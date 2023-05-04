@@ -1,24 +1,12 @@
-import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, createSnippet, focusEditor, html, initialize, startApp} from '../../utils/e2e';
-import {expect} from '@playwright/test';
+import {assertHTML, createSnippet, focusEditor, html, initialize} from '../../utils/e2e';
+import {expect, test} from '@playwright/test';
 
-describe('Embed card', async () => {
-    let app;
-    let page;
-
-    beforeAll(async () => {
-        ({app, page} = await startApp());
-    });
-
-    afterAll(async () => {
-        await app.stop();
-    });
-
-    beforeEach(async () => {
+test.describe('Embed card', async () => {
+    test.beforeEach(async ({page}) => {
         await initialize({page});
     });
 
-    test('can import serialized embed card nodes', async function () {
+    test('can import serialized embed card nodes', async function ({page}) {
         await page.evaluate(() => {
             const serializedState = JSON.stringify({
                 root: {
@@ -61,7 +49,7 @@ describe('Embed card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('renders embed card node', async function () {
+    test('renders embed card node', async function ({page}) {
         await focusEditor(page);
         await insertEmbedCard(page);
 
@@ -73,7 +61,7 @@ describe('Embed card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('can interact with url input after inserting', async function () {
+    test('can interact with url input after inserting', async function ({page}) {
         await focusEditor(page);
         await insertEmbedCard(page);
 
@@ -84,8 +72,8 @@ describe('Embed card', async () => {
         await expect(urlInput).toHaveValue('test');
     });
 
-    describe('Valid URL handling', async () => {
-        test('shows loading wheel', async function () {
+    test.describe('Valid URL handling', async () => {
+        test('shows loading wheel', async function ({page}) {
             await focusEditor(page);
             await insertEmbedCard(page);
 
@@ -97,7 +85,7 @@ describe('Embed card', async () => {
             await expect(await page.getByTestId('embed-url-loading-spinner')).toBeVisible();
         });
 
-        test('displays expected metadata', async function () {
+        test('displays expected metadata', async function ({page}) {
             await focusEditor(page);
             await insertEmbedCard(page);
 
@@ -109,7 +97,7 @@ describe('Embed card', async () => {
         });
 
         // TODO: the caption editor is very nested, and we don't have an actual input field here, so we aren't testing for filling it
-        test('caption displays on insert', async function () {
+        test('caption displays on insert', async function ({page}) {
             await focusEditor(page);
             await insertEmbedCard(page);
 
@@ -122,8 +110,8 @@ describe('Embed card', async () => {
         });
     });
 
-    describe('Error Handling', async () => {
-        test('bad url entry shows error message', async function () {
+    test.describe('Error Handling', async () => {
+        test('bad url entry shows error message', async function ({page}) {
             await focusEditor(page);
             await insertEmbedCard(page);
 
@@ -135,7 +123,7 @@ describe('Embed card', async () => {
             await expect(await page.getByTestId('embed-url-error-message')).toContainText('There was an error when parsing the URL.');
         });
 
-        test('retry button bring back url input', async function () {
+        test('retry button bring back url input', async function ({page}) {
             await focusEditor(page);
             await insertEmbedCard(page);
 
@@ -155,7 +143,7 @@ describe('Embed card', async () => {
         });
 
         // todo: test is failing, need to figure if the error in test logic or on code
-        test.skip('paste as link button removes card and inserts text node link', async function () {
+        test.skip('paste as link button removes card and inserts text node link', async function ({page}) {
             await focusEditor(page);
             await insertEmbedCard(page);
 
@@ -177,7 +165,7 @@ describe('Embed card', async () => {
             `);
         });
 
-        test('close button removes card', async function () {
+        test('close button removes card', async function ({page}) {
             await focusEditor(page);
             await insertEmbedCard(page);
 
@@ -195,7 +183,7 @@ describe('Embed card', async () => {
         });
     });
 
-    test('can add snippet', async function () {
+    test('can add snippet', async function ({page}) {
         await focusEditor(page);
         await insertEmbedCard(page);
 

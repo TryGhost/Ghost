@@ -1,24 +1,12 @@
-import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, focusEditor, html, initialize, startApp} from '../../utils/e2e';
-import {expect} from '@playwright/test';
+import {assertHTML, focusEditor, html, initialize} from '../../utils/e2e';
+import {expect, test} from '@playwright/test';
 
-describe('Code Block card', async () => {
-    let app;
-    let page;
-
-    beforeAll(async () => {
-        ({app, page} = await startApp());
-    });
-
-    afterAll(async () => {
-        await app.stop();
-    });
-
-    beforeEach(async () => {
+test.describe('Code Block card', async () => {
+    test.beforeEach(async ({page}) => {
         await initialize({page});
     });
 
-    test('can import serialized code block card nodes', async function () {
+    test('can import serialized code block card nodes', async function ({page}) {
         await page.evaluate(() => {
             const serializedState = JSON.stringify({
                 root: {
@@ -48,7 +36,7 @@ describe('Code Block card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('renders code block card node', async function () {
+    test('renders code block card node', async function ({page}) {
         await focusEditor(page);
         await page.keyboard.type('```javascript ');
 
@@ -60,7 +48,7 @@ describe('Code Block card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('renders code block card node 2', async function () {
+    test('renders code block card node 2', async function ({page}) {
         await focusEditor(page);
         await page.keyboard.type('```javascript');
         await page.keyboard.press('Enter');
@@ -73,7 +61,7 @@ describe('Code Block card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('it hides the language input when typing in the code editor and shows it when the mouse moves', async function () {
+    test('it hides the language input when typing in the code editor and shows it when the mouse moves', async function ({page}) {
         await focusEditor(page);
         await page.keyboard.type('```javascript ');
         await page.waitForSelector('[data-kg-card="codeblock"] .cm-editor');

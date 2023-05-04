@@ -1,29 +1,16 @@
-import createDataTransfer from '../../utils/createDataTransfer';
 import path from 'path';
-import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, createSnippet, focusEditor, html, initialize, startApp} from '../../utils/e2e';
-import {expect} from '@playwright/test';
+import {assertHTML, createDataTransfer, createSnippet, focusEditor, html, initialize} from '../../utils/e2e';
+import {expect, test} from '@playwright/test';
+import {fileURLToPath} from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-describe('Video card', async () => {
-    let app;
-    let page;
-
-    beforeAll(async () => {
-        // Video card is tested in firefox
-        // Need to get video thumbnail before uploading on the server; for this purpose, convert video to blob https://github.com/TryGhost/Koenig/blob/a04c59c2d81ddc783869c47653aa9d7adf093629/packages/koenig-lexical/src/utils/extractVideoMetadata.js#L45
-        // The problem is that Chromium can't read video src as blob
-        ({app, page} = await startApp('firefox'));
-    });
-
-    afterAll(async () => {
-        await app.stop();
-    });
-
-    beforeEach(async () => {
+test.describe('Video card', async () => {
+    test.beforeEach(async ({page}) => {
         await initialize({page});
     });
 
-    test('can import serialized video card nodes', async function () {
+    test('can import serialized video card nodes', async function ({page}) {
         await page.evaluate(() => {
             const serializedState = JSON.stringify({
                 root: {
@@ -56,7 +43,7 @@ describe('Video card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('renders video card node', async function () {
+    test('renders video card node', async function ({page}) {
         const fileChooserPromise = page.waitForEvent('filechooser');
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/video.mp4');
 
@@ -78,7 +65,7 @@ describe('Video card', async () => {
         await fileChooser.setFiles([filePath]);
     });
 
-    test('can upload video file from slash menu', async function () {
+    test('can upload video file from slash menu', async function ({page}) {
         const fileChooserPromise = page.waitForEvent('filechooser');
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/video.mp4');
 
@@ -95,7 +82,7 @@ describe('Video card', async () => {
         await expect(await page.getByTestId('media-duration')).toContainText('0:04');
     });
 
-    test('can upload video file from card menu', async function () {
+    test('can upload video file from card menu', async function ({page}) {
         await focusEditor(page);
         await uploadVideo(page);
 
@@ -103,7 +90,7 @@ describe('Video card', async () => {
         await expect(await page.getByTestId('media-duration')).toContainText('0:04');
     });
 
-    test('can show errors for failed video upload', async function () {
+    test('can show errors for failed video upload', async function ({page}) {
         await focusEditor(page);
         await uploadVideo(page, 'video-fail.mp4');
 
@@ -111,7 +98,7 @@ describe('Video card', async () => {
         await expect(await page.getByTestId('media-placeholder-errors')).toBeVisible();
     });
 
-    test('can manage custom thumbnail', async function () {
+    test('can manage custom thumbnail', async function ({page}) {
         await focusEditor(page);
         await uploadVideo(page);
 
@@ -138,7 +125,7 @@ describe('Video card', async () => {
         await expect(await page.getByTestId('thumbnail-media-placeholder')).toBeVisible();
     });
 
-    test('can show errors for custom thumbnail', async function () {
+    test('can show errors for custom thumbnail', async function ({page}) {
         await focusEditor(page);
         await uploadVideo(page);
 
@@ -162,7 +149,7 @@ describe('Video card', async () => {
         await expect(await page.getByTestId('custom-thumbnails-errors')).toBeVisible();
     });
 
-    test('can hide custom thumbnail if loop enabled', async function () {
+    test('can hide custom thumbnail if loop enabled', async function ({page}) {
         await focusEditor(page);
         await uploadVideo(page);
 
@@ -180,7 +167,7 @@ describe('Video card', async () => {
         await expect(page.getByTestId('thumbnail-media-placeholder')).toBeHidden();
     });
 
-    test('can upload dropped video', async function () {
+    test('can upload dropped video', async function ({page}) {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/video.mp4');
         const fileChooserPromise = page.waitForEvent('filechooser');
 
@@ -207,7 +194,7 @@ describe('Video card', async () => {
         await expect(await page.getByTestId('media-duration')).toContainText('0:04');
     });
 
-    test('can show errors if was dropped a file with wrong extension to video placeholder', async function () {
+    test('can show errors if was dropped a file with wrong extension to video placeholder', async function ({page}) {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
         const fileChooserPromise = page.waitForEvent('filechooser');
 
@@ -229,7 +216,7 @@ describe('Video card', async () => {
         await expect(await page.getByTestId('media-placeholder-errors')).toBeVisible();
     });
 
-    test('can upload dropped custom thumbnail', async function () {
+    test('can upload dropped custom thumbnail', async function ({page}) {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
         await focusEditor(page);
@@ -252,7 +239,7 @@ describe('Video card', async () => {
         await expect(await page.getByTestId('custom-thumbnail-filled')).toBeVisible();
     });
 
-    test('can show errors if was dropped a file with wrong extension to custom thumbnail', async function () {
+    test('can show errors if was dropped a file with wrong extension to custom thumbnail', async function ({page}) {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/video.mp4');
 
         await focusEditor(page);
@@ -269,7 +256,7 @@ describe('Video card', async () => {
         await expect(await page.getByTestId('custom-thumbnails-errors')).toBeVisible();
     });
 
-    test('renders video card toolbar', async function () {
+    test('renders video card toolbar', async function ({page}) {
         await focusEditor(page);
 
         // Upload video
@@ -283,7 +270,7 @@ describe('Video card', async () => {
         await expect(await page.locator('[data-kg-card-toolbar="video"]')).toBeVisible();
     });
 
-    test('video card toolbar has Edit button', async function () {
+    test('video card toolbar has Edit button', async function ({page}) {
         await focusEditor(page);
 
         // Upload video
@@ -309,7 +296,7 @@ describe('Video card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('adds extra paragraph when video is inserted at end of document', async function () {
+    test('adds extra paragraph when video is inserted at end of document', async function ({page}) {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
 
@@ -327,7 +314,7 @@ describe('Video card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('does not add extra paragraph when video is inserted mid-document', async function () {
+    test('does not add extra paragraph when video is inserted mid-document', async function ({page}) {
         await focusEditor(page);
         await page.keyboard.press('Enter');
         await page.keyboard.type('Testing');
@@ -348,7 +335,7 @@ describe('Video card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    it('can add snippet', async function () {
+    test('can add snippet', async function ({page}) {
         await focusEditor(page);
 
         // Upload video

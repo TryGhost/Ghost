@@ -1,24 +1,12 @@
-import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, createSnippet, focusEditor, html, initialize, insertCard, startApp} from '../../utils/e2e';
-import {expect} from '@playwright/test';
+import {assertHTML, createSnippet, focusEditor, html, initialize, insertCard} from '../../utils/e2e';
+import {expect, test} from '@playwright/test';
 
-describe('Button Card', async () => {
-    let app;
-    let page;
-
-    beforeAll(async () => {
-        ({app, page} = await startApp());
-    });
-
-    afterAll(async () => {
-        await app.stop();
-    });
-
-    beforeEach(async () => {
+test.describe('Button Card', async () => {
+    test.beforeEach(async ({page}) => {
         await initialize({page});
     });
 
-    test('can import serialized button card nodes', async function () {
+    test('can import serialized button card nodes', async function ({page}) {
         await page.evaluate(() => {
             const serializedState = JSON.stringify({
                 root: {
@@ -48,7 +36,7 @@ describe('Button Card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('renders button card', async function () {
+    test('renders button card', async function ({page}) {
         await focusEditor(page);
         await insertCard(page, {cardName: 'button'});
 
@@ -61,7 +49,7 @@ describe('Button Card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('has settings panel', async function () {
+    test('has settings panel', async function ({page}) {
         await focusEditor(page);
         await insertCard(page, {cardName: 'button'});
 
@@ -72,7 +60,7 @@ describe('Button Card', async () => {
         await expect(await page.getByTestId('button-input-url')).toBeVisible();
     });
 
-    test('alignment buttons work', async function () {
+    test('alignment buttons work', async function ({page}) {
         await focusEditor(page);
         await insertCard(page, {cardName: 'button'});
 
@@ -89,7 +77,7 @@ describe('Button Card', async () => {
         await expect(buttonCard).toHaveClass(/justify-center/);
     });
 
-    test('default settings are appropriate', async function () {
+    test('default settings are appropriate', async function ({page}) {
         await focusEditor(page);
         await insertCard(page, {cardName: 'button'});
 
@@ -100,7 +88,7 @@ describe('Button Card', async () => {
         await expect(buttonUrlInput).toHaveAttribute('placeholder','https://yoursite.com/#/portal/signup/');
     });
 
-    test('text input field works', async function () {
+    test('text input field works', async function ({page}) {
         await focusEditor(page);
         await insertCard(page, {cardName: 'button'});
 
@@ -115,7 +103,7 @@ describe('Button Card', async () => {
         await expect(await page.getByTestId('button-card-btn-span').textContent()).toEqual('test');
     });
 
-    test('url input field works', async function () {
+    test('url input field works', async function ({page}) {
         await focusEditor(page);
         await insertCard(page, {cardName: 'button'});
 
@@ -129,7 +117,7 @@ describe('Button Card', async () => {
     });
 
     // NOTE: an improvement would be to pass in suggested url options, but the construction now doesn't make that straightforward
-    test('suggested urls display', async function () {
+    test('suggested urls display', async function ({page}) {
         await focusEditor(page);
         await insertCard(page, {cardName: 'button'});
 
@@ -150,7 +138,7 @@ describe('Button Card', async () => {
         await expect(buttonLink).toHaveAttribute('href',anyString);
     });
 
-    test('can add snippet', async function () {
+    test('can add snippet', async function ({page}) {
         await focusEditor(page);
         await insertCard(page, {cardName: 'button'});
 

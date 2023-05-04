@@ -1,25 +1,16 @@
 import path from 'path';
-import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, dragMouse, focusEditor, html, initialize, startApp} from '../../utils/e2e';
-import {expect} from '@playwright/test';
+import {assertHTML, dragMouse, focusEditor, html, initialize} from '../../utils/e2e';
+import {expect, test} from '@playwright/test';
+import {fileURLToPath} from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-describe('Drag Drop Reorder Plugin', async function () {
-    let app;
-    let page;
-
-    beforeAll(async function () {
-        ({app, page} = await startApp());
-    });
-
-    afterAll(async function () {
-        await app.stop();
-    });
-
-    beforeEach(async function () {
+test.describe('Drag Drop Reorder Plugin', async function () {
+    test.beforeEach(async function ({page}) {
         await initialize({page});
     });
 
-    test('can drag and drop a card between two other nodes', async function () {
+    test('can drag and drop a card between two other nodes', async function ({page}) {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
         await focusEditor(page);
@@ -68,7 +59,7 @@ describe('Drag Drop Reorder Plugin', async function () {
         `, {ignoreCardContents: true});
     });
 
-    test('can drag and drop a card at the top of the editor', async function () {
+    test('can drag and drop a card at the top of the editor', async function ({page}) {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
         await focusEditor(page);
@@ -120,7 +111,7 @@ describe('Drag Drop Reorder Plugin', async function () {
         `, {ignoreCardContents: true});
     });
 
-    test('can drag and drop a card at the bottom of the editor', async function () {
+    test('can drag and drop a card at the bottom of the editor', async function ({page}) {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
         await focusEditor(page);
@@ -176,7 +167,7 @@ describe('Drag Drop Reorder Plugin', async function () {
         `, {ignoreCardContents: true});
     });
 
-    test('can display placeholder element while hovering between nodes', async function () {
+    test('can display placeholder element while hovering between nodes', async function ({page}) {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
         await focusEditor(page);

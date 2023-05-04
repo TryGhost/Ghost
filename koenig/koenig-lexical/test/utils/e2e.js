@@ -1,39 +1,16 @@
+import fs from 'fs';
 import jsdom from 'jsdom';
-import playwright from '@playwright/test';
 import prettier from 'prettier';
-import {E2E_PORT} from '../e2e-setup';
-import {chromium, firefox, webkit} from 'playwright';
-import {expect} from 'vitest';
-import {startCase} from 'lodash';
+import startCase from 'lodash/startCase';
+import {E2E_PORT} from '../../playwright.config';
+import {expect} from '@playwright/test';
 
 const {JSDOM} = jsdom;
 
-const BROWSER_NAME = process.env.browser || 'chromium';
-
-export async function startApp(browserName = BROWSER_NAME) {
-    const headless = process.env.PLAYWRIGHT_HEADLESS === 'false' ? false : true;
-    const slowMo = parseInt(process.env.PLAYWRIGHT_SLOWMO) || 0;
-    const browser = await {chromium, webkit, firefox}[browserName].launch({
-        headless: headless,
-        slowMo: slowMo
-    });
-    const page = await browser.newPage();
-
-    return {
-        app: {
-            stop: async () => {
-                await browser.close();
-            }
-        },
-        browser,
-        page
-    };
-}
-
 export async function initialize({page, uri = '/#/?content=false'}) {
-    const url = `http://127.0.0.1:${E2E_PORT}${uri}`;
+    const url = `http://localhost:${E2E_PORT}${uri}`;
 
-    page.setViewportSize({width: 1000, height: 1000});
+    await page.setViewportSize({width: 1000, height: 1000});
 
     await page.goto(url);
     await page.reload(); // required with hash URLs otherwise app doesn't always reset
@@ -328,9 +305,9 @@ export function isMac() {
 
 export async function insertCard(page, {cardName}) {
     await page.keyboard.type(`/${cardName}`);
-    await playwright.expect(await page.locator(`[data-kg-card-menu-item="${startCase(cardName)}"][data-kg-cardmenu-selected="true"]`)).toBeVisible();
+    await expect(await page.locator(`[data-kg-card-menu-item="${startCase(cardName)}"][data-kg-cardmenu-selected="true"]`)).toBeVisible();
     await page.keyboard.press('Enter');
-    await playwright.expect(await page.locator(`[data-kg-card="${cardName}"]`)).toBeVisible();
+    await expect(await page.locator(`[data-kg-card="${cardName}"]`)).toBeVisible();
 }
 
 export async function createSnippet(page) {
@@ -363,4 +340,29 @@ export async function expectUnchangedScrollPosition(page, wrapper) {
     await wrapper();
     const end = await getScrollPosition(page);
     expect(start).toEqual(end);
+}
+
+export async function createDataTransfer(page, data = []) {
+    const filesData = [];
+
+    data.forEach((file) => {
+        const buffer = fs.readFileSync(file.filePath);
+
+        filesData.push({
+            buffer: buffer.toJSON().data,
+            name: file.fileName,
+            type: file.fileType
+        });
+    });
+
+    return await page.evaluateHandle((dataset = []) => {
+        const dt = new DataTransfer();
+
+        dataset.forEach((fileData) => {
+            const file = new File([new Uint8Array(fileData.buffer)], fileData.name, {type: fileData.type});
+            dt.items.add(file);
+        });
+
+        return dt;
+    }, filesData);
 }

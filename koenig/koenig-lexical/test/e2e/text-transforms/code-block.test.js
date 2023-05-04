@@ -1,23 +1,12 @@
-import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, focusEditor, html, initialize, startApp} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize} from '../../utils/e2e';
+import {test} from '@playwright/test';
 
-describe('Renders code block node', async () => {
-    let app;
-    let page;
-
-    beforeAll(async () => {
-        ({app, page} = await startApp());
-    });
-
-    afterAll(async () => {
-        await app.stop();
-    });
-
-    beforeEach(async () => {
+test.describe('Renders code block node', async () => {
+    test.beforeEach(async ({page}) => {
         await initialize({page});
     });
 
-    test('renders code block node in edit mode', async function () {
+    test('renders code block node in edit mode', async function ({page}) {
         await focusEditor(page);
         await page.keyboard.type('```javascript ');
         await assertHTML(page, html`

@@ -1,26 +1,16 @@
-import createDataTransfer from '../../utils/createDataTransfer';
 import path from 'path';
-import {afterAll, beforeAll, beforeEach, describe, it} from 'vitest';
-import {assertHTML, focusEditor, html, initialize, insertCard, startApp} from '../../utils/e2e';
-import {expect} from '@playwright/test';
+import {assertHTML, createDataTransfer, focusEditor, html, initialize, insertCard} from '../../utils/e2e';
+import {expect, test} from '@playwright/test';
+import {fileURLToPath} from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-describe('Gallery card', async () => {
-    let app;
-    let page;
-
-    beforeAll(async () => {
-        ({app, page} = await startApp());
-    });
-
-    afterAll(async () => {
-        await app.stop();
-    });
-
-    beforeEach(async () => {
+test.describe('Gallery card', async () => {
+    test.beforeEach(async ({page}) => {
         await initialize({page});
     });
 
-    it('can import serialized gallery card nodes', async function () {
+    test('can import serialized gallery card nodes', async function ({page}) {
         await page.evaluate(() => {
             const serializedState = JSON.stringify({
                 root: {
@@ -107,7 +97,7 @@ describe('Gallery card', async () => {
         `);
     });
 
-    it('can insert gallery card', async function () {
+    test('can insert gallery card', async function ({page}) {
         await focusEditor(page);
         await insertCard(page, {cardName: 'gallery'});
 
@@ -152,7 +142,7 @@ describe('Gallery card', async () => {
         `);
     });
 
-    it('can upload images', async function () {
+    test('can upload images', async function ({page}) {
         const fileChooserPromise = page.waitForEvent('filechooser');
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.jpeg');
 
@@ -214,7 +204,7 @@ describe('Gallery card', async () => {
         `, {ignoreCardToolbarContents: true});
     });
 
-    it('can drop images when empty', async function () {
+    test('can drop images when empty', async function ({page}) {
         const firstImagePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.jpeg');
         const secondImagePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
@@ -238,7 +228,7 @@ describe('Gallery card', async () => {
         await expect(page.locator('[data-testid="gallery-image"]')).toHaveCount(2);
     });
 
-    it('can drop images when populated', async function () {
+    test('can drop images when populated', async function ({page}) {
         const prePopulatedImagePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.jpeg');
         const fileChooserPromise = page.waitForEvent('filechooser');
 
@@ -272,7 +262,7 @@ describe('Gallery card', async () => {
         await expect(page.locator('[data-testid="gallery-image"]')).toHaveCount(3);
     });
 
-    it('limits uploads to 9 images', async function () {
+    test('limits uploads to 9 images', async function ({page}) {
         const filePaths = Array.from(Array(10).keys()).map(n => path.relative(process.cwd(), __dirname + `/../fixtures/large-image-${n}.png`));
         const fileChooserPromise = page.waitForEvent('filechooser');
 
@@ -291,7 +281,7 @@ describe('Gallery card', async () => {
         await expect(page.getByTestId('gallery-error')).not.toBeVisible();
     });
 
-    it('can add images via toolbar', async function () {
+    test('can add images via toolbar', async function ({page}) {
         await focusEditor(page);
         await insertCard(page, {cardName: 'gallery'});
 

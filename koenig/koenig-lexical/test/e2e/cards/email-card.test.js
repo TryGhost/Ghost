@@ -1,6 +1,5 @@
-import {afterAll, beforeAll, beforeEach, describe} from 'vitest';
-import {assertHTML, createSnippet, focusEditor, html, initialize, startApp} from '../../utils/e2e';
-import {expect} from '@playwright/test';
+import {assertHTML, createSnippet, focusEditor, html, initialize} from '../../utils/e2e';
+import {expect, test} from '@playwright/test';
 
 async function insertEmailCard(page) {
     await page.keyboard.type('/email content');
@@ -9,23 +8,12 @@ async function insertEmailCard(page) {
     await page.waitForSelector('[data-kg-card="email"]');
 }
 
-describe('Email card', async () => {
-    let app;
-    let page;
-
-    beforeAll(async () => {
-        ({app, page} = await startApp());
-    });
-
-    afterAll(async () => {
-        await app.stop();
-    });
-
-    beforeEach(async () => {
+test.describe('Email card', async () => {
+    test.beforeEach(async ({page}) => {
         await initialize({page});
     });
 
-    it('can import serialized email card nodes', async function () {
+    test('can import serialized email card nodes', async function ({page}) {
         await page.evaluate(() => {
             const serializedState = JSON.stringify({
                 root: {
@@ -66,7 +54,7 @@ describe('Email card', async () => {
         `, {ignoreInnerSVG: true, ignoreCardToolbarContents: true});
     });
 
-    it('renders email card node in edit mode from slash command', async function () {
+    test('renders email card node in edit mode from slash command', async function ({page}) {
         await focusEditor(page);
         await insertEmailCard(page);
 
@@ -101,7 +89,7 @@ describe('Email card', async () => {
         `, {ignoreInnerSVG: true, ignoreCardToolbarContents: true});
     });
 
-    it('contains `Hey {first_name, "there"}` by default when rendered', async function () {
+    test('contains `Hey {first_name, "there"}` by default when rendered', async function ({page}) {
         await focusEditor(page);
         await insertEmailCard(page);
 
@@ -109,7 +97,7 @@ describe('Email card', async () => {
         await expect(htmlContent).toContainText('Hey {first_name, "there"},');
     });
 
-    it('renders in display mode when unfocused', async function () {
+    test('renders in display mode when unfocused', async function ({page}) {
         await focusEditor(page);
         await insertEmailCard(page);
 
@@ -120,7 +108,7 @@ describe('Email card', async () => {
         await expect(emailCard).toHaveAttribute('data-kg-card-editing', 'false');
     });
 
-    it('renders an action toolbar', async function () {
+    test('renders an action toolbar', async function ({page}) {
         await focusEditor(page);
         await insertEmailCard(page);
 
@@ -131,7 +119,7 @@ describe('Email card', async () => {
         await expect(editButton).toBeVisible();
     });
 
-    it('is removed when left empty', async function () {
+    test('is removed when left empty', async function ({page}) {
         await focusEditor(page);
         await insertEmailCard(page);
 
@@ -147,7 +135,7 @@ describe('Email card', async () => {
         await expect(emailCard).not.toBeVisible();
     });
 
-    it('it can contain lists', async function () {
+    test('it can contain lists', async function ({page}) {
         await focusEditor(page);
         await insertEmailCard(page);
 
@@ -160,7 +148,7 @@ describe('Email card', async () => {
         await expect(emailCard).toHaveText('List item 1');
     });
 
-    it('can add snippet', async function () {
+    test('can add snippet', async function ({page}) {
         await focusEditor(page);
         await insertEmailCard(page);
 

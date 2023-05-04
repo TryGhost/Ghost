@@ -63,7 +63,7 @@ export default (function viteConfig() {
             globals: true, // required for @testing-library/jest-dom extensions
             environment: 'jsdom',
             setupFiles: './test/test-setup.js',
-            globalSetup: './test/e2e-setup.js',
+            include: ['./test/unit/*'],
             testTimeout: process.env.TIMEOUT ? parseInt(process.env.TIMEOUT) : 10000,
             ...(process.env.CI && { // https://github.com/vitest-dev/vitest/issues/1674
                 minThreads: 1,

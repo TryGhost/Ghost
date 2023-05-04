@@ -1,25 +1,13 @@
 // TODO: Switch to mocked API. Currently uses real Unsplash API so the asserted test data isn't stable
-import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {expect} from '@playwright/test';
-import {focusEditor, initialize, startApp} from '../../utils/e2e';
+import {expect, test} from '@playwright/test';
+import {focusEditor, initialize} from '../../utils/e2e';
 
-describe('Modals', async () => {
-    let app;
-    let page;
-
-    beforeAll(async () => {
-        ({app, page} = await startApp());
-    });
-
-    afterAll(async () => {
-        await app.stop();
-    });
-
-    beforeEach(async () => {
+test.describe('Modals', async () => {
+    test.beforeEach(async ({page}) => {
         await initialize({page});
     });
 
-    test.skip('can open selector', async () => {
+    test.skip('can open selector', async ({page}) => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
         await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
@@ -27,7 +15,7 @@ describe('Modals', async () => {
         await expect(page.locator('[data-kg-modal="unsplash"]')).toBeVisible();
     });
 
-    test.skip('renders (empty) image card under container', async () => {
+    test.skip('renders (empty) image card under container', async ({page}) => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
         await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
@@ -36,7 +24,7 @@ describe('Modals', async () => {
         await expect(page.locator('[data-kg-card="image"]')).toBeVisible();
     });
 
-    test.skip('can close selector', async () => {
+    test.skip('can close selector', async ({page}) => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
         await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
@@ -46,7 +34,7 @@ describe('Modals', async () => {
         await expect(page.locator('[data-kg-modal="unsplash"]')).not.toBeVisible();
     });
 
-    test.skip('empty image card removed when closing model', async () => {
+    test.skip('empty image card removed when closing model', async ({page}) => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
         await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
@@ -57,7 +45,7 @@ describe('Modals', async () => {
         await expect(page.locator('[data-kg-card="image"]')).not.toBeVisible();
     });
 
-    test.skip('renders unsplash gallery', async () => {
+    test.skip('renders unsplash gallery', async ({page}) => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
         await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
@@ -67,7 +55,7 @@ describe('Modals', async () => {
         await expect(page.locator('[data-kg-unsplash-gallery]')).toBeVisible();
     });
 
-    test.skip('can select / zoom image', async () => {
+    test.skip('can select / zoom image', async ({page}) => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
         await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
@@ -77,10 +65,10 @@ describe('Modals', async () => {
         await expect(page.locator('[data-kg-unsplash-gallery]')).toBeVisible();
         await page.waitForSelector('[data-kg-unsplash-gallery-item]');
         await page.click('[data-kg-unsplash-gallery-item]');
-        expect(await page.$('[data-kg-unsplash-zoomed]')).not.toBeNull();
+        expect(await page.locator('[data-kg-unsplash-zoomed]')).not.toBeNull();
     });
 
-    test.skip('can download image', async () => {
+    test.skip('can download image', async ({page}) => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
         await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
@@ -97,7 +85,7 @@ describe('Modals', async () => {
         expect(download.suggestedFilename()).toContain('unsplash.jpg');
     });
 
-    test.skip('can click like button, opens in new tab', async () => {
+    test.skip('can click like button, opens in new tab', async ({page}) => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
         await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
@@ -115,7 +103,7 @@ describe('Modals', async () => {
         expect(newPage.url()).toContain('unsplash.com');
     });
 
-    test.skip('can search for photos', async () => {
+    test.skip('can search for photos', async ({page}) => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
         await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
@@ -135,7 +123,7 @@ describe('Modals', async () => {
         expect(altTexts.some(alt => alt.includes(searchTerm))).toBe(true);
     });
 
-    test.skip('closes a zoomed image when searching', async () => {
+    test.skip('closes a zoomed image when searching', async ({page}) => {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
         await expect(page.locator('[data-kg-plus-menu]')).toBeVisible();
@@ -156,5 +144,5 @@ describe('Modals', async () => {
         await expect(page.locator('[data-kg-unsplash-zoomed]')).not.toBeVisible();
     });
 
-    test.todo('can infinite scroll');
+    //test.fixme('can infinite scroll');
 });

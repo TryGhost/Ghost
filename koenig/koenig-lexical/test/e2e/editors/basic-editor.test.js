@@ -1,28 +1,17 @@
-import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, focusEditor, html, initialize, startApp} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize} from '../../utils/e2e';
+import {expect, test} from '@playwright/test';
 
-describe('Koening Editor with basic nodes', async function () {
-    let app;
-    let page;
-
-    beforeAll(async function () {
-        ({app, page} = await startApp());
-    });
-
-    afterAll(async function () {
-        await app.stop();
-    });
-
-    beforeEach(async function () {
+test.describe('Koening Editor with basic nodes', async function () {
+    test.beforeEach(async function ({page}) {
         await initialize({page, uri: '/#/basic?content=false'});
     });
 
-    test('caret does not appear on empty editor', async function () {
+    test('caret does not appear on empty editor', async function ({page}) {
         await focusEditor(page);
-        expect(await page.$('[data-kg-plus-button]')).toBeNull();
+        await expect(await page.locator('[data-kg-plus-button]')).toHaveCount(0);
     });
 
-    test('can add basic text', async function () {
+    test('can add basic text', async function ({page}) {
         await focusEditor(page);
 
         await page.keyboard.type('Hello World');
@@ -32,7 +21,7 @@ describe('Koening Editor with basic nodes', async function () {
         `);
     });
 
-    test('can add more than 1 paragraphs by typing manually', async function () {
+    test('can add more than 1 paragraphs by typing manually', async function ({page}) {
         await focusEditor(page);
 
         await page.keyboard.type('Hello World');
@@ -45,7 +34,7 @@ describe('Koening Editor with basic nodes', async function () {
         `);
     });
 
-    test('ignores hr card shortcut', async function () {
+    test('ignores hr card shortcut', async function ({page}) {
         await focusEditor(page);
 
         await page.keyboard.type('--- ');
@@ -57,7 +46,7 @@ describe('Koening Editor with basic nodes', async function () {
         `);
     });
 
-    test('ignores code block card shortcut', async function () {
+    test('ignores code block card shortcut', async function ({page}) {
         await focusEditor(page);
         await page.keyboard.type('```javascript ');
 
@@ -66,7 +55,7 @@ describe('Koening Editor with basic nodes', async function () {
         `);
     });
 
-    test('ignores image card shortcut', async function () {
+    test('ignores image card shortcut', async function ({page}) {
         await focusEditor(page);
 
         await page.keyboard.type('image! ');
@@ -76,19 +65,19 @@ describe('Koening Editor with basic nodes', async function () {
         `);
     });
 
-    test('ignores slash menu on blank paragraph', async function () {
+    test('ignores slash menu on blank paragraph', async function ({page}) {
         await focusEditor(page);
-        expect(await page.$('[data-kg-slash-menu]')).toBeNull();
+        await expect(await page.locator('[data-kg-slash-menu]')).toHaveCount(0);
         await page.keyboard.type('/');
-        expect(await page.$('[data-kg-slash-menu]')).toBeNull();
+        await expect(await page.locator('[data-kg-slash-menu]')).toHaveCount(0);
     });
 
-    describe('Floating format toolbar', async () => {
-        test('appears on text selection', async function () {
+    test.describe('Floating format toolbar', async () => {
+        test('appears on text selection', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.type('text for selection');
 
-            expect(await page.$('[data-kg-floating-toolbar]')).toBeNull();
+            await expect(await page.locator('[data-kg-floating-toolbar]')).toHaveCount(0);
 
             await page.keyboard.down('Shift');
             for (let i = 0; i < 'for selection'.length; i++) {
@@ -96,14 +85,14 @@ describe('Koening Editor with basic nodes', async function () {
             }
             await page.keyboard.up('Shift');
 
-            expect(await page.$('[data-kg-floating-toolbar]')).not.toBeNull();
+            expect(await page.locator('[data-kg-floating-toolbar]')).not.toBeNull();
         });
 
-        test('does not has heading buttons', async function () {
+        test('does not has heading buttons', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.type('text for selection');
 
-            expect(await page.$('[data-kg-floating-toolbar]')).toBeNull();
+            await expect(await page.locator('[data-kg-floating-toolbar]')).toHaveCount(0);
 
             await page.keyboard.down('Shift');
             for (let i = 0; i < 'for selection'.length; i++) {
@@ -111,16 +100,16 @@ describe('Koening Editor with basic nodes', async function () {
             }
             await page.keyboard.up('Shift');
 
-            expect(await page.$('[data-kg-floating-toolbar]')).not.toBeNull();
+            expect(await page.locator('[data-kg-floating-toolbar]')).not.toBeNull();
 
             const boldButtonSelector = `[data-kg-floating-toolbar] [data-kg-toolbar-button="bold"] button`;
-            expect(await page.$(boldButtonSelector)).not.toBeNull();
+            expect(await page.locator(boldButtonSelector)).not.toBeNull();
 
             const h2ButtonSelector = `[data-kg-floating-toolbar] [data-kg-toolbar-button="h2"] button`;
-            expect(await page.$(h2ButtonSelector)).toBeNull();
+            await expect(await page.locator(h2ButtonSelector)).toHaveCount(0);
 
             const h3ButtonSelector = `[data-kg-floating-toolbar] [data-kg-toolbar-button="h3"] button`;
-            expect(await page.$(h3ButtonSelector)).toBeNull();
+            await expect(await page.locator(h3ButtonSelector)).toHaveCount(0);
         });
     });
 });

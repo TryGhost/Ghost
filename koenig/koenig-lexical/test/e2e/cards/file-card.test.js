@@ -1,26 +1,16 @@
-import createDataTransfer from '../../utils/createDataTransfer';
 import path from 'path';
-import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, focusEditor, html, initialize, startApp} from '../../utils/e2e';
-import {expect} from '@playwright/test';
+import {assertHTML, createDataTransfer, focusEditor, html, initialize} from '../../utils/e2e';
+import {expect, test} from '@playwright/test';
+import {fileURLToPath} from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-describe('File card', async () => {
-    let app;
-    let page;
-
-    beforeAll(async () => {
-        ({app, page} = await startApp());
-    });
-
-    afterAll(async () => {
-        await app.stop();
-    });
-
-    beforeEach(async () => {
+test.describe('File card', async () => {
+    test.beforeEach(async ({page}) => {
         await initialize({page});
     });
-    
-    test('can import serialized file card nodes', async function () {
+
+    test('can import serialized file card nodes', async function ({page}) {
         await page.evaluate(() => {
             const serializedState = JSON.stringify({
                 root: {
@@ -53,7 +43,7 @@ describe('File card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('renders file card node', async function () {
+    test('renders file card node', async function ({page}) {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/print-img.pdf');
 
         await focusEditor(page);
@@ -75,7 +65,7 @@ describe('File card', async () => {
         await fileChooser.setFiles([filePath]);
     });
 
-    test('can upload a file', async function () {
+    test('can upload a file', async function ({page}) {
         await focusEditor(page);
         await uploadFile(page);
 
@@ -88,7 +78,7 @@ describe('File card', async () => {
         `, {ignoreCardContents: true}); // TODO: assert on HTML of inner card (not working due to error in prettier)
     });
 
-    test('can upload dropped file', async function () {
+    test('can upload dropped file', async function ({page}) {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/print-img.pdf');
         const fileChooserPromise = page.waitForEvent('filechooser');
 
@@ -116,7 +106,7 @@ describe('File card', async () => {
         await expect(await page.locator('[data-kg-file-card="dataset"]')).toBeVisible();
     });
 
-    test('file input opens immediately when added via card menu', async function () {
+    test('file input opens immediately when added via card menu', async function ({page}) {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
         const [fileChooser] = await Promise.all([
@@ -127,7 +117,7 @@ describe('File card', async () => {
         expect(fileChooser).not.toBeNull();
     });
 
-    test('file input opens immediately when added via slash menu', async function () {
+    test('file input opens immediately when added via slash menu', async function ({page}) {
         await focusEditor(page);
         const [fileChooser] = await Promise.all([
             page.waitForEvent('filechooser'),
@@ -139,14 +129,14 @@ describe('File card', async () => {
         expect(fileChooser).not.toBeNull();
     });
 
-    it('can edit file card title', async function () {
+    test('can edit file card title', async function ({page}) {
         await focusEditor(page);
         await uploadFile(page);
         await page.locator('[data-kg-file-card="fileTitle"]').fill('Free printable pdf');
         await expect(await page.locator('[data-kg-file-card="fileTitle"]')).toHaveValue('Free printable pdf');
     });
 
-    it('can edit file card description', async function () {
+    test('can edit file card description', async function ({page}) {
         await focusEditor(page);
         await uploadFile(page);
         await page.locator('[data-kg-file-card="fileDescription"]').fill('Enjoy this free download of a puppy pdf');

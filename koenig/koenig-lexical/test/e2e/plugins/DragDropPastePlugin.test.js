@@ -1,26 +1,16 @@
-import createDataTransfer from '../../utils/createDataTransfer';
 import path from 'path';
-import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, focusEditor, html, initialize, startApp} from '../../utils/e2e';
-import {expect} from '@playwright/test';
+import {assertHTML, createDataTransfer, focusEditor, html, initialize} from '../../utils/e2e';
+import {expect, test} from '@playwright/test';
+import {fileURLToPath} from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-describe('Drag Drop Paste Plugin', async function () {
-    let app;
-    let page;
-
-    beforeAll(async function () {
-        ({app, page} = await startApp());
-    });
-
-    afterAll(async function () {
-        await app.stop();
-    });
-
-    beforeEach(async function () {
+test.describe('Drag Drop Paste Plugin', async function () {
+    test.beforeEach(async function ({page}) {
         await initialize({page});
     });
 
-    test('can drag and drop an image on the editor', async function () {
+    test('can drag and drop an image on the editor', async function ({page}) {
         await focusEditor(page);
 
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
@@ -51,7 +41,7 @@ describe('Drag Drop Paste Plugin', async function () {
         `, {ignoreCardToolbarContents: true, ignoreCardContents: true});
     });
 
-    test('can drag and drop multiple images on the editor', async function () {
+    test('can drag and drop multiple images on the editor', async function ({page}) {
         await focusEditor(page);
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
         const filePath2 = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.jpeg');
@@ -79,7 +69,7 @@ describe('Drag Drop Paste Plugin', async function () {
         `, {ignoreCardToolbarContents: true, ignoreCardContents: true});
     });
 
-    test('can drag and drop an audio file on the editor', async function () {
+    test('can drag and drop an audio file on the editor', async function ({page}) {
         await focusEditor(page);
 
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/audio-sample.mp3');
@@ -98,7 +88,7 @@ describe('Drag Drop Paste Plugin', async function () {
         `, {ignoreCardContents: true});
     });
 
-    test('can drag and drop multiple audio files on the editor', async function () {
+    test('can drag and drop multiple audio files on the editor', async function ({page}) {
         await focusEditor(page);
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/audio-sample.mp3');
         const filePath2 = path.relative(process.cwd(), __dirname + '/../fixtures/audio-sample.mp3');

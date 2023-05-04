@@ -1,5 +1,4 @@
 import path from 'path';
-import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
 import {
     assertHTML,
     assertRootChildren,
@@ -7,30 +6,21 @@ import {
     focusEditor,
     html,
     initialize, insertCard,
-    isMac,
-    startApp
+    isMac
 } from '../../utils/e2e';
-import {expect} from '@playwright/test';
+import {expect, test} from '@playwright/test';
+import {fileURLToPath} from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-describe('Markdown card', async () => {
-    let app;
-    let page;
-
+test.describe('Markdown card', async () => {
     const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
 
-    beforeAll(async () => {
-        ({app, page} = await startApp());
-    });
-
-    afterAll(async () => {
-        await app.stop();
-    });
-
-    beforeEach(async () => {
+    test.beforeEach(async ({page}) => {
         await initialize({page});
     });
 
-    test('can import serialized markdown card node', async function () {
+    test('can import serialized markdown card node', async function ({page}) {
         await page.evaluate(() => {
             const serializedState = JSON.stringify({
                 root: {
@@ -61,7 +51,7 @@ describe('Markdown card', async () => {
         `);
     });
 
-    test('renders markdown card node', async function () {
+    test('renders markdown card node', async function ({page}) {
         await focusEditor(page);
         await page.keyboard.type('/');
 
@@ -77,7 +67,7 @@ describe('Markdown card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test ('markdown card doesn\'t leave editing mode on double click inside', async function () {
+    test ('markdown card doesn\'t leave editing mode on double click inside', async function ({page}) {
         await focusEditor(page);
         await page.keyboard.type('/');
         await page.click('[data-kg-card-menu-item="Markdown"]');
@@ -105,39 +95,39 @@ describe('Markdown card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('should open unsplash dialog on Cmd-Alt-O', async function () {
+    test('should open unsplash dialog on Cmd-Alt-O', async function ({page}) {
         await focusEditor(page);
         await page.keyboard.type('/');
         await page.click('[data-kg-card-menu-item="Markdown"]');
         await page.click('[data-kg-card="markdown"]');
 
-        await page.keyboard.press(`${ctrlOrCmd}+Alt+O`);
+        await page.keyboard.press(`Control+Alt+O`);
         await page.waitForSelector('[data-kg-modal="unsplash"]');
     });
 
-    test('should toggle spellcheck on Cmd-Alt-S', async function () {
+    test('should toggle spellcheck on Cmd-Alt-S', async function ({page}) {
         await focusEditor(page);
         await page.keyboard.type('/');
         await page.click('[data-kg-card-menu-item="Markdown"]');
         await page.click('[data-kg-card="markdown"]');
 
-        expect(await page.$('[title*="Spellcheck"][class*="active"]')).not.toBeNull();
-        await page.keyboard.press(`${ctrlOrCmd}+Alt+S`);
-        expect(await page.$('[title*="Spellcheck"]')).not.toBeNull();
-        expect(await page.$('[title*="Spellcheck"][class*="active"]')).toBeNull();
+        expect(await page.locator('[title*="Spellcheck"][class*="active"]')).not.toBeNull();
+        await page.keyboard.press(`Control+Alt+S`);
+        expect(await page.locator('[title*="Spellcheck"]')).not.toBeNull();
+        await expect(await page.locator('[title*="Spellcheck"][class*="active"]')).toHaveCount(0);
     });
 
-    test('should open image upload dialog on Cmd-Alt-I', async function () {
+    test('should open image upload dialog on Cmd-Alt-I', async function ({page}) {
         const fileChooserPromise = page.waitForEvent('filechooser');
         await focusEditor(page);
         await page.keyboard.type('/');
         await page.click('[data-kg-card-menu-item="Markdown"]');
         await page.click('[data-kg-card="markdown"]');
-        await page.keyboard.press(`${ctrlOrCmd}+Alt+I`);
+        await page.keyboard.press(`Control+Alt+I`);
         await fileChooserPromise;
     });
 
-    test('can display and close markdown help guide', async function () {
+    test('can display and close markdown help guide', async function ({page}) {
         await focusEditor(page);
         await page.keyboard.type('/');
         await page.click('[data-kg-card-menu-item="Markdown"]');
@@ -150,7 +140,7 @@ describe('Markdown card', async () => {
         await expect(await page.getByTestId('markdown-help-dialog')).not.toBeVisible();
     });
 
-    test('adds extra paragraph when markdown is inserted at end of document', async function () {
+    test('adds extra paragraph when markdown is inserted at end of document', async function ({page}) {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
         await page.click('[data-kg-card-menu-item="Markdown"]');
@@ -167,7 +157,7 @@ describe('Markdown card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('does not add extra paragraph when markdown is inserted mid-document', async function () {
+    test('does not add extra paragraph when markdown is inserted mid-document', async function ({page}) {
         await focusEditor(page);
         await page.keyboard.press('Enter');
         await page.keyboard.type('Testing');
@@ -187,7 +177,7 @@ describe('Markdown card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('can upload an image', async function () {
+    test('can upload an image', async function ({page}) {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
         await focusEditor(page);
         const fileChooserPromise = page.waitForEvent('filechooser');
@@ -195,7 +185,7 @@ describe('Markdown card', async () => {
         await page.keyboard.type('/');
         await page.click('[data-kg-card-menu-item="Markdown"]');
         await page.waitForSelector('[data-kg-card="markdown"] .editor-toolbar');
-        await page.keyboard.press(`${ctrlOrCmd}+Alt+I`);
+        await page.keyboard.press(`Control+Alt+I`);
 
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles(filePath);
@@ -226,7 +216,7 @@ describe('Markdown card', async () => {
         ]));
     });
 
-    test('can insert bold text', async function () {
+    test('can insert bold text', async function ({page}) {
         await focusEditor(page);
 
         await page.keyboard.type('/');
@@ -252,7 +242,7 @@ describe('Markdown card', async () => {
         ]));
     });
 
-    test('can convert text to bold', async function () {
+    test('can convert text to bold', async function ({page}) {
         await focusEditor(page);
 
         await page.keyboard.type('/');
@@ -286,7 +276,7 @@ describe('Markdown card', async () => {
         ]));
     });
 
-    test('can insert italic text', async function () {
+    test('can insert italic text', async function ({page}) {
         await focusEditor(page);
 
         await page.keyboard.type('/');
@@ -312,7 +302,7 @@ describe('Markdown card', async () => {
         ]));
     });
 
-    test('can convert text to italic', async function () {
+    test('can convert text to italic', async function ({page}) {
         await focusEditor(page);
 
         await page.keyboard.type('/');
@@ -348,7 +338,7 @@ describe('Markdown card', async () => {
         ]));
     });
 
-    test('can insert strikethrough text', async function () {
+    test('can insert strikethrough text', async function ({page}) {
         await focusEditor(page);
 
         await page.keyboard.type('/');
@@ -374,7 +364,7 @@ describe('Markdown card', async () => {
         ]));
     });
 
-    test('can convert text to strikethrough', async function () {
+    test('can convert text to strikethrough', async function ({page}) {
         await focusEditor(page);
 
         await page.keyboard.type('/');
@@ -408,7 +398,7 @@ describe('Markdown card', async () => {
         ]));
     });
 
-    test('can insert heading', async function () {
+    test('can insert heading', async function ({page}) {
         await focusEditor(page);
 
         await page.keyboard.type('/');
@@ -434,7 +424,7 @@ describe('Markdown card', async () => {
         ]));
     });
 
-    test('can convert line to heading', async function () {
+    test('can convert line to heading', async function ({page}) {
         await focusEditor(page);
 
         await page.keyboard.type('/');
@@ -460,7 +450,7 @@ describe('Markdown card', async () => {
         ]));
     });
 
-    test('can insert quote', async function () {
+    test('can insert quote', async function ({page}) {
         await focusEditor(page);
 
         await page.keyboard.type('/');
@@ -486,7 +476,7 @@ describe('Markdown card', async () => {
         ]));
     });
 
-    test('can convert line to quote', async function () {
+    test('can convert line to quote', async function ({page}) {
         await focusEditor(page);
 
         await page.keyboard.type('/');
@@ -512,7 +502,7 @@ describe('Markdown card', async () => {
         ]));
     });
 
-    test('can insert an unordered list', async function () {
+    test('can insert an unordered list', async function ({page}) {
         await focusEditor(page);
 
         await page.keyboard.type('/');
@@ -538,7 +528,7 @@ describe('Markdown card', async () => {
         ]));
     });
 
-    test('can convert line to unordered list', async function () {
+    test('can convert line to unordered list', async function ({page}) {
         await focusEditor(page);
 
         await page.keyboard.type('/');
@@ -564,7 +554,7 @@ describe('Markdown card', async () => {
         ]));
     });
 
-    test('can insert an ordered list', async function () {
+    test('can insert an ordered list', async function ({page}) {
         await focusEditor(page);
 
         await page.keyboard.type('/');
@@ -590,7 +580,7 @@ describe('Markdown card', async () => {
         ]));
     });
 
-    test('can convert line to ordered list', async function () {
+    test('can convert line to ordered list', async function ({page}) {
         await focusEditor(page);
 
         await page.keyboard.type('/');
@@ -616,7 +606,7 @@ describe('Markdown card', async () => {
         ]));
     });
 
-    test('can insert a link', async function () {
+    test('can insert a link', async function ({page}) {
         await focusEditor(page);
 
         await page.keyboard.type('/');
@@ -641,7 +631,7 @@ describe('Markdown card', async () => {
         ]));
     });
 
-    test('can convert text to a link', async function () {
+    test('can convert text to a link', async function ({page}) {
         await focusEditor(page);
 
         await page.keyboard.type('/');
@@ -675,13 +665,14 @@ describe('Markdown card', async () => {
         ]));
     });
 
-    test('can add snippet', async function () {
+    test('can add snippet', async function ({page}) {
         await focusEditor(page);
         // insert new card
         await insertCard(page, {cardName: 'markdown'});
 
         // fill card
         await expect(await page.locator('[data-kg-card="markdown"]')).toBeVisible();
+        await page.click('[data-kg-card="markdown"]');
         await page.keyboard.type('snippet');
         await page.keyboard.press('Escape');
 

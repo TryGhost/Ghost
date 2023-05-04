@@ -1,24 +1,12 @@
-import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, createSnippet, focusEditor, html, initialize, startApp} from '../../utils/e2e';
-import {expect} from '@playwright/test';
+import {assertHTML, createSnippet, focusEditor, html, initialize} from '../../utils/e2e';
+import {expect, test} from '@playwright/test';
 
-describe('Html card', async () => {
-    let app;
-    let page;
-
-    beforeAll(async () => {
-        ({app, page} = await startApp());
-    });
-
-    afterAll(async () => {
-        await app.stop();
-    });
-
-    beforeEach(async () => {
+test.describe('Html card', async () => {
+    test.beforeEach(async ({page}) => {
         await initialize({page});
     });
 
-    test('can import serialized html card nodes', async function () {
+    test('can import serialized html card nodes', async function ({page}) {
         await page.evaluate(() => {
             const serializedState = JSON.stringify({
                 root: {
@@ -48,7 +36,7 @@ describe('Html card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('renders html card node from slash entry', async function () {
+    test('renders html card node from slash entry', async function ({page}) {
         await focusEditor(page);
         await page.keyboard.type('/html');
         await page.waitForSelector('[data-kg-card-menu-item="HTML"][data-kg-cardmenu-selected="true"]');
@@ -63,7 +51,7 @@ describe('Html card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('can add snippet', async function () {
+    test('can add snippet', async function ({page}) {
         await focusEditor(page);
         // insert new card
         await page.keyboard.type('/html');
@@ -74,6 +62,7 @@ describe('Html card', async () => {
         await expect(await page.locator('[data-kg-card="html"][data-kg-card-editing="true"]')).toBeVisible();
         // waiting for html editor
         await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
+        await page.locator('[data-kg-card="html"]').click();
         await page.keyboard.type('text in html card', {delay: 100});
         await expect(await page.getByText('text in html card')).toBeVisible();
         await page.keyboard.press('Escape');

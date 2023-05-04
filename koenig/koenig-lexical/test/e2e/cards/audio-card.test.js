@@ -1,26 +1,16 @@
-import createDataTransfer from '../../utils/createDataTransfer';
 import path from 'path';
-import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, createSnippet, focusEditor, html, initialize, startApp} from '../../utils/e2e';
-import {expect} from '@playwright/test';
+import {assertHTML, createDataTransfer, createSnippet, focusEditor, html, initialize} from '../../utils/e2e';
+import {expect, test} from '@playwright/test';
+import {fileURLToPath} from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-describe('Audio card', async () => {
-    let app;
-    let page;
-
-    beforeAll(async () => {
-        ({app, page} = await startApp());
-    });
-
-    afterAll(async () => {
-        await app.stop();
-    });
-
-    beforeEach(async () => {
+test.describe('Audio card', async () => {
+    test.beforeEach(async ({page}) => {
         await initialize({page});
     });
 
-    test('can import serialized audio card nodes', async function () {
+    test('can import serialized audio card nodes', async function ({page}) {
         await page.evaluate(() => {
             const serializedState = JSON.stringify({
                 root: {
@@ -52,7 +42,7 @@ describe('Audio card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('renders audio card node', async function () {
+    test('renders audio card node', async function ({page}) {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/audio-sample.mp3');
 
         await focusEditor(page);
@@ -74,7 +64,7 @@ describe('Audio card', async () => {
         await fileChooser.setFiles([filePath]);
     });
 
-    test('can upload an audio file', async function () {
+    test('can upload an audio file', async function ({page}) {
         await focusEditor(page);
         await uploadAudio(page);
 
@@ -91,7 +81,7 @@ describe('Audio card', async () => {
         `, {ignoreCardContents: true}); // TODO: assert on HTML of inner card (not working due to error in prettier)
     });
 
-    test('can upload dropped audio', async function () {
+    test('can upload dropped audio', async function ({page}) {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/audio-sample.mp3');
         const fileChooserPromise = page.waitForEvent('filechooser');
 
@@ -118,16 +108,16 @@ describe('Audio card', async () => {
         await expect(await page.getByTestId('media-duration')).toContainText('0:19');
     });
 
-    test('shows errors on failed audio upload', async function () {
+    test('shows errors on failed audio upload', async function ({page}) {
         await focusEditor(page);
         await uploadAudio(page, 'audio-sample-fail.mp3');
 
         // Check that errors are displayed
         await page.waitForSelector('[data-testid="audio-upload-errors"]');
-        expect(await page.getByTestId('audio-upload-errors')).toBeVisible();
+        await expect(await page.getByTestId('audio-upload-errors')).toBeVisible();
     });
 
-    test('can show errors if was dropped a file with wrong extension to audio placeholder', async function () {
+    test('can show errors if was dropped a file with wrong extension to audio placeholder', async function ({page}) {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
         const fileChooserPromise = page.waitForEvent('filechooser');
 
@@ -148,7 +138,7 @@ describe('Audio card', async () => {
         await expect(await page.getByTestId('audio-upload-errors')).toBeVisible();
     });
 
-    test('file input opens immediately when added via card menu', async function () {
+    test('file input opens immediately when added via card menu', async function ({page}) {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
         const [fileChooser] = await Promise.all([
@@ -159,7 +149,7 @@ describe('Audio card', async () => {
         expect(fileChooser).not.toBeNull();
     });
 
-    test('file input opens immediately when added via slash menu', async function () {
+    test('file input opens immediately when added via slash menu', async function ({page}) {
         await focusEditor(page);
         const [fileChooser] = await Promise.all([
             page.waitForEvent('filechooser'),
@@ -171,7 +161,7 @@ describe('Audio card', async () => {
         expect(fileChooser).not.toBeNull();
     });
 
-    test('can change the title of the audio card', async function () {
+    test('can change the title of the audio card', async function ({page}) {
         await focusEditor(page);
         await uploadAudio(page);
 
@@ -184,7 +174,7 @@ describe('Audio card', async () => {
         expect(await page.getByTestId('audio-caption').inputValue()).toEqual('Audio sample 1');
     });
 
-    test('can upload and remove a thumbnail image', async function () {
+    test('can upload and remove a thumbnail image', async function ({page}) {
         const thumbnailFilePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.jpeg');
 
         await focusEditor(page);
@@ -203,7 +193,7 @@ describe('Audio card', async () => {
         expect (await page.getByTestId('upload-thumbnail')).not.toBeNull();
     });
 
-    test('can upload dropped thumbnail', async function () {
+    test('can upload dropped thumbnail', async function ({page}) {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
         await focusEditor(page);
         await uploadAudio(page);
@@ -225,7 +215,7 @@ describe('Audio card', async () => {
         await expect (await page.getByTestId('audio-thumbnail')).toBeVisible();
     });
 
-    test('can show errors if was dropped a file with wrong extension to thumbnail', async function () {
+    test('can show errors if was dropped a file with wrong extension to thumbnail', async function ({page}) {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/video.mp4');
         await focusEditor(page);
         await uploadAudio(page);
@@ -241,7 +231,7 @@ describe('Audio card', async () => {
         await expect(await page.getByTestId('thumbnail-errors')).toBeVisible();
     });
 
-    test('shows errors on a failed thumbnail upload', async function () {
+    test('shows errors on a failed thumbnail upload', async function ({page}) {
         const thumbnailFilePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image-fail.jpeg');
 
         await focusEditor(page);
@@ -257,7 +247,7 @@ describe('Audio card', async () => {
         expect (await page.getByTestId('thumbnail-errors').textContent()).toEqual('Upload failed');
     });
 
-    test('renders audio card toolbar', async function () {
+    test('renders audio card toolbar', async function ({page}) {
         await focusEditor(page);
         await uploadAudio(page);
 
@@ -269,7 +259,7 @@ describe('Audio card', async () => {
         expect(await page.locator('[data-kg-card-toolbar="audio"]')).not.toBeNull();
     });
 
-    test('audio card toolbar has Edit button', async function () {
+    test('audio card toolbar has Edit button', async function ({page}) {
         await focusEditor(page);
         await uploadAudio(page);
 
@@ -292,7 +282,7 @@ describe('Audio card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('should not be available for editing in preview mode', async function () {
+    test('should not be available for editing in preview mode', async function ({page}) {
         await focusEditor(page);
         await uploadAudio(page);
 
@@ -312,7 +302,7 @@ describe('Audio card', async () => {
         await expect(await page.getByTestId('audio-thumbnail-dragover')).toBeHidden();
     });
 
-    test('does not add extra paragraph when audio is inserted mid-document', async function () {
+    test('does not add extra paragraph when audio is inserted mid-document', async function ({page}) {
         await focusEditor(page);
         await page.keyboard.press('Enter');
         await page.keyboard.type('Testing');
@@ -333,7 +323,7 @@ describe('Audio card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('adds extra paragraph when audio is inserted at end of document', async function () {
+    test('adds extra paragraph when audio is inserted at end of document', async function ({page}) {
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
 
@@ -351,7 +341,7 @@ describe('Audio card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('can add snippet', async function () {
+    test('can add snippet', async function ({page}) {
         await focusEditor(page);
         await uploadAudio(page);
 

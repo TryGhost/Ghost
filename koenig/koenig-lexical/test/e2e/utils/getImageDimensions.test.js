@@ -1,25 +1,17 @@
 import path from 'path';
-import {afterAll, beforeAll, beforeEach, describe, expect, test} from 'vitest';
-import {focusEditor, initialize, startApp} from '../../utils/e2e'; 
+import {expect, test} from '@playwright/test';
+import {fileURLToPath} from 'url';
+import {focusEditor, initialize} from '../../utils/e2e';
 import {getImageDimensions} from '../../../src/utils/getImageDimensions';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-describe('Image card', async () => {
-    let app;
-    let page;
-
-    beforeAll(async () => {
-        ({app, page} = await startApp());
-    });
-
-    afterAll(async () => {
-        await app.stop();
-    });
-
-    beforeEach(async () => {
+test.describe('Image card', async () => {
+    test.beforeEach(async ({page}) => {
         await initialize({page});
     });
 
-    test('can get image height and width', async function () {
+    test('can get image height and width', async function ({page}) {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
         await focusEditor(page);
@@ -31,15 +23,13 @@ describe('Image card', async () => {
         ]);
         await fileChooser.setFiles([filePath]);
 
-        const imageCard = await page.$('[data-kg-card="image"]');
+        const imageCard = await page.locator('[data-kg-card="image"]');
         expect(imageCard).not.toBeNull();
 
-        const image = await page.$('img');
+        const image = await page.locator('img');
         expect(image).not.toBeNull();
 
-        const url = await page.evaluate((imageData) => {
-            return imageData.src;
-        }, image);
+        const url = await image.getAttribute('src');
 
         const getImageDimensionsStr = getImageDimensions.toString();
         const command = `(${getImageDimensionsStr})('${url}')`;

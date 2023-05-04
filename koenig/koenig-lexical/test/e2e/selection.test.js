@@ -1,26 +1,15 @@
-import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, assertSelection, dragMouse, focusEditor, html, initialize, startApp} from '../utils/e2e';
+import {assertHTML, assertSelection, dragMouse, focusEditor, html, initialize} from '../utils/e2e';
+import {test} from '@playwright/test';
 
-describe('Selection behaviour', async () => {
-    let app;
-    let page;
-
-    beforeAll(async function () {
-        ({app, page} = await startApp());
-    });
-
-    afterAll(async function () {
-        await app.stop();
-    });
-
-    beforeEach(async function () {
+test.describe('Selection behaviour', async () => {
+    test.beforeEach(async function ({page}) {
         await initialize({page});
     });
 
     // TODO: skipped because Playwright doesn't fire the `click` event when the
     // mouse is released after a drag meaning it wasn't triggering the buggy behaviour.
     // Unskip when this is fixed: https://github.com/microsoft/playwright/issues/20717
-    test.skip('can create range selection covering a card', async function () {
+    test.skip('can create range selection covering a card', async function ({page}) {
         await focusEditor(page);
         await page.keyboard.type('First paragraph');
         await page.keyboard.press('Enter');
@@ -43,7 +32,7 @@ describe('Selection behaviour', async () => {
         });
     });
 
-    test('cards do not show as selected in range selections', async function () {
+    test('cards do not show as selected in range selections', async function ({page}) {
         await focusEditor(page);
         await page.keyboard.type('First paragraph');
         await page.keyboard.press('Enter');

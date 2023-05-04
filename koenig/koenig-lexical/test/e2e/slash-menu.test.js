@@ -1,36 +1,24 @@
-import {afterAll, beforeAll, beforeEach, describe, it, test} from 'vitest';
-import {assertHTML, assertSelection, focusEditor, html, initialize, insertCard, startApp} from '../utils/e2e';
-import {expect} from '@playwright/test';
+import {assertHTML, assertSelection, focusEditor, html, initialize, insertCard} from '../utils/e2e';
+import {expect, test} from '@playwright/test';
 
-describe('Slash menu', async () => {
-    let app;
-    let page;
-
-    beforeAll(async () => {
-        ({app, page} = await startApp());
-    });
-
-    afterAll(async () => {
-        await app.stop();
-    });
-
-    beforeEach(async () => {
+test.describe('Slash menu', async () => {
+    test.beforeEach(async ({page}) => {
         await initialize({page});
     });
 
-    describe('open/close', function () {
-        it('opens with / on blank paragraph', async function () {
+    test.describe('open/close', function () {
+        test('opens with / on blank paragraph', async function ({page}) {
             await focusEditor(page);
             await expect(page.locator('[data-kg-slash-menu]')).not.toBeVisible();
             await page.keyboard.type('/');
             await expect(page.locator('[data-kg-slash-menu]')).toBeVisible();
         });
 
-        it('opens with / on paragraph that is entirely selected', async function () {
+        test('opens with / on paragraph that is entirely selected', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.type('testing');
 
-            const paragraph = await page.$('[data-lexical-editor] > p');
+            const paragraph = await page.locator('[data-lexical-editor] > p');
             await paragraph.click({clickCount: 3});
 
             await assertSelection(page, {
@@ -48,7 +36,7 @@ describe('Slash menu', async () => {
             await expect(page.locator('[data-kg-slash-menu]')).toBeVisible();
         });
 
-        it('opens with / + SHIFT', async function () {
+        test('opens with / + SHIFT', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.down('Shift');
             await page.keyboard.type('/');
@@ -56,7 +44,7 @@ describe('Slash menu', async () => {
             await expect(page.locator('[data-kg-slash-menu]')).toBeVisible();
         });
 
-        it('does not open with / on populated paragraph', async function () {
+        test('does not open with / on populated paragraph', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.type('testing');
             await page.keyboard.type('/');
@@ -80,7 +68,7 @@ describe('Slash menu', async () => {
             await expect(page.locator('[data-kg-slash-menu]')).not.toBeVisible();
         });
 
-        it('closes when / deleted', async function () {
+        test('closes when / deleted', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.type('/');
 
@@ -91,7 +79,7 @@ describe('Slash menu', async () => {
             await expect(page.locator('[data-kg-slash-menu]')).not.toBeVisible();
         });
 
-        it('closes on Escape', async function () {
+        test('closes on Escape', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.type('/');
             await page.keyboard.press('Escape');
@@ -106,7 +94,7 @@ describe('Slash menu', async () => {
             });
         });
 
-        it('closes on click outside menu', async function () {
+        test('closes on click outside menu', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.type('/');
             await page.click('body');
@@ -114,7 +102,7 @@ describe('Slash menu', async () => {
             await expect(page.locator('[data-kg-slash-menu]')).not.toBeVisible();
         });
 
-        it('does not close on click inside menu', async function () {
+        test('does not close on click inside menu', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.type('/');
             await page.click('[data-kg-slash-menu] [role="separator"] > span'); // better selector for menu headings?
@@ -122,7 +110,7 @@ describe('Slash menu', async () => {
             await expect(page.locator('[data-kg-slash-menu]')).toBeVisible();
         });
 
-        it('does not re-open when cursor placed back on /', async function () {
+        test('does not re-open when cursor placed back on /', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.press('Enter');
             await page.keyboard.type('/');
@@ -148,8 +136,8 @@ describe('Slash menu', async () => {
         });
     });
 
-    describe('filtering', function () {
-        it('matches text after /', async function () {
+    test.describe('filtering', function () {
+        test('matches text after /', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.type('/img');
 
@@ -159,7 +147,7 @@ describe('Slash menu', async () => {
             await expect(menuItems.first()).toContainText('Image');
         });
 
-        it('shows no menu with no matches', async function () {
+        test('shows no menu with no matches', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.type('/unknown');
 
@@ -167,8 +155,8 @@ describe('Slash menu', async () => {
         });
     });
 
-    describe('selection', function () {
-        test('first item is selected when opening', async function () {
+    test.describe('selection', function () {
+        test('first item is selected when opening', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.type('/');
 
@@ -177,7 +165,7 @@ describe('Slash menu', async () => {
             await expect(menuItems.nth(1)).toHaveAttribute('data-kg-cardmenu-selected', 'false');
         });
 
-        test('DOWN selects next item', async function () {
+        test('DOWN selects next item', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.type('/');
             await page.keyboard.press('ArrowDown');
@@ -187,7 +175,7 @@ describe('Slash menu', async () => {
             await expect(menuItems.nth(1)).toHaveAttribute('data-kg-cardmenu-selected', 'true');
         });
 
-        test('RIGHT selects next item', async function () {
+        test('RIGHT selects next item', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.type('/');
             await page.keyboard.press('ArrowRight');
@@ -197,7 +185,7 @@ describe('Slash menu', async () => {
             await expect(menuItems.nth(1)).toHaveAttribute('data-kg-cardmenu-selected', 'true');
         });
 
-        test('UP selects previous item', async function () {
+        test('UP selects previous item', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.type('/');
             await page.keyboard.press('ArrowDown');
@@ -208,7 +196,7 @@ describe('Slash menu', async () => {
             await expect(menuItems.nth(1)).toHaveAttribute('data-kg-cardmenu-selected', 'false');
         });
 
-        test('LEFT selects previous time', async function () {
+        test('LEFT selects previous time', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.type('/');
             await page.keyboard.press('ArrowDown');
@@ -219,7 +207,7 @@ describe('Slash menu', async () => {
             await expect(menuItems.nth(1)).toHaveAttribute('data-kg-cardmenu-selected', 'false');
         });
 
-        test('first item is selected after changing query', async function () {
+        test('first item is selected after changing query', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.type('/');
             await page.keyboard.press('ArrowDown');
@@ -230,8 +218,8 @@ describe('Slash menu', async () => {
         });
     });
 
-    describe('insertion', function () {
-        test('ENTER inserts card', async function () {
+    test.describe('insertion', function () {
+        test('ENTER inserts card', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.type('/hr');
             await page.keyboard.press('Enter');
@@ -253,7 +241,7 @@ describe('Slash menu', async () => {
             await expect(page.locator('[data-kg-slash-menu]')).not.toBeVisible();
         });
 
-        it('has correct order when inserting after text', async function () {
+        test('has correct order when inserting after text', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.type('Testing');
             await page.keyboard.press('Enter');
@@ -277,7 +265,7 @@ describe('Slash menu', async () => {
             });
         });
 
-        it('has correct order when inserting after a card', async function () {
+        test('has correct order when inserting after a card', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.type('/hr');
             await page.waitForSelector('li:first-child > [data-kg-card-menu-item="Divider"]');
@@ -298,7 +286,7 @@ describe('Slash menu', async () => {
             `, {ignoreCardContents: true});
         });
 
-        it('uses query params', async function () {
+        test('uses query params', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.type('/image https://example.com/image.jpg');
             await expect(await page.locator('[data-kg-card-menu-item="Image"][data-kg-cardmenu-selected="true"]')).toBeVisible();
@@ -317,7 +305,7 @@ describe('Slash menu', async () => {
             })).toEqual('https://example.com/image.jpg');
         });
 
-        it('can insert card at beginning of document before text', async function () {
+        test('can insert card at beginning of document before text', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.press('Enter');
             // todo: flaky test, added delay for slower typing to imitate user behaviour
@@ -334,7 +322,7 @@ describe('Slash menu', async () => {
             `, {ignoreCardContents: true});
         });
 
-        it('can insert card at beginning of document before card', async function () {
+        test('can insert card at beginning of document before card', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.press('Enter');
             await page.keyboard.type('--- ');

@@ -1,23 +1,12 @@
-import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, focusEditor, html, initialize, isMac, pasteText, startApp} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, isMac, pasteText} from '../../utils/e2e';
+import {expect, test} from '@playwright/test';
 
-describe('Html Output Plugin', async function () {
-    let app;
-    let page;
-
-    beforeAll(async function () {
-        ({app, page} = await startApp());
-    });
-
-    afterAll(async function () {
-        await app.stop();
-    });
-
-    beforeEach(async function () {
+test.describe('Html Output Plugin', async function () {
+    test.beforeEach(async function ({page}) {
         await initialize({page, uri: '/#/html-output'});
     });
 
-    test('can render html to editor', async function () {
+    test('can render html to editor', async function ({page}) {
         await focusEditor(page);
 
         await assertHTML(page, html`
@@ -30,7 +19,7 @@ describe('Html Output Plugin', async function () {
         `);
     });
 
-    test('can parse editor state to html', async function () {
+    test('can parse editor state to html', async function ({page}) {
         const ctrl = isMac() ? 'Meta' : 'Control';
         await focusEditor(page);
 

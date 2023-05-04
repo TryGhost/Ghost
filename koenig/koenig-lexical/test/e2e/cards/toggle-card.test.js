@@ -1,6 +1,5 @@
-import {afterAll, beforeAll, beforeEach, describe} from 'vitest';
-import {assertHTML, createSnippet, focusEditor, html, initialize, startApp} from '../../utils/e2e';
-import {expect} from '@playwright/test';
+import {assertHTML, createSnippet, focusEditor, html, initialize} from '../../utils/e2e';
+import {expect, test} from '@playwright/test';
 
 async function insertToggleCard(page) {
     await page.keyboard.type('/toggle');
@@ -9,23 +8,12 @@ async function insertToggleCard(page) {
     await page.waitForSelector('[data-kg-card="toggle"]');
 }
 
-describe('Toggle card', async () => {
-    let app;
-    let page;
-
-    beforeAll(async () => {
-        ({app, page} = await startApp());
-    });
-
-    afterAll(async () => {
-        await app.stop();
-    });
-
-    beforeEach(async () => {
+test.describe('Toggle card', async () => {
+    test.beforeEach(async ({page}) => {
         await initialize({page});
     });
 
-    it('can import serialized toggle card nodes', async function () {
+    test('can import serialized toggle card nodes', async function ({page}) {
         await page.evaluate(() => {
             const serializedState = JSON.stringify({
                 root: {
@@ -91,7 +79,7 @@ describe('Toggle card', async () => {
             `, {ignoreCardToolbarContents: true, ignoreInnerSVG: true});
     });
 
-    it('renders toggle card node from slash command', async function () {
+    test('renders toggle card node from slash command', async function ({page}) {
         await focusEditor(page);
         await insertToggleCard(page);
 
@@ -142,7 +130,7 @@ describe('Toggle card', async () => {
         `, {ignoreInnerSVG: true});
     });
 
-    it('focuses on the header input when rendered', async function () {
+    test('focuses on the header input when rendered', async function ({page}) {
         await focusEditor(page);
         await insertToggleCard(page);
 
@@ -152,7 +140,7 @@ describe('Toggle card', async () => {
         await expect(header).toContainText('Header');
     });
 
-    it('focuses on the content input when "Enter" is pressed from the header input', async function () {
+    test('focuses on the content input when "Enter" is pressed from the header input', async function ({page}) {
         await focusEditor(page);
         await insertToggleCard(page);
 
@@ -163,7 +151,7 @@ describe('Toggle card', async () => {
         await expect(content).toContainText('Content');
     });
 
-    it('focuses on the content input when "Tab" is pressed from the header input', async function () {
+    test('focuses on the content input when "Tab" is pressed from the header input', async function ({page}) {
         await focusEditor(page);
         await insertToggleCard(page);
 
@@ -174,7 +162,7 @@ describe('Toggle card', async () => {
         await expect(content).toContainText('Content');
     });
 
-    it('focuses on the content input when "Arrow Down" is pressed from the header input', async function () {
+    test('focuses on the content input when "Arrow Down" is pressed from the header input', async function ({page}) {
         await focusEditor(page);
         await insertToggleCard(page);
 
@@ -185,7 +173,7 @@ describe('Toggle card', async () => {
         await expect(content).toContainText('Content');
     });
 
-    it('focuses on the header input when "Arrow Up" is pressed from the content input', async function () {
+    test('focuses on the header input when "Arrow Up" is pressed from the content input', async function ({page}) {
         await focusEditor(page);
         await insertToggleCard(page);
 
@@ -198,7 +186,7 @@ describe('Toggle card', async () => {
         await expect(header).toContainText('Header');
     });
 
-    it('renders in display mode when unfocused', async function () {
+    test('renders in display mode when unfocused', async function ({page}) {
         await focusEditor(page);
         await insertToggleCard(page);
 
@@ -215,7 +203,7 @@ describe('Toggle card', async () => {
         await expect(toggleCard).toHaveAttribute('data-kg-card-editing', 'false');
     });
 
-    it('renders an action toolbar', async function () {
+    test('renders an action toolbar', async function ({page}) {
         await focusEditor(page);
         await insertToggleCard(page);
 
@@ -229,7 +217,7 @@ describe('Toggle card', async () => {
         await expect(editButton).toBeVisible();
     });
 
-    it('is removed when left empty', async function () {
+    test('is removed when left empty', async function ({page}) {
         await focusEditor(page);
         await insertToggleCard(page);
 
@@ -243,7 +231,7 @@ describe('Toggle card', async () => {
         await expect(toggleCard).not.toBeVisible();
     });
 
-    it('can add snippet', async function () {
+    test('can add snippet', async function ({page}) {
         await focusEditor(page);
         await insertToggleCard(page);
 

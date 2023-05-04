@@ -1,23 +1,12 @@
-import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
-import {assertHTML, focusEditor, html, initialize, pasteText, startApp} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, pasteText} from '../../utils/e2e';
+import {test} from '@playwright/test';
 
-describe('Links', async () => {
-    let app;
-    let page;
-
-    beforeAll(async () => {
-        ({app, page} = await startApp());
-    });
-
-    afterAll(async () => {
-        await app.stop();
-    });
-
-    beforeEach(async () => {
+test.describe('Links', async () => {
+    test.beforeEach(async ({page}) => {
         await initialize({page});
     });
 
-    test('converts selected text to link on url paste', async function () {
+    test('converts selected text to link on url paste', async function ({page}) {
         await focusEditor(page);
         await page.keyboard.type('link');
         await page.keyboard.down('Shift');
@@ -36,7 +25,7 @@ describe('Links', async () => {
         `);
     });
 
-    test('does not convert text to link if pasting a non-url', async function () {
+    test('does not convert text to link if pasting a non-url', async function ({page}) {
         await focusEditor(page);
         await page.keyboard.type('link');
         await page.keyboard.down('Shift');

@@ -1,27 +1,16 @@
-import {afterAll, beforeAll, beforeEach, describe, expect, it, test} from 'vitest';
-import {assertHTML, focusEditor, html, initialize, startApp} from '../utils/e2e';
+import {assertHTML, focusEditor, html, initialize} from '../utils/e2e';
+import {expect, test} from '@playwright/test';
 
-describe('Floating format toolbar', async () => {
-    let app;
-    let page;
-
-    beforeAll(async () => {
-        ({app, page} = await startApp());
-    });
-
-    afterAll(async () => {
-        await app.stop();
-    });
-
-    beforeEach(async () => {
+test.describe('Floating format toolbar', async () => {
+    test.beforeEach(async ({page}) => {
         await initialize({page});
     });
 
-    it('appears on text selection', async function () {
+    test('appears on text selection', async function ({page}) {
         await focusEditor(page);
         await page.keyboard.type('text for selection');
 
-        expect(await page.$('[data-kg-floating-toolbar]')).toBeNull();
+        await expect(await page.locator('[data-kg-floating-toolbar]')).toHaveCount(0);
 
         await page.keyboard.down('Shift');
         for (let i = 0; i < 'for selection'.length; i++) {
@@ -29,24 +18,24 @@ describe('Floating format toolbar', async () => {
         }
         await page.keyboard.up('Shift');
 
-        expect(await page.$('[data-kg-floating-toolbar]')).not.toBeNull();
+        expect(await page.locator('[data-kg-floating-toolbar]')).not.toBeNull();
     });
 
-    it('disappears on selection removal', async function () {
+    test('disappears on selection removal', async function ({page}) {
         await focusEditor(page);
         await page.keyboard.type('text for selection');
         await page.keyboard.down('Shift');
         await page.keyboard.press('ArrowLeft');
         await page.keyboard.up('Shift');
 
-        expect(await page.$('[data-kg-floating-toolbar]')).not.toBeNull();
+        expect(await page.locator('[data-kg-floating-toolbar]')).not.toBeNull();
 
         await page.keyboard.press('ArrowRight');
 
-        expect(await page.$('[data-kg-floating-toolbar]')).toBeNull();
+        await expect(await page.locator('[data-kg-floating-toolbar]')).toHaveCount(0);
     });
 
-    describe('buttons', function () {
+    test.describe('buttons', function () {
         const BASIC_TOGGLES = [{
             button: 'bold',
             html: html`
@@ -76,7 +65,7 @@ describe('Floating format toolbar', async () => {
         }];
 
         BASIC_TOGGLES.forEach((testCase) => {
-            test(`toggles ${testCase.button}`, async function () {
+            test(`toggles ${testCase.button}`, async function ({page}) {
                 await focusEditor(page);
                 await page.keyboard.type('text for selection');
 
@@ -102,7 +91,7 @@ describe('Floating format toolbar', async () => {
             });
         });
 
-        it('toggles h4 to h2', async function () {
+        test('toggles h4 to h2', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.type('#### header for selection');
 
@@ -129,7 +118,7 @@ describe('Floating format toolbar', async () => {
             expect(await page.$eval(buttonSelector, e => e.dataset.kgActive)).toEqual('false');
         });
 
-        it('toggles h4 to h3', async function () {
+        test('toggles h4 to h3', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.type('#### header for selection');
 
@@ -156,7 +145,7 @@ describe('Floating format toolbar', async () => {
             expect(await page.$eval(buttonSelector, e => e.dataset.kgActive)).toEqual('false');
         });
 
-        it('cycles through quote styles', async function () {
+        test('cycles through quote styles', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.type('quote text');
 
@@ -189,7 +178,7 @@ describe('Floating format toolbar', async () => {
             expect(await page.$eval(buttonSelector, e => e.dataset.kgActive)).toEqual('false');
         });
 
-        it('can create link', async function () {
+        test('can create link', async function ({page}) {
             await focusEditor(page);
             await page.keyboard.type('link');
 
