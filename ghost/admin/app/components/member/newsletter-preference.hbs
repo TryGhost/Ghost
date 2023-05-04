@@ -1,5 +1,5 @@
 <h4 class="gh-main-section-header small bn">Newsletters</h4>
-<div class="gh-main-section-content grey {{if (not this.suppressionData.suppressed) 'gh-member-newsletter-section'}}">
+<div class="gh-main-section-content grey {{unless this.suppressionData.suppressed 'gh-member-newsletter-section'}}">
     {{#unless this.suppressionData.suppressed}}
         <div class="gh-member-newsletters">
             {{#each this.newsletters as |newsletter|}}
