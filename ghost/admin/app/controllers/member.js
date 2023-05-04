@@ -19,6 +19,10 @@ export default class MemberController extends Controller {
     @service router;
     @service store;
 
+    queryParams = [
+        {postAnalytics: 'post'}
+    ];
+
     @tracked isLoading = false;
     @tracked showImpersonateMemberModal = false;
     @tracked modalLabel = null;
@@ -27,8 +31,15 @@ export default class MemberController extends Controller {
     _previousLabels = null;
     _previousNewsletters = null;
 
-    directlyFromAnalytics = false;
-    fromAnalytics = null;
+    @tracked directlyFromAnalytics = false;
+    @tracked postAnalytics = null;
+
+    get fromAnalytics() {
+        if (!this.postAnalytics) {
+            return null;
+        }
+        return [this.postAnalytics];
+    }
 
     constructor() {
         super(...arguments);
