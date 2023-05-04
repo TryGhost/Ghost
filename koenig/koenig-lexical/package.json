@@ -34,7 +34,9 @@
     "pretest:watch": "yarn pretest",
     "posttest": "yarn lint",
     "coverage": "vitest run --coverage",
-    "lint": "eslint --ext .js,.cjs,.jsx --cache demo src test",
+    "lint": "yarn run lint:js && yarn run lint:css",
+    "lint:css": "stylelint \"src/**/*.css\"",
+    "lint:js": "eslint --ext .js,.cjs,.jsx --cache demo src test",
     "prepare": "NODE_ENV=production yarn build",
     "storybook": "NODE_OPTIONS=--openssl-legacy-provider start-storybook -p 6006 -h 127.0.0.1",
     "build-storybook": "build-storybook"
@@ -102,6 +104,7 @@
     "prettier": "2.8.8",
     "react-highlight": "^0.15.0",
     "react-router-dom": "6.11.1",
+    "stylelint": "^15.6.1",
     "tailwindcss": "3.2.7",
     "typescript": "5.0.4",
     "vite": "^4.2.1",
