@@ -138,7 +138,7 @@ export class CalloutNode extends BaseCalloutNode {
         if (!this.__textEditorInitialState) {
             this.__textEditorInitialState = generateEditorState({
                 editor: createEditor({nodes: MINIMAL_NODES}),
-                initialHtml: dataset.text
+                initialHtml: dataset.text ? `<p>${dataset.text}</p>` : '' // wrap with paragraph to interpret as ParagraphNode (needed for nested editor)
             });
         }
     }
