@@ -6,7 +6,7 @@ const logging = require('@tryghost/logging');
  * @param {import('bookshelf')} Bookshelf
  */
 module.exports = function (Bookshelf) {
-    const insertAction = async (data, options) => {
+    const insertAction = (data, options) => {
         // CASE: model does not support action for target event
         if (!data) {
             return;
@@ -50,8 +50,8 @@ module.exports = function (Bookshelf) {
             return;
         }
 
-        const existingAction = model.getAction(event, options);
-        insertAction(existingAction, options);
+        const data = model.getAction(event, options);
+        insertAction(data, options);
     };
 
     Bookshelf.Model = Bookshelf.Model.extend({
