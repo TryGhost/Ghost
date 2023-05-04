@@ -44,7 +44,8 @@ export default class MembersController extends Controller {
         {paidParam: 'paid'},
         {searchParam: 'search'},
         {orderParam: 'order'},
-        {filterParam: 'filter'}
+        {filterParam: 'filter'},
+        {postAnalytics: 'post'}
     ];
 
     @tracked members = A([]);
@@ -67,7 +68,14 @@ export default class MembersController extends Controller {
     /**
      * Flag used to determine if we should return to the analytics page
      */
-    fromAnalytics = null;
+    @tracked postAnalytics = null;
+
+    get fromAnalytics() {
+        if (!this.postAnalytics) {
+            return null;
+        }
+        return [this.postAnalytics];
+    }
 
     paidParams = PAID_PARAMS;
 
