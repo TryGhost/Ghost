@@ -154,6 +154,7 @@
                                     @newsletterEnabled={{and (not-eq this.settings.editorDefaultEmailRecipients "disabled") this.settings.emailTrackOpens}}
                                     @member={{member.content}}
                                     @filterColumns={{this.filterColumns}}
+                                    @query={{hash postAnalytics=this.postAnalytics}}
                                     data-test-member={{member.id}}
                                 />
                             {{/if}}

@@ -1,5 +1,5 @@
 <tr data-test-list='members-list-item' data-test-member={{@member.id}}>
-    <LinkTo @route="member" @model={{@member}} class="gh-list-data" data-test-table-data="details">
+    <LinkTo @route="member" @model={{@member}} @query={{@query}} class="gh-list-data" data-test-table-data="details">
         <div class="flex items-center">
             <GhMemberAvatar @member={{@member}} @containerClass="w9 h9 mr3 flex-shrink-0" />
             <div class="w-80">
@@ -11,7 +11,7 @@
         </div>
     </LinkTo>
     {{#if this.hasMultipleTiers}}
-        <LinkTo @route="member" @model={{@member}} class="gh-list-data" data-test-table-data="status">
+        <LinkTo @route="member" @model={{@member}} @query={{@query}} class="gh-list-data" data-test-table-data="status">
             {{#if (not (is-empty @member.status))}}
                 <span>{{capitalize @member.status}}</span>
             {{else}}
@@ -20,7 +20,7 @@
             <div class="midgrey">{{this.tiers}}</div>
         </LinkTo>
     {{else}}
-        <LinkTo @route="member" @model={{@member}} class="gh-list-data" data-test-table-data="status">
+        <LinkTo @route="member" @model={{@member}} @query={{@query}} class="gh-list-data" data-test-table-data="status">
             {{#if (not (is-empty @member.status))}}
                 <span>{{capitalize @member.status}}</span>
             {{else}}
@@ -29,7 +29,7 @@
         </LinkTo>
     {{/if}}
     {{#if @newsletterEnabled}}
-        <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8 {{unless @member.name "gh-members-list-open-rate-noname"}}" data-test-table-data="open-rate">
+        <LinkTo @route="member" @model={{@member}} @query={{@query}} class="gh-list-data middarkgrey f8 {{unless @member.name "gh-members-list-open-rate-noname"}}" data-test-table-data="open-rate">
             {{#if (not (is-empty @member.emailOpenRate))}}
                 <span>{{@member.emailOpenRate}}%</span>
             {{else}}
@@ -38,7 +38,7 @@
         </LinkTo>
     {{/if}}
 
-    <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8 {{unless @member.name "gh-members-geolocation-noname"}}" data-test-table-data="location">
+    <LinkTo @route="member" @model={{@member}} @query={{@query}} class="gh-list-data middarkgrey f8 {{unless @member.name "gh-members-geolocation-noname"}}" data-test-table-data="location">
         {{#if (and @member.geolocation @member.geolocation.country)}}
             {{#if (and (eq @member.geolocation.country_code "US") @member.geolocation.region)}}
                 {{@member.geolocation.region}}, US
@@ -54,7 +54,7 @@
         {{/if}}
     </LinkTo>
 
-    <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8" data-test-table-data="created-at">
+    <LinkTo @route="member" @model={{@member}} @query={{@query}} class="gh-list-data middarkgrey f8" data-test-table-data="created-at">
         {{#if @member.createdAtUTC}}
             <div>{{moment-format (moment-site-tz @member.createdAtUTC) "DD MMM YYYY"}}</div>
             <div class="midlightgrey gh-members-list-subscribed-moment">{{moment-from-now @member.createdAtUTC}}</div>
@@ -62,6 +62,6 @@
     </LinkTo>
 
     {{#each @filterColumns as |filterColumn|}}
-        <Members::ListItemColumn @member={{@member}} @filterColumn={{filterColumn}} />
+        <Members::ListItemColumn @member={{@member}} @filterColumn={{filterColumn}} @query={{@query}} />
     {{/each}}
 </tr>

@@ -46,7 +46,7 @@
                         <div class="gh-dashboard-list-item">
                             <div class="gh-dashboard-list-item-sub">
                                 <GhMemberAvatar @member={{parsedEvent.member}} @containerClass="w6 h6 mr3 flex-shrink-0" />
-                                <LinkTo class="gh-dashboard-list-text" @route="member" @model="{{parsedEvent.memberId}}">{{parsedEvent.subject}}</LinkTo>
+                                <LinkTo class="gh-dashboard-list-text" @route="member" @model="{{parsedEvent.memberId}}" @query={{hash postAnalytics=@post.id}}>{{parsedEvent.subject}}</LinkTo>
                             </div>
                             <div class="gh-dashboard-list-item-sub">
                                 {{svg-jar parsedEvent.icon }}
@@ -95,7 +95,7 @@
                         <LinkTo
                             class="gh-post-activity-feed-pagination-link"
                             @route="members"
-                            @query={{@linkQuery}}
+                            @query={{hash @linkQuery postAnalytics=@post.id}}
                         >
                             {{svg-jar "filter"}}
                             View members
