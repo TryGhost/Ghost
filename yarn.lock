@@ -2589,6 +2589,13 @@
   resolved "https://registry.yarnpkg.com/@eslint/js/-/js-8.37.0.tgz#cf1b5fa24217fe007f6487a26d765274925efa7d"
   integrity sha512-x5vzdtOOGgFVDCUs81QRB2+liax8rFg3+7hqM+QhBG0/G3F1ZsoYl97UrqgHgQ9KKT7G6c4V+aTUCgu/n22v1A==
 
+"@extractus/oembed-extractor@^3.1.8":
+  version "3.1.8"
+  resolved "https://registry.yarnpkg.com/@extractus/oembed-extractor/-/oembed-extractor-3.1.8.tgz#79ea7ed65c7688bdf9ee673a0ac5aa122cef5e4e"
+  integrity sha512-k6p8des8ISJY2fuuQDyiUOTlcuPOzWETM2ewF1aywFNSS3EvgGWRwoMsvBKhCrLuvb8NyEKDAJB0SWgt0L793w==
+  dependencies:
+    cross-fetch "^3.1.5"
+
 "@faker-js/faker@7.6.0":
   version "7.6.0"
   resolved "https://registry.yarnpkg.com/@faker-js/faker/-/faker-7.6.0.tgz#9ea331766084288634a9247fcd8b84f16ff4ba07"
@@ -11749,7 +11756,7 @@ cron-validate@1.4.5, cron-validate@^1.4.1:
   dependencies:
     yup "0.32.9"
 
-cross-fetch@3.1.5, cross-fetch@^3.1.4:
+cross-fetch@3.1.5, cross-fetch@^3.1.4, cross-fetch@^3.1.5:
   version "3.1.5"
   resolved "https://registry.yarnpkg.com/cross-fetch/-/cross-fetch-3.1.5.tgz#e1389f44d9e7ba767907f7af8454787952ab534f"
   integrity sha512-lvb1SBsI0Z7GDwmuid+mU3kWVBwTVUbe7S0H52yaaAdQOXq2YktTCZdlAcNKFzE6QtRz0snpw9bNiPeOIkkQvw==
