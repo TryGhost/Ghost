@@ -116,18 +116,9 @@ export default class extends Component {
         return null;
     }
 
-    get canShowSingleNewsletter() {
-        return (
-            this.newslettersList?.length === 1
-            && this.settings.editorDefaultEmailRecipients !== 'disabled'
-            && !this.feature.get('suppressionList')
-        );
-    }
-
     get canShowMultipleNewsletters() {
         return (
-            (this.newslettersList?.length > 1 || this.feature.get('suppressionList'))
-            && this.settings.editorDefaultEmailRecipients !== 'disabled'
+            this.settings.editorDefaultEmailRecipients !== 'disabled'
         );
     }
 

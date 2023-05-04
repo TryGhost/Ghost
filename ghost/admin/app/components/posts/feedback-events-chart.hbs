@@ -29,18 +29,5 @@
 
             <span class="gh-feedback-events-tooltip-metric">{{this.tooltipData.label}}</span>
         </div>
-
-        {{#if (and this.tooltipData.href (not (feature "suppressionList")))}}
-            <div class="gh-feedback-events-tooltip-footer">
-                <LinkTo
-                    class="gh-post-activity-feed-pagination-link gh-post-activity-chart-link"
-                    @route="members"
-                    @query={{this.tooltipData.href}}
-                >
-                    {{svg-jar "filter"}}
-                    <span>View members</span>
-                </LinkTo>
-            </div>
-        {{/if}}
     </div>
 </div>

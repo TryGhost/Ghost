@@ -2,7 +2,6 @@
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:members');
 const {unparse} = require('@tryghost/members-csv');
 const mappers = require('./mappers');
-const labs = require('../../../../../../shared/labs');
 
 module.exports = {
     browse: createSerializer('browse', paginatedMembers),
@@ -172,9 +171,7 @@ function serializeMember(member, options) {
         delete subscription.price.product;
     }
 
-    if (labs.isSet('suppressionList')) {
-        serialized.email_suppression = json.email_suppression;
-    }
+    serialized.email_suppression = json.email_suppression;
 
     if (json.newsletters) {
         serialized.newsletters = json.newsletters

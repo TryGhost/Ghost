@@ -2,19 +2,7 @@ import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-// todo: replace function with const after suppressionList feature flag will be removed
 const ALL_EVENT_TYPES = [
-    {event: 'signup_event', icon: 'filter-dropdown-signups', name: 'Signups'},
-    {event: 'login_event', icon: 'filter-dropdown-logins', name: 'Logins'},
-    {event: 'subscription_event', icon: 'filter-dropdown-paid-subscriptions', name: 'Paid subscriptions'},
-    {event: 'payment_event', icon: 'filter-dropdown-payments', name: 'Payments'},
-    {event: 'newsletter_event', icon: 'filter-dropdown-email-subscriptions', name: 'Email subscriptions'},
-    {event: 'email_opened_event', icon: 'filter-dropdown-email-opened', name: 'Email opens'},
-    {event: 'email_delivered_event', icon: 'filter-dropdown-email-received', name: 'Email deliveries'},
-    {event: 'email_failed_event', icon: 'filter-dropdown-email-bounced', name: 'Email failures'}
-];
-
-const ALL_EVENT_TYPES_SUPPRESSION = [
     {event: 'signup_event', icon: 'filter-dropdown-signups', name: 'Signups', group: 'auth'},
     {event: 'login_event', icon: 'filter-dropdown-logins', name: 'Logins', group: 'auth'},
     {event: 'subscription_event', icon: 'filter-dropdown-paid-subscriptions', name: 'Paid subscriptions', group: 'payments'},
@@ -31,8 +19,7 @@ export default class MembersActivityEventTypeFilter extends Component {
     @service feature;
 
     get availableEventTypes() {
-        // todo: remove condition when feature will be enabled
-        const extended = this.feature.suppressionList ? [...ALL_EVENT_TYPES_SUPPRESSION] : [...ALL_EVENT_TYPES];
+        const extended = ALL_EVENT_TYPES;
 
         if (this.settings.commentsEnabled !== 'off') {
             extended.push({event: 'comment_event', icon: 'filter-dropdown-comments', name: 'Comments', group: 'others'});
