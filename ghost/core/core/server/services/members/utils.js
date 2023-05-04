@@ -1,5 +1,3 @@
-const labsService = require('../../../shared/labs');
-
 function formatNewsletterResponse(newsletters) {
     return newsletters.map(({id, name, description, sort_order: sortOrder}) => {
         return {id, name, description, sort_order: sortOrder};
@@ -27,7 +25,7 @@ module.exports.formattedMemberResponse = function formattedMemberResponse(member
         data.newsletters = formatNewsletterResponse(member.newsletters);
     }
 
-    if (labsService.isSet('suppressionList') && member.email_suppression) {
+    if (member.email_suppression) {
         data.email_suppression = member.email_suppression;
     }
 

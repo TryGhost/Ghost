@@ -64,29 +64,6 @@
                         <p> Maximum: <b>500</b> characters. You’ve used
                             {{gh-count-down-characters this.scratchMember.note 500}}</p>
                     </GhFormGroup>
-                    {{#if this.canShowSingleNewsletter}}
-                        <GhFormGroup class="gh-members-subscribed-checkbox mb0">
-                            <div class="flex justify-between items-center" data-test-member-settings-switch>
-                                <div>
-                                    <h4 class="gh-setting-title m">Subscribed to newsletter</h4>
-                                    <p class="gh-setting-desc">If disabled, member will <em>not</em> receive newsletter emails</p>
-                                </div>
-                                <div class="for-switch">
-                                    <label class="switch" for="subscribed-checkbox">
-                                        <Input
-                                            @checked={{this.member.subscribed}}
-                                            @type="checkbox"
-                                            id="subscribed-checkbox"
-                                            name="subscribed"
-                                            {{on "click" this.updateNewsletterPreference}}
-                                            data-test-checkbox="member-subscribed"
-                                        />
-                                        <span class="input-toggle-component"></span>
-                                    </label>
-                                </div>
-                            </div>
-                        </GhFormGroup>
-                    {{/if}}
                 </div>
             </div>
 

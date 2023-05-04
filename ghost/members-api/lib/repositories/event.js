@@ -84,9 +84,7 @@ module.exports = class EventRepository {
             pageActions.push({type: 'email_failed_event', action: 'getEmailFailedEvents'});
         }
 
-        if (this._labsService.isSet('suppressionList')) {
-            pageActions.push({type: 'email_complained_event', action: 'getEmailSpamComplaintEvents'});
-        }
+        pageActions.push({type: 'email_complained_event', action: 'getEmailSpamComplaintEvents'});
 
         if (this._labsService.isSet('audienceFeedback')) {
             pageActions.push({type: 'feedback_event', action: 'getFeedbackEvents'});
@@ -505,9 +503,7 @@ module.exports = class EventRepository {
     }
 
     async getEmailSentEvents(options = {}, filter) {
-        const filterStr = this._labsService.isSet('suppressionList')
-            ? 'failed_at:null+processed_at:-null+delivered_at:null+custom:true'
-            : 'failed_at:null+processed_at:-null+custom:true';
+        const filterStr = 'failed_at:null+processed_at:-null+delivered_at:null+custom:true';
         options = {
             ...options,
             withRelated: ['member', 'email'],

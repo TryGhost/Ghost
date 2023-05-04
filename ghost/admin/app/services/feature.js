@@ -65,7 +65,6 @@ export default class FeatureService extends Service {
     @feature('lexicalEditor') lexicalEditor;
     @feature('lexicalMultiplayer') lexicalMultiplayer;
     @feature('audienceFeedback') audienceFeedback;
-    @feature('suppressionList') suppressionList;
     @feature('webmentions') webmentions;
     @feature('emailErrors') emailErrors;
     @feature('websockets') websockets;

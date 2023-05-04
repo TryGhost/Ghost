@@ -84,23 +84,10 @@
                 {{/if}}
 
                 <div class="gh-post-activity-feed-footer">
-                    {{#if (feature "suppressionList")}}
-                        <Posts::PostActivityFeed::FooterLinks
-                            @eventType={{this.eventType}}
-                            @post={{@post}}
-                        />
-                    {{/if}}
-
-                    {{#if (and @linkQuery (not (feature "suppressionList")))}}
-                        <LinkTo
-                            class="gh-post-activity-feed-pagination-link"
-                            @route="members"
-                            @query={{hash @linkQuery postAnalytics=@post.id}}
-                        >
-                            {{svg-jar "filter"}}
-                            View members
-                        </LinkTo>
-                    {{/if}}
+                    <Posts::PostActivityFeed::FooterLinks
+                        @eventType={{this.eventType}}
+                        @post={{@post}}
+                    />
 
                     <div class="gh-post-activity-feed-pagination">
                         {{#if (compute (fn this.isPaginationNotNeeded eventsFetcher))}}
