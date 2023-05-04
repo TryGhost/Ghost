@@ -5,7 +5,6 @@ export const EMAIL_SENT_FILTER = {
     name: 'emails.post_id',
     valueType: 'string',
     resource: 'email',
-    feature: 'suppressionList',
     relationOptions: MATCH_RELATION_OPTIONS,
     columnLabel: 'Sent email',
     getColumnValue: (member, filter) => {

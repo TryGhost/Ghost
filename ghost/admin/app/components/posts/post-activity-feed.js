@@ -7,9 +7,7 @@ export default class PostActivityFeed extends Component {
 
     _pageSize = 5;
     _eventTypes = {
-        sent: this.feature.get('suppressionList')
-            ? ['email_sent_event', 'email_delivered_event', 'email_failed_event']
-            : ['email_sent_event'],
+        sent: ['email_sent_event', 'email_delivered_event', 'email_failed_event'],
         opened: ['email_opened_event'],
         clicked: ['aggregated_click_event'],
         feedback: ['feedback_event'],
