@@ -109,8 +109,7 @@ More information about traces can be found here https://playwright.dev/docs/trac
 Node enables ECMAScript modules if `type: 'module'` in package.json file. It leads to some restrictions:
 - [No require, exports, module.exports, __filename, __dirname](https://github.com/GrosSacASac/node/blob/master/doc/api/esm.md#no-require-exports-moduleexports-__filename-__dirname)
 - [Mandatory file extensions](https://github.com/GrosSacASac/node/blob/master/doc/api/esm.md#mandatory-file-extensions)
-- [No require.extensions](https://github.com/GrosSacASac/node/blob/master/doc/api/esm.md#no-requireextensions). It means 
-- we don't have control over the extensions list. Further will be a description of why this is important.
+- [No require.extensions](https://github.com/GrosSacASac/node/blob/master/doc/api/esm.md#no-requireextensions). It means we don't have control over the extensions list. Further will be a description of why this is important.
 
 We can make file extension optional with [--experimental-specifier-resolution](https://nodejs.org/api/cli.html#--experimental-specifier-resolutionmode)
 flag, which we use. But node is not recognized `jsx` extension. 
