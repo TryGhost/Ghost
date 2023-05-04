@@ -69,6 +69,7 @@ function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedType, meta
     };
 
     const fetchMetadata = async (href) => {
+        editor.getRootElement().focus(); // focus editor before causing the input element to dismount
         setLoading(true);
         let response;
         const type = createdWithUrl ? '' : 'embed';

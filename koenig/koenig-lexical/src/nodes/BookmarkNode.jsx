@@ -61,6 +61,7 @@ function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, 
     };
 
     const fetchMetadata = async (href) => {
+        editor.getRootElement().focus(); // focus editor before causing the input element to dismount
         setLoading(true);
         let response;
         try {
