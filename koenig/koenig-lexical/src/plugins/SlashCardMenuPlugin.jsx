@@ -93,6 +93,15 @@ function useSlashCardMenu(editor) {
                 const selection = $getSelection();
 
                 if (!$isRangeSelection(selection) || !selection.type === 'text' || !selection.isCollapsed()) {
+                    const nativeSelection = window.getSelection();
+                    const anchorNode = nativeSelection.anchorNode;
+                    const isMenuSection = anchorNode?.parentNode?.dataset?.cardMenuSection;
+
+                    // don't close the menu if the selection inside the card section
+                    if (isMenuSection) {
+                        return;
+                    }
+
                     closeMenu();
                     return;
                 }

@@ -4,7 +4,11 @@ import {ReactComponent as TrashCardIcon} from '../../assets/icons/kg-trash-outli
 export const CardMenuSection = ({label, children, ...props}) => {
     return (
         <li className="flex shrink-0 flex-col justify-center text-[1.1rem] font-semibold tracking-wide text-grey dark:text-grey-800" role="separator" {...props}>
-            <span className="mb-2 block px-4 pt-3 uppercase" style={{minWidth: 'calc(100% - 3.2rem)'}}>{label}</span>
+            <span
+                className="mb-2 block px-4 pt-3 uppercase"
+                data-card-menu-section="label"
+                style={{minWidth: 'calc(100% - 3.2rem)'}}
+            >{label}</span>
             <ul role="menu">
                 {children}
             </ul>
