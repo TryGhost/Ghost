@@ -13,7 +13,7 @@ export default class AnnouncementSettingsVisibilityComponent extends Component {
     };
 
     get visibilitySettings() {
-        return this.settings.announcementVisibility;
+        return this.settings.announcementVisibility || [];
     }
 
     get isPaidAvailable() {
