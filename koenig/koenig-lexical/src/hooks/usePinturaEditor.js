@@ -22,14 +22,8 @@ export default function usePinturaEditor({
 
         try {
             const url = new URL(jsUrl);
-
-            let importScriptPromise;
-
-            if (url.protocol === 'http:') {
-                importScriptPromise = import(`http://${url.host}${url.pathname}`);
-            } else {
-                importScriptPromise = import(`https://${url.host}${url.pathname}`);
-            }
+            const importUrl = `${url.protocol}//${url.host}${url.pathname}`;
+            const importScriptPromise = import(/* @vite-ignore */ importUrl);
 
             importScriptPromise.then(() => {
                 setScriptLoaded(true);
