@@ -17,8 +17,8 @@
   },
   "scripts": {
     "start": "ember serve",
-    "build": "ember build",
-    "build:prod": "yarn build --environment=production --silent",
+    "build": "ember build --environment=production --silent",
+    "build:prod": "yarn build",
     "test:unit": "true",
     "test": "ember exam --split 2 --parallel",
     "lint:js": "eslint . --cache",
