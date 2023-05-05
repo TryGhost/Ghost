@@ -26,8 +26,16 @@
     color: #fff;
 }
 
-.gh-announcement-bar * {
+.gh-announcement-bar *:not(path) {
     all: unset;
+}
+
+.gh-announcement-bar strong {
+    font-weight: 700;
+}
+
+.gh-announcement-bar :is(i, em) {
+    font-style: italic;
 }
 
 .gh-announcement-bar a {
