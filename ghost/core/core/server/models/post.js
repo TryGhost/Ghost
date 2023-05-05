@@ -1129,6 +1129,16 @@ Post = ghostBookshelf.Model.extend({
         return filter;
     }
 }, {
+    getBulkActionExtraContext: function (options) {
+        if (options && options.filter && options.filter.includes('type:page')) {
+            return {
+                type: 'page'
+            };
+        }
+        return {
+            type: 'post'
+        };
+    },
     allowedFormats: ['mobiledoc', 'lexical', 'html', 'plaintext'],
 
     orderDefaultOptions: function orderDefaultOptions() {
@@ -1236,9 +1246,11 @@ Post = ghostBookshelf.Model.extend({
      * **See:** [ghostBookshelf.Model.findOne](base.js.html#Find%20One)
      */
     findOne: function findOne(data = {}, options = {}) {
-        // @TODO: remove when we drop v0.1
-        if (!options.filter && !data.status) {
-            data.status = 'published';
+        if (!options.context || !options.context.internal) {
+            // @TODO: remove when we drop v0.1
+            if (!options.filter && !data.status) {
+                data.status = 'published';
+            }
         }
 
         if (data.status === 'all') {

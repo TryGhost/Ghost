@@ -70,13 +70,13 @@ class PostsService {
 
     async bulkEdit(data, options) {
         if (data.action === 'unpublish') {
-            return await this.#updatePosts({status: 'draft'}, {filter: this.#mergeFilters('status:published', options.filter)});
+            return await this.#updatePosts({status: 'draft'}, {filter: this.#mergeFilters('status:published', options.filter), context: options.context, actionName: 'unpublished'});
         }
         if (data.action === 'feature') {
-            return await this.#updatePosts({featured: true}, {filter: options.filter});
+            return await this.#updatePosts({featured: true}, {filter: options.filter, context: options.context, actionName: 'featured'});
         }
         if (data.action === 'unfeature') {
-            return await this.#updatePosts({featured: false}, {filter: options.filter});
+            return await this.#updatePosts({featured: false}, {filter: options.filter, context: options.context, actionName: 'unfeatured'});
         }
         if (data.action === 'access') {
             if (!['public', 'members', 'paid', 'tiers'].includes(data.meta.visibility)) {
@@ -93,7 +93,7 @@ class PostsService {
                 }
                 tiers = data.meta.tiers;
             }
-            return await this.#updatePosts({visibility: data.meta.visibility, tiers}, {filter: options.filter});
+            return await this.#updatePosts({visibility: data.meta.visibility, tiers}, {filter: options.filter, context: options.context});
         }
         if (data.action === 'addTag') {
             if (!Array.isArray(data.meta.tags)) {
@@ -113,7 +113,7 @@ class PostsService {
                     });
                 }
             }
-            return await this.#bulkAddTags({tags: data.meta.tags}, {filter: options.filter});
+            return await this.#bulkAddTags({tags: data.meta.tags}, {filter: options.filter, context: options.context});
         }
         throw new errors.IncorrectUsageError({
             message: tpl(messages.unsupportedBulkAction)
@@ -125,6 +125,8 @@ class PostsService {
      * @param {string[]} data.tags - Array of tag ids to add to the post
      * @param {object} options
      * @param {string} options.filter - An NQL Filter
+     * @param {object} options.context
+     * @param {object} [options.transacting]
      */
     async #bulkAddTags(data, options) {
         if (!options.transacting) {
@@ -139,7 +141,7 @@ class PostsService {
         // Create tags that don't exist
         for (const tag of data.tags) {
             if (!tag.id) {
-                const createdTag = await this.models.Tag.add(tag, {transacting: options.transacting});
+                const createdTag = await this.models.Tag.add(tag, {transacting: options.transacting, context: options.context});
                 tag.id = createdTag.id;
             }
         }
@@ -162,6 +164,7 @@ class PostsService {
         }, []);
 
         await options.transacting('posts_tags').insert(postTags);
+        await this.models.Post.addActions('edited', postRows.map(p => p.id), options);
 
         return {
             successful: postRows.length,
@@ -236,7 +239,7 @@ class PostsService {
 
         // Posts and emails
         await this.models.Post.bulkDestroy(deleteEmailIds, 'emails', {transacting: options.transacting, throwErrors: true});
-        return await this.models.Post.bulkDestroy(deleteIds, 'posts', {transacting: options.transacting, throwErrors: true});
+        return await this.models.Post.bulkDestroy(deleteIds, 'posts', {...options, throwErrors: true});
     }
 
     async export(frame) {
@@ -268,8 +271,8 @@ class PostsService {
         }
 
         const result = await this.models.Post.bulkEdit(editIds, 'posts', {
+            ...options,
             data,
-            transacting: options.transacting,
             throwErrors: true
         });
 
