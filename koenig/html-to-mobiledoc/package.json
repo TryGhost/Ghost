@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/html-to-mobiledoc",
-  "version": "2.0.15",
+  "version": "2.0.16",
   "repository": "https://github.com/TryGhost/SDK/tree/master/packages/html-to-mobiledoc",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -21,7 +21,7 @@
     "sinon": "15.0.4"
   },
   "dependencies": {
-    "@tryghost/kg-parser-plugins": "^3.0.15",
+    "@tryghost/kg-parser-plugins": "^3.0.16",
     "@tryghost/mobiledoc-kit": "^0.12.4-ghost.1",
     "jsdom": "^21.0.0"
   }
