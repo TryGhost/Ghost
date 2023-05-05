@@ -78,6 +78,6 @@
     "vite": "4.3.4",
     "vite-plugin-css-injected-by-js": "3.1.0",
     "vite-plugin-svgr": "2.4.0",
-    "vitest": "0.29.8"
+    "vitest": "0.31.0"
   }
 }
