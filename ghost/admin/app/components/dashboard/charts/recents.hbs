@@ -99,7 +99,7 @@
                                             <div class="gh-dashboard-list-item-sub">
                                                 {{svg-jar parsedEvent.icon }}
                                                 <span class="gh-dashboard-list-subtext">
-                                                    <span class="gh-members-activity-description {{if (feature "memberAttribution") 'feature-memberAttribution'}}">
+                                                    <span class="gh-members-activity-description feature-memberAttribution">
                                                         <span class="gh-members-activity-event-text">{{capitalize-first-letter parsedEvent.action}}</span>
                                                         {{#if parsedEvent.info}}
                                                             <span class="highlight">({{parsedEvent.info}})</span>

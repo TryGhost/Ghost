@@ -238,10 +238,7 @@ module.exports = class MemberBREADService {
         member.subscriptions = member.subscriptions.filter(sub => !!sub.price);
         this.attachSubscriptionsToMember(member);
         this.attachOffersToSubscriptions(member, await this.fetchSubscriptionOffers(model.related('stripeSubscriptions')));
-
-        if (this.labsService.isSet('memberAttribution')) {
-            await this.attachAttributionsToMember(member, subscriptionIdMap);
-        }
+        await this.attachAttributionsToMember(member, subscriptionIdMap);
 
         const suppressionData = await this.emailSuppressionList.getSuppressionData(member.email);
         member.email_suppression = {
