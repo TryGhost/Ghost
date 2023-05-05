@@ -6,7 +6,8 @@
     justify-content: center;
     padding: 12px 48px;
     min-height: 48px;
-    font-size: 1.5rem;
+    font-size: 15px;
+    line-height: 23px;
     text-align: center;
 }
 
@@ -23,6 +24,10 @@
 .gh-announcement-bar.dark {
     background-color: #15171a;
     color: #fff;
+}
+
+.gh-announcement-bar * {
+    all: unset;
 }
 
 .gh-announcement-bar a {
@@ -59,4 +64,5 @@
 .gh-announcement-bar svg {
     width: 10px;
     height: 10px;
+    fill: currentColor;
 }
