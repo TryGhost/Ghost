@@ -581,3 +581,5 @@ add|ember-template-lint|require-valid-alt-text|20|20|20|20|bc0bb4f51567cea7289bf
 add|ember-template-lint|no-action|55|71|55|71|76726a13a086d82dab219df12e86db1773a9de32|1678147200000|1688511600000|1693695600000|lib/koenig-editor/addon/components/koenig-card-embed.hbs
 add|ember-template-lint|no-action|56|85|56|85|bb78ad59bc384ea0de5e9459da9d85f1735ce141|1678147200000|1688511600000|1693695600000|lib/koenig-editor/addon/components/koenig-card-embed.hbs
 add|ember-template-lint|no-action|57|38|57|38|3ad187464ff78253a0ea4dd17dcfcf0423f66864|1678147200000|1688511600000|1693695600000|lib/koenig-editor/addon/components/koenig-card-embed.hbs
+remove|ember-template-lint|require-iframe-title|6|4|6|4|62bc251294f2cbea568fcc8d8e46bb5fe1915bc9|1675296000000|1685660400000|1690844400000|app/components/gh-html-iframe.hbs
+remove|ember-template-lint|require-iframe-title|7|4|7|4|62bc251294f2cbea568fcc8d8e46bb5fe1915bc9|1675296000000|1685660400000|1690844400000|app/components/gh-html-iframe.hbs
