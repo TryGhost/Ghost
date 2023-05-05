@@ -38,7 +38,7 @@
     "metascraper-publisher": "5.34.2",
     "metascraper-title": "5.34.2",
     "metascraper-url": "5.34.2",
-    "oembed-parser": "1.4.9",
+    "oembed-parser": "3.1.5",
     "tough-cookie": "4.1.2"
   }
 }

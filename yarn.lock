@@ -11728,7 +11728,7 @@ cron-validate@1.4.5, cron-validate@^1.4.1:
   dependencies:
     yup "0.32.9"
 
-cross-fetch@3.1.5, cross-fetch@^3.1.4, cross-fetch@^3.1.5:
+cross-fetch@3.1.5, cross-fetch@^3.1.5:
   version "3.1.5"
   resolved "https://registry.yarnpkg.com/cross-fetch/-/cross-fetch-3.1.5.tgz#e1389f44d9e7ba767907f7af8454787952ab534f"
   integrity sha512-lvb1SBsI0Z7GDwmuid+mU3kWVBwTVUbe7S0H52yaaAdQOXq2YktTCZdlAcNKFzE6QtRz0snpw9bNiPeOIkkQvw==
@@ -23338,12 +23338,12 @@ obuf@^1.0.0, obuf@^1.1.2:
   resolved "https://registry.yarnpkg.com/obuf/-/obuf-1.1.2.tgz#09bea3343d41859ebd446292d11c9d4db619084e"
   integrity sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==
 
-oembed-parser@1.4.9:
-  version "1.4.9"
-  resolved "https://registry.yarnpkg.com/oembed-parser/-/oembed-parser-1.4.9.tgz#d23127c96185dfa2d998b8567e6c7df164f3d824"
-  integrity sha512-RCOjuv20IMm9XekZB1ZefdYPc+x5qe8IyCeY/xcN71I2z70vQl+L420eI5Mjyy/NQFLv+QPEgj/aYh1vptO83w==
+oembed-parser@3.1.5:
+  version "3.1.5"
+  resolved "https://registry.yarnpkg.com/oembed-parser/-/oembed-parser-3.1.5.tgz#0a5751080ada189455253644fd85ab86959b8a6d"
+  integrity sha512-jX7XRzyGoroywAcOT9a1hS84ywn9fll9R82MnO1ED0WUYftCwVzNdWT5i2BdciH5N9nYh0bUQ/HAL1nhWVHcEQ==
   dependencies:
-    cross-fetch "^3.1.4"
+    cross-fetch "^3.1.5"
 
 on-finished@2.4.1, on-finished@^2.3.0:
   version "2.4.1"
