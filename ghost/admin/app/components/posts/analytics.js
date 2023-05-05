@@ -295,7 +295,7 @@ export default class Analytics extends Component {
     }
 
     get showSources() {
-        return this.feature.get('sourceAttribution') && this.post.showAttributionAnalytics;
+        return this.post.showAttributionAnalytics;
     }
 
     get showMentions() {
