@@ -27,7 +27,7 @@
     </GhCanvasHeader>
 
     <section class="view-container content-list">
-        <div class="{{if this.feature.memberAttribution 'gh-list-sticky'}}">
+        <div class="gh-list-sticky">
             <PostsList::List
                 @model={{this.postsInfinityModel}}
                 @list={{this.selectionList}}

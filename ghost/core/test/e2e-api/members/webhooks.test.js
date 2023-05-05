@@ -1645,7 +1645,6 @@ describe('Members API', function () {
         });
 
         beforeEach(function () {
-            mockManager.mockLabsEnabled('memberAttribution');
             mockManager.mockMail();
         });
 

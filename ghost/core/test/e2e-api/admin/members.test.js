@@ -216,9 +216,6 @@ describe('Members API - member attribution', function () {
     beforeEach(function () {
         mockManager.mockStripe();
         mockManager.mockMail();
-
-        // For some reason it is enabled by default?
-        mockManager.mockLabsEnabled('memberAttribution');
     });
 
     afterEach(function () {
