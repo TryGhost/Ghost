@@ -2053,10 +2053,20 @@ p.theme-validation-details {
     opacity: 0;
 }
 
+.gh-nav-design .gh-setting-action-largeimg-edit,
+.gh-nav-design .gh-setting-action-smallimg-edit {
+    right: 40px;
+}
+
 .gh-nav-design .gh-setting-action-largeimg-delete:hover,
 .gh-nav-design .gh-setting-action-smallimg-delete:hover {
     background: var(--red);
     border-color: transparent;
+}
+
+.gh-nav-design .gh-setting-action-smallimg-edit:hover,
+.gh-nav-design .gh-setting-action-largeimg-edit:hover {
+    background: var(--middarkgrey);
 }
 
 .gh-nav-design .gh-setting-action-largeimg-delete svg,
