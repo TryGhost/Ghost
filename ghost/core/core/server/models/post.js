@@ -36,7 +36,7 @@ const messages = {
 };
 
 const MOBILEDOC_REVISIONS_COUNT = 10;
-const POST_REVISIONS_COUNT = 10;
+const POST_REVISIONS_COUNT = 25;
 const POST_REVISIONS_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
 const ALL_STATUSES = ['published', 'draft', 'scheduled', 'sent'];
 
