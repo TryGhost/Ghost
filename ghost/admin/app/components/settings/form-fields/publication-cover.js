@@ -35,6 +35,11 @@ export default class PublicationCoverFormField extends Component {
     }
 
     @action
+    saveImage(setFiles, imageFile) {
+        setFiles([imageFile]);
+    }
+
+    @action
     setUnsplashImage({src}) {
         this.update(src);
     }
