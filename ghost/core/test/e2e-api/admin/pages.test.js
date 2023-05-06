@@ -430,4 +430,33 @@ describe('Pages API', function () {
         res.body.should.be.empty();
         res.headers['x-cache-invalidate'].should.eql('/*');
     });
+
+    it('Can copy a page', async function () {
+        const existingPage = testUtils.DataGenerator.Content.posts[6];
+
+        const result = await request.post(localUtils.API.getApiQuery(`pages/${existingPage.id}/copy`))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        result.body.pages.length.should.eql(1);
+
+        const page = result.body.pages[0];
+        const headers = result.headers;
+
+        localUtils.API.checkResponse(page, 'page');
+
+        should.exist(headers.location);
+        headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('pages/')}${page.id}/`);
+
+        const model = await models.Post.findOne({
+            id: page.id
+        }, testUtils.context.internal);
+
+        const modelJSON = model.toJSON();
+
+        modelJSON.title.should.eql(`${existingPage.title} (Copy)`);
+        modelJSON.status.should.eql('draft');
+        modelJSON.type.should.eql('page');
+    });
 });

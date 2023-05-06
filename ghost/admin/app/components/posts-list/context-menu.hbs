@@ -35,6 +35,13 @@
         </li>
     {{/if}}
     {{#if this.session.user.isAdmin}}
+        {{#if this.canCopySelection}}
+        <li>
+            <button class="mr2" type="button" {{on "click" this.copyPosts}}>
+                <span>{{svg-jar "copy"}}Duplicate</span>
+            </button>
+        </li>
+        {{/if}}
         <li>
             <button class="mr2" type="button" {{on "click" this.deletePosts}}>
                 <span class="red">{{svg-jar "trash"}}Delete</span>

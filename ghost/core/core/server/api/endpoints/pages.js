@@ -238,5 +238,31 @@ module.exports = {
         query(frame) {
             return models.Post.destroy({...frame.options, require: true});
         }
+    },
+
+    copy: {
+        statusCode: 201,
+        headers: {},
+        options: [
+            'id',
+            'formats'
+        ],
+        validation: {
+            id: {
+                required: true
+            }
+        },
+        permissions: {
+            docName: 'posts',
+            method: 'add'
+        },
+        async query(frame) {
+            return postsService.copyPost(frame)
+                .then((model) => {
+                    this.headers.cacheInvalidate = false;
+
+                    return model;
+                });
+        }
     }
 };
