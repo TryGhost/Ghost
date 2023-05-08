@@ -125,8 +125,20 @@ export default class KoenigLexicalEditorInput extends Component {
             props.onChangeHtml?.(cleanedHtml);
         };
 
-        // wrap in a paragraph, so it gets parsed correctly
-        const initialHtml = props.html ? `<p>${props.html}</p>` : null;
+        const hasParagraphWrapper = (html) => {
+            const domParser = new DOMParser();
+            const doc = domParser.parseFromString(html, 'text/html');
+
+            return doc.body.firstElementChild.tagName === 'P';
+        };
+
+        const getInitialHtml = () => {
+            if (!props.html) {
+                return null;
+            }
+            // wrap in a paragraph, so it gets parsed correctly
+            return hasParagraphWrapper(props.html) ? props.html : `<p>${props.html}</p>`;
+        };
 
         return (
             <div className={['koenig-react-editor', this.args.className].filter(Boolean).join(' ')}>
@@ -146,7 +158,7 @@ export default class KoenigLexicalEditorInput extends Component {
                                 placeholderText={props.placeholderText}
                                 placeholderClassName="koenig-lexical-editor-input-placeholder"
                             >
-                                <HtmlOutputPlugin html={initialHtml} setHtml={cleanHtml} />
+                                <HtmlOutputPlugin html={getInitialHtml()} setHtml={cleanHtml} />
                             </KoenigComposableEditor>
                         </KoenigComposer>
                     </Suspense>
