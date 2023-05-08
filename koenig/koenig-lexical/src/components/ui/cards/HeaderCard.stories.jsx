@@ -57,7 +57,7 @@ export const Empty = Template.bind({});
 Empty.args = {
     display: 'Editing',
     size: 'S',
-    style: 'dark',
+    style: ['dark'],
     heading: '',
     headerPlaceholder: 'Enter heading text',
     subheader: '',
@@ -72,7 +72,7 @@ export const Populated = Template.bind({});
 Populated.args = {
     display: 'Editing',
     size: 'S',
-    style: 'dark',
+    style: ['dark'],
     heading: 'This is a heading',
     headerPlaceholder: 'Enter heading text',
     subheader: 'And here is some subheading text.',
