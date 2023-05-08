@@ -67,7 +67,7 @@ export function InputUrlSetting({dataTestId, label, value, onChange}) {
     const [listOptions, setListOptions] = React.useState([]);
 
     React.useEffect(() => {
-        if (cardConfig.fetchAutocompleteLinks) {
+        if (cardConfig?.fetchAutocompleteLinks) {
             cardConfig.fetchAutocompleteLinks().then((links) => {
                 setListOptions(links.map((link) => {
                     return {value: link.value, label: link.label};
