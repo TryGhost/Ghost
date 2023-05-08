@@ -25,6 +25,8 @@ const notImplemented = function (req, res, next) {
         tags: ['GET', 'PUT', 'DELETE', 'POST'],
         labels: ['GET', 'PUT', 'DELETE', 'POST'],
         users: ['GET'],
+        roles: ['GET'],
+        invites: ['POST'],
         themes: ['POST', 'PUT'],
         members: ['GET', 'PUT', 'DELETE', 'POST'],
         tiers: ['GET', 'PUT', 'POST'],
