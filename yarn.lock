@@ -5796,13 +5796,13 @@
     "@tryghost/errors" "^1.2.24"
     "@tryghost/request" "^0.1.39"
 
-"@tryghost/image-transform@1.2.5":
-  version "1.2.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-1.2.5.tgz#cd5353cf7757bba48dddf1c35da1bfab1d9f7728"
-  integrity sha512-Hevzi+1YN/1PqodytCiV3UWLreJL1PC6F7R4dIzI1f5+eNKKyGMjXPWscaLSQK0/Dx+yahDR4WluMS/OfW9gCA==
+"@tryghost/image-transform@1.2.6":
+  version "1.2.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-1.2.6.tgz#530c792a50853b1779ecb8e15bee8ea5d1d890ef"
+  integrity sha512-kxDJHRgCCvcnLopyDCq4XIarG9QfOout+/MMdue6cvwrd9QBFpjvmN6/quO9OoAz3++Av/ovh7e1QpZhC+sUnA==
   dependencies:
     "@tryghost/errors" "^1.2.1"
-    fs-extra "^10.0.0"
+    fs-extra "^11.0.0"
   optionalDependencies:
     sharp "^0.30.0"
 
