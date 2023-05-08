@@ -1,7 +1,6 @@
 import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
-import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
@@ -118,16 +117,7 @@ export default class KoenigLexicalEditorInput extends Component {
         // don't rethrow, Lexical will attempt to gracefully recover
     }
 
-    ReactComponent = (props = {}) => {
-        // remove `p` wrapper
-        const cleanHtml = (html) => {
-            const cleanedHtml = cleanBasicHtml(html || '', {firstChildInnerContent: true});
-            props.onChangeHtml?.(cleanedHtml);
-        };
-
-        // wrap in a paragraph, so it gets parsed correctly
-        const initialHtml = props.html ? `<p>${props.html}</p>` : null;
-
+    ReactComponent = (props) => {
         return (
             <div className={['koenig-react-editor', this.args.className].filter(Boolean).join(' ')}>
                 <ErrorHandler>
@@ -146,7 +136,7 @@ export default class KoenigLexicalEditorInput extends Component {
                                 placeholderText={props.placeholderText}
                                 placeholderClassName="koenig-lexical-editor-input-placeholder"
                             >
-                                <HtmlOutputPlugin html={initialHtml} setHtml={cleanHtml} />
+                                <HtmlOutputPlugin html={props.html} setHtml={props.onChangeHtml} />
                             </KoenigComposableEditor>
                         </KoenigComposer>
                     </Suspense>
