@@ -54,6 +54,7 @@ const Template = ({display, caption, ...args}) => {
 export const Empty = Template.bind({});
 Empty.args = {
     display: 'Selected',
-    caption: ''
+    caption: '',
+    filesDropper: {}
 };
 
