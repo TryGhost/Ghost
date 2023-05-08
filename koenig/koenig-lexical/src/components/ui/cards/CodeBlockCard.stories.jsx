@@ -1,5 +1,5 @@
 import React from 'react';
-import populateNestedEditor from '../../../util';
+import populateNestedEditor from '../../../utils/populateNestedEditor';
 import {CardWrapper} from './../CardWrapper';
 import {CodeBlockCard} from './CodeBlockCard';
 import {MINIMAL_NODES} from '../../../index.js';
