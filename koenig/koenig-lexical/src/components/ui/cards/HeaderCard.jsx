@@ -167,7 +167,13 @@ export function HeaderCard({isEditing,
 
     return (
         <>
-            <div className={`flex flex-col items-center justify-center text-center font-sans transition-colors ease-in-out ${(size === 'small') ? 'min-h-[40vh] p-[14vmin]' : (size === 'medium') ? 'min-h-[60vh] p-[12vmin]' : 'min-h-[80vh] p-[18vmin]'} ${HEADER_COLORS[type]} `}>
+            <div className={`flex flex-col items-center justify-center text-center font-sans transition-colors ease-in-out ${(size === 'small') ? 'min-h-[40vh] p-[14vmin]' : (size === 'medium') ? 'min-h-[60vh] p-[12vmin]' : 'min-h-[80vh] p-[18vmin]'} ${HEADER_COLORS[type]} `}
+                style={backgroundImageSrc && type === 'image' ? {
+                    backgroundImage: `url(${backgroundImageSrc})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center center',
+                    backgroundColor: 'bg-grey-950'
+                } : null}>
 
                 {/* Heading */}
                 {
