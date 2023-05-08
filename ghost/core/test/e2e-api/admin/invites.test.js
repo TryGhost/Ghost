@@ -6,7 +6,7 @@ const config = require('../../../core/shared/config');
 const mailService = require('../../../core/server/services/mail');
 const localUtils = require('./utils');
 
-describe.only('Invites API', function () {
+describe('Invites API', function () {
     let request;
 
     describe('As Owner', function () {
