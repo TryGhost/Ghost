@@ -24,6 +24,7 @@ const SUPPORTED_LOCALES = [
     'sv',
     'tr',
     'uk',
+    'uz',
     'vi',
     'zh'
 ];
