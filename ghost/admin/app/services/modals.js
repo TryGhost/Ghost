@@ -57,7 +57,7 @@ export default class ModalsService extends EPMModalsService {
         let shouldClose = true;
 
         for (const elem of (event.path || event.composedPath())) {
-            if (elem.matches?.('.modal-content, .fullscreen-modal-total-overlay, .ember-basic-dropdown-content, a[download]')) {
+            if (elem.matches?.('.modal-content, .fullscreen-modal-total-overlay, .ember-basic-dropdown-content, a[download], .pintura-editor')) {
                 shouldClose = false;
                 break;
             }
