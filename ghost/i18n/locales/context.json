@@ -18,6 +18,7 @@
     "Confirm your email update for {{siteTitle}}!": "A message about confirming a change to a member's email adress",
     "Confirm your subscription to {{siteTitle}}": "Double opt-in message for new signups",
     "Continue": "Continue button",
+    "Current plan": "Current plan",
     "Delete account": "A button for members to delete their account",
     "Don't have an account?": "A link on the login screen, directing people who do not yet have an account to sign up.",
     "Email": "A label for email address input",
