@@ -94,6 +94,7 @@ describe('Transform', function () {
             });
 
             sharp.cache = sinon.stub().returns({});
+            sharp.concurrency = sinon.stub().returns({});
 
             testUtils.modules.mockNonExistentModule('sharp', sharp);
         });
