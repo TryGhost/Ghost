@@ -131,12 +131,13 @@ describe('Invites API', function () {
             sinon.restore();
         });
 
-        it('Can add a new invite by API Key', async function () {
+        it('Can add a new invite by API Key with the Author Role', async function () {
+            const roleId = testUtils.getExistingData().roles.find(role => role.name === 'Author').id;
             const res = await request
                 .post(localUtils.API.getApiQuery('invites/'))
                 .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/')}`)
                 .send({
-                    invites: [{email: 'admin-api-key-test@example.com', role_id: testUtils.getExistingData().roles[1].id}]
+                    invites: [{email: 'admin-api-key-test@example.com', role_id: roleId}]
                 })
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
@@ -149,7 +150,101 @@ describe('Invites API', function () {
             jsonResponse.invites.should.have.length(1);
 
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
-            jsonResponse.invites[0].role_id.should.eql(testUtils.getExistingData().roles[1].id);
+            jsonResponse.invites[0].role_id.should.eql(roleId);
+
+            mailService.GhostMailer.prototype.send.called.should.be.true();
+
+            should.exist(res.headers.location);
+            res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
+        });
+
+        it('Can add a new invite by API Key with the Editor Role', async function () {
+            const roleId = testUtils.getExistingData().roles.find(role => role.name === 'Editor').id;
+            const res = await request
+                .post(localUtils.API.getApiQuery('invites/'))
+                .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/')}`)
+                .send({
+                    invites: [{email: 'admin-api-key-test@example.com', role_id: roleId}]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201);
+
+            should.not.exist(res.headers['x-cache-invalidate']);
+            const jsonResponse = res.body;
+            should.exist(jsonResponse);
+            should.exist(jsonResponse.invites);
+            jsonResponse.invites.should.have.length(1);
+
+            localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
+            jsonResponse.invites[0].role_id.should.eql(roleId);
+
+            mailService.GhostMailer.prototype.send.called.should.be.true();
+
+            should.exist(res.headers.location);
+            res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
+        });
+
+        it('Can add a new invite by API Key with the Contributor Role', async function () {
+            const roleId = testUtils.getExistingData().roles.find(role => role.name === 'Contributor').id;
+            const res = await request
+                .post(localUtils.API.getApiQuery('invites/'))
+                .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/')}`)
+                .send({
+                    invites: [{email: 'admin-api-key-test@example.com', role_id: roleId}]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201);
+
+            should.not.exist(res.headers['x-cache-invalidate']);
+            const jsonResponse = res.body;
+            should.exist(jsonResponse);
+            should.exist(jsonResponse.invites);
+            jsonResponse.invites.should.have.length(1);
+
+            localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
+            jsonResponse.invites[0].role_id.should.eql(roleId);
+
+            mailService.GhostMailer.prototype.send.called.should.be.true();
+
+            should.exist(res.headers.location);
+            res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
+        });
+
+        it('Can not add a new invite by API Key with the Administrator Role', async function () {
+            const roleId = testUtils.getExistingData().roles.find(role => role.name === 'Administrator').id;
+            await request
+                .post(localUtils.API.getApiQuery('invites/'))
+                .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/')}`)
+                .send({
+                    invites: [{email: 'admin-api-key-test@example.com', role_id: roleId}]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(403);
+        });
+
+        it('Can add a new invite by API Key with the Contributor Role', async function () {
+            const roleId = testUtils.getExistingData().roles.find(role => role.name === 'Contributor').id;
+            const res = await request
+                .post(localUtils.API.getApiQuery('invites/'))
+                .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/')}`)
+                .send({
+                    invites: [{email: 'admin-api-key-test@example.com', role_id: roleId}]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201);
+
+            should.not.exist(res.headers['x-cache-invalidate']);
+            const jsonResponse = res.body;
+            should.exist(jsonResponse);
+            should.exist(jsonResponse.invites);
+            jsonResponse.invites.should.have.length(1);
+
+            localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
+            jsonResponse.invites[0].role_id.should.eql(roleId);
 
             mailService.GhostMailer.prototype.send.called.should.be.true();
 
