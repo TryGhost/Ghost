@@ -128,7 +128,15 @@ export default class KoenigImageEditor extends Component {
     }
 
     @action
-    async handleClick() {
+    async onUploadComplete(urlList) {
+        if (this.args.saveUrl) {
+            const url = urlList[0].url;
+            this.args.saveUrl(url);
+        }
+    }
+
+    @action
+    async handleClick(uploader) {
         if (this.isEditorEnabled && this.args.imageSrc) {
             // add a timestamp to the image src to bypass cache
             // avoids cors issues with cached images
@@ -199,7 +207,16 @@ export default class KoenigImageEditor extends Component {
 
             editor.on('process', (result) => {
                 // save edited image
-                this.args.saveImage(result.dest);
+                try {
+                    if (this.args.saveImage) {
+                        this.args.saveImage(result.dest);
+                    }
+                    if (this.args.saveUrl) {
+                        uploader.setFiles([result.dest]);
+                    }
+                } catch (e) {
+                    // Failed to save edited image
+                }
             });
         }
     }
