@@ -1,6 +1,8 @@
 import React from 'react';
+import populateNestedEditor from '../../../utils/populateNestedEditor';
 import {CardWrapper} from './../CardWrapper';
 import {HeaderCard} from './HeaderCard';
+import {MINIMAL_NODES} from '../../../index.js';
 import {createEditor} from 'lexical';
 
 const displayOptions = {
@@ -36,9 +38,13 @@ const story = {
 };
 export default story;
 
-const Template = ({display, ...args}) => {
-    const headerTextEditor = createEditor();
-    const subheaderTextEditor = createEditor();
+const Template = ({display, heading, subheader, ...args}) => {
+    const headerTextEditor = createEditor({nodes: MINIMAL_NODES});
+    const subheaderTextEditor = createEditor({nodes: MINIMAL_NODES});
+
+    populateNestedEditor({editor: headerTextEditor, initialHtml: `<p>${heading}</p>`});
+    populateNestedEditor({editor: subheaderTextEditor, initialHtml: `<p>${subheader}</p>`});
+
     return (<div className="kg-prose">
         <div className="mx-auto my-8 w-full min-w-[initial]">
             <CardWrapper {...display} {...args}>
@@ -56,8 +62,8 @@ const Template = ({display, ...args}) => {
 export const Empty = Template.bind({});
 Empty.args = {
     display: 'Editing',
-    size: 'S',
-    style: ['dark'],
+    size: 'small',
+    type: 'dark',
     heading: '',
     headerPlaceholder: 'Enter heading text',
     subheader: '',
@@ -71,8 +77,9 @@ Empty.args = {
 export const Populated = Template.bind({});
 Populated.args = {
     display: 'Editing',
-    size: 'S',
-    style: ['dark'],
+    size: 'small',
+    type: 'dark',
+    handleButtonToggle: () => {},
     heading: 'This is a heading',
     headerPlaceholder: 'Enter heading text',
     subheader: 'And here is some subheading text.',
@@ -82,4 +89,3 @@ Populated.args = {
     buttonPlaceholder: 'Add button text',
     buttonUrl: 'https://ghost.org/'
 };
-

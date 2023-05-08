@@ -19,7 +19,7 @@ function HeaderNodeComponent({
     subheaderPlaceholder,
     buttonText,
     buttonUrl,
-    style,
+    type,
     headerTextEditorInitialState,
     headerPlaceholder,
     header,
@@ -154,12 +154,12 @@ function HeaderNodeComponent({
                 isEditing={isEditing}
                 openFilePicker={openFilePicker}
                 size={size}
-                style={style}
                 subheader={subheader}
                 subheaderPlaceholder={subheaderPlaceholder}
                 subheaderTextEditor={subheaderTextEditor}
                 subheaderTextEditorInitialState={subheaderTextEditorInitialState}
                 toggleBackgroundImagePreview={toggleBackgroundImagePreview}
+                type={type}
                 onFileChange={onFileChange}
             />
             <ActionToolbar

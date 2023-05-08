@@ -109,11 +109,11 @@ export class HeaderNode extends BaseHeaderNode {
                     headerTextEditorInitialState={this.__headerTextEditorInitialState}
                     nodeKey={this.getKey()}
                     size={this.getSize()}
-                    style={this.getStyle()}
                     subheader={this.getSubheader()}
                     subheaderPlaceholder={'Enter subheading text'}
                     subheaderTextEditor={this.__subheaderTextEditor}
                     subheaderTextEditorInitialState={this.__subheaderTextEditorInitialState}
+                    type={this.getStyle()}
                 />
             </KoenigCardWrapper>
         );

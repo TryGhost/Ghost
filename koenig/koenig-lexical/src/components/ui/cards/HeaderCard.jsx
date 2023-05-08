@@ -117,7 +117,7 @@ export function HeaderCard({isEditing,
     backgroundImagePreview,
     fileInputRef,
     openFilePicker,
-    style,
+    type,
     header,
     headerTextEditor,
     subheaderTextEditor,
@@ -167,13 +167,7 @@ export function HeaderCard({isEditing,
 
     return (
         <>
-            <div className={`flex flex-col items-center justify-center text-center font-sans transition-colors ease-in-out ${(size === 'small') ? 'min-h-[40vh] p-[14vmin]' : (size === 'medium') ? 'min-h-[60vh] p-[12vmin]' : 'min-h-[80vh] p-[18vmin]'} ${HEADER_COLORS[style]} `}
-                style={backgroundImageSrc && style === 'image' ? {
-                    backgroundImage: `url(${backgroundImageSrc})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center center',
-                    backgroundColor: 'bg-grey-950'
-                } : null}>
+            <div className={`flex flex-col items-center justify-center text-center font-sans transition-colors ease-in-out ${(size === 'small') ? 'min-h-[40vh] p-[14vmin]' : (size === 'medium') ? 'min-h-[60vh] p-[12vmin]' : 'min-h-[80vh] p-[18vmin]'} ${HEADER_COLORS[type]} `}>
 
                 {/* Heading */}
                 {
@@ -185,10 +179,10 @@ export function HeaderCard({isEditing,
                             initialEditor={headerTextEditor}
                             initialEditorState={headerTextEditorInitialState}
                             nodes="minimal"
-                            placeholderClassName={`truncate opacity-50 whitespace-normal !tracking-tight !text-center w-full !leading-tight !font-bold ${(size === 'small') ? 'kg-header-small !text-6xl' : (size === 'medium') ? '!text-7xl' : '!text-8xl'} ${HEADER_TEXT_COLORS[style]}`}
+                            placeholderClassName={`truncate opacity-50 whitespace-normal !tracking-tight !text-center w-full !leading-tight !font-bold ${(size === 'small') ? 'kg-header-small !text-6xl' : (size === 'medium') ? '!text-7xl' : '!text-8xl'} ${HEADER_TEXT_COLORS[type]}`}
                             placeholderText={headerPlaceholder}
                             singleParagraph={true}
-                            textClassName={`koenig-lexical-header-heading relative w-full whitespace-normal text-center font-bold text-center [&:has(br)]:text-left ${(size === 'small') ? 'koenig-lexical-header-small [&:has(br)]:pl-[calc(50%_-_254px)]' : (size === 'medium') ? 'koenig-lexical-header-medium [&:has(br)]:pl-[calc(50%_-_304px)]' : 'koenig-lexical-header-large [&:has(br)]:pl-[calc(50%_-_404px)]'} ${HEADER_TEXT_COLORS[style]}`}
+                            textClassName={`koenig-lexical-header-heading relative w-full whitespace-normal text-center font-bold text-center [&:has(br)]:text-left ${(size === 'small') ? 'koenig-lexical-header-small [&:has(br)]:pl-[calc(50%_-_254px)]' : (size === 'medium') ? 'koenig-lexical-header-medium [&:has(br)]:pl-[calc(50%_-_304px)]' : 'koenig-lexical-header-large [&:has(br)]:pl-[calc(50%_-_404px)]'} ${HEADER_TEXT_COLORS[type]}`}
                         />
                     )
                 }
@@ -201,19 +195,20 @@ export function HeaderCard({isEditing,
                             initialEditor={subheaderTextEditor}
                             initialEditorState={subheaderTextEditorInitialState}
                             nodes="minimal"
-                            placeholderClassName={`truncate opacity-50 w-full whitespace-normal !text-center !leading-tight !font-normal ${(size === 'small') ? '!text-xl' : (size === 'medium') ? '!text-2xl' : '!text-3xl'} ${HEADER_TEXT_COLORS[style]}`}
+                            placeholderClassName={`truncate opacity-50 w-full whitespace-normal !text-center !leading-tight !font-normal ${(size === 'small') ? '!text-xl' : (size === 'medium') ? '!text-2xl' : '!text-3xl'} ${HEADER_TEXT_COLORS[type]}`}
                             placeholderText={subheaderPlaceholder}
                             singleParagraph={true}
-                            textClassName={`koenig-lexical-header-subheading relative w-full whitespace-normal text-center [&:has(br)]:text-left ${(size === 'small') ? 'koenig-lexical-header-small [&:has(br)]:pl-[calc(50%_-_105px)] !mt-2' : (size === 'medium') ? 'koenig-lexical-header-medium [&:has(br)]:pl-[calc(50%_-_124px)] !mt-3' : 'koenig-lexical-header-large [&:has(br)]:pl-[calc(50%_-_156px)] !mt-3'} ${HEADER_TEXT_COLORS[style]}`}
+                            textClassName={`koenig-lexical-header-subheading relative w-full whitespace-normal text-center [&:has(br)]:text-left ${(size === 'small') ? 'koenig-lexical-header-small [&:has(br)]:pl-[calc(50%_-_105px)] !mt-2' : (size === 'medium') ? 'koenig-lexical-header-medium [&:has(br)]:pl-[calc(50%_-_124px)] !mt-3' : 'koenig-lexical-header-large [&:has(br)]:pl-[calc(50%_-_156px)] !mt-3'} ${HEADER_TEXT_COLORS[type]}`}
                         />
                     )
                 }
 
                 {/* Button */}
-                { (button) &&
-                    <div className={`${(size === 'S') ? 'mt-6' : (size === 'M') ? 'mt-8' : 'mt-10'}`}>
-                        {((button && (style === 'light')) && <Button dataTestId="header-card-button" placeholder={buttonPlaceholder} size={size} value={buttonText} />) || (button && <Button color='light' dataTestId="header-card-button" placeholder={buttonPlaceholder} size={size} value={buttonText} />)}
+                { button ? 
+                    <div className={`${(size === 'small') ? 'mt-6' : (size === 'medium') ? 'mt-8' : 'mt-10'}`}>
+                        {((button && (type === 'light')) && <Button dataTestId="header-card-button" placeholder={buttonPlaceholder} size={size} value={buttonText} />) || (button && <Button color='light' dataTestId="header-card-button" placeholder={buttonPlaceholder} size={size} value={buttonText} />)}
                     </div>
+                    : undefined
                 }
 
                 {/* Read-only overlay */}
@@ -231,7 +226,7 @@ export function HeaderCard({isEditing,
                     <ColorPickerSetting
                         buttons={colorPickerChildren}
                         label='Style'
-                        selectedName={style}
+                        selectedName={type}
                         onClick={handleColorSelector}
                     />
                     <ImagePicker
@@ -251,7 +246,7 @@ export function HeaderCard({isEditing,
                         label='Button'
                         onChange={handleButtonToggle}
                     />
-                    {button && (
+                    {button ? (
                         <>
                             <InputSetting
                                 dataTestId='header-button-text'
@@ -268,7 +263,7 @@ export function HeaderCard({isEditing,
                                 onChange={handleButtonUrl}
                             />
                         </>
-                    )}
+                    ) : null}
                 </SettingsPanel>
             )}
         </>
@@ -277,7 +272,7 @@ export function HeaderCard({isEditing,
 
 HeaderCard.propTypes = {
     size: PropTypes.oneOf(['small', 'medium', 'large']),
-    style: PropTypes.oneOf(['dark', 'light', 'accent', 'image']),
+    type: PropTypes.oneOf(['dark', 'light', 'accent', 'image']),
     heading: PropTypes.string,
     headerPlaceholder: PropTypes.string,
     subheader: PropTypes.string,
