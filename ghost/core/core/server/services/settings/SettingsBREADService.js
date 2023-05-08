@@ -360,13 +360,6 @@ class SettingsBREADService {
      * @private
      */
     async sendEmailVerificationMagicLink({email, key}) {
-        const [,toDomain] = email.split('@');
-
-        let fromEmail = `noreply@${toDomain}`;
-        if (fromEmail === email) {
-            fromEmail = `no-reply@${toDomain}`;
-        }
-
         const {ghostMailer} = this;
 
         this.magicLinkService.transporter = {
@@ -375,7 +368,6 @@ class SettingsBREADService {
                     logging.warn(message.text);
                 }
                 let msg = Object.assign({
-                    from: fromEmail,
                     subject: 'Verify email address',
                     forceTextContent: true
                 }, message);

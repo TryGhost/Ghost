@@ -199,7 +199,7 @@ class NewslettersService {
         }
 
         let updatedNewsletter;
-        
+
         try {
             updatedNewsletter = await this.NewsletterModel.edit(cleanedAttrs, options);
         } catch (error) {
@@ -215,7 +215,7 @@ class NewslettersService {
 
         // Load relations correctly in the response
         updatedNewsletter = await this.NewsletterModel.findOne({id: updatedNewsletter.id}, {...options, require: true});
-        
+
         await this.respondWithEmailVerification(updatedNewsletter, emailsToVerify);
         return updatedNewsletter;
     }
@@ -297,13 +297,6 @@ class NewslettersService {
      * @private
      */
     async sendEmailVerificationMagicLink({id, email, property = 'sender_from'}) {
-        const [,toDomain] = email.split('@');
-
-        let fromEmail = `noreply@${toDomain}`;
-        if (fromEmail === email) {
-            fromEmail = `no-reply@${toDomain}`;
-        }
-
         const {ghostMailer} = this;
 
         this.magicLinkService.transporter = {
@@ -312,7 +305,6 @@ class NewslettersService {
                     logging.warn(message.text);
                 }
                 let msg = Object.assign({
-                    from: fromEmail,
                     subject: 'Verify email address',
                     forceTextContent: true
                 }, message);
