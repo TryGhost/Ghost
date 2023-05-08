@@ -21,6 +21,33 @@ test.describe('Floating format toolbar', async () => {
         expect(await page.locator('[data-kg-floating-toolbar]')).not.toBeNull();
     });
 
+    test('appears on paragraph selection', async function ({page}) {
+        await focusEditor(page);
+        await expect(await page.locator('[data-kg-floating-toolbar]')).toHaveCount(0);
+        await test.step('Insert paragraphs', async () => {
+            await page.keyboard.type('paragraph for selection');
+            await page.keyboard.press('Shift+Enter');
+            await page.keyboard.type('paragraph for selection');
+            await page.keyboard.press('Shift+Enter');
+            await page.keyboard.type('paragraph for selection');
+        });
+
+        await test.step('Move cursor to the end of first paragraph', async () => {
+            await page.keyboard.press('ArrowUp');
+            await page.keyboard.press('ArrowUp');
+        });
+
+        await test.step('Select paragraphs', async () => {
+            await page.keyboard.down('Shift');
+            await page.keyboard.press('ArrowRight');
+            await page.keyboard.press('ArrowDown');
+            await page.keyboard.press('ArrowDown');
+            await page.keyboard.up('Shift');
+        });
+
+        await expect(await page.locator('[data-kg-floating-toolbar]')).toBeVisible();
+    });
+
     test('disappears on selection removal', async function ({page}) {
         await focusEditor(page);
         await page.keyboard.type('text for selection');

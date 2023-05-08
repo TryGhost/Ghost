@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {$getSelection, $isRangeSelection, $isTextNode} from 'lexical';
+import {$getSelection, $isParagraphNode, $isRangeSelection, $isTextNode} from 'lexical';
 import {$getSelectionRangeRect} from '../utils/$getSelectionRangeRect';
 import {$isLinkNode} from '@lexical/link';
 import {FloatingFormatToolbar, toolbarItemTypes} from '../components/ui/FloatingFormatToolbar';
@@ -62,7 +62,7 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled) {
                 setHref('');
             }
 
-            if (selection.getTextContent().trim() !== '' && $isTextNode(anchorNode)) {
+            if (selection.getTextContent().trim() !== '' && ($isTextNode(anchorNode) || $isParagraphNode(anchorNode))) {
                 setToolbarItemType(toolbarItemTypes.text);
                 return;
             }
