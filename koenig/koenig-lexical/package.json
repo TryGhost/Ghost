@@ -84,7 +84,7 @@
     "@tailwindcss/line-clamp": "0.4.4",
     "@testing-library/jest-dom": "5.16.5",
     "@testing-library/react": "14.0.0",
-    "@types/react": "18.2.5",
+    "@types/react": "18.2.6",
     "@types/react-dom": "18.2.4",
     "@vitejs/plugin-react": "4.0.0",
     "@vitest/coverage-c8": "0.31.0",
