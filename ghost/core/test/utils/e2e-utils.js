@@ -37,7 +37,7 @@ let totalBoots = 0;
  */
 const exposeFixtures = async () => {
     const fixturePromises = {
-        roles: models.Role.findAll({columns: ['id']}),
+        roles: models.Role.findAll({columns: ['id', 'name']}),
         users: models.User.findAll({columns: ['id', 'email', 'slug']}),
         tags: models.Tag.findAll({columns: ['id']}),
         apiKeys: models.ApiKey.findAll({withRelated: 'integration'})

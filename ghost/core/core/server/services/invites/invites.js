@@ -4,6 +4,7 @@ const logging = require('@tryghost/logging');
 
 const messages = {
     invitedByName: '{invitedByName} has invited you to join {blogName}',
+    invitedByNoName: 'You have been invited to join {blogName}',
     errorSendingEmail: {
         error: 'Error sending email: {message}',
         help: 'Please check your email settings and resend the invitation.'
@@ -11,8 +12,9 @@ const messages = {
 };
 
 class Invites {
-    constructor({settingsCache, mailService, urlUtils}) {
+    constructor({settingsCache, settingsHelpers, mailService, urlUtils}) {
         this.settingsCache = settingsCache;
+        this.settingsHelpers = settingsHelpers;
         this.mailService = mailService;
         this.urlUtils = urlUtils;
     }
@@ -37,15 +39,26 @@ class Invites {
 
                 const adminUrl = this.urlUtils.urlFor('admin', true);
 
-                emailData = {
-                    blogName: this.settingsCache.get('title'),
-                    invitedByName: user.name,
-                    invitedByEmail: user.email,
-                    resetLink: this.urlUtils.urlJoin(adminUrl, 'signup', security.url.encodeBase64(invite.get('token')), '/'),
-                    recipientEmail: invite.get('email')
-                };
+                if (user.name || user.email) {
+                    emailData = {
+                        blogName: this.settingsCache.get('title'),
+                        invitedByName: user.name,
+                        invitedByEmail: user.email,
+                        resetLink: this.urlUtils.urlJoin(adminUrl, 'signup', security.url.encodeBase64(invite.get('token')), '/'),
+                        recipientEmail: invite.get('email')
+                    };
 
-                return this.mailService.utils.generateContent({data: emailData, template: 'invite-user'});
+                    return this.mailService.utils.generateContent({data: emailData, template: 'invite-user'});
+                } else {
+                    emailData = {
+                        blogName: this.settingsCache.get('title'),
+                        invitedByEmail: `ghost@${this.settingsHelpers.getDefaultEmailDomain()}`,
+                        resetLink: this.urlUtils.urlJoin(adminUrl, 'signup', security.url.encodeBase64(invite.get('token')), '/'),
+                        recipientEmail: invite.get('email')
+                    };
+
+                    return this.mailService.utils.generateContent({data: emailData, template: 'invite-user-by-api-key'});
+                }
             })
             .then((emailContent) => {
                 const payload = {
@@ -53,8 +66,10 @@ class Invites {
                         message: {
                             to: invite.get('email'),
                             replyTo: emailData.invitedByEmail,
-                            subject: tpl(messages.invitedByName, {
+                            subject: emailData.invitedByName ? tpl(messages.invitedByName, {
                                 invitedByName: emailData.invitedByName,
+                                blogName: emailData.blogName
+                            }) : tpl(messages.invitedByNoName, {
                                 blogName: emailData.blogName
                             }),
                             html: emailContent.html,
