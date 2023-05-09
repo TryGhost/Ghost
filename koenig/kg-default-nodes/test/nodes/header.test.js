@@ -88,7 +88,7 @@ describe('HeaderNode', function () {
             node.getButtonUrl().should.equal('https://example.com/newurl');
         }));
 
-        it('gas getDataset() method', editorTest(function () {
+        it('has getDataset() method', editorTest(function () {
             const headerNode = $createHeaderNode(dataset);
             const nodeData = headerNode.getDataset();
             nodeData.should.deepEqual(dataset);

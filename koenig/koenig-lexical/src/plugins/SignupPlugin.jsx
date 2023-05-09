@@ -1,23 +1,23 @@
 import React from 'react';
-import {$createHeaderNode, HeaderNode, INSERT_HEADER_COMMAND} from '../nodes/HeaderNode';
+import {$createSignupNode, INSERT_SIGNUP_COMMAND, SignupNode} from '../nodes/SignupNode';
 import {COMMAND_PRIORITY_LOW} from 'lexical';
 import {INSERT_CARD_COMMAND} from './KoenigBehaviourPlugin';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-export const HeaderPlugin = () => {
+export const SignupPlugin = () => {
     const [editor] = useLexicalComposerContext();
 
     React.useEffect(() => {
-        if (!editor.hasNodes([HeaderNode])){
-            console.error('HeaderPlugin: HeaderNode not registered'); // eslint-disable-line no-console
+        if (!editor.hasNodes([SignupNode])){
+            console.error('SignupPlugin: SignupNode not registered'); // eslint-disable-line no-console
             return;
         }
         return mergeRegister(
             editor.registerCommand(
-                INSERT_HEADER_COMMAND,
+                INSERT_SIGNUP_COMMAND,
                 async (dataset) => {
-                    const cardNode = $createHeaderNode(dataset);
+                    const cardNode = $createSignupNode(dataset);
                     editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode, openInEditMode: true});
 
                     return true;
@@ -30,4 +30,4 @@ export const HeaderPlugin = () => {
     return null;
 };
 
-export default HeaderPlugin;
+export default SignupPlugin;

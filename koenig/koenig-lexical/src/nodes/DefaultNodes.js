@@ -19,6 +19,7 @@ import {ListItemNode, ListNode} from '@lexical/list';
 import {MarkdownNode} from './MarkdownNode';
 import {PaywallNode} from './PaywallNode';
 import {ProductNode} from './ProductNode';
+import {SignupNode} from './SignupNode';
 import {ToggleNode} from './ToggleNode';
 import {VideoNode} from './VideoNode';
 
@@ -47,7 +48,8 @@ const DEFAULT_NODES = [
     EmailNode,
     EmailCtaNode,
     EmbedNode,
-    GalleryNode
+    GalleryNode,
+    SignupNode
 ];
 
 export default DEFAULT_NODES;

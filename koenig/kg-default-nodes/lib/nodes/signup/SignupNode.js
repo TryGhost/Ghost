@@ -1,26 +1,68 @@
-import {createCommand} from 'lexical';
 import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
+import {createCommand} from 'lexical';
 import {renderSignupCardToDOM} from './SignupRenderer';
 
 export const INSERT_SIGNUP_COMMAND = createCommand();
+const NODE_TYPE = 'signup';
 
 export class SignupNode extends KoenigDecoratorNode {
+    // payload properties
+    __size;
+    __style;
+    __buttonText;
+    __header;
+    __subheader;
+    __disclaimer;
+    __backgroundImageSrc;
+
     static getType() {
-        return 'signup';
+        return NODE_TYPE;
     }
 
-    // used by `@tryghost/url-utils` to transform URLs contained in the serialized JSON
+    static clone(node) {
+        return new this(
+            node.getDataset(),
+            node.__key
+        );
+    }
+
     static get urlTransformMap() {
         return {
-            html: 'html'
+            backgroundImageSrc: 'url',
+            header: 'html',
+            subheader: 'html',
+            disclaimer: 'html'
         };
     }
 
-    exportJSON() {
+    getDataset() {
+        const self = this.getLatest();
         return {
-            type: 'signup',
-            version: 1
+            size: self.__size,
+            style: self.__style,
+            buttonText: self.__buttonText,
+            header: self.__header,
+            subheader: self.__subheader,
+            disclaimer: self.__disclaimer,
+            backgroundImageSrc: self.__backgroundImageSrc
         };
+    }
+
+    constructor({size,
+        style,
+        buttonText,
+        header,
+        subheader,
+        disclaimer,
+        backgroundImageSrc} = {}, key) {
+        super(key);
+        this.__size = size || 'small';
+        this.__style = style || 'dark';
+        this.__buttonText = buttonText || '';
+        this.__header = header || '';
+        this.__subheader = subheader || '';
+        this.__disclaimer = disclaimer || '';
+        this.__backgroundImageSrc = backgroundImageSrc || '';
     }
 
     exportDOM(options = {}) {
@@ -31,10 +73,38 @@ export class SignupNode extends KoenigDecoratorNode {
         };
     }
 
+    static importJSON(serializedNode) {
+        const {size, style, buttonText, header, subheader, disclaimer, backgroundImageSrc} = serializedNode;
+        const node = new this({
+            size,
+            style,
+            buttonText,
+            header,
+            subheader,
+            disclaimer,
+            backgroundImageSrc
+        });
+        return node;
+    }
+
+    exportJSON() {
+        const dataset = {
+            type: NODE_TYPE,
+            version: 1,
+            size: this.getSize(),
+            style: this.getStyle(),
+            buttonText: this.getButtonText(),
+            header: this.getHeader(),
+            subheader: this.getSubheader(),
+            disclaimer: this.getDisclaimer(),
+            backgroundImageSrc: this.getBackgroundImageSrc()
+        };
+        return dataset;
+    }
+
     /* c8 ignore start */
     createDOM() {
-        const element = document.createElement('div');
-        return element;
+        return document.createElement('div');
     }
 
     updateDOM() {
@@ -44,22 +114,95 @@ export class SignupNode extends KoenigDecoratorNode {
     isInline() {
         return false;
     }
-    /* c8 ignore stop */
 
-    // should be overwritten
-    /* c8 ignore next 3 */
-    decorate() {
-        return '';
+    getSize() {
+        const self = this.getLatest();
+        return self.__size;
+    }
+
+    setSize(size) {
+        const writable = this.getWritable();
+        writable.__size = size;
+    }
+
+    getStyle() {
+        const self = this.getLatest();
+        return self.__style;
+    }
+
+    setStyle(style) {
+        const writable = this.getWritable();
+        writable.__style = style;
+    }
+
+    getButtonText() {
+        const self = this.getLatest();
+        return self.__buttonText;
+    }
+
+    setButtonText(buttonText) {
+        const writable = this.getWritable();
+        writable.__buttonText = buttonText;
+    }
+
+    getHeader() {
+        const self = this.getLatest();
+        return self.__header;
+    }
+
+    setHeader(header) {
+        const writable = this.getWritable();
+        writable.__header = header;
+    }
+
+    getSubheader() {
+        const self = this.getLatest();
+        return self.__subheader;
+    }
+
+    setSubheader(subheader) {
+        const writable = this.getWritable();
+        writable.__subheader = subheader;
+    }
+
+    getDisclaimer() {
+        const self = this.getLatest();
+        return self.__disclaimer;
+    }
+
+    setDisclaimer(size) {
+        const writable = this.getWritable();
+        writable.__disclaimer = size;
+    }
+
+    getBackgroundImageSrc() {
+        const self = this.getLatest();
+        return self.__backgroundImageSrc;
+    }
+
+    setBackgroundImageSrc(backgroundImageSrc) {
+        const writable = this.getWritable();
+        writable.__backgroundImageSrc = backgroundImageSrc;
     }
 
     hasEditMode() {
         return true;
     }
+
+    isEmpty() {
+        return !this.__header && !this.__subheader && !this.__disclaimer && !this.__buttonText && !this.__backgroundImageSrc;
+    }
+
+    // should be overridden
+    /* c8 ignore next 3 */
+    decorate() {
+        return '';
+    }
 }
 
-export function $createSignupNode(dataset) {
+export const $createSignupNode = (dataset) => {
     return new SignupNode(dataset);
-}
+};
 
 export function $isSignupNode(node) {
     return node instanceof SignupNode;
