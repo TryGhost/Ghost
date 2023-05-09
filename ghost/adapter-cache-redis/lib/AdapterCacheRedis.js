@@ -144,9 +144,13 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      * Reset the cache by deleting everything from redis
      */
     async reset() {
-        const keys = await this.#getKeys();
-        for (const key of keys) {
-            await this.cache.del(key);
+        try {
+            const keys = await this.#getKeys();
+            for (const key of keys) {
+                await this.cache.del(key);
+            }
+        } catch (err) {
+            logging.error(err);
         }
     }
 
