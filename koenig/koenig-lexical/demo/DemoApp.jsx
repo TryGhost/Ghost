@@ -35,7 +35,10 @@ const cardConfig = {
     fetchAutocompleteLinks: () => Promise.resolve([
         {label: 'Homepage', value: window.location.origin + '/'},
         {label: 'Free signup', value: window.location.origin + '/#/portal/signup/free'}
-    ])
+    ]),
+    feature: {
+        signupCard: true
+    }
 };
 
 function getDefaultContent({editorType}) {

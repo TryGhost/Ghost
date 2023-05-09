@@ -25,6 +25,7 @@ import MarkdownPlugin from './plugins/MarkdownPlugin';
 import MarkdownShortcutPlugin from './plugins/MarkdownShortcutPlugin';
 import PlusCardMenuPlugin from './plugins/PlusCardMenuPlugin';
 import RestrictContentPlugin from './plugins/RestrictContentPlugin';
+import SignupPlugin from './plugins/SignupPlugin';
 import SlashCardMenuPlugin from './plugins/SlashCardMenuPlugin';
 import TogglePlugin from './plugins/TogglePlugin';
 import VideoPlugin from './plugins/VideoPlugin';
@@ -79,6 +80,7 @@ export {
     TogglePlugin,
     HeaderPlugin,
     VideoPlugin,
+    SignupPlugin,
 
     AllDefaultPlugins,
 

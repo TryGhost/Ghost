@@ -28,7 +28,8 @@ export class SignupNode extends BaseSignupNode {
         desc: 'Convert visitors into members',
         Icon: SignupCardIcon,
         insertCommand: INSERT_SIGNUP_COMMAND,
-        matches: ['signup', 'subscribe']
+        matches: ['signup', 'subscribe'],
+        isHidden: ({config}) => !config?.feature?.signupCard
     };
 
     getIcon() {
