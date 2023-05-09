@@ -7,9 +7,17 @@
 
     <div class="modal-body gh-modal-reset-passwords">
         <p>Have any issues? Feedback? Let us know!</p>
-        <div class="flex mt2 mb2">
-
-        </div>
+        <GhFormGroup>
+            <GhTextarea 
+                @id="feedback-lexical"
+                @name="feedback-lexical" 
+                @value={{this.feedbackMessage}}
+            />
+            {{!--
+            <GhErrorMessage @errors={{this.member.errors}} @property="note" /> --}}
+            <p> Maximum: <b>500</b> characters. You’ve used
+                {{gh-count-down-characters this.feedbackMessage 500}}</p>
+        </GhFormGroup>
     </div>
 
     <div class="modal-footer">
