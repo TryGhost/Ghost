@@ -2,7 +2,7 @@ import {createCommand} from 'lexical';
 import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
 import {renderSignupCardToDOM} from './SignupRenderer';
 
-export const INSERT_HTML_COMMAND = createCommand();
+export const INSERT_SIGNUP_COMMAND = createCommand();
 
 export class SignupNode extends KoenigDecoratorNode {
     static getType() {
