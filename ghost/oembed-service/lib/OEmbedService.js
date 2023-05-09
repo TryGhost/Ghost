@@ -1,7 +1,6 @@
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
-const {extract, hasProvider} = require('@extractus/oembed-extractor');
 const cheerio = require('cheerio');
 const _ = require('lodash');
 const charset = require('charset');
@@ -19,6 +18,8 @@ const messages = {
  * @returns {{url: string, provider: boolean}}
  */
 const findUrlWithProvider = (url) => {
+    const {hasProvider} = require('@extractus/oembed-extractor');
+
     let provider;
 
     // build up a list of URL variations to test against because the oembed
@@ -95,6 +96,8 @@ class OEmbedService {
      * @param {string} url
      */
     async knownProvider(url) {
+        const {extract} = require('@extractus/oembed-extractor');
+
         try {
             return await extract(url);
         } catch (err) {
