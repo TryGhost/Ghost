@@ -1,0 +1,37 @@
+{
+  "name": "@tryghost/kg-converters",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-converters",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "cjs/kg-converters.js",
+  "module": "es/kg-converters.js",
+  "source": "lib/kg-converters.js",
+  "scripts": {
+    "dev": "rollup -c -w --bundleConfigAsCjs",
+    "build": "rollup -c --bundleConfigAsCjs",
+    "prepare": "NODE_ENV=production yarn build",
+    "pretest": "yarn build",
+    "test:unit": "NODE_ENV=testing c8 --all --check-coverage --100  --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "test": "yarn test:unit",
+    "lint:code": "eslint *.js lib/ --ext .js --cache",
+    "lint": "yarn lint:code && yarn lint:test",
+    "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache"
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "cjs/",
+    "es/",
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "c8": "7.13.0",
+    "mocha": "10.2.0",
+    "sinon": "15.0.4"
+  },
+  "dependencies": {}
+}
