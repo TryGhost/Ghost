@@ -64,8 +64,8 @@ const fetchKoenig = function () {
     let response;
 
     const fetchPackage = async () => {
-        if (window['@tryghost/koenig-lexical']) {
-            return window['@tryghost/koenig-lexical'];
+        if (window['admin-x-v1']) {
+            return window['admin-x-v1'];
         }
 
         // the manual specification of the protocol in the import template string is
@@ -83,7 +83,7 @@ const fetchKoenig = function () {
             await import(`https://${url.host}${url.pathname}`);
         }
 
-        return window['@tryghost/koenig-lexical'];
+        return window['admin-x-v1'];
     };
 
     const suspender = fetchPackage().then(
@@ -116,6 +116,12 @@ const editorResource = fetchKoenig();
 const KoenigComposer = (props) => {
     const {KoenigComposer: _KoenigComposer} = editorResource.read();
     return <_KoenigComposer {...props} />;
+};
+
+const AdminXApp = (props) => {
+    const {AdminXApp: _AdminXApp} = editorResource.read();
+    console.log('Admin X App', AdminXApp);
+    return <_AdminXApp {...props} />;
 };
 
 const KoenigEditor = (props) => {
@@ -486,23 +492,7 @@ export default class KoenigLexicalEditor extends Component {
             <div className={['koenig-react-editor', this.args.className].filter(Boolean).join(' ')}>
                 <ErrorHandler>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
-                        <KoenigComposer
-                            cardConfig={cardConfig}
-                            enableMultiplayer={enableMultiplayer}
-                            fileUploader={{useFileUpload, fileTypes}}
-                            initialEditorState={this.args.lexical}
-                            multiplayerUsername={multiplayerUsername}
-                            multiplayerDocId={multiplayerDocId}
-                            multiplayerEndpoint={multiplayerEndpoint}
-                            onError={this.onError}
-                        >
-                            <KoenigEditor
-                                cursorDidExitAtTop={this.args.cursorDidExitAtTop}
-                                darkMode={this.feature.nightShift}
-                                onChange={this.args.onChange}
-                                registerAPI={this.args.registerAPI}
-                            />
-                        </KoenigComposer>
+                        <AdminXApp />
                     </Suspense>
                 </ErrorHandler>
             </div>
