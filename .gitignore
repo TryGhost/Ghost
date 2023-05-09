@@ -136,6 +136,10 @@ Caddyfile
 /ghost/announcement-bar/umd
 /ghost/announcement-bar/build
 
+# Admin X
+/ghost/admin-x-settings/dist
+/ghost/admin-x-settings/dist-ssr
+
 /ghost/post-revisions/build
 /ghost/post-revisions/tsconfig.tsbuildinfo
 
