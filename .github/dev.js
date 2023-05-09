@@ -50,6 +50,16 @@ if (DASH_DASH_ARGS.includes('revisions') || DASH_DASH_ARGS.includes('all')) {
     });
 }
 
+if (DASH_DASH_ARGS.includes('in-memory-repository') || DASH_DASH_ARGS.includes('all')) {
+    commands.push({
+        name: 'in-memory-repository',
+        command: 'yarn dev',
+        cwd: path.resolve(__dirname, '../ghost/in-memory-repository'),
+        prefixColor: 'pink',
+        env: {}
+    });
+}
+
 if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'portal',
