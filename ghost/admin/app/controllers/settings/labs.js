@@ -61,7 +61,7 @@ export default class LabsController extends Controller {
     yamlExtension = null;
     yamlMimeType = null;
     yamlAccept = null;
-    showInviteUserModal = false;
+    showLexicalFeedbackModal = false;
 
     init() {
         super.init(...arguments);
