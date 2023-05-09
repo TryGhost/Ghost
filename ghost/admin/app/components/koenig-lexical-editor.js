@@ -251,7 +251,10 @@ export default class KoenigLexicalEditor extends Component {
             },
             tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null,
             fetchEmbed: fetchEmbed,
-            fetchAutocompleteLinks
+            fetchAutocompleteLinks,
+            feature: {
+                signupCard: this.feature.get('signupCard')
+            }
         };
         const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig});
 
