@@ -1,4 +1,4 @@
-import {assertHTML, createSnippet, focusEditor, html, initialize} from '../../utils/e2e';
+import {assertHTML, createSnippet, focusEditor, html, initialize, pasteText} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Embed card', async () => {
@@ -202,6 +202,14 @@ test.describe('Embed card', async () => {
         await page.waitForSelector('[data-kg-cardmenu-selected="true"]');
         await page.keyboard.press('Enter');
         await expect(await page.locator('[data-kg-card="embed"]')).toHaveCount(2);
+    });
+
+    test('can convert link to embed card on paste', async function ({page}) {
+        await focusEditor(page);
+        await pasteText(page, 'https://ghost.org/');
+        await expect(await page.getByTestId('embed-url-loading-container')).toBeVisible();
+        await expect(await page.getByTestId('embed-url-loading-container')).toBeHidden();
+        await expect(await page.getByTestId('embed-iframe')).toBeVisible();
     });
 });
 
