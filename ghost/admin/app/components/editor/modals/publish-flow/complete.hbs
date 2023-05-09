@@ -109,6 +109,7 @@
                     <button
                         type="button"
                         class="gh-publish-confirmation-feedback"
+                        {{on "click" this.openFeedbackLexical}}
                     >
                         <span>Beta feedback?</span>
                     </button>
@@ -116,5 +117,11 @@
             </p>
         {{/if}}
     {{/if}}
-
 {{/let}}
+
+{{#if this.showFeedbackLexicalModal}}
+    <GhFullscreenModal
+        @modal="feedback-lexical"
+        @close={{this.closeFeedbackLexical}}
+        @modifier="action wide" />
+{{/if}}

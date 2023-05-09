@@ -23,6 +23,7 @@ import {isArray as isEmberArray} from '@ember/array';
 import {isHostLimitError, isServerUnreachableError, isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {isInvalidError} from 'ember-ajax/errors';
 import {inject as service} from '@ember/service';
+import {tracked} from '@glimmer/tracking';
 
 const DEFAULT_TITLE = '(Untitled)';
 
@@ -112,6 +113,8 @@ export default class LexicalEditorController extends Controller {
     @service ui;
 
     @inject config;
+
+    @tracked showFeedbackLexicalModal = false;
 
     /* public properties -----------------------------------------------------*/
 
@@ -406,6 +409,16 @@ export default class LexicalEditorController extends Controller {
         await this.modals.open(DeleteSnippetModal, {
             snippet
         });
+    }
+
+    @action
+    openFeedbackLexical() {
+        this.showFeedbackLexicalModal = true;
+    }
+
+    @action
+    closeFeedbackLexical() {
+        this.showFeedbackLexicalModal = false;
     }
 
     /* Public tasks ----------------------------------------------------------*/

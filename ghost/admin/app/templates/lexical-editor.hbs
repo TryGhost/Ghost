@@ -98,6 +98,7 @@
                     <button
                         type="button"
                         class="gh-editor-feedback"
+                        {{on "click" this.openFeedbackLexical}}
                     >
                         <span>Feedback?</span>
                     </button>
@@ -144,6 +145,12 @@
                 @close={{this.closePostHistory}}
                 @modifier="total-overlay post-history" />
         {{/if}}
+    {{/if}}
+    {{#if this.showFeedbackLexicalModal}}
+        <GhFullscreenModal
+            @modal="feedback-lexical"
+            @close={{this.closeFeedbackLexical}}
+            @modifier="action wide" />
     {{/if}}
 {{/if}}
 

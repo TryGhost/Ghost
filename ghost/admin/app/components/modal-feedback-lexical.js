@@ -37,7 +37,7 @@ export default class FeedbackLexicalModalComponent extends Component {
 
         let response = yield this.ajax.post(url, {
             data: {
-                message: this.feedbackMessage
+                Feedback: this.feedbackMessage
             }
         });
 
