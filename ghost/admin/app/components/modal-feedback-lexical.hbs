@@ -1,0 +1,44 @@
+{{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
+<a class="close" href role="button" title="Close" {{action "closeModal"}} {{action (optional this.noop) on="mouseDown"}}>
+    {{svg-jar "close"}}<span class="hidden">Close</span>
+</a>
+
+<div class="gh-modal-invite-user">
+    <header class="modal-header" data-test-modal="invite-staff-user">
+        <h1>Editor beta</h1>
+        <p>Have any issues? Feedback? Let us know!</p>
+    </header>
+
+    {{!-- <div class="modal-body">
+        <fieldset>
+            <GhFormGroup @errors={{this.errors}} @hasValidated={{this.hasValidated}} @property="email">
+                <label for="new-user-email">Email address</label>
+                <GhTextArea
+                    @class="email"
+                    @id="new-user-email"
+                    @type="email"
+                    @placeholder="youremail@example.com"
+                    @name="email"
+                    @shouldFocus={{true}}
+                    @autocapitalize="off"
+                    @autocorrect="off"
+                    @value={{readonly this.email}}
+                    @input={{action (mut this.email) value="target.value"}}
+                    @keyEvents={{hash
+                        Enter=(action "confirm")
+                    }}
+                />
+                <GhErrorMessage @errors={{this.errors}} @property="email" />
+            </GhFormGroup>
+        </fieldset>
+    </div>
+    <div class="modal-footer">
+            <GhTaskButton @buttonText="Send feedback &rarr;"
+                @successText="Sent"
+                @task={{this.sendInvitation}}
+                @class="gh-btn gh-btn-black gh-btn-icon"
+                @disabled={{this.fetchRoles.isRunning}}
+                @disableMouseDown="true"
+                data-test-button="send-user-invite" />
+    </div> --}}
+</div>

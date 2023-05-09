@@ -61,6 +61,7 @@ export default class LabsController extends Controller {
     yamlExtension = null;
     yamlMimeType = null;
     yamlAccept = null;
+    showInviteUserModal = false;
 
     init() {
         super.init(...arguments);
@@ -158,6 +159,11 @@ export default class LabsController extends Controller {
     @action
     toggleEarlyAccessModal() {
         this.toggleProperty('showEarlyAccessModal');
+    }
+
+    @action
+    toggleLexicalFeedbackModal() {
+        this.showLexicalFeedbackModal = !this.showLexicalFeedbackModal;
     }
 
     /**

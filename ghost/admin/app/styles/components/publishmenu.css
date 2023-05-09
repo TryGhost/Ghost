@@ -732,6 +732,18 @@
     font-size: 1.6rem;
 }
 
+.gh-publish-confirmation-with-feedback {
+    display: flex;
+    justify-content: space-between;
+}
+
+.gh-publish-confirmation-feedback {
+    color: var(--green);
+    font-size: 1.6rem;
+    font-weight: 400;
+    letter-spacing: .4px;
+}
+
 .gh-revert-to-draft {
     color: var(--green-d1);
     font-weight: 500;

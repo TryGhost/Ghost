@@ -206,7 +206,11 @@
                         <div>
                             <h4 class="gh-expandable-title">Lexical editor</h4>
                             <p class="gh-expandable-description">
-                               Makes lexical editor the default when creating new posts/pages.
+                                {{#if (feature 'lexicalEditor')}}
+                                    <span>Makes lexical editor the default when creating new posts/pages. Any issues? Feedback?</span><button class="green ml2" role="button" {{on "click" this.toggleLexicalFeedbackModal}}>Let us know</button>
+                                {{else}}
+                                    <span>Makes lexical editor the default when creating new posts/pages.</span>
+                                {{/if}}
                             </p>
                         </div>
                         <div class="for-switch">
@@ -365,4 +369,9 @@
         </div>
         {{/if}}
     </section>
+    {{#if this.showLexicalFeedbackModal}}
+        <GhFullscreenModal @modal="feedback-lexical"
+            @close={{this.toggleLexicalFeedbackModal}}
+            @modifier="action wide" />
+    {{/if}}
 </section>
