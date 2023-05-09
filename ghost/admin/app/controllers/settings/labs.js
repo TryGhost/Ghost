@@ -4,6 +4,7 @@ import {inject as service} from '@ember/service';
 import Controller from '@ember/controller';
 import DeleteAllModal from '../../components/settings/labs/delete-all-content-modal';
 import ImportContentModal from '../../components/modal-import-content';
+import LexicalFeedbackModal from '../../components/modal-feedback-lexical';
 import RSVP from 'rsvp';
 import config from 'ghost-admin/config/environment';
 import {
@@ -17,6 +18,7 @@ import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
 import {run} from '@ember/runloop';
 import {task, timeout} from 'ember-concurrency';
+import {tracked} from '@glimmer/tracking';
 
 const {Promise} = RSVP;
 
@@ -50,6 +52,8 @@ export default class LabsController extends Controller {
 
     @inject config;
 
+    @tracked showFeedbackLexicalModal = false;
+
     importErrors = null;
     importSuccessful = false;
     showEarlyAccessModal = false;
@@ -61,7 +65,6 @@ export default class LabsController extends Controller {
     yamlExtension = null;
     yamlMimeType = null;
     yamlAccept = null;
-    showLexicalFeedbackModal = false;
 
     init() {
         super.init(...arguments);
@@ -162,9 +165,25 @@ export default class LabsController extends Controller {
     }
 
     @action
-    toggleLexicalFeedbackModal() {
-        this.showLexicalFeedbackModal = !this.showLexicalFeedbackModal;
+    openFeedbackLexical() {
+        this.showFeedbackLexicalModal = true;
     }
+
+    @action
+    closeFeedbackLexical() {
+        this.showFeedbackLexicalModal = false;
+    }
+
+    // @action
+    // toggleLexicalFeedbackModal(event) {
+    //     event?.preventDefault();
+    //     this.showFeedbackLexicalModal = !this.showFeedbackLexicalModal;
+
+    //     if (this.showFeedbackLexicalModal) {
+    //         this.modals.open(LexicalFeedbackModal);
+    //     }
+    //     console.log(`toggling modal for feedback`,this.showFeedbackLexicalModal);
+    // }
 
     /**
      * Opens a file selection dialog - Triggered by "Upload x" buttons,
