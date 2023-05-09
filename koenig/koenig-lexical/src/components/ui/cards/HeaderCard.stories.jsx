@@ -4,6 +4,7 @@ import {CardWrapper} from './../CardWrapper';
 import {HeaderCard} from './HeaderCard';
 import {MINIMAL_NODES} from '../../../index.js';
 import {createEditor} from 'lexical';
+import {editorEmptyState} from '../../../../.storybook/editorEmptyState';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},
@@ -53,6 +54,7 @@ const Template = ({display, heading, subheader, ...args}) => {
                     {...args}
                     headerTextEditor={headerTextEditor}
                     subheaderTextEditor={subheaderTextEditor}
+                    subheaderTextEditorInitialState={editorEmptyState}
                 />
             </CardWrapper>
         </div>
@@ -71,7 +73,9 @@ Empty.args = {
     button: false,
     buttonText: '',
     buttonPlaceholder: 'Add button text',
-    buttonUrl: ''
+    buttonUrl: '',
+    headerTextEditorInitialState: editorEmptyState,
+    subheaderTextEditorInitialState: editorEmptyState
 };
 
 export const Populated = Template.bind({});
