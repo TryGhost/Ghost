@@ -154,6 +154,20 @@ ImageHolder.propTypes = {
     imageDragHandler: PropTypes.object
 };
 
+PopulatedImageCard.propTypes = {
+    src: PropTypes.string,
+    alt: PropTypes.string,
+    previewSrc: PropTypes.string,
+    imageUploader: PropTypes.object
+};
+
+EmptyImageCard.propTypes = {
+    onFileChange: PropTypes.func,
+    setFileInputRef: PropTypes.func,
+    imageDragHandler: PropTypes.object,
+    errors: PropTypes.array
+};
+
 ImageCard.propTypes = {
     isSelected: PropTypes.bool,
     src: PropTypes.string,

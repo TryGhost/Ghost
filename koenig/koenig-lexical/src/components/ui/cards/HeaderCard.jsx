@@ -285,5 +285,41 @@ HeaderCard.propTypes = {
     subheaderPlaceholder: PropTypes.string,
     button: PropTypes.bool,
     buttonText: PropTypes.string,
-    buttonPlaceholder: PropTypes.string
+    buttonPlaceholder: PropTypes.string,
+    buttonUrl: PropTypes.string,
+    backgroundImageSrc: PropTypes.string,
+    backgroundImagePreview: PropTypes.bool,
+    isEditing: PropTypes.bool,
+    isUploading: PropTypes.bool,
+    progress: PropTypes.number,
+    fileUploader: PropTypes.object,
+    header: PropTypes.string,
+    fileInputRef: PropTypes.object,
+    handleSizeSelector: PropTypes.func,
+    handleColorSelector: PropTypes.func,
+    handleButtonToggle: PropTypes.func,
+    handleButtonText: PropTypes.func,
+    handleButtonUrl: PropTypes.func,
+    handleClearBackgroundImage: PropTypes.func,
+    openFilePicker: PropTypes.func,
+    onFileChange: PropTypes.func,
+    headerTextEditor: PropTypes.object,
+    headerTextEditorInitialState: PropTypes.string,
+    subheaderTextEditor: PropTypes.object,
+    subheaderTextEditorInitialState: PropTypes.string
+};
+
+FileUploading.propTypes = {
+    progress: PropTypes.number
+};
+
+ImagePicker.propTypes = {
+    backgroundImagePreview: PropTypes.bool,
+    backgroundImageSrc: PropTypes.string,
+    fileInputRef: PropTypes.object,
+    handleClearBackgroundImage: PropTypes.func,
+    isUploading: PropTypes.bool,
+    openFilePicker: PropTypes.func,
+    progress: PropTypes.number,
+    onFileChange: PropTypes.func
 };

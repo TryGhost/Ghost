@@ -157,5 +157,14 @@ ProductCard.propTypes = {
     onRemoveImage: PropTypes.func,
     imgDragHandler: PropTypes.object,
     imgUploader: PropTypes.object,
-    imgMimeTypes: PropTypes.array
+    imgMimeTypes: PropTypes.array,
+    isPinturaEnabled: PropTypes.bool,
+    openImageEditor: PropTypes.func,
+    title: PropTypes.string,
+    description: PropTypes.string,
+    titleEditor: PropTypes.object,
+    titleEditorInitialState: PropTypes.string,
+    descriptionEditor: PropTypes.object,
+    descriptionEditorInitialState: PropTypes.string,
+    onRatingChange: PropTypes.func
 };

@@ -216,10 +216,49 @@ export function GalleryCard({
     );
 }
 
+GalleryRow.propTypes = {
+    deleteImage: PropTypes.func,
+    images: PropTypes.array,
+    index: PropTypes.number,
+    isDragging: PropTypes.bool
+};
+
+GalleryImage.propTypes = {
+    deleteImage: PropTypes.func,
+    image: PropTypes.object,
+    position: PropTypes.number,
+    isDragging: PropTypes.bool
+};
+
+PopulatedGalleryCard.propTypes = {
+    deleteImage: PropTypes.func,
+    filesDropper: PropTypes.object,
+    images: PropTypes.array,
+    isDragging: PropTypes.bool,
+    reorderHandler: PropTypes.object
+};
+
+EmptyGalleryCard.propTypes = {
+    filesDropper: PropTypes.object,
+    openFilePicker: PropTypes.func
+};
+
+UploadOverlay.propTypes = {
+    progress: PropTypes.number
+};
+
 GalleryCard.propTypes = {
     isSelected: PropTypes.bool,
     onFileChange: PropTypes.func,
     captionEditor: PropTypes.object,
     captionEditorInitialState: PropTypes.string,
-    errorMessage: PropTypes.string
+    errorMessage: PropTypes.string,
+    clearErrorMessage: PropTypes.func,
+    deleteImage: PropTypes.func,
+    fileInputRef: PropTypes.object,
+    filesDropper: PropTypes.object,
+    imageMimeTypes: PropTypes.array,
+    images: PropTypes.array,
+    uploader: PropTypes.object,
+    reorderHandler: PropTypes.object
 };

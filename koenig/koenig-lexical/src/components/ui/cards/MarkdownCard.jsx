@@ -33,5 +33,13 @@ function MarkdownDisplay({markdown}) {
 }
 
 MarkdownCard.propTypes = {
+    markdown: PropTypes.string,
+    updateMarkdown: PropTypes.func,
+    isEditing: PropTypes.bool,
+    imageUploader: PropTypes.func,
+    unsplashConf: PropTypes.object
+};
+
+MarkdownDisplay.propTypes = {
     markdown: PropTypes.string
 };

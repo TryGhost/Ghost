@@ -53,7 +53,9 @@ ToggleCard.propTypes = {
     contentPlaceholder: PropTypes.string,
     headerEditor: PropTypes.object,
     headerPlaceholder: PropTypes.string,
-    isEditing: PropTypes.bool
+    isEditing: PropTypes.bool,
+    contentEditorInitialState: PropTypes.string,
+    headerEditorInitialState: PropTypes.string
 };
 
 ToggleCard.defaultProps = {

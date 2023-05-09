@@ -27,6 +27,13 @@ function HtmlDisplay({html}) {
     return <div dangerouslySetInnerHTML={{__html: sanitizedHtml}} className="whitespace-normal"></div>;
 }
 
-HtmlCard.propTypes = {
+HtmlDisplay.propTypes = {
     html: PropTypes.string
+};
+
+HtmlCard.propTypes = {
+    html: PropTypes.string,
+    updateHtml: PropTypes.func,
+    isEditing: PropTypes.bool,
+    darkMode: PropTypes.bool
 };

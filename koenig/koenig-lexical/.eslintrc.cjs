@@ -38,5 +38,15 @@ module.exports = {
         'tailwindcss/no-arbitrary-value': 'off',
         'tailwindcss/no-custom-classname': 'off',
         'tailwindcss/no-contradicting-classname': ['error', {config: 'tailwind.config.cjs'}]
-    }
+    },
+    // add prop type validation checking for our cards (we should later do this for subcomponents, but the list is really long)
+    overrides: [
+        {
+            files: ['src/components/ui/cards/*.jsx'],
+            excludedFiles: ['src/components/ui/cards/*.stories.jsx'],
+            rules: {
+                'react/prop-types': 1
+            }
+        }
+    ]
 };

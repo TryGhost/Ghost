@@ -196,3 +196,39 @@ VideoCard.propTypes = {
     isSelected: PropTypes.bool,
     isEditing: PropTypes.bool
 };
+
+PopulatedVideoCard.propTypes = {
+    thumbnail: PropTypes.string,
+    customThumbnail: PropTypes.string,
+    onCustomThumbnailChange: PropTypes.func,
+    videoUploader: PropTypes.object,
+    customThumbnailUploader: PropTypes.object,
+    onRemoveCustomThumbnail: PropTypes.func,
+    totalDuration: PropTypes.number,
+    cardWidth: PropTypes.string,
+    isLoopChecked: PropTypes.bool,
+    onLoopChange: PropTypes.func,
+    onCardWidthChange: PropTypes.func,
+    isEditing: PropTypes.bool,
+    thumbnailMimeTypes: PropTypes.array,
+    thumbnailDragHandler: PropTypes.object
+};
+
+EmptyVideoCard.propTypes = {
+    onFileChange: PropTypes.func,
+    fileInputRef: PropTypes.object,
+    errors: PropTypes.array,
+    videoMimeTypes: PropTypes.array,
+    videoDragHandler: PropTypes.object
+};
+
+VideoHolder.propTypes = {
+    fileInputRef: PropTypes.object,
+    onVideoFileChange: PropTypes.func,
+    videoDragHandler: PropTypes.object,
+    videoUploader: PropTypes.object,
+    videoUploadErrors: PropTypes.array,
+    videoMimeTypes: PropTypes.array,
+    customThumbnail: PropTypes.string,
+    thumbnail: PropTypes.string
+};
