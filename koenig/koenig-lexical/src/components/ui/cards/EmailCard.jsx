@@ -30,7 +30,8 @@ export function EmailCard({htmlEditor, htmlEditorInitialState, isEditing}) {
 
 EmailCard.propTypes = {
     htmlEditor: PropTypes.object,
-    isEditing: PropTypes.bool
+    isEditing: PropTypes.bool,
+    htmlEditorInitialState: PropTypes.string
 };
 
 EmailCard.defaultProps = {

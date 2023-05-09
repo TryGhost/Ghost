@@ -132,5 +132,33 @@ FileCard.propTypes = {
     fileDesc: PropTypes.string,
     fileDescPlaceholder: PropTypes.string,
     fileName: PropTypes.string,
-    fileSize: PropTypes.string
+    fileSize: PropTypes.string,
+    fileDragHandler: PropTypes.object,
+    isEditing: PropTypes.bool,
+    fileInputRef: PropTypes.object,
+    onFileChange: PropTypes.func,
+    handleFileTitle: PropTypes.func,
+    handleFileDesc: PropTypes.func,
+    fileUploader: PropTypes.object
+};
+
+FileUploading.propTypes = {
+    progress: PropTypes.number
+};
+
+EmptyFileCard.propTypes = {
+    fileDragHandler: PropTypes.object,
+    handleSelectorClick: PropTypes.func
+};
+
+PopulatedFileCard.propTypes = {
+    desc: PropTypes.string,
+    descPlaceholder: PropTypes.string,
+    handleFileDesc: PropTypes.func,
+    handleFileTitle: PropTypes.func,
+    isEditing: PropTypes.bool,
+    name: PropTypes.string,
+    size: PropTypes.string,
+    title: PropTypes.string,
+    titlePlaceholder: PropTypes.string
 };

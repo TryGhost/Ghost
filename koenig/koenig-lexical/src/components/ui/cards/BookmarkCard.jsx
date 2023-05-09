@@ -97,3 +97,7 @@ BookmarkCard.propTypes = {
     isLoading: PropTypes.bool,
     urlError: PropTypes.bool
 };
+
+BookmarkIcon.propTypes = {
+    src: PropTypes.string
+};

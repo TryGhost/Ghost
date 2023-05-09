@@ -110,5 +110,22 @@ function EmbedIframe({dataTestId, html}) {
 }
 
 EmbedCard.propTypes = {
+    html: PropTypes.string,
+    isSelected: PropTypes.bool,
+    urlInputValue: PropTypes.string,
+    urlPlaceholder: PropTypes.string,
+    urlError: PropTypes.bool,
+    isLoading: PropTypes.bool,
+    handleUrlChange: PropTypes.func,
+    handleUrlSubmit: PropTypes.func,
+    handleRetry: PropTypes.func,
+    handlePasteAsLink: PropTypes.func,
+    handleClose: PropTypes.func,
+    captionEditor: PropTypes.object,
+    captionEditorInitialState: PropTypes.string
+};
+
+EmbedIframe.propTypes = {
+    dataTestId: PropTypes.string,
     html: PropTypes.string
 };

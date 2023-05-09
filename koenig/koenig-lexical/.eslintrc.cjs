@@ -45,7 +45,7 @@ module.exports = {
             files: ['src/components/ui/cards/*.jsx'],
             excludedFiles: ['src/components/ui/cards/*.stories.jsx'],
             rules: {
-                'react/prop-types': 1
+                'react/prop-types': 2
             }
         }
     ]

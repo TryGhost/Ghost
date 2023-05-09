@@ -148,7 +148,6 @@ EmailCtaCard.propTypes = {
     alignment: PropTypes.oneOf(['left', 'center']),
     buttonText: PropTypes.string,
     buttonUrl: PropTypes.string,
-    htmlEditor: PropTypes.object,
     isEditing: PropTypes.bool,
     segment: PropTypes.oneOf(['status:free', 'status:-free']),
     showButton: PropTypes.bool,
@@ -158,7 +157,10 @@ EmailCtaCard.propTypes = {
     updateButtonUrl: PropTypes.func,
     updateShowButton: PropTypes.func,
     toggleDividers: PropTypes.func,
-    suggestedUrls: PropTypes.array
+    suggestedUrls: PropTypes.array,
+    handleSegmentChange: PropTypes.func,
+    htmlEditor: PropTypes.object,
+    htmlEditorInitialState: PropTypes.string
 };
 
 EmailCtaCard.defaultProps = {

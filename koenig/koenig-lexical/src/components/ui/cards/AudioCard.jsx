@@ -280,5 +280,61 @@ export function AudioCard({
 
 AudioCard.propTypes = {
     src: PropTypes.string,
-    title: PropTypes.string
+    title: PropTypes.string,
+    isEditing: PropTypes.bool,
+    updateTitle: PropTypes.func,
+    duration: PropTypes.number,
+    thumbnailSrc: PropTypes.string,
+    audioUploader: PropTypes.object,
+    audioMimeTypes: PropTypes.array,
+    thumbnailUploader: PropTypes.object,
+    thumbnailMimeTypes: PropTypes.array,
+    audioFileInputRef: PropTypes.object,
+    thumbnailFileInputRef: PropTypes.object,
+    onAudioFileChange: PropTypes.func,
+    onThumbnailFileChange: PropTypes.func,
+    audioDragHandler: PropTypes.object,
+    removeThumbnail: PropTypes.func,
+    thumbnailDragHandler: PropTypes.object
+};
+
+AudioUploading.propTypes = {
+    progress: PropTypes.number
+};
+
+AudioThumbnail.propTypes = {
+    errors: PropTypes.array,
+    isDraggedOver: PropTypes.bool,
+    isEditing: PropTypes.bool,
+    isUploading: PropTypes.bool,
+    mimeTypes: PropTypes.array,
+    progress: PropTypes.number,
+    removeThumbnail: PropTypes.func,
+    setFileInputRef: PropTypes.func,
+    src: PropTypes.string,
+    onFileChange: PropTypes.func
+};
+
+PopulatedAudioCard.propTypes = {
+    duration: PropTypes.number,
+    errors: PropTypes.array,
+    isEditing: PropTypes.bool,
+    placeholder: PropTypes.string,
+    removeThumbnail: PropTypes.func,
+    setFileInputRef: PropTypes.func,
+    thumbnailDragHandler: PropTypes.object,
+    thumbnailMimeTypes: PropTypes.array,
+    thumbnailSrc: PropTypes.string,
+    thumbnailUploader: PropTypes.object,
+    title: PropTypes.string,
+    updateTitle: PropTypes.func,
+    onFileChange: PropTypes.func
+};
+
+EmptyAudioCard.propTypes = {
+    audioDragHandler: PropTypes.object,
+    audioMimeTypes: PropTypes.array,
+    audioUploader: PropTypes.object,
+    setFileInputRef: PropTypes.func,
+    onFileChange: PropTypes.func
 };

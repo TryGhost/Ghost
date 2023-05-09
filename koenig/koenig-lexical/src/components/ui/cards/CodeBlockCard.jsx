@@ -201,12 +201,18 @@ CodeEditor.propTypes = {
 
 CodeBlock.propTypes = {
     code: PropTypes.string,
-    language: PropTypes.string
+    language: PropTypes.string,
+    caption: PropTypes.string
 };
 
 CodeBlockCard.propTypes = {
     code: PropTypes.string,
     language: PropTypes.string,
     captionEditor: PropTypes.object,
-    captionEditorInitialState: PropTypes.string
+    captionEditorInitialState: PropTypes.string,
+    isEditing: PropTypes.bool,
+    isSelected: PropTypes.bool,
+    updateCode: PropTypes.func,
+    updateLanguage: PropTypes.func,
+    setCaption: PropTypes.func
 };
