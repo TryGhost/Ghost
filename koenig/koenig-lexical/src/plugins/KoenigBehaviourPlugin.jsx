@@ -41,6 +41,7 @@ import {
 } from '../utils/';
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {$isListItemNode, $isListNode, ListNode} from '@lexical/list';
+import {MIME_TEXT_HTML, MIME_TEXT_PLAIN, PASTE_MARKDOWN_COMMAND} from './MarkdownPastePlugin.jsx';
 import {mergeRegister} from '@lexical/utils';
 import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -915,11 +916,18 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         return false;
                     }
 
-                    const clipboardDataset = clipboard?.clipboardData?.getData('text');
-                    const linkMatch = clipboardDataset?.match(/^(https?:\/\/[^\s]+)$/); // replace with better regex to include more protocols like mailto, ftp, etc
+                    const text = clipboard?.clipboardData?.getData(MIME_TEXT_PLAIN);
+                    const html = clipboard?.clipboardData?.getData(MIME_TEXT_HTML);
+                    const linkMatch = text?.match(/^(https?:\/\/[^\s]+)$/); // replace with better regex to include more protocols like mailto, ftp, etc
 
                     if (linkMatch) {
                         editor.dispatchCommand(PASTE_LINK_COMMAND, {linkMatch});
+
+                        return true;
+                    }
+
+                    if (text && !html) {
+                        editor.dispatchCommand(PASTE_MARKDOWN_COMMAND, {text, allowBr: true});
 
                         return true;
                     }

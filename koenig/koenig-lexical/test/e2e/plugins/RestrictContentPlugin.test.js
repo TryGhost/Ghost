@@ -35,7 +35,7 @@ test.describe('Restrict Content Plugin', async function () {
         await pasteText(page, 'Hello world \n Hello world');
 
         await assertHTML(page, html`
-            <p dir="ltr"><span data-lexical-text="true">Hello world</span></p>
+            <p dir="ltr"><span data-lexical-text="true">Hello world Hello world</span></p>
         `);
     });
 

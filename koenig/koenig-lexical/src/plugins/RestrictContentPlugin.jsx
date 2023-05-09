@@ -5,13 +5,16 @@ import {
     $isDecoratorNode,
     $isParagraphNode,
     $isRangeSelection,
+    COMMAND_PRIORITY_LOW,
+    PASTE_COMMAND,
     RootNode
 } from 'lexical';
 import {$isListNode} from '@lexical/list';
+import {MIME_TEXT_HTML, MIME_TEXT_PLAIN, PASTE_MARKDOWN_COMMAND} from './MarkdownPastePlugin.jsx';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-export const RestrictContentPlugin = ({paragraphs}) => {
+export const RestrictContentPlugin = ({paragraphs, allowBr}) => {
     const [editor] = useLexicalComposerContext();
 
     React.useEffect(() => {
@@ -64,9 +67,24 @@ export const RestrictContentPlugin = ({paragraphs}) => {
                     // move selection to end of new node
                     rootNode.selectEnd();
                 }
-            })
+            }),
+            editor.registerCommand(
+                PASTE_COMMAND,
+                (clipboard) => {
+                    const text = clipboard?.clipboardData?.getData(MIME_TEXT_PLAIN);
+                    const html = clipboard?.clipboardData?.getData(MIME_TEXT_HTML);
+
+                    if (text && !html) {
+                        editor.dispatchCommand(PASTE_MARKDOWN_COMMAND, {text, allowBr});
+
+                        return true;
+                    }
+                },
+                COMMAND_PRIORITY_LOW
+            )
+
         );
-    }, [editor, paragraphs]);
+    }, [allowBr, editor, paragraphs]);
     return null;
 };
 

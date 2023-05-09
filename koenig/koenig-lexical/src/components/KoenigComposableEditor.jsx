@@ -5,6 +5,7 @@ import FloatingToolbarPlugin from '../plugins/FloatingToolbarPlugin';
 import KoenigBehaviourPlugin from '../plugins/KoenigBehaviourPlugin';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import KoenigErrorBoundary from './KoenigErrorBoundary';
+import MarkdownPastePlugin from '../plugins/MarkdownPastePlugin.jsx';
 import MarkdownShortcutPlugin from '../plugins/MarkdownShortcutPlugin';
 import React from 'react';
 import {ContentEditable} from '@lexical/react/LexicalContentEditable';
@@ -102,6 +103,7 @@ const KoenigComposableEditor = ({
             {isDragReorderEnabled && <DragDropReorderPlugin containerElem={editorContainerRef} />}
             {singleParagraph && <RestrictContentPlugin paragraphs={1} />}
             {onBlur && <KoenigBlurPlugin onBlur={onBlur} />}
+            <MarkdownPastePlugin />
             {children}
         </div>
     );
