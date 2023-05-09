@@ -40,7 +40,8 @@ const ALPHA_FEATURES = [
     'makingItRain',
     'postHistory',
     'postDiffing',
-    'imageEditor'
+    'imageEditor',
+    'signupCard'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
