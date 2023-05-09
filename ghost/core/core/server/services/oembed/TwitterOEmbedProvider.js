@@ -1,4 +1,3 @@
-const {extract} = require('@extractus/oembed-extractor');
 const logging = require('@tryghost/logging');
 
 /**
@@ -38,6 +37,8 @@ class TwitterOEmbedProvider {
         if (!match) {
             return null;
         }
+
+        const {extract} = require('@extractus/oembed-extractor');
 
         /** @type {object} */
         const oembedData = await extract(url.href);
