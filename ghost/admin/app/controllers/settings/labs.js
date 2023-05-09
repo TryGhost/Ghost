@@ -4,7 +4,6 @@ import {inject as service} from '@ember/service';
 import Controller from '@ember/controller';
 import DeleteAllModal from '../../components/settings/labs/delete-all-content-modal';
 import ImportContentModal from '../../components/modal-import-content';
-import LexicalFeedbackModal from '../../components/modal-feedback-lexical';
 import RSVP from 'rsvp';
 import config from 'ghost-admin/config/environment';
 import {
@@ -173,17 +172,6 @@ export default class LabsController extends Controller {
     closeFeedbackLexical() {
         this.showFeedbackLexicalModal = false;
     }
-
-    // @action
-    // toggleLexicalFeedbackModal(event) {
-    //     event?.preventDefault();
-    //     this.showFeedbackLexicalModal = !this.showFeedbackLexicalModal;
-
-    //     if (this.showFeedbackLexicalModal) {
-    //         this.modals.open(LexicalFeedbackModal);
-    //     }
-    //     console.log(`toggling modal for feedback`,this.showFeedbackLexicalModal);
-    // }
 
     /**
      * Opens a file selection dialog - Triggered by "Upload x" buttons,
