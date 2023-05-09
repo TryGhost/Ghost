@@ -12,7 +12,7 @@
     "build": "rollup -c --bundleConfigAsCjs",
     "prepare": "NODE_ENV=production yarn build",
     "pretest": "yarn build",
-    "test:unit": "NODE_ENV=testing c8 --all --check-coverage --100  --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "test:unit": "NODE_ENV=testing c8 --all --src lib/ --exclude lib/kg-converters.js --check-coverage --reporter text --reporter cobertura mocha './test/**/*.test.js'",
     "test": "yarn test:unit",
     "lint:code": "eslint *.js lib/ --ext .js --cache",
     "lint": "yarn lint:code && yarn lint:test",

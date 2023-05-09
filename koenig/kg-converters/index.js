@@ -1,1 +1,1 @@
-module.exports = require('./lib/kg-converters');
+export * from './lib/kg-converters';
