@@ -13,7 +13,9 @@ module.exports = {
         // @TODO: remove this rule once it's turned into "error" in the base plugin
         'no-shadow': 'error',
         'no-var': 'error',
-        'one-var': ['error', 'never']
+        'one-var': ['error', 'never'],
+        'ghost/ghost-custom/ghost-error-usage': [1],
+        'ghost/ghost-custom/no-native-error': [1]
     },
     overrides: [
         {
@@ -74,6 +76,12 @@ module.exports = {
                         message: 'Invalid require of core/frontend from core/shared.'
                     }
                 ]]
+            }
+        },
+        {
+            files: ['core/frontend/helpers/**', 'core/frontend/apps/*/lib/helpers/**'],
+            rules: {
+                'ghost/filenames/match-regex': ['off', '^[a-z0-9-.]$', null, true]
             }
         },
         /**

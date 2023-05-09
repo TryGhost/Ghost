@@ -1,5 +1,5 @@
 const should = require('should');
-const Gravatar = require('../../../../../core/server/lib/image/gravatar');
+const Gravatar = require('../../../../../core/server/lib/image/Gravatar');
 
 describe('lib/image: gravatar', function () {
     const gravatarUrl = 'https://www.gravatar.com/avatar/{hash}?s={size}&r={rating}&d={_default}';
