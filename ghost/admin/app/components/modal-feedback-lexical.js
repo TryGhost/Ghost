@@ -49,11 +49,11 @@ export default class FeedbackLexicalModalComponent extends Component {
             ...postData
         };
 
-        // let response = yield this.ajax.post(url, {data});
+        let response = yield this.ajax.post(url, {data});
 
-        // if (response.status < 200 || response.status >= 300) {
-        //     throw new Error('api failed ' + response.status + ' ' + response.statusText);
-        // }
+        if (response.status < 200 || response.status >= 300) {
+            throw new Error('api failed ' + response.status + ' ' + response.statusText);
+        }
 
         this.args.close();
 
@@ -64,7 +64,6 @@ export default class FeedbackLexicalModalComponent extends Component {
             }
         );
 
-        yield data;
-        // return response;
+        return response;
     }
 }
