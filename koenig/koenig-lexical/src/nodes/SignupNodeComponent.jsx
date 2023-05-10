@@ -69,10 +69,6 @@ function SignupNodeComponent({
         fileInputRef.current.click();
     };
 
-    const toggleBackgroundImagePreview = () => {
-        setBackgroundImagePreview(!backgroundImagePreview);
-    };
-
     useEffect(() => {
         if (backgroundImageSrc !== '') {
             setBackgroundImagePreview(true);
@@ -143,7 +139,6 @@ function SignupNodeComponent({
                 subheaderPlaceholder={subheaderPlaceholder}
                 subheaderTextEditor={subheaderTextEditor}
                 subheaderTextEditorInitialState={subheaderTextEditorInitialState}
-                toggleBackgroundImagePreview={toggleBackgroundImagePreview}
                 type={type}
                 onFileChange={onFileChange}
             />

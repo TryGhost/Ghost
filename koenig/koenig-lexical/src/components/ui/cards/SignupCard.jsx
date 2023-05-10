@@ -150,6 +150,7 @@ export function SignupCard({alignment,
                 {
                     (isEditing || !!subheader || !isEditorEmpty(subheaderTextEditor)) && (
                         <KoenigNestedEditor
+                            focusNext={disclaimerTextEditor}
                             hasSettingsPanel={true}
                             initialEditor={subheaderTextEditor}
                             initialEditorState={subheaderTextEditorInitialState}
@@ -165,7 +166,7 @@ export function SignupCard({alignment,
                 {/* Subscribe field */}
                 <div className={`${(cardWidth === 'regular') ? 'mt-6' : (cardWidth === 'wide') ? 'mt-8' : 'mt-10'}`}>
                     <Input placeholder='jamie@example.com' />
-                    {((type === 'light') && <Button dataTestId="header-card-button" placeholder={buttonPlaceholder} size='medium' value={buttonText} />) || <Button color='light' dataTestId="header-card-button" placeholder={buttonPlaceholder} size='medium' value={buttonText} />}
+                    {((type === 'light') && <Button dataTestId="signup-card-button" placeholder={buttonPlaceholder} size='medium' value={buttonText} />) || <Button color='light' dataTestId="signup-card-button" placeholder={buttonPlaceholder} size='medium' value={buttonText} />}
                 </div>
 
                 {/* Disclaimer */}
@@ -209,6 +210,7 @@ export function SignupCard({alignment,
                     />
                     {splitLayout ?
                         <BackgroundImagePicker
+                            backgroundImagePreview={backgroundImagePreview}
                             backgroundImageSrc={backgroundImageSrc}
                             fileInputRef={fileInputRef}
                             handleClearBackgroundImage={handleClearBackgroundImage}
@@ -224,8 +226,8 @@ export function SignupCard({alignment,
                                 selectedName={type}
                                 onClick={handleColorSelector}
                             />
-                            {(type === 'image') &&
                             <BackgroundImagePicker
+                                backgroundImagePreview={backgroundImagePreview}
                                 backgroundImageSrc={backgroundImageSrc}
                                 fileInputRef={fileInputRef}
                                 handleClearBackgroundImage={handleClearBackgroundImage}
@@ -234,13 +236,12 @@ export function SignupCard({alignment,
                                 progress={progress}
                                 onFileChange={onFileChange}
                             />
-                            }
                         </>
                     }
                     <SettingsDivider />
 
                     <InputSetting
-                        dataTestId='header-button-text'
+                        dataTestId='signup-button-text'
                         label='Button text'
                         placeholder='Add button text'
                         value={buttonText}
