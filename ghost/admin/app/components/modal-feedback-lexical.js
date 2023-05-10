@@ -5,7 +5,6 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default class FeedbackLexicalModalComponent extends Component {
-    @service modals;
     @service ajax;
     @service ghostPaths;
     @service session;
@@ -18,23 +17,9 @@ export default class FeedbackLexicalModalComponent extends Component {
         this.feedbackMessage = this.args.feedbackMessage;
     }
 
-    // not working?
-    @action
-    willDestroy() {
-        super.willDestroy(...arguments);
-        window.removeEventListener('keydown', this.handleKeyDown);
-    }
-
-    @action
-    handleKeyDown(event) {
-        if (event.key === 'Escape') {
-            this.args.closeModal();
-        }
-    }
-
     @action
     closeModal() {
-        this.args.closeModal();
+        this.args.close();
     }
 
     @task({drop: true})
@@ -70,12 +55,14 @@ export default class FeedbackLexicalModalComponent extends Component {
             throw new Error('api failed ' + response.status + ' ' + response.statusText);
         }
 
+        this.args.close();
+
         this.notifications.showNotification('Feedback sent',
-                {
-                    icon: 'send-email',
-                    description: 'Thank you!'
-                }
-            );
+            {
+                icon: 'send-email',
+                description: 'Thank you!'
+            }
+        );
 
         return response;
     }
