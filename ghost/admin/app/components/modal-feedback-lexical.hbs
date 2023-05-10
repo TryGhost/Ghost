@@ -14,11 +14,12 @@
                     @id="feedback-lexical"
                     @name="feedback-lexical" 
                     @value={{this.feedbackMessage}}
+                    @placeholder="I've noticed that..."
                 />
                 {{!--
                 <GhErrorMessage @errors={{this.member.errors}} @property="note" /> --}}
-                <p> Maximum: <b>500</b> characters. You’ve used
-                    {{gh-count-down-characters this.feedbackMessage 2000}}</p>
+                {{!-- <p> Maximum: <b>500</b> characters. You’ve used
+                    {{gh-count-down-characters this.feedbackMessage 500}}</p> --}}
             </GhFormGroup>
         </form>
     </div>
