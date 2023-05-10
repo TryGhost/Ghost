@@ -1,26 +1,30 @@
 <div class="modal-content">
     <header class="modal-header">
-        <h1>Lexical Beta Feedback</h1>
+        <h1>Editor beta feedback</h1>
     </header>
-    <a class="close" href="" role="button" title="Close" {{action "closeModal" }}>{{svg-jar "close"}}<span
+    <a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span
             class="hidden">Close</span></a>
 
-    <div class="modal-body gh-modal-reset-passwords">
-        <p>Have any issues? Feedback? Let us know!</p>
-        <GhFormGroup>
-            <GhTextarea 
-                @id="feedback-lexical"
-                @name="feedback-lexical" 
-                @value={{this.feedbackMessage}}
-            />
-            {{!--
-            <GhErrorMessage @errors={{this.member.errors}} @property="note" /> --}}
-            <p> Maximum: <b>500</b> characters. You’ve used
-                {{gh-count-down-characters this.feedbackMessage 500}}</p>
-        </GhFormGroup>
+    <div class="modal-body gh-modal-feedback-lexical">
+        {{!-- <p>Have any issues? Feedback? Let us know!</p> --}}
+        <form>
+            <GhFormGroup>
+                <label for="feedback-lexical">Have any issues? Feedback? Let us know below!</label>
+                <GhTextarea 
+                    @id="feedback-lexical"
+                    @name="feedback-lexical" 
+                    @value={{this.feedbackMessage}}
+                />
+                {{!--
+                <GhErrorMessage @errors={{this.member.errors}} @property="note" /> --}}
+                <p> Maximum: <b>500</b> characters. You’ve used
+                    {{gh-count-down-characters this.feedbackMessage 500}}</p>
+            </GhFormGroup>
+        </form>
     </div>
 
     <div class="modal-footer">
-        <GhTaskButton @buttonText="Submit" @task={{this.submitFeedback}} @class="gh-btn gh-btn-icon" />
+        <button class="gh-btn" type="button" {{action "closeModal" }}><span>Cancel</span></button>
+        <GhTaskButton @buttonText="Send feedback" @task={{this.submitFeedback}} @class="gh-btn gh-btn-black gh-btn-icon" />
     </div>
 </div>
