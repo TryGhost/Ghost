@@ -9,6 +9,7 @@ export default class FeedbackLexicalModalComponent extends Component {
     @service ajax;
     @service ghostPaths;
     @service session;
+    @service notifications;
 
     @inject config;
 
@@ -68,6 +69,13 @@ export default class FeedbackLexicalModalComponent extends Component {
         if (response.status < 200 || response.status >= 300) {
             throw new Error('api failed ' + response.status + ' ' + response.statusText);
         }
+
+        this.notifications.showNotification('Feedback sent',
+                {
+                    icon: 'send-email',
+                    description: 'Thank you!'
+                }
+            );
 
         return response;
     }
