@@ -25,6 +25,8 @@
     "@storybook/react": "^7.0.9",
     "@storybook/react-vite": "^7.0.9",
     "@storybook/testing-library": "^0.0.14-next.2",
+    "@tailwindcss/forms": "^0.5.3",
+    "@tailwindcss/line-clamp": "^0.4.4",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
     "@typescript-eslint/eslint-plugin": "^5.57.1",
