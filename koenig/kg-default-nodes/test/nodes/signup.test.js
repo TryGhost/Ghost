@@ -1,6 +1,7 @@
 const {createHeadlessEditor} = require('@lexical/headless');
 const {html} = require('../utils');
 const {JSDOM} = require('jsdom');
+const {$getRoot} = require('lexical');
 const {SignupNode, $createSignupNode, $isSignupNode} = require('../../');
 
 const editorNodes = [SignupNode];
@@ -19,6 +20,16 @@ describe('SignupNode', function () {
                 done(e);
             }
         });
+    };
+
+    const checkGetters = (signupNode, data) => {
+        signupNode.getBackgroundImageSrc().should.equal(data.backgroundImageSrc);
+        signupNode.getButtonText().should.equal(data.buttonText);
+        signupNode.getDisclaimer().should.equal(data.disclaimer);
+        signupNode.getHeader().should.equal(data.header);
+        signupNode.getSubheader().should.equal(data.subheader);
+        signupNode.getSize().should.equal(data.size);
+        signupNode.getStyle().should.equal(data.style);
     };
 
     beforeEach(function () {
@@ -46,6 +57,16 @@ describe('SignupNode', function () {
         $isSignupNode(signupNode).should.be.true;
     }));
 
+    describe('clone', function () {
+        it('clones the node', editorTest(function () {
+            const signupNode = $createSignupNode(dataset);
+            const clonedSignupNode = SignupNode.clone(signupNode);
+            $isSignupNode(clonedSignupNode).should.be.true;
+            clonedSignupNode.should.not.equal(signupNode);
+            checkGetters(signupNode, dataset);
+        }));
+    });
+
     describe('hasEditMode', function () {
         it('returns true', editorTest(function () {
             const signupNode = $createSignupNode(dataset);
@@ -56,16 +77,10 @@ describe('SignupNode', function () {
     describe('data access', function () {
         it('has getters for all properties', editorTest(function () {
             const signupNode = $createSignupNode(dataset);
-            signupNode.getBackgroundImageSrc().should.equal(dataset.backgroundImageSrc);
-            signupNode.getButtonText().should.equal(dataset.buttonText);
-            signupNode.getDisclaimer().should.equal(dataset.disclaimer);
-            signupNode.getHeader().should.equal(dataset.header);
-            signupNode.getSubheader().should.equal(dataset.subheader);
-            signupNode.getSize().should.equal(dataset.size);
-            signupNode.getStyle().should.equal(dataset.style);
+            checkGetters(signupNode, dataset);
         }));
 
-        it ('has setters for all properties', editorTest(function () {
+        it('has setters for all properties', editorTest(function () {
             const node = $createSignupNode(dataset);
             node.setBackgroundImageSrc('https://example.com/image2.jpg');
             node.getBackgroundImageSrc().should.equal('https://example.com/image2.jpg');
@@ -88,6 +103,22 @@ describe('SignupNode', function () {
             const nodeData = signupNode.getDataset();
             nodeData.should.deepEqual(dataset);
         }));
+
+        it('has isEmpty() method', editorTest(function () {
+            const signupNode = $createSignupNode(dataset);
+
+            signupNode.isEmpty().should.be.false;
+            signupNode.setBackgroundImageSrc('');
+            signupNode.isEmpty().should.be.false;
+            signupNode.setHeader('');
+            signupNode.isEmpty().should.be.false;
+            signupNode.setSubheader('');
+            signupNode.isEmpty().should.be.false;
+            signupNode.setDisclaimer('');
+            signupNode.isEmpty().should.be.false;
+            signupNode.setButtonText('');
+            signupNode.isEmpty().should.be.true;
+        }));
     });
 
     describe('exportDOM', function () {
@@ -98,5 +129,58 @@ describe('SignupNode', function () {
             <form data-members-form=""><input data-members-email="" type="email" required=""><button type="submit">Continue</button></form>
             `);
         }));
+    });
+
+    describe('exportJSON', function () {
+        it('contains all data', editorTest(function () {
+            const signupNode = $createSignupNode(dataset);
+            const json = signupNode.exportJSON();
+
+            json.should.deepEqual({
+                type: 'signup',
+                version: 1,
+                size: dataset.size,
+                style: dataset.style,
+                backgroundImageSrc: dataset.backgroundImageSrc,
+                header: dataset.header,
+                subheader: dataset.subheader,
+                disclaimer: dataset.disclaimer,
+                buttonText: dataset.buttonText
+            });
+        }));
+    });
+
+    describe('importJSON', function () {
+        it('imports all data', function (done) {
+            const serializedState = JSON.stringify({
+                root: {
+                    children: [{
+                        type: 'signup',
+                        ...dataset
+                    }],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+
+            const editorState = editor.parseEditorState(serializedState);
+            editor.setEditorState(editorState);
+
+            editor.getEditorState().read(() => {
+                try {
+                    const [signupNode] = $getRoot().getChildren();
+
+                    $isSignupNode(signupNode).should.be.true;
+                    checkGetters(signupNode, dataset);
+
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            });
+        });
     });
 });
