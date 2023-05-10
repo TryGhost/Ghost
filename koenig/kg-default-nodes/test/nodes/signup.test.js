@@ -3,6 +3,7 @@ const {html} = require('../utils');
 const {JSDOM} = require('jsdom');
 const {$getRoot} = require('lexical');
 const {SignupNode, $createSignupNode, $isSignupNode} = require('../../');
+const {$generateNodesFromDOM} = require('@lexical/html');
 
 const editorNodes = [SignupNode];
 
@@ -124,6 +125,20 @@ describe('SignupNode', function () {
             element.should.prettifyTo(html`
             <form data-members-form="" style="background-image: url(https://example.com/image.jpg);"><h1>Header</h1><h2>Subheader</h2><p>Disclaimer</p><label for="email">Email</label><input id="email" data-members-email="" type="email" required="true"><button type="submit">Button</button></form>
             `);
+        }));
+    });
+
+    describe('importDOM', function () {
+        it('parses a signup card', editorTest(function () {
+            const dom = new JSDOM(`<form data-members-form="" style="background-image: url(https://example.com/image.jpg);"><h1>Header</h1><h2>Subheader</h2><p>Disclaimer</p><label for="email">Email</label><input id="email" data-members-email="" type="email" required="true"><button type="submit">Button</button></form>`).window.document;
+            const nodes = $generateNodesFromDOM(editor, dom);
+            nodes.length.should.equal(1);
+            nodes[0].getType().should.equal('signup');
+            nodes[0].getBackgroundImageSrc().should.equal('https://example.com/image.jpg');
+            nodes[0].getButtonText().should.equal('Button');
+            nodes[0].getDisclaimer().should.equal('Disclaimer');
+            nodes[0].getHeader().should.equal('Header');
+            nodes[0].getSubheader().should.equal('Subheader');
         }));
     });
 

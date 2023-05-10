@@ -1,6 +1,7 @@
 import {createCommand} from 'lexical';
 import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
 import {renderSignupCardToDOM} from './SignupRenderer';
+import {SignupParser} from './SignupParser';
 
 export const INSERT_SIGNUP_COMMAND = createCommand();
 const NODE_TYPE = 'signup';
@@ -80,6 +81,11 @@ export class SignupNode extends KoenigDecoratorNode {
             backgroundImageSrc
         });
         return node;
+    }
+
+    static importDOM() {
+        const parser = new SignupParser(this);
+        return parser.DOMConversionMap;
     }
 
     exportJSON() {
