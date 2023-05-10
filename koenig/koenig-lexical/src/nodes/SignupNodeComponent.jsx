@@ -28,7 +28,6 @@ function SignupNodeComponent({
     subheaderPlaceholder,
     subheaderTextEditor,
     subheaderTextEditorInitialState,
-    size,
     type
 }) {
     const [editor] = useLexicalComposerContext();
@@ -140,7 +139,6 @@ function SignupNodeComponent({
                 headerTextEditorInitialState={headerTextEditorInitialState}
                 isEditing={isEditing}
                 openFilePicker={openFilePicker}
-                size={size}
                 subheader={subheader}
                 subheaderPlaceholder={subheaderPlaceholder}
                 subheaderTextEditor={subheaderTextEditor}

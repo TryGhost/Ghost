@@ -1,17 +1,15 @@
 import KoenigNestedEditor from '../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
 import React from 'react';
+import {BackgroundImagePicker} from '../BackgroundImagePicker';
 import {Button} from '../Button';
 import {ButtonGroupSetting, ColorPickerSetting, DropdownSetting, InputSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {ReactComponent as CenterAlignIcon} from '../../../assets/icons/kg-align-center.svg';
-import {ReactComponent as FileUploadIcon} from '../../../assets/icons/kg-upload-fill.svg';
 import {ReactComponent as ImgFullIcon} from '../../../assets/icons/kg-img-full.svg';
 import {ReactComponent as ImgRegularIcon} from '../../../assets/icons/kg-img-regular.svg';
 import {ReactComponent as ImgWideIcon} from '../../../assets/icons/kg-img-wide.svg';
 import {Input} from '../Input';
 import {ReactComponent as LeftAlignIcon} from '../../../assets/icons/kg-align-left.svg';
-import {ProgressBar} from '../ProgressBar';
-import {ReactComponent as TrashIcon} from '../../../assets/icons/kg-trash.svg';
 import {isEditorEmpty} from '../../../utils/isEditorEmpty';
 
 export const BACKGROUND_COLORS = {
@@ -29,99 +27,35 @@ export const TEXT_COLORS = {
     image: 'text-white caret-white'
 };
 
-function FileUploading({progress}) {
-    const progressStyle = {
-        width: `${progress?.toFixed(0)}%`
-    };
-
-    return (
-        <div className="h-full border border-transparent">
-            <div className="relative flex h-[120px] items-center justify-center border border-grey/20 bg-grey-50 before:pb-[12.5%] dark:bg-grey-900">
-                <div className="flex w-full items-center justify-center overflow-hidden">
-                    <ProgressBar style={progressStyle} />
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function ImagePicker({onFileChange,
-    backgroundImageSrc,
-    handleClearBackgroundImage,
-    fileInputRef,
-    openFilePicker,
-    isUploading,
-    progress}) {
-    if (isUploading) {
-        return (
-            <FileUploading progress={progress} />
-        );
-    }
-    return (
-        <>
-            <form onChange={onFileChange}>
-                <input
-                    ref={fileInputRef}
-                    accept='image/*'
-                    hidden={true}
-                    name="image-input"
-                    type='file'
-                />
-            </form>
-            <div className="w-full">
-                <div className="relative">
-                    <div className="flex w-full items-center justify-center">
-                        {
-                            backgroundImageSrc ?
-                                <>
-                                    <div className="group relative mb-4 w-full rounded">
-                                        <div className="absolute inset-0 rounded bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover:opacity-100">
-                                        </div>
-                                        <div className="absolute top-5 right-5 flex opacity-0 transition-all group-hover:opacity-100">
-                                            <button className="pointer-events-auto flex h-8 w-9 cursor-pointer items-center justify-center rounded bg-white/90 transition-all hover:bg-white" type="button" onClick={handleClearBackgroundImage}>
-                                                <TrashIcon className="h-5 w-5 fill-grey-900 stroke-[3px] transition-all ease-linear group-hover:scale-105" />
-                                            </button>
-                                        </div>
-                                        <img alt='backgroundHeaderImage' className="max-h-64 w-full rounded object-cover" data-testid="image-picker-background" src={backgroundImageSrc} />
-                                    </div>
-                                </>
-                                :
-                                <button className="group flex h-[120px] w-full cursor-pointer flex-col items-center justify-center rounded-sm border border-dashed border-grey-300 bg-grey-50 dark:border-grey-800 dark:bg-grey-900" type="button" onClick={openFilePicker}>
-                                    <FileUploadIcon className="h-5 w-5 fill-grey-700 stroke-[3px] transition-all ease-linear group-hover:scale-105" />
-                                    <span className="px-1 text-[1.35rem] font-medium text-grey-700">Click to upload background image</span>
-                                </button>
-                        }
-                    </div>
-                </div>
-            </div>
-        </>
-    );
-}
-
-export function SignupCard({isEditing,
+export function SignupCard({alignment,
+    type,
     cardWidth,
-    headerPlaceholder,
-    subheaderPlaceholder,
-    subheader,
-    buttonText,
-    buttonPlaceholder,
-    splitLayout,
-    alignment,
     handleColorSelector,
     handleSizeSelector,
-    handleButtonText,
-    backgroundImageSrc,
-    onFileChange,
-    handleClearBackgroundImage,
-    fileInputRef,
-    openFilePicker,
-    type,
+    splitLayout,
     header,
-    headerTextEditor,
-    subheaderTextEditor,
+    headerPlaceholder,
+    subheader,
+    subheaderPlaceholder,
+    disclaimer,
+    disclaimerPlaceholder,
+    buttonText,
+    buttonPlaceholder,
+    backgroundImageSrc,
+    backgroundImagePreview,
+    isEditing,
     fileUploader,
+    fileInputRef,
+    handleButtonText,
+    handleClearBackgroundImage,
+    openFilePicker,
+    onFileChange,
+    headerTextEditor,
     headerTextEditorInitialState,
-    subheaderTextEditorInitialState}) {
+    subheaderTextEditor,
+    subheaderTextEditorInitialState,
+    disclaimerTextEditor,
+    disclaimerTextEditorInitialState}) {
     const cardWidthChildren = [
         {
             label: 'Regular',
@@ -234,8 +168,24 @@ export function SignupCard({isEditing,
                     {((type === 'light') && <Button dataTestId="header-card-button" placeholder={buttonPlaceholder} size='medium' value={buttonText} />) || <Button color='light' dataTestId="header-card-button" placeholder={buttonPlaceholder} size='medium' value={buttonText} />}
                 </div>
 
+                {/* Disclaimer */}
+                {
+                    (isEditing || !!disclaimer || !isEditorEmpty(disclaimerTextEditor)) && (
+                        <KoenigNestedEditor
+                            hasSettingsPanel={true}
+                            initialEditor={disclaimerTextEditor}
+                            initialEditorState={disclaimerTextEditorInitialState}
+                            nodes="minimal"
+                            placeholderClassName={`truncate opacity-50 w-full whitespace-normal !leading-tight !font-normal ${(alignment === 'center' && 'text-center')} ${(cardWidth === 'regular') ? '!text-xl' : (cardWidth === 'wide') ? '!text-2xl' : '!text-3xl'} ${TEXT_COLORS[type]}`}
+                            placeholderText={disclaimerPlaceholder}
+                            singleParagraph={true}
+                            textClassName={`koenig-lexical-header-subheading relative w-full whitespace-normal ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(cardWidth === 'regular') ? 'koenig-lexical-header-small [&:has(br)]:pl-[calc(50%_-_105px)] !mt-2' : (cardWidth === 'wide') ? 'koenig-lexical-header-medium [&:has(br)]:pl-[calc(50%_-_124px)] !mt-3' : 'koenig-lexical-header-large [&:has(br)]:pl-[calc(50%_-_156px)] !mt-3'} ${TEXT_COLORS[type]}`}
+                        />
+                    )
+                }
+
                 {/* Read-only overlay */}
-                {!isEditing && <div className="absolute top-0 z-10 !m-0 h-full w-full cursor-default p-0"></div>}   
+                {!isEditing && <div className="absolute top-0 z-10 !m-0 h-full w-full cursor-default p-0"></div>}
             </div>
 
             {isEditing && (
@@ -258,7 +208,7 @@ export function SignupCard({isEditing,
                         label='Split layout'
                     />
                     {splitLayout ?
-                        <ImagePicker
+                        <BackgroundImagePicker
                             backgroundImageSrc={backgroundImageSrc}
                             fileInputRef={fileInputRef}
                             handleClearBackgroundImage={handleClearBackgroundImage}
@@ -275,7 +225,7 @@ export function SignupCard({isEditing,
                                 onClick={handleColorSelector}
                             />
                             {(type === 'image') &&
-                            <ImagePicker
+                            <BackgroundImagePicker
                                 backgroundImageSrc={backgroundImageSrc}
                                 fileInputRef={fileInputRef}
                                 handleClearBackgroundImage={handleClearBackgroundImage}
@@ -313,11 +263,30 @@ SignupCard.propTypes = {
     cardWidth: PropTypes.oneOf(['regular', 'wide', 'full']),
     alignment: PropTypes.oneOf(['left', 'center']),
     type: PropTypes.oneOf(['dark', 'light', 'accent', 'image']),
-    heading: PropTypes.string,
+    splitLayout: PropTypes.bool,
+    header: PropTypes.string,
     headerPlaceholder: PropTypes.string,
     subheader: PropTypes.string,
     subheaderPlaceholder: PropTypes.string,
+    disclaimer: PropTypes.string,
+    disclaimerPlaceholder: PropTypes.string,
     buttonText: PropTypes.string,
     buttonPlaceholder: PropTypes.string,
-    splitLayout: PropTypes.bool
+    backgroundImageSrc: PropTypes.string,
+    backgroundImagePreview: PropTypes.bool,
+    isEditing: PropTypes.bool,
+    fileUploader: PropTypes.object,
+    fileInputRef: PropTypes.object,
+    handleColorSelector: PropTypes.func,
+    handleSizeSelector: PropTypes.func,
+    handleButtonText: PropTypes.func,
+    handleClearBackgroundImage: PropTypes.func,
+    openFilePicker: PropTypes.func,
+    onFileChange: PropTypes.func,
+    headerTextEditor: PropTypes.object,
+    headerTextEditorInitialState: PropTypes.string,
+    subheaderTextEditor: PropTypes.object,
+    subheaderTextEditorInitialState: PropTypes.string,
+    disclaimerTextEditor: PropTypes.object,
+    disclaimerTextEditorInitialState: PropTypes.string
 };

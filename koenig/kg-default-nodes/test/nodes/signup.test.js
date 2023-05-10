@@ -28,7 +28,6 @@ describe('SignupNode', function () {
         signupNode.getDisclaimer().should.equal(data.disclaimer);
         signupNode.getHeader().should.equal(data.header);
         signupNode.getSubheader().should.equal(data.subheader);
-        signupNode.getSize().should.equal(data.size);
         signupNode.getStyle().should.equal(data.style);
     };
 
@@ -41,7 +40,6 @@ describe('SignupNode', function () {
             disclaimer: 'Disclaimer',
             header: 'Header',
             subheader: 'Subheader',
-            size: 'small',
             style: 'image'
         };
 
@@ -92,8 +90,6 @@ describe('SignupNode', function () {
             node.getHeader().should.equal('This is the new header');
             node.setSubheader('This is the new subheader');
             node.getSubheader().should.equal('This is the new subheader');
-            node.setSize('large');
-            node.getSize().should.equal('large');
             node.setStyle('light');
             node.getStyle().should.equal('light');
         }));
@@ -139,7 +135,6 @@ describe('SignupNode', function () {
             json.should.deepEqual({
                 type: 'signup',
                 version: 1,
-                size: dataset.size,
                 style: dataset.style,
                 backgroundImageSrc: dataset.backgroundImageSrc,
                 header: dataset.header,

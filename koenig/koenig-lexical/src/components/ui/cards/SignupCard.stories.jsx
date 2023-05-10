@@ -4,6 +4,7 @@ import {CardWrapper} from './../CardWrapper';
 import {MINIMAL_NODES} from '../../../index.js';
 import {SignupCard} from './SignupCard';
 import {createEditor} from 'lexical';
+import {editorEmptyState} from '../../../../.storybook/editorEmptyState';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},
@@ -42,12 +43,14 @@ const story = {
 };
 export default story;
 
-const Template = ({display, heading, subheader, ...args}) => {
+const Template = ({display, heading, subheader, disclaimer, ...args}) => {
     const headerTextEditor = createEditor({nodes: MINIMAL_NODES});
     const subheaderTextEditor = createEditor({nodes: MINIMAL_NODES});
+    const disclaimerTextEditor = createEditor({nodes: MINIMAL_NODES});
 
     populateNestedEditor({editor: headerTextEditor, initialHtml: `<p>${heading}</p>`});
     populateNestedEditor({editor: subheaderTextEditor, initialHtml: `<p>${subheader}</p>`});
+    populateNestedEditor({editor: disclaimerTextEditor, initialHtml: `<p>${disclaimer}</p>`});
 
     return (<div className="kg-prose">
         <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
@@ -55,8 +58,12 @@ const Template = ({display, heading, subheader, ...args}) => {
                 <SignupCard
                     {...display}
                     {...args}
+                    disclaimerTextEditor={disclaimerTextEditor}
+                    disclaimerTextEditorInitialState={editorEmptyState}
                     headerTextEditor={headerTextEditor}
+                    headerTextEditorInitialState={editorEmptyState}
                     subheaderTextEditor={subheaderTextEditor}
+                    subheaderTextEditorInitialState={editorEmptyState}
                 />
             </CardWrapper>
         </div>
@@ -73,6 +80,8 @@ Empty.args = {
     headerPlaceholder: 'Enter heading text',
     subheader: '',
     subheaderPlaceholder: 'Enter subheading text',
+    disclaimer: '',
+    disclaimerPlaceholder: 'Enter disclaimer text',
     buttonText: '',
     buttonPlaceholder: 'Add button text',
     splitLayout: false
@@ -88,6 +97,8 @@ Populated.args = {
     headerPlaceholder: 'Enter heading text',
     subheader: 'And here is some subheading text.',
     subheaderPlaceholder: 'Enter subheading text',
+    disclaimer: 'And here is some disclaimer text.',
+    disclaimerPlaceholder: 'Enter disclaimer text',
     buttonText: 'Subscribe',
     buttonPlaceholder: 'Add button text',
     splitLayout: false

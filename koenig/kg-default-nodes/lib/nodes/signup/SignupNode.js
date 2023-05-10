@@ -1,5 +1,5 @@
-import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
 import {createCommand} from 'lexical';
+import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
 import {renderSignupCardToDOM} from './SignupRenderer';
 
 export const INSERT_SIGNUP_COMMAND = createCommand();
@@ -7,7 +7,6 @@ const NODE_TYPE = 'signup';
 
 export class SignupNode extends KoenigDecoratorNode {
     // payload properties
-    __size;
     __style;
     __buttonText;
     __header;
@@ -38,7 +37,6 @@ export class SignupNode extends KoenigDecoratorNode {
     getDataset() {
         const self = this.getLatest();
         return {
-            size: self.__size,
             style: self.__style,
             buttonText: self.__buttonText,
             header: self.__header,
@@ -48,15 +46,13 @@ export class SignupNode extends KoenigDecoratorNode {
         };
     }
 
-    constructor({size,
-        style,
+    constructor({style,
         buttonText,
         header,
         subheader,
         disclaimer,
         backgroundImageSrc} = {}, key) {
         super(key);
-        this.__size = size || 'small';
         this.__style = style || 'dark';
         this.__buttonText = buttonText || '';
         this.__header = header || '';
@@ -74,9 +70,8 @@ export class SignupNode extends KoenigDecoratorNode {
     }
 
     static importJSON(serializedNode) {
-        const {size, style, buttonText, header, subheader, disclaimer, backgroundImageSrc} = serializedNode;
+        const {style, buttonText, header, subheader, disclaimer, backgroundImageSrc} = serializedNode;
         const node = new this({
-            size,
             style,
             buttonText,
             header,
@@ -91,7 +86,6 @@ export class SignupNode extends KoenigDecoratorNode {
         const dataset = {
             type: NODE_TYPE,
             version: 1,
-            size: this.getSize(),
             style: this.getStyle(),
             buttonText: this.getButtonText(),
             header: this.getHeader(),
@@ -113,16 +107,6 @@ export class SignupNode extends KoenigDecoratorNode {
 
     isInline() {
         return false;
-    }
-
-    getSize() {
-        const self = this.getLatest();
-        return self.__size;
-    }
-
-    setSize(size) {
-        const writable = this.getWritable();
-        writable.__size = size;
     }
 
     getStyle() {
@@ -170,9 +154,9 @@ export class SignupNode extends KoenigDecoratorNode {
         return self.__disclaimer;
     }
 
-    setDisclaimer(size) {
+    setDisclaimer(disclaimer) {
         const writable = this.getWritable();
-        writable.__disclaimer = size;
+        writable.__disclaimer = disclaimer;
     }
 
     getBackgroundImageSrc() {

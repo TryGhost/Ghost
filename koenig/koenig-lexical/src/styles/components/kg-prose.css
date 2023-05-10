@@ -969,3 +969,19 @@
 .kg-header-accent, .kg-callout-accent {
     --kg-accent-color: #fff;
 }
+
+.koenig-lexical-signup-disclaimer {
+    .kg-prose {
+        :where(
+                    p,
+                    blockquote,
+                    aside,
+                    ul,
+                    ol
+                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+            line-height: 1.25 !important;
+            font-size: 1.5rem !important;
+        }
+    }
+}
