@@ -3,10 +3,10 @@ import {ReactComponent as BoldIcon} from '../../assets/icons/kg-bold.svg';
 import {ReactComponent as EditIcon} from '../../assets/icons/kg-edit.svg';
 import {ReactComponent as HeadingOneIcon} from '../../assets/icons/kg-heading-1.svg';
 import {ReactComponent as HeadingTwoIcon} from '../../assets/icons/kg-heading-2.svg';
-import {ReactComponent as ImageFullIcon} from '../../assets/icons/kg-img-full.svg';
-import {ReactComponent as ImageRegularIcon} from '../../assets/icons/kg-img-regular.svg';
-import {ReactComponent as ImageReplaceIcon} from '../../assets/icons/kg-replace.svg';
-import {ReactComponent as ImageWideIcon} from '../../assets/icons/kg-img-wide.svg';
+import {ReactComponent as ImgFullIcon} from '../../assets/icons/kg-img-full.svg';
+import {ReactComponent as ImgRegularIcon} from '../../assets/icons/kg-img-regular.svg';
+import {ReactComponent as ImgReplaceIcon} from '../../assets/icons/kg-replace.svg';
+import {ReactComponent as ImgWideIcon} from '../../assets/icons/kg-img-wide.svg';
 import {ReactComponent as ItalicIcon} from '../../assets/icons/kg-italic.svg';
 import {ReactComponent as LinkIcon} from '../../assets/icons/kg-link.svg';
 import {ReactComponent as QuoteIcon} from '../../assets/icons/kg-quote.svg';
@@ -24,10 +24,10 @@ export const TOOLBAR_ICONS = {
     quoteOne: QuoteOneIcon,
     quoteTwo: QuoteTwoIcon,
     link: LinkIcon,
-    imageRegular: ImageRegularIcon,
-    imageWide: ImageWideIcon,
-    imageFull: ImageFullIcon,
-    imageReplace: ImageReplaceIcon,
+    imgRegular: ImgRegularIcon,
+    imgWide: ImgWideIcon,
+    imgFull: ImgFullIcon,
+    imgReplace: ImgReplaceIcon,
     add: AddIcon,
     edit: EditIcon,
     snippet: SnippetIcon,

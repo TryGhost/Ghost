@@ -165,21 +165,21 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
                 <ToolbarMenu>
                     <ToolbarMenuItem
                         hide={isGif(src)}
-                        icon="imageRegular"
+                        icon="imgRegular"
                         isActive={cardWidth === 'regular'}
                         label="Regular"
                         onClick={() => handleImageCardResize('regular')}
                     />
                     <ToolbarMenuItem
                         hide={isGif(src)}
-                        icon="imageWide"
+                        icon="imgWide"
                         isActive={cardWidth === 'wide'}
                         label="Wide"
                         onClick={() => handleImageCardResize('wide')}
                     />
                     <ToolbarMenuItem
                         hide={isGif(src)}
-                        icon="imageFull"
+                        icon="imgFull"
                         isActive={cardWidth === 'full'}
                         label="Full"
                         onClick={() => handleImageCardResize('full')}

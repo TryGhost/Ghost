@@ -2,9 +2,9 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {ButtonGroupSetting, SettingsPanel, ThumbnailSetting, ToggleSetting} from '../SettingsPanel';
 import {CardCaptionEditor} from '../CardCaptionEditor';
-import {ReactComponent as ImageFullIcon} from '../../../assets/icons/kg-img-full.svg';
-import {ReactComponent as ImageRegularIcon} from '../../../assets/icons/kg-img-regular.svg';
-import {ReactComponent as ImageWideIcon} from '../../../assets/icons/kg-img-wide.svg';
+import {ReactComponent as ImgFullIcon} from '../../../assets/icons/kg-img-full.svg';
+import {ReactComponent as ImgRegularIcon} from '../../../assets/icons/kg-img-regular.svg';
+import {ReactComponent as ImgWideIcon} from '../../../assets/icons/kg-img-wide.svg';
 import {MediaPlaceholder} from '../MediaPlaceholder';
 import {MediaPlayer} from '../MediaPlayer';
 import {ReactComponent as PlayIcon} from '../../../assets/icons/kg-play.svg';
@@ -35,17 +35,17 @@ function PopulatedVideoCard({
         {
             label: 'Regular',
             name: 'regular',
-            Icon: ImageRegularIcon
+            Icon: ImgRegularIcon
         },
         {
             label: 'Wide',
             name: 'wide',
-            Icon: ImageWideIcon
+            Icon: ImgWideIcon
         },
         {
             label: 'Full',
             name: 'full',
-            Icon: ImageFullIcon
+            Icon: ImgFullIcon
         }
     ];
 

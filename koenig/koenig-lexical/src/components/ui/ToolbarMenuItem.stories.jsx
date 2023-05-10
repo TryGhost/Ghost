@@ -64,24 +64,24 @@ Link.args = {
     icon: 'link'
 };
 
-export const ImageRegular = Template.bind({});
-ImageRegular.args = {
-    icon: 'imageRegular'
+export const ImgRegular = Template.bind({});
+ImgRegular.args = {
+    icon: 'imgRegular'
 };
 
-export const ImageWide = Template.bind({});
-ImageWide.args = {
-    icon: 'imageWide'
+export const ImgWide = Template.bind({});
+ImgWide.args = {
+    icon: 'imgWide'
 };
 
-export const ImageFull = Template.bind({});
-ImageFull.args = {
-    icon: 'imageFull'
+export const ImgFull = Template.bind({});
+ImgFull.args = {
+    icon: 'imgFull'
 };
 
-export const ImageReplace = Template.bind({});
-ImageReplace.args = {
-    icon: 'imageReplace'
+export const ImgReplace = Template.bind({});
+ImgReplace.args = {
+    icon: 'imgReplace'
 };
 
 export const Add = Template.bind({});

@@ -3,9 +3,9 @@ import React from 'react';
 
 import {ButtonGroupSetting, ColorPickerSetting, DropdownSetting, InputSetting, SettingsDivider, SettingsPanel, ThumbnailSetting, ToggleSetting} from './SettingsPanel';
 import {ReactComponent as CenterAlignIcon} from '../../assets/icons/kg-align-center.svg';
-import {ReactComponent as ImageFullIcon} from '../../assets/icons/kg-img-full.svg';
-import {ReactComponent as ImageRegularIcon} from '../../assets/icons/kg-img-regular.svg';
-import {ReactComponent as ImageWideIcon} from '../../assets/icons/kg-img-wide.svg';
+import {ReactComponent as ImgFullIcon} from '../../assets/icons/kg-img-full.svg';
+import {ReactComponent as ImgRegularIcon} from '../../assets/icons/kg-img-regular.svg';
+import {ReactComponent as ImgWideIcon} from '../../assets/icons/kg-img-wide.svg';
 import {ReactComponent as LeftAlignIcon} from '../../assets/icons/kg-align-left.svg';
 
 const story = {
@@ -45,17 +45,17 @@ const widthButtonGroup = [
     {
         label: 'Regular',
         name: 'regular',
-        Icon: ImageRegularIcon
+        Icon: ImgRegularIcon
     },
     {
         label: 'Wide',
         name: 'wide',
-        Icon: ImageWideIcon
+        Icon: ImgWideIcon
     },
     {
         label: 'Full',
         name: 'full',
-        Icon: ImageFullIcon
+        Icon: ImgFullIcon
     }
 ];
 

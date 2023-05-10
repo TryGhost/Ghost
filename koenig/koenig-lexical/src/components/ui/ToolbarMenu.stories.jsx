@@ -9,10 +9,10 @@ import {Bold} from './ToolbarMenuItem.stories';
 import {Edit} from './ToolbarMenuItem.stories';
 import {HeadingOne} from './ToolbarMenuItem.stories';
 import {HeadingTwo} from './ToolbarMenuItem.stories';
-import {ImageFull} from './ToolbarMenuItem.stories';
-import {ImageRegular} from './ToolbarMenuItem.stories';
-import {ImageReplace} from './ToolbarMenuItem.stories';
-import {ImageWide} from './ToolbarMenuItem.stories';
+import {ImgFull} from './ToolbarMenuItem.stories';
+import {ImgRegular} from './ToolbarMenuItem.stories';
+import {ImgReplace} from './ToolbarMenuItem.stories';
+import {ImgWide} from './ToolbarMenuItem.stories';
 import {Italic} from './ToolbarMenuItem.stories';
 import {Link} from './ToolbarMenuItem.stories';
 import {Quote} from './ToolbarMenuItem.stories';
@@ -56,12 +56,12 @@ Text.args = {
 export const Image = Template.bind({});
 Image.args = {
     children: [
-        <ImageRegular {...ImageRegular.args} />,
-        <ImageWide {...ImageWide.args} />,
-        <ImageFull {...ImageFull.args} />,
+        <ImgRegular {...ImgRegular.args} />,
+        <ImgWide {...ImgWide.args} />,
+        <ImgFull {...ImgFull.args} />,
         <ToolbarMenuSeparator />,
         <Link {...Link.args} />,
-        <ImageReplace {...ImageReplace.args} />,
+        <ImgReplace {...ImgReplace.args} />,
         <ToolbarMenuSeparator />,
         <Snippet {...Snippet.args} />
     ]
