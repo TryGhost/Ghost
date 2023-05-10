@@ -2,6 +2,7 @@ import ConfirmEditorLeaveModal from '../components/modals/editor/confirm-leave';
 import Controller, {inject as controller} from '@ember/controller';
 import DeletePostModal from '../components/modals/delete-post';
 import DeleteSnippetModal from '../components/editor/modals/delete-snippet';
+import FeedbackLexicalModal from '../components/modal-feedback-lexical';
 import PostModel from 'ghost-admin/models/post';
 import PublishLimitModal from '../components/modals/limits/publish-limit';
 import ReAuthenticateModal from '../components/editor/modals/re-authenticate';
@@ -23,6 +24,7 @@ import {isArray as isEmberArray} from '@ember/array';
 import {isHostLimitError, isServerUnreachableError, isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {isInvalidError} from 'ember-ajax/errors';
 import {inject as service} from '@ember/service';
+import {tracked} from '@glimmer/tracking';
 
 const DEFAULT_TITLE = '(Untitled)';
 
@@ -112,6 +114,8 @@ export default class LexicalEditorController extends Controller {
     @service ui;
 
     @inject config;
+
+    @tracked showFeedbackLexicalModal = false;
 
     /* public properties -----------------------------------------------------*/
 
@@ -406,6 +410,11 @@ export default class LexicalEditorController extends Controller {
         await this.modals.open(DeleteSnippetModal, {
             snippet
         });
+    }
+
+    @action
+    async openFeedbackLexical() {
+        await this.modals.open(FeedbackLexicalModal);
     }
 
     /* Public tasks ----------------------------------------------------------*/
