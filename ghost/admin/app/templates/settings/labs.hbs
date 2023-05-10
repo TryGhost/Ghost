@@ -207,7 +207,7 @@
                             <h4 class="gh-expandable-title">Lexical editor</h4>
                             <p class="gh-expandable-description">
                                 {{#if (feature 'lexicalEditor')}}
-                                    <span>Makes lexical editor the default when creating new posts/pages. Any issues? Feedback?</span><button class="green ml1" role="button" {{on "click" this.openFeedbackLexical}}>Let us know</button>
+                                    <span>Makes lexical editor the default when creating new posts/pages. Any issues? Feedback?</span><button class="green ml1" role="button" {{on "click" this.openFeedbackLexical}} data-test-button="lexical-feedback">Let us know</button>
                                 {{else}}
                                     <span>Makes lexical editor the default when creating new posts/pages.</span>
                                 {{/if}}

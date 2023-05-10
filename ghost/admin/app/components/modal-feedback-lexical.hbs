@@ -1,4 +1,4 @@
-<div class="modal-content">
+<div class="modal-content" data-test-modal="lexical-feedback">
     <header class="modal-header">
         <h1>Editor beta feedback</h1>
     </header>
@@ -16,6 +16,7 @@
                     @value={{this.feedbackMessage}}
                     @placeholder="I've noticed that..."
                     @shouldFocus={{true}}
+                    data-test-lexical-feedback-textarea
                 />
                 {{!--
                 <GhErrorMessage @errors={{this.member.errors}} @property="note" /> --}}
@@ -27,6 +28,11 @@
 
     <div class="modal-footer">
         <button class="gh-btn" type="button" {{action "closeModal" }}><span>Cancel</span></button>
-        <GhTaskButton @buttonText="Send feedback" @task={{this.submitFeedback}} @class="gh-btn gh-btn-black gh-btn-icon" />
+        <GhTaskButton 
+            @buttonText="Send feedback"
+            @task={{this.submitFeedback}}
+            @class="gh-btn gh-btn-black gh-btn-icon"
+            data-test-button="submit-lexical-feedback"
+        />
     </div>
 </div>
