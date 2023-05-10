@@ -138,3 +138,6 @@ Caddyfile
 
 /ghost/post-revisions/build
 /ghost/post-revisions/tsconfig.tsbuildinfo
+
+/ghost/in-memory-repository/build
+/ghost/in-memory-repository/tsconfig.tsbuildinfo
