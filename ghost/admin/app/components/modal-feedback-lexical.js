@@ -1,11 +1,16 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default class FeedbackLexicalModalComponent extends Component {
     @service modals;
     @service ajax;
+    @service ghostPaths;
+    @service session;
+
+    @inject config;
 
     constructor(...args) {
         super(...args);
@@ -34,18 +39,35 @@ export default class FeedbackLexicalModalComponent extends Component {
     @task({drop: true})
     *submitFeedback() {
         let url = `https://submit-form.com/us6uBWv8`;
+        
+        let postData;
+        if (this.args.data?.post) {
+            postData = {
+                PostId: this.args.data.post?.id,
+                PostTitle: this.args.data.post?.title
+            };
+        }
 
-        let response = yield this.ajax.post(url, {
-            data: {
-                Feedback: this.feedbackMessage
-            }
-        });
+        let ghostData = {
+            Site: this.config.blogUrl,
+            StaffMember: this.session.user.name,
+            StaffMemberEmail: this.session.user.email,
+            StaffAccessLevel: this.session.user.role?.description,
+            UserAgent: navigator.userAgent,
+            Version: this.config.version,
+            Feedback: this.feedbackMessage
+        };
+
+        let data = {
+            ...ghostData,
+            ...postData
+        };
+
+        let response = yield this.ajax.post(url, {data});
 
         if (response.status < 200 || response.status >= 300) {
             throw new Error('api failed ' + response.status + ' ' + response.statusText);
         }
-        
-        // note: do we want to just do this.send('closeModal') here? or do we want to display a thanks message and close after a delay?
 
         return response;
     }

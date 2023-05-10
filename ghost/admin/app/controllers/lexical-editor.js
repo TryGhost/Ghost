@@ -2,6 +2,7 @@ import ConfirmEditorLeaveModal from '../components/modals/editor/confirm-leave';
 import Controller, {inject as controller} from '@ember/controller';
 import DeletePostModal from '../components/modals/delete-post';
 import DeleteSnippetModal from '../components/editor/modals/delete-snippet';
+import FeedbackLexicalModal from '../components/modal-feedback-lexical';
 import PostModel from 'ghost-admin/models/post';
 import PublishLimitModal from '../components/modals/limits/publish-limit';
 import ReAuthenticateModal from '../components/editor/modals/re-authenticate';
@@ -412,13 +413,8 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
-    openFeedbackLexical() {
-        this.showFeedbackLexicalModal = true;
-    }
-
-    @action
-    closeFeedbackLexical() {
-        this.showFeedbackLexicalModal = false;
+    async openFeedbackLexical() {
+        await this.modals.open(FeedbackLexicalModal);
     }
 
     /* Public tasks ----------------------------------------------------------*/
