@@ -6,10 +6,10 @@ export default {
   ],
   theme: {
     screens: {
-      xs: '480px',
-      tablet: '640px',
-      laptop: '1024px',
-      desktop: '1280px'
+      sm: '480px',
+      md: '640px',
+      lg: '1024px',
+      xl: '1280px'
     },
     colors: {
       transparent: 'transparent',
@@ -184,5 +184,5 @@ export default {
       }
     },
   },
-  plugins: [require('@tailwindcss/forms')],
+  // plugins: [require('@tailwindcss/forms')],
 }
