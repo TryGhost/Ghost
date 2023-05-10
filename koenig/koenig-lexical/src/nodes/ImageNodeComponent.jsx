@@ -190,7 +190,7 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
                     }} />
                     <ToolbarMenuItem
                         hide={isGif(src)}
-                        icon="imageReplace"
+                        icon="imgReplace"
                         isActive={false}
                         label="Replace"
                         onClick={() => openFileSelection({fileInputRef: toolbarFileInputRef})}
