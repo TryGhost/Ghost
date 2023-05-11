@@ -32,8 +32,8 @@ class CardAssetService {
         // Include rules take precedence over exclude rules.
         if (_.has(this.config, 'include')) {
             return {
-                'cards.min.css': `css/(${this.config.include.join('|')}).css`,
-                'cards.min.js': `js/(${this.config.include.join('|')}).js`
+                'cards.min.css': `css/@(${this.config.include.join('|')}).css`,
+                'cards.min.js': `js/@(${this.config.include.join('|')}).js`
             };
         }
 
