@@ -175,18 +175,17 @@ export function VideoCard({
     ...props
 }) {
     return (
-        <>
-            <figure>
-                <VideoHolder {...props} isEditing={isEditing} />
-                <CardCaptionEditor
-                    captionEditor={captionEditor}
-                    captionPlaceholder="Type caption for video (optional)"
-                    dataTestId="video-card-caption"
-                    isSelected={isSelected}
-                    readOnly={!isEditing}
-                />
-            </figure>
-        </>
+        <figure className="not-kg-prose">
+            <VideoHolder {...props} isEditing={isEditing} />
+            <CardCaptionEditor
+                captionEditor={captionEditor}
+                captionEditorInitialState={captionEditorInitialState}
+                captionPlaceholder="Type caption for video (optional)"
+                dataTestId="video-card-caption"
+                isSelected={isSelected}
+                readOnly={true}
+            />
+        </figure>
     );
 }
 
