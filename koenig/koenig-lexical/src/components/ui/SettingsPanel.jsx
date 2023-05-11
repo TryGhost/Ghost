@@ -10,6 +10,7 @@ import {IconButton} from './IconButton';
 import {Input} from './Input';
 import {InputList} from './InputList';
 import {MediaPlaceholder} from './MediaPlaceholder';
+import {MultiSelectDropdown} from './MultiSelectDropdown';
 import {ProgressBar} from './ProgressBar';
 import {Toggle} from './Toggle';
 import {openFileSelection} from '../../utils/openFileSelection';
@@ -116,6 +117,23 @@ export function DropdownSetting({label, description, value, menu, onChange}) {
         <div className="mt-2 flex w-full flex-col justify-between gap-2 text-[1.3rem] first:mt-0">
             <div className="font-bold text-grey-900 dark:text-grey-200">{label}</div>
             <Dropdown
+                menu={menu}
+                value={value}
+                onChange={onChange}
+            />
+            {description &&
+                    <p className="text-[1.25rem] font-normal leading-snug text-grey-700">{description}</p>
+            }
+        </div>
+    );
+}
+
+export function MultiSelectDropdownSetting({label, description, value, menu, onChange, dataTestId}) {
+    return (
+        <div className="mt-2 flex w-full flex-col justify-between gap-2 text-[1.3rem] first:mt-0">
+            <div className="font-bold text-grey-900 dark:text-grey-200">{label}</div>
+            <MultiSelectDropdown
+                dataTestId={dataTestId}
                 menu={menu}
                 value={value}
                 onChange={onChange}

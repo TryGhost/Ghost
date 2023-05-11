@@ -130,6 +130,7 @@ export class SignupNode extends BaseSignupNode {
                     headerPlaceholder={'Enter heading'}
                     headerTextEditor={this.__headerTextEditor}
                     headerTextEditorInitialState={this.__headerTextEditorInitialState}
+                    labels={this.getLabels()}
                     nodeKey={this.getKey()}
                     subheader={this.getSubheader()}
                     subheaderPlaceholder={'Enter subheading text'}

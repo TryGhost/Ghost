@@ -12,7 +12,6 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 function SignupNodeComponent({
     backgroundImageSrc,
-    button,
     buttonPlaceholder,
     buttonText,
     nodeKey,
@@ -28,13 +27,23 @@ function SignupNodeComponent({
     subheaderPlaceholder,
     subheaderTextEditor,
     subheaderTextEditorInitialState,
-    type
+    type,
+    labels
 }) {
     const [editor] = useLexicalComposerContext();
     const {cardConfig} = useContext(KoenigComposerContext);
     const {fileUploader} = useContext(KoenigComposerContext);
     const {isEditing, isSelected} = useContext(CardContext);
     const [showSnippetToolbar, setShowSnippetToolbar] = useState(false);
+    const [availableLabels, setAvailableLabels] = useState([]);
+
+    useEffect(() => {
+        if (cardConfig?.fetchLabels) {
+            cardConfig.fetchLabels().then((options) => {
+                setAvailableLabels(options);
+            });
+        }
+    }, [cardConfig]);
 
     const handleToolbarEdit = (event) => {
         event.preventDefault();
@@ -108,6 +117,13 @@ function SignupNodeComponent({
         });
     };
 
+    const handleLabels = (newLabels) => {
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.setLabels(newLabels);
+        });
+    };
+
     useEffect(() => {
         headerTextEditor.setEditable(isEditing);
         subheaderTextEditor.setEditable(isEditing);
@@ -115,6 +131,7 @@ function SignupNodeComponent({
     return (
         <>
             <SignupCard
+                availableLabels={availableLabels}
                 backgroundImagePreview={backgroundImagePreview}
                 backgroundImageSrc={backgroundImageSrc}
                 buttonPlaceholder={buttonPlaceholder}
@@ -128,12 +145,14 @@ function SignupNodeComponent({
                 handleButtonText={handleButtonText}
                 handleClearBackgroundImage={handleClearBackgroundImage}
                 handleColorSelector={handleColorSelector}
+                handleLabels={handleLabels}
                 handleSizeSelector={handleSizeSelector}
                 header={header}
                 headerPlaceholder={headerPlaceholder}
                 headerTextEditor={headerTextEditor}
                 headerTextEditorInitialState={headerTextEditorInitialState}
                 isEditing={isEditing}
+                labels={labels}
                 openFilePicker={openFilePicker}
                 subheader={subheader}
                 subheaderPlaceholder={subheaderPlaceholder}

@@ -1,7 +1,7 @@
 import {createCommand} from 'lexical';
 import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
-import {renderSignupCardToDOM} from './SignupRenderer';
 import {SignupParser} from './SignupParser';
+import {renderSignupCardToDOM} from './SignupRenderer';
 
 export const INSERT_SIGNUP_COMMAND = createCommand();
 const NODE_TYPE = 'signup';
@@ -14,6 +14,7 @@ export class SignupNode extends KoenigDecoratorNode {
     __subheader;
     __disclaimer;
     __backgroundImageSrc;
+    __labels;
 
     static getType() {
         return NODE_TYPE;
@@ -43,7 +44,8 @@ export class SignupNode extends KoenigDecoratorNode {
             header: self.__header,
             subheader: self.__subheader,
             disclaimer: self.__disclaimer,
-            backgroundImageSrc: self.__backgroundImageSrc
+            backgroundImageSrc: self.__backgroundImageSrc,
+            labels: self.__labels
         };
     }
 
@@ -52,7 +54,8 @@ export class SignupNode extends KoenigDecoratorNode {
         header,
         subheader,
         disclaimer,
-        backgroundImageSrc} = {}, key) {
+        backgroundImageSrc,
+        labels} = {}, key) {
         super(key);
         this.__style = style || 'dark';
         this.__buttonText = buttonText || '';
@@ -60,6 +63,7 @@ export class SignupNode extends KoenigDecoratorNode {
         this.__subheader = subheader || '';
         this.__disclaimer = disclaimer || '';
         this.__backgroundImageSrc = backgroundImageSrc || '';
+        this.__labels = labels || [];
     }
 
     exportDOM(options = {}) {
@@ -71,14 +75,15 @@ export class SignupNode extends KoenigDecoratorNode {
     }
 
     static importJSON(serializedNode) {
-        const {style, buttonText, header, subheader, disclaimer, backgroundImageSrc} = serializedNode;
+        const {style, buttonText, header, subheader, disclaimer, backgroundImageSrc, labels} = serializedNode;
         const node = new this({
             style,
             buttonText,
             header,
             subheader,
             disclaimer,
-            backgroundImageSrc
+            backgroundImageSrc,
+            labels
         });
         return node;
     }
@@ -97,7 +102,8 @@ export class SignupNode extends KoenigDecoratorNode {
             header: this.getHeader(),
             subheader: this.getSubheader(),
             disclaimer: this.getDisclaimer(),
-            backgroundImageSrc: this.getBackgroundImageSrc()
+            backgroundImageSrc: this.getBackgroundImageSrc(),
+            labels: this.getLabels()
         };
         return dataset;
     }
@@ -173,6 +179,30 @@ export class SignupNode extends KoenigDecoratorNode {
     setBackgroundImageSrc(backgroundImageSrc) {
         const writable = this.getWritable();
         writable.__backgroundImageSrc = backgroundImageSrc;
+    }
+
+    getLabels() {
+        const self = this.getLatest();
+        return self.__labels;
+    }
+
+    setLabels(labels) {
+        if (!Array.isArray(labels) || !labels.every(item => typeof item === 'string')) {
+            throw new Error('Invalid argument: Expected an array of strings.'); // eslint-disable-line
+        }
+
+        const writable = this.getWritable();
+        writable.__labels = labels;
+    }
+
+    addLabel(label) {
+        const writable = this.getWritable();
+        writable.__labels.push(label);
+    }
+
+    removeLabel(label) {
+        const writable = this.getWritable();
+        writable.__labels = writable.__labels.filter(l => l !== label);
     }
 
     hasEditMode() {

@@ -147,4 +147,39 @@ test.describe('Signup card', async () => {
         // Check if it is also set as an image in the panel
         await expect(page.getByTestId('image-picker-background')).toHaveAttribute('src', /blob:/);
     });
+
+    test('can add and remove labels', async function ({page}) {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'signup'});
+
+        await page.click('[data-testid="labels-dropdown"] input');
+
+        // Add existing label
+
+        await page.keyboard.type('Label 1');
+        await page.click('[data-testid="labels-dropdown"] [data-testid="multiselect-dropdown-item"]');
+
+        await expect(page.locator('[data-testid="labels-dropdown"] [data-testid="multiselect-dropdown-selected"]')).toHaveCount(1);
+        await expect(page.locator('[data-testid="labels-dropdown"] [data-testid="multiselect-dropdown-selected"]')).toHaveText('Label 1');
+
+        // Add new label
+
+        await page.keyboard.type('Some new label');
+        await page.keyboard.press('Enter');
+
+        await expect(page.locator('[data-testid="labels-dropdown"] [data-testid="multiselect-dropdown-selected"]')).toHaveCount(2);
+        await expect(page.locator('[data-testid="labels-dropdown"] [data-testid="multiselect-dropdown-selected"]:nth-child(2)')).toHaveText('Some new label');
+
+        // Remove label with backspace
+
+        await page.keyboard.press('Backspace');
+
+        await expect(page.locator('[data-testid="labels-dropdown"] [data-testid="multiselect-dropdown-selected"]')).toHaveCount(1);
+
+        // Remove label by clicking
+
+        await page.click('[data-testid="labels-dropdown"] [data-testid="multiselect-dropdown-selected"]');
+
+        await expect(page.locator('[data-testid="labels-dropdown"] [data-testid="multiselect-dropdown-selected"]')).toHaveCount(0);
+    });
 });

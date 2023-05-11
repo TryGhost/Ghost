@@ -84,7 +84,8 @@ Empty.args = {
     disclaimerPlaceholder: 'Enter disclaimer text',
     buttonText: '',
     buttonPlaceholder: 'Add button text',
-    splitLayout: false
+    splitLayout: false,
+    availableLabels: [{id: '1',name: 'First label'},{id: '2',name: 'Second label'}]
 };
 
 export const Populated = Template.bind({});
@@ -101,5 +102,6 @@ Populated.args = {
     disclaimerPlaceholder: 'Enter disclaimer text',
     buttonText: 'Subscribe',
     buttonPlaceholder: 'Add button text',
-    splitLayout: false
+    splitLayout: false,
+    availableLabels: [{id: '1',name: 'First label'},{id: '2',name: 'Second label'}]
 };

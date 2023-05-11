@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-key */
 import React from 'react';
 
-import {ButtonGroupSetting, ColorPickerSetting, DropdownSetting, InputSetting, SettingsDivider, SettingsPanel, ThumbnailSetting, ToggleSetting} from './SettingsPanel';
+import {ButtonGroupSetting, ColorPickerSetting, DropdownSetting, InputSetting, MultiSelectDropdownSetting, SettingsDivider, SettingsPanel, ThumbnailSetting, ToggleSetting} from './SettingsPanel';
 import {ReactComponent as CenterAlignIcon} from '../../assets/icons/kg-align-center.svg';
 import {ReactComponent as ImgFullIcon} from '../../assets/icons/kg-img-full.svg';
 import {ReactComponent as ImgRegularIcon} from '../../assets/icons/kg-img-regular.svg';
@@ -90,6 +90,18 @@ EmailCtaCard.args = {
         <ToggleSetting label='Button' />,
         <InputSetting label='Button text' placeholder='Add button text' />,
         <InputSetting label='Button URL' placeholder='https://yoursite.com/#/portal/signup/' />
+    ]
+};
+
+export const SignupLabelsCard = Template.bind({});
+SignupLabelsCard.args = {
+    children: [
+        <MultiSelectDropdownSetting
+            description='These labels will be applied to members who sign up via this form.'
+            label='Labels'
+            menu={[{id: '1', name: 'Free members'}, {id: '2', name: 'Paid members'}]}
+            value={['1']}
+        />
     ]
 };
 

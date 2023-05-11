@@ -30,6 +30,7 @@ describe('SignupNode', function () {
         signupNode.getHeader().should.equal(data.header);
         signupNode.getSubheader().should.equal(data.subheader);
         signupNode.getStyle().should.equal(data.style);
+        signupNode.getLabels().should.deepEqual(data.labels);
     };
 
     beforeEach(function () {
@@ -41,7 +42,8 @@ describe('SignupNode', function () {
             disclaimer: 'Disclaimer',
             header: 'Header',
             subheader: 'Subheader',
-            style: 'image'
+            style: 'image',
+            labels: ['label 1', 'label 2']
         };
 
         exportOptions = {
@@ -93,7 +95,34 @@ describe('SignupNode', function () {
             node.getSubheader().should.equal('This is the new subheader');
             node.setStyle('light');
             node.getStyle().should.equal('light');
+            // Labels are tested in a separate block below
         }));
+
+        describe('labels', function () {
+            it('can set multiple labels at once', editorTest(function () {
+                const node = $createSignupNode(dataset);
+                node.setLabels(['new label 1', 'new label 2']);
+                node.getLabels().should.deepEqual(['new label 1', 'new label 2']);
+            }));
+
+            it('only accepts an array of strings for setLabels', editorTest(function () {
+                const node = $createSignupNode(dataset);
+                (() => node.setLabels('label')).should.throwError();
+                (() => node.setLabels(['label 1', 2])).should.throwError();
+            }));
+
+            it('can add one label to the existing array', editorTest(function () {
+                const node = $createSignupNode(dataset);
+                node.addLabel('new label 3');
+                node.getLabels().should.deepEqual(['label 1', 'label 2', 'new label 3']);
+            }));
+
+            it('can remove one label from the existing array', editorTest(function () {
+                const node = $createSignupNode(dataset);
+                node.removeLabel('label 2');
+                node.getLabels().should.deepEqual(['label 1']);
+            }));
+        });
 
         it('has getDataset() method', editorTest(function () {
             const signupNode = $createSignupNode(dataset);
@@ -155,7 +184,8 @@ describe('SignupNode', function () {
                 header: dataset.header,
                 subheader: dataset.subheader,
                 disclaimer: dataset.disclaimer,
-                buttonText: dataset.buttonText
+                buttonText: dataset.buttonText,
+                labels: dataset.labels
             });
         }));
     });
