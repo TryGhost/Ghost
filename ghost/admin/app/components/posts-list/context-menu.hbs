@@ -11,7 +11,7 @@
         {{#if this.shouldFeatureSelection }}
             <li>
                 <button class="mr2" type="button" {{on "click" this.featurePosts}}>
-                    <span>{{svg-jar "star" class="mb1"}}Feature</span>
+                    <span>{{svg-jar "star" class="mb1 star"}}Feature</span>
                 </button>
             </li>
         {{else}}
@@ -38,7 +38,7 @@
         {{#if this.canCopySelection}}
         <li>
             <button class="mr2" type="button" {{on "click" this.copyPosts}}>
-                <span>{{svg-jar "copy"}}Duplicate</span>
+                <span>{{svg-jar "duplicate"}}Duplicate</span>
             </button>
         </li>
         {{/if}}
