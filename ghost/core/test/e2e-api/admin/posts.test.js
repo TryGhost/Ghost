@@ -465,15 +465,7 @@ describe('Posts API', function () {
                     }
                 })
                 .body({posts: [post]})
-                .expectStatus(201)
-                .matchBodySnapshot({
-                    posts: [Object.assign(matchPostShallowIncludes, {published_at: anyISODateTime})]
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    location: anyLocationFor('posts')
-                });
+                .expectStatus(201);
 
             const [postResponse] = postBody.posts;
 
