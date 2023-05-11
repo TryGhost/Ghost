@@ -1,4 +1,5 @@
 import Component from '@glimmer/component';
+import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
@@ -7,11 +8,24 @@ export default class AnnouncementSettingsContentComponent extends Component {
     @service settings;
 
     get content() {
-        return this.settings.announcementContent;
+        const content = this.settings.announcementContent;
+        if (!content) {
+            return null;
+        }
+        // wrap in a paragraph, so it gets parsed correctly
+        return this.hasParagraphWrapper(content) ? content : `<p>${content}</p>`;
+    }
+
+    hasParagraphWrapper(html) {
+        const domParser = new DOMParser();
+        const doc = domParser.parseFromString(html, 'text/html');
+
+        return doc.body?.firstElementChild?.tagName === 'P';
     }
 
     @action
     setContent(html) {
-        this.settings.announcementContent = html;
+        const cleanedHtml = cleanBasicHtml(html || '', {firstChildInnerContent: true});
+        this.settings.announcementContent = cleanedHtml;
     }
 }
