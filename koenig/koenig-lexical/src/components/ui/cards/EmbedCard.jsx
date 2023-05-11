@@ -7,8 +7,11 @@ import {UrlInput} from '../UrlInput';
 export function EmbedCard({captionEditor, captionEditorInitialState, html, isSelected, urlInputValue, urlPlaceholder, urlError, isLoading, handleUrlChange, handleUrlSubmit, handleRetry, handlePasteAsLink, handleClose}) {
     if (html) {
         return (
-            <>
-                <EmbedIframe dataTestId="embed-iframe" html={html} />
+            <div className="not-kg-prose">
+                <div className="relative">
+                    <EmbedIframe dataTestId="embed-iframe" html={html} />
+                    <div className="absolute inset-0 z-50 mt-0"></div>
+                </div>
                 <CardCaptionEditor
                     captionEditor={captionEditor}
                     captionEditorInitialState={captionEditorInitialState}
@@ -16,8 +19,7 @@ export function EmbedCard({captionEditor, captionEditorInitialState, html, isSel
                     dataTestId="embed-caption"
                     isSelected={isSelected}
                 />
-                <div className="absolute inset-0 z-50 mt-0"></div>
-            </>
+            </div>
         );
     }
     return (
