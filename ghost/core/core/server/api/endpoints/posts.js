@@ -283,7 +283,6 @@ module.exports = {
 
     copy: {
         statusCode: 201,
-        headers: {},
         options: [
             'id',
             'formats'
@@ -297,12 +296,7 @@ module.exports = {
             method: 'add'
         },
         async query(frame) {
-            return postsService.copyPost(frame)
-                .then((model) => {
-                    this.headers.cacheInvalidate = false;
-
-                    return model;
-                });
+            return postsService.copyPost(frame);
         }
     }
 };
