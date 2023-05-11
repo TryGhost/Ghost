@@ -157,8 +157,8 @@ describe('Card Asset Service', function () {
             });
 
             cardAssets.generateGlobs().should.eql({
-                'cards.min.css': 'css/(gallery).css',
-                'cards.min.js': 'js/(gallery).js'
+                'cards.min.css': 'css/@(gallery).css',
+                'cards.min.js': 'js/@(gallery).js'
             });
         });
 
@@ -171,8 +171,8 @@ describe('Card Asset Service', function () {
             });
 
             cardAssets.generateGlobs().should.eql({
-                'cards.min.css': 'css/(gallery).css',
-                'cards.min.js': 'js/(gallery).js'
+                'cards.min.css': 'css/@(gallery).css',
+                'cards.min.js': 'js/@(gallery).js'
             });
         });
     });
