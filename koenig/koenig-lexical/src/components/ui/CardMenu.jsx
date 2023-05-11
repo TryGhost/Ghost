@@ -17,6 +17,13 @@ export const CardMenuSection = ({label, children, ...props}) => {
 };
 
 export const CardMenuItem = ({label, desc, isSelected, onClick, Icon, ...props}) => {
+    const buttonRef = React.useRef(null);
+
+    React.useEffect(() => {
+        if (isSelected) {
+            buttonRef.current.scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'nearest'});
+        }
+    }, [isSelected]);
     // browsers will move focus on mouseDown but we don't want that because it
     // removes focus from the editor meaning key commands don't work as
     // expected after a card is inserted
@@ -27,9 +34,13 @@ export const CardMenuItem = ({label, desc, isSelected, onClick, Icon, ...props})
     return (
         <li className="mb-0" role="presentation">
             <button
+                ref={buttonRef}
                 className={`flex w-full cursor-pointer flex-row items-center border border-transparent px-4 py-[1rem] text-left text-grey-800 hover:bg-grey-100 dark:hover:bg-grey-900  ${isSelected ? 'bg-grey-100 dark:bg-grey-900' : ''}`}
                 data-kg-card-menu-item={label}
-                data-kg-cardmenu-selected={isSelected} role="menuitem" type="button" onClick={onClick}
+                data-kg-cardmenu-selected={isSelected}
+                role="menuitem"
+                type="button"
+                onClick={onClick}
                 onMouseDown={preventMouseDown}
                 {...props}
             >
@@ -46,6 +57,13 @@ export const CardMenuItem = ({label, desc, isSelected, onClick, Icon, ...props})
 };
 
 export const CardSnippetItem = ({label, isSelected, Icon, onRemove, closeMenu, ...props}) => {
+    const itemRef = React.useRef(null);
+
+    React.useEffect(() => {
+        if (isSelected) {
+            itemRef.current.scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'nearest'});
+        }
+    }, [isSelected]);
     const handleSnippetRemove = (event) => {
         event.stopPropagation(); // prevent snippet insertion
         onRemove();
@@ -55,6 +73,7 @@ export const CardSnippetItem = ({label, isSelected, Icon, onRemove, closeMenu, .
     return (
         <li className="mb-0" role="presentation">
             <div
+                ref={itemRef}
                 className={`kg-cardmenu-card-hover group flex w-full cursor-pointer flex-row items-center border border-transparent px-4 py-[1rem] text-grey-800 hover:bg-grey-100 dark:hover:bg-grey-900 ${isSelected ? 'bg-grey-100 dark:hover:bg-grey-900' : ''}`}
                 data-kg-cardmenu-selected={isSelected}
                 role="menuitem"
