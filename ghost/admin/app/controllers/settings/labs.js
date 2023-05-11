@@ -3,7 +3,6 @@ import {inject as service} from '@ember/service';
 /* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller from '@ember/controller';
 import DeleteAllModal from '../../components/settings/labs/delete-all-content-modal';
-import FeedbackLexicalModal from '../../components/modal-feedback-lexical';
 import ImportContentModal from '../../components/modal-import-content';
 import RSVP from 'rsvp';
 import config from 'ghost-admin/config/environment';
@@ -18,7 +17,6 @@ import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
 import {run} from '@ember/runloop';
 import {task, timeout} from 'ember-concurrency';
-import {tracked} from '@glimmer/tracking';
 
 const {Promise} = RSVP;
 
@@ -51,8 +49,6 @@ export default class LabsController extends Controller {
     @service utils;
 
     @inject config;
-
-    @tracked showFeedbackLexicalModal = false;
 
     importErrors = null;
     importSuccessful = false;
@@ -162,11 +158,6 @@ export default class LabsController extends Controller {
     @action
     toggleEarlyAccessModal() {
         this.toggleProperty('showEarlyAccessModal');
-    }
-
-    @action
-    async openFeedbackLexical() {
-        await this.modals.open(FeedbackLexicalModal);
     }
 
     /**
