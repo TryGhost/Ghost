@@ -94,16 +94,6 @@
             />
 
             <div class="gh-editor-wordcount-container">
-                {{#if (feature 'lexicalEditor')}}
-                    <button
-                        type="button"
-                        class="gh-editor-feedback"
-                        {{on "click" this.openFeedbackLexical}}
-                        data-test-button="lexical-editor-feedback"
-                    >
-                        <span>Feedback?</span>
-                    </button>
-                {{/if}}
                 <div class="gh-editor-wordcount">
                     {{gh-pluralize this.wordCount.wordCount "word"}}
                 </div>

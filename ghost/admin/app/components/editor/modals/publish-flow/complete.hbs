@@ -96,7 +96,7 @@
                 </button>
             </p>
         {{else}}
-            <p class="gh-publish-confirmation gh-publish-confirmation-with-feedback">
+            <p class="gh-publish-confirmation">
                 <button
                     type="button"
                     class="gh-back-to-editor"
@@ -105,17 +105,8 @@
                 >
                     <span>Back to editor</span>
                 </button>
-                {{#if (feature 'lexicalEditor')}}
-                    <button
-                        type="button"
-                        class="gh-publish-confirmation-feedback"
-                        {{on "click" this.openFeedbackLexical}}
-                        data-test-button="lexical-feedback"
-                    >
-                        <span>Beta feedback?</span>
-                    </button>
-                {{/if}}
             </p>
         {{/if}}
     {{/if}}
+
 {{/let}}
