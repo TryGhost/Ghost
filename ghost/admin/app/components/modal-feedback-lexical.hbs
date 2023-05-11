@@ -2,7 +2,7 @@
     <header class="modal-header">
         <h1>Editor beta feedback</h1>
     </header>
-    <a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span
+    <a class="close" href="" role="button" title="Close" {{on "click" this.closeModal}}>{{svg-jar "close"}}<span
             class="hidden">Close</span></a>
 
     <div class="modal-body gh-modal-feedback-lexical">
@@ -27,7 +27,7 @@
     </div>
 
     <div class="modal-footer">
-        <button class="gh-btn" type="button" {{action "closeModal" }}><span>Cancel</span></button>
+        <button class="gh-btn" type="button" {{on "click" this.closeModal}}><span>Cancel</span></button>
         <GhTaskButton 
             @buttonText="Send feedback"
             @task={{this.submitFeedback}}
