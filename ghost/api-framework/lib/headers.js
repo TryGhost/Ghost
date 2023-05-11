@@ -122,27 +122,23 @@ module.exports = {
         }
 
         const locationHeaderDisabled = apiConfigHeaders?.location === false;
-        const hasFrameData = ['add', 'copy'].includes(frame?.method) && result[frame.docName]?.[0]?.id;
+        const hasLocationResolver = apiConfigHeaders?.location?.resolve;
+        const hasFrameData = (frame?.method === 'add' || hasLocationResolver) && result[frame.docName]?.[0]?.id;
 
         if (!locationHeaderDisabled && hasFrameData) {
             const protocol = (frame.original.url.secure === false) ? 'http://' : 'https://';
             const resourceId = result[frame.docName][0].id;
 
             let locationURL = url.resolve(`${protocol}${frame.original.url.host}`,frame.original.url.pathname);
-
             if (!locationURL.endsWith('/')) {
                 locationURL += '/';
             }
 
-            if (locationURL.endsWith('/copy/')) {
-                locationURL = locationURL
-                    .split('/')
-                    .slice(0, -3)
-                    .concat('')
-                    .join('/');
-            }
-
             locationURL += `${resourceId}/`;
+
+            if (hasLocationResolver) {
+                locationURL = apiConfigHeaders.location.resolve(locationURL);
+            }
 
             const locationHeader = {
                 Location: locationURL

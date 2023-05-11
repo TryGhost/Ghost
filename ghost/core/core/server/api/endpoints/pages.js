@@ -242,6 +242,11 @@ module.exports = {
 
     copy: {
         statusCode: 201,
+        headers: {
+            location: {
+                resolve: postsService.generateCopiedPostLocationFromUrl
+            }
+        },
         options: [
             'id',
             'formats'

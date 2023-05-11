@@ -234,4 +234,14 @@ describe('Posts Service', function () {
             });
         });
     });
+
+    describe('generateCopiedPostLocationFromUrl', function () {
+        it('generates a location from the provided url', function () {
+            const postsService = new PostsService({});
+            const url = 'http://foo.bar/ghost/api/admin/posts/abc123/copy/def456/';
+            const expectedUrl = 'http://foo.bar/ghost/api/admin/posts/def456/';
+
+            assert.equal(postsService.generateCopiedPostLocationFromUrl(url), expectedUrl);
+        });
+    });
 });
