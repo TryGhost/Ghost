@@ -34,6 +34,7 @@
     "@storybook/addon-essentials": "^7.0.9",
     "@storybook/addon-interactions": "^7.0.9",
     "@storybook/addon-links": "^7.0.9",
+    "@storybook/addon-styling": "^1.0.6",
     "@storybook/blocks": "^7.0.9",
     "@storybook/react": "^7.0.9",
     "@storybook/react-vite": "^7.0.9",
