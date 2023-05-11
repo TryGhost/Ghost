@@ -159,7 +159,7 @@ export function HeaderCard({isEditing,
                         onClick={handleColorSelector}
                     />
                     <BackgroundImagePicker
-                        backgroundImagePreview={backgroundImagePreview}
+                        backgroundImagePreview={backgroundImagePreview || (!backgroundImageSrc && type === 'image')} // for storybook compatibility
                         backgroundImageSrc={backgroundImageSrc}
                         fileInputRef={fileInputRef}
                         handleClearBackgroundImage={handleClearBackgroundImage}

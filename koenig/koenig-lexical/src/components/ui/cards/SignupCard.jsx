@@ -210,7 +210,7 @@ export function SignupCard({alignment,
                     />
                     {splitLayout ?
                         <BackgroundImagePicker
-                            backgroundImagePreview={backgroundImagePreview}
+                            backgroundImagePreview={backgroundImagePreview || (!backgroundImageSrc && type === 'image')} // for storybook compatibility
                             backgroundImageSrc={backgroundImageSrc}
                             fileInputRef={fileInputRef}
                             handleClearBackgroundImage={handleClearBackgroundImage}
@@ -227,7 +227,7 @@ export function SignupCard({alignment,
                                 onClick={handleColorSelector}
                             />
                             <BackgroundImagePicker
-                                backgroundImagePreview={backgroundImagePreview}
+                                backgroundImagePreview={backgroundImagePreview || (!backgroundImageSrc && type === 'image')} // for storybook compatibility
                                 backgroundImageSrc={backgroundImageSrc}
                                 fileInputRef={fileInputRef}
                                 handleClearBackgroundImage={handleClearBackgroundImage}
