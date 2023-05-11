@@ -13,5 +13,11 @@ const config: StorybookConfig = {
   docs: {
     autodocs: "tag",
   },
+  async viteFinal(config, options) {
+    config.resolve.alias = {
+        crypto: require.resolve('rollup-plugin-node-builtins'),
+    }
+    return config;
+  },
 };
 export default config;
