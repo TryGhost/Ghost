@@ -387,10 +387,6 @@
     font-weight: 400;
 }
 
-.gh-editor-feedback {
-    color: var(--green);
-}
-
 .gh-editor-status {
     color: var(--midgrey);
     font-size: 1.3rem;
