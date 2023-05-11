@@ -19,7 +19,7 @@ const {get: getMetaData, getAssetUrl} = metaData;
 
 function writeMetaTag(property, content, type) {
     type = type || property.substring(0, 7) === 'twitter' ? 'name' : 'property';
-    return '<meta ' + type + '="' + property + '" content="' + content + '" />';
+    return '<meta ' + type + '="' + property + '" content="' + content + '">';
 }
 
 function finaliseStructuredData(meta) {
@@ -126,7 +126,7 @@ function getWebmentionDiscoveryLink() {
     try {
         const siteUrl = urlUtils.getSiteUrl();
         const webmentionUrl = new URL('webmentions/receive/', siteUrl);
-        return `<link href="${webmentionUrl.href}" rel="webmention" />`;
+        return `<link href="${webmentionUrl.href}" rel="webmention">`;
     } catch (err) {
         logging.warn(err);
         return '';
