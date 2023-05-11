@@ -180,7 +180,7 @@
     "express-session": "1.17.3",
     "fs-extra": "11.1.1",
     "ghost-storage-base": "1.0.0",
-    "glob": "8.1.0",
+    "glob": "10.2.3",
     "got": "11.8.6",
     "gscan": "4.36.3",
     "human-number": "2.0.1",
