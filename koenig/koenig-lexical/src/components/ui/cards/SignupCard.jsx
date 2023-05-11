@@ -42,7 +42,6 @@ export function SignupCard({alignment,
     buttonText,
     buttonPlaceholder,
     backgroundImageSrc,
-    backgroundImagePreview,
     isEditing,
     fileUploader,
     fileInputRef,
@@ -207,13 +206,13 @@ export function SignupCard({alignment,
                     />
                     {splitLayout ?
                         <BackgroundImagePicker
-                            backgroundImagePreview={backgroundImagePreview || (!backgroundImageSrc && type === 'image')} // for storybook compatibility
                             backgroundImageSrc={backgroundImageSrc}
                             fileInputRef={fileInputRef}
                             handleClearBackgroundImage={handleClearBackgroundImage}
                             isUploading={isUploading}
                             openFilePicker={openFilePicker}
                             progress={progress}
+                            type={type}
                             onFileChange={onFileChange}
                         />
                         : <>
@@ -224,13 +223,13 @@ export function SignupCard({alignment,
                                 onClick={handleColorSelector}
                             />
                             <BackgroundImagePicker
-                                backgroundImagePreview={backgroundImagePreview || (!backgroundImageSrc && type === 'image')} // for storybook compatibility
                                 backgroundImageSrc={backgroundImageSrc}
                                 fileInputRef={fileInputRef}
                                 handleClearBackgroundImage={handleClearBackgroundImage}
                                 isUploading={isUploading}
                                 openFilePicker={openFilePicker}
                                 progress={progress}
+                                type={type}
                                 onFileChange={onFileChange}
                             />
                         </>
@@ -272,7 +271,6 @@ SignupCard.propTypes = {
     buttonText: PropTypes.string,
     buttonPlaceholder: PropTypes.string,
     backgroundImageSrc: PropTypes.string,
-    backgroundImagePreview: PropTypes.bool,
     isEditing: PropTypes.bool,
     fileUploader: PropTypes.object,
     fileInputRef: PropTypes.object,

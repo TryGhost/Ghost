@@ -59,27 +59,13 @@ function HeaderNodeComponent({
         });
     };
 
-    const [backgroundImagePreview, setBackgroundImagePreview] = React.useState(false);
-
     const fileInputRef = React.useRef(null);
 
     const openFilePicker = () => {
         fileInputRef.current.click();
     };
 
-    const toggleBackgroundImagePreview = () => {
-        setBackgroundImagePreview(!backgroundImagePreview);
-    };
-
-    React.useEffect(() => {
-        if (backgroundImageSrc !== '') {
-            setBackgroundImagePreview(true);
-        }
-    }, [backgroundImageSrc]);
-
     const handleColorSelector = (color) => {
-        color === 'image' ? setBackgroundImagePreview(true) : setBackgroundImagePreview(false);
-
         if (color === 'image' && backgroundImageSrc === ''){
             openFilePicker();
         }
@@ -133,7 +119,6 @@ function HeaderNodeComponent({
     return (
         <>
             <HeaderCard
-                backgroundImagePreview={backgroundImagePreview}
                 backgroundImageSrc={backgroundImageSrc}
                 button={button}
                 buttonPlaceholder={buttonPlaceholder}
@@ -158,7 +143,6 @@ function HeaderNodeComponent({
                 subheaderPlaceholder={subheaderPlaceholder}
                 subheaderTextEditor={subheaderTextEditor}
                 subheaderTextEditorInitialState={subheaderTextEditorInitialState}
-                toggleBackgroundImagePreview={toggleBackgroundImagePreview}
                 type={type}
                 onFileChange={onFileChange}
             />

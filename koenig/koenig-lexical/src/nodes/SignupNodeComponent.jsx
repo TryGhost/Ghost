@@ -70,23 +70,13 @@ function SignupNodeComponent({
         });
     };
 
-    const [backgroundImagePreview, setBackgroundImagePreview] = useState(false);
-
     const fileInputRef = useRef(null);
 
     const openFilePicker = () => {
         fileInputRef.current.click();
     };
 
-    useEffect(() => {
-        if (backgroundImageSrc !== '') {
-            setBackgroundImagePreview(true);
-        }
-    }, [backgroundImageSrc]);
-
     const handleColorSelector = (color) => {
-        color === 'image' ? setBackgroundImagePreview(true) : setBackgroundImagePreview(false);
-
         if (color === 'image' && backgroundImageSrc === ''){
             openFilePicker();
         }
@@ -132,7 +122,6 @@ function SignupNodeComponent({
         <>
             <SignupCard
                 availableLabels={availableLabels}
-                backgroundImagePreview={backgroundImagePreview}
                 backgroundImageSrc={backgroundImageSrc}
                 buttonPlaceholder={buttonPlaceholder}
                 buttonText={buttonText}

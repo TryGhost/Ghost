@@ -22,7 +22,7 @@ function FileUploading({progress}) {
 
 export function BackgroundImagePicker({onFileChange,
     backgroundImageSrc,
-    backgroundImagePreview,
+    type,
     handleClearBackgroundImage,
     fileInputRef,
     openFilePicker,
@@ -45,7 +45,7 @@ export function BackgroundImagePicker({onFileChange,
                 />
             </form>
             {
-                backgroundImagePreview && (
+                type === 'image' && (
                     <div className="w-full">
                         <div className="relative">
                             <div className="flex w-full items-center justify-center">
@@ -84,7 +84,6 @@ FileUploading.propTypes = {
 };
 
 BackgroundImagePicker.propTypes = {
-    backgroundImagePreview: PropTypes.bool,
     backgroundImageSrc: PropTypes.string,
     fileInputRef: PropTypes.object,
     handleClearBackgroundImage: PropTypes.func,

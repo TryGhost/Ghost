@@ -91,7 +91,6 @@ Populated.args = {
     buttonText: 'Subscribe',
     buttonPlaceholder: 'Add button text',
     buttonUrl: 'https://ghost.org/',
-    backgroundImagePreview: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
     backgroundImageSrc: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
     type: 'image'
 };
@@ -109,7 +108,6 @@ Loading.args = {
     buttonText: 'Subscribe',
     buttonPlaceholder: 'Add button text',
     buttonUrl: 'https://ghost.org/',
-    backgroundImagePreview: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
     backgroundImageSrc: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
     type: 'image',
     fileUploader: {

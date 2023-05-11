@@ -37,7 +37,6 @@ export function HeaderCard({isEditing,
     backgroundImageSrc,
     onFileChange,
     handleClearBackgroundImage,
-    backgroundImagePreview,
     fileInputRef,
     openFilePicker,
     type,
@@ -159,13 +158,13 @@ export function HeaderCard({isEditing,
                         onClick={handleColorSelector}
                     />
                     <BackgroundImagePicker
-                        backgroundImagePreview={backgroundImagePreview || (!backgroundImageSrc && type === 'image')} // for storybook compatibility
                         backgroundImageSrc={backgroundImageSrc}
                         fileInputRef={fileInputRef}
                         handleClearBackgroundImage={handleClearBackgroundImage}
                         isUploading={isUploading}
                         openFilePicker={openFilePicker}
                         progress={progress}
+                        type={type}
                         onFileChange={onFileChange}
                     />
                     <SettingsDivider />
@@ -211,7 +210,6 @@ HeaderCard.propTypes = {
     buttonPlaceholder: PropTypes.string,
     buttonUrl: PropTypes.string,
     backgroundImageSrc: PropTypes.string,
-    backgroundImagePreview: PropTypes.bool,
     isEditing: PropTypes.bool,
     isUploading: PropTypes.bool,
     progress: PropTypes.number,
