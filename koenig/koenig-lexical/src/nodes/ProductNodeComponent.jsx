@@ -8,6 +8,7 @@ import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {ProductCard} from '../components/ui/cards/ProductCard';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
+import {getImageDimensions} from '../utils/getImageDimensions';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export function ProductNodeComponent({
@@ -46,6 +47,7 @@ export function ProductNodeComponent({
         const imgPreviewUrl = URL.createObjectURL(files[0]);
         setImgPreview(imgPreviewUrl);
 
+        const {width, height} = await getImageDimensions(imgPreviewUrl);
         const imgUploadResult = await imgUploader.upload(files);
         const imageUrl = imgUploadResult?.[0]?.url;
 
@@ -53,6 +55,8 @@ export function ProductNodeComponent({
             editor.update(() => {
                 const node = $getNodeByKey(nodeKey);
                 node.setImgSrc(imageUrl);
+                node.setImgHeight(height);
+                node.setImgWidth(width);
             });
         }
 

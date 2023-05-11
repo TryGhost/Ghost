@@ -142,8 +142,6 @@ export function ProductCard({
 ProductCard.propTypes = {
     isEditing: PropTypes.bool,
     imgSrc: PropTypes.string,
-    imgWidth: PropTypes.string,
-    imgHeight: PropTypes.string,
     isButtonEnabled: PropTypes.bool,
     buttonText: PropTypes.string,
     buttonUrl: PropTypes.string,
