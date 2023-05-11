@@ -26,8 +26,8 @@ export function BookmarkCard({
 }) {
     if (url && !urlError && title) {
         return (
-            <>
-                <div className="flex min-h-[120px] w-full rounded border border-grey/40 bg-transparent font-sans dark:border-grey/20" data-testid="bookmark-container">
+            <div className="not-kg-prose">
+                <div className="relative flex min-h-[120px] w-full rounded border border-grey/40 bg-transparent font-sans dark:border-grey/20" data-testid="bookmark-container">
                     <div className="flex grow basis-full flex-col items-start justify-start p-5" data-testid="bookmark-text-container">
                         <div className="text-[1.5rem] font-semibold leading-normal tracking-normal text-grey-900 dark:text-grey-100" data-testid="bookmark-title">{title}</div>
                         <div className="mt-1 max-h-[44px] overflow-y-hidden text-sm font-normal leading-normal text-grey-800 line-clamp-2 dark:text-grey-600" data-testid="bookmark-description">{description}</div>
@@ -42,6 +42,7 @@ export function BookmarkCard({
                             <img alt="" className="absolute inset-0 h-full w-full rounded-r-[.3rem] object-cover" data-testid="bookmark-thumbnail" src={thumbnail}/>
                         </div>)
                     }
+                    <div className="absolute inset-0 z-50 mt-0"></div>
                 </div>
                 <CardCaptionEditor
                     captionEditor={captionEditor}
@@ -50,8 +51,7 @@ export function BookmarkCard({
                     dataTestId="bookmark-caption"
                     isSelected={isSelected}
                 />
-                <div className="absolute inset-0 z-50 mt-0"></div>
-            </>
+            </div>
         );
     }
     return (
