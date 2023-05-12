@@ -208,15 +208,15 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         if (context) {
             // head is our main array that holds our meta data
             if (meta.metaDescription && meta.metaDescription.length > 0) {
-                head.push('<meta name="description" content="' + escapeExpression(meta.metaDescription) + '" />');
+                head.push('<meta name="description" content="' + escapeExpression(meta.metaDescription) + '">');
             }
 
             // no output in head if a publication icon is not set
             if (settingsCache.get('icon')) {
-                head.push('<link rel="icon" href="' + favicon + '" type="image/' + iconType + '" />');
+                head.push('<link rel="icon" href="' + favicon + '" type="image/' + iconType + '">');
             }
 
-            head.push('<link rel="canonical" href="' + escapeExpression(meta.canonicalUrl) + '" />');
+            head.push('<link rel="canonical" href="' + escapeExpression(meta.canonicalUrl) + '">');
 
             if (_.includes(context, 'preview')) {
                 head.push(writeMetaTag('robots', 'noindex,nofollow', 'name'));
@@ -228,17 +228,17 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             // show amp link in post when 1. we are not on the amp page and 2. amp is enabled
             if (_.includes(context, 'post') && !_.includes(context, 'amp') && settingsCache.get('amp')) {
                 head.push('<link rel="amphtml" href="' +
-                    escapeExpression(meta.ampUrl) + '" />');
+                    escapeExpression(meta.ampUrl) + '">');
             }
 
             if (meta.previousUrl) {
                 head.push('<link rel="prev" href="' +
-                    escapeExpression(meta.previousUrl) + '" />');
+                    escapeExpression(meta.previousUrl) + '">');
             }
 
             if (meta.nextUrl) {
                 head.push('<link rel="next" href="' +
-                    escapeExpression(meta.nextUrl) + '" />');
+                    escapeExpression(meta.nextUrl) + '">');
             }
 
             if (!_.includes(context, 'paged') && useStructuredData) {
@@ -255,11 +255,11 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         }
 
         head.push('<meta name="generator" content="Ghost ' +
-            escapeExpression(safeVersion) + '" />');
+            escapeExpression(safeVersion) + '">');
 
         head.push('<link rel="alternate" type="application/rss+xml" title="' +
             escapeExpression(meta.site.title) + '" href="' +
-            escapeExpression(meta.rssUrl) + '" />');
+            escapeExpression(meta.rssUrl) + '">');
 
         // no code injection for amp context!!!
         if (!_.includes(context, 'amp')) {
