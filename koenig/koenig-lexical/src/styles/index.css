@@ -7,6 +7,7 @@
 @import './components/koenig-lexical';
 @import './components/kg-prose';
 @import './components/simplemde';
+@import './components/react-colorful';
 
 /* Global Koenig content styles
 /* -------------------------------------------------------------------- */

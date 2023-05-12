@@ -100,42 +100,33 @@ test.describe('Signup card', async () => {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
-        const lightButton = page.locator('[aria-label="Light"]');
-        const darkButton = page.locator('[aria-label="Dark"]');
-        const accentButton = page.locator('[aria-label="Accent"]');
+        await page.click('[data-testid="signup-background-color"] [aria-label="Pick colour"]');
 
-        // Default class should be 'bg-black' on the card
-        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveClass(/ bg-black /);
+        await page.click('[data-testid="signup-background-color"] input');
+        await page.keyboard.type('ff0000');
 
-        // Switch to light
-        await lightButton.click();
+        // Selected colour should be applied inline
+        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('background-color', 'rgb(255, 0, 0)');
+        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('color', 'rgb(255, 255, 255)');
 
-        // Check that the background color has changed
-        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveClass(/ bg-grey-100 /);
+        // Check that the text colour updates to contrast with the background
 
-        // Switch back to dark
-        await darkButton.click();
+        await page.fill('[data-testid="signup-background-color"] input', '');
+        await page.keyboard.type('f7f7f7');
 
-        // Check that the background color has changed
-        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveClass(/ bg-black /);
-
-        // Switch to accent
-        await accentButton.click();
-
-        // Check that the background color has changed
-        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveClass(/ bg-accent /);
+        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('background-color', 'rgb(247, 247, 247)');
+        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('color', 'rgb(0, 0, 0)');
     });
 
     test('can add and remove background image', async function ({page}) {
         const filePath = path.relative(process.cwd(), __dirname + `/../fixtures/large-image.jpeg`);
+        const fileChooserPromise = page.waitForEvent('filechooser');
 
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
-        const fileChooserPromise = page.waitForEvent('filechooser');
-
-        // Click data-testid="background-image-color-button"
-        await page.click('[data-testid="background-image-color-button"]');
+        await page.click('[data-testid="signup-background-image-toggle"]');
+        await page.click('[data-testid="media-upload-placeholder"]');
 
         // Set files
         const fileChooser = await fileChooserPromise;
@@ -145,7 +136,29 @@ test.describe('Signup card', async () => {
         await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('background-image', /blob:/);
 
         // Check if it is also set as an image in the panel
-        await expect(page.getByTestId('image-picker-background')).toHaveAttribute('src', /blob:/);
+        await expect(page.locator('[data-testid="media-upload-filled"] img')).toHaveAttribute('src', /blob:/);
+    });
+
+    test('can change the button color', async function ({page}) {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'signup'});
+
+        await page.click('[data-testid="signup-button-color"] [aria-label="Pick colour"]');
+
+        await page.click('[data-testid="signup-button-color"] input');
+        await page.keyboard.type('ff0000');
+
+        // Selected colour should be applied inline
+        await expect(page.locator('[data-testid="signup-card-button"]')).toHaveCSS('background-color', 'rgb(255, 0, 0)');
+        await expect(page.locator('[data-testid="signup-card-button"]')).toHaveCSS('color', 'rgb(255, 255, 255)');
+
+        // Check that the text colour updates to contrast with the background
+
+        await page.fill('[data-testid="signup-button-color"] input', '');
+        await page.keyboard.type('f7f7f7');
+
+        await expect(page.locator('[data-testid="signup-card-button"]')).toHaveCSS('background-color', 'rgb(247, 247, 247)');
+        await expect(page.locator('[data-testid="signup-card-button"]')).toHaveCSS('color', 'rgb(0, 0, 0)');
     });
 
     test('can add and remove labels', async function ({page}) {

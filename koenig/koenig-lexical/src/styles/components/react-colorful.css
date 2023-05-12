@@ -1,0 +1,19 @@
+.koenig-lexical .react-colorful {
+    width: 100%;
+    height: 140px;
+
+    .react-colorful__saturation {
+        border-radius: 4px 4px 0 0;
+    }
+
+    .react-colorful__hue {
+        height: 8px;
+        border-radius: 0 0 4px 4px;
+    }
+
+    .react-colorful__pointer {
+        width: 14px;
+        height: 14px;
+        border-width: 1px;
+    }
+}

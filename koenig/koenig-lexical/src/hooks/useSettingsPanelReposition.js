@@ -1,6 +1,6 @@
 import useMovable from './useMovable.js';
 import {debounce} from 'lodash';
-import {useLayoutEffect} from 'react';
+import {useCallback, useLayoutEffect} from 'react';
 
 const CARD_SPACING = 20;
 const MIN_RIGHT_SPACING = 20;
@@ -89,5 +89,10 @@ export default function useSettingsPanelPosition({positionToRef} = {}) {
         return {x, y};
     }
 
-    return {ref};
+    const repositionPanel = useCallback(() => positionPanel(ref.current), []);
+
+    return {
+        ref,
+        repositionPanel
+    };
 }

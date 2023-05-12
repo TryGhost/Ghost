@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-key */
 import React from 'react';
 
-import {ButtonGroupSetting, ColorPickerSetting, DropdownSetting, InputSetting, MultiSelectDropdownSetting, SettingsDivider, SettingsPanel, ThumbnailSetting, ToggleSetting} from './SettingsPanel';
+import {ButtonGroupSetting, ColorOptionSetting, ColorPickerSetting, DropdownSetting, InputSetting, MediaUploadSetting, MultiSelectDropdownSetting, SettingsDivider, SettingsPanel, ToggleSetting} from './SettingsPanel';
 import {ReactComponent as CenterAlignIcon} from '../../assets/icons/kg-align-center.svg';
 import {ReactComponent as ImgFullIcon} from '../../assets/icons/kg-img-full.svg';
 import {ReactComponent as ImgRegularIcon} from '../../assets/icons/kg-img-regular.svg';
@@ -93,9 +93,10 @@ EmailCtaCard.args = {
     ]
 };
 
-export const SignupLabelsCard = Template.bind({});
-SignupLabelsCard.args = {
+export const SignupCard = Template.bind({});
+SignupCard.args = {
     children: [
+        <ColorPickerSetting label='Background color' value='#777777' />,
         <MultiSelectDropdownSetting
             description='These labels will be applied to members who sign up via this form.'
             label='Labels'
@@ -166,7 +167,7 @@ const calloutColorPicker = [
 export const CalloutCard = Template.bind({});
 CalloutCard.args = {
     children: [
-        <ColorPickerSetting buttons={calloutColorPicker} label='Background color' layout='stacked' />,
+        <ColorOptionSetting buttons={calloutColorPicker} label='Background color' layout='stacked' />,
         <ToggleSetting label='Emoji' />
     ]
 };
@@ -182,7 +183,7 @@ VideoCard.args = {
             description='Autoplay your video on a loop without sound.'
             label='Loop'
         />,
-        <ThumbnailSetting
+        <MediaUploadSetting
             desc=''
             icon='file'
             label='Custom thumbnail'
@@ -221,7 +222,7 @@ export const HeaderCard = Template.bind({});
 HeaderCard.args = {
     children: [
         <ButtonGroupSetting buttons={sizeButtonGroup} label='Size' />,
-        <ColorPickerSetting buttons={headerColorPicker} label='Style' />,
+        <ColorOptionSetting buttons={headerColorPicker} label='Style' />,
         <SettingsDivider />,
         <ToggleSetting label='Button' />,
         <InputSetting label='Button text' placeholder='Add button text' />,

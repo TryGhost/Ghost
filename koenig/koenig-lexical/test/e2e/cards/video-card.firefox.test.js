@@ -109,7 +109,7 @@ test.describe('Video card', async () => {
         await expect(await page.getByTestId('settings-panel')).toBeVisible();
 
         // Custom thumbnail should be visible
-        const emptyThumbnail = await page.getByTestId('thumbnail-media-placeholder');
+        const emptyThumbnail = await page.getByTestId('media-upload-placeholder');
         await expect(emptyThumbnail).toBeVisible();
 
         // Upload thumbnail
@@ -120,12 +120,12 @@ test.describe('Video card', async () => {
         await fileChooser.setFiles([imagePath]);
 
         // Thumbnail should be visible
-        await expect(await page.getByTestId('custom-thumbnail-filled')).toBeVisible();
+        await expect(await page.getByTestId('media-upload-filled')).toBeVisible();
 
         // Can remove thumbnail
         const replaceButton = page.getByTestId('custom-thumbnail-replace');
         replaceButton.click();
-        await expect(await page.getByTestId('thumbnail-media-placeholder')).toBeVisible();
+        await expect(await page.getByTestId('media-upload-placeholder')).toBeVisible();
     });
 
     test('can show errors for custom thumbnail', async function ({page}) {
@@ -139,7 +139,7 @@ test.describe('Video card', async () => {
         await expect(page.getByTestId('media-placeholder-errors')).toBeHidden();
 
         // Custom thumbnail should be visible
-        const emptyThumbnail = await page.getByTestId('thumbnail-media-placeholder');
+        const emptyThumbnail = await page.getByTestId('media-upload-placeholder');
 
         // Upload thumbnail
         const imagePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image-fail.jpeg');
@@ -162,12 +162,12 @@ test.describe('Video card', async () => {
         await expect(await page.locator('[data-testid="loop-video"] input').isChecked()).toBeFalsy();
 
         // Custom thumbnail should be visible
-        const emptyThumbnail = await page.getByTestId('thumbnail-media-placeholder');
+        const emptyThumbnail = await page.getByTestId('media-upload-placeholder');
         await expect(emptyThumbnail).toBeVisible();
 
         // Custom thumbnail should be hidden after loop enabled
         await loopButton.check();
-        await expect(page.getByTestId('thumbnail-media-placeholder')).toBeHidden();
+        await expect(page.getByTestId('media-upload-placeholder')).toBeHidden();
     });
 
     test('can upload dropped video', async function ({page}) {
@@ -226,20 +226,20 @@ test.describe('Video card', async () => {
         await uploadVideo(page);
 
         // Wait for custom thumbnail
-        await page.waitForSelector('[data-testid="thumbnail-media-placeholder"]');
+        await page.waitForSelector('[data-testid="media-upload-placeholder"]');
 
         // Create and dispatch data transfer
         const dataTransfer = await createDataTransfer(page, [{filePath, fileName: 'large-image.png', fileType: 'image/png'}]);
-        await page.getByTestId('thumbnail-media-placeholder').dispatchEvent('dragover', {dataTransfer});
+        await page.getByTestId('media-upload-placeholder').dispatchEvent('dragover', {dataTransfer});
 
         // Dragover text should be visible
         await expect(await page.locator('[data-kg-card-drag-text="true"]')).toBeVisible();
 
         // Drop file
-        await page.getByTestId('thumbnail-media-placeholder').dispatchEvent('drop', {dataTransfer});
+        await page.getByTestId('media-upload-placeholder').dispatchEvent('drop', {dataTransfer});
 
         // Thumbnail should be visible
-        await expect(await page.getByTestId('custom-thumbnail-filled')).toBeVisible();
+        await expect(await page.getByTestId('media-upload-filled')).toBeVisible();
     });
 
     test('can show errors if was dropped a file with wrong extension to custom thumbnail', async function ({page}) {
@@ -249,11 +249,11 @@ test.describe('Video card', async () => {
         await uploadVideo(page);
 
         // Wait for custom thumbnail
-        await page.waitForSelector('[data-testid="thumbnail-media-placeholder"]');
+        await page.waitForSelector('[data-testid="media-upload-placeholder"]');
 
         // Create and dispatch data transfer
         const dataTransfer = await createDataTransfer(page, [{filePath, fileName: 'video.mp4', fileType: 'video/mp4'}]);
-        await page.getByTestId('thumbnail-media-placeholder').dispatchEvent('drop', {dataTransfer});
+        await page.getByTestId('media-upload-placeholder').dispatchEvent('drop', {dataTransfer});
 
         // Errors should be visible
         await expect(await page.getByTestId('custom-thumbnails-errors')).toBeVisible();
@@ -264,7 +264,7 @@ test.describe('Video card', async () => {
 
         // Upload video
         await uploadVideo(page);
-        await page.waitForSelector('[data-testid="thumbnail-media-placeholder"]');
+        await page.waitForSelector('[data-testid="media-upload-placeholder"]');
 
         // Leave editing mode to display the toolbar
         await page.keyboard.press('Escape');
@@ -278,7 +278,7 @@ test.describe('Video card', async () => {
 
         // Upload video
         await uploadVideo(page);
-        await page.waitForSelector('[data-testid="thumbnail-media-placeholder"]');
+        await page.waitForSelector('[data-testid="media-upload-placeholder"]');
 
         // Leave editing mode to display the toolbar
         await page.keyboard.press('Escape');
@@ -343,7 +343,7 @@ test.describe('Video card', async () => {
 
         // Upload video
         await uploadVideo(page);
-        await page.waitForSelector('[data-testid="thumbnail-media-placeholder"]');
+        await page.waitForSelector('[data-testid="media-upload-placeholder"]');
 
         // create snippet
         await page.keyboard.press('Escape');

@@ -1,13 +1,14 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-export function Button({color, dataTestId, href, size, width, value, placeholder, type = 'button', target}) {
+export function Button({color, dataTestId, href, size, width, value, placeholder, type = 'button', target, ...other}) {
     const Tag = href ? 'a' : 'button';
     const props = {
         type: href ? null : type,
         href: href || null,
         rel: target === '_blank' ? 'noopener noreferrer' : null,
-        target: target || null
+        target: target || null,
+        ...other
     };
 
     return (

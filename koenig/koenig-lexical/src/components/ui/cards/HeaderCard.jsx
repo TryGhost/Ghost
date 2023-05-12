@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {BackgroundImagePicker} from '../BackgroundImagePicker';
 import {Button} from '../Button';
-import {ButtonGroupSetting, ColorPickerSetting, InputSetting, InputUrlSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
+import {ButtonGroupSetting, ColorOptionSetting, InputSetting, InputUrlSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {isEditorEmpty} from '../../../utils/isEditorEmpty';
 
 export const HEADER_COLORS = {
@@ -151,7 +151,7 @@ export function HeaderCard({isEditing,
                         selectedName={size}
                         onClick={handleSizeSelector}
                     />
-                    <ColorPickerSetting
+                    <ColorOptionSetting
                         buttons={colorPickerChildren}
                         label='Style'
                         selectedName={type}

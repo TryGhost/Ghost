@@ -8,12 +8,13 @@ const NODE_TYPE = 'signup';
 
 export class SignupNode extends KoenigDecoratorNode {
     // payload properties
-    __style;
     __buttonText;
     __header;
     __subheader;
     __disclaimer;
     __backgroundImageSrc;
+    __backgroundColor;
+    __buttonColor;
     __labels;
 
     static getType() {
@@ -39,30 +40,33 @@ export class SignupNode extends KoenigDecoratorNode {
     getDataset() {
         const self = this.getLatest();
         return {
-            style: self.__style,
             buttonText: self.__buttonText,
             header: self.__header,
             subheader: self.__subheader,
             disclaimer: self.__disclaimer,
             backgroundImageSrc: self.__backgroundImageSrc,
+            backgroundColor: self.__backgroundColor,
+            buttonColor: self.__buttonColor,
             labels: self.__labels
         };
     }
 
-    constructor({style,
-        buttonText,
+    constructor({buttonText,
         header,
         subheader,
         disclaimer,
         backgroundImageSrc,
+        backgroundColor,
+        buttonColor,
         labels} = {}, key) {
         super(key);
-        this.__style = style || 'dark';
         this.__buttonText = buttonText || '';
         this.__header = header || '';
         this.__subheader = subheader || '';
         this.__disclaimer = disclaimer || '';
         this.__backgroundImageSrc = backgroundImageSrc || '';
+        this.__backgroundColor = backgroundColor || '';
+        this.__buttonColor = buttonColor || '';
         this.__labels = labels || [];
     }
 
@@ -75,14 +79,15 @@ export class SignupNode extends KoenigDecoratorNode {
     }
 
     static importJSON(serializedNode) {
-        const {style, buttonText, header, subheader, disclaimer, backgroundImageSrc, labels} = serializedNode;
+        const {buttonText, header, subheader, disclaimer, backgroundImageSrc, backgroundColor, buttonColor, labels} = serializedNode;
         const node = new this({
-            style,
             buttonText,
             header,
             subheader,
             disclaimer,
             backgroundImageSrc,
+            backgroundColor,
+            buttonColor,
             labels
         });
         return node;
@@ -97,12 +102,13 @@ export class SignupNode extends KoenigDecoratorNode {
         const dataset = {
             type: NODE_TYPE,
             version: 1,
-            style: this.getStyle(),
             buttonText: this.getButtonText(),
             header: this.getHeader(),
             subheader: this.getSubheader(),
             disclaimer: this.getDisclaimer(),
             backgroundImageSrc: this.getBackgroundImageSrc(),
+            backgroundColor: this.getBackgroundColor(),
+            buttonColor: this.getButtonColor(),
             labels: this.getLabels()
         };
         return dataset;
@@ -119,16 +125,6 @@ export class SignupNode extends KoenigDecoratorNode {
 
     isInline() {
         return false;
-    }
-
-    getStyle() {
-        const self = this.getLatest();
-        return self.__style;
-    }
-
-    setStyle(style) {
-        const writable = this.getWritable();
-        writable.__style = style;
     }
 
     getButtonText() {
@@ -181,6 +177,26 @@ export class SignupNode extends KoenigDecoratorNode {
         writable.__backgroundImageSrc = backgroundImageSrc;
     }
 
+    getBackgroundColor() {
+        const self = this.getLatest();
+        return self.__backgroundColor;
+    }
+
+    setBackgroundColor(backgroundColor) {
+        const writable = this.getWritable();
+        writable.__backgroundColor = backgroundColor;
+    }
+
+    getButtonColor() {
+        const self = this.getLatest();
+        return self.__buttonColor;
+    }
+
+    setButtonColor(buttonColor) {
+        const writable = this.getWritable();
+        writable.__buttonColor = buttonColor;
+    }
+
     getLabels() {
         const self = this.getLatest();
         return self.__labels;
@@ -210,7 +226,7 @@ export class SignupNode extends KoenigDecoratorNode {
     }
 
     isEmpty() {
-        return !this.__header && !this.__subheader && !this.__disclaimer && !this.__buttonText && !this.__backgroundImageSrc;
+        return !this.__header && !this.__subheader && !this.__disclaimer && !this.__buttonText && !this.__backgroundImageSrc && !this.__backgroundColor;
     }
 
     // should be overridden

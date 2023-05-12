@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {ButtonGroupSetting, SettingsPanel, ThumbnailSetting, ToggleSetting} from '../SettingsPanel';
+import {ButtonGroupSetting, MediaUploadSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {CardCaptionEditor} from '../CardCaptionEditor';
 import {ReactComponent as ImgFullIcon} from '../../../assets/icons/kg-img-full.svg';
 import {ReactComponent as ImgRegularIcon} from '../../../assets/icons/kg-img-regular.svg';
@@ -92,7 +92,7 @@ function PopulatedVideoCard({
                             onChange={onLoopChange}
                         />
                         {!isLoopChecked && (
-                            <ThumbnailSetting
+                            <MediaUploadSetting
                                 alt='Custom thumbnail'
                                 dataTestId="custom-thumbnail-replace"
                                 errors={customThumbnailUploader.errors}
@@ -106,7 +106,7 @@ function PopulatedVideoCard({
                                 size='xsmall'
                                 src={customThumbnail}
                                 onFileChange={onCustomThumbnailChange}
-                                onRemoveCustomThumbnail={onRemoveCustomThumbnail}
+                                onRemoveMedia={onRemoveCustomThumbnail}
                             />
                         )}
                     </SettingsPanel>

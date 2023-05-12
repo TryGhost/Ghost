@@ -75,7 +75,6 @@ Empty.args = {
     display: 'Editing',
     cardWidth: 'regular',
     alignment: 'center',
-    type: 'dark',
     heading: '',
     headerPlaceholder: 'Enter heading text',
     subheader: '',
@@ -93,7 +92,6 @@ Populated.args = {
     display: 'Editing',
     cardWidth: 'regular',
     alignment: 'center',
-    type: 'dark',
     heading: 'This is a heading',
     headerPlaceholder: 'Enter heading text',
     subheader: 'And here is some subheading text.',
@@ -102,6 +100,8 @@ Populated.args = {
     disclaimerPlaceholder: 'Enter disclaimer text',
     buttonText: 'Subscribe',
     buttonPlaceholder: 'Add button text',
+    buttonColor: '#f7f7f7',
+    backgroundColor: '#444444',
     splitLayout: false,
     availableLabels: [{id: '1',name: 'First label'},{id: '2',name: 'Second label'}]
 };

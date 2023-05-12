@@ -38,6 +38,21 @@ export default function useMovable({adjustOnResize} = {}) {
     let originalOverflow = useRef();
     let guid = guidFor();
 
+    // React event handlers get added to the root element, so if we add listeners to the ref directly
+    // and call stopPropagation they stop any React events on child nodes from firing.
+    // Instead we add the listeners to the body and check if the event target is the ref.
+    const addRefEventListener = (event, handler) => {
+        const listener = (e) => {
+            if (ref.current?.contains(e.target)) {
+                handler(e);
+            }
+        };
+
+        document.body.addEventListener(event, listener, false);
+
+        return listener;
+    };
+
     const cancelClick = useCallback((e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -185,14 +200,14 @@ export default function useMovable({adjustOnResize} = {}) {
     }, [ref, addActiveEventListeners]);
 
     const addStartEventListeners = useCallback(() => {
-        ref.current?.addEventListener('touchstart', dragStart, false);
-        ref.current?.addEventListener('mousedown', dragStart, false);
-    }, [ref, dragStart]);
+        const touchStartListener = addRefEventListener('touchstart', dragStart);
+        const mouseDownListener = addRefEventListener('mousedown', dragStart);
 
-    const removeStartEventListeners = useCallback(() => {
-        ref.current?.removeEventListener('touchstart', dragEnd, false);
-        ref.current?.removeEventListener('mousedown', dragEnd, false);
-    }, [ref, dragEnd]);
+        return () => {
+            ref.current?.removeEventListener('touchstart', touchStartListener);
+            ref.current?.removeEventListener('mousedown', mouseDownListener);
+        };
+    }, [dragStart]);
 
     const removeActiveEventListeners = useCallback(() => {
         window.removeEventListener('touchend', dragEnd, {capture: true, passive: false});
@@ -208,17 +223,12 @@ export default function useMovable({adjustOnResize} = {}) {
         }, 1);
     }, [dragEnd, drag, cancelClick]);
 
-    const removeEventListeners = useCallback(() => {
-        removeStartEventListeners();
-        removeActiveEventListeners();
-    }, [removeStartEventListeners, removeActiveEventListeners]);
-
     useEffect(() => {
         const elem = ref.current;
         elem.setAttribute('draggable', true);
         ref.current?.classList.add('kg-card-movable');
         let _resizeObserver;
-        addStartEventListeners();
+        const removeStartEventListeners = addStartEventListeners();
 
         if (adjustOnResize) {
             _resizeObserver = new ResizeObserver(() => {
@@ -247,7 +257,8 @@ export default function useMovable({adjustOnResize} = {}) {
 
         // Cleanup event listeners on unmount
         return () => {
-            removeEventListeners();
+            removeStartEventListeners();
+            removeActiveEventListeners();
             _resizeObserver?.disconnect();
             enableSelection();
         };

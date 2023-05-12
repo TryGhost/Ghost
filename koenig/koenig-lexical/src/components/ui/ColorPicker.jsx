@@ -1,48 +1,30 @@
-import React from 'react';
-import {ReactComponent as PlusIcon} from '../../assets/icons/plus.svg';
+import {HexColorInput, HexColorPicker} from 'react-colorful';
+import {INPUT_CLASSES} from './Input';
+import {useCallback} from 'react';
 
-export function ColorPicker({buttons = [], selectedName, onClick}) {
+export function ColorPicker({value, onChange}) {
+    // Prevent clashing with dragging the settings panel around
+    const stopPropagation = useCallback(e => e.stopPropagation(), []);
+
     return (
-        <div className="flex">
-            <ul className="flex w-full items-center justify-between rounded font-sans text-md font-normal text-white">
-                {buttons.map(({label, name, color}) => (
-                    name !== 'image' ?
-                        <ColorButton
-                            key={`${name}-${label}`}
-                            color={color}
-                            label={label}
-                            name={name}
-                            selectedName={selectedName}
-                            onClick={onClick}
-                        />
-                        :
-                        <li key='background-image' className={`flex h-[3rem] w-[3rem] cursor-pointer items-center justify-center rounded-full border-2 ${selectedName === name ? 'border-green' : 'border-transparent'}`} data-testid="background-image-color-button" type="button" onClick={() => onClick(name)}>
-                            <span className="border-1 flex h-6 w-6 items-center justify-center rounded-full border border-black/5">
-                                <PlusIcon className="h-3 w-3 stroke-grey-700 stroke-2 dark:stroke-grey-500 dark:group-hover:stroke-grey-100" />
-                            </span>
-                        </li>
-
-                ))}
-            </ul>
+        <div className="mt-2" onMouseDown={stopPropagation} onTouchStart={stopPropagation}>
+            <HexColorPicker color={value || '#ffffff'} onChange={onChange} />
+            <div className="mt-3 flex gap-2">
+                <div className={`flex flex-1 items-center ${INPUT_CLASSES}`}>
+                    <span className='ml-1 mr-2 text-grey-700'>#</span>
+                    <HexColorInput aria-label="Colour value" color={value} onChange={onChange} />
+                </div>
+                <button className="cursor-pointer rounded bg-grey-100 px-4 text-sm font-semibold text-grey-900 dark:bg-black dark:text-white" type="button" onClick={() => onChange('')}>Clear</button>
+            </div>
         </div>
     );
 }
 
-export function ColorButton({onClick, label, name, color, selectedName}) {
-    const isActive = name === selectedName;
+export function ColorIndicator({value, onClick}) {
     return (
-        <li>
-            <button
-                aria-label={label}
-                className={`flex h-[3rem] w-[3rem] cursor-pointer items-center justify-center rounded-full border-2 ${isActive ? 'border-green' : 'border-transparent'}`}
-                data-test-id={`color-picker-${name}`}
-                type="button"
-                onClick={() => onClick(name)}
-            >
-                <span
-                    className={`${color} h-6 w-6 rounded-full border-2 border-black/5`}
-                ></span>
-            </button>
-        </li>
+        <button aria-label="Pick colour" className="relative h-6 w-6" type="button" onClick={onClick}>
+            <div className='absolute inset-0 rounded-full bg-[conic-gradient(hsl(360,100%,50%),hsl(315,100%,50%),hsl(270,100%,50%),hsl(225,100%,50%),hsl(180,100%,50%),hsl(135,100%,50%),hsl(90,100%,50%),hsl(45,100%,50%),hsl(0,100%,50%))]' />
+            {value && <div className="absolute inset-[3px] rounded-full border border-white" style={{backgroundColor: value}} onClick={onClick} />}
+        </button>
     );
 }

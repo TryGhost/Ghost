@@ -119,7 +119,9 @@ export class SignupNode extends BaseSignupNode {
         return (
             <KoenigCardWrapper nodeKey={this.getKey()}>
                 <SignupNodeComponent
+                    backgroundColor={this.getBackgroundColor()}
                     backgroundImageSrc={this.getBackgroundImageSrc()}
+                    buttonColor={this.getButtonColor()}
                     buttonPlaceholder={'Add button text'}
                     buttonText={this.getButtonText()}
                     disclaimer={this.getDisclaimer()}
@@ -136,7 +138,6 @@ export class SignupNode extends BaseSignupNode {
                     subheaderPlaceholder={'Enter subheading text'}
                     subheaderTextEditor={this.__subheaderTextEditor}
                     subheaderTextEditorInitialState={this.__subheaderTextEditorInitialState}
-                    type={this.getStyle()}
                 />
             </KoenigCardWrapper>
         );

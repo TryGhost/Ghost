@@ -29,7 +29,6 @@ describe('SignupNode', function () {
         signupNode.getDisclaimer().should.equal(data.disclaimer);
         signupNode.getHeader().should.equal(data.header);
         signupNode.getSubheader().should.equal(data.subheader);
-        signupNode.getStyle().should.equal(data.style);
         signupNode.getLabels().should.deepEqual(data.labels);
     };
 
@@ -37,12 +36,13 @@ describe('SignupNode', function () {
         editor = createHeadlessEditor({nodes: editorNodes});
 
         dataset = {
+            backgroundColor: '',
             backgroundImageSrc: 'https://example.com/image.jpg',
             buttonText: 'Button',
+            buttonColor: '#000',
             disclaimer: 'Disclaimer',
             header: 'Header',
             subheader: 'Subheader',
-            style: 'image',
             labels: ['label 1', 'label 2']
         };
 
@@ -93,8 +93,6 @@ describe('SignupNode', function () {
             node.getHeader().should.equal('This is the new header');
             node.setSubheader('This is the new subheader');
             node.getSubheader().should.equal('This is the new subheader');
-            node.setStyle('light');
-            node.getStyle().should.equal('light');
             // Labels are tested in a separate block below
         }));
 
@@ -179,12 +177,13 @@ describe('SignupNode', function () {
             json.should.deepEqual({
                 type: 'signup',
                 version: 1,
-                style: dataset.style,
                 backgroundImageSrc: dataset.backgroundImageSrc,
+                backgroundColor: dataset.backgroundColor,
                 header: dataset.header,
                 subheader: dataset.subheader,
                 disclaimer: dataset.disclaimer,
                 buttonText: dataset.buttonText,
+                buttonColor: dataset.buttonColor,
                 labels: dataset.labels
             });
         }));

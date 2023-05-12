@@ -3,7 +3,7 @@ import KoenigComposerContext from '../../../context/KoenigComposerContext.jsx';
 import KoenigNestedEditor from '../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
 import React from 'react';
-import {ColorPickerSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel';
+import {ColorOptionSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 
 export const CALLOUT_COLORS = {
     grey: 'bg-grey/10 border-transparent',
@@ -153,7 +153,7 @@ export function CalloutCard({
                             label='Emoji'
                             onChange={toggleEmoji}
                         />
-                        <ColorPickerSetting
+                        <ColorOptionSetting
                             buttons={calloutColorPicker}
                             dataTestId='callout-color-picker'
                             label='Background color'
