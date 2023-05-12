@@ -8,8 +8,8 @@ import {partition} from 'lodash-es';
 function Item({item, selected, onChange}) {
     let selectionClass = '';
 
-    if (item.name && selected) {
-        selectionClass = 'bg-grey-100 hover:bg-grey-100 dark:hover:bg-grey-950';
+    if (selected) {
+        selectionClass = 'bg-grey-100';
     }
 
     // We use the capture phase of the mouse down event, otherwise the list option will be removed when blurring the input
@@ -21,7 +21,7 @@ function Item({item, selected, onChange}) {
     };
 
     return (
-        <li key={item.name} className={selectionClass}>
+        <li key={item.name} className={`${selectionClass} !mb-1 hover:bg-grey-100 dark:hover:bg-grey-950`} >
             <button
                 className="h-full w-full cursor-pointer px-3 py-1 text-left dark:text-white"
                 data-testid="multiselect-dropdown-item"
