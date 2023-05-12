@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-converters",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-converters",
   "author": "Ghost Foundation",
   "license": "MIT",
