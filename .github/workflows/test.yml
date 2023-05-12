@@ -34,7 +34,7 @@ jobs:
 
       - run: yarn --prefer-offline
       - run: yarn lint
-      - uses: daniellockyer/action-slack-build@master
+      - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -69,7 +69,7 @@ jobs:
           name: coverage
           path: ghost/*/coverage/cobertura-coverage.xml
 
-      - uses: daniellockyer/action-slack-build@master
+      - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -165,7 +165,7 @@ jobs:
           name: coverage
           path: ghost/*/coverage/cobertura-coverage.xml
 
-      - uses: daniellockyer/action-slack-build@master
+      - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -272,7 +272,7 @@ jobs:
               }
             }
 
-      - uses: daniellockyer/action-slack-build@master
+      - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -331,7 +331,7 @@ jobs:
         run: |
           [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
 
-      - uses: daniellockyer/action-slack-build@master
+      - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
