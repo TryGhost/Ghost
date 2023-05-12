@@ -107,7 +107,7 @@ export function HeaderCard({isEditing,
                             initialEditor={headerTextEditor}
                             initialEditorState={headerTextEditorInitialState}
                             nodes="minimal"
-                            placeholderClassName={`truncate opacity-50 whitespace-normal !tracking-tight !text-center w-full !leading-tight !font-bold ${(size === 'small') ? '!text-6xl' : (size === 'medium') ? '!text-7xl' : '!text-8xl'} ${HEADER_TEXT_COLORS[type]}`}
+                            placeholderClassName={`truncate opacity-50 whitespace-normal !tracking-tight !text-center w-full !leading-tight !font-bold ${(size === 'small') ? 'kg-header-small !text-6xl' : (size === 'medium') ? '!text-7xl' : '!text-8xl'} ${HEADER_TEXT_COLORS[type]}`}
                             placeholderText={headerPlaceholder}
                             singleParagraph={true}
                             textClassName={`koenig-lexical-header-heading relative w-full whitespace-normal text-center font-bold text-center [&:has(br)]:text-left ${(size === 'small') ? 'koenig-lexical-header-small [&:has(br)]:pl-[calc(50%_-_254px)]' : (size === 'medium') ? 'koenig-lexical-header-medium [&:has(br)]:pl-[calc(50%_-_304px)]' : 'koenig-lexical-header-large [&:has(br)]:pl-[calc(50%_-_404px)]'} ${HEADER_TEXT_COLORS[type]}`}
