@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-converters",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-converters",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -32,6 +32,5 @@
     "c8": "7.13.0",
     "mocha": "10.2.0",
     "sinon": "15.0.4"
-  },
-  "dependencies": {}
+  }
 }
