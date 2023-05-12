@@ -96,6 +96,28 @@
                 </button>
             </p>
         {{else}}
+            <div class="gh-feedback-grey">
+                <h4 class="gh-feedback-grey-title">Hey, noticed anything different?</h4>
+                <p>This post was successfully published using our new editor. Have any issues? Feedback? Let us know!</p>
+                <form>
+                    <GhFormGroup>
+                        {{!-- <label for="feedback-lexical">Feedback</label> --}}
+                        <GhTextarea 
+                            @id="feedback-lexical"
+                            @name="feedback-lexical" 
+                            @value={{this.feedbackMessage}}
+                            @placeholder="I've noticed that..."
+                            data-test-lexical-feedback-textarea
+                        />
+                    </GhFormGroup>
+                </form>
+                <GhTaskButton 
+                    @buttonText="Send feedback"
+                    @task={{this.submitFeedback}}
+                    @class="gh-btn gh-btn-black gh-btn-icon"
+                    data-test-button="submit-lexical-feedback"
+                />
+            </div>
             <p class="gh-publish-confirmation gh-publish-confirmation-with-feedback">
                 <button
                     type="button"
@@ -105,7 +127,7 @@
                 >
                     <span>Back to editor</span>
                 </button>
-                {{#if (feature 'lexicalEditor')}}
+                {{!-- {{#if (feature 'lexicalEditor')}}
                     <button
                         type="button"
                         class="gh-publish-confirmation-feedback"
@@ -114,7 +136,7 @@
                     >
                         <span>Beta feedback?</span>
                     </button>
-                {{/if}}
+                {{/if}} --}}
             </p>
         {{/if}}
     {{/if}}
