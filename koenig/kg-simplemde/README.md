@@ -325,6 +325,7 @@ simplemde.isFullscreenActive(); // returns boolean
 simplemde.clearAutosavedValue(); // no returned value
 ```
 
+
 ## How it works
 SimpleMDE began as an improvement of [lepture's Editor project](https://github.com/lepture/editor), but has now taken on an identity of its own. It is bundled with [CodeMirror](https://github.com/codemirror/codemirror) and depends on [Font Awesome](http://fontawesome.io).
 
