@@ -7,7 +7,7 @@ jobs:
     if: github.repository_owner == 'TryGhost'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v7
+      - uses: actions/stale@v8
         with:
           stale-issue-message: |
             Our bot has automatically marked this issue as stale because there has not been any activity here in some time.
