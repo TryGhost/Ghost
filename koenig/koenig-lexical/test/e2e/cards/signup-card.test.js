@@ -106,16 +106,17 @@ test.describe('Signup card', async () => {
         await page.keyboard.type('ff0000');
 
         // Selected colour should be applied inline
-        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('background-color', 'rgb(255, 0, 0)');
-        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('color', 'rgb(255, 255, 255)');
+        const container = page.getByTestId('signup-card-container');
+        await expect(container).toHaveCSS('background-color', 'rgb(255, 0, 0)');
+        await expect(container).toHaveCSS('color', 'rgb(255, 255, 255)');
 
         // Check that the text colour updates to contrast with the background
 
         await page.fill('[data-testid="signup-background-color"] input', '');
         await page.keyboard.type('f7f7f7');
 
-        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('background-color', 'rgb(247, 247, 247)');
-        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('color', 'rgb(0, 0, 0)');
+        await expect(container).toHaveCSS('background-color', 'rgb(247, 247, 247)');
+        await expect(container).toHaveCSS('color', 'rgb(0, 0, 0)');
     });
 
     test('can add and remove background image', async function ({page}) {

@@ -24,12 +24,16 @@ describe('SignupNode', function () {
     };
 
     const checkGetters = (signupNode, data) => {
+        signupNode.getAlignment().should.equal(data.alignment);
+        signupNode.getBackgroundColor().should.equal(data.backgroundColor);
         signupNode.getBackgroundImageSrc().should.equal(data.backgroundImageSrc);
+        signupNode.getButtonColor().should.equal(data.buttonColor);
         signupNode.getButtonText().should.equal(data.buttonText);
         signupNode.getDisclaimer().should.equal(data.disclaimer);
         signupNode.getHeader().should.equal(data.header);
-        signupNode.getSubheader().should.equal(data.subheader);
         signupNode.getLabels().should.deepEqual(data.labels);
+        signupNode.getLayout().should.equal(data.layout);
+        signupNode.getSubheader().should.equal(data.subheader);
     };
 
     beforeEach(function () {
@@ -43,7 +47,9 @@ describe('SignupNode', function () {
             disclaimer: 'Disclaimer',
             header: 'Header',
             subheader: 'Subheader',
-            labels: ['label 1', 'label 2']
+            labels: ['label 1', 'label 2'],
+            layout: 'regular',
+            alignment: 'center'
         };
 
         exportOptions = {
@@ -83,17 +89,25 @@ describe('SignupNode', function () {
 
         it('has setters for all properties', editorTest(function () {
             const node = $createSignupNode(dataset);
+            node.setAlignment('left');
+            node.getAlignment().should.equal('left');
+            node.setBackgroundColor('#fff');
+            node.getBackgroundColor().should.equal('#fff');
             node.setBackgroundImageSrc('https://example.com/image2.jpg');
             node.getBackgroundImageSrc().should.equal('https://example.com/image2.jpg');
+            node.setButtonColor('#fff');
+            node.getButtonColor().should.equal('#fff');
             node.setButtonText('This is the new button text');
             node.getButtonText().should.equal('This is the new button text');
             node.setDisclaimer('This is the new disclaimer');
             node.getDisclaimer().should.equal('This is the new disclaimer');
             node.setHeader('This is the new header');
             node.getHeader().should.equal('This is the new header');
+            // Labels are tested in a separate block below
+            node.setLayout('compact');
+            node.getLayout().should.equal('compact');
             node.setSubheader('This is the new subheader');
             node.getSubheader().should.equal('This is the new subheader');
-            // Labels are tested in a separate block below
         }));
 
         describe('labels', function () {
@@ -132,15 +146,21 @@ describe('SignupNode', function () {
             const signupNode = $createSignupNode(dataset);
 
             signupNode.isEmpty().should.be.false;
+            signupNode.setBackgroundColor('');
+            signupNode.isEmpty().should.be.false;
             signupNode.setBackgroundImageSrc('');
             signupNode.isEmpty().should.be.false;
-            signupNode.setHeader('');
+            signupNode.setButtonColor('');
             signupNode.isEmpty().should.be.false;
-            signupNode.setSubheader('');
+            signupNode.setButtonText('');
             signupNode.isEmpty().should.be.false;
             signupNode.setDisclaimer('');
             signupNode.isEmpty().should.be.false;
-            signupNode.setButtonText('');
+            signupNode.setHeader('');
+            signupNode.isEmpty().should.be.false;
+            signupNode.setLabels([]);
+            signupNode.isEmpty().should.be.false;
+            signupNode.setSubheader('');
             signupNode.isEmpty().should.be.true;
         }));
     });
@@ -177,14 +197,16 @@ describe('SignupNode', function () {
             json.should.deepEqual({
                 type: 'signup',
                 version: 1,
-                backgroundImageSrc: dataset.backgroundImageSrc,
+                alignment: dataset.alignment,
                 backgroundColor: dataset.backgroundColor,
-                header: dataset.header,
-                subheader: dataset.subheader,
-                disclaimer: dataset.disclaimer,
-                buttonText: dataset.buttonText,
+                backgroundImageSrc: dataset.backgroundImageSrc,
                 buttonColor: dataset.buttonColor,
-                labels: dataset.labels
+                buttonText: dataset.buttonText,
+                disclaimer: dataset.disclaimer,
+                header: dataset.header,
+                labels: dataset.labels,
+                layout: dataset.layout,
+                subheader: dataset.subheader
             });
         }));
     });

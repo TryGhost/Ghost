@@ -115,10 +115,17 @@ export class SignupNode extends BaseSignupNode {
         return dataset;
     }
 
+    getCardWidth() {
+        const layout = this.getLayout();
+
+        return layout === 'split' ? 'wide' : layout;
+    }
+
     decorate() {
         return (
-            <KoenigCardWrapper nodeKey={this.getKey()}>
+            <KoenigCardWrapper nodeKey={this.getKey()} width={this.getCardWidth()}>
                 <SignupNodeComponent
+                    alignment={this.getAlignment()}
                     backgroundColor={this.getBackgroundColor()}
                     backgroundImageSrc={this.getBackgroundImageSrc()}
                     buttonColor={this.getButtonColor()}
@@ -133,6 +140,7 @@ export class SignupNode extends BaseSignupNode {
                     headerTextEditor={this.__headerTextEditor}
                     headerTextEditorInitialState={this.__headerTextEditorInitialState}
                     labels={this.getLabels()}
+                    layout={this.getLayout()}
                     nodeKey={this.getKey()}
                     subheader={this.getSubheader()}
                     subheaderPlaceholder={'Enter subheading text'}
@@ -146,10 +154,18 @@ export class SignupNode extends BaseSignupNode {
     // override the default `isEmpty` check because we need to check the nested editors
     // rather than the data properties themselves
     isEmpty() {
-        const isHtmlEmpty = this.__headerTextEditor.getEditorState().read($canShowPlaceholderCurry(false));
-        const isSubHtmlEmpty = this.__subheaderTextEditor.getEditorState().read($canShowPlaceholderCurry(false));
+        const isHeaderEmpty = this.__headerTextEditor.getEditorState().read($canShowPlaceholderCurry(false));
+        const isSubheaderEmpty = this.__subheaderTextEditor.getEditorState().read($canShowPlaceholderCurry(false));
         const isDisclaimerEmpty = this.__disclaimerTextEditor.getEditorState().read($canShowPlaceholderCurry(false));
-        return isHtmlEmpty && isSubHtmlEmpty && isDisclaimerEmpty && !this.__buttonText && !this.__backgroundImageSrc;
+
+        return !this.__backgroundColor &&
+            !this.__backgroundImageSrc &&
+            !this.__buttonColor &&
+            !this.__buttonText &&
+            isDisclaimerEmpty &&
+            isHeaderEmpty &&
+            !this.__labels.length &&
+            isSubheaderEmpty;
     }
 }
 

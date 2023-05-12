@@ -12,8 +12,6 @@ import {isEditorEmpty} from '../../../utils/isEditorEmpty';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 
 export function SignupCard({alignment,
-    cardWidth,
-    handleSizeSelector,
     splitLayout,
     header,
     headerPlaceholder,
@@ -28,12 +26,15 @@ export function SignupCard({alignment,
     buttonColor,
     isEditing,
     fileUploader,
+    handleAlignment,
     handleButtonText,
     handleToggleBackgroundImage,
     handleClearBackgroundImage,
     handleBackgroundColor,
     handleButtonColor,
+    handleLayout,
     labels,
+    layout,
     availableLabels,
     handleLabels,
     onFileChange,
@@ -44,7 +45,7 @@ export function SignupCard({alignment,
     subheaderTextEditorInitialState,
     disclaimerTextEditor,
     disclaimerTextEditorInitialState}) {
-    const cardWidthChildren = [
+    const layoutChildren = [
         {
             label: 'Regular',
             name: 'regular',
@@ -58,6 +59,11 @@ export function SignupCard({alignment,
         {
             label: 'Full',
             name: 'full',
+            Icon: ImgFullIcon
+        },
+        {
+            label: 'Split',
+            name: 'split',
             Icon: ImgFullIcon
         }
     ];
@@ -97,7 +103,7 @@ export function SignupCard({alignment,
 
     return (
         <>
-            <div className={`flex flex-col justify-center bg-black font-sans text-white transition-colors ease-in-out ${(alignment === 'center' && 'items-center')} ${(cardWidth === 'regular') ? 'min-h-[40vh] p-[14vmin]' : (cardWidth === 'wide') ? 'min-h-[60vh] p-[12vmin]' : 'min-h-[80vh] p-[18vmin]'}`} style={wrapperStyle()}>
+            <div className={`flex flex-col justify-center bg-black font-sans text-white transition-colors ease-in-out ${(alignment === 'center' && 'items-center')} ${(layout === 'regular') ? 'min-h-[40vh] p-[14vmin]' : (layout === 'wide') ? 'min-h-[60vh] p-[12vmin]' : 'min-h-[80vh] p-[18vmin]'}`} data-testid={'signup-card-container'} style={wrapperStyle()}>
                 {/* Heading */}
                 {
                     (isEditing || !!header || !isEditorEmpty(headerTextEditor)) && (
@@ -108,10 +114,10 @@ export function SignupCard({alignment,
                             initialEditor={headerTextEditor}
                             initialEditorState={headerTextEditorInitialState}
                             nodes="minimal"
-                            placeholderClassName={`truncate opacity-50 whitespace-normal !tracking-tight w-full !leading-tight !font-bold ${(alignment === 'center' && 'text-center')} ${(cardWidth === 'regular') ? 'kg-header-small !text-6xl' : (cardWidth === 'wide') ? '!text-7xl' : '!text-8xl'}`}
+                            placeholderClassName={`truncate opacity-50 whitespace-normal !tracking-tight w-full !leading-tight !font-bold ${(alignment === 'center' && 'text-center')} ${(layout === 'regular') ? 'kg-header-small !text-6xl' : (layout === 'wide') ? '!text-7xl' : '!text-8xl'}`}
                             placeholderText={headerPlaceholder}
                             singleParagraph={true}
-                            textClassName={`koenig-lexical-header-heading relative w-full whitespace-normal font-bold ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(cardWidth === 'regular') ? 'koenig-lexical-header-small [&:has(br)]:pl-[calc(50%_-_254px)]' : (cardWidth === 'wide') ? 'koenig-lexical-header-medium [&:has(br)]:pl-[calc(50%_-_304px)]' : 'koenig-lexical-header-large [&:has(br)]:pl-[calc(50%_-_404px)]'}`}
+                            textClassName={`koenig-lexical-header-heading relative w-full whitespace-normal font-bold ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(layout === 'regular') ? 'koenig-lexical-header-small [&:has(br)]:pl-[calc(50%_-_254px)]' : (layout === 'wide') ? 'koenig-lexical-header-medium [&:has(br)]:pl-[calc(50%_-_304px)]' : 'koenig-lexical-header-large [&:has(br)]:pl-[calc(50%_-_404px)]'}`}
                         />
                     )
                 }
@@ -125,16 +131,16 @@ export function SignupCard({alignment,
                             initialEditor={subheaderTextEditor}
                             initialEditorState={subheaderTextEditorInitialState}
                             nodes="minimal"
-                            placeholderClassName={`truncate opacity-50 w-full whitespace-normal !leading-tight !font-normal ${(alignment === 'center' && 'text-center')} ${(cardWidth === 'regular') ? '!text-xl' : (cardWidth === 'wide') ? '!text-2xl' : '!text-3xl'}`}
+                            placeholderClassName={`truncate opacity-50 w-full whitespace-normal !leading-tight !font-normal ${(alignment === 'center' && 'text-center')} ${(layout === 'regular') ? '!text-xl' : (layout === 'wide') ? '!text-2xl' : '!text-3xl'}`}
                             placeholderText={subheaderPlaceholder}
                             singleParagraph={true}
-                            textClassName={`koenig-lexical-header-subheading relative w-full whitespace-normal ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(cardWidth === 'regular') ? 'koenig-lexical-header-small [&:has(br)]:pl-[calc(50%_-_105px)] !mt-2' : (cardWidth === 'wide') ? 'koenig-lexical-header-medium [&:has(br)]:pl-[calc(50%_-_124px)] !mt-3' : 'koenig-lexical-header-large [&:has(br)]:pl-[calc(50%_-_156px)] !mt-3'}`}
+                            textClassName={`koenig-lexical-header-subheading relative w-full whitespace-normal ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(layout === 'regular') ? 'koenig-lexical-header-small [&:has(br)]:pl-[calc(50%_-_105px)] !mt-2' : (layout === 'wide') ? 'koenig-lexical-header-medium [&:has(br)]:pl-[calc(50%_-_124px)] !mt-3' : 'koenig-lexical-header-large [&:has(br)]:pl-[calc(50%_-_156px)] !mt-3'}`}
                         />
                     )
                 }
 
                 {/* Subscribe form */}
-                <div className={`${(cardWidth === 'regular') ? 'mt-6 h-full w-full' : (cardWidth === 'wide') ? 'mt-8' : 'mt-10'}`}>
+                <div className={`${(layout === 'regular') ? 'mt-6 h-full w-full' : (layout === 'wide') ? 'mt-8' : 'mt-10'}`}>
                     <SubscribeForm 
                         buttonSize='medium'
                         buttonStyle={buttonColor ? {
@@ -142,6 +148,7 @@ export function SignupCard({alignment,
                             color: textColorForBackgroundColor(buttonColor).hex()
                         } : null} 
                         buttonText={buttonText} 
+                        dataTestId='signup-card-button'
                         inputBorderStyle={buttonColor ? {
                             border: `1px solid ${buttonColor}`
                         } : null}
@@ -157,10 +164,10 @@ export function SignupCard({alignment,
                             initialEditor={disclaimerTextEditor}
                             initialEditorState={disclaimerTextEditorInitialState}
                             nodes="minimal"
-                            placeholderClassName={`truncate opacity-50 w-full whitespace-normal !leading-tight !font-normal ${(alignment === 'center' && 'text-center')} ${(cardWidth === 'regular') ? '!text-md' : (cardWidth === 'wide') ? '!text-lg' : '!text-xl'}`}
+                            placeholderClassName={`truncate opacity-50 w-full whitespace-normal !leading-tight !font-normal ${(alignment === 'center' && 'text-center')} ${(layout === 'regular') ? '!text-md' : (layout === 'wide') ? '!text-lg' : '!text-xl'}`}
                             placeholderText={disclaimerPlaceholder}
                             singleParagraph={true}
-                            textClassName={`koenig-lexical-header-subheading koenig-lexical-header-xsmall relative w-full whitespace-normal ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(cardWidth === 'regular') ? '[&:has(br)]:pl-[calc(50%_-_105px)] !mt-3' : (cardWidth === 'wide') ? '[&:has(br)]:pl-[calc(50%_-_124px)] !mt-4' : '[&:has(br)]:pl-[calc(50%_-_156px)] !mt-4'}`}
+                            textClassName={`koenig-lexical-header-subheading koenig-lexical-header-xsmall relative w-full whitespace-normal ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(layout === 'regular') ? '[&:has(br)]:pl-[calc(50%_-_105px)] !mt-3' : (layout === 'wide') ? '[&:has(br)]:pl-[calc(50%_-_124px)] !mt-4' : '[&:has(br)]:pl-[calc(50%_-_156px)] !mt-4'}`}
                         />
                     )
                 }
@@ -172,21 +179,16 @@ export function SignupCard({alignment,
             {isEditing && (
                 <SettingsPanel className="mt-0">
                     <ButtonGroupSetting
-                        buttons={cardWidthChildren}
-                        label='Width'
-                        selectedName={cardWidth}
-                        onClick={handleSizeSelector}
+                        buttons={layoutChildren}
+                        label='Layout'
+                        selectedName={layout}
+                        onClick={handleLayout}
                     />
                     <ButtonGroupSetting
                         buttons={alignmentChildren}
                         label='Alignment'
                         selectedName={alignment}
-                        onClick={handleSizeSelector}
-                    />
-                    <ToggleSetting
-                        dataTestId='split-layout-toggle'
-                        isChecked={splitLayout}
-                        label='Split layout'
+                        onClick={handleAlignment}
                     />
                     <ToggleSetting
                         dataTestId='signup-background-image-toggle'
@@ -247,7 +249,6 @@ export function SignupCard({alignment,
 }
 
 SignupCard.propTypes = {
-    cardWidth: PropTypes.oneOf(['regular', 'wide', 'full']),
     alignment: PropTypes.oneOf(['left', 'center']),
     splitLayout: PropTypes.bool,
     header: PropTypes.string,
@@ -265,7 +266,8 @@ SignupCard.propTypes = {
     isEditing: PropTypes.bool,
     fileUploader: PropTypes.object,
     fileInputRef: PropTypes.object,
-    handleSizeSelector: PropTypes.func,
+    handleLayout: PropTypes.func,
+    handleAlignment: PropTypes.func,
     handleButtonText: PropTypes.func,
     handleClearBackgroundImage: PropTypes.func,
     handleBackgroundColor: PropTypes.func,
@@ -273,6 +275,7 @@ SignupCard.propTypes = {
     handleButtonColor: PropTypes.func,
     handleLabels: PropTypes.func,
     labels: PropTypes.arrayOf(PropTypes.string),
+    layout: PropTypes.oneOf(['regular', 'wide', 'full', 'split']),
     availableLabels: PropTypes.arrayOf(PropTypes.object),
     openFilePicker: PropTypes.func,
     onFileChange: PropTypes.func,

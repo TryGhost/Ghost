@@ -19,7 +19,6 @@ export function SubscribeForm({dataTestId, placeholder, value, inputBorderStyle,
             <input
                 ref={setRef}
                 className={`relative w-full py-2 px-4 font-sans font-normal text-grey-900 focus-visible:outline-none dark:border-grey-900 dark:bg-grey-900 dark:text-white dark:placeholder:text-grey-800 ${(buttonSize === 'small' ? 'h-10 text-md leading-[4rem]' : (buttonSize === 'medium' ? 'h-11 text-[1.6rem] leading-[4.4rem]' : 'h-12 text-lg leading-[4.8rem]'))}`}
-                data-testid={dataTestId}
                 placeholder={placeholder}
                 style={inputBorderStyle}
                 value={value}
@@ -27,7 +26,7 @@ export function SubscribeForm({dataTestId, placeholder, value, inputBorderStyle,
                 onChange={onChangeWrapper}
                 onFocus={onFocus}
             />
-            <Button href='https://ghost.org/' placeholder='' rounded={false} size={buttonSize} style={buttonStyle} value={buttonText} />
+            <Button dataTestId={dataTestId} href='https://ghost.org/' placeholder='' rounded={false} size={buttonSize} style={buttonStyle} value={buttonText}/>
         </div>
     );
 }

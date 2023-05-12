@@ -8,14 +8,16 @@ const NODE_TYPE = 'signup';
 
 export class SignupNode extends KoenigDecoratorNode {
     // payload properties
-    __buttonText;
-    __header;
-    __subheader;
-    __disclaimer;
-    __backgroundImageSrc;
+    __alignment;
     __backgroundColor;
+    __backgroundImageSrc;
     __buttonColor;
+    __buttonText;
+    __disclaimer;
+    __header;
     __labels;
+    __layout;
+    __subheader;
 
     static getType() {
         return NODE_TYPE;
@@ -31,43 +33,49 @@ export class SignupNode extends KoenigDecoratorNode {
     static get urlTransformMap() {
         return {
             backgroundImageSrc: 'url',
+            disclaimer: 'html',
             header: 'html',
-            subheader: 'html',
-            disclaimer: 'html'
+            subheader: 'html'
         };
     }
 
     getDataset() {
         const self = this.getLatest();
         return {
-            buttonText: self.__buttonText,
-            header: self.__header,
-            subheader: self.__subheader,
-            disclaimer: self.__disclaimer,
-            backgroundImageSrc: self.__backgroundImageSrc,
+            alignment: self.__alignment,
             backgroundColor: self.__backgroundColor,
+            backgroundImageSrc: self.__backgroundImageSrc,
             buttonColor: self.__buttonColor,
-            labels: self.__labels
+            buttonText: self.__buttonText,
+            disclaimer: self.__disclaimer,
+            header: self.__header,
+            labels: self.__labels,
+            layout: self.__layout,
+            subheader: self.__subheader
         };
     }
 
-    constructor({buttonText,
-        header,
-        subheader,
-        disclaimer,
-        backgroundImageSrc,
+    constructor({alignment,
         backgroundColor,
+        backgroundImageSrc,
         buttonColor,
-        labels} = {}, key) {
+        buttonText,
+        disclaimer,
+        header,
+        labels,
+        layout,
+        subheader} = {}, key) {
         super(key);
-        this.__buttonText = buttonText || '';
-        this.__header = header || '';
-        this.__subheader = subheader || '';
-        this.__disclaimer = disclaimer || '';
-        this.__backgroundImageSrc = backgroundImageSrc || '';
+        this.__alignment = alignment || 'center';
         this.__backgroundColor = backgroundColor || '';
+        this.__backgroundImageSrc = backgroundImageSrc || '';
         this.__buttonColor = buttonColor || '';
+        this.__buttonText = buttonText || '';
+        this.__disclaimer = disclaimer || '';
+        this.__header = header || '';
         this.__labels = labels || [];
+        this.__layout = layout || 'regular';
+        this.__subheader = subheader || '';
     }
 
     exportDOM(options = {}) {
@@ -79,16 +87,27 @@ export class SignupNode extends KoenigDecoratorNode {
     }
 
     static importJSON(serializedNode) {
-        const {buttonText, header, subheader, disclaimer, backgroundImageSrc, backgroundColor, buttonColor, labels} = serializedNode;
-        const node = new this({
-            buttonText,
-            header,
-            subheader,
-            disclaimer,
-            backgroundImageSrc,
+        const {alignment,
             backgroundColor,
+            backgroundImageSrc,
             buttonColor,
-            labels
+            buttonText,
+            disclaimer,
+            header,
+            labels,
+            layout,
+            subheader} = serializedNode;
+        const node = new this({
+            alignment,
+            backgroundColor,
+            backgroundImageSrc,
+            buttonColor,
+            buttonText,
+            disclaimer,
+            header,
+            labels,
+            layout,
+            subheader
         });
         return node;
     }
@@ -102,14 +121,16 @@ export class SignupNode extends KoenigDecoratorNode {
         const dataset = {
             type: NODE_TYPE,
             version: 1,
-            buttonText: this.getButtonText(),
-            header: this.getHeader(),
-            subheader: this.getSubheader(),
-            disclaimer: this.getDisclaimer(),
-            backgroundImageSrc: this.getBackgroundImageSrc(),
+            alignment: this.getAlignment(),
             backgroundColor: this.getBackgroundColor(),
+            backgroundImageSrc: this.getBackgroundImageSrc(),
             buttonColor: this.getButtonColor(),
-            labels: this.getLabels()
+            buttonText: this.getButtonText(),
+            disclaimer: this.getDisclaimer(),
+            header: this.getHeader(),
+            labels: this.getLabels(),
+            layout: this.getLayout(),
+            subheader: this.getSubheader()
         };
         return dataset;
     }
@@ -126,55 +147,16 @@ export class SignupNode extends KoenigDecoratorNode {
     isInline() {
         return false;
     }
+    /* c8 ignore stop */
 
-    getButtonText() {
+    getAlignment() {
         const self = this.getLatest();
-        return self.__buttonText;
+        return self.__alignment;
     }
 
-    setButtonText(buttonText) {
+    setAlignment(alignment) {
         const writable = this.getWritable();
-        writable.__buttonText = buttonText;
-    }
-
-    getHeader() {
-        const self = this.getLatest();
-        return self.__header;
-    }
-
-    setHeader(header) {
-        const writable = this.getWritable();
-        writable.__header = header;
-    }
-
-    getSubheader() {
-        const self = this.getLatest();
-        return self.__subheader;
-    }
-
-    setSubheader(subheader) {
-        const writable = this.getWritable();
-        writable.__subheader = subheader;
-    }
-
-    getDisclaimer() {
-        const self = this.getLatest();
-        return self.__disclaimer;
-    }
-
-    setDisclaimer(disclaimer) {
-        const writable = this.getWritable();
-        writable.__disclaimer = disclaimer;
-    }
-
-    getBackgroundImageSrc() {
-        const self = this.getLatest();
-        return self.__backgroundImageSrc;
-    }
-
-    setBackgroundImageSrc(backgroundImageSrc) {
-        const writable = this.getWritable();
-        writable.__backgroundImageSrc = backgroundImageSrc;
+        writable.__alignment = alignment;
     }
 
     getBackgroundColor() {
@@ -187,6 +169,16 @@ export class SignupNode extends KoenigDecoratorNode {
         writable.__backgroundColor = backgroundColor;
     }
 
+    getBackgroundImageSrc() {
+        const self = this.getLatest();
+        return self.__backgroundImageSrc;
+    }
+
+    setBackgroundImageSrc(backgroundImageSrc) {
+        const writable = this.getWritable();
+        writable.__backgroundImageSrc = backgroundImageSrc;
+    }
+
     getButtonColor() {
         const self = this.getLatest();
         return self.__buttonColor;
@@ -195,6 +187,36 @@ export class SignupNode extends KoenigDecoratorNode {
     setButtonColor(buttonColor) {
         const writable = this.getWritable();
         writable.__buttonColor = buttonColor;
+    }
+
+    getButtonText() {
+        const self = this.getLatest();
+        return self.__buttonText;
+    }
+
+    setButtonText(buttonText) {
+        const writable = this.getWritable();
+        writable.__buttonText = buttonText;
+    }
+
+    getDisclaimer() {
+        const self = this.getLatest();
+        return self.__disclaimer;
+    }
+
+    setDisclaimer(disclaimer) {
+        const writable = this.getWritable();
+        writable.__disclaimer = disclaimer;
+    }
+
+    getHeader() {
+        const self = this.getLatest();
+        return self.__header;
+    }
+
+    setHeader(header) {
+        const writable = this.getWritable();
+        writable.__header = header;
     }
 
     getLabels() {
@@ -221,12 +243,39 @@ export class SignupNode extends KoenigDecoratorNode {
         writable.__labels = writable.__labels.filter(l => l !== label);
     }
 
+    getLayout() {
+        const self = this.getLatest();
+        return self.__layout;
+    }
+
+    setLayout(layout) {
+        const writable = this.getWritable();
+        writable.__layout = layout;
+    }
+
+    getSubheader() {
+        const self = this.getLatest();
+        return self.__subheader;
+    }
+
+    setSubheader(subheader) {
+        const writable = this.getWritable();
+        writable.__subheader = subheader;
+    }
+
     hasEditMode() {
         return true;
     }
 
     isEmpty() {
-        return !this.__header && !this.__subheader && !this.__disclaimer && !this.__buttonText && !this.__backgroundImageSrc && !this.__backgroundColor;
+        return !this.__backgroundColor &&
+            !this.__backgroundImageSrc &&
+            !this.__buttonColor &&
+            !this.__buttonText &&
+            !this.__disclaimer &&
+            !this.__header &&
+            !this.__labels.length &&
+            !this.__subheader;
     }
 
     // should be overridden

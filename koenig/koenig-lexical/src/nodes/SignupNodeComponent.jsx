@@ -12,11 +12,12 @@ import {useContext, useEffect, useState} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 function SignupNodeComponent({
-    backgroundImageSrc,
+    alignment,
     backgroundColor,
+    backgroundImageSrc,
+    buttonColor,
     buttonPlaceholder,
     buttonText,
-    buttonColor,
     nodeKey,
     disclaimer,
     disclaimerPlaceholder,
@@ -26,11 +27,12 @@ function SignupNodeComponent({
     headerPlaceholder,
     headerTextEditor,
     headerTextEditorInitialState,
+    labels,
+    layout,
     subheader,
     subheaderPlaceholder,
     subheaderTextEditor,
-    subheaderTextEditorInitialState,
-    labels
+    subheaderTextEditorInitialState
 }) {
     const [editor] = useLexicalComposerContext();
     const {cardConfig} = useContext(KoenigComposerContext);
@@ -47,6 +49,13 @@ function SignupNodeComponent({
             });
         }
     }, [cardConfig]);
+
+    const handleAlignment = (a) => {
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.setAlignment(a);
+        });
+    };
 
     const handleToolbarEdit = (event) => {
         event.preventDefault();
@@ -77,10 +86,10 @@ function SignupNodeComponent({
 
     const imageDragHandler = useFileDragAndDrop({handleDrop: handleImageChange});
 
-    const handleSizeSelector = (s) => {
+    const handleLayout = (l) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setSize(s);
+            node.setLayout(l);
         });
     };
 
@@ -135,6 +144,7 @@ function SignupNodeComponent({
     return (
         <>
             <SignupCard
+                alignment={alignment}
                 availableLabels={availableLabels}
                 backgroundColor={backgroundColor}
                 backgroundImageSrc={backgroundImageSrc}
@@ -146,12 +156,13 @@ function SignupNodeComponent({
                 disclaimerTextEditor={disclaimerTextEditor}
                 disclaimerTextEditorInitialState={disclaimerTextEditorInitialState}
                 fileUploader={imageUploader}
+                handleAlignment={handleAlignment}
                 handleBackgroundColor={handleBackgroundColor}
                 handleButtonColor={handleButtonColor}
                 handleButtonText={handleButtonText}
                 handleClearBackgroundImage={handleClearBackgroundImage}
                 handleLabels={handleLabels}
-                handleSizeSelector={handleSizeSelector}
+                handleLayout={handleLayout}
                 handleToggleBackgroundImage={handleToggleBackgroundImage}
                 header={header}
                 headerPlaceholder={headerPlaceholder}
@@ -160,6 +171,7 @@ function SignupNodeComponent({
                 imageDragHandler={imageDragHandler}
                 isEditing={isEditing}
                 labels={labels}
+                layout={layout}
                 showBackgroundImage={showBackgroundImage}
                 subheader={subheader}
                 subheaderPlaceholder={subheaderPlaceholder}
