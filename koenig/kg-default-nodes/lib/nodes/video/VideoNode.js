@@ -10,11 +10,15 @@ export class VideoNode extends KoenigDecoratorNode {
     // payload properties
     __src;
     __caption;
+    __fileName;
+    __mimeType;
     __width;
     __height;
     __duration;
     __thumbnailSrc;
     __customThumbnailSrc;
+    __thumbnailWidth;
+    __thumbnailHeight;
     __cardWidth;
     __loop;
 
@@ -44,39 +48,51 @@ export class VideoNode extends KoenigDecoratorNode {
         return {
             src: self.__src,
             caption: self.__caption,
+            fileName: self.__fileName,
+            mimeType: self.__mimeType,
             width: self.__width,
             height: self.__height,
             duration: self.__duration,
             thumbnailSrc: self.__thumbnailSrc,
             customThumbnailSrc: self.__customThumbnailSrc,
+            thumbnailWidth: self.__thumbnailWidth,
+            thumbnailHeight: self.__thumbnailHeight,
             cardWidth: self.__cardWidth,
             loop: self.__loop
         };
     }
 
-    constructor({src, caption, width, height, duration, thumbnailSrc, customThumbnailSrc, cardWidth, loop} = {}, key) {
+    constructor({src, caption, fileName, mimeType, width, height, duration, thumbnailSrc, customThumbnailSrc, thumbnailWidth, thumbnailHeight, cardWidth, loop} = {}, key) {
         super(key);
         this.__src = src || '';
         this.__caption = caption || '';
+        this.__fileName = fileName || '';
+        this.__mimeType = mimeType || '';
         this.__width = width || null;
         this.__height = height || null;
         this.__duration = duration || 0;
         this.__thumbnailSrc = thumbnailSrc || '';
         this.__customThumbnailSrc = customThumbnailSrc || '';
+        this.__thumbnailWidth = thumbnailWidth || null;
+        this.__thumbnailHeight = thumbnailHeight || null;
         this.__cardWidth = cardWidth || 'regular';
         this.__loop = !!loop;
     }
 
     static importJSON(serializedNode) {
-        const {src, caption, width, height, duration, thumbnailSrc, customThumbnailSrc, cardWidth, loop} = serializedNode;
+        const {src, caption, fileName, mimeType, width, height, duration, thumbnailSrc, customThumbnailSrc, thumbnailWidth, thumbnailHeight, cardWidth, loop} = serializedNode;
         const node = new this({
             src,
             caption,
+            fileName,
+            mimeType,
             width,
             height,
             duration,
             thumbnailSrc,
             customThumbnailSrc,
+            thumbnailWidth,
+            thumbnailHeight,
             cardWidth,
             loop
         });
@@ -92,11 +108,15 @@ export class VideoNode extends KoenigDecoratorNode {
             version: 1,
             src: isBlob ? '<base64String>' : this.getSrc(),
             caption: this.getCaption(),
+            fileName: this.getFileName(),
+            mimeType: this.getMimeType(),
             width: this.getVideoWidth(),
             height: this.getVideoHeight(),
             duration: this.getDuration(),
             thumbnailSrc: this.getThumbnailSrc(),
             customThumbnailSrc: this.getCustomThumbnailSrc(),
+            thumbnailWidth: this.getThumbnailWidth(),
+            thumbnailHeight: this.getThumbnailHeight(),
             cardWidth: this.getCardWidth(),
             loop: this.getLoop()
         };
@@ -146,6 +166,26 @@ export class VideoNode extends KoenigDecoratorNode {
     setCaption(caption) {
         const writable = this.getWritable();
         return writable.__caption = caption;
+    }
+
+    getFileName() {
+        const self = this.getLatest();
+        return self.__fileName;
+    }
+
+    setFileName(fileName) {
+        const writable = this.getWritable();
+        return writable.__fileName = fileName;
+    }
+
+    getMimeType() {
+        const self = this.getLatest();
+        return self.__mimeType;
+    }
+
+    setMimeType(mimeType) {
+        const writable = this.getWritable();
+        return writable.__mimeType = mimeType;
     }
 
     getVideoWidth() {
@@ -204,6 +244,26 @@ export class VideoNode extends KoenigDecoratorNode {
     setCustomThumbnailSrc(customThumbnailSrc) {
         const writable = this.getWritable();
         return writable.__customThumbnailSrc = customThumbnailSrc;
+    }
+
+    getThumbnailWidth() {
+        const self = this.getLatest();
+        return self.__thumbnailWidth;
+    }
+
+    setThumbnailWidth(thumbnailWidth) {
+        const writable = this.getWritable();
+        return writable.__thumbnailWidth = thumbnailWidth;
+    }
+
+    getThumbnailHeight() {
+        const self = this.getLatest();
+        return self.__thumbnailHeight;
+    }
+
+    setThumbnailHeight(thumbnailHeight) {
+        const writable = this.getWritable();
+        return writable.__thumbnailHeight = thumbnailHeight;
     }
 
     setCardWidth(cardWidth) {

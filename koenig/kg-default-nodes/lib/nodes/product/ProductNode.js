@@ -8,16 +8,16 @@ const NODE_TYPE = 'product';
 
 export class ProductNode extends KoenigDecoratorNode {
     // payload properties
-    __imgSrc;
-    __imgWidth;
-    __imgHeight;
-    __title;
-    __description;
-    __isRatingEnabled;
-    __starRating;
-    __isButtonEnabled;
-    __buttonText;
-    __buttonUrl;
+    __productImageSrc;
+    __productImageWidth;
+    __productImageHeight;
+    __productTitle;
+    __productDescription;
+    __productRatingEnabled;
+    __productStarRating;
+    __productButtonEnabled;
+    __productButton;
+    __productUrl;
 
     static getType() {
         return NODE_TYPE;
@@ -33,76 +33,76 @@ export class ProductNode extends KoenigDecoratorNode {
     // used by `@tryghost/url-utils` to transform URLs contained in the serialized JSON
     static get urlTransformMap() {
         return {
-            imgSrc: 'url',
-            title: 'html',
-            description: 'html'
+            productImageSrc: 'url',
+            productTitle: 'html',
+            productDescription: 'html'
         };
     }
 
     getDataset() {
         const self = this.getLatest();
         return {
-            imgSrc: self.__imgSrc,
-            imgWidth: self.__imgWidth,
-            imgHeight: self.__imgHeight,
-            title: self.__title,
-            description: self.__description,
-            isRatingEnabled: self.__isRatingEnabled,
-            starRating: self.__starRating,
-            isButtonEnabled: self.__isButtonEnabled,
-            buttonText: self.__buttonText,
-            buttonUrl: self.__buttonUrl
+            productImageSrc: self.__productImageSrc,
+            productImageWidth: self.__productImageWidth,
+            productImageHeight: self.__productImageHeight,
+            productTitle: self.__productTitle,
+            productDescription: self.__productDescription,
+            productRatingEnabled: self.__productRatingEnabled,
+            productStarRating: self.__productStarRating,
+            productButtonEnabled: self.__productButtonEnabled,
+            productButton: self.__productButton,
+            productUrl: self.__productUrl
         };
     }
 
-    constructor({imgSrc, imgWidth, imgHeight, title, description, isRatingEnabled, starRating, isButtonEnabled, buttonText, buttonUrl} = {}, key) {
+    constructor({productImageSrc, productImageWidth, productImageHeight, productTitle, productDescription, productRatingEnabled, productStarRating, productButtonEnabled, productButton, productUrl} = {}, key) {
         super(key);
-        this.__imgSrc = imgSrc || '';
-        this.__imgWidth = imgWidth || null;
-        this.__imgHeight = imgHeight || null;
-        this.__title = title || '';
-        this.__description = description || '';
-        this.__isRatingEnabled = !!isRatingEnabled;
-        this.__starRating = starRating || 5;
-        this.__isButtonEnabled = !!isButtonEnabled;
-        this.__buttonText = buttonText || '';
-        this.__buttonUrl = buttonUrl || '';
+        this.__productImageSrc = productImageSrc || '';
+        this.__productImageWidth = productImageWidth || null;
+        this.__productImageHeight = productImageHeight || null;
+        this.__productTitle = productTitle || '';
+        this.__productDescription = productDescription || '';
+        this.__productRatingEnabled = !!productRatingEnabled;
+        this.__productStarRating = productStarRating || 5;
+        this.__productButtonEnabled = !!productButtonEnabled;
+        this.__productButton = productButton || '';
+        this.__productUrl = productUrl || '';
     }
 
     static importJSON(serializedNode) {
-        const {imgSrc, imgWidth, imgHeight, title, description, isRatingEnabled, starRating, isButtonEnabled, buttonText, buttonUrl} = serializedNode;
+        const {productImageSrc, productImageWidth, productImageHeight, productTitle, productDescription, productRatingEnabled, productStarRating, productButtonEnabled, productButton, productUrl} = serializedNode;
         const node = new this({
-            imgSrc,
-            imgWidth,
-            imgHeight,
-            title,
-            description,
-            isRatingEnabled,
-            starRating,
-            isButtonEnabled,
-            buttonText,
-            buttonUrl
+            productImageSrc,
+            productImageWidth,
+            productImageHeight,
+            productTitle,
+            productDescription,
+            productRatingEnabled,
+            productStarRating,
+            productButtonEnabled,
+            productButton,
+            productUrl
         });
         return node;
     }
 
     exportJSON() {
         // checks if src is a data string
-        const src = this.getImgSrc();
+        const src = this.getProductImageSrc();
         const isBlob = src.startsWith('data:');
         const dataset = {
             type: NODE_TYPE,
             version: 1,
-            imgSrc: isBlob ? '<base64String>' : this.getImgSrc(),
-            imgWidth: this.getImgWidth(),
-            imgHeight: this.getImgHeight(),
-            title: this.getTitle(),
-            description: this.getDescription(),
-            isRatingEnabled: this.getIsRatingEnabled(),
-            starRating: this.getStarRating(),
-            isButtonEnabled: this.getIsButtonEnabled(),
-            buttonText: this.getButtonText(),
-            buttonUrl: this.getButtonUrl()
+            productImageSrc: isBlob ? '<base64String>' : this.getProductImageSrc(),
+            productImageWidth: this.getProductImageWidth(),
+            productImageHeight: this.getProductImageHeight(),
+            productTitle: this.getProductTitle(),
+            productDescription: this.getProductDescription(),
+            productRatingEnabled: this.getProductRatingEnabled(),
+            productStarRating: this.getProductStarRating(),
+            productButtonEnabled: this.getProductButtonEnabled(),
+            productButton: this.getProductButton(),
+            productUrl: this.getProductUrl()
 
         };
         return dataset;
@@ -133,104 +133,104 @@ export class ProductNode extends KoenigDecoratorNode {
     }
     /* c8 ignore stop */
 
-    getImgSrc() {
+    getProductImageSrc() {
         const self = this.getLatest();
-        return self.__imgSrc;
+        return self.__productImageSrc;
     }
 
-    setImgSrc(imgSrc) {
+    setProductImageSrc(productImageSrc) {
         const writable = this.getWritable();
-        return writable.__imgSrc = imgSrc;
+        return writable.__productImageSrc = productImageSrc;
     }
 
-    getImgWidth() {
+    getProductImageWidth() {
         const self = this.getLatest();
-        return self.__imgWidth;
+        return self.__productImageWidth;
     }
 
-    setImgWidth(imgWidth) {
+    setProductImageWidth(productImageWidth) {
         const writable = this.getWritable();
-        return writable.__imgWidth = imgWidth;
+        return writable.__productImageWidth = productImageWidth;
     }
 
-    getImgHeight() {
+    getProductImageHeight() {
         const self = this.getLatest();
-        return self.__imgHeight;
+        return self.__productImageHeight;
     }
 
-    setImgHeight(imgHeight) {
+    setProductImageHeight(productImageHeight) {
         const writable = this.getWritable();
-        return writable.__imgHeight = imgHeight;
+        return writable.__productImageHeight = productImageHeight;
     }
 
-    getTitle() {
+    getProductTitle() {
         const self = this.getLatest();
-        return self.__title;
+        return self.__productTitle;
     }
 
-    setTitle(title) {
+    setProductTitle(title) {
         const writable = this.getWritable();
-        return writable.__title = title;
+        return writable.__productTitle = title;
     }
 
-    getDescription() {
+    getProductDescription() {
         const self = this.getLatest();
-        return self.__description;
+        return self.__productDescription;
     }
 
-    setDescription(description) {
+    setProductDescription(description) {
         const writable = this.getWritable();
-        return writable.__description = description;
+        return writable.__productDescription = description;
     }
 
-    getIsRatingEnabled() {
+    getProductRatingEnabled() {
         const self = this.getLatest();
-        return self.__isRatingEnabled;
+        return self.__productRatingEnabled;
     }
 
-    setIsRatingEnabled(isRatingEnabled) {
+    setProductRatingEnabled(productRatingEnabled) {
         const writable = this.getWritable();
-        return writable.__isRatingEnabled = isRatingEnabled;
+        return writable.__productRatingEnabled = productRatingEnabled;
     }
 
-    getStarRating() {
+    getProductStarRating() {
         const self = this.getLatest();
-        return self.__starRating;
+        return self.__productStarRating;
     }
 
-    setStarRating(starRating) {
+    setProductStarRating(starRating) {
         const writable = this.getWritable();
-        return writable.__starRating = starRating;
+        return writable.__productStarRating = starRating;
     }
 
-    getIsButtonEnabled() {
+    getProductButtonEnabled() {
         const self = this.getLatest();
-        return self.__isButtonEnabled;
+        return self.__productButtonEnabled;
     }
 
-    setIsButtonEnabled(isButtonEnabled) {
+    setProductButtonEnabled(productButtonEnabled) {
         const writable = this.getWritable();
-        return writable.__isButtonEnabled = isButtonEnabled;
+        return writable.__productButtonEnabled = productButtonEnabled;
     }
 
-    getButtonText() {
+    getProductButton() {
         const self = this.getLatest();
-        return self.__buttonText;
+        return self.__productButton;
     }
 
-    setButtonText(buttonText) {
+    setProductButton(productButton) {
         const writable = this.getWritable();
-        return writable.__buttonText = buttonText;
+        return writable.__productButton = productButton;
     }
 
-    getButtonUrl() {
+    getProductUrl() {
         const self = this.getLatest();
-        return self.__buttonUrl;
+        return self.__productUrl;
     }
 
-    setButtonUrl(buttonUrl) {
+    setProductUrl(productUrl) {
         const writable = this.getWritable();
-        return writable.__buttonUrl = buttonUrl;
+        return writable.__productUrl = productUrl;
     }
 
     // should be overridden
@@ -244,8 +244,8 @@ export class ProductNode extends KoenigDecoratorNode {
     }
 
     isEmpty() {
-        const isButtonFilled = this.__isButtonEnabled && this.__buttonUrl && this.__buttonText;
-        return !this.__title && !this.__description && !isButtonFilled && !this.__imgSrc && !this.__isRatingEnabled;
+        const isButtonFilled = this.__productButtonEnabled && this.__productUrl && this.__productButton;
+        return !this.__productTitle && !this.__productDescription && !isButtonFilled && !this.__productImageSrc && !this.__productRatingEnabled;
     }
 }
 

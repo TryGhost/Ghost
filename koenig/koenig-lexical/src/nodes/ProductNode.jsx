@@ -39,7 +39,7 @@ export class ProductNode extends BaseProductNode {
         if (!this.__titleEditorInitialState) {
             // wrap the header in a paragraph so it gets parsed correctly
             // - we serialize with no wrapper so the renderer can decide how to wrap it
-            const initialHtml = dataset.title ? `<p>${dataset.title}</p>` : null;
+            const initialHtml = dataset.productTitle ? `<p>${dataset.productTitle}</p>` : null;
             this.__titleEditorInitialState = generateEditorState({
                 editor: createEditor({nodes: MINIMAL_NODES}),
                 initialHtml
@@ -50,7 +50,7 @@ export class ProductNode extends BaseProductNode {
         if (!this.__descriptionEditorInitialState) {
             this.__descriptionEditorInitialState = generateEditorState({
                 editor: createEditor({nodes: BASIC_NODES}),
-                initialHtml: dataset.description
+                initialHtml: dataset.productDescription
             });
         }
     }
@@ -77,14 +77,14 @@ export class ProductNode extends BaseProductNode {
             this.__titleEditor.getEditorState().read(() => {
                 const html = $generateHtmlFromNodes(this.__titleEditor, null);
                 const cleanedHtml = cleanBasicHtml(html, {firstChildInnerContent: true});
-                json.title = cleanedHtml;
+                json.productTitle = cleanedHtml;
             });
         }
         if (this.__descriptionEditor) {
             this.__descriptionEditor.getEditorState().read(() => {
                 const html = $generateHtmlFromNodes(this.__descriptionEditor, null);
                 const cleanedHtml = cleanBasicHtml(html);
-                json.description = cleanedHtml;
+                json.productDescription = cleanedHtml;
             });
         }
 
@@ -95,19 +95,19 @@ export class ProductNode extends BaseProductNode {
         return (
             <KoenigCardWrapper nodeKey={this.getKey()}>
                 <ProductNodeComponent
-                    buttonText={this.getButtonText()}
-                    buttonUrl={this.getButtonUrl()}
-                    description={this.getDescription()}
+                    buttonText={this.getProductButton()}
+                    buttonUrl={this.getProductUrl()}
+                    description={this.getProductDescription()}
                     descriptionEditor={this.__descriptionEditor}
                     descriptionEditorInitialState={this.__descriptionEditorInitialState}
-                    imgHeight={this.getImgHeight()}
-                    imgSrc={this.getImgSrc()}
-                    imgWidth={this.getImgWidth()}
-                    isButtonEnabled={this.getIsButtonEnabled()}
-                    isRatingEnabled={this.getIsRatingEnabled()}
+                    imgHeight={this.getProductImageHeight()}
+                    imgSrc={this.getProductImageSrc()}
+                    imgWidth={this.getProductImageWidth()}
+                    isButtonEnabled={this.getProductButtonEnabled()}
+                    isRatingEnabled={this.getProductRatingEnabled()}
                     nodeKey={this.getKey()}
-                    starRating={this.getStarRating()}
-                    title={this.getTitle()}
+                    starRating={this.getProductStarRating()}
+                    title={this.getProductTitle()}
                     titleEditor={this.__titleEditor}
                     titleEditorInitialState={this.__titleEditorInitialState}
                 />
@@ -120,9 +120,9 @@ export class ProductNode extends BaseProductNode {
     isEmpty() {
         const isTitleEmpty = isEditorEmpty(this.__titleEditor);
         const isDescriptionEmpty = isEditorEmpty(this.__descriptionEditor);
-        const isButtonFilled = this.getIsButtonEnabled() && this.getButtonUrl() && this.getButtonText();
+        const isButtonFilled = this.getProductButtonEnabled() && this.getProductUrl() && this.getProductButton();
 
-        return isTitleEmpty && isDescriptionEmpty && !isButtonFilled && !this.getImgSrc() && !this.getIsRatingEnabled();
+        return isTitleEmpty && isDescriptionEmpty && !isButtonFilled && !this.getProductImageSrc() && !this.getProductRatingEnabled();
     }
 }
 

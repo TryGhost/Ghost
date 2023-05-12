@@ -76,7 +76,7 @@ function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, 
             const node = $getNodeByKey(nodeKey);
             node.setUrl(response.url);
             node.setAuthor(response.metadata.author);
-            node.setIcon(response.metadata.icon);
+            node.setIconSrc(response.metadata.icon);
             node.setTitle(response.metadata.title);
             node.setDescription(response.metadata.description);
             node.setPublisher(response.metadata.publisher);
@@ -100,7 +100,7 @@ function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, 
             const node = $getNodeByKey(nodeKey);
             node.setUrl(response.url);
             node.setAuthor(response.metadata.author);
-            node.setIcon(response.metadata.icon);
+            node.setIconSrc(response.metadata.icon);
             node.setTitle(response.metadata.title);
             node.setDescription(response.metadata.description);
             node.setPublisher(response.metadata.publisher);

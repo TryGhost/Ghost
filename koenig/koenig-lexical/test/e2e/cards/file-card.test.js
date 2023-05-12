@@ -17,8 +17,8 @@ test.describe('File card', async () => {
                     children: [{
                         type: 'file',
                         src: '/content/images/2022/11/koenig-lexical.jpg',
-                        title: 'This is a title',
-                        description: 'This is a description',
+                        fileTitle: 'This is a title',
+                        fileCaption: 'This is a description',
                         fileName: 'koenig-lexical.jpg',
                         fileSize: '1.2 MB'
                     }],

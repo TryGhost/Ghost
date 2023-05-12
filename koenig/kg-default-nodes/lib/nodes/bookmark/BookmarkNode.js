@@ -40,39 +40,36 @@ export class BookmarkNode extends KoenigDecoratorNode {
         const self = this.getLatest();
         return {
             url: self.__url,
-            icon: self.__icon,
-            title: self.__title,
-            description: self.__description,
-            author: self.__author,
-            publisher: self.__publisher,
-            thumbnail: self.__thumbnail,
+            metadata: {
+                icon: self.__icon,
+                title: self.__title,
+                description: self.__description,
+                author: self.__author,
+                publisher: self.__publisher,
+                thumbnail: self.__thumbnail
+            },
             caption: self.__caption
         
         };
     }
 
-    constructor({url, icon, title, description, author, publisher, thumbnail, caption} = {}, key) {
+    constructor({url, metadata, caption} = {}, key) {
         super(key);
         this.__url = url || '';
-        this.__icon = icon || '';
-        this.__title = title || '';
-        this.__description = description || '';
-        this.__author = author || '';
-        this.__publisher = publisher || '';
-        this.__thumbnail = thumbnail || '';
+        this.__icon = metadata?.icon || '';
+        this.__title = metadata?.title || '';
+        this.__description = metadata?.description || '';
+        this.__author = metadata?.author || '';
+        this.__publisher = metadata?.publisher || '';
+        this.__thumbnail = metadata?.thumbnail || '';
         this.__caption = caption || '';
     }
 
     static importJSON(serializedNode) {
-        const {url, icon, title, description, author, publisher, thumbnail, caption} = serializedNode;
+        const {url, metadata, caption} = serializedNode;
         const node = new this({
             url,
-            icon,
-            title,
-            description,
-            author,
-            publisher, 
-            thumbnail,
+            metadata,
             caption
         });
         return node;
@@ -83,12 +80,14 @@ export class BookmarkNode extends KoenigDecoratorNode {
             type: 'bookmark',
             version: 1,
             url: this.getUrl(),
-            icon: this.getIcon(),
-            title: this.getTitle(),
-            description: this.getDescription(),
-            author: this.getAuthor(),
-            publisher: this.getPublisher(),
-            thumbnail: this.getThumbnail(),
+            metadata: {
+                icon: this.getIconSrc(),
+                title: this.getTitle(),
+                description: this.getDescription(),
+                author: this.getAuthor(),
+                publisher: this.getPublisher(),
+                thumbnail: this.getThumbnail()
+            },
             caption: this.getCaption()
         };
         return dataset;
@@ -131,12 +130,13 @@ export class BookmarkNode extends KoenigDecoratorNode {
         return writable.__url = url;
     }
 
-    getIcon() {
+    // getIcon() is reserved for the card's icon in the editor
+    getIconSrc() {
         const self = this.getLatest();
         return self.__icon;
     }
 
-    setIcon(icon) {
+    setIconSrc(icon) {
         const writable = this.getWritable();
         return writable.__icon = icon;
     }

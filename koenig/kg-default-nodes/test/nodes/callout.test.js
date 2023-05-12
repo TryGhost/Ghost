@@ -31,9 +31,8 @@ describe('CalloutNode', function () {
             nodes: editorNodes
         });
         dataset = {
-            text: 'This is a callout',
-            hasEmoji: true,
-            emojiValue: '💡',
+            calloutText: 'This is a callout',
+            calloutEmoji: '💡',
             backgroundColor: 'blue'
         };
         exportOptions = {
@@ -59,22 +58,19 @@ describe('CalloutNode', function () {
     describe('data access', function (){
         it('has getters for all properties', editorTest(function () {
             const node = $createCalloutNode(dataset);
-            node.getText().should.equal(dataset.text);
-            node.getHasEmoji().should.equal(dataset.hasEmoji);
-            node.getEmojiValue().should.equal(dataset.emojiValue);
+            node.getCalloutText().should.equal(dataset.calloutText);
+            node.getCalloutEmoji().should.equal(dataset.calloutEmoji);
             node.getBackgroundColor().should.equal(dataset.backgroundColor);
         }));
 
         it('has setters for all properties', editorTest(function () {
             const node = $createCalloutNode(dataset);
-            node.setText('new text');
-            node.getText().should.equal('new text');
-            node.setHasEmoji(true);
-            node.getHasEmoji().should.be.true;
+            node.setCalloutText('new text');
+            node.getCalloutText().should.equal('new text');
             node.setBackgroundColor('red');
             node.getBackgroundColor().should.equal('red');
-            node.setEmojiValue('👍');
-            node.getEmojiValue().should.equal('👍');
+            node.setCalloutEmoji('👍');
+            node.getCalloutEmoji().should.equal('👍');
         }));
 
         it('has getDataset() method', editorTest(function () {
@@ -97,7 +93,7 @@ describe('CalloutNode', function () {
         }));
         it('can render to HTML with no emoji', editorTest(function () {
             const node = $createCalloutNode(dataset);
-            node.setHasEmoji(false);
+            node.setCalloutEmoji(null);
             const {element} = node.exportDOM(exportOptions);
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-callout-card kg-callout-card-blue">
@@ -108,6 +104,7 @@ describe('CalloutNode', function () {
 
         it('can export JSON', editorTest(function () {
             const node = $createCalloutNode(dataset);
+            console.log(dataset);
             const json = node.exportJSON();
             json.should.deepEqual({
                 type: 'callout',
@@ -129,9 +126,8 @@ describe('CalloutNode', function () {
             // console.log(nodes);
             nodes.length.should.equal(1);
             nodes[0].getBackgroundColor().should.equal('red');
-            nodes[0].getHasEmoji().should.be.true;
-            nodes[0].getText().should.equal('This is a callout');
-            nodes[0].getEmojiValue().should.equal('💡');
+            nodes[0].getCalloutText().should.equal('This is a callout');
+            nodes[0].getCalloutEmoji().should.equal('💡');
         }));
     });
 
@@ -140,9 +136,8 @@ describe('CalloutNode', function () {
             const node = $createCalloutNode(dataset);
             const clone = CalloutNode.clone(node);
             clone.getBackgroundColor().should.equal(node.getBackgroundColor());
-            clone.getHasEmoji().should.equal(node.getHasEmoji());
-            clone.getText().should.equal(node.getText());
-            clone.getEmojiValue().should.equal(node.getEmojiValue());
+            clone.getCalloutText().should.equal(node.getCalloutText());
+            clone.getCalloutEmoji().should.equal(node.getCalloutEmoji());
         }));
     });
 
@@ -168,9 +163,8 @@ describe('CalloutNode', function () {
             editor.getEditorState().read(() => {
                 try {
                     const [calloutNode] = $getRoot().getChildren();
-                    calloutNode.getText().should.equal(dataset.text);
-                    calloutNode.getHasEmoji().should.equal(dataset.hasEmoji);
-                    calloutNode.getEmojiValue().should.equal(dataset.emojiValue);
+                    calloutNode.getCalloutText().should.equal(dataset.calloutText);
+                    calloutNode.getCalloutEmoji().should.equal(dataset.calloutEmoji);
                     calloutNode.getBackgroundColor().should.equal(dataset.backgroundColor);
                     done();
                 } catch (e) {

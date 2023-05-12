@@ -20,18 +20,21 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 // re-export here so we don't need to import from multiple places throughout the app
 export {INSERT_CALLOUT_COMMAND} from '@tryghost/kg-default-nodes';
 
-function CalloutNodeComponent({nodeKey, textEditor, textEditorInitialState, hasEmoji, backgroundColor, emojiValue}) {
+function CalloutNodeComponent({nodeKey, textEditor, textEditorInitialState, backgroundColor, calloutEmoji}) {
     const [editor] = useLexicalComposerContext();
 
     const {isSelected, isEditing, setEditing} = React.useContext(CardContext);
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const [showEmojiPicker, setShowEmojiPicker] = React.useState(false);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
+    const [emoji, setEmoji] = React.useState(calloutEmoji);
+    const [hasEmoji, setHasEmoji] = React.useState(calloutEmoji ? true : false);
 
     const toggleEmoji = (event) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setHasEmoji(event.target.checked);
+            setHasEmoji(event.target.checked);
+            node.setCalloutEmoji(event.target.checked ? emoji : '');
         });
     };
 
@@ -45,7 +48,8 @@ function CalloutNodeComponent({nodeKey, textEditor, textEditorInitialState, hasE
     const handleEmojiChange = (event) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setEmojiValue(event.native);
+            setEmoji(event.native);
+            node.setCalloutEmoji(event.native);
             toggleEmojiPicker();
         });
     };
@@ -71,11 +75,11 @@ function CalloutNodeComponent({nodeKey, textEditor, textEditorInitialState, hasE
     return (
         <>
             <CalloutCard
+                calloutEmoji={calloutEmoji}
                 changeEmoji={handleEmojiChange}
                 color={backgroundColor}
-                emoji={hasEmoji}
-                emojiValue={emojiValue}
                 handleColorChange={handleColorChange}
+                hasEmoji={hasEmoji}
                 isEditing={isEditing}
                 nodeKey={nodeKey}
                 sanitizeHtml={sanitizeHtml}
@@ -138,7 +142,7 @@ export class CalloutNode extends BaseCalloutNode {
         if (!this.__textEditorInitialState) {
             this.__textEditorInitialState = generateEditorState({
                 editor: createEditor({nodes: MINIMAL_NODES}),
-                initialHtml: dataset.text ? `<p>${dataset.text}</p>` : '' // wrap with paragraph to interpret as ParagraphNode (needed for nested editor)
+                initialHtml: dataset.calloutText ? `<p>${dataset.calloutText}</p>` : '' // wrap with paragraph to interpret as ParagraphNode (needed for nested editor)
             });
         }
     }
@@ -152,7 +156,7 @@ export class CalloutNode extends BaseCalloutNode {
             this.__textEditor.getEditorState().read(() => {
                 const html = $generateHtmlFromNodes(this.__textEditor, null);
                 const cleanedHtml = cleanBasicHtml(html);
-                json.text = cleanedHtml;
+                json.calloutText = cleanedHtml;
             });
         }
 
@@ -183,8 +187,7 @@ export class CalloutNode extends BaseCalloutNode {
             <KoenigCardWrapper nodeKey={this.getKey()}>
                 <CalloutNodeComponent
                     backgroundColor={this.__backgroundColor}
-                    emojiValue={this.__emojiValue}
-                    hasEmoji={this.__hasEmoji}
+                    calloutEmoji={this.__calloutEmoji}
                     nodeKey={this.getKey()}
                     textEditor={this.__textEditor}
                     textEditorInitialState={this.__textEditorInitialState}

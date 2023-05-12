@@ -27,31 +27,31 @@ describe('ProductNode', function () {
     };
 
     const checkGetters = (productNode, data) => {
-        productNode.getImgSrc().should.equal(data.imgSrc);
-        productNode.getImgWidth().should.equal(data.imgWidth);
-        productNode.getImgHeight().should.equal(data.imgHeight);
-        productNode.getTitle().should.equal(data.title);
-        productNode.getDescription().should.equal(data.description);
-        productNode.getIsRatingEnabled().should.be.exactly(true);
-        productNode.getStarRating().should.equal(5);
-        productNode.getIsButtonEnabled().should.be.exactly(true);
-        productNode.getButtonText().should.equal(data.buttonText);
-        productNode.getButtonUrl().should.equal(data.buttonUrl);
+        productNode.getProductImageSrc().should.equal(data.productImageSrc);
+        productNode.getProductImageWidth().should.equal(data.productImageWidth);
+        productNode.getProductImageHeight().should.equal(data.productImageHeight);
+        productNode.getProductTitle().should.equal(data.productTitle);
+        productNode.getProductDescription().should.equal(data.productDescription);
+        productNode.getProductRatingEnabled().should.be.exactly(true);
+        productNode.getProductStarRating().should.equal(5);
+        productNode.getProductButtonEnabled().should.be.exactly(true);
+        productNode.getProductButton().should.equal(data.productButton);
+        productNode.getProductUrl().should.equal(data.productUrl);
     };
 
     beforeEach(function () {
         editor = createHeadlessEditor({nodes: editorNodes});
 
         dataset = {
-            imgSrc: '/content/images/2022/11/koenig-lexical.jpg',
-            imgWidth: 200,
-            imgHeight: 100,
-            title: 'This is a <b>title</b>',
-            description: 'This is a <b>description</b>',
-            isRatingEnabled: true,
-            isButtonEnabled: true,
-            buttonText: 'Button text',
-            buttonUrl: 'https://google.com/'
+            productImageSrc: '/content/images/2022/11/koenig-lexical.jpg',
+            productImageWidth: 200,
+            productImageHeight: 100,
+            productTitle: 'This is a <b>title</b>',
+            productDescription: 'This is a <b>description</b>',
+            productRatingEnabled: true,
+            productButtonEnabled: true,
+            productButton: 'Button text',
+            productUrl: 'https://google.com/'
         };
 
         exportOptions = new Object({
@@ -76,41 +76,41 @@ describe('ProductNode', function () {
         it('has setters for all properties', editorTest(function () {
             const productNode = $createProductNode();
 
-            productNode.getImgSrc().should.equal('');
-            productNode.setImgSrc('/content/images/2022/11/koenig-lexical.jpg');
-            productNode.getImgSrc().should.equal('/content/images/2022/11/koenig-lexical.jpg');
+            productNode.getProductImageSrc().should.equal('');
+            productNode.setProductImageSrc('/content/images/2022/11/koenig-lexical.jpg');
+            productNode.getProductImageSrc().should.equal('/content/images/2022/11/koenig-lexical.jpg');
 
-            should(productNode.getImgWidth()).equal(null);
-            productNode.setImgWidth(600);
-            productNode.getImgWidth().should.equal(600);
+            should(productNode.getProductImageWidth()).equal(null);
+            productNode.setProductImageWidth(600);
+            productNode.getProductImageWidth().should.equal(600);
 
-            should(productNode.getImgHeight()).equal(null);
-            productNode.setImgHeight(700);
-            productNode.getImgHeight().should.equal(700);
+            should(productNode.getProductImageHeight()).equal(null);
+            productNode.setProductImageHeight(700);
+            productNode.getProductImageHeight().should.equal(700);
 
-            productNode.getTitle().should.equal('');
-            productNode.setTitle('Title');
-            productNode.getTitle().should.equal('Title');
+            productNode.getProductTitle().should.equal('');
+            productNode.setProductTitle('Title');
+            productNode.getProductTitle().should.equal('Title');
 
-            productNode.getDescription().should.equal('');
-            productNode.setDescription('Description');
-            productNode.getDescription().should.equal('Description');
+            productNode.getProductDescription().should.equal('');
+            productNode.setProductDescription('Description');
+            productNode.getProductDescription().should.equal('Description');
 
-            productNode.getIsRatingEnabled().should.be.exactly(false);
-            productNode.setIsRatingEnabled(true);
-            productNode.getIsRatingEnabled().should.be.exactly(true);
+            productNode.getProductRatingEnabled().should.be.exactly(false);
+            productNode.setProductRatingEnabled(true);
+            productNode.getProductRatingEnabled().should.be.exactly(true);
 
-            productNode.getStarRating().should.equal(5);
-            productNode.setStarRating(3);
-            productNode.getStarRating().should.equal(3);
+            productNode.getProductStarRating().should.equal(5);
+            productNode.setProductStarRating(3);
+            productNode.getProductStarRating().should.equal(3);
 
-            productNode.getButtonText().should.equal('');
-            productNode.setButtonText('Button text');
-            productNode.getButtonText().should.equal('Button text');
+            productNode.getProductButton().should.equal('');
+            productNode.setProductButton('Button text');
+            productNode.getProductButton().should.equal('Button text');
 
-            productNode.getButtonUrl().should.equal('');
-            productNode.setButtonUrl('https://google.com/');
-            productNode.getButtonUrl().should.equal('https://google.com/');
+            productNode.getProductUrl().should.equal('');
+            productNode.setProductUrl('https://google.com/');
+            productNode.getProductUrl().should.equal('https://google.com/');
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
@@ -119,7 +119,7 @@ describe('ProductNode', function () {
 
             productNodeDataset.should.deepEqual({
                 ...dataset,
-                starRating: 5
+                productStarRating: 5
             });
         }));
 
@@ -127,15 +127,15 @@ describe('ProductNode', function () {
             const productNode = $createProductNode(dataset);
 
             productNode.isEmpty().should.be.exactly(false);
-            productNode.setImgSrc('');
+            productNode.setProductImageSrc('');
             productNode.isEmpty().should.be.exactly(false);
-            productNode.setIsButtonEnabled(false);
+            productNode.setProductButtonEnabled(false);
             productNode.isEmpty().should.be.exactly(false);
-            productNode.setTitle('');
+            productNode.setProductTitle('');
             productNode.isEmpty().should.be.exactly(false);
-            productNode.setDescription('');
+            productNode.setProductDescription('');
             productNode.isEmpty().should.be.exactly(false);
-            productNode.setIsRatingEnabled(false);
+            productNode.setProductRatingEnabled(false);
             productNode.isEmpty().should.be.exactly(true);
         }));
     });
@@ -148,16 +148,16 @@ describe('ProductNode', function () {
             json.should.deepEqual({
                 type: 'product',
                 version: 1,
-                imgSrc: dataset.imgSrc,
-                imgWidth: dataset.imgWidth,
-                imgHeight: dataset.imgHeight,
-                title: dataset.title,
-                description: dataset.description,
-                isRatingEnabled: dataset.isRatingEnabled,
-                isButtonEnabled: dataset.isButtonEnabled,
-                buttonText: dataset.buttonText,
-                buttonUrl: dataset.buttonUrl,
-                starRating: 5
+                productImageSrc: dataset.productImageSrc,
+                productImageWidth: dataset.productImageWidth,
+                productImageHeight: dataset.productImageHeight,
+                productTitle: dataset.productTitle,
+                productDescription: dataset.productDescription,
+                productRatingEnabled: dataset.productRatingEnabled,
+                productButtonEnabled: dataset.productButtonEnabled,
+                productButton: dataset.productButton,
+                productUrl: dataset.productUrl,
+                productStarRating: 5
             });
         }));
     });
@@ -216,14 +216,14 @@ describe('ProductNode', function () {
     describe('exportDOM', function () {
         it('renders', editorTest(function () {
             const payload = {
-                buttonText: 'Click me',
-                isButtonEnabled: true,
-                description: 'This product is ok',
-                imgSrc: 'https://example.com/images/ok.jpg',
-                isRatingEnabled: true,
-                starRating: 3,
-                title: 'Product title!',
-                buttonUrl: 'https://example.com/product/ok'
+                productButton: 'Click me',
+                productButtonEnabled: true,
+                productDescription: 'This product is ok',
+                productImageSrc: 'https://example.com/images/ok.jpg',
+                productRatingEnabled: true,
+                productStarRating: 3,
+                productTitle: 'Product title!',
+                productUrl: 'https://example.com/product/ok'
             };
             const productNode = $createProductNode(payload);
             const {element} = productNode.exportDOM(exportOptions);
@@ -235,16 +235,16 @@ describe('ProductNode', function () {
 
         it('renders with img width and height', editorTest(function () {
             const payload = {
-                buttonText: 'Click me',
-                isButtonEnabled: true,
-                description: 'This product is ok',
-                imgSrc: 'https://example.com/images/ok.jpg',
-                imgWidth: 200,
-                imgHeight: 100,
-                isRatingEnabled: true,
-                starRating: 3,
-                title: 'Product title!',
-                buttonUrl: 'https://example.com/product/ok'
+                productButton: 'Click me',
+                productButtonEnabled: true,
+                productDescription: 'This product is ok',
+                productImageSrc: 'https://example.com/images/ok.jpg',
+                productImageWidth: 200,
+                productImageHeight: 100,
+                productRatingEnabled: true,
+                productStarRating: 3,
+                productTitle: 'Product title!',
+                productUrl: 'https://example.com/product/ok'
             };
             const productNode = $createProductNode(payload);
             const {element} = productNode.exportDOM(exportOptions);
@@ -256,8 +256,8 @@ describe('ProductNode', function () {
 
         it('renders nothing if title, description, button and image are missing', editorTest(function () {
             const payload = {
-                title: '',
-                description: ''
+                productTitle: '',
+                productDescription: ''
             };
             const productNode = $createProductNode(payload);
             const {element} = productNode.exportDOM(exportOptions);
@@ -268,7 +268,7 @@ describe('ProductNode', function () {
 
         it('renders if only title is present', editorTest(function () {
             const payload = {
-                title: 'Just a title'
+                productTitle: 'Just a title'
             };
             const productNode = $createProductNode(payload);
             const {element} = productNode.exportDOM(exportOptions);
@@ -280,7 +280,7 @@ describe('ProductNode', function () {
 
         it('renders if only description is present', editorTest(function () {
             const payload = {
-                description: 'Just a description'
+                productDescription: 'Just a description'
             };
             const productNode = $createProductNode(payload);
             const {element} = productNode.exportDOM(exportOptions);
@@ -292,9 +292,9 @@ describe('ProductNode', function () {
 
         it('renders if only button is present', editorTest(function () {
             const payload = {
-                isButtonEnabled: true,
-                buttonText: 'Button text',
-                buttonUrl: 'https://example.com/product/ok'
+                productButtonEnabled: true,
+                productButton: 'Button text',
+                productUrl: 'https://example.com/product/ok'
             };
             const productNode = $createProductNode(payload);
             const {element} = productNode.exportDOM(exportOptions);
@@ -306,14 +306,14 @@ describe('ProductNode', function () {
 
         it('renders email', editorTest(function () {
             const payload = {
-                buttonText: 'Click me',
-                isButtonEnabled: true,
-                description: 'This product is ok',
-                imgSrc: 'https://example.com/images/ok.jpg',
-                isRatingEnabled: true,
-                starRating: 3,
-                title: 'Product title!',
-                buttonUrl: 'https://example.com/product/ok'
+                productButton: 'Click me',
+                productButtonEnabled: true,
+                productDescription: 'This product is ok',
+                productImageSrc: 'https://example.com/images/ok.jpg',
+                productRatingEnabled: true,
+                productStarRating: 3,
+                productTitle: 'Product title!',
+                productUrl: 'https://example.com/product/ok'
             };
 
             const options = {
@@ -330,16 +330,16 @@ describe('ProductNode', function () {
 
         it('renders email with img width and height', editorTest(function () {
             const payload = {
-                buttonText: 'Click me',
-                isButtonEnabled: true,
-                description: 'This product is ok',
-                imgSrc: 'https://example.com/images/ok.jpg',
-                imgWidth: 200,
-                imgHeight: 100,
-                isRatingEnabled: true,
-                starRating: 3,
-                title: 'Product title!',
-                buttonUrl: 'https://example.com/product/ok'
+                productButton: 'Click me',
+                productButtonEnabled: true,
+                productDescription: 'This product is ok',
+                productImageSrc: 'https://example.com/images/ok.jpg',
+                productImageWidth: 200,
+                productImageHeight: 100,
+                productRatingEnabled: true,
+                productStarRating: 3,
+                productTitle: 'Product title!',
+                productUrl: 'https://example.com/product/ok'
             };
 
             const options = {
@@ -356,13 +356,13 @@ describe('ProductNode', function () {
 
         it('renders email when the star-rating is disabled', editorTest(function () {
             const payload = {
-                buttonText: 'Click me',
-                isButtonEnabled: true,
-                description: 'This product is ok',
-                imgSrc: 'https://example.com/images/ok.jpg',
-                isRatingEnabled: false,
-                title: 'Product title!',
-                buttonUrl: 'https://example.com/product/ok'
+                productButton: 'Click me',
+                productButtonEnabled: true,
+                productDescription: 'This product is ok',
+                productImageSrc: 'https://example.com/images/ok.jpg',
+                productRatingEnabled: false,
+                productTitle: 'Product title!',
+                productUrl: 'https://example.com/product/ok'
             };
 
             const options = {
@@ -379,13 +379,13 @@ describe('ProductNode', function () {
 
         it('renders email when the button is disabled', editorTest(function () {
             const payload = {
-                buttonText: 'Click me',
-                isButtonEnabled: false,
-                description: 'This product is ok',
-                imgSrc: 'https://example.com/images/ok.jpg',
-                isRatingEnabled: false,
-                title: 'Product title!',
-                buttonUrl: 'https://example.com/product/ok'
+                productButton: 'Click me',
+                productButtonEnabled: false,
+                productDescription: 'This product is ok',
+                productImageSrc: 'https://example.com/images/ok.jpg',
+                productRatingEnabled: false,
+                productTitle: 'Product title!',
+                productUrl: 'https://example.com/product/ok'
             };
 
             const options = {
@@ -402,12 +402,12 @@ describe('ProductNode', function () {
 
         it('renders email without an image if the attribute isn\'t there', editorTest(function () {
             const payload = {
-                buttonText: 'Click me',
-                isButtonEnabled: false,
-                description: 'This product is ok',
-                isRatingEnabled: false,
-                title: 'Product title!',
-                buttonUrl: 'https://example.com/product/ok'
+                productButton: 'Click me',
+                productButtonEnabled: false,
+                productDescription: 'This product is ok',
+                productRatingEnabled: false,
+                productTitle: 'Product title!',
+                productUrl: 'https://example.com/product/ok'
             };
 
             const options = {
@@ -434,14 +434,14 @@ describe('ProductNode', function () {
             const productNode = nodes[0];
             $isProductNode(productNode).should.be.exactly(true);
 
-            productNode.getImgSrc().should.equal('https://example.com/images/ok.jpg');
-            productNode.getTitle().should.equal('Product title!');
-            productNode.getDescription().should.equal('This product is ok');
-            productNode.getIsRatingEnabled().should.be.exactly(true);
-            productNode.getStarRating().should.equal(3);
-            productNode.getIsButtonEnabled().should.be.exactly(true);
-            productNode.getButtonText().should.equal('Click me');
-            productNode.getButtonUrl().should.equal('https://example.com/product/ok');
+            productNode.getProductImageSrc().should.equal('https://example.com/images/ok.jpg');
+            productNode.getProductTitle().should.equal('Product title!');
+            productNode.getProductDescription().should.equal('This product is ok');
+            productNode.getProductRatingEnabled().should.be.exactly(true);
+            productNode.getProductStarRating().should.equal(3);
+            productNode.getProductButtonEnabled().should.be.exactly(true);
+            productNode.getProductButton().should.equal('Click me');
+            productNode.getProductUrl().should.equal('https://example.com/product/ok');
         }));
 
         it('parses a product card with disabled star rating', editorTest(function () {
@@ -454,13 +454,13 @@ describe('ProductNode', function () {
             const productNode = nodes[0];
             $isProductNode(productNode).should.be.exactly(true);
 
-            productNode.getImgSrc().should.equal('https://example.com/images/ok.jpg');
-            productNode.getTitle().should.equal('Product title!');
-            productNode.getDescription().should.equal('This product is ok');
-            productNode.getIsRatingEnabled().should.be.exactly(false);
-            productNode.getIsButtonEnabled().should.be.exactly(true);
-            productNode.getButtonText().should.equal('Click me');
-            productNode.getButtonUrl().should.equal('https://example.com/product/ok');
+            productNode.getProductImageSrc().should.equal('https://example.com/images/ok.jpg');
+            productNode.getProductTitle().should.equal('Product title!');
+            productNode.getProductDescription().should.equal('This product is ok');
+            productNode.getProductRatingEnabled().should.be.exactly(false);
+            productNode.getProductButtonEnabled().should.be.exactly(true);
+            productNode.getProductButton().should.equal('Click me');
+            productNode.getProductUrl().should.equal('https://example.com/product/ok');
         }));
 
         it('parses a product card with disabled button', editorTest(function () {
@@ -473,11 +473,11 @@ describe('ProductNode', function () {
             const productNode = nodes[0];
             $isProductNode(productNode).should.be.exactly(true);
 
-            productNode.getImgSrc().should.equal('https://example.com/images/ok.jpg');
-            productNode.getTitle().should.equal('Product title!');
-            productNode.getDescription().should.equal('This product is ok');
-            productNode.getIsRatingEnabled().should.be.exactly(false);
-            productNode.getIsButtonEnabled().should.be.exactly(false);
+            productNode.getProductImageSrc().should.equal('https://example.com/images/ok.jpg');
+            productNode.getProductTitle().should.equal('Product title!');
+            productNode.getProductDescription().should.equal('This product is ok');
+            productNode.getProductRatingEnabled().should.be.exactly(false);
+            productNode.getProductButtonEnabled().should.be.exactly(false);
         }));
 
         it('parses a product card with image width/height', editorTest(function () {
@@ -490,13 +490,13 @@ describe('ProductNode', function () {
             const productNode = nodes[0];
             $isProductNode(productNode).should.be.exactly(true);
 
-            productNode.getImgSrc().should.equal('https://example.com/images/ok.jpg');
-            productNode.getTitle().should.equal('Product title!');
-            productNode.getDescription().should.equal('This product is ok');
-            productNode.getIsRatingEnabled().should.be.exactly(false);
-            productNode.getIsButtonEnabled().should.be.exactly(false);
-            productNode.getImgWidth().should.equal('200');
-            productNode.getImgHeight().should.equal('100');
+            productNode.getProductImageSrc().should.equal('https://example.com/images/ok.jpg');
+            productNode.getProductTitle().should.equal('Product title!');
+            productNode.getProductDescription().should.equal('This product is ok');
+            productNode.getProductRatingEnabled().should.be.exactly(false);
+            productNode.getProductButtonEnabled().should.be.exactly(false);
+            productNode.getProductImageWidth().should.equal('200');
+            productNode.getProductImageHeight().should.equal('100');
         }));
 
         it('handles arbitrary whitespace in button content', editorTest(function () {
@@ -524,13 +524,13 @@ describe('ProductNode', function () {
             const productNode = nodes[0];
             $isProductNode(productNode).should.be.exactly(true);
 
-            productNode.getImgSrc().should.equal('https://example.com/images/ok.jpg');
-            productNode.getTitle().should.equal('Product title!');
-            productNode.getDescription().should.equal('This product is ok');
-            productNode.getIsRatingEnabled().should.be.exactly(false);
-            productNode.getIsButtonEnabled().should.be.exactly(true);
-            productNode.getButtonText().should.equal('Click me');
-            productNode.getButtonUrl().should.equal('https://example.com/product/ok');
+            productNode.getProductImageSrc().should.equal('https://example.com/images/ok.jpg');
+            productNode.getProductTitle().should.equal('Product title!');
+            productNode.getProductDescription().should.equal('This product is ok');
+            productNode.getProductRatingEnabled().should.be.exactly(false);
+            productNode.getProductButtonEnabled().should.be.exactly(true);
+            productNode.getProductButton().should.equal('Click me');
+            productNode.getProductUrl().should.equal('https://example.com/product/ok');
         }));
 
         it('falls through if title, description, button and image are missing', editorTest(function () {

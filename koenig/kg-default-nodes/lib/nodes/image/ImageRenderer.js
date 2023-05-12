@@ -24,7 +24,7 @@ export function renderImageNodeToDOM(node, options = {}) {
 
     const img = document.createElement('img');
     img.setAttribute('src', node.getSrc());
-    img.setAttribute('alt', node.getAltText());
+    img.setAttribute('alt', node.getAlt());
     img.setAttribute('loading', 'lazy');
 
     if (node.getTitle()) {

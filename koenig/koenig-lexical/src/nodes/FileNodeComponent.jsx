@@ -82,7 +82,7 @@ function FileNodeComponent({
 
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setTitle(title);
+            node.setFileTitle(title);
         });
     };
 
@@ -91,7 +91,7 @@ function FileNodeComponent({
 
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setDescription(desc);
+            node.setFileCaption(desc);
         });
     };
 

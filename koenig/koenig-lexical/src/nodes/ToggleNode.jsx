@@ -13,8 +13,8 @@ import {createEditor} from 'lexical';
 export {INSERT_TOGGLE_COMMAND} from '@tryghost/kg-default-nodes';
 
 export class ToggleNode extends BaseToggleNode {
-    __headerEditor;
-    __headerEditorInitialState;
+    __headingEditor;
+    __headingEditorInitialState;
     __contentEditor;
     __contentEditorInitialState;
 
@@ -34,16 +34,16 @@ export class ToggleNode extends BaseToggleNode {
         super(dataset, key);
 
         // set up and populate nested editors from the serialized HTML
-        this.__headerEditor = dataset.headerEditor || createEditor({nodes: MINIMAL_NODES});
-        this.__headerEditorInitialState = dataset.headerEditorInitialState;
-        if (!this.__headerEditorInitialState) {
-            // wrap the header in a paragraph so it gets parsed correctly
+        this.__headingEditor = dataset.headingEditor || createEditor({nodes: MINIMAL_NODES});
+        this.__headingEditorInitialState = dataset.headingEditorInitialState;
+        if (!this.__headingEditorInitialState) {
+            // wrap the heading in a paragraph so it gets parsed correctly
             // - we serialize with no wrapper so the renderer can decide how to wrap it
-            const initialHtml = dataset.header ? `<p>${dataset.header}</p>` : null;
+            const initialHtml = dataset.heading ? `<p>${dataset.heading}</p>` : null;
 
             // store the initial state separately as it's passed in to `<CollaborationPlugin />`
             // for use when there is no YJS document already stored
-            this.__headerEditorInitialState = generateEditorState({
+            this.__headingEditorInitialState = generateEditorState({
                 // create a new editor instance so we don't pre-fill an editor that will be filled by YJS content
                 editor: createEditor({nodes: MINIMAL_NODES}),
                 initialHtml
@@ -66,8 +66,8 @@ export class ToggleNode extends BaseToggleNode {
 
         // client-side only data properties such as nested editors
         const self = this.getLatest();
-        dataset.headerEditor = self.__headerEditor;
-        dataset.headerEditorInitialState = self.__headerEditorInitialState;
+        dataset.headingEditor = self.__headingEditor;
+        dataset.headingEditorInitialState = self.__headingEditorInitialState;
         dataset.contentEditor = self.__contentEditor;
         dataset.contentEditorInitialState = self.__contentEditorInitialState;
 
@@ -79,11 +79,11 @@ export class ToggleNode extends BaseToggleNode {
 
         // convert nested editor instances back into HTML because their content may not
         // be automatically updated when the nested editor changes
-        if (this.__headerEditor) {
-            this.__headerEditor.getEditorState().read(() => {
-                const html = $generateHtmlFromNodes(this.__headerEditor, null);
+        if (this.__headingEditor) {
+            this.__headingEditor.getEditorState().read(() => {
+                const html = $generateHtmlFromNodes(this.__headingEditor, null);
                 const cleanedHtml = cleanBasicHtml(html, {firstChildInnerContent: true});
-                json.header = cleanedHtml;
+                json.heading = cleanedHtml;
             });
         }
         if (this.__contentEditor) {
@@ -108,8 +108,8 @@ export class ToggleNode extends BaseToggleNode {
                 <ToggleNodeComponent
                     contentEditor={this.__contentEditor}
                     contentEditorInitialState={this.__contentEditorInitialState}
-                    headerEditor={this.__headerEditor}
-                    headerEditorInitialState={this.__headerEditorInitialState}
+                    headingEditor={this.__headingEditor}
+                    headingEditorInitialState={this.__headingEditorInitialState}
                     nodeKey={this.getKey()}
                 />
             </KoenigCardWrapper>
@@ -119,10 +119,10 @@ export class ToggleNode extends BaseToggleNode {
     // override the default `isEmpty` check because we need to check the nested editors
     // rather than the data properties themselves
     isEmpty() {
-        const isHeaderEmpty = this.__headerEditor.getEditorState().read($canShowPlaceholderCurry(false));
+        const isHeadingEmpty = this.__headingEditor.getEditorState().read($canShowPlaceholderCurry(false));
         const isContentEmpty = this.__contentEditor.getEditorState().read($canShowPlaceholderCurry(false));
 
-        return isHeaderEmpty && isContentEmpty;
+        return isHeadingEmpty && isContentEmpty;
     }
 }
 

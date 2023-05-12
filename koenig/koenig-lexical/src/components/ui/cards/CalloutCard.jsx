@@ -83,13 +83,13 @@ export const calloutColorPicker = [
 
 export function CalloutCard({
     color,
-    emoji,
     isEditing,
     setShowEmojiPicker,
     toggleEmoji,
+    hasEmoji,
     handleColorChange,
     changeEmoji,
-    emojiValue,
+    calloutEmoji,
     textEditor,
     textEditorInitialState,
     nodeKey,
@@ -109,7 +109,7 @@ export function CalloutCard({
         <>
             <div className={`flex rounded border px-7 py-5 ${CALLOUT_COLORS[color]} `} data-testid={`callout-bg-${color}`}>
                 <div>
-                    {emoji &&
+                    {hasEmoji &&
                     <>
                         <button
                             ref={emojiButtonRef}
@@ -118,7 +118,7 @@ export function CalloutCard({
                             type="button"
                             onClick={toggleEmojiPicker}
                         >
-                            {emojiValue}
+                            {calloutEmoji}
                         </button>
                         {
                             isEditing && showEmojiPicker && (
@@ -149,7 +149,7 @@ export function CalloutCard({
                     >
                         <ToggleSetting
                             dataTestId='emoji-toggle'
-                            isChecked={emoji}
+                            isChecked={calloutEmoji}
                             label='Emoji'
                             onChange={toggleEmoji}
                         />
@@ -173,11 +173,11 @@ export function CalloutCard({
 CalloutCard.propTypes = {
     color: PropTypes.oneOf(['grey', 'white', 'blue', 'green', 'yellow', 'red', 'pink', 'purple', 'accent']),
     text: PropTypes.string,
+    hasEmoji: PropTypes.bool,
     placeholder: PropTypes.string,
     isEditing: PropTypes.bool,
     updateText: PropTypes.func,
-    emoji: PropTypes.bool,
-    emojiValue: PropTypes.string,
+    calloutEmoji: PropTypes.string,
     setShowEmojiPicker: PropTypes.func,
     toggleEmoji: PropTypes.func,
     handleColorChange: PropTypes.func,
@@ -191,5 +191,6 @@ CalloutCard.propTypes = {
 
 CalloutCard.defaultProps = {
     color: 'green',
-    emojiValue: '💡'
+    calloutEmoji: '💡',
+    hasEmoji: true
 };

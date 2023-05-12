@@ -9,15 +9,15 @@ export function renderCalloutNodeToDOM(node, options = {}) {
 
     const element = document.createElement('div');
     element.classList.add('kg-card', 'kg-callout-card', `kg-callout-card-${node.getBackgroundColor()}`);
-    if (node.getHasEmoji()) {
+    if (node.getCalloutEmoji()) {
         const emojiElement = document.createElement('div');
         emojiElement.classList.add('kg-callout-emoji');
-        emojiElement.textContent = node.getEmojiValue();
+        emojiElement.textContent = node.getCalloutEmoji();
         element.appendChild(emojiElement);
     }
     const textElement = document.createElement('div');
     textElement.classList.add('kg-callout-text');
-    textElement.innerHTML = node.getText();
+    textElement.innerHTML = node.getCalloutText();
     element.appendChild(textElement);
     return element;
 }

@@ -11,7 +11,7 @@ export class ImageNode extends KoenigDecoratorNode {
     __src;
     __caption;
     __title;
-    __altText;
+    __alt;
     __cardWidth;
     __width;
     __height;
@@ -43,7 +43,7 @@ export class ImageNode extends KoenigDecoratorNode {
             src: self.__src,
             caption: self.__caption,
             title: self.__title,
-            altText: self.__altText,
+            alt: self.__alt,
             width: self.__width,
             height: self.__height,
             cardWidth: self.__cardWidth,
@@ -51,12 +51,12 @@ export class ImageNode extends KoenigDecoratorNode {
         };
     }
 
-    constructor({src, caption, title, altText, cardWidth, width, height, href} = {}, key) {
+    constructor({src, caption, title, alt, cardWidth, width, height, href} = {}, key) {
         super(key);
         this.__src = src || '';
         this.__title = title || '';
         this.__caption = caption || '';
-        this.__altText = altText || '';
+        this.__alt = alt || '';
         this.__width = width || null;
         this.__height = height || null;
         this.__cardWidth = cardWidth || 'regular';
@@ -64,12 +64,12 @@ export class ImageNode extends KoenigDecoratorNode {
     }
 
     static importJSON(serializedNode) {
-        const {src, caption, title, altText, width, height, cardWidth, href} = serializedNode;
+        const {src, caption, title, alt, width, height, cardWidth, href} = serializedNode;
         const node = new this({
             src,
             caption,
             title,
-            altText,
+            alt,
             width,
             height,
             href,
@@ -89,7 +89,7 @@ export class ImageNode extends KoenigDecoratorNode {
             width: this.getImgWidth(),
             height: this.getImgHeight(),
             title: this.getTitle(),
-            altText: this.getAltText(),
+            alt: this.getAlt(),
             caption: this.getCaption(),
             cardWidth: this.getCardWidth(),
             href: this.getHref()
@@ -192,14 +192,14 @@ export class ImageNode extends KoenigDecoratorNode {
         return writable.__caption = caption;
     }
 
-    getAltText() {
+    getAlt() {
         const self = this.getLatest();
-        return self.__altText;
+        return self.__alt;
     }
 
-    setAltText(altText) {
+    setAlt(alt) {
         const writable = this.getWritable();
-        return writable.__altText = altText;
+        return writable.__alt = alt;
     }
 
     // should be overridden

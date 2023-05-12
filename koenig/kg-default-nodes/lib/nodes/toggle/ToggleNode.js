@@ -9,7 +9,7 @@ const NODE_TYPE = 'toggle';
 export class ToggleNode extends KoenigDecoratorNode {
     // payload properties
     __content;
-    __header;
+    __heading;
 
     static getType() {
         return NODE_TYPE;
@@ -25,7 +25,7 @@ export class ToggleNode extends KoenigDecoratorNode {
     static get urlTransformMap() {
         return {
             content: 'html',
-            header: 'html'
+            heading: 'html'
         };
     }
 
@@ -33,21 +33,21 @@ export class ToggleNode extends KoenigDecoratorNode {
         const self = this.getLatest();
         return {
             content: self.__content,
-            header: self.__header
+            heading: self.__heading
         };
     }
 
-    constructor({content, header} = {}, key) {
+    constructor({content, heading} = {}, key) {
         super(key);
         this.__content = content || '';
-        this.__header = header || '';
+        this.__heading = heading || '';
     }
 
     static importJSON(serializedNode) {
-        const {content, header} = serializedNode;
+        const {content, heading} = serializedNode;
         return new this({
             content,
-            header
+            heading
         });
     }
 
@@ -56,7 +56,7 @@ export class ToggleNode extends KoenigDecoratorNode {
             type: NODE_TYPE,
             version: 1,
             content: this.getContent(),
-            header: this.getHeader()
+            heading: this.getHeading()
         };
         return dataset;
     }
@@ -95,14 +95,14 @@ export class ToggleNode extends KoenigDecoratorNode {
         return writable.__content = content;
     }
 
-    getHeader() {
+    getHeading() {
         const self = this.getLatest();
-        return self.__header;
+        return self.__heading;
     }
 
-    setHeader(header) {
+    setHeading(heading) {
         const writable = this.getWritable();
-        return writable.__header = header;
+        return writable.__heading = heading;
     }
 
     hasEditMode() {
@@ -110,7 +110,7 @@ export class ToggleNode extends KoenigDecoratorNode {
     }
 
     isEmpty() {
-        return !this.__header && !this.__content;
+        return !this.__heading && !this.__content;
     }
 
     // should be overridden

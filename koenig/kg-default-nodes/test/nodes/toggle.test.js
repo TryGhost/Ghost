@@ -32,7 +32,7 @@ describe('ToggleNode', function () {
         });
 
         dataset = {
-            header: 'Toggle Header',
+            heading: 'Toggle Heading',
             content: 'Collapsible content'
         };
 
@@ -53,16 +53,16 @@ describe('ToggleNode', function () {
         it('has getters for all properties', editorTest(function () {
             const toggleNode = $createToggleNode(dataset);
 
-            toggleNode.getHeader().should.equal(dataset.header);
+            toggleNode.getHeading().should.equal(dataset.heading);
             toggleNode.getContent().should.equal(dataset.content);
         }));
 
         it('has setters for all properties', editorTest(function () {
             const toggleNode = $createToggleNode();
 
-            toggleNode.getHeader().should.equal('');
-            toggleNode.setHeader('Header');
-            toggleNode.getHeader().should.equal('Header');
+            toggleNode.getHeading().should.equal('');
+            toggleNode.setHeading('Heading');
+            toggleNode.getHeading().should.equal('Heading');
 
             toggleNode.getContent().should.equal('');
             toggleNode.setContent('Content');
@@ -87,7 +87,7 @@ describe('ToggleNode', function () {
             json.should.deepEqual({
                 type: 'toggle',
                 version: 1,
-                header: dataset.header,
+                heading: dataset.heading,
                 content: dataset.content
             });
         }));
@@ -116,7 +116,7 @@ describe('ToggleNode', function () {
                 try {
                     const [toggleNode] = $getRoot().getChildren();
 
-                    toggleNode.getHeader().should.equal(dataset.header);
+                    toggleNode.getHeading().should.equal(dataset.heading);
                     toggleNode.getContent().should.equal(dataset.content);
 
                     done();
@@ -130,7 +130,7 @@ describe('ToggleNode', function () {
     describe('exportDOM', function () {
         it('renders', editorTest(function () {
             const payload = {
-                header: 'Header',
+                heading: 'Heading',
                 content: 'Content'
             };
             const toggleNode = $createToggleNode(payload);
@@ -139,7 +139,7 @@ describe('ToggleNode', function () {
             element.outerHTML.should.prettifyTo(html`
             <div class="kg-card kg-toggle-card" data-kg-toggle-state="close">
                 <div class="kg-toggle-heading">
-                    <h4 class="kg-toggle-heading-text">Header</h4>
+                    <h4 class="kg-toggle-heading-text">Heading</h4>
                     <button class="kg-toggle-card-icon">
                         <svg id="Regular" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                             <path class="cls-1" d="M23.25,7.311,12.53,18.03a.749.749,0,0,1-1.06,0L.75,7.311"></path>
@@ -153,7 +153,7 @@ describe('ToggleNode', function () {
 
         it('renders for email target', editorTest(function () {
             const payload = {
-                header: 'Header',
+                heading: 'Heading',
                 content: 'Content'
             };
 
@@ -167,26 +167,26 @@ describe('ToggleNode', function () {
             element.outerHTML.should.prettifyTo(html`
                 <div style="background: transparent;
                 border: 1px solid rgba(124, 139, 154, 0.25); border-radius: 4px; padding: 20px; margin-bottom: 1.5em;">
-                    <h4 style="font-size: 1.375rem; font-weight: 600; margin-bottom: 8px; margin-top:0px">Header</h4>
+                    <h4 style="font-size: 1.375rem; font-weight: 600; margin-bottom: 8px; margin-top:0px">Heading</h4>
                     <div style="font-size: 1rem; line-height: 1.5; margin-bottom: -1.5em;">Content</div>
                 </div>
             `);
         }));
 
-        it('renders header', editorTest(function () {
+        it('renders heading', editorTest(function () {
             const payload = {
-                header: 'Header',
+                heading: 'Heading',
                 content: 'Content'
             };
 
             const toggleNode = $createToggleNode(payload);
             const {element} = toggleNode.exportDOM(exportOptions);
-            element.outerHTML.should.containEql('<h4 class="kg-toggle-heading-text">Header</h4>');
+            element.outerHTML.should.containEql('<h4 class="kg-toggle-heading-text">Heading</h4>');
         }));
 
         it('renders content', editorTest(function () {
             const payload = {
-                header: 'Header',
+                heading: 'Heading',
                 content: 'Content'
             };
 
@@ -199,11 +199,11 @@ describe('ToggleNode', function () {
     describe('importDOM', function () {
         it('parses toggle card', editorTest(function () {
             const dom = (new JSDOM(html`
-                <div class="kg-card kg-toggle-card" data-kg-toggle-state="close"><div class="kg-toggle-heading"><h4 class="kg-toggle-heading-text">Header</h4><button class="kg-toggle-card-icon"><svg id="Regular" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path class="cls-1" d="M23.25,7.311,12.53,18.03a.749.749,0,0,1-1.06,0L.75,7.311"></path></svg></button></div><div class="kg-toggle-content">Content</div></div>
+                <div class="kg-card kg-toggle-card" data-kg-toggle-state="close"><div class="kg-toggle-heading"><h4 class="kg-toggle-heading-text">Heading</h4><button class="kg-toggle-card-icon"><svg id="Regular" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path class="cls-1" d="M23.25,7.311,12.53,18.03a.749.749,0,0,1-1.06,0L.75,7.311"></path></svg></button></div><div class="kg-toggle-content">Content</div></div>
             `)).window.document;
             const nodes = $generateNodesFromDOM(editor, dom);
             nodes.length.should.equal(1);
-            nodes[0].getHeader().should.equal('Header');
+            nodes[0].getHeading().should.equal('Heading');
             nodes[0].getContent().should.equal('Content');
         }));
     });

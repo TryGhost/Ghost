@@ -32,9 +32,9 @@ describe('FileNode', function () {
         });
         dataset = {
             src: '/content/files/2023/03/IMG_0196.jpeg',
-            title: 'Cool image to download',
-            fileSize: '121 KB',
-            description: 'This is a description',
+            fileTitle: 'Cool image to download',
+            fileSize: 123456,
+            fileCaption: 'This is a description',
             fileName: 'IMG_0196.jpeg'
         };
         exportOptions = {
@@ -56,9 +56,9 @@ describe('FileNode', function () {
         it('has getters from all properties', editorTest(function () {
             const node = $createFileNode(dataset);
             node.getSrc().should.equal(dataset.src);
-            node.getTitle().should.equal(dataset.title);
+            node.getFileTitle().should.equal(dataset.fileTitle);
             node.getFileSize().should.equal(dataset.fileSize);
-            node.getDescription().should.equal(dataset.description);
+            node.getFileCaption().should.equal(dataset.fileCaption);
             node.getFileName().should.equal(dataset.fileName);
         }));
 
@@ -66,12 +66,13 @@ describe('FileNode', function () {
             const node = $createFileNode(dataset);
             node.setSrc('/content/files/2023/03/IMG_0196.jpeg');
             node.getSrc().should.equal('/content/files/2023/03/IMG_0196.jpeg');
-            node.setTitle('new title');
-            node.getTitle().should.equal('new title');
+            node.setFileTitle('new title');
+            node.getFileTitle().should.equal('new title');
             node.setFileSize(123456);
-            node.getFileSize().should.equal('121 KB');
-            node.setDescription('new description');
-            node.getDescription().should.equal('new description');
+            node.getFileSize().should.equal(123456);
+            node.getFormattedFileSize().should.equal('121 KB');
+            node.setFileCaption('new description');
+            node.getFileCaption().should.equal('new description');
             node.setFileName('IMG_0196.jpeg');
             node.getFileName().should.equal('IMG_0196.jpeg');
         }));
@@ -131,10 +132,10 @@ describe('FileNode', function () {
             const nodes = $generateNodesFromDOM(editor, dom);
             nodes.length.should.equal(1);
             nodes[0].getSrc().should.equal('/content/files/2023/03/IMG_0196.jpeg');
-            nodes[0].getTitle().should.equal('Cool image to download');
-            nodes[0].getDescription().should.equal('This is a description');
+            nodes[0].getFileTitle().should.equal('Cool image to download');
+            nodes[0].getFileCaption().should.equal('This is a description');
             nodes[0].getFileName().should.equal('IMG_0196.jpeg');
-            nodes[0].getFileSize().should.equal('121 KB'); // ~121 KB
+            nodes[0].getFileSize().should.equal(123904); // ~121 KB
         }));
     });
 
@@ -161,10 +162,11 @@ describe('FileNode', function () {
                 try {
                     const [fileNode] = $getRoot().getChildren();
                     fileNode.getSrc().should.equal('/content/files/2023/03/IMG_0196.jpeg');
-                    fileNode.getTitle().should.equal('Cool image to download');
-                    fileNode.getDescription().should.equal('This is a description');
+                    fileNode.getFileTitle().should.equal('Cool image to download');
+                    fileNode.getFileCaption().should.equal('This is a description');
                     fileNode.getFileName().should.equal('IMG_0196.jpeg');
-                    fileNode.getFileSize().should.equal('121 KB');
+                    fileNode.getFileSize().should.equal(123456);
+                    fileNode.getFormattedFileSize().should.equal('121 KB'); // ~121 KB
                     done();
                 } catch (e) {
                     done(e);
@@ -179,10 +181,11 @@ describe('FileNode', function () {
             const clonedNode = FileNode.clone(fileNode);
             $isFileNode(clonedNode).should.be.true();
             clonedNode.getSrc().should.equal('/content/files/2023/03/IMG_0196.jpeg');
-            clonedNode.getTitle().should.equal('Cool image to download');
-            clonedNode.getDescription().should.equal('This is a description');
+            clonedNode.getFileTitle().should.equal('Cool image to download');
+            clonedNode.getFileCaption().should.equal('This is a description');
             clonedNode.getFileName().should.equal('IMG_0196.jpeg');
-            clonedNode.getFileSize().should.equal('121 KB');
+            clonedNode.getFileSize().should.equal(123456);
+            clonedNode.getFormattedFileSize().should.equal('121 KB'); // ~121 KB
         }));
     });
 

@@ -23,11 +23,11 @@ export function renderFileNodeToDOM(node, options = {}) {
   
     const title = document.createElement('div');
     title.setAttribute('class', 'kg-file-card-title');
-    title.textContent = node.getTitle() || '';
+    title.textContent = node.getFileTitle() || '';
   
     const caption = document.createElement('div');
     caption.setAttribute('class', 'kg-file-card-caption');
-    caption.textContent = node.getDescription() || '';
+    caption.textContent = node.getFileCaption() || '';
   
     const metadata = document.createElement('div');
     metadata.setAttribute('class', 'kg-file-card-metadata');
@@ -38,7 +38,7 @@ export function renderFileNodeToDOM(node, options = {}) {
   
     const filesize = document.createElement('div');
     filesize.setAttribute('class', 'kg-file-card-filesize');
-    filesize.textContent = node.getFileSize() || '';
+    filesize.textContent = node.getFormattedFileSize() || '';
   
     metadata.appendChild(filename);
     metadata.appendChild(filesize);

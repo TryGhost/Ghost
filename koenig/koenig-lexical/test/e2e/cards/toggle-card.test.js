@@ -19,7 +19,7 @@ test.describe('Toggle card', async () => {
                 root: {
                     children: [{
                         type: 'toggle',
-                        header: '<span><em>Header</em></span>', // header shouldn't have wrapper element like <p> or <h4>
+                        heading: '<span><em>Heading</em></span>', // heading shouldn't have wrapper element like <p> or <h4>
                         content: '<p dir="ltr"><span>Content</span></p>'
                     }],
                     direction: null,
@@ -40,7 +40,7 @@ test.describe('Toggle card', async () => {
                         <div class="rounded border border-grey/40 py-4 px-6 dark:border-grey/30">
                             <div class="flex cursor-text items-start justify-between">
                                 <div class="mr-2 w-full">
-                                    <div class="koenig-lexical-toggle-header">
+                                    <div class="koenig-lexical-toggle-heading">
                                         <div data-kg="editor">
                                             <div
                                                 contenteditable="false"
@@ -48,7 +48,7 @@ test.describe('Toggle card', async () => {
                                                 data-lexical-editor="true"
                                                 aria-autocomplete="none"
                                             >
-                                                <p dir="ltr"><em data-lexical-text="true">Header</em></p>
+                                                <p dir="ltr"><em data-lexical-text="true">Heading</em></p>
                                             </div>
                                         </div>
                                     </div>
@@ -89,7 +89,7 @@ test.describe('Toggle card', async () => {
                     <div class="rounded border border-grey/40 py-4 px-6 dark:border-grey/30">
                         <div class="flex cursor-text items-start justify-between">
                             <div class="mr-2 w-full">
-                                <div class="koenig-lexical-toggle-header">
+                                <div class="koenig-lexical-toggle-heading">
                                     <div data-kg="editor">
                                         <div
                                             contenteditable="true"
@@ -130,17 +130,17 @@ test.describe('Toggle card', async () => {
         `, {ignoreInnerSVG: true});
     });
 
-    test('focuses on the header input when rendered', async function ({page}) {
+    test('focuses on the heading input when rendered', async function ({page}) {
         await focusEditor(page);
         await insertToggleCard(page);
 
-        await page.keyboard.type('Header');
+        await page.keyboard.type('Heading');
 
-        const header = page.locator('.koenig-lexical-toggle-header');
-        await expect(header).toContainText('Header');
+        const heading = page.locator('.koenig-lexical-toggle-heading');
+        await expect(heading).toContainText('Heading');
     });
 
-    test('focuses on the content input when "Enter" is pressed from the header input', async function ({page}) {
+    test('focuses on the content input when "Enter" is pressed from the heading input', async function ({page}) {
         await focusEditor(page);
         await insertToggleCard(page);
 
@@ -151,7 +151,7 @@ test.describe('Toggle card', async () => {
         await expect(content).toContainText('Content');
     });
 
-    test('focuses on the content input when "Tab" is pressed from the header input', async function ({page}) {
+    test('focuses on the content input when "Tab" is pressed from the heading input', async function ({page}) {
         await focusEditor(page);
         await insertToggleCard(page);
 
@@ -162,7 +162,7 @@ test.describe('Toggle card', async () => {
         await expect(content).toContainText('Content');
     });
 
-    test('focuses on the content input when "Arrow Down" is pressed from the header input', async function ({page}) {
+    test('focuses on the content input when "Arrow Down" is pressed from the heading input', async function ({page}) {
         await focusEditor(page);
         await insertToggleCard(page);
 
@@ -173,17 +173,17 @@ test.describe('Toggle card', async () => {
         await expect(content).toContainText('Content');
     });
 
-    test('focuses on the header input when "Arrow Up" is pressed from the content input', async function ({page}) {
+    test('focuses on the heading input when "Arrow Up" is pressed from the content input', async function ({page}) {
         await focusEditor(page);
         await insertToggleCard(page);
 
         await page.keyboard.press('ArrowDown');
         await page.keyboard.type('Content');
         await page.keyboard.press('ArrowUp');
-        await page.keyboard.type('Header');
+        await page.keyboard.type('Heading');
 
-        const header = page.locator('.koenig-lexical-toggle-header');
-        await expect(header).toContainText('Header');
+        const heading = page.locator('.koenig-lexical-toggle-heading');
+        await expect(heading).toContainText('Heading');
     });
 
     test('renders in display mode when unfocused', async function ({page}) {
@@ -191,9 +191,9 @@ test.describe('Toggle card', async () => {
         await insertToggleCard(page);
 
         // add some content to avoid auto-removal when leaving empty
-        await page.keyboard.type('Header');
+        await page.keyboard.type('Heading');
 
-        // Shift focus away from header field
+        // Shift focus away from heading field
         await page.keyboard.press('ArrowDown');
 
         // Shift focus away from content field
@@ -208,7 +208,7 @@ test.describe('Toggle card', async () => {
         await insertToggleCard(page);
 
         // Add some content to avoid auto-removal
-        await page.keyboard.type('Header');
+        await page.keyboard.type('Heading');
 
         // Shift focus away from toggle card
         await page.keyboard.press('Escape');
@@ -221,7 +221,7 @@ test.describe('Toggle card', async () => {
         await focusEditor(page);
         await insertToggleCard(page);
 
-        // Shift focus away from header field
+        // Shift focus away from heading field
         await page.keyboard.press('ArrowDown');
 
         // Shift focus away from content field
@@ -236,7 +236,7 @@ test.describe('Toggle card', async () => {
         await insertToggleCard(page);
 
         // Add some content to avoid auto-removal
-        await page.keyboard.type('Header');
+        await page.keyboard.type('Heading');
 
         // create snippet
         await page.keyboard.press('Escape');

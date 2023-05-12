@@ -8,9 +8,8 @@ const NODE_TYPE = 'callout';
 
 export class CalloutNode extends KoenigDecoratorNode {
     // payload properties
-    __text;
-    __hasEmoji;
-    __emojiValue;
+    __calloutText;
+    __calloutEmoji;
     __backgroundColor;
 
     static getType() {
@@ -27,27 +26,24 @@ export class CalloutNode extends KoenigDecoratorNode {
     getDataset() {
         const self = this.getLatest();
         return {
-            text: self.__text,
-            hasEmoji: self.__hasEmoji,
-            emojiValue: self.__emojiValue,
+            calloutText: self.__calloutText,
+            calloutEmoji: self.__calloutEmoji,
             backgroundColor: self.__backgroundColor
         };
     }
 
-    constructor({text, hasEmoji = true, emojiValue, backgroundColor} = {}, key) {
+    constructor({calloutText, calloutEmoji, backgroundColor} = {}, key) {
         super(key);
-        this.__text = text || '';
-        this.__hasEmoji = hasEmoji;
-        this.__emojiValue = emojiValue || '💡';
+        this.__calloutText = calloutText || '';
+        this.__calloutEmoji = calloutEmoji || '💡';
         this.__backgroundColor = backgroundColor || 'blue';
     }
 
     static importJSON(serializedNode) {
-        const {text, hasEmoji, backgroundColor, emojiValue} = serializedNode;
+        const {calloutText, backgroundColor, calloutEmoji} = serializedNode;
         return new this({
-            text,
-            hasEmoji,
-            emojiValue,
+            calloutText,
+            calloutEmoji,
             backgroundColor
         });
     }
@@ -56,10 +52,9 @@ export class CalloutNode extends KoenigDecoratorNode {
         const dataset = {
             type: NODE_TYPE,
             version: 1,
-            text: this.getText(),
-            hasEmoji: this.__hasEmoji,
-            emojiValue: this.__emojiValue,
-            backgroundColor: this.__backgroundColor
+            calloutText: this.getCalloutText(),
+            calloutEmoji: this.getCalloutEmoji(),
+            backgroundColor: this.getBackgroundColor()
         };
         return dataset;
     }
@@ -87,14 +82,14 @@ export class CalloutNode extends KoenigDecoratorNode {
         return false;
     }
 
-    getText() {
+    getCalloutText() {
         const self = this.getLatest();
-        return self.__text;
+        return self.__calloutText;
     }
 
-    setText(text) {
+    setCalloutText(text) {
         const writeable = this.getWritable();
-        writeable.__text = text;
+        writeable.__calloutText = text;
     }
 
     getBackgroundColor() {
@@ -107,24 +102,14 @@ export class CalloutNode extends KoenigDecoratorNode {
         writeable.__backgroundColor = color;
     }
 
-    getHasEmoji() {
+    getCalloutEmoji() {
         const self = this.getLatest();
-        return self.__hasEmoji;
+        return self.__calloutEmoji;
     }
 
-    setHasEmoji(hasEmoji) {
+    setCalloutEmoji(emoji) {
         const writeable = this.getWritable();
-        writeable.__hasEmoji = hasEmoji;
-    }
-
-    getEmojiValue() {
-        const self = this.getLatest();
-        return self.__emojiValue;
-    }
-
-    setEmojiValue(emojiValue) {
-        const writeable = this.getWritable();
-        writeable.__emojiValue = emojiValue;
+        writeable.__calloutEmoji = emoji;
     }
 
     decorate() {

@@ -33,12 +33,14 @@ describe('BookmarkNode', function () {
 
         dataset = {
             url: 'https://www.ghost.org/',
-            icon: 'https://www.ghost.org/favicon.ico',
-            title: 'Ghost: The Creator Economy Platform',
-            description: 'doing kewl stuff',
-            author: 'ghost',
-            publisher: 'Ghost - The Professional Publishing Platform',
-            thumbnail: 'https://ghost.org/images/meta/ghost.png',
+            metadata: {
+                icon: 'https://www.ghost.org/favicon.ico',
+                title: 'Ghost: The Creator Economy Platform',
+                description: 'doing kewl stuff',
+                author: 'ghost',
+                publisher: 'Ghost - The Professional Publishing Platform',
+                thumbnail: 'https://ghost.org/images/meta/ghost.png'
+            },
             caption: 'caption here'
         };
 
@@ -59,12 +61,12 @@ describe('BookmarkNode', function () {
             const bookmarkNode = $createBookmarkNode(dataset);
 
             bookmarkNode.getUrl().should.equal(dataset.url);
-            bookmarkNode.getIcon().should.equal(dataset.icon);
-            bookmarkNode.getTitle().should.equal(dataset.title);
-            bookmarkNode.getDescription().should.equal(dataset.description);
-            bookmarkNode.getAuthor().should.equal(dataset.author);
-            bookmarkNode.getPublisher().should.equal(dataset.publisher);
-            bookmarkNode.getThumbnail().should.equal(dataset.thumbnail);
+            bookmarkNode.getIconSrc().should.equal(dataset.metadata.icon);
+            bookmarkNode.getTitle().should.equal(dataset.metadata.title);
+            bookmarkNode.getDescription().should.equal(dataset.metadata.description);
+            bookmarkNode.getAuthor().should.equal(dataset.metadata.author);
+            bookmarkNode.getPublisher().should.equal(dataset.metadata.publisher);
+            bookmarkNode.getThumbnail().should.equal(dataset.metadata.thumbnail);
             bookmarkNode.getCaption().should.equal(dataset.caption);
         }));
 
@@ -75,9 +77,9 @@ describe('BookmarkNode', function () {
             bookmarkNode.setUrl('https://www.ghost.org/');
             bookmarkNode.getUrl().should.equal('https://www.ghost.org/');
 
-            bookmarkNode.getIcon().should.equal('');
-            bookmarkNode.setIcon('https://www.ghost.org/favicon.ico');
-            bookmarkNode.getIcon().should.equal('https://www.ghost.org/favicon.ico');
+            bookmarkNode.getIconSrc().should.equal('');
+            bookmarkNode.setIconSrc('https://www.ghost.org/favicon.ico');
+            bookmarkNode.getIconSrc().should.equal('https://www.ghost.org/favicon.ico');
 
             bookmarkNode.getTitle().should.equal('');
             bookmarkNode.setTitle('Ghost: The Creator Economy Platform');
@@ -131,16 +133,16 @@ describe('BookmarkNode', function () {
                 <figure class="kg-card kg-bookmark-card kg-card-hascaption">
                     <a class="kg-bookmark-container" href="${dataset.url}">
                         <div class="kg-bookmark-content">
-                            <div class="kg-bookmark-title">${dataset.title}</div>
-                            <div class="kg-bookmark-description">${dataset.description}</div>
+                            <div class="kg-bookmark-title">${dataset.metadata.title}</div>
+                            <div class="kg-bookmark-description">${dataset.metadata.description}</div>
                             <div class="kg-bookmark-metadata">
-                                <img class="kg-bookmark-icon" src="${dataset.icon}" alt="">
-                                <span class="kg-bookmark-author">${dataset.author}</span>
-                                <span class="kg-bookmark-publisher">${dataset.publisher}</span>
+                                <img class="kg-bookmark-icon" src="${dataset.metadata.icon}" alt="">
+                                <span class="kg-bookmark-author">${dataset.metadata.author}</span>
+                                <span class="kg-bookmark-publisher">${dataset.metadata.publisher}</span>
                             </div>
                         </div>
                         <div class="kg-bookmark-thumbnail">
-                            <img src="${dataset.thumbnail}" alt="">
+                            <img src="${dataset.metadata.thumbnail}" alt="">
                         </div>
                     </a>
                     <figcaption>${dataset.caption}</figcaption>
@@ -183,12 +185,14 @@ describe('BookmarkNode', function () {
                 type: 'bookmark',
                 version: 1,
                 url: dataset.url,
-                icon: dataset.icon,
-                title: dataset.title,
-                description: dataset.description,
-                author: dataset.author,
-                publisher: dataset.publisher,
-                thumbnail: dataset.thumbnail,
+                metadata: {
+                    icon: dataset.metadata.icon,
+                    title: dataset.metadata.title,
+                    description: dataset.metadata.description,
+                    author: dataset.metadata.author,
+                    publisher: dataset.metadata.publisher,
+                    thumbnail: dataset.metadata.thumbnail
+                },
                 caption: dataset.caption
             });
         }));
@@ -218,12 +222,12 @@ describe('BookmarkNode', function () {
                     const [bookmarkNode] = $getRoot().getChildren();
 
                     bookmarkNode.getUrl().should.equal(dataset.url);
-                    bookmarkNode.getIcon().should.equal(dataset.icon);
-                    bookmarkNode.getTitle().should.equal(dataset.title);
-                    bookmarkNode.getDescription().should.equal(dataset.description);
-                    bookmarkNode.getAuthor().should.equal(dataset.author);
-                    bookmarkNode.getPublisher().should.equal(dataset.publisher);
-                    bookmarkNode.getThumbnail().should.equal(dataset.thumbnail);
+                    bookmarkNode.getIconSrc().should.equal(dataset.metadata.icon);
+                    bookmarkNode.getTitle().should.equal(dataset.metadata.title);
+                    bookmarkNode.getDescription().should.equal(dataset.metadata.description);
+                    bookmarkNode.getAuthor().should.equal(dataset.metadata.author);
+                    bookmarkNode.getPublisher().should.equal(dataset.metadata.publisher);
+                    bookmarkNode.getThumbnail().should.equal(dataset.metadata.thumbnail);
                     bookmarkNode.getCaption().should.equal(dataset.caption);
 
                     done();
@@ -270,16 +274,16 @@ describe('BookmarkNode', function () {
                 <figure class="kg-card kg-bookmark-card kg-card-hascaption">
                     <a class="kg-bookmark-container" href="${dataset.url}">
                         <div class="kg-bookmark-content">
-                            <div class="kg-bookmark-title">${dataset.title}</div>
-                            <div class="kg-bookmark-description">${dataset.description}</div>
+                            <div class="kg-bookmark-title">${dataset.metadata.title}</div>
+                            <div class="kg-bookmark-description">${dataset.metadata.description}</div>
                             <div class="kg-bookmark-metadata">
-                                <img class="kg-bookmark-icon" src="${dataset.icon}" alt="">
-                                <span class="kg-bookmark-author">${dataset.author}</span>
-                                <span class="kg-bookmark-publisher">${dataset.publisher}</span>
+                                <img class="kg-bookmark-icon" src="${dataset.metadata.icon}" alt="">
+                                <span class="kg-bookmark-author">${dataset.metadata.author}</span>
+                                <span class="kg-bookmark-publisher">${dataset.metadata.publisher}</span>
                             </div>
                         </div>
                         <div class="kg-bookmark-thumbnail">
-                            <img src="${dataset.thumbnail}" alt="">
+                            <img src="${dataset.metadata.thumbnail}" alt="">
                         </div>
                     </a>
                     <figcaption>${dataset.caption}</figcaption>
@@ -289,12 +293,12 @@ describe('BookmarkNode', function () {
 
             nodes.length.should.equal(1);
             nodes[0].getUrl().should.equal(dataset.url);
-            nodes[0].getIcon().should.equal(dataset.icon);
-            nodes[0].getTitle().should.equal(dataset.title);
-            nodes[0].getDescription().should.equal(dataset.description);
-            nodes[0].getAuthor().should.equal(dataset.author);
-            nodes[0].getPublisher().should.equal(dataset.publisher);
-            nodes[0].getThumbnail().should.equal(dataset.thumbnail);
+            nodes[0].getIconSrc().should.equal(dataset.metadata.icon);
+            nodes[0].getTitle().should.equal(dataset.metadata.title);
+            nodes[0].getDescription().should.equal(dataset.metadata.description);
+            nodes[0].getAuthor().should.equal(dataset.metadata.author);
+            nodes[0].getPublisher().should.equal(dataset.metadata.publisher);
+            nodes[0].getThumbnail().should.equal(dataset.metadata.thumbnail);
             nodes[0].getCaption().should.equal(dataset.caption);
         }));
 

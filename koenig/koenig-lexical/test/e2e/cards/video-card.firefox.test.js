@@ -124,7 +124,7 @@ test.describe('Video card', async () => {
 
         // Can remove thumbnail
         const replaceButton = page.getByTestId('custom-thumbnail-replace');
-        replaceButton.click();
+        await replaceButton.click();
         await expect(await page.getByTestId('media-upload-placeholder')).toBeVisible();
     });
 

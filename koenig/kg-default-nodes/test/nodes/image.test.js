@@ -35,7 +35,7 @@ describe('ImageNode', function () {
             height: 2160,
             href: '',
             title: 'This is a title',
-            altText: 'This is some alt text',
+            alt: 'This is some alt text',
             caption: 'This is a <b>caption</b>'
         };
 
@@ -68,7 +68,7 @@ describe('ImageNode', function () {
             imageNode.getImgWidth().should.equal(3840);
             imageNode.getImgHeight().should.equal(2160);
             imageNode.getTitle().should.equal('This is a title');
-            imageNode.getAltText().should.equal('This is some alt text');
+            imageNode.getAlt().should.equal('This is some alt text');
             imageNode.getCaption().should.equal('This is a <b>caption</b>');
             imageNode.getCardWidth().should.equal('regular');
             imageNode.getHref().should.equal('');
@@ -93,9 +93,9 @@ describe('ImageNode', function () {
             imageNode.setTitle('I am a title');
             imageNode.getTitle().should.equal('I am a title');
 
-            imageNode.getAltText().should.equal('');
-            imageNode.setAltText('I am alt text');
-            imageNode.getAltText().should.equal('I am alt text');
+            imageNode.getAlt().should.equal('');
+            imageNode.setAlt('I am alt text');
+            imageNode.getAlt().should.equal('I am alt text');
 
             imageNode.getCaption().should.equal('');
             imageNode.setCaption('I am a <b>Caption</b>');
@@ -321,7 +321,7 @@ describe('ImageNode', function () {
 
             nodes.length.should.equal(1);
             nodes[0].getSrc().should.equal('/image.png');
-            nodes[0].getAltText().should.equal('Alt text');
+            nodes[0].getAlt().should.equal('Alt text');
             nodes[0].getTitle().should.equal('Title text');
             nodes[0].getImgWidth().should.equal(3000);
             nodes[0].getImgHeight().should.equal(2000);
@@ -337,7 +337,7 @@ describe('ImageNode', function () {
 
             nodes.length.should.equal(1);
             nodes[0].getSrc().should.equal('http://example.com/test.png');
-            nodes[0].getAltText().should.equal('Alt test');
+            nodes[0].getAlt().should.equal('Alt test');
             nodes[0].getTitle().should.equal('Title test');
         }));
 
@@ -450,7 +450,7 @@ describe('ImageNode', function () {
                 width: 3840,
                 height: 2160,
                 title: 'This is a title',
-                altText: 'This is some alt text',
+                alt: 'This is some alt text',
                 caption: 'This is a <b>caption</b>',
                 cardWidth: 'wide',
                 href: ''
@@ -486,7 +486,7 @@ describe('ImageNode', function () {
                     imageNode.getImgWidth().should.equal(3840);
                     imageNode.getImgHeight().should.equal(2160);
                     imageNode.getTitle().should.equal('This is a title');
-                    imageNode.getAltText().should.equal('This is some alt text');
+                    imageNode.getAlt().should.equal('This is some alt text');
                     imageNode.getCaption().should.equal('This is a <b>caption</b>');
                     imageNode.getCardWidth().should.equal('wide');
 

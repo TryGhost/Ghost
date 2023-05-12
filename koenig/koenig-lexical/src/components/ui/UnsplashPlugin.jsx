@@ -26,7 +26,7 @@ const UnsplashPlugin = ({nodeKey, isModalOpen = true}) => {
             node.setImgHeight(image.height);
             node.setImgWidth(image.width);
             node.setCaption(image.caption);
-            node.setAltText(image.alt);
+            node.setAlt(image.alt);
             const nodeSelection = $createNodeSelection();
             nodeSelection.add(node.getKey());
             $setSelection(nodeSelection);

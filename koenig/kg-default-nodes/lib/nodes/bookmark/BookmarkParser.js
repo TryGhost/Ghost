@@ -22,12 +22,14 @@ export class BookmarkParser {
                             const caption = domNode?.querySelector('figure.kg-bookmark-card figcaption').textContent;
                             const payload = {
                                 url: url,
-                                icon: icon,
-                                title: title,
-                                description: description,
-                                author: author,
-                                publisher: publisher,
-                                thumbnail: thumbnail,
+                                metadata: {
+                                    icon: icon,
+                                    title: title,
+                                    description: description,
+                                    author: author,
+                                    publisher: publisher,
+                                    thumbnail: thumbnail
+                                },
                                 caption: caption
                             };
                             const node = new self.NodeClass(payload);
@@ -78,7 +80,13 @@ export class BookmarkParser {
                                 thumbnail = imgElement.style['background-image'].match(/url\(([^)]*?)\)/)[1];
                             }
 
-                            let payload = {url, title, description, publisher, thumbnail};
+                            let payload = {url, 
+                                metadata: {
+                                    title, 
+                                    description, 
+                                    publisher, 
+                                    thumbnail
+                                }};
                             const node = new self.NodeClass(payload);
                             return {node};
                         },

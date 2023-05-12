@@ -85,7 +85,7 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
     const setAltText = (newAltText) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setAltText(newAltText);
+            node.setAlt(newAltText);
         });
     };
 

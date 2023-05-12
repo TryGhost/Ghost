@@ -11,14 +11,14 @@ export class ToggleParser {
                 conversion(domNode) {
                     const isKgToggleCard = domNode.classList?.contains('kg-toggle-card');
                     if (domNode.tagName === 'DIV' && isKgToggleCard) {
-                        const headerNode = domNode.querySelector('.kg-toggle-heading-text');
-                        const header = headerNode.textContent;
+                        const headingNode = domNode.querySelector('.kg-toggle-heading-text');
+                        const heading = headingNode.textContent;
 
                         const contentNode = domNode.querySelector('.kg-toggle-content');
                         const content = contentNode.textContent;
 
                         const payload = {
-                            header,
+                            heading,
                             content
                         };
 

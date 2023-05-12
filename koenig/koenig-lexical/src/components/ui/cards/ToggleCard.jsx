@@ -7,9 +7,9 @@ export function ToggleCard({
     contentEditor,
     contentEditorInitialState,
     contentPlaceholder,
-    headerEditor,
-    headerEditorInitialState,
-    headerPlaceholder,
+    headingEditor,
+    headingEditorInitialState,
+    headingPlaceholder,
     isEditing
 }) {
     return (
@@ -20,13 +20,13 @@ export function ToggleCard({
                         <KoenigNestedEditor
                             autoFocus={true}
                             focusNext={contentEditor}
-                            initialEditor={headerEditor}
-                            initialEditorState={headerEditorInitialState}
+                            initialEditor={headingEditor}
+                            initialEditorState={headingEditorInitialState}
                             nodes='minimal'
                             placeholderClassName={'!font-sans !text-[2.2rem] !font-bold !leading-snug !tracking-tight text-black dark:text-grey-50 opacity-40'}
-                            placeholderText={headerPlaceholder}
+                            placeholderText={headingPlaceholder}
                             singleParagraph={true}
-                            textClassName={'koenig-lexical-toggle-header whitespace-normal text-black dark:text-grey-50 opacity-100'}
+                            textClassName={'koenig-lexical-toggle-heading whitespace-normal text-black dark:text-grey-50 opacity-100'}
                         />
                     </div>
                     <div className='z-20 ml-auto !mt-[-1px] flex h-8 w-8 shrink-0 items-center justify-center'>
@@ -51,15 +51,15 @@ export function ToggleCard({
 ToggleCard.propTypes = {
     contentEditor: PropTypes.object,
     contentPlaceholder: PropTypes.string,
-    headerEditor: PropTypes.object,
-    headerPlaceholder: PropTypes.string,
+    headingEditor: PropTypes.object,
+    headingPlaceholder: PropTypes.string,
     isEditing: PropTypes.bool,
     contentEditorInitialState: PropTypes.string,
-    headerEditorInitialState: PropTypes.string
+    headingEditorInitialState: PropTypes.string
 };
 
 ToggleCard.defaultProps = {
     contentPlaceholder: 'Collapsible content',
-    headerPlaceholder: 'Toggle header',
+    headingPlaceholder: 'Toggle header',
     isEditing: false
 };

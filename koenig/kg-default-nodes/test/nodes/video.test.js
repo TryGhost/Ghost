@@ -32,11 +32,15 @@ describe('VideoNode', function () {
         dataset = {
             src: '/content/images/2022/11/koenig-lexical.mp4',
             caption: 'This is a <b>caption</b>',
+            fileName: 'koenig-lexical.mp4',
+            mimeType: 'video/mp4',
             width: 200,
             height: 100,
             duration: 60,
             thumbnailSrc: '/content/images/2022/11/koenig-lexical.jpg',
-            customThumbnailSrc: '/content/images/2022/11/koenig-lexical-custom.jpg'
+            customThumbnailSrc: '/content/images/2022/11/koenig-lexical-custom.jpg',
+            thumbnailWidth: 100,
+            thumbnailHeight: 50
         };
 
         exportOptions = new Object({
@@ -57,11 +61,15 @@ describe('VideoNode', function () {
 
             videoNode.getSrc().should.equal(dataset.src);
             videoNode.getCaption().should.equal(dataset.caption);
+            videoNode.getFileName().should.equal(dataset.fileName);
+            videoNode.getMimeType().should.equal(dataset.mimeType);
             videoNode.getVideoWidth().should.equal(dataset.width);
             videoNode.getVideoHeight().should.equal(dataset.height);
             videoNode.getDuration().should.equal(dataset.duration);
             videoNode.getThumbnailSrc().should.equal(dataset.thumbnailSrc);
             videoNode.getCustomThumbnailSrc().should.equal(dataset.customThumbnailSrc);
+            videoNode.getThumbnailWidth().should.equal(dataset.thumbnailWidth);
+            videoNode.getThumbnailHeight().should.equal(dataset.thumbnailHeight);
             videoNode.getCardWidth().should.equal('regular');
             videoNode.getLoop().should.be.false;
         }));
@@ -76,6 +84,14 @@ describe('VideoNode', function () {
             videoNode.getCaption().should.equal('');
             videoNode.setCaption('Caption');
             videoNode.getCaption().should.equal('Caption');
+
+            videoNode.getFileName().should.equal('');
+            videoNode.setFileName('koenig-lexical.mp4');
+            videoNode.getFileName().should.equal('koenig-lexical.mp4');
+
+            videoNode.getMimeType().should.equal('');
+            videoNode.setMimeType('video/mp4');
+            videoNode.getMimeType().should.equal('video/mp4');
 
             should(videoNode.getVideoWidth()).equal(null);
             videoNode.setVideoWidth(600);
@@ -96,6 +112,14 @@ describe('VideoNode', function () {
             videoNode.getCustomThumbnailSrc().should.equal('');
             videoNode.setCustomThumbnailSrc('/content/images/2022/12/koenig-lexical-custom.png');
             videoNode.getCustomThumbnailSrc().should.equal('/content/images/2022/12/koenig-lexical-custom.png');
+
+            should(videoNode.getThumbnailWidth()).equal(null);
+            videoNode.setThumbnailWidth(100);
+            videoNode.getThumbnailWidth().should.equal(100);
+
+            should(videoNode.getThumbnailHeight()).equal(null);
+            videoNode.setThumbnailHeight(200);
+            videoNode.getThumbnailHeight().should.equal(200);
 
             videoNode.getCardWidth().should.equal('regular');
             videoNode.setCardWidth('wide');
@@ -154,11 +178,15 @@ describe('VideoNode', function () {
                 version: 1,
                 src: dataset.src,
                 caption: dataset.caption,
+                fileName: dataset.fileName,
+                mimeType: dataset.mimeType,
                 width: dataset.width,
                 height: dataset.height,
                 duration: dataset.duration,
                 thumbnailSrc: dataset.thumbnailSrc,
                 customThumbnailSrc: dataset.customThumbnailSrc,
+                thumbnailWidth: dataset.thumbnailWidth,
+                thumbnailHeight: dataset.thumbnailHeight,
                 cardWidth: dataset.cardWidth,
                 loop: false
             });
@@ -192,11 +220,15 @@ describe('VideoNode', function () {
 
                     videoNode.getSrc().should.equal(dataset.src);
                     videoNode.getCaption().should.equal(dataset.caption);
+                    videoNode.getFileName().should.equal(dataset.fileName);
+                    videoNode.getMimeType().should.equal(dataset.mimeType);
                     videoNode.getVideoWidth().should.equal(dataset.width);
                     videoNode.getVideoHeight().should.equal(dataset.height);
                     videoNode.getDuration().should.equal(dataset.duration);
                     videoNode.getThumbnailSrc().should.equal(dataset.thumbnailSrc);
                     videoNode.getCustomThumbnailSrc().should.equal(dataset.customThumbnailSrc);
+                    videoNode.getThumbnailWidth().should.equal(dataset.thumbnailWidth);
+                    videoNode.getThumbnailHeight().should.equal(dataset.thumbnailHeight);
                     videoNode.getCardWidth().should.equal('wide');
                     videoNode.getLoop().should.be.true;
 

@@ -54,9 +54,9 @@ export function ProductNodeComponent({
         if (imageUrl) {
             editor.update(() => {
                 const node = $getNodeByKey(nodeKey);
-                node.setImgSrc(imageUrl);
-                node.setImgHeight(height);
-                node.setImgWidth(width);
+                node.setProductImageSrc(imageUrl);
+                node.setProductImageHeight(height);
+                node.setProductImageWidth(width);
             });
         }
 
@@ -75,7 +75,7 @@ export function ProductNodeComponent({
     const onRemoveImage = () => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setImgSrc('');
+            node.setProductImageSrc('');
         });
     };
 
@@ -86,35 +86,35 @@ export function ProductNodeComponent({
     const handleButtonToggle = (event) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setIsButtonEnabled(event.target.checked);
+            node.setProductButtonEnabled(event.target.checked);
         });
     };
 
     const handleButtonTextChange = (event) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setButtonText(event.target.value);
+            node.setProductButton(event.target.value);
         });
     };
 
     const handleButtonUrlChange = (val) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setButtonUrl(val);
+            node.setProductUrl(val);
         });
     };
 
     const handleRatingToggle = (event) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setIsRatingEnabled(event.target.checked);
+            node.setProductRatingEnabled(event.target.checked);
         });
     };
 
     const handleRatingChange = (rating) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setStarRating(rating);
+            node.setProductStarRating(rating);
         });
     };
 

@@ -13,9 +13,9 @@ export class ImageParser {
             img: () => ({
                 conversion(domNode) {
                     if (domNode.tagName === 'IMG') {
-                        const {src, width, height, alt: altText, title} = readImageAttributesFromElement(domNode);
+                        const {src, width, height, alt, title} = readImageAttributesFromElement(domNode);
 
-                        const node = new self.NodeClass({altText, src, title, width, height});
+                        const node = new self.NodeClass({alt, src, title, width, height});
                         return {node};
                     }
 
@@ -47,8 +47,8 @@ export class ImageParser {
 
                         payload.caption = readCaptionFromElement(domNode);
 
-                        const {src, width, height, alt: altText, title, caption, cardWidth, href} = payload;
-                        const node = new self.NodeClass({altText, src, title, width, height, caption, cardWidth, href});
+                        const {src, width, height, alt, title, caption, cardWidth, href} = payload;
+                        const node = new self.NodeClass({alt, src, title, width, height, caption, cardWidth, href});
                         return {node};
                     },
                     priority: 1

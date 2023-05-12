@@ -50,12 +50,12 @@ export class FileNode extends BaseFileNode {
                 nodeKey={this.getKey()}
             >
                 <FileNodeComponent
-                    fileDesc={this.getDescription()}
+                    fileDesc={this.getFileCaption()}
                     fileDescPlaceholder={'Enter a description'}
                     fileName={this.getFileName()} 
-                    fileSize={this.getFileSize()}
+                    fileSize={this.getFormattedFileSize()}
                     fileSrc = {this.getSrc()}
-                    fileTitle={this.getTitle()}
+                    fileTitle={this.getFileTitle()}
                     fileTitlePlaceholder={'Enter a title'}
                     initialFile={this.__initialFile}
                     nodeKey={this.getKey()}

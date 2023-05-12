@@ -15,9 +15,8 @@ test.describe('Callout Card', async () => {
                 root: {
                     children: [{
                         type: 'callout',
-                        text: '<p dir="ltr"><span>Hello World</span></p>',
-                        hasEmoji: true,
-                        emojiValue: '😚',
+                        calloutText: '<p dir="ltr"><span>Hello World</span></p>',
+                        calloutEmoji: '😚',
                         backgroundColor: 'blue'
                     }],
                     direction: null,

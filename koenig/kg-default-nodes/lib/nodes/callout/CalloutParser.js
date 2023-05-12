@@ -22,9 +22,8 @@ export class CalloutParser {
                             const color = getColorTag(domNode);
 
                             const payload = {
-                                text: textNode && textNode.innerHTML.trim(),
-                                hasEmoji: emojiNode ? true : false,
-                                emojiValue: emojiNode && emojiNode.innerHTML.trim(),
+                                calloutText: textNode && textNode.innerHTML.trim(),
+                                calloutEmoji: emojiNode && emojiNode.innerHTML.trim(),
                                 backgroundColor: color
                             };
 

@@ -16,13 +16,13 @@ test.describe('Product card', async () => {
                 root: {
                     children: [{
                         type: 'product',
-                        imgSrc: '/content/images/2022/11/koenig-lexical.jpg',
-                        title: '<span>This is <em>title</em></span>',
-                        description: '<p dir="ltr"><span>Description</span></p>',
-                        buttonUrl: 'https://google.com/',
-                        buttonText: 'Button',
-                        isButtonEnabled: true,
-                        isRatingEnabled: true
+                        productImageSrc: '/content/images/2022/11/koenig-lexical.jpg',
+                        productTitle: '<span>This is <em>title</em></span>',
+                        productDescription: '<p dir="ltr"><span>Description</span></p>',
+                        productUrl: 'https://google.com/',
+                        productButton: 'Button',
+                        productButtonEnabled: true,
+                        productRatingEnabled: true
                     }],
                     direction: null,
                     format: '',

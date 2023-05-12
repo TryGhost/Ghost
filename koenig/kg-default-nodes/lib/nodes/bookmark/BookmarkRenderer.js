@@ -20,7 +20,7 @@ function emailTemplate(node, document) {
     const title = node.getTitle();
     const publisher = node.getPublisher();
     const author = node.getAuthor();
-    const icon = node.getIcon();
+    const icon = node.getIconSrc();
     const description = node.getDescription();
     const url = node.getUrl();
     const thumbnail = node.getThumbnail();
@@ -134,7 +134,7 @@ function frontendTemplate(node, document) {
     metadata.setAttribute('class','kg-bookmark-metadata');
     content.appendChild(metadata);
 
-    metadata.icon = node.getIcon();
+    metadata.icon = node.getIconSrc();
     if (metadata.icon) {
         const icon = document.createElement('img');
         icon.setAttribute('class','kg-bookmark-icon');

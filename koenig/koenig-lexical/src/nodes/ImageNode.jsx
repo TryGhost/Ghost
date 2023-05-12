@@ -156,7 +156,7 @@ export class ImageNode extends BaseImageNode {
                 {
                     !this.__isImageHidden && (
                         <ImageNodeComponent
-                            altText={this.__altText}
+                            altText={this.__alt}
                             captionEditor={this.__captionEditor}
                             captionEditorInitialState={this.__captionEditorInitialState}
                             href={this.__href}

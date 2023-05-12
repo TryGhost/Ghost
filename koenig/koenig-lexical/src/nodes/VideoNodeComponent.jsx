@@ -8,6 +8,7 @@ import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {VideoCard} from '../components/ui/cards/VideoCard';
+import {getImageDimensions} from '../utils/getImageDimensions';
 import {openFileSelection} from '../utils/openFileSelection';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -56,9 +57,9 @@ export function VideoNodeComponent({
         if (!file) {
             return;
         }
-        let thumbnailBlob, duration, width, height;
+        let thumbnailBlob, duration, width, height, mimeType;
         try {
-            ({thumbnailBlob, duration, width, height} = await extractVideoMetadata(file));
+            ({thumbnailBlob, duration, width, height, mimeType} = await extractVideoMetadata(file));
         } catch (error) {
             setMetadataExtractionErrors([{
                 name: file.name,
@@ -81,8 +82,14 @@ export function VideoNodeComponent({
                 const node = $getNodeByKey(nodeKey);
                 node.setSrc(videoUrl);
                 node.setDuration(duration);
+                node.setFileName(file.name);
                 node.setVideoWidth(width);
                 node.setVideoHeight(height);
+                node.setMimeType(mimeType);
+                if (!node.getCustomThumbnailSrc()) {
+                    node.setThumbnailWidth(width);
+                    node.setThumbnailHeight(height);
+                }
             });
         }
 
@@ -111,11 +118,14 @@ export function VideoNodeComponent({
     const handleCustomThumbnailChange = async (files) => {
         const customThumbnailUploadResult = await customThumbnailUploader.upload(files);
         const imageUrl = customThumbnailUploadResult?.[0]?.url;
+        const {width, height} = await getImageDimensions(imageUrl);
 
         if (imageUrl) {
             editor.update(() => {
                 const node = $getNodeByKey(nodeKey);
                 node.setCustomThumbnailSrc(imageUrl);
+                node.setThumbnailWidth(width);
+                node.setThumbnailHeight(height);
             });
         }
     };
@@ -136,6 +146,8 @@ export function VideoNodeComponent({
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             node.setCustomThumbnailSrc('');
+            node.setThumbnailHeight(node.getVideoHeight());
+            node.setThumbnailWidth(node.getVideoWidth());
         });
     };
 

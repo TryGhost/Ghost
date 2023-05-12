@@ -17,29 +17,29 @@ export class ProductParser {
                         const description = readCaptionFromElement(domNode, {selector: '.kg-product-card-description'});
 
                         const payload = {
-                            isButtonEnabled: false,
-                            isRatingEnabled: false,
-                            title: title,
-                            description: description
+                            productButtonEnabled: false,
+                            productRatingEnabled: false,
+                            productTitle: title,
+                            productDescription: description
                         };
 
                         const img = domNode.querySelector('.kg-product-card-image');
                         if (img && img.getAttribute('src')) {
-                            payload.imgSrc = img.getAttribute('src');
+                            payload.productImageSrc = img.getAttribute('src');
 
                             if (img.getAttribute('width')) {
-                                payload.imgWidth = img.getAttribute('width');
+                                payload.productImageWidth = img.getAttribute('width');
                             }
 
                             if (img.getAttribute('height')) {
-                                payload.imgHeight = img.getAttribute('height');
+                                payload.productImageHeight = img.getAttribute('height');
                             }
                         }
 
                         const stars = [...domNode.querySelectorAll('.kg-product-card-rating-active')].length;
                         if (stars) {
-                            payload.isRatingEnabled = true;
-                            payload.starRating = stars;
+                            payload.productRatingEnabled = true;
+                            payload.productStarRating = stars;
                         }
 
                         const button = domNode.querySelector('a');
@@ -49,9 +49,9 @@ export class ProductParser {
                             const buttonText = getButtonText(button);
 
                             if (buttonUrl && buttonText) {
-                                payload.isButtonEnabled = true;
-                                payload.buttonText = buttonText;
-                                payload.buttonUrl = buttonUrl;
+                                payload.productButtonEnabled = true;
+                                payload.productButton = buttonText;
+                                payload.productUrl = buttonUrl;
                             }
                         }
 
