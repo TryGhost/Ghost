@@ -83,7 +83,7 @@ jobs:
         STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
         STRIPE_ACCOUNT_ID: ${{ secrets.STRIPE_ACCOUNT_ID }}
 
-    - uses: daniellockyer/action-slack-build@master
+    - uses: tryghost/actions/actions/slack-build@main
       if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
       with:
         status: ${{ job.status }}
