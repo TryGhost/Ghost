@@ -150,7 +150,7 @@ export default class GhPostSettingsMenu extends Component {
             && this.post.emailOnly === false;
 
         if (this.post.isPublished === true) {
-            showPostHistory = this.post.hasEmail === false;
+            return showPostHistory && this.post.hasEmail === false;
         }
 
         return showPostHistory;
