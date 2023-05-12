@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-export function Button({color, dataTestId, href, size, width, value, placeholder, type = 'button', target, ...other}) {
+export function Button({color, dataTestId, href, size, width, rounded, value, placeholder, type = 'button', target, ...other}) {
     const Tag = href ? 'a' : 'button';
     const props = {
         type: href ? null : type,
@@ -13,7 +13,7 @@ export function Button({color, dataTestId, href, size, width, value, placeholder
 
     return (
         <Tag
-            className={`not-kg-prose inline-block rounded text-center font-sans font-medium ${(width === 'regular') || 'w-full' } ${value ? 'opacity-100' : 'opacity-50' } ${(color === 'light') ? 'bg-white text-black' : 'bg-green text-white'} `}
+            className={`not-kg-prose inline-block text-center font-sans font-medium ${(width === 'regular') || 'w-full' } ${rounded && 'rounded'} ${value ? 'opacity-100' : 'opacity-50' } ${(color === 'light') ? 'bg-white text-black' : 'bg-green text-white'} `}
             data-testid={`${dataTestId}`}
             {...props}
         >
@@ -31,6 +31,7 @@ Button.propTypes = {
     color: PropTypes.oneOf(['light', 'accent']),
     size: PropTypes.oneOf(['small', 'medium', 'large']),
     width: PropTypes.oneOf(['regular', 'full']),
+    rounded: PropTypes.bool,
     value: PropTypes.string,
     placeholder: PropTypes.string,
     href: PropTypes.string,
@@ -41,6 +42,7 @@ Button.defaultProps = {
     color: 'accent',
     size: 'small',
     width: 'regular',
+    rounded: true,
     value: '',
     placeholder: 'Add button text'
 };

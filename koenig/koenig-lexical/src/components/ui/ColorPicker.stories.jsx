@@ -1,10 +1,9 @@
 import React from 'react';
-import {ColorButton, ColorPicker} from './ColorPicker';
+import {ColorPicker} from './ColorPicker';
 
 const story = {
     title: 'Generic/Color picker',
     component: ColorPicker,
-    subcomponents: {ColorButton},
     parameters: {
         status: {
             type: 'uiReady'

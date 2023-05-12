@@ -923,6 +923,20 @@
     }
 }
 
+.koenig-lexical-header-subheading.koenig-lexical-header-xsmall {
+    .kg-prose {
+        :where(
+                    p,
+                    blockquote,
+                    aside,
+                    ul,
+                    ol
+                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            font-size: 1.6rem !important;
+        }
+    }
+}
+
 .koenig-lexical-header-subheading.koenig-lexical-header-small {
     .kg-prose {
         :where(
