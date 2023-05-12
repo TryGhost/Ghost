@@ -387,8 +387,19 @@
     font-weight: 400;
 }
 
+.gh-editor-feedback-container {
+    position: absolute;
+    left: 30px;
+    bottom: 30px;
+    display: flex;
+    align-items: center;
+    border-radius: 3px;
+    background: #fff;
+}
+
 .gh-editor-feedback {
     color: var(--green);
+    font-weight: 500;
 }
 
 .gh-editor-status {
