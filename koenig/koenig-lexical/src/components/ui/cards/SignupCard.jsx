@@ -103,7 +103,7 @@ export function SignupCard({alignment,
 
     return (
         <>
-            <div className={`flex flex-col justify-center bg-black font-sans text-white transition-colors ease-in-out ${(alignment === 'center' && 'items-center')} ${(layout === 'regular') ? 'min-h-[40vh] p-[14vmin]' : (layout === 'wide') ? 'min-h-[60vh] p-[12vmin]' : 'min-h-[80vh] p-[18vmin]'}`} data-testid={'signup-card-container'} style={wrapperStyle()}>
+            <div className={`flex flex-col justify-center bg-transparent font-sans text-black transition-colors ease-in-out dark:text-white ${(alignment === 'center' && 'items-center')} ${(layout === 'regular') ? 'min-h-[32vh] p-[8vmin] pb-[9vmin]' : (layout === 'wide') ? 'min-h-[56vh] p-[12vmin] pb-[13vmin]' : 'min-h-[80vh] p-[16vmin] pb-[18vmin]'}`} data-testid={'signup-card-container'} style={wrapperStyle()}>
                 {/* Heading */}
                 {
                     (isEditing || !!header || !isEditorEmpty(headerTextEditor)) && (
@@ -114,10 +114,10 @@ export function SignupCard({alignment,
                             initialEditor={headerTextEditor}
                             initialEditorState={headerTextEditorInitialState}
                             nodes="minimal"
-                            placeholderClassName={`truncate opacity-50 whitespace-normal !tracking-tight w-full !leading-tight !font-bold ${(alignment === 'center' && 'text-center')} ${(layout === 'regular') ? 'kg-header-small !text-6xl' : (layout === 'wide') ? '!text-7xl' : '!text-8xl'}`}
+                            placeholderClassName={`truncate opacity-50 whitespace-normal !tracking-tight w-full !leading-tight !font-bold ${(alignment === 'center' && 'text-center')} ${(layout === 'regular') ? '!text-5xl' : (layout === 'wide') ? '!text-7xl' : '!text-8xl'}`}
                             placeholderText={headerPlaceholder}
                             singleParagraph={true}
-                            textClassName={`koenig-lexical-header-heading relative w-full whitespace-normal font-bold ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(layout === 'regular') ? 'koenig-lexical-header-small [&:has(br)]:pl-[calc(50%_-_254px)]' : (layout === 'wide') ? 'koenig-lexical-header-medium [&:has(br)]:pl-[calc(50%_-_304px)]' : 'koenig-lexical-header-large [&:has(br)]:pl-[calc(50%_-_404px)]'}`}
+                            textClassName={`koenig-lexical-header-heading relative w-full whitespace-normal font-bold ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(layout === 'regular') ? 'koenig-lexical-header-xsmall [&:has(br)]:pl-[calc(50%_-_254px)]' : (layout === 'wide') ? 'koenig-lexical-header-small [&:has(br)]:pl-[calc(50%_-_304px)]' : 'koenig-lexical-header-large [&:has(br)]:pl-[calc(50%_-_404px)]'}`}
                         />
                     )
                 }
@@ -140,14 +140,15 @@ export function SignupCard({alignment,
                 }
 
                 {/* Subscribe form */}
-                <div className={`${(layout === 'regular') ? 'mt-6 h-full w-full' : (layout === 'wide') ? 'mt-8' : 'mt-10'}`}>
+                <div className={`h-full ${(layout === 'regular') ? 'mt-6 w-9/12' : (layout === 'wide') ? 'mt-8 w-4/6' : 'mt-10 w-5/12'}`}>
                     <SubscribeForm 
-                        buttonSize='medium'
+                        buttonSize={`${(layout === 'regular') ? 'medium' : (layout === 'wide') ? 'large' : 'large'}`}
                         buttonStyle={buttonColor ? {
                             backgroundColor: buttonColor,
                             color: textColorForBackgroundColor(buttonColor).hex()
-                        } : null} 
-                        buttonText={buttonText} 
+                        } : {backgroundColor: `#000000`,
+                            color: `#ffffff`}} 
+                        buttonText={buttonText || 'Subscribe'} 
                         dataTestId='signup-card-button'
                         inputBorderStyle={buttonColor ? {
                             border: `1px solid ${buttonColor}`
@@ -230,7 +231,7 @@ export function SignupCard({alignment,
                         dataTestId='signup-button-text'
                         label='Button text'
                         placeholder='Add button text'
-                        value={buttonText}
+                        value={buttonText || 'Subscribe'}
                         hideLabel
                         onChange={handleButtonText}
                     />

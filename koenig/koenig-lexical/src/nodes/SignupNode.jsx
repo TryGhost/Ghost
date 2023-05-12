@@ -118,7 +118,7 @@ export class SignupNode extends BaseSignupNode {
     getCardWidth() {
         const layout = this.getLayout();
 
-        return layout === 'split' ? 'wide' : layout;
+        return layout === 'split' ? 'full' : layout;
     }
 
     decorate() {
@@ -136,7 +136,7 @@ export class SignupNode extends BaseSignupNode {
                     disclaimerTextEditor={this.__disclaimerTextEditor}
                     disclaimerTextEditorInitialState={this.__disclaimerTextEditorInitialState}
                     header={this.getHeader()}
-                    headerPlaceholder={'Enter heading'}
+                    headerPlaceholder={'Enter heading text'}
                     headerTextEditor={this.__headerTextEditor}
                     headerTextEditorInitialState={this.__headerTextEditorInitialState}
                     labels={this.getLabels()}
