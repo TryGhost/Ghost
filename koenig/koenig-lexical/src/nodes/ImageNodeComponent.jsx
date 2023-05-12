@@ -10,6 +10,7 @@ import {ImageUploadForm} from '../components/ui/ImageUploadForm';
 import {LinkInput} from '../components/ui/LinkInput';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
+import {dataSrcToFile} from '../utils/dataSrcToFile.js';
 import {imageUploadHandler} from '../utils/imageUploadHandler';
 import {isGif} from '../utils/isGif';
 import {openFileSelection} from '../utils/openFileSelection';
@@ -27,6 +28,27 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
     const imageUploader = fileUploader.useFileUpload('image');
     const imageDragHandler = useFileDragAndDrop({handleDrop: handleImageDrop});
     const {isEnabled: isPinturaEnabled, openEditor: openImageEditor} = usePinturaEditor({config: cardConfig.pinturaConfig});
+
+    React.useEffect(() => {
+        if (!src?.startsWith('data:') || imageUploader.isLoading) {
+            return;
+        }
+
+        let isMounted = true;
+
+        // When copy/pasting from Google Docs it's possible for images to be transferred with data: URLs.
+        // Convert `data:` URL to File and upload it
+        const uploadFile = async () => {
+            const file = await dataSrcToFile(src);
+            if (isMounted) {
+                await imageUploadHandler([file], nodeKey, editor, imageUploader.upload);
+            }
+        };
+
+        uploadFile();
+
+        return () => isMounted = false;
+    }, [editor, imageUploader.isLoading, imageUploader.upload, nodeKey, src]);
 
     React.useEffect(() => {
         const uploadInitialFile = async (file) => {
