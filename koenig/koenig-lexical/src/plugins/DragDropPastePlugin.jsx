@@ -1,6 +1,7 @@
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
-import {COMMAND_PRIORITY_HIGH, COMMAND_PRIORITY_LOW, DROP_COMMAND} from 'lexical';
+import {$getRoot, $getSelection, COMMAND_PRIORITY_HIGH, COMMAND_PRIORITY_LOW, DROP_COMMAND} from 'lexical';
+import {$insertDataTransferForRichText} from '@lexical/clipboard';
 import {DRAG_DROP_PASTE} from '@lexical/rich-text';
 import {createCommand} from 'lexical';
 import {getEditorCardNodes} from '../utils/getEditorCardNodes';
@@ -112,12 +113,32 @@ function DragDropPastePlugin() {
             event.preventDefault();
         };
 
+        const handleDrop = (event) => {
+            // handle image drop from a browser window
+            const html = event.dataTransfer.getData('text/html');
+            if (html) {
+                event.preventDefault();
+
+                editor.update(() => {
+                    editor.focus();
+                    let selection = $getSelection();
+                    if (!selection) {
+                        $getRoot().selectEnd();
+                        selection = $getSelection();
+                    }
+                    $insertDataTransferForRichText(event.dataTransfer, selection, editor);
+                });
+            }
+        };
+
         rootElement.addEventListener('dragover', handleDragOver);
         rootElement.addEventListener('dragleave', handleDragLeave);
+        rootElement.addEventListener('drop', handleDrop);
 
         return () => {
             rootElement.removeEventListener('dragover', handleDragOver);
             rootElement.removeEventListener('dragleave', handleDragLeave);
+            rootElement.removeEventListener('drop', handleDrop);
         };
     }, [editor]);
 
