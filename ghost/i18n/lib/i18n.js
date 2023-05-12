@@ -12,9 +12,11 @@ const SUPPORTED_LOCALES = [
     'es',
     'fr',
     'hu',
+    'id',
     'it',
     'mn',
     'nl',
+    'no',
     'pl',
     'pt',
     'pt-br',
@@ -24,6 +26,7 @@ const SUPPORTED_LOCALES = [
     'sv',
     'tr',
     'uk',
+    'uz',
     'vi',
     'zh'
 ];
