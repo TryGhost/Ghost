@@ -5859,7 +5859,20 @@
     lodash "^4.17.21"
     luxon "^3.0.0"
 
-"@tryghost/kg-default-nodes@0.0.39", "@tryghost/kg-default-nodes@^0.0.39":
+"@tryghost/kg-default-nodes@0.0.41":
+  version "0.0.41"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-nodes/-/kg-default-nodes-0.0.41.tgz#55dc74fd6b49cf2f735c9d152f8e13245fdc8a17"
+  integrity sha512-qipn1oePUpHBJP+CPnpj7aDjSnPspEI4gS0tozf07K5hi7h0NUzI8GkJsp/GzTJSN+jbIvOFjGkq58EFlGcKnw==
+  dependencies:
+    "@tryghost/kg-clean-basic-html" "^3.0.15"
+    "@tryghost/kg-markdown-html-renderer" "^6.0.8"
+    html-minifier "^4.0.0"
+    jsdom "^21.0.0"
+    lexical "^0.10.0"
+    lodash "^4.17.21"
+    luxon "^3.3.0"
+
+"@tryghost/kg-default-nodes@^0.0.39":
   version "0.0.39"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-default-nodes/-/kg-default-nodes-0.0.39.tgz#3b4a889ca693b22d864e27644fda0b43eeecabab"
   integrity sha512-wFphtopRdfvA8p7el6RdmHLCRshCdWJNm3jhlxWo6XIvFKQ6yEzHcQFYSU2sDgICngMpvOzQQDpR1SAvWZyo2Q==
