@@ -35,9 +35,7 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/\\",
         \\"logo\\": {
             \\"@type\\": \\"ImageObject\\",
-            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\",
-            \\"width\\": 48,
-            \\"height\\": 48
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
         }
     },
     \\"author\\": {
@@ -174,9 +172,7 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/\\",
         \\"logo\\": {
             \\"@type\\": \\"ImageObject\\",
-            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\",
-            \\"width\\": 48,
-            \\"height\\": 48
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
         }
     },
     \\"author\\": {
@@ -246,9 +242,7 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/\\",
         \\"logo\\": {
             \\"@type\\": \\"ImageObject\\",
-            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\",
-            \\"width\\": 48,
-            \\"height\\": 48
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
         }
     },
     \\"author\\": {
@@ -333,9 +327,7 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/\\",
         \\"logo\\": {
             \\"@type\\": \\"ImageObject\\",
-            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\",
-            \\"width\\": 48,
-            \\"height\\": 48
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
         }
     },
     \\"author\\": {
@@ -408,9 +400,7 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/\\",
         \\"logo\\": {
             \\"@type\\": \\"ImageObject\\",
-            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\",
-            \\"width\\": 48,
-            \\"height\\": 48
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
         }
     },
     \\"author\\": {
@@ -757,9 +747,7 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/\\",
         \\"logo\\": {
             \\"@type\\": \\"ImageObject\\",
-            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\",
-            \\"width\\": 48,
-            \\"height\\": 48
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
@@ -873,9 +861,7 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/\\",
         \\"logo\\": {
             \\"@type\\": \\"ImageObject\\",
-            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\",
-            \\"width\\": 48,
-            \\"height\\": 48
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
@@ -988,9 +974,7 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/\\",
         \\"logo\\": {
             \\"@type\\": \\"ImageObject\\",
-            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\",
-            \\"width\\": 48,
-            \\"height\\": 48
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
@@ -1104,9 +1088,7 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/\\",
         \\"logo\\": {
             \\"@type\\": \\"ImageObject\\",
-            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\",
-            \\"width\\": 48,
-            \\"height\\": 48
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
@@ -1220,9 +1202,7 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/\\",
         \\"logo\\": {
             \\"@type\\": \\"ImageObject\\",
-            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\",
-            \\"width\\": 48,
-            \\"height\\": 48
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
@@ -1272,9 +1252,7 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/\\",
         \\"logo\\": {
             \\"@type\\": \\"ImageObject\\",
-            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\",
-            \\"width\\": 48,
-            \\"height\\": 48
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
@@ -1388,9 +1366,7 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/\\",
         \\"logo\\": {
             \\"@type\\": \\"ImageObject\\",
-            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\",
-            \\"width\\": 48,
-            \\"height\\": 48
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
