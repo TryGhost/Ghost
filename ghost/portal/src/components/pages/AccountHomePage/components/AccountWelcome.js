@@ -36,20 +36,20 @@ const AccountWelcome = () => {
             const trialEnd = getDateString(subscription.trial_end_at);
             return (
                 <div className='gh-portal-section'>
-                    <p className='gh-portal-text-center gh-portal-free-ctatext'>Your subscription will start on {trialEnd}</p>
+                    <p className='gh-portal-text-center gh-portal-free-ctatext'>${t('Your subscription will start on {trialEnd}')}</p>
                 </div>
             );
         }
         return (
             <div className='gh-portal-section'>
-                <p className='gh-portal-text-center gh-portal-free-ctatext'>Your subscription will renew on {getDateString(currentPeriodEnd)}</p>
+                <p className='gh-portal-text-center gh-portal-free-ctatext'>${t('Your subscription will renew on')} {getDateString(currentPeriodEnd)}</p>
             </div>
         );
     }
 
     return (
         <div className='gh-portal-section'>
-            <p className='gh-portal-text-center gh-portal-free-ctatext'>You currently have a free membership, upgrade to a paid subscription for full access.</p>
+            <p className='gh-portal-text-center gh-portal-free-ctatext'>${t('You currently have a free membership, upgrade to a paid subscription for full access.')}</p>
             <SubscribeButton />
         </div>
     );
