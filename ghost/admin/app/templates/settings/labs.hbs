@@ -56,7 +56,6 @@
         <div class="gh-main-section">
             <h4 class="gh-main-section-header small bn">Beta features</h4>
             <div class="gh-expandable">
-                {{#if this.feature.migrateApp}}
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
@@ -68,7 +67,6 @@
                         </LinkTo>
                     </div>
                 </div>
-                {{/if}}
 
                 <div class="gh-expandable-block">
                     <GhUploader
@@ -279,19 +277,6 @@
                         </div>
                         <div class="for-switch">
                             <GhFeatureFlag @flag="makingItRain" />
-                        </div>
-                    </div>
-                </div>
-                <div class="gh-expandable-block">
-                    <div class="gh-expandable-header">
-                        <div>
-                            <h4 class="gh-expandable-title">Migrate content</h4>
-                            <p class="gh-expandable-description">
-                               Import content from other platforms to Ghost
-                            </p>
-                        </div>
-                        <div class="for-switch">
-                            <GhFeatureFlag @flag="migrateApp" />
                         </div>
                     </div>
                 </div>
