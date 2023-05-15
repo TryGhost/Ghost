@@ -2,25 +2,25 @@ import React from 'react';
 import Button, { ButtonColors } from '../../design-system/globals/Button';
 import SettingGroup from '../../design-system/settings/SettingGroup';
 import SettingGroupHeader from '../../design-system/settings/SettingGroupHeader';
+import ButtonGroup from '../../design-system/globals/ButtonGroup';
 
 const TitleAndDescription: React.FC = () => {
+
+    const buttons = [
+        {
+            label: 'Edit',
+            color: ButtonColors.Green
+        },
+    ];
+
     return (
         <SettingGroup>
-            <div className="flex justify-between items-start">
-                
-                {/* Header to be created as component */}
-                
-                <SettingGroupHeader title="Title & description" />
-
-                {/* Setting actions to be created as component */}
-                <div>
-                    <Button 
-                        label="Action"
-                        color={ButtonColors.Green}
-                        link={true}
-                    />
-                </div>
-            </div>
+            <SettingGroupHeader 
+                title="Title & description" 
+                description="The details used to identify your publication around the web"
+            >
+                <ButtonGroup buttons={buttons} link={true} />
+            </SettingGroupHeader>
         </SettingGroup>
     );
 }
