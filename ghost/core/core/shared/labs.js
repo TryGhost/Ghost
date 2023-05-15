@@ -32,7 +32,6 @@ const BETA_FEATURES = [
 
 const ALPHA_FEATURES = [
     'urlCache',
-    'migrateApp',
     'lexicalEditor',
     'lexicalMultiplayer',
     'websockets',
