@@ -2,7 +2,7 @@ import {INSERT_SNIPPET_COMMAND} from '../plugins/KoenigSnippetPlugin';
 import {ReactComponent as SnippetCardIcon} from '../assets/icons/kg-card-type-snippet.svg';
 
 export function buildCardMenu(nodes, {query, config} = {}) {
-    const menu = new Map();
+    let menu = new Map();
 
     query = query?.toLowerCase();
 
@@ -40,6 +40,15 @@ export function buildCardMenu(nodes, {query, config} = {}) {
         const snippetMenuItem = buildSnippetMenuItem(item, config);
         addMenuItem(snippetMenuItem);
     });
+
+    // sort primary to always display first
+    menu = new Map([...menu.entries()].sort((a, b) => {
+        if (a[0] === 'Primary') {
+            return -1;
+        } else {
+            return 1;
+        }
+    }));
 
     return {menu, maxItemIndex};
 }
