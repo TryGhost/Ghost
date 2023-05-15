@@ -395,6 +395,16 @@
     align-items: center;
     border-radius: 3px;
     background: #fff;
+    cursor: pointer;
+}
+
+.gh-editor-feedback-dropdown {
+    border-radius: 3px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.04), 0 8px 20px -3px rgba(0,0,0,.2);
+    padding: 32px;
+    background-color: #fff;
+    background-clip: padding-box;
+    margin-bottom: 20px;
 }
 
 .gh-editor-feedback {
