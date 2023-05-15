@@ -154,7 +154,6 @@ export default class App extends React.Component {
 
     /** Initialize portal setup on load, fetch data and setup state*/
     async initSetup() {
-        let isLoggedIn = false;
         try {
             // Fetch data from API, links, preview, dev sources
             const {site, member, page, showPopup, popupNotification, lastPage, pageQuery, pageData} = await this.fetchData();
@@ -185,14 +184,17 @@ export default class App extends React.Component {
             };
             window.addEventListener('hashchange', this.hashHandler, false);
 
-            if (member) {
-                isLoggedIn = true;
-            }
+            // spike ship - to test if we can show / hide signup forms inside post / page
+            // if a member is logged in.
+            // we should probably not have this here, but it's a quick way to prototype
 
-            if (isLoggedIn) {
-                const formElement = document.querySelector('[data-lexical-signup-form]');
-                if (formElement) {
-                    formElement.style.display = 'none';
+            if (member) {
+                // not sure why a user would have more than one form on a post, but just in case we'll find them all
+                const formElements = document.querySelectorAll('[data-lexical-signup-form]');
+                if (formElements.length > 0){
+                    formElements.forEach((element) => {
+                        element.style.display = 'none';
+                    });
                 }
             }
         } catch (e) {
