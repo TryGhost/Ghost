@@ -14,8 +14,8 @@ const PublicationLanguage: React.FC = () => {
 
     return (
         <SettingGroup>
-            <SettingGroupHeader 
-                description="Set the language/locale which is used on your site" 
+            <SettingGroupHeader
+                description="Set the language/locale which is used on your site"
                 title="Publication Language"
             >
                 <ButtonGroup buttons={buttons} link={true} />

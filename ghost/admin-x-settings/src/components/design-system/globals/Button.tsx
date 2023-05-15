@@ -1,15 +1,21 @@
 import React from 'react';
-
-export enum ButtonColors {
-    Clear = 'Clear',
-    Black = 'Black',
-    Green = 'Green',
-    Red = 'Red'
+export interface ButtonColorsType {
+    Clear: string;
+    Black: string;
+    Green: string;
+    Red: string;
 }
+
+export const ButtonColors: ButtonColorsType = {
+    Clear: 'Clear',
+    Black: 'Black',
+    Green: 'Green',
+    Red: 'Red'
+};
 
 export interface ButtonProps {
     label: string;
-    color?: ButtonColors;
+    color?: string;
     fullWidth?: boolean;
     link?: boolean;
 }
