@@ -22,11 +22,12 @@ export function SubscribeForm({dataTestId, placeholder, value, inputBorderStyle,
                 placeholder={placeholder}
                 style={inputBorderStyle}
                 value={value}
+                readOnly
                 onBlur={onBlur}
                 onChange={onChangeWrapper}
                 onFocus={onFocus}
             />
-            <Button dataTestId={dataTestId} href='https://ghost.org/' placeholder='' rounded={false} size={buttonSize} style={buttonStyle} value={buttonText}/>
+            <Button dataTestId={dataTestId} placeholder='' rounded={false} size={buttonSize} style={buttonStyle} value={buttonText} disabled/>
         </div>
     );
 }
