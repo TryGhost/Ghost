@@ -183,7 +183,6 @@ export function VideoCard({
                 captionPlaceholder="Type caption for video (optional)"
                 dataTestId="video-card-caption"
                 isSelected={isSelected}
-                readOnly={true}
             />
         </figure>
     );
@@ -203,7 +202,7 @@ PopulatedVideoCard.propTypes = {
     videoUploader: PropTypes.object,
     customThumbnailUploader: PropTypes.object,
     onRemoveCustomThumbnail: PropTypes.func,
-    totalDuration: PropTypes.number,
+    totalDuration: PropTypes.string,
     cardWidth: PropTypes.string,
     isLoopChecked: PropTypes.bool,
     onLoopChange: PropTypes.func,

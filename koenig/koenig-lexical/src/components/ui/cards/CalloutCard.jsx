@@ -149,7 +149,7 @@ export function CalloutCard({
                     >
                         <ToggleSetting
                             dataTestId='emoji-toggle'
-                            isChecked={calloutEmoji}
+                            isChecked={!!calloutEmoji}
                             label='Emoji'
                             onChange={toggleEmoji}
                         />

@@ -226,7 +226,7 @@ GalleryRow.propTypes = {
 GalleryImage.propTypes = {
     deleteImage: PropTypes.func,
     image: PropTypes.object,
-    position: PropTypes.number,
+    position: PropTypes.string,
     isDragging: PropTypes.bool
 };
 
