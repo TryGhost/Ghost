@@ -142,7 +142,7 @@ export function SignupCard({alignment,
                 {/* Subscribe form */}
                 <div className={`h-full ${(layout === 'regular') ? 'mt-6 w-9/12' : (layout === 'wide') ? 'mt-8 w-4/6' : 'mt-10 w-5/12'}`}>
                     <SubscribeForm
-                        buttonSize={`${(layout === 'regular') ? 'medium' : (layout === 'wide') ? 'large' : 'large'}`}
+                        buttonSize={`${(layout === 'regular') ? 'medium' : (layout === 'wide') ? 'large' : 'xlarge'}`}
                         buttonStyle={buttonColor ? {
                             backgroundColor: buttonColor,
                             color: textColorForBackgroundColor(buttonColor).hex()

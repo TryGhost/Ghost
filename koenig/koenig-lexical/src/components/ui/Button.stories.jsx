@@ -11,7 +11,7 @@ const story = {
             control: {type: 'radio'}
         },
         size: {
-            options: ['small', 'medium', 'large'],
+            options: ['small', 'medium', 'large', 'xlarge'],
             control: {type: 'radio'}
         },
         width: {

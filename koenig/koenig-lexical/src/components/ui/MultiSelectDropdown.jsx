@@ -105,13 +105,13 @@ export function MultiSelectDropdown({value = [], menu, onChange, dataTestId}) {
                 {selectedItems.map(item => (
                     <button
                         key={item.id}
-                        className="flex cursor-pointer items-center rounded-sm bg-grey-900 py-1 px-2 leading-none text-white dark:bg-grey-100 dark:text-grey-900"
+                        className="flex cursor-pointer items-center rounded-sm bg-black px-[1rem] py-[.6rem] leading-none text-white dark:bg-grey-100 dark:text-grey-900"
                         data-testid="multiselect-dropdown-selected"
                         type="button"
                         onMouseDownCapture={event => handleDeselect(event, item)}
                     >
                         {item.label}
-                        <CloseIcon className="ml-2 h-2 w-2" />
+                        <CloseIcon className="ml-2 mt-[1px] h-2 w-2" />
                     </button>
                 ))}
 

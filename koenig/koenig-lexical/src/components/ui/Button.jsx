@@ -18,7 +18,7 @@ export function Button({color, dataTestId, href, size, width, rounded, value, pl
             {...props}
         >
             <span
-                className={`block px-5 ${(size === 'small' ? 'h-10 text-md leading-[4rem]' : (size === 'medium' ? 'h-11 text-[1.6rem] leading-[4.4rem]' : 'h-12 text-lg leading-[4.8rem]'))}`}
+                className={`block ${(size === 'small' ? 'h-10 px-5 text-md leading-[4rem]' : (size === 'medium' ? 'h-11 px-5 text-[1.6rem] leading-[4.4rem]' : (size === 'large') ? 'h-12 px-6 text-lg leading-[4.8rem]' : 'h-[5.2rem] px-6 text-lg leading-[5.2rem]'))}`}
                 data-testid={`${dataTestId}-span`}
             >
                 {value || placeholder}
@@ -29,7 +29,7 @@ export function Button({color, dataTestId, href, size, width, rounded, value, pl
 
 Button.propTypes = {
     color: PropTypes.oneOf(['white', 'grey', 'black', 'accent']),
-    size: PropTypes.oneOf(['small', 'medium', 'large']),
+    size: PropTypes.oneOf(['small', 'medium', 'large', 'xlarge']),
     width: PropTypes.oneOf(['regular', 'full']),
     rounded: PropTypes.bool,
     value: PropTypes.string,
