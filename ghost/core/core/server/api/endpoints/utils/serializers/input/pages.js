@@ -197,5 +197,12 @@ module.exports = {
 
     bulkDestroy(apiConfig, frame) {
         forcePageFilter(frame);
+    },
+
+    copy(apiConfig, frame) {
+        debug('copy');
+
+        defaultFormat(frame);
+        defaultRelations(frame);
     }
 };

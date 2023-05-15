@@ -35,6 +35,7 @@ module.exports = function apiRoutes() {
     router.get('/posts/slug/:slug', mw.authAdminApi, http(api.posts.read));
     router.put('/posts/:id', mw.authAdminApi, http(api.posts.edit));
     router.del('/posts/:id', mw.authAdminApi, http(api.posts.destroy));
+    router.post('/posts/:id/copy', mw.authAdminApi, http(api.posts.copy));
 
     router.get('/mentions', labs.enabledMiddleware('webmentions'), mw.authAdminApi, http(api.mentions.browse));
 
@@ -49,6 +50,7 @@ module.exports = function apiRoutes() {
     router.get('/pages/slug/:slug', mw.authAdminApi, http(api.pages.read));
     router.put('/pages/:id', mw.authAdminApi, http(api.pages.edit));
     router.del('/pages/:id', mw.authAdminApi, http(api.pages.destroy));
+    router.post('/pages/:id/copy', mw.authAdminApi, http(api.pages.copy));
 
     // # Integrations
 

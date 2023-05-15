@@ -279,5 +279,29 @@ module.exports = {
         query(frame) {
             return models.Post.destroy({...frame.options, require: true});
         }
+    },
+
+    copy: {
+        statusCode: 201,
+        headers: {
+            location: {
+                resolve: postsService.generateCopiedPostLocationFromUrl
+            }
+        },
+        options: [
+            'id',
+            'formats'
+        ],
+        validation: {
+            id: {
+                required: true
+            }
+        },
+        permissions: {
+            method: 'add'
+        },
+        async query(frame) {
+            return postsService.copyPost(frame);
+        }
     }
 };
