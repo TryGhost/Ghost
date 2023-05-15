@@ -114,10 +114,10 @@ export function SignupCard({alignment,
                             initialEditor={headerTextEditor}
                             initialEditorState={headerTextEditorInitialState}
                             nodes="minimal"
-                            placeholderClassName={`truncate opacity-50 whitespace-normal !tracking-tight w-full !leading-tight !font-bold ${(alignment === 'center' && 'text-center')} ${(layout === 'regular') ? '!text-5xl' : (layout === 'wide') ? '!text-7xl' : '!text-8xl'}`}
+                            placeholderClassName={`truncate opacity-50 whitespace-normal !tracking-tight w-full !leading-tight !font-bold ${(alignment === 'center' && 'text-center')} ${(layout === 'regular') ? '!text-5xl' : (layout === 'wide') ? '!text-6xl' : '!text-8xl'}`}
                             placeholderText={headerPlaceholder}
                             singleParagraph={true}
-                            textClassName={`koenig-lexical-header-heading relative w-full whitespace-normal font-bold ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(layout === 'regular') ? `koenig-lexical-header-xsmall ${(alignment === 'center') ? '[&:has(br)]:pl-[calc(50%_-_185px)]' : ''}` : (layout === 'wide') ? `koenig-lexical-header-small ${(alignment === 'center') ? '[&:has(br)]:pl-[calc(50%_-_220px)]' : ''}` : `koenig-lexical-header-large ${(alignment === 'center') ? '[&:has(br)]:pl-[calc(50%_-_300px)]' : ''}`}`}
+                            textClassName={`koenig-lexical-header-heading relative w-full whitespace-normal font-bold ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(layout === 'regular') ? `koenig-lexical-header-xsmall ${(alignment === 'center') ? '[&:has(br)]:pl-[calc(50%_-_192px)]' : ''}` : (layout === 'wide') ? `koenig-lexical-header-small ${(alignment === 'center') ? '[&:has(br)]:pl-[calc(50%_-_238px)]' : ''}` : `koenig-lexical-header-large ${(alignment === 'center') ? '[&:has(br)]:pl-[calc(50%_-_374px)]' : ''}`}`}
                         />
                     )
                 }
