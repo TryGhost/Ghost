@@ -176,7 +176,7 @@ export function ColorOptionSetting({label, onClick, selectedName, buttons, layou
     );
 }
 
-export function ColorPickerSetting({label, onChange, value, dataTestId}) {
+export function ColorPickerSetting({label, onChange, value, swatches, dataTestId}) {
     const [isExpanded, setExpanded] = useState(false);
     const {repositionPanel} = useSettingsPanelContext();
 
@@ -191,7 +191,7 @@ export function ColorPickerSetting({label, onChange, value, dataTestId}) {
                     <ColorIndicator value={value} onClick={() => setExpanded(!isExpanded)} />
                 </div>
             </div>
-            {isExpanded && <ColorPicker value={value} onBlur={() => setExpanded(false)} onChange={onChange} />}
+            {isExpanded && <ColorPicker swatches={swatches} value={value} onBlur={() => setExpanded(false)} onChange={onChange} />}
         </div>
     );
 }

@@ -8,6 +8,7 @@ import {ReactComponent as ImgRegularIcon} from '../../../assets/icons/kg-img-reg
 import {ReactComponent as ImgWideIcon} from '../../../assets/icons/kg-img-wide.svg';
 import {ReactComponent as LeftAlignIcon} from '../../../assets/icons/kg-align-left.svg';
 import {SubscribeForm} from '../SubscribeForm';
+import {getAccentColor} from '../../../utils/getAccentColor';
 import {isEditorEmpty} from '../../../utils/isEditorEmpty';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 
@@ -83,6 +84,14 @@ export function SignupCard({alignment,
 
     const {isLoading: isUploading, progress} = fileUploader || {};
 
+    const hexColorValue = (color) => {
+        if (color === 'accent') {
+            return getAccentColor();
+        }
+
+        return color;
+    };
+
     const wrapperStyle = () => {
         if (backgroundImageSrc) {
             return {
@@ -93,8 +102,8 @@ export function SignupCard({alignment,
             };
         } else if (backgroundColor) {
             return {
-                backgroundColor: backgroundColor,
-                color: textColorForBackgroundColor(backgroundColor).hex()
+                backgroundColor: hexColorValue(backgroundColor),
+                color: textColorForBackgroundColor(hexColorValue(backgroundColor)).hex()
             };
         }
 
@@ -144,15 +153,15 @@ export function SignupCard({alignment,
                     <SubscribeForm
                         buttonSize={`${(layout === 'regular') ? 'medium' : (layout === 'wide') ? 'large' : 'xlarge'}`}
                         buttonStyle={buttonColor ? {
-                            backgroundColor: buttonColor,
-                            color: textColorForBackgroundColor(buttonColor).hex()
+                            backgroundColor: hexColorValue(buttonColor),
+                            color: textColorForBackgroundColor(hexColorValue(buttonColor)).hex()
                         } : {backgroundColor: `#000000`,
                             color: `#ffffff`}}
                         buttonText={buttonText || 'Subscribe'}
                         dataTestId='signup-card-button'
                         disabled={true}
                         inputBorderStyle={buttonColor ? {
-                            border: `1px solid ${buttonColor}`
+                            border: `1px solid ${hexColorValue(buttonColor)}`
                         } : null}
                         placeholder='yourname@example.com'
                     />
@@ -217,6 +226,11 @@ export function SignupCard({alignment,
                     {(!showBackgroundImage || splitLayout) && <ColorPickerSetting
                         dataTestId='signup-background-color'
                         label='Background'
+                        swatches={[
+                            {title: 'Brand color', accent: true},
+                            {title: 'Black', hex: '#000000'},
+                            {title: 'Transparent', transparent: true}
+                        ]}
                         value={backgroundColor}
                         onChange={handleBackgroundColor}
                     />}
@@ -225,6 +239,11 @@ export function SignupCard({alignment,
                     <ColorPickerSetting
                         dataTestId='signup-button-color'
                         label='Button'
+                        swatches={[
+                            {title: 'Brand color', accent: true},
+                            {title: 'Black', hex: '#000000'},
+                            {title: 'White', hex: '#ffffff'}
+                        ]}
                         value={buttonColor}
                         onChange={handleButtonColor}
                     />

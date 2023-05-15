@@ -96,7 +96,11 @@ EmailCtaCard.args = {
 export const SignupCard = Template.bind({});
 SignupCard.args = {
     children: [
-        <ColorPickerSetting label='Background color' value='#777777' />,
+        <ColorPickerSetting label='Background color' swatches={[
+            {title: 'Brand color', accent: true},
+            {title: 'Black', hex: '#000000'},
+            {title: 'Transparent', transparent: true}
+        ]} value='#777777' />,
         <MultiSelectDropdownSetting
             description='These labels will be applied to members who sign up via this form.'
             label='Labels'

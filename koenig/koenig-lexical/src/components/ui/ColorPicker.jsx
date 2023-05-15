@@ -1,8 +1,9 @@
 import React, {useCallback, useEffect, useRef} from 'react';
 import {HexColorInput, HexColorPicker} from 'react-colorful';
 import {INPUT_CLASSES} from './Input';
+import {getAccentColor} from '../../utils/getAccentColor';
 
-export function ColorPicker({value, onChange, onBlur}) {
+export function ColorPicker({value, swatches, onChange, onBlur}) {
     // Prevent clashing with dragging the settings panel around
     const stopPropagation = useCallback(e => e.stopPropagation(), []);
 
@@ -35,38 +36,40 @@ export function ColorPicker({value, onChange, onBlur}) {
         inputWrapperRef.current?.querySelector('input')?.focus();
     }, []);
 
+    const hexValue = value === 'accent' ? getAccentColor() : value;
+
     return (
         <div className="mt-2" onMouseDown={stopPropagation} onTouchStart={stopPropagation}>
-            <HexColorPicker color={value || '#ffffff'} onChange={onChange} onMouseDown={startUsingColorPicker} onMouseUp={stopUsingColorPicker} onTouchEnd={stopUsingColorPicker} onTouchStart={startUsingColorPicker} />
+            <HexColorPicker color={hexValue || '#ffffff'} onChange={onChange} onMouseDown={startUsingColorPicker} onMouseUp={stopUsingColorPicker} onTouchEnd={stopUsingColorPicker} onTouchStart={startUsingColorPicker} />
             <div className="mt-3 flex">
                 <div ref={inputWrapperRef} className={`flex w-full items-center ${INPUT_CLASSES} rounded-r-none`}>
                     <span className='ml-1 mr-2 text-grey-700'>#</span>
-                    <HexColorInput aria-label="Colour value" className='w-full' color={value} onBlur={onBlurHandler} onChange={onChange} />
+                    <HexColorInput aria-label="Colour value" className='w-full' color={hexValue} onBlur={onBlurHandler} onChange={onChange} />
                 </div>
                 <div className={`flex items-center gap-1 ${INPUT_CLASSES} ml-[-1px] rounded-l-none`}>
-                    <ColorSwatch title='Brand color' accent onSelect={pickSwatch} />
-                    <ColorSwatch customColor='#000000' title='Black' onSelect={pickSwatch} />
-                    <ColorSwatch title='Transparent' transparent onSelect={pickSwatch} />
+                    {swatches.map(swatch => (
+                        <ColorSwatch key={swatch.title} onSelect={pickSwatch} {...swatch} />
+                    ))}
                 </div>
             </div>
         </div>
     );
 }
 
-function ColorSwatch({customColor, accent, transparent, title, onSelect}) {
-    const backgroundColor = accent ? 'var(--kg-accent-color, #ff0095)' : customColor;
+function ColorSwatch({hex, accent, transparent, title, onSelect}) {
+    const backgroundColor = accent ? getAccentColor() : hex;
 
     const ref = useRef(null);
 
     const onClickHandler = useCallback(() => {
         if (accent) {
-            onSelect(getComputedStyle(ref.current).getPropertyValue('--kg-accent-color') || '#ff0095');
+            onSelect('accent');
         } else if (transparent) {
             onSelect('');
         } else {
-            onSelect(customColor);
+            onSelect(hex);
         }
-    }, [accent, customColor, onSelect, transparent]);
+    }, [accent, hex, onSelect, transparent]);
 
     return (
         <button ref={ref} className={`relative flex h-4 w-4 shrink-0 items-center rounded border border-grey-300`} style={{backgroundColor}} title={title} type="button" onClick={onClickHandler}>
@@ -76,10 +79,12 @@ function ColorSwatch({customColor, accent, transparent, title, onSelect}) {
 }
 
 export function ColorIndicator({value, onClick}) {
+    const backgroundColor = value === 'accent' ? getAccentColor() : value;
+
     return (
         <button aria-label="Pick colour" className="relative h-6 w-6" type="button" onClick={onClick}>
             <div className='absolute inset-0 rounded-full bg-[conic-gradient(hsl(360,100%,50%),hsl(315,100%,50%),hsl(270,100%,50%),hsl(225,100%,50%),hsl(180,100%,50%),hsl(135,100%,50%),hsl(90,100%,50%),hsl(45,100%,50%),hsl(0,100%,50%))]' />
-            {value && <div className="absolute inset-[3px] rounded-full border border-white" style={{backgroundColor: value}} onClick={onClick} />}
+            {value && <div className="absolute inset-[3px] rounded-full border border-white" style={{backgroundColor}} onClick={onClick} />}
         </button>
     );
 }
