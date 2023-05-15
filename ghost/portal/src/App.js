@@ -185,15 +185,13 @@ export default class App extends React.Component {
             window.addEventListener('hashchange', this.hashHandler, false);
 
             // spike ship - to test if we can show / hide signup forms inside post / page
-            // if a member is logged in.
-            // we should probably not have this here, but it's a quick way to prototype
-
-            if (member) {
+            if (!member) {
+                // the signup card will ship hidden by default, so we need to show it if the user is not logged in
                 // not sure why a user would have more than one form on a post, but just in case we'll find them all
                 const formElements = document.querySelectorAll('[data-lexical-signup-form]');
                 if (formElements.length > 0){
                     formElements.forEach((element) => {
-                        element.style.display = 'none';
+                        element.style.display = '';
                     });
                 }
             }
