@@ -1,5 +1,5 @@
 import React from 'react';
-import Button, { ButtonColors } from '../../design-system/globals/Button';
+import { ButtonColors } from '../../design-system/globals/Button';
 import SettingGroup from '../../design-system/settings/SettingGroup';
 import SettingGroupHeader from '../../design-system/settings/SettingGroupHeader';
 import ButtonGroup from '../../design-system/globals/ButtonGroup';
