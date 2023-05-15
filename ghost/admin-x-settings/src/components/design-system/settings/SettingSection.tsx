@@ -1,5 +1,5 @@
 import React from 'react';
-import SettingGroupHeader from '../global/SettingGroupHeader';
+import SettingSectionHeader from './SettingSectionHeader';
 
 interface Props {
     name?: string;
@@ -9,7 +9,7 @@ interface Props {
 const SettingSection: React.FC<Props> = ({ name, children }) => {
     return (
         <>
-            {name && <SettingGroupHeader name={name} />}
+            {name && <SettingSectionHeader name={name} />}
             {children &&
                 <div className="flex flex-col gap-9 mb-[100px]">
                     {children}

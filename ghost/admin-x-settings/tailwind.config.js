@@ -76,6 +76,7 @@ export default {
       },
     },
     fontFamily: {
+      inter: "Inter",
       sans: 'Inter, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif',
       serif: 'Georgia, serif',
       mono: 'Consolas, Liberation Mono, Menlo, Courier, monospace'
@@ -150,7 +151,7 @@ export default {
         prose: '65ch',
       },
       borderRadius: {
-        sm: '0.2rem',
+        sm: '0.3rem',
         DEFAULT: '0.4rem',
         md: '0.6rem',
         lg: '0.8rem',

@@ -1,4 +1,3 @@
-import MainHeader from "./components/global/MainHeader";
 import Sidebar from "./components/Sidebar";
 import Settings from "./components/Settings";
 
@@ -12,7 +11,7 @@ function App() {
             
             {/* Sidebar */}
             <div className="md:top-[8vmin] flex-grow-0 md:basis-[240px] relative md:sticky">
-                <MainHeader />
+                <h1 className="font-inter text-5xl">Settings</h1>
                 <Sidebar />
             </div>
             <div className="pt-[3vmin] flex-auto md:pt-[72px]">

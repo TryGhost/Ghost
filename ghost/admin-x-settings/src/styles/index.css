@@ -5,8 +5,8 @@
 /* Defaults */
 @layer base {
     @font-face {
-        font-family: "Inter", sans-serif;
-        src: url("/fonts/Inter.ttf") format("truetype-variations");
+        font-family: "Inter";
+        src: url("../../public/fonts/Inter.ttf") format("truetype-variations");
         font-weight: 100 900;
     }
 

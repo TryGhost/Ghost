@@ -1,46 +1,46 @@
 import React from 'react';
-import SidebarNavSection from './sidebar/SidebarNavSection';
-import SidebarNavItem from './sidebar/SidebarNavItem';
+import SettingNavSection from './design-system/settings/SettingNavSection';
+import SettingNavItem from './design-system/settings/SettingNavItem';
 
 const Sidebar: React.FC = () => {
     return (
-        <div className="hidden md:block mt-5">
-            <SidebarNavSection name="General">
-                <SidebarNavItem name="Title and description" />
-                <SidebarNavItem name="Timezone" />
-                <SidebarNavItem name="Publication language" />
-                <SidebarNavItem name="Meta data" />
-                <SidebarNavItem name="Twitter card" />
-                <SidebarNavItem name="Facebook card" />
-                <SidebarNavItem name="Social accounts" />
-                <SidebarNavItem name="Make this site private" />
-                <SidebarNavItem name="Users and permissions" />
-            </SidebarNavSection>
+        <div className="hidden md:block mt-6">
+            <SettingNavSection name="General">
+                <SettingNavItem name="Title and description" />
+                <SettingNavItem name="Timezone" />
+                <SettingNavItem name="Publication language" />
+                <SettingNavItem name="Meta data" />
+                <SettingNavItem name="Twitter card" />
+                <SettingNavItem name="Facebook card" />
+                <SettingNavItem name="Social accounts" />
+                <SettingNavItem name="Make this site private" />
+                <SettingNavItem name="Users and permissions" />
+            </SettingNavSection>
 
-            <SidebarNavSection name="Site">
-                <SidebarNavItem name="Branding and design" />
-                <SidebarNavItem name="Navigation" />
-            </SidebarNavSection>
+            <SettingNavSection name="Site">
+                <SettingNavItem name="Branding and design" />
+                <SettingNavItem name="Navigation" />
+            </SettingNavSection>
 
-            <SidebarNavSection name="Membership">
-                <SidebarNavItem name="Portal" />
-                <SidebarNavItem name="Access" />
-                <SidebarNavItem name="Tiers" />
-                <SidebarNavItem name="Analytics" />
-            </SidebarNavSection>
+            <SettingNavSection name="Membership">
+                <SettingNavItem name="Portal" />
+                <SettingNavItem name="Access" />
+                <SettingNavItem name="Tiers" />
+                <SettingNavItem name="Analytics" />
+            </SettingNavSection>
 
-            <SidebarNavSection name="Email newsletters">
-                <SidebarNavItem name="Newsletter sending" />
-                <SidebarNavItem name="Newsletters" />
-                <SidebarNavItem name="Default recipients" />
-            </SidebarNavSection>
+            <SettingNavSection name="Email newsletters">
+                <SettingNavItem name="Newsletter sending" />
+                <SettingNavItem name="Newsletters" />
+                <SettingNavItem name="Default recipients" />
+            </SettingNavSection>
 
-            <SidebarNavSection name="Advanced">
-                <SidebarNavItem name="Integrations" />
-                <SidebarNavItem name="Code injection" />
-                <SidebarNavItem name="Labs" />
-                <SidebarNavItem name="History" />
-            </SidebarNavSection>
+            <SettingNavSection name="Advanced">
+                <SettingNavItem name="Integrations" />
+                <SettingNavItem name="Code injection" />
+                <SettingNavItem name="Labs" />
+                <SettingNavItem name="History" />
+            </SettingNavSection>
         </div>
     );
 }

@@ -16,6 +16,7 @@ const config: StorybookConfig = {
   docs: {
     autodocs: "tag",
   },
+  staticDirs: ['../public/fonts'],
   async viteFinal(config, options) {
     config.resolve.alias = {
         crypto: require.resolve('rollup-plugin-node-builtins'),

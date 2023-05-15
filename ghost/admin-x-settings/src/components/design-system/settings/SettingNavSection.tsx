@@ -1,15 +1,15 @@
 import React from 'react';
-import SettingGroupHeader from '../global/SettingGroupHeader';
+import SettingSectionHeader from './SettingSectionHeader';
 
 interface Props {
     name?: string;
     children?: React.ReactNode;
 }
 
-const SidebarNavSection: React.FC<Props> = ({ name, children }) => {
+const SettingNavSection: React.FC<Props> = ({ name, children }) => {
     return (
         <>
-            {name && <SettingGroupHeader name={name} />}
+            {name && <SettingSectionHeader name={name} />}
             {children &&
                 <ul className="mt-[-8px] mb-10">
                     {children}
@@ -19,4 +19,4 @@ const SidebarNavSection: React.FC<Props> = ({ name, children }) => {
     );
 }
 
-export default SidebarNavSection;
+export default SettingNavSection;
