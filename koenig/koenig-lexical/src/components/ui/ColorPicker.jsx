@@ -19,11 +19,17 @@ export function ColorPicker({value, onChange, onBlur}) {
 
     const onBlurHandler = useCallback((e) => {
         setTimeout(() => {
-            if (!isUsingColorPicker.current && !e.currentTarget.contains(document.activeElement)) {
+            if (!isUsingColorPicker.current && !inputWrapperRef.current?.contains(document.activeElement)) {
                 onBlur();
             }
-        });
+        }, 100);
     }, [onBlur]);
+
+    const pickSwatch = useCallback((color) => {
+        onChange(color);
+
+        inputWrapperRef.current?.querySelector('input')?.focus();
+    }, [onChange]);
 
     useEffect(() => {
         inputWrapperRef.current?.querySelector('input')?.focus();
@@ -38,20 +44,34 @@ export function ColorPicker({value, onChange, onBlur}) {
                     <HexColorInput aria-label="Colour value" className='w-full' color={value} onBlur={onBlurHandler} onChange={onChange} />
                 </div>
                 <div className={`flex items-center gap-1 ${INPUT_CLASSES} ml-[-1px] rounded-l-none`}>
-                    <ColorSwatch color='accent' title='Brand color' />
-                    <ColorSwatch color='black' title='Black' />
-                    <ColorSwatch color='grey-100' title='Transparent' transparent={true} onClick={() => onChange('')} />
+                    <ColorSwatch title='Brand color' accent onSelect={pickSwatch} />
+                    <ColorSwatch customColor='#000000' title='Black' onSelect={pickSwatch} />
+                    <ColorSwatch title='Transparent' transparent onSelect={pickSwatch} />
                 </div>
             </div>
         </div>
     );
 }
 
-function ColorSwatch({color, title, transparent, onClick}) {
+function ColorSwatch({customColor, accent, transparent, title, onSelect}) {
+    const backgroundColor = accent ? 'var(--kg-accent-color, #ff0095)' : customColor;
+
+    const ref = useRef(null);
+
+    const onClickHandler = useCallback(() => {
+        if (accent) {
+            onSelect(getComputedStyle(ref.current).getPropertyValue('--kg-accent-color') || '#ff0095');
+        } else if (transparent) {
+            onSelect('');
+        } else {
+            onSelect(customColor);
+        }
+    }, [accent, customColor, onSelect, transparent]);
+
     return (
-        <div className={`relative flex w-4 shrink-0 items-center rounded ${INPUT_CLASSES} bg-${color}`} title={title} onClick={onClick}>
+        <button ref={ref} className={`relative flex h-4 w-4 shrink-0 items-center rounded border border-grey-300`} style={{backgroundColor}} title={title} type="button" onClick={onClickHandler}>
             {transparent && <div className="absolute left-0 top-0 z-10 w-[136%] origin-left rotate-45 border-b border-b-red" />}
-        </div>
+        </button>
     );
 }
 
