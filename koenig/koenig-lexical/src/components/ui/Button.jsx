@@ -13,7 +13,7 @@ export function Button({color, dataTestId, href, size, width, rounded, value, pl
 
     return (
         <Tag
-            className={`not-kg-prose inline-block shrink-0 text-center font-sans font-medium ${(width === 'regular') || 'w-full' } ${rounded && 'rounded'} ${value ? 'opacity-100' : 'opacity-50' } ${(color === 'light') ? 'bg-white text-black' : 'bg-green text-white'} `}
+            className={`not-kg-prose inline-block shrink-0 text-center font-sans font-medium ${(width === 'regular') || 'w-full' } ${rounded && 'rounded'} ${value ? 'opacity-100' : 'opacity-50' } ${(color === 'white') ? 'bg-white text-black' : (color === 'grey') ? 'bg-grey-200 text-black' : (color === 'black') ? 'bg-black text-white' : 'bg-green text-white'} `}
             data-testid={`${dataTestId}`}
             {...props}
         >
@@ -28,7 +28,7 @@ export function Button({color, dataTestId, href, size, width, rounded, value, pl
 }
 
 Button.propTypes = {
-    color: PropTypes.oneOf(['light', 'accent']),
+    color: PropTypes.oneOf(['white', 'grey', 'black', 'accent']),
     size: PropTypes.oneOf(['small', 'medium', 'large']),
     width: PropTypes.oneOf(['regular', 'full']),
     rounded: PropTypes.bool,

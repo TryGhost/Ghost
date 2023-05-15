@@ -134,7 +134,7 @@ export function HeaderCard({isEditing,
                 {/* Button */}
                 { button ?
                     <div className={`${(size === 'small') ? 'mt-6' : (size === 'medium') ? 'mt-8' : 'mt-10'}`}>
-                        {((button && (type === 'light')) && <Button dataTestId="header-card-button" placeholder={buttonPlaceholder} size={size} value={buttonText} />) || (button && <Button color='light' dataTestId="header-card-button" placeholder={buttonPlaceholder} size={size} value={buttonText} />)}
+                        {((button && (type === 'light')) && <Button dataTestId="header-card-button" placeholder={buttonPlaceholder} size={size} value={buttonText} />) || (button && <Button color='white' dataTestId="header-card-button" placeholder={buttonPlaceholder} size={size} value={buttonText} />)}
                     </div>
                     : undefined
                 }
