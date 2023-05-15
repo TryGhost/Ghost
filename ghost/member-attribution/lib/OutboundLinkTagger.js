@@ -55,6 +55,11 @@ class OutboundLinkTagger {
             return url;
         }
 
+        // Check protocol
+        if (!url.protocol.startsWith('http')) {
+            return url;
+        }
+
         // Check blocked domains
         const referrerDomain = url.hostname;
         if (blockedReferrerDomains.includes(referrerDomain)) {
