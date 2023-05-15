@@ -221,7 +221,7 @@ test.describe('Slash menu', async () => {
     test.describe('insertion', function () {
         test('ENTER inserts card', async function ({page}) {
             await focusEditor(page);
-            await page.keyboard.type('/hr');
+            await page.keyboard.type('/hr', {delay: 100});
             await page.keyboard.press('Enter');
 
             await assertHTML(page, html`
@@ -245,7 +245,7 @@ test.describe('Slash menu', async () => {
             await focusEditor(page);
             await page.keyboard.type('Testing');
             await page.keyboard.press('Enter');
-            await page.keyboard.type('/hr');
+            await page.keyboard.type('/hr', {delay: 100});
             await page.keyboard.press('Enter');
 
             await assertHTML(page, html`

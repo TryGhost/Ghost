@@ -30,7 +30,8 @@ export class ImageNode extends BaseImageNode {
             triggerFileDialog: true
         },
         matches: ['image', 'img'],
-        queryParams: ['src']
+        queryParams: ['src'],
+        priority: 1
     },
     {
         section: 'Embed',
@@ -42,7 +43,8 @@ export class ImageNode extends BaseImageNode {
             triggerFileDialog: false
         },
         matches: ['unsplash', 'uns'],
-        queryParams: ['src']
+        queryParams: ['src'],
+        priority: 3
     },
     {
         label: 'GIF',

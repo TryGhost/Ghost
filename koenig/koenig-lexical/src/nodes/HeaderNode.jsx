@@ -23,7 +23,8 @@ export class HeaderNode extends BaseHeaderNode {
         desc: 'Add a header',
         Icon: HeaderCardIcon,
         insertCommand: INSERT_HEADER_COMMAND,
-        matches: ['header', 'heading']
+        matches: ['header', 'heading'],
+        priority: 17
     };
 
     getIcon() {

@@ -189,7 +189,8 @@ export class BookmarkNode extends BaseBookmarkNode {
         Icon: BookmarkCardIcon,
         insertCommand: INSERT_BOOKMARK_COMMAND,
         matches: ['bookmark'],
-        queryParams: ['url']
+        queryParams: ['url'],
+        priority: 6
     }];
 
     getIcon() {

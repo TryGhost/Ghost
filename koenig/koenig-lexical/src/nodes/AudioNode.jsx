@@ -168,7 +168,8 @@ export class AudioNode extends BaseAudioNode {
         insertParams: {
             triggerFileDialog: true
         },
-        matches: ['audio']
+        matches: ['audio'],
+        priority: 14
     }];
 
     static uploadType = 'audio';

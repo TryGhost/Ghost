@@ -127,7 +127,8 @@ export class CalloutNode extends BaseCalloutNode {
         desc: 'Info boxes that stand out',
         Icon: CalloutCardIcon,
         insertCommand: INSERT_CALLOUT_COMMAND,
-        matches: ['callout']
+        matches: ['callout'],
+        priority: 11
     }];
 
     getIcon() {

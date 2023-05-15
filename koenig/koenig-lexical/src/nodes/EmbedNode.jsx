@@ -173,16 +173,8 @@ export class EmbedNode extends BaseEmbedNode {
         Icon: EmbedCardIcon,
         insertCommand: INSERT_EMBED_COMMAND,
         matches: ['embed'],
-        queryParams: ['url']
-    },
-    {
-        section: 'Embed',
-        label: 'Twitter',
-        desc: '/twitter [tweet url]',
-        Icon: TwitterIcon,
-        insertCommand: INSERT_EMBED_COMMAND,
         queryParams: ['url'],
-        matches: ['twitter']
+        priority: 100
     },
     {
         section: 'Embed',
@@ -191,7 +183,18 @@ export class EmbedNode extends BaseEmbedNode {
         Icon: YouTubeIcon,
         insertCommand: INSERT_EMBED_COMMAND,
         queryParams: ['url'],
-        matches: ['youtube']
+        matches: ['youtube'],
+        priority: 1
+    },
+    {
+        section: 'Embed',
+        label: 'Twitter',
+        desc: '/twitter [tweet url]',
+        Icon: TwitterIcon,
+        insertCommand: INSERT_EMBED_COMMAND,
+        queryParams: ['url'],
+        matches: ['twitter'],
+        priority: 2
     },
     {
         section: 'Embed',
@@ -200,7 +203,8 @@ export class EmbedNode extends BaseEmbedNode {
         Icon: VimeoIcon,
         insertCommand: INSERT_EMBED_COMMAND,
         queryParams: ['url'],
-        matches: ['vimeo']
+        matches: ['vimeo'],
+        priority: 4
     },
     {
         section: 'Embed',
@@ -209,7 +213,8 @@ export class EmbedNode extends BaseEmbedNode {
         Icon: CodePenIcon,
         insertCommand: INSERT_EMBED_COMMAND,
         queryParams: ['url'],
-        matches: ['codepen']
+        matches: ['codepen'],
+        priority: 5
     },
     {
         section: 'Embed',
@@ -218,7 +223,8 @@ export class EmbedNode extends BaseEmbedNode {
         Icon: SpotifyIcon,
         insertCommand: INSERT_EMBED_COMMAND,
         queryParams: ['url'],
-        matches: ['spotify']
+        matches: ['spotify'],
+        priority: 6
     },
     {
         section: 'Embed',
@@ -227,7 +233,8 @@ export class EmbedNode extends BaseEmbedNode {
         Icon: SoundCloudIcon,
         insertCommand: INSERT_EMBED_COMMAND,
         queryParams: ['url'],
-        matches: ['soundcloud']
+        matches: ['soundcloud'],
+        priority: 7
     }];
 
     getIcon() {

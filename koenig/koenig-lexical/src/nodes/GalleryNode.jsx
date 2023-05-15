@@ -22,7 +22,8 @@ export class GalleryNode extends BaseGalleryNode {
         insertParams: {
             triggerFileDialog: true
         },
-        matches: ['gallery']
+        matches: ['gallery'],
+        priority: 4
     }];
 
     constructor(dataset = {}, key) {

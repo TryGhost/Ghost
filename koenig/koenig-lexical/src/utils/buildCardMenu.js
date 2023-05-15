@@ -41,7 +41,22 @@ export function buildCardMenu(nodes, {query, config} = {}) {
         addMenuItem(snippetMenuItem);
     });
 
-    // sort primary to always display first
+    // sort each menu section by priority
+    menu = new Map([...menu.entries()].map(([section, items]) => {
+        return [section, items.sort((a, b) => {
+            if (a.priority === b.priority) {
+                return 0;
+            } else if (a.priority === undefined) {
+                return 1;
+            } else if (b.priority === undefined) {
+                return -1;
+            } else {
+                return a.priority - b.priority;
+            }
+        })];
+    }));
+
+    // sort primary section to always display first
     menu = new Map([...menu.entries()].sort((a, b) => {
         if (a[0] === 'Primary') {
             return -1;

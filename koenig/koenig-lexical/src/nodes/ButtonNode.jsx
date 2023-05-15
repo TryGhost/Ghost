@@ -93,7 +93,8 @@ export class ButtonNode extends BaseButtonNode {
         desc: 'Add a button to your post',
         Icon: ButtonCardIcon,
         insertCommand: INSERT_BUTTON_COMMAND,
-        matches: ['button']
+        matches: ['button'],
+        priority: 10
     };
 
     static getType() {

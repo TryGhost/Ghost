@@ -23,7 +23,8 @@ export class ToggleNode extends BaseToggleNode {
         desc: 'Add collapsible content',
         Icon: ToggleCardIcon,
         insertCommand: INSERT_TOGGLE_COMMAND,
-        matches: ['toggle', 'collapse']
+        matches: ['toggle', 'collapse'],
+        priority: 12
     }];
 
     getIcon() {

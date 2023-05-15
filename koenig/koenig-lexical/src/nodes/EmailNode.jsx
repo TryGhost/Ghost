@@ -22,7 +22,8 @@ export class EmailNode extends BaseEmailNode {
         desc: 'Only visible when delivered by email',
         Icon: EmailCardIcon,
         insertCommand: INSERT_EMAIL_COMMAND,
-        matches: ['email content', 'only email']
+        matches: ['email content', 'only email'],
+        priority: 7
     }];
 
     getIcon() {

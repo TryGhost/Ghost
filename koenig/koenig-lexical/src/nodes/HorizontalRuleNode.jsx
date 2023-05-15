@@ -13,7 +13,8 @@ export class HorizontalRuleNode extends BaseHorizontalRuleNode {
         desc: 'Insert a dividing line',
         Icon: DividerCardIcon,
         insertCommand: INSERT_HORIZONTAL_RULE_COMMAND,
-        matches: ['divider', 'horizontal-rule', 'hr']
+        matches: ['divider', 'horizontal-rule', 'hr'],
+        priority: 5
     };
 
     getIcon() {

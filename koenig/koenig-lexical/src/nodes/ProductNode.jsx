@@ -23,7 +23,8 @@ export class ProductNode extends BaseProductNode {
         desc: 'Add a product recommendation',
         Icon: ProductCardIcon,
         insertCommand: INSERT_PRODUCT_COMMAND,
-        matches: ['product']
+        matches: ['product'],
+        priority: 16
     }];
 
     getIcon() {

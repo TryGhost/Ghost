@@ -22,7 +22,8 @@ export class EmailCtaNode extends BaseEmailCtaNode {
         desc: 'Target free or paid members with a CTA',
         Icon: EmailCtaCardIcon,
         insertCommand: INSERT_EMAIL_CTA_COMMAND,
-        matches: ['email', 'cta', 'email-cta']
+        matches: ['email', 'cta', 'email-cta'],
+        priority: 8
     };
 
     getIcon() {

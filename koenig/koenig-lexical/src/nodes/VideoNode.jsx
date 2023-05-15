@@ -26,7 +26,8 @@ export class VideoNode extends BaseVideoNode {
         insertParams: {
             triggerFileDialog: true
         },
-        matches: ['video']
+        matches: ['video'],
+        priority: 13
     }];
 
     static uploadType = 'video';

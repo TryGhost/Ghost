@@ -78,7 +78,8 @@ export class HtmlNode extends BaseHtmlNode {
         desc: 'Insert a HTML editor card',
         Icon: HtmlCardIcon,
         insertCommand: INSERT_HTML_COMMAND,
-        matches: ['html']
+        matches: ['html'],
+        priority: 3
     };
 
     static getType() {
