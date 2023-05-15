@@ -76,6 +76,17 @@ function EmbedIframe({dataTestId, html}) {
         const scrollHeight = iframeRef.current.contentDocument.scrollingElement.scrollHeight;
         iframeRef.current.style.height = `${scrollHeight}px`;
     };
+
+    // register mutation observer to handle changes to iframe content (e.g. twitter embeds loading richer content)
+    const config = {
+        attributes: true,
+        attributeOldValue: false,
+        characterData: true,
+        characterDataOldValue: false,
+        childList: true,
+        subtree: true
+    };
+    const mutationObserver = new MutationObserver(handleResize);
     
     const handleLoad = () => {
         const iframeBody = iframeRef.current.contentDocument.body;
@@ -85,9 +96,11 @@ function EmbedIframe({dataTestId, html}) {
         iframeBody.style.justifyContent = 'center';
         // resize first load
         handleResize();
+        // start listening to mutations when the iframe content is loaded
+        mutationObserver.observe(iframeRef.current.contentWindow.document, config);
     };
 
-    // register listener for resize events
+    // register listener for window resize events
     React.useEffect(() => {
         const resizeObserver = new ResizeObserver(handleResize);
         resizeObserver.observe(iframeRef.current);
@@ -95,6 +108,7 @@ function EmbedIframe({dataTestId, html}) {
         // cleanup listener when component unmounts
         return function cleanup() {
             resizeObserver.disconnect();
+            mutationObserver.disconnect();
         };
     }, []);
 
