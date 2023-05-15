@@ -150,6 +150,7 @@ export function SignupCard({alignment,
                             color: `#ffffff`}}
                         buttonText={buttonText || 'Subscribe'}
                         dataTestId='signup-card-button'
+                        disabled={true}
                         inputBorderStyle={buttonColor ? {
                             border: `1px solid ${buttonColor}`
                         } : null}

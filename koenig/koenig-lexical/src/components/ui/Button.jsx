@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-export function Button({color, dataTestId, href, size, width, rounded, value, placeholder, type = 'button', target, ...other}) {
+export function Button({color, dataTestId, href, size, width, rounded, value, placeholder, type = 'button', disabled = false, target, ...other}) {
     const Tag = href ? 'a' : 'button';
     const props = {
         type: href ? null : type,
@@ -13,8 +13,9 @@ export function Button({color, dataTestId, href, size, width, rounded, value, pl
 
     return (
         <Tag
-            className={`not-kg-prose inline-block shrink-0 text-center font-sans font-medium ${(width === 'regular') || 'w-full' } ${rounded && 'rounded'} ${value ? 'opacity-100' : 'opacity-50' } ${(color === 'white') ? 'bg-white text-black' : (color === 'grey') ? 'bg-grey-200 text-black' : (color === 'black') ? 'bg-black text-white' : 'bg-green text-white'} `}
+            className={`not-kg-prose inline-block shrink-0 text-center font-sans font-medium ${(disabled ? 'cursor-not-allowed' : 'cursor-pointer')} ${(width === 'regular') || 'w-full' } ${rounded && 'rounded'} ${value ? 'opacity-100' : 'opacity-50' } ${(color === 'white') ? 'bg-white text-black' : (color === 'grey') ? 'bg-grey-200 text-black' : (color === 'black') ? 'bg-black text-white' : 'bg-green text-white'} `}
             data-testid={`${dataTestId}`}
+            disabled={disabled}
             {...props}
         >
             <span
@@ -35,7 +36,9 @@ Button.propTypes = {
     value: PropTypes.string,
     placeholder: PropTypes.string,
     href: PropTypes.string,
-    target: PropTypes.string
+    target: PropTypes.string,
+    styles: PropTypes.object,
+    disabled: PropTypes.bool
 };
 
 Button.defaultProps = {
@@ -44,5 +47,6 @@ Button.defaultProps = {
     width: 'regular',
     rounded: true,
     value: '',
-    placeholder: 'Add button text'
+    placeholder: 'Add button text',
+    disabled: false
 };
