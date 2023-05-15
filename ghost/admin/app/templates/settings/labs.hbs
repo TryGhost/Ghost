@@ -31,20 +31,6 @@
                     </div>
                 </div>
 
-                {{#if this.feature.migrateApp}}
-                <div class="gh-expandable-block">
-                    <div class="gh-expandable-header">
-                        <div>
-                            <h4 class="gh-expandable-title">Migrate content</h4>
-                            <p class="gh-expandable-description">Import your content from Substack</p>
-                        </div>
-                        <LinkTo @route="migrate" class="gh-btn" data-test-link="migrate">
-                            <span>Open</span>
-                        </LinkTo>
-                    </div>
-                </div>
-                {{/if}}
-
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
@@ -70,6 +56,20 @@
         <div class="gh-main-section">
             <h4 class="gh-main-section-header small bn">Beta features</h4>
             <div class="gh-expandable">
+                {{#if this.feature.migrateApp}}
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Substack migrator</h4>
+                            <p class="gh-expandable-description">Import all your content, members and paid subscriptions</p>
+                        </div>
+                        <LinkTo @route="migrate" class="gh-btn" data-test-link="migrate">
+                            <span>Open</span>
+                        </LinkTo>
+                    </div>
+                </div>
+                {{/if}}
+
                 <div class="gh-expandable-block">
                     <GhUploader
                         @extensions={{this.redirectsFileExtensions}}
