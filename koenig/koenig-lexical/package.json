@@ -64,6 +64,7 @@
     "dompurify": "^3.0.0",
     "emoji-mart": "^5.5.2",
     "eventemitter3": "^5.0.0",
+    "fast-average-color": "^9.3.0",
     "lexical": "^0.10.0",
     "lodash-es": "^4.17.21",
     "pluralize": "^8.0.0",

@@ -4,6 +4,7 @@ import useFileDragAndDrop from '../hooks/useFileDragAndDrop';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar';
 import {EDIT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin';
+import {FastAverageColor} from 'fast-average-color';
 import {SignupCard} from '../components/ui/cards/SignupCard.jsx';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
@@ -41,6 +42,7 @@ function SignupNodeComponent({
     const [showSnippetToolbar, setShowSnippetToolbar] = useState(false);
     const [availableLabels, setAvailableLabels] = useState([]);
     const [showBackgroundImage, setShowBackgroundImage] = useState(Boolean(backgroundImageSrc));
+    const [backgroundImageAverageColor, setBackgroundImageAverageColor] = useState(null);
 
     useEffect(() => {
         if (cardConfig?.fetchLabels) {
@@ -49,6 +51,14 @@ function SignupNodeComponent({
             });
         }
     }, [cardConfig]);
+
+    useEffect(() => {
+        if (backgroundImageSrc) {
+            new FastAverageColor().getColorAsync(backgroundImageSrc).then((color) => {
+                setBackgroundImageAverageColor(color.hex);
+            });
+        }
+    }, [backgroundImageSrc]);
 
     const handleAlignment = (a) => {
         editor.update(() => {
@@ -147,6 +157,7 @@ function SignupNodeComponent({
                 alignment={alignment}
                 availableLabels={availableLabels}
                 backgroundColor={backgroundColor}
+                backgroundImageAverageColor={backgroundImageAverageColor}
                 backgroundImageSrc={backgroundImageSrc}
                 buttonColor={buttonColor}
                 buttonPlaceholder={buttonPlaceholder}

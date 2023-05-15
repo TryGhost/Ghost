@@ -23,6 +23,7 @@ export function SignupCard({alignment,
     buttonText,
     showBackgroundImage,
     backgroundImageSrc,
+    backgroundImageAverageColor,
     backgroundColor,
     buttonColor,
     isEditing,
@@ -98,7 +99,8 @@ export function SignupCard({alignment,
                 backgroundImage: `url(${backgroundImageSrc})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center center',
-                backgroundColor: 'bg-grey-950'
+                backgroundColor: 'bg-grey-950',
+                color: backgroundImageAverageColor && textColorForBackgroundColor(backgroundImageAverageColor).hex()
             };
         } else if (backgroundColor) {
             return {
@@ -281,6 +283,7 @@ SignupCard.propTypes = {
     buttonText: PropTypes.string,
     buttonPlaceholder: PropTypes.string,
     backgroundImageSrc: PropTypes.string,
+    backgroundImageAverageColor: PropTypes.string,
     backgroundColor: PropTypes.string,
     buttonColor: PropTypes.string,
     showBackgroundImage: PropTypes.bool,
