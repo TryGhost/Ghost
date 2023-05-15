@@ -169,7 +169,7 @@ export class EmbedNode extends BaseEmbedNode {
     static kgMenu = [{
         section: 'Embed',
         label: 'Other...',
-        desc: 'Embed a link as a visual embed',
+        desc: '/embed [url]',
         Icon: EmbedCardIcon,
         insertCommand: INSERT_EMBED_COMMAND,
         matches: ['embed'],
