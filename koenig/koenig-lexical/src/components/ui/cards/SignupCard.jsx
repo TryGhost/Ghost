@@ -117,7 +117,7 @@ export function SignupCard({alignment,
                             placeholderClassName={`truncate opacity-50 whitespace-normal !tracking-tight w-full !leading-tight !font-bold ${(alignment === 'center' && 'text-center')} ${(layout === 'regular') ? 'kg-header-small !text-6xl' : (layout === 'wide') ? '!text-7xl' : '!text-8xl'}`}
                             placeholderText={headerPlaceholder}
                             singleParagraph={true}
-                            textClassName={`koenig-lexical-header-heading relative w-full whitespace-normal font-bold ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(layout === 'regular') ? 'koenig-lexical-header-small [&:has(br)]:pl-[calc(50%_-_254px)]' : (layout === 'wide') ? 'koenig-lexical-header-medium [&:has(br)]:pl-[calc(50%_-_304px)]' : 'koenig-lexical-header-large [&:has(br)]:pl-[calc(50%_-_404px)]'}`}
+                            textClassName={`koenig-lexical-header-heading relative w-full whitespace-normal font-bold ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(layout === 'regular') ? `koenig-lexical-header-small ${(alignment === 'center') ? '[&:has(br)]:pl-[calc(50%_-_185px)]' : ''}` : (layout === 'wide') ? `koenig-lexical-header-medium ${(alignment === 'center') ? '[&:has(br)]:pl-[calc(50%_-_220px)]' : ''}` : `koenig-lexical-header-large ${(alignment === 'center') ? '[&:has(br)]:pl-[calc(50%_-_300px)]' : ''}`}`}
                         />
                     )
                 }
@@ -134,20 +134,20 @@ export function SignupCard({alignment,
                             placeholderClassName={`truncate opacity-50 w-full whitespace-normal !leading-tight !font-normal ${(alignment === 'center' && 'text-center')} ${(layout === 'regular') ? '!text-xl' : (layout === 'wide') ? '!text-2xl' : '!text-3xl'}`}
                             placeholderText={subheaderPlaceholder}
                             singleParagraph={true}
-                            textClassName={`koenig-lexical-header-subheading relative w-full whitespace-normal ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(layout === 'regular') ? 'koenig-lexical-header-small [&:has(br)]:pl-[calc(50%_-_105px)] !mt-2' : (layout === 'wide') ? 'koenig-lexical-header-medium [&:has(br)]:pl-[calc(50%_-_124px)] !mt-3' : 'koenig-lexical-header-large [&:has(br)]:pl-[calc(50%_-_156px)] !mt-3'}`}
+                            textClassName={`koenig-lexical-header-subheading relative w-full whitespace-normal ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(layout === 'regular') ? `koenig-lexical-header-small !mt-2 ${(alignment === 'center') ? '[&:has(br)]:pl-[calc(50%_-_105px)]' : ''}` : (layout === 'wide') ? `koenig-lexical-header-medium !mt-3 ${(alignment === 'center') ? '[&:has(br)]:pl-[calc(50%_-_124px)]' : ''}` : `koenig-lexical-header-large !mt-3 ${(alignment === 'center') ? '[&:has(br)]:pl-[calc(50%_-_156px)]' : ''}`}`}
                         />
                     )
                 }
 
                 {/* Subscribe form */}
                 <div className={`${(layout === 'regular') ? 'mt-6 h-full w-full' : (layout === 'wide') ? 'mt-8' : 'mt-10'}`}>
-                    <SubscribeForm 
+                    <SubscribeForm
                         buttonSize='medium'
                         buttonStyle={buttonColor ? {
                             backgroundColor: buttonColor,
                             color: textColorForBackgroundColor(buttonColor).hex()
-                        } : null} 
-                        buttonText={buttonText} 
+                        } : null}
+                        buttonText={buttonText}
                         dataTestId='signup-card-button'
                         inputBorderStyle={buttonColor ? {
                             border: `1px solid ${buttonColor}`
@@ -167,7 +167,7 @@ export function SignupCard({alignment,
                             placeholderClassName={`truncate opacity-50 w-full whitespace-normal !leading-tight !font-normal ${(alignment === 'center' && 'text-center')} ${(layout === 'regular') ? '!text-md' : (layout === 'wide') ? '!text-lg' : '!text-xl'}`}
                             placeholderText={disclaimerPlaceholder}
                             singleParagraph={true}
-                            textClassName={`koenig-lexical-header-subheading koenig-lexical-header-xsmall relative w-full whitespace-normal ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(layout === 'regular') ? '[&:has(br)]:pl-[calc(50%_-_105px)] !mt-3' : (layout === 'wide') ? '[&:has(br)]:pl-[calc(50%_-_124px)] !mt-4' : '[&:has(br)]:pl-[calc(50%_-_156px)] !mt-4'}`}
+                            textClassName={`koenig-lexical-header-subheading koenig-lexical-header-xsmall relative w-full whitespace-normal !mt-4 ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(alignment === 'center') ? ((layout === 'regular') ? '[&:has(br)]:pl-[calc(50%_-_75px)]' : (layout === 'wide') ? '[&:has(br)]:pl-[calc(50%_-_85px)]' : '[&:has(br)]:pl-[calc(50%_-_95px)]') : ''}`}
                         />
                     )
                 }
