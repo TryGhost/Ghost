@@ -166,10 +166,10 @@ export function SignupCard({alignment,
                             initialEditor={disclaimerTextEditor}
                             initialEditorState={disclaimerTextEditorInitialState}
                             nodes="minimal"
-                            placeholderClassName={`truncate opacity-50 w-full whitespace-normal !leading-tight !font-normal ${(alignment === 'center' && 'text-center')} ${(layout === 'regular') ? '!text-md' : (layout === 'wide') ? '!text-lg' : '!text-xl'}`}
+                            placeholderClassName={`truncate opacity-50 w-full whitespace-normal !leading-tight !font-normal !text-[1.6rem] !tracking-[-0.025em] ${(alignment === 'center' && 'text-center')}`}
                             placeholderText={disclaimerPlaceholder}
                             singleParagraph={true}
-                            textClassName={`koenig-lexical-header-subheading koenig-lexical-header-xsmall relative w-full whitespace-normal !mt-4 ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(alignment === 'center') ? ((layout === 'regular') ? '[&:has(br)]:pl-[calc(50%_-_75px)]' : (layout === 'wide') ? '[&:has(br)]:pl-[calc(50%_-_85px)]' : '[&:has(br)]:pl-[calc(50%_-_95px)]') : ''}`}
+                            textClassName={`koenig-lexical-header-subheading koenig-lexical-header-xsmall relative w-full whitespace-normal !mt-4 ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_76px)]'}`}
                         />
                     )
                 }
