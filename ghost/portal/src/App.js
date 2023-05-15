@@ -154,6 +154,7 @@ export default class App extends React.Component {
 
     /** Initialize portal setup on load, fetch data and setup state*/
     async initSetup() {
+        let isLoggedIn = false;
         try {
             // Fetch data from API, links, preview, dev sources
             const {site, member, page, showPopup, popupNotification, lastPage, pageQuery, pageData} = await this.fetchData();
@@ -183,6 +184,17 @@ export default class App extends React.Component {
                 this.updateStateForPreviewLinks();
             };
             window.addEventListener('hashchange', this.hashHandler, false);
+
+            if (member) {
+                isLoggedIn = true;
+            }
+
+            if (isLoggedIn) {
+                const formElement = document.querySelector('[data-lexical-signup-form]');
+                if (formElement) {
+                    formElement.style.display = 'none';
+                }
+            }
         } catch (e) {
             /* eslint-disable no-console */
             console.error(`[Portal] Failed to initialize:`, e);
