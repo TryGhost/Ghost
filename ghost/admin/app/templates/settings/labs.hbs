@@ -206,17 +206,35 @@
                         <div>
                             <h4 class="gh-expandable-title">Lexical editor</h4>
                             <p class="gh-expandable-description">
-                                {{#if (feature 'lexicalEditor')}}
-                                    <span>Makes lexical editor the default when creating new posts/pages. Any issues? Feedback?</span><button class="green ml1" type="button" {{on "click" this.openFeedbackLexical}} data-test-button="lexical-feedback">Let us know</button>
-                                {{else}}
-                                    <span>Makes lexical editor the default when creating new posts/pages.</span>
-                                {{/if}}
+                                <span>Makes lexical editor the default when creating new posts/pages. Any issues? Feedback?</span><button class="green ml1" type="button" {{on "click" this.openFeedbackLexical}} data-test-button="lexical-feedback">Let us know</button>
                             </p>
                         </div>
                         <div class="for-switch">
                            <GhFeatureFlag @flag="lexicalEditor" />
                         </div>
                     </div>
+                    {{!-- Inlined feedback form --}}
+                    {{!-- <div>
+                        <form>
+                            <GhFormGroup>
+                                <label for="feedback-lexical">Have any issues? Feedback? Let us know below!</label>
+                                <GhTextarea 
+                                    @id="feedback-lexical"
+                                    @name="feedback-lexical" 
+                                    @value={{this.feedbackMessage}}
+                                    @placeholder="I've noticed that..."
+                                    @shouldFocus={{true}}
+                                    data-test-lexical-feedback-textarea
+                                />
+                            </GhFormGroup>
+                        </form>
+                        <GhTaskButton 
+                            @buttonText="Send feedback"
+                            @task={{this.submitFeedback}}
+                            @class="gh-btn gh-btn-black gh-btn-icon"
+                            data-test-button="submit-lexical-feedback"
+                        />
+                    </div> --}}
                 </div>
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
