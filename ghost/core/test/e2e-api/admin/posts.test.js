@@ -450,4 +450,36 @@ describe('Posts API', function () {
                 });
         });
     });
+
+    describe('Copy', function () {
+        it('Can copy a post', async function () {
+            const post = {
+                title: 'Test Post',
+                status: 'published'
+            };
+
+            const {body: postBody} = await agent
+                .post('/posts/?formats=mobiledoc,lexical,html', {
+                    headers: {
+                        'content-type': 'application/json'
+                    }
+                })
+                .body({posts: [post]})
+                .expectStatus(201);
+
+            const [postResponse] = postBody.posts;
+
+            await agent
+                .post(`/posts/${postResponse.id}/copy?formats=mobiledoc,lexical`)
+                .expectStatus(201)
+                .matchBodySnapshot({
+                    posts: [Object.assign(matchPostShallowIncludes, {published_at: null})]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('posts')
+                });
+        });
+    });
 });
