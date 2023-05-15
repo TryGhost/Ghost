@@ -191,7 +191,7 @@ export function ColorPickerSetting({label, onChange, value, dataTestId}) {
                     <ColorIndicator value={value} onClick={() => setExpanded(!isExpanded)} />
                 </div>
             </div>
-            {isExpanded && <ColorPicker value={value} onChange={onChange} />}
+            {isExpanded && <ColorPicker value={value} onBlur={() => setExpanded(false)} onChange={onChange} />}
         </div>
     );
 }

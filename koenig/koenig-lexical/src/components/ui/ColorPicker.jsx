@@ -1,19 +1,41 @@
-import React from 'react';
+import React, {useCallback, useEffect, useRef} from 'react';
 import {HexColorInput, HexColorPicker} from 'react-colorful';
 import {INPUT_CLASSES} from './Input';
-import {useCallback} from 'react';
 
-export function ColorPicker({value, onChange}) {
+export function ColorPicker({value, onChange, onBlur}) {
     // Prevent clashing with dragging the settings panel around
     const stopPropagation = useCallback(e => e.stopPropagation(), []);
 
+    // HexColorInput doesn't support adding a ref on the input itself
+    const inputWrapperRef = useRef(null);
+
+    const isUsingColorPicker = useRef(false);
+
+    const startUsingColorPicker = useCallback(() => isUsingColorPicker.current = true, []);
+    const stopUsingColorPicker = useCallback(() => {
+        isUsingColorPicker.current = false;
+        inputWrapperRef.current?.querySelector('input')?.focus();
+    }, []);
+
+    const onBlurHandler = useCallback((e) => {
+        setTimeout(() => {
+            if (!isUsingColorPicker.current && !e.currentTarget.contains(document.activeElement)) {
+                onBlur();
+            }
+        });
+    }, [onBlur]);
+
+    useEffect(() => {
+        inputWrapperRef.current?.querySelector('input')?.focus();
+    }, []);
+
     return (
         <div className="mt-2" onMouseDown={stopPropagation} onTouchStart={stopPropagation}>
-            <HexColorPicker color={value || '#ffffff'} onChange={onChange} />
+            <HexColorPicker color={value || '#ffffff'} onChange={onChange} onMouseDown={startUsingColorPicker} onMouseUp={stopUsingColorPicker} onTouchEnd={stopUsingColorPicker} onTouchStart={startUsingColorPicker} />
             <div className="mt-3 flex">
-                <div className={`flex w-full items-center ${INPUT_CLASSES} rounded-r-none`}>
+                <div ref={inputWrapperRef} className={`flex w-full items-center ${INPUT_CLASSES} rounded-r-none`}>
                     <span className='ml-1 mr-2 text-grey-700'>#</span>
-                    <HexColorInput aria-label="Colour value" className='w-full' color={value} onChange={onChange} />
+                    <HexColorInput aria-label="Colour value" className='w-full' color={value} onBlur={onBlurHandler} onChange={onChange} />
                 </div>
                 <div className={`flex items-center gap-1 ${INPUT_CLASSES} ml-[-1px] rounded-l-none`}>
                     <ColorSwatch color='accent' title='Brand color' />
