@@ -91,9 +91,12 @@ test.describe('Signup card', async () => {
         await insertCard(page, {cardName: 'signup'});
 
         await page.click('[data-testid="signup-button-text"]');
-        await page.keyboard.type('Click me');
 
-        await expect(page.getByTestId('signup-card-button')).toHaveText('Click me');
+        // Default text
+        await expect(page.getByTestId('signup-card-button')).toHaveText('Subscribe');
+
+        await page.keyboard.type(' now');
+        await expect(page.getByTestId('signup-card-button')).toHaveText('Subscribe now');
     });
 
     test('can change the background color', async function ({page}) {
