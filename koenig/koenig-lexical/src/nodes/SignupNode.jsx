@@ -10,8 +10,7 @@ import {$generateHtmlFromNodes} from '@lexical/html';
 import {SignupNode as BaseSignupNode, INSERT_SIGNUP_COMMAND} from '@tryghost/kg-default-nodes';
 import {createEditor} from 'lexical';
 
-// TODO: Update icon
-import {ReactComponent as SignupCardIcon} from '../assets/icons/kg-card-type-other.svg';
+import {ReactComponent as SignupCardIcon} from '../assets/icons/kg-card-type-signup.svg';
 
 export {INSERT_SIGNUP_COMMAND} from '@tryghost/kg-default-nodes';
 

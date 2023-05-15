@@ -26,6 +26,7 @@ import {ReactComponent as NftCardIcon} from '../../assets/icons/kg-card-type-nft
 import {ReactComponent as OtherCardIcon} from '../../assets/icons/kg-card-type-other.svg';
 import {ReactComponent as PreviewCardIcon} from '../../assets/icons/kg-card-type-preview.svg';
 import {ReactComponent as ProductCardIcon} from '../../assets/icons/kg-card-type-product.svg';
+import {ReactComponent as SignupCardIcon} from '../../assets/icons/kg-card-type-signup.svg';
 import {ReactComponent as SnippetCardIcon} from '../../assets/icons/kg-card-type-snippet.svg';
 import {ReactComponent as SoundCloudCardIcon} from '../../assets/icons/kg-card-type-soundcloud.svg';
 import {ReactComponent as SpotifyCardIcon} from '../../assets/icons/kg-card-type-spotify.svg';
@@ -71,7 +72,8 @@ Default.args = {
             {label: 'Audio', desc: 'Upload and play an audio file', Icon: AudioCardIcon},
             {label: 'File', desc: 'Upload a downloadable file', Icon: FileCardIcon},
             {label: 'Product', desc: 'Add a product recommendation', Icon: ProductCardIcon},
-            {label: 'Header', desc: 'Add a bold section header', Icon: HeaderCardIcon}
+            {label: 'Header', desc: 'Add a bold section header', Icon: HeaderCardIcon},
+            {label: 'Signup', desc: 'Convert visitors into members', Icon: SignupCardIcon}
         ]],
         ['Embed', [
             {label: 'YouTube', desc: '/youtube [video url]', Icon: YoutubeCardIcon},
