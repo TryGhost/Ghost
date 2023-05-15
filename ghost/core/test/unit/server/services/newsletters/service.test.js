@@ -38,7 +38,13 @@ describe('NewslettersService', function () {
         newsletterService = new NewslettersService({
             NewsletterModel: models.Newsletter,
             MemberModel: models.Member,
-            mail,
+            mail: {
+                ...mail,
+                utils: {
+                    ...mail.utils,
+                    getDefaultFromEmail: prefix => `${prefix}@example.com`
+                }
+            },
             singleUseTokenProvider: tokenProvider,
             urlUtils: urlUtils.stubUrlUtilsFromConfig(),
             limitService
@@ -177,6 +183,20 @@ describe('NewslettersService', function () {
             sinon.assert.calledOnceWithExactly(tokenProvider.create, {id: 'test', property: 'sender_email', value: 'test@example.com'});
             sinon.assert.notCalled(fetchMembersStub);
             sinon.assert.calledOnceWithExactly(findOneStub, {id: 'test'}, {foo: 'bar', require: true});
+        });
+
+        it('uses a different from email when the to email is the same', async function () {
+            const data = {name: 'hello world', sender_email: 'noreply@example.com'};
+            const options = {foo: 'bar'};
+
+            const result = await newsletterService.add(data, options);
+
+            assert.deepEqual(result.meta, {
+                sent_email_verification: [
+                    'sender_email'
+                ]
+            });
+            mockManager.assert.sentEmail({to: 'noreply@example.com', from: 'no-reply@example.com'});
         });
 
         it('will try to find existing members when opt_in_existing is provided', async function () {

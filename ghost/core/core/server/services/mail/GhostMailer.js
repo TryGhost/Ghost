@@ -6,7 +6,7 @@ const config = require('../../../shared/config');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const settingsCache = require('../../../shared/settings-cache');
-const urlUtils = require('../../../shared/url-utils');
+const {getDomain,getDefaultFromEmail} = require('./default-from-email');
 const metrics = require('@tryghost/metrics');
 const messages = {
     title: 'Ghost at {domain}',
@@ -17,19 +17,13 @@ const messages = {
     messageSent: 'Message sent. Double check inbox and spam folder!'
 };
 
-function getDomain() {
-    const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
-    return domain && domain[1];
-}
-
 function getFromAddress(requestedFromAddress) {
     const configAddress = config.get('mail') && config.get('mail').from;
 
     const address = requestedFromAddress || configAddress;
     // If we don't have a from address at all
     if (!address) {
-        // Default to noreply@[blog.url]
-        return getFromAddress(`noreply@${getDomain()}`);
+        return getFromAddress(getDefaultFromEmail());
     }
 
     // If we do have a from address, and it's just an email

@@ -31,6 +31,7 @@ class SettingsBREADService {
         /* email verification setup */
 
         this.ghostMailer = new mail.GhostMailer();
+        this.getDefaultFromEmail = mail.utils.getDefaultFromEmail;
 
         const {transporter, getSubject, getText, getHTML, getSigninURL} = {
             transporter: {
@@ -360,6 +361,12 @@ class SettingsBREADService {
      * @private
      */
     async sendEmailVerificationMagicLink({email, key}) {
+        let fromEmail = this.getDefaultFromEmail('noreply');
+        if (fromEmail === email) {
+            // If the from and to email are the same, mail clients often mark the email as spam
+            fromEmail = this.getDefaultFromEmail('no-reply');
+        }
+
         const {ghostMailer} = this;
 
         this.magicLinkService.transporter = {
@@ -368,6 +375,7 @@ class SettingsBREADService {
                     logging.warn(message.text);
                 }
                 let msg = Object.assign({
+                    from: fromEmail,
                     subject: 'Verify email address',
                     forceTextContent: true
                 }, message);

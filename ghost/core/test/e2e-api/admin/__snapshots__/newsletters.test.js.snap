@@ -123,6 +123,7 @@ Object {
 exports[`Newsletters API Can add a newsletter - with custom sender_email 3: [metadata 1] 1`] = `
 Object {
   "forceTextContent": true,
+  "from": "noreply@127.0.0.1",
   "subject": "Verify email address",
   "to": "test@example.com",
 }
@@ -548,6 +549,7 @@ exports[`Newsletters API Can add a newsletter - with custom sender_email and sub
 exports[`Newsletters API Can add a newsletter - with custom sender_email and subscribe existing members 3: [metadata 1] 1`] = `
 Object {
   "forceTextContent": true,
+  "from": "noreply@127.0.0.1",
   "subject": "Verify email address",
   "to": "test@example.com",
 }
@@ -1153,6 +1155,7 @@ Object {
 exports[`Newsletters API Can edit a newsletters and update the sender_email when already set 3: [metadata 1] 1`] = `
 Object {
   "forceTextContent": true,
+  "from": "noreply@127.0.0.1",
   "subject": "Verify email address",
   "to": "updated@example.com",
 }
@@ -1856,6 +1859,7 @@ Object {
 exports[`Newsletters API Can verify property updates 1: [metadata 1] 1`] = `
 Object {
   "forceTextContent": true,
+  "from": "noreply@127.0.0.1",
   "subject": "Verify email address",
   "to": "verify@example.com",
 }

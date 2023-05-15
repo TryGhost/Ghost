@@ -200,6 +200,40 @@ describe('UNIT > Settings BREAD Service:', function () {
             emailMockReceiver.matchPlaintextSnapshot();
             emailMockReceiver.matchMetadataSnapshot();
         });
+
+        it('uses a different from email for verification when the to email is the same', async function () {
+            const defaultSettingsManager = new SettingsBreadService({
+                SettingsModel: {
+                    edit: async changes => changes
+                },
+                settingsCache: {
+                    get: () => ({})
+                },
+                mail: {
+                    ...mail,
+                    utils: {
+                        ...mail.utils,
+                        getDefaultFromEmail: prefix => `${prefix}@example.com`
+                    }
+                },
+                urlUtils,
+                singleUseTokenProvider: {
+                    create: () => 'test'
+                },
+                labsService: {}
+            });
+
+            const settings = await defaultSettingsManager.edit([
+                {
+                    key: 'members_support_address',
+                    value: 'noreply@example.com'
+                }
+            ], {}, null);
+
+            assert.deepEqual(settings.meta.sent_email_verification, ['members_support_address']);
+
+            assert.equal(emailMockReceiver.getSentEmail().from, 'no-reply@example.com');
+        });
     });
 
     describe('verifyKeyUpdate', function () {
