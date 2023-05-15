@@ -1,9 +1,11 @@
 import KoenigNestedEditor from '../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
 import React from 'react';
+import clsx from 'clsx';
 import {ButtonGroupSetting, ColorPickerSetting, InputSetting, MediaUploadSetting, MultiSelectDropdownSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {ReactComponent as CenterAlignIcon} from '../../../assets/icons/kg-align-center.svg';
 import {ReactComponent as ImgFullIcon} from '../../../assets/icons/kg-img-full.svg';
+import {ReactComponent as ImgPlaceholderIcon} from '../../../assets/icons/kg-img-placeholder.svg';
 import {ReactComponent as ImgRegularIcon} from '../../../assets/icons/kg-img-regular.svg';
 import {ReactComponent as ImgWideIcon} from '../../../assets/icons/kg-img-wide.svg';
 import {ReactComponent as LeftAlignIcon} from '../../../assets/icons/kg-align-left.svg';
@@ -13,7 +15,6 @@ import {isEditorEmpty} from '../../../utils/isEditorEmpty';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 
 export function SignupCard({alignment,
-    splitLayout,
     header,
     headerPlaceholder,
     subheader,
@@ -94,7 +95,7 @@ export function SignupCard({alignment,
     };
 
     const wrapperStyle = () => {
-        if (backgroundImageSrc) {
+        if (backgroundImageSrc && layout !== 'split') {
             return {
                 backgroundImage: `url(${backgroundImageSrc})`,
                 backgroundSize: 'cover',
@@ -114,76 +115,120 @@ export function SignupCard({alignment,
 
     return (
         <>
-            <div className={`flex flex-col justify-center bg-transparent font-sans text-black transition-colors ease-in-out dark:text-white ${(alignment === 'center' && 'items-center')} ${(layout === 'regular') ? 'min-h-[32vh] p-[8vmin] pb-[9vmin]' : (layout === 'wide') ? 'min-h-[56vh] p-[12vmin] pb-[13vmin]' : 'min-h-[80vh] p-[16vmin] pb-[18vmin]'}`} data-testid={'signup-card-container'} style={wrapperStyle()}>
-                {/* Heading */}
-                {
-                    (isEditing || !!header || !isEditorEmpty(headerTextEditor)) && (
-                        <KoenigNestedEditor
-                            autoFocus={true}
-                            focusNext={subheaderTextEditor}
-                            hasSettingsPanel={true}
-                            initialEditor={headerTextEditor}
-                            initialEditorState={headerTextEditorInitialState}
-                            nodes="minimal"
-                            placeholderClassName={`truncate opacity-50 whitespace-normal !tracking-tight w-full !leading-tight !font-bold ${(alignment === 'center' && 'text-center')} ${(layout === 'regular') ? '!text-5xl' : (layout === 'wide') ? '!text-6xl' : '!text-8xl'}`}
-                            placeholderText={headerPlaceholder}
-                            singleParagraph={true}
-                            textClassName={`koenig-lexical-header-heading relative w-full whitespace-normal font-bold ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(layout === 'regular') ? `koenig-lexical-header-xsmall ${(alignment === 'center') ? '[&:has(br)]:pl-[calc(50%_-_192px)]' : ''}` : (layout === 'wide') ? `koenig-lexical-header-small ${(alignment === 'center') ? '[&:has(br)]:pl-[calc(50%_-_238px)]' : ''}` : `koenig-lexical-header-large ${(alignment === 'center') ? '[&:has(br)]:pl-[calc(50%_-_374px)]' : ''}`}`}
-                        />
-                    )
-                }
+            <div className='flex bg-transparent font-sans text-black transition-colors ease-in-out dark:text-white' data-testid={'signup-card-container'} style={wrapperStyle()}>
+                {layout === 'split' && (
+                    backgroundImageSrc
+                        ? <img alt="" className="w-[50%] object-cover" src={backgroundImageSrc} />
+                        : <div className="flex w-[50%] items-center justify-center"><ImgPlaceholderIcon className="h-20 w-20 text-grey-500 opacity-50" /></div>
+                )}
 
-                {/* Subheading */}
-                {
-                    (isEditing || !!subheader || !isEditorEmpty(subheaderTextEditor)) && (
-                        <KoenigNestedEditor
-                            focusNext={disclaimerTextEditor}
-                            hasSettingsPanel={true}
-                            initialEditor={subheaderTextEditor}
-                            initialEditorState={subheaderTextEditorInitialState}
-                            nodes="minimal"
-                            placeholderClassName={`truncate opacity-50 w-full whitespace-normal !leading-tight !font-normal ${(alignment === 'center' && 'text-center')} ${(layout === 'regular') ? '!text-xl' : (layout === 'wide') ? '!text-2xl' : '!text-3xl'}`}
-                            placeholderText={subheaderPlaceholder}
-                            singleParagraph={true}
-                            textClassName={`koenig-lexical-header-subheading relative w-full whitespace-normal ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(layout === 'regular') ? `koenig-lexical-header-small !mt-2 ${(alignment === 'center') ? '[&:has(br)]:pl-[calc(50%_-_105px)]' : ''}` : (layout === 'wide') ? `koenig-lexical-header-medium !mt-3 ${(alignment === 'center') ? '[&:has(br)]:pl-[calc(50%_-_124px)]' : ''}` : `koenig-lexical-header-large !mt-3 ${(alignment === 'center') ? '[&:has(br)]:pl-[calc(50%_-_156px)]' : ''}`}`}
-                        />
-                    )
-                }
+                <div className={clsx(
+                    'flex flex-1 flex-col justify-center',
+                    (alignment === 'center') && 'items-center',
+                    (layout === 'regular' || layout === 'split') && 'min-h-[32vh] p-[8vmin] pb-[9vmin]',
+                    (layout === 'wide') && 'min-h-[56vh] p-[12vmin] pb-[13vmin]',
+                    (layout === 'full') && 'min-h-[80vh] p-[16vmin] pb-[18vmin]'
+                )}>
+                    {/* Heading */}
+                    {
+                        (isEditing || !!header || !isEditorEmpty(headerTextEditor)) && (
+                            <KoenigNestedEditor
+                                autoFocus={true}
+                                focusNext={subheaderTextEditor}
+                                hasSettingsPanel={true}
+                                initialEditor={headerTextEditor}
+                                initialEditorState={headerTextEditorInitialState}
+                                nodes="minimal"
+                                placeholderClassName={clsx(
+                                    'w-full truncate whitespace-normal !font-bold !leading-tight !tracking-tight opacity-50',
+                                    (alignment === 'center') && 'text-center',
+                                    (layout === 'regular' || layout === 'split') && '!text-5xl',
+                                    (layout === 'wide') && '!text-6xl',
+                                    (layout === 'full') && '!text-8xl'
+                                )}
+                                placeholderText={headerPlaceholder}
+                                singleParagraph={true}
+                                textClassName={clsx(
+                                    'koenig-lexical-header-heading relative w-full whitespace-normal font-bold [&:has(br)]:text-left',
+                                    (alignment === 'center') && 'text-center',
+                                    (layout === 'regular' || layout === 'split') && 'koenig-lexical-header-xsmall',
+                                    ((layout === 'regular' || layout === 'split') && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_192px)]',
+                                    (layout === 'wide') && 'koenig-lexical-header-small',
+                                    (layout === 'wide' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_238px)]',
+                                    (layout === 'full') && 'koenig-lexical-header-large',
+                                    (layout === 'full' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_374px)]'
+                                )}
+                            />
+                        )
+                    }
 
-                {/* Subscribe form */}
-                <div className={`h-full ${(layout === 'regular') ? 'mt-6 w-9/12' : (layout === 'wide') ? 'mt-8 w-4/6' : 'mt-10 w-5/12'}`}>
-                    <SubscribeForm
-                        buttonSize={`${(layout === 'regular') ? 'medium' : (layout === 'wide') ? 'large' : 'xlarge'}`}
-                        buttonStyle={buttonColor ? {
-                            backgroundColor: hexColorValue(buttonColor),
-                            color: textColorForBackgroundColor(hexColorValue(buttonColor)).hex()
-                        } : {backgroundColor: `#000000`,
-                            color: `#ffffff`}}
-                        buttonText={buttonText || 'Subscribe'}
-                        dataTestId='signup-card-button'
-                        disabled={true}
-                        inputBorderStyle={buttonColor ? {
-                            border: `1px solid ${hexColorValue(buttonColor)}`
-                        } : null}
-                        placeholder='yourname@example.com'
-                    />
+                    {/* Subheading */}
+                    {
+                        (isEditing || !!subheader || !isEditorEmpty(subheaderTextEditor)) && (
+                            <KoenigNestedEditor
+                                focusNext={disclaimerTextEditor}
+                                hasSettingsPanel={true}
+                                initialEditor={subheaderTextEditor}
+                                initialEditorState={subheaderTextEditorInitialState}
+                                nodes="minimal"
+                                placeholderClassName={clsx(
+                                    'w-full truncate whitespace-normal !font-normal !leading-tight opacity-50',
+                                    (alignment === 'center') && 'text-center',
+                                    (layout === 'regular' || layout === 'split') && '!text-xl',
+                                    (layout === 'wide') && '!text-2xl',
+                                    (layout === 'full') && '!text-3xl'
+                                )}
+                                placeholderText={subheaderPlaceholder}
+                                singleParagraph={true}
+                                textClassName={clsx(
+                                    'koenig-lexical-header-subheading relative w-full whitespace-normal [&:has(br)]:text-left',
+                                    (alignment === 'center') && 'text-center',
+                                    (layout === 'regular' || layout === 'split') && 'koenig-lexical-header-small !mt-2',
+                                    ((layout === 'regular' || layout === 'split') && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_105px)]',
+                                    (layout === 'wide') && 'koenig-lexical-header-medium !mt-3',
+                                    (layout === 'wide' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_124px)]',
+                                    (layout === 'full') && 'koenig-lexical-header-large !mt-3',
+                                    (layout === 'full' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_156px)]'
+                                )}
+                            />
+                        )
+                    }
+
+                    {/* Subscribe form */}
+                    <div className={`h-full ${(layout === 'regular') ? 'mt-6 w-9/12' : (layout === 'wide') ? 'mt-8 w-4/6' : 'mt-10 w-5/12'}`}>
+                        <SubscribeForm
+                            buttonSize={`${(layout === 'regular') ? 'medium' : (layout === 'wide') ? 'large' : 'xlarge'}`}
+                            buttonStyle={buttonColor ? {
+                                backgroundColor: hexColorValue(buttonColor),
+                                color: textColorForBackgroundColor(hexColorValue(buttonColor)).hex()
+                            } : {backgroundColor: `#000000`,
+                                color: `#ffffff`}}
+                            buttonText={buttonText || 'Subscribe'}
+                            dataTestId='signup-card-button'
+                            disabled={true}
+                            inputBorderStyle={buttonColor ? {
+                                border: `1px solid ${hexColorValue(buttonColor)}`
+                            } : null}
+                            placeholder='yourname@example.com'
+                        />
+                    </div>
+
+                    {/* Disclaimer */}
+                    {
+                        (isEditing || !!disclaimer || !isEditorEmpty(disclaimerTextEditor)) && (
+                            <KoenigNestedEditor
+                                hasSettingsPanel={true}
+                                initialEditor={disclaimerTextEditor}
+                                initialEditorState={disclaimerTextEditorInitialState}
+                                nodes="minimal"
+                                placeholderClassName={`truncate opacity-50 w-full whitespace-normal !leading-tight !font-normal !text-[1.6rem] !tracking-[-0.025em] ${(alignment === 'center' && 'text-center')}`}
+                                placeholderText={disclaimerPlaceholder}
+                                singleParagraph={true}
+                                textClassName={`koenig-lexical-header-subheading koenig-lexical-header-xsmall relative w-full whitespace-normal !mt-4 ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_76px)]'}`}
+                            />
+                        )
+                    }
                 </div>
-
-                {/* Disclaimer */}
-                {
-                    (isEditing || !!disclaimer || !isEditorEmpty(disclaimerTextEditor)) && (
-                        <KoenigNestedEditor
-                            hasSettingsPanel={true}
-                            initialEditor={disclaimerTextEditor}
-                            initialEditorState={disclaimerTextEditorInitialState}
-                            nodes="minimal"
-                            placeholderClassName={`truncate opacity-50 w-full whitespace-normal !leading-tight !font-normal !text-[1.6rem] !tracking-[-0.025em] ${(alignment === 'center' && 'text-center')}`}
-                            placeholderText={disclaimerPlaceholder}
-                            singleParagraph={true}
-                            textClassName={`koenig-lexical-header-subheading koenig-lexical-header-xsmall relative w-full whitespace-normal !mt-4 ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_76px)]'}`}
-                        />
-                    )
-                }
 
                 {/* Read-only overlay */}
                 {!isEditing && <div className="absolute top-0 z-10 !m-0 h-full w-full cursor-default p-0"></div>}
@@ -203,29 +248,28 @@ export function SignupCard({alignment,
                         selectedName={alignment}
                         onClick={handleAlignment}
                     />
-                    <ToggleSetting
+                    {(layout !== 'split') && <ToggleSetting
                         dataTestId='signup-background-image-toggle'
                         isChecked={Boolean(showBackgroundImage)}
                         label='Image'
                         onChange={handleToggleBackgroundImage}
-                    />
-                    {showBackgroundImage && <MediaUploadSetting
+                    />}
+                    {(showBackgroundImage || layout === 'split') && <MediaUploadSetting
                         alt='Background image'
                         errors={fileUploader.errors}
+                        hideLabel={layout !== 'split'}
                         icon='file'
                         isDraggedOver={imageDragHandler.isDraggedOver}
                         isLoading={isUploading}
-                        label='Custom thumbnail'
+                        label='Image'
                         mimeTypes={['image/*']}
                         placeholderRef={imageDragHandler.setRef}
                         progress={progress}
-                        size='xsmall'
                         src={backgroundImageSrc}
-                        hideLabel
                         onFileChange={onFileChange}
                         onRemoveMedia={handleClearBackgroundImage}
                     />}
-                    {(!showBackgroundImage || splitLayout) && <ColorPickerSetting
+                    {(!showBackgroundImage || layout === 'split') && <ColorPickerSetting
                         dataTestId='signup-background-color'
                         label='Background'
                         swatches={[
@@ -273,7 +317,6 @@ export function SignupCard({alignment,
 
 SignupCard.propTypes = {
     alignment: PropTypes.oneOf(['left', 'center']),
-    splitLayout: PropTypes.bool,
     header: PropTypes.string,
     headerPlaceholder: PropTypes.string,
     subheader: PropTypes.string,

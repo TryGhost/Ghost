@@ -83,7 +83,6 @@ Empty.args = {
     disclaimerPlaceholder: 'Enter disclaimer text',
     buttonText: '',
     buttonPlaceholder: 'Add button text',
-    splitLayout: false,
     availableLabels: [{id: '1',name: 'First label'},{id: '2',name: 'Second label'}]
 };
 
@@ -102,6 +101,5 @@ Populated.args = {
     buttonPlaceholder: 'Add button text',
     buttonColor: '#f7f7f7',
     backgroundColor: '#444444',
-    splitLayout: false,
     availableLabels: [{id: '1',name: 'First label'},{id: '2',name: 'Second label'}]
 };

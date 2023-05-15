@@ -60,6 +60,7 @@
     "@tryghost/kg-markdown-html-renderer": "^6.0.8",
     "@tryghost/kg-simplemde": "^2.0.15",
     "@uiw/react-codemirror": "^4.19.6",
+    "clsx": "^1.2.1",
     "codemirror": "^6.0.1",
     "dompurify": "^3.0.0",
     "emoji-mart": "^5.5.2",
