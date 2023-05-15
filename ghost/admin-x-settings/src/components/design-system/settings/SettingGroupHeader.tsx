@@ -8,7 +8,7 @@ interface Props {
 
 const SettingGroupHeader: React.FC<Props> = ({title, description, children}) => {
     return (
-        <div className="flex justify-between items-start">
+        <div className="flex items-start justify-between">
             <div>
                 <h5>{title}</h5>
                 {description && <p className="text-sm">{description}</p>}
@@ -16,6 +16,6 @@ const SettingGroupHeader: React.FC<Props> = ({title, description, children}) => 
             {children}
         </div>
     );
-}
+};
 
 export default SettingGroupHeader;

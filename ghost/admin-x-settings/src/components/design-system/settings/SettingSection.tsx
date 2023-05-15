@@ -6,17 +6,17 @@ interface Props {
     children?: React.ReactNode;
 }
 
-const SettingSection: React.FC<Props> = ({ name, children }) => {
+const SettingSection: React.FC<Props> = ({name, children}) => {
     return (
         <>
             {name && <SettingSectionHeader name={name} />}
             {children &&
-                <div className="flex flex-col gap-9 mb-[100px]">
+                <div className="mb-[100px] flex flex-col gap-9">
                     {children}
                 </div>
             }
         </>
     );
-}
+};
 
 export default SettingSection;

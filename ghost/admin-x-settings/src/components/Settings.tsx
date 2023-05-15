@@ -4,10 +4,10 @@ import GeneralSettings from './settings/general/GeneralSettings';
 
 const Settings: React.FC = () => {
     return (
-    <>
-        <GeneralSettings />
-    </>
+        <>
+            <GeneralSettings />
+        </>
     );
-}
+};
 
 export default Settings;    

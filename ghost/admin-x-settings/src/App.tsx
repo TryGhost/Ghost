@@ -1,24 +1,24 @@
-import Sidebar from "./components/Sidebar";
-import Settings from "./components/Settings";
+import Settings from './components/Settings';
+import Sidebar from './components/Sidebar';
 
 function App() {
     return (
-    <div>
-        <button className="fixed top-4 left-6 text-sm font-bold text-black">&larr; Done</button>
-        
-        {/* Main container */}
-        <div className="max-w-[1080px] flex flex-col mx-auto px-[5vmin] py-[12vmin] md:flex-row md:gap-x-10 md:py-[8vmin] md:items-start">
-            
-            {/* Sidebar */}
-            <div className="md:top-[8vmin] flex-grow-0 md:basis-[240px] relative md:sticky">
-                <h1 className="font-inter text-5xl">Settings</h1>
-                <Sidebar />
-            </div>
-            <div className="pt-[3vmin] flex-auto md:pt-[72px]">
-                <Settings />
+        <div>
+            <button className="fixed left-6 top-4 text-sm font-bold text-black" type="button">&larr; Done</button>
+
+            {/* Main container */}
+            <div className="mx-auto flex max-w-[1080px] flex-col px-[5vmin] py-[12vmin] md:flex-row md:items-start md:gap-x-10 md:py-[8vmin]">
+
+                {/* Sidebar */}
+                <div className="relative grow-0 md:sticky md:top-[8vmin] md:basis-[240px]">
+                    <h1 className="font-inter text-5xl">Settings</h1>
+                    <Sidebar />
+                </div>
+                <div className="flex-auto pt-[3vmin] md:pt-[72px]">
+                    <Settings />
+                </div>
             </div>
         </div>
-    </div>
     );
 }
 

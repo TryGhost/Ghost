@@ -6,8 +6,8 @@ interface Props {
 
 const SettingSectionHeader: React.FC<Props> = ({name}) => {
     return (
-        <h2 className="text-xs mb-4 uppercase font-semibold tracking-normal text-grey-700">{name}</h2>
+        <h2 className="text-grey-700 mb-4 text-xs font-semibold uppercase tracking-normal">{name}</h2>
     );
-}
+};
 
 export default SettingSectionHeader;

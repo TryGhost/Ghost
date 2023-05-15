@@ -1,5 +1,5 @@
-import React from "react";
-import Task from "./Task";
+import React from 'react';
+import Task from './Task';
 
 interface Props {
     loading: boolean,
@@ -10,12 +10,12 @@ interface Props {
     }>,
     onArchiveTask: (id: string) => void,
     onPinTask: (id: string) => void,
-};
+}
 
 const TaskList: React.FC<Props> = ({loading, tasks, onPinTask, onArchiveTask}) => {
     const events = {
         onPinTask,
-        onArchiveTask,
+        onArchiveTask
     };
 
     if (loading) {

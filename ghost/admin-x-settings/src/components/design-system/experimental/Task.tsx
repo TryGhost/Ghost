@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface Props {
     task: {
@@ -10,20 +10,20 @@ interface Props {
     onPinTask: (id: string) => void,
 }
 
-const Task: React.FC<Props> = ({ task: { id, title, state }, onArchiveTask, onPinTask }) => {
+const Task: React.FC<Props> = ({task: {id, title, state}, onArchiveTask, onPinTask}) => {
     return (
         <div className={`list-item ${state}`}>
-            <label 
-                htmlFor="title"
+            <label
                 aria-label={title}
                 className="checkbox"
+                htmlFor="title"
             >
-                <input 
-                    type="checkbox"
+                <input
+                    checked={state === 'TASK_ARCHIVED'}
                     disabled={true}
-                    name="checked"
                     id={`archiveTask-${id}`}
-                    checked={state === 'TASK_ARCHIVED'} 
+                    name="checked"
+                    type="checkbox"
                 />
                 <span
                     className="checkbox-custom"
@@ -32,32 +32,33 @@ const Task: React.FC<Props> = ({ task: { id, title, state }, onArchiveTask, onPi
             </label>
 
             <label
-                htmlFor="title" 
                 aria-label={title}
                 className="title"
+                htmlFor="title"
             >
-                <input 
-                    type="text"
-                    value={title}
-                    readOnly={true}
+                <input
                     name="title"
                     placeholder="Input title"
+                    readOnly={true}
+                    type="text"
+                    value={title}
                 />
             </label>
 
             {state !== 'TASK_ARCHIVED' && (
                 <button
-                    className="pin-button"
-                    onClick={() => onPinTask(id)}
-                    id={`pinTask-${id}`}
-                    aria-label={`pinTask-${id}`}
                     key={`pinTask-${id}`}
+                    aria-label={`pinTask-${id}`}
+                    className="pin-button"
+                    id={`pinTask-${id}`}
+                    type="button"
+                    onClick={() => onPinTask(id)}
                 >
                     <span className={`icon-star`} />
                 </button>
             )}
         </div>
     );
-}
+};
 
 export default Task;

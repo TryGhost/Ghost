@@ -6,8 +6,8 @@ interface Props {
 
 const SettingNavItem: React.FC<Props> = ({name}) => {
     return (
-        <li><a href="javascript:" className="block px-0 py-1 text-sm">{name}</a></li>
+        <li><a className="block px-0 py-1 text-sm" href="_blank">{name}</a></li>
     );
-}
+};
 
 export default SettingNavItem;

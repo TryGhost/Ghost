@@ -1,12 +1,12 @@
-import type {Meta, StoryObj} from "@storybook/react";
+import type {Meta, StoryObj} from '@storybook/react';
 
-import ButtonGroup from "./ButtonGroup";
-import { ButtonColors } from "./Button";
+import ButtonGroup from './ButtonGroup';
+import {ButtonColors} from './Button';
 
 const ButtonGroupMeta = {
     title: 'Global / Button group',
     component: ButtonGroup,
-    tags: ['autodocs'],
+    tags: ['autodocs']
 } satisfies Meta<typeof ButtonGroup>;
 
 export default ButtonGroupMeta;
@@ -16,35 +16,35 @@ type Story = StoryObj<typeof ButtonGroupMeta>;
 const defaultButtons = [
     {
         label: 'Cancel',
-        color: ButtonColors.Clear,
+        color: ButtonColors.Clear
     },
     {
         label: 'Save',
-        color: ButtonColors.Black,
-    },
+        color: ButtonColors.Black
+    }
 ];
 
 export const Default: Story = {
     args: {
         buttons: defaultButtons,
-        link: false,
-    },
+        link: false
+    }
 };
 
 const linkButtons = [
     {
         label: 'Cancel',
-        color: ButtonColors.Clear,
+        color: ButtonColors.Clear
     },
     {
         label: 'Save',
-        color: ButtonColors.Green,
-    },
+        color: ButtonColors.Green
+    }
 ];
 
 export const LinkButtons: Story = {
     args: {
         buttons: linkButtons,
-        link: true,
-    },
+        link: true
+    }
 };

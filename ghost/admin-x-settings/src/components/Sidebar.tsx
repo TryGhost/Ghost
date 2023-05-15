@@ -1,10 +1,10 @@
 import React from 'react';
-import SettingNavSection from './design-system/settings/SettingNavSection';
 import SettingNavItem from './design-system/settings/SettingNavItem';
+import SettingNavSection from './design-system/settings/SettingNavSection';
 
 const Sidebar: React.FC = () => {
     return (
-        <div className="hidden md:block mt-6">
+        <div className="mt-6 hidden md:block">
             <SettingNavSection name="General">
                 <SettingNavItem name="Title and description" />
                 <SettingNavItem name="Timezone" />
@@ -43,6 +43,6 @@ const Sidebar: React.FC = () => {
             </SettingNavSection>
         </div>
     );
-}
+};
 
 export default Sidebar;
