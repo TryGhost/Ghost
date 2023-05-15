@@ -24,8 +24,8 @@ export function SettingsPanel({children, darkMode}) {
     const {ref,repositionPanel} = useSettingsPanelReposition();
 
     return (
-        // Block with fixed position and transformed ancestor can be incorrectly positioned https://bugs.chromium.org/p/chromium/issues/detail?id=20574
-        // Using Portal to avoid such issue as some cards using transformation
+        // Ideally we would use Portal to avoid issues with transformed ancestors (https://bugs.chromium.org/p/chromium/issues/detail?id=20574)
+        // However, Portal causes problems with drag/drop, focus, etc
         <SettingsPanelContext.Provider value={{repositionPanel}}>
             <div className={`!mt-0 ${darkMode ? 'dark' : ''}`}>
                 <div ref={ref}
