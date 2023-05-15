@@ -202,6 +202,10 @@
     color: var(--darkgrey);
 }
 
+.ghost-members-activity-object-link {
+    text-transform: capitalize;
+}
+
 .ghost-members-activity-event-description {
     margin-top: -1px;
 }
