@@ -1,12 +1,10 @@
 import Button from './Button';
 import React from 'react';
 
-import {ButtonColors} from './Button';
-
 interface ButtonGroupProps {
     buttons: Array<{
         label: string,
-        color?: ButtonColors,
+        color?: string,
     }>;
     link?: boolean;
 }
