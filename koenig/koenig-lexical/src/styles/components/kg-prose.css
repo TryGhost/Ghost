@@ -640,7 +640,7 @@
             min-width: 100%;
         }
 
-        :where(
+        > :where(
             div + div
         ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
             margin: 3.2rem 0 0;
@@ -847,7 +847,7 @@
                     ol
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
             font-family: "Inter", -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
-            line-height: 1.25 !important;
+            line-height: 1.15 !important;
             font-weight: bold;
             letter-spacing: -0.025em;
         }

@@ -19,7 +19,7 @@ export function Button({color, dataTestId, href, size, width, rounded, value, pl
             {...props}
         >
             <span
-                className={`block ${(size === 'small' ? 'h-10 px-5 text-md leading-[4rem]' : (size === 'medium' ? 'h-11 px-5 text-[1.6rem] leading-[4.4rem]' : (size === 'large') ? 'h-12 px-6 text-lg leading-[4.8rem]' : 'h-[5.2rem] px-6 text-lg leading-[5.2rem]'))}`}
+                className={`block ${(size === 'small' ? 'h-10 px-5 text-md leading-[4rem]' : (size === 'medium' ? 'h-11 px-5 text-[1.6rem] leading-[4.4rem]' : (size === 'large') ? 'h-12 px-6 text-lg leading-[4.8rem]' : 'h-[5.6rem] px-6 text-xl leading-[5.6rem]'))}`}
                 data-testid={`${dataTestId}-span`}
             >
                 {value || placeholder}
