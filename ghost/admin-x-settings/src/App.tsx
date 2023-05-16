@@ -4,7 +4,13 @@ import Sidebar from './components/Sidebar';
 function App() {
     return (
         <div>
-            <button className="fixed left-6 top-4 text-sm font-bold text-black" type="button">&larr; Done</button>
+            <button
+                className="fixed left-6 top-4 text-sm font-bold text-black"
+                type="button"
+                onClick={() => window.history.back()}
+            >
+                &larr; Done
+            </button>
 
             {/* Main container */}
             <div className="mx-auto flex max-w-[1080px] flex-col px-[5vmin] py-[12vmin] md:flex-row md:items-start md:gap-x-10 md:py-[8vmin]">
