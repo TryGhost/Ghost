@@ -17,7 +17,7 @@ class ErrorHandler extends React.Component {
     render() {
         if (this.state.hasError) {
             return (
-                <p className="koenig-react-editor-error">Loading has failed. Try refreshing the browser!</p>
+                <p className="admin-x-settings-container-error">Loading has failed. Try refreshing the browser!</p>
             );
         }
 
@@ -112,9 +112,9 @@ export default class KoenigLexicalEditor extends Component {
 
     ReactComponent = () => {
         return (
-            <div className={['koenig-react-editor', this.args.className].filter(Boolean).join(' ')}>
+            <div className={['admin-x-settings-container-', this.args.className].filter(Boolean).join(' ')}>
                 <ErrorHandler>
-                    <Suspense fallback={<p className="koenig-react-editor-loading">Loading settings...</p>}>
+                    <Suspense fallback={<p className="admin-x-settings-container--loading">Loading settings...</p>}>
                         <AdminXApp />
                     </Suspense>
                 </ErrorHandler>
