@@ -96,35 +96,40 @@ function addParagraphChild(paragraph, mobiledoc) {
     } else {
         // mobiledoc tracks opened/closed formats across markers whereas lexical
         // lists all formats for each marker so we need to manually track open formats
-        let openFormats = [];
+        let openMarkups = [];
+
+        // markup: a specific format, or tag name+attributes
+        // marker: a piece of text with 0 or more markups
 
         paragraph.children.forEach((child, childIndex) => {
             if (child.type === 'text') {
                 if (child.format !== 0) {
-                    const openedFormats = [];
                     // text child has formats, track which are new and which have closed
+                    const openedFormats = [];
                     const childFormats = readFormat(child.format);
                     let closedFormatCount = 0;
 
                     childFormats.forEach((format) => {
-                        if (!openFormats.includes(format)) {
-                            openFormats.push(format);
+                        if (!openMarkups.includes(format)) {
+                            openMarkups.push(format);
                             openedFormats.push(format);
                         }
                     });
 
-                    // mobiledoc will immediately close any formats if the next section doesn't use them
-                    if (!paragraph.children[childIndex + 1]) {
-                        closedFormatCount = openFormats.length;
-                        openFormats = [];
+                    // mobiledoc will immediately close any formats if the next section doesn't use them or it's not a text section
+                    if (!paragraph.children[childIndex + 1] || paragraph.children[childIndex + 1].type !== 'text') {
+                        // no more children, close all formats
+                        closedFormatCount = openMarkups.length;
+                        openMarkups = [];
                     } else {
-                        const nextFormats = readFormat(paragraph.children[childIndex + 1].format);
-                        const firstMissingFormatIndex = openFormats.findIndex(format => !nextFormats.includes(format));
+                        const nextChild = paragraph.children[childIndex + 1];
+                        const nextFormats = readFormat(nextChild.format);
+                        const firstMissingFormatIndex = openMarkups.findIndex(format => !nextFormats.includes(format));
 
                         if (firstMissingFormatIndex !== -1) {
-                            const formatsToClose = openFormats.slice(firstMissingFormatIndex);
+                            const formatsToClose = openMarkups.slice(firstMissingFormatIndex);
                             closedFormatCount = formatsToClose.length;
-                            openFormats = openFormats.slice(0, firstMissingFormatIndex);
+                            openMarkups = openMarkups.slice(0, firstMissingFormatIndex);
                         }
                     }
 
@@ -132,11 +137,83 @@ function addParagraphChild(paragraph, mobiledoc) {
                     markers.push([MD_TEXT_MARKER, markupIndexes, closedFormatCount, child.text]);
                 } else {
                     // text child has no formats so we close all formats in mobiledoc
-                    let closedFormatCount = openFormats.length;
-                    openFormats = [];
+                    let closedFormatCount = openMarkups.length;
+                    openMarkups = [];
 
                     markers.push([MD_TEXT_MARKER, [], closedFormatCount, child.text]);
                 }
+            }
+
+            if (child.type === 'link') {
+                const linkMarkup = ['a', ['href', child.url]];
+                const linkMarkupIndex = mobiledoc.markups.push(linkMarkup) - 1;
+
+                child.children.forEach((linkChild, linkChildIndex) => {
+                    if (linkChild.format !== 0) {
+                        const openedMarkupIndexes = [];
+                        const openedFormats = [];
+
+                        // first child of a link opens the link markup
+                        if (linkChildIndex === 0) {
+                            openMarkups.push(linkMarkup);
+                            openedMarkupIndexes.push(linkMarkupIndex);
+                        }
+
+                        // text child has formats, track which are new and which have closed
+                        const childFormats = readFormat(linkChild.format);
+                        let closedMarkupCount = 0;
+
+                        childFormats.forEach((format) => {
+                            if (!openMarkups.includes(format)) {
+                                openMarkups.push(format);
+                                openedFormats.push(format);
+                            }
+                        });
+
+                        // mobiledoc will immediately close any formats if the next section doesn't use them
+                        if (!child.children[linkChildIndex + 1]) {
+                            // last child of a link closes all markups
+                            closedMarkupCount = openMarkups.length;
+                            openMarkups = [];
+                        } else {
+                            const nextChild = child.children[linkChildIndex + 1];
+                            const nextFormats = readFormat(nextChild.format);
+
+                            const firstMissingFormatIndex = openMarkups.findIndex((markup) => {
+                                const markupIsLink = JSON.stringify(markup) === JSON.stringify(linkMarkup);
+                                return !markupIsLink && !nextFormats.includes(markup);
+                            });
+
+                            if (firstMissingFormatIndex !== -1) {
+                                const formatsToClose = openMarkups.slice(firstMissingFormatIndex);
+                                closedMarkupCount = formatsToClose.length;
+                                openMarkups = openMarkups.slice(0, firstMissingFormatIndex);
+                            }
+                        }
+
+                        openedMarkupIndexes.push(...openedFormats.map(format => getOrSetMarkupIndex(format, mobiledoc)));
+
+                        markers.push([MD_TEXT_MARKER, openedMarkupIndexes, closedMarkupCount, linkChild.text]);
+                    } else {
+                        const openedMarkupIndexes = [];
+
+                        // first child of a link opens the link markup
+                        if (linkChildIndex === 0) {
+                            openMarkups.push(linkMarkup);
+                            openedMarkupIndexes.push(linkMarkupIndex);
+                        }
+
+                        let closedMarkupCount = openMarkups.length - 1; // don't close the link markup, just the others
+
+                        // last child of a link closes all markups
+                        if (!child.children[linkChildIndex + 1]) {
+                            closedMarkupCount += 1; // close the link markup
+                            openMarkups = [];
+                        }
+
+                        markers.push([MD_TEXT_MARKER, openedMarkupIndexes, closedMarkupCount, linkChild.text]);
+                    }
+                });
             }
         });
     }

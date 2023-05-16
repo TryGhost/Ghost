@@ -740,8 +740,511 @@ describe('lexicalToMobiledoc', function () {
             }));
         });
 
-        it('converts a paragraph with a link');
-        it('converts a paragraph with a link containing formats');
+        it('converts a paragraph with a link', function () {
+            const result = lexicalToMobiledoc(JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Hello, ',
+                                    type: 'text',
+                                    version: 1
+                                },
+                                {
+                                    children: [
+                                        {
+                                            detail: 0,
+                                            format: 0,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'world',
+                                            type: 'text',
+                                            version: 1
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'link',
+                                    version: 1,
+                                    rel: 'noopener',
+                                    target: null,
+                                    title: null,
+                                    url: 'https://koenig.ghost.org'
+                                },
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: '!',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        }
+                    ],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+
+            assert.equal(result, JSON.stringify({
+                version: MOBILEDOC_VERSION,
+                ghostVersion: GHOST_VERSION,
+                atoms: [],
+                cards: [],
+                markups: [
+                    ['a', ['href', 'https://koenig.ghost.org']]
+                ],
+                sections: [
+                    [1, 'p', [
+                        [0, [], 0, 'Hello, '],
+                        [0, [0], 1, 'world'],
+                        [0, [], 0, '!']
+                    ]]
+                ]
+            }));
+        });
+
+        it('converts a paragraph with a link with a format starting and ending inside', function () {
+            const result = lexicalToMobiledoc(JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Hello ',
+                                    type: 'text',
+                                    version: 1
+                                },
+                                {
+                                    children: [
+                                        {
+                                            detail: 0,
+                                            format: 0,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'there ',
+                                            type: 'text',
+                                            version: 1
+                                        },
+                                        {
+                                            detail: 0,
+                                            format: 1,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'beautiful',
+                                            type: 'text',
+                                            version: 1
+                                        },
+                                        {
+                                            detail: 0,
+                                            format: 0,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: ' world',
+                                            type: 'text',
+                                            version: 1
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'link',
+                                    version: 1,
+                                    rel: 'noopener',
+                                    target: null,
+                                    title: null,
+                                    url: 'https://koenig.ghost.org'
+                                },
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: '!',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        }
+                    ],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+
+            assert.equal(result, JSON.stringify({
+                version: MOBILEDOC_VERSION,
+                ghostVersion: GHOST_VERSION,
+                atoms: [],
+                cards: [],
+                markups: [
+                    ['a', ['href', 'https://koenig.ghost.org']],
+                    ['strong']
+                ],
+                sections: [
+                    [1,'p',[
+                        [0, [], 0, 'Hello '],
+                        [0, [0], 0, 'there '],
+                        [0, [1], 1, 'beautiful'],
+                        [0, [], 1, ' world'],
+                        [0, [], 0, '!']
+                    ]]
+                ]
+            }));
+        });
+
+        it('converts a paragraph with a link where format starts inside and ends after', function () {
+            const result = lexicalToMobiledoc(JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Plain ',
+                                    type: 'text',
+                                    version: 1
+                                },
+                                {
+                                    children: [
+                                        {
+                                            detail: 0,
+                                            format: 0,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'link ',
+                                            type: 'text',
+                                            version: 1
+                                        },
+                                        {
+                                            detail: 0,
+                                            format: 1,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'linkbold',
+                                            type: 'text',
+                                            version: 1
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'link',
+                                    version: 1,
+                                    rel: 'noopener',
+                                    target: null,
+                                    title: null,
+                                    url: 'https://koenig.ghost.org'
+                                },
+                                {
+                                    detail: 0,
+                                    format: 1,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: ' bold',
+                                    type: 'text',
+                                    version: 1
+                                },
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: ' plain',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        }
+                    ],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+
+            assert.equal(result, JSON.stringify({
+                version: MOBILEDOC_VERSION,
+                ghostVersion: GHOST_VERSION,
+                atoms: [],
+                cards: [],
+                markups: [
+                    ['a', ['href', 'https://koenig.ghost.org']],
+                    ['strong']
+                ],
+                sections: [
+                    [1, 'p', [
+                        [0, [], 0, 'Plain '],
+                        [0, [0], 0, 'link '],
+                        [0, [1], 2, 'linkbold'],
+                        [0, [1], 1, ' bold'],
+                        [0, [], 0, ' plain']
+                    ]]
+                ]
+            }));
+        });
+
+        it('converts a paragraph with a link where format starts before and ends inside', function () {
+            const result = lexicalToMobiledoc(JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Plain ',
+                                    type: 'text',
+                                    version: 1
+                                },
+                                {
+                                    detail: 0,
+                                    format: 1,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'bold ',
+                                    type: 'text',
+                                    version: 1
+                                },
+                                {
+                                    children: [
+                                        {
+                                            detail: 0,
+                                            format: 1,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'boldlink',
+                                            type: 'text',
+                                            version: 1
+                                        },
+                                        {
+                                            detail: 0,
+                                            format: 0,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: ' link',
+                                            type: 'text',
+                                            version: 1
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'link',
+                                    version: 1,
+                                    rel: null,
+                                    target: null,
+                                    title: null,
+                                    url: 'https://koenig.ghost.org'
+                                },
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: ' plain',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        }
+                    ],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+
+            assert.equal(result, JSON.stringify({
+                version: MOBILEDOC_VERSION,
+                ghostVersion: GHOST_VERSION,
+                atoms: [],
+                cards: [],
+                markups: [
+                    ['strong'],
+                    ['a', ['href', 'https://koenig.ghost.org']]
+                ],
+                sections: [
+                    [1, 'p', [
+                        [0, [], 0, 'Plain '],
+                        [0, [0], 1, 'bold '],
+                        [0, [1,0], 1, 'boldlink'],
+                        [0, [], 1, ' link'],
+                        [0, [], 0, ' plain']
+                    ]]
+                ]
+            }));
+        });
+
+        it('converts a paragraph with a link surrounded by and containing formats', function () {
+            const result = lexicalToMobiledoc(JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Plain ',
+                                    type: 'text',
+                                    version: 1
+                                },
+                                {
+                                    detail: 0,
+                                    format: 1,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'startbold ',
+                                    type: 'text',
+                                    version: 1
+                                },
+                                {
+                                    children: [
+                                        {
+                                            detail: 0,
+                                            format: 1,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'link ',
+                                            type: 'text',
+                                            version: 1
+                                        },
+                                        {
+                                            detail: 0,
+                                            format: 3,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'italiclink',
+                                            type: 'text',
+                                            version: 1
+                                        },
+                                        {
+                                            detail: 0,
+                                            format: 1,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: ' link',
+                                            type: 'text',
+                                            version: 1
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'link',
+                                    version: 1,
+                                    rel: 'noopener',
+                                    target: null,
+                                    title: null,
+                                    url: 'https://koenig.ghost.org'
+                                },
+                                {
+                                    detail: 0,
+                                    format: 1,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: ' endbold',
+                                    type: 'text',
+                                    version: 1
+                                },
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: ' plain',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        }
+                    ],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+
+            assert.equal(result, JSON.stringify({
+                version: MOBILEDOC_VERSION,
+                ghostVersion: GHOST_VERSION,
+                atoms: [],
+                cards: [],
+                markups: [
+                    ['strong'],
+                    ['a', ['href', 'https://koenig.ghost.org']],
+                    ['em']
+                ],
+                sections: [
+                    [1, 'p', [
+                        [0, [], 0, 'Plain '],
+                        [0, [0], 1, 'startbold '],
+                        [0, [1,0], 0, 'link '],
+                        [0, [2], 1, 'italiclink'],
+                        [0, [], 2, ' link'],
+                        [0, [0], 1, ' endbold'],
+                        [0, [], 0, ' plain']
+                    ]]
+                ]
+            }));
+        });
+
         it('converts a paragraph with line breaks');
 
         it('converts headings');
