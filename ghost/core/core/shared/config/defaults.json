@@ -196,6 +196,10 @@
         "url": "https://cdn.jsdelivr.net/ghost/koenig-lexical@~{version}/dist/koenig-lexical.umd.js",
         "version": "0.2"
     },
+    "adminX": {
+        "url": "https://cdn.jsdelivr.net/ghost/admin-x-settings@~{version}/dist/admin-x-settings.umd.js",
+        "version": "0.0"
+    },
     "tenor": {
         "googleApiKey": null,
         "contentFilter": "off"
