@@ -76,6 +76,7 @@ export default class FeatureService extends Service {
     @feature('imageEditor') imageEditor;
     @feature('signupCard') signupCard;
     @feature('collections') collections;
+    @feature('adminXSettings') adminXSettings;
 
     _user = null;
 

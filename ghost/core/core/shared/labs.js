@@ -42,7 +42,8 @@ const ALPHA_FEATURES = [
     'postDiffing',
     'imageEditor',
     'signupCard',
-    'collections'
+    'collections',
+    'adminXSettings'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
