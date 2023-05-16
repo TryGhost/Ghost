@@ -53,6 +53,14 @@ function SignupNodeComponent({
     }, [cardConfig]);
 
     useEffect(() => {
+        if (layout !== 'split') {
+            setShowBackgroundImage(Boolean(backgroundImageSrc));
+        }
+        // We just want to reset the show background image state when the layout changes, not when the image changes
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [layout]);
+
+    useEffect(() => {
         if (backgroundImageSrc) {
             new FastAverageColor().getColorAsync(backgroundImageSrc).then((color) => {
                 setBackgroundImageAverageColor(color.hex);
