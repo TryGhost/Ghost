@@ -4,7 +4,7 @@ import SettingNavSection from './design-system/settings/SettingNavSection';
 
 const Sidebar: React.FC = () => {
     return (
-        <div className="mt-6 hidden md:block">
+        <div className="mt-6 hidden md:!visible md:!block">
             <SettingNavSection title="General">
                 <SettingNavItem title="Title and description" />
                 <SettingNavItem title="Timezone" />
