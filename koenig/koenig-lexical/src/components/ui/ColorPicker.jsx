@@ -13,11 +13,20 @@ export function ColorPicker({value, swatches, onChange, onBlur}) {
 
     const isUsingColorPicker = useRef(false);
 
-    const startUsingColorPicker = useCallback(() => isUsingColorPicker.current = true, []);
     const stopUsingColorPicker = useCallback(() => {
         isUsingColorPicker.current = false;
         inputWrapperRef.current?.querySelector('input')?.focus();
+
+        document.removeEventListener('mouseup', stopUsingColorPicker);
+        document.removeEventListener('touchend', stopUsingColorPicker);
     }, []);
+
+    const startUsingColorPicker = useCallback(() => {
+        isUsingColorPicker.current = true;
+
+        document.addEventListener('mouseup', stopUsingColorPicker);
+        document.addEventListener('touchend', stopUsingColorPicker);
+    }, [stopUsingColorPicker]);
 
     const onBlurHandler = useCallback((e) => {
         setTimeout(() => {
@@ -53,7 +62,7 @@ export function ColorPicker({value, swatches, onChange, onBlur}) {
 
     return (
         <div className="mt-2" onMouseDown={stopPropagation} onTouchStart={stopPropagation}>
-            <HexColorPicker color={hexValue || '#ffffff'} onChange={onChange} onMouseDown={startUsingColorPicker} onMouseUp={stopUsingColorPicker} onTouchEnd={stopUsingColorPicker} onTouchStart={startUsingColorPicker} />
+            <HexColorPicker color={hexValue || '#ffffff'} onChange={onChange} onMouseDown={startUsingColorPicker} onTouchStart={startUsingColorPicker} />
             <div className="mt-3 flex">
                 <div ref={inputWrapperRef} className={`flex w-full items-center ${INPUT_CLASSES} rounded-r-none`}>
                     <span className='ml-1 mr-2 text-grey-700'>#</span>
