@@ -14,8 +14,9 @@
     "pretest": "yarn build",
     "test:unit": "NODE_ENV=testing c8 --all --src lib/ --exclude lib/kg-converters.js --check-coverage --reporter text --reporter cobertura mocha './test/**/*.test.js'",
     "test": "yarn test:unit",
-    "lint:code": "eslint *.js lib/ --ext .js --cache",
+    "posttest": "yarn lint",
     "lint": "yarn lint:code && yarn lint:test",
+    "lint:code": "eslint *.js lib/ --ext .js --cache",
     "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache"
   },
   "files": [
@@ -31,6 +32,8 @@
   "devDependencies": {
     "c8": "7.13.0",
     "mocha": "10.2.0",
+    "rollup": "2.79.1",
+    "rollup-plugin-babel": "4.4.0",
     "sinon": "15.0.4"
   },
   "dependencies": {

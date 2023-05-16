@@ -36,8 +36,8 @@
     "c8": "7.13.0",
     "html-minifier": "^4.0.0",
     "mocha": "10.2.0",
-    "rollup": "^3.21.5",
-    "rollup-plugin-babel": "^4.4.0",
+    "rollup": "2.79.1",
+    "rollup-plugin-babel": "4.4.0",
     "should": "13.2.3",
     "sinon": "15.0.4"
   },
