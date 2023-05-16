@@ -39,8 +39,8 @@
     "lint:css": "stylelint \"src/**/*.css\"",
     "lint:js": "eslint --ext .js,.cjs,.jsx --cache demo src test",
     "prepare": "NODE_ENV=production yarn build",
-    "storybook": "NODE_OPTIONS=--openssl-legacy-provider start-storybook -p 6006 -h 127.0.0.1",
-    "build-storybook": "build-storybook"
+    "storybook": "NODE_OPTIONS=--openssl-legacy-provider storybook dev -p 6006 -h 127.0.0.1",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@codemirror/lang-css": "^6.0.2",
@@ -77,14 +77,15 @@
   },
   "devDependencies": {
     "@babel/core": "7.21.8",
-    "@etchteam/storybook-addon-status": "^4.2.2",
+    "@etchteam/storybook-addon-status": "^4.2.4",
     "@playwright/test": "^1.33.0",
-    "@storybook/addon-actions": "6.5.16",
-    "@storybook/addon-essentials": "6.5.16",
-    "@storybook/addon-interactions": "6.5.16",
-    "@storybook/addon-links": "6.5.16",
-    "@storybook/builder-vite": "0.4.2",
-    "@storybook/react": "6.5.16",
+    "@storybook/addon-actions": "7.0.12",
+    "@storybook/addon-essentials": "7.0.12",
+    "@storybook/addon-interactions": "7.0.12",
+    "@storybook/addon-links": "7.0.12",
+    "@storybook/addon-mdx-gfm": "7.0.12",
+    "@storybook/react": "7.0.12",
+    "@storybook/react-vite": "7.0.12",
     "@storybook/test-runner": "^0.10.0",
     "@tailwindcss/line-clamp": "0.4.4",
     "@testing-library/jest-dom": "5.16.5",
@@ -101,6 +102,7 @@
     "eslint-config-react-app": "7.0.1",
     "eslint-plugin-jest": "27.2.1",
     "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-storybook": "^0.6.12",
     "eslint-plugin-tailwindcss": "3.11.0",
     "jsdom": "21.1.1",
     "playwright": "1.33.0",
@@ -109,11 +111,12 @@
     "prettier": "2.8.8",
     "react-highlight": "^0.15.0",
     "react-router-dom": "6.11.1",
+    "storybook": "^7.0.12",
     "stylelint": "^15.6.1",
     "tailwindcss": "3.2.7",
     "typescript": "5.0.4",
     "vite": "^4.2.1",
-    "vite-plugin-svgr": "2.4.0",
+    "vite-plugin-svgr": "^3.2.0",
     "vitest": "0.31.0"
   }
 }
