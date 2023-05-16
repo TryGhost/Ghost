@@ -109,7 +109,10 @@
 
                     <dd.Content class="gh-editor-feedback-dropdown-container">
                         <div {{css-transition "anim-fade-in-scale"}}>
-                            <ModalFeedbackLexical @class="gh-editor-feedback-dropdown" @close={{dd.actions.close}} />
+                            <FeedbackLexical::EditorForm
+                                @post={{this.post}}
+                                @close={{dd.actions.close}}
+                            />
                         </div>
                     </dd.Content>
                 </GhBasicDropdown>

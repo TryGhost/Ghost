@@ -314,27 +314,18 @@ describe('Acceptance: Settings - Labs', function () {
             expect(iframe.getAttribute('src')).to.have.string('/settings/routes/yaml/');
         });
 
-        it('displays lexical feedback button when the labs setting is enabled', async function () {
+        it('displays lexical feedback textarea when the labs setting is enabled', async function () {
             enableLabsFlag(this.server, 'lexicalEditor');
 
             await visit('/settings/labs');
 
-            expect(find('[data-test-button="lexical-feedback"]')).to.exist;
+            expect(find('[data-test-lexical-feedback-textarea]')).to.exist;
         });
 
-        it('does not display lexical feedback button when the labs setting is disabled', async function () {
+        it('does not display lexical feedback textarea when the labs setting is disabled', async function () {
             await visit('/settings/labs');
 
-            expect(find('[data-test-button="lexical-feedback"]')).to.not.exist;
-        });
-
-        it('allows the user to launch the feedback modal', async function () {
-            enableLabsFlag(this.server, 'lexicalEditor');
-
-            await visit('/settings/labs');
-            await click('[data-test-button="lexical-feedback"]');
-
-            expect(find('[data-test-modal="lexical-feedback"]')).to.exist;
+            expect(find('[data-test-lexical-feedback-textarea]')).to.not.exist;
         });
 
         it('allows the user to send lexical feedback', async function () {
@@ -344,14 +335,11 @@ describe('Acceptance: Settings - Labs', function () {
             this.server.post('https://submit-form.com/us6uBWv8', {}, 200);
 
             await visit('/settings/labs');
-            await click('[data-test-button="lexical-feedback"]');
 
-            expect(find('[data-test-modal="lexical-feedback"]')).to.exist;
             await fillIn('[data-test-lexical-feedback-textarea]', 'This is test feedback');
             await click('[data-test-button="submit-lexical-feedback"]');
 
-            // successful request will close the modal and show a notification toast
-            expect(find('[data-test-modal="lexical-feedback"]')).to.not.exist;
+            // successful request will show a notification toast
             expect(find('[data-test-text="notification-content"]')).to.exist;
         });
     });

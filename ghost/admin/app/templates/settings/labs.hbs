@@ -213,28 +213,7 @@
                            <GhFeatureFlag @flag="lexicalEditor" />
                         </div>
                     </div>
-                    {{!-- Inlined feedback form --}}
-                    {{!-- <div>
-                        <form>
-                            <GhFormGroup>
-                                <label for="feedback-lexical">Have any issues? Feedback? Let us know below!</label>
-                                <GhTextarea
-                                    @id="feedback-lexical"
-                                    @name="feedback-lexical"
-                                    @value={{this.feedbackMessage}}
-                                    @placeholder="I've noticed that..."
-                                    @shouldFocus={{true}}
-                                    data-test-lexical-feedback-textarea
-                                />
-                            </GhFormGroup>
-                        </form>
-                        <GhTaskButton
-                            @buttonText="Send feedback"
-                            @task={{this.submitFeedback}}
-                            @class="gh-btn gh-btn-black gh-btn-icon"
-                            data-test-button="submit-lexical-feedback"
-                        />
-                    </div> --}}
+                    <FeedbackLexical::LabsForm />
                 </div>
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">

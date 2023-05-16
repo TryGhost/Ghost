@@ -1,0 +1,20 @@
+<form>
+    <GhFormGroup>
+        {{#if @label}}
+            <label for="feedback-lexical">{{@label}}</label>
+        {{/if}}
+        <GhTextarea
+            @id="feedback-lexical"
+            @name="feedback-lexical"
+            @value={{@feedbackMessage}}
+            @placeholder="I've noticed that..."
+            @shouldFocus={{true}}
+            data-test-lexical-feedback-textarea
+            {{on "input" @updateFeedbackMessage}}
+        />
+        {{!--
+        <GhErrorMessage @errors={{this.member.errors}} @property="note" /> --}}
+        {{!-- <p> Maximum: <b>500</b> characters. You’ve used
+            {{gh-count-down-characters this.feedbackMessage 500}}</p> --}}
+    </GhFormGroup>
+</form>
