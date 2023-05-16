@@ -183,6 +183,18 @@ export default class App extends React.Component {
                 this.updateStateForPreviewLinks();
             };
             window.addEventListener('hashchange', this.hashHandler, false);
+
+            // spike ship - to test if we can show / hide signup forms inside post / page
+            if (!member) {
+                // the signup card will ship hidden by default, so we need to show it if the user is not logged in
+                // not sure why a user would have more than one form on a post, but just in case we'll find them all
+                const formElements = document.querySelectorAll('[data-lexical-signup-form]');
+                if (formElements.length > 0){
+                    formElements.forEach((element) => {
+                        element.style.display = '';
+                    });
+                }
+            }
         } catch (e) {
             /* eslint-disable no-console */
             console.error(`[Portal] Failed to initialize:`, e);
