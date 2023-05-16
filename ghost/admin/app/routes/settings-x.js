@@ -13,6 +13,10 @@ export default class SettingsXRoute extends AuthenticatedRoute {
         if (!user.isAdmin) {
             return this.transitionTo('settings.staff.user', user);
         }
+
+        if (!this.config.adminX?.url) {
+            return this.router.transitionTo('settings');
+        }
     }
 
     activate() {
