@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/admin-x-settings",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/admin-x-settings",
   "author": "Ghost Foundation",
   "private": true,
@@ -63,10 +63,10 @@
     "prop-types": "15.8.1",
     "rollup-plugin-node-builtins": "2.1.2",
     "storybook": "7.0.9",
+    "stylelint": "15.6.1",
     "tailwindcss": "3.3.2",
     "typescript": "5.0.2",
     "vite": "4.3.2",
-    "stylelint": "15.6.1",
     "vite-plugin-svgr": "3.2.0",
     "vitest": "0.31.0"
   }
