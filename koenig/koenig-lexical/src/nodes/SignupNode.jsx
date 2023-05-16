@@ -128,21 +128,17 @@ export class SignupNode extends BaseSignupNode {
                     backgroundColor={this.getBackgroundColor()}
                     backgroundImageSrc={this.getBackgroundImageSrc()}
                     buttonColor={this.getButtonColor()}
-                    buttonPlaceholder={'Add button text'}
                     buttonText={this.getButtonText()}
                     disclaimer={this.getDisclaimer()}
-                    disclaimerPlaceholder={'Enter disclaimer text'}
                     disclaimerTextEditor={this.__disclaimerTextEditor}
                     disclaimerTextEditorInitialState={this.__disclaimerTextEditorInitialState}
                     header={this.getHeader()}
-                    headerPlaceholder={'Enter heading text'}
                     headerTextEditor={this.__headerTextEditor}
                     headerTextEditorInitialState={this.__headerTextEditorInitialState}
                     labels={this.getLabels()}
                     layout={this.getLayout()}
                     nodeKey={this.getKey()}
                     subheader={this.getSubheader()}
-                    subheaderPlaceholder={'Enter subheading text'}
                     subheaderTextEditor={this.__subheaderTextEditor}
                     subheaderTextEditorInitialState={this.__subheaderTextEditorInitialState}
                 />

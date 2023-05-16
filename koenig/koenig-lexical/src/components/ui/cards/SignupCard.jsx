@@ -16,11 +16,8 @@ import {textColorForBackgroundColor} from '@tryghost/color-utils';
 
 export function SignupCard({alignment,
     header,
-    headerPlaceholder,
     subheader,
-    subheaderPlaceholder,
     disclaimer,
-    disclaimerPlaceholder,
     buttonText,
     showBackgroundImage,
     backgroundImageSrc,
@@ -85,6 +82,10 @@ export function SignupCard({alignment,
     ];
 
     const {isLoading: isUploading, progress} = fileUploader || {};
+
+    const headerPlaceholder = layout === 'split' ? 'Enter heading' : 'Enter heading text';
+    const subheaderPlaceholder = 'Enter subheading text';
+    const disclaimerPlaceholder = 'Enter disclaimer text';
 
     const hexColorValue = (color) => {
         if (color === 'accent') {

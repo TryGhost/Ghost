@@ -101,17 +101,14 @@ export class HeaderNode extends BaseHeaderNode {
                 <HeaderNodeComponent
                     backgroundImageSrc={this.getBackgroundImageSrc()}
                     button={this.getButtonEnabled()}
-                    buttonPlaceholder={'Add button text'}
                     buttonText={this.getButtonText()}
                     buttonUrl={this.getButtonUrl()}
                     header={this.getHeader()}
-                    headerPlaceholder={'Enter heading text'}
                     headerTextEditor={this.__headerTextEditor}
                     headerTextEditorInitialState={this.__headerTextEditorInitialState}
                     nodeKey={this.getKey()}
                     size={this.getSize()}
                     subheader={this.getSubheader()}
-                    subheaderPlaceholder={'Enter subheading text'}
                     subheaderTextEditor={this.__subheaderTextEditor}
                     subheaderTextEditorInitialState={this.__subheaderTextEditorInitialState}
                     type={this.getStyle()}

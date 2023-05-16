@@ -37,7 +37,6 @@ Button.propTypes = {
     placeholder: PropTypes.string,
     href: PropTypes.string,
     target: PropTypes.string,
-    styles: PropTypes.object,
     disabled: PropTypes.bool
 };
 

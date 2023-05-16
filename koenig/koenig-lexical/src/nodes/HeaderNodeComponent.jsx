@@ -15,13 +15,10 @@ function HeaderNodeComponent({
     backgroundImageSrc,
     button,
     subheaderTextEditorInitialState,
-    buttonPlaceholder,
-    subheaderPlaceholder,
     buttonText,
     buttonUrl,
     type,
     headerTextEditorInitialState,
-    headerPlaceholder,
     header,
     subheader,
     headerTextEditor,
@@ -121,7 +118,6 @@ function HeaderNodeComponent({
             <HeaderCard
                 backgroundImageSrc={backgroundImageSrc}
                 button={button}
-                buttonPlaceholder={buttonPlaceholder}
                 buttonText={buttonText}
                 buttonUrl={buttonUrl}
                 fileInputRef={fileInputRef}
@@ -133,14 +129,12 @@ function HeaderNodeComponent({
                 handleColorSelector={handleColorSelector}
                 handleSizeSelector={handleSizeSelector}
                 header={header}
-                headerPlaceholder={headerPlaceholder}
                 headerTextEditor={headerTextEditor}
                 headerTextEditorInitialState={headerTextEditorInitialState}
                 isEditing={isEditing}
                 openFilePicker={openFilePicker}
                 size={size}
                 subheader={subheader}
-                subheaderPlaceholder={subheaderPlaceholder}
                 subheaderTextEditor={subheaderTextEditor}
                 subheaderTextEditorInitialState={subheaderTextEditorInitialState}
                 type={type}

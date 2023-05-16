@@ -23,12 +23,9 @@ export const HEADER_TEXT_COLORS = {
 
 export function HeaderCard({isEditing,
     size,
-    headerPlaceholder,
-    subheaderPlaceholder,
     subheader,
     button,
     buttonText,
-    buttonPlaceholder,
     buttonUrl,
     handleColorSelector,
     handleSizeSelector,
@@ -86,6 +83,9 @@ export function HeaderCard({isEditing,
     ];
 
     const {isLoading: isUploading, progress} = fileUploader || {};
+    const headerPlaceholder = 'Enter heading text';
+    const subheaderPlaceholder = 'Enter subheading text';
+    const buttonPlaceholder = 'Add button text';
 
     return (
         <>
@@ -202,12 +202,9 @@ HeaderCard.propTypes = {
     size: PropTypes.oneOf(['small', 'medium', 'large']),
     type: PropTypes.oneOf(['dark', 'light', 'accent', 'image']),
     heading: PropTypes.string,
-    headerPlaceholder: PropTypes.string,
     subheader: PropTypes.string,
-    subheaderPlaceholder: PropTypes.string,
     button: PropTypes.bool,
     buttonText: PropTypes.string,
-    buttonPlaceholder: PropTypes.string,
     buttonUrl: PropTypes.string,
     backgroundImageSrc: PropTypes.string,
     isEditing: PropTypes.bool,

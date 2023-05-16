@@ -151,6 +151,7 @@ function SignupNodeComponent({
         headerTextEditor.setEditable(isEditing);
         subheaderTextEditor.setEditable(isEditing);
     }, [isEditing, headerTextEditor, subheaderTextEditor]);
+
     return (
         <>
             <SignupCard
@@ -160,10 +161,8 @@ function SignupNodeComponent({
                 backgroundImageAverageColor={backgroundImageAverageColor}
                 backgroundImageSrc={backgroundImageSrc}
                 buttonColor={buttonColor}
-                buttonPlaceholder={buttonPlaceholder}
                 buttonText={buttonText}
                 disclaimer={disclaimer}
-                disclaimerPlaceholder={disclaimerPlaceholder}
                 disclaimerTextEditor={disclaimerTextEditor}
                 disclaimerTextEditorInitialState={disclaimerTextEditorInitialState}
                 fileUploader={imageUploader}
@@ -176,7 +175,6 @@ function SignupNodeComponent({
                 handleLayout={handleLayout}
                 handleToggleBackgroundImage={handleToggleBackgroundImage}
                 header={header}
-                headerPlaceholder={headerPlaceholder}
                 headerTextEditor={headerTextEditor}
                 headerTextEditorInitialState={headerTextEditorInitialState}
                 imageDragHandler={imageDragHandler}
@@ -185,7 +183,6 @@ function SignupNodeComponent({
                 layout={layout}
                 showBackgroundImage={showBackgroundImage}
                 subheader={subheader}
-                subheaderPlaceholder={subheaderPlaceholder}
                 subheaderTextEditor={subheaderTextEditor}
                 subheaderTextEditorInitialState={subheaderTextEditorInitialState}
                 onFileChange={onFileChange}
