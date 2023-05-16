@@ -1,9 +1,10 @@
 import KoenigNestedEditor from '../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import clsx from 'clsx';
 import {ButtonGroupSetting, ColorPickerSetting, InputSetting, MediaUploadSetting, MultiSelectDropdownSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {ReactComponent as CenterAlignIcon} from '../../../assets/icons/kg-align-center.svg';
+import {FastAverageColor} from 'fast-average-color';
 import {ReactComponent as ImgFullIcon} from '../../../assets/icons/kg-img-full.svg';
 import {ReactComponent as ImgRegularIcon} from '../../../assets/icons/kg-img-regular.svg';
 import {ReactComponent as ImgWideIcon} from '../../../assets/icons/kg-img-wide.svg';
@@ -21,7 +22,6 @@ export function SignupCard({alignment,
     buttonText,
     showBackgroundImage,
     backgroundImageSrc,
-    backgroundImageAverageColor,
     backgroundColor,
     buttonColor,
     isEditing,
@@ -45,6 +45,16 @@ export function SignupCard({alignment,
     subheaderTextEditorInitialState,
     disclaimerTextEditor,
     disclaimerTextEditorInitialState}) {
+    const [backgroundImageAverageColor, setBackgroundImageAverageColor] = useState(null);
+
+    useEffect(() => {
+        if (backgroundImageSrc) {
+            new FastAverageColor().getColorAsync(backgroundImageSrc).then((color) => {
+                setBackgroundImageAverageColor(color.hex);
+            });
+        }
+    }, [backgroundImageSrc]);
+
     const layoutChildren = [
         {
             label: 'Regular',
@@ -340,15 +350,11 @@ export function SignupCard({alignment,
 SignupCard.propTypes = {
     alignment: PropTypes.oneOf(['left', 'center']),
     header: PropTypes.string,
-    headerPlaceholder: PropTypes.string,
     subheader: PropTypes.string,
-    subheaderPlaceholder: PropTypes.string,
     disclaimer: PropTypes.string,
-    disclaimerPlaceholder: PropTypes.string,
     buttonText: PropTypes.string,
     buttonPlaceholder: PropTypes.string,
     backgroundImageSrc: PropTypes.string,
-    backgroundImageAverageColor: PropTypes.string,
     backgroundColor: PropTypes.string,
     buttonColor: PropTypes.string,
     showBackgroundImage: PropTypes.bool,
