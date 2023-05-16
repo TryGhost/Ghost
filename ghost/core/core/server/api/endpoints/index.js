@@ -12,6 +12,10 @@ module.exports = {
         return apiFramework.pipeline(require('./authentication'), localUtils);
     },
 
+    get collections() {
+        return apiFramework.pipeline(require('./collections'), localUtils);
+    },
+
     get db() {
         return apiFramework.pipeline(require('./db'), localUtils);
     },
