@@ -58,7 +58,12 @@ export function ColorPicker({value, swatches, onChange, onBlur}) {
         inputWrapperRef.current?.querySelector('input')?.focus();
     }, []);
 
-    const hexValue = value === 'accent' ? getAccentColor() : value;
+    let hexValue = value;
+    if (value === 'accent') {
+        hexValue = getAccentColor();
+    } else if (value === 'transparent') {
+        hexValue = '';
+    }
 
     return (
         <div className="mt-2" onMouseDown={stopPropagation} onTouchStart={stopPropagation}>
@@ -93,7 +98,7 @@ function ColorSwatch({hex, accent, transparent, title, onSelect}) {
         if (accent) {
             onSelect('accent');
         } else if (transparent) {
-            onSelect('');
+            onSelect('transparent');
         } else {
             onSelect(hex);
         }
@@ -107,12 +112,21 @@ function ColorSwatch({hex, accent, transparent, title, onSelect}) {
 }
 
 export function ColorIndicator({value, onClick}) {
-    const backgroundColor = value === 'accent' ? getAccentColor() : value;
+    let backgroundColor = value;
+    if (value === 'accent') {
+        backgroundColor = getAccentColor();
+    } else if (value === 'transparent') {
+        backgroundColor = 'white';
+    }
 
     return (
         <button aria-label="Pick color" className="relative h-6 w-6" type="button" onClick={onClick}>
             <div className='absolute inset-0 rounded-full bg-[conic-gradient(hsl(360,100%,50%),hsl(315,100%,50%),hsl(270,100%,50%),hsl(225,100%,50%),hsl(180,100%,50%),hsl(135,100%,50%),hsl(90,100%,50%),hsl(45,100%,50%),hsl(0,100%,50%))]' />
-            {value && <div className="absolute inset-[3px] rounded-full border border-white" style={{backgroundColor}} onClick={onClick} />}
+            {value && (
+                <div className="absolute inset-[3px] overflow-hidden rounded-full border border-grey-200" style={{backgroundColor}} onClick={onClick}>
+                    {value === 'transparent' && <div className="absolute top-[3px] left-[3px] z-10 w-[136%] origin-left rotate-45 border-b border-b-red" />}
+                </div>
+            )}
         </button>
     );
 }

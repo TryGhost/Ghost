@@ -40,7 +40,7 @@ describe('SignupNode', function () {
         editor = createHeadlessEditor({nodes: editorNodes});
 
         dataset = {
-            backgroundColor: '',
+            backgroundColor: 'transparent',
             backgroundImageSrc: 'https://example.com/image.jpg',
             buttonText: 'Button',
             buttonColor: '#000',

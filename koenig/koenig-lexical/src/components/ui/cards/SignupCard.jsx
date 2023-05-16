@@ -92,6 +92,11 @@ export function SignupCard({alignment,
             return getAccentColor();
         }
 
+        if (color === 'transparent') {
+            // The editor background is white, so we should force dark text
+            return '#ffffff';
+        }
+
         return color;
     };
 

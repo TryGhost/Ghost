@@ -1,7 +1,7 @@
+import { expect, test } from '@playwright/test';
 import path from 'path';
-import {assertHTML, focusEditor, html, initialize, insertCard} from '../../utils/e2e';
-import {expect, test} from '@playwright/test';
-import {fileURLToPath} from 'url';
+import { fileURLToPath } from 'url';
+import { assertHTML, focusEditor, html, initialize, insertCard } from '../../utils/e2e';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -149,7 +149,7 @@ test.describe('Signup card', async () => {
 
         await page.click('[data-testid="signup-button-color"] [aria-label="Pick color"]');
 
-        await page.click('[data-testid="signup-button-color"] input');
+        await page.fill('[data-testid="signup-button-color"] input', '');
         await page.keyboard.type('ff0000');
 
         // Selected colour should be applied inline
