@@ -8,7 +8,7 @@ import TitleAndDescription from './TitleAndDescription';
 const GeneralSettings: React.FC = () => {
     return (
         <>
-            <SettingSection name="General">
+            <SettingSection title="General">
                 <TitleAndDescription />
                 <TimeZone />
                 <PublicationLanguage />

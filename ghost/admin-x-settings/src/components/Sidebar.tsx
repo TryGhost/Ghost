@@ -5,7 +5,7 @@ import SettingNavSection from './design-system/settings/SettingNavSection';
 const Sidebar: React.FC = () => {
     return (
         <div className="mt-6 hidden md:block">
-            <SettingNavSection name="General">
+            <SettingNavSection title="General">
                 <SettingNavItem name="Title and description" />
                 <SettingNavItem name="Timezone" />
                 <SettingNavItem name="Publication language" />
@@ -17,25 +17,25 @@ const Sidebar: React.FC = () => {
                 <SettingNavItem name="Users and permissions" />
             </SettingNavSection>
 
-            <SettingNavSection name="Site">
+            <SettingNavSection title="Site">
                 <SettingNavItem name="Branding and design" />
                 <SettingNavItem name="Navigation" />
             </SettingNavSection>
 
-            <SettingNavSection name="Membership">
+            <SettingNavSection title="Membership">
                 <SettingNavItem name="Portal" />
                 <SettingNavItem name="Access" />
                 <SettingNavItem name="Tiers" />
                 <SettingNavItem name="Analytics" />
             </SettingNavSection>
 
-            <SettingNavSection name="Email newsletters">
+            <SettingNavSection title="Email newsletters">
                 <SettingNavItem name="Newsletter sending" />
                 <SettingNavItem name="Newsletters" />
                 <SettingNavItem name="Default recipients" />
             </SettingNavSection>
 
-            <SettingNavSection name="Advanced">
+            <SettingNavSection title="Advanced">
                 <SettingNavItem name="Integrations" />
                 <SettingNavItem name="Code injection" />
                 <SettingNavItem name="Labs" />

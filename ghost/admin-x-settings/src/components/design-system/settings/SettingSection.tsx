@@ -2,14 +2,14 @@ import React from 'react';
 import SettingSectionHeader from './SettingSectionHeader';
 
 interface Props {
-    name?: string;
+    title?: string;
     children?: React.ReactNode;
 }
 
-const SettingSection: React.FC<Props> = ({name, children}) => {
+const SettingSection: React.FC<Props> = ({title, children}) => {
     return (
         <>
-            {name && <SettingSectionHeader name={name} />}
+            {title && <SettingSectionHeader title={title} />}
             {children &&
                 <div className="mb-[100px] flex flex-col gap-9">
                     {children}
