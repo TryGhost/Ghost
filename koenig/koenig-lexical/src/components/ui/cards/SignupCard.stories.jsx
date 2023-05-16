@@ -47,6 +47,7 @@ const Template = ({display, heading, subheader, disclaimer, ...args}) => {
     const headerTextEditor = createEditor({nodes: MINIMAL_NODES});
     const subheaderTextEditor = createEditor({nodes: MINIMAL_NODES});
     const disclaimerTextEditor = createEditor({nodes: MINIMAL_NODES});
+    const cardWidth = args.layout === 'split' ? 'full' : args.layout;
 
     populateNestedEditor({editor: headerTextEditor, initialHtml: `<p>${heading}</p>`});
     populateNestedEditor({editor: subheaderTextEditor, initialHtml: `<p>${subheader}</p>`});
@@ -54,7 +55,7 @@ const Template = ({display, heading, subheader, disclaimer, ...args}) => {
 
     return (<div className="kg-prose">
         <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
-            <CardWrapper {...display} {...args}>
+            <CardWrapper {...display} {...args} cardWidth={cardWidth}>
                 <SignupCard
                     {...display}
                     {...args}
