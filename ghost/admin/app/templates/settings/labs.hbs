@@ -218,9 +218,9 @@
                         <form>
                             <GhFormGroup>
                                 <label for="feedback-lexical">Have any issues? Feedback? Let us know below!</label>
-                                <GhTextarea 
+                                <GhTextarea
                                     @id="feedback-lexical"
-                                    @name="feedback-lexical" 
+                                    @name="feedback-lexical"
                                     @value={{this.feedbackMessage}}
                                     @placeholder="I've noticed that..."
                                     @shouldFocus={{true}}
@@ -228,7 +228,7 @@
                                 />
                             </GhFormGroup>
                         </form>
-                        <GhTaskButton 
+                        <GhTaskButton
                             @buttonText="Send feedback"
                             @task={{this.submitFeedback}}
                             @class="gh-btn gh-btn-black gh-btn-icon"
@@ -393,6 +393,20 @@
                         </div>
                         <div class="for-switch">
                             <GhFeatureFlag @flag="collections" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Admin X</h4>
+                            <p class="gh-expandable-description">
+                                Enables Admin X, the new admin UI for Ghost
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="adminXSettings" />
                         </div>
                     </div>
                 </div>
