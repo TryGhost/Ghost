@@ -248,6 +248,12 @@ export function SignupCard({alignment,
                 </div>
             </div>
 
+            {isEditing &&
+                <div className="!mt-0 flex items-center justify-center bg-grey-100 p-2 font-sans text-sm font-normal leading-none text-grey-600 dark:bg-grey-950 dark:text-grey-800">
+                    Only visible for posts on the web, this card will not be displayed in emails.
+                </div>
+            }
+
             {isEditing && (
                 <SettingsPanel className="mt-0">
                     <ButtonGroupSetting
