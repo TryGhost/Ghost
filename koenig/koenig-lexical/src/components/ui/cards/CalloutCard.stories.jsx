@@ -1,4 +1,5 @@
 import React from 'react';
+import populateNestedEditor from '../../../utils/populateNestedEditor.js';
 import {CalloutCard} from './CalloutCard';
 import {CardWrapper} from './../CardWrapper';
 import {createEditor} from 'lexical';
@@ -36,8 +37,9 @@ const story = {
 };
 export default story;
 
-const Template = ({display, ...args}) => {
+const Template = ({display, value, ...args}) => {
     const textEditor = createEditor();
+    populateNestedEditor({editor: textEditor, initialHtml: `<p>${value}</p>`});
 
     return (
         <div className="kg-prose">
@@ -56,7 +58,8 @@ Empty.args = {
     value: '',
     placeholder: 'Callout text...',
     emoji: true,
-    color: 'grey'
+    color: 'grey',
+    setShowEmojiPicker: () => {}
 };
 
 export const Populated = Template.bind({});
@@ -65,6 +68,7 @@ Populated.args = {
     value: 'Something to pay attention to.',
     placeholder: 'Callout text...',
     emoji: true,
-    color: 'grey'
+    color: 'grey',
+    setShowEmojiPicker: () => {}
 };
 

@@ -39,11 +39,11 @@ const story = {
 };
 export default story;
 
-const Template = ({display, heading, subheader, ...args}) => {
+const Template = ({display, header, subheader, ...args}) => {
     const headerTextEditor = createEditor({nodes: MINIMAL_NODES});
     const subheaderTextEditor = createEditor({nodes: MINIMAL_NODES});
 
-    populateNestedEditor({editor: headerTextEditor, initialHtml: `<p>${heading}</p>`});
+    populateNestedEditor({editor: headerTextEditor, initialHtml: `<p>${header}</p>`});
     populateNestedEditor({editor: subheaderTextEditor, initialHtml: `<p>${subheader}</p>`});
 
     return (<div className="kg-prose">
@@ -52,9 +52,10 @@ const Template = ({display, heading, subheader, ...args}) => {
                 <HeaderCard
                     {...display}
                     {...args}
+                    header={header}
                     headerTextEditor={headerTextEditor}
+                    subheader={subheader}
                     subheaderTextEditor={subheaderTextEditor}
-                    subheaderTextEditorInitialState={editorEmptyState}
                 />
             </CardWrapper>
         </div>
@@ -66,7 +67,7 @@ Empty.args = {
     display: 'Editing',
     size: 'small',
     type: 'dark',
-    heading: '',
+    header: '',
     headerPlaceholder: 'Enter heading text',
     subheader: '',
     subheaderPlaceholder: 'Enter subheading text',
@@ -83,7 +84,7 @@ Populated.args = {
     display: 'Editing',
     size: 'small',
     handleButtonToggle: () => {},
-    heading: 'This is a heading',
+    header: 'This is a heading',
     headerPlaceholder: 'Enter heading text',
     subheader: 'And here is some subheading text.',
     subheaderPlaceholder: 'Enter subheading text',
@@ -100,7 +101,7 @@ Loading.args = {
     display: 'Editing',
     size: 'small',
     handleButtonToggle: () => {},
-    heading: 'This is a heading',
+    header: 'This is a heading',
     headerPlaceholder: 'Enter heading text',
     subheader: 'And here is some subheading text.',
     subheaderPlaceholder: 'Enter subheading text',

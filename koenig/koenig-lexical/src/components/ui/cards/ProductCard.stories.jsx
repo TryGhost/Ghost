@@ -50,7 +50,14 @@ const Template = ({display, title, description, ...args}) => {
             <div className="not-kg-prose mx-auto my-8 min-w-[initial] max-w-[740px]">
                 <CardWrapper {...display} {...args}>
                     <div className="flex justify-center p-3">
-                        <ProductCard {...display} {...args} descriptionEditor={descriptionEditor} titleEditor={titleEditor} />
+                        <ProductCard
+                            {...display}
+                            {...args}
+                            description={description}
+                            descriptionEditor={descriptionEditor}
+                            title={title}
+                            titleEditor={titleEditor}
+                        />
                     </div>
                 </CardWrapper>
             </div>
