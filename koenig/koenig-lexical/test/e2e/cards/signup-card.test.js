@@ -1,7 +1,7 @@
-import { expect, test } from '@playwright/test';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import { assertHTML, focusEditor, html, initialize, insertCard } from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, insertCard} from '../../utils/e2e';
+import {expect, test} from '@playwright/test';
+import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
