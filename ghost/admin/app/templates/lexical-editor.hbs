@@ -99,7 +99,7 @@
                     @horizontalPosition="left" as |dd|
                 >
                     <dd.Trigger
-                        class="gh-editor-feedback-container"
+                        class="gh-editor-feedback-trigger gh-btn gh-btn-editor green"
                         data-test-button="lexical-editor-feedback"
                     >
                         <span class="gh-editor-feedback">
@@ -107,7 +107,7 @@
                         </span>
                     </dd.Trigger>
 
-                    <dd.Content>
+                    <dd.Content class="gh-editor-feedback-dropdown-container">
                         <div {{css-transition "anim-fade-in-scale"}}>
                             <ModalFeedbackLexical @class="gh-editor-feedback-dropdown" @close={{dd.actions.close}} />
                         </div>
