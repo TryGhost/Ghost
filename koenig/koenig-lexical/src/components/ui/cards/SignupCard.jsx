@@ -264,14 +264,14 @@ export function SignupCard({alignment,
                     {(showBackgroundImage || layout === 'split') && <MediaUploadSetting
                         alt='Background image'
                         desc='Click to upload'
-                        errors={fileUploader.errors}
+                        errors={fileUploader?.errors}
                         hideLabel={layout !== 'split'}
                         icon='file'
-                        isDraggedOver={imageDragHandler.isDraggedOver}
+                        isDraggedOver={imageDragHandler?.isDraggedOver}
                         isLoading={isUploading}
                         label='Image'
                         mimeTypes={['image/*']}
-                        placeholderRef={imageDragHandler.setRef}
+                        placeholderRef={imageDragHandler?.setRef}
                         progress={progress}
                         size='xsmall'
                         src={backgroundImageSrc}
