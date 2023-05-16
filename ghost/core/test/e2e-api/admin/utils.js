@@ -41,7 +41,8 @@ const expectedProperties = {
         'emailAnalytics',
         'tenor',
         'mailgunIsConfigured',
-        'editor'
+        'editor',
+        'adminX'
     ],
 
     post: [
