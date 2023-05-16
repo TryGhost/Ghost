@@ -6,40 +6,40 @@ const Sidebar: React.FC = () => {
     return (
         <div className="mt-6 hidden md:block">
             <SettingNavSection title="General">
-                <SettingNavItem name="Title and description" />
-                <SettingNavItem name="Timezone" />
-                <SettingNavItem name="Publication language" />
-                <SettingNavItem name="Meta data" />
-                <SettingNavItem name="Twitter card" />
-                <SettingNavItem name="Facebook card" />
-                <SettingNavItem name="Social accounts" />
-                <SettingNavItem name="Make this site private" />
-                <SettingNavItem name="Users and permissions" />
+                <SettingNavItem title="Title and description" />
+                <SettingNavItem title="Timezone" />
+                <SettingNavItem title="Publication language" />
+                <SettingNavItem title="Meta data" />
+                <SettingNavItem title="Twitter card" />
+                <SettingNavItem title="Facebook card" />
+                <SettingNavItem title="Social accounts" />
+                <SettingNavItem title="Make this site private" />
+                <SettingNavItem title="Users and permissions" />
             </SettingNavSection>
 
             <SettingNavSection title="Site">
-                <SettingNavItem name="Branding and design" />
-                <SettingNavItem name="Navigation" />
+                <SettingNavItem title="Branding and design" />
+                <SettingNavItem title="Navigation" />
             </SettingNavSection>
 
             <SettingNavSection title="Membership">
-                <SettingNavItem name="Portal" />
-                <SettingNavItem name="Access" />
-                <SettingNavItem name="Tiers" />
-                <SettingNavItem name="Analytics" />
+                <SettingNavItem title="Portal" />
+                <SettingNavItem title="Access" />
+                <SettingNavItem title="Tiers" />
+                <SettingNavItem title="Analytics" />
             </SettingNavSection>
 
             <SettingNavSection title="Email newsletters">
-                <SettingNavItem name="Newsletter sending" />
-                <SettingNavItem name="Newsletters" />
-                <SettingNavItem name="Default recipients" />
+                <SettingNavItem title="Newsletter sending" />
+                <SettingNavItem title="Newsletters" />
+                <SettingNavItem title="Default recipients" />
             </SettingNavSection>
 
             <SettingNavSection title="Advanced">
-                <SettingNavItem name="Integrations" />
-                <SettingNavItem name="Code injection" />
-                <SettingNavItem name="Labs" />
-                <SettingNavItem name="History" />
+                <SettingNavItem title="Integrations" />
+                <SettingNavItem title="Code injection" />
+                <SettingNavItem title="Labs" />
+                <SettingNavItem title="History" />
             </SettingNavSection>
         </div>
     );
