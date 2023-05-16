@@ -138,3 +138,7 @@ Caddyfile
 
 # Typescript build artifacts
 /ghost/*/tsconfig.tsbuildinfo
+
+# Admin X
+/ghost/admin-x-settings/dist
+/ghost/admin-x-settings/dist-ssr
