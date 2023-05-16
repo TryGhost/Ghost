@@ -25,7 +25,11 @@
     "lint:js": "eslint --ext .js,.ts,.cjs,.tsx --cache src test",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "preship": "yarn lint",
+    "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn version; fi",
+    "postship": "git push ${GHOST_UPSTREAM:-origin} --follow-tags && npm publish",
+    "prepublishOnly": "yarn build"
   },
   "dependencies": {
     "react": "^18.2.0",
