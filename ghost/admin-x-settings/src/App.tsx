@@ -3,7 +3,7 @@ import Sidebar from './components/Sidebar';
 
 function App() {
     return (
-        <div>
+        <div className="admin-x-settings">
             <button
                 className="fixed left-6 top-4 text-sm font-bold text-black"
                 type="button"
