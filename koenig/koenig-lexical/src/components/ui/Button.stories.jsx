@@ -8,11 +8,11 @@ const story = {
     argTypes: {
         color: {
             options: ['white', 'grey', 'black', 'accent'],
-            control: {type: 'radio'}
+            control: {type: 'select'}
         },
         size: {
             options: ['small', 'medium', 'large', 'xlarge'],
-            control: {type: 'radio'}
+            control: {type: 'select'}
         },
         width: {
             options: ['regular', 'full'],

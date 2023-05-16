@@ -44,7 +44,7 @@ export function ColorPicker({value, swatches, onChange, onBlur}) {
             <div className="mt-3 flex">
                 <div ref={inputWrapperRef} className={`flex w-full items-center ${INPUT_CLASSES} rounded-r-none`}>
                     <span className='ml-1 mr-2 text-grey-700'>#</span>
-                    <HexColorInput aria-label="Colour value" className='w-full' color={hexValue} onBlur={onBlurHandler} onChange={onChange} />
+                    <HexColorInput aria-label="Color value" className='w-full' color={hexValue} onBlur={onBlurHandler} onChange={onChange} />
                 </div>
                 <div className={`flex items-center gap-1 ${INPUT_CLASSES} ml-[-1px] rounded-l-none`}>
                     {swatches.map(swatch => (
@@ -82,7 +82,7 @@ export function ColorIndicator({value, onClick}) {
     const backgroundColor = value === 'accent' ? getAccentColor() : value;
 
     return (
-        <button aria-label="Pick colour" className="relative h-6 w-6" type="button" onClick={onClick}>
+        <button aria-label="Pick color" className="relative h-6 w-6" type="button" onClick={onClick}>
             <div className='absolute inset-0 rounded-full bg-[conic-gradient(hsl(360,100%,50%),hsl(315,100%,50%),hsl(270,100%,50%),hsl(225,100%,50%),hsl(180,100%,50%),hsl(135,100%,50%),hsl(90,100%,50%),hsl(45,100%,50%),hsl(0,100%,50%))]' />
             {value && <div className="absolute inset-[3px] rounded-full border border-white" style={{backgroundColor}} onClick={onClick} />}
         </button>

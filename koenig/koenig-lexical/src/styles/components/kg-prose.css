@@ -505,7 +505,7 @@
         /* Links
         /* -------------------------------------------------------------------- */
 
-        /* Uses accent colour defined by React, else fallback to default colour. */
+        /* Uses accent color defined by React, else fallback to default color. */
 
         :where(
             a

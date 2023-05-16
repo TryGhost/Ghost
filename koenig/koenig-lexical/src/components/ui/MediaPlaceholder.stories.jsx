@@ -5,6 +5,20 @@ import {MediaPlaceholder} from './MediaPlaceholder';
 const story = {
     title: 'Generic/Media placeholder',
     component: MediaPlaceholder,
+    argTypes: {
+        icon: {
+            options: ['image', 'gallery', 'video', 'audio', 'file', 'product'],
+            control: {type: 'select'}
+        },
+        size: {
+            options: ['xsmall', 'small', 'medium', 'large'],
+            control: {type: 'select'}
+        },
+        borderStyle: {
+            options: ['solid', 'dashed'],
+            control: {type: 'radio'}
+        }
+    },
     parameters: {
         status: {
             type: 'functional'

@@ -29,7 +29,7 @@ export function SettingsPanel({children, darkMode}) {
         <SettingsPanelContext.Provider value={{repositionPanel}}>
             <div className={`!mt-0 ${darkMode ? 'dark' : ''}`}>
                 <div ref={ref}
-                    className="not-kg-prose z-[9999999] m-0 flex max-h-[520px] w-[320px] flex-col gap-2 overflow-auto rounded-lg bg-white bg-clip-padding p-6 font-sans shadow dark:bg-grey-950"
+                    className="not-kg-prose z-[9999999] m-0 flex max-h-[520px] w-[320px] flex-col gap-2 overflow-auto rounded-lg bg-white bg-clip-padding p-6 font-sans shadow transition-all dark:bg-grey-950"
                     data-testid="settings-panel"
                 >
                     {children}

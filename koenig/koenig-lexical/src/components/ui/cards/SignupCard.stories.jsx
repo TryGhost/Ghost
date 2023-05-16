@@ -30,8 +30,8 @@ const story = {
                 defaultValue: displayOptions.Default
             }
         },
-        cardWidth: {
-            options: ['regular', 'wide', 'full'],
+        layout: {
+            options: ['regular', 'wide', 'full', 'split'],
             control: {type: 'radio'}
         }
     },
@@ -73,8 +73,9 @@ const Template = ({display, heading, subheader, disclaimer, ...args}) => {
 export const Empty = Template.bind({});
 Empty.args = {
     display: 'Editing',
-    cardWidth: 'regular',
+    layout: 'regular',
     alignment: 'center',
+    showBackgroundImage: false,
     heading: '',
     headerPlaceholder: 'Enter heading text',
     subheader: '',
@@ -89,8 +90,10 @@ Empty.args = {
 export const Populated = Template.bind({});
 Populated.args = {
     display: 'Editing',
-    cardWidth: 'regular',
+    layout: 'regular',
     alignment: 'center',
+    showBackgroundImage: true,
+    backgroundImageSrc: 'https://static.ghost.org/v4.0.0/images/feature-image.jpg',
     heading: 'This is a heading',
     headerPlaceholder: 'Enter heading text',
     subheader: 'And here is some subheading text.',
@@ -98,7 +101,6 @@ Populated.args = {
     disclaimer: 'And here is some disclaimer text.',
     disclaimerPlaceholder: 'Enter disclaimer text',
     buttonText: 'Subscribe',
-    buttonPlaceholder: 'Add button text',
     buttonColor: '#f7f7f7',
     backgroundColor: '#444444',
     availableLabels: [{id: '1',name: 'First label'},{id: '2',name: 'Second label'}]

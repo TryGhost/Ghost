@@ -115,7 +115,13 @@ export function SignupCard({alignment,
 
     return (
         <>
-            <div className='flex bg-transparent font-sans text-black transition-colors ease-in-out dark:text-white' data-testid={'signup-card-container'} style={wrapperStyle()}>
+            <div className={clsx(
+                'flex bg-transparent font-sans text-black transition-colors ease-in-out dark:text-white',
+                (layout === 'regular') && 'min-h-[32vh]',
+                (layout === 'wide') && 'min-h-[56vh]',
+                (layout === 'full') && 'min-h-[80vh]',
+                (layout === 'split') && 'h-[80vh]'
+            )} data-testid={'signup-card-container'} style={wrapperStyle()}>
                 {layout === 'split' && (
                     backgroundImageSrc
                         ? <img alt="" className="w-[50%] object-cover" src={backgroundImageSrc} />
@@ -123,11 +129,12 @@ export function SignupCard({alignment,
                 )}
 
                 <div className={clsx(
-                    'flex flex-1 flex-col justify-center',
+                    'mx-auto flex w-full flex-1 flex-col justify-center',
                     (alignment === 'center') && 'items-center',
-                    (layout === 'regular' || layout === 'split') && 'min-h-[32vh] p-[8vmin] pb-[9vmin]',
-                    (layout === 'wide') && 'min-h-[56vh] p-[12vmin] pb-[13vmin]',
-                    (layout === 'full') && 'min-h-[80vh] p-[16vmin] pb-[18vmin]'
+                    (layout === 'regular') && 'p-[8vmin] pb-[9vmin]',
+                    (layout === 'wide') && 'p-[12vmin] pb-[13vmin]',
+                    (layout === 'full') && 'p-[16vmin] pb-[18vmin]',
+                    (layout === 'split') && 'px-[8vmin] pt-[16vmin] pb-[18vmin]'
                 )}>
                     {/* Heading */}
                     {
@@ -142,8 +149,8 @@ export function SignupCard({alignment,
                                 placeholderClassName={clsx(
                                     'w-full truncate whitespace-normal !font-bold !leading-tight !tracking-tight opacity-50',
                                     (alignment === 'center') && 'text-center',
-                                    (layout === 'regular' || layout === 'split') && '!text-5xl',
-                                    (layout === 'wide') && '!text-6xl',
+                                    (layout === 'regular') && '!text-5xl',
+                                    (layout === 'wide' || layout === 'split') && '!text-6xl',
                                     (layout === 'full') && '!text-8xl'
                                 )}
                                 placeholderText={headerPlaceholder}
@@ -151,10 +158,10 @@ export function SignupCard({alignment,
                                 textClassName={clsx(
                                     'koenig-lexical-header-heading relative w-full whitespace-normal font-bold [&:has(br)]:text-left',
                                     (alignment === 'center') && 'text-center',
-                                    (layout === 'regular' || layout === 'split') && 'koenig-lexical-header-xsmall',
-                                    ((layout === 'regular' || layout === 'split') && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_192px)]',
-                                    (layout === 'wide') && 'koenig-lexical-header-small',
-                                    (layout === 'wide' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_238px)]',
+                                    (layout === 'regular') && 'koenig-lexical-header-xsmall',
+                                    (layout === 'regular' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_192px)]',
+                                    (layout === 'wide' || layout === 'split') && 'koenig-lexical-header-small',
+                                    ((layout === 'wide' || layout === 'split') && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_238px)]',
                                     (layout === 'full') && 'koenig-lexical-header-large',
                                     (layout === 'full' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_374px)]'
                                 )}
@@ -172,10 +179,10 @@ export function SignupCard({alignment,
                                 initialEditorState={subheaderTextEditorInitialState}
                                 nodes="minimal"
                                 placeholderClassName={clsx(
-                                    'w-full truncate whitespace-normal !font-normal !leading-tight opacity-50',
+                                    'w-full truncate whitespace-normal !font-normal !leading-tight !tracking-[-0.025em] opacity-50',
                                     (alignment === 'center') && 'text-center',
-                                    (layout === 'regular' || layout === 'split') && '!text-xl',
-                                    (layout === 'wide') && '!text-2xl',
+                                    (layout === 'regular') && '!text-xl',
+                                    (layout === 'wide' || layout === 'split') && '!text-2xl',
                                     (layout === 'full') && '!text-3xl'
                                 )}
                                 placeholderText={subheaderPlaceholder}
@@ -183,19 +190,19 @@ export function SignupCard({alignment,
                                 textClassName={clsx(
                                     'koenig-lexical-header-subheading relative w-full whitespace-normal [&:has(br)]:text-left',
                                     (alignment === 'center') && 'text-center',
-                                    (layout === 'regular' || layout === 'split') && 'koenig-lexical-header-small !mt-2',
-                                    ((layout === 'regular' || layout === 'split') && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_105px)]',
-                                    (layout === 'wide') && 'koenig-lexical-header-medium !mt-3',
-                                    (layout === 'wide' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_124px)]',
+                                    (layout === 'regular') && 'koenig-lexical-header-small !mt-2',
+                                    (layout === 'regular' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_92px)]',
+                                    (layout === 'wide' || layout === 'split') && 'koenig-lexical-header-medium !mt-3',
+                                    ((layout === 'wide' || layout === 'split') && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_108px)]',
                                     (layout === 'full') && 'koenig-lexical-header-large !mt-3',
-                                    (layout === 'full' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_156px)]'
+                                    (layout === 'full' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_134px)]'
                                 )}
                             />
                         )
                     }
 
                     {/* Subscribe form */}
-                    <div className={`h-full ${(layout === 'regular') ? 'mt-6 w-9/12' : (layout === 'wide') ? 'mt-8 w-4/6' : 'mt-10 w-5/12'}`}>
+                    <div className={`${(layout === 'regular') ? 'mt-6 w-9/12' : (layout === 'wide') ? 'mt-8 w-4/6' : (layout === 'full') ? 'mt-10 w-5/12' : 'mt-10 w-full'}`}>
                         <SubscribeForm
                             buttonSize={`${(layout === 'regular') ? 'medium' : (layout === 'wide') ? 'large' : 'xlarge'}`}
                             buttonStyle={buttonColor ? {
@@ -224,14 +231,14 @@ export function SignupCard({alignment,
                                 placeholderClassName={`truncate opacity-50 w-full whitespace-normal !leading-tight !font-normal !text-[1.6rem] !tracking-[-0.025em] ${(alignment === 'center' && 'text-center')}`}
                                 placeholderText={disclaimerPlaceholder}
                                 singleParagraph={true}
-                                textClassName={`koenig-lexical-header-subheading koenig-lexical-header-xsmall relative w-full whitespace-normal !mt-4 ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_76px)]'}`}
+                                textClassName={`koenig-lexical-header-subheading koenig-lexical-header-xsmall relative w-full whitespace-normal !mt-4 ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_71px)]'}`}
                             />
                         )
                     }
-                </div>
 
-                {/* Read-only overlay */}
-                {!isEditing && <div className="absolute top-0 z-10 !m-0 h-full w-full cursor-default p-0"></div>}
+                    {/* Read-only overlay */}
+                    {!isEditing && <div className="absolute top-0 z-10 !m-0 h-full w-full cursor-default p-0"></div>}
+                </div>
             </div>
 
             {isEditing && (
@@ -256,6 +263,7 @@ export function SignupCard({alignment,
                     />}
                     {(showBackgroundImage || layout === 'split') && <MediaUploadSetting
                         alt='Background image'
+                        desc='Click to upload'
                         errors={fileUploader.errors}
                         hideLabel={layout !== 'split'}
                         icon='file'
@@ -265,11 +273,12 @@ export function SignupCard({alignment,
                         mimeTypes={['image/*']}
                         placeholderRef={imageDragHandler.setRef}
                         progress={progress}
+                        size='xsmall'
                         src={backgroundImageSrc}
                         onFileChange={onFileChange}
                         onRemoveMedia={handleClearBackgroundImage}
                     />}
-                    {(!showBackgroundImage || layout === 'split') && <ColorPickerSetting
+                    <ColorPickerSetting
                         dataTestId='signup-background-color'
                         label='Background'
                         swatches={[
@@ -279,7 +288,7 @@ export function SignupCard({alignment,
                         ]}
                         value={backgroundColor}
                         onChange={handleBackgroundColor}
-                    />}
+                    />
                     <SettingsDivider />
 
                     <ColorPickerSetting

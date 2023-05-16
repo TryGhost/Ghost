@@ -103,7 +103,7 @@ test.describe('Signup card', async () => {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
-        await page.click('[data-testid="signup-background-color"] [aria-label="Pick colour"]');
+        await page.click('[data-testid="signup-background-color"] [aria-label="Pick color"]');
 
         await page.click('[data-testid="signup-background-color"] input');
         await page.keyboard.type('ff0000');
@@ -147,7 +147,7 @@ test.describe('Signup card', async () => {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
-        await page.click('[data-testid="signup-button-color"] [aria-label="Pick colour"]');
+        await page.click('[data-testid="signup-button-color"] [aria-label="Pick color"]');
 
         await page.click('[data-testid="signup-button-color"] input');
         await page.keyboard.type('ff0000');

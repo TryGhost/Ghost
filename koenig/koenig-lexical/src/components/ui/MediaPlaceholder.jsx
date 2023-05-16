@@ -71,7 +71,7 @@ export function MediaPlaceholder({
 }
 
 MediaPlaceholder.propTypes = {
-    icon: PropTypes.string,
+    icon: PropTypes.oneOf(['image', 'gallery', 'video', 'audio', 'file', 'product']),
     desc: PropTypes.string,
     size: PropTypes.oneOf(['xsmall', 'small', 'medium', 'large']),
     borderStyle: PropTypes.oneOf(['solid', 'dashed'])
