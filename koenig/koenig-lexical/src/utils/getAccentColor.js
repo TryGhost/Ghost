@@ -1,3 +1,5 @@
 export function getAccentColor() {
-    return getComputedStyle(document.body.querySelector('.koenig-lexical')).getPropertyValue('--kg-accent-color') || '#ff0095';
+    const editor = document.body.querySelector('.koenig-lexical');
+
+    return (editor && getComputedStyle(editor).getPropertyValue('--kg-accent-color')) || '#ff0095';
 }
