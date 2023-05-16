@@ -16,12 +16,8 @@ export default BaseValidator.create({
     },
 
     amount(model) {
-        if (!model.amount) {
-            if (model.type === 'trial') {
-                model.errors.add('amount', 'Free trial must be at least 1 day.');
-            } else {
-                model.errors.add('amount', 'Please enter the amount.');
-            }
+        if (model.amount === '' || model.amount === undefined) {
+            model.errors.add('amount', 'Please enter the amount.');
 
             return this.invalidate();
         }
