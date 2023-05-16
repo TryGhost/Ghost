@@ -19,7 +19,7 @@ const MD_TEXT_SECTION = 1;
 // const MD_CARD_SECTION = 10;
 
 const MD_TEXT_MARKER = 0;
-// const MD_ATOM_MARKER = 1;
+const MD_ATOM_MARKER = 1;
 
 const L_IS_BOLD = 1;
 const L_IS_ITALIC = 1 << 1;
@@ -76,6 +76,17 @@ function getOrSetMarkupIndex(markup, mobiledoc) {
     if (index === -1) {
         mobiledoc.markups.push([markup]);
         index = mobiledoc.markups.length - 1;
+    }
+
+    return index;
+}
+
+function getOrSetAtomIndex(atom, mobiledoc) {
+    let index = mobiledoc.atoms.findIndex(m => m[0] === atom);
+
+    if (index === -1) {
+        mobiledoc.atoms.push(atom);
+        index = mobiledoc.atoms.length - 1;
     }
 
     return index;
@@ -214,6 +225,12 @@ function addParagraphChild(paragraph, mobiledoc) {
                         markers.push([MD_TEXT_MARKER, openedMarkupIndexes, closedMarkupCount, linkChild.text]);
                     }
                 });
+            }
+
+            if (child.type === 'linebreak') {
+                const atom = ['soft-return', '', {}];
+                const atomIndex = getOrSetAtomIndex(atom, mobiledoc);
+                markers.push([MD_ATOM_MARKER, [], 0, atomIndex]);
             }
         });
     }
