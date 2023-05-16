@@ -70,6 +70,7 @@
     "@tryghost/audience-feedback": "0.0.0",
     "@tryghost/bookshelf-plugins": "0.6.7",
     "@tryghost/bootstrap-socket": "0.0.0",
+    "@tryghost/collections": "0.0.0",
     "@tryghost/color-utils": "0.1.24",
     "@tryghost/config-url-helpers": "1.0.6",
     "@tryghost/constants": "0.0.0",

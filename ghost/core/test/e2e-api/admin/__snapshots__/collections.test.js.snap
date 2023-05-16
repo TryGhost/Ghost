@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Collections API Can browse Collections 1: [body] 1`] = `
+Object {
+  "collections": Array [
+    Array [],
+  ],
+}
+`;
+
+exports[`Collections API Can browse Collections 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "20",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": "v5.47",
+  "etag": "W/\\"14-8OY9ZEqoQYKIwHgKOLz+0dUdl7A\\"",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
