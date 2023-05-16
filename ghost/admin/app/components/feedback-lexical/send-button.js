@@ -1,10 +1,9 @@
 import Component from '@glimmer/component';
-import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
-export default class FeedbackLexicalModalComponent extends Component {
+export default class FeedbackLexicalSendButtonComponent extends Component {
     @service ajax;
     @service ghostPaths;
     @service session;
@@ -12,25 +11,15 @@ export default class FeedbackLexicalModalComponent extends Component {
 
     @inject config;
 
-    constructor(...args) {
-        super(...args);
-        this.feedbackMessage = this.args.feedbackMessage;
-    }
-
-    @action
-    closeModal() {
-        this.args.close();
-    }
-
     @task({drop: true})
     *submitFeedback() {
         let url = `https://submit-form.com/us6uBWv8`;
-        
+
         let postData;
-        if (this.args.data?.post) {
+        if (this.args?.post) {
             postData = {
-                PostId: this.args.data.post?.id,
-                PostTitle: this.args.data.post?.title
+                PostId: this.args.post?.id,
+                PostTitle: this.args.post?.title
             };
         }
 
@@ -41,7 +30,7 @@ export default class FeedbackLexicalModalComponent extends Component {
             StaffAccessLevel: this.session.user.role?.description,
             UserAgent: navigator.userAgent,
             Version: this.config.version,
-            Feedback: this.feedbackMessage
+            Feedback: this.args.feedbackMessage
         };
 
         let data = {
@@ -55,7 +44,7 @@ export default class FeedbackLexicalModalComponent extends Component {
             throw new Error('api failed ' + response.status + ' ' + response.statusText);
         }
 
-        this.args.close();
+        this.args.onSuccess?.();
 
         this.notifications.showNotification('Feedback sent',
             {
