@@ -59,7 +59,7 @@ export const H6: Story = {
 
 export const H6Grey: Story = {
     args: {
-        children: 'Grey heading 6 (only available here)',
+        children: 'Grey heading 6',
         level: 6,
         grey: true
     }

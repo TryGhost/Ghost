@@ -6,18 +6,26 @@ type THeadingLevels = 1 | 2 | 3 | 4 | 5 | 6;
 interface IHeading {
     level?: THeadingLevels;
     children?: React.ReactNode;
+
+    /**
+     * Only available for Heading 6
+     */
     grey?: boolean;
     separator?: boolean;
-    formLabel?: boolean;
+
+    /**
+     * Uses &lt;label&gt; tag and standardised styling for form labels
+     */
+    useLabelTag?: boolean;
 }
 
-const Heading: React.FC<IHeading> = ({level, children, grey, separator, formLabel, ...props}) => {
+const Heading: React.FC<IHeading> = ({level, children, grey, separator, useLabelTag, ...props}) => {
     if (!level) {
         level = 1;
     }
 
-    const newElement = `${formLabel ? 'label' : `h${level}`}`;
-    let styles = (level === 6 || formLabel) ? (`text-2xs font-semibold uppercase tracking-wide ${(grey && 'text-grey-700')}`) : '';
+    const newElement = `${useLabelTag ? 'label' : `h${level}`}`;
+    let styles = (level === 6 || useLabelTag) ? (`block text-2xs font-semibold uppercase tracking-wide ${(grey && 'text-grey-700')}`) : '';
 
     const Element = React.createElement(newElement, {className: styles, ...props}, children);
 
