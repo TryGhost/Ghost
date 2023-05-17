@@ -436,7 +436,9 @@ test.describe('Card behaviour', async () => {
             await page.keyboard.type('Second line');
             await page.keyboard.press('Enter');
             await page.keyboard.type('/hr');
+            await expect(await page.locator(`[data-kg-card-menu-item="Divider"][data-kg-cardmenu-selected="true"]`)).toBeVisible();
             await page.keyboard.press('Enter');
+            await expect(await page.locator(`[data-kg-card="horizontalrule"]`)).toBeVisible();
 
             // sanity check
             await assertHTML(page, html`
@@ -452,7 +454,7 @@ test.describe('Card behaviour', async () => {
             `);
 
             await page.click('[data-kg-card="horizontalrule"]');
-            expect(await page.locator('[data-kg-card-selected="true"]')).not.toBeNull();
+            await expect(await page.locator('[data-kg-card-selected="true"]')).not.toBeNull();
 
             await page.keyboard.press('ArrowUp');
 
