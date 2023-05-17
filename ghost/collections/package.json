@@ -28,6 +28,9 @@
         "typescript": "5.0.4"
     },
     "dependencies": {
-        "@tryghost/in-memory-repository": "0.0.0"
+        "@tryghost/errors": "^1.2.25",
+        "@tryghost/in-memory-repository": "0.0.0",
+        "@tryghost/tpl": "^0.1.25",
+        "bson-objectid": "^2.0.4"
     }
 }

@@ -11,8 +11,10 @@ export class CollectionsService {
         this.repository = deps.repository;
     }
 
-    async save(collection: Collection): Promise<Collection> {
-        return await this.repository.save(collection);
+    async save(data: any): Promise<Collection> {
+        const collection = await this.repository.create(data);
+        await this.repository.save(collection);
+        return collection;
     }
 
     async getById(id: string): Promise<Collection | null> {
