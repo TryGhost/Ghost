@@ -60,11 +60,8 @@ const Template = ({display, heading, subheader, disclaimer, ...args}) => {
                     {...display}
                     {...args}
                     disclaimerTextEditor={disclaimerTextEditor}
-                    disclaimerTextEditorInitialState={editorEmptyState}
                     headerTextEditor={headerTextEditor}
-                    headerTextEditorInitialState={editorEmptyState}
                     subheaderTextEditor={subheaderTextEditor}
-                    subheaderTextEditorInitialState={editorEmptyState}
                 />
             </CardWrapper>
         </div>
@@ -82,7 +79,10 @@ Empty.args = {
     disclaimer: '',
     buttonText: '',
     buttonPlaceholder: 'Add button text',
-    availableLabels: [{id: '1',name: 'First label'},{id: '2',name: 'Second label'}]
+    availableLabels: [{id: '1',name: 'First label'},{id: '2',name: 'Second label'}],
+    headerTextEditorInitialState: editorEmptyState,
+    subheaderTextEditorInitialState: editorEmptyState,
+    disclaimerTextEditorInitialState: editorEmptyState
 };
 
 export const Populated = Template.bind({});
