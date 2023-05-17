@@ -17,7 +17,7 @@ const TextField: React.FC<ITextField> = ({inputRef, title, value, placeholder, h
             {title && <Heading formLabel={true} grey={true}>{title}</Heading>}
             <input
                 ref={inputRef} 
-                className='-m-1 border-b border-grey-300 px-1 py-2 focus:border-grey-900' 
+                className={`-m-1 h-10 border-b border-grey-300 px-1 py-2 focus:border-grey-900 ${title && `mt-1`}`} 
                 placeholder={placeholder} 
                 type='text' 
                 value={value}
