@@ -16,14 +16,15 @@ const Heading: React.FC<IHeading> = ({level, children, grey, separator, ...props
     }
 
     const newElement = `h${level}`;
-    let styles = (level === 6) ? (`text-xs font-semibold uppercase tracking-wide ${(grey && 'text-grey-700')}`) : '';
+    let styles = (level === 6) ? (`text-2xs font-semibold uppercase tracking-wide ${(grey && 'text-grey-700')}`) : '';
 
     const Element = React.createElement(newElement, {className: styles, ...props}, children);
 
     if (separator) {
         let gap = (!level || level === 1) ? 2 : 1;
+        let bottomMargin = (level === 6) ? 2 : 3;
         return (
-            <div className={`gap-${gap} mb-3 flex flex-col`}>
+            <div className={`gap-${gap} mb-${bottomMargin} flex flex-col`}>
                 {Element}
                 <Separator />
             </div>
