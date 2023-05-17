@@ -13,18 +13,21 @@ export const ButtonColors: ButtonColorsType = {
     Red: 'Red'
 };
 
-export interface ButtonProps {
+export interface IButton {
     label: string;
+    key?: string;
     color?: string;
     fullWidth?: boolean;
     link?: boolean;
+    onClick?: () => void;
 }
 
-const Button: React.FC<ButtonProps> = ({
+const Button: React.FC<IButton> = ({
     label,
     color,
     fullWidth,
     link,
+    onClick,
     ...props
 }) => {
     let buttonColor: string;
@@ -53,6 +56,7 @@ const Button: React.FC<ButtonProps> = ({
         <button
             className={`flex cursor-pointer items-center justify-center rounded-sm text-sm ${padding} ${fontWeight} ${fullWidth && !link ? 'w-full' : ''} ${buttonColor} `}
             type="button"
+            onClick={onClick}
             {...props}
         >
             {label}
