@@ -14,7 +14,7 @@ function PopulatedImageCard({src, alt, previewSrc, imageUploader}) {
     const progressAlt = imageUploader.progress.toFixed(0) < 100 ? `upload in progress, ${imageUploader.progress}` : '';
 
     return (
-        <div>
+        <div className="not-kg-prose">
             <img
                 alt={alt ? alt : progressAlt}
                 className={`mx-auto block ${previewSrc ? 'opacity-40' : ''}`}
