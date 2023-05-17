@@ -6,7 +6,12 @@ const meta = {
     title: 'Global / Input / Textfield',
     component: TextField,
     tags: ['autodocs'],
-    decorators: [(_story: any) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)]
+    decorators: [(_story: any) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)],
+    argTypes: {
+        help: {
+            control: 'text'
+        }
+    }
 } satisfies Meta<typeof TextField>;
 
 export default meta;

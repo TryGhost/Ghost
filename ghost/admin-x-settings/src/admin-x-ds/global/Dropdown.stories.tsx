@@ -7,18 +7,23 @@ const meta = {
     title: 'Global / Input / Dropdown',
     component: Dropdown,
     tags: ['autodocs'],
-    decorators: [(_story: any) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)]
+    decorators: [(_story: any) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)],
+    argTypes: {
+        help: {
+            control: 'text'
+        }
+    }
 } satisfies Meta<typeof Dropdown>;
 
 export default meta;
 type Story = StoryObj<typeof Dropdown>;
 
 const dropdownOptions: DropdownOption[] = [
-    {value: 'Option 1', label: 'option-1'},
-    {value: 'Option 2', label: 'option-2'},
-    {value: 'Option 3', label: 'option-3'},
-    {value: 'Option 4', label: 'option-4'},
-    {value: 'Option 5', label: 'option-5'}
+    {value: 'option-1', label: 'Option 1'},
+    {value: 'option-2', label: 'Option 2'},
+    {value: 'option-3', label: 'Option 3'},
+    {value: 'option-4', label: 'Option 4'},
+    {value: 'option-5', label: 'Option 5'}
 ];
 
 export const Default: Story = {
