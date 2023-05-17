@@ -21,7 +21,7 @@
     }
 
     h1 {
-        @apply text-4xl leading-supertight;
+        @apply text-5xl leading-supertight;
     }
 
     h2 {
