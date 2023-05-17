@@ -29,9 +29,9 @@ const Button: React.FC<ButtonProps> = ({
 }) => {
     let buttonColor: string;
     if (!color) {
-        color = ButtonColors.Black;
+        color = ButtonColors.Clear;
     }
-    const fontWeight: string = ((link && color !== ButtonColors.Black) || (!link && color !== ButtonColors.Clear)) ? 'font-bold' : 'font-semibold';
+    const fontWeight: string = ((link && color !== ButtonColors.Clear && color !== ButtonColors.Black) || (!link && color !== ButtonColors.Clear)) ? 'font-bold' : 'font-semibold';
     const padding: string = !link ? 'px-4 h-9' : '';
 
     switch (color) {
