@@ -11,8 +11,8 @@ interface ButtonGroupProps {
 const ButtonGroup: React.FC<ButtonGroupProps> = ({buttons, link}) => {
     return (
         <div className={`flex items-center ${link ? 'gap-5' : 'gap-2'}`}>
-            {buttons.map(({key, color, label, onClick}) => (
-                <Button key={key} color={color} label={label} link={link} onClick={onClick} />
+            {buttons.map(({key, ...props}) => (
+                <Button key={key} link={link} {...props} />
             ))}
         </div>
     );
