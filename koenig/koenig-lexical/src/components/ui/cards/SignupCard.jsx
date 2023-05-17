@@ -260,7 +260,7 @@ export function SignupCard({alignment,
 
             {isEditing &&
                 <div className="!mt-0 flex items-center justify-center bg-grey-100 p-2 font-sans text-sm font-normal leading-none text-grey-600 dark:bg-grey-950 dark:text-grey-800">
-                    Only visible for posts on the web, this card will not be displayed in emails.
+                    Only visible to logged out visitors, this card will not be displayed to members or in emails.
                 </div>
             }
 
