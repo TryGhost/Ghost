@@ -6,7 +6,13 @@ import {ButtonColors} from './Button';
 const meta = {
     title: 'Global / Button',
     component: Button,
-    tags: ['autodocs']
+    tags: ['autodocs'],
+    argTypes: {
+        color: {
+            control: 'select',
+            options: ButtonColors
+        }
+    }
 } satisfies Meta<typeof Button>;
 
 export default meta;
