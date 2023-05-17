@@ -21,8 +21,22 @@ export class CollectionsService {
         return await this.repository.getById(id);
     }
 
-    async getAll(): Promise<Collection[]> {
-        return await this.repository.getAll();
+    async getAll(options?: any): Promise<{data: Collection[], meta: any}> {
+        const collections = await this.repository.getAll(options);
+
+        return {
+            data: collections,
+            meta: {
+                pagination: {
+                    page: 1,
+                    pages: 1,
+                    limit: collections.length,
+                    total: collections.length,
+                    prev: null,
+                    next: null
+                }
+            }
+        };
     }
 
     async destroy(id: string): Promise<void> {
