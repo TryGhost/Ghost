@@ -17,6 +17,19 @@ export class CollectionsService {
         return collection;
     }
 
+    async edit(data: any): Promise<Collection | null> {
+        const collection = await this.repository.getById(data.id);
+
+        if (!collection) {
+            return null;
+        }
+
+        Object.assign(collection, data);
+        await this.repository.save(collection);
+
+        return collection;
+    }
+
     async getById(id: string): Promise<Collection | null> {
         return await this.repository.getById(id);
     }

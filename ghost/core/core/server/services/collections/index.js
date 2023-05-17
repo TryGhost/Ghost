@@ -12,7 +12,7 @@ class CollectionsServiceWrapper {
         this.api = {
             browse: collectionsService.getAll.bind(collectionsService),
             add: collectionsService.save.bind(collectionsService),
-            edit: collectionsService.save.bind(collectionsService)
+            edit: collectionsService.edit.bind(collectionsService)
         };
     }
 }
