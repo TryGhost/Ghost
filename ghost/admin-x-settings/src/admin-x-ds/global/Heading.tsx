@@ -8,15 +8,16 @@ interface IHeading {
     children?: React.ReactNode;
     grey?: boolean;
     separator?: boolean;
+    formLabel?: boolean;
 }
 
-const Heading: React.FC<IHeading> = ({level, children, grey, separator, ...props}) => {
+const Heading: React.FC<IHeading> = ({level, children, grey, separator, formLabel, ...props}) => {
     if (!level) {
         level = 1;
     }
 
-    const newElement = `h${level}`;
-    let styles = (level === 6) ? (`text-2xs font-semibold uppercase tracking-wide ${(grey && 'text-grey-700')}`) : '';
+    const newElement = `${formLabel ? 'label' : `h${level}`}`;
+    let styles = (level === 6 || formLabel) ? (`text-2xs font-semibold uppercase tracking-wide ${(grey && 'text-grey-700')}`) : '';
 
     const Element = React.createElement(newElement, {className: styles, ...props}, children);
 
