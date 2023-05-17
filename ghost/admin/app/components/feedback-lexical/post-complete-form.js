@@ -9,4 +9,9 @@ export default class FeedbackLexicalPostCompleteFormComponent extends Component 
     updateFeedbackMessage(event) {
         this.feedbackMessage = event.target.value;
     }
+
+    @action
+    resetFeedbackMessage() {
+        this.feedbackMessage = '';
+    }
 }
