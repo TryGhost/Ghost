@@ -8,6 +8,7 @@ const {
 const {
     anyContentVersion,
     anyEtag,
+    anyErrorId,
     anyLocationFor,
     anyObjectId
 } = matchers;
@@ -103,5 +104,27 @@ describe('Collections API', function () {
             });
 
         assert.equal(editResponse.body.collections[0].title, 'Test Collection Edited');
+    });
+
+    it('Fails to edit unexistent Collection', async function () {
+        const unexistentID = '5951f5fca366002ebd5dbef7';
+        await agent
+            .put(`/collections/${unexistentID}/`)
+            .body({
+                collections: [{
+                    id: unexistentID,
+                    title: 'Editing unexistent Collection'
+                }]
+            })
+            .expectStatus(404)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
     });
 });
