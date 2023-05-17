@@ -4,7 +4,7 @@ import ButtonGroup from './ButtonGroup';
 import {ButtonColors} from './Button';
 
 const ButtonGroupMeta = {
-    title: 'Global / Button group',
+    title: 'Global / Button Group',
     component: ButtonGroup,
     tags: ['autodocs']
 } satisfies Meta<typeof ButtonGroup>;

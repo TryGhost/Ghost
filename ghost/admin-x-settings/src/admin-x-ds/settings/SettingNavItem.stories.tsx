@@ -3,7 +3,7 @@ import type {Meta, StoryObj} from '@storybook/react';
 import SettingNavItem from './SettingNavItem';
 
 const meta = {
-    title: 'Settings / Sidebar navigation item',
+    title: 'Settings / Sidebar Navigation Item',
     component: SettingNavItem,
     tags: ['autodocs']
 } satisfies Meta<typeof SettingNavItem>;
