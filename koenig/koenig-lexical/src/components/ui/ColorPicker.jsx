@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useRef} from 'react';
-import {ReactComponent as EyedropperIcon} from '../../assets/icons/kg-link.svg';
+import {ReactComponent as EyedropperIcon} from '../../assets/icons/kg-eyedropper.svg';
 import {HexColorInput, HexColorPicker} from 'react-colorful';
 import {INPUT_CLASSES} from './Input';
 import {getAccentColor} from '../../utils/getAccentColor';
@@ -79,8 +79,8 @@ export function ColorPicker({value, swatches, onChange, onBlur}) {
                     ))}
 
                     {!!window.EyeDropper && (
-                        <button className="flex h-4 w-4 items-center justify-center" type="button" onClick={openColorPicker}>
-                            <EyedropperIcon className="h-3 w-3" />
+                        <button className="flex h-4 w-4 p-[1px] pt-[2px] ml-[2px] items-center justify-center z-10" type="button" onClick={openColorPicker}>
+                            <EyedropperIcon className="h-full w-full" />
                         </button>
                     )}
                 </div>
