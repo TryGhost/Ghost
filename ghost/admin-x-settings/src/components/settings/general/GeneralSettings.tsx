@@ -1,8 +1,8 @@
 import React from 'react';
 
-import PublicationLanguage from './PublicationLanguage';
+// import PublicationLanguage from './PublicationLanguage';
 import SettingSection from '../../../admin-x-ds/settings/SettingSection';
-import TimeZone from './TimeZone';
+// import TimeZone from './TimeZone';
 import TitleAndDescription from './TitleAndDescription';
 
 const GeneralSettings: React.FC = () => {
@@ -10,8 +10,8 @@ const GeneralSettings: React.FC = () => {
         <>
             <SettingSection title="General">
                 <TitleAndDescription />
-                <TimeZone />
-                <PublicationLanguage />
+                {/* <TimeZone /> */}
+                {/* <PublicationLanguage /> */}
             </SettingSection>
         </>
     );

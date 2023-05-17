@@ -1,7 +1,9 @@
 import React from 'react';
 
+export type TSettingGroupStates = 'view' | 'edit' | 'unsaved' | 'error' | 'new';
+
 interface SettingGroupProps {
-    state?: 'view' | 'edit' | 'unsaved' | 'error' | 'new';
+    state?: TSettingGroupStates;
     children?: React.ReactNode;
 }
 
