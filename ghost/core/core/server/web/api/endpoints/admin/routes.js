@@ -20,6 +20,7 @@ module.exports = function apiRoutes() {
 
     // ## Collections
     router.get('/collections', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.browse));
+    router.post('/collections', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.add));
 
     // ## Configuration
     router.get('/config', mw.authAdminApi, http(api.config.read));
