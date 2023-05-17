@@ -100,6 +100,14 @@ function addRootChild(child, mobiledoc) {
     if (child.type === 'heading') {
         addTextSection(child, mobiledoc, child.tag);
     }
+
+    if (child.type === 'quote') {
+        addTextSection(child, mobiledoc, 'blockquote');
+    }
+
+    if (child.type === 'aside') {
+        addTextSection(child, mobiledoc, 'aside');
+    }
 }
 
 function addTextSection(childWithFormats, mobiledoc, tagName = 'p') {

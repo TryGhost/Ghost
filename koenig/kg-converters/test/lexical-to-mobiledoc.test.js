@@ -1493,11 +1493,273 @@ describe('lexicalToMobiledoc', function () {
             }));
         });
 
-        it('converts blockquotes');
-        it('converts blockquotes with links and formatting');
+        it('converts blockquotes', function () {
+            const result = lexicalToMobiledoc(JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Blockquote text',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'quote',
+                            version: 1
+                        }
+                    ],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
 
-        it('converts asides');
-        it('converts asides with links and formatting');
+            assert.equal(result, JSON.stringify({
+                version: MOBILEDOC_VERSION,
+                ghostVersion: GHOST_VERSION,
+                atoms: [],
+                cards: [],
+                markups: [],
+                sections: [
+                    [1, 'blockquote', [[0, [], 0, 'Blockquote text']]]
+                ]
+            }));
+        });
+
+        it('converts blockquotes with links and formatting', function () {
+            const result = lexicalToMobiledoc(JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Blockquote with ',
+                                    type: 'text',
+                                    version: 1
+                                },
+                                {
+                                    children: [
+                                        {
+                                            detail: 0,
+                                            format: 0,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'links and ',
+                                            type: 'text',
+                                            version: 1
+                                        },
+                                        {
+                                            detail: 0,
+                                            format: 1,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'formatting',
+                                            type: 'text',
+                                            version: 1
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'link',
+                                    version: 1,
+                                    rel: 'noopener',
+                                    target: null,
+                                    title: null,
+                                    url: 'https://koenig.ghost.org'
+                                },
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: '.',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'quote',
+                            version: 1
+                        }
+                    ],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+
+            assert.equal(result, JSON.stringify({
+                version: MOBILEDOC_VERSION,
+                ghostVersion: GHOST_VERSION,
+                atoms: [],
+                cards: [],
+                markups: [
+                    ['a', ['href', 'https://koenig.ghost.org']],
+                    ['strong']
+                ],
+                sections: [
+                    [1, 'blockquote', [
+                        [0, [], 0, 'Blockquote with '],
+                        [0, [0], 0, 'links and '],
+                        [0, [1], 2, 'formatting'],
+                        [0, [], 0, '.']
+                    ]]
+                ]
+            }));
+        });
+
+        it('converts asides', function () {
+            const result = lexicalToMobiledoc(JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Aside text',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'aside',
+                            version: 1
+                        }
+                    ],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+
+            assert.equal(result, JSON.stringify({
+                version: MOBILEDOC_VERSION,
+                ghostVersion: GHOST_VERSION,
+                atoms: [],
+                cards: [],
+                markups: [],
+                sections: [
+                    [1, 'aside', [[0, [], 0, 'Aside text']]]
+                ]
+            }));
+        });
+
+        it('converts asides with links and formatting', function () {
+            const result = lexicalToMobiledoc(JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Aside with ',
+                                    type: 'text',
+                                    version: 1
+                                },
+                                {
+                                    children: [
+                                        {
+                                            detail: 0,
+                                            format: 0,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'links and ',
+                                            type: 'text',
+                                            version: 1
+                                        },
+                                        {
+                                            detail: 0,
+                                            format: 1,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'formatting',
+                                            type: 'text',
+                                            version: 1
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'link',
+                                    version: 1,
+                                    rel: 'noopener',
+                                    target: null,
+                                    title: null,
+                                    url: 'https://koenig.ghost.org'
+                                },
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: '.',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'aside',
+                            version: 1
+                        }
+                    ],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+
+            assert.equal(result, JSON.stringify({
+                version: MOBILEDOC_VERSION,
+                ghostVersion: GHOST_VERSION,
+                atoms: [],
+                cards: [],
+                markups: [
+                    ['a', ['href', 'https://koenig.ghost.org']],
+                    ['strong']
+                ],
+                sections: [
+                    [1, 'aside', [
+                        [0, [], 0, 'Aside with '],
+                        [0, [0], 0, 'links and '],
+                        [0, [1], 2, 'formatting'],
+                        [0, [], 0, '.']
+                    ]]
+                ]
+            }));
+        });
 
         it('converts unordered lists');
         it('converts unordered lists with links and formatting');
