@@ -98,16 +98,11 @@ export function SignupCard({alignment,
     const disclaimerPlaceholder = 'Enter disclaimer text';
 
     const hexColorValue = (color) => {
-        if (color === 'accent') {
-            return getAccentColor();
-        }
+        return color === 'accent' ? getAccentColor() : color;
+    };
 
-        if (color === 'transparent') {
-            // The editor background is white, so we should force dark text
-            return '#ffffff';
-        }
-
-        return color;
+    const textColor = (color) => {
+        return color === 'transparent' ? null : textColorForBackgroundColor(hexColorValue(color)).hex();
     };
 
     const wrapperStyle = () => {
@@ -117,12 +112,12 @@ export function SignupCard({alignment,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center center',
                 backgroundColor: 'bg-grey-950',
-                color: backgroundImageAverageColor && textColorForBackgroundColor(backgroundImageAverageColor).hex()
+                color: backgroundImageAverageColor && textColor(backgroundImageAverageColor)
             };
         } else if (backgroundColor) {
             return {
                 backgroundColor: hexColorValue(backgroundColor),
-                color: textColorForBackgroundColor(hexColorValue(backgroundColor)).hex()
+                color: textColor(backgroundColor)
             };
         }
 
@@ -224,7 +219,7 @@ export function SignupCard({alignment,
                             buttonSize={`${(layout === 'regular') ? 'medium' : (layout === 'wide') ? 'large' : 'xlarge'}`}
                             buttonStyle={buttonColor ? {
                                 backgroundColor: hexColorValue(buttonColor),
-                                color: textColorForBackgroundColor(hexColorValue(buttonColor)).hex()
+                                color: textColor(buttonColor)
                             } : {backgroundColor: `#000000`,
                                 color: `#ffffff`}}
                             buttonText={buttonText || 'Subscribe'}
