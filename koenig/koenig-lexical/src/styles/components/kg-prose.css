@@ -837,6 +837,8 @@
     }
 }
 
+/* stylelint-disable at-rule-disallowed-list */
+
 .koenig-lexical-header-heading {
     .kg-prose {
         :where(
@@ -846,15 +848,12 @@
                     ul,
                     ol
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-family: "Inter", -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
-            line-height: 1.15 !important;
-            font-weight: bold;
-            letter-spacing: -0.025em;
+                    @apply font-sans !leading-[1.1] font-bold tracking-tight;
         }
         :where(
                     strong
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-weight: 800;
+            @apply font-extrabold;
         }
     }
 }
@@ -868,7 +867,7 @@
                     ul,
                     ol
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-size: 4.8rem !important;
+            @apply text-3xl sm:text-4xl md:text-5xl;
         }
     }
 }
@@ -882,7 +881,7 @@
                     ul,
                     ol
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-size: 6rem !important;
+            @apply text-3xl sm:text-4xl md:text-5xl lg:text-6xl;
         }
     }
 }
@@ -896,7 +895,7 @@
                     ul,
                     ol
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-size: 7.2rem !important;
+            @apply text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl;
         }
     }
 }
@@ -910,7 +909,7 @@
                     ul,
                     ol
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-size: 9.6rem !important;
+            @apply text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl;
         }
     }
 }
@@ -924,15 +923,12 @@
                     ul,
                     ol
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-family: "Inter", -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
-            line-height: 1.25 !important;
-            font-weight: 500;
-            letter-spacing: -0.025em;
+                    @apply font-sans !leading-snug font-medium tracking-tight;
         }
         :where(
                     strong
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-weight: 800;
+            @apply font-extrabold;
         }
     }
 }
@@ -946,7 +942,7 @@
                     ul,
                     ol
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-size: 1.6rem !important;
+            @apply text-[1.6rem];
         }
     }
 }
@@ -960,7 +956,7 @@
                     ul,
                     ol
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-size: 2rem !important;
+            @apply text-lg sm:text-xl;
         }
     }
 }
@@ -974,7 +970,7 @@
                     ul,
                     ol
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-size: 2.4rem !important;
+            @apply text-lg sm:text-xl md:text-2xl;
         }
     }
 }
@@ -988,28 +984,15 @@
                     ul,
                     ol
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-size: 3rem !important;
+            @apply text-xl md:text-2xl xl:text-3xl;
         }
     }
 }
+
+/* stylelint-enable at-rule-disallowed-list */
+
 
 /* When the header or the callout have a background color of accent, we need to show all links in white */
 .kg-header-accent, .kg-callout-accent {
     --kg-accent-color: #fff;
-}
-
-.koenig-lexical-signup-disclaimer {
-    .kg-prose {
-        :where(
-                    p,
-                    blockquote,
-                    aside,
-                    ul,
-                    ol
-                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-family: "Inter", -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
-            line-height: 1.25 !important;
-            font-size: 1.5rem !important;
-        }
-    }
 }

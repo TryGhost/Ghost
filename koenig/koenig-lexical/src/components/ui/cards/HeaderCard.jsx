@@ -1,6 +1,7 @@
 import KoenigNestedEditor from '../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
 import React from 'react';
+import clsx from 'clsx';
 import {BackgroundImagePicker} from '../BackgroundImagePicker';
 import {Button} from '../Button';
 import {ButtonGroupSetting, ColorOptionSetting, InputSetting, InputUrlSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
@@ -107,10 +108,22 @@ export function HeaderCard({isEditing,
                             initialEditor={headerTextEditor}
                             initialEditorState={headerTextEditorInitialState}
                             nodes="minimal"
-                            placeholderClassName={`truncate opacity-50 whitespace-normal !tracking-tight !text-center w-full !leading-tight !font-bold ${(size === 'small') ? '!text-6xl' : (size === 'medium') ? '!text-7xl' : '!text-8xl'} ${HEADER_TEXT_COLORS[type]}`}
+                            placeholderClassName={clsx(
+                                'w-full truncate whitespace-normal !text-center !font-bold !leading-[1.1] !tracking-tight opacity-50',
+                                (size === 'small') && 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl',
+                                (size === 'medium') && 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl',
+                                (size === 'large') && 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl',
+                                (HEADER_TEXT_COLORS[type])
+                            )}
                             placeholderText={headerPlaceholder}
                             singleParagraph={true}
-                            textClassName={`koenig-lexical-header-heading relative w-full whitespace-normal text-center font-bold text-center [&:has(br)]:text-left ${(size === 'small') ? 'koenig-lexical-header-small [&:has(br)]:pl-[calc(50%_-_254px)]' : (size === 'medium') ? 'koenig-lexical-header-medium [&:has(br)]:pl-[calc(50%_-_304px)]' : 'koenig-lexical-header-large [&:has(br)]:pl-[calc(50%_-_404px)]'} ${HEADER_TEXT_COLORS[type]}`}
+                            textClassName={clsx(
+                                'koenig-lexical-header-heading relative w-full whitespace-normal text-center font-bold [&:has(br)]:text-left', 
+                                (size === 'small') && 'koenig-lexical-header-small [&:has(br)]:pl-[calc(50%_-_122px)] [&:has(br)]:sm:pl-[calc(50%_-_146px)] [&:has(br)]:md:pl-[calc(50%_-_192px)] [&:has(br)]:lg:pl-[calc(50%_-_236px)]',
+                                (size === 'medium') && 'koenig-lexical-header-medium [&:has(br)]:pl-[calc(50%_-_122px)] [&:has(br)]:sm:pl-[calc(50%_-_146px)] [&:has(br)]:md:pl-[calc(50%_-_192px)] [&:has(br)]:lg:pl-[calc(50%_-_236px)] [&:has(br)]:xl:pl-[calc(50%_-_282px)]',
+                                (size === 'large') && 'koenig-lexical-header-large [&:has(br)]:pl-[calc(50%_-_146px)] [&:has(br)]:sm:pl-[calc(50%_-_192px)] [&:has(br)]:md:pl-[calc(50%_-_236px)] [&:has(br)]:lg:pl-[calc(50%_-_282px)] [&:has(br)]:xl:pl-[calc(50%_-_374px)]',
+                                (HEADER_TEXT_COLORS[type])
+                            )}
                         />
                     )
                 }
@@ -123,10 +136,22 @@ export function HeaderCard({isEditing,
                             initialEditor={subheaderTextEditor}
                             initialEditorState={subheaderTextEditorInitialState}
                             nodes="minimal"
-                            placeholderClassName={`truncate opacity-50 w-full whitespace-normal !text-center !leading-tight !font-normal ${(size === 'small') ? '!text-xl' : (size === 'medium') ? '!text-2xl' : '!text-3xl'} ${HEADER_TEXT_COLORS[type]}`}
+                            placeholderClassName={clsx(
+                                'w-full truncate whitespace-normal !text-center !font-medium !leading-snug !tracking-tight opacity-50',
+                                (size === 'small') && 'text-lg sm:text-xl',
+                                (size === 'medium') && 'text-lg sm:text-xl md:text-2xl',
+                                (size === 'large') && 'text-xl md:text-2xl xl:text-3xl',
+                                (HEADER_TEXT_COLORS[type])
+                            )}
                             placeholderText={subheaderPlaceholder}
                             singleParagraph={true}
-                            textClassName={`koenig-lexical-header-subheading relative w-full whitespace-normal text-center [&:has(br)]:text-left ${(size === 'small') ? 'koenig-lexical-header-small [&:has(br)]:pl-[calc(50%_-_105px)] !mt-2' : (size === 'medium') ? 'koenig-lexical-header-medium [&:has(br)]:pl-[calc(50%_-_124px)] !mt-3' : 'koenig-lexical-header-large [&:has(br)]:pl-[calc(50%_-_156px)] !mt-3'} ${HEADER_TEXT_COLORS[type]}`}
+                            textClassName={clsx(
+                                'koenig-lexical-header-subheading relative w-full whitespace-normal text-center [&:has(br)]:text-left',
+                                (size === 'small') && 'koenig-lexical-header-small !mt-2 [&:has(br)]:pl-[calc(50%_-_86px)] [&:has(br)]:sm:pl-[calc(50%_-_95px)]',
+                                (size === 'medium') && 'koenig-lexical-header-medium !mt-3 [&:has(br)]:pl-[calc(50%_-_86px)] [&:has(br)]:sm:pl-[calc(50%_-_95px)] [&:has(br)]:md:pl-[calc(50%_-_112px)]',
+                                (size === 'large') && 'koenig-lexical-header-large !mt-3 [&:has(br)]:pl-[calc(50%_-_95px)] [&:has(br)]:md:pl-[calc(50%_-_112px)] [&:has(br)]:xl:pl-[calc(50%_-_138px)]',
+                                (HEADER_TEXT_COLORS[type])
+                            )}
                         />
                     )
                 }

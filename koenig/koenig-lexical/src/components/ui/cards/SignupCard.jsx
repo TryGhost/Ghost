@@ -132,16 +132,16 @@ export function SignupCard({alignment,
     return (
         <>
             <div className={clsx(
-                'flex bg-transparent font-sans text-black transition-colors ease-in-out dark:text-white',
+                'flex flex-col bg-transparent font-sans text-black transition-colors ease-in-out dark:text-white sm:flex-row',
                 (layout === 'regular') && 'min-h-[32vh]',
                 (layout === 'wide') && 'min-h-[56vh]',
                 (layout === 'full') && 'min-h-[80vh]',
-                (layout === 'split') && 'h-[80vh]'
+                (layout === 'split') && 'h-auto sm:h-[80vh]'
             )} data-testid={'signup-card-container'} style={wrapperStyle()}>
                 {layout === 'split' && (
                     backgroundImageSrc
-                        ? <img alt="" className="w-[50%] object-cover" src={backgroundImageSrc} />
-                        : <div className="flex w-[50%] items-center justify-center bg-gradient-to-t from-black/0 via-black/5 to-black/30"></div>
+                        ? <img alt="" className="h-1/2 object-cover sm:h-auto sm:w-1/2" src={backgroundImageSrc} />
+                        : <div className="flex items-center justify-center bg-gradient-to-t from-black/0 via-black/5 to-black/30 sm:w-1/2"></div>
                 )}
 
                 <div className={clsx(
@@ -163,11 +163,11 @@ export function SignupCard({alignment,
                                 initialEditorState={headerTextEditorInitialState}
                                 nodes="minimal"
                                 placeholderClassName={clsx(
-                                    'w-full truncate whitespace-normal !font-bold !leading-[1.15] !tracking-tight opacity-50',
+                                    'w-full truncate whitespace-normal !font-bold !leading-[1.1] !tracking-tight opacity-50',
                                     (alignment === 'center') && 'text-center',
-                                    (layout === 'regular') && '!text-5xl',
-                                    (layout === 'wide') && '!text-6xl',
-                                    (layout === 'full' || layout === 'split') && '!text-8xl'
+                                    (layout === 'regular') && 'text-3xl sm:text-4xl md:text-5xl',
+                                    (layout === 'wide') && 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl',
+                                    (layout === 'full' || layout === 'split') && 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl'
                                 )}
                                 placeholderText={headerPlaceholder}
                                 singleParagraph={true}
@@ -175,12 +175,12 @@ export function SignupCard({alignment,
                                     'koenig-lexical-header-heading relative w-full whitespace-normal font-bold caret-current [&:has(br)]:text-left',
                                     (alignment === 'center') && 'text-center',
                                     (layout === 'regular') && 'koenig-lexical-header-xsmall',
-                                    (layout === 'regular' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_192px)]',
+                                    (layout === 'regular' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_122px)] [&:has(br)]:sm:pl-[calc(50%_-_145px)] [&:has(br)]:md:pl-[calc(50%_-_192px)]',
                                     (layout === 'wide' || layout === 'split') && 'koenig-lexical-header-small',
-                                    (layout === 'wide' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_238px)]',
+                                    (layout === 'wide' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_122px)] [&:has(br)]:sm:pl-[calc(50%_-_145px)] [&:has(br)]:md:pl-[calc(50%_-_192px)] [&:has(br)]:lg:pl-[calc(50%_-_238px)]',
                                     (layout === 'full' || layout === 'split') && 'koenig-lexical-header-large',
-                                    (layout === 'full' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_374px)]',
-                                    (layout === 'split' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_286px)]'
+                                    (layout === 'full' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_145px)] [&:has(br)]:sm:pl-[calc(50%_-_192px)] [&:has(br)]:md:pl-[calc(50%_-_238px)] [&:has(br)]:lg:pl-[calc(50%_-_283px)] [&:has(br)]:xl:pl-[calc(50%_-_374px)]',
+                                    (layout === 'split' && alignment === 'center') && '[&:has(br)]:md:pl-[calc(50%_-_182px)] [&:has(br)]:lg:pl-[calc(50%_-_216px)] [&:has(br)]:xl:pl-[calc(50%_-_286px)]'
                                 )}
                             />
                         )
@@ -198,9 +198,9 @@ export function SignupCard({alignment,
                                 placeholderClassName={clsx(
                                     'w-full truncate whitespace-normal !font-normal !leading-tight !tracking-[-0.025em] opacity-50',
                                     (alignment === 'center') && 'text-center',
-                                    (layout === 'regular') && '!text-xl',
-                                    (layout === 'wide') && '!text-2xl',
-                                    (layout === 'full' || layout === 'split') && '!text-3xl'
+                                    (layout === 'regular') && 'text-lg sm:text-xl',
+                                    (layout === 'wide') && 'text-lg sm:text-xl md:text-2xl',
+                                    (layout === 'full' || layout === 'split') && 'text-xl md:text-2xl xl:text-3xl'
                                 )}
                                 placeholderText={subheaderPlaceholder}
                                 singleParagraph={true}
@@ -208,18 +208,18 @@ export function SignupCard({alignment,
                                     'koenig-lexical-header-subheading relative w-full whitespace-normal caret-current [&:has(br)]:text-left',
                                     (alignment === 'center') && 'text-center',
                                     (layout === 'regular') && 'koenig-lexical-header-small !mt-2',
-                                    (layout === 'regular' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_92px)]',
+                                    (layout === 'regular' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_84px)] [&:has(br)]:sm:pl-[calc(50%_-_92px)]',
                                     (layout === 'wide') && 'koenig-lexical-header-medium !mt-3',
-                                    (layout === 'wide' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_108px)]',
+                                    (layout === 'wide' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_84px)] [&:has(br)]:sm:pl-[calc(50%_-_92px)] [&:has(br)]:md:pl-[calc(50%_-_108px)]',
                                     (layout === 'full' || layout === 'split') && 'koenig-lexical-header-large !mt-3',
-                                    ((layout === 'full' || layout === 'split') && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_134px)]'
+                                    ((layout === 'full' || layout === 'split') && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_92px)] [&:has(br)]:md:pl-[calc(50%_-_108px)] [&:has(br)]:xl:pl-[calc(50%_-_134px)]'
                                 )}
                             />
                         )
                     }
 
                     {/* Subscribe form */}
-                    <div className={`${(layout === 'regular') ? 'mt-10 w-9/12' : (layout === 'wide') ? 'mt-12 w-4/6' : (layout === 'full') ? 'mt-16 w-5/12' : 'mt-16 w-full'}`}>
+                    <div className={`w-full ${(layout === 'regular') ? 'mt-10 md:w-9/12' : (layout === 'wide') ? 'mt-12 md:w-4/6' : (layout === 'full') ? 'mt-12 md:mt-16 md:w-4/6 lg:w-1/2 xl:w-5/12' : 'mt-10 md:mt-16'}`}>
                         <SubscribeForm
                             buttonSize={`${(layout === 'regular') ? 'medium' : (layout === 'wide') ? 'large' : 'xlarge'}`}
                             buttonStyle={buttonColor ? {

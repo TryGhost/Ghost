@@ -18,7 +18,6 @@
 
     &.kg-inherit-styles {
         > * {
-            font-size: inherit;
             color: inherit;
             letter-spacing: inherit;
             font-weight: inherit;
