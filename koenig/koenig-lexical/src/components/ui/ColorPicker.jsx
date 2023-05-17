@@ -4,7 +4,7 @@ import {HexColorInput, HexColorPicker} from 'react-colorful';
 import {INPUT_CLASSES} from './Input';
 import {getAccentColor} from '../../utils/getAccentColor';
 
-export function ColorPicker({value, swatches, onChange, onBlur}) {
+export function ColorPicker({value, swatches, eyedropper, onChange, onBlur}) {
     // Prevent clashing with dragging the settings panel around
     const stopPropagation = useCallback(e => e.stopPropagation(), []);
 
@@ -73,14 +73,14 @@ export function ColorPicker({value, swatches, onChange, onBlur}) {
             <div className="mt-3 flex">
                 <div ref={inputWrapperRef} className={`flex w-full items-center ${INPUT_CLASSES} rounded-r-none`}>
                     <span className='ml-1 mr-2 text-grey-700'>#</span>
-                    <HexColorInput aria-label="Color value" className='w-full' color={hexValue} onBlur={onBlurHandler} onChange={onChange} />
+                    <HexColorInput aria-label="Color value" className='w-full bg-transparent' color={hexValue} onBlur={onBlurHandler} onChange={onChange} />
                 </div>
                 <div className={`flex items-center gap-1 ${INPUT_CLASSES} ml-[-1px] rounded-l-none`}>
                     {swatches.map(swatch => (
                         <ColorSwatch key={swatch.title} onSelect={pickSwatch} {...swatch} />
                     ))}
 
-                    {!!window.EyeDropper && (
+                    {eyedropper && !!window.EyeDropper && (
                         <button
                             className="ml-[2px] flex h-4 w-4 items-center justify-center p-[1px] pt-[2px]"
                             type="button"

@@ -298,6 +298,7 @@ export function SignupCard({alignment,
                     />}
                     <ColorPickerSetting
                         dataTestId='signup-background-color'
+                        eyedropper={layout === 'split'}
                         label='Background'
                         swatches={[
                             {title: 'Brand color', accent: true},
@@ -311,6 +312,7 @@ export function SignupCard({alignment,
 
                     <ColorPickerSetting
                         dataTestId='signup-button-color'
+                        eyedropper={layout === 'split'}
                         label='Button'
                         swatches={[
                             {title: 'Brand color', accent: true},
