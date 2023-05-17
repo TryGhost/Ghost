@@ -67,4 +67,30 @@ describe('collections', function () {
             assert.equal(error.message, 'Invalid ID provided for Collection', 'Error message should match');
         }
     });
+
+    describe('edit', function () {
+        it('Can edit existing collection', async function () {
+            const savedCollection = await collectionsService.save({
+                title: 'testing collections',
+                description: 'testing collections description',
+                type: 'manual',
+                deleted: false
+            });
+
+            const editedCollection = await collectionsService.edit({
+                id: savedCollection.id,
+                description: 'Edited description'
+            });
+
+            assert.equal(editedCollection?.description, 'Edited description', 'Collection description should be edited');
+        });
+
+        it('Resolves to null when editing unexistend collection', async function () {
+            const editedCollection = await collectionsService.edit({
+                id: '12345'
+            });
+
+            assert.equal(editedCollection, null, 'Collection should be null');
+        });
+    });
 });
