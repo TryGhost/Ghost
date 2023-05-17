@@ -10,7 +10,7 @@ const meta = {
         value: {
             control: 'text'
         },
-        help: {
+        hint: {
             control: 'text'
         }
     }
@@ -26,17 +26,17 @@ export const Default: Story = {
     }
 };
 
-export const WithHelp: Story = {
+export const WithHint: Story = {
     args: {
         heading: 'Setting',
         value: 'Setting value',
-        help: 'Setting help text'
+        hint: 'Setting hint text'
     }
 };
 
 export const NoHeading: Story = {
     args: {
         value: 'Setting value',
-        help: 'Help text'
+        hint: 'Hint text'
     }
 };

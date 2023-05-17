@@ -6,15 +6,15 @@ export interface ISettingValue {
     key: string,
     heading?: string,
     value: ReactNode,
-    help?: ReactNode
+    hint?: ReactNode
 }
 
-const SettingValue: React.FC<ISettingValue> = ({heading, value, help, ...props}) => {
+const SettingValue: React.FC<ISettingValue> = ({heading, value, hint, ...props}) => {
     return (
         <div className='flex flex-col' {...props}>
             {heading && <Heading grey={true} level={6}>{heading}</Heading>}
-            <div className='flex min-h-[40px] items-center'>{value}</div>
-            {help && <p className='mt-0.5 text-xs'>{help}</p>}
+            <div className={`flex items-center ${heading && `min-h-[40px]`}`}>{value}</div>
+            {hint && <p className='mt-0.5 text-xs'>{hint}</p>}
         </div>
     );
 };
