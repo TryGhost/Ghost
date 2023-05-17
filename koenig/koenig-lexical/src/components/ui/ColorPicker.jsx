@@ -42,7 +42,9 @@ export function ColorPicker({value, swatches, onChange, onBlur}) {
         inputWrapperRef.current?.querySelector('input')?.focus();
     }, [onChange]);
 
-    const openColorPicker = useCallback(() => {
+    const openColorPicker = useCallback((e) => {
+        e.preventDefault();
+
         isUsingColorPicker.current = true;
 
         const eyeDropper = new window.EyeDropper();
@@ -79,7 +81,12 @@ export function ColorPicker({value, swatches, onChange, onBlur}) {
                     ))}
 
                     {!!window.EyeDropper && (
-                        <button className="z-10 ml-[2px] flex h-4 w-4 items-center justify-center p-[1px] pt-[2px]" type="button" onClick={openColorPicker}>
+                        <button
+                            className="ml-[2px] flex h-4 w-4 items-center justify-center p-[1px] pt-[2px]"
+                            type="button"
+                            onMouseDown={openColorPicker}
+                            onTouchStart={openColorPicker}
+                        >
                             <EyedropperIcon className="h-full w-full" />
                         </button>
                     )}
