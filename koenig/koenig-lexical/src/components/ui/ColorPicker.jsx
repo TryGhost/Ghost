@@ -79,7 +79,7 @@ export function ColorPicker({value, swatches, onChange, onBlur}) {
                     ))}
 
                     {!!window.EyeDropper && (
-                        <button className="flex h-4 w-4 p-[1px] pt-[2px] ml-[2px] items-center justify-center z-10" type="button" onClick={openColorPicker}>
+                        <button className="z-10 ml-[2px] flex h-4 w-4 items-center justify-center p-[1px] pt-[2px]" type="button" onClick={openColorPicker}>
                             <EyedropperIcon className="h-full w-full" />
                         </button>
                     )}

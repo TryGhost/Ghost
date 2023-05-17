@@ -83,8 +83,7 @@ Empty.args = {
     availableLabels: [{id: '1',name: 'First label'},{id: '2',name: 'Second label'}],
     headerTextEditorInitialState: editorEmptyState,
     subheaderTextEditorInitialState: editorEmptyState,
-    disclaimerTextEditorInitialState: editorEmptyState,
-    availableLabels: [{id: '1',name: 'First label'},{id: '2',name: 'Second label'}]
+    disclaimerTextEditorInitialState: editorEmptyState
 };
 
 export const Populated = Template.bind({});

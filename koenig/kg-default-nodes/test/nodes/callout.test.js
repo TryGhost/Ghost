@@ -104,7 +104,6 @@ describe('CalloutNode', function () {
 
         it('can export JSON', editorTest(function () {
             const node = $createCalloutNode(dataset);
-            console.log(dataset);
             const json = node.exportJSON();
             json.should.deepEqual({
                 type: 'callout',
@@ -123,7 +122,6 @@ describe('CalloutNode', function () {
                 </div>
                     `)).window.document;
             const nodes = $generateNodesFromDOM(editor, dom);
-            // console.log(nodes);
             nodes.length.should.equal(1);
             nodes[0].getBackgroundColor().should.equal('red');
             nodes[0].getCalloutText().should.equal('This is a callout');
