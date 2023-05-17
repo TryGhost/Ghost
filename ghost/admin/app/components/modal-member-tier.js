@@ -37,6 +37,10 @@ export default class ModalMemberTier extends ModalComponent {
         {
             label: '1 Year',
             duration: 'year'
+        },
+        {
+            label: 'Custom',
+            duration: 'custom'
         }
     ];
 

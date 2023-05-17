@@ -57,6 +57,9 @@
                     </span>
                     <GhErrorMessage @errors={{this.errors}} @property="product-cadence" />
                 </GhFormGroup>
+                {{#if (eq this.expiryAt "custom")}}
+                    <GhDatePicker />
+                {{/if}}
         {{/if}}
     </div>
 </form>
