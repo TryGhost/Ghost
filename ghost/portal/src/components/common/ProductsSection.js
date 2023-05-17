@@ -814,7 +814,7 @@ function ProductCards({products, selectedInterval, handleChooseSignup, errors}) 
 }
 
 function YearlyDiscount({discount, trialDays}) {
-    const {site} = useContext(AppContext);
+    const {site, t} = useContext(AppContext);
     const {portal_plans: portalPlans} = site;
 
     if (discount === 0 || !portalPlans.includes('monthly')) {
@@ -824,13 +824,13 @@ function YearlyDiscount({discount, trialDays}) {
     if (hasFreeTrialTier({site})) {
         return (
             <>
-                <span className="gh-portal-discount-label-trial">{discount}% discount</span>
+                <span className="gh-portal-discount-label-trial">{t('{{discount}}% discount', {discount})}</span>
             </>
         );
     } else {
         return (
             <>
-                <span className="gh-portal-discount-label">{discount}% discount</span>
+                <span className="gh-portal-discount-label">{t('{{discount}}% discount', {discount})}</span>
             </>
         );
     }
@@ -1034,7 +1034,7 @@ function ProductDescription({product, selectedPrice, activePrice}) {
 }
 
 function ChangeProductCard({product, onPlanSelect}) {
-    const {member, site} = useContext(AppContext);
+    const {member, site, t} = useContext(AppContext);
     const {selectedProduct, setSelectedProduct, selectedInterval} = useContext(ProductsContext);
     const cardClass = selectedProduct === product.id ? 'gh-portal-product-card checked' : 'gh-portal-product-card';
     const monthlyPrice = product.monthlyPrice;
@@ -1061,7 +1061,7 @@ function ChangeProductCard({product, onPlanSelect}) {
                 </div>
                 {(currentPlan ?
                     <div className='gh-portal-btn-product'>
-                        <span className='gh-portal-current-plan'><span>Current plan</span></span>
+                        <span className='gh-portal-current-plan'><span>{t('Current plan')}</span></span>
                     </div>
                     :
                     <div className='gh-portal-btn-product'>
