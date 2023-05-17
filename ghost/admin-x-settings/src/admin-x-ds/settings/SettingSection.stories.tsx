@@ -19,7 +19,7 @@ export const Default: Story = {
         title: 'Section header',
         children: 
         <>
-            <SettingGroup {...SettingGroupStories.Default.args} />
+            <SettingGroup {...SettingGroupStories.SingleColumn.args} />
             <SettingGroup {...SettingGroupStories.Editing.args} />
             <SettingGroup {...SettingGroupStories.Unsaved.args} />
         </>
