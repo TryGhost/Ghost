@@ -27,8 +27,7 @@ test.describe('Drag Drop Reorder Plugin', async function () {
         await page.waitForSelector('[data-kg-card="image"] [data-testid="image-card-populated"]');
         await page.keyboard.press('ArrowDown');
 
-        await page.keyboard.type('/divider');
-        await page.keyboard.press('Enter');
+        await insertDivider(page);
 
         await page.keyboard.type('This is some text');
 
@@ -64,9 +63,7 @@ test.describe('Drag Drop Reorder Plugin', async function () {
 
         await focusEditor(page);
 
-        await page.keyboard.type('/divider');
-        await page.waitForSelector('[data-kg-card-menu-item="Divider"][data-kg-cardmenu-selected="true"]');
-        await page.keyboard.press('Enter');
+        await insertDivider(page);
 
         await page.keyboard.type('This is some text');
         await page.keyboard.press('Enter');
@@ -128,10 +125,7 @@ test.describe('Drag Drop Reorder Plugin', async function () {
         await page.waitForSelector('[data-kg-card="image"] [data-testid="image-card-populated"]');
         await page.keyboard.press('ArrowDown');
 
-        await page.keyboard.type('/divider');
-        await expect(await page.locator(`[data-kg-card-menu-item="Divider"][data-kg-cardmenu-selected="true"]`)).toBeVisible();
-        await page.keyboard.press('Enter');
-        await expect(await page.locator(`[data-kg-card="horizontalrule"]`)).toBeVisible();
+        await insertDivider(page);
 
         await page.keyboard.type('This is some text', {delay: 100}); // type slower to imitate user
         await expect(await page.getByText('This is some text')).toBeVisible();
@@ -186,10 +180,7 @@ test.describe('Drag Drop Reorder Plugin', async function () {
         await page.waitForSelector('[data-kg-card="image"] [data-testid="image-card-populated"]');
         await page.keyboard.press('ArrowDown');
 
-        await page.keyboard.type('/divider');
-        await expect(await page.locator(`[data-kg-card-menu-item="Divider"][data-kg-cardmenu-selected="true"]`)).toBeVisible();
-        await page.keyboard.press('Enter');
-        await expect(await page.locator(`[data-kg-card="horizontalrule"]`)).toBeVisible();
+        await insertDivider(page);
 
         await page.keyboard.type('This is some text');
 
@@ -229,3 +220,10 @@ test.describe('Drag Drop Reorder Plugin', async function () {
         await expect(await indicator).toBeVisible();
     });
 });
+
+async function insertDivider(page) {
+    await page.keyboard.type('/divider');
+    await expect(page.locator(`[data-kg-card-menu-item="Divider"][data-kg-cardmenu-selected="true"]`)).toBeVisible();
+    await page.keyboard.press('Enter');
+    await expect(page.locator(`[data-kg-card="horizontalrule"]`)).toBeVisible();
+}
