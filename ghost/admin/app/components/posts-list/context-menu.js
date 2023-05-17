@@ -48,7 +48,6 @@ const messages = {
 
 export default class PostsContextMenu extends Component {
     @service ajax;
-    @service feature;
     @service ghostPaths;
     @service session;
     @service infinity;
@@ -453,10 +452,6 @@ export default class PostsContextMenu extends Component {
     }
 
     get canCopySelection() {
-        if (this.feature.makingItRain === false) {
-            return false;
-        }
-
         return this.selectionList.availableModels.length === 1;
     }
 }
