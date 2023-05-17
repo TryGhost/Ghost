@@ -8,7 +8,7 @@
             @name="feedback-lexical"
             @value={{@feedbackMessage}}
             @placeholder="I've noticed that..."
-            @shouldFocus={{true}}
+            @shouldFocus={{@shouldFocus}}
             data-test-lexical-feedback-textarea
             {{on "input" @updateFeedbackMessage}}
         />
