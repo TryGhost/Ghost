@@ -14,17 +14,33 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const buttons = [
-    {
-        label: 'Edit',
-        color: ButtonColors.Green
-    }
-];
-
 export const Default: Story = {
     args: {
         title: 'Section group title',
         description: 'Section group description',
-        children: <ButtonGroup buttons={buttons} link={true} />
+        children: <ButtonGroup 
+            buttons={
+                [
+                    {label: 'Edit', color: ButtonColors.Green}
+                ]
+            } 
+            link={true} 
+        />
+    }
+};
+
+export const Editing: Story = {
+    args: {
+        title: 'Section group title',
+        description: 'Section group description',
+        children: <ButtonGroup 
+            buttons={
+                [
+                    {label: 'Cancel'},
+                    {label: 'Save', color: ButtonColors.Green}
+                ]
+            } 
+            link={true} 
+        />
     }
 };

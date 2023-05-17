@@ -5,7 +5,7 @@ import {ISettingValue} from './SettingValue';
 
 interface ISettingGroupValues {
     columns?: 1 | 2;
-    values: Array<ISettingValue>
+    values?: Array<ISettingValue>
 }
 
 const SettingGroupValues: React.FC<ISettingGroupValues> = ({columns, values}) => {
