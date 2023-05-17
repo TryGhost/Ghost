@@ -2,7 +2,8 @@ import React, {ReactNode} from 'react';
 
 import Heading from '../global/Heading';
 
-interface ISettingValue {
+export interface ISettingValue {
+    key: string,
     heading?: string,
     value: ReactNode,
     help?: ReactNode
