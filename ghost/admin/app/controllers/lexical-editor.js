@@ -734,7 +734,7 @@ export default class LexicalEditorController extends Controller {
         if (
             (post.get('isNew') && !currentTitle) ||
             (currentTitle === DEFAULT_TITLE) ||
-            currentTitle.endsWith(DUPLICATED_POST_TITLE_SUFFIX)
+            currentTitle?.endsWith(DUPLICATED_POST_TITLE_SUFFIX)
         ) {
             yield this.generateSlugTask.perform();
         }
