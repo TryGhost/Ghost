@@ -28,7 +28,7 @@ const Dropdown: React.FC<DropdownProps> = ({title, options, onSelect, error, hin
     return (
         <div className='flex flex-col'>
             {title && <Heading grey={true} useLabelTag={true}>{title}</Heading>}
-            <select className={`-m-1 h-10 border-b ${error ? `border-red` : `border-grey-300 focus:border-grey-900`} py-2 ${title && `mt-0`}`} value={selectedOption} onChange={handleOptionChange}>
+            <select className={`-m-1 h-10 border-b ${error ? `border-red` : `border-grey-300 hover:border-grey-500 focus:border-grey-900`} py-2 ${title && `mt-0`}`} value={selectedOption} onChange={handleOptionChange}>
                 <option value="">Select an option</option>
                 {options.map(option => (
                     <option
