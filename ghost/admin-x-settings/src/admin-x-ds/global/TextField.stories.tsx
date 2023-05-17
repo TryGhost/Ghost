@@ -5,7 +5,8 @@ import TextField from './TextField';
 const meta = {
     title: 'Global / Input / Textfield',
     component: TextField,
-    tags: ['autodocs']
+    tags: ['autodocs'],
+    decorators: [(_story: any) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)]
 } satisfies Meta<typeof TextField>;
 
 export default meta;
