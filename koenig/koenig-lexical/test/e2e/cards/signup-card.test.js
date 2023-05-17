@@ -110,7 +110,7 @@ test.describe('Signup card', async () => {
 
         // Selected colour should be applied inline
         const container = page.getByTestId('signup-card-container');
-        await expect(container).toHaveCSS('background-color', 'rgb(255, 0, 0)');
+        await expect(container).toHaveCSS('background-color', 'rgb(255, 0, 149)');
         await expect(container).toHaveCSS('color', 'rgb(255, 255, 255)');
 
         // Check that the text colour updates to contrast with the background
