@@ -1,5 +1,5 @@
 import ButtonGroup from '../../../admin-x-ds/global/ButtonGroup';
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupHeader from '../../../admin-x-ds/settings/SettingGroupHeader';
 import SettingGroupInputs from '../../../admin-x-ds/settings/SettingGroupInputs';
@@ -13,6 +13,13 @@ const TitleAndDescription: React.FC = () => {
     const [isEdited, setIsEdited] = useState(false);
     const [siteTitle, setSiteTitleValue] = useState(`Dr. Evil's secret volcano lair`);
     const [siteDescription, setSiteDescriptionValue] = useState(`I'm doing this for fun`);
+    const siteTitleRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (isEditMode && siteTitleRef.current) {
+            siteTitleRef.current.focus();
+        }
+    }, [isEditMode]);
 
     const handleEditClick = () => {
         setIsEditMode(true);
@@ -72,6 +79,7 @@ const TitleAndDescription: React.FC = () => {
         <SettingGroupInputs columns={2}>
             <TextField
                 help="The name of your site"
+                inputRef={siteTitleRef}
                 placeholder="Site title"
                 title="Site title"
                 value={siteTitle}
