@@ -20,11 +20,11 @@ export const Default: Story = {
 export const Grey: Story = {
     args: {
         title: 'Block',
-        color: 'grey'
+        grey: true
     }
 };
 
-export const Separator: Story = {
+export const WithSeparator: Story = {
     args: {
         title: 'Block',
         separator: true
