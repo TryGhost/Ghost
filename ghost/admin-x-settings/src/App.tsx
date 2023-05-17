@@ -1,6 +1,7 @@
 import Heading from './admin-x-ds/global/Heading';
 import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
+import {SettingsProvider} from './components/SettingsProvider';
 
 function App() {
     return (
@@ -22,7 +23,9 @@ function App() {
                     <Sidebar />
                 </div>
                 <div className="flex-auto pt-[3vmin] md:pt-[72px]">
-                    <Settings />
+                    <SettingsProvider>
+                        <Settings />
+                    </SettingsProvider>
                 </div>
             </div>
         </div>
