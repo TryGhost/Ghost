@@ -6,7 +6,7 @@ interface Props {
 
 const SettingSectionHeader: React.FC<Props> = ({title}) => {
     return (
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-normal text-grey-700">{title}</h2>
+        <h2 className="mb-4 text-2xs font-semibold uppercase tracking-wide text-grey-700">{title}</h2>
     );
 };
 
