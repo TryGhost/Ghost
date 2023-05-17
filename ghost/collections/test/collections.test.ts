@@ -30,7 +30,7 @@ describe('collections', function () {
         assert.equal(createdCollection.title, 'testing collections', 'Collection title should match');
 
         const allCollections = await collectionsService.getAll();
-        assert.equal(allCollections.length, 1, 'There should be one collection');
+        assert.equal(allCollections.data.length, 1, 'There should be one collection');
 
         await collectionsService.destroy(savedCollection.id);
         const deletedCollection = await collectionsService.getById(savedCollection.id);
