@@ -94,15 +94,19 @@ function getOrSetAtomIndex(atom, mobiledoc) {
 
 function addRootChild(child, mobiledoc) {
     if (child.type === 'paragraph') {
-        addParagraphChild(child, mobiledoc);
+        addTextSection(child, mobiledoc);
+    }
+
+    if (child.type === 'heading') {
+        addTextSection(child, mobiledoc, child.tag);
     }
 }
 
-function addParagraphChild(paragraph, mobiledoc) {
+function addTextSection(childWithFormats, mobiledoc, tagName = 'p') {
     const markers = [];
-    const section = [MD_TEXT_SECTION, 'p', markers];
+    const section = [MD_TEXT_SECTION, tagName, markers];
 
-    if (!paragraph.children.length) {
+    if (!childWithFormats.children.length) {
         markers.push([MD_TEXT_MARKER, [], 0, '']);
     } else {
         // mobiledoc tracks opened/closed formats across markers whereas lexical
@@ -112,7 +116,7 @@ function addParagraphChild(paragraph, mobiledoc) {
         // markup: a specific format, or tag name+attributes
         // marker: a piece of text with 0 or more markups
 
-        paragraph.children.forEach((child, childIndex) => {
+        childWithFormats.children.forEach((child, childIndex) => {
             if (child.type === 'text') {
                 if (child.format !== 0) {
                     // text child has formats, track which are new and which have closed
@@ -128,12 +132,12 @@ function addParagraphChild(paragraph, mobiledoc) {
                     });
 
                     // mobiledoc will immediately close any formats if the next section doesn't use them or it's not a text section
-                    if (!paragraph.children[childIndex + 1] || paragraph.children[childIndex + 1].type !== 'text') {
+                    if (!childWithFormats.children[childIndex + 1] || childWithFormats.children[childIndex + 1].type !== 'text') {
                         // no more children, close all formats
                         closedFormatCount = openMarkups.length;
                         openMarkups = [];
                     } else {
-                        const nextChild = paragraph.children[childIndex + 1];
+                        const nextChild = childWithFormats.children[childIndex + 1];
                         const nextFormats = readFormat(nextChild.format);
                         const firstMissingFormatIndex = openMarkups.findIndex(format => !nextFormats.includes(format));
 

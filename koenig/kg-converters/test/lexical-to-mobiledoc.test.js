@@ -1323,8 +1323,175 @@ describe('lexicalToMobiledoc', function () {
             }));
         });
 
-        it('converts headings');
-        it('converts headings with links and formatting');
+        it('converts H1s', function () {
+            const result = lexicalToMobiledoc(JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Heading 1',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'heading',
+                            version: 1,
+                            tag: 'h1'
+                        }
+                    ],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+
+            assert.equal(result, JSON.stringify({
+                version: MOBILEDOC_VERSION,
+                ghostVersion: GHOST_VERSION,
+                atoms: [],
+                cards: [],
+                markups: [],
+                sections: [
+                    [1, 'h1', [[0, [], 0, 'Heading 1']]]
+                ]
+            }));
+        });
+
+        it('converts H2s', function () {
+            const result = lexicalToMobiledoc(JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Heading 2',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'heading',
+                            version: 1,
+                            tag: 'h2'
+                        }
+                    ],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+
+            assert.equal(result, JSON.stringify({
+                version: MOBILEDOC_VERSION,
+                ghostVersion: GHOST_VERSION,
+                atoms: [],
+                cards: [],
+                markups: [],
+                sections: [
+                    [1, 'h2', [[0, [], 0, 'Heading 2']]]
+                ]
+            }));
+        });
+
+        it('converts headings with links and formatting', function () {
+            const result = lexicalToMobiledoc(JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Heading with ',
+                                    type: 'text',
+                                    version: 1
+                                },
+                                {
+                                    children: [
+                                        {
+                                            detail: 0,
+                                            format: 0,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'links and ',
+                                            type: 'text',
+                                            version: 1
+                                        },
+                                        {
+                                            detail: 0,
+                                            format: 2,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'formatting',
+                                            type: 'text',
+                                            version: 1
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'link',
+                                    version: 1,
+                                    rel: null,
+                                    target: null,
+                                    title: null,
+                                    url: 'https://koenig.ghost.org'
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'heading',
+                            version: 1,
+                            tag: 'h1'
+                        }
+                    ],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+
+            assert.equal(result, JSON.stringify({
+                version: MOBILEDOC_VERSION,
+                ghostVersion: GHOST_VERSION,
+                atoms: [],
+                cards: [],
+                markups: [
+                    ['a', ['href', 'https://koenig.ghost.org']],
+                    ['em']
+                ],
+                sections: [
+                    [1, 'h1', [
+                        [0, [], 0, 'Heading with '],
+                        [0, [0], 0, 'links and '],
+                        [0, [1], 2, 'formatting']
+                    ]]
+                ]
+            }));
+        });
 
         it('converts blockquotes');
         it('converts blockquotes with links and formatting');
