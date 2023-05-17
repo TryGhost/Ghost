@@ -1,5 +1,5 @@
 import path from 'path';
-import {assertHTML, createDataTransfer, focusEditor, html, initialize} from '../../utils/e2e';
+import {assertHTML, createDataTransfer, focusEditor, html, initialize, insertCard} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
@@ -48,9 +48,7 @@ test.describe('File card', async () => {
 
         await focusEditor(page);
         const fileChooserPromise = page.waitForEvent('filechooser');
-        await page.keyboard.type('/file');
-        await page.waitForSelector('[data-kg-card-menu-item="File"][data-kg-cardmenu-selected="true"]');
-        await page.keyboard.press('Enter');
+        await insertCard(page, {cardName: 'file'});
         const fileChooser = await fileChooserPromise;
 
         await assertHTML(page, html`
@@ -85,9 +83,7 @@ test.describe('File card', async () => {
         await focusEditor(page);
 
         // Open file card and dismiss files chooser to prepare card for file dropping
-        await page.keyboard.type('/file');
-        await page.waitForSelector('[data-kg-card-menu-item="File"][data-kg-cardmenu-selected="true"]');
-        await page.keyboard.press('Enter');
+        await insertCard(page, {cardName: 'file'});
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles([]);
 
@@ -121,9 +117,7 @@ test.describe('File card', async () => {
         await focusEditor(page);
         const [fileChooser] = await Promise.all([
             page.waitForEvent('filechooser'),
-            await page.keyboard.type('/file'),
-            await page.waitForSelector('[data-kg-card-menu-item="File"][data-kg-cardmenu-selected="true"]'),
-            await page.keyboard.press('Enter')
+            await insertCard(page, {cardName: 'file'})
         ]);
 
         expect(fileChooser).not.toBeNull();
@@ -148,9 +142,7 @@ async function uploadFile(page, fileName = 'print-img.pdf') {
     const filePath = path.relative(process.cwd(), __dirname + `/../fixtures/${fileName}`);
 
     const fileChooserPromise = page.waitForEvent('filechooser');
-    await page.keyboard.type('/file');
-    await page.waitForSelector('[data-kg-card-menu-item="File"][data-kg-cardmenu-selected="true"]');
-    await page.keyboard.press('Enter');
+    await insertCard(page, {cardName: 'file'});
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles([filePath]);
 }

@@ -221,8 +221,7 @@ test.describe('Slash menu', async () => {
     test.describe('insertion', function () {
         test('ENTER inserts card', async function ({page}) {
             await focusEditor(page);
-            await page.keyboard.type('/hr', {delay: 100});
-            await page.keyboard.press('Enter');
+            await insertCard(page, {cardName: 'divider'});
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
@@ -245,8 +244,7 @@ test.describe('Slash menu', async () => {
             await focusEditor(page);
             await page.keyboard.type('Testing');
             await page.keyboard.press('Enter');
-            await page.keyboard.type('/hr', {delay: 100});
-            await page.keyboard.press('Enter');
+            await insertCard(page, {cardName: 'divider'});
 
             await assertHTML(page, html`
                 <p dir="ltr"><span data-lexical-text="true">Testing</span></p>

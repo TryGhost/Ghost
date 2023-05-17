@@ -1,5 +1,5 @@
 import path from 'path';
-import {assertHTML, createDataTransfer, createSnippet, focusEditor, html, initialize} from '../../utils/e2e';
+import {assertHTML, createDataTransfer, createSnippet, focusEditor, html, initialize, insertCard} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
@@ -51,9 +51,7 @@ test.describe('Video card', async () => {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/video.mp4');
 
         await focusEditor(page);
-        await page.keyboard.type('/video');
-        await page.waitForSelector('[data-kg-card-menu-item="Video"][data-kg-cardmenu-selected="true"]');
-        await page.keyboard.press('Enter');
+        await insertCard(page, {cardName: 'video'});
         const fileChooser = await fileChooserPromise;
 
         await assertHTML(page, html`
@@ -75,9 +73,7 @@ test.describe('Video card', async () => {
         await focusEditor(page);
 
         // Upload video file
-        await page.keyboard.type('/video');
-        await page.waitForSelector('[data-kg-card-menu-item="Video"][data-kg-cardmenu-selected="true"]');
-        await page.keyboard.press('Enter');
+        await insertCard(page, {cardName: 'video'});
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles([filePath]);
 
@@ -177,9 +173,7 @@ test.describe('Video card', async () => {
         await focusEditor(page);
 
         // Open video card and dismiss files chooser to prepare card for video dropping
-        await page.keyboard.type('/video');
-        await page.waitForSelector('[data-kg-card-menu-item="Video"][data-kg-cardmenu-selected="true"]');
-        await page.keyboard.press('Enter');
+        await insertCard(page, {cardName: 'video'});
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles([]);
 
@@ -204,9 +198,7 @@ test.describe('Video card', async () => {
         await focusEditor(page);
 
         // Open video card and dismiss files chooser to prepare card for video dropping
-        await page.keyboard.type('/video');
-        await page.waitForSelector('[data-kg-card-menu-item="Video"][data-kg-cardmenu-selected="true"]');
-        await page.keyboard.press('Enter');
+        await insertCard(page, {cardName: 'video'});
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles([]);
 
@@ -362,9 +354,7 @@ async function uploadVideo(page, fileName = 'video.mp4') {
     const filePath = path.relative(process.cwd(), __dirname + `/../fixtures/${fileName}`);
 
     const fileChooserPromise = page.waitForEvent('filechooser');
-    await page.keyboard.type('/video');
-    await page.waitForSelector('[data-kg-card-menu-item="Video"][data-kg-cardmenu-selected="true"]');
-    await page.keyboard.press('Enter');
+    await insertCard(page, {cardName: 'video'});
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles([filePath]);
 }

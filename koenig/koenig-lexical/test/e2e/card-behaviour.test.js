@@ -1,4 +1,4 @@
-import {assertHTML, assertSelection, focusEditor, html, initialize, pasteText} from '../utils/e2e';
+import {assertHTML, assertSelection, focusEditor, html, initialize, insertCard, pasteText} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Card behaviour', async () => {
@@ -435,10 +435,7 @@ test.describe('Card behaviour', async () => {
             await page.keyboard.up('Shift');
             await page.keyboard.type('Second line');
             await page.keyboard.press('Enter');
-            await page.keyboard.type('/hr');
-            await expect(await page.locator(`[data-kg-card-menu-item="Divider"][data-kg-cardmenu-selected="true"]`)).toBeVisible();
-            await page.keyboard.press('Enter');
-            await expect(await page.locator(`[data-kg-card="horizontalrule"]`)).toBeVisible();
+            await insertCard(page, {cardName: 'divider'});
 
             // sanity check
             await assertHTML(page, html`

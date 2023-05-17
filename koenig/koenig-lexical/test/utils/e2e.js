@@ -303,11 +303,18 @@ export function isMac() {
     return process.platform === 'darwin';
 }
 
+// note: we always use lowercase for the cardName but we use start case for the menu item attribute
 export async function insertCard(page, {cardName}) {
+    let card = startCase(cardName);
     await page.keyboard.type(`/${cardName}`);
-    await expect(await page.locator(`[data-kg-card-menu-item="${startCase(cardName)}"][data-kg-cardmenu-selected="true"]`)).toBeVisible();
+    await expect(page.locator(`[data-kg-card-menu-item="${card}"][data-kg-cardmenu-selected="true"]`)).toBeVisible();
     await page.keyboard.press('Enter');
-    await expect(await page.locator(`[data-kg-card="${cardName}"]`)).toBeVisible();
+    // hr is the one case we don't match the card name to the data attribute
+    if (card === 'Divider') {
+        await expect(page.locator(`[data-kg-card="horizontalrule"]`)).toBeVisible();
+    } else {
+        await expect(page.locator(`[data-kg-card="${cardName}"]`)).toBeVisible();
+    }
 }
 
 export async function createSnippet(page) {
