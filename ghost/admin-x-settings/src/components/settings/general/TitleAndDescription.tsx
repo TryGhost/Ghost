@@ -50,6 +50,7 @@ const TitleAndDescription: React.FC = () => {
         {
             label: 'Save',
             key: 'save',
+            disabled: !isEdited,
             color: ButtonColors.Green
         }
     ];

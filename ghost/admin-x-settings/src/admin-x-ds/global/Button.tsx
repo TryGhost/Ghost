@@ -19,6 +19,7 @@ export interface IButton {
     color?: string;
     fullWidth?: boolean;
     link?: boolean;
+    disabled?: boolean;
     onClick?: () => void;
 }
 
@@ -27,34 +28,40 @@ const Button: React.FC<IButton> = ({
     color,
     fullWidth,
     link,
+    disabled,
     onClick,
     ...props
 }) => {
-    let buttonColor: string;
     if (!color) {
         color = ButtonColors.Clear;
     }
-    const fontWeight: string = ((link && color !== ButtonColors.Clear && color !== ButtonColors.Black) || (!link && color !== ButtonColors.Clear)) ? 'font-bold' : 'font-semibold';
-    const padding: string = !link ? 'px-4 h-9' : '';
+    
+    let styles = 'flex items-center justify-center rounded-sm text-sm';
+    styles += ((link && color !== ButtonColors.Clear && color !== ButtonColors.Black) || (!link && color !== ButtonColors.Clear)) ? ' font-bold' : ' font-semibold';
+    styles += !link ? ' px-4 h-9' : '';
 
     switch (color) {
     case ButtonColors.Black:
-        buttonColor = link ? 'text-black' : 'bg-black text-white';
+        styles += link ? ' text-black' : ' bg-black text-white';
         break;
     case ButtonColors.Green:
-        buttonColor = link ? 'text-green' : 'bg-green text-white';
+        styles += link ? ' text-green' : ' bg-green text-white';
         break;
     case ButtonColors.Red:
-        buttonColor = link ? 'text-red' : 'bg-red text-white';
+        styles += link ? ' text-red' : ' bg-red text-white';
         break;
     default:
-        buttonColor = link ? 'text-black' : 'bg-transparent text-black';
+        styles += link ? ' text-black' : ' bg-transparent text-black';
         break;
     }
 
+    styles += (fullWidth && !link) ? ' w-full' : '';
+    styles += (disabled) ? ' opacity-40' : ' cursor-pointer';
+
     return (
         <button
-            className={`flex cursor-pointer items-center justify-center rounded-sm text-sm ${padding} ${fontWeight} ${fullWidth && !link ? 'w-full' : ''} ${buttonColor} `}
+            className={styles}
+            disabled={disabled}
             type="button"
             onClick={onClick}
             {...props}
