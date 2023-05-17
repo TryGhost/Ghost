@@ -65,6 +65,42 @@ describe('Collections API', function () {
             });
     });
 
+    it('Can read a Collection', async function () {
+        const collection = {
+            title: 'Test Collection to Read'
+        };
+
+        const addResponse = await agent
+            .post('/collections/')
+            .body({
+                collections: [collection]
+            })
+            .expectStatus(201)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag,
+                location: anyLocationFor('collections')
+            })
+            .matchBodySnapshot({
+                collections: [matchCollection]
+            });
+
+        const collectionId = addResponse.body.collections[0].id;
+
+        const readResponse = await agent
+            .get(`/collections/${collectionId}/`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                collections: [matchCollection]
+            });
+
+        assert.equal(readResponse.body.collections[0].title, 'Test Collection to Read');
+    });
+
     it('Can edit a Collection', async function () {
         const collection = {
             title: 'Test Collection to Edit'
