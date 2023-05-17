@@ -6,7 +6,7 @@ import {addCreateDocumentOption} from '../../utils/add-create-document-option';
 
 function cardTemplate(nodeData) {
     return `
-    <div data-lexical-signup-form>
+    <div data-lexical-signup-form style="display:none">
         <h1>${nodeData.header}</h1>
         <h2>${nodeData.subheader}</h2>
         <p>${nodeData.disclaimer}</p>
