@@ -1,6 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/react';
 
-import Componeent from './Component';
+import Component from './Component';
 
 const meta = {
     title: 'Group / Component',
