@@ -16,10 +16,12 @@ type Story = StoryObj<typeof ButtonGroupMeta>;
 const defaultButtons = [
     {
         label: 'Cancel',
+        key: 'cancel',
         color: ButtonColors.Clear
     },
     {
         label: 'Save',
+        key: 'save',
         color: ButtonColors.Black
     }
 ];
@@ -34,10 +36,12 @@ export const Default: Story = {
 const linkButtons = [
     {
         label: 'Cancel',
+        key: 'cancel',
         color: ButtonColors.Clear
     },
     {
         label: 'Save',
+        key: 'save',
         color: ButtonColors.Green
     }
 ];
