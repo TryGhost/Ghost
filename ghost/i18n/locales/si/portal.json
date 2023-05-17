@@ -16,7 +16,6 @@
     "Comments": "ප්\u200dරතිචාර",
     "Confirm": "තහවුරු කරන්න",
     "Continue": "Continue",
-    "Current plan": "වත්මන් සැලැස්ම",
     "Delete account": "ගිණුම Delete කරන්න",
     "Don't have an account?": "ගිණුමක් නොමැතිද?",
     "Email": "Email",
@@ -57,5 +56,6 @@
     "You have been successfully resubscribed": "ඔබ සාර්ථකව නැවත subscribe කර ඇත",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.",
     "Your account": "ඔබගේ ගිණුම",
-    "Your input helps shape what gets published.": "Your input helps shape what gets published."
+    "Your input helps shape what gets published.": "Your input helps shape what gets published.",
+    "Current plan": "වත්මන් සැලැස්ම"
 }
