@@ -22,6 +22,25 @@ module.exports = {
         }
     },
 
+    read: {
+        data: [
+            'id'
+        ],
+        // @NOTE: should have permissions when moving out of Alpha
+        permissions: false,
+        async query(frame) {
+            const model = await collectionsService.api.read(frame.data.id, frame.options);
+
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.collectionNotFound)
+                });
+            }
+
+            return model;
+        }
+    },
+
     add: {
         statusCode: 201,
         headers: {
