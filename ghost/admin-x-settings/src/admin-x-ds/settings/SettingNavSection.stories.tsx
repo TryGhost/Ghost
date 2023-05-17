@@ -6,7 +6,7 @@ import SettingNavSection from './SettingNavSection';
 import {Default as DefaultNavItem} from './SettingNavItem.stories';
 
 const meta = {
-    title: 'Settings / Sidebar navigation section',
+    title: 'Settings / Sidebar Navigation Section',
     component: SettingNavSection,
     tags: ['autodocs']
 } satisfies Meta<typeof SettingNavSection>;

@@ -5,10 +5,11 @@ import {ISettingValue} from './SettingValue';
 
 interface ISettingGroupValues {
     columns?: 1 | 2;
-    values?: Array<ISettingValue>
+    values?: Array<ISettingValue>;
+    children?: React.ReactNode;
 }
 
-const SettingGroupValues: React.FC<ISettingGroupValues> = ({columns, values}) => {
+const SettingGroupValues: React.FC<ISettingGroupValues> = ({columns, values, children}) => {
     let styles = 'flex flex-col gap-6';
     if (columns === 2) {
         styles = 'grid grid-cols-2 gap-6';
@@ -19,6 +20,7 @@ const SettingGroupValues: React.FC<ISettingGroupValues> = ({columns, values}) =>
             {values && values.map(value => (
                 <SettingValue key={value.key} heading={value.heading} value={value.value} />
             ))}
+            {children}
         </div>
     );
 };

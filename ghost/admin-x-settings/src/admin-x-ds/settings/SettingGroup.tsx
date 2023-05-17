@@ -31,7 +31,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({state, children}) => {
     }
 
     return (
-        <div className={`rounded border p-5 md:p-7 ${styles}`}>
+        <div className={`flex flex-col gap-6 rounded border p-5 md:p-7 ${styles}`}>
             {children}
         </div>
     );

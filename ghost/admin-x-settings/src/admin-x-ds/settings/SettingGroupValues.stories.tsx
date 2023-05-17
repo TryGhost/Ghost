@@ -5,7 +5,7 @@ import SettingGroupValues from './SettingGroupValues';
 import * as SettingValueStories from './SettingValue.stories';
 
 const meta = {
-    title: 'Settings / Setting group values',
+    title: 'Settings / Setting Group Values',
     component: SettingGroupValues,
     tags: ['autodocs']
 } satisfies Meta<typeof SettingGroupValues>;
