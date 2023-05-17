@@ -4,12 +4,12 @@ import Dropdown from './Dropdown';
 import {DropdownOption} from './Dropdown';
 
 const meta = {
-    title: 'Global / Input / Dropdown',
+    title: 'Global / Dropdown',
     component: Dropdown,
     tags: ['autodocs'],
     decorators: [(_story: any) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)],
     argTypes: {
-        help: {
+        hint: {
             control: 'text'
         }
     }
@@ -39,10 +39,19 @@ export const WithHeading: Story = {
     }
 };
 
-export const WithHelp: Story = {
+export const WithHint: Story = {
     args: {
         title: 'Title',
         options: dropdownOptions,
-        help: 'Here\'s some help'
+        hint: 'Here\'s some hint'
+    }
+};
+
+export const Error: Story = {
+    args: {
+        title: 'Title',
+        options: dropdownOptions,
+        hint: 'Invalid value',
+        error: true
     }
 };

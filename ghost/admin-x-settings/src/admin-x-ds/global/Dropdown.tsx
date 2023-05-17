@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 
 import Heading from './Heading';
+import Hint from './Hint';
 
 export interface DropdownOption {
     value: string;
@@ -11,10 +12,11 @@ interface DropdownProps {
     title?: string;
     options: DropdownOption[];
     onSelect: (value: string) => void;
-    help?: React.ReactNode;
+    error?:boolean;
+    hint?: React.ReactNode;
 }
 
-const Dropdown: React.FC<DropdownProps> = ({title, options, onSelect, help}) => {   
+const Dropdown: React.FC<DropdownProps> = ({title, options, onSelect, error, hint}) => {   
     const [selectedOption, setSelectedOption] = useState('');
 
     const handleOptionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -25,8 +27,8 @@ const Dropdown: React.FC<DropdownProps> = ({title, options, onSelect, help}) => 
 
     return (
         <div className='flex flex-col'>
-            {title && <Heading formLabel={true} grey={true}>{title}</Heading>}
-            <select className={`-m-1 h-10 border-b border-grey-300 py-2 focus:border-grey-900 ${title && `mt-0`}`} value={selectedOption} onChange={handleOptionChange}>
+            {title && <Heading grey={true} useLabelTag={true}>{title}</Heading>}
+            <select className={`-m-1 h-10 border-b ${error ? `border-red` : `border-grey-300 focus:border-grey-900`} py-2 ${title && `mt-0`}`} value={selectedOption} onChange={handleOptionChange}>
                 <option value="">Select an option</option>
                 {options.map(option => (
                     <option
@@ -37,7 +39,7 @@ const Dropdown: React.FC<DropdownProps> = ({title, options, onSelect, help}) => 
                     </option>
                 ))}
             </select>
-            <span className='mt-2 inline-block text-xs text-grey-700'>{help}</span>
+            {hint && <Hint color={error ? 'red' : ''}>{hint}</Hint>}
         </div>
     );
 };
