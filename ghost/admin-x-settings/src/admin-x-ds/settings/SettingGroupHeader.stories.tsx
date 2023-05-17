@@ -6,7 +6,7 @@ import SettingGroupHeader from './SettingGroupHeader';
 import {ButtonColors} from '../global/Button';
 
 const meta = {
-    title: 'Settings / Setting group header',
+    title: 'Settings / Setting Group Header',
     component: SettingGroupHeader,
     tags: ['autodocs']
 } satisfies Meta<typeof SettingGroupHeader>;

@@ -5,7 +5,7 @@ import SettingGroup from './SettingGroup';
 import SettingSection from './SettingSection';
 
 const meta = {
-    title: 'Settings / Setting section',
+    title: 'Settings / Setting Section',
     component: SettingSection,
     tags: ['autodocs'],
     decorators: [(_story: any) => <div style={{maxWidth: '780px'}}>{_story()}</div>]
