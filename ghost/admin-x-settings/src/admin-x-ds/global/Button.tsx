@@ -28,7 +28,10 @@ const Button: React.FC<ButtonProps> = ({
     ...props
 }) => {
     let buttonColor: string;
-    const fontWeight: string = (link || (color !== ButtonColors.Clear && color)) ? 'font-bold' : 'font-medium';
+    if (!color) {
+        color = ButtonColors.Black;
+    }
+    const fontWeight: string = ((link && color !== ButtonColors.Black) || (!link && color !== ButtonColors.Clear)) ? 'font-bold' : 'font-semibold';
     const padding: string = !link ? 'px-4 h-9' : '';
 
     switch (color) {
@@ -48,7 +51,7 @@ const Button: React.FC<ButtonProps> = ({
 
     return (
         <button
-            className={`flex items-center justify-center rounded-sm text-sm ${padding} ${fontWeight} ${fullWidth && !link ? 'w-full' : ''} ${buttonColor} `}
+            className={`flex cursor-pointer items-center justify-center rounded-sm text-sm ${padding} ${fontWeight} ${fullWidth && !link ? 'w-full' : ''} ${buttonColor} `}
             type="button"
             {...props}
         >

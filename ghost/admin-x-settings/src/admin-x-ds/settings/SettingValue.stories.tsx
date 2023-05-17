@@ -3,7 +3,7 @@ import type {Meta, StoryObj} from '@storybook/react';
 import SettingValue from './SettingValue';
 
 const meta = {
-    title: 'Settings / Setting Value',
+    title: 'Settings / Setting value',
     component: SettingValue,
     tags: ['autodocs']
 } satisfies Meta<typeof SettingValue>;
