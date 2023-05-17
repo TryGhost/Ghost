@@ -11,6 +11,10 @@ export default class FeedbackLexicalSendButtonComponent extends Component {
 
     @inject config;
 
+    get isDisabled() {
+        return !this.args.feedbackMessage;
+    }
+
     @task({drop: true})
     *submitFeedback() {
         let url = `https://submit-form.com/us6uBWv8`;
