@@ -10,7 +10,8 @@ class CollectionsServiceWrapper {
         });
 
         this.api = {
-            browse: collectionsService.getAll.bind(collectionsService)
+            browse: collectionsService.getAll.bind(collectionsService),
+            add: collectionsService.save.bind(collectionsService)
         };
     }
 }
