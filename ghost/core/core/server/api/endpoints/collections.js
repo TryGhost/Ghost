@@ -49,12 +49,14 @@ module.exports = {
         // @NOTE: should have permissions when moving out of Alpha
         permissions: false,
         async query(frame) {
-            const model = await collectionsService.api.edit(frame.data.collections[0], frame.options);
+            const model = await collectionsService.api.edit(Object.assign(frame.data.collections[0], {
+                id: frame.options.id
+            }), frame.options);
 
             if (!model) {
-                return Promise.reject(new errors.NotFoundError({
-                    message: tpl(messages.tagNotFound)
-                }));
+                throw new errors.NotFoundError({
+                    message: tpl(messages.collectionNotFound)
+                });
             }
 
             // @NOTE: cache invalidation has to be done manually for now
