@@ -17,8 +17,8 @@ const SettingGroupValues: React.FC<ISettingGroupValues> = ({columns, values, chi
 
     return (
         <div className={styles}>
-            {values && values.map(value => (
-                <SettingValue key={value.key} heading={value.heading} value={value.value} />
+            {values && values.map(({key, ...props}) => (
+                <SettingValue key={key} {...props} />
             ))}
             {children}
         </div>
