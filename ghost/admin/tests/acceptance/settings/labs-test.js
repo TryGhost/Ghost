@@ -1,13 +1,12 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
+import {enableLabsFlag} from '../../helpers/labs-flag';
 import {expect} from 'chai';
 import {fileUpload} from '../../helpers/file-upload';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
-// import wait from 'ember-test-helpers/wait';
-// import {timeout} from 'ember-concurrency';
 
 describe('Acceptance: Settings - Labs', function () {
     let hooks = setupApplicationTest();
@@ -313,6 +312,35 @@ describe('Acceptance: Settings - Labs', function () {
 
             let iframe = document.querySelector('#iframeDownload');
             expect(iframe.getAttribute('src')).to.have.string('/settings/routes/yaml/');
+        });
+
+        it('displays lexical feedback textarea when the labs setting is enabled', async function () {
+            enableLabsFlag(this.server, 'lexicalEditor');
+
+            await visit('/settings/labs');
+
+            expect(find('[data-test-lexical-feedback-textarea]')).to.exist;
+        });
+
+        it('does not display lexical feedback textarea when the labs setting is disabled', async function () {
+            await visit('/settings/labs');
+
+            expect(find('[data-test-lexical-feedback-textarea]')).to.not.exist;
+        });
+
+        it('allows the user to send lexical feedback', async function () {
+            enableLabsFlag(this.server, 'lexicalEditor');
+
+            // mock successful request
+            this.server.post('https://submit-form.com/us6uBWv8', {}, 200);
+
+            await visit('/settings/labs');
+
+            await fillIn('[data-test-lexical-feedback-textarea]', 'This is test feedback');
+            await click('[data-test-button="submit-lexical-feedback"]');
+
+            // successful request will show a notification toast
+            expect(find('[data-test-text="notification-content"]')).to.exist;
         });
     });
 

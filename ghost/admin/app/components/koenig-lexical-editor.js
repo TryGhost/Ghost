@@ -213,6 +213,16 @@ export default class KoenigLexicalEditor extends Component {
         return this.offers;
     }
 
+    @task({restartable: true})
+    *fetchLabelsTask() {
+        if (this.labels) {
+            return this.labels;
+        }
+
+        this.labels = yield this.store.query('label', {limit: 'all', fields: 'id, name'});
+        return this.labels;
+    }
+
     ReactComponent = (props) => {
         const fetchEmbed = async (url, {type}) => {
             let oembedEndpoint = this.ghostPaths.url.api('oembed');
@@ -239,6 +249,17 @@ export default class KoenigLexicalEditor extends Component {
             return [...defaults, ...offersLinks];
         };
 
+        const fetchLabels = async () => {
+            const labels = await this.fetchLabelsTask.perform();
+
+            return labels.toArray().map((label) => {
+                return {
+                    id: label.id,
+                    name: label.name
+                };
+            });
+        };
+
         const defaultCardConfig = {
             unsplash: {
                 defaultHeaders: {
@@ -251,7 +272,11 @@ export default class KoenigLexicalEditor extends Component {
             },
             tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null,
             fetchEmbed: fetchEmbed,
-            fetchAutocompleteLinks
+            fetchAutocompleteLinks,
+            fetchLabels,
+            feature: {
+                signupCard: this.feature.get('signupCard')
+            }
         };
         const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig});
 

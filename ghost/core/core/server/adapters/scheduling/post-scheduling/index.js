@@ -1,7 +1,7 @@
 const Promise = require('bluebird');
 const events = require('../../../lib/common/events');
 const localUtils = require('../utils');
-const PostScheduler = require('./post-scheduler');
+const PostScheduler = require('./PostScheduler');
 const getSchedulerIntegration = require('./scheduler-intergation');
 
 /**

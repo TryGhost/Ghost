@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const limitService = require('../../services/limits');
 const logging = require('@tryghost/logging');
-const WebhookTrigger = require('./trigger');
+const WebhookTrigger = require('./WebhookTrigger');
 const models = require('../../models');
 const payload = require('./payload');
 

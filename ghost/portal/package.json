@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/portal",
-  "version": "2.30.0",
+  "version": "2.31.1",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -59,7 +59,7 @@
     ]
   },
   "devDependencies": {
-    "@babel/eslint-parser": "7.21.3",
+    "@babel/eslint-parser": "7.21.8",
     "@sentry/react": "7.49.0",
     "@sentry/tracing": "7.49.0",
     "@testing-library/jest-dom": "5.16.5",
@@ -69,15 +69,15 @@
     "@vitest/coverage-c8": "0.29.8",
     "@vitest/ui": "0.29.8",
     "concurrently": "8.0.1",
-    "cross-fetch": "3.1.5",
+    "cross-fetch": "3.1.6",
     "eslint": "8.37.0",
     "eslint-config-react-app": "7.0.1",
-    "jsdom": "21.1.2",
+    "jsdom": "22.0.0",
     "react": "17.0.2",
     "react-dom": "17.0.2",
-    "vite": "4.3.5",
-    "vite-plugin-css-injected-by-js": "3.1.0",
-    "vite-plugin-svgr": "2.4.0",
+    "vite": "4.3.6",
+    "vite-plugin-css-injected-by-js": "3.1.1",
+    "vite-plugin-svgr": "3.2.0",
     "vitest": "0.31.0"
   }
 }

@@ -1,0 +1,14 @@
+<div class="gh-feedback-grey">
+    <h4 class="gh-feedback-grey-title">Hey, noticed anything different?</h4>
+    <p>This post was successfully published using our new editor. Have any issues? Feedback? Let us know!</p>
+    <FeedbackLexical::Textarea
+        @feedbackMessage={{this.feedbackMessage}}
+        @updateFeedbackMessage={{this.updateFeedbackMessage}}
+        @label="Feedback"
+    />
+    <FeedbackLexical::SendButton
+        @feedbackMessage={{this.feedbackMessage}}
+        @post={{@post}}
+        @onSuccess={{this.resetFeedbackMessage}}
+    />
+</div>

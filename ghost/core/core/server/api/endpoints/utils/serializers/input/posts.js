@@ -222,5 +222,12 @@ module.exports = {
 
         defaultFormat(frame);
         defaultRelations(frame);
+    },
+
+    copy(apiConfig, frame) {
+        debug('copy');
+
+        defaultFormat(frame);
+        defaultRelations(frame);
     }
 };

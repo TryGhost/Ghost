@@ -22,10 +22,10 @@
     },
     "adapters": {
         "sso": {
-            "active": "Default"
+            "active": "DefaultSSOAdapter"
         },
         "cache": {
-            "active": "Memory",
+            "active": "MemoryCache",
             "settings": {},
             "imageSizes": {},
             "gscan": {}
@@ -39,7 +39,7 @@
         "LocalFilesStorage": {}
     },
     "scheduling": {
-        "active": "SchedulingDefault"
+        "active": "scheduling-default"
     },
     "members": {
         "contentApiAccess": [],
@@ -176,7 +176,7 @@
     },
     "portal": {
         "url": "https://cdn.jsdelivr.net/ghost/portal@~{version}/umd/portal.min.js",
-        "version": "2.30"
+        "version": "2.31"
     },
     "sodoSearch": {
         "url": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/sodo-search.min.js",
@@ -194,7 +194,11 @@
     },
     "editor": {
         "url": "https://cdn.jsdelivr.net/ghost/koenig-lexical@~{version}/dist/koenig-lexical.umd.js",
-        "version": "0.1"
+        "version": "0.2"
+    },
+    "adminX": {
+        "url": "https://cdn.jsdelivr.net/ghost/admin-x-settings@~{version}/dist/admin-x-settings.umd.js",
+        "version": "0.0"
     },
     "tenor": {
         "googleApiKey": null,

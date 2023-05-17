@@ -387,6 +387,54 @@
     font-weight: 400;
 }
 
+.gh-editor-feedback-trigger {
+    position: absolute;
+    left: 30px;
+    bottom: 22px;
+    display: flex;
+    align-items: center;
+    border-radius: 3px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.gh-editor-feedback-dropdown-container {
+    background: transparent;
+}
+
+.gh-editor-feedback-dropdown {
+    min-width: 400px;
+    border-radius: 3px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.04), 0 8px 20px -3px rgba(0,0,0,.2);
+    padding: 20px;
+    background-color: #fff;
+    background-clip: padding-box;
+    margin-bottom: 10px;
+}
+
+.gh-editor-feedback-dropdown textarea {
+    resize: none;
+}
+
+.gh-editor-feedback-dropdown-header h3 {
+    font-size: 1.9rem;
+    font-weight: 600;
+}
+
+.gh-editor-feedback-dropdown p {
+    margin-bottom: 16px;
+    color: var(--midgrey);
+}
+
+.gh-editor-feedback-dropdown-footer .gh-btn:not(:last-child) {
+    margin-right: 8px;
+}
+
+.gh-editor-feedback {
+    color: var(--green);
+    font-weight: 500;
+}
+
 .gh-editor-status {
     color: var(--midgrey);
     font-size: 1.3rem;

@@ -93,6 +93,31 @@
                 @registerAPI={{this.registerEditorAPI}}
             />
 
+            {{#if (feature 'lexicalEditor')}}
+                <GhBasicDropdown
+                    @verticalPosition="above"
+                    @horizontalPosition="left" as |dd|
+                >
+                    <dd.Trigger
+                        class="gh-editor-feedback-trigger gh-btn gh-btn-editor green"
+                        data-test-button="lexical-editor-feedback"
+                    >
+                        <span class="gh-editor-feedback">
+                            Feedback?
+                        </span>
+                    </dd.Trigger>
+
+                    <dd.Content class="gh-editor-feedback-dropdown-container">
+                        <div {{css-transition "anim-fade-in-scale"}}>
+                            <FeedbackLexical::EditorForm
+                                @post={{this.post}}
+                                @close={{dd.actions.close}}
+                            />
+                        </div>
+                    </dd.Content>
+                </GhBasicDropdown>
+            {{/if}}
+
             <div class="gh-editor-wordcount-container">
                 <div class="gh-editor-wordcount">
                     {{gh-pluralize this.wordCount.wordCount "word"}}

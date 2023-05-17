@@ -732,6 +732,40 @@
     font-size: 1.6rem;
 }
 
+.gh-publish-confirmation-with-feedback {
+    display: flex;
+    justify-content: space-between;
+}
+
+.gh-feedback-grey {
+    background: var(--main-color-content-greybg);
+    padding: 24px;
+    border-radius: 3px;
+    margin-bottom: 2.4rem;
+}
+
+.gh-post-bookmark-wrapper + .gh-feedback-grey {
+    margin-bottom: 2.4rem;
+}
+
+.gh-feedback-grey .gh-feedback-grey-title {
+    font-size: 1.8rem;
+}
+
+.gh-feedback-grey p {
+    font-size: 1.4rem;
+    color: var(--midgrey);
+    max-width: 30em;
+    margin-bottom: 0.8rem;
+}
+
+.gh-publish-confirmation-feedback {
+    color: var(--green);
+    font-size: 1.6rem;
+    font-weight: 400;
+    letter-spacing: .4px;
+}
+
 .gh-revert-to-draft {
     color: var(--green-d1);
     font-weight: 500;

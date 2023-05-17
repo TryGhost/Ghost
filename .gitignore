@@ -125,16 +125,20 @@ Caddyfile
 # Portal
 !/ghost/portal/.env
 /ghost/portal/umd
-/ghost/portal/build
 
 # Sodo-Search
 /ghost/sodo-search/public/main.css
 /ghost/sodo-search/umd
-/ghost/sodo-search/build
 
 # Announcement-Bar
 /ghost/announcement-bar/umd
-/ghost/announcement-bar/build
 
-/ghost/post-revisions/build
-/ghost/post-revisions/tsconfig.tsbuildinfo
+# Build files
+/ghost/*/build
+
+# Typescript build artifacts
+/ghost/*/tsconfig.tsbuildinfo
+
+# Admin X
+/ghost/admin-x-settings/dist
+/ghost/admin-x-settings/dist-ssr

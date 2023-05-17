@@ -206,13 +206,14 @@
                         <div>
                             <h4 class="gh-expandable-title">Lexical editor</h4>
                             <p class="gh-expandable-description">
-                               Makes lexical editor the default when creating new posts/pages.
+                                <span>Makes lexical editor the default when creating new posts/pages. Any issues? Feedback?</span><button class="green ml1" type="button" {{on "click" this.openFeedbackLexical}} data-test-button="lexical-feedback">Let us know</button>
                             </p>
                         </div>
                         <div class="for-switch">
                            <GhFeatureFlag @flag="lexicalEditor" />
                         </div>
                     </div>
+                    <FeedbackLexical::LabsForm />
                 </div>
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
@@ -343,6 +344,48 @@
                         </div>
                         <div class="for-switch">
                             <GhFeatureFlag @flag="imageEditor" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Signup Card</h4>
+                            <p class="gh-expandable-description">
+                                Enables the signup card in the Lexical editor
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="signupCard" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Collections</h4>
+                            <p class="gh-expandable-description">
+                                Enables Collections 2.0
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="collections" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Admin X</h4>
+                            <p class="gh-expandable-description">
+                                Enables Admin X, the new admin UI for Ghost
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="adminXSettings" />
                         </div>
                     </div>
                 </div>

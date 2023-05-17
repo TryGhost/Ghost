@@ -363,7 +363,7 @@ class SignupPage extends React.Component {
     }
 
     getFormErrors(state) {
-        const checkboxRequired = this.context.site.portal_signup_checkbox_required;
+        const checkboxRequired = this.context.site.portal_signup_checkbox_required && this.context.site.portal_signup_terms_html;
         const checkboxError = checkboxRequired && !state.termsCheckboxChecked;
 
         return {

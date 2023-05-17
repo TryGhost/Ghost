@@ -1,5 +1,5 @@
 const {createModel, createModelClass, createDb, sleep} = require('./utils');
-const BatchSendingService = require('../lib/batch-sending-service');
+const BatchSendingService = require('../lib/BatchSendingService');
 const sinon = require('sinon');
 const assert = require('assert');
 const logging = require('@tryghost/logging');

@@ -33,6 +33,14 @@ describe('Minifier', function () {
             result[2].should.eql('test/fixtures/basic-cards/css/gallery.css');
         });
 
+        it('match glob range e.g. css/bookmark.css and css/empty.css (css/@(bookmark|empty).css)', async function () {
+            let result = await minifier.getMatchingFiles('css/@(bookmark|empty).css');
+            
+            result.should.be.an.Array().with.lengthOf(2);
+            result[0].should.eql('test/fixtures/basic-cards/css/bookmark.css');
+            result[1].should.eql('test/fixtures/basic-cards/css/empty.css');
+        });
+
         it('reverse match glob e.g. css/!(bookmark).css', async function () {
             let result = await minifier.getMatchingFiles('css/!(bookmark).css');
 
