@@ -5,7 +5,15 @@ import SettingValue from './SettingValue';
 const meta = {
     title: 'Settings / Setting Value',
     component: SettingValue,
-    tags: ['autodocs']
+    tags: ['autodocs'],
+    argTypes: {
+        value: {
+            control: 'text'
+        },
+        help: {
+            control: 'text'
+        }
+    }
 } satisfies Meta<typeof SettingValue>;
 
 export default meta;
