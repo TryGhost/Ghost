@@ -45,14 +45,30 @@ export const H4: Story = {
 
 export const H5: Story = {
     args: {
-        children: 'Heading 4',
+        children: 'Heading 5',
         level: 5
     }
 };
 
 export const H6: Story = {
     args: {
-        children: 'Heading 4',
+        children: 'Heading 6',
         level: 6
+    }
+};
+
+export const H6Grey: Story = {
+    args: {
+        children: 'Grey heading 6 (only available here)',
+        level: 6,
+        grey: true
+    }
+};
+
+export const H6WithSeparator: Story = {
+    args: {
+        children: 'Heading 6 with separator',
+        level: 6,
+        separator: true
     }
 };
