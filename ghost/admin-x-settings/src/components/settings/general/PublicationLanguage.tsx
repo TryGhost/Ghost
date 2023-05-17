@@ -1,8 +1,8 @@
-import ButtonGroup from '../../design-system/globals/ButtonGroup';
+import ButtonGroup from '../../../admin-x-ds/global/ButtonGroup';
 import React from 'react';
-import SettingGroup from '../../design-system/settings/SettingGroup';
-import SettingGroupHeader from '../../design-system/settings/SettingGroupHeader';
-import {ButtonColors} from '../../design-system/globals/Button';
+import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
+import SettingGroupHeader from '../../../admin-x-ds/settings/SettingGroupHeader';
+import {ButtonColors} from '../../../admin-x-ds/global/Button';
 
 const PublicationLanguage: React.FC = () => {
     const buttons = [

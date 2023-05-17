@@ -1,9 +1,9 @@
 import type {Meta, StoryObj} from '@storybook/react';
 
-import ButtonGroup from '../globals/ButtonGroup';
+import ButtonGroup from '../global/ButtonGroup';
 import SettingGroupHeader from './SettingGroupHeader';
 
-import {ButtonColors} from '../globals/Button';
+import {ButtonColors} from '../global/Button';
 
 const meta = {
     title: 'Settings / Setting group header',

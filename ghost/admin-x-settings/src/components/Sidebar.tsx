@@ -1,6 +1,6 @@
 import React from 'react';
-import SettingNavItem from './design-system/settings/SettingNavItem';
-import SettingNavSection from './design-system/settings/SettingNavSection';
+import SettingNavItem from '../admin-x-ds/settings/SettingNavItem';
+import SettingNavSection from '../admin-x-ds/settings/SettingNavSection';
 
 const Sidebar: React.FC = () => {
     return (
