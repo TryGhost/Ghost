@@ -5,7 +5,7 @@ import SettingGroupHeader from '../../../admin-x-ds/settings/SettingGroupHeader'
 import SettingGroupInputs from '../../../admin-x-ds/settings/SettingGroupInputs';
 import SettingGroupValues from '../../../admin-x-ds/settings/SettingGroupValues';
 import TextField from '../../../admin-x-ds/global/TextField';
-import {ButtonColors} from '../../../admin-x-ds/global/Button';
+import {ButtonColors, IButton} from '../../../admin-x-ds/global/Button';
 import {TSettingGroupStates} from '../../../admin-x-ds/settings/SettingGroup';
 
 const TitleAndDescription: React.FC = () => {
@@ -48,19 +48,24 @@ const TitleAndDescription: React.FC = () => {
         }
     ];
 
-    const editButtons = [
+    let editButtons: IButton[] = [
         {
             label: 'Cancel',
             key: 'cancel',
             onClick: handleCancelClick
-        },
-        {
-            label: 'Save',
-            key: 'save',
-            disabled: !isEdited,
-            color: ButtonColors.Green
         }
     ];
+
+    if (isEdited) {
+        editButtons.push(
+            {
+                label: 'Save',
+                key: 'save',
+                disabled: !isEdited,
+                color: ButtonColors.Green
+            }
+        );
+    }
 
     const viewValues = [
         {
@@ -78,7 +83,7 @@ const TitleAndDescription: React.FC = () => {
     const inputFields = (
         <SettingGroupInputs columns={2}>
             <TextField
-                help="The name of your site"
+                hint="The name of your site"
                 inputRef={siteTitleRef}
                 placeholder="Site title"
                 title="Site title"
@@ -86,7 +91,7 @@ const TitleAndDescription: React.FC = () => {
                 onChange={handleTitleChange}
             />
             <TextField
-                help="Used in your theme, meta data and search results"
+                hint="Used in your theme, meta data and search results"
                 placeholder="Enter something"
                 title="Site description"
                 value={siteDescription}
