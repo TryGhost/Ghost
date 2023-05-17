@@ -46,7 +46,6 @@ const SettingsProvider: React.FC<SettingsProviderProps> = ({children}) => {
             // Update the local state with the new settings
             setSettings(data.settings);
         } catch (error) {
-            console.log('Error', error);
             // Log error in settings API
         }
     };
