@@ -1,11 +1,15 @@
 import ButtonGroup from '../../../admin-x-ds/global/ButtonGroup';
-import React from 'react';
+import React, {useContext} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupHeader from '../../../admin-x-ds/settings/SettingGroupHeader';
 import SettingGroupValues from '../../../admin-x-ds/settings/SettingGroupValues';
 import {ButtonColors} from '../../../admin-x-ds/global/Button';
+import {SettingsContext} from '../../SettingsProvider';
+import {getSettingValue} from '../../../utils/helpers';
 
 const PublicationLanguage: React.FC = () => {
+    const {settings} = useContext(SettingsContext) || {};
+    const publicationLanguage = getSettingValue(settings, 'locale');
     const buttons = [
         {
             label: 'Edit',
@@ -17,8 +21,7 @@ const PublicationLanguage: React.FC = () => {
         {
             heading: 'Site language',
             key: 'site-language',
-            value: 'en'
-
+            value: publicationLanguage
         }
     ];
 

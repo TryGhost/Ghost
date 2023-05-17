@@ -23,9 +23,9 @@ export function getGhostPaths(): IGhostPaths {
     return {adminRoot, assetRoot, apiRoot};
 }
 
-export function getLocalTime({timeZone}) {
+export function getLocalTime(timeZone: string) {
     const date = new Date();
-    const options = {timeZone: timeZone, hour12: false, hour: 'numeric', minute: 'numeric', second: 'numeric'};
+    const options = {timeZone: timeZone};
     const localTime = date.toLocaleString('en-US', options);
     return localTime;
 }
