@@ -71,32 +71,34 @@ const Template = ({display, heading, subheader, disclaimer, ...args}) => {
 export const Empty = Template.bind({});
 Empty.args = {
     display: 'Editing',
-    layout: 'regular',
-    alignment: 'center',
+    layout: 'wide',
+    alignment: 'left',
     showBackgroundImage: false,
     heading: '',
     subheader: '',
     disclaimer: '',
     buttonText: '',
-    buttonPlaceholder: 'Add button text',
+    buttonColor: '#ffffff',
+    backgroundColor: '#ff0095',
     availableLabels: [{id: '1',name: 'First label'},{id: '2',name: 'Second label'}],
     headerTextEditorInitialState: editorEmptyState,
     subheaderTextEditorInitialState: editorEmptyState,
-    disclaimerTextEditorInitialState: editorEmptyState
+    disclaimerTextEditorInitialState: editorEmptyState,
+    availableLabels: [{id: '1',name: 'First label'},{id: '2',name: 'Second label'}]
 };
 
 export const Populated = Template.bind({});
 Populated.args = {
     display: 'Editing',
-    layout: 'regular',
-    alignment: 'center',
+    layout: 'split',
+    alignment: 'left',
     showBackgroundImage: true,
-    backgroundImageSrc: 'https://static.ghost.org/v4.0.0/images/feature-image.jpg',
+    backgroundImageSrc: 'https://static.ghost.org/v4.0.0/images/andreas-selter-e4yK8QQlZa0-unsplash.jpg',
     heading: 'This is a heading',
     subheader: 'And here is some subheading text.',
     disclaimer: 'And here is some disclaimer text.',
     buttonText: 'Subscribe',
-    buttonColor: '#f7f7f7',
-    backgroundColor: '#444444',
+    buttonColor: '#000000',
+    backgroundColor: '#F3B389',
     availableLabels: [{id: '1',name: 'First label'},{id: '2',name: 'Second label'}]
 };
