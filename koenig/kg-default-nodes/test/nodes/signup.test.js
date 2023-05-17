@@ -169,8 +169,8 @@ describe('SignupNode', function () {
         it('creates signup element', editorTest(function () {
             const signupNode = $createSignupNode(dataset);
             const {element} = signupNode.exportDOM(exportOptions);
-            element.should.prettifyTo(html`
-            <form data-members-form="" style="background-image: url(https://example.com/image.jpg);"><h1>Header</h1><h2>Subheader</h2><p>Disclaimer</p><label for="email">Email</label><input id="email" data-members-email="" type="email" required="true"><button type="submit">Button</button></form>
+            element.outerHTML.should.prettifyTo(html`
+            <div><h1>Header</h1><h2>Subheader</h2><p>Disclaimer</p><form data-members-form="" style="background-image:url(https://example.com/image.jpg)"><input id="email" data-members-email="" type="email" required="true"><button type="submit">Button</button></form></div>
             `);
         }));
     });

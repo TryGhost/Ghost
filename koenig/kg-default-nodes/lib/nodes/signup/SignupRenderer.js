@@ -1,21 +1,27 @@
+import {addCreateDocumentOption} from '../../utils/add-create-document-option';
+
 // TODO this is a placeholder, we need to figure out what the signup card should look like and
 // which elements should be customizable inside the editor
 // ref https://ghost.org/docs/themes/members#signup-forms
 
 function cardTemplate(nodeData) {
     return `
+    <div>
+        <h1>${nodeData.header}</h1>
+        <h2>${nodeData.subheader}</h2>
+        <p>${nodeData.disclaimer}</p>
         <form data-members-form="" style="background-image: url(${nodeData.backgroundImageSrc});">
-            <h1>${nodeData.header}</h1>
-            <h2>${nodeData.subheader}</h2>
-            <p>${nodeData.disclaimer}</p>
-            <label for="email">Email</label>
-            <input id="email" data-members-email="" type="email" required="true">
+            <input id="email" data-members-email="" type="email" required="true" />
             <button type="submit">${nodeData.buttonText}</button>
         </form>
+    </div>
     `;
 }
 
 export function renderSignupCardToDOM(dataset, options = {}) {
+    addCreateDocumentOption(options);
+    const document = options.createDocument();
+
     const node = {
         buttonText: dataset.__buttonText,
         header: dataset.__header,
@@ -27,6 +33,11 @@ export function renderSignupCardToDOM(dataset, options = {}) {
         labels: dataset.__labels
     };
 
-    const htmlString = options.target === 'email' ? '' : cardTemplate(node);
-    return htmlString;
+    const htmlString = options.target === 'email'
+        ? ''
+        : cardTemplate(node);
+
+    const element = document.createElement('div');
+    element.innerHTML = htmlString?.trim();
+    return element.firstElementChild;
 }

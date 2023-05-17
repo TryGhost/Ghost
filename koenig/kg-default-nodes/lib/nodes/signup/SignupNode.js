@@ -80,10 +80,7 @@ export class SignupNode extends KoenigDecoratorNode {
 
     exportDOM(options = {}) {
         const element = renderSignupCardToDOM(this, options);
-        return {
-            element,
-            type: 'inner'
-        };
+        return {element};
     }
 
     static importJSON(serializedNode) {
