@@ -4,16 +4,18 @@ import {CollectionsService} from '../src/index';
 import {CollectionsRepositoryInMemory} from '../src/CollectionsRepositoryInMemory';
 
 describe('collections', function () {
-    it('Instantiates a CollectionsService', function () {
+    let collectionsService: CollectionsService;
+
+    beforeEach(function () {
         const repository = new CollectionsRepositoryInMemory();
-        const collectionsService = new CollectionsService({repository});
+        collectionsService = new CollectionsService({repository});
+    });
+
+    it('Instantiates a CollectionsService', function () {
         assert.ok(collectionsService, 'CollectionsService should initialize');
     });
 
     it('Can do CRUD operations on a collection', async function () {
-        const repository = new CollectionsRepositoryInMemory();
-        const collectionsService = new CollectionsService({repository});
-
         const savedCollection = await collectionsService.save({
             title: 'testing collections',
             description: 'testing collections description',
@@ -39,9 +41,6 @@ describe('collections', function () {
     });
 
     it('Can create a collection with predefined ID', async function () {
-        const repository = new CollectionsRepositoryInMemory();
-        const collectionsService = new CollectionsService({repository});
-
         const id = new ObjectID();
         const savedCollection = await collectionsService.save({
             id: id.toHexString()
@@ -51,9 +50,6 @@ describe('collections', function () {
     });
 
     it('Can create a collection with predefined ObjectID instance', async function () {
-        const repository = new CollectionsRepositoryInMemory();
-        const collectionsService = new CollectionsService({repository});
-
         const id = new ObjectID();
         const savedCollection = await collectionsService.save({
             id: id
@@ -63,9 +59,6 @@ describe('collections', function () {
     });
 
     it('Throws an error when trying to save a collection with an invalid ID', async function () {
-        const repository = new CollectionsRepositoryInMemory();
-        const collectionsService = new CollectionsService({repository});
-
         try {
             await collectionsService.save({
                 id: 12345
