@@ -49,7 +49,7 @@ module.exports = class TierRepository {
      */
     toPrimitive(tier) {
         return {
-            ...tier,
+            ...tier.toJSON(),
             active: (tier.status === 'active'),
             type: tier.type,
             id: tier.id.toHexString()
