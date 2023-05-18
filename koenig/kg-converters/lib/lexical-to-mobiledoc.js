@@ -16,7 +16,7 @@ const BLANK_DOC = {
 
 const MD_TEXT_SECTION = 1;
 const MD_LIST_SECTION = 3;
-// const MD_CARD_SECTION = 10;
+const MD_CARD_SECTION = 10;
 
 const MD_TEXT_MARKER = 0;
 const MD_ATOM_MARKER = 1;
@@ -38,6 +38,47 @@ const L_FORMAT_MAP = new Map([
     [L_IS_SUBSCRIPT, 'sub'],
     [L_IS_SUPERSCRIPT, 'sup']
 ]);
+
+// TODO: Feels a little too explicit as it will need updating every time we add a new card.
+//
+// One alternative is to use a list of all built-in Lexical types and assume that anything
+// not listed is a card but that feels more dangerous.
+//
+// Another alternative is to grab the list of cards from kg-default-nodes but that's creating
+// more inter-dependencies that makes development setup tricky.
+const KNOWN_CARDS = [
+    'audio',
+    'bookmark',
+    'button',
+    'callout',
+    'codeblock',
+    'email-cta',
+    'email',
+    'embed',
+    'file',
+    'gallery',
+    'header',
+    'horizontalrule',
+    'html',
+    'image',
+    'markdown',
+    'paywall',
+    'product',
+    'signup',
+    'toggle',
+    'video'
+];
+
+const CARD_NAME_MAP = {
+    codeblock: 'code',
+    hr: 'horizontalrule'
+};
+
+const CARD_PROPERTY_MAP = {
+    embed: {
+        embedType: 'type'
+    }
+};
 
 export function lexicalToMobiledoc(serializedLexical) {
     if (serializedLexical === null || serializedLexical === undefined || serializedLexical === '') {
@@ -111,6 +152,10 @@ function addRootChild(child, mobiledoc) {
 
     if (child.type === 'list') {
         addListSection(child, mobiledoc, child.tag);
+    }
+
+    if (KNOWN_CARDS.includes(child.type)) {
+        addCardSection(child, mobiledoc);
     }
 }
 
@@ -316,4 +361,34 @@ function readFormat(format) {
     });
 
     return formats;
+}
+
+function addCardSection(child, mobiledoc) {
+    const cardType = child.type;
+
+    let cardName = child.type;
+    // rename card if there's a difference between lexical/mobiledoc
+    if (CARD_NAME_MAP[cardName]) {
+        cardName = CARD_NAME_MAP[cardName];
+    }
+    // don't include type in the payload
+    delete child.type;
+
+    // rename any properties to match mobiledoc
+    if (CARD_PROPERTY_MAP[cardType]) {
+        const map = CARD_PROPERTY_MAP[cardType];
+
+        for (const [key, value] of Object.entries(map)) {
+            child[value] = child[key];
+            delete child[key];
+        }
+    }
+
+    const card = [cardName, child];
+    mobiledoc.cards.push(card);
+
+    const cardIndex = mobiledoc.cards.length - 1;
+    const section = [MD_CARD_SECTION, cardIndex];
+
+    mobiledoc.sections.push(section);
 }
