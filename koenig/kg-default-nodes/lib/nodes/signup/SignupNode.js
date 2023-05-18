@@ -11,8 +11,10 @@ export class SignupNode extends KoenigDecoratorNode {
     __alignment;
     __backgroundColor;
     __backgroundImageSrc;
+    __textColor;
     __buttonColor;
     __buttonText;
+    __buttonTextColor;
     __disclaimer;
     __header;
     __labels;
@@ -45,8 +47,10 @@ export class SignupNode extends KoenigDecoratorNode {
             alignment: self.__alignment,
             backgroundColor: self.__backgroundColor,
             backgroundImageSrc: self.__backgroundImageSrc,
+            textColor: self.__textColor,
             buttonColor: self.__buttonColor,
             buttonText: self.__buttonText,
+            buttonTextColor: self.__buttonTextColor,
             disclaimer: self.__disclaimer,
             header: self.__header,
             labels: self.__labels,
@@ -58,7 +62,9 @@ export class SignupNode extends KoenigDecoratorNode {
     constructor({alignment,
         backgroundColor,
         backgroundImageSrc,
+        textColor,
         buttonColor,
+        buttonTextColor,
         buttonText,
         disclaimer,
         header,
@@ -69,7 +75,9 @@ export class SignupNode extends KoenigDecoratorNode {
         this.__alignment = alignment || 'left';
         this.__backgroundColor = backgroundColor || 'accent';
         this.__backgroundImageSrc = backgroundImageSrc || '';
-        this.__buttonColor = buttonColor || 'white';
+        this.__textColor = textColor || '#ffffff';
+        this.__buttonColor = buttonColor || '#ffffff';
+        this.__buttonTextColor = buttonTextColor || '#000000';
         this.__buttonText = buttonText || '';
         this.__disclaimer = disclaimer || '';
         this.__header = header || '';
@@ -87,7 +95,9 @@ export class SignupNode extends KoenigDecoratorNode {
         const {alignment,
             backgroundColor,
             backgroundImageSrc,
+            textColor,
             buttonColor,
+            buttonTextColor,
             buttonText,
             disclaimer,
             header,
@@ -98,7 +108,9 @@ export class SignupNode extends KoenigDecoratorNode {
             alignment,
             backgroundColor,
             backgroundImageSrc,
+            textColor,
             buttonColor,
+            buttonTextColor,
             buttonText,
             disclaimer,
             header,
@@ -121,7 +133,9 @@ export class SignupNode extends KoenigDecoratorNode {
             alignment: this.getAlignment(),
             backgroundColor: this.getBackgroundColor(),
             backgroundImageSrc: this.getBackgroundImageSrc(),
+            textColor: this.getTextColor(),
             buttonColor: this.getButtonColor(),
+            buttonTextColor: this.getButtonTextColor(),
             buttonText: this.getButtonText(),
             disclaimer: this.getDisclaimer(),
             header: this.getHeader(),
@@ -176,6 +190,16 @@ export class SignupNode extends KoenigDecoratorNode {
         writable.__backgroundImageSrc = backgroundImageSrc;
     }
 
+    getTextColor() {
+        const self = this.getLatest();
+        return self.__textColor;
+    }
+
+    setTextColor(textColor) {
+        const writable = this.getWritable();
+        writable.__textColor = textColor;
+    }
+
     getButtonColor() {
         const self = this.getLatest();
         return self.__buttonColor;
@@ -184,6 +208,16 @@ export class SignupNode extends KoenigDecoratorNode {
     setButtonColor(buttonColor) {
         const writable = this.getWritable();
         writable.__buttonColor = buttonColor;
+    }
+
+    getButtonTextColor() {
+        const self = this.getLatest();
+        return self.__buttonTextColor;
+    }
+
+    setButtonTextColor(buttonTextColor) {
+        const writable = this.getWritable();
+        writable.__buttonTextColor = buttonTextColor;
     }
 
     getButtonText() {

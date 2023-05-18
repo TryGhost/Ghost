@@ -16,23 +16,21 @@ function SignupNodeComponent({
     backgroundColor,
     backgroundImageSrc,
     buttonColor,
-    buttonPlaceholder,
     buttonText,
+    buttonTextColor,
     nodeKey,
     disclaimer,
-    disclaimerPlaceholder,
     disclaimerTextEditor,
     disclaimerTextEditorInitialState,
     header,
-    headerPlaceholder,
     headerTextEditor,
     headerTextEditorInitialState,
     labels,
     layout,
     subheader,
-    subheaderPlaceholder,
     subheaderTextEditor,
-    subheaderTextEditorInitialState
+    subheaderTextEditorInitialState,
+    textColor
 }) {
     const [editor] = useLexicalComposerContext();
     const {cardConfig} = useContext(KoenigComposerContext);
@@ -124,17 +122,26 @@ function SignupNodeComponent({
         }
     };
 
-    const handleBackgroundColor = (color) => {
+    const handleBackgroundColor = (color, matchingTextColor) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             node.setBackgroundColor(color);
+            node.setTextColor(matchingTextColor);
         });
     };
 
-    const handleButtonColor = (color) => {
+    const handleTextColor = (color) => {
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.setTextColor(color);
+        });
+    };
+
+    const handleButtonColor = (color, matchingTextColor) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             node.setButtonColor(color);
+            node.setButtonTextColor(matchingTextColor);
         });
     };
 
@@ -159,6 +166,7 @@ function SignupNodeComponent({
                 backgroundImageSrc={backgroundImageSrc}
                 buttonColor={buttonColor}
                 buttonText={buttonText}
+                buttonTextColor={buttonTextColor}
                 disclaimer={disclaimer}
                 disclaimerTextEditor={disclaimerTextEditor}
                 disclaimerTextEditorInitialState={disclaimerTextEditorInitialState}
@@ -170,6 +178,7 @@ function SignupNodeComponent({
                 handleClearBackgroundImage={handleClearBackgroundImage}
                 handleLabels={handleLabels}
                 handleLayout={handleLayout}
+                handleTextColor={handleTextColor}
                 handleToggleBackgroundImage={handleToggleBackgroundImage}
                 header={header}
                 headerTextEditor={headerTextEditor}
@@ -182,6 +191,7 @@ function SignupNodeComponent({
                 subheader={subheader}
                 subheaderTextEditor={subheaderTextEditor}
                 subheaderTextEditorInitialState={subheaderTextEditorInitialState}
+                textColor={textColor}
                 onFileChange={onFileChange}
             />
             <ActionToolbar

@@ -1,6 +1,6 @@
 import KoenigNestedEditor from '../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import clsx from 'clsx';
 import {ButtonGroupSetting, ColorPickerSetting, InputSetting, MediaUploadSetting, MultiSelectDropdownSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {ReactComponent as CenterAlignIcon} from '../../../assets/icons/kg-align-center.svg';
@@ -24,6 +24,8 @@ export function SignupCard({alignment,
     backgroundImageSrc,
     backgroundColor,
     buttonColor,
+    buttonTextColor,
+    textColor,
     isEditing,
     fileUploader,
     handleAlignment,
@@ -33,6 +35,7 @@ export function SignupCard({alignment,
     handleBackgroundColor,
     handleButtonColor,
     handleLayout,
+    handleTextColor,
     labels,
     layout,
     availableLabels,
@@ -45,14 +48,18 @@ export function SignupCard({alignment,
     subheaderTextEditorInitialState,
     disclaimerTextEditor,
     disclaimerTextEditorInitialState}) {
-    const [backgroundImageAverageColor, setBackgroundImageAverageColor] = useState(null);
+    const matchingTextColor = (color) => {
+        return color === 'transparent' ? null : textColorForBackgroundColor(hexColorValue(color)).hex();
+    };
 
     useEffect(() => {
         if (backgroundImageSrc) {
             new FastAverageColor().getColorAsync(backgroundImageSrc).then((color) => {
-                setBackgroundImageAverageColor(color.hex);
+                handleTextColor(matchingTextColor(color.hex));
             });
         }
+        // This is only needed when the background image is changed
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [backgroundImageSrc]);
 
     const layoutChildren = [
@@ -101,10 +108,6 @@ export function SignupCard({alignment,
         return color === 'accent' ? getAccentColor() : color;
     };
 
-    const textColor = (color) => {
-        return color === 'transparent' ? null : textColorForBackgroundColor(hexColorValue(color)).hex();
-    };
-
     const wrapperStyle = () => {
         if (backgroundImageSrc && layout !== 'split') {
             return {
@@ -112,12 +115,12 @@ export function SignupCard({alignment,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center center',
                 backgroundColor: 'bg-grey-950',
-                color: backgroundImageAverageColor && textColor(backgroundImageAverageColor)
+                color: hexColorValue(textColor)
             };
         } else if (backgroundColor) {
             return {
                 backgroundColor: hexColorValue(backgroundColor),
-                color: textColor(backgroundColor)
+                color: hexColorValue(textColor)
             };
         }
 
@@ -219,7 +222,7 @@ export function SignupCard({alignment,
                             buttonSize={`${(layout === 'regular') ? 'medium' : (layout === 'wide') ? 'large' : 'xlarge'}`}
                             buttonStyle={buttonColor ? {
                                 backgroundColor: hexColorValue(buttonColor),
-                                color: textColor(buttonColor)
+                                color: hexColorValue(buttonTextColor)
                             } : {backgroundColor: `#000000`,
                                 color: `#ffffff`}}
                             buttonText={buttonText || 'Subscribe'}
@@ -296,7 +299,7 @@ export function SignupCard({alignment,
                         onFileChange={onFileChange}
                         onRemoveMedia={handleClearBackgroundImage}
                     />}
-                    <ColorPickerSetting
+                    {(!showBackgroundImage || layout === 'split') && <ColorPickerSetting
                         dataTestId='signup-background-color'
                         eyedropper={layout === 'split'}
                         label='Background'
@@ -306,8 +309,8 @@ export function SignupCard({alignment,
                             {title: 'Transparent', transparent: true}
                         ]}
                         value={backgroundColor}
-                        onChange={handleBackgroundColor}
-                    />
+                        onChange={color => handleBackgroundColor(color, matchingTextColor(color))}
+                    />}
                     <SettingsDivider />
 
                     <ColorPickerSetting
@@ -320,7 +323,7 @@ export function SignupCard({alignment,
                             {title: 'White', hex: '#ffffff'}
                         ]}
                         value={buttonColor}
-                        onChange={handleButtonColor}
+                        onChange={color => handleButtonColor(color, matchingTextColor(color))}
                     />
                     <InputSetting
                         dataTestId='signup-button-text'
@@ -349,11 +352,13 @@ SignupCard.propTypes = {
     header: PropTypes.string,
     subheader: PropTypes.string,
     disclaimer: PropTypes.string,
+    buttonColor: PropTypes.string,
     buttonText: PropTypes.string,
+    buttonTextColor: PropTypes.string,
     buttonPlaceholder: PropTypes.string,
     backgroundImageSrc: PropTypes.string,
     backgroundColor: PropTypes.string,
-    buttonColor: PropTypes.string,
+    textColor: PropTypes.string,
     showBackgroundImage: PropTypes.bool,
     isEditing: PropTypes.bool,
     fileUploader: PropTypes.object,
@@ -366,6 +371,7 @@ SignupCard.propTypes = {
     handleToggleBackgroundImage: PropTypes.func,
     handleButtonColor: PropTypes.func,
     handleLabels: PropTypes.func,
+    handleTextColor: PropTypes.func,
     labels: PropTypes.arrayOf(PropTypes.string),
     layout: PropTypes.oneOf(['regular', 'wide', 'full', 'split']),
     availableLabels: PropTypes.arrayOf(PropTypes.object),

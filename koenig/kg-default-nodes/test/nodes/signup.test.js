@@ -27,8 +27,10 @@ describe('SignupNode', function () {
         signupNode.getAlignment().should.equal(data.alignment);
         signupNode.getBackgroundColor().should.equal(data.backgroundColor);
         signupNode.getBackgroundImageSrc().should.equal(data.backgroundImageSrc);
+        signupNode.getTextColor().should.equal(data.textColor);
         signupNode.getButtonColor().should.equal(data.buttonColor);
         signupNode.getButtonText().should.equal(data.buttonText);
+        signupNode.getButtonTextColor().should.equal(data.buttonTextColor);
         signupNode.getDisclaimer().should.equal(data.disclaimer);
         signupNode.getHeader().should.equal(data.header);
         signupNode.getLabels().should.deepEqual(data.labels);
@@ -42,8 +44,10 @@ describe('SignupNode', function () {
         dataset = {
             backgroundColor: 'transparent',
             backgroundImageSrc: 'https://example.com/image.jpg',
-            buttonText: 'Button',
+            textColor: '#000',
             buttonColor: '#000',
+            buttonText: 'Button',
+            buttonTextColor: '#fff',
             disclaimer: 'Disclaimer',
             header: 'Header',
             subheader: 'Subheader',
@@ -91,12 +95,16 @@ describe('SignupNode', function () {
             const node = $createSignupNode(dataset);
             node.setAlignment('left');
             node.getAlignment().should.equal('left');
-            node.setBackgroundColor('#fff');
-            node.getBackgroundColor().should.equal('#fff');
+            node.setBackgroundColor('#f00');
+            node.getBackgroundColor().should.equal('#f00');
             node.setBackgroundImageSrc('https://example.com/image2.jpg');
             node.getBackgroundImageSrc().should.equal('https://example.com/image2.jpg');
-            node.setButtonColor('#fff');
-            node.getButtonColor().should.equal('#fff');
+            node.setTextColor('#0f0');
+            node.getTextColor().should.equal('#0f0');
+            node.setButtonColor('#00f');
+            node.getButtonColor().should.equal('#00f');
+            node.setButtonTextColor('#777');
+            node.getButtonTextColor().should.equal('#777');
             node.setButtonText('This is the new button text');
             node.getButtonText().should.equal('This is the new button text');
             node.setDisclaimer('This is the new disclaimer');
@@ -200,8 +208,10 @@ describe('SignupNode', function () {
                 alignment: dataset.alignment,
                 backgroundColor: dataset.backgroundColor,
                 backgroundImageSrc: dataset.backgroundImageSrc,
+                textColor: dataset.textColor,
                 buttonColor: dataset.buttonColor,
                 buttonText: dataset.buttonText,
+                buttonTextColor: dataset.buttonTextColor,
                 disclaimer: dataset.disclaimer,
                 header: dataset.header,
                 labels: dataset.labels,
