@@ -25,14 +25,17 @@ const PublicationLanguage: React.FC = () => {
         }
     ];
 
+    const custonHeader = (
+        <SettingGroupHeader
+            description="Set the language/locale which is used on your site"
+            title="Publication Language"
+        >
+            <ButtonGroup buttons={buttons} link={true} />
+        </SettingGroupHeader>
+    );
+
     return (
-        <SettingGroup>
-            <SettingGroupHeader
-                description="Set the language/locale which is used on your site"
-                title="Publication Language"
-            >
-                <ButtonGroup buttons={buttons} link={true} />
-            </SettingGroupHeader>
+        <SettingGroup customHeader={custonHeader}>
             <SettingGroupValues values={viewValues} />
         </SettingGroup>
     );

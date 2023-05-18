@@ -13,13 +13,13 @@ const TimeZone: React.FC = () => {
 
     const [currentTime, setCurrentTime] = useState(getLocalTime(publicationTimezone));
     useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentTime(getLocalTime(publicationTimezone));
-        }, 1000);
+        setCurrentTime(getLocalTime(publicationTimezone));
+        // const timer = setInterval(() => {
+        // }, 1000);
 
-        return () => {
-            clearInterval(timer);
-        };
+        // return () => {
+        //     clearInterval(timer);
+        // };
     }, [publicationTimezone]);
 
     const buttons = [
@@ -37,14 +37,17 @@ const TimeZone: React.FC = () => {
         }
     ];
 
+    const customHeader = (
+        <SettingGroupHeader
+            description="Set the time and date of your publication, used for all published posts"
+            title="Site timezone"
+        >
+            <ButtonGroup buttons={buttons} link={true} />
+        </SettingGroupHeader>
+    );
+
     return (
-        <SettingGroup>
-            <SettingGroupHeader
-                description="Set the time and date of your publication, used for all published posts"
-                title="Site timezone"
-            >
-                <ButtonGroup buttons={buttons} link={true} />
-            </SettingGroupHeader>
+        <SettingGroup customHeader={customHeader}>
             <SettingGroupValues values={viewValues} />
         </SettingGroup>
     );
