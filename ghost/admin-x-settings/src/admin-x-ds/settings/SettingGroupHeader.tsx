@@ -1,7 +1,8 @@
+import Heading from '../global/Heading';
 import React from 'react';
 
 interface Props {
-    title: string;
+    title?: string;
     description?: React.ReactNode;
     children?: React.ReactNode;
 }
@@ -9,10 +10,12 @@ interface Props {
 const SettingGroupHeader: React.FC<Props> = ({title, description, children}) => {
     return (
         <div className="flex items-start justify-between">
-            <div>
-                <h5>{title}</h5>
-                {description && <p className="text-sm">{description}</p>}
-            </div>
+            {(title || description) && 
+                <div>
+                    <Heading level={5}>{title}</Heading>
+                    {description && <p className="text-sm">{description}</p>}
+                </div>
+            }
             {children}
         </div>
     );

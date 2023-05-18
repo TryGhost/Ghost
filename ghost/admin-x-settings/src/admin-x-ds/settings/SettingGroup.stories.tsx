@@ -4,10 +4,12 @@ import * as SettingGroupHeaderStories from './SettingGroupHeader.stories';
 import * as SettingGroupInputStories from './SettingGroupInputs.stories';
 import * as SettingGroupValueStories from './SettingGroupValues.stories';
 
+import ButtonGroup from '../global/ButtonGroup';
 import SettingGroup from './SettingGroup';
 import SettingGroupHeader from './SettingGroupHeader';
 import SettingGroupInputs from './SettingGroupInputs';
 import SettingGroupValues from './SettingGroupValues';
+import {ButtonColors} from '../global/Button';
 
 const meta = {
     title: 'Settings / Setting Group',
@@ -19,46 +21,58 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+const customButtons = <ButtonGroup buttons={[{label: 'My action', color: ButtonColors.Green}]} link={true} />;
+const customHeader = <SettingGroupHeader {...SettingGroupHeaderStories.CustomHeader.args} />;
+const singleColContent = <SettingGroupValues {...SettingGroupValueStories.SingleColumn.args} />;
+const twoColView = <SettingGroupValues {...SettingGroupValueStories.TwoColumns.args} />;
+const twoColEdit = <SettingGroupInputs {...SettingGroupInputStories.TwoColumns.args} />;
+
 export const SingleColumn: Story = {
     args: {
-        state: 'view',
-        children: 
-            <>
-                <SettingGroupHeader {...SettingGroupHeaderStories.Default.args} />
-                <SettingGroupValues {...SettingGroupValueStories.SingleColumn.args} />
-            </>
+        title: 'Setting title',
+        description: 'Setting description',
+        children: singleColContent
     }
 };
 
 export const TwoColumns: Story = {
     args: {
-        state: 'view',
-        children: 
-            <>
-                <SettingGroupHeader {...SettingGroupHeaderStories.Default.args} />
-                <SettingGroupValues {...SettingGroupValueStories.TwoColumns.args} />
-            </>
+        title: SingleColumn.args?.title,
+        description: SingleColumn.args?.description,
+        children: twoColView
     }
 };
 
 export const Editing: Story = {
     args: {
         state: 'edit',
-        children: 
-            <>
-                <SettingGroupHeader {...SettingGroupHeaderStories.Editing.args} />
-                <SettingGroupInputs {...SettingGroupInputStories.TwoColumns.args} />
-            </>
+        title: SingleColumn.args?.title,
+        description: SingleColumn.args?.description,
+        children: twoColEdit
     }
 };
 
 export const Unsaved: Story = {
     args: {
         state: 'unsaved',
-        children: 
-            <>
-                <SettingGroupHeader {...SettingGroupHeaderStories.Editing.args} />
-                <SettingGroupInputs {...SettingGroupInputStories.TwoColumns.args} />
-            </>
+        title: SingleColumn.args?.title,
+        description: SingleColumn.args?.description,
+        children: twoColEdit
+    }
+};
+
+export const CustomActions: Story = {
+    args: {
+        title: SingleColumn.args?.title,
+        description: SingleColumn.args?.description,
+        customButtons: customButtons
+    }
+};
+
+export const CustomHeader: Story = {
+    args: {
+        title: SingleColumn.args?.title,
+        description: SingleColumn.args?.description,
+        customHeader: customHeader
     }
 };

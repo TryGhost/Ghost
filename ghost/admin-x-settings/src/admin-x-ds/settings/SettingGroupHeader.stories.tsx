@@ -3,6 +3,7 @@ import type {Meta, StoryObj} from '@storybook/react';
 import ButtonGroup from '../global/ButtonGroup';
 import SettingGroupHeader from './SettingGroupHeader';
 
+import Heading from '../global/Heading';
 import {ButtonColors} from '../global/Button';
 
 const meta = {
@@ -42,5 +43,22 @@ export const Editing: Story = {
             } 
             link={true} 
         />
+    }
+};
+
+export const CustomHeader: Story = {
+    args: {
+        children: 
+            <>
+                <div className='flex flex-col'>
+                    <Heading level={5}>Users</Heading>
+                    <span className='mt-4 text-sm'>Cristofer Vaccaro — <strong>Owner</strong></span>
+                    <span className='text-xs text-grey-500'>cristofer@example.com</span>
+                </div>
+                <ButtonGroup 
+                    buttons={[{label: 'Invite users', color: ButtonColors.Green}]} 
+                    link={true} 
+                />
+            </>
     }
 };
