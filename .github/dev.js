@@ -83,6 +83,10 @@ if (DASH_DASH_ARGS.includes('search') || DASH_DASH_ARGS.includes('all')) {
     COMMAND_GHOST.env['sodoSearch__styles'] = 'http://localhost:5370/umd/main.css';
 }
 
+if (DASH_DASH_ARGS.includes('lexical')) {
+    COMMAND_GHOST.env['editor__url'] = 'http://localhost:4173/koenig-lexical.umd.js';
+}
+
 async function handleStripe() {
     if (DASH_DASH_ARGS.includes('stripe') || DASH_DASH_ARGS.includes('all')) {
         if (DASH_DASH_ARGS.includes('offline')) {
