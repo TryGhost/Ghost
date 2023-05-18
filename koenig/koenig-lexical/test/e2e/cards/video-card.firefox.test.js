@@ -119,7 +119,7 @@ test.describe('Video card', async () => {
         await expect(await page.getByTestId('media-upload-filled')).toBeVisible();
 
         // Can remove thumbnail
-        const replaceButton = page.getByTestId('custom-thumbnail-replace');
+        const replaceButton = page.getByTestId('media-upload-remove');
         await replaceButton.click();
         await expect(await page.getByTestId('media-upload-placeholder')).toBeVisible();
     });
@@ -145,7 +145,7 @@ test.describe('Video card', async () => {
         await fileChooser.setFiles([imagePath]);
 
         // Errors should be visible
-        await expect(await page.getByTestId('custom-thumbnails-errors')).toBeVisible();
+        await expect(await page.getByTestId('media-upload-errors')).toBeVisible();
     });
 
     test('can hide custom thumbnail if loop enabled', async function ({page}) {
@@ -248,7 +248,7 @@ test.describe('Video card', async () => {
         await page.getByTestId('media-upload-placeholder').dispatchEvent('drop', {dataTransfer});
 
         // Errors should be visible
-        await expect(await page.getByTestId('custom-thumbnails-errors')).toBeVisible();
+        await expect(await page.getByTestId('media-upload-errors')).toBeVisible();
     });
 
     test('renders video card toolbar', async function ({page}) {

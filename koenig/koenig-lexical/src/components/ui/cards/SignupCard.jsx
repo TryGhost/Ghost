@@ -10,6 +10,7 @@ import {ReactComponent as ImgRegularIcon} from '../../../assets/icons/kg-img-reg
 import {ReactComponent as ImgWideIcon} from '../../../assets/icons/kg-img-wide.svg';
 import {ReactComponent as LayoutSplitIcon} from '../../../assets/icons/kg-layout-split.svg';
 import {ReactComponent as LeftAlignIcon} from '../../../assets/icons/kg-align-left.svg';
+import {MediaUploader} from '../MediaUploader';
 import {SubscribeForm} from '../SubscribeForm';
 import {getAccentColor} from '../../../utils/getAccentColor';
 import {isEditorEmpty} from '../../../utils/isEditorEmpty';
@@ -143,26 +144,21 @@ export function SignupCard({alignment,
                 (layout === 'split') && 'h-auto sm:h-[80vh]'
             )} data-testid={'signup-card-container'} style={wrapperStyle()}>
                 {layout === 'split' && (
-                    backgroundImageSrc
-                        ? <img alt="" className="h-1/2 object-cover sm:h-auto sm:w-1/2" src={backgroundImageSrc} />
-                        : <div className="flex items-center justify-center bg-grey-50 sm:w-1/2">
-                            <MediaUploadSetting
-                                alt='Background image'
-                                borderStyle={''}
-                                desc='Click to select an image'
-                                errors={fileUploader?.errors}
-                                icon='image'
-                                isDraggedOver={imageDragHandler?.isDraggedOver}
-                                isLoading={isLoading}
-                                mimeTypes={['image/*']}
-                                placeholderRef={imageDragHandler?.setRef}
-                                progress={progress}
-                                size='large'
-                                src={backgroundImageSrc}
-                                onFileChange={onFileChange}
-                                onRemoveMedia={handleClearBackgroundImage}
-                            />
-                        </div>
+                    <MediaUploader
+                        alt='Background image'
+                        className="sm:w-1/2"
+                        desc='Click to select an image'
+                        dragHandler={imageDragHandler}
+                        errors={fileUploader?.errors}
+                        icon='image'
+                        isLoading={isLoading}
+                        mimeTypes={['image/*']}
+                        progress={progress}
+                        size='large'
+                        src={backgroundImageSrc}
+                        onFileChange={onFileChange}
+                        onRemoveMedia={handleClearBackgroundImage}
+                    />
                 )}
 
                 <div className={clsx(

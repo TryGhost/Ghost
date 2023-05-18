@@ -1,20 +1,15 @@
-import ImageUploadForm from './ImageUploadForm';
 import KoenigComposerContext from '../../context/KoenigComposerContext.jsx';
 import React, {createContext, useContext, useEffect, useState} from 'react';
 import useSettingsPanelReposition from '../../hooks/useSettingsPanelReposition';
 import {ButtonGroup} from './ButtonGroup';
 import {ColorIndicator, ColorPicker} from './ColorPicker';
 import {ColorOptionButtons} from './ColorOptionButtons';
-import {ReactComponent as DeleteIcon} from '../../assets/icons/kg-trash.svg';
 import {Dropdown} from './Dropdown';
-import {IconButton} from './IconButton';
 import {Input} from './Input';
 import {InputList} from './InputList';
-import {MediaPlaceholder} from './MediaPlaceholder';
+import {MediaUploader} from './MediaUploader';
 import {MultiSelectDropdown} from './MultiSelectDropdown';
-import {ProgressBar} from './ProgressBar';
 import {Toggle} from './Toggle';
-import {openFileSelection} from '../../utils/openFileSelection';
 
 const SettingsPanelContext = createContext();
 
@@ -196,76 +191,27 @@ export function ColorPickerSetting({label, onChange, value, swatches, eyedropper
     );
 }
 
-export function MediaUploadSetting({label, hideLabel, onFileChange, isDraggedOver, placeholderRef, src, alt, isLoading, dataTestId, errors = [], progress, onRemoveMedia, icon, desc = '', size, borderStyle, mimeTypes}) {
-    const fileInputRef = React.useRef(null);
-
-    const onFileInputRef = (element) => {
-        fileInputRef.current = element;
-    };
-
-    const progressStyle = {
-        width: `${progress?.toFixed(0)}%`
-    };
-
-    const onRemove = (e) => {
-        e.stopPropagation(); // prevents card from losing selected state
-        onRemoveMedia();
-    };
-
-    const isEmpty = !isLoading && !src;
-
+export function MediaUploadSetting({label, hideLabel, onFileChange, isDraggedOver, placeholderRef, src, alt, isLoading, errors = [], progress, onRemoveMedia, icon, desc = '', size, borderStyle, mimeTypes}) {
     return (
         <div className="mt-2 text-[1.3rem] first:mt-0" data-testid="custom-thumbnail">
             <div className={hideLabel ? 'sr-only' : 'font-bold text-grey-900 dark:text-grey-200'}>{label}</div>
 
-            {isEmpty &&
-                <div className="h-32">
-                    <MediaPlaceholder
-                        borderStyle={borderStyle}
-                        dataTestId="media-upload-placeholder"
-                        desc={desc}
-                        errorDataTestId="custom-thumbnails-errors"
-                        errors={errors}
-                        filePicker={() => openFileSelection({fileInputRef})}
-                        icon={icon}
-                        isDraggedOver={isDraggedOver}
-                        placeholderRef={placeholderRef}
-                        size={size}
-                    />
-                    <ImageUploadForm
-                        fileInputRef={onFileInputRef}
-                        filePicker={() => openFileSelection({fileInputRef})}
-                        mimeTypes={mimeTypes}
-                        onFileChange={onFileChange}
-                    />
-                </div>
-            }
-
-            {!isEmpty && (
-                <div className="group relative flex h-32 items-center justify-center rounded" data-testid="media-upload-filled">
-                    {src && (
-                        <>
-                            <img alt={alt} className="mx-auto h-full w-full rounded object-cover" src={src} />
-                            <div className="absolute inset-0 rounded bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover:opacity-100"></div>
-                        </>
-                    )}
-
-                    {!isLoading && (
-                        <div className="absolute top-2 right-2 flex opacity-0 transition-all group-hover:opacity-100">
-                            <IconButton dataTestId={dataTestId} Icon={DeleteIcon} onClick={onRemove} />
-                        </div>
-                    )}
-
-                    {isLoading && (
-                        <div
-                            className="absolute inset-0 flex min-w-full items-center justify-center overflow-hidden rounded border border-dashed border-grey/20 bg-grey-50"
-                            data-testid="custom-thumbnail-progress"
-                        >
-                            <ProgressBar style={progressStyle} />
-                        </div>
-                    )}
-                </div>
-            )}
+            <MediaUploader
+                alt={alt}
+                borderStyle={borderStyle}
+                className="h-32"
+                desc={desc}
+                dragHandler={{isDraggedOver, setRef: placeholderRef}}
+                errors={errors}
+                icon={icon}
+                isLoading={isLoading}
+                mimeTypes={mimeTypes}
+                progress={progress}
+                size={size}
+                src={src}
+                onFileChange={onFileChange}
+                onRemoveMedia={onRemoveMedia}
+            />
         </div>
     );
 }

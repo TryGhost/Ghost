@@ -143,6 +143,26 @@ test.describe('Signup card', async () => {
         await expect(page.locator('[data-testid="media-upload-filled"] img')).toHaveAttribute('src', /blob:/);
     });
 
+    test('can add and remove background image in split layout', async function ({page}) {
+        const filePath = path.relative(process.cwd(), __dirname + `/../fixtures/large-image.jpeg`);
+        const fileChooserPromise = page.waitForEvent('filechooser');
+
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'signup'});
+
+        await page.locator('[data-testid="signup-layout-split"]').click();
+
+        await expect(page.locator('[data-testid="signup-background-image-toggle"]')).toHaveCount(0);
+
+        await page.click('[data-testid="media-upload-placeholder"]');
+
+        // Set files
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles([filePath]);
+
+        await expect(page.locator('[data-testid="media-upload-filled"] img')).toHaveAttribute('src', /blob:/);
+    });
+
     test('can change the button color', async function ({page}) {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
