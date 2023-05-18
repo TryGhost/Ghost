@@ -33,7 +33,7 @@ jobs:
           submodules: true
 
       - name: Checkout most recent tag
-        run: git checkout $(git describe --tags --abbrev=0)
+        run: git checkout $(git describe --tags --abbrev=0 --match=v*)
         if: inputs.base-ref == 'latest'
 
       - uses: asdf-vm/actions/install@v2
