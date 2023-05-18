@@ -78,22 +78,36 @@ export default class GhMembersSegmentSelect extends Component {
         const tiers = yield this.store.query('tier', {filter: 'type:paid', limit: 'all', include: 'monthly_price,yearly_price,benefits'});
 
         if (tiers.length > 0) {
-            const tiersGroup = {
-                groupName: 'Tiers',
+            const activeTiersGroup = {
+                groupName: 'Active tiers',
                 options: []
             };
+
+            const archivedTiersGroup = {
+                groupName: 'Archived tiers',
+                options: []
+            };
+
             tiers.forEach((tier) => {
-                tiersGroup.options.push({
+                const tierData = {
                     name: tier.name,
                     segment: `${tier.id}`,
                     count: tier.count?.members,
                     class: 'segment-tier'
-                });
+                };
+
+                if (tier.active) {
+                    activeTiersGroup.options.push(tierData);
+                } else {
+                    archivedTiersGroup.options.push(tierData);
+                }
             });
 
-            options.push(tiersGroup);
+            options.push(activeTiersGroup);
+            options.push(archivedTiersGroup);
+
             if (this.args.selectDefaultTier && !this.args.segment) {
-                this.args.onChange?.(tiersGroup.options[0].segment);
+                this.args.onChange?.(activeTiersGroup.options[0].segment);
             }
         }
 
