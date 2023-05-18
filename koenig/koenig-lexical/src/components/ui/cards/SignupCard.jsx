@@ -10,7 +10,6 @@ import {ReactComponent as ImgRegularIcon} from '../../../assets/icons/kg-img-reg
 import {ReactComponent as ImgWideIcon} from '../../../assets/icons/kg-img-wide.svg';
 import {ReactComponent as LayoutSplitIcon} from '../../../assets/icons/kg-layout-split.svg';
 import {ReactComponent as LeftAlignIcon} from '../../../assets/icons/kg-align-left.svg';
-import {MediaPlaceholder} from '../MediaPlaceholder';
 import {SubscribeForm} from '../SubscribeForm';
 import {getAccentColor} from '../../../utils/getAccentColor';
 import {isEditorEmpty} from '../../../utils/isEditorEmpty';
@@ -105,7 +104,7 @@ export function SignupCard({alignment,
         }
     ];
 
-    const {isLoading: isUploading, progress} = fileUploader || {};
+    const {isLoading, progress} = fileUploader || {};
 
     const headerPlaceholder = layout === 'split' ? 'Enter heading' : 'Enter heading text';
     const subheaderPlaceholder = 'Enter subheading text';
@@ -147,10 +146,21 @@ export function SignupCard({alignment,
                     backgroundImageSrc
                         ? <img alt="" className="h-1/2 object-cover sm:h-auto sm:w-1/2" src={backgroundImageSrc} />
                         : <div className="flex items-center justify-center bg-grey-50 sm:w-1/2">
-                            <MediaPlaceholder
-                                desc="Click to select an image"
+                            <MediaUploadSetting
+                                alt='Background image'
+                                borderStyle={''}
+                                desc='Click to select an image'
+                                errors={fileUploader?.errors}
                                 icon='image'
+                                isDraggedOver={imageDragHandler?.isDraggedOver}
+                                isLoading={isLoading}
+                                mimeTypes={['image/*']}
+                                placeholderRef={imageDragHandler?.setRef}
+                                progress={progress}
                                 size='large'
+                                src={backgroundImageSrc}
+                                onFileChange={onFileChange}
+                                onRemoveMedia={handleClearBackgroundImage}
                             />
                         </div>
                 )}
@@ -295,14 +305,15 @@ export function SignupCard({alignment,
                         label='Image'
                         onChange={handleToggleBackgroundImage}
                     />}
-                    {showBackgroundImage && <MediaUploadSetting
+                    {showBackgroundImage && layout !== 'split' && <MediaUploadSetting
                         alt='Background image'
+                        borderStyle={'rounded border-dashed border-grey/40'}
                         desc='Click to upload'
                         errors={fileUploader?.errors}
                         hideLabel={layout !== 'split'}
                         icon='file'
                         isDraggedOver={imageDragHandler?.isDraggedOver}
-                        isLoading={isUploading}
+                        isLoading={isLoading}
                         label='Image'
                         mimeTypes={['image/*']}
                         placeholderRef={imageDragHandler?.setRef}

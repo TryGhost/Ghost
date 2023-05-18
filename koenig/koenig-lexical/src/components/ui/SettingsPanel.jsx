@@ -196,7 +196,7 @@ export function ColorPickerSetting({label, onChange, value, swatches, eyedropper
     );
 }
 
-export function MediaUploadSetting({label, hideLabel, onFileChange, isDraggedOver, placeholderRef, src, alt, isLoading, dataTestId, errors = [], progress, onRemoveMedia, icon, desc = '', size, mimeTypes}) {
+export function MediaUploadSetting({label, hideLabel, onFileChange, isDraggedOver, placeholderRef, src, alt, isLoading, dataTestId, errors = [], progress, onRemoveMedia, icon, desc = '', size, borderStyle, mimeTypes}) {
     const fileInputRef = React.useRef(null);
 
     const onFileInputRef = (element) => {
@@ -221,7 +221,7 @@ export function MediaUploadSetting({label, hideLabel, onFileChange, isDraggedOve
             {isEmpty &&
                 <div className="h-32">
                     <MediaPlaceholder
-                        borderStyle='dashed'
+                        borderStyle={borderStyle}
                         dataTestId="media-upload-placeholder"
                         desc={desc}
                         errorDataTestId="custom-thumbnails-errors"

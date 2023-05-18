@@ -44,7 +44,7 @@ export function MediaPlaceholder({
             className="h-full w-full border border-transparent" {...props}
             data-testid={dataTestId}
         >
-            <div className={`relative flex h-full items-center justify-center border bg-grey-50 dark:bg-grey-950 ${size === 'xsmall' ? 'before:pb-[12.5%]' : 'before:pb-[62.5%]'} ${borderStyle === 'dashed' ? 'rounded border-dashed border-grey/40' : 'border-grey/20 dark:border-grey/10'}`}>
+            <div className={`relative flex h-full items-center justify-center border bg-grey-50 dark:bg-grey-950 ${size === 'xsmall' ? 'before:pb-[12.5%]' : 'before:pb-[62.5%]'} ${borderStyle}`}>
                 {isDraggedOver ?
                     <CardText text={`Drop ${multiple ? '\'em' : 'it'} like it's hot 🔥`} /> :
                     <>
@@ -74,5 +74,5 @@ MediaPlaceholder.propTypes = {
     icon: PropTypes.oneOf(['image', 'gallery', 'video', 'audio', 'file', 'product']),
     desc: PropTypes.string,
     size: PropTypes.oneOf(['xsmall', 'small', 'medium', 'large']),
-    borderStyle: PropTypes.oneOf(['solid', 'dashed'])
+    borderStyle: PropTypes.string
 };
