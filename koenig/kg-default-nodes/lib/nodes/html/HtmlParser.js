@@ -32,6 +32,20 @@ export class HtmlParser {
                     },
                     priority: 0
                 };
+            },
+            table: (nodeElem) => {
+                if (nodeElem.nodeType === 1 && nodeElem.tagName === 'TABLE' && nodeElem.parentNode.tagName !== 'TABLE') {
+                    return {
+                        conversion(domNode) {
+                            const payload = {html: domNode.outerHTML};
+                            const node = new self.NodeClass(payload);
+                            return {node};
+                        },
+                        priority: 0
+                    };
+                }
+
+                return null;
             }
         };
     }

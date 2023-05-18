@@ -120,4 +120,11 @@ test.describe('Markdown', async () => {
         await expect(await page.locator('a[href="https://ghost.org/"]')).toHaveCount(0);
         await expect(await page.locator('[data-kg-card="horizontalrule"]')).toHaveCount(0);
     });
+
+    test('converts table to html card', async function ({page}) {
+        await focusEditor(page);
+        await pasteText(page, '<table><tr><th>Month</th><th>Savings</th></tr><tr><td>January</td><td>$100</td></tr><tr><td>February</td><td>$80</td></tr></table>');
+
+        await expect(page.locator('[data-kg-card="html"]')).toBeVisible();
+    });
 });
