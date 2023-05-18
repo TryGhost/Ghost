@@ -1,3 +1,4 @@
+const uniqBy = require('lodash/uniqBy');
 const logging = require('@tryghost/logging');
 const ObjectID = require('bson-objectid').default;
 const errors = require('@tryghost/errors');
@@ -394,7 +395,7 @@ class BatchSendingService {
         let succeeded = false;
 
         try {
-            const members = await this.retryDb(
+            let members = await this.retryDb(
                 async () => {
                     const m = await this.getBatchMembers(batch.id);
 
@@ -410,6 +411,19 @@ class BatchSendingService {
                 },
                 {...this.#getBeforeRetryConfig(email), description: `getBatchMembers batch ${originalBatch.id}`}
             );
+
+            if (members.length > this.#sendingService.getMaximumRecipients()) {
+                // @NOTE the unique by member_id is a best effort to make sure we don't send the same email to the same member twice
+                logging.warn(`Email batch ${originalBatch.id} has ${members.length} members, which exceeds the maximum of ${this.#sendingService.getMaximumRecipients()}. Filtering to unique members`);
+                members = uniqBy(members, 'member_id');
+
+                if (members.length > this.#sendingService.getMaximumRecipients()) {
+                    // @NOTE this is a best effort logic to still try sending an email batch
+                    //       even if it exceeds the maximum recipients limit of the sending service
+                    logging.warn(`Email batch ${originalBatch.id} has ${members.length} members, which exceeds the maximum of ${this.#sendingService.getMaximumRecipients()}. Truncating to ${this.#sendingService.getMaximumRecipients()}`);
+                    members = members.slice(0, this.#sendingService.getMaximumRecipients());
+                }
+            }
 
             const response = await this.retryDb(async () => {
                 return await this.#sendingService.send({

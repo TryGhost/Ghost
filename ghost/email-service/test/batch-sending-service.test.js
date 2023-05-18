@@ -646,7 +646,8 @@ describe('Batch Sending Service', function () {
                 }
             });
             const sendingService = {
-                send: sinon.stub().resolves({id: 'providerid@example.com'})
+                send: sinon.stub().resolves({id: 'providerid@example.com'}),
+                getMaximumRecipients: () => 5
             };
 
             const findOne = sinon.spy(EmailBatch, 'findOne');
@@ -683,7 +684,8 @@ describe('Batch Sending Service', function () {
                 }
             });
             const sendingService = {
-                send: sinon.stub().rejects(new Error('Test error'))
+                send: sinon.stub().rejects(new Error('Test error')),
+                getMaximumRecipients: () => 5
             };
 
             const findOne = sinon.spy(EmailBatch, 'findOne');
@@ -722,7 +724,8 @@ describe('Batch Sending Service', function () {
                 }
             });
             const sendingService = {
-                send: sinon.stub().rejects(new Error('Test error'))
+                send: sinon.stub().rejects(new Error('Test error')),
+                getMaximumRecipients: () => 5
             };
 
             const findOne = sinon.spy(EmailBatch, 'findOne');
@@ -780,7 +783,8 @@ describe('Batch Sending Service', function () {
                     context: `Mailgun Error 500: Test error`,
                     help: `https://ghost.org/docs/newsletters/#bulk-email-configuration`,
                     code: 'BULK_EMAIL_SEND_FAILED'
-                }))
+                })),
+                getMaximumRecipients: () => 5
             };
             const captureException = sinon.stub();
             const findOne = sinon.spy(EmailBatch, 'findOne');
@@ -825,7 +829,9 @@ describe('Batch Sending Service', function () {
                 }
             });
             const sendingService = {
-                send: sinon.stub().resolves({id: 'providerid@example.com'})
+                send: sinon.stub().resolves({id: 'providerid@example.com'}),
+                getMaximumRecipients: () => 5
+
             };
 
             const WrongEmailRecipient = createModelClass({
@@ -884,7 +890,8 @@ describe('Batch Sending Service', function () {
                 }
             });
             const sendingService = {
-                send: sinon.stub().resolves({id: 'providerid@example.com'})
+                send: sinon.stub().resolves({id: 'providerid@example.com'}),
+                getMaximumRecipients: () => 5
             };
 
             const WrongEmailRecipient = createModelClass({
@@ -944,7 +951,10 @@ describe('Batch Sending Service', function () {
             });
 
             const service = new BatchSendingService({
-                models: {EmailRecipient}
+                models: {EmailRecipient},
+                sendingService: {
+                    getMaximumRecipients: () => 5
+                }
             });
 
             const result = await service.getBatchMembers('id123');
