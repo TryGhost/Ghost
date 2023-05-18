@@ -46,7 +46,7 @@ function checkPostAccess(post, member) {
             return BLOCK_ACCESS;
         }
         visibility = post.tiers.map((product) => {
-            return `product:${product.slug}`;
+            return `product:'${product.slug}'`;
         }).join(',');
     }
 
