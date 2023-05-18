@@ -184,14 +184,13 @@ test.describe('Callout Card', async () => {
         await expect(calloutCard).toHaveAttribute('data-kg-card-editing', 'true');
     });
 
-    test.describe('nested editor', function () {
-        test('syncs display state content', async function ({page}) {
-            await focusEditor(page);
-            await insertCard(page, {cardName: 'callout'});
-            await page.keyboard.type('testing nesting');
-            await page.keyboard.press('Enter');
+    test('syncs display state content', async function ({page}) {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'callout'});
+        await page.keyboard.type('testing nesting');
+        await page.keyboard.press('Enter');
 
-            await assertHTML(page, html`
+        await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
                     <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="callout">
                         <div>
@@ -216,16 +215,16 @@ test.describe('Callout Card', async () => {
                 <p><br /></p>
                 <p><br /></p>
             `, {ignoreCardContents: false});
-        });
+    });
 
-        test('can toggle edit mode with CMD+ENTER', async function ({page}) {
-            await focusEditor(page);
-            await insertCard(page, {cardName: 'callout'});
-            await page.keyboard.type('testing nesting');
+    test('can toggle edit mode with CMD+ENTER', async function ({page}) {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'callout'});
+        await page.keyboard.type('testing nesting');
 
-            await page.keyboard.press(`${ctrlOrCmd}+Enter`);
+        await page.keyboard.press(`${ctrlOrCmd}+Enter`);
 
-            await assertHTML(page, html`
+        await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
                     <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="callout">
                         <div>
@@ -252,47 +251,64 @@ test.describe('Callout Card', async () => {
                 <p><br /></p>
             `, {ignoreCardToolbarContents: true});
 
-            await page.keyboard.press(`${ctrlOrCmd}+Enter`);
+        await page.keyboard.press(`${ctrlOrCmd}+Enter`);
 
-            await assertHTML(page, html`
+        await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
                     <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="callout">
                     </div>
                 </div>
                 <p><br /></p>
             `, {ignoreCardContents: true});
-        });
+    });
 
-        test('can leave edit mode with ESCAPE', async function ({page}) {
-            await focusEditor(page);
-            await insertCard(page, {cardName: 'callout'});
-            await page.keyboard.type('testing nesting');
-            await page.keyboard.press('Escape');
+    test('can leave edit mode with ESCAPE', async function ({page}) {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'callout'});
+        await page.keyboard.type('testing nesting');
+        await page.keyboard.press('Escape');
 
-            await assertHTML(page, html`
+        await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
                     <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="callout">
                     </div>
                 </div>
                 <p><br /></p>
             `, {ignoreCardContents: true});
-        });
+    });
 
-        test('can add snippet', async function ({page}) {
-            await focusEditor(page);
-            await insertCard(page, {cardName: 'callout'});
-            await page.keyboard.type('testing nesting');
+    test('can add snippet', async function ({page}) {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'callout'});
+        await page.keyboard.type('testing nesting');
 
-            // create snippet
-            await page.keyboard.press('Escape');
-            await createSnippet(page);
+        // create snippet
+        await page.keyboard.press('Escape');
+        await createSnippet(page);
 
-            // can insert card from snippet
-            await page.keyboard.press('Enter');
-            await page.keyboard.type('/snippet');
-            await page.waitForSelector('[data-kg-cardmenu-selected="true"]');
-            await page.keyboard.press('Enter');
-            await expect(await page.locator('[data-kg-card="callout"]')).toHaveCount(2);
-        });
+        // can insert card from snippet
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('/snippet');
+        await page.waitForSelector('[data-kg-cardmenu-selected="true"]');
+        await page.keyboard.press('Enter');
+        await expect(await page.locator('[data-kg-card="callout"]')).toHaveCount(2);
+    });
+
+    test('keeps focus on previous editor when changing size opts', async function ({page}) {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'callout'});
+
+        // Start editing the content
+        await page.keyboard.type('Hello ');
+
+        // Change color
+        await page.locator(`[data-test-id="color-picker-green"]`).click();
+
+        // Continue editing the content
+        await page.keyboard.type('world');
+
+        // Expect content to have 'Hello World'
+        const content = page.locator('[data-kg-card="callout"]');
+        await expect(content).toContainText('Hello world');
     });
 });

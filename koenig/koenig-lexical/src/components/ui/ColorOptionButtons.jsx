@@ -1,5 +1,6 @@
 import React from 'react';
 import {ReactComponent as PlusIcon} from '../../assets/icons/plus.svg';
+import {usePreviousFocus} from '../../hooks/usePreviousFocus';
 
 export function ColorOptionButtons({buttons = [], selectedName, onClick}) {
     return (
@@ -30,6 +31,8 @@ export function ColorOptionButtons({buttons = [], selectedName, onClick}) {
 
 export function ColorButton({onClick, label, name, color, selectedName}) {
     const isActive = name === selectedName;
+
+    const {handleMousedown, handleClick} = usePreviousFocus(onClick, name);
     return (
         <li>
             <button
@@ -37,7 +40,8 @@ export function ColorButton({onClick, label, name, color, selectedName}) {
                 className={`flex h-[3rem] w-[3rem] cursor-pointer items-center justify-center rounded-full border-2 ${isActive ? 'border-green' : 'border-transparent'}`}
                 data-test-id={`color-picker-${name}`}
                 type="button"
-                onClick={() => onClick(name)}
+                onClick={handleClick}
+                onMouseDown={handleMousedown}
             >
                 <span
                     className={`${color} h-6 w-6 rounded-full border-2 border-black/5`}

@@ -300,4 +300,21 @@ test.describe('Header card', async () => {
         await expect(boldSpan).toHaveText(' world');
         await expect(helloSpan).toHaveText('Hello');
     });
+
+    test('keeps focus on previous editor when changing size opts', async function ({page}) {
+        await createHeaderCard({page});
+
+        // Start editing the header
+        await page.keyboard.type('Hello ');
+
+        // Change size to medium
+        await page.getByLabel('M').click();
+
+        // Continue editing the subheader
+        await page.keyboard.type('world');
+
+        // Expect header to have 'Hello World'
+        const header = page.locator('[data-kg-card="header"] [data-kg="editor"]').nth(0);
+        await expect(header).toHaveText('Hello world');
+    });
 });

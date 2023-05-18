@@ -416,4 +416,22 @@ test.describe('Email card', async () => {
         await page.keyboard.press('Enter');
         await expect(await page.locator('[data-kg-card="email-cta"]')).toHaveCount(2);
     });
+
+    test('keeps focus on previous editor when changing size opts', async function ({page}) {
+        await focusEditor(page);
+        await insertEmailCard(page);
+
+        // Start editing the content
+        await page.keyboard.type('Hello ');
+
+        // Change alignment to center
+        await page.getByTestId('center-align').click();
+
+        // Continue editing the content
+        await page.keyboard.type('world');
+
+        // Expect content to have 'Hello World'
+        const content = page.locator('[data-kg-card="email-cta"] > div > div.koenig-lexical');
+        await expect(content).toHaveText('Hello world');
+    });
 });

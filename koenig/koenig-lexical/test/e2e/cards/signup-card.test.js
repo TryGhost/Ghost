@@ -237,4 +237,41 @@ test.describe('Signup card', async () => {
         await layoutSplit.click();
         await expect(container).toHaveClass(/h-auto sm:h-\[80vh\]/);
     });
+
+    test('keeps focus on previous editor when changing layout opts', async function ({page}) {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'signup'});
+
+        // Start editing the header
+        await page.keyboard.type('Hello ');
+
+        // Change layout to regular
+        await page.locator('[data-testid="signup-layout-regular"]').click();
+
+        // Continue editing the header
+        await page.keyboard.type('world');
+
+        // Expect header to have 'Hello World'
+        const header = page.locator('[data-kg-card="signup"] [data-kg="editor"]').nth(0);
+        await expect(header).toHaveText('Hello world');
+    });
+
+    test('keeps focus on previous editor when changing alignment opts', async function ({page}) {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'signup'});
+
+        // Start editing the subheader
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('Hello ');
+
+        // Change alignment to center
+        await page.locator('[data-testid="signup-alignment-center"]').click();
+
+        // Continue editing the subheader
+        await page.keyboard.type('world');
+
+        // Expect subheader to have 'Hello World'
+        const subheader = page.locator('[data-kg-card="signup"] [data-kg="editor"]').nth(1);
+        await expect(subheader).toHaveText('Hello world');
+    });
 });
