@@ -10,6 +10,7 @@ import {ReactComponent as ImgRegularIcon} from '../../../assets/icons/kg-img-reg
 import {ReactComponent as ImgWideIcon} from '../../../assets/icons/kg-img-wide.svg';
 import {ReactComponent as LayoutSplitIcon} from '../../../assets/icons/kg-layout-split.svg';
 import {ReactComponent as LeftAlignIcon} from '../../../assets/icons/kg-align-left.svg';
+import {MediaPlaceholder} from '../MediaPlaceholder';
 import {SubscribeForm} from '../SubscribeForm';
 import {getAccentColor} from '../../../utils/getAccentColor';
 import {isEditorEmpty} from '../../../utils/isEditorEmpty';
@@ -136,7 +137,7 @@ export function SignupCard({alignment,
     return (
         <>
             <div className={clsx(
-                'flex flex-col bg-transparent font-sans text-black transition-colors ease-in-out dark:text-white sm:flex-row',
+                'flex flex-col font-sans text-black transition-colors ease-in-out sm:flex-row',
                 (layout === 'regular') && 'min-h-[32vh]',
                 (layout === 'wide') && 'min-h-[56vh]',
                 (layout === 'full') && 'min-h-[80vh]',
@@ -145,7 +146,13 @@ export function SignupCard({alignment,
                 {layout === 'split' && (
                     backgroundImageSrc
                         ? <img alt="" className="h-1/2 object-cover sm:h-auto sm:w-1/2" src={backgroundImageSrc} />
-                        : <div className="flex items-center justify-center bg-gradient-to-t from-black/0 via-black/5 to-black/30 sm:w-1/2"></div>
+                        : <div className="flex items-center justify-center bg-grey-50 sm:w-1/2">
+                            <MediaPlaceholder
+                                desc="Click to select an image"
+                                icon='image'
+                                size='large'
+                            />
+                        </div>
                 )}
 
                 <div className={clsx(
@@ -288,7 +295,7 @@ export function SignupCard({alignment,
                         label='Image'
                         onChange={handleToggleBackgroundImage}
                     />}
-                    {(showBackgroundImage || layout === 'split') && <MediaUploadSetting
+                    {showBackgroundImage && <MediaUploadSetting
                         alt='Background image'
                         desc='Click to upload'
                         errors={fileUploader?.errors}
