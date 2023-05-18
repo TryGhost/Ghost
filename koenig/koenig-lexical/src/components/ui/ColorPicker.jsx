@@ -101,7 +101,9 @@ function ColorSwatch({hex, accent, transparent, title, onSelect}) {
 
     const ref = useRef(null);
 
-    const onClickHandler = useCallback(() => {
+    const onSelectHandler = (e) => {
+        e.preventDefault();
+
         if (accent) {
             onSelect('accent');
         } else if (transparent) {
@@ -109,10 +111,18 @@ function ColorSwatch({hex, accent, transparent, title, onSelect}) {
         } else {
             onSelect(hex);
         }
-    }, [accent, hex, onSelect, transparent]);
+    };
 
     return (
-        <button ref={ref} className={`relative flex h-4 w-4 shrink-0 items-center rounded border border-grey-300`} style={{backgroundColor}} title={title} type="button" onClick={onClickHandler}>
+        <button
+            ref={ref}
+            className={`relative flex h-4 w-4 shrink-0 items-center rounded border border-grey-300`}
+            style={{backgroundColor}}
+            title={title}
+            type="button"
+            onMouseDown={onSelectHandler}
+            onTouchStart={onSelectHandler}
+        >
             {transparent && <div className="absolute left-0 top-0 z-10 w-[136%] origin-left rotate-45 border-b border-b-red" />}
         </button>
     );
