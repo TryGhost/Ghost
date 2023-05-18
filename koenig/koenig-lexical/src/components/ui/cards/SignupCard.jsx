@@ -66,22 +66,26 @@ export function SignupCard({alignment,
         {
             label: 'Regular',
             name: 'regular',
-            Icon: ImgRegularIcon
+            Icon: ImgRegularIcon,
+            dataTestId: 'signup-layout-regular'
         },
         {
             label: 'Wide',
             name: 'wide',
-            Icon: ImgWideIcon
+            Icon: ImgWideIcon,
+            dataTestId: 'signup-layout-wide'
         },
         {
             label: 'Full',
             name: 'full',
-            Icon: ImgFullIcon
+            Icon: ImgFullIcon,
+            dataTestId: 'signup-layout-full'
         },
         {
             label: 'Split',
             name: 'split',
-            Icon: LayoutSplitIcon
+            Icon: LayoutSplitIcon,
+            dataTestId: 'signup-layout-split'
         }
     ];
 
@@ -89,12 +93,14 @@ export function SignupCard({alignment,
         {
             label: 'Left',
             name: 'left',
-            Icon: LeftAlignIcon
+            Icon: LeftAlignIcon,
+            dataTestId: 'signup-alignment-left'
         },
         {
             label: 'Center',
             name: 'center',
-            Icon: CenterAlignIcon
+            Icon: CenterAlignIcon,
+            dataTestId: 'signup-alignment-center'
         }
     ];
 

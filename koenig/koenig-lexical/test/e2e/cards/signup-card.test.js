@@ -199,4 +199,42 @@ test.describe('Signup card', async () => {
 
         await expect(page.locator('[data-testid="labels-dropdown"] [data-testid="multiselect-dropdown-selected"]')).toHaveCount(0);
     });
+
+    test('changes the alignment options from the settings panel', async function ({page}) {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'signup'});
+
+        // Default: left alignment
+        const header = page.locator('[data-testid="signup-card-container"] > div > div:first-child');
+        await expect(header).toHaveClass(/text-left/);
+
+        // Change aligment to center
+        const alignmentCenter = page.locator('[data-testid="signup-alignment-center"]');
+        await alignmentCenter.click();
+        await expect(header).toHaveClass(/text-center/);
+    });
+
+    test('changes the layout options from the settings panel', async function ({page}) {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'signup'});
+
+        // Default: wise layout
+        const container = page.locator('[data-testid="signup-card-container"]');
+        await expect(container).toHaveClass(/min-h-\[56vh\]/);
+
+        // Change layout to regular
+        const layoutRegular = page.locator('[data-testid="signup-layout-regular"]');
+        await layoutRegular.click();
+        await expect(container).toHaveClass(/min-h-\[32vh\]/);
+
+        // Change layout to full
+        const layoutFull = page.locator('[data-testid="signup-layout-full"]');
+        await layoutFull.click();
+        await expect(container).toHaveClass(/min-h-\[80vh\]/);
+
+        // Change layout to split
+        const layoutSplit = page.locator('[data-testid="signup-layout-split"]');
+        await layoutSplit.click();
+        await expect(container).toHaveClass(/h-auto sm:h-\[80vh\]/);
+    });
 });
