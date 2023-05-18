@@ -37,18 +37,9 @@ These cards make external web requests. Since the demo doesn't have a server to 
 
 ### Running inside Admin
 
-To test/develop inside of Admin you can run `yarn preview` then in Ghost set your `editor.url` value in `config.local.json` to `http://127.0.0.1:4173/koenig-lexical.umd.js` and load Admin as usual. With recent updates, if you see a cannot connect error, you may need to use localhost: ``http://localhost:4173/koenig-lexical.umd.js`.
+To test and develop inside of Admin, run `yarn preview --host` within `koenig-lexical` to start a server. `yarn preview --host` only serves the library files, so run `yarn build --watch` in a separate terminal tab to have auto-rebuild whilst developing.
 
-```json
-{
-    ...
-    "editor": {
-        "url": "http://127.0.0.1:4173/koenig-lexical.umd.js"
-    }
-}
-```
-
-`yarn preview` by itself only serves the library files, it's possible ro run `yarn build --watch` in a separate terminal tab to have auto-rebuild whilst developing.
+Within Ghost, run the development command with `--lexical` (ie. `yarn dev --lexical`). This will set up the `editor.url` environment variable with the local URL. Admin should now load your local version of Lexical.
 
 Note: if you need to run your local packages of `kg-default-nodes` and `kg-lexical-html-renderer`, you will need to run `yarn link` in those repositories and run the output in `ghost/core`. Otherwise `ghost/core` will be using the latest published version listed in `package.json`.
 
