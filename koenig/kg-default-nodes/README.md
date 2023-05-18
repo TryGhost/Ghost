@@ -29,6 +29,12 @@ Follow the instructions for the top-level repo.
 - `yarn test` run lint and tests
 
 
+## Running in Ghost Admin
+In order to run local changes, perform the following:
+1. Run `yarn link` within `kg-default-nodes`
+2. Run `yarn link @tryghost/kg-default-nodes` within `ghost/core`
+
+`kg-lexical-html-renderer` must also be linked when linking this package as they are codependencies.
 
 
 # Copyright & License 
