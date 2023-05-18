@@ -11,6 +11,9 @@ module.exports = {
     docName: 'previews',
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: true,
         options: [
             'include'

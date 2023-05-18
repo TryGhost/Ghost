@@ -10,6 +10,22 @@ describe('Pipeline', function () {
 
     describe('stages', function () {
         describe('validation', function () {
+            describe('configuration', function () {
+                beforeEach(function () {
+                    sinon.stub(shared.validators.controller.configuration, 'headers').resolves();
+                });
+
+                it('validates the controller configuration', function () {
+                    const apiImpl = {};
+
+                    return shared.pipeline.STAGES.validation.controller(apiImpl)
+                        .then(() => {
+                            shared.validators.controller.configuration.headers.calledOnce.should.be.true();
+                            shared.validators.controller.configuration.headers.calledWith(apiImpl).should.be.true();
+                        });
+                });
+            });
+
             describe('input', function () {
                 beforeEach(function () {
                     sinon.stub(shared.validators.handle, 'input').resolves();
@@ -176,6 +192,7 @@ describe('Pipeline', function () {
 
     describe('pipeline', function () {
         beforeEach(function () {
+            sinon.stub(shared.pipeline.STAGES.validation, 'controller');
             sinon.stub(shared.pipeline.STAGES.validation, 'input');
             sinon.stub(shared.pipeline.STAGES.serialisation, 'input');
             sinon.stub(shared.pipeline.STAGES.serialisation, 'output');
@@ -208,6 +225,7 @@ describe('Pipeline', function () {
             const apiUtils = {};
             const result = shared.pipeline(apiController, apiUtils);
 
+            shared.pipeline.STAGES.validation.controller.resolves();
             shared.pipeline.STAGES.validation.input.resolves();
             shared.pipeline.STAGES.serialisation.input.resolves();
             shared.pipeline.STAGES.permissions.resolves();
@@ -220,6 +238,7 @@ describe('Pipeline', function () {
                 .then((response) => {
                     response.should.eql('response');
 
+                    shared.pipeline.STAGES.validation.controller.calledOnce.should.be.true();
                     shared.pipeline.STAGES.validation.input.calledOnce.should.be.true();
                     shared.pipeline.STAGES.serialisation.input.calledOnce.should.be.true();
                     shared.pipeline.STAGES.permissions.calledOnce.should.be.true();
@@ -253,6 +272,7 @@ describe('Pipeline', function () {
 
     describe('caching', function () {
         beforeEach(function () {
+            sinon.stub(shared.pipeline.STAGES.validation, 'controller');
             sinon.stub(shared.pipeline.STAGES.validation, 'input');
             sinon.stub(shared.pipeline.STAGES.serialisation, 'input');
             sinon.stub(shared.pipeline.STAGES.serialisation, 'output');
@@ -273,6 +293,7 @@ describe('Pipeline', function () {
             const apiUtils = {};
             const result = shared.pipeline(apiController, apiUtils);
 
+            shared.pipeline.STAGES.validation.controller.resolves();
             shared.pipeline.STAGES.validation.input.resolves();
             shared.pipeline.STAGES.serialisation.input.resolves();
             shared.pipeline.STAGES.permissions.resolves();

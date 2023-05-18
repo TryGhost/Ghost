@@ -3,6 +3,9 @@ const membersService = require('../../services/members');
 module.exports = {
     docName: 'members_stripe_connect',
     auth: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: true,
         options: [
             'mode'

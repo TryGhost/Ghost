@@ -8,6 +8,7 @@ API framework used by Ghost
 
 Each request goes through the following stages:
 
+- controller configuration validation
 - input validation
 - input serialisation
 - permissions

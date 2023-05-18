@@ -30,6 +30,9 @@ const postsService = getPostServiceInstance();
 module.exports = {
     docName: 'posts',
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'filter',
@@ -72,7 +75,8 @@ module.exports = {
                     const datetime = (new Date()).toJSON().substring(0, 10);
                     return `post-analytics.${datetime}.csv`;
                 }
-            }
+            },
+            cacheInvalidate: false
         },
         response: {
             format: 'plain'
@@ -89,6 +93,9 @@ module.exports = {
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'fields',
@@ -133,7 +140,9 @@ module.exports = {
 
     add: {
         statusCode: 201,
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'formats',
@@ -167,7 +176,9 @@ module.exports = {
     },
 
     edit: {
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'id',
@@ -286,7 +297,8 @@ module.exports = {
         headers: {
             location: {
                 resolve: postsService.generateCopiedPostLocationFromUrl
-            }
+            },
+            cacheInvalidate: false
         },
         options: [
             'id',
