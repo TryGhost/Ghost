@@ -48,9 +48,9 @@ To test/develop inside of Admin you can run `yarn preview` then in Ghost set you
 }
 ```
 
-You will also need to use `yarn link` to create a symlink between packages. First run `yarn link` in `koenig-lexical`, then run the output within `ghost/core`. If you are working with the renderer (Preview within Admin), you will need to also run this link procedure on `kg-lexical-html-renderer`.
-
 `yarn preview` by itself only serves the library files, it's possible ro run `yarn build --watch` in a separate terminal tab to have auto-rebuild whilst developing.
+
+Note: if you need to run your local packages of `kg-default-nodes` and `kg-lexical-html-renderer`, you will need to run `yarn link` in those repositories and run the output in `ghost/core`. Otherwise `ghost/core` will be using the latest published version listed in `package.json`.
 
 ### Project structure
 
