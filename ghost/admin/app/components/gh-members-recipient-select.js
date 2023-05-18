@@ -165,21 +165,33 @@ export default class GhMembersRecipientSelect extends Component {
         const tiers = yield this.store.query('tier', {filter: 'type:paid', limit: 'all'});
 
         if (tiers.length > 1) {
-            const tiersGroup = {
-                groupName: 'Tiers',
+            const activeTiersGroup = {
+                groupName: 'Active tiers',
+                options: []
+            };
+
+            const archivedTiersGroup = {
+                groupName: 'Archived tiers',
                 options: []
             };
 
             tiers.forEach((tier) => {
-                tiersGroup.options.push({
+                const tierData = {
                     name: tier.name,
                     segment: `tier:${tier.slug}`,
                     count: tier.count?.members,
                     class: 'segment-tier'
-                });
+                };
+
+                if (tier.active) {
+                    activeTiersGroup.options.push(tierData);
+                } else {
+                    archivedTiersGroup.options.push(tierData);
+                }
             });
 
-            options.push(tiersGroup);
+            options.push(activeTiersGroup);
+            options.push(archivedTiersGroup);
         }
 
         this.specificOptions = options;
