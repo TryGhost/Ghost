@@ -737,25 +737,26 @@
     justify-content: space-between;
 }
 
-.gh-feedback-grey {
-    background: var(--main-color-content-greybg);
-    padding: 24px;
-    border-radius: 3px;
+.gh-feedback-lexical-published {
     margin-bottom: 2.4rem;
 }
 
-.gh-post-bookmark-wrapper + .gh-feedback-grey {
+.gh-feedback-lexical-published .form-group, .gh-feedback-lexical-published textarea {
+    min-width: 100%;
+    max-width: 100%;
+}
+
+.gh-post-bookmark-wrapper + .gh-feedback-lexical-published {
     margin-bottom: 2.4rem;
 }
 
-.gh-feedback-grey .gh-feedback-grey-title {
+.gh-feedback-grey .gh-feedback-lexical-published-title {
     font-size: 1.8rem;
 }
 
-.gh-feedback-grey p {
+.gh-feedback-lexical-published p {
     font-size: 1.4rem;
     color: var(--midgrey);
-    max-width: 30em;
     margin-bottom: 0.8rem;
 }
 
