@@ -23,6 +23,7 @@ export function renderSignupCardToDOM(dataset, options = {}) {
     const document = options.createDocument();
 
     const node = {
+        alignment: dataset.__alignment,
         buttonText: dataset.__buttonText,
         header: dataset.__header,
         subheader: dataset.__subheader,
@@ -30,7 +31,8 @@ export function renderSignupCardToDOM(dataset, options = {}) {
         backgroundImageSrc: dataset.__backgroundImageSrc,
         backgroundColor: dataset.__backgroundColor,
         buttonColor: dataset.__buttonColor,
-        labels: dataset.__labels
+        labels: dataset.__labels,
+        layout: dataset.__layout
     };
 
     const htmlString = options.target === 'email'
