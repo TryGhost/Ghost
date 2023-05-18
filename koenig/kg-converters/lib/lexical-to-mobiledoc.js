@@ -15,7 +15,7 @@ const BLANK_DOC = {
 };
 
 const MD_TEXT_SECTION = 1;
-// const MD_LIST_SECTION = 3;
+const MD_LIST_SECTION = 3;
 // const MD_CARD_SECTION = 10;
 
 const MD_TEXT_MARKER = 0;
@@ -108,11 +108,65 @@ function addRootChild(child, mobiledoc) {
     if (child.type === 'aside') {
         addTextSection(child, mobiledoc, 'aside');
     }
+
+    if (child.type === 'list') {
+        addListSection(child, mobiledoc, child.tag);
+    }
 }
 
 function addTextSection(childWithFormats, mobiledoc, tagName = 'p') {
-    const markers = [];
+    const markers = buildMarkers(childWithFormats, mobiledoc);
     const section = [MD_TEXT_SECTION, tagName, markers];
+
+    mobiledoc.sections.push(section);
+}
+
+function addListSection(listChild, mobiledoc, tagName = 'ul') {
+    const listItems = buildListItems(listChild, mobiledoc);
+    const section = [MD_LIST_SECTION, tagName, listItems];
+
+    mobiledoc.sections.push(section);
+}
+
+function buildListItems(listRoot, mobiledoc) {
+    const listItems = [];
+
+    flattenListChildren(listRoot);
+
+    listRoot.children.forEach((listItemChild) => {
+        if (listItemChild.type === 'listitem') {
+            const markers = buildMarkers(listItemChild, mobiledoc);
+            listItems.push(markers);
+        }
+    });
+
+    return listItems;
+}
+
+function flattenListChildren(listRoot) {
+    const flatListItems = [];
+
+    function traverse(item) {
+        item.children?.forEach((child) => {
+            child.children?.forEach((grandchild) => {
+                if (grandchild.type === 'list') {
+                    traverse(grandchild);
+                    child.children.splice(child.children.indexOf(grandchild), 1);
+                }
+            });
+
+            if (child.type === 'listitem' && child.children.length) {
+                flatListItems.push(child);
+            }
+        });
+    }
+
+    traverse(listRoot);
+    listRoot.children = flatListItems;
+}
+
+function buildMarkers(childWithFormats, mobiledoc) {
+    const markers = [];
 
     if (!childWithFormats.children.length) {
         markers.push([MD_TEXT_MARKER, [], 0, '']);
@@ -247,7 +301,7 @@ function addTextSection(childWithFormats, mobiledoc, tagName = 'p') {
         });
     }
 
-    mobiledoc.sections.push(section);
+    return markers;
 }
 
 // Lexical stores formats as a bitmask, so we need to read the bitmask to

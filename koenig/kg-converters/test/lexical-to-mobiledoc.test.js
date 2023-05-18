@@ -1761,11 +1761,873 @@ describe('lexicalToMobiledoc', function () {
             }));
         });
 
-        it('converts unordered lists');
-        it('converts unordered lists with links and formatting');
+        it('converts unordered lists', function () {
+            const result = lexicalToMobiledoc(JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    children: [
+                                        {
+                                            detail: 0,
+                                            format: 0,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'one',
+                                            type: 'text',
+                                            version: 1
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'listitem',
+                                    version: 1,
+                                    value: 1
+                                },
+                                {
+                                    children: [
+                                        {
+                                            detail: 0,
+                                            format: 0,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'two',
+                                            type: 'text',
+                                            version: 1
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'listitem',
+                                    version: 1,
+                                    value: 2
+                                },
+                                {
+                                    children: [
+                                        {
+                                            detail: 0,
+                                            format: 0,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'three',
+                                            type: 'text',
+                                            version: 1
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'listitem',
+                                    version: 1,
+                                    value: 3
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'list',
+                            version: 1,
+                            listType: 'bullet',
+                            start: 1,
+                            tag: 'ul'
+                        }
+                    ],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
 
-        it('converts ordered lists');
-        it('converts ordered lists with links and formatting');
+            assert.equal(result, JSON.stringify({
+                version: MOBILEDOC_VERSION,
+                ghostVersion: GHOST_VERSION,
+                atoms: [],
+                cards: [],
+                markups: [],
+                sections: [
+                    [3, 'ul', [
+                        [[0, [], 0, 'one']],
+                        [[0, [], 0, 'two']],
+                        [[0, [], 0, 'three']]
+                    ]]
+                ]
+            }));
+        });
+
+        it('converts ordered lists', function () {
+            const result = lexicalToMobiledoc(JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    children: [
+                                        {
+                                            detail: 0,
+                                            format: 0,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'one',
+                                            type: 'text',
+                                            version: 1
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'listitem',
+                                    version: 1,
+                                    value: 1
+                                },
+                                {
+                                    children: [
+                                        {
+                                            detail: 0,
+                                            format: 0,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'two',
+                                            type: 'text',
+                                            version: 1
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'listitem',
+                                    version: 1,
+                                    value: 2
+                                },
+                                {
+                                    children: [
+                                        {
+                                            detail: 0,
+                                            format: 0,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'three',
+                                            type: 'text',
+                                            version: 1
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'listitem',
+                                    version: 1,
+                                    value: 3
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'list',
+                            version: 1,
+                            listType: 'number',
+                            start: 1,
+                            tag: 'ol'
+                        }
+                    ],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+
+            assert.equal(result, JSON.stringify({
+                version: MOBILEDOC_VERSION,
+                ghostVersion: GHOST_VERSION,
+                atoms: [],
+                cards: [],
+                markups: [],
+                sections: [
+                    [3, 'ol', [
+                        [[0, [], 0, 'one']],
+                        [[0, [], 0, 'two']],
+                        [[0, [], 0, 'three']]
+                    ]]
+                ]
+            }));
+        });
+
+        it('converts lists with links and formatting', function () {
+            const result = lexicalToMobiledoc(JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    children: [
+                                        {
+                                            detail: 0,
+                                            format: 0,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'one',
+                                            type: 'text',
+                                            version: 1
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'listitem',
+                                    version: 1,
+                                    value: 1
+                                },
+                                {
+                                    children: [
+                                        {
+                                            children: [
+                                                {
+                                                    detail: 0,
+                                                    format: 1,
+                                                    mode: 'normal',
+                                                    style: '',
+                                                    text: 'formatted',
+                                                    type: 'text',
+                                                    version: 1
+                                                },
+                                                {
+                                                    detail: 0,
+                                                    format: 0,
+                                                    mode: 'normal',
+                                                    style: '',
+                                                    text: ' link',
+                                                    type: 'text',
+                                                    version: 1
+                                                }
+                                            ],
+                                            direction: 'ltr',
+                                            format: '',
+                                            indent: 0,
+                                            type: 'link',
+                                            version: 1,
+                                            rel: 'noopener',
+                                            target: null,
+                                            title: null,
+                                            url: 'https://koenig.ghost.org'
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'listitem',
+                                    version: 1,
+                                    value: 2
+                                },
+                                {
+                                    children: [
+                                        {
+                                            detail: 0,
+                                            format: 0,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'three',
+                                            type: 'text',
+                                            version: 1
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'listitem',
+                                    version: 1,
+                                    value: 3
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'list',
+                            version: 1,
+                            listType: 'bullet',
+                            start: 1,
+                            tag: 'ul'
+                        }
+                    ],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+
+            assert.equal(result, JSON.stringify({
+                version: MOBILEDOC_VERSION,
+                ghostVersion: GHOST_VERSION,
+                atoms: [],
+                cards: [],
+                markups: [
+                    ['a', ['href', 'https://koenig.ghost.org']],
+                    ['strong']
+                ],
+                sections: [
+                    [3, 'ul', [
+                        [[0, [], 0, 'one']],
+                        [
+                            [0, [0, 1], 1, 'formatted'],
+                            [0, [], 1, ' link']
+                        ],
+                        [[0, [], 0, 'three']]
+                    ]]
+                ]
+            }));
+        });
+
+        it('converts and collapses nested lists', function () {
+            const result = lexicalToMobiledoc(JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    children: [
+                                        {
+                                            detail: 0,
+                                            format: 0,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'one',
+                                            type: 'text',
+                                            version: 1
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'listitem',
+                                    version: 1,
+                                    value: 1
+                                },
+                                {
+                                    children: [
+                                        {
+                                            detail: 0,
+                                            format: 0,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'two',
+                                            type: 'text',
+                                            version: 1
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'listitem',
+                                    version: 1,
+                                    value: 2
+                                },
+                                {
+                                    children: [
+                                        {
+                                            children: [
+                                                {
+                                                    children: [
+                                                        {
+                                                            detail: 0,
+                                                            format: 0,
+                                                            mode: 'normal',
+                                                            style: '',
+                                                            text: 'two.one',
+                                                            type: 'text',
+                                                            version: 1
+                                                        }
+                                                    ],
+                                                    direction: 'ltr',
+                                                    format: '',
+                                                    indent: 1,
+                                                    type: 'listitem',
+                                                    version: 1,
+                                                    value: 1
+                                                },
+                                                {
+                                                    children: [
+                                                        {
+                                                            detail: 0,
+                                                            format: 0,
+                                                            mode: 'normal',
+                                                            style: '',
+                                                            text: 'two.two',
+                                                            type: 'text',
+                                                            version: 1
+                                                        }
+                                                    ],
+                                                    direction: 'ltr',
+                                                    format: '',
+                                                    indent: 1,
+                                                    type: 'listitem',
+                                                    version: 1,
+                                                    value: 2
+                                                }
+                                            ],
+                                            direction: 'ltr',
+                                            format: '',
+                                            indent: 0,
+                                            type: 'list',
+                                            version: 1,
+                                            listType: 'number',
+                                            start: 1,
+                                            tag: 'ol'
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'listitem',
+                                    version: 1,
+                                    value: 3
+                                },
+                                {
+                                    children: [
+                                        {
+                                            detail: 0,
+                                            format: 0,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'three',
+                                            type: 'text',
+                                            version: 1
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'listitem',
+                                    version: 1,
+                                    value: 3
+                                },
+                                {
+                                    children: [
+                                        {
+                                            children: [
+                                                {
+                                                    children: [
+                                                        {
+                                                            detail: 0,
+                                                            format: 0,
+                                                            mode: 'normal',
+                                                            style: '',
+                                                            text: 'three.one',
+                                                            type: 'text',
+                                                            version: 1
+                                                        }
+                                                    ],
+                                                    direction: 'ltr',
+                                                    format: '',
+                                                    indent: 1,
+                                                    type: 'listitem',
+                                                    version: 1,
+                                                    value: 1
+                                                },
+                                                {
+                                                    children: [
+                                                        {
+                                                            children: [
+                                                                {
+                                                                    children: [
+                                                                        {
+                                                                            detail: 0,
+                                                                            format: 0,
+                                                                            mode: 'normal',
+                                                                            style: '',
+                                                                            text: 'three.one.one',
+                                                                            type: 'text',
+                                                                            version: 1
+                                                                        }
+                                                                    ],
+                                                                    direction: 'ltr',
+                                                                    format: '',
+                                                                    indent: 2,
+                                                                    type: 'listitem',
+                                                                    version: 1,
+                                                                    value: 1
+                                                                }
+                                                            ],
+                                                            direction: 'ltr',
+                                                            format: '',
+                                                            indent: 0,
+                                                            type: 'list',
+                                                            version: 1,
+                                                            listType: 'number',
+                                                            start: 1,
+                                                            tag: 'ol'
+                                                        }
+                                                    ],
+                                                    direction: 'ltr',
+                                                    format: '',
+                                                    indent: 1,
+                                                    type: 'listitem',
+                                                    version: 1,
+                                                    value: 2
+                                                }
+                                            ],
+                                            direction: 'ltr',
+                                            format: '',
+                                            indent: 0,
+                                            type: 'list',
+                                            version: 1,
+                                            listType: 'number',
+                                            start: 1,
+                                            tag: 'ol'
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'listitem',
+                                    version: 1,
+                                    value: 4
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'list',
+                            version: 1,
+                            listType: 'number',
+                            start: 1,
+                            tag: 'ol'
+                        }
+                    ],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+
+            assert.equal(result, JSON.stringify({
+                version: MOBILEDOC_VERSION,
+                ghostVersion: GHOST_VERSION,
+                atoms: [],
+                cards: [],
+                markups: [],
+                sections: [
+                    [3, 'ol', [
+                        [[0, [], 0, 'one']],
+                        [[0, [], 0, 'two']],
+                        [[0, [], 0, 'two.one']],
+                        [[0, [], 0, 'two.two']],
+                        [[0, [], 0, 'three']],
+                        [[0, [], 0, 'three.one']],
+                        [[0, [], 0, 'three.one.one']]
+                    ]]
+                ]
+            }));
+        });
+
+        it('converts and collapses nested lists with formats', function () {
+            const result = lexicalToMobiledoc(JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    children: [
+                                        {
+                                            detail: 0,
+                                            format: 1,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'one',
+                                            type: 'text',
+                                            version: 1
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'listitem',
+                                    version: 1,
+                                    value: 1
+                                },
+                                {
+                                    children: [
+                                        {
+                                            detail: 0,
+                                            format: 0,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'two',
+                                            type: 'text',
+                                            version: 1
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'listitem',
+                                    version: 1,
+                                    value: 2
+                                },
+                                {
+                                    children: [
+                                        {
+                                            children: [
+                                                {
+                                                    children: [
+                                                        {
+                                                            detail: 0,
+                                                            format: 0,
+                                                            mode: 'normal',
+                                                            style: '',
+                                                            text: 'two.one',
+                                                            type: 'text',
+                                                            version: 1
+                                                        }
+                                                    ],
+                                                    direction: 'ltr',
+                                                    format: '',
+                                                    indent: 1,
+                                                    type: 'listitem',
+                                                    version: 1,
+                                                    value: 1
+                                                },
+                                                {
+                                                    children: [
+                                                        {
+                                                            detail: 0,
+                                                            format: 1,
+                                                            mode: 'normal',
+                                                            style: '',
+                                                            text: 'two',
+                                                            type: 'text',
+                                                            version: 1
+                                                        },
+                                                        {
+                                                            detail: 0,
+                                                            format: 0,
+                                                            mode: 'normal',
+                                                            style: '',
+                                                            text: '.two',
+                                                            type: 'text',
+                                                            version: 1
+                                                        }
+                                                    ],
+                                                    direction: 'ltr',
+                                                    format: '',
+                                                    indent: 1,
+                                                    type: 'listitem',
+                                                    version: 1,
+                                                    value: 2
+                                                }
+                                            ],
+                                            direction: 'ltr',
+                                            format: '',
+                                            indent: 0,
+                                            type: 'list',
+                                            version: 1,
+                                            listType: 'number',
+                                            start: 1,
+                                            tag: 'ol'
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'listitem',
+                                    version: 1,
+                                    value: 3
+                                },
+                                {
+                                    children: [
+                                        {
+                                            detail: 0,
+                                            format: 0,
+                                            mode: 'normal',
+                                            style: '',
+                                            text: 'three',
+                                            type: 'text',
+                                            version: 1
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'listitem',
+                                    version: 1,
+                                    value: 3
+                                },
+                                {
+                                    children: [
+                                        {
+                                            children: [
+                                                {
+                                                    children: [
+                                                        {
+                                                            detail: 0,
+                                                            format: 0,
+                                                            mode: 'normal',
+                                                            style: '',
+                                                            text: 'three.',
+                                                            type: 'text',
+                                                            version: 1
+                                                        },
+                                                        {
+                                                            detail: 0,
+                                                            format: 2,
+                                                            mode: 'normal',
+                                                            style: '',
+                                                            text: 'one',
+                                                            type: 'text',
+                                                            version: 1
+                                                        }
+                                                    ],
+                                                    direction: 'ltr',
+                                                    format: '',
+                                                    indent: 1,
+                                                    type: 'listitem',
+                                                    version: 1,
+                                                    value: 1
+                                                },
+                                                {
+                                                    children: [
+                                                        {
+                                                            children: [
+                                                                {
+                                                                    children: [
+                                                                        {
+                                                                            detail: 0,
+                                                                            format: 0,
+                                                                            mode: 'normal',
+                                                                            style: '',
+                                                                            text: 'three.',
+                                                                            type: 'text',
+                                                                            version: 1
+                                                                        },
+                                                                        {
+                                                                            detail: 0,
+                                                                            format: 4,
+                                                                            mode: 'normal',
+                                                                            style: '',
+                                                                            text: 'one',
+                                                                            type: 'text',
+                                                                            version: 1
+                                                                        },
+                                                                        {
+                                                                            detail: 0,
+                                                                            format: 0,
+                                                                            mode: 'normal',
+                                                                            style: '',
+                                                                            text: '.one',
+                                                                            type: 'text',
+                                                                            version: 1
+                                                                        }
+                                                                    ],
+                                                                    direction: 'ltr',
+                                                                    format: '',
+                                                                    indent: 2,
+                                                                    type: 'listitem',
+                                                                    version: 1,
+                                                                    value: 1
+                                                                }
+                                                            ],
+                                                            direction: 'ltr',
+                                                            format: '',
+                                                            indent: 0,
+                                                            type: 'list',
+                                                            version: 1,
+                                                            listType: 'number',
+                                                            start: 1,
+                                                            tag: 'ol'
+                                                        }
+                                                    ],
+                                                    direction: 'ltr',
+                                                    format: '',
+                                                    indent: 1,
+                                                    type: 'listitem',
+                                                    version: 1,
+                                                    value: 2
+                                                }
+                                            ],
+                                            direction: 'ltr',
+                                            format: '',
+                                            indent: 0,
+                                            type: 'list',
+                                            version: 1,
+                                            listType: 'number',
+                                            start: 1,
+                                            tag: 'ol'
+                                        }
+                                    ],
+                                    direction: 'ltr',
+                                    format: '',
+                                    indent: 0,
+                                    type: 'listitem',
+                                    version: 1,
+                                    value: 4
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'list',
+                            version: 1,
+                            listType: 'number',
+                            start: 1,
+                            tag: 'ol'
+                        }
+                    ],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+
+            assert.equal(result, JSON.stringify({
+                version: MOBILEDOC_VERSION,
+                ghostVersion: GHOST_VERSION,
+                atoms: [],
+                cards: [],
+                markups: [
+                    ['strong'],
+                    ['em'],
+                    ['s']
+                ],
+                sections: [
+                    [3, 'ol', [
+                        [
+                            [0, [0], 1, 'one']
+                        ],
+                        [
+                            [0, [], 0, 'two']
+                        ],
+                        [
+                            [0, [], 0, 'two.one']
+                        ],
+                        [
+                            [0, [0], 1, 'two'],
+                            [0, [], 0, '.two']
+                        ],
+                        [
+                            [0, [], 0, 'three']
+                        ],
+                        [
+                            [0, [], 0, 'three.'],
+                            [0, [1], 1, 'one']
+                        ],
+                        [
+                            [0, [], 0, 'three.'],
+                            [0, [2], 1, 'one'],
+                            [0, [], 0, '.one']
+                        ]
+                    ]]
+                ]
+            }));
+        });
     });
 
     describe('cards', function () {
