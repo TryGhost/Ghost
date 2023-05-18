@@ -1,7 +1,7 @@
 const BLANK_DOC = {
     root: {
         children: [],
-        direction: null, 
+        direction: null,
         format: '',
         indent: 0,
         type: 'root',
@@ -12,17 +12,36 @@ const BLANK_DOC = {
 const TAG_TO_LEXICAL_NODE = {
     p: {
         type: 'paragraph'
-    }, 
+    },
+    h1: {
+        type: 'heading',
+        tag: 'h1'
+    },
     h2: {
         type: 'heading',
         tag: 'h2'
-    }, 
+    },
     h3: {
         type: 'heading',
         tag: 'h3'
     },
+    h4: {
+        type: 'heading',
+        tag: 'h4'
+    },
+    h5: {
+        type: 'heading',
+        tag: 'h5'
+    },
+    h6: {
+        type: 'heading',
+        tag: 'h5'
+    },
     blockquote: {
         type: 'quote'
+    },
+    aside: {
+        type: 'aside'
     },
     a: {
         type: 'link',
@@ -73,7 +92,7 @@ function buildEmptyDoc() {
     return {
         root: {
             children: [],
-            direction: null, 
+            direction: null,
             format: '',
             indent: 0,
             type: 'root',
@@ -119,7 +138,7 @@ function convertMarkupSectionToLexical(section, mobiledoc) {
     let openMarkups = []; // tracks which markup tags are open for the current marker
     let linkNode = undefined; // tracks current link node or undefined if no a tag is open
     let href = undefined; // tracks the href for the current link node or undefined if no a tag is open
-    
+
     // loop over markers and convert each one to lexical
     for (let i = 0; i < markers.length; i++) {
         // grab the attributes from the current marker
