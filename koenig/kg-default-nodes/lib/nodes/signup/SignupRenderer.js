@@ -32,7 +32,9 @@ export function renderSignupCardToDOM(dataset, options = {}) {
         backgroundColor: dataset.__backgroundColor,
         buttonColor: dataset.__buttonColor,
         labels: dataset.__labels,
-        layout: dataset.__layout
+        layout: dataset.__layout,
+        textColor: dataset.__textColor,
+        buttonTextColor: dataset.__buttonTextColor
     };
 
     const htmlString = options.target === 'email'
