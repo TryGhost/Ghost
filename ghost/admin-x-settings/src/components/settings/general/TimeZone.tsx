@@ -13,13 +13,13 @@ const TimeZone: React.FC = () => {
 
     const [currentTime, setCurrentTime] = useState(getLocalTime(publicationTimezone));
     useEffect(() => {
-        setCurrentTime(getLocalTime(publicationTimezone));
-        // const timer = setInterval(() => {
-        // }, 1000);
+        const timer = setInterval(() => {
+            setCurrentTime(getLocalTime(publicationTimezone));
+        }, 1000);
 
-        // return () => {
-        //     clearInterval(timer);
-        // };
+        return () => {
+            clearInterval(timer);
+        };
     }, [publicationTimezone]);
 
     const buttons = [
