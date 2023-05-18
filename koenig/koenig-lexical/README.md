@@ -37,7 +37,7 @@ These cards make external web requests. Since the demo doesn't have a server to 
 
 ### Running inside Admin
 
-To test/develop inside of Admin you can run `yarn preview` then in Ghost set your `editor.url` value in `config.local.json` to `http://127.0.0.1:4173/koenig-lexical.umd.js` and load Admin as usual.
+To test/develop inside of Admin you can run `yarn preview` then in Ghost set your `editor.url` value in `config.local.json` to `http://127.0.0.1:4173/koenig-lexical.umd.js` and load Admin as usual. With recent updates, if you see a cannot connect error, you may need to use localhost: ``http://localhost:4173/koenig-lexical.umd.js`.
 
 ```json
 {
@@ -47,6 +47,8 @@ To test/develop inside of Admin you can run `yarn preview` then in Ghost set you
     }
 }
 ```
+
+You will also need to use `yarn link` to create a symlink between packages. First run `yarn link` in `koenig-lexical`, then run the output within `ghost/core`. If you are working with the renderer (Preview within Admin), you will need to also run this link procedure on `kg-lexical-html-renderer`.
 
 `yarn preview` by itself only serves the library files, it's possible ro run `yarn build --watch` in a separate terminal tab to have auto-rebuild whilst developing.
 
