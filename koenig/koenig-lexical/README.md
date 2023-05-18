@@ -37,9 +37,18 @@ These cards make external web requests. Since the demo doesn't have a server to 
 
 ### Running inside Admin
 
-To test and develop inside of Admin, run `yarn preview --host` within `koenig-lexical` to start a server. `yarn preview --host` only serves the library files, so run `yarn build --watch` in a separate terminal tab to have auto-rebuild whilst developing.
+```bash
+# Start a local web server
+yarn preview --host
 
-Within Ghost, run the development command with `--lexical` (ie. `yarn dev --lexical`). This will set up the `editor.url` environment variable with the local URL. Admin should now load your local version of Lexical.
+# (optional) Automatically rebuild upon change
+yarn build --watch
+
+# Within Ghost, run `yarn dev` with `--lexical`
+yarn dev --lexical
+```
+
+Admin should now load your local version of Lexical.
 
 Note: if you need to run your local packages of `kg-default-nodes` and `kg-lexical-html-renderer`, you will need to run `yarn link` in those repositories and run the output in `ghost/core`. Otherwise `ghost/core` will be using the latest published version listed in `package.json`.
 
