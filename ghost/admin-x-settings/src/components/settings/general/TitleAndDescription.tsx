@@ -1,7 +1,6 @@
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupInputs from '../../../admin-x-ds/settings/SettingGroupInputs';
-import SettingGroupValues from '../../../admin-x-ds/settings/SettingGroupValues';
+import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/TextField';
 import {SettingsContext} from '../../SettingsProvider';
 import {TSettingGroupStates} from '../../../admin-x-ds/settings/SettingGroup';
@@ -64,7 +63,7 @@ const TitleAndDescription: React.FC = () => {
     ];
 
     const inputFields = (
-        <SettingGroupInputs columns={2}>
+        <SettingGroupContent columns={2}>
             <TextField
                 hint="The name of your site"
                 inputRef={siteTitleRef}
@@ -80,7 +79,7 @@ const TitleAndDescription: React.FC = () => {
                 value={siteDescription}
                 onChange={handleDescriptionChange}
             />
-        </SettingGroupInputs>
+        </SettingGroupContent>
     );
 
     return (
@@ -91,7 +90,7 @@ const TitleAndDescription: React.FC = () => {
             onSave={handleSave}
             onStateChange={handleStateChange}
         >
-            {currentState === 'view' ? <SettingGroupValues columns={2} values={viewValues} /> : inputFields }
+            {currentState === 'view' ? <SettingGroupContent columns={2} values={viewValues} /> : inputFields }
         </SettingGroup>
     );
 };

@@ -1,8 +1,8 @@
 import ButtonGroup from '../../../admin-x-ds/global/ButtonGroup';
 import React, {useContext} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
+import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import SettingGroupHeader from '../../../admin-x-ds/settings/SettingGroupHeader';
-import SettingGroupValues from '../../../admin-x-ds/settings/SettingGroupValues';
 import {SettingsContext} from '../../SettingsProvider';
 import {getSettingValue} from '../../../utils/helpers';
 
@@ -35,7 +35,7 @@ const PublicationLanguage: React.FC = () => {
 
     return (
         <SettingGroup customHeader={custonHeader}>
-            <SettingGroupValues values={viewValues} />
+            <SettingGroupContent values={viewValues} />
         </SettingGroup>
     );
 };

@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupInputs from '../../../admin-x-ds/settings/SettingGroupInputs';
-import SettingGroupValues from '../../../admin-x-ds/settings/SettingGroupValues';
+import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/TextField';
 import {TSettingGroupStates} from '../../../admin-x-ds/settings/SettingGroup';
 
@@ -13,7 +12,7 @@ const SocialAccounts: React.FC = () => {
     };
 
     const values = (
-        <SettingGroupValues
+        <SettingGroupContent
             values={[
                 {
                     heading: `URL of your publication's Facebook Page`,
@@ -30,7 +29,7 @@ const SocialAccounts: React.FC = () => {
     );
 
     const inputs = (
-        <SettingGroupInputs>
+        <SettingGroupContent>
             <TextField
                 placeholder="https://www.facebook.com/ghost"
                 title={`URL of your publication's Facebook Page`}
@@ -43,7 +42,7 @@ const SocialAccounts: React.FC = () => {
                 value="https://twitter.com/ghost"
                 onChange={() => {}}
             />
-        </SettingGroupInputs>
+        </SettingGroupContent>
     );
 
     return (
