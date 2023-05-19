@@ -17,7 +17,7 @@ interface SettingGroupProps {
 }
 
 const SettingGroup: React.FC<SettingGroupProps> = ({title, description, state, customHeader, customButtons, children, onStateChange, onSave}) => {
-    const handleEdit = () => {        
+    const handleEdit = () => {
         if (onStateChange) {
             onStateChange('edit');
         }
@@ -44,11 +44,11 @@ const SettingGroup: React.FC<SettingGroupProps> = ({title, description, state, c
     case 'edit':
         styles = 'border-grey-500';
         break;
-        
+
     case 'unsaved':
         styles = 'border-green';
         break;
-            
+
     default:
         styles = 'border-grey-200';
         break;
@@ -84,9 +84,9 @@ const SettingGroup: React.FC<SettingGroupProps> = ({title, description, state, c
 
     return (
         <div className={`flex flex-col gap-6 rounded border p-5 md:p-7 ${styles}`}>
-            {customHeader ? customHeader : 
+            {customHeader ? customHeader :
                 <SettingGroupHeader description={description} title={title!}>
-                    {customButtons ? customButtons : 
+                    {customButtons ? customButtons :
                         <ButtonGroup buttons={state === 'view' ? viewButtons : editButtons} link={true} />}
                 </SettingGroupHeader>
             }
