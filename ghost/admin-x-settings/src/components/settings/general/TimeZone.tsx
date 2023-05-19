@@ -3,7 +3,6 @@ import React, {useContext, useEffect, useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupHeader from '../../../admin-x-ds/settings/SettingGroupHeader';
 import SettingGroupValues from '../../../admin-x-ds/settings/SettingGroupValues';
-import {ButtonColors} from '../../../admin-x-ds/global/Button';
 import {SettingsContext} from '../../SettingsProvider';
 import {getLocalTime, getSettingValue} from '../../../utils/helpers';
 
@@ -25,7 +24,7 @@ const TimeZone: React.FC = () => {
     const buttons = [
         {
             label: 'Edit',
-            color: ButtonColors.Green
+            color: 'green'
         }
     ];
 

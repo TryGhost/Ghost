@@ -4,7 +4,6 @@ import ButtonGroup from '../global/ButtonGroup';
 import SettingGroupHeader from './SettingGroupHeader';
 
 import Heading from '../global/Heading';
-import {ButtonColors} from '../global/Button';
 
 const meta = {
     title: 'Settings / Setting Group Header',
@@ -20,11 +19,7 @@ export const Default: Story = {
         title: 'Section group title',
         description: 'Section group description',
         children: <ButtonGroup 
-            buttons={
-                [
-                    {label: 'Edit', color: ButtonColors.Green}
-                ]
-            } 
+            buttons={[{label: 'Edit', color: 'green'}]} 
             link={true} 
         />
     }
@@ -38,7 +33,7 @@ export const Editing: Story = {
             buttons={
                 [
                     {label: 'Cancel'},
-                    {label: 'Save', color: ButtonColors.Green}
+                    {label: 'Save', color: 'green'}
                 ]
             } 
             link={true} 
@@ -56,7 +51,7 @@ export const CustomHeader: Story = {
                     <span className='text-xs text-grey-500'>cristofer@example.com</span>
                 </div>
                 <ButtonGroup 
-                    buttons={[{label: 'Invite users', color: ButtonColors.Green}]} 
+                    buttons={[{label: 'Invite users', color: 'green'}]} 
                     link={true} 
                 />
             </>

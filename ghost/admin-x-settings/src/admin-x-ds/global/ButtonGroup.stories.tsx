@@ -1,7 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/react';
 
 import ButtonGroup from './ButtonGroup';
-import {ButtonColors} from './Button';
 
 const ButtonGroupMeta = {
     title: 'Global / Button Group',
@@ -16,13 +15,12 @@ type Story = StoryObj<typeof ButtonGroupMeta>;
 const defaultButtons = [
     {
         label: 'Cancel',
-        key: 'cancel',
-        color: ButtonColors.Clear
+        key: 'cancel'
     },
     {
         label: 'Save',
         key: 'save',
-        color: ButtonColors.Black
+        color: 'black'
     }
 ];
 
@@ -36,13 +34,12 @@ export const Default: Story = {
 const linkButtons = [
     {
         label: 'Cancel',
-        key: 'cancel',
-        color: ButtonColors.Clear
+        key: 'cancel'
     },
     {
         label: 'Save',
         key: 'save',
-        color: ButtonColors.Green
+        color: 'green'
     }
 ];
 

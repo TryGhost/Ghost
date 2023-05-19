@@ -1,17 +1,6 @@
 import React from 'react';
-export interface ButtonColorsType {
-    Clear: string;
-    Black: string;
-    Green: string;
-    Red: string;
-}
 
-export const ButtonColors: ButtonColorsType = {
-    Clear: 'Clear',
-    Black: 'Black',
-    Green: 'Green',
-    Red: 'Red'
-};
+export type ButtonColor = 'clear' | 'black' | 'green' | 'red';
 
 export interface IButton {
     label: string;
@@ -33,25 +22,25 @@ const Button: React.FC<IButton> = ({
     ...props
 }) => {
     if (!color) {
-        color = ButtonColors.Clear;
+        color = 'clear';
     }
     
-    let styles = 'flex items-center justify-center rounded-sm text-sm';
-    styles += ((link && color !== ButtonColors.Clear && color !== ButtonColors.Black) || (!link && color !== ButtonColors.Clear)) ? ' font-bold' : ' font-semibold';
+    let styles = 'transition flex items-center justify-center rounded-sm text-sm';
+    styles += ((link && color !== 'clear' && color !== 'black') || (!link && color !== 'clear')) ? ' font-bold' : ' font-semibold';
     styles += !link ? ' px-4 h-9' : '';
 
     switch (color) {
-    case ButtonColors.Black:
-        styles += link ? ' text-black' : ' bg-black text-white';
+    case 'black':
+        styles += link ? ' text-black hover:text-grey-800' : ' bg-black text-white hover:bg-grey-900';
         break;
-    case ButtonColors.Green:
-        styles += link ? ' text-green' : ' bg-green text-white';
+    case 'green':
+        styles += link ? ' text-green hover:text-green-400' : ' bg-green text-white hover:bg-green-400';
         break;
-    case ButtonColors.Red:
-        styles += link ? ' text-red' : ' bg-red text-white';
+    case 'red':
+        styles += link ? ' text-red hover:text-red-400' : ' bg-red text-white hover:bg-red-400';
         break;
     default:
-        styles += link ? ' text-black' : ' bg-transparent text-black';
+        styles += link ? ' text-black hover:text-grey-800' : ' bg-transparent text-black hover:text-grey-800';
         break;
     }
 
