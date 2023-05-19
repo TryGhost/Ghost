@@ -45,9 +45,17 @@ const PublicationLanguage: React.FC = () => {
         }
     ];
 
+    const hint = (
+        <p className={`text-grey-700 mt-2 inline-block text-xs`}>
+            Default: English (<strong>en</strong>); find out more about
+            <a className='text-green-400' href="https://ghost.org/docs/faq/translation/" rel="noopener noreferrer" target="_blank"> using Ghost in other languages</a>
+        </p>
+    );
+
     const inputFields = (
-        <SettingGroupContent columns={2}>
+        <SettingGroupContent columns={1}>
             <TextField
+                hint={hint}
                 inputRef={languageRef}
                 placeholder="Site language"
                 title='Site language'
