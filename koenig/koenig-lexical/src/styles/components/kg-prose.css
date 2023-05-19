@@ -855,6 +855,12 @@
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
             @apply font-extrabold;
         }
+        :where(
+                    a,
+                    a span
+                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            @apply !text-current;
+        }
     }
 }
 
@@ -929,6 +935,12 @@
                     strong
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
             @apply font-extrabold;
+        }
+        :where(
+                    a,
+                    a span
+                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            @apply !text-current;
         }
     }
 }
