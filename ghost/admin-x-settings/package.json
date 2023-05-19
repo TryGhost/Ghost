@@ -27,6 +27,7 @@
   },
   "scripts": {
     "dev": "concurrently \"vite preview\" \"vite build --watch\"",
+    "dev:start": "vite",
     "build": "tsc && vite build",
     "lint": "yarn run lint:js",
     "lint:js": "eslint --ext .js,.ts,.cjs,.tsx --cache src test",
@@ -40,7 +41,8 @@
   },
   "dependencies": {
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "@tryghost/timezone-data": "0.3.0"
   },
   "devDependencies": {
     "@storybook/addon-essentials": "7.0.12",
