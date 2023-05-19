@@ -532,18 +532,7 @@ class BatchSendingService {
 
         const BATCH_SIZE = this.#sendingService.getMaximumRecipients();
         if (mappedMemberLikes.length > BATCH_SIZE) {
-            logging.warn(`Batch ${batchId} has ${mappedMemberLikes.length} members, but the sending service only supports ${BATCH_SIZE} members per batch.`);
-
-            const _debug = require('@tryghost/debug')._base;
-            try {
-                _debug.enable('ghost-query');
-                await this.#models.EmailRecipient.findAll({filter: `batch_id:${batchId}`, withRelated: ['member', 'member.stripeSubscriptions', 'member.products']});
-            } finally {
-                // @NOTE: disables all debugged modules, there's no
-                //        way to disable just one module.
-                //        The behavior rare enough and is acceptable to catch the live issue
-                _debug.disable();
-            }
+            logging.error(`Batch ${batchId} has ${mappedMemberLikes.length} members, but the sending service only supports ${BATCH_SIZE} members per batch.`);
         }
 
         return mappedMemberLikes;
