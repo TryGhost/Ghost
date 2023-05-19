@@ -27,7 +27,7 @@
     align-items: flex-start;
     justify-content: center;
     height: 100%;
-    padding: 12vmin 4em;
+    padding: 12vmin 6em;
     background-size: cover;
     background-position: center;
     text-align: left;
@@ -139,7 +139,7 @@
     letter-spacing: .2px;
     white-space: nowrap;
     text-overflow: ellipsis;
-    height: 2.4em;
+    height: 3em;
     padding: 0 1.2em;
     transition: opacity .2s ease;
 }
@@ -158,7 +158,6 @@
 }
 
 .kg-signup-card.kg-width-wide .kg-signup-card-button {
-    height: 2.7em;
     font-size: 1.05em;
 }
 
@@ -169,7 +168,6 @@
 
 .kg-signup-card.kg-width-full .kg-signup-card-button {
     font-size: 1.1em;
-    height: 2.9em;
 }
 
 .kg-signup-card.kg-width-full h2 + .kg-signup-card-button,
