@@ -39,6 +39,10 @@ class FeatureFlagComponent extends Component {
         return `labs[${this.flag}]`;
     }
 
+    get testKey() {
+        return `labs-${this.flag}`;
+    }
+
     init() {
         super.init(...arguments);
 
