@@ -1,7 +1,7 @@
 import ButtonGroup from '../global/ButtonGroup';
 import React, {useState} from 'react';
 import SettingGroupHeader from './SettingGroupHeader';
-import {ButtonColors, IButton} from '../global/Button';
+import {IButton} from '../global/Button';
 
 export type TSettingGroupStates = 'view' | 'edit' | 'unsaved';
 
@@ -64,7 +64,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({title, description, state, c
         {
             label: 'Edit',
             key: 'edit',
-            color: ButtonColors.Green,
+            color: 'green',
             onClick: handleEdit
         }
     ];
@@ -82,7 +82,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({title, description, state, c
             {
                 label: 'Save',
                 key: 'save',
-                color: ButtonColors.Green,
+                color: 'green',
                 onClick: handleSave
             }
         );
