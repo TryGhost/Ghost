@@ -9,7 +9,6 @@ import SettingGroup from './SettingGroup';
 import SettingGroupHeader from './SettingGroupHeader';
 import SettingGroupInputs from './SettingGroupInputs';
 import SettingGroupValues from './SettingGroupValues';
-import {ButtonColors} from '../global/Button';
 
 const meta = {
     title: 'Settings / Setting Group',
@@ -21,7 +20,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const customButtons = <ButtonGroup buttons={[{label: 'My action', color: ButtonColors.Green}]} link={true} />;
+const customButtons = <ButtonGroup buttons={[{label: 'My action', color: 'green'}]} link={true} />;
 const customHeader = <SettingGroupHeader {...SettingGroupHeaderStories.CustomHeader.args} />;
 const singleColContent = <SettingGroupValues {...SettingGroupValueStories.SingleColumn.args} />;
 const twoColView = <SettingGroupValues {...SettingGroupValueStories.TwoColumns.args} />;
