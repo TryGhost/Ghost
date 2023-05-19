@@ -1529,3 +1529,8 @@ kbd {
 .gh-dashboard-mention:hover {
     background: var(--whitegrey-d1);
 }
+
+/* Feedback form */
+.gh-editor-feedback-dropdown {
+    background: var(--whitegrey-l1);
+}
