@@ -50,7 +50,7 @@ export function SignupCard({alignment,
     disclaimerTextEditor,
     disclaimerTextEditorInitialState}) {
     const matchingTextColor = (color) => {
-        return color === 'transparent' ? null : textColorForBackgroundColor(hexColorValue(color)).hex();
+        return color === 'transparent' ? '' : textColorForBackgroundColor(hexColorValue(color)).hex();
     };
 
     useEffect(() => {
@@ -124,7 +124,7 @@ export function SignupCard({alignment,
                 backgroundColor: 'bg-grey-950',
                 color: hexColorValue(textColor)
             };
-        } else if (backgroundColor) {
+        } else if (backgroundColor && textColor) {
             return {
                 backgroundColor: hexColorValue(backgroundColor),
                 color: hexColorValue(textColor)

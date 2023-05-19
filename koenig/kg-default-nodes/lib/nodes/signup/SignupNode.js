@@ -75,7 +75,7 @@ export class SignupNode extends KoenigDecoratorNode {
         this.__alignment = alignment || 'left';
         this.__backgroundColor = backgroundColor || 'accent';
         this.__backgroundImageSrc = backgroundImageSrc || '';
-        this.__textColor = textColor || '#ffffff';
+        this.__textColor = textColor || (backgroundColor === 'transparent' ? '' : '#ffffff');
         this.__buttonColor = buttonColor || '#ffffff';
         this.__buttonTextColor = buttonTextColor || '#000000';
         this.__buttonText = buttonText || '';
