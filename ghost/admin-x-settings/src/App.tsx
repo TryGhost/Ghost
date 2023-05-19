@@ -18,7 +18,7 @@ function App() {
             <div className="mx-auto flex max-w-[1080px] flex-col px-[5vmin] py-[12vmin] md:flex-row md:items-start md:gap-x-10 md:py-[8vmin]">
 
                 {/* Sidebar */}
-                <div className="relative grow-0 md:sticky md:top-[8vmin] md:basis-[240px]">
+                <div className="relative min-w-[240px] grow-0 md:sticky md:top-[8vmin] md:basis-[240px]">
                     <Heading>Settings</Heading>
                     <Sidebar />
                 </div>
