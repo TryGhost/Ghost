@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupInputs from '../../../admin-x-ds/settings/SettingGroupInputs';
-import SettingGroupValues from '../../../admin-x-ds/settings/SettingGroupValues';
+import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import {TSettingGroupStates} from '../../../admin-x-ds/settings/SettingGroup';
 
 const Access: React.FC = () => {
@@ -12,7 +11,7 @@ const Access: React.FC = () => {
     };
 
     const values = (
-        <SettingGroupValues
+        <SettingGroupContent
             values={[
                 {
                     heading: 'Subscription access',
@@ -34,9 +33,9 @@ const Access: React.FC = () => {
     );
 
     const inputs = (
-        <SettingGroupInputs>
+        <SettingGroupContent>
             
-        </SettingGroupInputs>
+        </SettingGroupContent>
     );
 
     return (
