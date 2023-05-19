@@ -43,7 +43,7 @@ export const Red: Story = {
     }
 };
 
-export const Link: Story = {
+export const LinkButton: Story = {
     args: {
         label: 'Button',
         color: 'green',
