@@ -1,3 +1,4 @@
+import Dropdown from '../../../admin-x-ds/global/Dropdown';
 import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
@@ -22,9 +23,21 @@ const DefaultRecipients: React.FC = () => {
         />
     );
 
-    const inputs = (
-        <SettingGroupContent>
-            
+    const form = (
+        <SettingGroupContent columns={1}>
+            <Dropdown
+                defaultSelectedOption='option-1'
+                hint='Who should be able to subscribe to your site?'
+                options={[
+                    {value: 'option-1', label: 'Whoever has access to the post'},
+                    {value: 'option-2', label: 'All members'},
+                    {value: 'option-3', label: 'Paid-members only'},
+                    {value: 'option-4', label: 'Specific people'},
+                    {value: 'option-5', label: 'Usually nobody'}
+                ]}
+                title="Subscription access"
+                onSelect={() => {}}
+            />
         </SettingGroupContent>
     );
 
@@ -35,7 +48,7 @@ const DefaultRecipients: React.FC = () => {
             title='Default recipients' 
             onStateChange={handleStateChange}
         >
-            {currentState === 'view' ? values : inputs}
+            {currentState === 'view' ? values : form}
         </SettingGroup>
     );
 };
