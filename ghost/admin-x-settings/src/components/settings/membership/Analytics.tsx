@@ -9,7 +9,7 @@ import {TSettingGroupStates} from '../../../admin-x-ds/settings/SettingGroup';
 const Analytics: React.FC = () => {
     const [currentState, setCurrentState] = useState<TSettingGroupStates>('view');
 
-    const handleStateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleStateChange = () => {
         setCurrentState('unsaved');
     };
 
@@ -57,10 +57,10 @@ const Analytics: React.FC = () => {
     ]} link={true} />;
 
     return (
-        <SettingGroup 
+        <SettingGroup
             customButtons={currentState === 'unsaved' ? buttons : <></>}
-            description='Decide what data you collect from your members' 
-            state={currentState} 
+            description='Decide what data you collect from your members'
+            state={currentState}
             title='Analytics'
         >
             {inputs}
