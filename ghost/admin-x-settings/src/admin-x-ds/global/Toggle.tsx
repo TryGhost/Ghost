@@ -15,9 +15,10 @@ interface ToggleProps {
     separator?: boolean;
     direction?: ToggleDirections;
     hint?: React.ReactNode;
+    onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const Toggle: React.FC<ToggleProps> = ({id, size, direction, label, hint, separator, error, checked}) => {
+const Toggle: React.FC<ToggleProps> = ({id, size, direction, label, hint, separator, error, checked, onChange}) => {
     let sizeStyles = '';
     let labelStyles = '';
     switch (size) {
@@ -38,13 +39,14 @@ const Toggle: React.FC<ToggleProps> = ({id, size, direction, label, hint, separa
     }
 
     return (
-        <>
+        <div>
             <div className={`flex items-start gap-2 ${direction === 'rtl' && 'justify-between'} ${separator && 'pb-2'}`}>
                 <input checked={checked}
                     className={`appearance-none rounded-full bg-grey-300 after:absolute after:z-[2] after:ml-0.5 after:mt-0.5 after:rounded-full after:border-none after:bg-white after:transition-[background-color_0.2s,transform_0.2s] after:content-[''] checked:bg-green checked:after:absolute checked:after:z-[2] checked:after:rounded-full checked:after:border-none checked:after:bg-white checked:after:transition-[background-color_0.2s,transform_0.2s] checked:after:content-[''] hover:cursor-pointer focus:outline-none focus:ring-0 focus:after:absolute focus:after:z-[1] focus:after:block focus:after:rounded-full focus:after:content-[''] checked:focus:border-green checked:focus:bg-green dark:bg-grey-600 dark:after:bg-grey-400 dark:checked:bg-green dark:checked:after:bg-green ${sizeStyles} ${direction === 'rtl' && ' order-2'}`}
                     id={id}
                     role="switch"
-                    type="checkbox" />
+                    type="checkbox"
+                    onChange={onChange} />
                 {label && 
                     <div className={`flex flex-col ${direction === 'rtl' && 'order-1'} ${labelStyles}`}>
                         <label
@@ -58,7 +60,7 @@ const Toggle: React.FC<ToggleProps> = ({id, size, direction, label, hint, separa
                 }
             </div>
             {(separator || error) && <Separator color={error ? 'red' : ''} />}
-        </>
+        </div>
     );
 };
 
