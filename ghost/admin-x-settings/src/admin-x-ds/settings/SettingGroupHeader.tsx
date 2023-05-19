@@ -13,7 +13,7 @@ const SettingGroupHeader: React.FC<Props> = ({title, description, children}) => 
             {(title || description) && 
                 <div>
                     <Heading level={5}>{title}</Heading>
-                    {description && <p className="max-w-lg text-sm">{description}</p>}
+                    {description && <p className="mt-0.5 max-w-lg text-sm">{description}</p>}
                 </div>
             }
             {children}
