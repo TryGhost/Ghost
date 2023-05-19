@@ -1,3 +1,8 @@
+/**
+ * This is a boilerplate story as an example of how to structure stories
+ */
+
+/**
 import type {Meta, StoryObj} from '@storybook/react';
 
 import Component from './Component';
@@ -14,3 +19,4 @@ type Story = StoryObj<typeof Component>;
 export const Default: Story = {
     args: {}
 };
+*/
