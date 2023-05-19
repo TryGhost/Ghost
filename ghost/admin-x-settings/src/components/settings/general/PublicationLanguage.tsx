@@ -1,20 +1,41 @@
-import ButtonGroup from '../../../admin-x-ds/global/ButtonGroup';
-import React, {useContext} from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
+import React, {useContext, useEffect, useRef, useState} from 'react';
+import SettingGroup, {TSettingGroupStates} from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import SettingGroupHeader from '../../../admin-x-ds/settings/SettingGroupHeader';
+import TextField from '../../../admin-x-ds/global/TextField';
 import {SettingsContext} from '../../SettingsProvider';
 import {getSettingValue} from '../../../utils/helpers';
 
 const PublicationLanguage: React.FC = () => {
-    const {settings} = useContext(SettingsContext) || {};
-    const publicationLanguage = getSettingValue(settings, 'locale');
-    const buttons = [
-        {
-            label: 'Edit',
-            color: 'green'
+    const [currentState, setCurrentState] = useState<TSettingGroupStates>('view');
+    const {settings, saveSettings} = useContext(SettingsContext) || {};
+    const savedPublicationLanguage = getSettingValue(settings, 'locale');
+    const [publicationLanguage, setPublicationLanguage] = useState(savedPublicationLanguage);
+    const languageRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (currentState !== 'view' && languageRef.current) {
+            languageRef.current.focus();
         }
-    ];
+    }, [currentState]);
+
+    const handleStateChange = (newState: TSettingGroupStates) => {
+        setCurrentState(newState);
+    };
+
+    const handleSave = () => {
+        saveSettings?.([
+            {
+                key: 'locale',
+                value: publicationLanguage
+            }
+        ]);
+        setCurrentState('view');
+    };
+
+    const handleLanguageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setCurrentState('unsaved');
+        setPublicationLanguage(e.target.value);
+    };
 
     const viewValues = [
         {
@@ -24,18 +45,27 @@ const PublicationLanguage: React.FC = () => {
         }
     ];
 
-    const custonHeader = (
-        <SettingGroupHeader
-            description="Set the language/locale which is used on your site"
-            title="Publication Language"
-        >
-            <ButtonGroup buttons={buttons} link={true} />
-        </SettingGroupHeader>
+    const inputFields = (
+        <SettingGroupContent columns={2}>
+            <TextField
+                inputRef={languageRef}
+                placeholder="Site language"
+                title='Site language'
+                value={publicationLanguage}
+                onChange={handleLanguageChange}
+            />
+        </SettingGroupContent>
     );
 
     return (
-        <SettingGroup customHeader={custonHeader}>
-            <SettingGroupContent values={viewValues} />
+        <SettingGroup
+            description="Set the language/locale which is used on your site"
+            state={currentState}
+            title="Publication Language"
+            onSave={handleSave}
+            onStateChange={handleStateChange}
+        >
+            {currentState === 'view' ? <SettingGroupContent values={viewValues} /> : inputFields }
         </SettingGroup>
     );
 };
