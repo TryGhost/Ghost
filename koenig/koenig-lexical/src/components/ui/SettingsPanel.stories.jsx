@@ -188,6 +188,7 @@ VideoCard.args = {
             label='Loop'
         />,
         <MediaUploadSetting
+            borderStyle='dashed'
             desc=''
             icon='file'
             label='Custom thumbnail'

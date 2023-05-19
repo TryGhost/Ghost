@@ -180,7 +180,7 @@ export function SignupCard({alignment,
                                 initialEditorState={headerTextEditorInitialState}
                                 nodes="minimal"
                                 placeholderClassName={clsx(
-                                    'w-full truncate whitespace-normal !font-bold !leading-[1.1] !tracking-tight opacity-50',
+                                    'h-[110%] w-full truncate whitespace-normal !font-bold !leading-[1.1] !tracking-tight opacity-50',
                                     (alignment === 'center') && 'text-center',
                                     (layout === 'regular') && 'text-3xl sm:text-4xl md:text-5xl',
                                     (layout === 'wide') && 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl',
@@ -213,7 +213,7 @@ export function SignupCard({alignment,
                                 initialEditorState={subheaderTextEditorInitialState}
                                 nodes="minimal"
                                 placeholderClassName={clsx(
-                                    'w-full truncate whitespace-normal !font-normal !leading-tight !tracking-[-0.025em] opacity-50',
+                                    'h-[110%] w-full truncate whitespace-normal !font-normal !leading-tight !tracking-[-0.025em] opacity-50',
                                     (alignment === 'center') && 'text-center',
                                     (layout === 'regular') && 'text-lg sm:text-xl',
                                     (layout === 'wide') && 'text-lg sm:text-xl md:text-2xl',
@@ -262,7 +262,7 @@ export function SignupCard({alignment,
                                 initialEditor={disclaimerTextEditor}
                                 initialEditorState={disclaimerTextEditorInitialState}
                                 nodes="minimal"
-                                placeholderClassName={`truncate opacity-50 w-full whitespace-normal !leading-tight !font-normal !text-[1.6rem] !tracking-[-0.025em] ${(alignment === 'center' && 'text-center')}`}
+                                placeholderClassName={`truncate opacity-50 w-full h-[110%] whitespace-normal !leading-tight !font-normal !text-[1.6rem] !tracking-[-0.025em] ${(alignment === 'center' && 'text-center')}`}
                                 placeholderText={disclaimerPlaceholder}
                                 singleParagraph={true}
                                 textClassName={`koenig-lexical-header-subheading caret-current koenig-lexical-header-xsmall relative w-full whitespace-normal !mt-4 ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_71px)]'}`}
@@ -303,7 +303,7 @@ export function SignupCard({alignment,
                     />}
                     {showBackgroundImage && layout !== 'split' && <MediaUploadSetting
                         alt='Background image'
-                        borderStyle={'rounded border-dashed border-grey/40'}
+                        borderStyle={'dashed'}
                         desc='Click to upload'
                         errors={fileUploader?.errors}
                         hideLabel={layout !== 'split'}
