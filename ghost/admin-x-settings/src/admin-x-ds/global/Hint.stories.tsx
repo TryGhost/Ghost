@@ -16,3 +16,13 @@ export const Default: Story = {
         children: 'This is a hint'
     }
 };
+
+export const UsingReactNode: Story = {
+    args: {
+        children: (
+            <>
+                This is a <strong>bold</strong> hint with <a className='text-green-400' href="https://ghost.org">a link</a>
+            </>
+        )
+    }
+};

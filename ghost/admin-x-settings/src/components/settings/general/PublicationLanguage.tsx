@@ -46,10 +46,10 @@ const PublicationLanguage: React.FC = () => {
     ];
 
     const hint = (
-        <p className={`mt-2 inline-block text-xs text-grey-700`}>
+        <>
             Default: English (<strong>en</strong>); find out more about
             <a className='text-green-400' href="https://ghost.org/docs/faq/translation/" rel="noopener noreferrer" target="_blank"> using Ghost in other languages</a>
-        </p>
+        </>
     );
 
     const inputFields = (
