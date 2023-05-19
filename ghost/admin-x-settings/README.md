@@ -15,22 +15,7 @@ Run `yarn dev` to start the development server to test/develop the settings stan
 
 ### Running inside Admin
 
-To test/develop inside of Admin you can run `yarn preview` then in Ghost set your `adminX` value in `config.local.json` to `http://localhost:4173/admin-x-settings.umd.js` and load Admin as usual. Replace Ghost Admin's `settings` url with `settings-x` to load the new settings.
-
-```json
-{
-    ...
-    "adminX": {
-        "url": "http://localhost:4173/admin-x-settings.umd.js"
-    }
-}
-```
-
-`yarn preview` by itself only serves the library files, it's possible ro run `yarn build --watch` in a separate terminal tab to have auto-rebuild whilst developing.
-
-
-## Usage
-
+Run `yarn dev` from the top-level repo with `--adminX`
 
 ## Develop
 

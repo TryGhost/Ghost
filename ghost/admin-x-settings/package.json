@@ -26,7 +26,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently \"vite preview\" \"vite build --watch\"",
     "build": "tsc && vite build",
     "lint": "yarn run lint:js",
     "lint:js": "eslint --ext .js,.ts,.cjs,.tsx --cache src test",
@@ -59,6 +59,7 @@
     "@typescript-eslint/parser": "5.57.1",
     "@vitejs/plugin-react": "4.0.0",
     "autoprefixer": "10.4.14",
+    "concurrently": "8.0.1",
     "eslint": "8.38.0",
     "eslint-config-react-app": "7.0.1",
     "eslint-plugin-ghost": "2.18.0",

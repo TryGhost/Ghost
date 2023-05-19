@@ -17,6 +17,9 @@ export default (function viteConfig() {
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
             'process.env.VITEST_SEGFAULT_RETRY': 3
         },
+        preview: {
+            port: 4174
+        },
         build: {
             minify: true,
             sourcemap: true,
