@@ -1,7 +1,9 @@
+import Dropdown from '../../../admin-x-ds/global/Dropdown';
 import Link from '../../../admin-x-ds/global/Link';
 import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
+import TextField from '../../../admin-x-ds/global/TextField';
 import {TSettingGroupStates} from '../../../admin-x-ds/settings/SettingGroup';
 
 const MailGun: React.FC = () => {
@@ -26,7 +28,26 @@ const MailGun: React.FC = () => {
 
     const inputs = (
         <SettingGroupContent>
-            
+            <div className='grid grid-cols-2 gap-6'>
+                <Dropdown
+                    defaultSelectedOption='option-1'
+                    options={[
+                        {value: 'option-1', label: 'US'},
+                        {value: 'option-2', label: 'EU'}
+                    ]}
+                    title="Mailgun region"
+                    onSelect={() => {}}
+                />
+                <TextField 
+                    title='Mailgun domain'
+                />
+                <div className='col-span-2'>
+                    <TextField 
+                        hint={<>Find your Mailgun API keys<Link href="https://app.mailgun.com/app/account/security/api_keys" target="_blank">here</Link></>}
+                        title='Mailgun private API key'
+                    />
+                </div>
+            </div>
         </SettingGroupContent>
     );
 

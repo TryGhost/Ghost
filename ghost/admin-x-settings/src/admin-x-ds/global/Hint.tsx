@@ -18,7 +18,7 @@ const Hint: React.FC<HintProps> = ({children, color, ...props}) => {
 
     if (React.isValidElement(children)) {
         return (
-            <>{children}</>
+            <span className={`mt-2 inline-block text-xs ${color ? `text-${color}` : `text-grey-700`}`} {...props}>{children}</span>
         );
     }
 
