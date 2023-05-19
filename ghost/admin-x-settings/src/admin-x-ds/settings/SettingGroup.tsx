@@ -7,7 +7,7 @@ export type TSettingGroupStates = 'view' | 'edit' | 'unsaved';
 
 interface SettingGroupProps {
     title?: string;
-    description?: string;
+    description?: React.ReactNode;
     state?: TSettingGroupStates;
     customHeader?: React.ReactNode;
     customButtons?: React.ReactNode;
