@@ -737,17 +737,9 @@
     justify-content: space-between;
 }
 
-.gh-feedback-lexical-published {
-    margin-bottom: 2.4rem;
-}
-
 .gh-feedback-lexical-published .form-group, .gh-feedback-lexical-published textarea {
     min-width: 100%;
     max-width: 100%;
-}
-
-.gh-post-bookmark-wrapper + .gh-feedback-lexical-published {
-    margin-bottom: 2.4rem;
 }
 
 .gh-feedback-grey .gh-feedback-lexical-published-title {
@@ -758,6 +750,20 @@
     font-size: 1.4rem;
     color: var(--midgrey);
     margin-bottom: 0.8rem;
+}
+
+.gh-feedback-lexical-published-back {
+    display: block;
+    margin-top: 1rem;
+    height: 40px;
+    color: #7c8b9a;
+    font-size: 1.35rem;
+    font-weight: 400;
+    line-height: 40px;
+    letter-spacing: .4px;
+    text-align: left;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .gh-publish-confirmation-feedback {
