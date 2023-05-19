@@ -1,5 +1,5 @@
 import ButtonGroup from '../global/ButtonGroup';
-import React, {useState} from 'react';
+import React from 'react';
 import SettingGroupHeader from './SettingGroupHeader';
 import {IButton} from '../global/Button';
 
@@ -17,12 +17,6 @@ interface SettingGroupProps {
 }
 
 const SettingGroup: React.FC<SettingGroupProps> = ({title, description, state, customHeader, customButtons, children, onStateChange, onSave}) => {
-    const [currentState, setCurrentState] = useState<TSettingGroupStates>('view');
-
-    if (state && state !== currentState) {
-        setCurrentState(state);
-    }
-
     const handleEdit = () => {        
         if (onStateChange) {
             onStateChange('edit');
@@ -46,7 +40,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({title, description, state, c
 
     let styles = '';
 
-    switch (currentState) {
+    switch (state) {
     case 'edit':
         styles = 'border-grey-500';
         break;
@@ -77,7 +71,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({title, description, state, c
         }
     ];
 
-    if (currentState === 'unsaved') {
+    if (state === 'unsaved') {
         editButtons.push(
             {
                 label: 'Save',
@@ -93,7 +87,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({title, description, state, c
             {customHeader ? customHeader : 
                 <SettingGroupHeader description={description} title={title!}>
                     {customButtons ? customButtons : 
-                        <ButtonGroup buttons={currentState === 'view' ? viewButtons : editButtons} link={true} />}
+                        <ButtonGroup buttons={state === 'view' ? viewButtons : editButtons} link={true} />}
                 </SettingGroupHeader>
             }
             {children}
