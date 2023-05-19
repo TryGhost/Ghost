@@ -30,9 +30,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({title, description, state, c
     };
 
     const handleSave = () => {
-        if (onSave) {
-            onSave();
-        }
+        onSave?.();
         if (onStateChange) {
             onStateChange('view');
         }
