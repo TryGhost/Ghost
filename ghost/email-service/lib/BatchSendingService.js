@@ -415,7 +415,7 @@ class BatchSendingService {
             if (members.length > this.#sendingService.getMaximumRecipients()) {
                 // @NOTE the unique by member_id is a best effort to make sure we don't send the same email to the same member twice
                 logging.warn(`Email batch ${originalBatch.id} has ${members.length} members, which exceeds the maximum of ${this.#sendingService.getMaximumRecipients()}. Filtering to unique members`);
-                members = uniqBy(members, 'member_id');
+                members = uniqBy(members, 'email');
 
                 if (members.length > this.#sendingService.getMaximumRecipients()) {
                     // @NOTE this is a best effort logic to still try sending an email batch
