@@ -60,6 +60,17 @@ if (DASH_DASH_ARGS.includes('in-memory-repository') || DASH_DASH_ARGS.includes('
     });
 }
 
+if (DASH_DASH_ARGS.includes('admin-x') || DASH_DASH_ARGS.includes('adminx') || DASH_DASH_ARGS.includes('adminX') || DASH_DASH_ARGS.includes('all')) {
+    commands.push({
+        name: 'adminX',
+        command: 'yarn dev',
+        cwd: path.resolve(__dirname, '../ghost/admin-x-settings'),
+        prefixColor: '#C35831',
+        env: {}
+    });
+    COMMAND_GHOST.env['adminX__url'] = 'http://localhost:4174/admin-x-settings.umd.js';
+}
+
 if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'portal',
