@@ -398,7 +398,7 @@ ul.nostyle li {
     position: relative;
     overflow: auto;
     max-width: calc(100% + 96px);
-    height: calc(100vh - 129px);
+    height: calc(100vh - 140px);
     margin: 0 -48px -81px;
     padding: 0 48px;
 }
@@ -494,10 +494,10 @@ ul.nostyle li {
     background: var(--whitegrey-l2);
 }
 
-@media (min-width: 1450px) {
+@media (min-width: 1441px) {
     .gh-list-sticky,
     .gh-list-scrolling {
-        height: calc(100vh - 96px);
+        height: calc(100vh - 103px);
     }
 }
 

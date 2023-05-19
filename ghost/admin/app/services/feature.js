@@ -68,7 +68,6 @@ export default class FeatureService extends Service {
     @feature('websockets') websockets;
     @feature('stripeAutomaticTax') stripeAutomaticTax;
     @feature('makingItRain') makingItRain;
-    @feature('migrateApp') migrateApp;
     @feature('i18n') i18n;
     @feature('postHistory') postHistory;
     @feature('postDiffing') postDiffing;
@@ -76,6 +75,7 @@ export default class FeatureService extends Service {
     @feature('imageEditor') imageEditor;
     @feature('signupCard') signupCard;
     @feature('collections') collections;
+    @feature('adminXSettings') adminXSettings;
 
     _user = null;
 

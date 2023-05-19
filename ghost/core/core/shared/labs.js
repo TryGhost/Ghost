@@ -32,7 +32,6 @@ const BETA_FEATURES = [
 
 const ALPHA_FEATURES = [
     'urlCache',
-    'migrateApp',
     'lexicalEditor',
     'lexicalMultiplayer',
     'websockets',
@@ -42,7 +41,8 @@ const ALPHA_FEATURES = [
     'postDiffing',
     'imageEditor',
     'signupCard',
-    'collections'
+    'collections',
+    'adminXSettings'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

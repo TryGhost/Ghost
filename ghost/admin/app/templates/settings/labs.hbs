@@ -31,20 +31,6 @@
                     </div>
                 </div>
 
-                {{#if this.feature.migrateApp}}
-                <div class="gh-expandable-block">
-                    <div class="gh-expandable-header">
-                        <div>
-                            <h4 class="gh-expandable-title">Migrate content</h4>
-                            <p class="gh-expandable-description">Import your content from Substack</p>
-                        </div>
-                        <LinkTo @route="migrate" class="gh-btn" data-test-link="migrate">
-                            <span>Open</span>
-                        </LinkTo>
-                    </div>
-                </div>
-                {{/if}}
-
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
@@ -70,6 +56,18 @@
         <div class="gh-main-section">
             <h4 class="gh-main-section-header small bn">Beta features</h4>
             <div class="gh-expandable">
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Substack migrator</h4>
+                            <p class="gh-expandable-description">Import all your content, members and paid subscriptions</p>
+                        </div>
+                        <LinkTo @route="migrate" class="gh-btn" data-test-link="migrate">
+                            <span>Open</span>
+                        </LinkTo>
+                    </div>
+                </div>
+
                 <div class="gh-expandable-block">
                     <GhUploader
                         @extensions={{this.redirectsFileExtensions}}
@@ -201,23 +199,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="gh-expandable-block">
-                    <div class="gh-expandable-header">
-                        <div>
-                            <h4 class="gh-expandable-title">Lexical editor</h4>
-                            <p class="gh-expandable-description">
-                                {{#if (feature 'lexicalEditor')}}
-                                    <span>Makes lexical editor the default when creating new posts/pages. Any issues? Feedback?</span><button class="green ml1" type="button" {{on "click" this.openFeedbackLexical}} data-test-button="lexical-feedback">Let us know</button>
-                                {{else}}
-                                    <span>Makes lexical editor the default when creating new posts/pages.</span>
-                                {{/if}}
-                            </p>
-                        </div>
-                        <div class="for-switch">
-                           <GhFeatureFlag @flag="lexicalEditor" />
-                        </div>
-                    </div>
-                </div>
+
+                <Labs::Lexical />
+
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
@@ -299,19 +283,6 @@
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
-                            <h4 class="gh-expandable-title">Migrate content</h4>
-                            <p class="gh-expandable-description">
-                               Import content from other platforms to Ghost
-                            </p>
-                        </div>
-                        <div class="for-switch">
-                            <GhFeatureFlag @flag="migrateApp" />
-                        </div>
-                    </div>
-                </div>
-                <div class="gh-expandable-block">
-                    <div class="gh-expandable-header">
-                        <div>
                             <h4 class="gh-expandable-title">Post history</h4>
                             <p class="gh-expandable-description">
                                 Enables post history revision within the editor
@@ -375,6 +346,20 @@
                         </div>
                         <div class="for-switch">
                             <GhFeatureFlag @flag="collections" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Admin X</h4>
+                            <p class="gh-expandable-description">
+                                Enables Admin X, the new admin UI for Ghost
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="adminXSettings" />
                         </div>
                     </div>
                 </div>

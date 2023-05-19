@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.47.1",
+  "version": "5.49.0",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -150,7 +150,7 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "reframe.js": "4.0.1",
-    "semver": "7.5.0",
+    "semver": "7.5.1",
     "testem": "3.10.1",
     "top-gh-contribs": "2.0.4",
     "tracked-built-ins": "3.1.1",

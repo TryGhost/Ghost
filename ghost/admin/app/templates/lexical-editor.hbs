@@ -93,22 +93,16 @@
                 @registerAPI={{this.registerEditorAPI}}
             />
 
+            {{#if (feature 'lexicalEditor')}}
+                <FeedbackLexical::EditorDropdown @post={{this.post}} />
+            {{/if}}
+
             <div class="gh-editor-wordcount-container">
-                {{#if (feature 'lexicalEditor')}}
-                    <button
-                        type="button"
-                        class="gh-editor-feedback"
-                        {{on "click" this.openFeedbackLexical}}
-                        data-test-button="lexical-editor-feedback"
-                    >
-                        <span>Feedback?</span>
-                    </button>
-                {{/if}}
-                <div class="gh-editor-wordcount">
+                {{!-- <div class="gh-editor-wordcount">
                     {{gh-pluralize this.wordCount.wordCount "word"}}
-                </div>
-                <a href="https://github.com/TryGhost/Koenig/tree/main/packages/koenig-lexical" target="_blank" rel="noopener noreferrer" class="gh-lexical-indicator">Lexical</a>
-                {{!-- <a href="https://ghost.org/help/using-the-editor/" class="flex" target="_blank" rel="noopener noreferrer">{{svg-jar "help"}}</a> --}}
+                </div> --}}
+                {{!-- <a href="https://github.com/TryGhost/Koenig/tree/main/packages/koenig-lexical" target="_blank" rel="noopener noreferrer" class="gh-lexical-indicator">Lexical</a> --}}
+                <a href="https://ghost.org/help/using-the-editor/" class="flex" target="_blank" rel="noopener noreferrer">{{svg-jar "help"}}</a>
             </div>
 
         </GhEditor>

@@ -2,7 +2,6 @@ import ConfirmEditorLeaveModal from '../components/modals/editor/confirm-leave';
 import Controller, {inject as controller} from '@ember/controller';
 import DeletePostModal from '../components/modals/delete-post';
 import DeleteSnippetModal from '../components/editor/modals/delete-snippet';
-import FeedbackLexicalModal from '../components/modal-feedback-lexical';
 import PostModel from 'ghost-admin/models/post';
 import PublishLimitModal from '../components/modals/limits/publish-limit';
 import ReAuthenticateModal from '../components/editor/modals/re-authenticate';
@@ -24,10 +23,10 @@ import {isArray as isEmberArray} from '@ember/array';
 import {isHostLimitError, isServerUnreachableError, isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {isInvalidError} from 'ember-ajax/errors';
 import {inject as service} from '@ember/service';
-import {tracked} from '@glimmer/tracking';
 
 const DEFAULT_TITLE = '(Untitled)';
-
+// suffix that is applied to the title of a post when it has been duplicated
+const DUPLICATED_POST_TITLE_SUFFIX = '(Copy)';
 // time in ms to save after last content edit
 const AUTOSAVE_TIMEOUT = 3000;
 // time in ms to force a save if the user is continuously typing
@@ -114,8 +113,6 @@ export default class LexicalEditorController extends Controller {
     @service ui;
 
     @inject config;
-
-    @tracked showFeedbackLexicalModal = false;
 
     /* public properties -----------------------------------------------------*/
 
@@ -410,11 +407,6 @@ export default class LexicalEditorController extends Controller {
         await this.modals.open(DeleteSnippetModal, {
             snippet
         });
-    }
-
-    @action
-    async openFeedbackLexical() {
-        await this.modals.open(FeedbackLexicalModal);
     }
 
     /* Public tasks ----------------------------------------------------------*/
@@ -735,9 +727,15 @@ export default class LexicalEditorController extends Controller {
         // this is necessary to force a save when the title is blank
         this.set('hasDirtyAttributes', true);
 
-        // generate a slug if a post is new and doesn't have a title yet or
-        // if the title is still '(Untitled)'
-        if ((post.get('isNew') && !currentTitle) || currentTitle === DEFAULT_TITLE) {
+        // generate slug if post
+        //  - is new and doesn't have a title yet
+        //  - still has the default title
+        //  - previously had a title that ended with the duplicated post title suffix
+        if (
+            (post.get('isNew') && !currentTitle) ||
+            (currentTitle === DEFAULT_TITLE) ||
+            currentTitle?.endsWith(DUPLICATED_POST_TITLE_SUFFIX)
+        ) {
             yield this.generateSlugTask.perform();
         }
 

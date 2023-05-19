@@ -97,6 +97,27 @@ describe('Unit: Controller: editor', function () {
             expect(controller.get('post.slug')).to.equal('test-slug');
         });
 
+        it('should invoke generateSlug if the post is a duplicated post', async function () {
+            let {controller} = this;
+
+            controller.set('target', {send() {}});
+            defineProperty(controller, 'generateSlugTask', task(function * () {
+                this.set('post.slug', 'test-slug');
+                yield RSVP.resolve();
+            }));
+            controller.set('post', EmberObject.create({isNew: false, title: 'Some Title (Copy)'}));
+
+            expect(controller.get('post.isNew')).to.be.false;
+            expect(controller.get('post.titleScratch')).to.not.be.ok;
+
+            controller.set('post.titleScratch', 'Some Title');
+
+            await controller.saveTitleTask.perform();
+
+            expect(controller.get('post.titleScratch')).to.equal('Some Title');
+            expect(controller.get('post.slug')).to.equal('test-slug');
+        });
+
         it('should not invoke generateSlug if the post is new but has a title', async function () {
             let {controller} = this;
 

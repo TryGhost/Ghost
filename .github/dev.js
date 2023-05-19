@@ -60,6 +60,17 @@ if (DASH_DASH_ARGS.includes('in-memory-repository') || DASH_DASH_ARGS.includes('
     });
 }
 
+if (DASH_DASH_ARGS.includes('admin-x') || DASH_DASH_ARGS.includes('adminx') || DASH_DASH_ARGS.includes('adminX') || DASH_DASH_ARGS.includes('all')) {
+    commands.push({
+        name: 'adminX',
+        command: 'yarn dev',
+        cwd: path.resolve(__dirname, '../ghost/admin-x-settings'),
+        prefixColor: '#C35831',
+        env: {}
+    });
+    COMMAND_GHOST.env['adminX__url'] = 'http://localhost:4174/admin-x-settings.umd.js';
+}
+
 if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'portal',
@@ -81,6 +92,10 @@ if (DASH_DASH_ARGS.includes('search') || DASH_DASH_ARGS.includes('all')) {
     });
     COMMAND_GHOST.env['sodoSearch__url'] = 'http://localhost:5370/umd/sodo-search.min.js';
     COMMAND_GHOST.env['sodoSearch__styles'] = 'http://localhost:5370/umd/main.css';
+}
+
+if (DASH_DASH_ARGS.includes('lexical')) {
+    COMMAND_GHOST.env['editor__url'] = 'http://localhost:4173/koenig-lexical.umd.js';
 }
 
 async function handleStripe() {
