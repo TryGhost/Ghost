@@ -1,8 +1,8 @@
 import ButtonGroup from '../../../admin-x-ds/global/ButtonGroup';
 import React, {useContext, useEffect, useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
+import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import SettingGroupHeader from '../../../admin-x-ds/settings/SettingGroupHeader';
-import SettingGroupValues from '../../../admin-x-ds/settings/SettingGroupValues';
 import {SettingsContext} from '../../SettingsProvider';
 import {getLocalTime, getSettingValue} from '../../../utils/helpers';
 
@@ -47,7 +47,7 @@ const TimeZone: React.FC = () => {
 
     return (
         <SettingGroup customHeader={customHeader}>
-            <SettingGroupValues values={viewValues} />
+            <SettingGroupContent values={viewValues} />
         </SettingGroup>
     );
 };

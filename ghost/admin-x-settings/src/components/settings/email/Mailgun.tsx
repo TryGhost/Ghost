@@ -1,8 +1,7 @@
 import Link from '../../../admin-x-ds/global/Link';
 import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupInputs from '../../../admin-x-ds/settings/SettingGroupInputs';
-import SettingGroupValues from '../../../admin-x-ds/settings/SettingGroupValues';
+import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import {TSettingGroupStates} from '../../../admin-x-ds/settings/SettingGroup';
 
 const MailGun: React.FC = () => {
@@ -13,7 +12,7 @@ const MailGun: React.FC = () => {
     };
 
     const values = (
-        <SettingGroupValues
+        <SettingGroupContent
             columns={2}
             values={[
                 {
@@ -26,9 +25,9 @@ const MailGun: React.FC = () => {
     );
 
     const inputs = (
-        <SettingGroupInputs>
+        <SettingGroupContent>
             
-        </SettingGroupInputs>
+        </SettingGroupContent>
     );
 
     return (

@@ -1,14 +1,12 @@
 import type {Meta, StoryObj} from '@storybook/react';
 
+import * as SettingGroupContentStories from './SettingGroupContent.stories';
 import * as SettingGroupHeaderStories from './SettingGroupHeader.stories';
-import * as SettingGroupInputStories from './SettingGroupInputs.stories';
-import * as SettingGroupValueStories from './SettingGroupValues.stories';
 
 import ButtonGroup from '../global/ButtonGroup';
 import SettingGroup from './SettingGroup';
+import SettingGroupContent from './SettingGroupContent';
 import SettingGroupHeader from './SettingGroupHeader';
-import SettingGroupInputs from './SettingGroupInputs';
-import SettingGroupValues from './SettingGroupValues';
 
 const meta = {
     title: 'Settings / Setting Group',
@@ -27,9 +25,9 @@ type Story = StoryObj<typeof meta>;
 
 const customButtons = <ButtonGroup buttons={[{label: 'My action', color: 'green'}]} link={true} />;
 const customHeader = <SettingGroupHeader {...SettingGroupHeaderStories.CustomHeader.args} />;
-const singleColContent = <SettingGroupValues {...SettingGroupValueStories.SingleColumn.args} />;
-const twoColView = <SettingGroupValues {...SettingGroupValueStories.TwoColumns.args} />;
-const twoColEdit = <SettingGroupInputs {...SettingGroupInputStories.TwoColumns.args} />;
+const singleColContent = <SettingGroupContent {...SettingGroupContentStories.SingleColumn.args} />;
+const twoColView = <SettingGroupContent {...SettingGroupContentStories.TwoColumns.args} />;
+const twoColEdit = <SettingGroupContent {...SettingGroupContentStories.Editing.args} />;
 
 export const SingleColumn: Story = {
     args: {

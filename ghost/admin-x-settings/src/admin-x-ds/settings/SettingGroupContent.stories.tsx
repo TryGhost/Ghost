@@ -1,17 +1,19 @@
 import type {Meta, StoryObj} from '@storybook/react';
 
-import SettingGroupValues from './SettingGroupValues';
+import SettingGroupContent from './SettingGroupContent';
 
 import * as SettingValueStories from './SettingValue.stories';
+import * as TextFieldStories from '../global/TextField.stories';
+import TextField from '../global/TextField';
 
 const meta = {
-    title: 'Settings / Setting Group Values',
-    component: SettingGroupValues,
+    title: 'Settings / Setting Group Content',
+    component: SettingGroupContent,
     tags: ['autodocs']
-} satisfies Meta<typeof SettingGroupValues>;
+} satisfies Meta<typeof SettingGroupContent>;
 
 export default meta;
-type Story = StoryObj<typeof SettingGroupValues>;
+type Story = StoryObj<typeof SettingGroupContent>;
 
 const values = [
     {...SettingValueStories.Default.args, key: '1', heading: 'Setting one', value: 'Value one'},
@@ -30,5 +32,19 @@ export const TwoColumns: Story = {
     args: {
         values: values,
         columns: 2
+    }
+};
+
+export const Editing: Story = {
+    args: {
+        columns: 2,
+        children: (
+            <>
+                <TextField {...TextFieldStories.WithHint.args} />
+                <TextField {...TextFieldStories.WithHint.args} />
+                <TextField {...TextFieldStories.WithHint.args} />
+                <TextField {...TextFieldStories.WithHint.args} />
+            </>
+        )
     }
 };
