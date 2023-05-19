@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 
 import Heading from './Heading';
 import Hint from './Hint';
@@ -14,10 +14,17 @@ interface DropdownProps {
     onSelect: (value: string) => void;
     error?:boolean;
     hint?: React.ReactNode;
+    defaultSelectedOption?: string;
 }
 
-const Dropdown: React.FC<DropdownProps> = ({title, options, onSelect, error, hint}) => {   
+const Dropdown: React.FC<DropdownProps> = ({title, options, onSelect, error, hint, defaultSelectedOption}) => {
     const [selectedOption, setSelectedOption] = useState('');
+
+    useEffect(() => {
+        if (defaultSelectedOption) {
+            setSelectedOption(defaultSelectedOption);
+        }
+    }, [defaultSelectedOption]);
 
     const handleOptionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedValue = event.target.value;

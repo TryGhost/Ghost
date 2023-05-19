@@ -47,6 +47,15 @@ export const WithHint: Story = {
     }
 };
 
+export const WithDefaultSelectedOption: Story = {
+    args: {
+        title: 'Title',
+        options: dropdownOptions,
+        defaultSelectedOption: 'option-3',
+        hint: 'Here\'s some hint'
+    }
+};
+
 export const Error: Story = {
     args: {
         title: 'Title',
