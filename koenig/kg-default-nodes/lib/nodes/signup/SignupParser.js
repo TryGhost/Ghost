@@ -55,8 +55,6 @@ export class SignupParser {
                                 buttonTextColor: rgbToHex(buttonTextColor) || '#000000',
                                 alignment
                             };
-
-                            console.log(payload);
   
                             const node = new self.NodeClass(payload);
                             return {node};

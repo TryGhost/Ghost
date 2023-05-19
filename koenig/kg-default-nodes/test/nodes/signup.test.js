@@ -3,7 +3,7 @@ const {html} = require('../utils');
 const {JSDOM} = require('jsdom');
 const {$getRoot} = require('lexical');
 const {SignupNode, $createSignupNode, $isSignupNode} = require('../../');
-const {$generateNodesFromDOM} = require('@lexical/html');
+// const {$generateNodesFromDOM} = require('@lexical/html');
 
 const editorNodes = [SignupNode];
 
