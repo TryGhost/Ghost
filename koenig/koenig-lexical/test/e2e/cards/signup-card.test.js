@@ -10,6 +10,86 @@ test.describe('Signup card', async () => {
         await initialize({page});
     });
 
+    test('can import serialized signup card nodes', async function ({page}) {
+        await page.evaluate(() => {
+            const serializedState = JSON.stringify({
+                root: {
+                    children: [{
+                        alignment: 'left',
+                        backgroundColor: 'accent',
+                        backgroundImageSrc: '__GHOST_URL__/content/images/2023/05/fake-image.jpg',
+                        buttonColor: '#ffffff',
+                        buttonText: '',
+                        buttonTextColor: '#000000',
+                        disclaimer: '<span>Disclaimer</span>',
+                        header: '<span>Header</span>',
+                        labels: [],
+                        layout: 'split',
+                        subheader: '<span>Subheader</span>',
+                        textColor: '#FFFFFF',
+                        type: 'signup',
+                        version: 1
+                    }],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+            const editor = window.lexicalEditor;
+            const editorState = editor.parseEditorState(serializedState);
+            editor.setEditorState(editorState);
+        });
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="signup">
+                    <div>
+                        <div>
+                            <img alt="Background image"
+                                src="__GHOST_URL__/content/images/2023/05/fake-image.jpg" />
+                            <div></div>
+                            <div>
+                                <button type="button"><svg></svg></button>
+                            </div>
+                        </div>
+                        <div>
+                            <div>
+                                <div data-kg="editor">
+                                    <div contenteditable="false" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none">
+                                        <p dir="ltr"><span data-lexical-text="true">Header</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div data-kg="editor">
+                                    <div contenteditable="false" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none">
+                                        <p dir="ltr"><span data-lexical-text="true">Subheader</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div>
+                                    <input placeholder="yourname@example.com" tabindex="-1" readonly="" value="" />
+                                    <button disabled="" type="button"><span>Subscribe</span></button>
+                                </div>
+                            </div>
+                            <div>
+                                <div data-kg="editor">
+                                    <div contenteditable="true" spellcheck="true" data-lexical-editor="true" role="textbox">
+                                        <p dir="ltr"><span data-lexical-text="true">Disclaimer</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `);
+    });
+
     test('renders signup card node', async function ({page}) {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
@@ -99,7 +179,28 @@ test.describe('Signup card', async () => {
         await expect(page.getByTestId('signup-card-button')).toHaveText('Subscribe now');
     });
 
-    test('can change the background color', async function ({page}) {
+    test('can change the button background color and text color', async function ({page}) {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'signup'});
+
+        await page.click('[data-testid="signup-button-color"] [aria-label="Pick color"]');
+
+        await page.fill('[data-testid="signup-button-color"] input', '');
+        await page.keyboard.type('ff0000');
+
+        // Selected colour should be applied inline
+        await expect(page.locator('[data-testid="signup-card-button"]')).toHaveCSS('background-color', 'rgb(255, 0, 0)');
+        await expect(page.locator('[data-testid="signup-card-button"]')).toHaveCSS('color', 'rgb(255, 255, 255)');
+
+        // Check that the text colour updates to contrast with the background
+        await page.fill('[data-testid="signup-button-color"] input', '');
+        await page.keyboard.type('f7f7f7');
+
+        await expect(page.locator('[data-testid="signup-card-button"]')).toHaveCSS('background-color', 'rgb(247, 247, 247)');
+        await expect(page.locator('[data-testid="signup-card-button"]')).toHaveCSS('color', 'rgb(0, 0, 0)');
+    });
+
+    test('can change the background color and text color', async function ({page}) {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
@@ -114,7 +215,6 @@ test.describe('Signup card', async () => {
         await expect(container).toHaveCSS('color', 'rgb(255, 255, 255)');
 
         // Check that the text colour updates to contrast with the background
-
         await page.fill('[data-testid="signup-background-color"] input', '');
         await page.keyboard.type('f7f7f7');
 
@@ -163,28 +263,6 @@ test.describe('Signup card', async () => {
         await expect(page.locator('[data-testid="media-upload-filled"] img')).toHaveAttribute('src', /blob:/);
     });
 
-    test('can change the button color', async function ({page}) {
-        await focusEditor(page);
-        await insertCard(page, {cardName: 'signup'});
-
-        await page.click('[data-testid="signup-button-color"] [aria-label="Pick color"]');
-
-        await page.fill('[data-testid="signup-button-color"] input', '');
-        await page.keyboard.type('ff0000');
-
-        // Selected colour should be applied inline
-        await expect(page.locator('[data-testid="signup-card-button"]')).toHaveCSS('background-color', 'rgb(255, 0, 0)');
-        await expect(page.locator('[data-testid="signup-card-button"]')).toHaveCSS('color', 'rgb(255, 255, 255)');
-
-        // Check that the text colour updates to contrast with the background
-
-        await page.fill('[data-testid="signup-button-color"] input', '');
-        await page.keyboard.type('f7f7f7');
-
-        await expect(page.locator('[data-testid="signup-card-button"]')).toHaveCSS('background-color', 'rgb(247, 247, 247)');
-        await expect(page.locator('[data-testid="signup-card-button"]')).toHaveCSS('color', 'rgb(0, 0, 0)');
-    });
-
     test('can add and remove labels', async function ({page}) {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
@@ -192,7 +270,6 @@ test.describe('Signup card', async () => {
         await page.click('[data-testid="labels-dropdown"] input');
 
         // Add existing label
-
         await page.keyboard.type('Label 1');
         await page.click('[data-testid="labels-dropdown"] [data-testid="multiselect-dropdown-item"]');
 
@@ -200,7 +277,6 @@ test.describe('Signup card', async () => {
         await expect(page.locator('[data-testid="labels-dropdown"] [data-testid="multiselect-dropdown-selected"]')).toHaveText('Label 1');
 
         // Add new label
-
         await page.keyboard.type('Some new label');
         await page.keyboard.press('Enter');
 
@@ -208,15 +284,11 @@ test.describe('Signup card', async () => {
         await expect(page.locator('[data-testid="labels-dropdown"] [data-testid="multiselect-dropdown-selected"]:nth-child(2)')).toHaveText('Some new label');
 
         // Remove label with backspace
-
         await page.keyboard.press('Backspace');
-
         await expect(page.locator('[data-testid="labels-dropdown"] [data-testid="multiselect-dropdown-selected"]')).toHaveCount(1);
 
         // Remove label by clicking
-
         await page.click('[data-testid="labels-dropdown"] [data-testid="multiselect-dropdown-selected"]');
-
         await expect(page.locator('[data-testid="labels-dropdown"] [data-testid="multiselect-dropdown-selected"]')).toHaveCount(0);
     });
 
