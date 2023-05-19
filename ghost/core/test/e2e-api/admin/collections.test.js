@@ -163,4 +163,49 @@ describe('Collections API', function () {
                 etag: anyEtag
             });
     });
+
+    it('Can delete a Collection', async function () {
+        const collection = {
+            title: 'Test Collection to Delete'
+        };
+
+        const addResponse = await agent
+            .post('/collections/')
+            .body({
+                collections: [collection]
+            })
+            .expectStatus(201)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag,
+                location: anyLocationFor('collections')
+            })
+            .matchBodySnapshot({
+                collections: [matchCollection]
+            });
+
+        const collectionId = addResponse.body.collections[0].id;
+
+        await agent
+            .delete(`/collections/${collectionId}/`)
+            .expectStatus(204)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot();
+
+        await agent
+            .get(`/collections/${collectionId}/`)
+            .expectStatus(404)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
+    });
 });

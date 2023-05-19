@@ -89,5 +89,27 @@ module.exports = {
 
             return model;
         }
+    },
+
+    destroy: {
+        statusCode: 204,
+        headers: {
+            cacheInvalidate: true
+        },
+        options: [
+            'id'
+        ],
+        validation: {
+            options: {
+                id: {
+                    required: true
+                }
+            }
+        },
+        // @NOTE: should have permissions when moving out of Alpha
+        permissions: false,
+        async query(frame) {
+            return await collectionsService.api.destroy(frame.options.id);
+        }
     }
 };
