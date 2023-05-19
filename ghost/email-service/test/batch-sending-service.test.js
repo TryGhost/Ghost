@@ -831,7 +831,6 @@ describe('Batch Sending Service', function () {
             const sendingService = {
                 send: sinon.stub().resolves({id: 'providerid@example.com'}),
                 getMaximumRecipients: () => 5
-
             };
 
             const WrongEmailRecipient = createModelClass({
@@ -880,6 +879,115 @@ describe('Batch Sending Service', function () {
 
             const {members} = sendingService.send.firstCall.args[0];
             assert.equal(members.length, 2);
+        });
+
+        it('Truncates recipients if more than the maximum are returned in a batch', async function () {
+            const EmailBatch = createModelClass({
+                findOne: {
+                    status: 'pending',
+                    member_segment: null
+                }
+            });
+            const findOne = sinon.spy(EmailBatch, 'findOne');
+
+            const DoubleTheEmailRecipients = createModelClass({
+                findAll: [
+                    {
+                        member_id: '123',
+                        member_uuid: '123',
+                        member_email: 'example@example.com',
+                        member_name: 'Test User',
+                        loaded: ['member'],
+                        member: createModel({
+                            created_at: new Date(),
+                            loaded: ['stripeSubscriptions', 'products'],
+                            status: 'free',
+                            stripeSubscriptions: [],
+                            products: []
+                        })
+                    },
+                    {
+                        member_id: '124',
+                        member_uuid: '124',
+                        member_email: 'example2@example.com',
+                        member_name: 'Test User 2',
+                        loaded: ['member'],
+                        member: createModel({
+                            created_at: new Date(),
+                            status: 'free',
+                            loaded: ['stripeSubscriptions', 'products'],
+                            stripeSubscriptions: [],
+                            products: []
+                        })
+                    },
+                    {
+                        member_id: '125',
+                        member_uuid: '125',
+                        member_email: 'example3@example.com',
+                        member_name: 'Test User 3',
+                        loaded: ['member'],
+                        member: createModel({
+                            created_at: new Date(),
+                            status: 'free',
+                            loaded: ['stripeSubscriptions', 'products'],
+                            stripeSubscriptions: [],
+                            products: []
+                        })
+                    },
+                    // NOTE: one recipient with a duplicate data
+                    {
+                        member_id: '125',
+                        member_uuid: '125',
+                        member_email: 'example3@example.com',
+                        member_name: 'Test User 3',
+                        loaded: ['member'],
+                        member: createModel({
+                            created_at: new Date(),
+                            status: 'free',
+                            loaded: ['stripeSubscriptions', 'products'],
+                            stripeSubscriptions: [],
+                            products: []
+                        })
+                    }
+                ]
+            });
+
+            const sendingService = {
+                send: sinon.stub().resolves({id: 'providerid@example.com'}),
+                getMaximumRecipients: () => 2
+            };
+
+            const service = new BatchSendingService({
+                models: {EmailBatch, EmailRecipient: DoubleTheEmailRecipients},
+                sendingService,
+                BEFORE_RETRY_CONFIG: {maxRetries: 10, maxTime: 2000, sleep: 1}
+            });
+
+            const result = await service.sendBatch({
+                email: createModel({}),
+                batch: createModel({}),
+                post: createModel({}),
+                newsletter: createModel({})
+            });
+
+            assert.equal(result, true);
+            sinon.assert.calledThrice(errorLog);
+            const firstLoggedError = errorLog.firstCall.args[0];
+            const secondLoggedError = errorLog.secondCall.args[0];
+            const thirdLoggedError = errorLog.thirdCall.args[0];
+
+            assert.match(firstLoggedError, /Batch [a-f0-9]{24} has 4 members, but the sending service only supports 2 members per batch/);
+            assert.match(secondLoggedError, /Email batch [a-f0-9]{24} has 4 members, which exceeds the maximum of 2. Filtering to unique members/);
+            assert.match(thirdLoggedError, /Email batch [a-f0-9]{24} has 3 members, which exceeds the maximum of 2. Truncating to 2/);
+
+            sinon.assert.calledOnce(sendingService.send);
+            const {members} = sendingService.send.firstCall.args[0];
+            assert.equal(members.length, 2);
+
+            sinon.assert.calledOnce(findOne);
+            const batch = await findOne.firstCall.returnValue;
+            assert.equal(batch.get('status'), 'submitted');
+            assert.equal(batch.get('provider_id'), 'providerid@example.com');
         });
 
         it('Stops retrying after the email retry cut off time', async function () {
