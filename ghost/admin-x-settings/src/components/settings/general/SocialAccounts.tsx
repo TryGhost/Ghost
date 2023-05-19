@@ -39,7 +39,7 @@ const SocialAccounts: React.FC = () => {
             />
             <TextField
                 placeholder="https://twitter.com/ghost"
-                title="URL of your TWITTER PROFILE"
+                title="URL of your Twitter profile"
                 value="https://twitter.com/ghost"
                 onChange={() => {}}
             />
