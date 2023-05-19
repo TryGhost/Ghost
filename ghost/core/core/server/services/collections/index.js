@@ -13,7 +13,8 @@ class CollectionsServiceWrapper {
             browse: collectionsService.getAll.bind(collectionsService),
             read: collectionsService.getById.bind(collectionsService),
             add: collectionsService.save.bind(collectionsService),
-            edit: collectionsService.edit.bind(collectionsService)
+            edit: collectionsService.edit.bind(collectionsService),
+            destroy: collectionsService.destroy.bind(collectionsService)
         };
     }
 }
