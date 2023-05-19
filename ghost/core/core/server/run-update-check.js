@@ -40,6 +40,9 @@ if (parentPort) {
 
     const settings = require('./services/settings/settings-service');
     await settings.init();
+
+    const tiers = require('./services/tiers');
+    await tiers.init();
     // Finished INIT
 
     await updateCheck({
