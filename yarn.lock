@@ -6691,7 +6691,7 @@
     focus-trap "^6.7.2"
     postcss-preset-env "^7.3.1"
 
-"@tryghost/errors@1.2.21", "@tryghost/errors@1.2.24", "@tryghost/errors@1.2.25", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.24", "@tryghost/errors@^1.2.3":
+"@tryghost/errors@1.2.21", "@tryghost/errors@1.2.24", "@tryghost/errors@1.2.25", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.24", "@tryghost/errors@^1.2.25", "@tryghost/errors@^1.2.3":
   version "1.2.24"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.24.tgz#5daceff6cdee9421297849474fd885857c4bfe3f"
   integrity sha512-5iRF8dl2wirb/1gQA2dv8MtxK204vnjbWvmb3fULNZoVlmuHY1ZUgwRJRquClfUEFyl2qGmNDuoxGoTvur8JKA==
@@ -7055,6 +7055,13 @@
   version "0.1.24"
   resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.24.tgz#fcf585be02531baf651f2f7605466a3df744d0bc"
   integrity sha512-8DkKSCUuoGmagQ+LeiICt7mTC12HJdBIBhgK/zmOE/QKdl95G0y1mZuyc7dRaUyoXAwTj5EF+MR8gWOtuLdAEw==
+  dependencies:
+    lodash.template "^4.5.0"
+
+"@tryghost/tpl@^0.1.25":
+  version "0.1.25"
+  resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.25.tgz#500a05a2fce936ee785347259c4a8952223dea90"
+  integrity sha512-E4lLVhTNZn67TbOg94HHhW8lndgwP+G9yTDzTKXFabEB5zgfjaX4qBkJJvS0DO8RWMsO8O4c10/cQQpKXQrFBg==
   dependencies:
     lodash.template "^4.5.0"
 
@@ -11235,7 +11242,7 @@ bser@2.1.1:
   dependencies:
     node-int64 "^0.4.0"
 
-bson-objectid@2.0.4:
+bson-objectid@2.0.4, bson-objectid@^2.0.4:
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/bson-objectid/-/bson-objectid-2.0.4.tgz#339211572ef97dc98f2d68eaee7b99b7be59a089"
   integrity sha512-vgnKAUzcDoa+AeyYwXCoHyF2q6u/8H46dxu5JN+4/TZeq/Dlinn0K6GvxsCLb3LHUJl0m/TLiEK31kUwtgocMQ==
