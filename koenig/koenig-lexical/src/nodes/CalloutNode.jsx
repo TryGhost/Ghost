@@ -31,6 +31,8 @@ function CalloutNodeComponent({nodeKey, textEditor, textEditorInitialState, back
     const [hasEmoji, setHasEmoji] = React.useState(calloutEmoji ? true : false);
 
     const toggleEmoji = (event) => {
+        event.stopPropagation();
+        setEditing(true); // keep card selected when toggling emoji (else we lose the settings pane on deselection)
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             setHasEmoji(event.target.checked);
