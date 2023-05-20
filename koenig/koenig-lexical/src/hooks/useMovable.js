@@ -236,7 +236,7 @@ export default function useMovable({adjustOnResize} = {}) {
                     return;
                 }
 
-                const {x, y} = adjustOnResize(elem, {x: currentX, y: currentY});
+                const {x, y} = adjustOnResize(elem, {x: currentX.current, y: currentY.current});
 
                 if (x === currentX.current && y === currentY.current) {
                     return;

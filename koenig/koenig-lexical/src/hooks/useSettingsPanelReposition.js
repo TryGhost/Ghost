@@ -40,18 +40,20 @@ export default function useSettingsPanelPosition({positionToRef} = {}) {
         }
         const containerRect = cardElement.getBoundingClientRect();
 
-        const containerMiddle = containerRect.top + (containerRect.height / 2);
-
         // position vertically centered
+        let top;
+        const currentTop = panelElem.style.top;
+        // if we already have top set, leave it so that toggling additional settings doesn't cause the panel to jump (unless it would be offscreen)
+        const containerMiddle = containerRect.top + (containerRect.height / 2);
+        top = currentTop ? currentTop : Math.max(containerMiddle - (panelRect.height), MIN_TOP_SPACING);
         // if part of panel would be off screen adjust to keep minimum distance from window top/botom
-        let top = Math.max(containerMiddle - (panelRect.height / 2), MIN_TOP_SPACING);
         if (top + panelRect.height > window.innerHeight - MIN_TOP_SPACING) {
             top = window.innerHeight - MIN_TOP_SPACING - panelRect.height;
         }
 
         // position to right of panel
-        // if part of panel would be off screen adjust to keep minimum distance from window edge
         let left = containerRect.right + CARD_SPACING;
+        // if part of panel would be off screen adjust to keep minimum distance from window edge
         if (left + panelRect.width > window.innerWidth - MIN_RIGHT_SPACING) {
             left = window.innerWidth - panelRect.width - MIN_RIGHT_SPACING;
         }
@@ -81,7 +83,6 @@ export default function useSettingsPanelPosition({positionToRef} = {}) {
 
         if (bottomIsOffscreen) {
             const yAdjustment = -Math.abs(panelRect.bottom - window.innerHeight) - 10;
-
             return {x, y: y + yAdjustment};
         }
 
