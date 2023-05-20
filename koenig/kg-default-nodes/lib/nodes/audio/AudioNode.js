@@ -164,10 +164,6 @@ export class AudioNode extends KoenigDecoratorNode {
     hasEditMode() {
         return true;
     }
-
-    isEmpty() {
-        return !this.__src;
-    }
 }
 
 export const $createAudioNode = (dataset) => {

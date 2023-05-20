@@ -295,10 +295,6 @@ export class VideoNode extends KoenigDecoratorNode {
     hasEditMode() {
         return true;
     }
-
-    isEmpty() {
-        return !this.__src;
-    }
 }
 
 export const $createVideoNode = (dataset) => {
