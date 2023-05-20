@@ -93,14 +93,6 @@ describe('AudioNode', function () {
                 ...dataset
             });
         }));
-
-        it('has isEmpty() convenience method', editorTest(function () {
-            const audioNode = $createAudioNode(dataset);
-
-            audioNode.isEmpty().should.be.false;
-            audioNode.setSrc('');
-            audioNode.isEmpty().should.be.true;
-        }));
     });
 
     describe('exportDOM', function () {

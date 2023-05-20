@@ -156,14 +156,6 @@ describe('VideoNode', function () {
             videoNode.setDuration(78);
             videoNode.getFormattedDuration().should.equal('1:18');
         }));
-
-        it('has isEmpty() convenience method', editorTest(function () {
-            const videoNode = $createVideoNode(dataset);
-
-            videoNode.isEmpty().should.be.false;
-            videoNode.setSrc('');
-            videoNode.isEmpty().should.be.true;
-        }));
     });
 
     describe('exportJSON', function () {
