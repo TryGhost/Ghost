@@ -24,7 +24,7 @@ export function HtmlCard({html, updateHtml, isEditing, darkMode}) {
 function HtmlDisplay({html}) {
     const sanitizedHtml = sanitizeHtml(html, {replaceJS: true});
 
-    return <div dangerouslySetInnerHTML={{__html: sanitizedHtml}} className="whitespace-normal"></div>;
+    return <div dangerouslySetInnerHTML={{__html: sanitizedHtml}} className="min-h-[3.5vh] whitespace-normal"></div>;
 }
 
 HtmlDisplay.propTypes = {
