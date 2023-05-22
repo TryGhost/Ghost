@@ -54,7 +54,7 @@ const MailGun: React.FC = () => {
 
     const inputs = (
         <SettingGroupContent>
-            <div className='grid grid-cols-[0.25fr_0.75fr] gap-6'>
+            <div className='grid grid-cols-[120px_auto] gap-x-3 gap-y-6'>
                 <Dropdown
                     defaultSelectedOption={mailgunRegion}
                     options={MAILGUN_REGIONS}
