@@ -136,6 +136,7 @@ export class SignupNode extends BaseSignupNode {
                     header={this.getHeader()}
                     headerTextEditor={this.__headerTextEditor}
                     headerTextEditorInitialState={this.__headerTextEditorInitialState}
+                    isSwapped={this.getSwapped()}
                     labels={this.getLabels()}
                     layout={this.getLayout()}
                     nodeKey={this.getKey()}

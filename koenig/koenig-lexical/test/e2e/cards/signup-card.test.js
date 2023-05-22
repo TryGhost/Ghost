@@ -28,6 +28,7 @@ test.describe('Signup card', async () => {
                         subheader: '<span>Subheader</span>',
                         textColor: '#FFFFFF',
                         type: 'signup',
+                        swaped: false,
                         version: 1
                     }],
                     direction: null,
@@ -51,6 +52,7 @@ test.describe('Signup card', async () => {
                                 src="__GHOST_URL__/content/images/2023/05/fake-image.jpg" />
                             <div></div>
                             <div>
+                                <button type="button"><svg></svg></button>
                                 <button type="button"><svg></svg></button>
                             </div>
                         </div>
@@ -365,5 +367,29 @@ test.describe('Signup card', async () => {
         // Expect subheader to have 'Hello World'
         const subheader = page.locator('[data-kg-card="signup"] [data-kg="editor"]').nth(1);
         await expect(subheader).toHaveText('Hello world');
+    });
+
+    test('can swap split layout sides on image', async function ({page}) {
+        const filePath = path.relative(process.cwd(), __dirname + `/../fixtures/large-image.jpeg`);
+        const fileChooserPromise = page.waitForEvent('filechooser');
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'signup'});
+        await page.locator('[data-testid="signup-layout-split"]').click();
+        await expect(page.locator('[data-testid="signup-background-image-toggle"]')).toHaveCount(0);
+        await page.click('[data-testid="media-upload-placeholder"]');
+        // Set files
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles([filePath]);
+        await expect(page.locator('[data-testid="media-upload-filled"] img')).toHaveAttribute('src', /blob:/);
+        // Grab the outer most parent that contains both the MediaUploader and the rest of the content.
+        const container = await page.locator('[data-kg-card="signup"]');
+        const originalFirstChildHTML = await container.locator(':first-child').first().innerHTML();
+        // Click swap
+        await page.click('[data-testid="media-upload-swap"]');
+        // Grab the outer most parent again.
+        const swappedContainer = await page.locator('[data-kg-card="signup"]');
+        const swappedFirstChildHTML = await swappedContainer.locator(':first-child').first().innerHTML();
+        // Confirm if MediaUploader was swapped
+        expect(originalFirstChildHTML).not.toBe(swappedFirstChildHTML);
     });
 });

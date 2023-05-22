@@ -52,7 +52,9 @@ export function SignupCard({alignment,
     subheaderTextEditor,
     subheaderTextEditorInitialState,
     disclaimerTextEditor,
-    disclaimerTextEditorInitialState}) {
+    disclaimerTextEditorInitialState,
+    isSwapped,
+    handleSwapLayout}) {
     const matchingTextColor = (color) => {
         return color === 'transparent' ? '' : textColorForBackgroundColor(hexColorValue(color)).hex();
     };
@@ -147,13 +149,19 @@ export function SignupCard({alignment,
                 (layout === 'full') && 'min-h-[80vh]',
                 (layout === 'split') && 'h-auto sm:h-[80vh]'
             )} data-testid={'signup-card-container'} style={wrapperStyle()}>
-                {layout === 'split' && (
+                {/* BEWARE - MediaUploader renders at 2 different locations in this Component,
+                    if something changes here, change below as well.
+                    - TODO - see if we can let the flexbox swap this around instead of rendering twice
+                */}
+
+                {layout === 'split' && !isSwapped ? (
                     <MediaUploader
                         alt='Background image'
                         className="sm:w-1/2"
                         desc='Click to select an image'
                         dragHandler={imageDragHandler}
                         errors={fileUploader?.errors}
+                        handleSwapLayout={handleSwapLayout}
                         icon='image'
                         isLoading={isLoading}
                         isPinturaEnabled={isPinturaEnabled}
@@ -165,16 +173,17 @@ export function SignupCard({alignment,
                         onFileChange={onFileChange}
                         onRemoveMedia={handleClearBackgroundImage}
                     />
-                )}
+                ) : null}
 
-                <div className={clsx(
-                    'mx-auto flex w-full flex-1 flex-col justify-center',
-                    (alignment === 'center') && 'items-center',
-                    (layout === 'regular') && 'p-[8vmin] pb-[9vmin]',
-                    (layout === 'wide') && 'p-[10vmin] pb-[12vmin]',
-                    (layout === 'full') && 'p-[14vmin] pb-[16vmin]',
-                    (layout === 'split') && 'px-[6vmin] pt-[16vmin] pb-[18vmin]'
-                )}>
+                <div
+                    className={clsx(
+                        'mx-auto flex w-full flex-1 flex-col justify-center',
+                        (alignment === 'center') && 'items-center',
+                        (layout === 'regular') && 'p-[8vmin] pb-[9vmin]',
+                        (layout === 'wide') && 'p-[10vmin] pb-[12vmin]',
+                        (layout === 'full') && 'p-[14vmin] pb-[16vmin]',
+                        (layout === 'split') && 'px-[6vmin] pt-[16vmin] pb-[18vmin]'
+                    )}>
                     {/* Heading */}
                     {
                         (isEditing || !!header || !isEditorEmpty(headerTextEditor)) && (
@@ -277,6 +286,25 @@ export function SignupCard({alignment,
                     }
 
                 </div>
+                {layout === 'split' && isSwapped ? (
+                    <MediaUploader
+                        alt='Background image'
+                        className="sm:w-1/2"
+                        desc='Click to select an image'
+                        dragHandler={imageDragHandler}
+                        errors={fileUploader?.errors}
+                        handleSwapLayout={handleSwapLayout}
+                        icon='image'
+                        isLoading={isLoading}
+                        mimeTypes={['image/*']}
+                        progress={progress}
+                        size='large'
+                        src={backgroundImageSrc}
+                        onFileChange={onFileChange}
+                        onRemoveMedia={handleClearBackgroundImage}
+                    />
+                ) : null}
+
                 {/* Read-only overlay */}
                 {!isEditing && <div className="absolute top-0 z-10 !m-0 h-full w-full cursor-default p-0"></div>}
             </div>
@@ -421,5 +449,7 @@ SignupCard.propTypes = {
     subheaderTextEditor: PropTypes.object,
     subheaderTextEditorInitialState: PropTypes.string,
     disclaimerTextEditor: PropTypes.object,
-    disclaimerTextEditorInitialState: PropTypes.string
+    disclaimerTextEditorInitialState: PropTypes.string,
+    isSwapped: PropTypes.bool,
+    handleSwapLayout: PropTypes.func
 };

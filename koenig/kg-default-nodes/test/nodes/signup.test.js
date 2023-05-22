@@ -37,6 +37,7 @@ describe('SignupNode', function () {
         signupNode.getLayout().should.equal(data.layout);
         signupNode.getSubheader().should.equal(data.subheader);
         signupNode.getSuccessMessage().should.equal(data.successMessage);
+        signupNode.getSwapped().should.equal(data.swapped);
     };
 
     beforeEach(function () {
@@ -55,7 +56,8 @@ describe('SignupNode', function () {
             labels: ['label 1', 'label 2'],
             layout: 'regular',
             alignment: 'center',
-            successMessage: 'Success!'
+            successMessage: 'Success!',
+            swapped: false
         };
 
         exportOptions = {
@@ -120,6 +122,8 @@ describe('SignupNode', function () {
             node.getSubheader().should.equal('This is the new subheader');
             node.setSuccessMessage('This is the new success message');
             node.getSuccessMessage().should.equal('This is the new success message');
+            node.setSwapped(true);
+            node.getSwapped().should.equal(true);
         }));
 
         describe('labels', function () {
@@ -351,7 +355,8 @@ describe('SignupNode', function () {
                 labels: dataset.labels,
                 layout: dataset.layout,
                 subheader: dataset.subheader,
-                successMessage: dataset.successMessage
+                successMessage: dataset.successMessage,
+                swapped: dataset.swapped
             });
         }));
     });

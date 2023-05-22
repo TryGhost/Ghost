@@ -21,6 +21,7 @@ export class SignupNode extends KoenigDecoratorNode {
     __layout;
     __subheader;
     __successMessage;
+    __swapped;
 
     static getType() {
         return NODE_TYPE;
@@ -57,7 +58,8 @@ export class SignupNode extends KoenigDecoratorNode {
             labels: self.__labels,
             layout: self.__layout,
             subheader: self.__subheader,
-            successMessage: self.__successMessage
+            successMessage: self.__successMessage,
+            swapped: self.__swapped
         };
     }
 
@@ -73,6 +75,7 @@ export class SignupNode extends KoenigDecoratorNode {
         labels,
         layout,
         subheader,
+        swapped,
         successMessage} = {}, key) {
         super(key);
         this.__alignment = alignment || 'left';
@@ -88,6 +91,7 @@ export class SignupNode extends KoenigDecoratorNode {
         this.__layout = layout || 'wide';
         this.__subheader = subheader || '';
         this.__successMessage = successMessage || '';
+        this.__swapped = swapped || false;
     }
 
     exportDOM(options = {}) {
@@ -108,6 +112,7 @@ export class SignupNode extends KoenigDecoratorNode {
             labels,
             layout,
             subheader,
+            swapped,
             successMessage} = serializedNode;
         const node = new this({
             alignment,
@@ -122,7 +127,8 @@ export class SignupNode extends KoenigDecoratorNode {
             labels,
             layout,
             subheader,
-            successMessage
+            successMessage,
+            swapped
         });
         return node;
     }
@@ -148,7 +154,8 @@ export class SignupNode extends KoenigDecoratorNode {
             labels: this.getLabels(),
             layout: this.getLayout(),
             subheader: this.getSubheader(),
-            successMessage: this.getSuccessMessage()
+            successMessage: this.getSuccessMessage(),
+            swapped: this.getSwapped()
         };
         return dataset;
     }
@@ -309,6 +316,16 @@ export class SignupNode extends KoenigDecoratorNode {
     setSuccessMessage(successMessage) {
         const writable = this.getWritable();
         writable.__successMessage = successMessage;
+    }
+
+    getSwapped() {
+        const self = this.getLatest();
+        return self.__swapped;
+    }
+
+    setSwapped(swapped) {
+        const writable = this.getWritable();
+        writable.__swapped = swapped;
     }
 
     hasEditMode() {
