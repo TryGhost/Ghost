@@ -6,7 +6,7 @@ Early stage re-write of Ghost's editor, using Lexical as the editor framework in
 
 ### Pre-requisites
 
-This package makes use of two other built packages in the monorepo, those packages will need to be built before this package's build will succeed.
+Koenig Lexical depends on two other packages in the monorepo: `kg-default-nodes` and `kg-clean-basic-html`. These two packages need to be built before running Koenig Lexical:
 
 ```
 cd packages/kg-default-nodes && yarn build
@@ -14,7 +14,8 @@ cd ..
 cd packages/kg-clean-basic-html && yarn build
 ```
 
-_Note:_ If any changes are made to those packages you'll need to rebuild them before the changes will show up in the demo site.
+_Alternative_: you can also run `lerna run build` from the root of the monorepo to rebuild all packages in the monorepo.
+
 
 ### Running the development version
 
