@@ -32,6 +32,13 @@ export const Default: Story = {
     }
 };
 
+export const WithPrompt: Story = {
+    args: {
+        prompt: 'Select a value',
+        options: dropdownOptions
+    }
+};
+
 export const WithHeading: Story = {
     args: {
         title: 'Title',
