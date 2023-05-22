@@ -1,0 +1,41 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="About" />
+
+<style>
+  {`
+    .sb-doc {
+      max-width: 720px;
+      width: 100%;
+      font-family: Inter, sans-serif !important;
+      margin: 0 auto;
+    }
+
+    .sb-highlight {
+        background: yellow;
+        border-radius: 7px;
+        padding: 12px 24px;
+        margin: 0;
+    }
+  `}
+</style>
+
+<div className="sb-doc">
+
+# AdminX Design System
+
+This is a documentation of the design system of Ghost AdminX. 
+
+## Why?
+
+The purpose of any design system is to bring order to chaos and this is not any diffrent here either. Historically we maintained consistency in the Ghost Admin via using components and global CSS as much as possible. However due to the growth of the product and the loose system, more and more exotic patterns and styles emerged—which resulted in inconsistency. 
+
+The main goal of the design system (any design system) is to bring order into chaos by defining and documenting **reusable components**.
+
+## Install
+
+ATM the design system is part of the AdminX Settings project but soon it will be decoupled with the intention to be able to (re)use it in any future React based Admin projects. Eventually it should be an independent package that could be added to any React app.
+
+`yarn add @tryghost/admin-x-ds`
+
+</div>
