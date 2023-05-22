@@ -32,3 +32,13 @@ export const WithTitleAndHint: Story = {
         checked: true
     }
 };
+
+export const WithSeparator: Story = {
+    args: {
+        title: 'Title',
+        label: 'Checkbox 1',
+        hint: 'Here\'s some hint',
+        checked: true,
+        separator: true
+    }
+};
