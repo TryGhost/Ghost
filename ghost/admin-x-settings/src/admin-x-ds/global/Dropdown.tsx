@@ -36,17 +36,19 @@ const Dropdown: React.FC<DropdownProps> = ({title, prompt, options, onSelect, er
     return (
         <div className='flex flex-col'>
             {title && <Heading useLabelTag={true}>{title}</Heading>}
-            <select className={`-mx-1 -mt-0.5 h-10 border-b ${error ? `border-red` : `border-grey-500 hover:border-grey-600 focus:border-grey-900`} py-2 ${title && `mt-0`}`} value={selectedOption} onChange={handleOptionChange}>
-                {prompt && <option value="">{prompt}</option>}
-                {options.map(option => (
-                    <option
-                        key={option.value}
-                        value={option.value}
-                    >
-                        {option.label}
-                    </option>
-                ))}
-            </select>
+            <div className={`relative w-full after:pointer-events-none after:absolute after:right-4 after:block after:h-2 after:w-2 after:rotate-45 after:border-[1px] after:border-l-0 after:border-t-0 after:border-grey-900 after:content-[''] ${title ? 'after:top-[22px]' : 'after:top-[14px]'}`}>
+                <select className={`w-full cursor-pointer appearance-none border-b bg-grey-100 px-[10px] py-2 outline-none ${error ? `border-red` : `border-grey-300 hover:border-grey-400 focus:border-grey-600`} ${title && `mt-2`}`} value={selectedOption} onChange={handleOptionChange}>
+                    {prompt && <option value="">{prompt}</option>}
+                    {options.map(option => (
+                        <option
+                            key={option.value}
+                            value={option.value}
+                        >
+                            {option.label}
+                        </option>
+                    ))}
+                </select>
+            </div>
             {hint && <Hint color={error ? 'red' : ''}>{hint}</Hint>}
         </div>
     );

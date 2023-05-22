@@ -23,11 +23,11 @@ const TextField: React.FC<ITextField> = ({
         <div className='flex flex-col'>
             {title && <Heading useLabelTag={true}>{title}</Heading>}
             <input
-                ref={inputRef}
-                className={`-mx-1 -mt-0.5 h-10 border-b ${error ? `border-red` : `border-grey-500 hover:border-grey-600 focus:border-grey-900`} px-1 py-2 ${title && `mt-0`}`}
-                defaultValue={value}
-                placeholder={placeholder}
-                type={type}
+                ref={inputRef} 
+                className={`border-b bg-grey-100 px-[10px] py-2 ${error ? `border-red` : `border-grey-300 hover:border-grey-400 focus:border-grey-600`} ${title && `mt-2`}`} 
+                defaultValue={value} 
+                placeholder={placeholder} 
+                type='text'
                 onChange={onChange}
                 {...props} />
             {hint && <Hint color={error ? 'red' : ''}>{hint}</Hint>}
