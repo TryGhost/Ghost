@@ -527,3 +527,9 @@ p.gh-content-import-errordetail:first-of-type {
     margin-top: 0.8rem;
     margin-bottom: 1rem;
 }
+
+.gh-feedback-lexical-labs-heading {
+    font-size: 1.3rem;
+    font-weight: 500;
+    margin-top: 8px;
+}

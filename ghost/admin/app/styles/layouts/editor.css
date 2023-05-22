@@ -419,6 +419,7 @@
 .gh-editor-feedback-dropdown-header h3 {
     font-size: 1.9rem;
     font-weight: 600;
+    margin-bottom: 16px;
 }
 
 .gh-editor-feedback-dropdown p {

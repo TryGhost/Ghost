@@ -738,13 +738,17 @@
     justify-content: space-between;
 }
 
+.gh-feedback-lexical-published .form-group {
+    margin-bottom: 1.6rem;
+}
+
 .gh-feedback-lexical-published .form-group, .gh-feedback-lexical-published textarea {
     min-width: 100%;
     max-width: 100%;
 }
 
-.gh-feedback-grey .gh-feedback-lexical-published-title {
-    font-size: 1.8rem;
+.gh-feedback-lexical-published-title {
+    margin-bottom: 12px;
 }
 
 .gh-feedback-lexical-published p {
@@ -754,6 +758,7 @@
 }
 
 .gh-feedback-lexical-published-back {
+    width: max-content;
     display: block;
     margin-top: 1rem;
     height: 40px;
