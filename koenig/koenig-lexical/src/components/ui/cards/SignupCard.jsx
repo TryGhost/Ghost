@@ -358,7 +358,7 @@ export function SignupCard({alignment,
                     <InputSetting
                         label='Success message'
                         placeholder='Add success message'
-                        value={successMessage || 'Check your email for confirmation.'}
+                        value={successMessage || 'Thanks! Now check your email to confirm.'}
                         onChange={handleSuccessMessage}
                     />
                     <MultiSelectDropdownSetting
