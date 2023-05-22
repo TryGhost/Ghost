@@ -55,3 +55,12 @@ export const OptionHints: Story = {
         defaultSelectedOption: 'option-1'
     }
 };
+
+export const WithSeparator: Story = {
+    args: {
+        title: 'Title',
+        options: radioOptionsWithHints,
+        defaultSelectedOption: 'option-1',
+        separator: true
+    }
+};
