@@ -10,6 +10,7 @@ export interface DropdownOption {
 
 interface DropdownProps {
     title?: string;
+    prompt?: string;
     options: DropdownOption[];
     onSelect: (value: string) => void;
     error?:boolean;
@@ -17,7 +18,7 @@ interface DropdownProps {
     defaultSelectedOption?: string;
 }
 
-const Dropdown: React.FC<DropdownProps> = ({title, options, onSelect, error, hint, defaultSelectedOption}) => {
+const Dropdown: React.FC<DropdownProps> = ({title, prompt, options, onSelect, error, hint, defaultSelectedOption}) => {
     const [selectedOption, setSelectedOption] = useState(defaultSelectedOption);
 
     useEffect(() => {
@@ -36,7 +37,7 @@ const Dropdown: React.FC<DropdownProps> = ({title, options, onSelect, error, hin
         <div className='flex flex-col'>
             {title && <Heading useLabelTag={true}>{title}</Heading>}
             <select className={`-m-1 h-10 border-b ${error ? `border-red` : `border-grey-300 hover:border-grey-500 focus:border-grey-900`} py-2 ${title && `mt-0`}`} value={selectedOption} onChange={handleOptionChange}>
-                <option value="">Select an option</option>
+                {prompt && <option value="">{prompt}</option>}
                 {options.map(option => (
                     <option
                         key={option.value}
