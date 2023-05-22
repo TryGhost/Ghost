@@ -211,9 +211,11 @@ jobs:
           mysql database: 'ghost_testing'
           mysql root password: 'root'
 
-      - run: yarn --prefer-offline
+      - name: Install dependencies
+        run: yarn --prefer-offline
 
-      - run: date +%s > ${{ runner.temp }}/startTime # Get start time for test suite
+      - name: Record start time
+        run: date +%s > ${{ runner.temp }}/startTime # Get start time for test suite
 
       - name: Set env vars (SQLite)
         if: contains(matrix.env.DB, 'sqlite')
@@ -223,12 +225,21 @@ jobs:
         if: contains(matrix.env.DB, 'mysql')
         run: echo "database__connection__password=root" >> $GITHUB_ENV
 
-      - name: Run tests
+      - name: E2E tests
         working-directory: ghost/core
-        run: yarn test:ci
+        run: yarn test:ci:e2e
+
+      - name: Regression tests
+        working-directory: ghost/core
+        run: yarn test:ci:regression
+
+      - name: Integration tests
+        working-directory: ghost/core
+        run: yarn test:ci:integration
 
       # Get runtime in seconds for test suite
-      - run: |
+      - name: Record test duration
+        run: |
           startTime="$(cat ${{ runner.temp }}/startTime)"
           endTime="$(date +%s)"
           echo "test_time=$(($endTime-$startTime))" >> $GITHUB_ENV
@@ -237,7 +248,10 @@ jobs:
         if: startsWith(matrix.node, '16') && contains(matrix.env.DB, 'mysql')
         with:
           name: e2e-coverage
-          path: ghost/*/coverage-e2e/cobertura-coverage.xml
+          path: |
+            ghost/*/coverage-e2e/cobertura-coverage.xml
+            ghost/*/coverage-integration/cobertura-coverage.xml
+            ghost/*/coverage-regression/cobertura-coverage.xml
 
       # Continue on error if TailScale service is down
       - name: Tailscale Action
@@ -250,7 +264,8 @@ jobs:
 
       # Report time taken to metrics service
       # Continue on error if previous TailScale step fails
-      - uses: tryghost/action-trigger-metric@main
+      - name: Store test duration
+        uses: tryghost/action-trigger-metric@main
         timeout-minutes: 1
         continue-on-error: true
         if: (github.event_name == 'push' && github.repository_owner == 'TryGhost') || (github.event_name == 'pull_request' && startsWith(github.head_ref, 'TryGhost/'))
