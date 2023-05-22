@@ -47,9 +47,9 @@ const Radio: React.FC<RadioProps> = ({id, title, options, onSelect, error, hint,
                         value={option.value}
                         onChange={handleOptionChange}
                     />
-                    <div className='ml-2 flex flex-col'>
-                        <span className='inline-block text-md'>{option.label}</span>
-                        {option.hint && <span className='mb-2 inline-block text-xs text-grey-700'>{option.hint}</span>}
+                    <div className={`ml-2 flex flex-col ${option.hint && 'mb-2'}`}>
+                        <span className={`inline-block text-md ${option.hint && '-mb-1'}`}>{option.label}</span>
+                        {option.hint && <Hint>{option.hint}</Hint>}
                     </div>
                 </label>
             ))}
