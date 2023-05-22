@@ -247,7 +247,7 @@ describe('SignupNode', function () {
                             <input data-members-label="" type="hidden" value="label 1">
                             <input data-members-label="" type="hidden" value="label 2">
                             <div class="kg-signup-card-fields">
-                                <input class="kg-signup-card-input" style="border-color:accent" id="email" data-members-email="" type="email" required="true" placeholder="yourname@example.com">
+                                <input class="kg-signup-card-input kg-style-accent" style="border-color:accent" id="email" data-members-email="" type="email" required="true" placeholder="yourname@example.com">
                                 <button class="kg-signup-card-button kg-style-accent" style="background-color:accent;color:#ffffff" type="submit">
                                     <span class="kg-signup-card-button-default">Button</span>
                                     <span class="kg-signup-card-button-loading">...</span>
