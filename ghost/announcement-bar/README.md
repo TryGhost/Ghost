@@ -8,17 +8,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 This section is mostly relevant for core team only for active development.
 
-- Run `yarn start:dev` to start project in development mode
-- Update `config.local.json` in Ghost repo:
-```json
-{
-    ...
-    "announcementBar": {
-        "url": "http://localhost:5370/announcement-bar"
-    }
-}
-```
-It's also possible to specify a custom port when running the script using - `--port=xxxx`.
+Run `yarn dev` with `--announcement-bar` to start Ghost with a development version of Announcement Bar
 
 ## Available Scripts
 

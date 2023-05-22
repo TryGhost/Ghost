@@ -82,6 +82,17 @@ if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {
     COMMAND_GHOST.env['portal__url'] = 'http://localhost:5368/umd/portal.min.js';
 }
 
+if (DASH_DASH_ARGS.includes('announcement-bar') || DASH_DASH_ARGS.includes('announcementBar') || DASH_DASH_ARGS.includes('announcementbar') || DASH_DASH_ARGS.includes('all')) {
+    commands.push({
+        name: 'announcement-bar',
+        command: 'yarn dev',
+        cwd: path.resolve(__dirname, '../ghost/announcement-bar'),
+        prefixColor: '#DC9D00',
+        env: {}
+    });
+    COMMAND_GHOST.env['announcementBar__url'] = 'http://localhost:5371/announcement-bar';
+}
+
 if (DASH_DASH_ARGS.includes('search') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'search',
