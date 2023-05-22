@@ -7,7 +7,7 @@ import * as TextFieldStories from '../global/TextField.stories';
 import TextField from '../global/TextField';
 
 const meta = {
-    title: 'Settings / Setting Group Content',
+    title: 'Settings / Setting Group / Content',
     component: SettingGroupContent,
     tags: ['autodocs']
 } satisfies Meta<typeof SettingGroupContent>;
