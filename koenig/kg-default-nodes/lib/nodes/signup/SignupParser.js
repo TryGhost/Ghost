@@ -18,10 +18,10 @@ export class SignupParser {
     constructor(NodeClass) {
         this.NodeClass = NodeClass;
     }
-  
+
     get DOMConversionMap() {
         const self = this;
-  
+
         return {
             div: (nodeElem) => {
                 const isSignupNode = nodeElem.dataset?.lexicalSignupForm === '';
@@ -41,7 +41,8 @@ export class SignupParser {
                             const textColor = domNode.querySelector('.kg-signup-card-heading')?.style.color || '';
                             const buttonTextColor = domNode.querySelector('.kg-signup-card-button')?.style.color || '';
                             const alignment = domNode.querySelector('.kg-signup-card-container')?.classList.contains('align-center') ? 'center' : 'left';
-  
+                            const successMessage = domNode.querySelector('.kg-signup-card-success')?.textContent?.strip() || '';
+
                             const payload = {
                                 style,
                                 buttonText,
@@ -53,9 +54,10 @@ export class SignupParser {
                                 buttonColor: rgbToHex(buttonColor) || '#ffffff',
                                 textColor: rgbToHex(textColor) || '#ffffff',
                                 buttonTextColor: rgbToHex(buttonTextColor) || '#000000',
-                                alignment
+                                alignment,
+                                successMessage
                             };
-  
+
                             const node = new self.NodeClass(payload);
                             return {node};
                         },

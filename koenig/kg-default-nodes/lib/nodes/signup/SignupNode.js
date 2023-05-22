@@ -20,6 +20,7 @@ export class SignupNode extends KoenigDecoratorNode {
     __labels;
     __layout;
     __subheader;
+    __successMessage;
 
     static getType() {
         return NODE_TYPE;
@@ -55,7 +56,8 @@ export class SignupNode extends KoenigDecoratorNode {
             header: self.__header,
             labels: self.__labels,
             layout: self.__layout,
-            subheader: self.__subheader
+            subheader: self.__subheader,
+            successMessage: self.__successMessage
         };
     }
 
@@ -70,7 +72,8 @@ export class SignupNode extends KoenigDecoratorNode {
         header,
         labels,
         layout,
-        subheader} = {}, key) {
+        subheader,
+        successMessage} = {}, key) {
         super(key);
         this.__alignment = alignment || 'left';
         this.__backgroundColor = backgroundColor || 'accent';
@@ -84,6 +87,7 @@ export class SignupNode extends KoenigDecoratorNode {
         this.__labels = labels || [];
         this.__layout = layout || 'wide';
         this.__subheader = subheader || '';
+        this.__successMessage = successMessage || '';
     }
 
     exportDOM(options = {}) {
@@ -103,7 +107,8 @@ export class SignupNode extends KoenigDecoratorNode {
             header,
             labels,
             layout,
-            subheader} = serializedNode;
+            subheader,
+            successMessage} = serializedNode;
         const node = new this({
             alignment,
             backgroundColor,
@@ -116,7 +121,8 @@ export class SignupNode extends KoenigDecoratorNode {
             header,
             labels,
             layout,
-            subheader
+            subheader,
+            successMessage
         });
         return node;
     }
@@ -141,7 +147,8 @@ export class SignupNode extends KoenigDecoratorNode {
             header: this.getHeader(),
             labels: this.getLabels(),
             layout: this.getLayout(),
-            subheader: this.getSubheader()
+            subheader: this.getSubheader(),
+            successMessage: this.getSuccessMessage()
         };
         return dataset;
     }
@@ -294,6 +301,16 @@ export class SignupNode extends KoenigDecoratorNode {
         writable.__subheader = subheader;
     }
 
+    getSuccessMessage() {
+        const self = this.getLatest();
+        return self.__successMessage;
+    }
+
+    setSuccessMessage(successMessage) {
+        const writable = this.getWritable();
+        writable.__successMessage = successMessage;
+    }
+
     hasEditMode() {
         return true;
     }
@@ -306,7 +323,8 @@ export class SignupNode extends KoenigDecoratorNode {
             !this.__disclaimer &&
             !this.__header &&
             !this.__labels.length &&
-            !this.__subheader;
+            !this.__subheader &&
+            !this.__successMessage;
     }
 
     // should be overridden

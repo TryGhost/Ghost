@@ -27,6 +27,7 @@ export function SignupCard({alignment,
     buttonColor,
     buttonTextColor,
     textColor,
+    successMessage,
     isEditing,
     fileUploader,
     handleAlignment,
@@ -37,6 +38,7 @@ export function SignupCard({alignment,
     handleButtonColor,
     handleLayout,
     handleTextColor,
+    handleSuccessMessage,
     labels,
     layout,
     availableLabels,
@@ -353,6 +355,12 @@ export function SignupCard({alignment,
                         hideLabel
                         onChange={handleButtonText}
                     />
+                    <InputSetting
+                        label='Success message'
+                        placeholder='Add success message'
+                        value={successMessage || 'Check your email for confirmation.'}
+                        onChange={handleSuccessMessage}
+                    />
                     <MultiSelectDropdownSetting
                         dataTestId='labels-dropdown'
                         description='These labels will be applied to members who sign up via this form.'
@@ -379,6 +387,7 @@ SignupCard.propTypes = {
     backgroundImageSrc: PropTypes.string,
     backgroundColor: PropTypes.string,
     textColor: PropTypes.string,
+    successMessage: PropTypes.string,
     showBackgroundImage: PropTypes.bool,
     isEditing: PropTypes.bool,
     fileUploader: PropTypes.object,
@@ -392,6 +401,7 @@ SignupCard.propTypes = {
     handleButtonColor: PropTypes.func,
     handleLabels: PropTypes.func,
     handleTextColor: PropTypes.func,
+    handleSuccessMessage: PropTypes.func,
     labels: PropTypes.arrayOf(PropTypes.string),
     layout: PropTypes.oneOf(['regular', 'wide', 'full', 'split']),
     availableLabels: PropTypes.arrayOf(PropTypes.object),

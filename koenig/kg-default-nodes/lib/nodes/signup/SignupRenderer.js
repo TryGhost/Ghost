@@ -23,7 +23,7 @@ function cardTemplate(nodeData) {
                     </button>
                 </div>
                 <div class="kg-signup-card-success" style="color: ${nodeData.textColor};">
-                    To complete signup, click the link in the confirmation email we just sent you!
+                    ${nodeData.successMessage || 'Check your email for confirmation.'}
                 </div>
                 <div class="kg-signup-card-error" style="color: ${nodeData.textColor};" data-members-error></div>
             </form>
@@ -49,7 +49,8 @@ export function renderSignupCardToDOM(dataset, options = {}) {
         labels: dataset.__labels,
         layout: dataset.__layout,
         textColor: dataset.__textColor,
-        buttonTextColor: dataset.__buttonTextColor
+        buttonTextColor: dataset.__buttonTextColor,
+        successMessage: dataset.__successMessage
     };
 
     const htmlString = options.target === 'email'

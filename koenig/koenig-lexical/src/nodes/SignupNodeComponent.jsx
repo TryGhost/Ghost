@@ -30,7 +30,8 @@ function SignupNodeComponent({
     subheader,
     subheaderTextEditor,
     subheaderTextEditorInitialState,
-    textColor
+    textColor,
+    successMessage
 }) {
     const [editor] = useLexicalComposerContext();
     const {cardConfig} = useContext(KoenigComposerContext);
@@ -106,6 +107,13 @@ function SignupNodeComponent({
         });
     };
 
+    const handleSuccessMessage = (event) => {
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.setSuccessMessage(event.target.value);
+        });
+    };
+
     const handleClearBackgroundImage = () => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
@@ -178,6 +186,7 @@ function SignupNodeComponent({
                 handleClearBackgroundImage={handleClearBackgroundImage}
                 handleLabels={handleLabels}
                 handleLayout={handleLayout}
+                handleSuccessMessage={handleSuccessMessage}
                 handleTextColor={handleTextColor}
                 handleToggleBackgroundImage={handleToggleBackgroundImage}
                 header={header}
@@ -191,6 +200,7 @@ function SignupNodeComponent({
                 subheader={subheader}
                 subheaderTextEditor={subheaderTextEditor}
                 subheaderTextEditorInitialState={subheaderTextEditorInitialState}
+                successMessage={successMessage}
                 textColor={textColor}
                 onFileChange={onFileChange}
             />
