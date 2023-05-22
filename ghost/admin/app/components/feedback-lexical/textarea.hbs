@@ -1,7 +1,7 @@
 <form>
     <GhFormGroup>
         {{#if @label}}
-            <label for="feedback-lexical">{{@label}}</label>
+            <label for="feedback-lexical" class="sr-only">{{@label}}</label>
         {{/if}}
         <GhTextarea
             @id="feedback-lexical"
