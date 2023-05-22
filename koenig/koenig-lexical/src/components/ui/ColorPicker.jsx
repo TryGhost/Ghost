@@ -46,12 +46,14 @@ export function ColorPicker({value, swatches, eyedropper, onChange, onBlur}) {
         e.preventDefault();
 
         isUsingColorPicker.current = true;
+        document.body.style.setProperty('pointer-events', 'none');
 
         const eyeDropper = new window.EyeDropper();
         eyeDropper.open()
             .then(result => onChange(result.sRGBHex))
             .finally(() => {
                 isUsingColorPicker.current = false;
+                document.body.style.removeProperty('pointer-events');
                 inputWrapperRef.current?.querySelector('input')?.focus();
             });
     }, [onChange]);
