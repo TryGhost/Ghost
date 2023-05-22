@@ -32,7 +32,7 @@ const Checkbox: React.FC<CheckboxProps> = ({id, title, label, value, onChange, e
             <label className={`flex cursor-pointer items-start ${title && '-mb-1 mt-1'}`} htmlFor={id}>
                 <input 
                     checked={isChecked}
-                    className="relative float-left mt-[3px] h-4 w-4 appearance-none border-2 border-solid border-grey-300 after:absolute after:z-[1] after:block after:h-3 after:w-3 after:content-[''] checked:border-green checked:after:absolute checked:after:left-1/2 checked:after:top-1/2 checked:after:h-[0.625rem] checked:after:w-[0.625rem] checked:after:border-green checked:after:bg-green checked:after:content-[''] checked:after:[transform:translate(-50%,-50%)] hover:cursor-pointer focus:shadow-none focus:outline-none focus:ring-0 checked:focus:border-green dark:border-grey-600 dark:checked:border-green dark:checked:after:border-green dark:checked:after:bg-green dark:checked:focus:border-green"
+                    className="relative float-left mt-[3px] h-4 w-4 appearance-none border-2 border-solid border-grey-300 outline-none checked:border-green checked:bg-green checked:after:absolute checked:after:-mt-px checked:after:ml-[3px] checked:after:block checked:after:h-[11px] checked:after:w-[6px] checked:after:rotate-45 checked:after:border-[2px] checked:after:border-l-0 checked:after:border-t-0 checked:after:border-solid checked:after:border-white checked:after:bg-transparent checked:after:content-[''] hover:cursor-pointer focus:shadow-none focus:transition-[border-color_0.2s] dark:border-grey-600 dark:checked:border-green dark:checked:bg-green"
                     id={id}
                     type='checkbox'
                     value={value}
@@ -40,7 +40,7 @@ const Checkbox: React.FC<CheckboxProps> = ({id, title, label, value, onChange, e
                 />
                 <div className={`ml-2 flex flex-col ${hint && 'mb-2'}`}>
                     <span className={`inline-block text-md ${hint && '-mb-1'}`}>{label}</span>
-                    {hint && <Hint>{hint}</Hint>}
+                    {hint && <Hint color={error ? 'red' : ''}>{hint}</Hint>}
                 </div>
             </label>
         </div>
