@@ -181,7 +181,6 @@
     button,
     select {
         text-transform: none;
-        border: inherit;
         letter-spacing: inherit;
         border-radius: inherit;
         appearance: auto;
