@@ -126,7 +126,15 @@ JSX components in e2e tests. It can be a situation when some constants locate in
 we can move them to js file. If it is a problem in the future, we can add our implementation of the loader or 
 add an extension to all imports in the project.
 
+## Deployment
 
+To deploy the changes made in Koenig Lexical and integrate them into Ghost, follow these steps:
+
+1. Run `yarn ship` in the top-level Koenig monorepo. This command will update the editor used on Ghost by fetching the latest version from jsdelivr.
+
+2. Bump the version of `@tryghost/kg-default-nodes` in the Ghost repository. This step is necessary for rendering to work correctly with newly added or updated nodes. Failure to perform this step may result in issues when saving posts on Ghost that use the new cards.
+
+3. Run `/main` in Slack and wait for the new version to build to test on staging.
 
 ### Editor integration
 
