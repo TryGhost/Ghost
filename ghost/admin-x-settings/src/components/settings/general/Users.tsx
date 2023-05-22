@@ -3,6 +3,7 @@ import List from '../../../admin-x-ds/global/List';
 import ListItem from '../../../admin-x-ds/global/ListItem';
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
+import TabView from '../../../admin-x-ds/global/TabView';
 
 const Users: React.FC = () => {
     const buttons = (
@@ -11,27 +12,43 @@ const Users: React.FC = () => {
 
     const owner = (
         <div className='flex flex-col'>
-            <span className='text-sm'>Cristofer Vaccaro — <strong>Owner</strong></span>
+            <span>Cristofer Vaccaro &mdash; <strong>Owner</strong></span>
             <span className='text-xs text-grey-700'>cristofer@example.com</span>
         </div>
     );
 
-    const list = (
-        <List title='Users'>
+    const admins = (
+        <List>
             <ListItem 
                 action={<Button color='green' label='Edit' link={true} />}
                 detail='alena@press.com'
                 hideActions={true}
                 id='list-item-1'
                 title='Alena Press' />
-            <ListItem 
-                action={<Button color='green' label='Edit' link={true} />}
-                detail='martin@culhane.com'
-                hideActions={true}
-                id='list-item-1'
-                title='Martin Culhane' />
         </List>
     );
+
+    const editors = (
+        <List>
+            <ListItem 
+                action={<Button color='green' label='Edit' link={true} />}
+                detail='lydia@siphron.com'
+                hideActions={true}
+                id='list-item-1'
+                title='Lydia Siphron' />
+            <ListItem 
+                action={<Button color='green' label='Edit' link={true} />}
+                detail='james@korsgaard.com'
+                hideActions={true}
+                id='list-item-1'
+                title='James Korsgaard' />
+        </List>
+    );
+
+    const tabs = [
+        {id: 'users-admins', title: 'Administrators', contents: admins},
+        {id: 'users-editors', title: 'Editors', contents: editors}
+    ];
 
     return (
         <SettingGroup 
@@ -39,7 +56,7 @@ const Users: React.FC = () => {
             title='Users and permissions'
         >
             {owner}
-            {list}
+            <TabView tabs={tabs} />
         </SettingGroup>
     );
 };

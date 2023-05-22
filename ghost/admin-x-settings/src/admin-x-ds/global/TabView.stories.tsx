@@ -22,3 +22,10 @@ export const Default: Story = {
         tabs: tabs
     }
 };
+
+export const DefaultSelected: Story = {
+    args: {
+        tabs: tabs,
+        defaultSelected: 'tab-2'
+    }
+};
