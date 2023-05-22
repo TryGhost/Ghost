@@ -151,7 +151,7 @@
 
 .kg-signup-card-button {
     display: flex;
-    position: static;
+    position: relative;
     align-items: center;
     outline: none;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
@@ -224,15 +224,15 @@
 }
 
 .kg-signup-card-button-loading {
-    display: none;
-}
-
-.kg-signup-card-form.loading .kg-signup-card-button-default {
+    position: absolute;
+    inset: 0;
+    align-items: center;
+    justify-content: center;
     display: none;
 }
 
 .kg-signup-card-form.loading .kg-signup-card-button-loading {
-    display: inline-block;
+    display: flex;
 }
 
 /* Disclaimer */
