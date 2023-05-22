@@ -28,7 +28,7 @@ const MailGun: React.FC = () => {
 
     const inputs = (
         <SettingGroupContent>
-            <div className='grid grid-cols-2 gap-6'>
+            <div className='grid grid-cols-[0.25fr_0.75fr] gap-6'>
                 <Dropdown
                     defaultSelectedOption='option-1'
                     options={[
@@ -43,7 +43,7 @@ const MailGun: React.FC = () => {
                 />
                 <div className='col-span-2'>
                     <TextField 
-                        hint={<>Find your Mailgun API keys<Link href="https://app.mailgun.com/app/account/security/api_keys" target="_blank">here</Link></>}
+                        hint={<>Find your Mailgun API keys <Link href="https://app.mailgun.com/app/account/security/api_keys" rel="noopener noreferrer" target="_blank">here</Link></>}
                         title='Mailgun private API key'
                     />
                 </div>

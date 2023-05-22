@@ -36,7 +36,7 @@ const Dropdown: React.FC<DropdownProps> = ({title, prompt, options, onSelect, er
     return (
         <div className='flex flex-col'>
             {title && <Heading useLabelTag={true}>{title}</Heading>}
-            <select className={`-m-1 h-10 border-b ${error ? `border-red` : `border-grey-300 hover:border-grey-500 focus:border-grey-900`} py-2 ${title && `mt-0`}`} value={selectedOption} onChange={handleOptionChange}>
+            <select className={`-mx-1 -mt-1 h-10 border-b ${error ? `border-red` : `border-grey-500 hover:border-grey-600 focus:border-grey-900`} py-2 ${title && `mt-0`}`} value={selectedOption} onChange={handleOptionChange}>
                 {prompt && <option value="">{prompt}</option>}
                 {options.map(option => (
                     <option
