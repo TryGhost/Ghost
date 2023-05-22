@@ -7,7 +7,7 @@
             @id="feedback-lexical"
             @name="feedback-lexical"
             @value={{@feedbackMessage}}
-            @placeholder="I've noticed that..."
+            @placeholder={{or @placeholder "I’ve noticed that…"}}
             @shouldFocus={{@shouldFocus}}
             data-test-lexical-feedback-textarea
             {{on "input" @updateFeedbackMessage}}
