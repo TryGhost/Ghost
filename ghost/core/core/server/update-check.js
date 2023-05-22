@@ -17,7 +17,7 @@ const UpdateCheckService = require('@tryghost/update-check-service');
  * @returns {Promise<any>}
  */
 module.exports = async ({rethrowErrors = false} = {}) => {
-    const allowedCheckEnvironments = ['development', 'production'];
+    const allowedCheckEnvironments = ['testing', 'testing-mysql', 'development', 'production'];
 
     // CASE: The check will not happen if your NODE_ENV is not in the allowed defined environments.
     if (_.indexOf(allowedCheckEnvironments, process.env.NODE_ENV) === -1) {
@@ -47,11 +47,11 @@ module.exports = async ({rethrowErrors = false} = {}) => {
             mail: config.get('mail'),
             env: config.get('env'),
             databaseType: databaseInfo.getEngine(),
-            checkEndpoint: config.get('updateCheck:url'),
+            checkEndpoint: process.env.UPDATE_CHECK_URL || config.get('updateCheck:url'),
             isPrivacyDisabled: config.isPrivacyDisabled('useUpdateCheck'),
             notificationGroups: config.get('notificationGroups'),
             siteUrl: urlUtils.urlFor('home', true),
-            forceUpdate: config.get('updateCheck:forceUpdate'),
+            forceUpdate: process.env.FORCE_UPDATE === '1' || config.get('updateCheck:forceUpdate'),
             ghostVersion: ghostVersion.original,
             rethrowErrors
         },
