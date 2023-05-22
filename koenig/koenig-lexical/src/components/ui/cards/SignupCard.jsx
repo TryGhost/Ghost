@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import {ButtonGroupSetting, ColorPickerSetting, InputSetting, MediaUploadSetting, MultiSelectDropdownSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {ReactComponent as CenterAlignIcon} from '../../../assets/icons/kg-align-center.svg';
 import {FastAverageColor} from 'fast-average-color';
+import {IconButton} from '../IconButton';
 import {ReactComponent as ImgFullIcon} from '../../../assets/icons/kg-img-full.svg';
 import {ReactComponent as ImgRegularIcon} from '../../../assets/icons/kg-img-regular.svg';
 import {ReactComponent as ImgWideIcon} from '../../../assets/icons/kg-img-wide.svg';
@@ -12,6 +13,7 @@ import {ReactComponent as LayoutSplitIcon} from '../../../assets/icons/kg-layout
 import {ReactComponent as LeftAlignIcon} from '../../../assets/icons/kg-align-left.svg';
 import {MediaUploader} from '../MediaUploader';
 import {SubscribeForm} from '../SubscribeForm';
+import {ReactComponent as SwapIcon} from '../../../assets/icons/kg-swap.svg';
 import {getAccentColor} from '../../../utils/getAccentColor';
 import {isEditorEmpty} from '../../../utils/isEditorEmpty';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
@@ -147,21 +149,17 @@ export function SignupCard({alignment,
                 (layout === 'regular') && 'min-h-[32vh]',
                 (layout === 'wide') && 'min-h-[56vh]',
                 (layout === 'full') && 'min-h-[80vh]',
-                (layout === 'split') && 'h-auto sm:h-[80vh]'
+                (layout === 'split') && 'h-auto sm:h-[80vh]',
+                (layout === 'split' && isSwapped) && 'sm:flex-row-reverse'
             )} data-testid={'signup-card-container'} style={wrapperStyle()}>
-                {/* BEWARE - MediaUploader renders at 2 different locations in this Component,
-                    if something changes here, change below as well.
-                    - TODO - see if we can let the flexbox swap this around instead of rendering twice
-                */}
-
-                {layout === 'split' && !isSwapped ? (
+                {layout === 'split' && (
                     <MediaUploader
+                        additionalActions={<IconButton className="ml-2" dataTestId="media-upload-swap" Icon={SwapIcon} onClick={handleSwapLayout} />}
                         alt='Background image'
                         className="sm:w-1/2"
                         desc='Click to select an image'
                         dragHandler={imageDragHandler}
                         errors={fileUploader?.errors}
-                        handleSwapLayout={handleSwapLayout}
                         icon='image'
                         isLoading={isLoading}
                         isPinturaEnabled={isPinturaEnabled}
@@ -173,7 +171,7 @@ export function SignupCard({alignment,
                         onFileChange={onFileChange}
                         onRemoveMedia={handleClearBackgroundImage}
                     />
-                ) : null}
+                )}
 
                 <div
                     className={clsx(
@@ -284,26 +282,7 @@ export function SignupCard({alignment,
                             />
                         )
                     }
-
                 </div>
-                {layout === 'split' && isSwapped ? (
-                    <MediaUploader
-                        alt='Background image'
-                        className="sm:w-1/2"
-                        desc='Click to select an image'
-                        dragHandler={imageDragHandler}
-                        errors={fileUploader?.errors}
-                        handleSwapLayout={handleSwapLayout}
-                        icon='image'
-                        isLoading={isLoading}
-                        mimeTypes={['image/*']}
-                        progress={progress}
-                        size='large'
-                        src={backgroundImageSrc}
-                        onFileChange={onFileChange}
-                        onRemoveMedia={handleClearBackgroundImage}
-                    />
-                ) : null}
 
                 {/* Read-only overlay */}
                 {!isEditing && <div className="absolute top-0 z-10 !m-0 h-full w-full cursor-default p-0"></div>}

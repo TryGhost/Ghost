@@ -381,15 +381,10 @@ test.describe('Signup card', async () => {
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles([filePath]);
         await expect(page.locator('[data-testid="media-upload-filled"] img')).toHaveAttribute('src', /blob:/);
-        // Grab the outer most parent that contains both the MediaUploader and the rest of the content.
-        const container = await page.locator('[data-kg-card="signup"]');
-        const originalFirstChildHTML = await container.locator(':first-child').first().innerHTML();
         // Click swap
         await page.click('[data-testid="media-upload-swap"]');
-        // Grab the outer most parent again.
-        const swappedContainer = await page.locator('[data-kg-card="signup"]');
-        const swappedFirstChildHTML = await swappedContainer.locator(':first-child').first().innerHTML();
-        // Confirm if MediaUploader was swapped
-        expect(originalFirstChildHTML).not.toBe(swappedFirstChildHTML);
+        // Check the parent class name was updated
+        const swappedContainer = await page.locator('[data-testid="signup-card-container"]');
+        await expect(swappedContainer).toHaveClass(/sm:flex-row-reverse/);
     });
 });
