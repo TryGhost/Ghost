@@ -191,7 +191,7 @@ export function ColorPickerSetting({label, onChange, value, swatches, eyedropper
     );
 }
 
-export function MediaUploadSetting({label, hideLabel, onFileChange, isDraggedOver, placeholderRef, src, alt, isLoading, errors = [], progress, onRemoveMedia, icon, desc = '', size, borderStyle, mimeTypes}) {
+export function MediaUploadSetting({label, hideLabel, onFileChange, isDraggedOver, placeholderRef, src, alt, isLoading, errors = [], progress, onRemoveMedia, icon, desc = '', size, borderStyle, mimeTypes, isPinturaEnabled, openImageEditor}) {
     return (
         <div className="mt-2 text-[1.3rem] first:mt-0" data-testid="custom-thumbnail">
             <div className={hideLabel ? 'sr-only' : 'font-bold text-grey-900 dark:text-grey-200'}>{label}</div>
@@ -205,7 +205,9 @@ export function MediaUploadSetting({label, hideLabel, onFileChange, isDraggedOve
                 errors={errors}
                 icon={icon}
                 isLoading={isLoading}
+                isPinturaEnabled={isPinturaEnabled}
                 mimeTypes={mimeTypes}
+                openImageEditor={openImageEditor}
                 progress={progress}
                 size={size}
                 src={src}

@@ -316,8 +316,10 @@ export function SignupCard({alignment,
                         icon='file'
                         isDraggedOver={imageDragHandler?.isDraggedOver}
                         isLoading={isLoading}
+                        isPinturaEnabled={isPinturaEnabled}
                         label='Image'
                         mimeTypes={['image/*']}
+                        openImageEditor={openImageEditor}
                         placeholderRef={imageDragHandler?.setRef}
                         progress={progress}
                         size='xsmall'
