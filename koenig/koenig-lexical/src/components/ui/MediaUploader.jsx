@@ -2,6 +2,7 @@ import ImageUploadForm from './ImageUploadForm';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import {ReactComponent as DeleteIcon} from '../../assets/icons/kg-trash.svg';
+import {ReactComponent as EditIcon} from '../../assets/icons/kg-edit.svg';
 import {IconButton} from './IconButton';
 import {MediaPlaceholder} from './MediaPlaceholder';
 import {ProgressBar} from './ProgressBar';
@@ -20,6 +21,8 @@ export function MediaUploader({
     onFileChange,
     dragHandler,
     isLoading,
+    isPinturaEnabled,
+    openImageEditor,
     progress,
     errors,
     onRemoveMedia
@@ -74,6 +77,25 @@ export function MediaUploader({
                     <div className="absolute inset-0 rounded bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover:opacity-100"></div>
                 </>
             )}
+
+            {
+                !isLoading && isPinturaEnabled && (
+                    <>
+                        <div className="right-13 absolute top-2 flex opacity-0 transition-all group-hover:opacity-100">
+                            <IconButton dataTestId="replace-product-image" Icon={EditIcon} onClick={() => openImageEditor({
+                                image: src,
+                                handleSave: (editedImage) => {
+                                    onFileChange({
+                                        target: {
+                                            files: [editedImage]
+                                        }
+                                    });
+                                }
+                            })} />
+                        </div>
+                    </>
+                )
+            }
 
             {!isLoading && (
                 <div className="absolute top-2 right-2 flex opacity-0 transition-all group-hover:opacity-100">

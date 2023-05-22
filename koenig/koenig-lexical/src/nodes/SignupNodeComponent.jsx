@@ -1,6 +1,7 @@
 import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import useFileDragAndDrop from '../hooks/useFileDragAndDrop';
+import usePinturaEditor from '../hooks/usePinturaEditor';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar';
 import {EDIT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin';
@@ -40,6 +41,7 @@ function SignupNodeComponent({
     const [showSnippetToolbar, setShowSnippetToolbar] = useState(false);
     const [availableLabels, setAvailableLabels] = useState([]);
     const [showBackgroundImage, setShowBackgroundImage] = useState(Boolean(backgroundImageSrc));
+    const {isEnabled: isPinturaEnabled, openEditor: openImageEditor} = usePinturaEditor({config: cardConfig.pinturaConfig});
 
     useEffect(() => {
         if (cardConfig?.fetchLabels) {
@@ -194,8 +196,10 @@ function SignupNodeComponent({
                 headerTextEditorInitialState={headerTextEditorInitialState}
                 imageDragHandler={imageDragHandler}
                 isEditing={isEditing}
+                isPinturaEnabled={isPinturaEnabled}
                 labels={labels}
                 layout={layout}
+                openImageEditor={openImageEditor}
                 showBackgroundImage={showBackgroundImage}
                 subheader={subheader}
                 subheaderTextEditor={subheaderTextEditor}
