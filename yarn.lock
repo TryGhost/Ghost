@@ -7051,14 +7051,14 @@
   resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.3.0.tgz#5b0940a370a22a0fa3bdf506850dabbc6af574fa"
   integrity sha512-3vdaEugCY7cTOlo8TuEYTXnXJa1CeNKJ34EU9uJPxWfUsd0BwaSN0hNcXLHhKxnPQnnJkSjradkXSvTfUsYZiA==
 
-"@tryghost/tpl@0.1.24", "@tryghost/tpl@^0.1.24":
+"@tryghost/tpl@0.1.24":
   version "0.1.24"
   resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.24.tgz#fcf585be02531baf651f2f7605466a3df744d0bc"
   integrity sha512-8DkKSCUuoGmagQ+LeiICt7mTC12HJdBIBhgK/zmOE/QKdl95G0y1mZuyc7dRaUyoXAwTj5EF+MR8gWOtuLdAEw==
   dependencies:
     lodash.template "^4.5.0"
 
-"@tryghost/tpl@^0.1.25":
+"@tryghost/tpl@^0.1.24", "@tryghost/tpl@^0.1.25":
   version "0.1.25"
   resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.25.tgz#500a05a2fce936ee785347259c4a8952223dea90"
   integrity sha512-E4lLVhTNZn67TbOg94HHhW8lndgwP+G9yTDzTKXFabEB5zgfjaX4qBkJJvS0DO8RWMsO8O4c10/cQQpKXQrFBg==
@@ -13808,10 +13808,10 @@ del@^6.0.0:
     rimraf "^3.0.2"
     slash "^3.0.0"
 
-delay@5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/delay/-/delay-5.0.0.tgz#137045ef1b96e5071060dd5be60bf9334436bd1d"
-  integrity sha512-ReEBKkIfe4ya47wlPYf/gu5ib6yUG0/Aez0JQZQz94kiWtRQvZIQbTiehsnwHvLSWJnQdhVeqYue7Id1dKr0qw==
+delay@6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/delay/-/delay-6.0.0.tgz#43749aefdf6cabd9e17b0d00bd3904525137e607"
+  integrity sha512-2NJozoOHQ4NuZuVIr5CWd0iiLVIRSDepakaovIN+9eIDHEhdCAEvSy2cuf1DCrPPQLvHmbqTHODlhHg8UCy4zw==
 
 delayed-stream@~1.0.0:
   version "1.0.0"
