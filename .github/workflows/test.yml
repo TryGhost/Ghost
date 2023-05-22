@@ -370,13 +370,6 @@ jobs:
         with:
           name: unit-coverage
           path: coverage
-
-      - run: |
-          ls
-          echo ---
-          ls coverage
-          echo ---
-          ls ghost
       - run: rsync -av --remove-source-files coverage/* ghost/
       - uses: codecov/codecov-action@v3
         with:
