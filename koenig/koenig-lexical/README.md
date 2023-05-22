@@ -14,7 +14,7 @@ cd ..
 cd packages/kg-clean-basic-html && yarn build
 ```
 
-_Alternative_: you can also run `lerna run build` from the root of the monorepo to rebuild all packages in the monorepo.
+_Alternative_: you can also run `lerna run build` from the root of the monorepo to rebuild all packages.
 
 
 ### Running the development version
