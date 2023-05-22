@@ -106,7 +106,6 @@
 /* Subscribe form */
 
 .kg-signup-card-form {
-    display: flex;
     margin: 2.8em 0 0;
 }
 
@@ -116,6 +115,10 @@
 
 .kg-width-full .kg-signup-card-form {
     margin: 4em 0 0;
+}
+
+.kg-signup-card-fields {
+    display: flex;
 }
 
 .kg-signup-card-input {
@@ -175,6 +178,36 @@
     margin-top: 2em;
 }
 
+/* Subscribe form states */
+
+.kg-signup-card-success,
+.kg-signup-card-error {
+    display: none;
+}
+
+.kg-signup-card-form.success .kg-signup-card-fields {
+    display: none;
+}
+
+.kg-signup-card-form.success .kg-signup-card-success {
+    display: block;
+}
+
+.kg-signup-card-form.error .kg-signup-card-error {
+    display: block;
+}
+
+.kg-signup-card-button-loading {
+    display: none;
+}
+
+.kg-signup-card-form.loading .kg-signup-card-button-default {
+    display: none;
+}
+
+.kg-signup-card-form.loading .kg-signup-card-button-loading {
+    display: inline-block;
+}
 
 /* Disclaimer */
 
