@@ -20,6 +20,11 @@
     color: currentColor;
 }
 
+.kg-signup-card.kg-layout-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
 .kg-signup-card-container {
     position: relative;
     display: flex;
@@ -48,6 +53,17 @@
     z-index: 999;
 }
 
+
+/* Split layout image */
+
+.kg-signup-card-image {
+    object-fit: cover;
+    object-position: center;
+    /* this will force the image to follow the signup card height */
+    height: 0;
+    min-height: 100%;
+    /**/
+}
 
 /* Heading */
 
@@ -106,6 +122,7 @@
 /* Subscribe form */
 
 .kg-signup-card-form {
+    position: relative;
     margin: 2.8em 0 0;
 }
 
@@ -126,6 +143,10 @@
     border: solid 1px;
     padding: 12px 16px;
     font-size: 1.1em;
+}
+
+.kg-signup-card-input.kg-style-accent {
+    border-color: var(--ghost-accent-color);
 }
 
 .kg-signup-card-button {
@@ -191,10 +212,15 @@
 
 .kg-signup-card-form.success .kg-signup-card-success {
     display: block;
+    height: 3em;
+    font-size: 1.25em;
+    font-weight: 500;
+    line-height: 1.4em;
 }
 
 .kg-signup-card-form.error .kg-signup-card-error {
     display: block;
+    position: absolute;
 }
 
 .kg-signup-card-button-loading {
@@ -213,4 +239,9 @@
 
 .kg-signup-card-disclaimer {
     margin: .8em 0 0;
+}
+
+.kg-signup-card-form.success + .kg-signup-card-disclaimer,
+.kg-signup-card-form.error + .kg-signup-card-disclaimer {
+    visibility: hidden;
 }
