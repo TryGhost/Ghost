@@ -14,14 +14,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof List>;
 
-const listItemProps = {
-    title: ListItemStories.HiddenActions.args?.title,
-    detail: ListItemStories.HiddenActions.args?.detail,
-    action: ListItemStories.HiddenActions.args?.action,
-    hideActions: ListItemStories.HiddenActions.args?.hideActions,
-    separator: true,
-    onClick: ListItemStories.HiddenActions.args?.onClick
-};
+const {id, ...listItemProps} = ListItemStories.HiddenActions.args || {};
 
 const listItems = (
     <>
