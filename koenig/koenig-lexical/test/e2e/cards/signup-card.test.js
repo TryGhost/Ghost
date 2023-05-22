@@ -82,8 +82,8 @@ test.describe('Signup card', async () => {
                                     </div>
                                 </div>
                             </div>
-                            <div></div>
                         </div>
+                        <div></div>
                     </div>
                 </div>
             </div>

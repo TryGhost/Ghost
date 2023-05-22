@@ -5,7 +5,6 @@ import React from 'react';
 import SignupNodeComponent from './SignupNodeComponent';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import generateEditorState from '../utils/generateEditorState';
-import usePinturaEditor from '../hooks/usePinturaEditor';
 import {$canShowPlaceholderCurry} from '@lexical/text';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {SignupNode as BaseSignupNode, INSERT_SIGNUP_COMMAND} from '@tryghost/kg-default-nodes';
