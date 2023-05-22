@@ -272,9 +272,9 @@ export function SignupCard({alignment,
                         )
                     }
 
-                    {/* Read-only overlay */}
-                    {!isEditing && <div className="absolute top-0 z-10 !m-0 h-full w-full cursor-default p-0"></div>}
                 </div>
+                {/* Read-only overlay */}
+                {!isEditing && <div className="absolute top-0 z-10 !m-0 h-full w-full cursor-default p-0"></div>}
             </div>
 
             {isEditing &&
