@@ -1534,3 +1534,8 @@ kbd {
 .gh-editor-feedback-dropdown {
     background: var(--whitegrey-l1);
 }
+
+/* Update banner */
+.gh-update-banner {
+    background: var(--main-color-content-greybg);
+}
