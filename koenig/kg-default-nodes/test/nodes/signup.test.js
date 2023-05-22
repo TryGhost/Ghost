@@ -182,7 +182,24 @@ describe('SignupNode', function () {
             const signupNode = $createSignupNode(dataset);
             const {element} = signupNode.exportDOM(exportOptions);
             element.outerHTML.should.prettifyTo(html`
-            <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="display:none"><div class="kg-signup-card-container align-center" style="background-color:transparent;background-image:url(https://example.com/image.jpg)"><h2 class="kg-signup-card-heading" style="color:#000">Header</h2><h3 class="kg-signup-card-subheading" style="color:#000">Subheader</h3><form class="kg-signup-card-form" data-members-form=""><div class="kg-signup-card-fields"><input class="kg-signup-card-input" style="border-color:#000" id="email" data-members-email="" type="email" required="true" placeholder="yourname@example.com"><button class="kg-signup-card-button" style="background-color:#000;color:#fff" type="submit"><span class="kg-signup-card-button-default">Button</span><span class="kg-signup-card-button-loading">...</span></button></div><div class="kg-signup-card-success" style="color:#000">Success!</div><div class="kg-signup-card-error" style="color:#000" data-members-error=""></div></form><p class="kg-signup-card-disclaimer" style="color:#000">Disclaimer</p></div></div>
+                <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="display:none">
+                    <div class="kg-signup-card-container align-center" style="background-color:transparent;background-image:url(https://example.com/image.jpg)">
+                        <h2 class="kg-signup-card-heading" style="color:#000">Header</h2>
+                        <h3 class="kg-signup-card-subheading" style="color:#000">Subheader</h3>
+                        <form class="kg-signup-card-form" data-members-form="">
+                            <div class="kg-signup-card-fields">
+                                <input class="kg-signup-card-input" style="border-color:#000" id="email" data-members-email="" type="email" required="true" placeholder="yourname@example.com">
+                                <button class="kg-signup-card-button" style="background-color:#000;color:#fff" type="submit">
+                                    <span class="kg-signup-card-button-default">Button</span>
+                                    <span class="kg-signup-card-button-loading">...</span>
+                                </button>
+                            </div>
+                            <div class="kg-signup-card-success" style="color:#000">Success!</div>
+                            <div class="kg-signup-card-error" style="color:#000" data-members-error=""></div>
+                        </form>
+                        <p class="kg-signup-card-disclaimer" style="color:#000">Disclaimer</p>
+                    </div>
+                </div>
             `);
         }));
 
@@ -193,7 +210,21 @@ describe('SignupNode', function () {
             const signupNode = $createSignupNode(dataset);
             const {element} = signupNode.exportDOM(exportOptions);
             element.outerHTML.should.prettifyTo(html`
-            <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="display:none"><div class="kg-signup-card-container align-center" style="background-color:transparent;background-image:url(https://example.com/image.jpg)"><form class="kg-signup-card-form" data-members-form=""><div class="kg-signup-card-fields"><input class="kg-signup-card-input" style="border-color:#000" id="email" data-members-email="" type="email" required="true" placeholder="yourname@example.com"><button class="kg-signup-card-button" style="background-color:#000;color:#fff" type="submit"><span class="kg-signup-card-button-default">Button</span><span class="kg-signup-card-button-loading">...</span></button></div><div class="kg-signup-card-success" style="color:#000">Success!</div><div class="kg-signup-card-error" style="color:#000" data-members-error=""></div></form></div></div>
+                <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="display:none">
+                    <div class="kg-signup-card-container align-center" style="background-color:transparent;background-image:url(https://example.com/image.jpg)">
+                        <form class="kg-signup-card-form" data-members-form="">
+                            <div class="kg-signup-card-fields">
+                                <input class="kg-signup-card-input" style="border-color:#000" id="email" data-members-email="" type="email" required="true" placeholder="yourname@example.com">
+                                <button class="kg-signup-card-button" style="background-color:#000;color:#fff" type="submit">
+                                    <span class="kg-signup-card-button-default">Button</span>
+                                    <span class="kg-signup-card-button-loading">...</span>
+                                </button>
+                            </div>
+                            <div class="kg-signup-card-success" style="color:#000">Success!</div>
+                            <div class="kg-signup-card-error" style="color:#000" data-members-error=""></div>
+                        </form>
+                    </div>
+                </div>
             `);
         }));
 
@@ -204,7 +235,24 @@ describe('SignupNode', function () {
             const signupNode = $createSignupNode(dataset);
             const {element} = signupNode.exportDOM(exportOptions);
             element.outerHTML.should.prettifyTo(html`
-            <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="display:none"><div class="kg-signup-card-container align-center kg-style-accent" style="background-color:accent;background-image:url(https://example.com/image.jpg)"><h2 class="kg-signup-card-heading" style="color:#000">Header</h2><h3 class="kg-signup-card-subheading" style="color:#000">Subheader</h3><form class="kg-signup-card-form" data-members-form=""><div class="kg-signup-card-fields"><input class="kg-signup-card-input" style="border-color:accent" id="email" data-members-email="" type="email" required="true" placeholder="yourname@example.com"><button class="kg-signup-card-button kg-style-accent" style="background-color:accent;color:#fff" type="submit"><span class="kg-signup-card-button-default">Button</span><span class="kg-signup-card-button-loading">...</span></button></div><div class="kg-signup-card-success" style="color:#000">Success!</div><div class="kg-signup-card-error" style="color:#000" data-members-error=""></div></form><p class="kg-signup-card-disclaimer" style="color:#000">Disclaimer</p></div></div>
+                <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="display:none">
+                    <div class="kg-signup-card-container align-center kg-style-accent" style="background-color:accent;background-image:url(https://example.com/image.jpg)">
+                        <h2 class="kg-signup-card-heading" style="color:#000">Header</h2>
+                        <h3 class="kg-signup-card-subheading" style="color:#000">Subheader</h3>
+                        <form class="kg-signup-card-form" data-members-form="">
+                            <div class="kg-signup-card-fields">
+                                <input class="kg-signup-card-input" style="border-color:accent" id="email" data-members-email="" type="email" required="true" placeholder="yourname@example.com">
+                                <button class="kg-signup-card-button kg-style-accent" style="background-color:accent;color:#fff" type="submit">
+                                    <span class="kg-signup-card-button-default">Button</span>
+                                    <span class="kg-signup-card-button-loading">...</span>
+                                </button>
+                            </div>
+                            <div class="kg-signup-card-success" style="color:#000">Success!</div>
+                            <div class="kg-signup-card-error" style="color:#000" data-members-error=""></div>
+                        </form>
+                        <p class="kg-signup-card-disclaimer" style="color:#000">Disclaimer</p>
+                    </div>
+                </div>
             `);
         }));
 
@@ -214,7 +262,25 @@ describe('SignupNode', function () {
             const signupNode = $createSignupNode(dataset);
             const {element} = signupNode.exportDOM(exportOptions);
             element.outerHTML.should.prettifyTo(html`
-            <div class="kg-card kg-signup-card kg-layout-split kg-width-full" data-lexical-signup-form="" style="display:none"><div class="kg-signup-card-container align-center" style="background-color:transparent;background-image:url(https://example.com/image.jpg)"><h2 class="kg-signup-card-heading" style="color:#000">Header</h2><h3 class="kg-signup-card-subheading" style="color:#000">Subheader</h3><form class="kg-signup-card-form" data-members-form=""><div class="kg-signup-card-fields"><input class="kg-signup-card-input" style="border-color:#000" id="email" data-members-email="" type="email" required="true" placeholder="yourname@example.com"><button class="kg-signup-card-button" style="background-color:#000;color:#fff" type="submit"><span class="kg-signup-card-button-default">Button</span><span class="kg-signup-card-button-loading">...</span></button></div><div class="kg-signup-card-success" style="color:#000">Success!</div><div class="kg-signup-card-error" style="color:#000" data-members-error=""></div></form><p class="kg-signup-card-disclaimer" style="color:#000">Disclaimer</p></div></div>
+                <div class="kg-card kg-signup-card kg-layout-split kg-width-full" data-lexical-signup-form="" style="display:none">
+                    <img class="kg-signup-card-image" src="https://example.com/image.jpg" alt="">
+                    <div class="kg-signup-card-container align-center" style="background-color:transparent">
+                        <h2 class="kg-signup-card-heading" style="color:#000">Header</h2>
+                        <h3 class="kg-signup-card-subheading" style="color:#000">Subheader</h3>
+                        <form class="kg-signup-card-form" data-members-form="">
+                            <div class="kg-signup-card-fields">
+                                <input class="kg-signup-card-input" style="border-color:#000" id="email" data-members-email="" type="email" required="true" placeholder="yourname@example.com">
+                                <button class="kg-signup-card-button" style="background-color:#000;color:#fff" type="submit">
+                                    <span class="kg-signup-card-button-default">Button</span>
+                                    <span class="kg-signup-card-button-loading">...</span>
+                                </button>
+                            </div>
+                            <div class="kg-signup-card-success" style="color:#000">Success!</div>
+                            <div class="kg-signup-card-error" style="color:#000" data-members-error=""></div>
+                        </form>
+                        <p class="kg-signup-card-disclaimer" style="color:#000">Disclaimer</p>
+                    </div>
+                </div>
             `);
         }));
     });
