@@ -15,8 +15,17 @@ function cardTemplate(nodeData) {
             <h2 class="kg-signup-card-heading" style="color: ${nodeData.textColor};">${nodeData.header}</h2>
             <h3 class="kg-signup-card-subheading" style="color: ${nodeData.textColor};">${nodeData.subheader}</h3>
             <form class="kg-signup-card-form" data-members-form="">
-                <input class="kg-signup-card-input" style="border-color: ${nodeData.buttonColor};" id="email" data-members-email="" type="email" required="true" placeholder="yourname@example.com" />
-                <button class="kg-signup-card-button ${buttonAccent}" style="background-color: ${nodeData.buttonColor}; color: ${nodeData.buttonTextColor};" type="submit">${nodeData.buttonText || 'Subscribe'}</button>
+                <div class="kg-signup-card-fields">
+                    <input class="kg-signup-card-input" style="border-color: ${nodeData.buttonColor};" id="email" data-members-email="" type="email" required="true" placeholder="yourname@example.com" />
+                    <button class="kg-signup-card-button ${buttonAccent}" style="background-color: ${nodeData.buttonColor}; color: ${nodeData.buttonTextColor};" type="submit">
+                        <span class="kg-signup-card-button-default">${nodeData.buttonText || 'Subscribe'}</span>
+                        <span class="kg-signup-card-button-loading">...</span>
+                    </button>
+                </div>
+                <div class="kg-signup-card-success" style="color: ${nodeData.textColor};">
+                    To complete signup, click the link in the confirmation email we just sent you!
+                </div>
+                <div class="kg-signup-card-error" style="color: ${nodeData.textColor};" data-members-error></div>
             </form>
             <p class="kg-signup-card-disclaimer" style="color: ${nodeData.textColor};">${nodeData.disclaimer}</p>
         </div>
