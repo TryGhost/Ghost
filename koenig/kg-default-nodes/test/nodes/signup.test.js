@@ -182,6 +182,24 @@ describe('SignupNode', function () {
     });
 
     describe('exportDOM', function () {
+        const loadingIcon = `<svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 0 24 24">
+            <g stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor" stroke-linejoin="round" class="nc-icon-wrapper">
+                <g class="nc-loop-dots-4-24-icon-o">
+                    <circle cx="4" cy="12" r="3"></circle>
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <circle cx="20" cy="12" r="3"></circle>
+                </g>
+                <style data-cap="butt">
+                    .nc-loop-dots-4-24-icon-o{--animation-duration:0.8s}
+                    .nc-loop-dots-4-24-icon-o *{opacity:.4;transform:scale(.75);animation:nc-loop-dots-4-anim var(--animation-duration) infinite}
+                    .nc-loop-dots-4-24-icon-o :nth-child(1){transform-origin:4px 12px;animation-delay:-.3s;animation-delay:calc(var(--animation-duration)/-2.666)}
+                    .nc-loop-dots-4-24-icon-o :nth-child(2){transform-origin:12px 12px;animation-delay:-.15s;animation-delay:calc(var(--animation-duration)/-5.333)}
+                    .nc-loop-dots-4-24-icon-o :nth-child(3){transform-origin:20px 12px}
+                    @keyframes nc-loop-dots-4-anim{0%,100%{opacity:.4;transform:scale(.75)}50%{opacity:1;transform:scale(1)}}
+                </style>
+            </g>
+        </svg>`;
+
         it('creates signup element', editorTest(function () {
             const signupNode = $createSignupNode(dataset);
             const {element} = signupNode.exportDOM(exportOptions);
@@ -197,7 +215,7 @@ describe('SignupNode', function () {
                                 <input class="kg-signup-card-input" style="border-color:#000000" id="email" data-members-email="" type="email" required="true" placeholder="yourname@example.com">
                                 <button class="kg-signup-card-button" style="background-color:#000000;color:#ffffff" type="submit">
                                     <span class="kg-signup-card-button-default">Button</span>
-                                    <span class="kg-signup-card-button-loading">...</span>
+                                    <span class="kg-signup-card-button-loading" style="background-color:#000000">${loadingIcon}</span>
                                 </button>
                             </div>
                             <div class="kg-signup-card-success" style="color:#000000">Success!</div>
@@ -225,7 +243,7 @@ describe('SignupNode', function () {
                                 <input class="kg-signup-card-input" style="border-color:#000000" id="email" data-members-email="" type="email" required="true" placeholder="yourname@example.com">
                                 <button class="kg-signup-card-button" style="background-color:#000000;color:#ffffff" type="submit">
                                     <span class="kg-signup-card-button-default">Button</span>
-                                    <span class="kg-signup-card-button-loading">...</span>
+                                    <span class="kg-signup-card-button-loading" style="background-color:#000000">${loadingIcon}</span>
                                 </button>
                             </div>
                             <div class="kg-signup-card-success" style="color:#000000">Success!</div>
@@ -254,7 +272,7 @@ describe('SignupNode', function () {
                                 <input class="kg-signup-card-input kg-style-accent" style="border-color:accent" id="email" data-members-email="" type="email" required="true" placeholder="yourname@example.com">
                                 <button class="kg-signup-card-button kg-style-accent" style="background-color:accent;color:#ffffff" type="submit">
                                     <span class="kg-signup-card-button-default">Button</span>
-                                    <span class="kg-signup-card-button-loading">...</span>
+                                    <span class="kg-signup-card-button-loading" style="background-color:accent">${loadingIcon}</span>
                                 </button>
                             </div>
                             <div class="kg-signup-card-success" style="color:#000000">Success!</div>
@@ -284,7 +302,7 @@ describe('SignupNode', function () {
                                 <input class="kg-signup-card-input" style="border-color:#000000" id="email" data-members-email="" type="email" required="true" placeholder="yourname@example.com">
                                 <button class="kg-signup-card-button" style="background-color:#000000;color:#ffffff" type="submit">
                                     <span class="kg-signup-card-button-default">Button</span>
-                                    <span class="kg-signup-card-button-loading">...</span>
+                                    <span class="kg-signup-card-button-loading" style="background-color:#000000">${loadingIcon}</span>
                                 </button>
                             </div>
                             <div class="kg-signup-card-success" style="color:#000000">Success!</div>
