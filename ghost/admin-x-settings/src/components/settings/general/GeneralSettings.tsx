@@ -6,6 +6,7 @@ import SettingSection from '../../../admin-x-ds/settings/SettingSection';
 import SocialAccounts from './SocialAccounts';
 import TimeZone from './TimeZone';
 import TitleAndDescription from './TitleAndDescription';
+import Users from './Users';
 
 const GeneralSettings: React.FC = () => {
     return (
@@ -16,6 +17,7 @@ const GeneralSettings: React.FC = () => {
                 <PublicationLanguage />
                 <SocialAccounts />
                 <LockSite />
+                <Users />
             </SettingSection>
         </>
     );
