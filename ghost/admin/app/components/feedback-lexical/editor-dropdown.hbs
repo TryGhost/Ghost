@@ -20,11 +20,12 @@
                 </header>
 
                 <div class="">
-                    <p>Have any issues? Feedback? Let us know!</p>
+                    {{!-- <p>Have any issues? Feedback? Let us know!</p> --}}
                     <FeedbackLexical::Textarea
                         @feedbackMessage={{this.feedbackMessage}}
                         @updateFeedbackMessage={{this.updateFeedbackMessage}}
                         @shouldFocus={{true}}
+                        @placeholder="Have any issues? Feedback? Let us know!"
                     />
                 </div>
 
