@@ -6,7 +6,7 @@ import SettingGroupHeader from './SettingGroupHeader';
 import Heading from '../global/Heading';
 
 const meta = {
-    title: 'Settings / Setting Group Header',
+    title: 'Settings / Setting Group / Header',
     component: SettingGroupHeader,
     tags: ['autodocs']
 } satisfies Meta<typeof SettingGroupHeader>;
