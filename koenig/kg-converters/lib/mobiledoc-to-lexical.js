@@ -70,6 +70,17 @@ const MARKUP_TO_FORMAT = {
     sup: 1 << 6
 };
 
+const CARD_NAME_MAP = {
+    code: 'codeblock',
+    horizontalrule: 'hr'
+};
+
+const CARD_PROPERTY_MAP = {
+    embed: {
+        type: 'embedType'
+    }
+};
+
 export function mobiledocToLexical(serializedMobiledoc) {
     if (serializedMobiledoc === null || serializedMobiledoc === undefined || serializedMobiledoc === '') {
         return JSON.stringify(BLANK_DOC);
@@ -124,9 +135,11 @@ function addRootChild(child, mobiledoc, lexical) {
         // List section
         const lexicalChild = convertListSectionToLexical(child, mobiledoc);
         lexical.root.children.push(lexicalChild);
-        lexical.root.direction = 'ltr';
+        lexical.root.direction = 'ltr'; // mobiledoc only supports LTR
     } else if (sectionTypeIdentifier === 10) {
         // Card section
+        const lexicalChild = convertCardSectionToLexical(child, mobiledoc);
+        lexical.root.children.push(lexicalChild);
     }
 }
 
@@ -285,4 +298,25 @@ function convertListSectionToLexical(child, mobiledoc) {
     });
 
     return listNode;
+}
+
+function convertCardSectionToLexical(child, mobiledoc) {
+    let [cardName, payload] = mobiledoc.cards[child[1]];
+
+    // rename card if there's a difference between mobiledoc and lexical
+    cardName = CARD_NAME_MAP[cardName] || cardName;
+
+    // rename any properties to match lexical
+    if (CARD_PROPERTY_MAP[cardName]) {
+        const map = CARD_PROPERTY_MAP[cardName];
+
+        for (const [oldName, newName] of Object.entries(map)) {
+            payload[newName] = payload[oldName];
+            delete payload[oldName];
+        }
+    }
+
+    const decoratorNode = {type: cardName, ...payload};
+
+    return decoratorNode;
 }

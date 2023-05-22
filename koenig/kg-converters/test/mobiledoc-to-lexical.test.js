@@ -2041,5 +2041,123 @@ describe('mobiledocToLexical', function () {
     });
 
     describe('cards', function () {
+        it('moves all payload data over', function () {
+            const result = mobiledocToLexical(JSON.stringify({
+                version: MOBILEDOC_VERSION,
+                ghostVersion: GHOST_VERSION,
+                atoms: [],
+                cards: [
+                    ['image', {
+                        version: 1,
+                        src: 'https://koenig.ghost.org/content/images/2023/05/flip-flop.png',
+                        width: 112,
+                        height: 112,
+                        title: '',
+                        alt: 'White-soled flip flop with black strap',
+                        caption: '<span>Flip flop</span>',
+                        cardWidth: 'regular',
+                        href: ''
+                    }]
+                ],
+                markups: [],
+                sections: [
+                    [10, 0]
+                ]
+            }));
+
+            assert.equal(result, JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            type: 'image',
+                            version: 1,
+                            src: 'https://koenig.ghost.org/content/images/2023/05/flip-flop.png',
+                            width: 112,
+                            height: 112,
+                            title: '',
+                            alt: 'White-soled flip flop with black strap',
+                            caption: '<span>Flip flop</span>',
+                            cardWidth: 'regular',
+                            href: ''
+                        }
+                    ],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+        });
+
+        it('renames cards', function () {
+            const result = mobiledocToLexical(JSON.stringify({
+                version: MOBILEDOC_VERSION,
+                ghostVersion: GHOST_VERSION,
+                atoms: [],
+                cards: [
+                    ['code', {
+                        version: 1,
+                        code: 'testing'
+                    }]
+                ],
+                markups: [],
+                sections: [
+                    [10, 0]
+                ]
+            }));
+
+            assert.equal(result, JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            type: 'codeblock',
+                            version: 1,
+                            code: 'testing'
+                        }
+                    ],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+        });
+
+        it('renames payload properties', function () {
+            const result = mobiledocToLexical(JSON.stringify({
+                version: MOBILEDOC_VERSION,
+                ghostVersion: GHOST_VERSION,
+                atoms: [],
+                cards: [
+                    ['embed', {
+                        version: 1,
+                        type: 'twitter'
+                    }]
+                ],
+                markups: [],
+                sections: [
+                    [10, 0]
+                ]
+            }));
+
+            assert.equal(result, JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            type: 'embed',
+                            version: 1,
+                            embedType: 'twitter'
+                        }
+                    ],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+        });
     });
 });
