@@ -71,11 +71,11 @@ export function MediaUploader({
     }
 
     return (
-        <div className={clsx('group relative flex items-center justify-center rounded', className)} data-testid="media-upload-filled">
+        <div className={clsx('group relative flex items-center justify-center', borderStyle === 'dashed' && 'rounded', className)} data-testid="media-upload-filled">
             {src && (
                 <>
-                    <img alt={alt} className="mx-auto h-full w-full rounded object-cover" src={src} />
-                    <div className="absolute inset-0 rounded bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover:opacity-100"></div>
+                    <img alt={alt} className={clsx('mx-auto h-full w-full object-cover', borderStyle === 'dashed' && 'rounded')} src={src} />
+                    <div className={clsx('absolute inset-0 bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover:opacity-100', borderStyle === 'dashed' && 'rounded')}></div>
                 </>
             )}
 
@@ -107,7 +107,7 @@ export function MediaUploader({
 
             {isLoading && (
                 <div
-                    className="absolute inset-0 flex min-w-full items-center justify-center overflow-hidden rounded border border-dashed border-grey/20 bg-grey-50"
+                    className={clsx('absolute inset-0 flex min-w-full items-center justify-center overflow-hidden border border-dashed border-grey/20 bg-grey-50', borderStyle === 'dashed' && 'rounded')}
                     data-testid="custom-thumbnail-progress"
                 >
                     <ProgressBar style={progressStyle} />
