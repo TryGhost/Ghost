@@ -1,7 +1,7 @@
 import AppContext from '../../AppContext';
 import React, {useContext, useState} from 'react';
 import Switch from '../common/Switch';
-import {getSiteNewsletters} from '../../utils/helpers';
+import {getSiteNewsletters, hasOnlyFreePlan} from '../../utils/helpers';
 import ActionButton from '../common/ActionButton';
 import {ReactComponent as LockIcon} from '../../images/icons/lock.svg';
 
@@ -116,15 +116,17 @@ export default function NewsletterSelectionPage({pageData, onBack}) {
                             style={{width: '100%'}}
                         />
                     </div>
-                    <div>
-                        <button
-                            className='gh-portal-btn gh-portal-btn-link gh-portal-btn-different-plan'
-                            onClick = {() => {
-                                onBack();
-                            }}>
-                            <span>{t('Choose a different plan')}</span>
-                        </button>
-                    </div>
+                    {!hasOnlyFreePlan({site}) ? (
+                        <div>
+                            <button
+                                className='gh-portal-btn gh-portal-btn-link gh-portal-btn-different-plan'
+                                onClick = {() => {
+                                    onBack();
+                                }}>
+                                <span>{t('Choose a different plan')}</span>
+                            </button>
+                        </div>
+                    ) : null}
                 </div>
             </footer>
         </div>
