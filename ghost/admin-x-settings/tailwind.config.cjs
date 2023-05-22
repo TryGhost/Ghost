@@ -186,7 +186,7 @@ module.exports = {
                 supertight: '1.1em'
             },
             transition: {
-                basic: 'all 0.4 ease'
+                basic: 'all 0.4s ease'
             }
         }
     }
