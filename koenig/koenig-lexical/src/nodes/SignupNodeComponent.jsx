@@ -124,13 +124,8 @@ function SignupNodeComponent({
         });
     };
 
-    const handleToggleBackgroundImage = (e) => {
-        if (e.target.checked) {
-            setShowBackgroundImage(true);
-        } else {
-            setShowBackgroundImage(false);
-            handleClearBackgroundImage();
-        }
+    const handleShowBackgroundImage = (e) => {
+        setShowBackgroundImage(true);
     };
 
     const handleBackgroundColor = (color, matchingTextColor) => {
@@ -138,6 +133,11 @@ function SignupNodeComponent({
             const node = $getNodeByKey(nodeKey);
             node.setBackgroundColor(color);
             node.setTextColor(matchingTextColor);
+
+            if (layout !== 'split') {
+                setShowBackgroundImage(false);
+                handleClearBackgroundImage();
+            }
         });
     };
 
@@ -196,10 +196,10 @@ function SignupNodeComponent({
                 handleClearBackgroundImage={handleClearBackgroundImage}
                 handleLabels={handleLabels}
                 handleLayout={handleLayout}
+                handleShowBackgroundImage={handleShowBackgroundImage}
                 handleSuccessMessage={handleSuccessMessage}
                 handleSwapLayout={handleSwapLayout}
                 handleTextColor={handleTextColor}
-                handleToggleBackgroundImage={handleToggleBackgroundImage}
                 header={header}
                 headerTextEditor={headerTextEditor}
                 headerTextEditorInitialState={headerTextEditorInitialState}

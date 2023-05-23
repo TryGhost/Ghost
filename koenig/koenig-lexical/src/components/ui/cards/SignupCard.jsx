@@ -2,10 +2,11 @@ import KoenigNestedEditor from '../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
 import React, {useEffect} from 'react';
 import clsx from 'clsx';
-import {ButtonGroupSetting, ColorPickerSetting, InputSetting, MediaUploadSetting, MultiSelectDropdownSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
+import {ButtonGroupSetting, ColorPickerSetting, InputSetting, MediaUploadSetting, MultiSelectDropdownSetting, SettingsDivider, SettingsPanel} from '../SettingsPanel';
 import {ReactComponent as CenterAlignIcon} from '../../../assets/icons/kg-align-center.svg';
 import {FastAverageColor} from 'fast-average-color';
 import {IconButton} from '../IconButton';
+import {ReactComponent as ImgBgIcon} from '../../../assets/icons/kg-img-bg.svg';
 import {ReactComponent as ImgFullIcon} from '../../../assets/icons/kg-img-full.svg';
 import {ReactComponent as ImgRegularIcon} from '../../../assets/icons/kg-img-regular.svg';
 import {ReactComponent as ImgWideIcon} from '../../../assets/icons/kg-img-wide.svg';
@@ -34,7 +35,7 @@ export function SignupCard({alignment,
     fileUploader,
     handleAlignment,
     handleButtonText,
-    handleToggleBackgroundImage,
+    handleShowBackgroundImage,
     handleClearBackgroundImage,
     handleBackgroundColor,
     handleButtonColor,
@@ -308,12 +309,35 @@ export function SignupCard({alignment,
                         selectedName={alignment}
                         onClick={handleAlignment}
                     />
-                    {(layout !== 'split') && <ToggleSetting
-                        dataTestId='signup-background-image-toggle'
-                        isChecked={Boolean(showBackgroundImage)}
-                        label='Image'
-                        onChange={handleToggleBackgroundImage}
-                    />}
+                    <ColorPickerSetting
+                        dataTestId='signup-background-color'
+                        eyedropper={layout === 'split'}
+                        hasTransparentOption={true}
+                        label='Background'
+                        swatches={[
+                            (layout !== 'split' && {
+                                customContent: (
+                                    <button
+                                        className={clsx(
+                                            `relative flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-grey-300 bg-grey-100 text-black`,
+                                            showBackgroundImage && 'outline outline-2 outline-green'
+                                        )}
+                                        data-testid="signup-background-image-toggle"
+                                        title="Image"
+                                        type="button"
+                                        onClick={handleShowBackgroundImage}
+                                    >
+                                        <ImgBgIcon className="h-[1.4rem] w-[1.4rem]" />
+                                    </button>
+                                )
+                            }),
+                            {title: 'Grey', hex: '#F4F5F6'},
+                            {title: 'Black', hex: '#000000'},
+                            {title: 'Brand color', accent: true}
+                        ].filter(Boolean)}
+                        value={(showBackgroundImage && layout !== 'split') ? '' : backgroundColor}
+                        onChange={color => handleBackgroundColor(color, matchingTextColor(color))}
+                    />
                     {showBackgroundImage && layout !== 'split' && <MediaUploadSetting
                         alt='Background image'
                         borderStyle={'dashed'}
@@ -334,18 +358,6 @@ export function SignupCard({alignment,
                         onFileChange={onFileChange}
                         onRemoveMedia={handleClearBackgroundImage}
                     />}
-                    {(!showBackgroundImage || layout === 'split') && <ColorPickerSetting
-                        dataTestId='signup-background-color'
-                        eyedropper={layout === 'split'}
-                        label='Background'
-                        swatches={[
-                            {title: 'Brand color', accent: true},
-                            {title: 'Black', hex: '#000000'},
-                            {title: 'Transparent', transparent: true}
-                        ]}
-                        value={backgroundColor}
-                        onChange={color => handleBackgroundColor(color, matchingTextColor(color))}
-                    />}
                     <SettingsDivider />
 
                     <ColorPickerSetting
@@ -353,9 +365,9 @@ export function SignupCard({alignment,
                         eyedropper={layout === 'split'}
                         label='Button'
                         swatches={[
-                            {title: 'Brand color', accent: true},
+                            {title: 'White', hex: '#ffffff'},
                             {title: 'Black', hex: '#000000'},
-                            {title: 'White', hex: '#ffffff'}
+                            {title: 'Brand color', accent: true}
                         ]}
                         value={buttonColor}
                         onChange={color => handleButtonColor(color, matchingTextColor(color))}
@@ -411,7 +423,7 @@ SignupCard.propTypes = {
     handleButtonText: PropTypes.func,
     handleClearBackgroundImage: PropTypes.func,
     handleBackgroundColor: PropTypes.func,
-    handleToggleBackgroundImage: PropTypes.func,
+    handleShowBackgroundImage: PropTypes.func,
     handleButtonColor: PropTypes.func,
     handleLabels: PropTypes.func,
     handleTextColor: PropTypes.func,

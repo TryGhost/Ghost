@@ -4,6 +4,7 @@
 
     .react-colorful__saturation {
         border-radius: 4px 4px 0 0;
+        border-bottom: 1px solid #000;
     }
 
     .react-colorful__hue {
