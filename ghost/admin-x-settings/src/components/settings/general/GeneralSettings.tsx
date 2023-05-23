@@ -1,6 +1,7 @@
 import React from 'react';
 
 import LockSite from './LockSite';
+import Metadata from './Metadata';
 import PublicationLanguage from './PublicationLanguage';
 import SettingSection from '../../../admin-x-ds/settings/SettingSection';
 import SocialAccounts from './SocialAccounts';
@@ -15,6 +16,7 @@ const GeneralSettings: React.FC = () => {
                 <TitleAndDescription />
                 <TimeZone />
                 <PublicationLanguage />
+                <Metadata />
                 <SocialAccounts />
                 <LockSite />
                 <Users />
