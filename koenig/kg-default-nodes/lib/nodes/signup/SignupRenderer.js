@@ -29,7 +29,7 @@ function cardTemplate(nodeData) {
 
     return `
         <div class="${cardClasses}" data-lexical-signup-form style="display:none;">
-            ${nodeData.layout === 'split' ? `<img class="kg-signup-card-image" src="${nodeData.backgroundImageSrc}" alt="" />` : ''}
+            ${nodeData.layout === 'split' ? `<img class="kg-signup-card-image ${backgroundAccent}" style="background-color: ${nodeData.backgroundColor};" src="${nodeData.backgroundImageSrc}" alt="" />` : ''}
             <div class="kg-signup-card-container ${alignment} ${backgroundAccent}" style="background-color: ${nodeData.backgroundColor}; ${backgroundImageStyle}">
                 <h2 class="kg-signup-card-heading" style="color: ${nodeData.textColor};">${nodeData.header}</h2>
                 <h3 class="kg-signup-card-subheading" style="color: ${nodeData.textColor};">${nodeData.subheader}</h3>
@@ -42,7 +42,7 @@ function cardTemplate(nodeData) {
 
 function loadingIcon() {
     return `<svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 0 24 24">
-        <g stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor" stroke-linejoin="round" class="nc-icon-wrapper">
+        <g stroke-linecap="round" stroke-width="2" fill="currentColor" stroke="none" stroke-linejoin="round" class="nc-icon-wrapper">
             <g class="nc-loop-dots-4-24-icon-o">
                 <circle cx="4" cy="12" r="3"></circle>
                 <circle cx="12" cy="12" r="3"></circle>
