@@ -1,27 +1,25 @@
 import React, {createContext, useEffect, useState} from 'react';
+import {Setting} from '../types/api';
 import {getSettings, updateSettings} from '../utils/api';
-
-// Define the Setting type
-export interface ISetting {
-    key: string;
-    value: string;
-}
 
 // Define the Settings Context
 interface SettingsContextProps {
-  settings: ISetting[] | null;
-  saveSettings: (updatedSettings: ISetting[]) => void;
+  settings: Setting[] | null;
+  saveSettings: (updatedSettings: Setting[]) => void;
 }
 
 interface SettingsProviderProps {
     children?: React.ReactNode;
 }
 
-const SettingsContext = createContext < SettingsContextProps | undefined > (undefined);
+const SettingsContext = createContext<SettingsContextProps>({
+    settings: null,
+    saveSettings: () => []
+});
 
 // Create a Settings Provider component
 const SettingsProvider: React.FC<SettingsProviderProps> = ({children}) => {
-    const [settings, setSettings] = useState <ISetting[] | null> (null);
+    const [settings, setSettings] = useState <Setting[] | null> (null);
 
     useEffect(() => {
         const fetchSettings = async (): Promise<void> => {
@@ -38,7 +36,7 @@ const SettingsProvider: React.FC<SettingsProviderProps> = ({children}) => {
         fetchSettings();
     }, []);
 
-    const saveSettings = async (updatedSettings: ISetting[]): Promise<void> => {
+    const saveSettings = async (updatedSettings: Setting[]): Promise<void> => {
         try {
             // Make an API call to save the updated settings
             const data = await updateSettings(updatedSettings);

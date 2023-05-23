@@ -31,7 +31,7 @@ const Toggle: React.FC<ToggleProps> = ({id, size, direction, label, hint, separa
         sizeStyles = ' h-5 w-8 after:h-4 after:w-4 checked:after:ml-[1.4rem]';
         labelStyles = 'mt-[-1px]';
         break;
-    
+
     default:
         sizeStyles = ' min-w-[28px] h-4 w-7 after:h-3 after:w-3 checked:after:ml-[1.4rem]';
         labelStyles = 'mt-[-3px]';
@@ -47,7 +47,7 @@ const Toggle: React.FC<ToggleProps> = ({id, size, direction, label, hint, separa
                     role="switch"
                     type="checkbox"
                     onChange={onChange} />
-                {label && 
+                {label &&
                     <div className={`flex flex-col ${direction === 'rtl' && 'order-1'} ${labelStyles}`}>
                         <label
                             className={`inline-block hover:cursor-pointer`}

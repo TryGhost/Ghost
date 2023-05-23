@@ -18,9 +18,20 @@ interface SettingGroupProps {
      */
     onStateChange?: (newState: TSettingGroupStates) => void
     onSave?: () => void
+    onCancel?: () => void
 }
 
-const SettingGroup: React.FC<SettingGroupProps> = ({title, description, state, customHeader, customButtons, children, onStateChange, onSave}) => {
+const SettingGroup: React.FC<SettingGroupProps> = ({
+    title,
+    description,
+    state,
+    customHeader,
+    customButtons,
+    children,
+    onStateChange,
+    onSave,
+    onCancel
+}) => {
     const handleEdit = () => {
         if (onStateChange) {
             onStateChange('edit');
@@ -28,16 +39,13 @@ const SettingGroup: React.FC<SettingGroupProps> = ({title, description, state, c
     };
 
     const handleCancel = () => {
-        if (onStateChange) {
-            onStateChange('view');
-        }
+        onCancel?.();
+        onStateChange?.('view');
     };
 
     const handleSave = () => {
         onSave?.();
-        if (onStateChange) {
-            onStateChange('view');
-        }
+        onStateChange?.('view');
     };
 
     let styles = '';

@@ -1,54 +1,50 @@
 import Dropdown from '../../../admin-x-ds/global/Dropdown';
-import React, {useContext, useEffect, useState} from 'react';
-import SettingGroup, {TSettingGroupStates} from '../../../admin-x-ds/settings/SettingGroup';
+import React, {useEffect, useState} from 'react';
+import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import timezoneData from '@tryghost/timezone-data';
-import {SettingsContext} from '../../SettingsProvider';
-import {getLocalTime, getSettingValue} from '../../../utils/helpers';
+import useSettingGroup from '../../../hooks/useSettingGroup';
+import {getLocalTime} from '../../../utils/helpers';
 
 interface TimezoneDataDropdownOption {
     name: string;
     label: string;
 }
 
-const TimeZone: React.FC = () => {
-    const [currentState, setCurrentState] = useState<TSettingGroupStates>('view');
-    const {settings, saveSettings} = useContext(SettingsContext) || {};
-    const savedPublicationTimezone = getSettingValue(settings, 'timezone');
-    const [publicationTimezone, setPublicationTimezone] = useState(savedPublicationTimezone);
+interface HintProps {
+    timezone: string;
+}
 
-    const [currentTime, setCurrentTime] = useState(getLocalTime(publicationTimezone));
+const Hint: React.FC<HintProps> = ({timezone}) => {
+    const [currentTime, setCurrentTime] = useState(getLocalTime(timezone));
+
     useEffect(() => {
         const timer = setInterval(() => {
-            setCurrentTime(getLocalTime(publicationTimezone));
+            setCurrentTime(getLocalTime(timezone));
         }, 1000);
 
         return () => {
             clearInterval(timer);
         };
-    }, [publicationTimezone]);
+    }, [timezone]);
+    return (
+        <>
+            The local time here is currently {currentTime}
+        </>
+    );
+};
 
-    const handleStateChange = (newState: TSettingGroupStates) => {
-        setCurrentState(newState);
-    };
+const TimeZone: React.FC = () => {
+    const {
+        currentState,
+        handleSave,
+        handleCancel,
+        updateSetting,
+        getSettingValues,
+        handleStateChange
+    } = useSettingGroup();
 
-    const handleSave = () => {
-        saveSettings?.([
-            {
-                key: 'timezone',
-                value: publicationTimezone
-            }
-        ]);
-        setCurrentState('view');
-    };
-
-    const viewValues = [
-        {
-            key: 'site-timezone',
-            value: publicationTimezone,
-            hint: `The local time here is currently ${currentTime}`
-        }
-    ];
+    const [publicationTimezone] = getSettingValues(['timezone']) as string[];
 
     const timezoneOptions = timezoneData.map((tzOption: TimezoneDataDropdownOption) => {
         return {
@@ -57,17 +53,29 @@ const TimeZone: React.FC = () => {
         };
     });
 
+    const handleTimezoneChange = (value: string) => {
+        updateSetting('timezone', value);
+    };
+
+    const viewContent = (
+        <SettingGroupContent values={[
+            {
+                key: 'site-timezone',
+                value: publicationTimezone,
+                hint: (
+                    <Hint timezone={publicationTimezone} />
+                )
+            }
+        ]} />
+    );
     const inputFields = (
         <SettingGroupContent columns={1}>
             <Dropdown
                 defaultSelectedOption={publicationTimezone}
-                hint={`The local time here is currently ${currentTime}`}
+                hint={<Hint timezone={publicationTimezone} />}
                 options={timezoneOptions}
                 title="Site timezone"
-                onSelect={(value) => {
-                    setCurrentState('unsaved');
-                    setPublicationTimezone(value);
-                }}
+                onSelect={handleTimezoneChange}
             />
         </SettingGroupContent>
     );
@@ -77,10 +85,11 @@ const TimeZone: React.FC = () => {
             description='Set the time and date of your publication, used for all published posts'
             state={currentState}
             title='Site timezone'
+            onCancel={handleCancel}
             onSave={handleSave}
             onStateChange={handleStateChange}
         >
-            {currentState === 'view' ? <SettingGroupContent values={viewValues} /> : inputFields}
+            {currentState === 'view' ? viewContent : inputFields}
         </SettingGroup>
     );
 };
