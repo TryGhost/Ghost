@@ -11,7 +11,7 @@ function cardTemplate(nodeData) {
     const backgroundImageStyle = nodeData.layout === 'split' ? '' : `background-image: url(${nodeData.backgroundImageSrc})`;
 
     const formTemplate = `
-        <form class="kg-signup-card-form" data-members-form="">
+        <form class="kg-signup-card-form" data-members-form="signup">
             ${nodeData.labels.map(label => `<input data-members-label type="hidden" value="${label}" />`).join('\n')}
             <div class="kg-signup-card-fields">
                 <input class="kg-signup-card-input ${buttonAccent}" style="border-color: ${nodeData.buttonColor};" id="email" data-members-email="" type="email" required="true" placeholder="yourname@example.com" />
