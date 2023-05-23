@@ -62,7 +62,7 @@ export function SignupCard({alignment,
     };
 
     useEffect(() => {
-        if (backgroundImageSrc) {
+        if (backgroundImageSrc && layout !== 'split') {
             new FastAverageColor().getColorAsync(backgroundImageSrc).then((color) => {
                 handleTextColor(matchingTextColor(color.hex));
             });
@@ -124,7 +124,7 @@ export function SignupCard({alignment,
     };
 
     const wrapperStyle = () => {
-        if (backgroundImageSrc && layout !== 'split') {
+        if (backgroundImageSrc && layout !== 'split' && textColor) {
             return {
                 backgroundImage: `url(${backgroundImageSrc})`,
                 backgroundSize: 'cover',
