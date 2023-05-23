@@ -31,6 +31,7 @@ const Access: React.FC = () => {
     const {
         currentState,
         handleSave,
+        handleCancel,
         updateSetting,
         getSettingValues,
         handleStateChange
@@ -103,6 +104,7 @@ const Access: React.FC = () => {
             description='Set up default access options for subscription and posts'
             state={currentState}
             title='Access'
+            onCancel={handleCancel}
             onSave={handleSave}
             onStateChange={handleStateChange}
         >
