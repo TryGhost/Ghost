@@ -45,6 +45,15 @@ export const WithHint: Story = {
     }
 };
 
+export const PasswordType: Story = {
+    args: {
+        title: 'Password',
+        type: 'password',
+        placeholder: 'Enter something',
+        hint: 'Here\'s some hint'
+    }
+};
+
 export const Error: Story = {
     args: {
         title: 'Title',
