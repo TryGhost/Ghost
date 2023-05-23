@@ -6,7 +6,7 @@ const Sidebar: React.FC = () => {
     return (
         <div className="hidden md:!visible md:!block md:h-[calc(100vh-8vmin-84px)] md:w-[300px] md:overflow-y-scroll md:pt-[32px]">
             <SettingNavSection title="General">
-                <SettingNavItem title="Title and description" />
+                <SettingNavItem href="#title-and-description" title="Title and description" />
                 <SettingNavItem title="Timezone" />
                 <SettingNavItem title="Publication language" />
                 <SettingNavItem title="Meta data" />
