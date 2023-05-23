@@ -79,29 +79,20 @@ export function MediaUploader({
                 </>
             )}
 
-            {
-                !isLoading && isPinturaEnabled && (
-                    <>
-                        <div className="right-13 absolute top-2 flex opacity-0 transition-all group-hover:opacity-100">
-                            <IconButton dataTestId="replace-product-image" Icon={EditIcon} onClick={() => openImageEditor({
-                                image: src,
-                                handleSave: (editedImage) => {
-                                    onFileChange({
-                                        target: {
-                                            files: [editedImage]
-                                        }
-                                    });
-                                }
-                            })} />
-                        </div>
-                    </>
-                )
-            }
-
             {!isLoading && (
-                <div className="absolute top-2 right-2 flex opacity-0 transition-all group-hover:opacity-100">
-                    <IconButton dataTestId="media-upload-remove" Icon={DeleteIcon} onClick={onRemove} />
+                <div className="absolute top-2 right-2 flex space-x-2 opacity-0 transition-all group-hover:opacity-100">
                     {additionalActions}
+                    { isPinturaEnabled && <IconButton Icon={EditIcon} onClick={() => openImageEditor({
+                        image: src,
+                        handleSave: (editedImage) => {
+                            onFileChange({
+                                target: {
+                                    files: [editedImage]
+                                }
+                            });
+                        }
+                    })} /> }
+                    <IconButton dataTestId="media-upload-remove" Icon={DeleteIcon} onClick={onRemove} />
                 </div>
             )}
 

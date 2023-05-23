@@ -154,7 +154,7 @@ export function SignupCard({alignment,
             )} data-testid={'signup-card-container'} style={wrapperStyle()}>
                 {layout === 'split' && (
                     <MediaUploader
-                        additionalActions={<IconButton className="ml-2" dataTestId="media-upload-swap" Icon={SwapIcon} onClick={handleSwapLayout} />}
+                        additionalActions={<IconButton dataTestId="media-upload-swap" Icon={SwapIcon} onClick={handleSwapLayout} />}
                         alt='Background image'
                         className="sm:w-1/2"
                         desc='Click to select an image'
