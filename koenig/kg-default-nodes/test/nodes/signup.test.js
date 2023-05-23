@@ -183,7 +183,7 @@ describe('SignupNode', function () {
 
     describe('exportDOM', function () {
         const loadingIcon = `<svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 0 24 24">
-            <g stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor" stroke-linejoin="round" class="nc-icon-wrapper">
+            <g stroke-linecap="round" stroke-width="2" fill="currentColor" stroke="none" stroke-linejoin="round" class="nc-icon-wrapper">
                 <g class="nc-loop-dots-4-24-icon-o">
                     <circle cx="4" cy="12" r="3"></circle>
                     <circle cx="12" cy="12" r="3"></circle>
@@ -291,7 +291,7 @@ describe('SignupNode', function () {
             const {element} = signupNode.exportDOM(exportOptions);
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-layout-split kg-width-full" data-lexical-signup-form="" style="display:none">
-                    <img class="kg-signup-card-image" src="https://example.com/image.jpg" alt="">
+                    <img class="kg-signup-card-image" style="background-color: transparent" src="https://example.com/image.jpg" alt="">
                     <div class="kg-signup-card-container align-center" style="background-color:transparent">
                         <h2 class="kg-signup-card-heading" style="color:#000000">Header</h2>
                         <h3 class="kg-signup-card-subheading" style="color:#000000">Subheader</h3>
@@ -322,7 +322,7 @@ describe('SignupNode', function () {
             const {element} = signupNode.exportDOM(exportOptions);
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-layout-split kg-width-full kg-swapped" data-lexical-signup-form="" style="display:none">
-                    <img class="kg-signup-card-image" src="https://example.com/image.jpg" alt="">
+                    <img class="kg-signup-card-image" style="background-color: transparent" src="https://example.com/image.jpg" alt="">
                     <div class="kg-signup-card-container align-center" style="background-color:transparent">
                         <h2 class="kg-signup-card-heading" style="color:#000000">Header</h2>
                         <h3 class="kg-signup-card-subheading" style="color:#000000">Subheader</h3>
