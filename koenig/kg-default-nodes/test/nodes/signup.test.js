@@ -368,6 +368,17 @@ describe('SignupNode', function () {
             checkGetters(nodes[0], dataset);
         }));
 
+        it('parses split and swapped correctly', editorTest(function () {
+            dataset.layout = 'split';
+            dataset.swapped = true;
+            const signupNode = $createSignupNode(dataset);
+            const {element} = signupNode.exportDOM(exportOptions);
+            const dom = new JSDOM(element.outerHTML).window.document;
+            const nodes = $generateNodesFromDOM(editor, dom);
+            nodes.length.should.equal(1);
+            checkGetters(nodes[0], dataset);
+        }));
+
         it('parses with empty elements removed', editorTest(function () {
             dataset.header = '';
             dataset.subheader = '';

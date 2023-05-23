@@ -60,6 +60,10 @@ export class SignupParser {
                             const successMessage = domNode.querySelector('.kg-signup-card-success')?.textContent?.trim() || '';
                             const labels = [...domNode.querySelectorAll('input[data-members-label]')].map(input => input.value);
 
+                            const containerElement = domNode.querySelector('.kg-signup-card-container');
+
+                            const isSwapped = layout === 'split' && domNode.querySelector('.kg-signup-card-image')?.previousElementSibling === containerElement;
+
                             const payload = {
                                 layout,
                                 buttonText,
@@ -73,7 +77,8 @@ export class SignupParser {
                                 buttonTextColor: rgbToHex(buttonTextColor) || '#000000',
                                 alignment,
                                 successMessage,
-                                labels
+                                labels,
+                                swapped: isSwapped
                             };
 
                             const node = new self.NodeClass(payload);
