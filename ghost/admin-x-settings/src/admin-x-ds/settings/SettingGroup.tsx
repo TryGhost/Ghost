@@ -54,7 +54,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
 
     switch (state) {
     case 'edit':
-        styles = 'border-grey-500';
+        styles = 'border-grey-300';
         break;
 
     case 'unsaved':
