@@ -130,8 +130,9 @@ Caddyfile
 /ghost/sodo-search/public/main.css
 /ghost/sodo-search/umd
 
-# Signup Form
+# Signup Form and local environments
 /ghost/signup-form/umd
+/ghost/signup-form/.env*.local
 
 # Announcement-Bar
 /ghost/announcement-bar/umd

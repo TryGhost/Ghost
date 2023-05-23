@@ -3,7 +3,7 @@ body {
 }
 
 #demo-container {
-    max-width: 1000px;
+    max-width: 800px;
     margin: 0 auto;
     padding: 50px 0;
 }
@@ -14,6 +14,19 @@ hr {
     margin: 40px 0;
 }
 
+h1 {
+    padding: 20px 0;
+    margin: 0;
+}
+
 p {
-    padding: 15px 0;
+    padding: 0 0 40px 0;
+    margin: 0;
+    line-height: 2;
+    font-size: 16px;
+}
+
+code {
+    background: #eee;
+    padding: 2px 4px;
 }
