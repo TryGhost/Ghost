@@ -4066,13 +4066,13 @@
   dependencies:
     esquery "^1.0.1"
 
-"@playwright/test@1.34.0":
-  version "1.34.0"
-  resolved "https://registry.yarnpkg.com/@playwright/test/-/test-1.34.0.tgz#1f3359523c3fd7460c83fe83c8152751a9e21f49"
-  integrity sha512-GIALJVODOIrMflLV54H3Cow635OfrTwOu24ZTDyKC66uchtFX2NcCRq83cLdakMjZKYK78lODNLQSYBj2OgaTw==
+"@playwright/test@1.34.1":
+  version "1.34.1"
+  resolved "https://registry.yarnpkg.com/@playwright/test/-/test-1.34.1.tgz#212461ba823489c15c0aa61f578de41c58d2e7eb"
+  integrity sha512-hKBpxD79vGkmeqLkJwPBjd4DMUahf1W7ra+83lDNL4JPmLhjITMiy0HoR0WM/PGU6nqnl1cisHc3yKQQgKMxOQ==
   dependencies:
     "@types/node" "*"
-    playwright-core "1.34.0"
+    playwright-core "1.34.1"
   optionalDependencies:
     fsevents "2.3.2"
 
@@ -26077,10 +26077,10 @@ pkg-up@^3.1.0:
   dependencies:
     find-up "^3.0.0"
 
-playwright-core@1.34.0:
-  version "1.34.0"
-  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.34.0.tgz#6a8f05c657400677591ed82b6749ef7e120a152d"
-  integrity sha512-fMUY1+iR6kYbJF/EsOOqzBA99ZHXbw9sYPNjwA4X/oV0hVF/1aGlWYBGPVUEqxBkGANDKMziYoOdKGU5DIP5Gg==
+playwright-core@1.34.1:
+  version "1.34.1"
+  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.34.1.tgz#e0af750c0fa684adf2a1d34a69b7b25f1ee1ffdb"
+  integrity sha512-4Y5hGLoSrnB/BXj2NFKBNWP/bI9uVejTVbso1ZBtkKZ+O2KiVIeCJ3R4c7Cf2PbP7htjLolHXY+mImt2IWOlEg==
 
 pluralize@8.0.0, pluralize@^8.0.0:
   version "8.0.0"
