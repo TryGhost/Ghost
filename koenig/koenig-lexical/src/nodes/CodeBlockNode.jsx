@@ -1,13 +1,17 @@
 import * as React from 'react';
 import CardContext from '../context/CardContext';
+import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import generateEditorState from '../utils/generateEditorState';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {$getNodeByKey} from 'lexical';
+import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {CodeBlockNode as BaseCodeBlockNode} from '@tryghost/kg-default-nodes';
 import {CodeBlockCard} from '../components/ui/cards/CodeBlockCard';
 import {ReactComponent as CodeBlockIcon} from '../assets/icons/kg-card-type-gen-embed.svg';
 import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
+import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
+import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {createEditor} from 'lexical';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -16,7 +20,9 @@ export {INSERT_CODE_BLOCK_COMMAND} from '@tryghost/kg-default-nodes';
 
 function CodeBlockNodeComponent({nodeKey, captionEditor, captionEditorInitialState, code, language}) {
     const [editor] = useLexicalComposerContext();
-    const cardContext = React.useContext(CardContext);
+    const {isEditing, setEditing, isSelected} = React.useContext(CardContext);
+    const {cardConfig} = React.useContext(KoenigComposerContext);
+    const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
     const updateCode = (value) => {
         editor.update(() => {
@@ -32,17 +38,51 @@ function CodeBlockNodeComponent({nodeKey, captionEditor, captionEditorInitialSta
         });
     };
 
+    const handleToolbarEdit = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setEditing(true);
+    };
+
     return (
-        <CodeBlockCard
-            captionEditor={captionEditor}
-            captionEditorInitialState={captionEditorInitialState}
-            code={code}
-            isEditing={cardContext.isEditing}
-            language={language}
-            nodeKey={nodeKey}
-            updateCode={updateCode}
-            updateLanguage={updateLanguage}
-        />
+        <>
+            <CodeBlockCard
+                captionEditor={captionEditor}
+                captionEditorInitialState={captionEditorInitialState}
+                code={code}
+                handleToolbarEdit={handleToolbarEdit}
+                isEditing={isEditing}
+                isSelected={isSelected}
+                language={language}
+                nodeKey={nodeKey}
+                updateCode={updateCode}
+                updateLanguage={updateLanguage}
+            />
+            <ActionToolbar
+                data-kg-card-toolbar="button"
+                isVisible={showSnippetToolbar}
+            >
+                <SnippetActionToolbar onClose={() => setShowSnippetToolbar(false)} />
+            </ActionToolbar>
+
+            <ActionToolbar
+                data-kg-card-toolbar="button"
+                isVisible={isSelected && !isEditing}
+            >
+                <ToolbarMenu>
+                    <ToolbarMenuItem dataTestId="edit-code-card" icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
+                    <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
+                    <ToolbarMenuItem
+                        dataTestId="create-snippet"
+                        hide={!cardConfig.createSnippet}
+                        icon="snippet"
+                        isActive={false}
+                        label="Snippet"
+                        onClick={() => setShowSnippetToolbar(true)}
+                    />
+                </ToolbarMenu>
+            </ActionToolbar>
+        </>
     );
 }
 

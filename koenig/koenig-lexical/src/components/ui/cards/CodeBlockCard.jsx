@@ -133,40 +133,22 @@ export function CodeEditor({code, language, updateCode, updateLanguage}) {
     );
 }
 
-// TODO: update caption use/handling
-export function CodeBlock({caption, code, language}) {
-    if (caption && caption.length > 0) {
-        return (
-            <div className="not-kg-prose">
-                <figure>
-                    <pre className="rounded border border-grey-200 bg-grey-100 px-2 py-[6px] font-mono text-[1.6rem] leading-9 text-grey-900">
-                        <code className={(language && `language-${language}`)}>
-                            {code}
-                        </code>
-                    </pre>
-                    <div className="absolute top-2 right-2 flex items-center justify-center px-1">
-                        <span className="block font-sans text-sm font-medium leading-normal text-grey">{language}</span>
-                    </div>
-                </figure>
+export function CodeBlock({code, language}) {
+    return (
+        <div className="not-kg-prose">
+            <pre className="rounded border border-grey-200 bg-grey-100 px-2 py-[6px] font-mono text-[1.6rem] leading-9 text-grey-900">
+                <code className={(language && `language-${language}`)}>
+                    {code}
+                </code>
+            </pre>
+            <div className="absolute top-2 right-2 flex items-center justify-center px-1">
+                <span className="block font-sans text-sm font-medium leading-normal text-grey">{language}</span>
             </div>
-        );
-    } else {
-        return (
-            <div className="not-kg-prose">
-                <pre className="rounded border border-grey-200 bg-grey-100 px-2 py-[6px] font-mono text-[1.6rem] leading-9 text-grey-900">
-                    <code className={(language && `language-${language}`)}>
-                        {code}
-                    </code>
-                </pre>
-                <div className="absolute top-2 right-2 flex items-center justify-center px-1">
-                    <span className="block font-sans text-sm font-medium leading-normal text-grey">{language}</span>
-                </div>
-            </div>
-        );
-    }
+        </div>
+    );
 }
 
-export function CodeBlockCard({captionEditor, captionEditorInitialState, code, isEditing, isSelected, language, updateCode, updateLanguage, setCaption}) {
+export function CodeBlockCard({captionEditor, captionEditorInitialState, code, isEditing, isSelected, language, updateCode, updateLanguage}) {
     if (isEditing) {
         return (
             <CodeEditor
@@ -179,7 +161,6 @@ export function CodeBlockCard({captionEditor, captionEditorInitialState, code, i
     } else {
         return (
             <>
-                {/* <CodeBlock caption={caption} code={code} language={language} /> */}
                 <CodeBlock code={code} language={language} />
                 <CardCaptionEditor
                     captionEditor={captionEditor}
@@ -213,6 +194,5 @@ CodeBlockCard.propTypes = {
     isEditing: PropTypes.bool,
     isSelected: PropTypes.bool,
     updateCode: PropTypes.func,
-    updateLanguage: PropTypes.func,
-    setCaption: PropTypes.func
+    updateLanguage: PropTypes.func
 };
