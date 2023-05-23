@@ -80,7 +80,7 @@ Empty.args = {
     buttonText: '',
     buttonColor: '#ffffff',
     backgroundColor: '#ff0095',
-    availableLabels: [{id: '1',name: 'First label'},{id: '2',name: 'Second label'}],
+    availableLabels: ['First label', 'Second label'],
     headerTextEditorInitialState: editorEmptyState,
     subheaderTextEditorInitialState: editorEmptyState,
     disclaimerTextEditorInitialState: editorEmptyState
@@ -99,5 +99,5 @@ Populated.args = {
     buttonText: 'Subscribe',
     buttonColor: '#000000',
     backgroundColor: '#F3B389',
-    availableLabels: [{id: '1',name: 'First label'},{id: '2',name: 'Second label'}]
+    availableLabels: ['First label', 'Second label']
 };
