@@ -42,7 +42,8 @@ export async function assertHTML(
         ignoreCardContents = false,
         ignoreCardToolbarContents = false,
         ignoreDragDropAttrs = true,
-        ignoreDataTestId = true
+        ignoreDataTestId = true,
+        ignoreCardCaptionContents = false
     } = {}
 ) {
     const actualHtml = await page.$eval('div[contenteditable="true"]', e => e.innerHTML);
@@ -54,7 +55,8 @@ export async function assertHTML(
         ignoreCardContents,
         ignoreCardToolbarContents,
         ignoreDragDropAttrs,
-        ignoreDataTestId
+        ignoreDataTestId,
+        ignoreCardCaptionContents
     });
     const expected = prettifyHTML(expectedHtml.replace(/\n/gm, ''), {
         ignoreClasses,
@@ -64,7 +66,8 @@ export async function assertHTML(
         ignoreCardContents,
         ignoreCardToolbarContents,
         ignoreDragDropAttrs,
-        ignoreDataTestId
+        ignoreDataTestId,
+        ignoreCardCaptionContents
     });
     expect(actual).toEqual(expected);
 }
@@ -98,7 +101,7 @@ export function prettifyHTML(string, options = {}) {
     // replace all instances of blob:http with "blob:..."
     output = output.replace(/blob:http[^"]*/g, 'blob:...');
 
-    if (options.ignoreCardContents || options.ignoreCardToolbarContents) {
+    if (options.ignoreCardContents || options.ignoreCardToolbarContents || options.ignoreCardCaptionContents) {
         const {document} = (new JSDOM(output)).window;
 
         const querySelectors = [];
@@ -107,6 +110,9 @@ export function prettifyHTML(string, options = {}) {
         }
         if (options.ignoreCardToolbarContents) {
             querySelectors.push('[data-kg-card-toolbar]');
+        }
+        if (options.ignoreCardCaptionContents) {
+            querySelectors.push('figcaption');
         }
 
         document.querySelectorAll(querySelectors.join(', ')).forEach((element) => {

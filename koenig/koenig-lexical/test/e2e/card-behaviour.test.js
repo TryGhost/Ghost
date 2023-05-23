@@ -169,7 +169,7 @@ test.describe('Card behaviour', async () => {
                     <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="codeblock">
                     </div>
                 </div>
-            `, {ignoreCardContents: true});
+            `, {ignoreCardContents: true, ignoreCardToolbarContents: true});
 
             // Select the python card
             await page.click('div[data-kg-card="codeblock"]');
@@ -201,9 +201,12 @@ test.describe('Card behaviour', async () => {
                             <pre><code class="language-javascript">import React from "react"</code></pre>
                             <div><span>javascript</span></div>
                         </div>
+                    <figcaption></figcaption>
+                    <div data-kg-card-toolbar="button"></div>
                     </div>
                 </div>
-            `);
+
+            `, {ignoreCardToolbarContents: true, ignoreCardCaptionContents: true});
         });
 
         test('clicking below the editor focuses the editor if last node is a paragraph', async function ({page}) {
