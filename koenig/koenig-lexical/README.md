@@ -4,18 +4,6 @@ Early stage re-write of Ghost's editor, using Lexical as the editor framework in
 
 ## Development
 
-### Pre-requisites
-
-Koenig Lexical depends on two other packages in the monorepo: `kg-default-nodes` and `kg-clean-basic-html`. These two packages need to be built before running Koenig Lexical:
-
-```
-cd ../kg-default-nodes && yarn build
-cd ../kg-clean-basic-html && yarn build
-```
-
-_Alternative_: you can also run `lerna run build` from the root of the monorepo to rebuild all packages.
-
-
 ### Running the development version
 
 Run `yarn dev` to start the development server to test/develop the editor standalone. This will generate a demo site from the `index.html` file which renders the demo app in `demo/demo.jsx` and makes it available on http://localhost:5173
