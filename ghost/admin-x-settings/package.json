@@ -47,10 +47,10 @@
   },
   "devDependencies": {
     "@storybook/addon-essentials": "7.0.13",
-    "@storybook/addon-interactions": "7.0.13",
+    "@storybook/addon-interactions": "7.0.14",
     "@storybook/addon-links": "7.0.13",
     "@storybook/addon-styling": "1.0.8",
-    "@storybook/blocks": "7.0.13",
+    "@storybook/blocks": "7.0.14",
     "@storybook/react": "7.0.13",
     "@storybook/react-vite": "7.0.13",
     "@storybook/testing-library": "0.1.0",
