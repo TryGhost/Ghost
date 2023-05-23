@@ -45,4 +45,68 @@ describe('Lists', function () {
         input: `{"root":{"children":[{"children":[{"children":[{"detail":0,"format":1,"mode":"normal","style":"","text":"bold","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"listitem","version":1,"value":1},{"children":[{"detail":0,"format":2,"mode":"normal","style":"","text":"italic","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"listitem","version":1,"value":2},{"children":[{"detail":0,"format":3,"mode":"normal","style":"","text":"bold+italic","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"listitem","version":1,"value":3}],"direction":"ltr","format":"","indent":0,"type":"list","version":1,"listType":"number","start":1,"tag":"ol"}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
         output: '<ol><li><strong>bold</strong></li><li><em>italic</em></li><li><strong><em>bold+italic</em></strong></li></ol>'
     }));
+
+    it('containing double formats', shouldRender({
+        input: `{
+            "root": {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "detail": 0,
+                          "format": 1,
+                          "mode": "normal",
+                          "style": "",
+                          "text": "Figure ",
+                          "type": "text",
+                          "version": 1
+                        },
+                        {
+                          "detail": 0,
+                          "format": 3,
+                          "mode": "normal",
+                          "style": "",
+                          "text": "you.",
+                          "type": "text",
+                          "version": 1
+                        },
+                        {
+                          "detail": 0,
+                          "format": 0,
+                          "mode": "normal",
+                          "style": "",
+                          "text": " Just test",
+                          "type": "text",
+                          "version": 1
+                        }
+                      ],
+                      "direction": "ltr",
+                      "format": "",
+                      "indent": 0,
+                      "type": "listitem",
+                      "version": 1,
+                      "value": 1
+                    }
+                  ],
+                  "direction": "ltr",
+                  "format": "",
+                  "indent": 0,
+                  "type": "list",
+                  "version": 1,
+                  "listType": "number",
+                  "start": 1,
+                  "tag": "ol"
+                }
+              ],
+              "direction": "ltr",
+              "format": "",
+              "indent": 0,
+              "type": "root",
+              "version": 1
+            }
+          }`,
+        output: '<ol><li><strong>Figure <em>you.</em></strong> Just test</li></ol>'
+    }));
 });
