@@ -39,7 +39,7 @@ import {
     $selectDecoratorNode,
     getTopLevelNativeElement
 } from '../utils/';
-import {$isKoenigCard} from '@tryghost/kg-default-nodes';
+import {$isKoenigCard, ImageNode} from '@tryghost/kg-default-nodes';
 import {$isListItemNode, $isListNode, ListNode} from '@lexical/list';
 import {MIME_TEXT_HTML, MIME_TEXT_PLAIN, PASTE_MARKDOWN_COMMAND} from './MarkdownPastePlugin.jsx';
 import {mergeRegister} from '@lexical/utils';
@@ -980,6 +980,28 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     node.append(...nextSibling.getChildren());
                     nextSibling.remove();
                 }
+            })
+        );
+    }, [editor]);
+
+    React.useEffect(() => {
+        if (!editor.hasNodes([ImageNode])) {
+            return;
+        }
+        return mergeRegister(
+            // make sure ImageNode is a top-level node
+            editor.registerNodeTransform(ImageNode, (node) => {
+                // return if ImageNode is already a top-level node
+                if (node.getParent() === $getRoot()) {
+                    return;
+                }
+
+                let parent = node;
+                while (parent.getParent() !== $getRoot()) {
+                    parent = parent.getParent();
+                }
+
+                parent.insertAfter(node);
             })
         );
     }, [editor]);
