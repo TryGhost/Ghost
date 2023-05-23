@@ -66,6 +66,7 @@ const TitleAndDescription: React.FC = () => {
     return (
         <SettingGroup
             description='The details used to identify your publication around the web'
+            navid='title-and-description'
             state={currentState}
             title='Title & description'
             onCancel={handleCancel}

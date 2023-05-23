@@ -1,12 +1,13 @@
 import React from 'react';
 
 interface Props {
-    title: string;
+    title: React.ReactNode;
+    href?: string;
 }
 
-const SettingNavItem: React.FC<Props> = ({title}) => {
+const SettingNavItem: React.FC<Props> = ({title, href}) => {
     return (
-        <li><a className="block px-0 py-1 text-sm" href="_blank">{title}</a></li>
+        <li><a className="block px-0 py-1 text-sm" href={href}>{title}</a></li>
     );
 };
 
