@@ -5,11 +5,17 @@ import {INPUT_CLASSES} from './Input';
 import {getAccentColor} from '../../utils/getAccentColor';
 
 export function ColorPicker({value, swatches, eyedropper, onChange, onBlur}) {
-    // Prevent clashing with dragging the settings panel around
-    const stopPropagation = useCallback(e => e.stopPropagation(), []);
-
     // HexColorInput doesn't support adding a ref on the input itself
     const inputWrapperRef = useRef(null);
+
+    const stopPropagation = useCallback((e) => {
+        // Prevent clashing with dragging the settings panel around
+        e.stopPropagation();
+        e.preventDefault();
+
+        // Prevent closing the color picker when clicking somewhere inside it
+        inputWrapperRef.current?.querySelector('input')?.focus();
+    }, []);
 
     const isUsingColorPicker = useRef(false);
 
