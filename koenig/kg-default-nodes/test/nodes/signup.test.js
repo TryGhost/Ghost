@@ -321,7 +321,8 @@ describe('SignupNode', function () {
             const signupNode = $createSignupNode(dataset);
             const {element} = signupNode.exportDOM(exportOptions);
             element.outerHTML.should.prettifyTo(html`
-                <div class="kg-card kg-signup-card kg-layout-split kg-width-full" data-lexical-signup-form="" style="display:none">
+                <div class="kg-card kg-signup-card kg-layout-split kg-width-full kg-swapped" data-lexical-signup-form="" style="display:none">
+                    <img class="kg-signup-card-image" src="https://example.com/image.jpg" alt="">
                     <div class="kg-signup-card-container align-center" style="background-color:transparent">
                         <h2 class="kg-signup-card-heading" style="color:#000000">Header</h2>
                         <h3 class="kg-signup-card-subheading" style="color:#000000">Subheader</h3>
@@ -340,7 +341,6 @@ describe('SignupNode', function () {
                         </form>
                         <p class="kg-signup-card-disclaimer" style="color:#000000">Disclaimer</p>
                     </div>
-                    <img class="kg-signup-card-image" src="https://example.com/image.jpg" alt="">
                 </div>
             `);
         }));

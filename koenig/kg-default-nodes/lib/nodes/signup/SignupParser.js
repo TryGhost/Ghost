@@ -60,9 +60,7 @@ export class SignupParser {
                             const successMessage = domNode.querySelector('.kg-signup-card-success')?.textContent?.trim() || '';
                             const labels = [...domNode.querySelectorAll('input[data-members-label]')].map(input => input.value);
 
-                            const containerElement = domNode.querySelector('.kg-signup-card-container');
-
-                            const isSwapped = layout === 'split' && domNode.querySelector('.kg-signup-card-image')?.previousElementSibling === containerElement;
+                            const isSwapped = domNode.classList.contains('kg-swapped');
 
                             const payload = {
                                 layout,
