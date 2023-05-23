@@ -115,7 +115,7 @@ const useSettingGroup = (): SettingGroupHook => {
     // function to get the values of the settings
     const getSettingValues = (keys: string[]) => {
         return keys.map((key) => {
-            return settings?.find(setting => setting.key === key)?.value;
+            return localSettings?.find(setting => setting.key === key)?.value;
         });
     };
 
