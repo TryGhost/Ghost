@@ -288,10 +288,6 @@
     height: 14px;
 }
 
-.modal-body .form-group + .gh-date-picker {
-    margin-top: -14px;
-}
-
 /* Modifiers
 /* ---------------------------------------------------------- */
 
