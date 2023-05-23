@@ -92,6 +92,14 @@ export const ExternalControlPlugin = ({registerAPI}) => {
             },
             insertFiles(files) {
                 editor.dispatchCommand(DRAG_DROP_PASTE, files);
+            },
+            lastNodeIsDecorator() {
+                let isDecorator = false;
+                editor.getEditorState().read(() => {
+                    const lastNode = $getRoot().getChildren().at(-1);
+                    isDecorator = $isDecoratorNode(lastNode);
+                });
+                return isDecorator;
             }
         };
 
