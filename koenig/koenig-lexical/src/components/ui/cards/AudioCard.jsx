@@ -63,7 +63,6 @@ function EmptyAudioCard({
                     mimeTypes={audioMimeTypes}
                     onFileChange={onFileChange}
                 />
-                <div className="absolute inset-0 z-50 mt-0"></div>
             </>
         );
     }
