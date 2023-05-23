@@ -61,7 +61,7 @@
   "devDependencies": {
     "@babel/eslint-parser": "7.21.8",
     "@sentry/react": "7.52.1",
-    "@sentry/tracing": "7.52.1",
+    "@sentry/tracing": "7.53.0",
     "@testing-library/jest-dom": "5.16.5",
     "@testing-library/react": "12.1.5",
     "@tryghost/i18n": "0.0.0",
