@@ -49,7 +49,7 @@ export const PasswordType: Story = {
     args: {
         title: 'Password',
         type: 'password',
-        placeholder: 'Enter something',
+        placeholder: 'Enter password',
         hint: 'Here\'s some hint'
     }
 };

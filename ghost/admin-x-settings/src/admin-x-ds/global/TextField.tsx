@@ -3,12 +3,12 @@ import React from 'react';
 import Heading from './Heading';
 import Hint from './Hint';
 
-type InputFieldType = 'text' | 'number' | 'email' | 'password' | 'checkbox' | 'radio' | 'file' | 'date' | 'time' | 'range' | 'search';
+type TextFieldType = 'text' | 'number' | 'email' | 'password' | 'file' | 'date' | 'time' | 'search';
 
-interface ITextField {
+interface TextFieldProps {
     inputRef?: React.RefObject<HTMLInputElement>;
     title?: string;
-    type?: InputFieldType;
+    type?: TextFieldType;
     value?: string;
     error?: boolean;
     placeholder?: string;
@@ -16,7 +16,7 @@ interface ITextField {
     onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const TextField: React.FC<ITextField> = ({
+const TextField: React.FC<TextFieldProps> = ({
     type = 'text', inputRef, title, value, error, placeholder, hint, onChange, ...props
 }) => {
     return (
@@ -27,7 +27,7 @@ const TextField: React.FC<ITextField> = ({
                 className={`border-b bg-grey-100 px-[10px] py-2 ${error ? `border-red` : `border-grey-300 hover:border-grey-400 focus:border-grey-600`} ${title && `mt-2`}`} 
                 defaultValue={value} 
                 placeholder={placeholder} 
-                type='text'
+                type={type}
                 onChange={onChange}
                 {...props} />
             {hint && <Hint color={error ? 'red' : ''}>{hint}</Hint>}
