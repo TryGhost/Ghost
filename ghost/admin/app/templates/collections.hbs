@@ -1,0 +1,34 @@
+<section class="gh-canvas" {{on-key "c" this.newCollection}}>
+    <GhCanvasHeader class="gh-canvas-header sticky">
+        <h2 class="gh-canvas-title" data-test-screen-title>Collections</h2>
+        <section class="view-actions">
+            <LinkTo @route="collection.new" class="gh-btn gh-btn-primary"><span>New collection</span></LinkTo>
+        </section>
+    </GhCanvasHeader>
+
+    <section class="view-container content-list">
+        <ol class="collections-list gh-list {{unless this.sortedCollections "no-posts"}}">
+            {{#if this.sortedCollections}}
+                <li class="gh-list-row header">
+                    <div class="gh-list-header gh-list-cellwidth-70">Collection</div>
+                    <div class="gh-list-header gh-list-cellwidth-10"></div>
+                </li>
+                <VerticalCollection @items={{this.sortedCollections}} @key="id" @containerSelector=".gh-main" @estimateHeight={{60}} @bufferSize={{20}} as |collection|>
+                    <Collections::ListItem @collection={{collection}} data-test-collection={{collection.id}} />
+                </VerticalCollection>
+            {{else}}
+                <li class="no-posts-box">
+                    <div class="no-posts">
+                            {{svg-jar "collections-placeholder" class="gh-collections-placeholder"}}
+                            <h4>Start organizing your content.</h4>
+                            <LinkTo @route="collection.new" class="gh-btn gh-btn-green">
+                                <span>Create a new collection</span>
+                            </LinkTo>
+                    </div>
+                </li>
+            {{/if}}
+        </ol>
+    </section>
+</section>
+
+{{outlet}}
