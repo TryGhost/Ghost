@@ -252,12 +252,7 @@ export default class KoenigLexicalEditor extends Component {
         const fetchLabels = async () => {
             const labels = await this.fetchLabelsTask.perform();
 
-            return labels.toArray().map((label) => {
-                return {
-                    id: label.id,
-                    name: label.name
-                };
-            });
+            return labels.map(label => label.name);
         };
 
         const defaultCardConfig = {
