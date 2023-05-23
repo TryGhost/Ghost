@@ -1,15 +1,19 @@
 import App from './App.tsx';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import {ROOT_DIV_ID} from './utils/constants';
+import {ROOT_DIV_CLASS} from './utils/constants';
+import {SignupFormOptions} from './AppContext.ts';
 
-function getScriptTag() {
-    let scriptTag = document.currentScript;
+function getScriptTag(): HTMLElement {
+    let scriptTag = document.currentScript as HTMLElement | null;
 
     if (!scriptTag && import.meta.env.DEV) {
         // In development mode, use any script tag (because in ESM mode, document.currentScript is not set)
         // We use the first script in the body element
-        scriptTag = document.querySelector('body script');
+        scriptTag = document.querySelector('body script:not([data-used="true"])') as HTMLElement;
+        if (scriptTag) {
+            scriptTag.dataset.used = 'true';
+        }
     }
 
     if (!scriptTag) {
@@ -19,30 +23,40 @@ function getScriptTag() {
     return scriptTag;
 }
 
-function getRootDiv() {
-    const existingRootDiv = document.getElementById(ROOT_DIV_ID);
-    if (existingRootDiv) {
-        return existingRootDiv;
+/**
+ * Note that we need to support multiple signup forms on the same page, so we need to find the root div for each script tag
+ */
+function getRootDiv(scriptTag: HTMLElement) {
+    if (scriptTag.previousElementSibling && scriptTag.previousElementSibling.className === ROOT_DIV_CLASS) {
+        return scriptTag.previousElementSibling;
     }
-
-    const scriptTag = getScriptTag();
 
     if (!scriptTag.parentElement) {
         throw new Error('[Signup Form] Script tag does not have a parent element');
     }
 
     const elem = document.createElement('div');
-    elem.id = ROOT_DIV_ID;
+    elem.className = ROOT_DIV_CLASS;
     scriptTag.parentElement.insertBefore(elem, scriptTag);
     return elem;
 }
 
 function init() {
-    const root = getRootDiv();
+    const scriptTag = getScriptTag();
+    const root = getRootDiv(scriptTag);
+
+    const options: SignupFormOptions = {
+        title: scriptTag.dataset.title || undefined,
+        description: scriptTag.dataset.description || undefined,
+        logo: scriptTag.dataset.logo || undefined,
+        color: scriptTag.dataset.color || undefined,
+        site: scriptTag.dataset.site || window.location.origin,
+        labels: scriptTag.dataset.labels ? scriptTag.dataset.labels.split(',') : []
+    };
 
     ReactDOM.createRoot(root).render(
         <React.StrictMode>
-            <App />
+            <App options={options} />
         </React.StrictMode>
     );
 }

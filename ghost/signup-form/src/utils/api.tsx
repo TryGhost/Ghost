@@ -10,19 +10,13 @@ export const setupGhostApi = ({siteUrl}: {siteUrl: string}) => {
     }
 
     return {
-        sendMagicLink: async ({email, emailType}: {email: string, emailType: 'signup'}) => {
+        sendMagicLink: async ({email, labels}: {email: string, labels: string[]}) => {
             const url = endpointFor({type: 'members', resource: 'send-magic-link'});
 
             const payload = JSON.stringify({
-                //name,
                 email,
-                emailType
-                /*newsletters,
-                oldEmail,
-                emailType,
-                labels,
-                requestSrc: 'portal',
-                redirect*/
+                emailType: 'signup',
+                labels
             });
 
             const response = await fetch(url, {
@@ -42,29 +36,6 @@ export const setupGhostApi = ({siteUrl}: {siteUrl: string}) => {
             return true;
         }
     };
-
-    /*export async function sendMagicLink({email}) {
-        const {apiRoot} = getGhostPaths();
-
-        const payload = JSON.stringify({
-            settings: newSettings
-        });
-
-        const response = await fetch(`${apiRoot}/settings/`, {
-            headers: {
-                'app-pragma': 'no-cache',
-                'x-ghost-version': '5.47',
-                'Content-Type': 'application/json'
-            },
-            body: payload,
-            method: 'PUT',
-            mode: 'cors',
-            credentials: 'include'
-        });
-
-        const data: ISettingsResponse = await response.json();
-        return data;
-    }*/
 };
 
 export type GhostApi = ReturnType<typeof setupGhostApi>;

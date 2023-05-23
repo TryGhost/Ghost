@@ -1,21 +1,22 @@
 // Ref: https://reactjs.org/docs/context.html
-import React from 'react';
-import {DispatchActionMethod} from './actions';
+import React, {ComponentProps} from 'react';
+import pages, {Page, PageName} from './pages';
 import {GhostApi} from './utils/api';
-import {Page} from './pages';
+
+export type SignupFormOptions = {
+    title?: string,
+    description?: string,
+    logo?: string,
+    color?: string,
+    site: string,
+    labels: string[],
+};
 
 export type AppContextType = {
     page: Page,
+    setPage: <T extends PageName>(name: T, data: ComponentProps<typeof pages[T]>) => void,
+    options: SignupFormOptions,
     api: GhostApi,
-    dispatchAction: DispatchActionMethod
 }
 
-export type EditableAppContextType = Omit<AppContextType, 'dispatchAction' | 'api'>;
-export const AppContext = React.createContext<AppContextType>({
-    page: {
-        name: 'form',
-        data: {}
-    },
-    dispatchAction: () => {},
-    api: {} as any
-});
+export const AppContext = React.createContext<AppContextType>({} as any);

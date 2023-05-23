@@ -1,1 +1,1 @@
-export const ROOT_DIV_ID = 'ghost-signup-root';
+export const ROOT_DIV_CLASS = 'gh-signup-root';

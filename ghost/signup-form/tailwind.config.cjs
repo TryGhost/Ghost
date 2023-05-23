@@ -12,6 +12,7 @@ module.exports = {
             xl: '1280px'
         },
         colors: {
+            accent: 'var(--gh-accent-color, #ff0095)',
             transparent: 'transparent',
             current: 'currentColor',
             white: '#FFF',
