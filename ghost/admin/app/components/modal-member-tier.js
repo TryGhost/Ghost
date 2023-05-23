@@ -16,6 +16,7 @@ export default class ModalMemberTier extends ModalComponent {
     @tracked selectedTier = null;
     @tracked loadingTiers = false;
     @tracked expiryAt = 'forever';
+    @tracked customExpiryDate = moment().add(1, 'days');
 
     @tracked expiryOptions = [
         {
@@ -101,6 +102,11 @@ export default class ModalMemberTier extends ModalComponent {
         this.expiryAt = expiryDuration;
     }
 
+    @action
+    updateCustomExpiryDate(date) {
+        this.customExpiryDate = moment(date);
+    }
+
     @task({drop: true})
     *addTier() {
         const url = `${this.ghostPaths.url.api(`members/${this.member.get('id')}`)}?include=tiers`;
@@ -126,6 +132,8 @@ export default class ModalMemberTier extends ModalComponent {
             expiryAt = moment.utc().add(6, 'months').startOf('day').toISOString();
         } else if (this.expiryAt === 'year') {
             expiryAt = moment.utc().add(1, 'year').startOf('day').toISOString();
+        } else if (this.expiryAt === 'custom') {
+            expiryAt = this.customExpiryDate.toISOString();
         }
         const tiersData = {
             id: this.selectedTier

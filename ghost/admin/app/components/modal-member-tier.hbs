@@ -56,7 +56,12 @@
                         {{svg-jar "arrow-down-small"}}
                     </span>
                     {{#if (eq this.expiryAt "custom")}}
-                        <GhDatePicker @minDate={{now}} @minDateError="Must be in the future" />
+                        <GhDatePicker
+                            @minDate={{now}}
+                            @minDateError="Must be in the future"
+                            @value={{this.customExpiryDate}}
+                            @onChange={{this.updateCustomExpiryDate}}
+                        />
                     {{/if}}
                     <GhErrorMessage @errors={{this.errors}} @property="product-cadence" />
                 </GhFormGroup>
