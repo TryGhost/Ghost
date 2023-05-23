@@ -1,5 +1,6 @@
 import React from 'react';
 
+import Facebook from './Facebook';
 import LockSite from './LockSite';
 import Metadata from './Metadata';
 import PublicationLanguage from './PublicationLanguage';
@@ -17,6 +18,7 @@ const GeneralSettings: React.FC = () => {
                 <TimeZone />
                 <PublicationLanguage />
                 <Metadata />
+                <Facebook />
                 <SocialAccounts />
                 <LockSite />
                 <Users />

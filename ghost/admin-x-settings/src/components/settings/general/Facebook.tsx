@@ -4,7 +4,7 @@ import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupConten
 import TextField from '../../../admin-x-ds/global/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 
-const Metadata: React.FC = () => {
+const Facebook: React.FC = () => {
     const {
         currentState,
         focusRef,
@@ -15,37 +15,35 @@ const Metadata: React.FC = () => {
         handleStateChange
     } = useSettingGroup();
 
-    const [metaTitle, metaDescription, siteTitle, siteDescription] = getSettingValues(['meta_title', 'meta_description', 'title', 'description']) as string[];
+    const [facebookTitle, facebookDescription, siteTitle, siteDescription] = getSettingValues(['og_title', 'og_description', 'title', 'description']) as string[];
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        updateSetting('meta_title', e.target.value);
+        updateSetting('og_title', e.target.value);
     };
 
     const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        updateSetting('meta_description', e.target.value);
+        updateSetting('og_description', e.target.value);
     };
 
     const values = (
         <div>
-            [TBD: search engine preview in view mode]
+            [TBD: facebook card preview]
         </div>
     );
 
     const inputFields = (
         <SettingGroupContent>
             <TextField
-                hint="Recommended: 70 characters"
                 inputRef={focusRef}
                 placeholder={siteTitle}
-                title="Meta title"
-                value={metaTitle}
+                title="Facebook title"
+                value={facebookTitle}
                 onChange={handleTitleChange}
             />
             <TextField
-                hint="Recommended: 156 characters"
                 placeholder={siteDescription}
-                title="Meta description"
-                value={metaDescription}
+                title="Facebook description"
+                value={facebookDescription}
                 onChange={handleDescriptionChange}
             />
         </SettingGroupContent>
@@ -53,10 +51,10 @@ const Metadata: React.FC = () => {
 
     return (
         <SettingGroup
-            description='Extra content for search engines'
-            navid='metadata'
+            description='Customize structured data of your site'
+            navid='facebook'
             state={currentState}
-            title='Metadata'
+            title='Facebook card'
             onCancel={handleCancel}
             onSave={handleSave}
             onStateChange={handleStateChange}
@@ -67,4 +65,4 @@ const Metadata: React.FC = () => {
     );
 };
 
-export default Metadata;
+export default Facebook;
