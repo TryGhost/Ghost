@@ -47,6 +47,10 @@
     background-color: var(--ghost-accent-color);
 }
 
+.kg-signup-card.kg-swapped .kg-signup-card-container {
+    grid-row: 1;
+}
+
 .kg-signup-card.kg-style-image h2.kg-signup-card-heading,
 .kg-signup-card.kg-style-image h3.kg-signup-card-subheading,
 .kg-signup-card.kg-style-image .kg-signup-card-button {
@@ -70,7 +74,7 @@
 .kg-signup-card h2.kg-signup-card-heading {
     font-size: 4em;
     font-weight: 700;
-    line-height: 1.1em;
+    line-height: 1em;
     letter-spacing: -0.01em;
     margin: 0;
 }
