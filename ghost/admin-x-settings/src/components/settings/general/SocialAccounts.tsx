@@ -14,8 +14,8 @@ const SocialAccounts: React.FC = () => {
     };
 
     const {settings, saveSettings} = useContext(SettingsContext) || {};
-    const savedFacebookUser = getSettingValue(settings, 'facebook');
-    const savedTwitterUser = getSettingValue(settings, 'twitter');
+    const savedFacebookUser = (getSettingValue(settings, 'facebook') || '') as string;
+    const savedTwitterUser = (getSettingValue(settings, 'twitter') || '') as string;
     let [, fbUser] = savedFacebookUser.match(/(\S+)/) || [];
     let [, twitterUser] = savedTwitterUser.match(/@?([^/]*)/) || [];
 

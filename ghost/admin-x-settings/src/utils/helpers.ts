@@ -1,4 +1,4 @@
-import {ISetting} from '../components/SettingsProvider';
+import {Setting, SettingValue} from '../types/api';
 
 export interface IGhostPaths {
     adminRoot: string;
@@ -6,12 +6,12 @@ export interface IGhostPaths {
     apiRoot: string;
 }
 
-export function getSettingValue(settings: ISetting[] | null | undefined, key: string): string {
+export function getSettingValue(settings: Setting[] | null | undefined, key: string): SettingValue {
     if (!settings) {
         return '';
     }
     const setting = settings.find(d => d.key === key);
-    return setting ? setting.value : '';
+    return setting?.value || null;
 }
 
 export function getGhostPaths(): IGhostPaths {
