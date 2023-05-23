@@ -29,3 +29,9 @@ export function getLocalTime(timeZone: string) {
     const localTime = date.toLocaleString('en-US', options);
     return localTime;
 }
+
+export function getOptionLabel(
+    options: {value: string; label: string}[], value: string
+): string | undefined {
+    return options?.find(option => option.value === value)?.label;
+}

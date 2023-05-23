@@ -1,15 +1,90 @@
 import Dropdown from '../../../admin-x-ds/global/Dropdown';
-import React, {useState} from 'react';
+import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import {TSettingGroupStates} from '../../../admin-x-ds/settings/SettingGroup';
+import useSettingGroup from '../../../hooks/useSettingGroup';
+import {getOptionLabel} from '../../../utils/helpers';
+
+type RefipientValueArgs = {
+    defaultEmailRecipients: string;
+    defaultEmailRecipientsFilter: string|null;
+};
+
+const RECIPIENT_FILTER_OPTIONS = [{
+    label: 'Whoever has access to the post',
+    value: 'visibility'
+}, {
+    label: 'All members',
+    value: 'all-members'
+}, {
+    label: 'Paid-members only',
+    value: 'paid-only'
+}, {
+    label: 'Specific people',
+    value: 'segment'
+}, {
+    label: 'Usually nobody',
+    value: 'none'
+}];
+
+function getDefaultRecipientValue({
+    defaultEmailRecipients,
+    defaultEmailRecipientsFilter
+}: RefipientValueArgs): string {
+    if (defaultEmailRecipients === 'filter') {
+        if (defaultEmailRecipientsFilter === 'status:free,status:-free') {
+            return 'all-members';
+        } else if (defaultEmailRecipientsFilter === 'status:-free') {
+            return 'paid-only';
+        } else if (defaultEmailRecipientsFilter === null) {
+            return 'none';
+        } else {
+            return 'segment';
+        }
+    }
+
+    return defaultEmailRecipients;
+}
 
 const DefaultRecipients: React.FC = () => {
-    const [currentState, setCurrentState] = useState<TSettingGroupStates>('view');
+    const {
+        currentState,
+        handleSave,
+        handleCancel,
+        updateSetting,
+        getSettingValues,
+        handleStateChange
+    } = useSettingGroup();
 
-    const handleStateChange = (newState: TSettingGroupStates) => {
-        setCurrentState(newState);
+    const [defaultEmailRecipients, defaultEmailRecipientsFilter] = getSettingValues([
+        'editor_default_email_recipients', 'editor_default_email_recipients_filter'
+    ]) as [string, string|null];
+
+    const setDefaultRecipientValue = (value: string) => {
+        if (['visibility', 'disabled'].includes(value)) {
+            updateSetting('editor_default_email_recipients', value);
+            updateSetting('editor_default_email_recipients_filter', null);
+        } else {
+            updateSetting('editor_default_email_recipients', 'filter');
+        }
+
+        if (value === 'all-members') {
+            updateSetting('editor_default_email_recipients_filter', 'status:free,status:-free');
+        }
+
+        if (value === 'paid-only') {
+            updateSetting('editor_default_email_recipients_filter', 'status:-free');
+        }
+
+        if (value === 'none') {
+            updateSetting('editor_default_email_recipients_filter', null);
+        }
     };
+
+    const emailRecipientValue = getDefaultRecipientValue({
+        defaultEmailRecipients,
+        defaultEmailRecipientsFilter
+    });
 
     const values = (
         <SettingGroupContent
@@ -17,7 +92,7 @@ const DefaultRecipients: React.FC = () => {
                 {
                     heading: 'Default Newsletter recipients',
                     key: 'default-recipients',
-                    value: 'Whoever has access to the post'
+                    value: getOptionLabel(RECIPIENT_FILTER_OPTIONS, emailRecipientValue)
                 }
             ]}
         />
@@ -26,26 +101,24 @@ const DefaultRecipients: React.FC = () => {
     const form = (
         <SettingGroupContent columns={1}>
             <Dropdown
-                defaultSelectedOption='option-1'
+                defaultSelectedOption={emailRecipientValue}
                 hint='Who should be able to subscribe to your site?'
-                options={[
-                    {value: 'option-1', label: 'Whoever has access to the post'},
-                    {value: 'option-2', label: 'All members'},
-                    {value: 'option-3', label: 'Paid-members only'},
-                    {value: 'option-4', label: 'Specific people'},
-                    {value: 'option-5', label: 'Usually nobody'}
-                ]}
+                options={RECIPIENT_FILTER_OPTIONS}
                 title="Subscription access"
-                onSelect={() => {}}
+                onSelect={(value) => {
+                    setDefaultRecipientValue(value);
+                }}
             />
         </SettingGroupContent>
     );
 
     return (
-        <SettingGroup 
+        <SettingGroup
             description='When you publish new content, who do you usually want to send it to?'
-            state={currentState} 
-            title='Default recipients' 
+            state={currentState}
+            title='Default recipients'
+            onCancel={handleCancel}
+            onSave={handleSave}
             onStateChange={handleStateChange}
         >
             {currentState === 'view' ? values : form}
