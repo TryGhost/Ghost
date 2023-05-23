@@ -200,6 +200,10 @@
         "url": "https://cdn.jsdelivr.net/ghost/admin-x-settings@~{version}/dist/admin-x-settings.umd.js",
         "version": "0.0"
     },
+    "signupForm": {
+        "url": "https://cdn.jsdelivr.net/ghost/signup-form@~{version}/umd/signup-form.min.js",
+        "version": "0.0"
+    },
     "tenor": {
         "googleApiKey": null,
         "contentFilter": "off"

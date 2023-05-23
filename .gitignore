@@ -130,6 +130,9 @@ Caddyfile
 /ghost/sodo-search/public/main.css
 /ghost/sodo-search/umd
 
+# Signup Form
+/ghost/signup-form/umd
+
 # Announcement-Bar
 /ghost/announcement-bar/umd
 

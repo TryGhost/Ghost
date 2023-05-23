@@ -1,0 +1,14 @@
+body {
+    font-family: sans-serif;
+}
+
+#demo-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 50px 0;
+}
+hr {
+    border: 0;
+    border-top: 1px solid #eee;
+    margin: 40px 0;
+}
