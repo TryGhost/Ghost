@@ -12,6 +12,7 @@ import {$getRoot, $isDecoratorNode} from 'lexical';
 import {
     BASIC_NODES, BASIC_TRANSFORMERS, KoenigComposableEditor,
     KoenigComposer, KoenigEditor, MINIMAL_NODES, MINIMAL_TRANSFORMERS,
+    MobiledocCopyPlugin,
     RestrictContentPlugin
 } from '../src';
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
@@ -88,6 +89,7 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode}) {
             darkMode={darkMode}
             registerAPI={registerAPI}
         >
+            <MobiledocCopyPlugin />
         </KoenigEditor>
     );
 }
