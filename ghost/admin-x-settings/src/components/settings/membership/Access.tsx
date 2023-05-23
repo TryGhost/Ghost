@@ -3,6 +3,7 @@ import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import useSettingGroup from '../../../hooks/useSettingGroup';
+import {getOptionLabel} from '../../../utils/helpers';
 
 const MEMBERS_SIGNUP_ACCESS_OPTIONS = [
     {value: 'all', label: 'Anyone can sign up'},
@@ -22,10 +23,6 @@ const COMMENTS_ENABLED_OPTIONS = [
     {value: 'paid', label: 'Paid-members only'},
     {value: 'off', label: 'Nobody'}
 ];
-
-function getOptionLabel(options: {value: string; label: string}[], value: string): string | undefined {
-    return options.find(option => option.value === value)?.label;
-}
 
 const Access: React.FC = () => {
     const {
