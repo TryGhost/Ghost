@@ -126,10 +126,21 @@ export default class GhKoenigEditorReactComponent extends Component {
             let {bottom} = editorCanvas.getBoundingClientRect();
 
             // if a mousedown and subsequent mouseup occurs below the editor
-            // canvas, focus the editor and put the cursor at the end of the
-            // document
-            if (this.mousedownY > bottom && event.clientY > bottom) {
-                this.editorAPI.focusEditor();
+            // canvas, focus the editor and put the cursor at the end of the document
+            if (event.pageY > bottom && event.clientY > bottom) {
+                event.preventDefault();
+
+                // we should always have a visible cursor when focusing
+                // at the bottom so create an empty paragraph if last
+                // section is a card
+                if (this.editorAPI.lastNodeIsDecorator()) {
+                    this.editorAPI.insertParagraphAtBottom();
+                }
+                // Focus the editor
+                this.editorAPI.focusEditor({position: 'bottom'});
+
+                //scroll to the bottom of the container
+                // containerRef.current.scrollTop = containerRef.current.scrollHeight;
             }
         }
     }
