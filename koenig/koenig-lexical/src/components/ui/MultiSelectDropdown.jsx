@@ -3,7 +3,6 @@ import {ReactComponent as ArrowIcon} from '../../assets/icons/kg-arrow-down.svg'
 import {ReactComponent as CloseIcon} from '../../assets/icons/kg-close.svg';
 import {DropdownContainer} from './DropdownContainer';
 import {KeyboardSelection} from './KeyboardSelection';
-import {partition} from 'lodash-es';
 
 function Item({item, selected, onChange}) {
     let selectionClass = '';
@@ -34,10 +33,9 @@ function Item({item, selected, onChange}) {
     );
 }
 
-export function MultiSelectDropdown({value = [], menu, onChange, dataTestId}) {
+export function MultiSelectDropdown({items = [], availableItems = [], onChange, dataTestId}) {
     const [open, setOpen] = React.useState(false);
     const [filter, setFilter] = React.useState('');
-    const [newItems, setNewItems] = React.useState([]);
     const inputRef = React.useRef(null);
 
     const handleOpen = (event) => {
@@ -54,31 +52,25 @@ export function MultiSelectDropdown({value = [], menu, onChange, dataTestId}) {
     };
 
     const handleSelect = (item) => {
-        if (!item.name || value?.includes(item.id)) {
+        if (!item.name || items?.includes(item.name)) {
             return;
         }
 
-        // TODO: How to handle new items?
-        if (!item.id) {
-            item.id = `new-item-${item.name}`;
-            setNewItems(newItems.concat({id: item.id, name: item.name}));
-        }
-
-        onChange(value.concat(item.id));
+        onChange(items.concat(item.name));
         setFilter('');
     };
 
     const handleDeselect = (event, selectedItem) => {
         // Prevent losing focus when clicking an option
         event.preventDefault();
+        event.stopPropagation();
 
-        onChange(value.filter(selection => selection !== selectedItem.id));
-        setNewItems(newItems.filter(item => item.id !== selectedItem.id));
+        onChange(items.filter(selection => selection !== selectedItem.name));
     };
 
     const handleBackspace = (event) => {
         if (event.key === 'Backspace' && !filter) {
-            onChange(value.slice(0, -1));
+            onChange(items.slice(0, -1));
         }
     };
 
@@ -88,12 +80,15 @@ export function MultiSelectDropdown({value = [], menu, onChange, dataTestId}) {
         );
     };
 
-    const allItems = menu.concat(newItems).map(item => ({...item, label: item.name}));
-    const [selectedItems, nonSelectedItems] = partition(allItems, item => value?.includes(item.id));
+    const selectedItems = items.map(item => ({name: item, label: item}));
+    const nonSelectedItems = availableItems.map(item => ({name: item, label: item})).filter(
+        ai => !selectedItems.some(ii => ii.name === ai.name)
+    );
+
     const filteredItems = nonSelectedItems.filter(item => item.name.toLowerCase().includes(filter.toLowerCase()));
-    const emptyItem = filter && !selectedItems?.some(item => item.name === filter)
-        ? [{id: undefined, name: filter, label: <>Add <strong>&quot;{filter}&quot;...</strong></>}]
-        : [{id: undefined, name: undefined, label: 'Type to search'}];
+    const emptyItem = filter && !selectedItems?.some(item => item.name.toLowerCase() === filter.toLowerCase())
+        ? [{name: filter, label: <>Add <strong>&quot;{filter}&quot;...</strong></>}]
+        : [{name: '', label: 'Type to search'}];
 
     return (
         <div className="relative font-sans text-sm font-normal" data-testid={dataTestId}>
@@ -104,7 +99,7 @@ export function MultiSelectDropdown({value = [], menu, onChange, dataTestId}) {
             >
                 {selectedItems.map(item => (
                     <button
-                        key={item.id}
+                        key={item.name}
                         className="flex cursor-pointer items-center rounded-sm bg-black px-[1rem] py-[.6rem] leading-none text-white dark:bg-grey-100 dark:text-grey-900"
                         data-testid="multiselect-dropdown-selected"
                         type="button"

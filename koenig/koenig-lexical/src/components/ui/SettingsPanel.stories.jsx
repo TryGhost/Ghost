@@ -102,10 +102,10 @@ SignupCard.args = {
             {title: 'Transparent', transparent: true}
         ]} value='#777777' />,
         <MultiSelectDropdownSetting
+            availableItems={[{id: '1', name: 'Free members'}, {id: '2', name: 'Paid members'}]}
             description='These labels will be applied to members who sign up via this form.'
+            items={['1']}
             label='Labels'
-            menu={[{id: '1', name: 'Free members'}, {id: '2', name: 'Paid members'}]}
-            value={['1']}
         />
     ]
 };

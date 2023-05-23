@@ -36,10 +36,7 @@ const cardConfig = {
         {label: 'Homepage', value: window.location.origin + '/'},
         {label: 'Free signup', value: window.location.origin + '/#/portal/signup/free'}
     ]),
-    fetchLabels: () => Promise.resolve([
-        {id: '1', name: 'Label 1'},
-        {id: '2', name: 'Label 2'}
-    ]),
+    fetchLabels: () => Promise.resolve(['Label 1', 'Label 2']),
     feature: {
         signupCard: true
     }

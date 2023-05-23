@@ -375,11 +375,11 @@ export function SignupCard({alignment,
                         onChange={handleSuccessMessage}
                     />
                     <MultiSelectDropdownSetting
+                        availableItems={availableLabels}
                         dataTestId='labels-dropdown'
                         description='These labels will be applied to members who sign up via this form.'
+                        items={labels}
                         label='Labels'
-                        menu={availableLabels}
-                        value={labels}
                         onChange={handleLabels}
                     />
                 </SettingsPanel>
