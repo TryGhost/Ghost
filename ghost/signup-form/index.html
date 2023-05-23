@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Signup Form</title>
+    <link rel="stylesheet" href="/src/styles/demo.css" />
+  </head>
+  <body>
+    <div id="demo-container">
+        <h1>Full signup form</h1>
+        <p>
+            This is a live preview of the embeddable signup form<br>
+            It is currently connected to Ghost running at <code>%VITE_SITE_URL%</code>. Please duplicate <code>.env.development</code> as <code>.env.development.local</code> and modify it to change the site url locally (when you get an error when submitting the forms).
+        </p>
+
+        <!-- Because we need to use ESM modules during develoment, the src should be different to force reexecution of each script -->
+        <script
+            type="module"
+            src="/src/index.tsx"
+            data-title="My site name"
+            data-description="An independent publication about embeddable signup forms."
+            data-logo="https://user-images.githubusercontent.com/65487235/157884383-1b75feb1-45d8-4430-b636-3f7e06577347.png"
+            data-color="#4664dd"
+            data-site="%VITE_SITE_URL%"
+            data-labels="signup-form,with-logo"
+        ></script>
+
+        <hr>
+        <h1>Without logo</h1>
+        <script
+            type="module"
+            src="/src/index.tsx?withoutlogo"
+            data-title="Site without logo"
+            data-description="An independent publication about embeddable signup forms."
+            data-color="#4664dd"
+            data-site="%VITE_SITE_URL%"
+            data-labels="signup-form,without-logo"
+        ></script>
+
+        <hr>
+        <h1>Minimal</h1>
+
+        <script
+            type="module"
+            src="/src/index.tsx?other"
+            data-color="#ff0095"
+            data-site="%VITE_SITE_URL%"
+            data-labels="signup-form,minimal"
+        ></script>
+
+        <hr>
+        <h1>With invalid configuration</h1>
+        <p>When you submit this one, it will throw an error.</p>
+
+        <script
+            type="module"
+            src="/src/index.tsx?other2"
+            data-color="#ff0095"
+            data-site="https://invalid/"
+        ></script>
+    </div>
+  </body>
+</html>
