@@ -69,6 +69,10 @@
     /**/
 }
 
+.kg-signup-card-image.kg-style-accent {
+    background-color: var(--ghost-accent-color);
+}
+
 /* Heading */
 
 .kg-signup-card h2.kg-signup-card-heading {
