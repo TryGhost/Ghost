@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.47.2",
+  "version": "5.49.0",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -40,7 +40,7 @@
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "3.0.0",
     "@joeattardi/emoji-button": "4.6.4",
-    "@sentry/ember": "7.49.0",
+    "@sentry/ember": "7.52.1",
     "@tryghost/color-utils": "0.1.24",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "1.1.77",

@@ -1,3 +1,4 @@
+const uniqBy = require('lodash/uniqBy');
 const logging = require('@tryghost/logging');
 const ObjectID = require('bson-objectid').default;
 const errors = require('@tryghost/errors');
@@ -52,6 +53,7 @@ class BatchSendingService {
      * @param {object} [dependencies.sentry]
      * @param {object} [dependencies.BEFORE_RETRY_CONFIG]
      * @param {object} [dependencies.AFTER_RETRY_CONFIG]
+     * @param {object} [dependencies.MAILGUN_API_RETRY_CONFIG]
      */
     constructor({
         emailRenderer,
@@ -393,7 +395,7 @@ class BatchSendingService {
         let succeeded = false;
 
         try {
-            const members = await this.retryDb(
+            let members = await this.retryDb(
                 async () => {
                     const m = await this.getBatchMembers(batch.id);
 
@@ -409,6 +411,19 @@ class BatchSendingService {
                 },
                 {...this.#getBeforeRetryConfig(email), description: `getBatchMembers batch ${originalBatch.id}`}
             );
+
+            if (members.length > this.#sendingService.getMaximumRecipients()) {
+                // @NOTE the unique by member_id is a best effort to make sure we don't send the same email to the same member twice
+                logging.error(`Email batch ${originalBatch.id} has ${members.length} members, which exceeds the maximum of ${this.#sendingService.getMaximumRecipients()}. Filtering to unique members`);
+                members = uniqBy(members, 'email');
+
+                if (members.length > this.#sendingService.getMaximumRecipients()) {
+                    // @NOTE this is a best effort logic to still try sending an email batch
+                    //       even if it exceeds the maximum recipients limit of the sending service
+                    logging.error(`Email batch ${originalBatch.id} has ${members.length} members, which exceeds the maximum of ${this.#sendingService.getMaximumRecipients()}. Truncating to ${this.#sendingService.getMaximumRecipients()}`);
+                    members = members.slice(0, this.#sendingService.getMaximumRecipients());
+                }
+            }
 
             const response = await this.retryDb(async () => {
                 return await this.#sendingService.send({
@@ -492,12 +507,13 @@ class BatchSendingService {
     /**
      * We don't want to pass EmailRecipient models to the sendingService.
      * So we transform them into the MemberLike interface.
-     * That keeps the sending service nicely seperated so it isn't dependent on the batch sending data structure.
+     * That keeps the sending service nicely separated so it isn't dependent on the batch sending data structure.
      * @returns {Promise<MemberLike[]>}
      */
     async getBatchMembers(batchId) {
         const models = await this.#models.EmailRecipient.findAll({filter: `batch_id:${batchId}`, withRelated: ['member', 'member.stripeSubscriptions', 'member.products']});
-        return models.map((model) => {
+
+        const mappedMemberLikes = models.map((model) => {
             // Map subscriptions
             const subscriptions = model.related('member').related('stripeSubscriptions').toJSON();
             const tiers = model.related('member').related('products').toJSON();
@@ -513,6 +529,13 @@ class BatchSendingService {
                 tiers
             };
         });
+
+        const BATCH_SIZE = this.#sendingService.getMaximumRecipients();
+        if (mappedMemberLikes.length > BATCH_SIZE) {
+            logging.error(`Batch ${batchId} has ${mappedMemberLikes.length} members, but the sending service only supports ${BATCH_SIZE} members per batch.`);
+        }
+
+        return mappedMemberLikes;
     }
 
     /**

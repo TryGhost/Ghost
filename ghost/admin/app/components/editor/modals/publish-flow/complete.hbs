@@ -96,52 +96,23 @@
                 </button>
             </p>
         {{else}}
-            {{!-- Inlined beta feedback form --}}
             {{#if (feature 'lexicalEditor')}}
-                {{!-- <div class="gh-feedback-grey">
-                    <h4 class="gh-feedback-grey-title">Hey, noticed anything different?</h4>
-                    <p>This post was successfully published using our new editor. Have any issues? Feedback? Let us know!</p>
-                    <form>
-                        <GhFormGroup>
-                            <label for="feedback-lexical">Feedback</label>
-                            <GhTextarea 
-                                @id="feedback-lexical"
-                                @name="feedback-lexical" 
-                                @value={{this.feedbackMessage}}
-                                @placeholder="I've noticed that..."
-                                data-test-lexical-feedback-textarea
-                            />
-                        </GhFormGroup>
-                    </form>
-                    <GhTaskButton 
-                        @buttonText="Send feedback"
-                        @task={{this.submitFeedback}}
-                        @class="gh-btn gh-btn-black gh-btn-icon"
-                        data-test-button="submit-lexical-feedback"
-                    />
-                </div> --}}
+                <FeedbackLexical::PostCompleteForm @post={{@publishOptions.post}} />
+                <LinkTo @route="dashboard" class="gh-feedback-lexical-published-back">Back to dashboard</LinkTo>
+                {{!-- <button class="gh-feedback-lexical-published-back"type="button">Back to dashboard</button> --}}
             {{/if}}
-            <p class="gh-publish-confirmation gh-publish-confirmation-with-feedback">
-                <button
-                    type="button"
-                    class="gh-back-to-editor"
-                    {{on "click" @close}}
-                    data-test-button="back-to-editor"
-                >
-                    <span>Back to editor</span>
-                </button>
-                {{!-- Trigger beta feedback modal --}}
-                {{#if (feature 'lexicalEditor')}}
+            {{#unless (feature 'lexicalEditor')}}
+                <p class="gh-publish-confirmation gh-publish-confirmation-with-feedback">
                     <button
                         type="button"
-                        class="gh-publish-confirmation-feedback"
-                        {{on "click" this.openFeedbackLexical}}
-                        data-test-button="lexical-feedback"
+                        class="gh-back-to-editor"
+                        {{on "click" @close}}
+                        data-test-button="back-to-editor"
                     >
-                        <span>Beta feedback?</span>
+                        <span>Back to editor</span>
                     </button>
-                {{/if}}
-            </p>
+                </p>
+            {{/unless}}
         {{/if}}
     {{/if}}
 {{/let}}
