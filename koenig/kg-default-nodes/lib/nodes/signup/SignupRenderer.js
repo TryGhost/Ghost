@@ -10,29 +10,48 @@ function cardTemplate(nodeData) {
     const alignment = nodeData.alignment === 'center' ? 'align-center' : '';
     const backgroundImageStyle = nodeData.layout === 'split' ? '' : `background-image: url(${nodeData.backgroundImageSrc})`;
 
-    return `
-    <div class="${cardClasses}" data-lexical-signup-form style="display:none;">
+    const isSwapped = nodeData.swapped;
+
+    const formDataTemplate = `
+        <form class="kg-signup-card-form" data-members-form="">
+            ${nodeData.labels.map(label => `<input data-members-label type="hidden" value="${label}" />`).join('\n')}
+
+            <div class="kg-signup-card-fields">
+                <input class="kg-signup-card-input ${buttonAccent}" style="border-color: ${nodeData.buttonColor};" id="email" data-members-email="" type="email" required="true" placeholder="yourname@example.com" />
+                <button class="kg-signup-card-button ${buttonAccent}" style="background-color: ${nodeData.buttonColor}; color: ${nodeData.buttonTextColor};" type="submit">
+                    <span class="kg-signup-card-button-default">${nodeData.buttonText || 'Subscribe'}</span>
+                    <span class="kg-signup-card-button-loading" style="background-color: ${nodeData.buttonColor}">${loadingIcon()}</span>
+                </button>
+            </div>
+            <div class="kg-signup-card-success" style="color: ${nodeData.textColor};">
+                ${nodeData.successMessage || 'Thanks! Now check your email to confirm.'}
+            </div>
+            <div class="kg-signup-card-error" style="color: ${nodeData.textColor};" data-members-error></div>
+        </form>
+        <p class="kg-signup-card-disclaimer" style="color: ${nodeData.textColor};">${nodeData.disclaimer}</p>
+    `;
+
+    const swappedTemplate = `
+        <div class="kg-signup-card-container ${alignment} ${backgroundAccent}" style="background-color: ${nodeData.backgroundColor}; ${backgroundImageStyle}">
+            <h2 class="kg-signup-card-heading" style="color: ${nodeData.textColor};">${nodeData.header}</h2>
+            <h3 class="kg-signup-card-subheading" style="color: ${nodeData.textColor};">${nodeData.subheader}</h3>
+            ${formDataTemplate}
+        </div>
+        ${nodeData.layout === 'split' ? `<img class="kg-signup-card-image" src="${nodeData.backgroundImageSrc}" alt="" />` : ''}
+    `;
+
+    const defaultTemplate = `
         ${nodeData.layout === 'split' ? `<img class="kg-signup-card-image" src="${nodeData.backgroundImageSrc}" alt="" />` : ''}
         <div class="kg-signup-card-container ${alignment} ${backgroundAccent}" style="background-color: ${nodeData.backgroundColor}; ${backgroundImageStyle}">
             <h2 class="kg-signup-card-heading" style="color: ${nodeData.textColor};">${nodeData.header}</h2>
             <h3 class="kg-signup-card-subheading" style="color: ${nodeData.textColor};">${nodeData.subheader}</h3>
-            <form class="kg-signup-card-form" data-members-form="">
-                ${nodeData.labels.map(label => `<input data-members-label type="hidden" value="${label}" />`).join('\n')}
-
-                <div class="kg-signup-card-fields">
-                    <input class="kg-signup-card-input ${buttonAccent}" style="border-color: ${nodeData.buttonColor};" id="email" data-members-email="" type="email" required="true" placeholder="yourname@example.com" />
-                    <button class="kg-signup-card-button ${buttonAccent}" style="background-color: ${nodeData.buttonColor}; color: ${nodeData.buttonTextColor};" type="submit">
-                        <span class="kg-signup-card-button-default">${nodeData.buttonText || 'Subscribe'}</span>
-                        <span class="kg-signup-card-button-loading" style="background-color: ${nodeData.buttonColor}">${loadingIcon()}</span>
-                    </button>
-                </div>
-                <div class="kg-signup-card-success" style="color: ${nodeData.textColor};">
-                    ${nodeData.successMessage || 'Thanks! Now check your email to confirm.'}
-                </div>
-                <div class="kg-signup-card-error" style="color: ${nodeData.textColor};" data-members-error></div>
-            </form>
-            <p class="kg-signup-card-disclaimer" style="color: ${nodeData.textColor};">${nodeData.disclaimer}</p>
+            ${formDataTemplate}
         </div>
+    `;
+
+    return `
+    <div class="${cardClasses}" data-lexical-signup-form style="display:none;">
+        ${isSwapped && nodeData.layout === 'split' ? swappedTemplate : defaultTemplate}
     </div>
     `;
 }
@@ -74,7 +93,8 @@ export function renderSignupCardToDOM(dataset, options = {}) {
         layout: dataset.__layout,
         textColor: dataset.__textColor,
         buttonTextColor: dataset.__buttonTextColor,
-        successMessage: dataset.__successMessage
+        successMessage: dataset.__successMessage,
+        swapped: dataset.__swapped
     };
 
     const htmlString = options.target === 'email'

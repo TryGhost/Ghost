@@ -313,8 +313,38 @@ describe('SignupNode', function () {
                 </div>
             `);
         }));
-    });
 
+        it('renders split card swapped', editorTest(function () {
+            dataset.layout = 'split';
+            dataset.swapped = true;
+        
+            const signupNode = $createSignupNode(dataset);
+            const {element} = signupNode.exportDOM(exportOptions);
+            element.outerHTML.should.prettifyTo(html`
+                <div class="kg-card kg-signup-card kg-layout-split kg-width-full" data-lexical-signup-form="" style="display:none">
+                    <div class="kg-signup-card-container align-center" style="background-color:transparent">
+                        <h2 class="kg-signup-card-heading" style="color:#000000">Header</h2>
+                        <h3 class="kg-signup-card-subheading" style="color:#000000">Subheader</h3>
+                        <form class="kg-signup-card-form" data-members-form="">
+                            <input data-members-label="" type="hidden" value="label 1">
+                            <input data-members-label="" type="hidden" value="label 2">
+                            <div class="kg-signup-card-fields">
+                                <input class="kg-signup-card-input" style="border-color:#000000" id="email" data-members-email="" type="email" required="true" placeholder="yourname@example.com">
+                                <button class="kg-signup-card-button" style="background-color:#000000;color:#ffffff" type="submit">
+                                    <span class="kg-signup-card-button-default">Button</span>
+                                    <span class="kg-signup-card-button-loading" style="background-color:#000000">${loadingIcon}</span>
+                                </button>
+                            </div>
+                            <div class="kg-signup-card-success" style="color:#000000">Success!</div>
+                            <div class="kg-signup-card-error" style="color:#000000" data-members-error=""></div>
+                        </form>
+                        <p class="kg-signup-card-disclaimer" style="color:#000000">Disclaimer</p>
+                    </div>
+                    <img class="kg-signup-card-image" src="https://example.com/image.jpg" alt="">
+                </div>
+            `);
+        }));
+    });
     describe('importDOM', function () {
         it('parses a signup card', editorTest(function () {
             const signupNode = $createSignupNode(dataset);
