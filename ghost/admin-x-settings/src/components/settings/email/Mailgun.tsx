@@ -29,19 +29,9 @@ const MailGun: React.FC = () => {
 
     const data = isMailgunSetup ? [
         {
-            heading: 'Mailgun region',
-            key: 'mailgun-region',
-            value: mailgunRegion
-        },
-        {
-            heading: 'Mailgun domain',
-            key: 'mailgun-domain',
-            value: mailgunDomain
-        },
-        {
-            heading: 'Mailgun private API key',
-            key: 'commenting',
-            value: mailgunApiKey
+            heading: 'Status',
+            key: 'status',
+            value: 'Mailgun is set up ✅'
         }
     ] : [
         {
