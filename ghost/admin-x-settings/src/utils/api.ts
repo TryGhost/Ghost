@@ -1,3 +1,4 @@
+import {Setting} from '../types/api';
 import {getGhostPaths} from './helpers';
 
 interface IQueryParams {
@@ -5,16 +6,10 @@ interface IQueryParams {
     [key: string]: string;
 }
 
-// Define the Setting type
-export interface ISetting {
-    key: string;
-    value: string;
-}
-
 // Define the SettingsResponse type
 export interface ISettingsResponse {
     meta: any;
-    settings: ISetting[];
+    settings: Setting[];
 }
 
 export async function getSettings() {
@@ -37,7 +32,7 @@ export async function getSettings() {
     return data;
 }
 
-export async function updateSettings(newSettings: ISetting[]) {
+export async function updateSettings(newSettings: Setting[]) {
     const {apiRoot} = getGhostPaths();
 
     const payload = JSON.stringify({
