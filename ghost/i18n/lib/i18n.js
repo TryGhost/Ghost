@@ -14,6 +14,7 @@ const SUPPORTED_LOCALES = [
     'hu',
     'id',
     'it',
+    'ko',
     'mn',
     'nl',
     'no',
