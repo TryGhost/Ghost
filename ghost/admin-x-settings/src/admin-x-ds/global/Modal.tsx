@@ -41,8 +41,8 @@ const Modal: React.FC<ModalProps> = ({size = 'md', title, okLabel, cancelLabel, 
         });
     }
 
-    let modalStyles = 'z-50 mx-auto flex flex-col justify-between bg-white p-8 shadow-xl w-full';
-    let backdropStyles = 'fixed inset-0 h-[100vh] w-[100vw] overflow-y-scroll bg-[rgba(0,0,0,0.1)]';
+    let modalStyles = 'relative z-50 mx-auto flex flex-col justify-between bg-white p-8 shadow-xl w-full';
+    let backdropStyles = 'fixed inset-0 h-[100vh] w-[100vw] overflow-y-scroll ';
 
     switch (size) {
     case 'sm':
@@ -77,8 +77,13 @@ const Modal: React.FC<ModalProps> = ({size = 'md', title, okLabel, cancelLabel, 
         backdropStyles += ' p-[2vmin]';
     }
 
+    const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        modal.remove();
+    };
+
     return (
-        <div className={backdropStyles}>
+        <div className={backdropStyles} id='modal-backdrop'>
+            <div className='absolute inset-0 z-0 bg-[rgba(0,0,0,0.1)]' onClick={handleBackdropClick}></div>
             <section className={modalStyles}>
                 <div>
                     {title && <Heading level={4}>{title}</Heading>}
