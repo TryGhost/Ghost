@@ -4,6 +4,7 @@ coverage:
   status:
     patch: false
     project:
+      default: false
       e2e-tests:
         flags:
         - e2e-tests
