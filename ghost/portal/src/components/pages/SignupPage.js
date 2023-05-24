@@ -583,14 +583,14 @@ class SignupPage extends React.Component {
     }
 
     renderProducts() {
-        const {site, pageQuery} = this.context;
+        const {site, pageQuery, t} = this.context;
         const products = getSiteProducts({site, pageQuery});
         const errors = this.state.errors || {};
         const priceErrors = {};
 
         // If we have at least one error, set an error message for the current selected plan
         if (Object.keys(errors).length > 0 && this.state.plan) {
-            priceErrors[this.state.plan] = 'Please fill in required fields';
+            priceErrors[this.state.plan] = t('Please fill in required fields');
         }
 
         return (
