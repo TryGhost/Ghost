@@ -1,0 +1,21 @@
+codecov:
+  require_ci_to_pass: true
+coverage:
+  status:
+    patch: false
+    project:
+      default:
+        flags:
+        - unit-tests
+        - e2e-tests
+      e2e-tests:
+        flags:
+        - e2e-tests
+      unit-tests:
+        flags:
+        - unit-tests
+flags:
+  e2e-tests:
+    carryforward: true
+  unit-tests:
+    carryforward: true
