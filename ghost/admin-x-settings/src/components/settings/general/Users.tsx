@@ -1,13 +1,21 @@
 import Button from '../../../admin-x-ds/global/Button';
+import InviteUserModal from '../../modals/InviteUserModal';
 import List from '../../../admin-x-ds/global/List';
 import ListItem from '../../../admin-x-ds/global/ListItem';
+import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
 
 const Users: React.FC = () => {
+    const showAddModal = () => {        
+        NiceModal.show(InviteUserModal);
+    };
+
     const buttons = (
-        <Button color='green' label='Invite users' link={true} />
+        <Button color='green' label='Invite users' link={true} onClick={() => {
+            showAddModal();
+        }} />
     );
 
     const owner = (
