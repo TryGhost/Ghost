@@ -1,5 +1,5 @@
 // Ref: https://reactjs.org/docs/context.html
-import React, {ComponentProps} from 'react';
+import React, {ComponentProps, useContext} from 'react';
 import pages, {Page, PageName} from './pages';
 import {GhostApi} from './utils/api';
 
@@ -19,4 +19,8 @@ export type AppContextType = {
     api: GhostApi,
 }
 
-export const AppContext = React.createContext<AppContextType>({} as any);
+const AppContext = React.createContext<AppContextType>({} as any);
+
+export const AppContextProvider = AppContext.Provider;
+
+export const useAppContext = () => useContext(AppContext);

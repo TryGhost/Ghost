@@ -1,12 +1,10 @@
 import React, {FormEventHandler} from 'react';
-import {AppContext} from '../../AppContext';
 import {isMinimal} from '../../utils/helpers';
 import {isValidEmail} from '../../utils/validator';
+import {useAppContext} from '../../AppContext';
 
-type Props = {};
-
-export const FormPage: React.FC<Props> = () => {
-    const {options} = React.useContext(AppContext);
+export const FormPage: React.FC = () => {
+    const {options} = useAppContext();
 
     if (isMinimal(options)) {
         return (
@@ -27,11 +25,11 @@ export const FormPage: React.FC<Props> = () => {
     </div>;
 };
 
-const Form: React.FC<Props> = () => {
+const Form: React.FC = () => {
     const [email, setEmail] = React.useState('');
     const [error, setError] = React.useState('');
     const [loading, setLoading] = React.useState(false);
-    const {api, setPage, options} = React.useContext(AppContext);
+    const {api, setPage, options} = useAppContext();
     const labels = options.labels;
 
     const submit: FormEventHandler<HTMLFormElement> = async (e) => {
