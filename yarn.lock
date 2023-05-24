@@ -2029,6 +2029,11 @@
     ee-log "^3.0.0"
     section-tests "^1.3.0"
 
+"@ebay/nice-modal-react@^1.2.10":
+  version "1.2.10"
+  resolved "https://registry.yarnpkg.com/@ebay/nice-modal-react/-/nice-modal-react-1.2.10.tgz#6b2406bfce4a5daffc43f5b85f5f238311cdfe93"
+  integrity sha512-qNp8vQo5kPRwB9bHlkh8lcwH/0KFWpp58X/b9KaLB/gNlJ3W24nCT2l/qBBSnWgV7NEIq25uLowaPS2mbfpZiw==
+
 "@elastic/elasticsearch@8.5.0", "@elastic/elasticsearch@8.6.0":
   version "8.5.0"
   resolved "https://registry.yarnpkg.com/@elastic/elasticsearch/-/elasticsearch-8.5.0.tgz#407aee0950a082ee76735a567f2571cf4301d4ea"
