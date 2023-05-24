@@ -156,6 +156,20 @@ test.describe('Signup card', async () => {
         await expect(thirdEditor).toHaveText(/No spam. Unsubscribe anytime./);
     });
 
+    test('nested editors are hidden when not in edit mode', async function ({page}) {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'signup'});
+
+        const firstEditor = page.locator('[data-kg-card="signup"] .koenig-lexical').nth(0);
+
+        for (let i = 0; i < 'Sign up for Koenig Lexical'.length; i++) {
+            await page.keyboard.press('Backspace');
+        }
+        await page.keyboard.press('Escape');
+
+        await expect(firstEditor).toHaveClass(/hidden/);
+    });
+
     test('can edit button text', async function ({page}) {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
