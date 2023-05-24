@@ -17,7 +17,7 @@ export const FormPage: React.FC = () => {
     const logo = options.logo;
 
     return <div className='bg-grey-300 p-24'>
-        {logo && <img alt={title} src={logo} width='100' />}
+        {logo && <img alt={title} src={logo} width='150' />}
         {title && <h1 className="text-4xl font-bold">{title}</h1>}
         {description && <p className='pb-3'>{description}</p>}
 
