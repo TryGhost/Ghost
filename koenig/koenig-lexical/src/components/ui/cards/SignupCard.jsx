@@ -68,9 +68,19 @@ export function SignupCard({alignment,
                 handleTextColor(matchingTextColor(color.hex));
             });
         }
-        // This is only needed when the background image is changed
+        // This is only needed when the background image or layout is changed
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [backgroundImageSrc]);
+    }, [backgroundImageSrc, layout === 'split']);
+
+    useEffect(() => {
+        if (backgroundColor && layout === 'split') {
+            // Make sure the text color matches the background color
+            // It might be different if an image was uploaded in a non-split layout
+            handleBackgroundColor(backgroundColor, matchingTextColor(backgroundColor));
+        }
+        // This is only needed when the layout is changed
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [layout === 'split']);
 
     const layoutChildren = [
         {

@@ -308,6 +308,47 @@ test.describe('Signup card', async () => {
         await expect(page.locator('[data-testid="media-upload-setting"]')).not.toBeVisible();
     });
 
+    test('can update the text color in split vs regular layout', async function ({page}) {
+        const filePath = path.relative(process.cwd(), __dirname + `/../fixtures/large-image.jpeg`);
+
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'signup'});
+
+        // Text colour is updated based on the background colour
+
+        await page.click('[data-testid="signup-background-color"] button[title="Grey"]');
+
+        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('background-color', 'rgb(244, 244, 244)');
+        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('color', 'rgb(0, 0, 0)');
+
+        // Text colour is updated based on the background image
+
+        const fileChooserPromise = page.waitForEvent('filechooser');
+
+        await page.click('[data-testid="signup-background-image-toggle"]');
+
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles([filePath]);
+
+        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('background-image', /blob:/);
+        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('color', 'rgb(255, 255, 255)');
+
+        // When switching to split layout, text colour is set based on the background colour
+
+        await page.locator('[data-testid="signup-layout-split"]').click();
+
+        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).not.toHaveCSS('background-image', /blob:/);
+        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('background-color', 'rgb(244, 244, 244)');
+        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('color', 'rgb(0, 0, 0)');
+
+        // When switching back from split layout, text colour is set based on the background colour
+
+        await page.locator('[data-testid="signup-layout-wide"]').click();
+
+        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('background-image', /blob:/);
+        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('color', 'rgb(255, 255, 255)');
+    });
+
     test('can add and remove background image in split layout', async function ({page}) {
         const filePath = path.relative(process.cwd(), __dirname + `/../fixtures/large-image.jpeg`);
         const fileChooserPromise = page.waitForEvent('filechooser');
