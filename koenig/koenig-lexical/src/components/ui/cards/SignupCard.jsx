@@ -196,8 +196,8 @@ export function SignupCard({alignment,
                         placeholderText={headerPlaceholder}
                         singleParagraph={true}
                         textClassName={clsx(
-                            'koenig-lexical-header-heading peer relative w-full whitespace-normal font-bold caret-current [&:has(br)]:text-left',
-                            (!isEditing && isEditorEmpty(headerTextEditor)) && 'hidden',
+                            'koenig-lexical-header-heading relative w-full whitespace-normal font-bold caret-current [&:has(br)]:text-left',
+                            (!isEditing && isEditorEmpty(headerTextEditor)) ? 'hidden' : 'peer',
                             (alignment === 'center') && 'text-center',
                             (layout === 'regular') && 'koenig-lexical-header-xsmall',
                             (layout === 'regular' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_128px)] [&:has(br)]:sm:pl-[calc(50%_-_154px)] [&:has(br)]:md:pl-[calc(50%_-_204px)]',
@@ -226,8 +226,8 @@ export function SignupCard({alignment,
                         placeholderText={subheaderPlaceholder}
                         singleParagraph={true}
                         textClassName={clsx(
-                            'koenig-lexical-header-subheading peer relative w-full whitespace-normal caret-current [&:has(br)]:text-left',
-                            (!isEditing && isEditorEmpty(subheaderTextEditor)) && 'hidden',
+                            'koenig-lexical-header-subheading relative w-full whitespace-normal caret-current [&:has(br)]:text-left',
+                            (!isEditing && isEditorEmpty(subheaderTextEditor)) ? 'hidden' : 'peer',
                             (alignment === 'center') && 'text-center',
                             (layout === 'regular') && 'koenig-lexical-header-small !mt-2',
                             (layout === 'regular' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_90px)] [&:has(br)]:sm:pl-[calc(50%_-_100px)]',
