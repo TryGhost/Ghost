@@ -17,8 +17,7 @@
       "registry": "https://registry.npmjs.org/"
     },
     "scripts": {
-      "dev": "vite",
-      "dev:preview": "concurrently \"vite preview\" \"vite build --watch\"",
+      "dev": "concurrently \"vite --port 6173\" \"vite preview -l silent\" \"vite build --watch\"",
       "build": "tsc && vite build",
       "lint": "yarn run lint:js",
       "lint:js": "eslint --ext .js,.ts,.cjs,.tsx --cache src test",

@@ -11,7 +11,15 @@ Embed a Ghost signup form on any site.
 
 ### Running the development version
 
-Run `yarn dev` to start the development server to test/develop the form standalone. This will generate a demo site from the `index.html` file which renders the app and makes it available on http://localhost:5137
+Run `yarn dev` to start the development server to test/develop the form standalone. 
+- This will generate a demo site on http://localhost:6173
+- This will build and watch the production build and host it on http://localhost:6174/signup-form.min.js (different port!)
+
+### Using the UMD build during development
+
+Vite by default only supports HRM with an ESM output. But when loading a script on a site as a ESM module (`<script type="module" src="...">`), you don't have access to `document.currentScript` inside the script, which is required to determine the location to inject the iframe. In development mode we use a workaround for this to make the ESM HMR work. But this workaroudn is not suitable for production.
+
+To test the real production behaviour without this hack, you can use http://localhost:6173/preview.html. This HTML page will use `http://localhost:6174/signup-form.min.js` directly. 
 
 ## Develop
 
