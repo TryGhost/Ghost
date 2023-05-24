@@ -41,9 +41,10 @@
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
+    "@ebay/nice-modal-react": "^1.2.10",
+    "@tryghost/timezone-data": "0.3.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "@tryghost/timezone-data": "0.3.0"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@storybook/addon-essentials": "7.0.15",
