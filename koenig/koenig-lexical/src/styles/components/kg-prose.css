@@ -954,7 +954,7 @@
                     ul,
                     ol
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            @apply text-[1.6rem];
+            @apply text-[1.6rem] font-normal;
         }
     }
 }

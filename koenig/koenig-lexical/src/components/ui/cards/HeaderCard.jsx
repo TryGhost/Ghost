@@ -119,9 +119,9 @@ export function HeaderCard({isEditing,
                             singleParagraph={true}
                             textClassName={clsx(
                                 'koenig-lexical-header-heading relative w-full whitespace-normal text-center font-bold [&:has(br)]:text-left', 
-                                (size === 'small') && 'koenig-lexical-header-small [&:has(br)]:pl-[calc(50%_-_122px)] [&:has(br)]:sm:pl-[calc(50%_-_146px)] [&:has(br)]:md:pl-[calc(50%_-_192px)] [&:has(br)]:lg:pl-[calc(50%_-_236px)]',
-                                (size === 'medium') && 'koenig-lexical-header-medium [&:has(br)]:pl-[calc(50%_-_122px)] [&:has(br)]:sm:pl-[calc(50%_-_146px)] [&:has(br)]:md:pl-[calc(50%_-_192px)] [&:has(br)]:lg:pl-[calc(50%_-_236px)] [&:has(br)]:xl:pl-[calc(50%_-_282px)]',
-                                (size === 'large') && 'koenig-lexical-header-large [&:has(br)]:pl-[calc(50%_-_146px)] [&:has(br)]:sm:pl-[calc(50%_-_192px)] [&:has(br)]:md:pl-[calc(50%_-_236px)] [&:has(br)]:lg:pl-[calc(50%_-_282px)] [&:has(br)]:xl:pl-[calc(50%_-_374px)]',
+                                (size === 'small') && 'koenig-lexical-header-small [&:has(br)]:pl-[calc(50%_-_128px)] [&:has(br)]:sm:pl-[calc(50%_-_154px)] [&:has(br)]:md:pl-[calc(50%_-_205px)] [&:has(br)]:lg:pl-[calc(50%_-_256px)]',
+                                (size === 'medium') && 'koenig-lexical-header-medium [&:has(br)]:pl-[calc(50%_-_128px)] [&:has(br)]:sm:pl-[calc(50%_-_154px)] [&:has(br)]:md:pl-[calc(50%_-_205px)] [&:has(br)]:lg:pl-[calc(50%_-_256px)] [&:has(br)]:xl:pl-[calc(50%_-_306px)]',
+                                (size === 'large') && 'koenig-lexical-header-large [&:has(br)]:pl-[calc(50%_-_154px)] [&:has(br)]:sm:pl-[calc(50%_-_205px)] [&:has(br)]:md:pl-[calc(50%_-_256px)] [&:has(br)]:lg:pl-[calc(50%_-_306px)] [&:has(br)]:xl:pl-[calc(50%_-_408px)]',
                                 (HEADER_TEXT_COLORS[type])
                             )}
                         />
@@ -147,9 +147,9 @@ export function HeaderCard({isEditing,
                             singleParagraph={true}
                             textClassName={clsx(
                                 'koenig-lexical-header-subheading relative w-full whitespace-normal text-center [&:has(br)]:text-left',
-                                (size === 'small') && 'koenig-lexical-header-small !mt-2 [&:has(br)]:pl-[calc(50%_-_86px)] [&:has(br)]:sm:pl-[calc(50%_-_95px)]',
-                                (size === 'medium') && 'koenig-lexical-header-medium !mt-3 [&:has(br)]:pl-[calc(50%_-_86px)] [&:has(br)]:sm:pl-[calc(50%_-_95px)] [&:has(br)]:md:pl-[calc(50%_-_112px)]',
-                                (size === 'large') && 'koenig-lexical-header-large !mt-3 [&:has(br)]:pl-[calc(50%_-_95px)] [&:has(br)]:md:pl-[calc(50%_-_112px)] [&:has(br)]:xl:pl-[calc(50%_-_138px)]',
+                                (size === 'small') && 'koenig-lexical-header-small !mt-2 [&:has(br)]:pl-[calc(50%_-_90px)] [&:has(br)]:sm:pl-[calc(50%_-_100px)]',
+                                (size === 'medium') && 'koenig-lexical-header-medium !mt-3 [&:has(br)]:pl-[calc(50%_-_90px)] [&:has(br)]:sm:pl-[calc(50%_-_100px)] [&:has(br)]:md:pl-[calc(50%_-_120px)]',
+                                (size === 'large') && 'koenig-lexical-header-large !mt-3 [&:has(br)]:pl-[calc(50%_-_100px)] [&:has(br)]:md:pl-[calc(50%_-_120px)] [&:has(br)]:xl:pl-[calc(50%_-_150px)]',
                                 (HEADER_TEXT_COLORS[type])
                             )}
                         />

@@ -116,9 +116,9 @@ export function SignupCard({alignment,
 
     const {isLoading, progress} = fileUploader || {};
 
-    const headerPlaceholder = layout === 'split' ? 'Enter heading' : 'Enter heading text';
-    const subheaderPlaceholder = 'Enter subheading text';
-    const disclaimerPlaceholder = 'Enter disclaimer text';
+    const headerPlaceholder = layout === 'split' ? 'Heading' : 'Enter heading text';
+    const subheaderPlaceholder = layout === 'split' ? 'Subheading text' : 'Enter subheading text';
+    const disclaimerPlaceholder = layout === 'split' ? 'Disclaimer text' : 'Enter disclaimer text';
 
     const hexColorValue = (color) => {
         return color === 'accent' ? getAccentColor() : color;
@@ -175,10 +175,10 @@ export function SignupCard({alignment,
                     className={clsx(
                         'mx-auto flex w-full flex-1 flex-col justify-center',
                         (alignment === 'center') && 'items-center',
-                        (layout === 'regular') && 'p-[8rem]',
-                        (layout === 'wide') && 'max-w-[740px] py-[10rem]',
-                        (layout === 'full') && 'p-[16rem]',
-                        (layout === 'split') && 'px-[6rem] py-[16rem]'
+                        (layout === 'regular') && 'py-[8rem] px-[6rem] lg:px-[8rem]',
+                        (layout === 'wide') && 'max-w-[740px] py-[10rem] px-[8rem] lg:px-0',
+                        (layout === 'full') && 'py-[8rem] px-[4.8rem] md:py-[12rem] md:px-[8rem] lg:p-[14rem] xl:p-[16rem]',
+                        (layout === 'split') && 'px-[4.8rem] py-[8rem] md:py-[12rem] lg:px-[6rem] lg:py-[16rem]'
                     )}>
                     {/* Heading */}
                     {
@@ -203,12 +203,12 @@ export function SignupCard({alignment,
                                     'koenig-lexical-header-heading peer relative w-full whitespace-normal font-bold caret-current [&:has(br)]:text-left',
                                     (alignment === 'center') && 'text-center',
                                     (layout === 'regular') && 'koenig-lexical-header-xsmall',
-                                    (layout === 'regular' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_122px)] [&:has(br)]:sm:pl-[calc(50%_-_145px)] [&:has(br)]:md:pl-[calc(50%_-_192px)]',
+                                    (layout === 'regular' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_128px)] [&:has(br)]:sm:pl-[calc(50%_-_154px)] [&:has(br)]:md:pl-[calc(50%_-_204px)]',
                                     (layout === 'wide' || layout === 'split') && 'koenig-lexical-header-small',
-                                    (layout === 'wide' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_122px)] [&:has(br)]:sm:pl-[calc(50%_-_145px)] [&:has(br)]:md:pl-[calc(50%_-_192px)] [&:has(br)]:lg:pl-[calc(50%_-_238px)]',
+                                    (layout === 'wide' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_128px)] [&:has(br)]:sm:pl-[calc(50%_-_154px)] [&:has(br)]:md:pl-[calc(50%_-_204px)] [&:has(br)]:lg:pl-[calc(50%_-_254px)]',
                                     (layout === 'full' || layout === 'split') && 'koenig-lexical-header-large',
-                                    (layout === 'full' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_145px)] [&:has(br)]:sm:pl-[calc(50%_-_192px)] [&:has(br)]:md:pl-[calc(50%_-_238px)] [&:has(br)]:lg:pl-[calc(50%_-_283px)] [&:has(br)]:xl:pl-[calc(50%_-_374px)]',
-                                    (layout === 'split' && alignment === 'center') && '[&:has(br)]:md:pl-[calc(50%_-_182px)] [&:has(br)]:lg:pl-[calc(50%_-_216px)] [&:has(br)]:xl:pl-[calc(50%_-_286px)]'
+                                    (layout === 'full' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_154px)] [&:has(br)]:sm:pl-[calc(50%_-_204px)] [&:has(br)]:md:pl-[calc(50%_-_254px)] [&:has(br)]:lg:pl-[calc(50%_-_306px)] [&:has(br)]:xl:pl-[calc(50%_-_408px)]',
+                                    (layout === 'split' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_71px)] [&:has(br)]:sm:pl-[calc(50%_-_94px)] [&:has(br)]:md:pl-[calc(50%_-_116px)] [&:has(br)]:lg:pl-[calc(50%_-_140px)] [&:has(br)]:xl:pl-[calc(50%_-_186px)]'
                                 )}
                             />
                         )
@@ -224,7 +224,7 @@ export function SignupCard({alignment,
                                 initialEditorState={subheaderTextEditorInitialState}
                                 nodes="minimal"
                                 placeholderClassName={clsx(
-                                    'h-[110%] w-full truncate whitespace-normal !font-normal !leading-tight !tracking-[-0.025em] opacity-50',
+                                    'h-[110%] w-full truncate whitespace-normal !font-medium !leading-snug !tracking-tight opacity-50',
                                     (alignment === 'center') && 'text-center',
                                     (layout === 'regular') && 'text-lg sm:text-xl',
                                     (layout === 'wide') && 'text-lg sm:text-xl md:text-2xl',
@@ -236,18 +236,19 @@ export function SignupCard({alignment,
                                     'koenig-lexical-header-subheading peer relative w-full whitespace-normal caret-current [&:has(br)]:text-left',
                                     (alignment === 'center') && 'text-center',
                                     (layout === 'regular') && 'koenig-lexical-header-small !mt-2',
-                                    (layout === 'regular' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_84px)] [&:has(br)]:sm:pl-[calc(50%_-_92px)]',
+                                    (layout === 'regular' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_90px)] [&:has(br)]:sm:pl-[calc(50%_-_100px)]',
                                     (layout === 'wide') && 'koenig-lexical-header-medium !mt-3',
-                                    (layout === 'wide' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_84px)] [&:has(br)]:sm:pl-[calc(50%_-_92px)] [&:has(br)]:md:pl-[calc(50%_-_108px)]',
+                                    (layout === 'wide' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_90px)] [&:has(br)]:sm:pl-[calc(50%_-_100px)] [&:has(br)]:md:pl-[calc(50%_-_120px)]',
                                     (layout === 'full' || layout === 'split') && 'koenig-lexical-header-large !mt-3',
-                                    ((layout === 'full' || layout === 'split') && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_92px)] [&:has(br)]:md:pl-[calc(50%_-_108px)] [&:has(br)]:xl:pl-[calc(50%_-_134px)]'
+                                    (layout === 'full' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_100px)] [&:has(br)]:md:pl-[calc(50%_-_120px)] [&:has(br)]:xl:pl-[calc(50%_-_152px)]',
+                                    (layout === 'split' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_75px)] [&:has(br)]:md:pl-[calc(50%_-_90px)] [&:has(br)]:xl:pl-[calc(50%_-_112px)]'
                                 )}
                             />
                         )
                     }
 
                     {/* Subscribe form */}
-                    <div className={`w-full ${(layout === 'regular') ? 'peer-[.koenig-lexical]:mt-10 md:w-9/12' : (layout === 'wide') ? 'peer-[.koenig-lexical]:mt-12 md:w-4/6' : (layout === 'full') ? 'peer-[.koenig-lexical]:mt-12 md:w-4/6 peer-[.koenig-lexical]:md:mt-16 lg:w-1/2 xl:w-5/12' : 'peer-[.koenig-lexical]:mt-10 peer-[.koenig-lexical]:md:mt-16'}`}>
+                    <div className={`w-full ${(layout === 'regular') ? 'peer-[.koenig-lexical]:mt-10' : (layout === 'wide') ? 'peer-[.koenig-lexical]:mt-12 md:w-4/6' : (layout === 'full') ? 'peer-[.koenig-lexical]:mt-12 md:w-4/6 peer-[.koenig-lexical]:md:mt-16 xl:w-1/2' : 'peer-[.koenig-lexical]:mt-10 peer-[.koenig-lexical]:md:mt-16'}`}>
                         <SubscribeForm
                             buttonSize={`${(layout === 'regular') ? 'medium' : (layout === 'wide') ? 'large' : 'xlarge'}`}
                             buttonStyle={buttonColor ? {
@@ -261,6 +262,7 @@ export function SignupCard({alignment,
                             inputBorderStyle={buttonColor ? {
                                 border: `1px solid ${hexColorValue(buttonColor)}`
                             } : null}
+                            mobileSize={`${(layout === 'full' || layout === 'split') && 'large'}`}
                             placeholder='yourname@example.com'
                         />
                     </div>
@@ -273,10 +275,14 @@ export function SignupCard({alignment,
                                 initialEditor={disclaimerTextEditor}
                                 initialEditorState={disclaimerTextEditorInitialState}
                                 nodes="minimal"
-                                placeholderClassName={`truncate opacity-50 w-full h-[110%] whitespace-normal !leading-tight !font-normal !text-[1.6rem] !tracking-[-0.025em] ${(alignment === 'center' && 'text-center')}`}
+                                placeholderClassName={`truncate opacity-50 w-full h-[110%] whitespace-normal !leading-snug !font-normal !text-[1.6rem] !tracking-tight ${(alignment === 'center' && 'text-center')}`}
                                 placeholderText={disclaimerPlaceholder}
                                 singleParagraph={true}
-                                textClassName={`koenig-lexical-header-subheading caret-current koenig-lexical-header-xsmall relative w-full whitespace-normal !mt-4 ${(alignment === 'center' && 'text-center')} [&:has(br)]:text-left ${(alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_71px)]'}`}
+                                textClassName={clsx(
+                                    'koenig-lexical-header-subheading koenig-lexical-header-xsmall relative !mt-4 w-full whitespace-normal caret-current',
+                                    alignment === 'center' && 'text-center [&:has(br)]:pl-[calc(50%_-_74px)] [&:has(br)]:text-left',
+                                    (layout === 'split' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_54px)]'
+                                )}
                             />
                         )
                     }
@@ -328,7 +334,7 @@ export function SignupCard({alignment,
                                     </button>
                                 )
                             }),
-                            {title: 'Grey', hex: '#F4F5F6'},
+                            {title: 'Grey', hex: '#F4F4F4'},
                             {title: 'Black', hex: '#000000'},
                             {title: 'Brand color', accent: true}
                         ].filter(Boolean)}

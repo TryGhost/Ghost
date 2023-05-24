@@ -79,11 +79,11 @@ export class SignupNode extends KoenigDecoratorNode {
         successMessage} = {}, key) {
         super(key);
         this.__alignment = alignment || 'left';
-        this.__backgroundColor = backgroundColor || 'accent';
+        this.__backgroundColor = backgroundColor || '#F4F4F4';
         this.__backgroundImageSrc = backgroundImageSrc || '';
-        this.__textColor = textColor || (backgroundColor === 'transparent' ? '' : '#ffffff');
-        this.__buttonColor = buttonColor || '#ffffff';
-        this.__buttonTextColor = buttonTextColor || '#000000';
+        this.__textColor = textColor || (backgroundColor === 'transparent' ? '' : '#000000');
+        this.__buttonColor = buttonColor || 'accent';
+        this.__buttonTextColor = buttonTextColor || '#FFFFFF';
         this.__buttonText = buttonText || '';
         this.__disclaimer = disclaimer || '';
         this.__header = header || '';
