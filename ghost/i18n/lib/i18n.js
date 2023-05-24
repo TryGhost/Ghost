@@ -11,6 +11,7 @@ const SUPPORTED_LOCALES = [
     'eo',
     'es',
     'fr',
+    'hi',
     'hu',
     'id',
     'it',
