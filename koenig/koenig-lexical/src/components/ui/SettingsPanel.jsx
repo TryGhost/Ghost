@@ -1,5 +1,6 @@
 import KoenigComposerContext from '../../context/KoenigComposerContext.jsx';
-import React, {createContext, useContext, useEffect, useState} from 'react';
+import React, {createContext, useContext, useEffect} from 'react';
+import clsx from 'clsx';
 import useSettingsPanelReposition from '../../hooks/useSettingsPanelReposition';
 import {ButtonGroup} from './ButtonGroup';
 import {ColorIndicator, ColorPicker} from './ColorPicker';
@@ -171,8 +172,7 @@ export function ColorOptionSetting({label, onClick, selectedName, buttons, layou
     );
 }
 
-export function ColorPickerSetting({label, onChange, value, swatches, eyedropper, hasTransparentOption, dataTestId}) {
-    const [isExpanded, setExpanded] = useState(false);
+export function ColorPickerSetting({label, isExpanded, onChange, onTogglePicker, value, swatches, eyedropper, hasTransparentOption, dataTestId}) {
     const {repositionPanel} = useSettingsPanelContext();
 
     useEffect(() => repositionPanel(), [repositionPanel, isExpanded]);
@@ -187,18 +187,18 @@ export function ColorPickerSetting({label, onChange, value, swatches, eyedropper
                         swatches={swatches}
                         value={value}
                         onSelectSwatch={onChange}
-                        onTogglePicker={() => setExpanded(!isExpanded)}
+                        onTogglePicker={() => onTogglePicker(!isExpanded)}
                     />
                 </div>
             </div>
-            {isExpanded && <ColorPicker eyedropper={eyedropper} hasTransparentOption={hasTransparentOption} value={value} onBlur={() => setExpanded(false)} onChange={onChange} />}
+            {isExpanded && <ColorPicker eyedropper={eyedropper} hasTransparentOption={hasTransparentOption} value={value} onBlur={() => onTogglePicker(false)} onChange={onChange} />}
         </div>
     );
 }
 
-export function MediaUploadSetting({label, hideLabel, onFileChange, isDraggedOver, placeholderRef, src, alt, isLoading, errors = [], progress, onRemoveMedia, icon, desc = '', size, borderStyle, mimeTypes, isPinturaEnabled, openImageEditor}) {
+export function MediaUploadSetting({className, label, hideLabel, onFileChange, isDraggedOver, placeholderRef, src, alt, isLoading, errors = [], progress, onRemoveMedia, icon, desc = '', size, borderStyle, mimeTypes, isPinturaEnabled, openImageEditor, setFileInputRef}) {
     return (
-        <div className="mt-2 text-[1.3rem] first:mt-0" data-testid="custom-thumbnail">
+        <div className={clsx('mt-2 text-[1.3rem] first:mt-0', className)} data-testid="media-upload-setting">
             <div className={hideLabel ? 'sr-only' : 'font-bold text-grey-900 dark:text-grey-200'}>{label}</div>
 
             <MediaUploader
@@ -214,6 +214,7 @@ export function MediaUploadSetting({label, hideLabel, onFileChange, isDraggedOve
                 mimeTypes={mimeTypes}
                 openImageEditor={openImageEditor}
                 progress={progress}
+                setFileInputRef={setFileInputRef}
                 size={size}
                 src={src}
                 onFileChange={onFileChange}

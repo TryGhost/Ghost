@@ -228,13 +228,13 @@ test.describe('Signup card', async () => {
 
     test('can add and remove background image', async function ({page}) {
         const filePath = path.relative(process.cwd(), __dirname + `/../fixtures/large-image.jpeg`);
-        const fileChooserPromise = page.waitForEvent('filechooser');
 
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
+        const fileChooserPromise = page.waitForEvent('filechooser');
+
         await page.click('[data-testid="signup-background-image-toggle"]');
-        await page.click('[data-testid="media-upload-placeholder"]');
 
         // Set files
         const fileChooser = await fileChooserPromise;
@@ -245,6 +245,67 @@ test.describe('Signup card', async () => {
 
         // Check if it is also set as an image in the panel
         await expect(page.locator('[data-testid="media-upload-filled"] img')).toHaveAttribute('src', /blob:/);
+
+        // Remove the image
+        await page.click('[data-testid="media-upload-remove"]');
+
+        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).not.toHaveCSS('background-image', /blob:/);
+        await expect(page.locator('[data-testid="media-upload-placeholder"]')).toBeVisible();
+
+        // Add it again by clicking the placeholder
+        const fileChooserPromise2 = page.waitForEvent('filechooser');
+
+        await page.click('[data-testid="media-upload-placeholder"]');
+
+        const fileChooser2 = await fileChooserPromise2;
+        await fileChooser2.setFiles([filePath]);
+
+        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('background-image', /blob:/);
+        await expect(page.locator('[data-testid="media-upload-filled"] img')).toHaveAttribute('src', /blob:/);
+    });
+
+    test('can switch between background image and color', async function ({page}) {
+        const filePath = path.relative(process.cwd(), __dirname + `/../fixtures/large-image.jpeg`);
+
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'signup'});
+
+        // Choose an image
+
+        const fileChooserPromise = page.waitForEvent('filechooser');
+
+        await page.click('[data-testid="signup-background-image-toggle"]');
+
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles([filePath]);
+
+        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('background-image', /blob:/);
+        await expect(page.locator('[data-testid="media-upload-setting"]')).toBeVisible();
+        await expect(page.locator('[data-testid="media-upload-filled"] img')).toHaveAttribute('src', /blob:/);
+
+        // Switch to a color swatch
+
+        await page.click('[data-testid="signup-background-color"] button[title="Black"]');
+
+        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).not.toHaveCSS('background-image', /blob:/);
+        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('background-color', 'rgb(0, 0, 0)');
+        await expect(page.locator('[data-testid="media-upload-setting"]')).not.toBeVisible();
+
+        // Switch back to the image
+
+        await page.click('[data-testid="signup-background-image-toggle"]');
+
+        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('background-image', /blob:/);
+        await expect(page.locator('[data-testid="media-upload-setting"]')).toBeVisible();
+        await expect(page.locator('[data-testid="media-upload-filled"] img')).toHaveAttribute('src', /blob:/);
+
+        // Open the color picker
+
+        await page.click('[data-testid="signup-background-color"] [aria-label="Pick color"]');
+
+        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).not.toHaveCSS('background-image', /blob:/);
+        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('background-color', 'rgb(0, 0, 0)');
+        await expect(page.locator('[data-testid="media-upload-setting"]')).not.toBeVisible();
     });
 
     test('can add and remove background image in split layout', async function ({page}) {
@@ -257,14 +318,15 @@ test.describe('Signup card', async () => {
         await page.locator('[data-testid="signup-layout-split"]').click();
 
         await expect(page.locator('[data-testid="signup-background-image-toggle"]')).toHaveCount(0);
+        await expect(page.locator('[data-testid="media-upload-setting"]')).not.toBeVisible();
 
-        await page.click('[data-testid="media-upload-placeholder"]');
+        await page.click('[data-testid="signup-card-container"] [data-testid="media-upload-placeholder"]');
 
         // Set files
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles([filePath]);
 
-        await expect(page.locator('[data-testid="media-upload-filled"] img')).toHaveAttribute('src', /blob:/);
+        await expect(page.locator('[data-testid="signup-card-container"] [data-testid="media-upload-filled"] img')).toHaveAttribute('src', /blob:/);
     });
 
     test('can add and remove labels', async function ({page}) {
@@ -385,7 +447,7 @@ test.describe('Signup card', async () => {
         // Set files
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles([filePath]);
-        await expect(page.locator('[data-testid="media-upload-filled"] img')).toHaveAttribute('src', /blob:/);
+        await expect(page.locator('[data-testid="signup-card-container"] [data-testid="media-upload-filled"] img')).toHaveAttribute('src', /blob:/);
         // Click swap
         await page.click('[data-testid="media-upload-swap"]');
         // Check the parent class name was updated

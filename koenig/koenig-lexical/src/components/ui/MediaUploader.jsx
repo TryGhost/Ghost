@@ -27,12 +27,14 @@ export function MediaUploader({
     progress,
     errors,
     onRemoveMedia,
-    additionalActions
+    additionalActions,
+    setFileInputRef
 }) {
     const fileInputRef = useRef(null);
 
     const onFileInputRef = (element) => {
         fileInputRef.current = element;
+        setFileInputRef?.(element);
     };
 
     const progressStyle = {

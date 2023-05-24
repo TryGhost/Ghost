@@ -9,7 +9,8 @@ import {SignupCard} from '../components/ui/cards/SignupCard.jsx';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
 import {backgroundImageUploadHandler} from '../utils/imageUploadHandler';
-import {useContext, useEffect, useState} from 'react';
+import {openFileSelection} from '../utils/openFileSelection';
+import {useContext, useEffect, useRef, useState} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 function SignupNodeComponent({
@@ -41,7 +42,9 @@ function SignupNodeComponent({
     const [showSnippetToolbar, setShowSnippetToolbar] = useState(false);
     const [availableLabels, setAvailableLabels] = useState([]);
     const [showBackgroundImage, setShowBackgroundImage] = useState(Boolean(backgroundImageSrc));
+    const [lastBackgroundImage, setLastBackgroundImage] = useState(backgroundImageSrc);
     const {isEnabled: isPinturaEnabled, openEditor: openImageEditor} = usePinturaEditor({config: cardConfig.pinturaConfig});
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
         if (cardConfig?.fetchLabels) {
@@ -54,6 +57,10 @@ function SignupNodeComponent({
     useEffect(() => {
         if (layout !== 'split') {
             setShowBackgroundImage(Boolean(backgroundImageSrc));
+        }
+
+        if (layout === 'split' && !backgroundImageSrc && lastBackgroundImage) {
+            handleShowBackgroundImage();
         }
         // We just want to reset the show background image state when the layout changes, not when the image changes
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -87,6 +94,8 @@ function SignupNodeComponent({
             const node = $getNodeByKey(nodeKey);
             node.setBackgroundImageSrc(imageSrc);
         });
+
+        setLastBackgroundImage(imageSrc);
     };
 
     const onFileChange = async (e) => {
@@ -116,8 +125,22 @@ function SignupNodeComponent({
         });
     };
 
-    const handleShowBackgroundImage = (e) => {
+    const handleShowBackgroundImage = () => {
         setShowBackgroundImage(true);
+
+        if (lastBackgroundImage) {
+            editor.update(() => {
+                const node = $getNodeByKey(nodeKey);
+                node.setBackgroundImageSrc(lastBackgroundImage);
+            });
+        } else {
+            openFileSelection({fileInputRef});
+        }
+    };
+
+    const handleHideBackgroundImage = () => {
+        setShowBackgroundImage(false);
+        handleClearBackgroundImage();
     };
 
     const handleBackgroundColor = (color, matchingTextColor) => {
@@ -127,8 +150,7 @@ function SignupNodeComponent({
             node.setTextColor(matchingTextColor);
 
             if (layout !== 'split') {
-                setShowBackgroundImage(false);
-                handleClearBackgroundImage();
+                handleHideBackgroundImage();
             }
         });
     };
@@ -186,6 +208,7 @@ function SignupNodeComponent({
                 handleButtonColor={handleButtonColor}
                 handleButtonText={handleButtonText}
                 handleClearBackgroundImage={handleClearBackgroundImage}
+                handleHideBackgroundImage={handleHideBackgroundImage}
                 handleLabels={handleLabels}
                 handleLayout={handleLayout}
                 handleShowBackgroundImage={handleShowBackgroundImage}
@@ -201,6 +224,7 @@ function SignupNodeComponent({
                 labels={labels}
                 layout={layout}
                 openImageEditor={openImageEditor}
+                setFileInputRef={ref => fileInputRef.current = ref}
                 showBackgroundImage={showBackgroundImage}
                 subheader={subheader}
                 subheaderTextEditor={subheaderTextEditor}

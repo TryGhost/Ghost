@@ -1,6 +1,6 @@
 import KoenigNestedEditor from '../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import clsx from 'clsx';
 import {ButtonGroupSetting, ColorPickerSetting, InputSetting, MediaUploadSetting, MultiSelectDropdownSetting, SettingsDivider, SettingsPanel} from '../SettingsPanel';
 import {ReactComponent as CenterAlignIcon} from '../../../assets/icons/kg-align-center.svg';
@@ -20,9 +20,6 @@ import {isEditorEmpty} from '../../../utils/isEditorEmpty';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 
 export function SignupCard({alignment,
-    header,
-    subheader,
-    disclaimer,
     buttonText,
     showBackgroundImage,
     backgroundImageSrc,
@@ -35,6 +32,7 @@ export function SignupCard({alignment,
     handleAlignment,
     handleButtonText,
     handleShowBackgroundImage,
+    handleHideBackgroundImage,
     handleClearBackgroundImage,
     handleBackgroundColor,
     handleButtonColor,
@@ -55,7 +53,11 @@ export function SignupCard({alignment,
     disclaimerTextEditor,
     disclaimerTextEditorInitialState,
     isSwapped,
-    handleSwapLayout}) {
+    handleSwapLayout,
+    setFileInputRef}) {
+    const [backgroundColorPickerExpanded, setBackgroundColorPickerExpanded] = useState(false);
+    const [buttonColorPickerExpanded, setButtonColorPickerExpanded] = useState(false);
+
     const matchingTextColor = (color) => {
         return color === 'transparent' ? '' : textColorForBackgroundColor(hexColorValue(color)).hex();
     };
@@ -305,6 +307,7 @@ export function SignupCard({alignment,
                         dataTestId='signup-background-color'
                         eyedropper={layout === 'split'}
                         hasTransparentOption={true}
+                        isExpanded={backgroundColorPickerExpanded}
                         label='Background'
                         swatches={[
                             (layout !== 'split' && {
@@ -317,7 +320,10 @@ export function SignupCard({alignment,
                                         data-testid="signup-background-image-toggle"
                                         title="Image"
                                         type="button"
-                                        onClick={handleShowBackgroundImage}
+                                        onClick={() => {
+                                            handleShowBackgroundImage();
+                                            setBackgroundColorPickerExpanded(false);
+                                        }}
                                     >
                                         <ImgBgIcon className="h-[1.4rem] w-[1.4rem]" />
                                     </button>
@@ -329,10 +335,17 @@ export function SignupCard({alignment,
                         ].filter(Boolean)}
                         value={(showBackgroundImage && layout !== 'split') ? '' : backgroundColor}
                         onChange={color => handleBackgroundColor(color, matchingTextColor(color))}
+                        onTogglePicker={(isExpanded) => {
+                            if (isExpanded) {
+                                handleHideBackgroundImage();
+                            }
+                            setBackgroundColorPickerExpanded(isExpanded);
+                        }}
                     />
-                    {showBackgroundImage && layout !== 'split' && <MediaUploadSetting
+                    <MediaUploadSetting
                         alt='Background image'
                         borderStyle={'dashed'}
+                        className={(!showBackgroundImage || layout === 'split') && 'hidden'}
                         desc='Click to upload'
                         errors={fileUploader?.errors}
                         hideLabel={layout !== 'split'}
@@ -345,16 +358,18 @@ export function SignupCard({alignment,
                         openImageEditor={openImageEditor}
                         placeholderRef={imageDragHandler?.setRef}
                         progress={progress}
+                        setFileInputRef={setFileInputRef}
                         size='xsmall'
                         src={backgroundImageSrc}
                         onFileChange={onFileChange}
                         onRemoveMedia={handleClearBackgroundImage}
-                    />}
+                    />
                     <SettingsDivider />
 
                     <ColorPickerSetting
                         dataTestId='signup-button-color'
                         eyedropper={layout === 'split'}
+                        isExpanded={buttonColorPickerExpanded}
                         label='Button'
                         swatches={[
                             {title: 'White', hex: '#ffffff'},
@@ -363,6 +378,7 @@ export function SignupCard({alignment,
                         ]}
                         value={buttonColor}
                         onChange={color => handleButtonColor(color, matchingTextColor(color))}
+                        onTogglePicker={setButtonColorPickerExpanded}
                     />
                     <InputSetting
                         dataTestId='signup-button-text'
@@ -388,9 +404,6 @@ export function SignupCard({alignment,
 
 SignupCard.propTypes = {
     alignment: PropTypes.oneOf(['left', 'center']),
-    header: PropTypes.string,
-    subheader: PropTypes.string,
-    disclaimer: PropTypes.string,
     buttonColor: PropTypes.string,
     buttonText: PropTypes.string,
     buttonTextColor: PropTypes.string,
@@ -409,6 +422,7 @@ SignupCard.propTypes = {
     handleClearBackgroundImage: PropTypes.func,
     handleBackgroundColor: PropTypes.func,
     handleShowBackgroundImage: PropTypes.func,
+    handleHideBackgroundImage: PropTypes.func,
     handleButtonColor: PropTypes.func,
     handleLabels: PropTypes.func,
     handleTextColor: PropTypes.func,
@@ -426,5 +440,6 @@ SignupCard.propTypes = {
     disclaimerTextEditor: PropTypes.object,
     disclaimerTextEditorInitialState: PropTypes.string,
     isSwapped: PropTypes.bool,
-    handleSwapLayout: PropTypes.func
+    handleSwapLayout: PropTypes.func,
+    setFileInputRef: PropTypes.func
 };
