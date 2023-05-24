@@ -30,7 +30,6 @@ export function SignupCard({alignment,
     buttonColor,
     buttonTextColor,
     textColor,
-    successMessage,
     isEditing,
     fileUploader,
     handleAlignment,
@@ -41,7 +40,6 @@ export function SignupCard({alignment,
     handleButtonColor,
     handleLayout,
     handleTextColor,
-    handleSuccessMessage,
     isPinturaEnabled,
     labels,
     layout,
@@ -383,12 +381,6 @@ export function SignupCard({alignment,
                         hideLabel
                         onChange={handleButtonText}
                     />
-                    <InputSetting
-                        label='Success message'
-                        placeholder='Add success message'
-                        value={successMessage || 'Thanks! Now check your email to confirm.'}
-                        onChange={handleSuccessMessage}
-                    />
                     <MultiSelectDropdownSetting
                         availableItems={availableLabels}
                         dataTestId='labels-dropdown'
@@ -415,7 +407,6 @@ SignupCard.propTypes = {
     backgroundImageSrc: PropTypes.string,
     backgroundColor: PropTypes.string,
     textColor: PropTypes.string,
-    successMessage: PropTypes.string,
     showBackgroundImage: PropTypes.bool,
     isEditing: PropTypes.bool,
     isPinturaEnabled: PropTypes.bool,
@@ -430,7 +421,6 @@ SignupCard.propTypes = {
     handleButtonColor: PropTypes.func,
     handleLabels: PropTypes.func,
     handleTextColor: PropTypes.func,
-    handleSuccessMessage: PropTypes.func,
     labels: PropTypes.arrayOf(PropTypes.string),
     layout: PropTypes.oneOf(['regular', 'wide', 'full', 'split']),
     availableLabels: PropTypes.arrayOf(PropTypes.object),

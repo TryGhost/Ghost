@@ -32,7 +32,6 @@ function SignupNodeComponent({
     subheaderTextEditor,
     subheaderTextEditorInitialState,
     textColor,
-    successMessage,
     isSwapped
 }) {
     const [editor] = useLexicalComposerContext();
@@ -107,13 +106,6 @@ function SignupNodeComponent({
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             node.setButtonText(event.target.value);
-        });
-    };
-
-    const handleSuccessMessage = (event) => {
-        editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            node.setSuccessMessage(event.target.value);
         });
     };
 
@@ -197,7 +189,6 @@ function SignupNodeComponent({
                 handleLabels={handleLabels}
                 handleLayout={handleLayout}
                 handleShowBackgroundImage={handleShowBackgroundImage}
-                handleSuccessMessage={handleSuccessMessage}
                 handleSwapLayout={handleSwapLayout}
                 handleTextColor={handleTextColor}
                 header={header}
@@ -214,7 +205,6 @@ function SignupNodeComponent({
                 subheader={subheader}
                 subheaderTextEditor={subheaderTextEditor}
                 subheaderTextEditorInitialState={subheaderTextEditorInitialState}
-                successMessage={successMessage}
                 textColor={textColor}
                 onFileChange={onFileChange}
             />

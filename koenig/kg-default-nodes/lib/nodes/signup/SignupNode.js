@@ -90,7 +90,7 @@ export class SignupNode extends KoenigDecoratorNode {
         this.__labels = labels || [];
         this.__layout = layout || 'wide';
         this.__subheader = subheader || '';
-        this.__successMessage = successMessage || '';
+        this.__successMessage = successMessage || 'Email sent! Check your inbox to complete your signup.';
         this.__swapped = swapped || false;
     }
 

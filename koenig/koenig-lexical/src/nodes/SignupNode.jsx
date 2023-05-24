@@ -148,7 +148,6 @@ export class SignupNode extends BaseSignupNode {
                     subheader={this.getSubheader()}
                     subheaderTextEditor={this.__subheaderTextEditor}
                     subheaderTextEditorInitialState={this.__subheaderTextEditorInitialState}
-                    successMessage={this.getSuccessMessage()}
                     textColor={this.getTextColor()}
                 />
             </KoenigCardWrapper>
