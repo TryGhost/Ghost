@@ -271,7 +271,9 @@ export default class KoenigLexicalEditor extends Component {
             fetchLabels,
             feature: {
                 signupCard: this.feature.get('signupCard')
-            }
+            },
+            siteTitle: this.settings.title,
+            siteDescription: this.settings.description
         };
         const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig});
 
