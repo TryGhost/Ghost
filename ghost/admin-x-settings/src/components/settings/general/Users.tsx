@@ -6,15 +6,20 @@ import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
+import UserDetailModal from '../../modals/UserDetailModal';
 
 const Users: React.FC = () => {
-    const showAddModal = () => {        
+    const showInviteModal = () => {        
         NiceModal.show(InviteUserModal);
+    };
+
+    const showDetailModal = () => {        
+        NiceModal.show(UserDetailModal);
     };
 
     const buttons = (
         <Button color='green' label='Invite users' link={true} onClick={() => {
-            showAddModal();
+            showInviteModal();
         }} />
     );
 
@@ -28,7 +33,7 @@ const Users: React.FC = () => {
     const admins = (
         <List>
             <ListItem 
-                action={<Button color='green' label='Edit' link={true} />}
+                action={<Button color='green' label='Edit' link={true} onClick={showDetailModal} />}
                 detail='alena@press.com'
                 hideActions={true}
                 id='list-item-1'
