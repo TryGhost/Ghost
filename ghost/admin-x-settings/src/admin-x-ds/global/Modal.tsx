@@ -77,7 +77,7 @@ const Modal: React.FC<ModalProps> = ({size = 'md', title, okLabel, cancelLabel, 
         backdropStyles += ' p-[2vmin]';
     }
 
-    const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const handleBackdropClick = () => {
         modal.remove();
     };
 
