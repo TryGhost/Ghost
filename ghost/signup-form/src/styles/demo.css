@@ -30,3 +30,17 @@ code {
     background: #eee;
     padding: 2px 4px;
 }
+
+nav.mode > a {
+    text-decoration: none;
+    color: black;
+    background: #eee;
+    padding: 5px 12px;
+    display: inline-block;
+    border-radius: 3px;
+}
+nav.mode > a.selected {
+    background: #ff0095;
+    color: white;
+    font-weight: bold;
+}
