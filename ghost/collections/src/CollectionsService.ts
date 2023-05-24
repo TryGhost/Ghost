@@ -12,7 +12,7 @@ export class CollectionsService {
     }
 
     async save(data: any): Promise<Collection> {
-        const collection = await this.repository.create(data);
+        const collection = await Collection.create(data);
         await this.repository.save(collection);
         return collection;
     }

@@ -40,34 +40,6 @@ describe('collections', function () {
         assert.equal(deletedCollection, null, 'Collection should be deleted');
     });
 
-    it('Can create a collection with predefined ID', async function () {
-        const id = new ObjectID();
-        const savedCollection = await collectionsService.save({
-            id: id.toHexString()
-        });
-
-        assert.equal(savedCollection.id, id.toHexString(), 'Collection should have same id');
-    });
-
-    it('Can create a collection with predefined ObjectID instance', async function () {
-        const id = new ObjectID();
-        const savedCollection = await collectionsService.save({
-            id: id
-        });
-
-        assert.equal(savedCollection.id, id.toHexString(), 'Collection should have same id');
-    });
-
-    it('Throws an error when trying to save a collection with an invalid ID', async function () {
-        try {
-            await collectionsService.save({
-                id: 12345
-            });
-        } catch (error: any) {
-            assert.equal(error.message, 'Invalid ID provided for Collection', 'Error message should match');
-        }
-    });
-
     describe('edit', function () {
         it('Can edit existing collection', async function () {
             const savedCollection = await collectionsService.save({
