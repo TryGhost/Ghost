@@ -18,6 +18,32 @@ describe('Collection', function () {
         assert.ok((collection.deleted === false), 'deleted should be false');
     });
 
+    it('Can serialize Collection to JSON', async function () {
+        const collection = await Collection.create({
+            title: 'Serialize me'
+        });
+
+        const json = collection.toJSON();
+
+        assert.ok(json);
+        assert.equal(json.id, collection.id);
+        assert.equal(json.title, 'Serialize me');
+        assert.ok(collection.createdAt instanceof Date);
+        assert.ok(collection.updatedAt instanceof Date);
+        assert.equal(Object.keys(json).length, 9, 'should only have 9 keys');
+        assert.deepEqual(Object.keys(json), [
+            'id',
+            'title',
+            'slug',
+            'description',
+            'type',
+            'filter',
+            'featureImage',
+            'createdAt',
+            'updatedAt'
+        ]);
+    });
+
     it('Can create a Collection with predefined ID', async function () {
         const id = new ObjectID();
         const savedCollection = await Collection.create({
