@@ -11,6 +11,7 @@ import {useRef} from 'react';
 
 export function MediaUploader({
     className,
+    imgClassName,
     src,
     alt,
     desc,
@@ -74,7 +75,7 @@ export function MediaUploader({
         <div className={clsx('group relative flex items-center justify-center', borderStyle === 'dashed' && 'rounded', className)} data-testid="media-upload-filled">
             {src && (
                 <>
-                    <img alt={alt} className={clsx('mx-auto h-full w-full object-cover', borderStyle === 'dashed' && 'rounded')} src={src} />
+                    <img alt={alt} className={clsx('mx-auto h-full w-full object-cover', borderStyle === 'dashed' && 'rounded', imgClassName)} src={src} />
                     <div className={clsx('absolute inset-0 bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover:opacity-100', borderStyle === 'dashed' && 'rounded')}></div>
                 </>
             )}
