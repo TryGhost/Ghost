@@ -34,3 +34,6 @@ Follow the instructions for the top-level repo.
 
 - `yarn lint` run just eslint
 - `yarn test` run lint and tests
+- `yarn test:e2e` run e2e tests on Chromium
+- `yarn test:slowmo` run e2e tests visually (headed) and slower on Chromium
+- `yarn test:e2e:full` run e2e tests on all browsers
