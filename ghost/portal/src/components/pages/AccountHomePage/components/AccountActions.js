@@ -7,7 +7,7 @@ import EmailNewsletterAction from './EmailNewsletterAction';
 import EmailPreferencesAction from './EmailPreferencesAction';
 
 const AccountActions = () => {
-    const {member, onAction, site} = useContext(AppContext);
+    const {member, onAction, site, t} = useContext(AppContext);
     const {name, email} = member;
 
     const openEditProfile = () => {
@@ -32,7 +32,7 @@ const AccountActions = () => {
                         className='gh-portal-btn gh-portal-btn-list'
                         onClick={e => openEditProfile(e)}
                     >
-                        Edit
+                        {t('Edit')}
                     </button>
                 </section>
 
