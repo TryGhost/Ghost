@@ -117,7 +117,7 @@ function ColorSwatch({hex, accent, transparent, title, isSelected, onSelect}) {
         <button
             ref={ref}
             className={clsx(
-                `relative flex h-6 w-6 shrink-0 items-center rounded-full border border-grey-200`,
+                `relative flex h-5 w-5 shrink-0 items-center rounded-full border border-grey-200`,
                 isSelected && 'outline outline-2 outline-green'
             )}
             style={{backgroundColor}}
