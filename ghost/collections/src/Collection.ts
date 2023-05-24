@@ -81,10 +81,10 @@ export class Collection {
         return new Collection({
             id: id.toHexString(),
             title: data.title,
-            description: data.description,
-            type: data.type,
-            filter: data.filter,
-            featureImage: data.feature_image,
+            description: data.description || null,
+            type: data.type || 'manual',
+            filter: data.filter || null,
+            featureImage: data.feature_image || null,
             createdAt: Collection.validateDateField(data.created_at, 'created_at'),
             updatedAt: Collection.validateDateField(data.updated_at, 'updated_at'),
             deleted: data.deleted || false
