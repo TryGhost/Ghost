@@ -1,8 +1,5 @@
-// have to use requires until there are type definitions for these modules
-
-const {ValidationError} = require('@tryghost/errors');
-const tpl = require('@tryghost/tpl');
-
+import {ValidationError} from '@tryghost/errors';
+import tpl from '@tryghost/tpl';
 import ObjectID from 'bson-objectid';
 
 const messages = {
