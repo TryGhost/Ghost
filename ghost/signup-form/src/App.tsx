@@ -1,15 +1,18 @@
 import React, {ComponentProps} from 'react';
 import pages, {Page, PageName} from './pages';
-import {AppContextProvider, SignupFormOptions} from './AppContext';
+import {AppContextProvider} from './AppContext';
 import {ContentBox} from './components/ContentBox';
 import {Frame} from './components/Frame';
 import {setupGhostApi} from './utils/api';
+import {useOptions} from './utils/options';
 
 type AppProps = {
-    options: SignupFormOptions;
+    scriptTag: HTMLElement;
 };
 
-const App: React.FC<AppProps> = ({options}) => {
+const App: React.FC<AppProps> = ({scriptTag}) => {
+    const options = useOptions(scriptTag);
+
     const [page, setPage] = React.useState<Page>({
         name: 'FormPage',
         data: {}
