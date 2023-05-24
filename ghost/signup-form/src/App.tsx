@@ -1,15 +1,15 @@
 import React, {ComponentProps} from 'react';
 import pages, {Page, PageName} from './pages';
-import {AppContext, SignupFormOptions} from './AppContext';
+import {AppContextProvider, SignupFormOptions} from './AppContext';
 import {ContentBox} from './components/ContentBox';
 import {Frame} from './components/Frame';
 import {setupGhostApi} from './utils/api';
 
-type Props = {
+type AppProps = {
     options: SignupFormOptions;
 };
 
-const App: React.FC<Props> = ({options}) => {
+const App: React.FC<AppProps> = ({options}) => {
     const [page, setPage] = React.useState<Page>({
         name: 'FormPage',
         data: {}
@@ -38,13 +38,13 @@ const App: React.FC<Props> = ({options}) => {
 
     return (
         <div>
-            <AppContext.Provider value={context}>
+            <AppContextProvider value={context}>
                 <Frame>
                     <ContentBox>
                         <PageComponent {...data} />
                     </ContentBox>
                 </Frame>
-            </AppContext.Provider>
+            </AppContextProvider>
         </div>
     );
 };

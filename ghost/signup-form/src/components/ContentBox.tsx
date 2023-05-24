@@ -1,12 +1,12 @@
 import React from 'react';
-import {AppContext} from '../AppContext';
+import {useAppContext} from '../AppContext';
 
-type Props = {
+type ContentBoxProps = {
     children: React.ReactNode
 };
 
-export const ContentBox: React.FC<Props> = ({children}) => {
-    const {color} = React.useContext(AppContext).options;
+export const ContentBox: React.FC<ContentBoxProps> = ({children}) => {
+    const {color} = useAppContext().options;
 
     const style = {
         '--gh-accent-color': color

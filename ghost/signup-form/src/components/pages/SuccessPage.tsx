@@ -1,13 +1,13 @@
 import React from 'react';
-import {AppContext} from '../../AppContext';
 import {isMinimal} from '../../utils/helpers';
+import {useAppContext} from '../../AppContext';
 
-type Props = {
+type SuccessPageProps = {
     email: string;
 };
 
-export const SuccessPage: React.FC<Props> = ({email}) => {
-    const {options} = React.useContext(AppContext);
+export const SuccessPage: React.FC<SuccessPageProps> = ({email}) => {
+    const {options} = useAppContext();
 
     if (isMinimal(options)) {
         return <div>
