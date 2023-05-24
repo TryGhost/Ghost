@@ -1,5 +1,4 @@
 import assert from 'assert';
-import ObjectID from 'bson-objectid';
 import {CollectionsService} from '../src/index';
 import {CollectionsRepositoryInMemory} from '../src/CollectionsRepositoryInMemory';
 
