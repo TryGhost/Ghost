@@ -19,7 +19,7 @@ const SUPPORTED_LOCALES = [
     'no',
     'pl',
     'pt',
-    'pt-br',
+    'pt-BR',
     'ru',
     'si',
     'sl',
