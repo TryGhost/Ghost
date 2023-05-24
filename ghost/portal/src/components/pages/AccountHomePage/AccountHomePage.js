@@ -38,6 +38,7 @@ export default class AccountHomePage extends React.Component {
                     onClose={() => this.context.onAction('closePopup')}
                     handleSignout={e => this.handleSignout(e)}
                     supportAddress={supportAddress}
+                    t={this.context.t}
                 />
             </div>
         );
