@@ -6,6 +6,8 @@ import setupGhostApi from '../../utils/api';
 import NewsletterManagement from '../common/NewsletterManagement';
 import CloseButton from '../common/CloseButton';
 import {ReactComponent as WarningIcon} from '../../images/icons/warning-fill.svg';
+import Interpolate from '@doist/react-interpolate';
+import {SYNTAX_I18NEXT} from '@doist/react-interpolate';
 
 function SiteLogo() {
     const {site} = useContext(AppContext);
@@ -126,16 +128,28 @@ export default function UnsubscribePage() {
                 <AccountHeader />
                 <h1 className="gh-portal-main-title">{t('Successfully unsubscribed')}</h1>
                 <div>
-                    <p className='gh-portal-text-center'><strong>{member?.email}</strong> will no longer receive this newsletter.</p>
-                    <p className='gh-portal-text-center'>Didn't mean to do this? Manage your preferences
-                        <button
-                            className="gh-portal-btn-link gh-portal-btn-branded gh-portal-btn-inline"
-                            onClick={() => {
-                                setShowPrefs(true);
+                    <p className='gh-portal-text-center'>
+                        <Interpolate
+                            syntax={SYNTAX_I18NEXT}
+                            string={t('{{memberEmail}} will no longer receive this newsletter.')}
+                            mapping={{
+                                memberEmail: <strong>{member?.email}</strong>
                             }}
-                        >
-                        here
-                        </button>.
+                        />
+                    </p>
+                    <p className='gh-portal-text-center'>
+                        <Interpolate
+                            syntax={SYNTAX_I18NEXT}
+                            string={t('Didn\'t mean to do this? Manage your preferences <button>here</button>.')}
+                            mapping={{
+                                button: <button
+                                    className="gh-portal-btn-link gh-portal-btn-branded gh-portal-btn-inline"
+                                    onClick={() => {
+                                        setShowPrefs(true);
+                                    }}
+                                />
+                            }}
+                        />
                     </p>
                 </div>
             </div>
@@ -147,7 +161,15 @@ export default function UnsubscribePage() {
             const hideClassName = hasInteracted ? 'gh-portal-hide' : '';
             return (
                 <>
-                    <p className={`gh-portal-text-center gh-portal-header-message ${hideClassName}`}><strong>{member?.email}</strong> will no longer receive emails when someone replies to your comments.</p>
+                    <p className={`gh-portal-text-center gh-portal-header-message ${hideClassName}`}>
+                        <Interpolate
+                            syntax={SYNTAX_I18NEXT}
+                            string={t('{{memberEmail}} will no longer receive emails when someone replies to your comments.')}
+                            mapping={{
+                                memberEmail: <strong>{member?.email}</strong>
+                            }}
+                        />
+                    </p>
                 </>
             );
         }
@@ -157,7 +179,16 @@ export default function UnsubscribePage() {
         const hideClassName = hasInteracted ? 'gh-portal-hide' : '';
         return (
             <>
-                <p className={`gh-portal-text-center gh-portal-header-message ${hideClassName}`}><strong>{member?.email}</strong> will no longer receive <strong>{unsubscribedNewsletter?.name}</strong> newsletter.</p>
+                <p className={`gh-portal-text-center gh-portal-header-message ${hideClassName}`}>
+                    <Interpolate
+                        syntax={SYNTAX_I18NEXT}
+                        string={t('{{memberEmail}} will no longer receive {{newsletterName}} newsletter.')}
+                        mapping={{
+                            memberEmail: <strong>{member?.email}</strong>,
+                            newsletterName: <strong>{unsubscribedNewsletter?.name}</strong>
+                        }}
+                    />
+                </p>
             </>
         );
     };
