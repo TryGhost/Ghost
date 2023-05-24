@@ -35,6 +35,20 @@ export class Collection {
         this.deleted = data.deleted;
     }
 
+    toJSON() {
+        return {
+            id: this.id,
+            title: this.title,
+            slug: this.slug,
+            description: this.description,
+            type: this.type,
+            filter: this.filter,
+            featureImage: this.featureImage,
+            createdAt: this.createdAt,
+            updatedAt: this.updatedAt
+        };
+    }
+
     static validateDateField(date: any, fieldName: string): Date {
         if (!date) {
             return new Date();

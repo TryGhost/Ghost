@@ -10,11 +10,14 @@ const {
     anyEtag,
     anyErrorId,
     anyLocationFor,
-    anyObjectId
+    anyObjectId,
+    anyISODateTime
 } = matchers;
 
 const matchCollection = {
-    id: anyObjectId
+    id: anyObjectId,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime
 };
 
 describe('Collections API', function () {

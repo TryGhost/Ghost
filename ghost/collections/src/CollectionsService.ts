@@ -52,12 +52,14 @@ export class CollectionsService {
         };
     }
 
-    async destroy(id: string): Promise<void> {
+    async destroy(id: string): Promise<Collection | null> {
         const collection = await this.getById(id);
 
         if (collection) {
             collection.deleted = true;
             await this.save(collection);
         }
+
+        return collection;
     }
 }
