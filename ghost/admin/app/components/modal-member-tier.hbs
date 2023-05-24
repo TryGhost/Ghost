@@ -57,8 +57,7 @@
                     </span>
                     {{#if (eq this.expiryAt "custom")}}
                         <GhDatePicker
-                            @minDate={{now}}
-                            @minDateError="Must be in the future"
+                            @minDate={{this.minCustomDate}}
                             @value={{this.customExpiryDate}}
                             @onChange={{this.updateCustomExpiryDate}}
                         />

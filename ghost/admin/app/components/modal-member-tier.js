@@ -16,7 +16,7 @@ export default class ModalMemberTier extends ModalComponent {
     @tracked selectedTier = null;
     @tracked loadingTiers = false;
     @tracked expiryAt = 'forever';
-    @tracked customExpiryDate = moment().add(1, 'days');
+    @tracked customExpiryDate = moment().startOf('day');
 
     @tracked expiryOptions = [
         {
@@ -70,6 +70,10 @@ export default class ModalMemberTier extends ModalComponent {
         return !this.price || this.price.amount !== 0;
     }
 
+    get minCustomDate() {
+        return moment().startOf('day');
+    }
+
     @action
     setup() {
         this.loadingTiers = true;
@@ -104,7 +108,7 @@ export default class ModalMemberTier extends ModalComponent {
 
     @action
     updateCustomExpiryDate(date) {
-        this.customExpiryDate = moment(date);
+        this.customExpiryDate = moment(date).startOf('day');
     }
 
     @task({drop: true})
@@ -133,7 +137,11 @@ export default class ModalMemberTier extends ModalComponent {
         } else if (this.expiryAt === 'year') {
             expiryAt = moment.utc().add(1, 'year').startOf('day').toISOString();
         } else if (this.expiryAt === 'custom') {
-            expiryAt = this.customExpiryDate.toISOString();
+            expiryAt = this.customExpiryDate
+                .endOf('day')
+                .subtract(1, 'second') // Prevent MySQL rounding up to the next day
+                .add(moment().utcOffset(), 'minutes') // Adjust for timezone offset
+                .toISOString();
         }
         const tiersData = {
             id: this.selectedTier
