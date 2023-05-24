@@ -17,6 +17,10 @@ export function buildCardMenu(nodes, {query, config} = {}) {
             return;
         }
 
+        if (typeof item.insertParams === 'function') {
+            item.insertParams = item.insertParams({config});
+        }
+
         const section = item.section || 'Primary';
 
         if (!menu.has(section)) {

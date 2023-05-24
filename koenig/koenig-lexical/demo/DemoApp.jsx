@@ -1,7 +1,7 @@
 import DarkModeToggle from './components/DarkModeToggle';
 import FloatingButton from './components/FloatingButton';
 import InitialContentToggle from './components/InitialContentToggle';
-import React from 'react';
+import React, {useState} from 'react';
 import Sidebar from './components/Sidebar';
 import TitleTextBox from './components/TitleTextBox';
 import Watermark from './components/Watermark';
@@ -19,10 +19,8 @@ import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
 import {fetchEmbed} from './utils/fetchEmbed';
 import {fileTypes, useFileUpload} from './utils/useFileUpload';
 import {tenorConfig} from './utils/tenorConfig';
-import {useLocation} from 'react-router-dom';
-import {useSearchParams} from 'react-router-dom';
+import {useLocation, useSearchParams} from 'react-router-dom';
 import {useSnippets} from './utils/useSnippets';
-import {useState} from 'react';
 
 const url = new URL(window.location.href);
 const params = new URLSearchParams(url.search);
@@ -38,6 +36,8 @@ const cardConfig = {
         {label: 'Free signup', value: window.location.origin + '/#/portal/signup/free'}
     ]),
     fetchLabels: () => Promise.resolve(['Label 1', 'Label 2']),
+    siteTitle: 'Koenig Lexical',
+    siteDescription: `There's a whole lot to discover in this editor. Let us help you settle in.`,
     feature: {
         signupCard: true
     }

@@ -109,63 +109,70 @@ test.describe('Signup card', async () => {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
-        await page.keyboard.type('Hello world');
         const firstEditor = page.locator('[data-kg-card="signup"] [data-kg="editor"]').nth(0);
-        await expect(firstEditor).toHaveText('Hello world');
+        await expect(firstEditor).toHaveText('Sign up for Koenig Lexical');
+
+        await page.keyboard.type(', my friends');
+        await expect(firstEditor).toHaveText('Sign up for Koenig Lexical, my friends');
     });
 
     test('can edit subheader', async function ({page}) {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
-        await page.keyboard.press('Enter');
-        await page.keyboard.type('Hello subheader');
-
         const secondEditor = page.locator('[data-kg-card="signup"] [data-kg="editor"]').nth(1);
+        await expect(secondEditor).toHaveText(`There's a whole lot to discover in this editor. Let us help you settle in.`);
 
-        await expect(secondEditor).toHaveText('Hello subheader');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type(' Cool.');
+
+        await expect(secondEditor).toHaveText(`There's a whole lot to discover in this editor. Let us help you settle in. Cool.`);
     });
 
     test('can edit disclaimer', async function ({page}) {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
-        await page.keyboard.press('Enter');
-        await page.keyboard.press('Enter');
-        await page.keyboard.type('Hello disclaimer');
-
         const thirdEditor = page.locator('[data-kg-card="signup"] [data-kg="editor"]').nth(2);
+        await expect(thirdEditor).toHaveText('No spam. Unsubscribe anytime.');
 
-        await expect(thirdEditor).toHaveText('Hello disclaimer');
+        await page.keyboard.press('Enter');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type(' For real.');
+
+        await expect(thirdEditor).toHaveText('No spam. Unsubscribe anytime. For real.');
     });
 
     test('can edit subheader and disclaimer via arrow keys', async function ({page}) {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
-        await page.keyboard.type('Hello');
+        await page.keyboard.type('. Hello');
 
         await page.keyboard.press('ArrowDown');
-        await page.keyboard.type('medium length');
+        await page.keyboard.type('-cursor1-');
 
+        // The subheader is long and has multiple lines
         await page.keyboard.press('ArrowDown');
-        await page.keyboard.type('something even longer');
+        await page.keyboard.press('ArrowDown');
+        await page.keyboard.type('-cursor2-');
 
         // Go back up again and add an extra word
 
         await page.keyboard.press('ArrowUp');
-        await page.keyboard.type(' here');
+        await page.keyboard.type('-cursor3-');
 
         await page.keyboard.press('ArrowUp');
-        await page.keyboard.type(' world');
+        await page.keyboard.press('ArrowUp');
+        await page.keyboard.type('-cursor4-');
 
         const firstEditor = page.locator('[data-kg-card="signup"] [data-kg="editor"]').nth(0);
         const secondEditor = page.locator('[data-kg-card="signup"] [data-kg="editor"]').nth(1);
         const thirdEditor = page.locator('[data-kg-card="signup"] [data-kg="editor"]').nth(2);
 
-        await expect(firstEditor).toHaveText('Hello world');
-        await expect(secondEditor).toHaveText('medium length here');
-        await expect(thirdEditor).toHaveText('something even longer');
+        await expect(firstEditor).toHaveText(/Hello-cursor4-/);
+        await expect(secondEditor).toHaveText(/-cursor1-.+-cursor3-/);
+        await expect(thirdEditor).toHaveText(/-cursor2-/);
     });
 
     test('can edit button text', async function ({page}) {
@@ -337,6 +344,7 @@ test.describe('Signup card', async () => {
         await insertCard(page, {cardName: 'signup'});
 
         // Start editing the header
+        await page.locator('[data-kg-card="signup"] [data-kg="editor"] [contenteditable]').nth(0).fill('');
         await page.keyboard.type('Hello ');
 
         // Change layout to regular
@@ -356,6 +364,7 @@ test.describe('Signup card', async () => {
 
         // Start editing the subheader
         await page.keyboard.press('Enter');
+        await page.locator('[data-kg-card="signup"] [data-kg="editor"] [contenteditable]').nth(1).fill('');
         await page.keyboard.type('Hello ');
 
         // Change alignment to center

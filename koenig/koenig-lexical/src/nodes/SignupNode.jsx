@@ -28,7 +28,12 @@ export class SignupNode extends BaseSignupNode {
         Icon: SignupCardIcon,
         insertCommand: INSERT_SIGNUP_COMMAND,
         matches: ['signup', 'subscribe'],
-        isHidden: ({config}) => !config?.feature?.signupCard
+        isHidden: ({config}) => !config?.feature?.signupCard,
+        insertParams: ({config}) => ({
+            header: config?.siteTitle ? `Sign up for ${config.siteTitle}` : '',
+            subheader: config?.siteDescription || '',
+            disclaimer: 'No spam. Unsubscribe anytime.'
+        })
     };
 
     getIcon() {
