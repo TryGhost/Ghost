@@ -105,7 +105,9 @@ describe('Collections API', function () {
     });
 
     describe('edit', function () {
-        it('Can edit a Collection', async function () {
+        let collectionToEdit;
+
+        before(async function () {
             const collection = {
                 title: 'Test Collection to Edit'
             };
@@ -115,20 +117,14 @@ describe('Collections API', function () {
                 .body({
                     collections: [collection]
                 })
-                .expectStatus(201)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    location: anyLocationFor('collections')
-                })
-                .matchBodySnapshot({
-                    collections: [matchCollection]
-                });
+                .expectStatus(201);
 
-            const collectionId = addResponse.body.collections[0].id;
+            collectionToEdit = addResponse.body.collections[0];
+        });
 
+        it('Can edit a Collection', async function () {
             const editResponse = await agent
-                .put(`/collections/${collectionId}/`)
+                .put(`/collections/${collectionToEdit.id}/`)
                 .body({
                     collections: [{
                         title: 'Test Collection Edited'
