@@ -10,12 +10,16 @@ import UserDetailModal from './modals/UserDetailModal';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 
 const Owner: React.FC<any> = ({user}) => {
+    const showDetailModal = () => {
+        NiceModal.show(UserDetailModal);
+    };
+
     if (!user) {
         return null;
     }
     return (
-        <div className='flex flex-col'>
-            <span>{user.name} &mdash; <strong>Owner</strong></span>
+        <div className='group flex flex-col hover:cursor-pointer' onClick={showDetailModal}>
+            <span>{user.name} &mdash; <strong>Owner</strong> <span className='invisible ml-2 inline-block text-sm font-bold text-green group-hover:visible'>Edit</span></span>
             <span className='text-xs text-grey-700'>{user.email}</span>
         </div>
     );
@@ -44,7 +48,8 @@ const UsersList: React.FC<any> = ({users}) => {
                         detail={user.email}
                         hideActions={true}
                         id={`list-item-${user.id}`}
-                        title={user.name} />
+                        title={user.name}
+                        onClick={showDetailModal} />
                 );
             })}
         </List>
