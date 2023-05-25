@@ -19,19 +19,24 @@ function KoenigNestedEditorPlugin({
     defaultKoenigEnterBehaviour = false
 }) {
     const [editor] = useLexicalComposerContext();
-    const {selectedCardKey} = useKoenigSelectedCardContext();
+    const {selectedCardKey, isEditingCard} = useKoenigSelectedCardContext();
 
     // using state here because this component can get re-rendered after the
     // editor's editable state changes so we need to re-focus on re-render
     const [shouldFocus, setShouldFocus] = React.useState(autoFocus);
 
     React.useEffect(() => {
+        // prevent nested editor getting focus when undoing card deletion
+        if (!isEditingCard) {
+            return;
+        }
+
         if (shouldFocus) {
             editor.focus(() => {
                 editor.getRootElement().focus({preventScroll: true});
             });
         }
-    }, [shouldFocus, editor]);
+    }, [shouldFocus, editor, isEditingCard]);
 
     React.useEffect(() => {
         return mergeRegister(
