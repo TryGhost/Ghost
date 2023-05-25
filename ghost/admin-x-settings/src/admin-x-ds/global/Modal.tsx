@@ -42,7 +42,7 @@ const Modal: React.FC<ModalProps> = ({size = 'md', title, okLabel, cancelLabel, 
         });
     }
 
-    let modalStyles = 'relative z-50 mx-auto flex flex-col justify-between bg-white shadow-xl w-full';
+    let modalStyles = 'relative rounded overflow-hidden z-50 mx-auto flex flex-col justify-between bg-white shadow-xl w-full';
     let backdropStyles = 'fixed inset-0 h-[100vh] w-[100vw] overflow-y-scroll ';
 
     switch (size) {
