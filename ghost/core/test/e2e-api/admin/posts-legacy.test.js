@@ -259,7 +259,6 @@ describe('Posts API', function () {
     });
 
     it('Can add a post', async function () {
-        this.retries(1);
         const post = {
             title: 'My post',
             status: 'draft',
@@ -267,8 +266,8 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             published_at: '2016-05-30T07:00:00.000Z',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
-            created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
+            created_at: moment('2016-05-30T06:30:00.456Z').toDate(),
+            updated_at: moment('2016-05-30T06:30:00.456Z').toDate(),
             created_by: ObjectId().toHexString(),
             updated_by: ObjectId().toHexString()
         };
