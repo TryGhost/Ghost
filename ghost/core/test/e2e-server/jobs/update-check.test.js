@@ -23,7 +23,9 @@ describe('Run Update Check', function () {
     it('successfully executes the update checker', async function () {
         let mockUpdateServerRequestCount = 0;
 
-        // Initialise mock update server
+        // Initialise mock update server - We use a mock server here instead of
+        // nock because the update-check job will be executed in a separate
+        // process which will prevent nock from intercepting HTTP requests
         mockUpdateServer = http.createServer((req, res) => {
             mockUpdateServerRequestCount += 1;
 
@@ -32,11 +34,11 @@ describe('Run Update Check', function () {
             res.end(JSON.stringify({hello: 'world'}));
         });
 
-        mockUpdateServer.listen(0);
+        mockUpdateServer.listen(0); // Listen on random port
 
         const mockUpdateServerPort = mockUpdateServer.address().port;
 
-        // Trigger update check job and wait for it to finish
+        // Trigger the update-check job and wait for it to finish
         await jobService.addJob({
             name: JOB_NAME,
             job: JOB_PATH,
@@ -48,7 +50,7 @@ describe('Run Update Check', function () {
 
         await jobService.awaitCompletion(JOB_NAME);
 
-        // Assert that the mock update server received a request (which means the update check job ran successfully)
+        // Assert that the mock update server received a request (which means the update-check job ran successfully)
         assert.equal(mockUpdateServerRequestCount, 1, 'Expected mock server to receive 1 request');
     });
 });
