@@ -3751,3 +3751,41 @@ p.theme-validation-details {
     padding: 0;
     height: auto;
 }
+
+/* Signup form */
+
+.gh-signup-form-embed-code {
+    display: flex;
+}
+
+.gh-signup-form-embed-code button {
+    flex-shrink: 0;
+    /* Overlap the input to keep the button radius */
+    margin-left: -5px;
+}
+
+.gh-signup-form-embed-code input {
+    min-width: 0; /* Make sure this input can shrink inside a flex container */
+    font-family: Consolas,Liberation Mono,Menlo,Courier,monospace;
+    font-size: .9em;
+}
+
+.gh-signup-form-iframe {
+    width: 100%;
+    border: 0;
+}
+
+@media (min-width: 800px) {
+    .gh-signup-form-container {
+        display: flex;
+        gap: 20px;
+        width: 100%;
+    }
+
+    .gh-signup-form-container > * {
+        flex-basis: 0;
+        flex-shrink: 0;
+        min-width: 0;
+        flex-grow: 1;
+    }
+}

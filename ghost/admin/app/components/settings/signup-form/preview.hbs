@@ -1,0 +1,11 @@
+<div style={{html-safe (concat "height: " this.cachedHeight "px")}}>
+    <iframe
+        srcDoc="<!DOCTYPE html>"
+        class="gh-signup-form-iframe"
+        frameborder="0"
+        allowtransparency="true"
+        title="Signup Form Preview"
+        {{on "load" this.onLoad}}
+        {{did-update this.updateContent @html}}
+    ></iframe>
+</div>

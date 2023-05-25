@@ -21,7 +21,8 @@ module.exports = function getConfigProperties() {
         tenor: config.get('tenor'),
         editor: config.get('editor'),
         pintura: config.get('pintura'),
-        adminX: config.get('adminX')
+        adminX: config.get('adminX'),
+        signupForm: config.get('signupForm')
     };
 
     const billingUrl = config.get('hostSettings:billing:enabled') ? config.get('hostSettings:billing:url') : '';

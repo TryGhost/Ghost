@@ -42,7 +42,8 @@ const ALPHA_FEATURES = [
     'imageEditor',
     'signupCard',
     'collections',
-    'adminXSettings'
+    'adminXSettings',
+    'signupForm'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
