@@ -346,9 +346,16 @@ export function SignupCard({alignment,
                         value={(showBackgroundImage && layout !== 'split') ? '' : backgroundColor}
                         onChange={color => handleBackgroundColor(color, matchingTextColor(color))}
                         onTogglePicker={(isExpanded) => {
-                            if (isExpanded && layout !== 'split') {
-                                handleHideBackgroundImage();
+                            if (isExpanded) {
+                                if (layout !== 'split') {
+                                    handleHideBackgroundImage();
+                                }
+
+                                if (backgroundColor) {
+                                    handleBackgroundColor(backgroundColor, matchingTextColor(backgroundColor));
+                                }
                             }
+
                             setBackgroundColorPickerExpanded(isExpanded);
                         }}
                     />
