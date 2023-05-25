@@ -20,7 +20,12 @@ describe('Collection', function () {
 
     it('Can serialize Collection to JSON', async function () {
         const collection = await Collection.create({
-            title: 'Serialize me'
+            title: 'Serialize me',
+            posts: [{
+                id: 'post-1'
+            }, {
+                id: 'post-2'
+            }]
         });
 
         const json = collection.toJSON();
@@ -30,7 +35,7 @@ describe('Collection', function () {
         assert.equal(json.title, 'Serialize me');
         assert.ok(collection.createdAt instanceof Date);
         assert.ok(collection.updatedAt instanceof Date);
-        assert.equal(Object.keys(json).length, 9, 'should only have 9 keys');
+        assert.equal(Object.keys(json).length, 10, 'should only have 9 keys + 1 posts relation');
         assert.deepEqual(Object.keys(json), [
             'id',
             'title',
@@ -40,7 +45,17 @@ describe('Collection', function () {
             'filter',
             'featureImage',
             'createdAt',
-            'updatedAt'
+            'updatedAt',
+            'posts'
+        ]);
+
+        assert.equal(json.posts.length, 2, 'should have 2 posts');
+        const serializedPost = json.posts[0];
+        assert.equal(Object.keys(serializedPost).length, 3, 'should only have 3 keys');
+        assert.deepEqual(Object.keys(serializedPost), [
+            'id',
+            'title',
+            'slug'
         ]);
     });
 
