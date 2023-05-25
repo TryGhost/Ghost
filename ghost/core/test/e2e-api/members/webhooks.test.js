@@ -4,12 +4,13 @@ const nock = require('nock');
 const should = require('should');
 const stripe = require('stripe');
 const {Product} = require('../../../core/server/models/product');
-const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, matchers, regexes} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const urlService = require('../../../core/server/services/url');
 const urlUtils = require('../../../core/shared/url-utils');
 const DomainEvents = require('@tryghost/domain-events');
 const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyString, anyArray, anyObject} = matchers;
+const {queryStringToken} = regexes;
 
 let membersAgent;
 let adminAgent;
@@ -570,6 +571,8 @@ describe('Members API', function () {
         // The subscription that we got from Stripe was created 2 seconds earlier (used for testing events)
         const beforeNow = Math.floor((Date.now() - 2000) / 1000) * 1000;
 
+        let emailMockReceiver;
+
         before(async function () {
             const agents = await agentProvider.getAgentsForMembers();
             membersAgent = agents.membersAgent;
@@ -607,7 +610,7 @@ describe('Members API', function () {
         });
 
         beforeEach(function () {
-            mockManager.mockMail();
+            emailMockReceiver = mockManager.mockMail();
         });
 
         afterEach(function () {
@@ -659,10 +662,19 @@ describe('Members API', function () {
             assert.equal(member.status, 'paid', 'The member should be "paid"');
             assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
 
-            mockManager.assert.sentEmail({
-                subject: '🙌 Thank you for signing up to Ghost!',
-                to: 'checkout-webhook-test@email.com'
-            });
+            // 2 emails were sent - one to the member, and one to the owner
+            emailMockReceiver.assertSentEmailCount(2);
+
+            const tokenReplacement = {
+                pattern: queryStringToken('token'),
+                replacement: 'token=REPLACED_TOKEN'
+            };
+
+            // Check the email to the member
+            emailMockReceiver
+                .matchHTMLSnapshot([tokenReplacement])
+                .matchPlaintextSnapshot([tokenReplacement])
+                .matchMetadataSnapshot();
 
             // Check whether MRR and status has been set
             await assertSubscription(member.subscriptions[0].id, {
@@ -707,10 +719,22 @@ describe('Members API', function () {
             // Wait for the dispatched events (because this happens async)
             await DomainEvents.allSettled();
 
-            mockManager.assert.sentEmail({
-                subject: '💸 Paid subscription started: checkout-webhook-test@email.com',
-                to: 'jbloggs@example.com'
-            });
+            const idReplacement = {
+                pattern: /members\/[a-f0-9]{24}/g,
+                replacement: 'members/REPLACED_ID'
+            };
+
+            // Check the email to the owner
+            emailMockReceiver
+                .matchHTMLSnapshot([
+                    idReplacement,
+                    tokenReplacement
+                ], 1)
+                .matchPlaintextSnapshot([
+                    idReplacement,
+                    tokenReplacement
+                ], 1)
+                .matchMetadataSnapshot({}, 1);
         });
 
         it('Will create a member with default newsletter subscriptions', async function () {
