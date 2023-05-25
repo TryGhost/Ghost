@@ -57,12 +57,12 @@ const Modal: React.FC<ModalProps> = ({size = 'md', title, okLabel, cancelLabel, 
         break;
 
     case 'lg':
-        modalStyles += ' max-w-[940px] p-10';
-        backdropStyles += ' p-[5vmin]';
+        modalStyles += ' max-w-[1020px] p-12';
+        backdropStyles += ' p-[4vmin]';
         break;
 
     case 'xl':
-        modalStyles += ' max-w-[1180px] p-12';
+        modalStyles += ' max-w-[1240px] p-14';
         backdropStyles += ' p-[3vmin]';
         break;
 
