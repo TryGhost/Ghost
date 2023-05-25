@@ -10,7 +10,7 @@ import TextField from '../../../../admin-x-ds/global/TextField';
 import Toggle from '../../../../admin-x-ds/global/Toggle';
 
 interface CustomHeadingProps {
-    children?: string;
+    children?: React.ReactNode;
 }
 
 const CustomHeader: React.FC<CustomHeadingProps> = ({children}) => {
