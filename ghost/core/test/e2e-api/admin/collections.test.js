@@ -20,6 +20,19 @@ const matchCollection = {
     updated_at: anyISODateTime
 };
 
+/**
+ *
+ * @param {number} postCount
+ */
+const buildMatcher = (postCount) => {
+    return {
+        ...matchCollection,
+        posts: Array(postCount).fill({
+            id: anyObjectId
+        })
+    };
+};
+
 describe('Collections API', function () {
     let agent;
 
@@ -162,6 +175,50 @@ describe('Collections API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
+        });
+
+        it('Can add a Post to a Collection', async function () {
+            const postsToAttach = [{
+                id: fixtureManager.get('posts', 0).id
+            }, {
+                id: fixtureManager.get('posts', 2).id
+            }, {
+                id: fixtureManager.get('posts', 3).id
+            }];
+
+            const collectionId = collectionToEdit.id;
+
+            const editResponse = await agent
+                .put(`/collections/${collectionId}/`)
+                .body({
+                    collections: [{
+                        posts: postsToAttach
+                    }]
+                })
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [buildMatcher(3)]
+                });
+
+            assert.equal(editResponse.body.collections[0].posts.length, 3, 'Posts should have been added to a Collection');
+
+            // verify the posts are persisted across requests
+            const readResponse = await agent
+                .get(`/collections/${collectionId}/`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [buildMatcher(3)]
+                });
+
+            assert.equal(readResponse.body.collections[0].posts.length, 3, 'Posts should have been added to a Collection');
         });
     });
 

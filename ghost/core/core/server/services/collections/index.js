@@ -1,12 +1,22 @@
-const {CollectionsService, CollectionsRepositoryInMemory} = require('@tryghost/collections');
+const models = require('../../models');
+const {
+    CollectionsService,
+    CollectionsRepositoryInMemory,
+    PostsDataRepositoryBookshelf
+} = require('@tryghost/collections');
 
 class CollectionsServiceWrapper {
     api;
 
     constructor() {
-        const inMemoryCollectionsRepository = new CollectionsRepositoryInMemory();
+        const collectionsRepositoryInMemory = new CollectionsRepositoryInMemory();
+        const postsDataRepositoryBookshelf = new PostsDataRepositoryBookshelf({
+            Post: models.Post
+        });
+
         const collectionsService = new CollectionsService({
-            repository: inMemoryCollectionsRepository
+            collectionsRepository: collectionsRepositoryInMemory,
+            postsRepository: postsDataRepositoryBookshelf
         });
 
         this.api = {
