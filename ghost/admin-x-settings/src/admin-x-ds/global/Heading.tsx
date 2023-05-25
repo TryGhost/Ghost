@@ -6,6 +6,7 @@ type THeadingLevels = 1 | 2 | 3 | 4 | 5 | 6;
 interface IHeading {
     level?: THeadingLevels;
     children?: React.ReactNode;
+    styles?: string;
 
     /**
      * Only available for Heading 6
@@ -19,13 +20,13 @@ interface IHeading {
     useLabelTag?: boolean;
 }
 
-const Heading: React.FC<IHeading> = ({level, children, grey, separator, useLabelTag, ...props}) => {
+const Heading: React.FC<IHeading> = ({level, children, styles, grey, separator, useLabelTag, ...props}) => {
     if (!level) {
         level = 1;
     }
 
     const newElement = `${useLabelTag ? 'label' : `h${level}`}`;
-    let styles = (level === 6 || useLabelTag) ? (`block text-2xs font-semibold uppercase tracking-wide ${(grey && 'text-grey-700')}`) : '';
+    styles += (level === 6 || useLabelTag) ? (` block text-2xs font-semibold uppercase tracking-wide ${(grey && 'text-grey-700')}`) : ' ';
 
     const Element = React.createElement(newElement, {className: styles, ...props}, children);
 

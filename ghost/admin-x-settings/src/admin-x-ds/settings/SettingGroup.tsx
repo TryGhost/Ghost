@@ -13,6 +13,14 @@ interface SettingGroupProps {
     customHeader?: React.ReactNode;
     customButtons?: React.ReactNode;
     children?: React.ReactNode;
+    hideEditButton?: boolean;
+    alwaysShowSaveButton?: boolean;
+
+    /**
+     * Remove borders and paddings
+     */
+    border?: boolean;
+    styles?: string;
 
     /**
      * Default buttons only appear if onStateChange is implemented
@@ -30,6 +38,10 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     customHeader,
     customButtons,
     children,
+    hideEditButton,
+    alwaysShowSaveButton = true,
+    border = true,
+    styles,
     onStateChange,
     onSave,
     onCancel
@@ -50,30 +62,32 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
         onStateChange?.('view');
     };
 
-    let styles = '';
-
     switch (state) {
     case 'edit':
-        styles = 'border-grey-300';
+        styles += ' border-grey-300';
         break;
 
     case 'unsaved':
-        styles = 'border-green';
+        styles += ' border-green';
         break;
 
     default:
-        styles = 'border-grey-200';
+        styles += ' border-grey-200';
         break;
     }
 
-    const viewButtons = [
-        {
-            label: 'Edit',
-            key: 'edit',
-            color: 'green',
-            onClick: handleEdit
-        }
-    ];
+    let viewButtons = [];
+
+    if (!hideEditButton) {
+        viewButtons.push(
+            {
+                label: 'Edit',
+                key: 'edit',
+                color: 'green',
+                onClick: handleEdit
+            }
+        );
+    }
 
     let editButtons: IButton[] = [
         {
@@ -83,7 +97,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
         }
     ];
 
-    if (state === 'unsaved') {
+    if (state === 'unsaved' || alwaysShowSaveButton) {
         editButtons.push(
             {
                 label: 'Save',
@@ -95,7 +109,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     }
 
     return (
-        <div className={`flex flex-col gap-6 rounded border p-5 md:p-7 ${styles}`} id={navid && navid}>
+        <div className={`flex flex-col gap-6 rounded ${border && 'border p-5 md:p-7'} ${styles}`} id={navid && navid}>
             {customHeader ? customHeader :
                 <SettingGroupHeader description={description} title={title!}>
                     {customButtons ? customButtons : 

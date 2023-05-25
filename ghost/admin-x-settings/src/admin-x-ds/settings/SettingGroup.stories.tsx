@@ -78,3 +78,11 @@ export const CustomHeader: Story = {
         customHeader: customHeader
     }
 };
+
+export const NoBorders: Story = {
+    args: {
+        title: SingleColumn.args?.title,
+        description: SingleColumn.args?.description,
+        children: twoColView
+    }
+};
