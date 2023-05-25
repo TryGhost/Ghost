@@ -2,19 +2,22 @@ import React from 'react';
 import {useAppContext} from '../AppContext';
 
 type ContentBoxProps = {
-    isDarkMode: boolean;
+    backgroundColor: string
+    textColor: string
     children: React.ReactNode
 };
 
-export const ContentBox: React.FC<ContentBoxProps> = ({isDarkMode, children}) => {
+export const ContentBox: React.FC<ContentBoxProps> = ({backgroundColor, textColor, children}) => {
     const {color} = useAppContext().options;
 
     const style = {
-        '--gh-accent-color': color
+        '--gh-accent-color': color,
+        backgroundColor,
+        color: textColor
     } as React.CSSProperties;
 
     return (
-        <section className={isDarkMode ? 'dark' : ''} style={style}>
+        <section style={style}>
             {children}
         </section>
     );

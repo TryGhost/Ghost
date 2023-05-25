@@ -1,13 +1,5 @@
 import React from 'react';
-import {ColorScheme, SignupFormOptions} from '../AppContext';
-
-const loadColorScheme = (colorScheme: string | undefined): ColorScheme => {
-    if (colorScheme === 'light' || colorScheme === 'dark') {
-        return colorScheme;
-    }
-
-    return 'auto';
-};
+import {SignupFormOptions} from '../AppContext';
 
 export function useOptions(scriptTag: HTMLElement) {
     const buildOptions = React.useCallback(() => ({
@@ -17,7 +9,7 @@ export function useOptions(scriptTag: HTMLElement) {
         color: scriptTag.dataset.color || undefined,
         site: scriptTag.dataset.site || window.location.origin,
         labels: scriptTag.dataset.labels ? scriptTag.dataset.labels.split(',') : [],
-        colorScheme: loadColorScheme(scriptTag.dataset.colorScheme)
+        backgroundColor: scriptTag.dataset.backgroundColor || 'inherit'
     }), [scriptTag]);
 
     const [options, setOptions] = React.useState<SignupFormOptions>(buildOptions());

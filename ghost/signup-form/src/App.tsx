@@ -4,7 +4,7 @@ import {AppContextProvider} from './AppContext';
 import {ContentBox} from './components/ContentBox';
 import {Frame} from './components/Frame';
 import {setupGhostApi} from './utils/api';
-import {useDarkMode} from './utils/darkMode';
+import {useColors} from './utils/colors';
 import {useOptions} from './utils/options';
 
 type AppProps = {
@@ -14,7 +14,7 @@ type AppProps = {
 
 const App: React.FC<AppProps> = ({scriptTag, root}) => {
     const options = useOptions(scriptTag);
-    const isDarkMode = useDarkMode(options.colorScheme, root);
+    const colors = useColors(options.backgroundColor, root);
 
     const [page, setPage] = React.useState<Page>({
         name: 'FormPage',
@@ -46,7 +46,7 @@ const App: React.FC<AppProps> = ({scriptTag, root}) => {
         <div>
             <AppContextProvider value={context}>
                 <Frame>
-                    <ContentBox isDarkMode={isDarkMode}>
+                    <ContentBox {...colors}>
                         <PageComponent {...data} />
                     </ContentBox>
                 </Frame>
