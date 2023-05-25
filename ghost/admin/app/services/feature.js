@@ -16,7 +16,7 @@ export function feature(name, options = {}) {
 
             if (user) {
                 enabled = this.get(`accessibility.${name}`);
-            } else if (this.get(`config.${name}`)) {
+            } else if (typeof this.get(`config.${name}`) === 'boolean') {
                 enabled = this.get(`config.${name}`);
             } else {
                 enabled = this.get(`labs.${name}`) || false;
@@ -74,6 +74,7 @@ export default class FeatureService extends Service {
     @feature('announcementBar') announcementBar;
     @feature('imageEditor') imageEditor;
     @feature('signupCard') signupCard;
+    @feature('signupForm') signupForm;
     @feature('collections') collections;
     @feature('adminXSettings') adminXSettings;
 
