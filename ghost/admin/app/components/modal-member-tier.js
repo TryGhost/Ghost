@@ -139,7 +139,7 @@ export default class ModalMemberTier extends ModalComponent {
         } else if (this.expiryAt === 'custom') {
             expiryAt = this.customExpiryDate
                 .endOf('day')
-                .subtract(1, 'second') // Prevent MySQL rounding up to the next day
+                .set('milliseconds', 0) // Prevent db rounding up to the next day
                 .add(moment().utcOffset(), 'minutes') // Adjust for timezone offset
                 .toISOString();
         }
