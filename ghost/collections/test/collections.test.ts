@@ -1,13 +1,32 @@
 import assert from 'assert';
-import {CollectionsService} from '../src/index';
-import {CollectionsRepositoryInMemory} from '../src/CollectionsRepositoryInMemory';
+import {CollectionsService, CollectionsRepositoryInMemory, PostsDataRepositoryInMemory} from '../src/index';
+import {PostDTO} from '../src/PostDTO';
 
-describe('collections', function () {
+import {posts as postFixtures} from './fixtures/posts';
+
+const buildPostsRepositoryWithFixtures = async (): Promise<PostsDataRepositoryInMemory> => {
+    const repository = new PostsDataRepositoryInMemory();
+
+    for (const post of postFixtures) {
+        const postDTO = await PostDTO.map(post);
+        await repository.save(postDTO);
+    }
+
+    return repository;
+};
+
+describe('CollectionsService', function () {
     let collectionsService: CollectionsService;
+    let postsRepository: PostsDataRepositoryInMemory;
 
-    beforeEach(function () {
-        const repository = new CollectionsRepositoryInMemory();
-        collectionsService = new CollectionsService({repository});
+    beforeEach(async function () {
+        const collectionsRepository = new CollectionsRepositoryInMemory();
+        postsRepository = await buildPostsRepositoryWithFixtures();
+
+        collectionsService = new CollectionsService({
+            collectionsRepository,
+            postsRepository
+        });
     });
 
     it('Instantiates a CollectionsService', function () {
@@ -62,6 +81,27 @@ describe('collections', function () {
             });
 
             assert.equal(editedCollection, null, 'Collection should be null');
+        });
+
+        it('Adds a Post to a Collection', async function () {
+            const collection = await collectionsService.save({
+                title: 'testing collections',
+                description: 'testing collections description',
+                type: 'manual',
+                deleted: false
+            });
+
+            const posts = await postsRepository.getAll();
+
+            const editedCollection = await collectionsService.edit({
+                id: collection.id,
+                posts: [{
+                    id: posts[0].id
+                }]
+            });
+
+            assert.equal(editedCollection?.posts.length, 1, 'Collection should have one post');
+            assert.equal(editedCollection?.posts[0].id, posts[0].id, 'Collection should have the correct post');
         });
     });
 });

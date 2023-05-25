@@ -4,6 +4,7 @@ import {ValidationError} from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 
 import ObjectID from 'bson-objectid';
+import {PostDTO} from './PostDTO';
 
 const messages = {
     invalidIDProvided: 'Invalid ID provided for Collection',
@@ -22,6 +23,8 @@ export class Collection {
     updatedAt: Date;
     deleted: boolean;
 
+    posts: PostDTO[];
+
     private constructor(data: any) {
         this.id = data.id;
         this.title = data.title;
@@ -33,6 +36,7 @@ export class Collection {
         this.createdAt = data.createdAt;
         this.updatedAt = data.updatedAt;
         this.deleted = data.deleted;
+        this.posts = data.posts;
     }
 
     toJSON() {
@@ -45,7 +49,12 @@ export class Collection {
             filter: this.filter,
             featureImage: this.featureImage,
             createdAt: this.createdAt,
-            updatedAt: this.updatedAt
+            updatedAt: this.updatedAt,
+            posts: this.posts.map(post => ({
+                id: post.id,
+                title: post.title,
+                slug: post.slug
+            }))
         };
     }
 
@@ -87,7 +96,8 @@ export class Collection {
             featureImage: data.feature_image || null,
             createdAt: Collection.validateDateField(data.created_at, 'created_at'),
             updatedAt: Collection.validateDateField(data.updated_at, 'updated_at'),
-            deleted: data.deleted || false
+            deleted: data.deleted || false,
+            posts: data.posts || []
         });
     }
 }
