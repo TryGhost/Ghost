@@ -16,7 +16,7 @@ interface ISettingGroupContent {
 const SettingGroupContent: React.FC<ISettingGroupContent> = ({columns, values, children}) => {
     let styles = 'flex flex-col gap-x-6 gap-y-7';
     if (columns === 2) {
-        styles = 'grid grid-cols-2 gap-6';
+        styles = 'grid grid-cols-2 gap-x-8 gap-y-6';
     }
 
     return (

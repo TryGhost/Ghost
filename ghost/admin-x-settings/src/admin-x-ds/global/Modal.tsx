@@ -10,6 +10,7 @@ export interface ModalProps {
     size?: ModalSize;
     title?: string;
     okLabel?: string;
+    okColor?: string;
     cancelLabel?: string;
     leftButtonLabel?: string;
     customFooter?: React.ReactNode;
@@ -18,7 +19,7 @@ export interface ModalProps {
     children?: React.ReactNode;
 }
 
-const Modal: React.FC<ModalProps> = ({size = 'md', title, okLabel, cancelLabel, customFooter, leftButtonLabel, onOk, onCancel, children}) => {
+const Modal: React.FC<ModalProps> = ({size = 'md', title, okLabel, cancelLabel, customFooter, leftButtonLabel, onOk, okColor, onCancel, children}) => {
     const modal = useModal();
 
     let buttons: IButton[] = [];
@@ -35,40 +36,40 @@ const Modal: React.FC<ModalProps> = ({size = 'md', title, okLabel, cancelLabel, 
         buttons.push({
             key: 'ok-modal',
             label: okLabel ? okLabel : 'OK', 
-            color: 'black',
+            color: okColor ? okColor : 'black',
             styles: 'min-w-[80px]',
             onClick: onOk
         });
     }
 
-    let modalStyles = 'relative z-50 mx-auto flex flex-col justify-between bg-white p-8 shadow-xl w-full';
+    let modalStyles = 'relative z-50 mx-auto flex flex-col justify-between bg-white shadow-xl w-full';
     let backdropStyles = 'fixed inset-0 h-[100vh] w-[100vw] overflow-y-scroll ';
 
     switch (size) {
     case 'sm':
-        modalStyles += ' max-w-[480px]';
+        modalStyles += ' max-w-[480px] p-8';
         break;
 
     case 'md':
-        modalStyles += ' max-w-[720px]';
+        modalStyles += ' max-w-[720px] p-8';
         break;
 
     case 'lg':
-        modalStyles += ' max-w-[940px]';
+        modalStyles += ' max-w-[940px] p-10';
         break;
 
     case 'xl':
-        modalStyles += ' max-w-[1180px] ';
+        modalStyles += ' max-w-[1180px] p-12';
         break;
 
     case 'full':
     case 'bleed':
-        modalStyles += ' h-full';
+        modalStyles += ' h-full p-12';
         break;
     }
 
     if (size !== 'bleed') {
-        modalStyles += ' rounded';
+        modalStyles += ' rounded-md overflow-hidden';
     }
 
     if (size !== 'bleed' && size !== 'full') {
@@ -83,7 +84,7 @@ const Modal: React.FC<ModalProps> = ({size = 'md', title, okLabel, cancelLabel, 
 
     return (
         <div className={backdropStyles} id='modal-backdrop'>
-            <div className='absolute inset-0 z-0 bg-[rgba(0,0,0,0.1)]' onClick={handleBackdropClick}></div>
+            <div className='fixed inset-0 z-0 bg-[rgba(0,0,0,0.1)]' onClick={handleBackdropClick}></div>
             <section className={modalStyles}>
                 <div>
                     {title && <Heading level={4}>{title}</Heading>}

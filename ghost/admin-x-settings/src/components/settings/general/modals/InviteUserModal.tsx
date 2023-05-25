@@ -1,4 +1,4 @@
-import Modal from '../../admin-x-ds/global/Modal';
+import Modal from '../../../../admin-x-ds/global/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 
 const InviteUserModal = NiceModal.create(() => {

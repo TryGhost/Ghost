@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type ButtonColor = 'clear' | 'black' | 'green' | 'red';
+export type ButtonColor = 'clear' | 'grey' | 'black' | 'green' | 'red';
 
 export interface IButton {
     label: string;
@@ -34,6 +34,9 @@ const Button: React.FC<IButton> = ({
     switch (color) {
     case 'black':
         styles += link ? ' text-black hover:text-grey-800' : ' bg-black text-white hover:bg-grey-900';
+        break;
+    case 'grey':
+        styles += link ? ' text-black hover:text-grey-800' : ' bg-grey-100 text-black hover:!bg-grey-300';
         break;
     case 'green':
         styles += link ? ' text-green hover:text-green-400' : ' bg-green text-white hover:bg-green-400';

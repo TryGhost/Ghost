@@ -28,7 +28,7 @@ const ListItem: React.FC<ListItemProps> = ({id, title, detail, action, hideActio
                 {detail && <span className='text-xs text-grey-700'>{detail}</span>}
             </div>
             {action && 
-                <div className={`px-3 ${separator ? 'py-3' : 'py-2'} ${hideActions ? 'invisible group-hover:visible' : ''}`}>
+                <div className={`px-6 ${separator ? 'py-3' : 'py-2'} ${hideActions ? 'invisible group-hover:visible' : ''}`}>
                     {action}
                 </div>
             }
