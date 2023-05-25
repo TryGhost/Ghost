@@ -26,6 +26,7 @@ const Styles = () => {
 };
 
 const NotificationText = ({type, status, context}) => {
+    const t = context.t;
     const signinPortalLink = getPortalLink({page: 'signin', siteUrl: context.site.url});
     const singupPortalLink = getPortalLink({page: 'signup', siteUrl: context.site.url});
 
@@ -33,16 +34,18 @@ const NotificationText = ({type, status, context}) => {
         const firstname = context.member.firstname || '';
         return (
             <p>
-                Welcome back{(firstname ? ', ' + firstname : '')}!<br />You've successfully signed in.
+                {firstname ? t('Welcome back, {{name}}!', firstname) : t('Welcome back!')}<br />{t('You\'ve successfully signed in.')}
             </p>
         );
     } else if (type === 'signin' && status === 'error') {
         return (
             <p>
-                Could not sign in. Login link expired. <a href={signinPortalLink} target="_parent">Click here to retry</a>
+                {t('Could not sign in. Login link expired.')} <a href={signinPortalLink} target="_parent">{t('Click here to retry')}</a>
             </p>
         );
     } else if (type === 'signup' && status === 'success') {
+        // TODO: Wrap these strings with translation function
+        /* eslint-disable i18next/no-literal-string */
         return (
             <p>
                 You've successfully subscribed to <br /><strong>{context.site.title}</strong>
@@ -54,41 +57,42 @@ const NotificationText = ({type, status, context}) => {
                 You've successfully subscribed to <br /><strong>{context.site.title}</strong>
             </p>
         );
+        /* eslint-enable i18next/no-literal-string */
     } else if (type === 'updateEmail' && status === 'success') {
         return (
             <p>
-                Success! Your email is updated.
+                {t('Success! Your email is updated.')}
             </p>
         );
     } else if (type === 'updateEmail' && status === 'error') {
         return (
             <p>
-                Could not update email! Invalid link.
+                {t('Could not update email! Invalid link.')}
             </p>
         );
     } else if (type === 'signup' && status === 'error') {
         return (
             <p>
-                Signup error: Invalid link <br /><a href={singupPortalLink} target="_parent">Click here to retry</a>
+                {t('Signup error: Invalid link')}<br /><a href={singupPortalLink} target="_parent">{t('Click here to retry')}</a>
             </p>
         );
     } else if (type === 'signup-paid' && status === 'error') {
         return (
             <p>
-                Signup error: Invalid link <br /><a href={singupPortalLink} target="_parent">Click here to retry</a>
+                {t('Signup error: Invalid link')}<br /><a href={singupPortalLink} target="_parent">{t('Click here to retry')}</a>
             </p>
         );
     } else if (type === 'stripe:checkout' && status === 'success') {
         if (context.member) {
             return (
                 <p>
-                    Success! Your account is fully activated, you now have access to all content.
+                    {t('Success! Your account is fully activated, you now have access to all content.')}
                 </p>
             );
         }
         return (
             <p>
-                Success! Check your email for magic link to sign-in.
+                {t('Success! Check your email for magic link to sign-in.')}
             </p>
         );
     } else if (type === 'stripe:checkout' && status === 'warning') {
@@ -96,19 +100,19 @@ const NotificationText = ({type, status, context}) => {
         if (context.member) {
             return (
                 <p>
-                    Plan upgrade was cancelled.
+                    {t('Plan upgrade was cancelled.')}
                 </p>
             );
         }
         return (
             <p>
-                Plan checkout was cancelled.
+                {t('Plan checkout was cancelled.')}
             </p>
         );
     }
     return (
         <p>
-            {status === 'success' ? 'Success' : 'Error'}
+            {status === 'success' ? t('Success') : t('Error')}
         </p>
     );
 };

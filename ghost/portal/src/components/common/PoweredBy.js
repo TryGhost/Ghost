@@ -8,7 +8,7 @@ export default class PoweredBy extends React.Component {
     render() {
         // Note: please do not wrap "Powered by Ghost" in the translation function, as we don't
         // want it to be translated
-
+        /* eslint-disable i18next/no-literal-string */
         return (
             <a href='https://ghost.org' target='_blank' rel='noopener noreferrer' onClick={() => {
                 window.open('https://ghost.org', '_blank');
@@ -17,5 +17,6 @@ export default class PoweredBy extends React.Component {
                 Powered by Ghost
             </a>
         );
+        /* eslint-enable i18next/no-literal-string */
     }
 }

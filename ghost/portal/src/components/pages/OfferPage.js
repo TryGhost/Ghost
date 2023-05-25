@@ -431,7 +431,7 @@ export default class OfferPage extends React.Component {
     }
 
     renderOfferTag() {
-        const {pageData: offer} = this.context;
+        const {pageData: offer, t} = this.context;
 
         if (offer.amount <= 0) {
             return (
@@ -441,18 +441,20 @@ export default class OfferPage extends React.Component {
 
         if (offer.type === 'fixed') {
             return (
-                <h5 className="gh-portal-discount-label">{getCurrencySymbol(offer.currency)}{offer.amount / 100} off</h5>
+                <h5 className="gh-portal-discount-label">{t('{{amount}} off', {
+                    amount: `${getCurrencySymbol(offer.currency)}${offer.amount / 100}`
+                })}</h5>
             );
         }
 
         if (offer.type === 'trial') {
             return (
-                <h5 className="gh-portal-discount-label">{offer.amount} days free</h5>
+                <h5 className="gh-portal-discount-label">{t('{{amount}} days free', {amount: offer.amount})}</h5>
             );
         }
 
         return (
-            <h5 className="gh-portal-discount-label">{offer.amount}% off</h5>
+            <h5 className="gh-portal-discount-label">{t('{{amount}} off', {amount: offer.amount + '%'})}</h5>
         );
     }
 
@@ -515,32 +517,51 @@ export default class OfferPage extends React.Component {
         return '';
     }
 
-    renderOfferMessage({offer, product, price}) {
-        const discountDuration = offer.duration;
-        let durationLabel = '';
+    renderOfferMessage({offer, product, price, t}) {
+        const offerMessages = {
+            forever: t(`{{amount}} off forever.`, {
+                amount: this.getOffAmount({offer})
+            }),
+            firstPeriod: t(`{{amount}} off for first {{period}}.`, {
+                amount: this.getOffAmount({offer}),
+                period: offer.cadence
+            }),
+            firstNMonths: t(`{{amount}} off for first {{number}} months.`, {
+                amount: this.getOffAmount({offer}),
+                number: offer.duration_in_months || ''
+            })
+        };
+
         const originalPrice = this.getOriginalPrice({offer, product});
-        let renewsLabel = '';
+        const renewsLabel = t(`Renews at {{price}}.`, {price: originalPrice});
+
+        let offerLabel = '';
+        let useRenewsLabel = false;
+        const discountDuration = offer.duration;
         if (discountDuration === 'once') {
-            durationLabel = `for first ${offer.cadence}`;
-            renewsLabel = `Renews at ${originalPrice}.`;
+            offerLabel = offerMessages.firstPeriod;
+            useRenewsLabel = true;
         } else if (discountDuration === 'forever') {
-            durationLabel = `forever`;
+            offerLabel = offerMessages.forever;
         } else if (discountDuration === 'repeating') {
             const durationInMonths = offer.duration_in_months || '';
             if (durationInMonths === 1) {
-                durationLabel = `for first month`;
+                offerLabel = offerMessages.firstPeriod;
             } else {
-                durationLabel = `for first ${durationInMonths} months`;
+                offerLabel = offerMessages.firstNMonths;
             }
-            renewsLabel = `Renews at ${originalPrice}.`;
+            useRenewsLabel = true;
         }
         if (discountDuration === 'trial') {
             return (
-                <p className="footnote">Try free for {offer.amount} days, then {originalPrice}. <span class="gh-portal-cancel">Cancel anytime.</span></p>
+                <p className="footnote">{t('Try free for {{amount}} days, then {{originalPrice}}.', {
+                    amount: offer.amount,
+                    originalPrice: originalPrice
+                })} <span class="gh-portal-cancel">{t('Cancel anytime.')}</span></p>
             );
         }
         return (
-            <p className="footnote">{this.getOffAmount({offer})} off {durationLabel}. {renewsLabel}</p>
+            <p className="footnote">{offerLabel} {useRenewsLabel ? renewsLabel : ''}</p>
         );
     }
 
@@ -611,7 +632,7 @@ export default class OfferPage extends React.Component {
                             {(benefits.length ? this.renderBenefits({product}) : '')}
                         </div>
                     </div>
-                    
+
                     <div className='gh-portal-btn-container sticky m32'>
                         <div className='gh-portal-signup-terms-wrapper'>
                             {this.renderSignupTerms()}
@@ -625,7 +646,7 @@ export default class OfferPage extends React.Component {
     }
 
     render() {
-        const {pageData: offer, site} = this.context;
+        const {pageData: offer, site, t} = this.context;
         if (!offer) {
             return null;
         }
@@ -647,7 +668,7 @@ export default class OfferPage extends React.Component {
 
                     <div className="gh-portal-offer-bar">
                         <div className="gh-portal-offer-title">
-                            {(offer.display_title ? <h4>{offer.display_title}</h4> : <h4 className='placeholder'>Black Friday</h4>)}
+                            {(offer.display_title ? <h4>{offer.display_title}</h4> : <h4 className='placeholder'>{t('Black Friday')}</h4>)}
                             {this.renderOfferTag()}
                         </div>
                         {(offer.display_description ? <p>{offer.display_description}</p> : '')}
