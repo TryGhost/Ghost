@@ -1,9 +1,9 @@
 import Button from './admin-x-ds/global/Button';
+import DataProvider from './components/providers/DataProvider';
 import Heading from './admin-x-ds/global/Heading';
 import NiceModal from '@ebay/nice-modal-react';
 import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
-import {SettingsProvider} from './components/SettingsProvider';
 
 function App() {
     return (
@@ -26,9 +26,9 @@ function App() {
                         </div>
                     </div>
                     <div className="flex-auto pt-[3vmin] md:ml-[280px] md:pt-[84px]">
-                        <SettingsProvider>
+                        <DataProvider>
                             <Settings />
-                        </SettingsProvider>
+                        </DataProvider>
                     </div>
                 </div>
             </NiceModal.Provider>

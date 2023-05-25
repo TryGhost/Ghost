@@ -2,7 +2,7 @@ import React, {useContext, useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/TextField';
-import {SettingsContext} from '../../SettingsProvider';
+import {SettingsContext} from '../../providers/SettingsProvider';
 import {TSettingGroupStates} from '../../../admin-x-ds/settings/SettingGroup';
 import {getSettingValue} from '../../../utils/helpers';
 
