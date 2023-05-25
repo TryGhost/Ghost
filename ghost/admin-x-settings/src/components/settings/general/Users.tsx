@@ -8,10 +8,11 @@ import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
 import UserDetailModal from './modals/UserDetailModal';
 import useStaffUsers from '../../../hooks/useStaffUsers';
+import {User} from '../../../types/api';
 
-const Owner: React.FC<any> = ({user}) => {
+const Owner: React.FC<{user: User}> = ({user}) => {
     const showDetailModal = () => {
-        NiceModal.show(UserDetailModal);
+        NiceModal.show(UserDetailModal, {user});
     };
 
     if (!user) {
@@ -25,9 +26,13 @@ const Owner: React.FC<any> = ({user}) => {
     );
 };
 
-const UsersList: React.FC<any> = ({users}) => {
-    const showDetailModal = () => {
-        NiceModal.show(UserDetailModal);
+interface UsersListProps {
+    users: User[];
+}
+
+const UsersList: React.FC<UsersListProps> = ({users}) => {
+    const showDetailModal = (user: User) => {
+        NiceModal.show(UserDetailModal, {user});
     };
 
     if (!users || !users.length) {
@@ -40,16 +45,16 @@ const UsersList: React.FC<any> = ({users}) => {
 
     return (
         <List>
-            {users.map((user: any) => {
+            {users.map((user) => {
                 return (
                     <ListItem
                         key={user.id}
-                        action={<Button color='green' label='Edit' link={true} onClick={showDetailModal} />}
+                        action={<Button color='green' label='Edit' link={true} onClick={() => showDetailModal(user)}/>}
                         detail={user.email}
                         hideActions={true}
                         id={`list-item-${user.id}`}
                         title={user.name}
-                        onClick={showDetailModal} />
+                        onClick={() => showDetailModal(user)} />
                 );
             })}
         </List>

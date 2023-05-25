@@ -8,9 +8,14 @@ import SettingGroup from '../../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../../admin-x-ds/global/TextField';
 import Toggle from '../../../../admin-x-ds/global/Toggle';
+import {User} from '../../../../types/api';
 
 interface CustomHeadingProps {
     children?: React.ReactNode;
+}
+
+interface UserDetailProps {
+    user: User;
 }
 
 const CustomHeader: React.FC<CustomHeadingProps> = ({children}) => {
@@ -18,21 +23,20 @@ const CustomHeader: React.FC<CustomHeadingProps> = ({children}) => {
         <Heading level={4} separator={true}>{children}</Heading>
     );
 };
-
-const Basic: React.FC = () => {
-    const inputs = (
+const BasicInputs: React.FC<UserDetailProps> = ({user}) => {
+    return (
         <SettingGroupContent>
             <TextField
                 hint="Use real name so people can recognize you"
                 title="Full name"
-                value="Martin Culhane"
+                value={user.name}
             />
             <TextField
                 title="Email"
-                value="martin@culhane.com"
+                value={user.email}
             />
             <Radio
-                defaultSelectedOption="administrator"
+                defaultSelectedOption={user.roles[0].name.toLowerCase()}
                 id='role'
                 options={[
                     {
@@ -61,83 +65,98 @@ const Basic: React.FC = () => {
             />
         </SettingGroupContent>
     );
+};
 
+const Basic: React.FC<UserDetailProps> = ({user}) => {
     return (
-        <SettingGroup 
+        <SettingGroup
             border={false}
             customHeader={<CustomHeader>Basic info</CustomHeader>}
             title='Basic'
         >
-            {inputs}
+            <BasicInputs user={user} />
         </SettingGroup>
     );
 };
 
-const Details: React.FC = () => {
-    const inputs = (
+const DetailsInputs: React.FC<UserDetailProps> = ({user}) => {
+    return (
         <SettingGroupContent>
             <TextField
                 hint="https://example.com/author"
                 title="Slug"
+                value={user.slug}
             />
             <TextField
                 title="Location"
+                value={user.location}
             />
             <TextField
                 title="Website"
+                value={user.website}
             />
             <TextField
                 title="Facebook profile"
+                value={user.facebook}
             />
             <TextField
                 title="Twitter profile"
+                value={user.twitter}
             />
             <TextField
                 hint="Recommended: 200 characters."
                 title="Bio"
+                value={user.bio}
             />
         </SettingGroupContent>
     );
+};
 
+const Details: React.FC<UserDetailProps> = ({user}) => {
     return (
-        <SettingGroup 
+        <SettingGroup
             border={false}
             customHeader={<CustomHeader>Details</CustomHeader>}
             title='Details'
         >
-            {inputs}
+            <DetailsInputs user={user} />
         </SettingGroup>
     );
 };
 
-const EmailNotifications: React.FC = () => {
-    const inputs = (
+const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user}) => {
+    return (
         <SettingGroupContent>
             <Toggle
+                checked={user.comment_notifications}
                 direction='rtl'
                 hint='Every time a member comments on one of your posts'
                 id='comments'
                 label='Comments'
             />
             <Toggle
+                checked={user.free_member_signup_notification}
                 direction='rtl'
                 hint='Every time a new free member signs up'
                 id='new-signups'
                 label='New signups'
             />
             <Toggle
+                checked={user.paid_subscription_started_notification}
                 direction='rtl'
                 hint='Every time a member starts a new paid subscription'
                 id='new-paid-members'
                 label='New paid members'
             />
             <Toggle
+                checked={user.paid_subscription_canceled_notification}
                 direction='rtl'
                 hint='Every time a member cancels their paid subscription'
                 id='paid-member-cancellations'
                 label='Paid member cancellations'
             />
             <Toggle
+                checked={user.milestone_notifications}
                 direction='rtl'
                 hint='Occasional summaries of your audience & revenue growth'
                 id='milestones'
@@ -145,14 +164,16 @@ const EmailNotifications: React.FC = () => {
             />
         </SettingGroupContent>
     );
+};
 
+const EmailNotifications: React.FC<UserDetailProps> = ({user}) => {
     return (
-        <SettingGroup 
+        <SettingGroup
             border={false}
             customHeader={<CustomHeader>Email notifications</CustomHeader>}
             title='Email notifications'
         >
-            {inputs}
+            <EmailNotificationsInputs user={user} />
         </SettingGroup>
     );
 };
@@ -165,7 +186,7 @@ const Password: React.FC = () => {
     };
 
     const view = (
-        <Button 
+        <Button
             color='grey'
             label='Change password'
             onClick={showPasswordInputs}
@@ -198,32 +219,36 @@ const Password: React.FC = () => {
     );
 };
 
-const UserDetailModal = NiceModal.create(() => {
+interface UserDetailModalProps {
+    user: User;
+}
+
+const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
     return (
-        <Modal 
+        <Modal
             okColor='green'
             okLabel='Save'
             size='xl'
             onOk={() => {
-                alert('Clicked OK'); 
+                alert('Clicked OK');
             }}
         >
             <div>
                 <div className='-mx-12 -mt-12 bg-gradient-to-tr from-grey-900 to-black p-12 text-white'>
                     <div className='mt-60'>
-                        <Heading styles='text-white'>Martin Culhane</Heading>
+                        <Heading styles='text-white'>{user.name}</Heading>
                         <span className='text-md font-semibold'>Administrator</span>
                     </div>
                 </div>
                 <div className='mt-10 grid grid-cols-2 gap-x-12 gap-y-20 pb-10'>
-                    <Basic />
-                    <Details />
-                    <EmailNotifications />
+                    <Basic user={user} />
+                    <Details user={user} />
+                    <EmailNotifications user={user} />
                     <Password />
                 </div>
             </div>
         </Modal>
     );
-});
+};
 
-export default UserDetailModal;
+export default NiceModal.create(UserDetailModal);
