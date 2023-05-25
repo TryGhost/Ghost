@@ -4,7 +4,7 @@ import SettingNavSection from '../admin-x-ds/settings/SettingNavSection';
 
 const Sidebar: React.FC = () => {
     return (
-        <div className="hidden md:!visible md:!block md:h-[calc(100vh-8vmin-84px)] md:w-[300px] md:overflow-y-scroll md:pt-[32px]">
+        <div className="hidden md:!visible md:!block md:h-[calc(100vh-5vmin-84px)] md:w-[300px] md:overflow-y-scroll md:pt-[32px]">
             <SettingNavSection title="General">
                 <SettingNavItem href="#title-and-description" title="Title and description" />
                 <SettingNavItem title="Timezone" />
