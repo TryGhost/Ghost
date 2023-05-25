@@ -26,9 +26,7 @@ const Facebook: React.FC = () => {
     };
 
     const values = (
-        <div>
-            [TBD: facebook card preview]
-        </div>
+        <></>
     );
 
     const inputFields = (

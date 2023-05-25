@@ -26,9 +26,7 @@ const Twitter: React.FC = () => {
     };
 
     const values = (
-        <div>
-            [TBD: twitter card preview]
-        </div>
+        <></>
     );
 
     const inputFields = (
