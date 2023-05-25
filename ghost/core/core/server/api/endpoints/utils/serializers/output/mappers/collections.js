@@ -16,7 +16,12 @@ const mapper = (collection) => {
         filter: json.filter,
         feature_image: json.featureImage,
         created_at: json.createdAt.toISOString().replace(/\d{3}Z$/, '000Z'),
-        updated_at: json.updatedAt.toISOString().replace(/\d{3}Z$/, '000Z')
+        updated_at: json.updatedAt.toISOString().replace(/\d{3}Z$/, '000Z'),
+        posts: json.posts.map(post => ({
+            id: post.id,
+            title: post.title,
+            slug: post.slug
+        }))
     };
 
     return serialized;
