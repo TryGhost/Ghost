@@ -27,7 +27,7 @@ function getScriptTag(): HTMLElement {
  */
 function getRootDiv(scriptTag: HTMLElement) {
     if (scriptTag.previousElementSibling && scriptTag.previousElementSibling.className === ROOT_DIV_CLASS) {
-        return scriptTag.previousElementSibling;
+        return scriptTag.previousElementSibling as HTMLDivElement;
     }
 
     if (!scriptTag.parentElement) {
@@ -46,7 +46,7 @@ function init() {
 
     ReactDOM.createRoot(root).render(
         <React.StrictMode>
-            <App scriptTag={scriptTag} />
+            <App root={root} scriptTag={scriptTag} />
         </React.StrictMode>
     );
 }

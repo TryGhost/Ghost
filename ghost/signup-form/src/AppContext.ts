@@ -3,6 +3,8 @@ import React, {ComponentProps, useContext} from 'react';
 import pages, {Page, PageName} from './pages';
 import {GhostApi} from './utils/api';
 
+export type ColorScheme = 'light' | 'dark' | 'auto'
+
 export type SignupFormOptions = {
     title?: string,
     description?: string,
@@ -10,6 +12,7 @@ export type SignupFormOptions = {
     color?: string,
     site: string,
     labels: string[],
+    colorScheme: ColorScheme
 };
 
 export type AppContextType = {

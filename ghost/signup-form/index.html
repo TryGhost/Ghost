@@ -62,6 +62,37 @@
             data-color="#ff0095"
             data-site="https://invalid/"
         ></script>
+
+        <hr>
+        <h1>Explicit dark mode</h1>
+
+        <script
+            type="module"
+            src="/src/index.tsx?dark"
+            data-title="My site name"
+            data-description="An independent publication about embeddable signup forms."
+            data-logo="https://user-images.githubusercontent.com/65487235/157884383-1b75feb1-45d8-4430-b636-3f7e06577347.png"
+            data-color="#4664dd"
+            data-site="%VITE_SITE_URL%"
+            data-labels="signup-form,with-logo"
+            data-color-scheme="dark"
+        ></script>
+
+        <hr>
+        <h1>Implicit dark mode (in a container with pale text color)</h1>
+
+        <div style="background: #333333; color: #eeeeee; padding: 32px">
+            <script
+                type="module"
+                src="/src/index.tsx?implicitdark"
+                data-title="My site name"
+                data-description="An independent publication about embeddable signup forms."
+                data-logo="https://user-images.githubusercontent.com/65487235/157884383-1b75feb1-45d8-4430-b636-3f7e06577347.png"
+                data-color="#4664dd"
+                data-site="%VITE_SITE_URL%"
+                data-labels="signup-form,with-logo"
+            ></script>
+        </div>
     </div>
   </body>
 </html>

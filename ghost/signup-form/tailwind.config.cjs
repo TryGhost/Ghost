@@ -4,6 +4,7 @@ module.exports = {
         preflight: true
     },
     content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+    darkMode: 'class',
     theme: {
         screens: {
             sm: '480px',
