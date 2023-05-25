@@ -32,6 +32,7 @@ import {getOwner} from '@ember/application';
 import {getParent} from '../lib/dnd/utils';
 import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {guidFor} from '@ember/object/internals';
+import {mobiledocToLexical} from '@tryghost/kg-converters';
 import {run} from '@ember/runloop';
 import {svgJar} from 'ghost-admin/helpers/svg-jar';
 import {task, waitForProperty} from 'ember-concurrency';
@@ -464,6 +465,11 @@ export default class KoenigEditor extends Component {
         this._pasteHandler = run.bind(this, this.handlePaste);
         editorElement.addEventListener('paste', this._pasteHandler);
 
+        // on window so we can catch the event after mobiledoc has processed it
+        this._cutCopyHandler = run.bind(this, this.handleCutAndCopy);
+        window.addEventListener('copy', this._cutCopyHandler);
+        window.addEventListener('cut', this._cutCopyHandler);
+
         if (this.scrollContainerSelector) {
             this._scrollContainer = document.querySelector(this.scrollContainerSelector);
         }
@@ -506,6 +512,8 @@ export default class KoenigEditor extends Component {
 
         window.removeEventListener('keydown', this._keydownHandler);
         window.removeEventListener('keyup', this._keyupHandler);
+        window.removeEventListener('copy', this._cutCopyHandler);
+        window.removeEventListener('cut', this._cutCopyHandler);
 
         let editorElement = this.element.querySelector('[data-kg="editor"]');
         editorElement.removeEventListener('paste', this._pasteHandler);
@@ -979,6 +987,35 @@ export default class KoenigEditor extends Component {
         if (this._isGraveInput && event.key === ' ') {
             this._isGraveInput = false;
             this._triggerTextHandlers();
+        }
+    }
+
+    handleCutAndCopy(event) {
+        const MOBILEDOC_REGEX = new RegExp(/data-mobiledoc='(.*?)'>/);
+
+        const html = event.clipboardData.getData('text/html') || '';
+
+        if (MOBILEDOC_REGEX.test(html)) {
+            const mobiledocString = html.match(MOBILEDOC_REGEX)?.[1];
+            const lexicalString = mobiledocToLexical(mobiledocString);
+
+            // we get a full Lexical doc from the converter but Lexical only
+            // stores an array of nodes in it's copied dataset
+            const lexical = JSON.parse(lexicalString);
+            let nodes = lexical.root.children;
+
+            // for a single-paragraph text selection Lexical only stores the
+            // text children in the nodes array
+            if (nodes.length === 1 && nodes[0].type === 'paragraph') {
+                nodes = nodes[0].children;
+            }
+
+            const lexicalData = {
+                namespace: 'KoenigEditor',
+                nodes
+            };
+
+            event.clipboardData.setData('application/x-lexical-editor', JSON.stringify(lexicalData));
         }
     }
 
