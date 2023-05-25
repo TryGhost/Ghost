@@ -32,8 +32,8 @@ const UsersList: React.FC<any> = ({users}) => {
 
     if (!users || !users.length) {
         return (
-            <div className='mt-2 text-grey-700'>
-                <p>No users found</p>
+            <div className='mt-2 py-10 text-center text-sm text-grey-700'>
+                No users found.
             </div>
         );
     }

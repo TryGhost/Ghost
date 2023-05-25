@@ -29,9 +29,9 @@ const TabView: React.FC<TabViewProps> = ({tabs, defaultSelected}) => {
 
     return (
         <section>
-            <div className='flex gap-4 border-b border-grey-300'>
+            <div className='flex gap-5 border-b border-grey-300'>
                 {tabs.map(tab => (
-                    <button key={tab.id} className={`-m-b-px cursor-pointer appearance-none border-b-[3px] py-1 text-sm transition-all ${selectedTab === tab.id ? 'border-black font-bold' : 'border-transparent hover:border-grey-500'}`} id={tab.id} type="button" onClick={handleTabChange}>{tab.title}</button>
+                    <button key={tab.id} className={`-m-b-px cursor-pointer appearance-none border-b-[3px] py-1 text-sm transition-all after:invisible after:block after:h-px after:overflow-hidden after:font-bold after:text-transparent after:content-[attr(title)] ${selectedTab === tab.id ? 'border-black font-bold' : 'border-transparent hover:border-grey-500'}`} id={tab.id} title={tab.title} type="button" onClick={handleTabChange}>{tab.title}</button>
                 ))}
             </div>
             {tabs.map(tab => (
