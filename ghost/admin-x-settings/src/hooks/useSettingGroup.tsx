@@ -82,7 +82,9 @@ const useSettingGroup = (): SettingGroupHook => {
                     value: setting.value
                 };
             });
-        saveSettings?.(changedSettings);
+        if (changedSettings.length) {            
+            saveSettings?.(changedSettings);
+        }
         setCurrentState('view');
     };
 
