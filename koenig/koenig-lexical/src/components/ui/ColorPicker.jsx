@@ -131,7 +131,7 @@ function ColorSwatch({hex, accent, transparent, title, isSelected, onSelect}) {
     );
 }
 
-export function ColorIndicator({value, swatches, onSelectSwatch, onTogglePicker}) {
+export function ColorIndicator({value, swatches, onSwatchChange, onTogglePicker}) {
     let backgroundColor = value;
     let selectedSwatch = swatches.find(swatch => swatch.hex === value)?.title;
     if (value === 'accent') {
@@ -146,7 +146,7 @@ export function ColorIndicator({value, swatches, onSelectSwatch, onTogglePicker}
         <div className='flex gap-1'>
             <div className={`flex items-center gap-1`}>
                 {swatches.map(({customContent, ...swatch}) => (
-                    customContent ?? <ColorSwatch key={swatch.title} isSelected={selectedSwatch === swatch.title} onSelect={onSelectSwatch} {...swatch} />
+                    customContent ?? <ColorSwatch key={swatch.title} isSelected={selectedSwatch === swatch.title} onSelect={onSwatchChange} {...swatch} />
                 ))}
             </div>
             <button aria-label="Pick color" className="relative h-6 w-6 rounded-full border border-grey-200" type="button" onClick={onTogglePicker}>

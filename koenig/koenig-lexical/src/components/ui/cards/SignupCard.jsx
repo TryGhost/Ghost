@@ -344,7 +344,11 @@ export function SignupCard({alignment,
                             {title: 'Brand color', accent: true}
                         ].filter(Boolean)}
                         value={(showBackgroundImage && layout !== 'split') ? '' : backgroundColor}
-                        onChange={color => handleBackgroundColor(color, matchingTextColor(color))}
+                        onPickerChange={color => handleBackgroundColor(color, matchingTextColor(color))}
+                        onSwatchChange={(color) => {
+                            handleBackgroundColor(color, matchingTextColor(color));
+                            setBackgroundColorPickerExpanded(false);
+                        }}
                         onTogglePicker={(isExpanded) => {
                             if (isExpanded) {
                                 if (layout !== 'split') {
@@ -394,7 +398,11 @@ export function SignupCard({alignment,
                             {title: 'Brand color', accent: true}
                         ]}
                         value={buttonColor}
-                        onChange={color => handleButtonColor(color, matchingTextColor(color))}
+                        onPickerChange={color => handleButtonColor(color, matchingTextColor(color))}
+                        onSwatchChange={(color) => {
+                            handleButtonColor(color, matchingTextColor(color));
+                            setButtonColorPickerExpanded(false);
+                        }}
                         onTogglePicker={setButtonColorPickerExpanded}
                     />
                     <InputSetting

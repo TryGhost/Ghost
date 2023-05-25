@@ -172,7 +172,7 @@ export function ColorOptionSetting({label, onClick, selectedName, buttons, layou
     );
 }
 
-export function ColorPickerSetting({label, isExpanded, onChange, onTogglePicker, value, swatches, eyedropper, hasTransparentOption, dataTestId}) {
+export function ColorPickerSetting({label, isExpanded, onSwatchChange, onPickerChange, onTogglePicker, value, swatches, eyedropper, hasTransparentOption, dataTestId}) {
     const {repositionPanel} = useSettingsPanelContext();
 
     useEffect(() => repositionPanel(), [repositionPanel, isExpanded]);
@@ -186,12 +186,12 @@ export function ColorPickerSetting({label, isExpanded, onChange, onTogglePicker,
                     <ColorIndicator
                         swatches={swatches}
                         value={value}
-                        onSelectSwatch={onChange}
-                        onTogglePicker={() => onTogglePicker(!isExpanded)}
+                        onSwatchChange={onSwatchChange}
+                        onTogglePicker={onTogglePicker}
                     />
                 </div>
             </div>
-            {isExpanded && <ColorPicker eyedropper={eyedropper} hasTransparentOption={hasTransparentOption} value={value} onBlur={() => onTogglePicker(false)} onChange={onChange} />}
+            {isExpanded && <ColorPicker eyedropper={eyedropper} hasTransparentOption={hasTransparentOption} value={value} onBlur={() => onTogglePicker(false)} onChange={onPickerChange} />}
         </div>
     );
 }
