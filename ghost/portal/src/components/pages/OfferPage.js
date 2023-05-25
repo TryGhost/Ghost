@@ -621,7 +621,7 @@ export default class OfferPage extends React.Component {
                         <h4 className="gh-portal-product-name">{product.name} - {(offer.cadence === 'month' ? t('Monthly') : t('Yearly'))}</h4>
                         {this.renderOldTierPrice({offer, price})}
                         {this.renderUpdatedTierPrice({offer, currencyClass, updatedPrice, price})}
-                        {this.renderOfferMessage({offer, product, price})}
+                        {this.renderOfferMessage({offer, product, price, t})}
                     </div>
                 </div>
 
