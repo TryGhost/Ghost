@@ -1,3 +1,4 @@
+import IconLabel from '../../../admin-x-ds/global/IconLabel';
 import Link from '../../../admin-x-ds/global/Link';
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
@@ -5,8 +6,6 @@ import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupConten
 import TextField from '../../../admin-x-ds/global/TextField';
 import Toggle from '../../../admin-x-ds/global/Toggle';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {ReactComponent as LockedIcon} from '../../../assets/icons/lock-locked.svg';
-import {ReactComponent as UnLockedIcon} from '../../../assets/icons/lock-unlocked.svg';
 
 const LockSite: React.FC = () => {
     const {
@@ -34,15 +33,13 @@ const LockSite: React.FC = () => {
                 {
                     key: 'private',
                     value: passwordEnabled ? (
-                        <div className='flex items-center  '>
-                            <LockedIcon className='mr-2 h-4 w-4 text-yellow' />
-                            <span>Your site is password protected</span>
-                        </div>
+                        <IconLabel icon='lock-locked' iconColor='yellow'>
+                            Your site is password protected
+                        </IconLabel>
                     ) : (
-                        <div className='flex items-center text-grey-900 '>
-                            <UnLockedIcon className='mr-2 h-4 w-4' />
-                            <span>Your site is not password protected</span>
-                        </div>
+                        <IconLabel icon='lock-unlocked' iconColor='grey-900'>
+                            Your site is password protected
+                        </IconLabel>
                     )
                 }
             ]}

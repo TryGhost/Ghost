@@ -1,11 +1,11 @@
 import Dropdown from '../../../admin-x-ds/global/Dropdown';
+import IconLabel from '../../../admin-x-ds/global/IconLabel';
 import Link from '../../../admin-x-ds/global/Link';
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {ReactComponent as CheckIcon} from '../../../assets/icons/check-circle.svg';
 
 const MAILGUN_REGIONS = [
     {label: '🇺🇸 US', value: 'https://api.mailgun.net/v3'},
@@ -32,9 +32,9 @@ const MailGun: React.FC = () => {
         {
             key: 'status',
             value: (
-                <div className='flex items-center'>
-                    <CheckIcon className='mr-2 h-4 w-4 text-green' /> Mailgun is set up
-                </div>
+                <IconLabel icon='check-circle' iconColor='green'>
+                    Mailgun is set up
+                </IconLabel>
             )
         }
     ] : [
