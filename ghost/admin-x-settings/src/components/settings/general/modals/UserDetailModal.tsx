@@ -228,7 +228,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
         <Modal
             okColor='green'
             okLabel='Save'
-            size='xl'
+            size='lg'
             onOk={() => {
                 alert('Clicked OK');
             }}
