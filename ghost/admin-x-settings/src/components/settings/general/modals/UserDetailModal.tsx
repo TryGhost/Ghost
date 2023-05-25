@@ -176,10 +176,12 @@ const Password: React.FC = () => {
         <>
             <TextField
                 title="New password"
+                type="password"
                 value=''
             />
             <TextField
                 title="Verify password"
+                type="password"
                 value=''
             />
         </>
