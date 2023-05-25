@@ -91,7 +91,26 @@ export default class HistoryEventFetcher extends Resource {
                 this.hasReachedEnd = true;
             }
 
-            actions.forEach((a) => {
+            let count = 1;
+
+            actions.forEach((a, index) => {
+                const nextAction = actions[index + 1] || null;
+
+                // depending on the similarity, add additional properties to be used on the frontend for grouping
+                // skip - used for hiding the event on the frontend
+                // count - the number of similar events which is added to the last item
+                if (nextAction) {
+                    if (a.resource_id === nextAction.resource_id && a.event === nextAction.event) {
+                        a.skip = true;
+                        count += 1;
+                    } else {
+                        if (count > 1) {
+                            a.count = count.toString();
+                            count = 1;
+                        }
+                    }
+                }
+
                 a.context = JSON.parse(a.context);
             });
 
