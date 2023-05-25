@@ -192,7 +192,7 @@ export default class KoenigEditor extends Component {
             cards,
             unknownCardHandler: ({env}) => {
                 console.warn(`Unknown card encountered: ${env.name}`); //eslint-disable-line
-                
+
                 env.remove();
             }
         }, options);
@@ -989,6 +989,41 @@ export default class KoenigEditor extends Component {
         // of the editor canvas. Avoids double-paste of content when pasting
         // into cards
         if (!editor.cursor.isAddressable(event.target)) {
+            return;
+        }
+
+        // if the event has a application/x-editor-mobiledoc mimetype, modify
+        // the text/html content to mimic the behaviour of a normal mobiledoc paste
+        if (event.clipboardData.getData('application/x-mobiledoc-editor')) {
+            // prevent mobiledoc's default paste event handler firing
+            event.preventDefault();
+            event.stopImmediatePropagation();
+
+            // extract mobiledoc and update html to match how mobiledoc handles it's own copy data
+            const mobiledoc = event.clipboardData.getData('application/x-mobiledoc-editor');
+            const html = event.clipboardData.getData('text/html');
+            const modifiedHtml = `<div data-mobiledoc='${mobiledoc}'>${html}</div>`;
+            const text = event.clipboardData.getData('text/plain');
+
+            // we can't modify the paste event itself so we trigger a mock
+            // paste event with our own data
+            const pasteEvent = {
+                type: 'paste',
+                preventDefault() { },
+                target: editor.element,
+                clipboardData: {
+                    getData(type) {
+                        if (type === 'text/plain') {
+                            return text;
+                        }
+                        if (type === 'text/html') {
+                            return modifiedHtml;
+                        }
+                    }
+                }
+            };
+
+            editor.triggerEvent(editor.element, 'paste', pasteEvent);
             return;
         }
 
