@@ -1,6 +1,6 @@
 import React, {createContext, useEffect, useState} from 'react';
-import {Setting} from '../types/api';
-import {getSettings, updateSettings} from '../utils/api';
+import {Setting} from '../../types/api';
+import {getSettings, updateSettings} from '../../utils/api';
 
 // Define the Settings Context
 interface SettingsContextProps {

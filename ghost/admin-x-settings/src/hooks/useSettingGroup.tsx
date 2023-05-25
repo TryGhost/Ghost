@@ -1,6 +1,6 @@
 import React, {useEffect} from 'react';
 import {Setting, SettingValue} from '../types/api';
-import {SettingsContext} from '../components/SettingsProvider';
+import {SettingsContext} from '../components/providers/SettingsProvider';
 import {TSettingGroupStates} from '../admin-x-ds/settings/SettingGroup';
 import {useContext, useReducer, useRef, useState} from 'react';
 
