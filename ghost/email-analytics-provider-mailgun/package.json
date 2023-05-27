@@ -7,7 +7,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test:unit": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura --check-coverage mocha './test/**/*.test.js'",
+    "test:unit": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura --check-coverage --100 mocha './test/**/*.test.js'",
     "test": "yarn test:unit",
     "lint": "eslint . --ext .js --cache"
   },
@@ -17,7 +17,7 @@
   ],
   "devDependencies": {
     "mocha": "10.2.0",
-    "sinon": "14.0.2"
+    "sinon": "15.0.3"
   },
   "dependencies": {
     "@tryghost/email-analytics-service": "0.0.0",

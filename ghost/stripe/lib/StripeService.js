@@ -1,6 +1,6 @@
 const WebhookManager = require('./WebhookManager');
 const StripeAPI = require('./StripeAPI');
-const StripeMigrations = require('./Migrations');
+const StripeMigrations = require('./StripeMigrations');
 const WebhookController = require('./WebhookController');
 
 module.exports = class StripeService {
@@ -73,6 +73,9 @@ module.exports = class StripeService {
             secretKey: config.secretKey,
             publicKey: config.publicKey,
             enablePromoCodes: config.enablePromoCodes,
+            get enableAutomaticTax() {
+                return config.enableAutomaticTax;
+            },
             checkoutSessionSuccessUrl: config.checkoutSessionSuccessUrl,
             checkoutSessionCancelUrl: config.checkoutSessionCancelUrl,
             checkoutSetupSessionSuccessUrl: config.checkoutSetupSessionSuccessUrl,

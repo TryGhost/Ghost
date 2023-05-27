@@ -51,6 +51,10 @@ module.exports = {
         return require('./webhooks');
     },
 
+    get mentions() {
+        return require('./mentions');
+    },
+
     get comments() {
         return require('./comments');
     }

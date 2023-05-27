@@ -1,1 +1,1 @@
-module.exports = require('./lib/SessionFromToken');
+module.exports = require('./lib/session-from-token');

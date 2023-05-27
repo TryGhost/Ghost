@@ -324,5 +324,24 @@ describe('Importer', function () {
             assert.equal(result.imported, 2);
             assert.equal(result.errors.length, 0);
         });
+
+        it ('handles various special cases', async function () {
+            const importer = buildMockImporterInstance();
+
+            const result = await importer.perform(`${csvPath}/special-cases.csv`);
+            
+            // CASE: Member has created_at in the future
+            // The member will not appear in the members list in admin
+            // In this case, we should overwrite create_at to current timestamp
+            // Refs: https://github.com/TryGhost/Team/issues/2793
+            assert.equal(membersRepositoryStub.create.args[0][0].email, 'timetraveler@example.com');
+            assert.equal(membersRepositoryStub.create.args[0][0].subscribed, true);
+            assert.notDeepEqual(membersRepositoryStub.create.args[0][0].created_at, '9999-10-18T06:34:08.000Z');
+            assert.equal(membersRepositoryStub.create.args[0][0].created_at <= new Date(), true);
+
+            assert.equal(result.total, 1);
+            assert.equal(result.imported, 1);
+            assert.equal(result.errors.length, 0);
+        });
     });
 });

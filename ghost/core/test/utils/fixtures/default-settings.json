@@ -1,5 +1,9 @@
 {
     "core": {
+        "last_mentions_report_email_timestamp": {
+            "defaultValue": null,
+            "type": "string"
+        },
         "db_hash": {
             "defaultValue": null,
             "type": "string"
@@ -353,6 +357,18 @@
         "portal_button_signup_text": {
             "defaultValue": "Subscribe",
             "type": "string"
+        },
+        "portal_signup_terms_html": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "portal_signup_checkbox_required": {
+            "defaultValue": "false",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         }
     },
     "email": {
@@ -475,6 +491,27 @@
             "type": "string"
         }
     },
+    "announcement": {
+        "announcement_content": {
+            "defaultValue": null,
+            "type": "string",
+            "flags": "PUBLIC"
+        },
+        "announcement_visibility": {
+            "defaultValue": "[]",
+            "type": "array"
+        },
+        "announcement_background": {
+            "defaultValue": "dark",
+            "type": "string",
+            "isIn": [[
+                "accent",
+                "dark",
+                "light"
+            ]],
+            "flags": "PUBLIC"
+        }
+    },
     "comments": {
         "comments_enabled": {
             "type": "string",
@@ -497,6 +534,28 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        }
+    },
+    "pintura": {
+        "pintura": {
+            "defaultValue": "false",
+            "validations": {
+                "isIn": [
+                    [
+                        "true",
+                        "false"
+                    ]
+                ]
+            },
+            "type": "boolean"
+        },
+        "pintura_js_url": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "pintura_css_url": {
+            "defaultValue": null,
+            "type": "string"
         }
     }
 }

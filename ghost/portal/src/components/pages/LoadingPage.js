@@ -1,5 +1,6 @@
+import React from 'react';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
-const React = require('react');
+
 export default class LoadingPage extends React.Component {
     render() {
         return (

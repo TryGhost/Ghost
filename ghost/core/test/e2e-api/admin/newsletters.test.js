@@ -1,7 +1,10 @@
 const assert = require('assert');
-const {agentProvider, mockManager, fixtureManager, configUtils, dbUtils, matchers} = require('../../utils/e2e-framework');
+const sinon = require('sinon');
+const {agentProvider, mockManager, fixtureManager, configUtils, dbUtils, matchers, regexes} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyLocationFor, anyNumber} = matchers;
+const {queryStringToken} = regexes;
 const models = require('../../../core/server/models');
+const logging = require('@tryghost/logging');
 
 const assertMemberRelationCount = async (newsletterId, expectedCount) => {
     const relations = await dbUtils.knex('members_newsletters').where({newsletter_id: newsletterId}).pluck('id');
@@ -26,7 +29,7 @@ const newsletterSnapshotWithoutSortOrder = {
 
 describe('Newsletters API', function () {
     let agent;
-    let mailMocks;
+    let emailMockReceiver;
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
@@ -35,11 +38,12 @@ describe('Newsletters API', function () {
     });
 
     beforeEach(function () {
-        mailMocks = mockManager.mockMail();
+        emailMockReceiver = mockManager.mockMail();
     });
 
     afterEach(function () {
         mockManager.restore();
+        sinon.restore();
     });
 
     it('Can browse newsletters', async function () {
@@ -237,10 +241,17 @@ describe('Newsletters API', function () {
                 location: anyLocationFor('newsletters')
             });
 
-        mockManager.assert.sentEmail({
-            subject: 'Verify email address',
-            to: 'test@example.com'
-        });
+        emailMockReceiver
+            .assertSentEmailCount(1)
+            .matchMetadataSnapshot()
+            .matchHTMLSnapshot([{
+                pattern: queryStringToken('verifyEmail'),
+                replacement: 'verifyEmail=REPLACED_TOKEN'
+            }])
+            .matchPlaintextSnapshot([{
+                pattern: queryStringToken('verifyEmail'),
+                replacement: 'verifyEmail=REPLACED_TOKEN'
+            }]);
     });
 
     it('Can add a newsletter - and subscribe existing members', async function () {
@@ -334,10 +345,17 @@ describe('Newsletters API', function () {
                 etag: anyEtag
             });
 
-        mockManager.assert.sentEmail({
-            subject: 'Verify email address',
-            to: 'updated@example.com'
-        });
+        emailMockReceiver
+            .assertSentEmailCount(1)
+            .matchMetadataSnapshot()
+            .matchHTMLSnapshot([{
+                pattern: queryStringToken('verifyEmail'),
+                replacement: 'verifyEmail=REPLACED_TOKEN'
+            }])
+            .matchPlaintextSnapshot([{
+                pattern: queryStringToken('verifyEmail'),
+                replacement: 'verifyEmail=REPLACED_TOKEN'
+            }]);
     });
 
     it('Can verify property updates', async function () {
@@ -354,7 +372,20 @@ describe('Newsletters API', function () {
             })
             .expectStatus(200);
 
+        // @NOTE: need a way to return snapshot of sent email from email mock receiver
         const mail = mockManager.assert.sentEmail([]);
+        emailMockReceiver
+            .assertSentEmailCount(1)
+            .matchMetadataSnapshot()
+            .matchHTMLSnapshot([{
+                pattern: queryStringToken('verifyEmail'),
+                replacement: 'verifyEmail=REPLACED_TOKEN'
+            }])
+            .matchPlaintextSnapshot([{
+                pattern: queryStringToken('verifyEmail'),
+                replacement: 'verifyEmail=REPLACED_TOKEN'
+            }]);
+
         const $mailHtml = cheerio.load(mail.html);
 
         const verifyUrl = new URL($mailHtml('[data-test-verify-link]').attr('href'));
@@ -392,6 +423,7 @@ describe('Newsletters API', function () {
                 name: 'Naughty newsletter'
             };
 
+            sinon.stub(logging, 'error');
             await agent
                 .post(`newsletters/?opt_in_existing=true`)
                 .body({newsletters: [newsletter]})
@@ -426,6 +458,7 @@ describe('Newsletters API', function () {
                     name: 'Naughty newsletter'
                 };
 
+                sinon.stub(logging, 'error');
                 await agent
                     .post(`newsletters/?opt_in_existing=true`)
                     .body({newsletters: [newsletter]})
@@ -449,6 +482,7 @@ describe('Newsletters API', function () {
                     name: 'Naughty newsletter'
                 };
 
+                sinon.stub(logging, 'error');
                 // Note that ?opt_in_existing=true will trigger a transaction, so we explicitly test here without a
                 // transaction
                 await agent
@@ -547,6 +581,7 @@ describe('Newsletters API', function () {
                 const archivedNewsletter = allNewsletters.find(n => n.get('status') !== 'active');
                 assert.ok(archivedNewsletter, 'This test expects to have an archived newsletter in the test fixtures');
 
+                sinon.stub(logging, 'error');
                 const id = archivedNewsletter.id;
                 await agent.put(`newsletters/${id}`)
                     .body({
@@ -634,6 +669,7 @@ describe('Newsletters API', function () {
                 location: anyLocationFor('newsletters')
             });
 
+        sinon.stub(logging, 'error');
         await agent
             .post(`newsletters/`)
             .body({newsletters: [secondNewsletter]})
@@ -688,15 +724,23 @@ describe('Newsletters API', function () {
                 location: anyLocationFor('newsletters')
             });
 
-        mockManager.assert.sentEmail({
-            subject: 'Verify email address',
-            to: 'test@example.com'
-        });
+        emailMockReceiver
+            .assertSentEmailCount(1)
+            .matchMetadataSnapshot()
+            .matchHTMLSnapshot([{
+                pattern: queryStringToken('verifyEmail'),
+                replacement: 'verifyEmail=REPLACED_TOKEN'
+            }])
+            .matchPlaintextSnapshot([{
+                pattern: queryStringToken('verifyEmail'),
+                replacement: 'verifyEmail=REPLACED_TOKEN'
+            }]);
     });
 
     it(`Can't edit multiple newsletters to existing name`, async function () {
         const id = fixtureManager.get('newsletters', 0).id;
 
+        sinon.stub(logging, 'error');
         await agent.put(`newsletters/${id}`)
             .body({
                 newsletters: [{

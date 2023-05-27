@@ -17,16 +17,16 @@
   ],
   "devDependencies": {
     "bson-objectid": "2.0.4",
-    "c8": "7.12.0",
+    "c8": "7.13.0",
     "mocha": "10.2.0",
     "should": "13.2.3",
-    "sinon": "14.0.2"
+    "sinon": "15.0.3"
   },
   "dependencies": {
     "@tryghost/domain-events": "0.0.0",
-    "@tryghost/errors": "1.2.20",
+    "@tryghost/errors": "1.2.24",
     "@tryghost/mongo-utils": "0.5.0",
-    "@tryghost/string": "0.2.2",
+    "@tryghost/string": "0.2.4",
     "lodash": "4.17.21"
   }
 }

@@ -191,7 +191,7 @@ describe('Permission Providers', function () {
 
             // Get permissions for the user
             providers.user(1)
-                .then(function (res) {
+                .then(function () {
                     done(new Error('Locked user should should throw an error'));
                 })
                 .catch((err) => {

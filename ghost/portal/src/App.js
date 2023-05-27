@@ -1,3 +1,4 @@
+import React from 'react';
 import * as Sentry from '@sentry/react';
 import TriggerButton from './components/TriggerButton';
 import Notification from './components/Notification';
@@ -10,10 +11,10 @@ import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import './App.css';
 import NotificationParser from './utils/notifications';
-import {allowCompMemberUpgrade, createPopupNotification, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnlySite, isPaidMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {allowCompMemberUpgrade, createPopupNotification, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnlySite, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 import {handleDataAttributes} from './data-attributes';
 
-const React = require('react');
+import i18nLib from '@tryghost/i18n';
 
 const DEV_MODE_DATA = {
     showPopup: true,
@@ -156,6 +157,9 @@ export default class App extends React.Component {
         try {
             // Fetch data from API, links, preview, dev sources
             const {site, member, page, showPopup, popupNotification, lastPage, pageQuery, pageData} = await this.fetchData();
+            const i18nLanguage = this.props.siteI18nEnabled ? site.locale : 'en';
+
+            const i18n = i18nLib(i18nLanguage, 'portal');
             const state = {
                 site,
                 member,
@@ -165,6 +169,7 @@ export default class App extends React.Component {
                 showPopup,
                 pageData,
                 popupNotification,
+                t: i18n.t,
                 action: 'init:success',
                 initStatus: 'success'
             };
@@ -178,6 +183,18 @@ export default class App extends React.Component {
                 this.updateStateForPreviewLinks();
             };
             window.addEventListener('hashchange', this.hashHandler, false);
+
+            // spike ship - to test if we can show / hide signup forms inside post / page
+            if (!member) {
+                // the signup card will ship hidden by default, so we need to show it if the user is not logged in
+                // not sure why a user would have more than one form on a post, but just in case we'll find them all
+                const formElements = document.querySelectorAll('[data-lexical-signup-form]');
+                if (formElements.length > 0){
+                    formElements.forEach((element) => {
+                        element.style.display = '';
+                    });
+                }
+            }
         } catch (e) {
             /* eslint-disable no-console */
             console.error(`[Portal] Failed to initialize:`, e);
@@ -316,6 +333,10 @@ export default class App extends React.Component {
                 data.site.portal_button_icon = value;
             } else if (key === 'signupButtonText') {
                 data.site.portal_button_signup_text = value || '';
+            } else if (key === 'signupTermsHtml') {
+                data.site.portal_signup_terms_html = value || '';
+            } else if (key === 'signupCheckboxRequired') {
+                data.site.portal_signup_checkbox_required = JSON.parse(value);
             } else if (key === 'buttonStyle' && value) {
                 data.site.portal_button_style = value;
             } else if (key === 'monthlyPrice' && !isNaN(Number(value))) {
@@ -412,7 +433,7 @@ export default class App extends React.Component {
         const offersRegex = /^offers\/(\w+?)\/?$/;
         const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
         const feedbackRegex = /^\/feedback\/(\w+?)\/(\w+?)\/?$/;
-        
+
         if (path && feedbackRegex.test(path) && hashQuery.get('uuid')) {
             const [, postId, scoreString] = path.match(feedbackRegex);
             const score = parseInt(scoreString);
@@ -506,7 +527,8 @@ export default class App extends React.Component {
             return null;
         }
         const {portal_sentry: portalSentry, portal_version: portalVersion, version: ghostVersion} = site;
-        const appVersion = process.env.REACT_APP_VERSION || portalVersion;
+        // eslint-disable-next-line no-undef
+        const appVersion = REACT_APP_VERSION || portalVersion;
         const releaseTag = `portal@${appVersion}|ghost@${ghostVersion}`;
         if (portalSentry && portalSentry.dsn) {
             Sentry.init({
@@ -532,7 +554,12 @@ export default class App extends React.Component {
             return null;
         }
         const firstPromoterId = getFirstpromoterId({site});
-        const siteDomain = getSiteDomain({site});
+        let siteDomain = getSiteDomain({site});
+        // Replace any leading subdomain and prefix the siteDomain with
+        // a `.` to allow the FPROM cookie to be accessible across all subdomains
+        // or the root.
+        siteDomain = siteDomain?.replace(/^(\S*\.)?(\S*\.\S*)$/i, '.$2');
+
         if (firstPromoterId && siteDomain) {
             const t = document.createElement('script');
             t.type = 'text/javascript';
@@ -543,7 +570,7 @@ export default class App extends React.Component {
                 if (!_t || 'complete' === _t || 'loaded' === _t) {
                     try {
                         window.$FPROM.init(firstPromoterId, siteDomain);
-                        if (member) {
+                        if (isRecentMember({member})) {
                             const email = member.email;
                             const uid = member.uuid;
                             if (window.$FPROM) {
@@ -800,7 +827,7 @@ export default class App extends React.Component {
 
     /**Get final App level context from App state*/
     getContextFromState() {
-        const {site, member, action, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl} = this.state;
+        const {site, member, action, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl, t} = this.state;
         const contextPage = this.getContextPage({site, page, member});
         const contextMember = this.getContextMember({page: contextPage, member, customSiteUrl});
         return {
@@ -815,6 +842,7 @@ export default class App extends React.Component {
             showPopup,
             popupNotification,
             customSiteUrl,
+            t,
             onAction: (_action, data) => this.dispatchAction(_action, data)
         };
     }

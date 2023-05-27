@@ -7,9 +7,10 @@ const testUtils = require('../../../../../utils');
 const models = require('../../../../../../core/server/models');
 const events = require('../../../../../../core/server/lib/common/events');
 const schedulingUtils = require('../../../../../../core/server/adapters/scheduling/utils');
-const SchedulingDefault = require('../../../../../../core/server/adapters/scheduling/SchedulingDefault');
+const SchedulingDefault = require('../../../../../../core/server/adapters/scheduling/scheduling-default');
 const urlUtils = require('../../../../../../core/shared/url-utils');
-const PostScheduler = require('../../../../../../core/server/adapters/scheduling/post-scheduling/post-scheduler');
+const PostScheduler = require('../../../../../../core/server/adapters/scheduling/post-scheduling/PostScheduler');
+const nock = require('nock');
 
 describe('Scheduling: Post Scheduler', function () {
     let adapter;
@@ -38,9 +39,21 @@ describe('Scheduling: Post Scheduler', function () {
                     id: 1337,
                     mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('something')
                 }));
+                nock('http://scheduler.local:1111')
+                    .get(() => true)
+                    .query(true)
+                    .reply(200);
+                nock('http://scheduler.local:1111')
+                    .post(() => true)
+                    .query(true)
+                    .reply(200);
+                nock('http://scheduler.local:1111')
+                    .put(() => true)
+                    .query(true)
+                    .reply(200);
 
                 new PostScheduler({
-                    apiUrl: 'localhost:1111/',
+                    apiUrl: 'http://scheduler.local:1111/',
                     integration: {
                         api_keys: [{
                             id: 'integrationUniqueId',
@@ -64,7 +77,7 @@ describe('Scheduling: Post Scheduler', function () {
                 adapter.schedule.calledOnce.should.eql(true);
 
                 adapter.schedule.args[0][0].time.should.equal(moment(post.get('published_at')).valueOf());
-                adapter.schedule.args[0][0].url.should.startWith(urlUtils.urlJoin('localhost:1111/', 'schedules', 'posts', post.get('id'), '?token='));
+                adapter.schedule.args[0][0].url.should.startWith(urlUtils.urlJoin('http://scheduler.local:1111/', 'schedules', 'posts', post.get('id'), '?token='));
                 adapter.schedule.args[0][0].extra.httpMethod.should.eql('PUT');
                 should.equal(null, adapter.schedule.args[0][0].extra.oldTime);
             });

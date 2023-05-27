@@ -5,6 +5,7 @@ const db = require('../../../../../core/server/data/db');
 const exporter = require('../../../../../core/server/data/exporter');
 const schema = require('../../../../../core/server/data/schema');
 const models = require('../../../../../core/server/models');
+const logging = require('@tryghost/logging');
 const schemaTables = Object.keys(schema.tables);
 
 describe('Exporter', function () {
@@ -190,10 +191,12 @@ describe('Exporter', function () {
             const settingsStub = sinon.stub(models.Settings, 'findOne').returns(
                 Promise.reject()
             );
+            const loggingStub = sinon.stub(logging, 'error');
 
             exporter.fileName().then(function (result) {
                 should.exist(result);
                 settingsStub.calledOnce.should.be.true();
+                loggingStub.calledOnce.should.be.true();
                 result.should.match(/^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
 
                 done();
@@ -227,13 +230,13 @@ describe('Exporter', function () {
             } = require('../../../../../core/server/data/exporter/table-lists.js');
             const defaultSettings = require('../../../../../core/server/data/schema/default-settings/default-settings.json');
 
-            const totalKeysLength = Object.keys(defaultSettings).reduce((acc, curr, index) => {
+            const totalKeysLength = Object.keys(defaultSettings).reduce((acc, curr) => {
                 return acc + Object.keys(defaultSettings[curr]).length;
             }, 0);
 
             // NOTE: if default settings changed either modify the settings keys blocklist or increase allowedKeysLength
             //       This is a reminder to think about the importer/exporter scenarios ;)
-            const allowedKeysLength = 73;
+            const allowedKeysLength = 82;
             totalKeysLength.should.eql(SETTING_KEYS_BLOCKLIST.length + allowedKeysLength);
         });
     });

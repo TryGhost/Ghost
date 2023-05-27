@@ -55,6 +55,8 @@ Object {
     "portal_plans": Array [
       "free",
     ],
+    "portal_signup_checkbox_required": false,
+    "portal_signup_terms_html": null,
     "secondary_navigation": Array [
       Object {
         "label": "Data & privacy",

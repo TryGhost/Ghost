@@ -1,10 +1,11 @@
 const debug = require('@tryghost/debug')('web:endpoints:admin:app');
 const boolParser = require('express-query-boolean');
-const express = require('../../../../../shared/express');
 const bodyParser = require('body-parser');
-const shared = require('../../../shared');
-const apiMw = require('../../middleware');
 const errorHandler = require('@tryghost/mw-error-handler');
+const versionMatch = require('@tryghost/mw-version-match');
+
+const shared = require('../../../shared');
+const express = require('../../../../../shared/express');
 const sentry = require('../../../../../shared/sentry');
 const routes = require('./routes');
 const APIVersionCompatibilityService = require('../../../../services/api-version-compatibility');
@@ -24,7 +25,7 @@ module.exports = function setupApiApp() {
 
     // Check version matches for API requests, depends on res.locals.safeVersion being set
     // Therefore must come after themeHandler.ghostLocals, for now
-    apiApp.use(apiMw.versionMatch);
+    apiApp.use(versionMatch);
 
     // Admin API shouldn't be cached
     apiApp.use(shared.middleware.cacheControl('private'));

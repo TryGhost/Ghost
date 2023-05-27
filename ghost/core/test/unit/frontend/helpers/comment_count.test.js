@@ -3,7 +3,6 @@ const sinon = require('sinon');
 const configUtils = require('../../../utils/configUtils');
 const {mockManager} = require('../../../utils/e2e-framework');
 
-const commentCount = require('../../../../core/frontend/helpers/comment_count');
 const proxy = require('../../../../core/frontend/services/proxy');
 const {html} = require('common-tags');
 const {settingsCache} = proxy;

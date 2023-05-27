@@ -41,7 +41,7 @@ function defaultRelations(frame) {
         return false;
     }
 
-    frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.clicks'];
+    frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.clicks', 'post_revisions', 'post_revisions.author'];
 }
 
 function setDefaultOrder(frame) {
@@ -219,6 +219,13 @@ module.exports = {
             id: frame.options.id,
             type: 'post'
         };
+
+        defaultFormat(frame);
+        defaultRelations(frame);
+    },
+
+    copy(apiConfig, frame) {
+        debug('copy');
 
         defaultFormat(frame);
         defaultRelations(frame);

@@ -717,6 +717,7 @@
 }
 
 .gh-publish-confirmation {
+    margin-top: -2rem;
     margin-bottom: 5rem;
     color: var(--black);
     font-size: 1.8rem;
@@ -732,6 +733,52 @@
     font-size: 1.6rem;
 }
 
+.gh-publish-confirmation-with-feedback {
+    display: flex;
+    justify-content: space-between;
+}
+
+.gh-feedback-lexical-published .form-group {
+    margin-bottom: 1.6rem;
+}
+
+.gh-feedback-lexical-published .form-group, .gh-feedback-lexical-published textarea {
+    min-width: 100%;
+    max-width: 100%;
+}
+
+.gh-feedback-lexical-published-title {
+    margin-bottom: 12px;
+}
+
+.gh-feedback-lexical-published p {
+    font-size: 1.4rem;
+    color: var(--midgrey);
+    margin-bottom: 0.8rem;
+}
+
+.gh-feedback-lexical-published-back {
+    width: max-content;
+    display: block;
+    margin-top: 1rem;
+    height: 40px;
+    color: #7c8b9a;
+    font-size: 1.35rem;
+    font-weight: 400;
+    line-height: 40px;
+    letter-spacing: .4px;
+    text-align: left;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.gh-publish-confirmation-feedback {
+    color: var(--green);
+    font-size: 1.6rem;
+    font-weight: 400;
+    letter-spacing: .4px;
+}
+
 .gh-revert-to-draft {
     color: var(--green-d1);
     font-weight: 500;
@@ -739,9 +786,15 @@
 
 .gh-back-to-editor {
     color: var(--midgrey);
-    font-size: 1.6rem;
+    font-size: 1.35rem;
     font-weight: 400;
     letter-spacing: .4px;
+    transition: color .2s ease;
+    -webkit-font-smoothing: subpixel-antialiased;
+}
+
+.gh-back-to-editor:hover {
+    color: var(--darkgrey);
 }
 
 .gh-post-bookmark-wrapper {

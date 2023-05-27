@@ -162,6 +162,56 @@ module.exports = {
         }
     },
 
+    bulkEdit: {
+        statusCode: 200,
+        headers: {
+            cacheInvalidate: true
+        },
+        options: [
+            'filter'
+        ],
+        data: [
+            'action',
+            'meta'
+        ],
+        validation: {
+            data: {
+                action: {
+                    required: true
+                }
+            },
+            options: {
+                filter: {
+                    required: true
+                }
+            }
+        },
+        permissions: {
+            docName: 'posts',
+            method: 'edit'
+        },
+        async query(frame) {
+            return await postsService.bulkEdit(frame.data.bulk, frame.options);
+        }
+    },
+
+    bulkDestroy: {
+        statusCode: 200,
+        headers: {
+            cacheInvalidate: true
+        },
+        options: [
+            'filter'
+        ],
+        permissions: {
+            docName: 'posts',
+            method: 'destroy'
+        },
+        async query(frame) {
+            return await postsService.bulkDestroy(frame.options);
+        }
+    },
+
     destroy: {
         statusCode: 204,
         headers: {
@@ -187,6 +237,31 @@ module.exports = {
         },
         query(frame) {
             return models.Post.destroy({...frame.options, require: true});
+        }
+    },
+
+    copy: {
+        statusCode: 201,
+        headers: {
+            location: {
+                resolve: postsService.generateCopiedPostLocationFromUrl
+            }
+        },
+        options: [
+            'id',
+            'formats'
+        ],
+        validation: {
+            id: {
+                required: true
+            }
+        },
+        permissions: {
+            docName: 'posts',
+            method: 'add'
+        },
+        async query(frame) {
+            return postsService.copyPost(frame);
         }
     }
 };

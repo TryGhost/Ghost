@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const should = require('should');
 const supertest = require('supertest');
 const config = require('../../../../core/shared/config');
@@ -78,7 +77,7 @@ describe('Settings API', function () {
         });
 
         it('Can edit only allowed labs keys', async function () {
-            await checkCanEdit('labs', 
+            await checkCanEdit('labs',
                 JSON.stringify({
                     activitypub: true,
                     gibberish: true
@@ -226,8 +225,8 @@ describe('Settings API', function () {
         });
 
         // If this test fails, it can be safely removed
-        // but the front-end should be updated accordingly, 
-        // removing the workaround in place for this specific usecase 
+        // but the front-end should be updated accordingly,
+        // removing the workaround in place for this specific usecase
         it('Cannot send an empty array', async function () {
             const settingsToChange = {
                 settings: []
@@ -385,7 +384,7 @@ describe('Settings API', function () {
             if (!currentValue || currentValue.value === true) {
                 throw new Error('Invalid key or unchanged value');
             }
-        
+
             let jsonResponse = await api.settings.edit({
                 settings: [{key: 'email_verification_required', value: true}]
             }, testUtils.context.internal);

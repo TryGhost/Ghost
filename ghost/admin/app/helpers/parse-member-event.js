@@ -19,6 +19,7 @@ export default class ParseMemberEventHelper extends Helper {
         const join = this.getJoin(event);
         const object = this.getObject(event);
         const url = this.getURL(event);
+        const route = this.getRoute(event);
         const timestamp = moment(event.data.created_at);
         const source = this.getSource(event);
 
@@ -36,6 +37,7 @@ export default class ParseMemberEventHelper extends Helper {
             info,
             description,
             url,
+            route,
             timestamp
         };
     }
@@ -76,18 +78,12 @@ export default class ParseMemberEventHelper extends Helper {
             icon = 'opened-email';
         }
 
-        if (this.feature.get('suppressionList')) {
-            if (event.type === 'email_sent_event') {
-                icon = 'sent-email';
-            }
+        if (event.type === 'email_sent_event') {
+            icon = 'sent-email';
+        }
 
-            if (event.type === 'email_delivered_event') {
-                icon = 'received-email';
-            }
-        } else {
-            if (event.type === 'email_delivered_event' || event.type === 'email_sent_event') {
-                icon = 'received-email';
-            }
+        if (event.type === 'email_delivered_event') {
+            icon = 'received-email';
         }
 
         if (event.type === 'email_failed_event') {
@@ -167,22 +163,16 @@ export default class ParseMemberEventHelper extends Helper {
             return 'opened email';
         }
 
-        if (this.feature.get('suppressionList')) {
-            if (event.type === 'email_sent_event') {
-                return 'sent email';
-            }
+        if (event.type === 'email_sent_event') {
+            return 'sent email';
+        }
 
-            if (event.type === 'email_delivered_event') {
-                return 'received email';
-            }
-        } else {
-            if (event.type === 'email_delivered_event' || event.type === 'email_sent_event') {
-                return 'received email';
-            }
+        if (event.type === 'email_delivered_event') {
+            return 'received email';
         }
 
         if (event.type === 'email_failed_event') {
-            return this.feature.get('suppressionList') ? 'bounced email' : 'failed to receive email';
+            return 'bounced email';
         }
 
         if (event.type === 'email_complaint_event') {
@@ -308,15 +298,39 @@ export default class ParseMemberEventHelper extends Helper {
      * Make the object clickable
      */
     getURL(event) {
-        if (event.type === 'comment_event' || event.type === 'click_event' || event.type === 'feedback_event') {
+        if (['comment_event', 'click_event', 'feedback_event'].includes(event.type)) {
             if (event.data.post) {
                 return event.data.post.url;
             }
         }
 
-        if (event.type === 'signup_event' || event.type === 'subscription_event') {
+        if (['signup_event', 'subscription_event'].includes(event.type)) {
             if (event.data.attribution && event.data.attribution.url) {
                 return event.data.attribution.url;
+            }
+        }
+        return;
+    }
+
+    /**
+     * Get internal route props for a clickable object
+     */
+    getRoute(event) {
+        if (['comment_event', 'click_event', 'feedback_event'].includes(event.type)) {
+            if (event.data.post) {
+                return {
+                    name: 'posts.analytics',
+                    model: event.data.post.id
+                };
+            }
+        }
+
+        if (['signup_event', 'subscription_event'].includes(event.type)) {
+            if (event.data.attribution_type === 'post') {
+                return {
+                    name: 'posts.analytics',
+                    model: event.data.attribution_id
+                };
             }
         }
         return;

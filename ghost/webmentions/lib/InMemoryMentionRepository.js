@@ -1,4 +1,5 @@
 const nql = require('@tryghost/nql');
+const Mention = require('./Mention');
 
 /**
  * @typedef {import('./Mention')} Mention
@@ -55,22 +56,31 @@ module.exports = class InMemoryMentionRepository {
      */
     async getBySourceAndTarget(source, target) {
         return this.#store.find((item) => {
-            return item.source.href === source.href && item.target.href === target.href;
+            return item.source.href === source.href && item.target.href === target.href && !Mention.isDeleted(item);
         });
     }
 
     /**
      * @param {object} options
      * @param {string} [options.filter]
+     * @param {string} [options.order]
      * @param {number | null} options.page
      * @param {number | 'all'} options.limit
      * @returns {Promise<Page<Mention>>}
      */
     async getPage(options) {
         const filter = nql(options.filter || '', {});
-        const results = this.#store.slice().filter((item) => {
-            return filter.queryJSON(this.toPrimitive(item));
+        const data = this.#store.slice();
+
+        const results = data.slice().filter((item) => {
+            return filter.queryJSON(this.toPrimitive(item)) && !Mention.isDeleted(item);
         });
+
+        if (options.order === 'created_at desc') {
+            results.sort((a, b) => {
+                return Number(b.timestamp) - Number(a.timestamp);
+            });
+        }
 
         if (options.limit === 'all') {
             return {
@@ -104,5 +114,16 @@ module.exports = class InMemoryMentionRepository {
                 }
             }
         };
+    }
+
+    async getAll(options) {
+        const page = await this.getPage({
+            filter: options.filter,
+            order: options.order,
+            page: null,
+            limit: 'all'
+        });
+
+        return page.data;
     }
 };

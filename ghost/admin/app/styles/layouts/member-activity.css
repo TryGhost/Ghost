@@ -202,6 +202,10 @@
     color: var(--darkgrey);
 }
 
+.ghost-members-activity-object-link {
+    text-transform: capitalize;
+}
+
 .ghost-members-activity-event-description {
     margin-top: -1px;
 }
@@ -223,6 +227,7 @@
     padding: 0;
     margin: 0;
     text-align: left;
+    word-break: break-word;
 }
 
 .ghost-members-activity-event-url::before {
@@ -237,18 +242,6 @@
     z-index: 999;
     opacity: 0;
     transition: all 250ms ease-out;
-}
-
-.ghost-members-activity-event-url::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 20px;
-    height: 100%;
-    background: rgb(255,255,255);
-    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
-    z-index: 999;
 }
 
 .ghost-members-activity-event-url.scroller:hover::before {
@@ -308,7 +301,6 @@
     display: inline-block;
     color: var(--middarkgrey);
     font-weight: 500;
-    white-space: nowrap;
     width: 100%;
 }
 

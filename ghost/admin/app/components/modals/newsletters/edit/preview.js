@@ -1,4 +1,5 @@
 import Component from '@glimmer/component';
+import moment from 'moment-timezone';
 import {htmlSafe} from '@ember/template';
 import {inject as service} from '@ember/service';
 
@@ -6,6 +7,7 @@ export default class EditNewsletterPreview extends Component {
     @service ghostPaths;
     @service session;
     @service settings;
+    @service membersUtils;
 
     get showHeader() {
         return (this.args.newsletter.showHeaderIcon && this.settings.icon)
@@ -14,6 +16,10 @@ export default class EditNewsletterPreview extends Component {
 
     get showHeaderTitle() {
         return this.headerTitle || this.headerSubtitle;
+    }
+
+    get showCommentCta() {
+        return this.args.newsletter.showCommentCta && this.settings.commentsEnabled !== 'off';
     }
 
     get headerTitle() {
@@ -43,5 +49,13 @@ export default class EditNewsletterPreview extends Component {
 
     get featureImageStyle() {
         return htmlSafe(`background-image: url(${this.featureImageUrl})`);
+    }
+
+    get renewDateString() {
+        return moment().add(1, 'year').format('DD MMM YYYY');
+    }
+
+    get todayString() {
+        return moment().format('DD MMM YYYY');
     }
 }

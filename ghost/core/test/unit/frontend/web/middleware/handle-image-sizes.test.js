@@ -4,7 +4,6 @@ const storage = require('../../../../../core/server/adapters/storage');
 const activeTheme = require('../../../../../core/frontend/services/theme-engine/active');
 const handleImageSizes = require('../../../../../core/frontend/web/middleware/handle-image-sizes.js');
 const imageTransform = require('@tryghost/image-transform');
-const config = require('../../../../../core/shared/config');
 
 // @TODO make these tests lovely and non specific to implementation
 describe('handleImageSizes middleware', function () {
@@ -94,7 +93,7 @@ describe('handleImageSizes middleware', function () {
                     return buffer;
                 },
 
-                async saveRaw(buf, url) {
+                async saveRaw(_buf, url) {
                     return url;
                 }
             };
@@ -205,7 +204,7 @@ describe('handleImageSizes middleware', function () {
                     return false;
                 }
             };
-            dummyStorage.read = async function (path) {
+            dummyStorage.read = async function () {
                 return Buffer.from([]);
             };
 
@@ -296,7 +295,7 @@ describe('handleImageSizes middleware', function () {
                 originalUrl: '/size/w1000/blank.png'
             };
             const fakeRes = {
-                redirect(url) {
+                redirect() {
                     done(new Error('Should not have called redirect'));
                 }
             };
@@ -322,7 +321,7 @@ describe('handleImageSizes middleware', function () {
                 originalUrl: '/size/h100/blank.png'
             };
             const fakeRes = {
-                redirect(url) {
+                redirect() {
                     done(new Error('Should not have called redirect'));
                 }
             };
@@ -353,7 +352,7 @@ describe('handleImageSizes middleware', function () {
                 originalUrl: '/size/w1000/format/webp/blank.png'
             };
             const fakeRes = {
-                redirect(url) {
+                redirect() {
                     done(new Error('Should not have called redirect'));
                 },
                 type: function () {}
@@ -375,7 +374,7 @@ describe('handleImageSizes middleware', function () {
         });
 
         it('skips SVG if not formatted', function (done) {
-            dummyStorage.exists = async function (path) {
+            dummyStorage.exists = async function () {
                 return false;
             };
 
@@ -403,7 +402,7 @@ describe('handleImageSizes middleware', function () {
         });
 
         it('skips formatting to ico', function (done) {
-            dummyStorage.exists = async function (path) {
+            dummyStorage.exists = async function () {
                 return false;
             };
 
@@ -431,7 +430,7 @@ describe('handleImageSizes middleware', function () {
         });
 
         it('skips formatting from ico', function (done) {
-            dummyStorage.exists = async function (path) {
+            dummyStorage.exists = async function () {
                 return false;
             };
 
@@ -459,7 +458,7 @@ describe('handleImageSizes middleware', function () {
         });
 
         it('skips formatting to svg', function (done) {
-            dummyStorage.exists = async function (path) {
+            dummyStorage.exists = async function () {
                 return false;
             };
 
@@ -487,7 +486,7 @@ describe('handleImageSizes middleware', function () {
         });
 
         it('doesn\'t skip SVGs if formatted to PNG', function (done) {
-            dummyStorage.exists = async function (path) {
+            dummyStorage.exists = async function () {
                 return false;
             };
 
@@ -496,7 +495,7 @@ describe('handleImageSizes middleware', function () {
                 originalUrl: '/size/w1000/format/png/blank.svg'
             };
             const fakeRes = {
-                redirect(url) {
+                redirect() {
                     done(new Error('Should not have called redirect'));
                 },
                 type: function () {}
@@ -518,10 +517,10 @@ describe('handleImageSizes middleware', function () {
         });
 
         it('can format PNG to WEBP', function (done) {
-            dummyStorage.exists = async function (path) {
+            dummyStorage.exists = async function () {
                 return false;
             };
-            dummyStorage.read = async function (path) {
+            dummyStorage.read = async function () {
                 return buffer;
             };
 
@@ -530,7 +529,7 @@ describe('handleImageSizes middleware', function () {
                 originalUrl: '/size/w1000/format/webp/blank.png'
             };
             const fakeRes = {
-                redirect(url) {
+                redirect() {
                     done(new Error('Should not have called redirect'));
                 },
                 type: function () {}
@@ -552,10 +551,10 @@ describe('handleImageSizes middleware', function () {
         });
 
         it('can format PNG to AVIF', function (done) {
-            dummyStorage.exists = async function (path) {
+            dummyStorage.exists = async function () {
                 return false;
             };
-            dummyStorage.read = async function (path) {
+            dummyStorage.read = async function () {
                 return buffer;
             };
 
@@ -564,7 +563,7 @@ describe('handleImageSizes middleware', function () {
                 originalUrl: '/size/w1000/format/avif/blank.png'
             };
             const fakeRes = {
-                redirect(url) {
+                redirect() {
                     done(new Error('Should not have called redirect'));
                 },
                 type: function () {}
@@ -586,10 +585,10 @@ describe('handleImageSizes middleware', function () {
         });
 
         it('can format GIF to WEBP', function (done) {
-            dummyStorage.exists = async function (path) {
+            dummyStorage.exists = async function () {
                 return false;
             };
-            dummyStorage.read = async function (path) {
+            dummyStorage.read = async function () {
                 return buffer;
             };
 
@@ -598,7 +597,7 @@ describe('handleImageSizes middleware', function () {
                 originalUrl: '/size/w1000/format/webp/blank.gif'
             };
             const fakeRes = {
-                redirect(url) {
+                redirect() {
                     done(new Error('Should not have called redirect'));
                 },
                 type: function () {}
@@ -620,10 +619,10 @@ describe('handleImageSizes middleware', function () {
         });
 
         it('can format WEBP to GIF', function (done) {
-            dummyStorage.exists = async function (path) {
+            dummyStorage.exists = async function () {
                 return false;
             };
-            dummyStorage.read = async function (path) {
+            dummyStorage.read = async function () {
                 return buffer;
             };
 
@@ -632,7 +631,7 @@ describe('handleImageSizes middleware', function () {
                 originalUrl: '/size/w1000/format/gif/blank.webp'
             };
             const fakeRes = {
-                redirect(url) {
+                redirect() {
                     done(new Error('Should not have called redirect'));
                 },
                 type: function () {}

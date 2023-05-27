@@ -152,7 +152,7 @@ describe('Tiers API', function () {
             })
             .expectStatus(200);
 
-        const {body: {tiers: [updatedTier]}} = await agent.get(`/tiers/${tier.id}/`)
+        await agent.get(`/tiers/${tier.id}/`)
             .expectStatus(200)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -163,6 +163,29 @@ describe('Tiers API', function () {
                     id: matchers.anyObjectId,
                     created_at: matchers.anyISODateTime,
                     updated_at: matchers.anyISODateTime
+                })
+            });
+    });
+
+    it('Can create a new tier', async function () {
+        const tier = {
+            name: 'new premium tier',
+            monthly_price: 100,
+            currency: 'usd'
+        };
+
+        await agent
+            .post('/tiers/')
+            .body({tiers: [tier]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                tiers: Array(1).fill({
+                    id: matchers.anyObjectId,
+                    created_at: matchers.anyISODate,
+                    name: 'new premium tier',
+                    slug: 'new-premium-tier',
+                    monthly_price: 100,
+                    currency: 'USD'
                 })
             });
     });

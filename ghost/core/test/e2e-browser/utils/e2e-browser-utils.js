@@ -125,6 +125,17 @@ const setupMailgun = async (page) => {
 };
 
 /**
+ * Enable experimental labs features
+ * @param {import('@playwright/test').Page} page
+ */
+const enableLabs = async (page) => {
+    await page.locator('.gh-nav a[href="#/settings/"]').click();
+    await page.locator('.gh-setting-group').filter({hasText: 'Labs'}).click();
+    const alphaList = page.locator('.gh-main-section').filter({hasText: 'Alpha Features'});
+    await alphaList.locator('label[for="labs-webmentions"]').click();
+};
+
+/**
  * Delete all members, 1 by 1, using the UI
  * @param {import('@playwright/test').Page} page
  */
@@ -356,6 +367,8 @@ const completeStripeSubscription = async (page) => {
     await fillInputIfExists(page, '#billingLocality', 'Testville');
 
     await page.getByTestId('hosted-payment-submit-button').click();
+
+    await page.waitForLoadState('networkidle');
 };
 
 /**
@@ -490,6 +503,7 @@ module.exports = {
     setupGhost,
     setupStripe,
     disconnectStripe,
+    enableLabs,
     generateStripeIntegrationToken,
     setupMailgun,
     deleteAllMembers,

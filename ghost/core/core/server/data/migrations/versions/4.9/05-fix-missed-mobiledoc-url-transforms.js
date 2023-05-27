@@ -4,7 +4,7 @@ const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const mobiledocLib = require('../../../../lib/mobiledoc');
 const {createTransactionalMigration} = require('../../utils');
 
-// in Ghost versions 4.6.1-4.8.4 the 4.0 migration that transfored URLs had a bug
+// in Ghost versions 4.6.1-4.8.4 the 4.0 migration that transformed URLs had a bug
 // that meant urls inside cards in mobiledoc content was not being transformed
 //
 // if the migrations table indicates an upgrade was made from 3.x to 4.6-4.8 then

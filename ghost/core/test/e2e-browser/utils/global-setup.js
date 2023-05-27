@@ -2,13 +2,14 @@ const config = require('../../../core/shared/config');
 const {promisify} = require('util');
 const {spawn, exec} = require('child_process');
 const {knex} = require('../../../core/server/data/db');
-const {setupGhost, setupStripe, setupMailgun} = require('./e2e-browser-utils');
+const {setupGhost, setupStripe, setupMailgun, enableLabs} = require('./e2e-browser-utils');
 const {chromium} = require('@playwright/test');
 const {startGhost} = require('../../utils/e2e-framework');
 const {stopGhost} = require('../../utils/e2e-utils');
-const MailgunClient = require('@tryghost/mailgun-client/lib/mailgun-client');
+const MailgunClient = require('@tryghost/mailgun-client');
 const sinon = require('sinon');
 const ObjectID = require('bson-objectid').default;
+const {allowStripe} = require('../../utils/e2e-framework-mock-manager');
 
 const startWebhookServer = () => {
     const command = `stripe listen --forward-to ${config.getSiteUrl()}members/webhooks/stripe/ ${process.env.CI ? `--api-key ${process.env.STRIPE_SECRET_KEY}` : ''}`.trim();
@@ -86,6 +87,9 @@ const setup = async (playwrightConfig) => {
             server: true,
             backend: true
         });
+
+        // StartGhost automatically disables network, so we need to re-enable it for Stripe
+        allowStripe();
     }
 
     const {baseURL, storageState} = playwrightConfig.projects[0].use;
@@ -98,6 +102,7 @@ const setup = async (playwrightConfig) => {
         await setupStripe(page, stripeConnectIntegrationToken);
         await setupMailgun(page);
     }
+    await enableLabs(page);
     await page.context().storageState({path: storageState});
     await browser.close();
 

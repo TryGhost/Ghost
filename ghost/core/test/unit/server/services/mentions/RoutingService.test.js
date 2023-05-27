@@ -4,12 +4,16 @@ const nock = require('nock');
 const got = require('got');
 const ObjectID = require('bson-objectid').default;
 const RoutingService = require('../../../../../core/server/services/mentions/RoutingService');
+const logging = require('@tryghost/logging');
 
 describe('RoutingService', function () {
+    let loggingStub;
+
     afterEach(function () {
         sinon.restore();
         nock.cleanAll();
     });
+
     describe('pageExists', function () {
         describe('URL checks', function () {
             it('Returns false if the url is from a different origin', async function () {
@@ -141,12 +145,15 @@ describe('RoutingService', function () {
                     externalRequest: got
                 });
 
+                loggingStub = sinon.stub(logging, 'error');
+
                 resourceService.getByURL.resolves({type: null, id: null});
 
                 nock('https://website.com').head('/subdir/big-error').reply(500);
 
                 const result = await routingService.pageExists(new URL('https://website.com/subdir/big-error'));
                 assert.equal(result, false);
+                sinon.assert.calledOnce(loggingStub);
             });
         });
     });

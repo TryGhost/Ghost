@@ -3,6 +3,7 @@ const api = require('./index');
 const config = require('../../../shared/config');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const web = require('../../web');
 const models = require('../../models');
 const auth = require('../../services/auth');
@@ -10,7 +11,7 @@ const invitations = require('../../services/invitations');
 const dbBackup = require('../../data/db/backup');
 const apiMail = require('./index').mail;
 const apiSettings = require('./index').settings;
-const UsersService = require('../../services/users');
+const UsersService = require('../../services/Users');
 const userService = new UsersService({dbBackup, models, auth, apiMail, apiSettings});
 const {deleteAllSessions} = require('../../services/auth/session');
 
@@ -70,8 +71,11 @@ module.exports = {
                     return auth.setup.doSettings(data, api.settings);
                 })
                 .then((user) => {
-                    return auth.setup.sendWelcomeEmail(user.get('email'), api.mail)
-                        .then(() => user);
+                    auth.setup.sendWelcomeEmail(user.get('email'), api.mail)
+                        .catch((err) => {
+                            logging.error(err);
+                        });
+                    return user;
                 });
         }
     },

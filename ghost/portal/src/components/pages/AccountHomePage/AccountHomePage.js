@@ -1,6 +1,6 @@
 import React from 'react';
-import AppContext from 'AppContext';
-import {getSupportAddress} from 'utils/helpers';
+import AppContext from '../../../AppContext';
+import {getSupportAddress} from '../../../utils/helpers';
 
 import AccountFooter from './components/AccountFooter';
 import AccountMain from './components/AccountMain';
@@ -12,7 +12,10 @@ export default class AccountHomePage extends React.Component {
         const {member} = this.context;
         if (!member) {
             this.context.onAction('switchPage', {
-                page: 'signin'
+                page: 'signin',
+                pageData: {
+                    redirect: window.location.href // This includes the search/fragment of the URL (#/portal/account) which is missing from the default referer header
+                }
             });
         }
     }
@@ -23,7 +26,7 @@ export default class AccountHomePage extends React.Component {
     }
 
     render() {
-        const {member, site} = this.context;
+        const {member, site, t} = this.context;
         const supportAddress = getSupportAddress({site});
         if (!member) {
             return null;
@@ -35,6 +38,7 @@ export default class AccountHomePage extends React.Component {
                     onClose={() => this.context.onAction('closePopup')}
                     handleSignout={e => this.handleSignout(e)}
                     supportAddress={supportAddress}
+                    t={t}
                 />
             </div>
         );

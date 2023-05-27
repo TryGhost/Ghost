@@ -1,12 +1,12 @@
-import AppContext from 'AppContext';
-import {allowCompMemberUpgrade, getCompExpiry, getMemberSubscription, getMemberTierName, getUpdatedOfferPrice, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, isInThePast, subscriptionHasFreeTrial} from 'utils/helpers';
-import {getDateString} from 'utils/date-time';
-import {ReactComponent as LoaderIcon} from 'images/icons/loader.svg';
-import {ReactComponent as OfferTagIcon} from 'images/icons/offer-tag.svg';
+import AppContext from '../../../../AppContext';
+import {allowCompMemberUpgrade, getCompExpiry, getMemberSubscription, getMemberTierName, getUpdatedOfferPrice, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, isInThePast, subscriptionHasFreeTrial} from '../../../../utils/helpers';
+import {getDateString} from '../../../../utils/date-time';
+import {ReactComponent as LoaderIcon} from '../../../../images/icons/loader.svg';
+import {ReactComponent as OfferTagIcon} from '../../../../images/icons/offer-tag.svg';
 import {useContext} from 'react';
 
 const PaidAccountActions = () => {
-    const {member, site, onAction} = useContext(AppContext);
+    const {member, site, onAction, t} = useContext(AppContext);
 
     const onEditBilling = () => {
         const subscription = getMemberSubscription({member});
@@ -33,13 +33,13 @@ const PaidAccountActions = () => {
             const {amount = 0, currency, interval} = price;
             label = `${Intl.NumberFormat('en', {currency, style: 'currency'}).format(amount / 100)}/${interval}`;
         }
-        let offerLabelStr = getOfferLabel({price, offer, subscriptionStartDate: startDate});
+        let offerLabelStr = getOfferLabel({price, offer, subscriptionStartDate: startDate, t});
         const compExpiry = getCompExpiry({member});
         if (isComplimentary) {
             if (compExpiry) {
-                label = `Complimentary - Expires ${compExpiry}`;
+                label = `${t('Complimentary')} - ${t('Expires {{expiryDate}}', {expiryDate: compExpiry})}`;
             } else {
-                label = label ? `Complimentary (${label})` : `Complimentary`;
+                label = label ? `${t('Complimentary')} (${label})` : t(`Complimentary`);
             }
         }
         let oldPriceClassName = '';
@@ -68,7 +68,7 @@ const PaidAccountActions = () => {
                     <p className={oldPriceClassName}>
                         {label}
                     </p>
-                    <FreeTrialLabel subscription={subscription} />
+                    <FreeTrialLabel subscription={subscription} t={t} />
                 </>
             );
         }
@@ -93,7 +93,7 @@ const PaidAccountActions = () => {
                 className='gh-portal-btn gh-portal-btn-list' onClick={e => openUpdatePlan(e)}
                 data-test-button='change-plan'
             >
-                Change
+                {t('Change')}
             </button>
         );
     };
@@ -114,7 +114,7 @@ const PaidAccountActions = () => {
         const {action} = useContext(AppContext);
         const label = action === 'editBilling:running' ? (
             <LoaderIcon className='gh-portal-billing-button-loader' />
-        ) : 'Update';
+        ) : t('Update');
         if (isComplimentary) {
             return null;
         }
@@ -122,7 +122,7 @@ const PaidAccountActions = () => {
         return (
             <section>
                 <div className='gh-portal-list-detail'>
-                    <h3>Billing info</h3>
+                    <h3>{t('Billing info')}</h3>
                     <CardLabel defaultCardLast4={defaultCardLast4} />
                 </div>
                 <button
@@ -143,7 +143,7 @@ const PaidAccountActions = () => {
             price,
             default_payment_card_last4: defaultCardLast4
         } = subscription || {};
-        let planLabel = 'Plan';
+        let planLabel = t('Plan');
 
         // Show name of tiers if there are multiple tiers
         if (hasMultipleProductsFeature({site}) && getMemberTierName({member})) {
@@ -169,13 +169,13 @@ const PaidAccountActions = () => {
     return null;
 };
 
-function FreeTrialLabel({subscription, priceLabel}) {
+function FreeTrialLabel({subscription, priceLabel, t}) {
     if (subscriptionHasFreeTrial({sub: subscription})) {
         const trialEnd = getDateString(subscription.trial_end_at);
         return (
             <p className="gh-portal-account-discountcontainer">
                 <div>
-                    <span>Free Trial – Ends {trialEnd}</span>
+                    <span>{t('Free Trial – Ends {{trialEnd}}', {trialEnd})}</span>
                     {/* <span>{getSubFreeTrialDaysLeft({sub: subscription})} days left</span> */}
                 </div>
             </p>
@@ -184,7 +184,7 @@ function FreeTrialLabel({subscription, priceLabel}) {
     return null;
 }
 
-function getOfferLabel({offer, price, subscriptionStartDate}) {
+function getOfferLabel({offer, price, subscriptionStartDate, t}) {
     let offerLabel = '';
 
     if (offer?.type === 'trial') {
@@ -199,7 +199,7 @@ function getOfferLabel({offer, price, subscriptionStartDate}) {
         const discountDuration = offer.duration;
         let durationLabel = '';
         if (discountDuration === 'forever') {
-            durationLabel = `Forever`;
+            durationLabel = t(`Forever`);
         } else if (discountDuration === 'repeating') {
             const durationInMonths = offer.duration_in_months || 0;
             let offerStartDate = new Date(subscriptionStartDate);
@@ -208,7 +208,7 @@ function getOfferLabel({offer, price, subscriptionStartDate}) {
             if (isInThePast(offerEndDate)) {
                 return '';
             }
-            durationLabel = `Ends ${getDateString(offerEndDate)}`;
+            durationLabel = t('Ends {{offerEndDate}}', {offerEndDate: getDateString(offerEndDate)});
         }
         offerLabel = `${getUpdatedOfferPrice({offer, price, useFormatted: true})}/${price.interval}${durationLabel ? ` — ${durationLabel}` : ``}`;
     }

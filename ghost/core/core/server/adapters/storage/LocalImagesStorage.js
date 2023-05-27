@@ -27,7 +27,7 @@ class LocalImagesStorage extends LocalStorageBase {
     /**
      * Saves a buffer in the targetPath
      * @param {Buffer} buffer is an instance of Buffer
-     * @param {String} targetPath path to which the buffer should be written
+     * @param {String} targetPath relative path NOT including storage path to which the buffer should be written
      * @returns {Promise<String>} a URL to retrieve the data
      */
     async saveRaw(buffer, targetPath) {

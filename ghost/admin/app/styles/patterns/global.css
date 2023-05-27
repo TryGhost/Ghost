@@ -89,7 +89,7 @@
     --yellow-l2: color-mod(var(--yellow) l(+10%));
     --yellow-l1: color-mod(var(--yellow) l(+5%));
     --yellow-d1: color-mod(var(--yellow) l(-5%));
-    --yellow-d2: color-mod(var(--yellow) l(-10%));
+    --yellow-d2: color-mod(var(--yellow) l(-7%));
     --yellow-d3: color-mod(var(--yellow) l(-13%));
 
     --red-l3: color-mod(var(--red) l(+15%));
@@ -776,6 +776,7 @@ input[type="image"] {
 .liquid-container.show-overflow,
 .liquid-container.show-overflow .liquid-child {
     overflow: visible;
+    z-index: 1;
 }
 .liquid-container.show-overflow.liquid-animating,
 .liquid-container.show-overflow.liquid-animating .liquid-child {

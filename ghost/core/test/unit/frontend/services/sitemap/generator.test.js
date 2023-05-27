@@ -6,11 +6,11 @@ const moment = require('moment');
 const assert = require('assert');
 const testUtils = require('../../../../utils');
 const urlUtils = require('../../../../../core/shared/url-utils');
-const IndexGenerator = require('../../../../../core/frontend/services/sitemap/index-generator');
-const PostGenerator = require('../../../../../core/frontend/services/sitemap/post-generator');
-const PageGenerator = require('../../../../../core/frontend/services/sitemap/page-generator');
-const TagGenerator = require('../../../../../core/frontend/services/sitemap/tag-generator');
-const UserGenerator = require('../../../../../core/frontend/services/sitemap/user-generator');
+const IndexGenerator = require('../../../../../core/frontend/services/sitemap/SiteMapIndexGenerator');
+const PostGenerator = require('../../../../../core/frontend/services/sitemap/PostMapGenerator');
+const PageGenerator = require('../../../../../core/frontend/services/sitemap/PageMapGenerator');
+const TagGenerator = require('../../../../../core/frontend/services/sitemap/TagsMapGenerator');
+const UserGenerator = require('../../../../../core/frontend/services/sitemap/UserMapGenerator');
 
 should.Assertion.add('ValidUrlNode', function (options) {
     // Check urlNode looks correct
@@ -150,6 +150,44 @@ describe('Generators', function () {
                 }));
 
                 urlNode.should.be.a.ValidUrlNode({withImage: true});
+            });
+        });
+
+        describe('fn: hasCanonicalUrl', function () {
+            it('can check for canonical url', function () {
+                const isCanonical = generator.hasCanonicalUrl(testUtils.DataGenerator.forKnex.createPost({
+                    page: false,
+                    slug: 'some-cool-page',
+                    canonical_url: 'https://myblog.com/test/'
+                }
+                ));
+                isCanonical.should.eql(true);
+            });
+            it('returns false if no canonical url', function () {
+                const isCanonical = generator.hasCanonicalUrl(testUtils.DataGenerator.forKnex.createPost({
+                    page: false,
+                    slug: 'some-cool-page',
+                    canonical_url: null
+                }
+                ));
+                isCanonical.should.eql(false);
+            });
+        });
+
+        describe('fn: addUrl', function () {
+            it('does not include posts containing canonical_url', function () {
+                generator.addUrl('https://myblog.com/test2/', testUtils.DataGenerator.forKnex.createPost({
+                    page: false,
+                    slug: 'test2',
+                    canonical_url: null
+                }));
+                generator.addUrl('https://myblog.com/test/', testUtils.DataGenerator.forKnex.createPost({
+                    page: false,
+                    slug: 'test',
+                    canonical_url: 'https://external.com/test/'
+                }));
+                const xml = generator.getXml();
+                xml.should.not.match(/https:\/\/external.com\/test\//);
             });
         });
 
@@ -318,6 +356,20 @@ describe('Generators', function () {
 
                 // <loc> should exist exactly one time
                 generator.siteMapContent.get(1).match(/<loc>/g).length.should.eql(3);
+            });
+            it('does not include pages containing canonical_url', function () {
+                generator.addUrl('https://myblog.com/test2/', testUtils.DataGenerator.forKnex.createPost({
+                    page: true,
+                    slug: 'test2',
+                    canonical_url: null
+                }));
+                generator.addUrl('https://myblog.com/test/', testUtils.DataGenerator.forKnex.createPost({
+                    page: true,
+                    slug: 'test',
+                    canonical_url: 'https://external.com/test/'
+                }));
+                const xml = generator.getXml();
+                xml.should.not.match(/https:\/\/external.com\/test\//);
             });
         });
     });

@@ -19,7 +19,7 @@
             <section class="gh-env-details gh-about-box grey">
                 <ul class="gh-env-list">
                     {{#if this.linkToGitHubReleases}}
-                    <li><strong>Version:</strong> <a href="https://github.com/TryGhost/Ghost/releases/tag/v{{this.config.version}}" target="_blank" rel="noopener noreferrer">{{this.config.version}}</a></li>
+                    <li><strong>Version:</strong> <a href="{{this.linkToGitHubReleases}}" target="_blank" rel="noopener noreferrer">{{this.config.version}}</a></li>
                     {{else}}
                     <li><strong>Version:</strong> {{this.config.version}}</li>
                     {{/if}}

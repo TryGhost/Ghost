@@ -267,7 +267,7 @@ const createSessionFromMagicLink = async function (req, res, next) {
                 const redirectUrl = new URL(referrer);
                 redirectUrl.searchParams.set('success', true);
                 redirectUrl.searchParams.set('action', 'signin');
-                return res.redirect(redirectUrl.pathname + redirectUrl.search);
+                return res.redirect(redirectUrl.href);
             }
         }
 

@@ -3,19 +3,16 @@ const {agentProvider, fixtureManager} = require('../../utils/e2e-framework');
 const assert = require('assert');
 const MailgunClient = require('@tryghost/mailgun-client');
 const DomainEvents = require('@tryghost/domain-events');
+const emailAnalytics = require('../../../core/server/services/email-analytics');
 
 describe('MailgunEmailSuppressionList', function () {
     let agent;
     let events = [];
-    let run;
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('newsletters', 'members:newsletters', 'members:emails');
         await agent.loginAsOwner();
-
-        // Only reference services after Ghost boot
-        run = require('../../../core/server/services/email-analytics/jobs/fetch-latest/run.js').run;
 
         sinon.stub(MailgunClient.prototype, 'fetchEvents').callsFake(async function (_, batchHandler) {
             const normalizedEvents = (events.map(this.normalizeEvent) || []).filter(e => !!e);
@@ -47,10 +44,7 @@ describe('MailgunEmailSuppressionList', function () {
             recipient
         })];
 
-        await run({
-            domainEvents: DomainEvents
-        });
-
+        await emailAnalytics.fetchLatest();
         await DomainEvents.allSettled();
 
         const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);
@@ -78,10 +72,7 @@ describe('MailgunEmailSuppressionList', function () {
             recipient
         })];
 
-        await run({
-            domainEvents: DomainEvents
-        });
-
+        await emailAnalytics.fetchLatest();
         await DomainEvents.allSettled();
 
         const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);
@@ -109,10 +100,7 @@ describe('MailgunEmailSuppressionList', function () {
             recipient
         })];
 
-        await run({
-            domainEvents: DomainEvents
-        });
-
+        await emailAnalytics.fetchLatest();
         await DomainEvents.allSettled();
 
         const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);
@@ -140,10 +128,7 @@ describe('MailgunEmailSuppressionList', function () {
             recipient
         })];
 
-        await run({
-            domainEvents: DomainEvents
-        });
-
+        await emailAnalytics.fetchLatest();
         await DomainEvents.allSettled();
 
         const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);
@@ -178,10 +163,7 @@ describe('MailgunEmailSuppressionList', function () {
             timestamp: Math.round(timestamp.getTime() / 1000)
         }];
 
-        await run({
-            domainEvents: DomainEvents
-        });
-
+        await emailAnalytics.fetchLatest();
         await DomainEvents.allSettled();
 
         const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);

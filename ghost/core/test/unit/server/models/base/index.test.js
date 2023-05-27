@@ -1,7 +1,5 @@
-const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
-const _ = require('lodash');
 const security = require('@tryghost/security');
 const models = require('../../../../../core/server/models');
 const urlUtils = require('../../../../../core/shared/url-utils');

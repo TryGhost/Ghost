@@ -18,17 +18,17 @@
     "lib"
   ],
   "devDependencies": {
-    "c8": "7.12.0",
+    "c8": "7.13.0",
     "mocha": "10.2.0",
     "nock": "13.3.0",
-    "sinon": "14.0.2"
+    "sinon": "15.0.3"
   },
   "dependencies": {
-    "@tryghost/debug": "0.1.21",
-    "@tryghost/logging": "2.4.0",
-    "@tryghost/metrics": "1.0.20",
+    "@tryghost/debug": "0.1.24",
+    "@tryghost/logging": "2.4.4",
+    "@tryghost/metrics": "1.0.24",
     "form-data": "4.0.0",
     "lodash": "4.17.21",
-    "mailgun.js": "8.0.6"
+    "mailgun.js": "8.2.1"
   }
 }

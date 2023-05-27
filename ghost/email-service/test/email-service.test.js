@@ -1,4 +1,4 @@
-const EmailService = require('../lib/email-service');
+const EmailService = require('../lib/EmailService');
 const assert = require('assert');
 const sinon = require('sinon');
 const {createModel, createModelClass} = require('./utils');
@@ -253,11 +253,27 @@ describe('Email Service', function () {
         it('Schedules email again', async function () {
             const email = createModel({
                 status: 'failed',
-                error: 'Test error'
+                error: 'Test error',
+                post: createModel({
+                    status: 'published'
+                })
             });
 
             await service.retryEmail(email);
             sinon.assert.calledOnce(scheduleEmail);
+        });
+
+        it('Does not schedule email again if draft', async function () {
+            const email = createModel({
+                status: 'failed',
+                error: 'Test error',
+                post: createModel({
+                    status: 'draft'
+                })
+            });
+
+            await assert.rejects(service.retryEmail(email));
+            sinon.assert.notCalled(scheduleEmail);
         });
 
         it('Checks limits before scheduling', async function () {
@@ -277,14 +293,78 @@ describe('Email Service', function () {
             const member = createModel({
                 uuid: '123',
                 name: 'Example member',
-                email: 'example@example.com'
+                email: 'example@example.com',
+                status: 'free'
             });
             membersRepository.get.resolves(member);
-            const exampleMember = await service.getExampleMember('example@example.com');
+            const exampleMember = await service.getExampleMember('example@example.com', 'status:free');
             assert.strictEqual(exampleMember.id, member.id);
             assert.strictEqual(exampleMember.name, member.get('name'));
             assert.strictEqual(exampleMember.email, member.get('email'));
             assert.strictEqual(exampleMember.uuid, member.get('uuid'));
+            assert.strictEqual(exampleMember.status, 'free');
+            assert.deepEqual(exampleMember.subscriptions, []);
+            assert.deepEqual(exampleMember.tiers, []);
+        });
+
+        it('Returns a paid member', async function () {
+            const member = createModel({
+                uuid: '123',
+                name: 'Example member',
+                email: 'example@example.com',
+                status: 'paid',
+                stripeSubscriptions: [
+                    createModel({
+                        status: 'active',
+                        current_period_end: new Date(2050, 0, 1),
+                        cancel_at_period_end: false
+                    })
+                ],
+                products: [createModel({
+                    name: 'Silver',
+                    expiry_at: null
+                })]
+            });
+            membersRepository.get.resolves(member);
+            const exampleMember = await service.getExampleMember('example@example.com', 'status:-free');
+            assert.strictEqual(exampleMember.id, member.id);
+            assert.strictEqual(exampleMember.name, member.get('name'));
+            assert.strictEqual(exampleMember.email, member.get('email'));
+            assert.strictEqual(exampleMember.uuid, member.get('uuid'));
+            assert.strictEqual(exampleMember.status, 'paid');
+            assert.deepEqual(exampleMember.subscriptions, [
+                {
+                    status: 'active',
+                    current_period_end: new Date(2050, 0, 1),
+                    cancel_at_period_end: false,
+                    id: member.related('stripeSubscriptions')[0].id
+                }
+            ]);
+            assert.deepEqual(exampleMember.tiers, [
+                {
+                    name: 'Silver',
+                    expiry_at: null,
+                    id: member.related('products')[0].id
+                }
+            ]);
+        });
+
+        it('Returns a forced free member', async function () {
+            const member = createModel({
+                uuid: '123',
+                name: 'Example member',
+                email: 'example@example.com',
+                status: 'paid'
+            });
+            membersRepository.get.resolves(member);
+            const exampleMember = await service.getExampleMember('example@example.com', 'status:free');
+            assert.strictEqual(exampleMember.id, member.id);
+            assert.strictEqual(exampleMember.name, member.get('name'));
+            assert.strictEqual(exampleMember.email, member.get('email'));
+            assert.strictEqual(exampleMember.uuid, member.get('uuid'));
+            assert.strictEqual(exampleMember.status, 'free');
+            assert.deepEqual(exampleMember.subscriptions, []);
+            assert.deepEqual(exampleMember.tiers, []);
         });
 
         it('Returns a member without name if member does not exist', async function () {

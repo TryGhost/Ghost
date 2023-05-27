@@ -70,7 +70,7 @@ describe('Notifications API', function () {
 
         const notification = jsonResponse.notifications[0];
 
-        const res2 = await agent
+        await agent
             .delete(`notifications/${notification.id}/`)
             .matchBodySnapshot()
             .matchHeaderSnapshot({

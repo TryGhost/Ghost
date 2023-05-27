@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const configUtils = require('../../../../utils/configUtils');
-const SettingsHelpers = require('../../../../../core/server/services/settings-helpers/settings-helpers');
+const SettingsHelpers = require('../../../../../core/server/services/settings-helpers/SettingsHelpers');
 
 function createSettingsMock({setDirect, setConnect}) {
     const getStub = sinon.stub();

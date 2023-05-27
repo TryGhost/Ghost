@@ -36,4 +36,4 @@ function invertColor(hex = '', bw = true) {
     return '#' + padZero(r) + padZero(g) + padZero(b);
 }
 
-module.exports = invertColor;
+export default invertColor;

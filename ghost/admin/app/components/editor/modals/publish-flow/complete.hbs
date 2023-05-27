@@ -79,9 +79,11 @@
             {{/if}}
         </div>
     {{else}}
-        <a href={{post.url}} class="gh-post-bookmark-wrapper" target="_blank" rel="noopener noreferrer" data-test-complete-bookmark>
-            <GhPostBookmark @post={{post}} />
-        </a>
+        {{#unless post.lexical}}
+            <a href={{post.url}} class="gh-post-bookmark-wrapper" target="_blank" rel="noopener noreferrer" data-test-complete-bookmark>
+                <GhPostBookmark @post={{post}} />
+            </a>
+        {{/unless}}
 
         {{#if post.isScheduled}}
             <p class="gh-publish-confirmation">
@@ -96,17 +98,22 @@
                 </button>
             </p>
         {{else}}
-            <p class="gh-publish-confirmation">
-                <button
-                    type="button"
-                    class="gh-back-to-editor"
-                    {{on "click" @close}}
-                    data-test-button="back-to-editor"
-                >
-                    <span>Back to editor</span>
-                </button>
-            </p>
+            {{#if post.lexical}}
+                <FeedbackLexical::PostCompleteForm @post={{@publishOptions.post}} />
+                <LinkTo @route="dashboard" class="gh-feedback-lexical-published-back">Back to dashboard</LinkTo>
+            {{/if}}
+            {{#unless post.lexical}}
+                <p class="gh-publish-confirmation gh-publish-confirmation-with-feedback">
+                    <button
+                        type="button"
+                        class="gh-back-to-editor"
+                        {{on "click" @close}}
+                        data-test-button="back-to-editor"
+                    >
+                        <span>Back to editor</span>
+                    </button>
+                </p>
+            {{/unless}}
         {{/if}}
     {{/if}}
-
 {{/let}}

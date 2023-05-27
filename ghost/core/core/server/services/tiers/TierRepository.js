@@ -1,4 +1,5 @@
 const {Tier} = require('@tryghost/tiers');
+const nql = require('@tryghost/nql');
 
 /**
  * @typedef {import('@tryghost/tiers/lib/TiersAPI').ITierRepository} ITierRepository
@@ -8,6 +9,11 @@ const {Tier} = require('@tryghost/tiers');
  * @implements {ITierRepository}
  */
 module.exports = class TierRepository {
+    /** @type {import('@tryghost/tiers/lib/Tier')[]} */
+    #store = [];
+    /** @type {Object.<string, true>} */
+    #ids = {};
+
     /** @type {Object} */
     #ProductModel;
 
@@ -22,6 +28,32 @@ module.exports = class TierRepository {
     constructor(deps) {
         this.#ProductModel = deps.ProductModel;
         this.#DomainEvents = deps.DomainEvents;
+    }
+
+    async init() {
+        this.#store = [];
+        this.#ids = {};
+        const models = await this.#ProductModel.findAll({
+            withRelated: ['benefits']
+        });
+        for (const model of models) {
+            const tier = await Tier.create(this.mapToTier(model));
+            this.#store.push(tier);
+            this.#ids[tier.id.toHexString()] = true;
+        }
+    }
+
+    /**
+     * @param {import('@tryghost/tiers/lib/Tier')} tier
+     * @returns {any}
+     */
+    toPrimitive(tier) {
+        return {
+            ...tier.toJSON(),
+            active: (tier.status === 'active'),
+            type: tier.type,
+            id: tier.id.toHexString()
+        };
     }
 
     /**
@@ -54,16 +86,12 @@ module.exports = class TierRepository {
      * @returns {Promise<import('@tryghost/tiers/lib/Tier')[]>}
      */
     async getAll(options = {}) {
-        const collection = await this.#ProductModel.findAll({...options, withRelated: ['benefits']});
-
-        const result = [];
-
-        for (const model of collection.models) {
-            const tier = await Tier.create(this.mapToTier(model));
-            result.push(tier);
-        }
-
-        return result;
+        const filter = nql(options.filter, {});
+        return Promise.all(this.#store.slice().filter((item) => {
+            return filter.queryJSON(this.toPrimitive(item));
+        }).map((tier) => {
+            return Tier.create(tier);
+        }));
     }
 
     /**
@@ -71,9 +99,15 @@ module.exports = class TierRepository {
      * @returns {Promise<import('@tryghost/tiers/lib/Tier')>}
      */
     async getById(id) {
-        const model = await this.#ProductModel.findOne({id: id.toHexString()}, {withRelated: ['benefits']});
+        const found = this.#store.find((item) => {
+            return item.id.equals(id);
+        });
 
-        return await Tier.create(this.mapToTier(model));
+        if (!found) {
+            return null;
+        }
+
+        return Tier.create(found);
     }
 
     /**
@@ -99,14 +133,20 @@ module.exports = class TierRepository {
             benefits: tier.benefits.map(name => ({name}))
         };
 
-        const existing = await this.#ProductModel.findOne({id: data.id}, {require: false});
+        const toSave = await Tier.create(tier);
 
-        if (!existing) {
-            await this.#ProductModel.add(data);
-        } else {
+        if (this.#ids[tier.id.toHexString()]) {
+            const existing = this.#store.findIndex((item) => {
+                return item.id.equals(tier.id);
+            });
             await this.#ProductModel.edit(data, {
                 id: data.id
             });
+            this.#store.splice(existing, 1, toSave);
+        } else {
+            await this.#ProductModel.add(data);
+            this.#store.push(toSave);
+            this.#ids[tier.id.toHexString()] = true;
         }
 
         for (const event of tier.events) {

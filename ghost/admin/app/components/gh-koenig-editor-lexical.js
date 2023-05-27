@@ -110,6 +110,7 @@ export default class GhKoenigEditorReactComponent extends Component {
     @action
     registerEditorAPI(API) {
         this.editorAPI = API;
+        this.args.registerAPI(API);
     }
 
     // @action
@@ -118,41 +119,31 @@ export default class GhKoenigEditorReactComponent extends Component {
     //     this.args.onEditorCreated?.(koenig);
     // }
 
-    // @action
-    // focusEditor(event) {
-    //     if (event.target.classList.contains('gh-koenig-editor-pane')) {
-    //         let editorCanvas = this.koenigEditor.element;
-    //         let {bottom} = editorCanvas.getBoundingClientRect();
+    @action
+    focusEditor(event) {
+        if (event.target.classList.contains('gh-koenig-editor-pane')) {
+            let editorCanvas = this.editorAPI.editorInstance.getRootElement();
+            let {bottom} = editorCanvas.getBoundingClientRect();
 
-    //         // if a mousedown and subsequent mouseup occurs below the editor
-    //         // canvas, focus the editor and put the cursor at the end of the
-    //         // document
-    //         if (this.mousedownY > bottom && event.clientY > bottom) {
-    //             let {post} = this.koenigEditor;
-    //             let range = post.toRange();
-    //             let {tailSection} = range;
+            // if a mousedown and subsequent mouseup occurs below the editor
+            // canvas, focus the editor and put the cursor at the end of the document
+            if (event.pageY > bottom && event.clientY > bottom) {
+                event.preventDefault();
 
-    //             event.preventDefault();
-    //             this.koenigEditor.focus();
+                // we should always have a visible cursor when focusing
+                // at the bottom so create an empty paragraph if last
+                // section is a card
+                if (this.editorAPI.lastNodeIsDecorator()) {
+                    this.editorAPI.insertParagraphAtBottom();
+                }
+                // Focus the editor
+                this.editorAPI.focusEditor({position: 'bottom'});
 
-    //             // we should always have a visible cursor when focusing
-    //             // at the bottom so create an empty paragraph if last
-    //             // section is a card
-    //             if (tailSection.isCardSection) {
-    //                 this.koenigEditor.run((postEditor) => {
-    //                     let newSection = postEditor.builder.createMarkupSection('p');
-    //                     postEditor.insertSectionAtEnd(newSection);
-    //                     tailSection = newSection;
-    //                 });
-    //             }
-
-    //             this.koenigEditor.selectRange(tailSection.tailPosition());
-
-    //             // ensure we're scrolled to the bottom
-    //             this.containerElement.scrollTop = this.containerElement.scrollHeight;
-    //         }
-    //     }
-    // }
+                //scroll to the bottom of the container
+                // containerRef.current.scrollTop = containerRef.current.scrollHeight;
+            }
+        }
+    }
 
     // _setupEditor(koenig) {
     //     let component = this;

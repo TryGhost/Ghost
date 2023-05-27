@@ -52,7 +52,7 @@ export default [
     setting('theme', 'active_theme', 'Casper'),
 
     // PRIVATE
-    setting('private', 'is_private', 'false'),
+    setting('private', 'is_private', false),
     setting('private', 'password', ''),
     setting('private', 'public_hash', ''),
 
@@ -71,35 +71,42 @@ export default [
     setting('members', 'stripe_connect_account_id', null),
     setting('members', 'members_monthly_price_id', null),
     setting('members', 'members_yearly_price_id', null),
-    setting('members', 'members_track_sources', 'true'),
+    setting('members', 'members_track_sources', true),
 
     // PORTAL
-    setting('portal', 'portal_name', 'true'),
-    setting('portal', 'portal_button', 'true'),
+    setting('portal', 'portal_name', true),
+    setting('portal', 'portal_button', true),
     setting('portal', 'portal_plans', JSON.stringify(['free'])),
     setting('portal', 'portal_products', JSON.stringify([])),
     setting('portal', 'portal_button_style', 'icon-and-text'),
     setting('portal', 'portal_button_icon', null),
     setting('portal', 'portal_button_signup_text', 'Subscribe'),
+    setting('portal', 'portal_signup_terms_html', null),
+    setting('portal', 'portal_signup_checkbox_required', false),
 
     // EMAIL
     setting('email', 'mailgun_domain', null),
     setting('email', 'mailgun_api_key', null),
     setting('email', 'mailgun_base_url', null),
-    setting('email', 'email_track_opens', 'true'),
-    setting('email', 'email_track_clicks', 'true'),
-    setting('email', 'email_verification_required', 'false'),
+    setting('email', 'email_track_opens', true),
+    setting('email', 'email_track_clicks', true),
+    setting('email', 'email_verification_required', false),
 
     // ANALYTICS
-    setting('email', 'outbound_link_tagging', 'true'),
+    setting('email', 'outbound_link_tagging', true),
 
     // AMP
-    setting('amp', 'amp', 'false'),
+    setting('amp', 'amp', false),
     setting('amp', 'amp_gtag_id', null),
 
     // FIRSTPROMOTER
-    setting('firstpromoter', 'firstpromoter', 'false'),
+    setting('firstpromoter', 'firstpromoter', false),
     setting('firstpromoter', 'firstpromoter_id', null),
+
+    // PINTURA
+    setting('pintura', 'pintura', false),
+    setting('pintura', 'pintura_js_url', null),
+    setting('pintura', 'pintura_css_url', null),
 
     // LABS
     setting('labs', 'labs', JSON.stringify({
@@ -111,7 +118,7 @@ export default [
     setting('slack', 'slack_username', 'Ghost'),
 
     // UNSPLASH
-    setting('unsplash', 'unsplash', 'true'),
+    setting('unsplash', 'unsplash', true),
 
     // VIEWS
     setting('views', 'shared_views', JSON.stringify([])),

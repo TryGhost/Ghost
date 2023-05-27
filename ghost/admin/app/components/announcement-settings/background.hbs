@@ -1,0 +1,22 @@
+<div class="gh-stack-item {{if (eq @index 0) "gh-setting-first" "gh-setting"}}">
+    <div class="flex-grow-1">
+        <div class="flex justify-between items-center relative">
+            <label class="gh-setting-title" for="announcement-background">
+                Background color
+            </label>
+
+            <div class="kg-settings-panel-control-input">
+                <div class="gh-btn-group kg-settings-headerstyle-btn-group">
+                    {{#each this.options as |settingOption|}}
+                        <button
+                            class="gh-btn {{settingOption.className}} {{if (eq this.background settingOption.value) "gh-btn-group-selected"}}"
+                            type="button"
+                            title={{settingOption.label}}
+                            {{on "click" (fn this.setBackground settingOption.value)}}
+                        ></button>
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

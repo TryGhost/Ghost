@@ -22,7 +22,6 @@ export const CARD_COMPONENT_MAP = {
     audio: 'koenig-card-audio',
     file: 'koenig-card-file',
     product: 'koenig-card-product',
-    'before-after': 'koenig-card-before-after',
     header: 'koenig-card-header'
 };
 
@@ -48,7 +47,6 @@ export const CARD_ICON_MAP = {
     audio: 'koenig/kg-card-type-audio',
     file: 'koenig/kg-card-type-file',
     product: 'koenig/kg-card-type-product',
-    'before-after': 'koenig/kg-card-type-before-after',
     header: 'koenig/kg-card-type-gen-embed'
 };
 
@@ -75,7 +73,6 @@ export default [
     createComponentCard('file'),
     createComponentCard('product'),
     createComponentCard('paywall', {hasEditMode: false, selectAfterInsert: false}),
-    createComponentCard('before-after'),
     createComponentCard('header')
 ];
 
@@ -247,14 +244,6 @@ export const CARD_MENU = [
             replaceArg: 'product'
         },
         {
-            label: 'Before/After',
-            icon: 'koenig/kg-card-type-before-after',
-            desc: 'Compare two images',
-            matches: ['before', 'after', 'compare'],
-            type: 'card',
-            replaceArg: 'before-after',
-            isAvailable: 'feature.beforeAfterCard'
-        }, {
             label: 'Header',
             icon: 'koenig/kg-card-type-header',
             desc: 'Add a bold section header',

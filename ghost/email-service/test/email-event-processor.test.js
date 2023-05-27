@@ -1,10 +1,11 @@
 const assert = require('assert');
-const EmailEventProcessor = require('../lib/email-event-processor');
+const EmailEventProcessor = require('../lib/EmailEventProcessor');
 const {createDb} = require('./utils');
 const sinon = require('sinon');
 
 describe('Email Event Processor', function () {
     let eventProcessor;
+    let eventStorage;
     let db;
     let domainEvents;
 
@@ -18,9 +19,20 @@ describe('Email Event Processor', function () {
         domainEvents = {
             dispatch: sinon.stub()
         };
+
+        eventStorage = {
+            handleDelivered: sinon.stub(),
+            handleOpened: sinon.stub(),
+            handlePermanentFailed: sinon.stub(),
+            handleTemporaryFailed: sinon.stub(),
+            handleComplained: sinon.stub(),
+            handleUnsubscribed: sinon.stub()
+        };
+
         eventProcessor = new EmailEventProcessor({
             db,
-            domainEvents
+            domainEvents,
+            eventStorage
         });
     });
 
@@ -88,8 +100,8 @@ describe('Email Event Processor', function () {
                 memberId: 'member-id',
                 emailId: 'email-id'
             });
-            assert.equal(domainEvents.dispatch.callCount, 1);
-            const event = domainEvents.dispatch.firstCall.args[0];
+            assert.equal(eventStorage.handleDelivered.callCount, 1);
+            const event = eventStorage.handleDelivered.firstCall.args[0];
             assert.equal(event.email, 'example@example.com');
             assert.equal(event.constructor.name, 'EmailDeliveredEvent');
         });
@@ -101,8 +113,8 @@ describe('Email Event Processor', function () {
                 memberId: 'member-id',
                 emailId: 'email-id'
             });
-            assert.equal(domainEvents.dispatch.callCount, 1);
-            const event = domainEvents.dispatch.firstCall.args[0];
+            assert.equal(eventStorage.handleOpened.callCount, 1);
+            const event = eventStorage.handleOpened.firstCall.args[0];
             assert.equal(event.email, 'example@example.com');
             assert.equal(event.constructor.name, 'EmailOpenedEvent');
         });
@@ -114,8 +126,8 @@ describe('Email Event Processor', function () {
                 memberId: 'member-id',
                 emailId: 'email-id'
             });
-            assert.equal(domainEvents.dispatch.callCount, 1);
-            const event = domainEvents.dispatch.firstCall.args[0];
+            assert.equal(eventStorage.handleTemporaryFailed.callCount, 1);
+            const event = eventStorage.handleTemporaryFailed.firstCall.args[0];
             assert.equal(event.email, 'example@example.com');
             assert.equal(event.constructor.name, 'EmailTemporaryBouncedEvent');
         });
@@ -127,8 +139,8 @@ describe('Email Event Processor', function () {
                 memberId: 'member-id',
                 emailId: 'email-id'
             });
-            assert.equal(domainEvents.dispatch.callCount, 1);
-            const event = domainEvents.dispatch.firstCall.args[0];
+            assert.equal(eventStorage.handlePermanentFailed.callCount, 1);
+            const event = eventStorage.handlePermanentFailed.firstCall.args[0];
             assert.equal(event.email, 'example@example.com');
             assert.equal(event.constructor.name, 'EmailBouncedEvent');
         });
@@ -140,8 +152,8 @@ describe('Email Event Processor', function () {
                 memberId: 'member-id',
                 emailId: 'email-id'
             });
-            assert.equal(domainEvents.dispatch.callCount, 1);
-            const event = domainEvents.dispatch.firstCall.args[0];
+            assert.equal(eventStorage.handleUnsubscribed.callCount, 1);
+            const event = eventStorage.handleUnsubscribed.firstCall.args[0];
             assert.equal(event.email, 'example@example.com');
             assert.equal(event.constructor.name, 'EmailUnsubscribedEvent');
         });
@@ -153,8 +165,8 @@ describe('Email Event Processor', function () {
                 memberId: 'member-id',
                 emailId: 'email-id'
             });
-            assert.equal(domainEvents.dispatch.callCount, 1);
-            const event = domainEvents.dispatch.firstCall.args[0];
+            assert.equal(eventStorage.handleComplained.callCount, 1);
+            const event = eventStorage.handleComplained.firstCall.args[0];
             assert.equal(event.email, 'example@example.com');
             assert.equal(event.constructor.name, 'SpamComplaintEvent');
         });

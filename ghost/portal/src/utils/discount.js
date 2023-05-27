@@ -7,4 +7,4 @@ function calculateDiscount(monthly, yearly) {
     return (discount >= 1 && discount < 100) ? discount : 0;
 }
 
-module.exports = calculateDiscount;
+export default calculateDiscount;

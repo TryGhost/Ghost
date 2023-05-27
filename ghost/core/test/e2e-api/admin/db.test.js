@@ -1,4 +1,3 @@
-const path = require('path');
 const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
@@ -83,5 +82,25 @@ describe('DB API', function () {
         eventsTriggered['post.unpublished'].length.should.eql(7);
         eventsTriggered['post.deleted'].length.should.eql(7);
         eventsTriggered['tag.deleted'].length.should.eql(1);
+    });
+
+    it('Can trigger external media inliner', async function () {
+        const response = await request
+            .post(localUtils.API.getApiQuery('db/media/inline'))
+            .send({
+                domains: ['https://example.com']
+            })
+            .set('Origin', config.get('url'))
+            .set('Accept', 'application/json')
+            .expect(200);
+
+        // @NOTE: the response format is temporary for test purposes
+        //        before feature graduates to GA, it should become
+        //        a more consistent format
+        response.body.should.eql({
+            db: [{
+                status: 'success'
+            }]
+        });
     });
 });

@@ -64,7 +64,7 @@ function notifyServerReady(error) {
   * @param {object} options.config
   */
 async function initDatabase({config}) {
-    const DatabaseStateManager = require('./server/data/db/state-manager');
+    const DatabaseStateManager = require('./server/data/db/DatabaseStateManager');
     const dbStateManager = new DatabaseStateManager({knexMigratorFilePath: config.get('paths:appRoot')});
     await dbStateManager.makeReady();
 
@@ -102,6 +102,11 @@ async function initCore({ghostServer, config, bootLogger, frontend}) {
     await settings.syncEmailSettings(config.get('hostSettings:emailVerification:verified'));
     debug('End: settings');
 
+    debug('Begin: i18n');
+    const i18n = require('./server/services/i18n');
+    await i18n.init();
+    debug('End: i18n');
+
     // The URLService is a core part of Ghost, which depends on models.
     debug('Begin: Url Service');
     const urlService = require('./server/services/url');
@@ -131,6 +136,19 @@ async function initCore({ghostServer, config, bootLogger, frontend}) {
             await jobService.shutdown();
         });
         debug('End: Job Service');
+
+        // Mentions Job Service allows mentions to be processed in the background
+        debug('Begin: Mentions Job Service');
+        const mentionsJobService = require('./server/services/mentions-jobs');
+
+        if (config.get('server:testmode')) {
+            mentionsJobService.initTestMode();
+        }
+
+        ghostServer.registerCleanupTask(async () => {
+            await mentionsJobService.shutdown();
+        });
+        debug('End: Mentions Job Service');
 
         ghostServer.registerCleanupTask(async () => {
             await urlService.shutdown();
@@ -261,6 +279,16 @@ async function initDynamicRouting() {
 }
 
 /**
+ * The app service cannot be loaded unless the frontend is enabled
+ * In future, the logic to determine whether this should be loaded should be in the service loader
+ */
+async function initAppService() {
+    debug('Begin: App Service');
+    const appService = require('./frontend/services/apps');
+    await appService.init();
+}
+
+/**
  * Services are components that make up part of Ghost and need initializing on boot
  * These services should all be part of core, frontend services should be loaded with the frontend
  * We are working towards this being a service loader, with the ability to make certain services optional
@@ -278,9 +306,7 @@ async function initServices({config}) {
     const permissions = require('./server/services/permissions');
     const xmlrpc = require('./server/services/xmlrpc');
     const slack = require('./server/services/slack');
-    const {mega} = require('./server/services/mega');
     const webhooks = require('./server/services/webhooks');
-    const appService = require('./frontend/services/apps');
     const limits = require('./server/services/limits');
     const apiVersionCompatibility = require('./server/services/api-version-compatibility');
     const scheduling = require('./server/adapters/scheduling');
@@ -292,7 +318,13 @@ async function initServices({config}) {
     const audienceFeedback = require('./server/services/audience-feedback');
     const emailSuppressionList = require('./server/services/email-suppression-list');
     const emailService = require('./server/services/email-service');
+    const emailAnalytics = require('./server/services/email-analytics');
     const mentionsService = require('./server/services/mentions');
+    const mentionsEmailReport = require('./server/services/mentions-email-report');
+    const tagsPublic = require('./server/services/tags-public');
+    const postsPublic = require('./server/services/posts-public');
+    const slackNotifications = require('./server/services/slack-notifications');
+    const mediaInliner = require('./server/services/media-inliner');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -307,31 +339,35 @@ async function initServices({config}) {
     await Promise.all([
         memberAttribution.init(),
         mentionsService.init(),
+        mentionsEmailReport.init(),
         staffService.init(),
         members.init(),
         tiers.init(),
+        tagsPublic.init(),
+        postsPublic.init(),
         membersEvents.init(),
         permissions.init(),
         xmlrpc.listen(),
         slack.listen(),
         audienceFeedback.init(),
         emailService.init(),
-        mega.listen(),
+        emailAnalytics.init(),
         webhooks.listen(),
-        appService.init(),
         apiVersionCompatibility.init(),
         scheduling.init({
             apiUrl: urlUtils.urlFor('api', {type: 'admin'}, true)
         }),
         comments.init(),
         linkTracking.init(),
-        emailSuppressionList.init()
+        emailSuppressionList.init(),
+        slackNotifications.init(),
+        mediaInliner.init()
     ]);
     debug('End: Services');
 
     // Initialize analytics events
     if (config.get('segment:key')) {
-        require('./server/analytics-events').init();
+        require('./server/services/segment').init();
     }
 
     debug('End: initServices');
@@ -365,6 +401,9 @@ async function initBackgroundServices({config}) {
 
     const updateCheck = require('./server/update-check');
     updateCheck.scheduleRecurringJobs();
+
+    const milestonesService = require('./server/services/milestones');
+    milestonesService.initAndRun();
 
     debug('End: initBackgroundServices');
 }
@@ -437,7 +476,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         const rootApp = require('./app')();
 
         if (server) {
-            const GhostServer = require('./server/ghost-server');
+            const GhostServer = require('./server/GhostServer');
             ghostServer = new GhostServer({url: config.getSiteUrl(), env: config.get('env'), serverConfig: config.get('server')});
             await ghostServer.start(rootApp);
             bootLogger.log('server started');
@@ -462,6 +501,18 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         if (frontend) {
             await initDynamicRouting();
+            await initAppService();
+        }
+
+        // TODO: move this to the correct place once we figure out where that is
+        if (ghostServer) {
+            //  NOTE: changes in this labs setting requires server reboot since we don't re-init services after changes a labs flag
+            const websockets = require('./server/services/websockets');
+            await websockets.init(ghostServer);
+
+            const lexicalMultiplayer = require('./server/services/lexical-multiplayer');
+            await lexicalMultiplayer.init(ghostServer);
+            await lexicalMultiplayer.enable();
         }
 
         await initServices({config});

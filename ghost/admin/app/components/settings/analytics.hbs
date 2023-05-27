@@ -74,7 +74,6 @@
                 </div>
             </div>
         </div>
-        {{#if (feature 'outboundLinkTagging')}}
         <div class="gh-expandable-block">
             <div class="gh-expandable-header">
                 <div>
@@ -97,6 +96,22 @@
                 </div>
             </div>
         </div>
-        {{/if}}
+    </section>
+</div>
+
+<div class="gh-main-section">
+    <h4 class="gh-main-section-header small bn">Posts</h4>
+    <section class="gh-expandable">
+        <div class="gh-expandable-block">
+            <div class="gh-expandable-header">
+                <div>
+                    <h4 class="gh-expandable-title">Export post analytics</h4>
+                    <p class="gh-expandable-description">
+                        Download a CSV file of your last 1000 posts data for easy analysis in one place
+                    </p>
+                </div>
+                <GhTaskButton @buttonText="Export" @successText="Exported" @task={{this.exportPostsTask}} @class="gh-btn gh-btn-icon"/>
+            </div>
+        </div>
     </section>
 </div>

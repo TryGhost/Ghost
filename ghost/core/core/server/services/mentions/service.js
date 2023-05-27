@@ -13,11 +13,10 @@ const events = require('../../lib/common/events');
 const externalRequest = require('../../../server/lib/request-external.js');
 const urlUtils = require('../../../shared/url-utils');
 const outputSerializerUrlUtil = require('../../../server/api/endpoints/utils/serializers/output/utils/url');
-const labs = require('../../../shared/labs');
 const urlService = require('../url');
 const settingsCache = require('../../../shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
-const jobsService = require('../jobs');
+const jobsService = require('../mentions-jobs');
 
 function getPostUrl(post) {
     const jsonModel = {};
@@ -26,8 +25,15 @@ function getPostUrl(post) {
 }
 
 module.exports = {
+    /** @type {import('@tryghost/webmentions/lib/MentionsAPI')} */
+    api: null,
     controller: new MentionController(),
+    didInit: false,
     async init() {
+        if (this.didInit) {
+            return;
+        }
+        this.didInit = true;
         const repository = new BookshelfMentionRepository({
             MentionModel: models.Mention,
             DomainEvents
@@ -52,6 +58,8 @@ module.exports = {
             routingService
         });
 
+        this.api = api;
+
         this.controller.init({
             api,
             jobService: {
@@ -62,6 +70,23 @@ module.exports = {
                         offloaded: false
                     });
                 }
+            },
+            mentionResourceService: {
+                async getByID(id) {
+                    if (!id) {
+                        return null;
+                    }
+                    const post = await models.Post.findOne({id: id.toHexString()});
+
+                    if (!post) {
+                        return null;
+                    }
+                    return {
+                        id: id,
+                        name: post.get('title'),
+                        type: post.get('type')
+                    };
+                }
             }
         });
 
@@ -70,7 +95,16 @@ module.exports = {
             externalRequest,
             getSiteUrl: () => urlUtils.urlFor('home', true),
             getPostUrl: post => getPostUrl(post),
-            isEnabled: () => labs.isSet('webmentions') && !settingsCache.get('is_private')
+            isEnabled: () => !settingsCache.get('is_private'),
+            jobService: {
+                async addJob(name, fn) {
+                    jobsService.addJob({
+                        name,
+                        job: fn,
+                        offloaded: false
+                    });
+                }
+            }
         });
         sendingService.listen(events);
     }

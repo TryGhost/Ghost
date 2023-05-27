@@ -18,6 +18,13 @@ module.exports = function apiRoutes() {
     // ## Public
     router.get('/site', mw.publicAdminApi, http(api.site.read));
 
+    // ## Collections
+    router.get('/collections', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.browse));
+    router.get('/collections/:id', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.read));
+    router.post('/collections', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.add));
+    router.put('/collections/:id', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.edit));
+    router.del('/collections/:id', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.destroy));
+
     // ## Configuration
     router.get('/config', mw.authAdminApi, http(api.config.read));
 
@@ -26,11 +33,16 @@ module.exports = function apiRoutes() {
 
     // ## Posts
     router.get('/posts', mw.authAdminApi, http(api.posts.browse));
+    router.get('/posts/export', mw.authAdminApi, http(api.posts.exportCSV));
+
     router.post('/posts', mw.authAdminApi, http(api.posts.add));
+    router.del('/posts', mw.authAdminApi, http(api.posts.bulkDestroy));
+    router.put('/posts/bulk', mw.authAdminApi, http(api.posts.bulkEdit));
     router.get('/posts/:id', mw.authAdminApi, http(api.posts.read));
     router.get('/posts/slug/:slug', mw.authAdminApi, http(api.posts.read));
     router.put('/posts/:id', mw.authAdminApi, http(api.posts.edit));
     router.del('/posts/:id', mw.authAdminApi, http(api.posts.destroy));
+    router.post('/posts/:id/copy', mw.authAdminApi, http(api.posts.copy));
 
     router.get('/mentions', labs.enabledMiddleware('webmentions'), mw.authAdminApi, http(api.mentions.browse));
 
@@ -38,11 +50,14 @@ module.exports = function apiRoutes() {
 
     // ## Pages
     router.get('/pages', mw.authAdminApi, http(api.pages.browse));
+    router.del('/pages', mw.authAdminApi, http(api.pages.bulkDestroy));
+    router.put('/pages/bulk', mw.authAdminApi, http(api.pages.bulkEdit));
     router.post('/pages', mw.authAdminApi, http(api.pages.add));
     router.get('/pages/:id', mw.authAdminApi, http(api.pages.read));
     router.get('/pages/slug/:slug', mw.authAdminApi, http(api.pages.read));
     router.put('/pages/:id', mw.authAdminApi, http(api.pages.edit));
     router.del('/pages/:id', mw.authAdminApi, http(api.pages.destroy));
+    router.post('/pages/:id/copy', mw.authAdminApi, http(api.pages.copy));
 
     // # Integrations
 
@@ -205,6 +220,11 @@ module.exports = function apiRoutes() {
         http(api.db.backupContent)
     );
 
+    router.post('/db/media/inline',
+        mw.authAdminApi,
+        http(api.db.inlineMedia)
+    );
+
     // ## Slack
     router.post('/slack/test', mw.authAdminApi, http(api.slack.sendTest));
 
@@ -300,6 +320,9 @@ module.exports = function apiRoutes() {
     router.put('/emails/:id/retry', mw.authAdminApi, http(api.emails.retry));
     router.get('/emails/:id/batches', mw.authAdminApi, http(api.emails.browseBatches));
     router.get('/emails/:id/recipient-failures', mw.authAdminApi, http(api.emails.browseFailures));
+    router.get('/emails/:id/analytics', mw.authAdminApi, http(api.emails.analyticsStatus));
+    router.put('/emails/:id/analytics', mw.authAdminApi, http(api.emails.scheduleAnalytics));
+    router.delete('/emails/analytics', mw.authAdminApi, http(api.emails.cancelScheduledAnalytics));
 
     // ## Snippets
     router.get('/snippets', mw.authAdminApi, http(api.snippets.browse));

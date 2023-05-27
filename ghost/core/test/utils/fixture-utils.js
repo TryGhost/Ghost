@@ -65,7 +65,6 @@ const fixtures = {
 
     insertMultiAuthorPosts: function insertMultiAuthorPosts() {
         let i;
-        let j;
         let k = 0;
         let posts = [];
 
@@ -480,6 +479,14 @@ const fixtures = {
         return models.Product.add(archivedProduct, context.internal);
     },
 
+    insertHiddenTiers: function insertArchivedTiers() {
+        let hiddenTier = DataGenerator.forKnex.createProduct({
+            visibility: 'none'
+        });
+
+        return models.Product.add(hiddenTier, context.internal);
+    },
+
     insertProducts: async function insertProducts() {
         let coreProductFixtures = fixtureManager.findModelFixtures('Product').entries;
         await Promise.all(coreProductFixtures.map(async (product) => {
@@ -642,7 +649,7 @@ const fixtures = {
                 memberIds: DataGenerator.forKnex.members.map(member => member.id)
             };
 
-            return emailAnalyticsService.aggregateStats(toAggregate);
+            return emailAnalyticsService.service.aggregateStats(toAggregate);
         });
     },
 
@@ -818,6 +825,9 @@ const toDoList = {
     'tiers:archived': function insertArchivedTiers() {
         return fixtures.insertArchivedTiers();
     },
+    'tiers:hidden': function insertHiddenTiers() {
+        return fixtures.insertHiddenTiers();
+    },
     comments: function insertComments() {
         return fixtures.insertComments();
     },
@@ -890,6 +900,10 @@ const getFixtureOps = (toDos) => {
 
             fixtureOps.push(toDoList[toDo]);
         }
+    });
+
+    fixtureOps.push(() => {
+        return require('../../core/server/services/tiers').repository?.init();
     });
 
     return fixtureOps;

@@ -156,6 +156,9 @@ export default class KoenigCardGallery extends Component {
 
     @action
     setImageSrc(uploadResult) {
+        if (!uploadResult.fileName && !uploadResult.url) {
+            return; // upload failed
+        }
         let image = this.images.findBy('fileName', uploadResult.fileName);
 
         image.set('src', uploadResult.url);

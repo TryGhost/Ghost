@@ -12,6 +12,10 @@ module.exports = {
         return apiFramework.pipeline(require('./authentication'), localUtils);
     },
 
+    get collections() {
+        return apiFramework.pipeline(require('./collections'), localUtils);
+    },
+
     get db() {
         return apiFramework.pipeline(require('./db'), localUtils);
     },
@@ -75,6 +79,10 @@ module.exports = {
 
     get settings() {
         return apiFramework.pipeline(require('./settings'), localUtils);
+    },
+
+    get announcements() {
+        return apiFramework.pipeline(require('./announcements'), localUtils);
     },
 
     get membersStripeConnect() {
@@ -239,5 +247,5 @@ module.exports = {
 
     get feedbackMembers() {
         return apiFramework.pipeline(require('./feedback-members'), localUtils, 'members');
-    }   
+    }
 };

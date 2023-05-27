@@ -2,6 +2,8 @@ const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-frame
 const {anyContentVersion, anyEtag, anyObjectId, anyLocationFor, anyErrorId} = matchers;
 const should = require('should');
 const models = require('../../../core/server/models');
+const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 
 let agent;
 
@@ -23,6 +25,10 @@ describe('Offers API', function () {
         await fixtureManager.init();
         await agent.loginAsOwner();
         defaultTier = await getPaidProduct();
+    });
+
+    this.afterEach(function () {
+        sinon.restore();
     });
 
     it('Has no initial offers', async function () {
@@ -211,6 +217,8 @@ describe('Offers API', function () {
     });
 
     it('Cannot create offer with same code', async function () {
+        sinon.stub(logging, 'error');
+
         const newOffer = {
             name: 'Fourth of July',
             code: '4th',
@@ -240,6 +248,8 @@ describe('Offers API', function () {
     });
 
     it('Cannot create offer with same slugified code', async function () {
+        sinon.stub(logging, 'error');
+
         const newOffer = {
             name: 'Another Black Friday Sale',
             code: 'black friday',
@@ -269,6 +279,8 @@ describe('Offers API', function () {
     });
 
     it('Cannot create offer with same name', async function () {
+        sinon.stub(logging, 'error');
+
         const newOffer = {
             name: 'Fourth of July Sales',
             code: 'july4',
@@ -385,6 +397,8 @@ describe('Offers API', function () {
     });
 
     it('Cannot update offer code to one that exists', async function () {
+        sinon.stub(logging, 'error');
+
         // We can change all fields except discount related fields
         let updatedOffer = {
             code: '4th'
@@ -406,6 +420,8 @@ describe('Offers API', function () {
     });
 
     it('Cannot update offer code to one that exists after it is slugified', async function () {
+        sinon.stub(logging, 'error');
+
         // We can change all fields except discount related fields
         let updatedOffer = {
             code: 'Summer sale'
@@ -427,6 +443,8 @@ describe('Offers API', function () {
     });
 
     it('Cannot update offer name to one that exists', async function () {
+        sinon.stub(logging, 'error');
+
         // We can change all fields except discount related fields
         let updatedOffer = {
             name: 'Easter Sales'

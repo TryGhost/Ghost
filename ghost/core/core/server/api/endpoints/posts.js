@@ -9,13 +9,15 @@ const allowedIncludes = [
     'email',
     'tiers',
     'newsletter',
-    'count.conversions', 
+    'count.conversions',
     'count.signups',
     'count.paid_conversions',
     'count.clicks',
     'sentiment',
     'count.positive_feedback',
-    'count.negative_feedback'
+    'count.negative_feedback',
+    'post_revisions',
+    'post_revisions.author'
 ];
 const unsafeAttrs = ['status', 'authors', 'visibility'];
 
@@ -54,6 +56,35 @@ module.exports = {
         },
         query(frame) {
             return models.Post.findPage(frame.options);
+        }
+    },
+
+    exportCSV: {
+        options: [
+            'limit',
+            'filter',
+            'order'
+        ],
+        headers: {
+            disposition: {
+                type: 'csv',
+                value() {
+                    const datetime = (new Date()).toJSON().substring(0, 10);
+                    return `post-analytics.${datetime}.csv`;
+                }
+            }
+        },
+        response: {
+            format: 'plain'
+        },
+        permissions: {
+            method: 'browse'
+        },
+        validation: {},
+        async query(frame) {
+            return {
+                data: await postsService.export(frame)
+            };
         }
     },
 
@@ -145,6 +176,7 @@ module.exports = {
             'email_segment',
             'newsletter',
             'force_rerender',
+            'save_revision',
             // NOTE: only for internal context
             'forUpdate',
             'transacting'
@@ -174,6 +206,54 @@ module.exports = {
         }
     },
 
+    bulkEdit: {
+        statusCode: 200,
+        headers: {
+            cacheInvalidate: true
+        },
+        options: [
+            'filter'
+        ],
+        data: [
+            'action',
+            'meta'
+        ],
+        validation: {
+            data: {
+                action: {
+                    required: true
+                }
+            },
+            options: {
+                filter: {
+                    required: true
+                }
+            }
+        },
+        permissions: {
+            method: 'edit'
+        },
+        async query(frame) {
+            return await postsService.bulkEdit(frame.data.bulk, frame.options);
+        }
+    },
+
+    bulkDestroy: {
+        statusCode: 200,
+        headers: {
+            cacheInvalidate: true
+        },
+        options: [
+            'filter'
+        ],
+        permissions: {
+            method: 'destroy'
+        },
+        async query(frame) {
+            return await postsService.bulkDestroy(frame.options);
+        }
+    },
+
     destroy: {
         statusCode: 204,
         headers: {
@@ -198,6 +278,30 @@ module.exports = {
         },
         query(frame) {
             return models.Post.destroy({...frame.options, require: true});
+        }
+    },
+
+    copy: {
+        statusCode: 201,
+        headers: {
+            location: {
+                resolve: postsService.generateCopiedPostLocationFromUrl
+            }
+        },
+        options: [
+            'id',
+            'formats'
+        ],
+        validation: {
+            id: {
+                required: true
+            }
+        },
+        permissions: {
+            method: 'add'
+        },
+        async query(frame) {
+            return postsService.copyPost(frame);
         }
     }
 };

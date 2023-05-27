@@ -4,7 +4,7 @@ import {isBlank} from '@ember/utils';
 
 export default Model.extend({
     active: attr('boolean'),
-    errors: attr('raw', {defaultValue: () => []}),
+    gscanErrors: attr('raw', {defaultValue: () => []}), // renamed from 'errors' to avoid clash with Ember Data Model's `errors` property
     name: attr('string'),
     package: attr('raw'),
     templates: attr('raw', {defaultValue: () => []}),

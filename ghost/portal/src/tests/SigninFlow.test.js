@@ -122,7 +122,7 @@ describe('Signin', () => {
         afterEach(() => {
             window.location = realLocation;
         });
-        test.only('with default settings', async () => {
+        test('with default settings', async () => {
             const {
                 ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, submitButton,popupIframeDocument
             } = await setup({
@@ -149,7 +149,7 @@ describe('Signin', () => {
             expect(magicLink).toBeInTheDocument();
         });
 
-        test.only('without name field', async () => {
+        test('without name field', async () => {
             const {ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, submitButton,
                 popupIframeDocument} = await setup({
                 site: FixtureSite.singleTier.withoutName
@@ -175,7 +175,7 @@ describe('Signin', () => {
             expect(magicLink).toBeInTheDocument();
         });
 
-        test.only('with only free plan', async () => {
+        test('with only free plan', async () => {
             let {ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, submitButton,
                 popupIframeDocument} = await setup({
                 site: FixtureSite.singleTier.onlyFreePlan
@@ -215,7 +215,7 @@ describe('Signin', () => {
         afterEach(() => {
             window.location = realLocation;
         });
-        test.only('with default settings', async () => {
+        test('with default settings', async () => {
             const {ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, submitButton,
                 popupIframeDocument} = await multiTierSetup({
                 site: FixtureSite.multipleTiers.basic
@@ -241,7 +241,7 @@ describe('Signin', () => {
             expect(magicLink).toBeInTheDocument();
         });
 
-        test.only('without name field', async () => {
+        test('without name field', async () => {
             const {ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, submitButton,
                 popupIframeDocument} = await multiTierSetup({
                 site: FixtureSite.multipleTiers.withoutName
@@ -267,7 +267,7 @@ describe('Signin', () => {
             expect(magicLink).toBeInTheDocument();
         });
 
-        test.only('with only free plan available', async () => {
+        test('with only free plan available', async () => {
             let {ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, submitButton,
                 popupIframeDocument} = await multiTierSetup({
                 site: FixtureSite.multipleTiers.onlyFreePlan

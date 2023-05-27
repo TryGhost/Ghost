@@ -1,27 +1,24 @@
 const should = require('should');
 const sinon = require('sinon');
 
-const I18n = require('../../../../../core/frontend/services/theme-engine/i18n/i18n');
+const I18n = require('../../../../../core/frontend/services/theme-engine/i18n/I18n');
 
-const logging = {
-    warn: sinon.stub(),
-    error: sinon.stub()
-};
+const logging = require('@tryghost/logging');
 
 describe('I18n Class behavior', function () {
     it('defaults to en', function () {
-        const i18n = new I18n({logging});
+        const i18n = new I18n();
         i18n.locale().should.eql('en');
     });
 
     it('can have a different locale set', function () {
-        const i18n = new I18n({locale: 'fr', logging});
+        const i18n = new I18n({locale: 'fr'});
         i18n.locale().should.eql('fr');
     });
 
     describe('file loading behavior', function () {
         it('will fallback to en file correctly without changing locale', function () {
-            const i18n = new I18n({locale: 'fr', logging});
+            const i18n = new I18n({locale: 'fr'});
 
             let fileSpy = sinon.spy(i18n, '_readTranslationsFile');
 
@@ -41,7 +38,7 @@ describe('I18n Class behavior', function () {
         let i18n;
 
         beforeEach(function initBasicI18n() {
-            i18n = new I18n({logging});
+            i18n = new I18n();
             sinon.stub(i18n, '_loadStrings').returns(fakeStrings);
             i18n.init();
         });
@@ -55,7 +52,9 @@ describe('I18n Class behavior', function () {
         });
 
         it('uses key fallback correctly', function () {
+            const loggingStub = sinon.stub(logging, 'error');
             i18n.t('unknown.string').should.eql('An error occurred');
+            sinon.assert.calledOnce(loggingStub);
         });
 
         it('errors for invalid strings', function () {
@@ -70,9 +69,13 @@ describe('I18n Class behavior', function () {
         let i18n;
 
         beforeEach(function initFulltextI18n() {
-            i18n = new I18n({stringMode: 'fulltext', logging});
+            i18n = new I18n({stringMode: 'fulltext'});
             sinon.stub(i18n, '_loadStrings').returns(fakeStrings);
             i18n.init();
+        });
+
+        afterEach(function () {
+            sinon.restore();
         });
 
         it('correctly loads strings', function () {

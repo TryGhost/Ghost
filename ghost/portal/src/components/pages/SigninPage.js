@@ -1,11 +1,10 @@
+import React from 'react';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 // import SiteTitleBackButton from '../common/SiteTitleBackButton';
 import AppContext from '../../AppContext';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-
-const React = require('react');
 
 export default class SigninPage extends React.Component {
     static contextType = AppContext;
@@ -34,9 +33,10 @@ export default class SigninPage extends React.Component {
             };
         }, async () => {
             const {email, errors} = this.state;
+            const {redirect} = this.context.pageData ?? {};
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
-                this.context.onAction('signin', {email});
+                this.context.onAction('signin', {email, redirect});
             }
         });
     }
@@ -56,13 +56,15 @@ export default class SigninPage extends React.Component {
     }
 
     getInputFields({state}) {
+        const {t} = this.context;
+
         const errors = state.errors || {};
         const fields = [
             {
                 type: 'email',
                 value: state.email,
                 placeholder: 'jamie@example.com',
-                label: 'Email',
+                label: t('Email'),
                 name: 'email',
                 required: true,
                 errorMessage: errors.email || '',
@@ -73,13 +75,13 @@ export default class SigninPage extends React.Component {
     }
 
     renderSubmitButton() {
-        const {action} = this.context;
+        const {action, t} = this.context;
         let retry = false;
         const isRunning = (action === 'signin:running');
-        let label = isRunning ? 'Sending login link...' : 'Continue';
+        let label = isRunning ? t('Sending login link...') : t('Continue');
         const disabled = isRunning ? true : false;
         if (action === 'signin:failed') {
-            label = 'Retry';
+            label = t('Retry');
             retry = true;
         }
         return (
@@ -97,17 +99,17 @@ export default class SigninPage extends React.Component {
     }
 
     renderSignupMessage() {
-        const brandColor = this.context.brandColor;
+        const {brandColor, t} = this.context;
         return (
             <div className='gh-portal-signup-message'>
-                <div>Don't have an account?</div>
+                <div>{t('Don\'t have an account?')}</div>
                 <button
                     data-test-button='signup-switch'
                     className='gh-portal-btn gh-portal-btn-link'
                     style={{color: brandColor}}
                     onClick={() => this.context.onAction('switchPage', {page: 'signup'})}
                 >
-                    <span>Sign up</span>
+                    <span>{t('Sign up')}</span>
                 </button>
             </div>
         );
@@ -143,11 +145,12 @@ export default class SigninPage extends React.Component {
 
     renderFormHeader() {
         // const siteTitle = this.context.site.title || 'Site Title';
+        const {t} = this.context;
 
         return (
             <header className='gh-portal-signin-header'>
                 {this.renderSiteLogo()}
-                <h1 className="gh-portal-main-title">Sign in</h1>
+                <h1 className="gh-portal-main-title">{t('Sign in')}</h1>
             </header>
         );
     }

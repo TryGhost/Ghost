@@ -265,6 +265,27 @@
                                     </div>
                                 </div>
                                 {{#if this.user.isAdmin}}
+                                {{#if (feature 'webmentions')}}
+                                    <div class="user-setting-toggle">
+                                        <div>
+                                            <label for="user-email">Mentions</label>
+                                            <p>Every time another site links to your work.</p>
+                                        </div>
+                                        <div class="for-switch small">
+                                            <label class="switch" for="mention-notifications" data-test-label="mention-notifications">
+                                                <input
+                                                    id="mention-notifications"
+                                                    type="checkbox"
+                                                    checked={{this.user.mentionNotifications}}
+                                                    class="gh-input"
+                                                    {{on "change" this.toggleMentionNotifications}}
+                                                    data-test-checkbox="mention-notifications"
+                                                >
+                                                <span class="input-toggle-component"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                {{/if}}
                                 {{#if this.canToggleMemberAlerts}}
                                     <div class="user-setting-toggle">
                                         <div>
@@ -325,6 +346,25 @@
                                         </div>
                                     </div>
                                     {{/if}}
+                                    <div class="user-setting-toggle">
+                                        <div>
+                                            <label for="user-email">Milestones</label>
+                                            <p>Occasional summaries of your audience & revenue growth</p>
+                                        </div>
+                                        <div class="for-switch small">
+                                            <label class="switch" for="milestone-notifications" data-test-label="milestone-notifications">
+                                                <input
+                                                    id="milestone-notifications"
+                                                    type="checkbox"
+                                                    checked={{this.user.milestoneNotifications}}
+                                                    class="gh-input"
+                                                    {{on "change" this.toggleMilestoneNotifications}}
+                                                    data-test-checkbox="milestone-notifications"
+                                                >
+                                                <span class="input-toggle-component"></span>
+                                            </label>
+                                        </div>
+                                    </div>
                                 {{/if}}
                                 {{/if}}
                             </GhFormGroup>

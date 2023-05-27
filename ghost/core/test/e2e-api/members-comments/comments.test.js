@@ -6,7 +6,6 @@ const models = require('../../../core/server/models');
 const moment = require('moment-timezone');
 const settingsCache = require('../../../core/shared/settings-cache');
 const sinon = require('sinon');
-const settingsService = require('../../../core/server/services/settings/settings-service');
 const DomainEvents = require('@tryghost/domain-events');
 
 let membersAgent, membersAgent2, postId, postTitle, commentId;
@@ -98,7 +97,7 @@ async function testCanReply(member, emailMatchers = {}) {
     const date = new Date(0);
     await models.Member.edit({last_seen_at: date, last_commented_at: date}, {id: member.get('id')});
 
-    const {body} = await membersAgent
+    await membersAgent
         .post(`/api/comments/`)
         .body({comments: [{
             post_id: postId,
@@ -213,7 +212,7 @@ describe('Comments API', function () {
             });
 
             it('Can browse all comments of a post', async function () {
-                const {body} = await membersAgent
+                await membersAgent
                     .get(`/api/comments/?filter=post_id:${postId}`)
                     .expectStatus(200)
                     .matchHeaderSnapshot({
@@ -308,7 +307,7 @@ describe('Comments API', function () {
             });
 
             it('Can browse all comments of a post', async function () {
-                const {body} = await membersAgent
+                await membersAgent
                     .get(`/api/comments/?filter=post_id:${postId}`)
                     .expectStatus(200)
                     .matchHeaderSnapshot({
@@ -325,7 +324,7 @@ describe('Comments API', function () {
                 const date = moment.utc(new Date()).tz(timezone).startOf('day').toDate();
                 await models.Member.edit({last_seen_at: date, last_commented_at: date}, {id: member.get('id')});
 
-                const {body} = await membersAgent
+                await membersAgent
                     .post(`/api/comments/`)
                     .body({comments: [{
                         post_id: postId,
@@ -895,7 +894,7 @@ describe('Comments API', function () {
         });
 
         it('Can not comment on a post', async function () {
-            const {body} = await membersAgent
+            await membersAgent
                 .post(`/api/comments/`)
                 .body({comments: [{
                     post_id: postId,

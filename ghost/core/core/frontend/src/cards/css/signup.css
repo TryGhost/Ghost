@@ -1,0 +1,316 @@
+.kg-signup-card,
+.kg-signup-card * {
+    box-sizing: border-box;
+}
+
+.kg-signup-card a,
+.kg-signup-card a span {
+    color: currentColor;
+}
+
+.kg-signup-card.kg-layout-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.kg-signup-card-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    height: 100%;
+    padding: 4vmax;
+    background-size: cover;
+    background-position: center;
+    text-align: left;
+}
+
+.kg-width-wide .kg-signup-card-container {
+    padding: 6.4vmax;
+}
+
+.kg-width-full .kg-signup-card-container {
+    padding: 9.6vmax 7.2vmax;
+}
+
+.kg-layout-split .kg-signup-card-container {
+    padding: 9.6vmax 4vmax;
+}
+
+.kg-signup-card-container.align-center {
+    align-items: center;
+    text-align: center;
+}
+
+.kg-signup-card-container.kg-style-accent {
+    background-color: var(--ghost-accent-color);
+}
+
+.kg-signup-card.kg-swapped .kg-signup-card-container {
+    grid-row: 1;
+}
+
+.kg-signup-card.kg-style-image h2.kg-signup-card-heading,
+.kg-signup-card.kg-style-image h3.kg-signup-card-subheading,
+.kg-signup-card.kg-style-image .kg-signup-card-button {
+    z-index: 999;
+}
+
+
+/* Split layout image */
+
+.kg-signup-card-image {
+    object-fit: cover;
+    object-position: center;
+    /* this will force the image to follow the signup card height */
+    height: 0;
+    min-height: 100%;
+    /**/
+}
+
+.kg-signup-card-image.kg-style-accent {
+    background-color: var(--ghost-accent-color);
+}
+
+/* Heading */
+
+.kg-signup-card h2.kg-signup-card-heading {
+    font-size: 4.8vmin;
+    font-weight: 700;
+    line-height: 1em;
+    letter-spacing: -0.01em;
+    margin: 0;
+}
+
+.kg-signup-card h2.kg-signup-card-heading strong {
+    font-weight: 800;
+}
+
+.kg-signup-card.kg-width-wide h2.kg-signup-card-heading {
+    font-size: 6vmin;
+}
+
+.kg-signup-card.kg-width-full h2.kg-signup-card-heading {
+    font-size: 8vmin;
+}
+
+.kg-signup-card.kg-width-full.kg-layout-split h2.kg-signup-card-heading {
+    font-size: 6.4vmin;
+}
+
+/* Subheading */
+
+.kg-signup-card-subheading {
+    margin: 0 0 2em;
+}
+
+.kg-signup-card h3.kg-signup-card-subheading {
+    font-size: 1.25em;
+    font-weight: 500;
+    line-height: 1.4em;
+    margin: 0;
+    max-width: 40em;
+}
+
+.kg-signup-card h2 + h3.kg-signup-card-subheading {
+    margin: 0.35em 0 0;
+}
+
+.kg-signup-card h3.kg-signup-card-subheading strong {
+    font-weight: 600;
+}
+
+.kg-signup-card.kg-width-wide h3.kg-signup-card-subheading {
+    font-size: 1.5em;
+}
+
+.kg-signup-card.kg-width-full h3.kg-signup-card-subheading {
+    font-size: 1.75em;
+}
+
+.kg-signup-card.kg-width-full.kg-layout-split h3.kg-signup-card-subheading {
+    font-size: 1.5em;
+}
+
+/* Subscribe form */
+
+.kg-signup-card-form {
+    position: relative;
+    width: 100%;
+}
+
+.kg-signup-card-heading + .kg-signup-card-form,
+.kg-signup-card-subheading + .kg-signup-card-form {
+    margin: 2.4vmax 0 0;
+}
+
+.kg-width-wide .kg-signup-card-heading + .kg-signup-card-form,
+.kg-width-wide .kg-signup-card-subheading + .kg-signup-card-form {
+    margin: 3.2vmax 0 0;
+}
+
+.kg-width-full .kg-signup-card-heading + .kg-signup-card-form,
+.kg-width-full .kg-signup-card-subheading + .kg-signup-card-form {
+    margin: 4vmax 0 0;
+}
+
+.kg-signup-card-fields {
+    display: flex;
+}
+
+.align-center .kg-signup-card-fields {
+    justify-content: center;
+}
+
+.kg-signup-card-input {
+    width: 100%;
+    border: solid 1px;
+    padding: 12px 16px;
+    font-size: 1.1em;
+}
+
+.kg-width-wide .kg-signup-card-input,
+.kg-width-full .kg-signup-card-input:not(.kg-layout-split .kg-signup-card-input) {
+    max-width: 400px;
+}
+
+.kg-signup-card-input.kg-style-accent {
+    border-color: var(--ghost-accent-color);
+}
+
+.kg-signup-card-button {
+    display: flex;
+    position: relative;
+    align-items: center;
+    outline: none;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+    font-size: 1em;
+    font-weight: 600;
+    line-height: 1em;
+    text-align: center;
+    text-decoration: none;
+    letter-spacing: .2px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    height: 3em;
+    padding: 0 1.2em;
+    transition: opacity .2s ease;
+}
+
+.kg-signup-card-button.kg-style-accent {
+    background-color: var(--ghost-accent-color);
+}
+
+.kg-signup-card h2 + .kg-signup-card-button,
+.kg-signup-card h3 + .kg-signup-card-button {
+    margin: 1.5em 0 0;
+}
+
+.kg-signup-card .kg-signup-card-button:hover {
+    opacity: 0.85;
+}
+
+.kg-signup-card.kg-width-wide .kg-signup-card-button {
+    font-size: 1.05em;
+}
+
+.kg-signup-card.kg-width-wide h2 + .kg-signup-card-button,
+.kg-signup-card.kg-width-wide h3 + .kg-signup-card-button {
+    margin-top: 1.75em;
+}
+
+.kg-signup-card.kg-width-full .kg-signup-card-button {
+    font-size: 1.1em;
+}
+
+.kg-signup-card.kg-width-full h2 + .kg-signup-card-button,
+.kg-signup-card.kg-width-full h3 + .kg-signup-card-button {
+    margin-top: 2em;
+}
+
+/* Subscribe form states */
+
+.kg-signup-card-success,
+.kg-signup-card-error {
+    display: none;
+}
+
+.kg-signup-card-form.success .kg-signup-card-fields {
+    display: none;
+}
+
+.kg-signup-card-form.success .kg-signup-card-success {
+    display: flex;
+    align-items: center;
+    height: 3em;
+    font-size: 1.25em;
+    font-weight: 500;
+    line-height: 1.4em;
+}
+
+.kg-signup-card-form.error .kg-signup-card-error {
+    display: block;
+    position: absolute;
+    top: -32px;
+}
+
+.kg-signup-card-button-loading {
+    position: absolute;
+    inset: 0;
+    align-items: center;
+    justify-content: center;
+    display: none;
+}
+
+.kg-signup-card-form.loading .kg-signup-card-button-loading {
+    display: flex;
+}
+
+/* Disclaimer */
+
+.kg-signup-card-disclaimer {
+    margin: 1rem 0 0;
+}
+
+.kg-signup-card-form.success + .kg-signup-card-disclaimer {
+    visibility: hidden;
+}
+
+
+/* Responsive styles */
+
+@media (max-width: 640px) {
+    .kg-signup-card.kg-layout-split {
+        grid-template-columns: 1fr;
+    }
+
+    .kg-width-wide .kg-signup-card-container {
+        padding: 6.4vmax 4vmax;
+    }
+
+    .kg-width-full .kg-signup-card-container {
+        padding: 9.6vmax 4vmax;
+    }
+
+    .kg-signup-card-image {
+        height: auto;
+        min-height: unset;
+        aspect-ratio: 1 / 1;
+    }
+
+    .kg-signup-card-input {
+        font-size: inherit;
+    }
+    .kg-signup-card.kg-width-wide .kg-signup-card-button,
+    .kg-signup-card.kg-width-full .kg-signup-card-button {
+        font-size: 1em;
+    }
+
+    .kg-signup-card h3.kg-signup-card-subheading,
+    .kg-signup-card.kg-width-wide h3.kg-signup-card-subheading,
+    .kg-signup-card.kg-width-full h3.kg-signup-card-subheading,
+    .kg-signup-card.kg-width-full.kg-layout-split h3.kg-signup-card-subheading {
+        font-size: 1.1em;
+    }
+}

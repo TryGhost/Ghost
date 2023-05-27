@@ -77,6 +77,10 @@
                     "description": "Internal Integration for the Ghost Explore directory"
                 },
                 {
+                    "name": "Self-Serve Migration Integration",
+                    "description": "Internal Integration for the Self-Serve migration tool"
+                },
+                {
                     "name": "DB Backup Integration",
                     "description": "Internal DB Backup Client"
                 },
@@ -651,6 +655,8 @@
                     "free_member_signup_notification": true,
                     "paid_subscription_started_notificaton": true,
                     "paid_subscription_canceled_notification": false,
+                    "mention_notifications": true,
+                    "milestone_notifications": true,
                     "status": "inactive",
                     "roles": []
                 },
@@ -665,6 +671,8 @@
                     "free_member_signup_notification": true,
                     "paid_subscription_started_notification": true,
                     "paid_subscription_canceled_notification": false,
+                    "mention_notifications": true,
+                    "milestone_notifications": true,
                     "location": "The Internet",
                     "website": "https://ghost.org",
                     "bio": "You can delete this user to remove all the welcome posts",
@@ -878,6 +886,18 @@
                     "api_keys": [{"type": "admin", "role": "Ghost Explore Integration"}]
                 },
                 {
+                    "slug": "self-serve-migration",
+                    "name": "Self-Serve Migration Integration",
+                    "description": "Core Self-Serve Migration integration",
+                    "type": "core",
+                    "api_keys": [
+                        {
+                            "type": "admin",
+                            "role": "Self-Serve Migration Integration"
+                        }
+                    ]
+                },
+                {
                     "slug": "ghost-backup",
                     "name": "Ghost Backup",
                     "description": "Internal DB Backup integration",
@@ -955,6 +975,11 @@
                 },
                 "Ghost Explore Integration": {
                     "explore": "read"
+                },
+                "Self-Serve Migration Integration": {
+                    "db": "importContent",
+                    "member": "add",
+                    "tag": "read"
                 },
                 "Admin Integration": {
                     "mail": "all",

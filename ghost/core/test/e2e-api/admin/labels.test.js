@@ -1,5 +1,7 @@
+const logging = require('@tryghost/logging');
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyObjectId, anyISODateTime, anyErrorId, anyEtag, anyLocationFor} = matchers;
+const sinon = require('sinon');
 
 const matchLabel = {
     id: anyObjectId,
@@ -14,6 +16,10 @@ describe('Labels API', function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init();
         await agent.loginAsOwner();
+    });
+
+    afterEach(function () {
+        sinon.restore();
     });
 
     it('Can browse with no labels', async function () {
@@ -45,6 +51,7 @@ describe('Labels API', function () {
     });
 
     it('Errors when adding label with the same name', async function () {
+        const loggingStub = sinon.stub(logging, 'error');
         await agent
             .post('labels')
             .body({labels: [{
@@ -61,6 +68,7 @@ describe('Labels API', function () {
                 'content-version': anyContentVersion,
                 etag: anyEtag
             });
+        sinon.assert.calledOnce(loggingStub);
     });
 
     it('Can browse with member count', async function () {

@@ -4,7 +4,7 @@
     <div
         class="gh-koenig-editor-pane flex flex-column mih-100"
         {{on "mousedown" this.trackMousedown}}
-        {{!-- {{on "mouseup" this.focusEditor}} --}}
+        {{on "mouseup" this.focusEditor}}
     >
         <GhEditorFeatureImage
             @image={{@featureImage}}
@@ -38,6 +38,7 @@
 
         <KoenigLexicalEditor
             @lexical={{@body}}
+            @cardConfig={{@cardOptions}}
             @onChange={{@onBodyChange}}
             @registerAPI={{this.registerEditorAPI}}
             @cursorDidExitAtTop={{this.focusTitle}}

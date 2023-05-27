@@ -1,5 +1,4 @@
 const should = require('should');
-const BaseModel = require('../../../core/server/models/base');
 const {Member} = require('../../../core/server/models/member');
 const {MemberStripeCustomer} = require('../../../core/server/models/member-stripe-customer');
 const {Product} = require('../../../core/server/models/product');

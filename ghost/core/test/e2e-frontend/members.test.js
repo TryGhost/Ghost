@@ -239,6 +239,10 @@ describe('Front-end members behavior', function () {
                 'footer_content',
                 'show_badge',
                 'show_header_name',
+                'show_post_title_section',
+                'show_comment_cta',
+                'show_subscription_details',
+                'show_latest_posts',
                 'created_at',
                 'updated_at'
             ]);

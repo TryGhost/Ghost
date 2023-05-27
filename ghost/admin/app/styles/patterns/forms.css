@@ -132,6 +132,10 @@ input[type=number] {
     margin-bottom: 0;
 }
 
+.form-group.mb8 {
+    margin-bottom: 3.2rem;
+}
+
 @media (max-width: 550px) {
     .form-group {
         max-width: 100%;
@@ -534,8 +538,17 @@ textarea {
     cursor: pointer;
     position: relative;
     display: inline-block;
+}
+
+.for-switch label:not(.x-small .switch),
+.for-switch .container {
     width: 50px !important;
     height: 28px !important;
+}
+
+.for-switch.x-small label {
+    width: 34px !important;
+    height: 20px !important;
 }
 
 .for-switch label p,

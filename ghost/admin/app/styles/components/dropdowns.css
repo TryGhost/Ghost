@@ -72,6 +72,10 @@
     transition: none;
 }
 
+.dropdown-menu li > button:disabled {
+    opacity: 0.4;
+}
+
 .dropdown-menu svg {
     margin-right: 10px;
     height: 14px;
@@ -313,4 +317,88 @@
     width: 14px;
     line-height: 1em;
     fill: none;
+}
+
+/**
+Post context menu
+*/
+
+.gh-context-menu-container {
+    visibility: hidden;
+}
+
+/* Disable user interaction with a div that covers the full view. We don't use a javascript based approach here, because you want to close a context menu even when you click a link on the page. With js, we cannot ignore or block that link click without complex event listeners. */
+.gh-context-menu-overlay {
+    position: fixed;
+    content: '';
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.gh-context-menu-container[data-open] {
+    visibility: visible;
+}
+
+.gh-context-menu {
+    position: fixed;
+    max-width: 160px;
+    z-index: 1001;
+}
+
+.gh-posts-context-menu {
+    max-width: 160px !important;
+    border-radius: var(--border-radius);
+    box-shadow:
+    0 0 2.3px rgba(0, 0, 0, 0.028),
+    0 3.8px 7.8px rgba(0, 0, 0, 0.042),
+    0 17px 35px -7px rgba(0, 0, 0, 0.11)
+    ;
+}
+
+.gh-placement-top .gh-posts-context-menu {
+    transform: translateY(-100%);
+}
+
+.gh-placement-left .gh-posts-context-menu {
+    transform: translateX(-100%);
+}
+
+.gh-placement-top.gh-placement-left .gh-posts-context-menu {
+    transform: translate(-100%, -100%);
+}
+
+.gh-posts-context-menu li > button {
+    padding: 8px 16px;
+}
+
+.gh-posts-context-menu li > button span {
+    display: flex;
+    align-items: center;
+    font-size: 1.35rem;
+}
+
+.gh-posts-context-menu li > button span svg,
+.gh-posts-context-menu li > button:hover span svg {
+    fill: none;
+}
+
+.gh-posts-context-menu li > button span svg path {
+    stroke-width: 2px;
+}
+
+.gh-posts-context-menu li > button span svg.star path {
+    stroke-width: 1.8px;
+}
+
+.gh-posts-context-menu li:last-child::before {
+    display: block;
+    position: relative;
+    content: "";
+    margin: 5px 0;
+    width: 100%;
+    height: 1px;
+    background-color: #dfe1e3;
 }

@@ -1,6 +1,5 @@
 const should = require('should');
 const tiersHelper = require('../../../../core/frontend/helpers/tiers');
-const {mockManager} = require('../../../utils/e2e-framework');
 
 describe('{{tiers}} helper', function () {
     it('can return string with tiers', function () {

@@ -1,0 +1,301 @@
+<fieldset class="modal-fullsettings-form-labs email-design">
+    <h4 class="modal-fullsettings-section-title">Design</h4>
+
+    <div class="modal-fullsettings-section-labs">
+
+        {{#let (eq @openSection "design-header") as |isOpen|}}
+            <button class="modal-fullsettings-tab {{if isOpen "active"}}" type="button" {{on "click" (fn @toggleSection "design-header")}} data-test-nav-toggle="design.header">
+                {{svg-jar "email-header"}} Header
+                <span class="gh-nav-button-expand">{{svg-jar (if isOpen "arrow-up-stroke" "arrow-down-stroke")}}</span>
+            </button>
+            {{#liquid-if isOpen}}
+                <div class="modal-fullsettings-tab-expanded">
+                    <div class="gh-stack">
+                        <GhFormGroup class="gh-stack-item">
+                            <GhUploader
+                                @extensions={{this.imageExtensions}}
+                                @paramsHash={{hash purpose="image"}}
+                                @onComplete={{fn this.imageUploaded "headerImage"}}
+                                as |uploader|
+                            >
+                                <div class="modal-fullsettings-uploader">
+                                    <div class="gh-header-img-desc">
+                                        <label class="modal-fullsettings-title">Header image</label>
+                                        <p>Optional, recommended size 1200x600</p>
+                                    </div>
+                                    {{#if uploader.isUploading}}
+                                        <div class="gh-header-img-container">
+                                            <div class="gh-loading-spinner"></div>
+                                        </div>
+                                    {{else if @newsletter.headerImage}}
+                                        <div class="gh-header-img">
+                                            <img
+                                                class="gh-header-img-thumbnail"
+                                                src={{@newsletter.headerImage}}
+                                                alt=""
+                                                role="presentation"
+                                                data-test-img="header"
+                                            >
+                                            <button type="button" class="gh-btn gh-header-img-deleteicon" {{on "click" (fn this.changeSetting "headerImage" null)}}>
+                                                <span> {{svg-jar "trash" class="w5 h5"}} </span>
+                                            </button>
+                                        </div>
+                                    {{else}}
+                                        <button type="button" class="gh-btn gh-header-img-uploadicon" {{on "click" uploader.triggerFileDialog}} data-test-image-upload-btn="header-image">
+                                            <span>{{svg-jar "upload-fill" class="w5 h5"}}</span>
+                                        </button>
+                                        <div style="display:none">
+                                            <GhFileInput
+                                                @multiple={{false}}
+                                                @action={{uploader.setFiles}}
+                                                @accept={{uploader.imageMimeTypes}}
+                                                @onInsert={{uploader.registerFileInput}}
+                                                data-test-file-input="icon" />
+                                        </div>
+                                    {{/if}}
+                                </div>
+                            </GhUploader>
+                        </GhFormGroup>
+
+                        {{#if this.settings.icon}}
+                            <GhFormGroup class="gh-stack-item row">
+                                <label class="modal-fullsettings-title {{unless this.settings.icon "disabled"}}">Publication icon</label>
+                                <div class="for-switch x-small {{unless this.settings.icon "disabled"}}">
+                                    <label class="switch" for="show-header">
+                                        <input
+                                            type="checkbox"
+                                            checked={{and @newsletter.showHeaderIcon this.settings.icon}}
+                                            id="show-header"
+                                            name="show-header"
+                                            disabled={{not this.settings.icon}}
+                                            {{on "click" (fn this.toggleSetting "showHeaderIcon")}}
+                                        >
+                                        <span class="input-toggle-component"></span>
+                                    </label>
+                                </div>
+                            </GhFormGroup>
+                        {{/if}}
+
+                        <GhFormGroup class="gh-stack-item row">
+                            <label class="modal-fullsettings-title">Publication title</label>
+                            <div class="for-switch x-small">
+                                <label class="switch" for="show-title" data-test-toggle="showHeaderTitle">
+                                    <input
+                                        type="checkbox"
+                                        checked={{@newsletter.showHeaderTitle}}
+                                        id="show-title"
+                                        name="show-title"
+                                        {{on "click" (fn this.toggleSetting "showHeaderTitle")}}
+                                    >
+                                    <span class="input-toggle-component"></span>
+                                </label>
+                            </div>
+                        </GhFormGroup>
+                        <GhFormGroup class="gh-stack-item row">
+                            <label class="modal-fullsettings-title">Newsletter name</label>
+                            <div class="for-switch x-small">
+                                <label class="switch" for="show-header-name" data-test-toggle="showHeaderName">
+                                    <input
+                                        type="checkbox"
+                                        checked={{@newsletter.showHeaderName}}
+                                        id="show-header-name"
+                                        name="show-header-name"
+                                        {{on "click" (fn this.toggleSetting "showHeaderName")}}
+                                    >
+                                    <span class="input-toggle-component"></span>
+                                </label>
+                            </div>
+                        </GhFormGroup>
+                    </div>
+                </div>
+            {{/liquid-if}}
+        {{/let}}
+
+        {{#let (eq @openSection "design-body") as |isOpen|}}
+            <button class="modal-fullsettings-tab {{if isOpen "active"}}" type="button" {{on "click" (fn @toggleSection "design-body")}} data-test-nav-toggle="design.body">
+                {{svg-jar "email-body"}} Body
+                <span class="gh-nav-button-expand">{{svg-jar (if isOpen "arrow-up-stroke" "arrow-down-stroke")}}</span>
+            </button>
+            {{#liquid-if isOpen class="show-overflow"}}
+                <div class="modal-fullsettings-tab-expanded">
+                    <div class="gh-stack">
+                        <GhFormGroup class="gh-stack-item row">
+                            <label class="modal-fullsettings-title">Background color</label>
+                            <Modals::Newsletters::Components::ColorPicker
+                                @color={{@newsletter.backgroundColor}}
+                                @presetColors={{this.backgroundPresetColors}}
+                                @onColorChange={{fn this.changeSetting "backgroundColor"}}
+                            />
+                        </GhFormGroup>
+
+                        <GhFormGroup class="gh-stack-item row">
+                            <label class="modal-fullsettings-title">Border color</label>
+                            <Modals::Newsletters::Components::ColorPicker
+                                @color={{@newsletter.borderColor}}
+                                @presetColors={{this.borderPresetColors}}
+                                @onColorChange={{fn this.changeSetting "borderColor"}}
+                            />
+                        </GhFormGroup>
+
+                        <GhFormGroup class="gh-stack-item row">
+                            <label class="modal-fullsettings-title">Post title</label>
+                            <div class="for-switch x-small">
+                                <label class="switch" for="show-post-title">
+                                    <input
+                                        type="checkbox"
+                                        checked={{@newsletter.showPostTitleSection}}
+                                        id="show-post-title"
+                                        name="show-post-title"
+                                        {{on "click" (fn this.toggleSetting "showPostTitleSection")}}
+                                    >
+                                    <span class="input-toggle-component"></span>
+                                </label>
+                            </div>
+                        </GhFormGroup>
+
+                        {{#if @newsletter.showPostTitleSection}}
+                            <GhFormGroup class="gh-stack-item">
+                                <label class="modal-fullsettings-title">Post title style</label>
+                                <div class="gh-email-design-typography-wrapper header">
+                                    <div class="modal-fullsettings-radiogroup gh-email-design-typography" data-test-input="titleFontCategory">
+                                        <GhFontSelector
+                                            @selected={{@newsletter.titleFontCategory}}
+                                            @onChange={{fn this.changeSetting "titleFontCategory"}}
+                                        />
+                                    </div>
+                                    <div class="gh-btn-group icons" id="newsletter-title-alignment">
+                                        <button type="button" class="gh-btn gh-btn-icon {{if (eq @newsletter.titleAlignment "left") "gh-btn-group-selected"}}" {{on "click" (fn this.changeSetting "titleAlignment" "left")}}><span>{{svg-jar "align-left"}}</span></button>
+                                        <button type="button" class="gh-btn gh-btn-icon {{if (eq @newsletter.titleAlignment "center") "gh-btn-group-selected"}}" {{on "click" (fn this.changeSetting "titleAlignment" "center")}}><span>{{svg-jar "align-center"}}</span></button>
+                                    </div>
+                                </div>
+                            </GhFormGroup>
+                        {{/if}}
+                        <GhFormGroup class="gh-stack-item row">
+                            <label class="modal-fullsettings-title">Heading color</label>
+                            <Modals::Newsletters::Components::ColorPicker
+                                @color={{@newsletter.titleColor}}
+                                @presetColors={{this.titlePresetColors}}
+                                @onColorChange={{fn this.changeSetting "titleColor"}}
+                            />
+                        </GhFormGroup>
+
+                        <GhFormGroup class="gh-stack-item row">
+                            <label class="modal-fullsettings-title">Feature image</label>
+                            <div class="for-switch x-small">
+                                <label class="switch" for="show-feature-image">
+                                    <input
+                                        type="checkbox"
+                                        checked={{@newsletter.showFeatureImage}}
+                                        id="show-feature-image"
+                                        name="show-feature-image"
+                                        {{on "click" (fn this.toggleSetting "showFeatureImage")}}
+                                    >
+                                    <span class="input-toggle-component"></span>
+                                </label>
+                            </div>
+                        </GhFormGroup>
+                        <GhFormGroup class="gh-stack-item">
+                            <label class="modal-fullsettings-title">Body style</label>
+                            <div class="gh-email-design-typography-wrapper">
+                                <div class="modal-fullsettings-radiogroup gh-email-design-typography" data-test-input="bodyFontCategory">
+                                    <GhFontSelector
+                                        @selected={{@newsletter.bodyFontCategory}}
+                                        @onChange={{fn this.changeSetting "bodyFontCategory"}}
+                                    />
+                                </div>
+                            </div>
+                        </GhFormGroup>
+                    </div>
+                </div>
+            {{/liquid-if}}
+        {{/let}}
+
+        {{#let (eq @openSection "design-footer") as |isOpen|}}
+            <button class="modal-fullsettings-tab {{if isOpen "active"}}" type="button" {{on "click" (fn @toggleSection "design-footer")}} data-test-nav-toggle="design.footer">
+                {{svg-jar "email-footer"}} Footer
+                <span class="gh-nav-button-expand">{{svg-jar (if isOpen "arrow-up-stroke" "arrow-down-stroke")}}</span>
+            </button>
+            {{#liquid-if isOpen}}
+                <div class="modal-fullsettings-tab-expanded">
+                    <div class="gh-stack">
+
+                        {{#if (feature "audienceFeedback")}}
+                            <GhFormGroup class="gh-stack-item row">
+                                <label for="capture-feedback" class="modal-fullsettings-title" data-test-toggle="feedbackEnabled">Ask your readers for feedback</label>
+                                <div class="for-switch x-small">
+                                    <div class="container">
+                                        <input
+                                            type="checkbox"
+                                            id="capture-feedback"
+                                            checked={{@newsletter.feedbackEnabled}}
+                                            {{on "change" (fn this.onCheckboxChange "feedbackEnabled")}}
+                                        >
+                                        <button type="button" class="input-toggle-component" {{on "click" (fn this.toggleProperty "feedbackEnabled")}}></button>
+                                    </div>
+                                </div>
+                            </GhFormGroup>
+                        {{/if}}
+
+                        {{#unless (eq this.settings.commentsEnabled 'off') }}
+                            <GhFormGroup class="gh-stack-item row">
+                                <label for="comments-link" class="modal-fullsettings-title" data-test-toggle="showCommentCta">Add a link to your comments</label>
+                                <div class="for-switch x-small">
+                                    <div class="container">
+                                        <input
+                                            type="checkbox"
+                                            id="comments-link"
+                                            checked={{@newsletter.showCommentCta}}
+                                            {{on "change" (fn this.onCheckboxChange "showCommentCta")}}
+                                        >
+                                        <button type="button" class="input-toggle-component" {{on "click" (fn this.toggleProperty "showCommentCta")}}></button>
+                                    </div>
+                                </div>
+                            </GhFormGroup>
+                        {{/unless}}
+
+                        <GhFormGroup class="gh-stack-item row">
+                            <label for="latest-posts" class="modal-fullsettings-title" data-test-toggle="showLatestPosts">Share your latest posts</label>
+                            <div class="for-switch x-small">
+                                <div class="container">
+                                    <input
+                                        type="checkbox"
+                                        id="latest-posts"
+                                        checked={{@newsletter.showLatestPosts}}
+                                        {{on "change" (fn this.onCheckboxChange "showLatestPosts")}}
+                                    >
+                                    <button type="button" class="input-toggle-component" {{on "click" (fn this.toggleProperty "showLatestPosts")}}></button>
+                                </div>
+                            </div>
+                        </GhFormGroup>
+
+                        <GhFormGroup class="gh-stack-item row">
+                            <label for="capture-feedback" class="modal-fullsettings-title" data-test-toggle="showSubscriptionDetails">Show subscription details</label>
+                            <div class="for-switch x-small">
+                                <div class="container">
+                                    <input
+                                        type="checkbox"
+                                        id="capture-feedback"
+                                        checked={{@newsletter.showSubscriptionDetails}}
+                                        {{on "change" (fn this.onCheckboxChange "showSubscriptionDetails")}}
+                                    >
+                                    <button type="button" class="input-toggle-component" {{on "click" (fn this.toggleProperty "showSubscriptionDetails")}}></button>
+                                </div>
+                            </div>
+                        </GhFormGroup>
+
+                        <GhFormGroup class="gh-stack-item">
+                            <label class="modal-fullsettings-title">Email footer</label>
+                            <KoenigBasicHtmlInput
+                                @name="footer"
+                                @html={{@newsletter.footerContent}}
+                                @class="miw-100 form-text gh-members-emailsettings-footer-input"
+                                @onChange={{fn this.changeSetting "footerContent"}}
+                            />
+                            <p>Any extra information or legal text</p>
+                        </GhFormGroup>
+                    </div>
+                </div>
+            {{/liquid-if}}
+        {{/let}}
+    </div>
+</fieldset>

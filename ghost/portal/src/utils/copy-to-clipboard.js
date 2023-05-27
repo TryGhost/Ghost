@@ -10,4 +10,4 @@ function copyTextToClipboard(text) {
     document.body.removeChild(textarea);
 }
 
-module.exports = copyTextToClipboard;
+export default copyTextToClipboard;

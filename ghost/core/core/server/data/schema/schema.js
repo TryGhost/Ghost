@@ -37,6 +37,13 @@ module.exports = {
         footer_content: {type: 'text', maxlength: 1000000000, nullable: true},
         show_badge: {type: 'boolean', nullable: false, defaultTo: true},
         show_header_name: {type: 'boolean', nullable: false, defaultTo: true},
+        show_post_title_section: {type: 'boolean', nullable: false, defaultTo: true},
+        show_comment_cta: {type: 'boolean', nullable: false, defaultTo: true},
+        show_subscription_details: {type: 'boolean', nullable: false, defaultTo: false},
+        show_latest_posts: {type: 'boolean', nullable: false, defaultTo: false},
+        background_color: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'light'},
+        border_color: {type: 'string', maxlength: 50, nullable: true},
+        title_color: {type: 'string', maxlength: 50, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
@@ -154,6 +161,8 @@ module.exports = {
         free_member_signup_notification: {type: 'boolean', nullable: false, defaultTo: true},
         paid_subscription_started_notification: {type: 'boolean', nullable: false, defaultTo: true},
         paid_subscription_canceled_notification: {type: 'boolean', nullable: false, defaultTo: false},
+        mention_notifications: {type: 'boolean', nullable: false, defaultTo: true},
+        milestone_notifications: {type: 'boolean', nullable: false, defaultTo: true},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
@@ -393,7 +402,14 @@ module.exports = {
         post_id: {type: 'string', maxlength: 24, nullable: false, index: true},
         lexical: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         created_at_ts: {type: 'bigInteger', nullable: false},
-        created_at: {type: 'dateTime', nullable: false}
+        created_at: {type: 'dateTime', nullable: false},
+        author_id: {type: 'string', maxlength: 24, nullable: true, references: 'users.id', cascadeDelete: false, constraintName: 'post_revs_author_id_foreign'},
+        title: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 255}}},
+        post_status: {type: 'string', maxlength: 50, nullable: true, validations: {isIn: [['draft', 'published', 'scheduled', 'sent']]}},
+        reason: {type: 'string', maxlength: 50, nullable: true},
+        feature_image: {type: 'string', maxlength: 2000, nullable: true},
+        feature_image_alt: {type: 'string', maxlength: 191, nullable: true, validations: {isLength: {max: 125}}},
+        feature_image_caption: {type: 'text', maxlength: 65535, nullable: true}
     },
     members: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -867,6 +883,7 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         name: {type: 'string', maxlength: 191, nullable: false, unique: true},
         mobiledoc: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: false},
+        lexical: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
@@ -993,6 +1010,16 @@ module.exports = {
         resource_id: {type: 'string', maxlength: 24, nullable: true},
         resource_type: {type: 'string', maxlength: 50, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
-        payload: {type: 'text', maxlength: 65535, nullable: true}
+        payload: {type: 'text', maxlength: 65535, nullable: true},
+        deleted: {type: 'boolean', nullable: false, defaultTo: false},
+        verified: {type: 'boolean', nullable: false, defaultTo: false}
+    },
+    milestones: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        type: {type: 'string', maxlength: 24, nullable: false},
+        value: {type: 'integer', nullable: false},
+        currency: {type: 'string', maxlength: 24, nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        email_sent_at: {type: 'dateTime', nullable: true}
     }
 };

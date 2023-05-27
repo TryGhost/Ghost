@@ -37,12 +37,12 @@
                                 <td align="left" style="padding: 16px;">
                                   <table border="0" cellpadding="0" cellspacing="0">
                                         <tr>
-                                            <td style="padding-right: 14px;">
+                                            <td style="padding-right: 14px; vertical-align: middle;" valign="middle">
                                                 <div style="width: 48px; height: 48px; background-color: #15171A; border-radius: 999px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 19px; color: #FFFFFF; text-align: center; vertical-align: center; font-weight: 500; line-height: 47px;">
                                                     {{memberData.initials}}
                                                 </div>
                                             </td>
-                                            <td style="padding-right: 8px;">
+                                            <td style="padding-right: 8px; vertical-align: middle;" valign="middle">
                                                 <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; padding-right: 8px; padding: 0; margin: 0; color: #15171A; font-weight: 600;">{{memberData.name}}</p>
                                                 {{#if memberData.showEmail}}
                                                   <p class="text-link" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 13px; padding-right: 8px; padding: 0; margin: 0; color: #394047; font-weight: 400;">{{memberData.email}}</p>
@@ -53,24 +53,40 @@
                                     </table>
                                 </td>
                             </tr>
-                            <tr>
-                                <td style="vertical-align: top; padding-top: 0; padding-right: 16px; padding-bottom: 16px; padding-left: 16px;">
-                                    <hr style="border-bottom: 2px solid #F4F4F5; margin-top: 0; margin-bottom: 16px;" />
-                                    <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 13px; padding-right: 8px; padding: 0; margin: 0; color: #95A1AD;">Tier</p>
-                                    <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; padding-right: 8px; padding: 0; margin: 0; color: #15171A; font-weight: 600;">{{tierData.name}}
-                                      {{#if tierData.details}} <span style="font-weight: normal; color:#3A464C;"> - {{tierData.details}}</span>{{/if}}
-                                      </p>
-                                </td>
-                            </tr>
-                            {{#if offerData}}
-                            <tr>
-                                <td style="vertical-align: top; padding-top: 0; padding-right: 16px; padding-bottom: 16px; padding-left: 16px;">
-                                    <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 13px; padding-right: 8px; padding: 0; margin: 0; color: #95A1AD;">Offer</p>
-                                    <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; padding-right: 8px; padding: 0; margin: 0; color: #15171A; font-weight: 600;">{{offerData.name}} <span style="font-weight: normal; color:#3A464C;"> - {{offerData.details}}</span></p>
-                                </td>
-                            </tr>
-                            {{/if}}
                         </tbody>
+                        </table>
+
+                        <table border="0" cellpadding="0" cellspacing="0" class="btn btn-primary" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; box-sizing: border-box;">
+                          <tr>
+                            <td align="left" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; padding-top: 32px; padding-bottom: 12px;">
+
+                              <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 13px; padding-right: 8px; padding: 0; margin: 0; color: #95A1AD;">Tier</p>
+                              <hr style="border-bottom: 1px solid #F4F4F5; margin-top: 4px; margin-bottom: 8px;" />
+                              <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; padding-right: 8px; padding: 0; margin: 0; color: #15171A; font-weight: 600; padding-bottom: 32px;">{{tierData.name}}
+                              {{#if tierData.details}} <span style="font-weight: normal; color:#3A464C;"> - {{tierData.details}}</span>{{/if}}
+                              </p>
+
+                              {{#if offerData}}
+                                <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 13px; padding-right: 8px; padding: 0; margin: 0; color: #95A1AD;">Offer</p>
+                                <hr style="border-bottom: 1px solid #F4F4F5; margin-top: 4px; margin-bottom: 8px;" />
+                                <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; padding-right: 8px; padding: 0; margin: 0; color: #15171A; font-weight: 600; padding-bottom: 32px;">{{offerData.name}} <span style="font-weight: normal; color:#3A464C;"> - {{offerData.details}}</span></p>
+                              {{/if}}
+
+                              {{#if referrerSource}}
+                                <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 13px; padding-right: 8px; padding: 0; margin: 0; color: #95A1AD;">Signup info</p>
+                                <hr style="border-bottom: 1px solid #F4F4F5; margin-top: 4px; margin-bottom: 8px;" />
+                                <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; padding-right: 8px; padding: 0; margin: 0; color: #15171A; font-weight: 600; padding-bottom: 4px;">Source
+                                    <span style="font-weight: normal; color:#3A464C;"> - {{referrerSource}}</span>
+                                </p>
+                                {{#if attributionTitle}}
+                                  <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; padding-right: 8px; padding: 0; margin: 0; color: #15171A; font-weight: 600;">Page
+                                      <span style="font-weight: normal; color:#3A464C;"> -  <a href="{{attributionUrl}}" style="font-weight: normal; color:#3A464C;text-decoration:none">{{attributionTitle}}</a></span>
+                                  </p>
+                                {{/if}}
+                              {{/if}}
+                              
+                            </td>
+                          </tr>
                         </table>
 
                         <table border="0" cellpadding="0" cellspacing="0" class="btn btn-primary" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; box-sizing: border-box;">

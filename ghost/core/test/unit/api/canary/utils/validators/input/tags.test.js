@@ -1,4 +1,3 @@
-const errors = require('@tryghost/errors');
 const _ = require('lodash');
 const should = require('should');
 const sinon = require('sinon');

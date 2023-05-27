@@ -6,9 +6,7 @@ export default class ActivityFeed extends Component {
     @service feature;
 
     linkScrollerTimeout = null; // needs to be global so can be cleared when needed across functions
-    excludedEventTypes = this.feature.get('suppressionList')
-        ? ['aggregated_click_event']
-        : ['email_sent_event', 'aggregated_click_event'];
+    excludedEventTypes = ['aggregated_click_event'];
 
     @action
     enterLinkURL(event) {

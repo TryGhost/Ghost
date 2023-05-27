@@ -15,7 +15,6 @@
             {{/if}}
             <h2 class="gh-canvas-title" data-test-screen-title>Members</h2>
         </div>
-        {{#if (not-eq this.settings.membersSignupAccess "none")}}
             <section class="view-actions">
                 <div class="view-actions-bottom-row {{if this.hideSearchBar "hidden"}}">
                     <div class="relative gh-members-header-search">
@@ -64,11 +63,13 @@
                             @tagName="ul"
                             @classNames="gh-member-actions-menu dropdown-menu dropdown-triangle-top-right"
                         >
-                            <li>
-                                <LinkTo @route="members.import" class="mr2" data-test-link="import-csv">
-                                    <span>Import members</span>
-                                </LinkTo>
-                            </li>
+                            {{#if (not-eq this.settings.membersSignupAccess "none")}}
+                                <li>
+                                    <LinkTo @route="members.import" class="mr2" data-test-link="import-csv">
+                                        <span>Import members</span>
+                                    </LinkTo>
+                                </li>
+                            {{/if}}
                             <li class="{{if this.members.length "" "disabled"}}">
                                 {{#if this.members.length}}
                                     <button class="mr2" type="button" {{on "click" this.exportData}} data-test-button="export-members">
@@ -96,11 +97,13 @@
                                         <span>Remove label from selected members ({{this.members.length}})</span>
                                     </button>
                                 </li>
-                                <li>
-                                    <button class="mr2" data-test-button="unsubscribe-selected" type="button" {{on "click" this.bulkUnsubscribe}}>
-                                        <span>Unsubscribe selected members ({{this.members.length}})</span>
-                                    </button>
-                                </li>
+                                {{#if (not-eq this.settings.membersSignupAccess "none")}}
+                                    <li>
+                                        <button class="mr2" data-test-button="unsubscribe-selected" type="button" {{on "click" this.bulkUnsubscribe}}>
+                                            <span>Unsubscribe selected members ({{this.members.length}})</span>
+                                        </button>
+                                    </li>
+                                {{/if}}
                                 <li class="divider"></li>
                                 <li>
                                     <button class="mr2" data-test-button="delete-selected" type="button" {{on "click" this.bulkDelete}}>
@@ -110,10 +113,11 @@
                             {{/if}}
                         </GhDropdown>
                     </span>
-                    <LinkTo @route="member.new" class="gh-btn gh-btn-primary" data-test-new-member-button="true"><span>New member</span><span class="gh-btn-text-hide-for-mobile">New</span></LinkTo>
+                    {{#if (not-eq this.settings.membersSignupAccess "none")}}
+                        <LinkTo @route="member.new" class="gh-btn gh-btn-primary" data-test-new-member-button="true"><span>New member</span><span class="gh-btn-text-hide-for-mobile">New</span></LinkTo>
+                    {{/if}}
                 </div>
             </section>
-        {{/if}}
     </GhCanvasHeader>
 
     {{#if this.members.loading}}
@@ -150,6 +154,7 @@
                                     @newsletterEnabled={{and (not-eq this.settings.editorDefaultEmailRecipients "disabled") this.settings.emailTrackOpens}}
                                     @member={{member.content}}
                                     @filterColumns={{this.filterColumns}}
+                                    @query={{hash postAnalytics=this.postAnalytics}}
                                     data-test-member={{member.id}}
                                 />
                             {{/if}}

@@ -1,13 +1,13 @@
 /** By default, CRAs webpack bundle combines and appends the main css at root level, so they are not applied inside iframe
  * This uses a hack where we append `<style> </style>` tag with all CSS inside the head of iframe dynamically, thus making it available easily
- * We can create separate variables to keep styles grouped logically, and export them as one appeneded string
+ * We can create separate variables to keep styles grouped logically, and export them as one appended string
 */
 
 import {GlobalStyles} from './Global.styles';
 import {ActionButtonStyles} from './common/ActionButton';
 import {BackButtonStyles} from './common/BackButton';
 import {SwitchStyles} from './common/Switch';
-import AccountHomePageStyles from '!!raw-loader!./pages/AccountHomePage/AccountHomePage.css';
+import AccountHomePageStyles from './pages/AccountHomePage/AccountHomePage.css';
 import {AccountPlanPageStyles} from './pages/AccountPlanPage';
 import {InputFieldStyles} from './common/InputField';
 import {SignupPageStyles} from './pages/SignupPage';
@@ -17,9 +17,9 @@ import {MagicLinkStyles} from './pages/MagicLinkPage';
 import {PopupNotificationStyles} from './common/PopupNotification';
 import {OfferPageStyles} from './pages/OfferPage';
 import {FeedbackPageStyles} from './pages/FeedbackPage';
-import EmailSuppressedPage from '!!raw-loader!./pages/EmailSuppressedPage.css';
-import EmailSuppressionFAQ from '!!raw-loader!./pages/EmailSuppressionFAQ.css';
-import EmailReceivingFAQ from '!!raw-loader!./pages/EmailReceivingFAQ.css';
+import EmailSuppressedPage from './pages/EmailSuppressedPage.css';
+import EmailSuppressionFAQ from './pages/EmailSuppressionFAQ.css';
+import EmailReceivingFAQ from './pages/EmailReceivingFAQ.css';
 
 // Global styles
 const FrameStyles = `
@@ -114,6 +114,14 @@ const FrameStyles = `
 .gh-portal-btn-container.sticky.m24 {
     margin: 0 0 -24px;
     padding: 24px 0 24px;
+}
+
+.gh-portal-signup-terms-wrapper + .gh-portal-btn-container {
+    margin: 16px 0 0;
+}
+
+.gh-portal-signup-terms-wrapper + .gh-portal-btn-container.sticky.m24 {
+    padding: 16px 0 24px;
 }
 
 .gh-portal-btn-container .gh-portal-btn {
@@ -801,7 +809,7 @@ const FrameStyles = `
 const MobileStyles = `
 @media (max-width: 1440px) {
     .gh-portal-popup-container:not(.full-size):not(.large-size):not(.preview) {
-        width: 460px;
+        width: 480px;
     }
 
     .gh-portal-popup-container.large-size {

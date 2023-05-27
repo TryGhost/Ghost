@@ -41,7 +41,7 @@ module.exports = function (Bookshelf) {
             case 'add':
                 return baseOptions.concat(extraOptions, ['autoRefresh']);
             case 'edit':
-                return baseOptions.concat(extraOptions, ['id', 'require']);
+                return baseOptions.concat(extraOptions, ['id', 'require', 'autoRefresh']);
             case 'findOne':
                 return baseOptions.concat(extraOptions, ['columns', 'require', 'mongoTransformer']);
             case 'findAll':

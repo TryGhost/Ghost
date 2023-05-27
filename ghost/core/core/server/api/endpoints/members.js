@@ -367,6 +367,13 @@ module.exports = {
             const pathToCSV = frame.file.path;
             const headerMapping = frame.data.mapping;
 
+            let email;
+            if (frame.user) {
+                email = frame.user.get('email');
+            } else {
+                email = await models.User.getOwnerUser().get('email');
+            }
+
             return membersService.processImport({
                 pathToCSV,
                 headerMapping,
@@ -374,7 +381,7 @@ module.exports = {
                 importLabel,
                 LabelModel: models.Label,
                 user: {
-                    email: frame.user.get('email')
+                    email: email
                 }
             });
         }

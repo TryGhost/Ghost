@@ -1,4 +1,4 @@
-import {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import AppContext from '../../AppContext';
 import {ReactComponent as ThumbDownIcon} from '../../images/icons/thumbs-down.svg';
 import {ReactComponent as ThumbUpIcon} from '../../images/icons/thumbs-up.svg';
@@ -8,8 +8,6 @@ import {HumanReadableError} from '../../utils/errors';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import LoadingPage from './LoadingPage';
-
-const React = require('react');
 
 export const FeedbackPageStyles = `
     .gh-portal-feedback {
@@ -153,14 +151,14 @@ export const FeedbackPageStyles = `
         }
 
         @keyframes mobile-tray-from-bottom {
-            0% { 
+            0% {
                 opacity: 0;
                 transform: translateY(300px);
             }
             20% {
                 opacity: 1.0;
             }
-            100% { 
+            100% {
                 transform: translateY(0);
             }
         }
@@ -168,7 +166,7 @@ export const FeedbackPageStyles = `
 `;
 
 function ErrorPage({error}) {
-    const {onAction} = useContext(AppContext);
+    const {onAction, t} = useContext(AppContext);
 
     return (
         <div className='gh-portal-content gh-portal-feedback with-footer'>
@@ -176,7 +174,7 @@ function ErrorPage({error}) {
             <div class="gh-feedback-icon gh-feedback-icon-error">
                 <ThumbErrorIcon />
             </div>
-            <h1 className="gh-portal-main-title">Sorry, that didn’t work.</h1>
+            <h1 className="gh-portal-main-title">{t('Sorry, that didn’t work.')}</h1>
             <div>
                 <p className="gh-portal-text-center">{error}</p>
             </div>
@@ -186,7 +184,7 @@ function ErrorPage({error}) {
                 onClick = {() => onAction('closePopup')}
                 disabled={false}
                 brandColor='#000000'
-                label={'Close'}
+                label={t('Close')}
                 isRunning={false}
                 tabindex='3'
                 classes={'sticky bottom'}
@@ -196,7 +194,7 @@ function ErrorPage({error}) {
 }
 
 const ConfirmDialog = ({onConfirm, loading, initialScore}) => {
-    const {onAction, brandColor} = useContext(AppContext);
+    const {onAction, brandColor, t} = useContext(AppContext);
     const [score, setScore] = useState(initialScore);
 
     const stopPropagation = (event) => {
@@ -223,7 +221,7 @@ const ConfirmDialog = ({onConfirm, loading, initialScore}) => {
 
     return (
         <div className="gh-portal-confirm-dialog" onMouseDown={stopPropagation}>
-            <h1 className="gh-portal-confirm-title">Give feedback on this post</h1>
+            <h1 className="gh-portal-confirm-title">{t('Give feedback on this post')}</h1>
 
             <div className="gh-feedback-buttons-group">
                 <button
@@ -232,7 +230,7 @@ const ConfirmDialog = ({onConfirm, loading, initialScore}) => {
                     onClick={() => setScore(1)}
                 >
                     <ThumbUpIcon />
-                    More like this
+                    {t('More like this')}
                 </button>
 
                 <button
@@ -241,7 +239,7 @@ const ConfirmDialog = ({onConfirm, loading, initialScore}) => {
                     onClick={() => setScore(0)}
                 >
                     <ThumbDownIcon />
-                    Less like this
+                    {t('Less like this')}
                 </button>
             </div>
 
@@ -251,7 +249,7 @@ const ConfirmDialog = ({onConfirm, loading, initialScore}) => {
                 onClick={submit}
                 disabled={false}
                 brandColor={brandColor}
-                label="Submit feedback"
+                label={t('Submit feedback')}
                 isRunning={loading}
                 tabindex="3"
             />
@@ -274,7 +272,7 @@ const LoadingFeedbackView = ({action, score}) => {
 };
 
 const ConfirmFeedback = ({positive}) => {
-    const {onAction, brandColor} = useContext(AppContext);
+    const {onAction, brandColor, t} = useContext(AppContext);
 
     const icon = positive ? <ThumbUpIcon /> : <ThumbDownIcon />;
 
@@ -285,15 +283,15 @@ const ConfirmFeedback = ({positive}) => {
             <div className="gh-feedback-icon">
                 {icon}
             </div>
-            <h1 className="gh-portal-main-title">Thanks for the feedback!</h1>
-            <p className="gh-portal-text-center">Your input helps shape what gets published.</p>
+            <h1 className="gh-portal-main-title">{t('Thanks for the feedback!')}</h1>
+            <p className="gh-portal-text-center">{t('Your input helps shape what gets published.')}</p>
             <ActionButton
                 style={{width: '100%'}}
                 retry={false}
                 onClick = {() => onAction('closePopup')}
                 disabled={false}
                 brandColor={brandColor}
-                label={'Close'}
+                label={t('Close')}
                 isRunning={false}
                 tabindex='3'
                 classes={'sticky bottom'}
@@ -303,7 +301,7 @@ const ConfirmFeedback = ({positive}) => {
 };
 
 export default function FeedbackPage() {
-    const {site, pageData, member} = useContext(AppContext);
+    const {site, pageData, member, t} = useContext(AppContext);
     const {uuid, postId, score: initialScore} = pageData;
     const [score, setScore] = useState(initialScore);
     const positive = score === 1;
@@ -320,7 +318,7 @@ export default function FeedbackPage() {
             await sendFeedback({siteUrl: site.url, uuid, postId, score: selectedScore});
             setScore(selectedScore);
         } catch (e) {
-            const text = HumanReadableError.getMessageFromError(e, 'There was a problem submitting your feedback. Please try again a little later.');
+            const text = HumanReadableError.getMessageFromError(e, t('There was a problem submitting your feedback. Please try again a little later.'));
             setError(text);
         }
         setLoading(false);

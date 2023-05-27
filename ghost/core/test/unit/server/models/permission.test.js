@@ -1,7 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
 const models = require('../../../../core/server/models');
-const testUtils = require('../../../utils');
 const configUtils = require('../../../utils/configUtils');
 
 describe('Unit: models/permission', function () {

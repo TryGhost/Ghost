@@ -3,7 +3,6 @@ const sinon = require('sinon');
 const configUtils = require('../../utils/configUtils');
 
 const Sentry = require('@sentry/node');
-const {asset} = require('../../../core/frontend/services/theme-engine/handlebars/template');
 
 const fakeDSN = 'https://aaabbbccc000111222333444555667@sentry.io/1234567';
 let sentry;

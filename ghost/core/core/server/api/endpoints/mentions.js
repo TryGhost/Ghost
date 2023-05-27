@@ -9,7 +9,8 @@ module.exports = {
             'limit',
             'order',
             'page',
-            'debug'
+            'debug',
+            'unique'
         ],
         permissions: true,
         query(frame) {

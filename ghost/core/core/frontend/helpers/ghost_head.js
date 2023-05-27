@@ -2,7 +2,7 @@
 // Usage: `{{ghost_head}}`
 //
 // Outputs scripts and other assets at the top of a Ghost theme
-const {metaData, settingsCache, config, blogIcon, urlUtils, getFrontendKey} = require('../services/proxy');
+const {labs, metaData, settingsCache, config, blogIcon, urlUtils, getFrontendKey} = require('../services/proxy');
 const {escapeExpression, SafeString} = require('../services/handlebars');
 
 // BAD REQUIRE
@@ -19,7 +19,7 @@ const {get: getMetaData, getAssetUrl} = metaData;
 
 function writeMetaTag(property, content, type) {
     type = type || property.substring(0, 7) === 'twitter' ? 'name' : 'property';
-    return '<meta ' + type + '="' + property + '" content="' + content + '" />';
+    return '<meta ' + type + '="' + property + '" content="' + content + '">';
 }
 
 function finaliseStructuredData(meta) {
@@ -52,6 +52,7 @@ function getMembersHelper(data, frontendKey) {
 
     const colorString = (_.has(data, 'site._preview') && data.site.accent_color) ? data.site.accent_color : '';
     const attributes = {
+        i18n: labs.isSet('i18n'),
         ghost: urlUtils.getSiteUrl(),
         key: frontendKey,
         api: urlUtils.urlFor('api', {type: 'content'}, true)
@@ -64,7 +65,10 @@ function getMembersHelper(data, frontendKey) {
     let membersHelper = `<script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>`;
     membersHelper += (`<style id="gh-members-styles">${templateStyles}</style>`);
     if (settingsCache.get('paid_members_enabled')) {
-        membersHelper += '<script async src="https://js.stripe.com/v3/"></script>';
+        // disable fraud detection for e2e tests to reduce waiting time
+        const isFraudSignalsEnabled = process.env.NODE_ENV === 'testing-browser' ? '?advancedFraudSignals=false' : '';
+
+        membersHelper += `<script async src="https://js.stripe.com/v3/${isFraudSignalsEnabled}"></script>`;
     }
     return membersHelper;
 }
@@ -83,11 +87,46 @@ function getSearchHelper(frontendKey) {
     return helper;
 }
 
+function getAnnouncementBarHelper(data) {
+    const preview = data?.site?._preview;
+
+    if (!settingsCache.get('announcement_content') && !preview) {
+        return '';
+    }
+
+    const {scriptUrl} = getFrontendAppConfig('announcementBar');
+    const siteUrl = urlUtils.getSiteUrl();
+    const announcementUrl = new URL('members/api/announcement/', siteUrl);
+    const attrs = {
+        'announcement-bar': siteUrl,
+        'api-url': announcementUrl
+    };
+
+    if (preview) {
+        const searchParam = new URLSearchParams(preview);
+        const announcement = searchParam.get('announcement');
+        const announcementBackground = searchParam.has('announcement_bg') ? searchParam.get('announcement_bg') : '';
+        const announcementVisibility = searchParam.has('announcement_vis');
+
+        if (!announcement || !announcementVisibility) {
+            return;
+        }
+        attrs.announcement = escapeExpression(announcement);
+        attrs['announcement-background'] = escapeExpression(announcementBackground);
+        attrs.preview = true;
+    }
+
+    const dataAttrs = getDataAttributes(attrs);
+    let helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
+
+    return helper;
+}
+
 function getWebmentionDiscoveryLink() {
     try {
         const siteUrl = urlUtils.getSiteUrl();
         const webmentionUrl = new URL('webmentions/receive/', siteUrl);
-        return `<link href="${webmentionUrl.href}" rel="webmention" />`;
+        return `<link href="${webmentionUrl.href}" rel="webmention">`;
     } catch (err) {
         logging.warn(err);
         return '';
@@ -169,15 +208,15 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         if (context) {
             // head is our main array that holds our meta data
             if (meta.metaDescription && meta.metaDescription.length > 0) {
-                head.push('<meta name="description" content="' + escapeExpression(meta.metaDescription) + '" />');
+                head.push('<meta name="description" content="' + escapeExpression(meta.metaDescription) + '">');
             }
 
             // no output in head if a publication icon is not set
             if (settingsCache.get('icon')) {
-                head.push('<link rel="icon" href="' + favicon + '" type="image/' + iconType + '" />');
+                head.push('<link rel="icon" href="' + favicon + '" type="image/' + iconType + '">');
             }
 
-            head.push('<link rel="canonical" href="' + escapeExpression(meta.canonicalUrl) + '" />');
+            head.push('<link rel="canonical" href="' + escapeExpression(meta.canonicalUrl) + '">');
 
             if (_.includes(context, 'preview')) {
                 head.push(writeMetaTag('robots', 'noindex,nofollow', 'name'));
@@ -189,17 +228,17 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             // show amp link in post when 1. we are not on the amp page and 2. amp is enabled
             if (_.includes(context, 'post') && !_.includes(context, 'amp') && settingsCache.get('amp')) {
                 head.push('<link rel="amphtml" href="' +
-                    escapeExpression(meta.ampUrl) + '" />');
+                    escapeExpression(meta.ampUrl) + '">');
             }
 
             if (meta.previousUrl) {
                 head.push('<link rel="prev" href="' +
-                    escapeExpression(meta.previousUrl) + '" />');
+                    escapeExpression(meta.previousUrl) + '">');
             }
 
             if (meta.nextUrl) {
                 head.push('<link rel="next" href="' +
-                    escapeExpression(meta.nextUrl) + '" />');
+                    escapeExpression(meta.nextUrl) + '">');
             }
 
             if (!_.includes(context, 'paged') && useStructuredData) {
@@ -216,16 +255,17 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         }
 
         head.push('<meta name="generator" content="Ghost ' +
-            escapeExpression(safeVersion) + '" />');
+            escapeExpression(safeVersion) + '">');
 
         head.push('<link rel="alternate" type="application/rss+xml" title="' +
             escapeExpression(meta.site.title) + '" href="' +
-            escapeExpression(meta.rssUrl) + '" />');
+            escapeExpression(meta.rssUrl) + '">');
 
         // no code injection for amp context!!!
         if (!_.includes(context, 'amp')) {
             head.push(getMembersHelper(options.data, frontendKey));
             head.push(getSearchHelper(frontendKey));
+            head.push(getAnnouncementBarHelper(options.data));
             try {
                 head.push(getWebmentionDiscoveryLink());
             } catch (err) {

@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   lint:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     name: Lint
     steps:
@@ -26,9 +26,15 @@ jobs:
         with:
           node-version: '16.13.0'
           cache: yarn
-      - run: yarn
+
+      - uses: actions/cache@v3
+        with:
+          path: ghost/**/.eslintcache
+          key: eslint-cache
+
+      - run: yarn --prefer-offline
       - run: yarn lint
-      - uses: daniellockyer/action-slack-build@master
+      - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -36,12 +42,9 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   admin-tests:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
-    strategy:
-      matrix:
-        browser: ["Firefox", "Chrome"]
-    name: Admin - ${{ matrix.browser }}
+    name: Admin - Chrome
     env:
       MOZ_HEADLESS: 1
       JOBS: 1
@@ -53,21 +56,20 @@ jobs:
         with:
           node-version: "16.13.0"
 
-      - run: yarn
+      - run: yarn --prefer-offline
       - run: yarn workspace ghost-admin run test
         env:
-          BROWSER: ${{ matrix.browser }}
+          BROWSER: Chrome
 
       # Merge coverage reports and upload
       - run: yarn ember coverage-merge
         working-directory: ghost/admin
       - uses: actions/upload-artifact@v3
-        if: matrix.browser == 'Chrome'
         with:
-          name: coverage
+          name: admin-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
 
-      - uses: daniellockyer/action-slack-build@master
+      - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -75,10 +77,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   migrations:
-    runs-on: ubuntu-22.04
-    defaults:
-      run:
-        working-directory: ghost/core
+    runs-on: ubuntu-latest
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     strategy:
       matrix:
@@ -126,8 +125,11 @@ jobs:
           echo "database__connection__password=root" >> $GITHUB_ENV
           echo "database__connection__database=ghost_testing" >> $GITHUB_ENV
 
-      - run: yarn
-      - run: |
+      - run: yarn --prefer-offline
+
+      - name: Run Ghost and then kill it
+        working-directory: ghost/core
+        run: |
           node index.js &
           sleep 20 && { kill $! && wait $!; } 2>/dev/null
 
@@ -139,11 +141,11 @@ jobs:
       - run: yarn knex-migrator migrate --force
 
   unit-tests:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     strategy:
       matrix:
-        node: [ '14.18.0', '16.13.0', '18.12.1' ]
+        node: [ '16.13.0', '18.12.1' ]
     name: Unit Tests (Node ${{ matrix.node }})
     steps:
       - uses: actions/checkout@v3
@@ -154,16 +156,16 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: yarn
 
-      - run: yarn
-      - run: yarn workspaces run test:unit
+      - run: yarn --prefer-offline
+      - run: yarn test:unit
 
       - uses: actions/upload-artifact@v3
         if: startsWith(matrix.node, '16')
         with:
-          name: coverage
+          name: unit-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
 
-      - uses: daniellockyer/action-slack-build@master
+      - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -171,19 +173,19 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   database-tests:
-    runs-on: ubuntu-22.04
-    defaults:
-      run:
-        working-directory: ghost/core
+    runs-on: ubuntu-latest
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     strategy:
       matrix:
-        node: [ '14.18.0', '16.13.0', '18.12.1' ]
+        node: [ '16.13.0', '18.12.1' ]
         env:
-          - DB: sqlite3
-            NODE_ENV: testing
           - DB: mysql8
             NODE_ENV: testing-mysql
+        include:
+          - node: 16.13.0
+            env:
+              DB: sqlite3
+              NODE_ENV: testing
     env:
       DB: ${{ matrix.env.DB }}
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
@@ -209,9 +211,11 @@ jobs:
           mysql database: 'ghost_testing'
           mysql root password: 'root'
 
-      - run: yarn
+      - name: Install dependencies
+        run: yarn --prefer-offline
 
-      - run: date +%s > ${{ runner.temp }}/startTime # Get start time for test suite
+      - name: Record start time
+        run: date +%s > ${{ runner.temp }}/startTime # Get start time for test suite
 
       - name: Set env vars (SQLite)
         if: contains(matrix.env.DB, 'sqlite')
@@ -221,19 +225,33 @@ jobs:
         if: contains(matrix.env.DB, 'mysql')
         run: echo "database__connection__password=root" >> $GITHUB_ENV
 
-      - name: Run tests
-        run: yarn test:ci
+      - name: E2E tests
+        working-directory: ghost/core
+        run: yarn test:ci:e2e
+
+      - name: Regression tests
+        working-directory: ghost/core
+        run: yarn test:ci:regression
+
+      - name: Integration tests
+        working-directory: ghost/core
+        run: yarn test:ci:integration
 
       # Get runtime in seconds for test suite
-      - run: |
+      - name: Record test duration
+        run: |
           startTime="$(cat ${{ runner.temp }}/startTime)"
           endTime="$(date +%s)"
           echo "test_time=$(($endTime-$startTime))" >> $GITHUB_ENV
 
-      - uses: codecov/codecov-action@v3
+      - uses: actions/upload-artifact@v3
         if: startsWith(matrix.node, '16') && contains(matrix.env.DB, 'mysql')
         with:
-          flags: e2e-tests
+          name: e2e-coverage
+          path: |
+            ghost/*/coverage-e2e/cobertura-coverage.xml
+            ghost/*/coverage-integration/cobertura-coverage.xml
+            ghost/*/coverage-regression/cobertura-coverage.xml
 
       # Continue on error if TailScale service is down
       - name: Tailscale Action
@@ -246,7 +264,8 @@ jobs:
 
       # Report time taken to metrics service
       # Continue on error if previous TailScale step fails
-      - uses: sam-lord/action-trigger-metric@main
+      - name: Store test duration
+        uses: tryghost/action-trigger-metric@main
         timeout-minutes: 1
         continue-on-error: true
         if: (github.event_name == 'push' && github.repository_owner == 'TryGhost') || (github.event_name == 'pull_request' && startsWith(github.head_ref, 'TryGhost/'))
@@ -269,7 +288,7 @@ jobs:
               }
             }
 
-      - uses: daniellockyer/action-slack-build@master
+      - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -279,7 +298,7 @@ jobs:
   ghost-cli:
     name: Ghost-CLI
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
@@ -295,7 +314,7 @@ jobs:
       - name: Install Ghost-CLI
         run: npm install -g ghost-cli@latest
 
-      - run: yarn
+      - run: yarn --prefer-offline
 
       - run: npm --no-git-tag-version version minor # We need to artificially bump the minor version to get migrations to run
         working-directory: ghost/core
@@ -328,7 +347,7 @@ jobs:
         run: |
           [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
 
-      - uses: daniellockyer/action-slack-build@master
+      - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -337,16 +356,39 @@ jobs:
 
   coverage:
     name: Coverage
-    needs: [unit-tests, admin-tests]
+    needs: [unit-tests, admin-tests, database-tests]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Restore coverage
+
+      - name: Restore Admin coverage
         uses: actions/download-artifact@v3
         with:
-          path: ghost
-      - run: rsync -av --remove-source-files ghost/coverage/* ghost/
-      - uses: codecov/codecov-action@v3
+          name: admin-coverage
+      - name: Restore E2E coverage
+        uses: actions/download-artifact@v3
+        with:
+          name: e2e-coverage
+
+      - name: Move coverage
+        run: |
+          rsync -av --remove-source-files admin/* ghost/admin
+          rsync -av --remove-source-files core/* ghost/core
+
+      - name: Upload E2E test coverage
+        uses: codecov/codecov-action@v3
+        with:
+          flags: e2e-tests
+          move_coverage_to_trash: true
+
+      - name: Restore Unit test coverage
+        uses: actions/download-artifact@v3
+        with:
+          name: unit-coverage
+          path: coverage
+      - run: rsync -av --remove-source-files coverage/* ghost/
+      - name: Upload unit test coverage
+        uses: codecov/codecov-action@v3
         with:
           flags: unit-tests
 
@@ -354,4 +396,5 @@ jobs:
     needs: [lint, ghost-cli, admin-tests, migrations, unit-tests, database-tests]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     name: Canary
+    secrets: inherit
     uses: tryghost/actions/.github/workflows/canary.yml@main

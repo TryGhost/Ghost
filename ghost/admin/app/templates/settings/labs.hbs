@@ -57,6 +57,18 @@
             <h4 class="gh-main-section-header small bn">Beta features</h4>
             <div class="gh-expandable">
                 <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Substack migrator</h4>
+                            <p class="gh-expandable-description">Import all your content, members and paid subscriptions</p>
+                        </div>
+                        <LinkTo @route="migrate" class="gh-btn" data-test-link="migrate">
+                            <span>Open</span>
+                        </LinkTo>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
                     <GhUploader
                         @extensions={{this.redirectsFileExtensions}}
                         @uploadUrl="/redirects/upload/"
@@ -153,6 +165,19 @@
                     </div>
                     </GhUploader>
                 </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Enable Portal translations (beta)</h4>
+                            <p class="gh-expandable-description">
+                               Enable support for translations in the members signup/login system
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="i18n" />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -174,42 +199,19 @@
                         </div>
                     </div>
                 </div>
+
+                <Labs::Lexical />
+
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
-                            <h4 class="gh-expandable-title">Cardmageddon - Before/After</h4>
+                            <h4 class="gh-expandable-title">Lexical multiplayer</h4>
                             <p class="gh-expandable-description">
-                                Card for comparing two images
+                                Enables multiplayer editing in the lexical editor.
                             </p>
                         </div>
                         <div class="for-switch">
-                           <GhFeatureFlag @flag="beforeAfterCard" />
-                        </div>
-                    </div>
-                </div>
-                <div class="gh-expandable-block">
-                    <div class="gh-expandable-header">
-                        <div>
-                            <h4 class="gh-expandable-title">Lexical editor</h4>
-                            <p class="gh-expandable-description">
-                               Makes lexical editor the default when creating new posts/pages.
-                            </p>
-                        </div>
-                        <div class="for-switch">
-                           <GhFeatureFlag @flag="lexicalEditor" />
-                        </div>
-                    </div>
-                </div>
-                <div class="gh-expandable-block">
-                    <div class="gh-expandable-header">
-                        <div>
-                            <h4 class="gh-expandable-title">Suppression list</h4>
-                            <p class="gh-expandable-description">
-                                Allows checking whether a member's email is blocked and removing emails from the suppression list.
-                            </p>
-                        </div>
-                        <div class="for-switch">
-                            <GhFeatureFlag @flag="suppressionList" />
+                            <GhFeatureFlag @flag="lexicalMultiplayer" />
                         </div>
                     </div>
                 </div>
@@ -218,37 +220,11 @@
                         <div>
                             <h4 class="gh-expandable-title">Webmentions</h4>
                             <p class="gh-expandable-description">
-                                Allow receiving webmentions from external sites and sending webmentions when linking external sites in posts.
+                                Allows viewing received mentions on the dashboard.
                             </p>
                         </div>
                         <div class="for-switch">
                             <GhFeatureFlag @flag="webmentions" />
-                        </div>
-                    </div>
-                </div>
-                <div class="gh-expandable-block">
-                    <div class="gh-expandable-header">
-                        <div>
-                            <h4 class="gh-expandable-title">Webmention Email Notifications</h4>
-                            <p class="gh-expandable-description">
-                                Receive email notifications when a webmention is received.
-                            </p>
-                        </div>
-                        <div class="for-switch">
-                            <GhFeatureFlag @flag="webmentionEmail" />
-                        </div>
-                    </div>
-                </div>
-                <div class="gh-expandable-block">
-                    <div class="gh-expandable-header">
-                        <div>
-                            <h4 class="gh-expandable-title">External attribution</h4>
-                            <p class="gh-expandable-description">
-                                Adds ?ref to external links in web posts and adds a setting to control this for both web and newsletters.
-                            </p>
-                        </div>
-                        <div class="for-switch">
-                            <GhFeatureFlag @flag="outboundLinkTagging" />
                         </div>
                     </div>
                 </div>
@@ -268,13 +244,136 @@
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
-                            <h4 class="gh-expandable-title">Milestone emails</h4>
+                            <h4 class="gh-expandable-title">Websockets</h4>
                             <p class="gh-expandable-description">
-                                Send emails for reaching specific milestones.
+                                Test out Websockets functionality at <code>/ghost/#/websockets</code>.
                             </p>
                         </div>
                         <div class="for-switch">
-                            <GhFeatureFlag @flag="milestoneEmails" />
+                            <GhFeatureFlag @flag="websockets" />
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Stripe Automatic Tax</h4>
+                            <p class="gh-expandable-description">
+                               Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="stripeAutomaticTax" />
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Making it rain</h4>
+                            <p class="gh-expandable-description">
+                               Building momentum in the eyes of our publishers.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="makingItRain" />
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Post history</h4>
+                            <p class="gh-expandable-description">
+                                Enables post history revision within the editor
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="postHistory" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Revision Diffing</h4>
+                            <p class="gh-expandable-description">
+                                Enables showing post history differences within the editor
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="postDiffing" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Image Editor</h4>
+                            <p class="gh-expandable-description">
+                                Allows publishers to edit images in the lexical editor
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="imageEditor" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Signup Card</h4>
+                            <p class="gh-expandable-description">
+                                Enables the signup card in the Lexical editor
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="signupCard" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Signup Form</h4>
+                            <p class="gh-expandable-description">
+                                Adds an option to generate embed code for the signup form in the email newsletter settings.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="signupForm" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Collections</h4>
+                            <p class="gh-expandable-description">
+                                Enables Collections 2.0
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="collections" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Admin X</h4>
+                            <p class="gh-expandable-description">
+                                Enables Admin X, the new admin UI for Ghost
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="adminXSettings" />
                         </div>
                     </div>
                 </div>

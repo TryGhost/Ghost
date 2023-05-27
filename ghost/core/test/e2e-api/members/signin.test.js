@@ -34,7 +34,6 @@ describe('Members Signin', function () {
 
     beforeEach(function () {
         mockManager.mockMail();
-        mockManager.mockStripe();
     });
 
     afterEach(function () {

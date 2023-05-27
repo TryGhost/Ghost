@@ -17,7 +17,9 @@ let commands = [];
 
 const COMMAND_GHOST = {
     name: 'ghost',
-    command: 'yarn nodemon -q -i ghost/admin -i ghost/core/content -i ghost/core/core/built -i ghost/portal',
+    // Note: if this isn't working for you, please use Node 18 and above
+    command: 'node --watch index.js',
+    cwd: path.resolve(__dirname, '../ghost/core'),
     prefixColor: 'blue',
     env: {}
 };
@@ -38,7 +40,38 @@ if (DASH_DASH_ARGS.includes('ghost')) {
     commands = [COMMAND_GHOST, COMMAND_ADMIN];
 }
 
-if (DASH_DASH_ARGS.includes('portal')) {
+if (DASH_DASH_ARGS.includes('revisions') || DASH_DASH_ARGS.includes('all')) {
+    commands.push({
+        name: 'post-revisions',
+        command: 'yarn dev',
+        cwd: path.resolve(__dirname, '../ghost/post-revisions'),
+        prefixColor: 'green',
+        env: {}
+    });
+}
+
+if (DASH_DASH_ARGS.includes('in-memory-repository') || DASH_DASH_ARGS.includes('all')) {
+    commands.push({
+        name: 'in-memory-repository',
+        command: 'yarn dev',
+        cwd: path.resolve(__dirname, '../ghost/in-memory-repository'),
+        prefixColor: 'pink',
+        env: {}
+    });
+}
+
+if (DASH_DASH_ARGS.includes('admin-x') || DASH_DASH_ARGS.includes('adminx') || DASH_DASH_ARGS.includes('adminX') || DASH_DASH_ARGS.includes('all')) {
+    commands.push({
+        name: 'adminX',
+        command: 'yarn dev',
+        cwd: path.resolve(__dirname, '../ghost/admin-x-settings'),
+        prefixColor: '#C35831',
+        env: {}
+    });
+    COMMAND_GHOST.env['adminX__url'] = 'http://localhost:4174/admin-x-settings.umd.js';
+}
+
+if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'portal',
         command: 'yarn dev',
@@ -49,8 +82,38 @@ if (DASH_DASH_ARGS.includes('portal')) {
     COMMAND_GHOST.env['portal__url'] = 'http://localhost:5368/umd/portal.min.js';
 }
 
-(async () => {
-    if (DASH_DASH_ARGS.includes('stripe')) {
+if (DASH_DASH_ARGS.includes('announcement-bar') || DASH_DASH_ARGS.includes('announcementBar') || DASH_DASH_ARGS.includes('announcementbar') || DASH_DASH_ARGS.includes('all')) {
+    commands.push({
+        name: 'announcement-bar',
+        command: 'yarn dev',
+        cwd: path.resolve(__dirname, '../ghost/announcement-bar'),
+        prefixColor: '#DC9D00',
+        env: {}
+    });
+    COMMAND_GHOST.env['announcementBar__url'] = 'http://localhost:5371/announcement-bar';
+}
+
+if (DASH_DASH_ARGS.includes('search') || DASH_DASH_ARGS.includes('all')) {
+    commands.push({
+        name: 'search',
+        command: 'yarn dev',
+        cwd: path.resolve(__dirname, '../ghost/sodo-search'),
+        prefixColor: '#23de43',
+        env: {}
+    });
+    COMMAND_GHOST.env['sodoSearch__url'] = 'http://localhost:5370/umd/sodo-search.min.js';
+    COMMAND_GHOST.env['sodoSearch__styles'] = 'http://localhost:5370/umd/main.css';
+}
+
+if (DASH_DASH_ARGS.includes('lexical')) {
+    COMMAND_GHOST.env['editor__url'] = 'http://localhost:4173/koenig-lexical.umd.js';
+}
+
+async function handleStripe() {
+    if (DASH_DASH_ARGS.includes('stripe') || DASH_DASH_ARGS.includes('all')) {
+        if (DASH_DASH_ARGS.includes('offline')) {
+            return;
+        }
         console.log('Fetching Stripe secret token..');
 
         let stripeSecret;
@@ -74,6 +137,10 @@ if (DASH_DASH_ARGS.includes('portal')) {
             env: {}
         });
     }
+}
+
+(async () => {
+    await handleStripe();
 
     if (!commands.length) {
         console.log(`No commands provided`);

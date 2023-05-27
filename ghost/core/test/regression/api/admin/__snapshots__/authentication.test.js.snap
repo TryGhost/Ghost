@@ -15,8 +15,10 @@ Object {
       "id": "1",
       "last_seen": null,
       "location": null,
+      "mention_notifications": true,
       "meta_description": null,
       "meta_title": null,
+      "milestone_notifications": true,
       "name": "test user",
       "paid_subscription_canceled_notification": false,
       "paid_subscription_started_notification": true,
@@ -37,7 +39,7 @@ exports[`Authentication API Blog setup complete setup 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "596",
+  "content-length": "656",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -211,10 +213,8 @@ a {
 </html>"
 `;
 
-exports[`Authentication API Blog setup complete setup 4: [metadata 1] 1`] = `
-Object {
-  "subject": "Your New Ghost Site",
-  "text": " [https://static.ghost.org/v4.0.0/images/ghost-orb-3.png] Hello!
+exports[`Authentication API Blog setup complete setup 4: [text 1] 1`] = `
+" [https://static.ghost.org/v4.0.0/images/ghost-orb-3.png] Hello!
 
 Good news! You've successfully created a brand new Ghost publication over on 
 http://127.0.0.1:2369/ [http://127.0.0.1:2369/]
@@ -232,7 +232,12 @@ xoxo
 Team Ghost – https://ghost.org [https://ghost.org]
 
 This email was sent from http://127.0.0.1:2369/ [http://127.0.0.1:2369/] to 
-test@example.com [test@example.com]",
+test@example.com [test@example.com]"
+`;
+
+exports[`Authentication API Blog setup complete setup 5: [metadata 1] 1`] = `
+Object {
+  "subject": "Your New Ghost Site",
   "to": "test@example.com",
 }
 `;
@@ -283,8 +288,10 @@ Object {
       "id": "1",
       "last_seen": null,
       "location": null,
+      "mention_notifications": true,
       "meta_description": null,
       "meta_title": null,
+      "milestone_notifications": true,
       "name": "test user",
       "paid_subscription_canceled_notification": false,
       "paid_subscription_started_notification": true,
@@ -305,7 +312,7 @@ exports[`Authentication API Blog setup complete setup with default theme 2: [hea
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "596",
+  "content-length": "656",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -479,10 +486,8 @@ a {
 </html>"
 `;
 
-exports[`Authentication API Blog setup complete setup with default theme 4: [metadata 1] 1`] = `
-Object {
-  "subject": "Your New Ghost Site",
-  "text": " [https://static.ghost.org/v4.0.0/images/ghost-orb-3.png] Hello!
+exports[`Authentication API Blog setup complete setup with default theme 4: [text 1] 1`] = `
+" [https://static.ghost.org/v4.0.0/images/ghost-orb-3.png] Hello!
 
 Good news! You've successfully created a brand new Ghost publication over on 
 http://127.0.0.1:2369/ [http://127.0.0.1:2369/]
@@ -500,7 +505,12 @@ xoxo
 Team Ghost – https://ghost.org [https://ghost.org]
 
 This email was sent from http://127.0.0.1:2369/ [http://127.0.0.1:2369/] to 
-test@example.com [test@example.com]",
+test@example.com [test@example.com]"
+`;
+
+exports[`Authentication API Blog setup complete setup with default theme 5: [metadata 1] 1`] = `
+Object {
+  "subject": "Your New Ghost Site",
   "to": "test@example.com",
 }
 `;
@@ -566,8 +576,10 @@ Object {
       "id": "1",
       "last_seen": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "location": "location",
+      "mention_notifications": true,
       "meta_description": null,
       "meta_title": null,
+      "milestone_notifications": true,
       "name": "test user edit",
       "paid_subscription_canceled_notification": false,
       "paid_subscription_started_notification": true,
@@ -588,7 +600,7 @@ exports[`Authentication API Blog setup update setup 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "668",
+  "content-length": "728",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

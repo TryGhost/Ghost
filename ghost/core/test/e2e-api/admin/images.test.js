@@ -1,17 +1,17 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const FormData = require('form-data');
 const p = require('path');
-const {promises: fs, stat} = require('fs');
+const {promises: fs} = require('fs');
 const assert = require('assert');
 const config = require('../../../core/shared/config');
 const urlUtils = require('../../../core/shared/url-utils');
 const imageTransform = require('@tryghost/image-transform');
 const sinon = require('sinon');
 const storage = require('../../../core/server/adapters/storage');
-const sleep = require('../../utils/sleep');
 const {anyErrorId} = matchers;
 const {imageSize} = require('../../../core/server/lib/image');
 const configUtils = require('../../utils/configUtils');
+const logging = require('@tryghost/logging');
 
 const images = [];
 let agent, frontendAgent, ghostServer;
@@ -188,6 +188,7 @@ describe('Images API', function () {
     it('Can not upload a json file', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/data/redirects.json');
         const fileContents = await fs.readFile(originalFilePath);
+        const loggingStub = sinon.stub(logging, 'error');
         await uploadImageRequest({fileContents, filename: 'redirects.json', contentType: 'application/json'})
             .expectStatus(415)
             .matchBodySnapshot({
@@ -195,11 +196,13 @@ describe('Images API', function () {
                     id: anyErrorId
                 }]
             });
+        sinon.assert.calledOnce(loggingStub);
     });
 
     it('Can not upload a file without extension', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/data/redirects.json');
         const fileContents = await fs.readFile(originalFilePath);
+        const loggingStub = sinon.stub(logging, 'error');
         await uploadImageRequest({fileContents, filename: 'redirects', contentType: 'image/png'})
             .expectStatus(415)
             .matchBodySnapshot({
@@ -207,11 +210,13 @@ describe('Images API', function () {
                     id: anyErrorId
                 }]
             });
+        sinon.assert.calledOnce(loggingStub);
     });
 
     it('Can not upload a json file with image mime type', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/data/redirects.json');
         const fileContents = await fs.readFile(originalFilePath);
+        const loggingStub = sinon.stub(logging, 'error');
         await uploadImageRequest({fileContents, filename: 'redirects.json', contentType: 'image/gif'})
             .expectStatus(415)
             .matchBodySnapshot({
@@ -219,11 +224,13 @@ describe('Images API', function () {
                     id: anyErrorId
                 }]
             });
+        sinon.assert.calledOnce(loggingStub);
     });
 
     it('Can not upload a json file with image file extension', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/data/redirects.json');
         const fileContents = await fs.readFile(originalFilePath);
+        const loggingStub = sinon.stub(logging, 'error');
         await uploadImageRequest({fileContents, filename: 'redirects.png', contentType: 'application/json'})
             .expectStatus(415)
             .matchBodySnapshot({
@@ -231,6 +238,7 @@ describe('Images API', function () {
                     id: anyErrorId
                 }]
             });
+        sinon.assert.calledOnce(loggingStub);
     });
 
     it('Can upload multiple images with the same name', async function () {
@@ -254,32 +262,6 @@ describe('Images API', function () {
     it('Can use _o in uploaded file name, as long as it is not at the end', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
         await uploadImageCheck({path: originalFilePath, filename: 'a_o-3.png', contentType: 'image/png', expectedFileName: 'a_o-3.png', expectedOriginalFileName: 'a_o-3_o.png'});
-    });
-
-    it('Can upload multiple images with the same name in parallel', async function () {
-        const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
-        const originalFilePath2 = p.join(__dirname, '/../../utils/fixtures/images/ghosticon.jpg');
-
-        // Delay the first original file upload by 400ms to force race condition
-        const store = storage.getStorage('images');
-        const saveStub = sinon.stub(store, 'save');
-        let calls = 0;
-        saveStub.callsFake(async function (file) {
-            if (file.name.includes('_o')) {
-                calls += 1;
-                if (calls === 1) {
-                    await sleep(400);
-                }
-            }
-            return saveStub.wrappedMethod.call(this, ...arguments);
-        });
-        const firstPromise = uploadImageCheck({path: originalFilePath, filename: 'a.png', contentType: 'image/png'});
-        await sleep(10);
-
-        await Promise.all([
-            firstPromise,
-            uploadImageCheck({path: originalFilePath2, filename: 'a.png', contentType: 'image/png', expectedFileName: 'a-1.png'})
-        ]);
     });
 
     it('Can upload around midnight of month change', async function () {

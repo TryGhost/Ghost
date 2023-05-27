@@ -1,13 +1,14 @@
 const assert = require('assert');
+const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const SingleUseTokenProvider = require('../../../core/server/services/members/SingleUseTokenProvider');
-const settingsService = require('../../../core/server/services/settings/settings-service');
 const settingsCache = require('../../../core/shared/settings-cache');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
 const {stringMatching, anyEtag, anyUuid, anyContentLength, anyContentVersion} = matchers;
 const models = require('../../../core/server/models');
 const {anyErrorId} = matchers;
 
-const CURRENT_SETTINGS_COUNT = 71;
+const CURRENT_SETTINGS_COUNT = 79;
 
 const settingsMatcher = {};
 
@@ -28,24 +29,22 @@ const matchSettingsArray = (length) => {
         settingsArray[26] = publicHashSettingMatcher;
     }
 
-    if (length > 58) {
+    if (length > 60) {
         // Added a setting that is alphabetically before 'labs'? then you need to increment this counter.
         // Item at index x is the lab settings, which changes as we add and remove features
-        settingsArray[58] = labsSettingMatcher;
+        settingsArray[60] = labsSettingMatcher;
     }
 
     return settingsArray;
 };
 
 describe('Settings API', function () {
-    let agent, membersService;
+    let agent;
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init();
         await agent.loginAsOwner();
-
-        membersService = require('../../../core/server/services/members');
     });
 
     beforeEach(function () {
@@ -54,6 +53,7 @@ describe('Settings API', function () {
 
     afterEach(function () {
         mockManager.restore();
+        sinon.restore();
     });
 
     describe('Browse', function () {
@@ -107,6 +107,14 @@ describe('Settings API', function () {
                 {
                     key: 'codeinjection_head',
                     value: null
+                },
+                {
+                    key: 'announcement_content',
+                    value: '<p>Great news coming soon!</p>'
+                },
+                {
+                    key: 'announcement_visibility',
+                    value: JSON.stringify(['visitors', 'free_members'])
                 },
                 {
                     key: 'navigation',
@@ -305,6 +313,64 @@ describe('Settings API', function () {
 
             mockManager.assert.sentEmailCount(0);
         });
+
+        it('fails to edit setting with unsupported announcement_visibility value', async function () {
+            const loggingStub = sinon.stub(logging, 'error');
+            const settingsToChange = [
+                {
+                    key: 'announcement_visibility',
+                    value: JSON.stringify(['invalid value'])
+                }
+            ];
+
+            await agent.put('settings/')
+                .body({
+                    settings: settingsToChange
+                })
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [
+                        {
+                            id: anyErrorId
+                        }
+                    ]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+
+            sinon.assert.calledOnce(loggingStub);
+        });
+
+        it('fails to edit setting with unsupported announcement_background value', async function () {
+            const loggingStub = sinon.stub(logging, 'error');
+            const settingsToChange = [
+                {
+                    key: 'announcement_background',
+                    value: 'not a background value'
+                }
+            ];
+
+            await agent.put('settings/')
+                .body({
+                    settings: settingsToChange
+                })
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [
+                        {
+                            id: anyErrorId
+                        }
+                    ]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+
+            sinon.assert.calledOnce(loggingStub);
+        });
     });
 
     describe('verify key update', function () {
@@ -338,6 +404,7 @@ describe('Settings API', function () {
         });
 
         it('cannot update invalid keys via token', async function () {
+            const loggingStub = sinon.stub(logging, 'error');
             const token = await (new SingleUseTokenProvider({
                 SingleUseTokenModel: models.SingleUseToken,
                 validityPeriod: 24 * 60 * 60 * 1000,
@@ -360,6 +427,8 @@ describe('Settings API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
+
+            sinon.assert.calledOnce(loggingStub);
         });
     });
 

@@ -12,6 +12,7 @@ class StaffServiceWrapper {
 
         const logging = require('@tryghost/logging');
         const models = require('../../models');
+        const memberAttribution = require('../member-attribution');
         const {GhostMailer} = require('../mail');
         const mailer = new GhostMailer();
         const settingsCache = require('../../../shared/settings-cache');
@@ -26,6 +27,7 @@ class StaffServiceWrapper {
             settingsCache,
             urlUtils,
             DomainEvents,
+            memberAttributionService: memberAttribution.service,
             labs
         });
 

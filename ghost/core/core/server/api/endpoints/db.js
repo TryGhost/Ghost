@@ -3,6 +3,7 @@ const moment = require('moment-timezone');
 const dbBackup = require('../../data/db/backup');
 const exporter = require('../../data/exporter');
 const importer = require('../../data/importer');
+const mediaInliner = require('../../services/media-inliner');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 const settingsCache = require('../../../shared/settings-cache');
@@ -81,15 +82,39 @@ module.exports = {
             cacheInvalidate: true
         },
         permissions: true,
-        query(frame) {
+        async query(frame) {
             const siteTimezone = settingsCache.get('timezone');
             const importTag = `#Import ${moment().tz(siteTimezone).format('YYYY-MM-DD HH:mm')}`;
+
+            let email;
+            if (frame.user) {
+                email = frame.user.get('email');
+            } else {
+                email = await models.User.getOwnerUser().get('email');
+            }
+
             return importer.importFromFile(frame.file, {
                 user: {
-                    email: frame.user.get('email')
+                    email: email
                 },
                 importTag
             });
+        }
+    },
+
+    inlineMedia: {
+        permissions: {
+            method: 'importContent'
+        },
+        validation: {
+            options: {
+                include: {
+                    values: ['domains']
+                }
+            }
+        },
+        async query(frame) {
+            return mediaInliner.api.startMediaInliner(frame.data.domains);
         }
     },
 

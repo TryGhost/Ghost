@@ -63,7 +63,7 @@ module.exports = {
         ],
         async query(frame) {
             await settingsBREADService.verifyKeyUpdate(frame.data.token);
-            
+
             // We need to return all settings here, because we have calculated settings that might change
             const browse = await settingsBREADService.browse(frame.options.context);
 

@@ -23,7 +23,7 @@ module.exports = class LinkRedirectRepository {
      */
     async save(linkRedirect) {
         const model = await this.#LinkRedirect.add({
-            // Only store the parthname (no support for variable query strings)
+            // Only store the pathname (no support for variable query strings)
             from: this.stripSubdirectoryFromPath(linkRedirect.from.pathname),
             to: linkRedirect.to.href
         }, {});

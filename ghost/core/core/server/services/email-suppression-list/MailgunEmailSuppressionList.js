@@ -2,6 +2,7 @@ const {AbstractEmailSuppressionList, EmailSuppressionData, EmailSuppressedEvent}
 const {SpamComplaintEvent, EmailBouncedEvent} = require('@tryghost/email-events');
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
+const models = require('../../models');
 
 /**
  * @typedef {object} IMailgunAPIClient
@@ -95,6 +96,7 @@ class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
     }
 
     async init() {
+        this.Suppression = models.Suppression;
         const handleEvent = reason => async (event) => {
             try {
                 if (reason === 'bounce') {

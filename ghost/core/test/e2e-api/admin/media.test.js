@@ -2,9 +2,10 @@ const path = require('path');
 const fs = require('fs-extra');
 const should = require('should');
 const supertest = require('supertest');
+const sinon = require('sinon');
 const localUtils = require('./utils');
-const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
+const logging = require('@tryghost/logging');
 
 describe('Media API', function () {
     // NOTE: holds paths to media that need to be cleaned up after the tests are run
@@ -21,6 +22,10 @@ describe('Media API', function () {
         media.forEach(function (image) {
             fs.removeSync(config.get('paths').appRoot + image);
         });
+    });
+
+    afterEach(function () {
+        sinon.restore();
     });
 
     describe('media/upload', function () {
@@ -85,7 +90,36 @@ describe('Media API', function () {
             media.push(res.body.media[0].url.replace(config.get('url'), ''));
         });
 
+        it('Can upload an m4a with audio/mp4 content type', async function () {
+            const res = await request.post(localUtils.API.getApiQuery('media/upload'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .field('ref', 'audio_file_mp4')
+                .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample.m4a'), {filename: 'audio-mp4.m4a', contentType: 'audio/mp4'})
+                .expect(201);
+
+            res.body.media[0].url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/audio-mp4.m4a`));
+            res.body.media[0].ref.should.equal('audio_file_mp4');
+
+            media.push(res.body.media[0].url.replace(config.get('url'), ''));
+        });
+
+        it('Can upload an m4a with audio/x-m4a content type', async function () {
+            const res = await request.post(localUtils.API.getApiQuery('media/upload'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .field('ref', 'audio_file_x_m4a')
+                .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample.m4a'), {filename: 'audio-x-m4a.m4a', contentType: 'audio/x-m4a'})
+                .expect(201);
+
+            res.body.media[0].url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/audio-x-m4a.m4a`));
+            res.body.media[0].ref.should.equal('audio_file_x_m4a');
+
+            media.push(res.body.media[0].url.replace(config.get('url'), ''));
+        });
+
         it('Rejects non-media file type', async function () {
+            const loggingStub = sinon.stub(logging, 'error');
             const res = await request.post(localUtils.API.getApiQuery('media/upload'))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
@@ -94,6 +128,7 @@ describe('Media API', function () {
                 .expect(415);
 
             res.body.errors[0].message.should.match(/select a valid media file/gi);
+            sinon.assert.calledOnce(loggingStub);
         });
     });
 

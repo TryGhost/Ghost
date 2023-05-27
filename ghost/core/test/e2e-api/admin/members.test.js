@@ -1,11 +1,13 @@
-const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, matchers, regexes} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyContentLength, anyErrorId, anyObject} = matchers;
+const {queryStringToken} = regexes;
 const ObjectId = require('bson-objectid').default;
 
 const assert = require('assert');
 const nock = require('nock');
-const should = require('should');
 const sinon = require('sinon');
+const should = require('should');
+
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/configUtils');
 
@@ -18,6 +20,8 @@ const urlService = require('../../../core/server/services/url');
 const urlUtils = require('../../../core/shared/url-utils');
 const settingsCache = require('../../../core/shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
+const logging = require('@tryghost/logging');
+const {stripeMocker} = require('../../utils/e2e-framework-mock-manager');
 
 /**
  * Assert that haystack and needles match, ignoring the order.
@@ -70,14 +74,36 @@ const newsletterSnapshot = {
 };
 
 const subscriptionSnapshot = {
+    id: anyString,
     start_date: anyString,
     current_period_end: anyString,
     price: {
+        id: anyString,
         price_id: anyObjectId,
         tier: {
+            id: anyString,
             tier_id: anyObjectId
         }
+    },
+    plan: {
+        id: anyString
+    },
+    customer: {
+        id: anyString
     }
+};
+
+const tierSnapshot = {
+    id: anyObjectId,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime,
+    monthly_price_id: anyString,
+    yearly_price_id: anyString
+};
+
+const subscriptionSnapshotWithTier = {
+    ...subscriptionSnapshot,
+    tier: tierSnapshot
 };
 
 function buildMemberWithoutIncludesSnapshot(options) {
@@ -190,9 +216,6 @@ describe('Members API - member attribution', function () {
     beforeEach(function () {
         mockManager.mockStripe();
         mockManager.mockMail();
-
-        // For some reason it is enabled by default?
-        mockManager.mockLabsEnabled('memberAttribution');
     });
 
     afterEach(function () {
@@ -436,6 +459,7 @@ describe('Members API - member attribution', function () {
 
 describe('Members API', function () {
     let newsletters;
+    let emailMockReceiver;
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
@@ -447,7 +471,7 @@ describe('Members API', function () {
 
     beforeEach(function () {
         mockManager.mockStripe();
-        mockManager.mockMail();
+        emailMockReceiver = mockManager.mockMail();
     });
 
     afterEach(function () {
@@ -527,6 +551,20 @@ describe('Members API', function () {
             .expectStatus(200)
             .matchBodySnapshot({
                 members: new Array(5).fill(memberMatcherShallowIncludes)
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
+
+    it('Can filter by tier id', async function () {
+        const products = await getPaidProduct();
+        await agent
+            .get(`/members/?filter=tier_id:[${products.toJSON().id}]`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: new Array(4).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -712,10 +750,13 @@ describe('Members API', function () {
             });
         const newMember = body.members[0];
 
+        // Cannot add same member twice
+        const loggingStub = sinon.stub(logging, 'error');
         await agent
             .post(`/members/`)
             .body({members: [member]})
             .expectStatus(422);
+        sinon.assert.calledOnce(loggingStub);
 
         await assertMemberEvents({
             eventType: 'MemberStatusEvent',
@@ -783,6 +824,7 @@ describe('Members API', function () {
 
         await DomainEvents.allSettled();
         assert.ok(settingsCache.get('email_verification_required'), 'Email verification should be required');
+
         mockManager.assert.sentEmail({
             subject: 'Email needs verification'
         });
@@ -804,6 +846,19 @@ describe('Members API', function () {
             ]
         };
 
+        // Set site title to something with a special character to ensure subject line doesn't get escaped
+        // Refs https://github.com/TryGhost/Team/issues/2895
+        await agent.put('/settings/')
+            .body({
+                settings: [
+                    {
+                        key: 'title',
+                        value: 'Ghost\'s Test Site'
+                    }
+                ]
+            })
+            .expectStatus(200);
+
         const {body} = await agent
             .post('/members/?send_email=true&email_type=signup')
             .body({members: [member]})
@@ -823,10 +878,17 @@ describe('Members API', function () {
 
         const newMember = body.members[0];
 
-        mockManager.assert.sentEmail({
-            subject: '🙌 Complete your sign up to Ghost!',
-            to: 'member_getting_confirmation@test.com'
-        });
+        emailMockReceiver
+            .assertSentEmailCount(1)
+            .matchHTMLSnapshot([{
+                pattern: queryStringToken('token'),
+                replacement: 'token=REPLACED_TOKEN'
+            }])
+            .matchPlaintextSnapshot([{
+                pattern: queryStringToken('token'),
+                replacement: 'token=REPLACED_TOKEN'
+            }])
+            .matchMetadataSnapshot();
 
         await assertMemberEvents({
             eventType: 'MemberStatusEvent',
@@ -871,6 +933,18 @@ describe('Members API', function () {
             memberId: newMember.id,
             asserts: []
         });
+
+        // Reset the site title to the default
+        await agent.put('/settings/')
+            .body({
+                settings: [
+                    {
+                        key: 'title',
+                        value: 'Ghost'
+                    }
+                ]
+            })
+            .expectStatus(200);
     });
 
     it('Add should fail when passing incorrect email_type query parameter', async function () {
@@ -881,6 +955,7 @@ describe('Members API', function () {
 
         const statusEventsBefore = await models.MemberStatusEvent.findAll();
 
+        sinon.stub(logging, 'error');
         await agent
             .post(`members/?send_email=true&email_type=lel`)
             .body({members: [newMember]})
@@ -964,7 +1039,7 @@ describe('Members API', function () {
 
         const newMember = body.members[0];
 
-        const updatedMember = await agent
+        await agent
             .put(`/members/${newMember.id}/`)
             .body({members: [compedPayload]})
             .expectStatus(200)
@@ -1248,24 +1323,9 @@ describe('Members API', function () {
                 data: [fakeSubscription]
             }
         };
-        nock('https://api.stripe.com')
-            .persist()
-            .get(/v1\/.*/)
-            .reply((uri, body) => {
-                const [match, resource, id] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
-
-                if (!match) {
-                    return [500];
-                }
-
-                if (resource === 'customers') {
-                    return [200, fakeCustomer];
-                }
-
-                if (resource === 'subscriptions') {
-                    return [200, fakeSubscription];
-                }
-            });
+        stripeMocker.customers.push(fakeCustomer);
+        stripeMocker.subscriptions.push(fakeSubscription);
+        stripeMocker.prices.push(fakePrice);
 
         const initialMember = {
             name: fakeCustomer.name,
@@ -1377,24 +1437,10 @@ describe('Members API', function () {
                 data: [fakeSubscription]
             }
         };
-        nock('https://api.stripe.com')
-            .persist()
-            .get(/v1\/.*/)
-            .reply((uri, body) => {
-                const [match, resource, id] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
 
-                if (!match) {
-                    return [500];
-                }
-
-                if (resource === 'customers') {
-                    return [200, fakeCustomer];
-                }
-
-                if (resource === 'subscriptions') {
-                    return [200, fakeSubscription];
-                }
-            });
+        stripeMocker.customers.push(fakeCustomer);
+        stripeMocker.subscriptions.push(fakeSubscription);
+        stripeMocker.prices.push(fakePrice);
 
         const initialMember = {
             name: fakeCustomer.name,
@@ -1529,6 +1575,7 @@ describe('Members API', function () {
             ]
         };
 
+        sinon.stub(logging, 'error');
         await agent
             .put(`/members/${memberWithPaidSubscription.id}/`)
             .body({members: [compedPayload]})
@@ -1547,6 +1594,7 @@ describe('Members API', function () {
             tiers: []
         };
 
+        sinon.stub(logging, 'error');
         await agent
             .put(`/members/${memberWithPaidSubscription.id}/`)
             .body({members: [compedPayload]})
@@ -1568,7 +1616,7 @@ describe('Members API', function () {
         should(memberWithPaidSubscription.tiers[0].id).not.eql(product.id);
 
         // Add it manually
-        const member = await models.Member.edit({
+        await models.Member.edit({
             products: [
                 ...memberWithPaidSubscription.tiers,
                 {
@@ -1743,7 +1791,8 @@ describe('Members API', function () {
             .expectStatus(404)
             .matchBodySnapshot({
                 errors: [{
-                    id: anyUuid
+                    id: anyUuid,
+                    context: anyString
                 }]
             })
             .matchHeaderSnapshot({
@@ -1940,43 +1989,9 @@ describe('Members API', function () {
 
     it('Can add a subscription', async function () {
         const memberId = testUtils.DataGenerator.Content.members[0].id;
-        const price = testUtils.DataGenerator.Content.stripe_prices[0];
 
-        function nockCallback(method, uri, body) {
-            const [match, resource, id] = uri.match(/\/?v1\/(\w+)(?:\/(\w+))?/) || [null];
-
-            if (!match) {
-                return [500];
-            }
-
-            if (resource === 'customers') {
-                return [200, {id: 'cus_123', email: 'member1@test.com'}];
-            }
-
-            if (resource === 'subscriptions') {
-                const now = Math.floor(Date.now() / 1000);
-                return [200, {id: 'sub_123', customer: 'cus_123', cancel_at_period_end: false, items: {
-                    data: [{price: {
-                        id: price.stripe_price_id,
-                        recurring: {
-                            interval: price.interval
-                        },
-                        unit_amount: price.amount,
-                        currency: price.currency.toLowerCase()
-                    }}]
-                }, status: 'active', current_period_end: now + 24 * 3600, start_date: now}];
-            }
-        }
-
-        nock('https://api.stripe.com:443')
-            .persist()
-            .post(/v1\/.*/)
-            .reply((uri, body) => nockCallback('POST', uri, body));
-
-        nock('https://api.stripe.com:443')
-            .persist()
-            .get(/v1\/.*/)
-            .reply((uri, body) => nockCallback('GET', uri, body));
+        // Get the stripe price ID of the default price for month
+        const price = await stripeMocker.getPriceForTier('default-product', 'month');
 
         await agent
             .post(`/members/${memberId}/subscriptions/`)
@@ -1991,8 +2006,9 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     labels: anyArray,
-                    subscriptions: [subscriptionSnapshot],
-                    newsletters: anyArray
+                    subscriptions: [subscriptionSnapshotWithTier],
+                    newsletters: anyArray,
+                    tiers: [tierSnapshot]
                 })
             })
             .matchHeaderSnapshot({
@@ -2011,8 +2027,9 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     labels: anyArray,
-                    subscriptions: [subscriptionSnapshot],
-                    newsletters: anyArray
+                    subscriptions: [subscriptionSnapshotWithTier],
+                    newsletters: anyArray,
+                    tiers: [tierSnapshot]
                 })
             })
             .matchHeaderSnapshot({
@@ -2023,48 +2040,9 @@ describe('Members API', function () {
 
     it('Can edit a subscription', async function () {
         const memberId = testUtils.DataGenerator.Content.members[1].id;
-        const price = testUtils.DataGenerator.Content.stripe_prices[0];
-        const stripeCustomerId = 'cus_GbEMMOZNVrL450';
-        const stripeSubscriptionId = 'sub_K1cBgJt6sCMu5n';
 
-        const stripeSubscriptionFixture = ({status = 'active'} = {}) => {
-            const now = Math.floor(Date.now() / 1000);
-            return {
-                id: stripeSubscriptionId,
-                customer: stripeCustomerId,
-                cancel_at_period_end: false,
-                items: {
-                    data: [{
-                        price: {
-                            id: price.stripe_price_id,
-                            recurring: {
-                                interval: price.interval
-                            },
-                            unit_amount: price.amount,
-                            currency: price.currency.toLowerCase()
-                        }
-                    }]
-                },
-                status: status,
-                current_period_end: now + 24 * 3600,
-                start_date: now
-            };
-        };
-
-        nock('https://api.stripe.com:443')
-            .post('/v1/customers')
-            .reply(200, {
-                id: `cus_GbEMMOZNVrL450`,
-                email: 'member1@test.com'
-            });
-
-        nock('https://api.stripe.com:443')
-            .get(`/v1/subscriptions/${stripeSubscriptionId}`)
-            .reply(200, stripeSubscriptionFixture());
-
-        nock('https://api.stripe.com:443')
-            .post('/v1/subscriptions')
-            .reply(200, stripeSubscriptionFixture());
+        // Get the stripe price ID of the default price for month
+        const price = await stripeMocker.getPriceForTier('default-product', 'year');
 
         const res = await agent
             .post(`/members/${memberId}/subscriptions/`)
@@ -2079,8 +2057,9 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     labels: anyArray,
-                    subscriptions: [subscriptionSnapshot],
-                    newsletters: anyArray
+                    subscriptions: [subscriptionSnapshotWithTier],
+                    newsletters: anyArray,
+                    tiers: [tierSnapshot]
                 })
             })
             .matchHeaderSnapshot({
@@ -2089,14 +2068,6 @@ describe('Members API', function () {
             });
 
         const subscriptionId = res.body.members[0].subscriptions[0].id;
-
-        nock('https://api.stripe.com:443')
-            .delete(`/v1/subscriptions/${stripeSubscriptionId}`)
-            .reply(200, stripeSubscriptionFixture({status: 'canceled'}));
-
-        nock('https://api.stripe.com:443')
-            .get(`/v1/subscriptions/${stripeSubscriptionId}`)
-            .reply(200, stripeSubscriptionFixture({status: 'canceled'}));
 
         const editRes = await agent
             .put(`/members/${memberId}/subscriptions/${subscriptionId}`)
@@ -2112,7 +2083,8 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     labels: anyArray,
                     subscriptions: [subscriptionSnapshot],
-                    newsletters: anyArray
+                    newsletters: anyArray,
+                    tiers: []
                 })
             })
             .matchHeaderSnapshot({
@@ -2184,42 +2156,6 @@ describe('Members API', function () {
             });
     });
 
-    it('Can delete a member without cancelling Stripe Subscription', async function () {
-        let subscriptionCanceled = false;
-        nock('https://api.stripe.com')
-            .persist()
-            .delete(/v1\/.*/)
-            .reply((uri) => {
-                const [match, resource, id] = uri.match(/\/?v1\/(\w+)(?:\/(\w+))/) || [null];
-
-                if (match && resource === 'subscriptions') {
-                    subscriptionCanceled = true;
-                    return [200, {
-                        id,
-                        status: 'canceled'
-                    }];
-                }
-
-                return [500];
-            });
-
-        // @TODO This is wrong because it changes the state for the rest of the tests
-        // We need to add a member via a fixture and then remove them OR work out how
-        // to reapply fixtures before each test
-        const memberToDelete = fixtureManager.get('members', 2);
-
-        await agent
-            .delete(`members/${memberToDelete.id}/`)
-            .expectStatus(204)
-            .expectEmptyBody()
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-
-        assert.equal(subscriptionCanceled, false, 'expected subscription not to be canceled');
-    });
-
     // Export members to CSV
 
     it('Can export CSV', async function () {
@@ -2267,6 +2203,80 @@ describe('Members API', function () {
         should.exist(csv.data.find(row => row.labels.length > 0));
     });
 
+    it('Can delete a member without cancelling Stripe Subscription', async function () {
+        let subscriptionCanceled = false;
+        mockManager.restore();
+        nock('https://api.stripe.com')
+            .persist()
+            .delete(/v1\/.*/)
+            .reply((uri) => {
+                const [match, resource, id] = uri.match(/\/?v1\/(\w+)(?:\/(\w+))/) || [null];
+
+                if (match && resource === 'subscriptions') {
+                    subscriptionCanceled = true;
+                    return [200, {
+                        id,
+                        status: 'canceled'
+                    }];
+                }
+
+                return [500];
+            });
+
+        // @TODO This is wrong because it changes the state for the rest of the tests
+        // We need to add a member via a fixture and then remove them OR work out how
+        // to reapply fixtures before each test
+        const memberToDelete = fixtureManager.get('members', 2);
+
+        await agent
+            .delete(`members/${memberToDelete.id}/`)
+            .expectStatus(204)
+            .expectEmptyBody()
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+
+        assert.equal(subscriptionCanceled, false, 'expected subscription not to be canceled');
+    });
+
+    it('Can delete a member while cancelling Stripe Subscription', async function () {
+        let subscriptionCanceled = false;
+        mockManager.restore();
+        nock('https://api.stripe.com')
+            .persist()
+            .delete(/v1\/.*/)
+            .reply((uri) => {
+                const [match, resource, id] = uri.match(/\/?v1\/(\w+)(?:\/(\w+))/) || [null];
+
+                if (match && resource === 'subscriptions') {
+                    subscriptionCanceled = true;
+                    return [200, {
+                        id,
+                        status: 'canceled'
+                    }];
+                }
+
+                return [500];
+            });
+
+        // @TODO This is wrong because it changes the state for the rest of the tests
+        // We need to add a member via a fixture and then remove them OR work out how
+        // to reapply fixtures before each test
+        const memberToDelete = fixtureManager.get('members', 3);
+
+        await agent
+            .delete(`members/${memberToDelete.id}/?cancel=true`)
+            .expectStatus(204)
+            .expectEmptyBody()
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+
+        assert.equal(subscriptionCanceled, true, 'expected subscription to be canceled');
+    });
+
     // Get stats
 
     it('Can fetch member counts stats', async function () {
@@ -2285,6 +2295,7 @@ describe('Members API', function () {
     });
 
     it('Errors when fetching stats with unknown days param value', async function () {
+        sinon.stub(logging, 'error');
         await agent
             .get('members/stats/?days=nope')
             .expectStatus(422)
@@ -2304,7 +2315,7 @@ describe('Members API', function () {
             .get('/members/?filter=newsletters:weekly-newsletter')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(4).fill(memberMatcherShallowIncludes)
+                members: new Array(3).fill(memberMatcherShallowIncludes)
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -2384,6 +2395,7 @@ describe('Members API', function () {
                 etag: anyEtag
             });
 
+        sinon.stub(logging, 'error');
         await agent
             .post(`/members/`)
             .body({members: [member]})
@@ -2431,6 +2443,7 @@ describe('Members API', function () {
             });
 
         const memberId = body.members[0].id;
+
         const editedMember = {
             subscribed: true // no change
         };
@@ -2459,6 +2472,166 @@ describe('Members API', function () {
         assert.equal(changedMember.newsletters.length, 2);
         assert.ok(changedMember.newsletters.find(n => n.id === testUtils.DataGenerator.Content.newsletters[0].id), 'The member is still subscribed for a newsletter that is off by default');
         assert.ok(changedMember.newsletters.find(n => n.id === testUtils.DataGenerator.Content.newsletters[1].id), 'The member is still subscribed for the newsletter it subscribed to');
+    });
+
+    it('Adding newsletters to member with no subscriptions works even with subscribed false', async function () {
+        // Add member with no subscriptions
+        const member = {
+            name: 'test newsletter',
+            email: 'memberAddNewsletterSubscribed@test.com',
+            newsletters: []
+        };
+
+        const {body} = await agent
+            .post(`/members/`)
+            .body({members: [member]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                members: [{
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime,
+                    subscriptions: anyArray,
+                    labels: anyArray,
+                    newsletters: Array(0).fill(newsletterSnapshot)
+                }]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag,
+                location: anyLocationFor('members')
+            });
+
+        const memberId = body.members[0].id;
+
+        const editedMember = {
+            subscribed: false,
+            newsletters: [
+                {
+                    id: testUtils.DataGenerator.Content.newsletters[0].id
+                }
+            ]
+        };
+
+        // Edit member
+        const {body: body2} = await agent
+            .put(`/members/${memberId}`)
+            .body({members: [editedMember]})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [{
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime,
+                    subscriptions: anyArray,
+                    labels: anyArray,
+                    newsletters: Array(1).fill(newsletterSnapshot)
+                }]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+        const changedMember = body2.members[0];
+        assert.equal(changedMember.newsletters.length, 1);
+        assert.ok(changedMember.newsletters.find(n => n.id === testUtils.DataGenerator.Content.newsletters[0].id), 'The member should be subscribed to the newsletter');
+    });
+
+    it('Updating member data without newsletters does not change newsletters', async function () {
+        // check that this newsletter is archived, or this test would not make sense
+        const archivedNewsletterId = testUtils.DataGenerator.Content.newsletters[2].id;
+        const archivedNewsletter = await models.Newsletter.findOne({id: archivedNewsletterId}, {require: true});
+        assert.equal(archivedNewsletter.get('status'), 'archived', 'This test expects the newsletter to be archived');
+
+        const member = await models.Member.findOne({id: testUtils.DataGenerator.Content.members[5].id}, {withRelated: ['newsletters']});
+        const memberNewsletters = member.related('newsletters').models;
+        // NOTE: removed this call for now; it's not necessary as it's just 'bonus validation' before executing the api calls
+        //  unfortunately it led to some issues where the object id was not in sync between fixture data and the db (unsure of cause)
+        // assert.equal(memberNewsletters[1].id, archivedNewsletterId, 'This test expects the member to be subscribed to an archived newsletter');
+        assert.equal(memberNewsletters.length, 2, 'This test expects the member to have two newsletter subscriptions');
+
+        const memberId = member.get('id');
+        const editedMember = {
+            id: memberId,
+            name: 'new name'
+        };
+
+        // edit member
+        const {body} = await agent
+            .put(`/members/${memberId}`)
+            .body({members: [editedMember]})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [{
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime,
+                    subscriptions: anyArray,
+                    labels: anyArray,
+                    newsletters: Array(1).fill(newsletterSnapshot)
+                }]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+
+        const changedMember = body.members[0];
+        assert.equal(changedMember.newsletters.length, 1); // the api only returns active newsletters
+        assert.ok(changedMember.newsletters.find(n => n.id === testUtils.DataGenerator.Content.newsletters[1].id), 'The member is still subscribed to an active newsletter');
+
+        const changedMemberFromDb = await models.Member.findOne({id: testUtils.DataGenerator.Content.members[5].id}, {withRelated: ['newsletters']});
+        assert.ok(changedMemberFromDb.related('newsletters').models.find(n => n.id === testUtils.DataGenerator.Content.newsletters[2].id), 'The member is still subscribed to the archived newsletter it subscribed to');
+    });
+
+    it('Updating newsletter subscriptions does not unsubscribe member from archived newsletter', async function () {
+        // check that this newsletter is archived, or this test would not make sense
+        const archivedNewsletterId = testUtils.DataGenerator.Content.newsletters[2].id;
+        const archivedNewsletter = await models.Newsletter.findOne({id: archivedNewsletterId}, {require: true});
+        assert.equal(archivedNewsletter.get('status'), 'archived', 'This test expects the newsletter to be archived');
+
+        const member = await models.Member.findOne({id: testUtils.DataGenerator.Content.members[5].id}, {withRelated: ['newsletters']});
+        const memberNewsletters = member.related('newsletters').models;
+        // NOTE: removed this call for now; it's not necessary as it's just 'bonus validation' before executing the api calls
+        //  unfortunately it led to some issues where the object id was not in sync between fixture data and the db (unsure of cause)
+        // assert.equal(memberNewsletters[1].id, archivedNewsletterId, 'This test expects the member to be subscribed to an archived newsletter');
+        assert.equal(memberNewsletters.length, 2, 'This test expects the member to have two newsletter subscriptions');
+
+        // remove active newsletter subscriptions
+        const memberId = member.get('id');
+        const editedMember = {
+            newsletters: []
+        };
+
+        // edit member
+        const {body} = await agent
+            .put(`/members/${memberId}`)
+            .body({members: [editedMember]})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [{
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime,
+                    subscriptions: anyArray,
+                    labels: anyArray,
+                    newsletters: anyArray
+                }]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+
+        const changedMember = body.members[0];
+        assert.equal(changedMember.newsletters.length, 0); // the api only returns active newsletters, so this member should have none
+
+        const changedMemberFromDb = await models.Member.findOne({id: testUtils.DataGenerator.Content.members[5].id}, {withRelated: ['newsletters']});
+        assert.ok(changedMemberFromDb.related('newsletters').models.find(n => n.id === testUtils.DataGenerator.Content.newsletters[2].id), 'The member is still subscribed to the archived newsletter it subscribed to');
     });
 
     it('Can add and send a signup confirmation email (old)', async function () {

@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+<svg xmlns="http://www.w3.org/2000/svg" stroke-width="1.5" viewBox="0 0 24 24">
   <title>lock</title>
-  <path d="M5.25 24A2.252 2.252 0 0 1 3 21.75v-10.5A2.252 2.252 0 0 1 5.25 9H6V6c0-3.308 2.692-6 6-6s6 2.692 6 6v3h.75A2.252 2.252 0 0 1 21 11.25v10.5A2.252 2.252 0 0 1 18.75 24H5.25zm0-13.5a.75.75 0 0 0-.75.75v10.5c0 .414.336.75.75.75h13.5a.75.75 0 0 0 .75-.75v-10.5a.75.75 0 0 0-.75-.75H5.25zM16.5 9V6c0-2.481-2.019-4.5-4.5-4.5A4.505 4.505 0 0 0 7.5 6v3h9z"/>
-  <path d="M12 18.75a.75.75 0 0 1-.75-.75v-3a.75.75 0 0 1 1.5 0v3a.75.75 0 0 1-.75.75z"/>
+  <rect width="16.5" height="13.5" x="3.75" y="9.75" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" rx="1.5" ry="1.5"/>
+  <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M6.75 9.75V6a5.25 5.25 0 0 1 10.5 0v3.75M12 15v3"/>
 </svg>

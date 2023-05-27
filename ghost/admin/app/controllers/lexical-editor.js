@@ -25,11 +25,14 @@ import {isInvalidError} from 'ember-ajax/errors';
 import {inject as service} from '@ember/service';
 
 const DEFAULT_TITLE = '(Untitled)';
-
+// suffix that is applied to the title of a post when it has been duplicated
+const DUPLICATED_POST_TITLE_SUFFIX = '(Copy)';
 // time in ms to save after last content edit
 const AUTOSAVE_TIMEOUT = 3000;
 // time in ms to force a save if the user is continuously typing
 const TIMEDSAVE_TIMEOUT = 60000;
+// time in ms to force a save even if the post is already saved so we trigger a new revision on the server
+const REVISIONSAVE_TIMEOUT = 1000 * 60 * 10; // 10 minutes
 
 // this array will hold properties we need to watch for this.hasDirtyAttributes
 let watchedProps = [
@@ -170,9 +173,15 @@ export default class LexicalEditorController extends Controller {
 
     @computed('_snippets.@each.{name,isNew}')
     get snippets() {
-        return this._snippets
+        const snippets = this._snippets
             .reject(snippet => snippet.get('isNew'))
-            .sort((a, b) => a.name.localeCompare(b.name));
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .filter(item => item.lexical !== null);
+        return snippets.map((item) => {
+            item.value = item.lexical;
+
+            return item;
+        });
     }
 
     @computed('session.user.{isAdmin,isEditor}')
@@ -184,12 +193,13 @@ export default class LexicalEditorController extends Controller {
         return false;
     }
 
-    @computed('_autosaveTask.isRunning', '_timedSaveTask.isRunning')
+    @computed('_autosaveTask.isRunning', '_timedSaveTask.isRunning', '_revisionSaveTask.isRunning')
     get _autosaveRunning() {
         let autosave = this.get('_autosaveTask.isRunning');
         let timedsave = this.get('_timedSaveTask.isRunning');
+        let revisionsave = this.get('_revisionSaveTask.isRunning');
 
-        return autosave || timedsave;
+        return autosave || timedsave || revisionsave;
     }
 
     @computed('post.isDraft')
@@ -205,6 +215,8 @@ export default class LexicalEditorController extends Controller {
         this._autosaveTask.perform();
         // force save at 60 seconds
         this._timedSaveTask.perform();
+        // force save at 10 minutes to trigger revision
+        this._revisionSaveTask.perform();
     }
 
     @action
@@ -239,6 +251,7 @@ export default class LexicalEditorController extends Controller {
     cancelAutosave() {
         this._autosaveTask.cancelAll();
         this._timedSaveTask.cancelAll();
+        this._revisionSaveTask.cancelAll();
     }
 
     // called by the "are you sure?" modal
@@ -303,6 +316,11 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
+    registerEditorAPI(API) {
+        this.editorAPI = API;
+    }
+
+    @action
     clearFeatureImage() {
         this.post.set('featureImage', null);
         this.post.set('featureImageAlt', null);
@@ -343,7 +361,8 @@ export default class LexicalEditorController extends Controller {
 
     @action
     saveSnippet(snippet) {
-        let snippetRecord = this.store.createRecord('snippet', snippet);
+        const snippetData = {name: snippet.name, lexical: snippet.value, mobiledoc: '{}'};
+        let snippetRecord = this.store.createRecord('snippet', snippetData);
         return snippetRecord.save().then(() => {
             this.notifications.closeAlerts('snippet.save');
             this.notifications.showNotification(
@@ -361,6 +380,18 @@ export default class LexicalEditorController extends Controller {
             snippetRecord.rollbackAttributes();
             throw error;
         });
+    }
+
+    @action
+    async createSnippet(data) {
+        const snippetNameLC = data.name.trim().toLowerCase();
+        const existingSnippet = this.snippets.find(snippet => snippet.name.toLowerCase() === snippetNameLC);
+
+        if (existingSnippet) {
+            await this.confirmUpdateSnippet(existingSnippet, {lexical: data.value, mobiledoc: '{}'});
+        } else {
+            await this.saveSnippet(data);
+        }
     }
 
     @action
@@ -382,11 +413,12 @@ export default class LexicalEditorController extends Controller {
 
     // separate task for autosave so that it doesn't override a manual save
     @dropTask
-    *autosaveTask() {
+    *autosaveTask(options) {
         if (!this.get('saveTask.isRunning')) {
             return yield this.saveTask.perform({
                 silent: true,
-                backgroundSave: true
+                backgroundSave: true,
+                ...options
             });
         }
     }
@@ -398,10 +430,11 @@ export default class LexicalEditorController extends Controller {
         let prevStatus = this.get('post.status');
         let isNew = this.get('post.isNew');
         let status;
+        const adapterOptions = {};
 
         this.cancelAutosave();
 
-        if (options.backgroundSave && !this.hasDirtyAttributes) {
+        if (options.backgroundSave && !this.hasDirtyAttributes && !options.leavingEditor && !options.saveRevision) {
             return;
         }
 
@@ -428,10 +461,15 @@ export default class LexicalEditorController extends Controller {
         // new publishing flow sets the post status manually on publish
         this.set('post.status', status);
 
+        const explicitSave = !options.backgroundSave;
+        const leavingEditor = options.leavingEditor;
+        if (explicitSave || leavingEditor) {
+            adapterOptions.saveRevision = 1;
+        }
         yield this.beforeSaveTask.perform(options);
 
         try {
-            let post = yield this._savePostTask.perform(options);
+            let post = yield this._savePostTask.perform({...options, adapterOptions});
 
             post.set('statusScratch', null);
 
@@ -449,6 +487,9 @@ export default class LexicalEditorController extends Controller {
                 }
                 return true;
             }
+
+            // Even if we've just saved and nothing else has changed, we want to save in 10 minutes to force a revision
+            this._revisionSaveTask.perform();
 
             return post;
         } catch (error) {
@@ -686,9 +727,15 @@ export default class LexicalEditorController extends Controller {
         // this is necessary to force a save when the title is blank
         this.set('hasDirtyAttributes', true);
 
-        // generate a slug if a post is new and doesn't have a title yet or
-        // if the title is still '(Untitled)'
-        if ((post.get('isNew') && !currentTitle) || currentTitle === DEFAULT_TITLE) {
+        // generate slug if post
+        //  - is new and doesn't have a title yet
+        //  - still has the default title
+        //  - previously had a title that ended with the duplicated post title suffix
+        if (
+            (post.get('isNew') && !currentTitle) ||
+            (currentTitle === DEFAULT_TITLE) ||
+            currentTitle?.endsWith(DUPLICATED_POST_TITLE_SUFFIX)
+        ) {
             yield this.generateSlugTask.perform();
         }
 
@@ -802,6 +849,11 @@ export default class LexicalEditorController extends Controller {
         let hasDirtyAttributes = this.hasDirtyAttributes;
         let state = post.getProperties('isDeleted', 'isSaving', 'hasDirtyAttributes', 'isNew');
 
+        // Check if anything has changed since the last revision
+        let postRevisions = post.get('postRevisions').toArray();
+        let latestRevision = postRevisions[postRevisions.length - 1];
+        let hasChangedSinceLastRevision = post.get('lexical') !== latestRevision.get('lexical');
+
         let fromNewToEdit = this.router.currentRouteName === 'lexical-editor.new'
             && transition.targetName === 'lexical-editor.edit'
             && transition.intent.contexts
@@ -810,6 +862,17 @@ export default class LexicalEditorController extends Controller {
 
         let deletedWithoutChanges = state.isDeleted
             && (state.isSaving || !state.hasDirtyAttributes);
+
+        // If leaving the editor and the post has changed since we last saved a revision, always save a new revision
+        if (hasChangedSinceLastRevision) {
+            transition.abort();
+            if (this._autosaveRunning) {
+                this.cancelAutosave();
+                this.autosaveTask.cancelAll();
+            }
+            await this.autosaveTask.perform({leavingEditor: true});
+            return transition.retry();
+        }
 
         // controller is dirty and we aren't in a new->edit or delete->index
         // transition so show our "are you sure you want to leave?" modal
@@ -827,7 +890,8 @@ export default class LexicalEditorController extends Controller {
                 this.cancelAutosave();
                 this.autosaveTask.cancelAll();
 
-                await this.autosaveTask.perform();
+                // If leaving the editor, always save a revision
+                await this.autosaveTask.perform({leavingEditor: true});
                 return transition.retry();
             }
 
@@ -919,6 +983,19 @@ export default class LexicalEditorController extends Controller {
         }
     }).drop())
         _timedSaveTask;
+
+    // save at 10 minutes even if the post is already saved
+    @(task(function* () {
+        if (!this._canAutosave) {
+            return;
+        }
+
+        while (config.environment !== 'test' && true) {
+            yield timeout(REVISIONSAVE_TIMEOUT);
+            this.autosaveTask.perform({saveRevision: true});
+        }
+    }).drop())
+        _revisionSaveTask;
 
     /* Private methods -------------------------------------------------------*/
 

@@ -4,7 +4,7 @@ const moment = require('moment');
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
 
-const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
 const {anyArray, anyContentVersion, anyEtag, anyUuid, anyISODateTimeWithTZ} = matchers;
 
 const postMatcher = {
@@ -14,7 +14,7 @@ const postMatcher = {
     uuid: anyUuid
 };
 
-const postMatcheShallowIncludes = Object.assign(
+const postMatcherShallowIncludes = Object.assign(
     {},
     postMatcher, {
         tags: anyArray,
@@ -169,7 +169,7 @@ describe('Posts Content API', function () {
             })
             .matchBodySnapshot({
                 posts: new Array(11)
-                    .fill(postMatcheShallowIncludes)
+                    .fill(postMatcherShallowIncludes)
             });
     });
 
@@ -341,5 +341,26 @@ describe('Posts Content API', function () {
             .get(`posts/?fields=plaintext`)
             .expectStatus(200)
             .matchBodySnapshot();
+    });
+
+    it('Adds ?ref tags', async function () {
+        const post = await models.Post.add({
+            title: 'title',
+            status: 'published',
+            slug: 'add-ref-tags',
+            mobiledoc: JSON.stringify({version: '0.3.1',atoms: [],cards: [['html',{html: '<a href="https://example.com">Link</a><a href="invalid">Test</a>'}]],markups: [],sections: [[10,0],[1,'p',[]]],ghostVersion: '4.0'})
+        }, {context: {internal: true}});
+
+        let response = await agent
+            .get(`posts/${post.id}/`)
+            .expectStatus(200);
+        assert(response.body.posts[0].html.includes('<a href="https://example.com/?ref=127.0.0.1">Link</a><a href="invalid">Test</a>'), 'Html not expected (should contain ?ref): ' + response.body.posts[0].html);
+
+        // Disable outbound link tracking
+        mockManager.mockSetting('outbound_link_tagging', false);
+        response = await agent
+            .get(`posts/${post.id}/`)
+            .expectStatus(200);
+        assert(response.body.posts[0].html.includes('<a href="https://example.com">Link</a><a href="invalid">Test</a>'), 'Html not expected: ' + response.body.posts[0].html);
     });
 });

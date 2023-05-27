@@ -1,22 +1,20 @@
 import AppContext from '../../AppContext';
 import CloseButton from '../common/CloseButton';
 import BackButton from '../common/BackButton';
-import {useContext, useState} from 'react';
+import React, {useContext, useState} from 'react';
 import Switch from '../common/Switch';
 import {getSiteNewsletters, hasMemberGotEmailSuppression} from '../../utils/helpers';
 import ActionButton from '../common/ActionButton';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/check-circle.svg';
 
-const React = require('react');
-
 function AccountHeader() {
-    const {brandColor, lastPage, onAction} = useContext(AppContext);
+    const {brandColor, lastPage, onAction, t} = useContext(AppContext);
     return (
         <header className='gh-portal-detail-header'>
             <BackButton brandColor={brandColor} hidden={!lastPage} onClick={(e) => {
                 onAction('back');
             }} />
-            <h3 className='gh-portal-main-title'>Email preferences</h3>
+            <h3 className='gh-portal-main-title'>{t('Email preferences')}</h3>
         </header>
     );
 }
@@ -86,6 +84,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
 }
 
 function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableCommentNotifications}) {
+    const {t} = useContext(AppContext);
     const isChecked = !!enableCommentNotifications;
 
     const [showUpdated, setShowUpdated] = useState(false);
@@ -98,8 +97,8 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
     return (
         <section className='gh-portal-list-toggle-wrapper' data-test-toggle-wrapper>
             <div className='gh-portal-list-detail'>
-                <h3>Comments</h3>
-                <p>Get notified when someone replies to your comment</p>
+                <h3>{t('Comments')}</h3>
+                <p>{t('Get notified when someone replies to your comment')}</p>
             </div>
             <div style={{display: 'flex', alignItems: 'center'}}>
                 <SuccessIcon show={showUpdated} checked={isChecked} />
@@ -133,9 +132,11 @@ function NewsletterPrefs({subscribedNewsletters, setSubscribedNewsletters}) {
 }
 
 function ShowPaidMemberMessage({site, isPaid}) {
+    const {t} = useContext(AppContext);
+
     if (isPaid) {
         return (
-            <p style={{textAlign: 'center', marginTop: '12px', marginBottom: '0', color: 'var(--grey6)'}}>Unsubscribing from emails will not cancel your paid subscription to {site?.title}</p>
+            <p style={{textAlign: 'center', marginTop: '12px', marginBottom: '0', color: 'var(--grey6)'}}>{t('Unsubscribing from emails will not cancel your paid subscription to {{title}}', {title: site?.title})}</p>
         );
     }
     return null;
@@ -151,7 +152,7 @@ export default function NewsletterManagement({
     isCommentsEnabled,
     enableCommentNotifications
 }) {
-    const {brandColor, onAction, member, site} = useContext(AppContext);
+    const {brandColor, onAction, member, site, t} = useContext(AppContext);
     const isDisabled = !subscribedNewsletters?.length && ((isCommentsEnabled && !enableCommentNotifications) || !isCommentsEnabled);
     const EmptyNotification = () => {
         return null;
@@ -192,7 +193,7 @@ export default function NewsletterManagement({
                         disabled={isDisabled}
                         brandColor={brandColor}
                         isPrimary={false}
-                        label='Unsubscribe from all emails'
+                        label={t('Unsubscribe from all emails')}
                         isDestructive={true}
                         style={{width: '100%'}}
                         dataTestId="unsubscribe-from-all-emails"
@@ -201,12 +202,13 @@ export default function NewsletterManagement({
                 </div>
                 {hasMemberGotEmailSuppression({member}) && !isDisabled &&
                     <div className="gh-portal-footer-secondary">
-                        <span className="gh-portal-footer-secondary-light">Not receiving emails?</span>
+                        <span className="gh-portal-footer-secondary-light">{t('Not receiving emails?')}</span>
                         <button
                             className="gh-portal-btn-text gh-email-faq-page-button"
                             onClick={() => onAction('switchPage', {page: 'emailReceivingFAQ'})}
                         >
-                            Learn more &rarr;
+                            {/* eslint-disable-next-line i18next/no-literal-string */}
+                            {t('Get help')} &rarr;
                         </button>
                     </div>
                 }

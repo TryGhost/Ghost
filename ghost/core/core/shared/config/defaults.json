@@ -22,10 +22,10 @@
     },
     "adapters": {
         "sso": {
-            "active": "Default"
+            "active": "DefaultSSOAdapter"
         },
         "cache": {
-            "active": "Memory",
+            "active": "MemoryCache",
             "settings": {},
             "imageSizes": {},
             "gscan": {}
@@ -39,7 +39,7 @@
         "LocalFilesStorage": {}
     },
     "scheduling": {
-        "active": "SchedulingDefault"
+        "active": "scheduling-default"
     },
     "members": {
         "contentApiAccess": [],
@@ -102,6 +102,12 @@
             "maxWait": 43200000,
             "lifetime": 43200,
             "freeRetries": 8
+        },
+        "webmentions_block": {
+            "minWait": 10,
+            "maxWait": 100,
+            "lifetime": 1000,
+            "freeRetries": 100
         }
     },
     "caching": {
@@ -170,11 +176,15 @@
     },
     "portal": {
         "url": "https://cdn.jsdelivr.net/ghost/portal@~{version}/umd/portal.min.js",
-        "version": "2.24"
+        "version": "2.32"
     },
     "sodoSearch": {
         "url": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/sodo-search.min.js",
         "styles": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/main.css",
+        "version": "1.1"
+    },
+    "announcementBar": {
+        "url": "https://cdn.jsdelivr.net/ghost/announcement-bar@~{version}/umd/announcement-bar.min.js",
         "version": "1.1"
     },
     "comments": {
@@ -183,8 +193,16 @@
         "version": "0.12"
     },
     "editor": {
-        "url": "https://unpkg.com/@tryghost/koenig-lexical@~{version}/dist/koenig-lexical.umd.js",
+        "url": "https://cdn.jsdelivr.net/ghost/koenig-lexical@~{version}/dist/koenig-lexical.umd.js",
+        "version": "0.2"
+    },
+    "adminX": {
+        "url": "https://cdn.jsdelivr.net/ghost/admin-x-settings@~{version}/dist/admin-x-settings.umd.js",
         "version": "0.0"
+    },
+    "signupForm": {
+        "url": "https://cdn.jsdelivr.net/ghost/signup-form@~{version}/umd/signup-form.min.js",
+        "version": "0"
     },
     "tenor": {
         "googleApiKey": null,
@@ -198,5 +216,17 @@
     },
     "gravatar": {
         "url": "https://www.gravatar.com/avatar/{hash}?s={size}&r={rating}&d={_default}"
-    }
+    },
+    "milestones":
+        {
+            "arr": [
+                {
+                    "currency": "usd",
+                    "values": [0, 100, 1000, 10000, 50000, 100000, 250000, 500000, 1000000]
+                }
+            ],
+            "members": [0, 100, 1000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000],
+            "minDaysSinceImported": 7,
+            "minDaysSinceLastEmail": 14
+        }
 }

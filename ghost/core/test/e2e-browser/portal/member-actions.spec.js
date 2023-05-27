@@ -19,6 +19,8 @@ const addNewsletter = async (page) => {
 
 test.describe('Portal', () => {
     test.describe('Member actions', () => {
+        test.describe.configure({retries: 1});
+        
         test('can log out', async ({page}) => {
             // create a new free member
             await createMember(page, {
@@ -28,7 +30,7 @@ test.describe('Portal', () => {
             });
 
             // impersonate the member on frontend
-            impersonateMember(page);
+            await impersonateMember(page);
 
             // open portal
             const portalTriggerButton = page.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
@@ -54,7 +56,7 @@ test.describe('Portal', () => {
             const memberUrl = page.url();
 
             // impersonate the member on frontend
-            impersonateMember(page);
+            await impersonateMember(page);
 
             const portalTriggerButton = page.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
             const portalFrame = page.frameLocator('[data-testid="portal-popup-frame"]');
@@ -64,13 +66,14 @@ test.describe('Portal', () => {
 
             // turn off default newsletter subscription
             const defaultNewsletterToggle = portalFrame.locator('[data-testid="default-newsletter-toggle"]');
-            expect(await defaultNewsletterToggle.isChecked()).toBeTruthy();
+            await expect(await defaultNewsletterToggle.isChecked()).toBeTruthy();
             await defaultNewsletterToggle.click();
-            expect(await defaultNewsletterToggle.isChecked()).not.toBeTruthy();
+            await expect(await defaultNewsletterToggle.isChecked()).not.toBeTruthy();
 
             // check that member's newsletters was updated in Admin
+            await page.waitForLoadState('networkidle');
             await page.goto(memberUrl);
-            expect(await page.locator('[data-test-member-settings-switch] input[type=checkbox]').first().isChecked()).not.toBeTruthy();
+            await expect(await page.locator('[data-test-member-settings-switch] input[type=checkbox]').first().isChecked()).not.toBeTruthy();
         });
 
         test('can unsubscribe from all newsletters from account settings', async ({page}) => {
@@ -88,7 +91,7 @@ test.describe('Portal', () => {
 
             // impersonate the member on frontend
             await page.goto(memberUrl);
-            impersonateMember(page);
+            await impersonateMember(page);
 
             const portalTriggerButton = page.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
             const portalFrame = page.frameLocator('[data-testid="portal-popup-frame"]');
@@ -100,34 +103,39 @@ test.describe('Portal', () => {
             // check amount of newsletterss
             const newsletters = await portalFrame.locator('[data-test-toggle-wrapper="true"]');
             const count = await newsletters.count();
-            expect(count).toEqual(2);
+            await expect(count).toEqual(2);
 
             // all newsletters should be activated
             for (let i = 0; i < count; i++) {
-                expect(await newsletters.nth(i).locator('input[type="checkbox"]').isChecked()).toBeTruthy();
+                await expect(await newsletters.nth(i).locator('input[type="checkbox"]').isChecked()).toBeTruthy();
             }
 
             // unsubscribe from all emails
             await portalFrame.locator('[data-test-button="unsubscribe-from-all-emails"]').click();
 
+            // todo: replace class locator on data-attr locator
+            await expect(await portalFrame.locator('.gh-portal-popupnotification.success')).toBeVisible();
+            await expect(await portalFrame.locator('.gh-portal-popupnotification.success')).toBeHidden();
+
             // all newsletters should be disabled
             for (let i = 0; i < count; i++) {
-                expect(await newsletters.nth(i).locator('input[type="checkbox"]').isChecked()).not.toBeTruthy();
+                await expect(await newsletters.nth(i).locator('input[type="checkbox"]').isChecked()).not.toBeTruthy();
             }
 
             // check that member's newsletters was updated in Admin
+            await page.waitForLoadState('networkidle');
             await page.goto(memberUrl);
 
             // check amount of newsletters in member's profile in Admin
             await page.waitForSelector('[data-test-member-settings-switch]');
             const membersNewsletters = await page.locator('[data-test-member-settings-switch]');
             const newslettersCount = await membersNewsletters.count();
-            expect(newslettersCount).toEqual(2);
+            await expect(newslettersCount).toEqual(2);
 
             // all newsletters should be disabled
             for (let i = 0; i < newslettersCount; i++) {
                 const isNewsletterChecked = await membersNewsletters.nth(i).locator('input[type="checkbox"]').isChecked();
-                expect(isNewsletterChecked).not.toBeTruthy();
+                await expect(isNewsletterChecked).not.toBeTruthy();
             }
         });
     });

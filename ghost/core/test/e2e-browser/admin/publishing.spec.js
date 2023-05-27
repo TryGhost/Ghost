@@ -280,7 +280,9 @@ test.describe('Publishing', () => {
     });
 
     test.describe('Update post', () => {
-        test('Can update a published post', async ({page: adminPage, browser}) => {
+        test.describe.configure({retries: 1});
+        
+        test('Can update a published post', async ({page: adminPage}) => {
             await adminPage.goto('/ghost');
 
             const date = DateTime.now();

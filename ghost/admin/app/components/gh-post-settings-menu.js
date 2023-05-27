@@ -7,6 +7,7 @@ import {alias, or} from '@ember/object/computed';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tagName} from '@ember-decorators/component';
+import {tracked} from '@glimmer/tracking';
 
 @classic
 @tagName('')
@@ -22,6 +23,8 @@ export default class GhPostSettingsMenu extends Component {
     @service ui;
 
     @inject config;
+
+    @tracked showPostHistory = false;
 
     post = null;
     isViewingSubview = false;
@@ -62,7 +65,7 @@ export default class GhPostSettingsMenu extends Component {
     @boundOneWay('post.uuid')
         uuidValue;
 
-    @or('metaDescriptionScratch', 'customExcerptScratch', 'post.excerpt')
+    @or('metaDescriptionScratch', 'customExcerptScratch')
         seoDescription;
 
     @or(
@@ -141,6 +144,18 @@ export default class GhPostSettingsMenu extends Component {
         return urlParts.join(' › ');
     }
 
+    get canViewPostHistory() {
+        let showPostHistory = this.feature.postHistory === true
+            && this.post.lexical !== null
+            && this.post.emailOnly === false;
+
+        if (this.post.isPublished === true) {
+            return showPostHistory && this.post.hasEmail === false;
+        }
+
+        return showPostHistory;
+    }
+
     willDestroyElement() {
         super.willDestroyElement(...arguments);
 
@@ -187,6 +202,16 @@ export default class GhPostSettingsMenu extends Component {
             this.showError(error);
             this.post.rollbackAttributes();
         });
+    }
+
+    @action
+    openPostHistory() {
+        this.showPostHistory = true;
+    }
+
+    @action
+    closePostHistory() {
+        this.showPostHistory = false;
     }
 
     /**

@@ -4,8 +4,10 @@ const TableImporter = require('./base');
 const dateToDatabaseString = require('../utils/database-date');
 
 class TagsImporter extends TableImporter {
+    static table = 'tags';
+
     constructor(knex, {users}) {
-        super('tags', knex);
+        super(TagsImporter.table, knex);
         this.users = users;
     }
 

@@ -26,6 +26,8 @@ const redirectsUtils = require('./redirects');
 const configUtils = require('./configUtils');
 const urlServiceUtils = require('./url-service-utils');
 const mockManager = require('./e2e-framework-mock-manager');
+const mentionsJobsService = require('../../core/server/services/mentions-jobs');
+const jobsService = require('../../core/server/services/jobs');
 
 const boot = require('../../core/boot');
 const {AdminAPITestAgent, ContentAPITestAgent, GhostAPITestAgent, MembersAPITestAgent} = require('./agents');
@@ -36,6 +38,10 @@ const settingsService = require('../../core/server/services/settings/settings-se
 const supertest = require('supertest');
 const {stopGhost} = require('./e2e-utils');
 const adapterManager = require('../../core/server/services/adapter-manager');
+const DomainEvents = require('@tryghost/domain-events');
+
+// Require additional assertions which help us keep our tests small and clear
+require('./assertions');
 
 /**
  * @param {Object} [options={}]
@@ -45,6 +51,10 @@ const adapterManager = require('../../core/server/services/adapter-manager');
  * @returns {Promise<Express.Application>} ghost
  */
 const startGhost = async (options = {}) => {
+    await mentionsJobsService.allSettled();
+    await jobsService.allSettled();
+    await DomainEvents.allSettled();
+
     /**
      * We never use the root content folder for testing!
      * We use a tmp folder.
@@ -74,6 +84,9 @@ const startGhost = async (options = {}) => {
     if (bootOptions.frontend) {
         await urlServiceUtils.isFinished();
     }
+
+    // Disable network in tests at the start
+    mockManager.disableNetwork();
 
     return ghostServer;
 };
@@ -438,6 +451,10 @@ module.exports = {
             return path.join(__dirname, 'fixtures', fixturePath);
         }
     },
+    regexes: {
+        anyMajorMinorVersion: /v\d+\.\d+/gi,
+        queryStringToken: paramName => new RegExp(`${paramName}=(\\w|-)+`, 'g')
+    },
     matchers: {
         anyBoolean: any(Boolean),
         anyString: any(String),
@@ -470,6 +487,5 @@ module.exports = {
     configUtils: require('./configUtils'),
     dbUtils: require('./db-utils'),
     urlUtils: require('./urlUtils'),
-    sleep: require('./sleep'),
     resetRateLimits
 };

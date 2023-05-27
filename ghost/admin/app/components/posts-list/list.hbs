@@ -1,0 +1,20 @@
+<MultiList::List @model={{@list}} class="posts-list gh-list {{unless @model "no-posts"}} feature-memberAttribution" as |list| >
+    {{#each @model as |post|}}
+        <list.item @id={{post.id}} class="gh-posts-list-item-group">
+            <PostsList::ListItem
+                @post={{post}}
+                data-test-post-id={{post.id}}
+            />
+        </list.item>
+    {{else}}
+        {{yield}}
+    {{/each}}
+</MultiList::List>
+
+{{!-- The currently selected item or items are passed to the context menu --}}
+<GhContextMenu
+    @name="context-menu"
+    as |menu|
+>
+    <PostsList::ContextMenu @menu={{menu}} />
+</GhContextMenu>

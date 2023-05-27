@@ -339,4 +339,26 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             });
         });
     });
+
+    describe('copy', function () {
+        it('adds default formats if no formats are specified', function () {
+            const frame = {
+                options: {}
+            };
+
+            serializers.input.posts.copy({}, frame);
+
+            frame.options.formats.should.eql('mobiledoc');
+        });
+
+        it('adds default relations if no relations are specified', function () {
+            const frame = {
+                options: {}
+            };
+
+            serializers.input.posts.copy({}, frame);
+
+            frame.options.withRelated.should.eql(['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.clicks', 'post_revisions', 'post_revisions.author']);
+        });
+    });
 });
