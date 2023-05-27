@@ -33,10 +33,12 @@
   "eslintConfig": {
     "extends": [
       "react-app",
-      "plugin:ghost/browser"
+      "plugin:ghost/browser",
+      "plugin:i18next/recommended"
     ],
     "plugins": [
-      "ghost"
+      "ghost",
+      "i18next"
     ]
   },
   "browserslist": {
@@ -60,6 +62,7 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "7.21.8",
+    "@doist/react-interpolate": "0.4.1",
     "@sentry/react": "7.52.1",
     "@sentry/tracing": "7.53.0",
     "@testing-library/jest-dom": "5.16.5",
@@ -72,6 +75,7 @@
     "cross-fetch": "3.1.6",
     "eslint": "8.37.0",
     "eslint-config-react-app": "7.0.1",
+    "eslint-plugin-i18next": "^6.0.1",
     "jsdom": "22.0.0",
     "react": "17.0.2",
     "react-dom": "17.0.2",

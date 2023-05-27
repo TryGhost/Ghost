@@ -1,4 +1,5 @@
 import Dropdown from '../../../admin-x-ds/global/Dropdown';
+import IconLabel from '../../../admin-x-ds/global/IconLabel';
 import Link from '../../../admin-x-ds/global/Link';
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
@@ -25,13 +26,16 @@ const MailGun: React.FC = () => {
         'mailgun_base_url', 'mailgun_domain', 'mailgun_api_key'
     ]) as string[];
 
-    const isMailgunSetup = mailgunRegion && mailgunDomain && mailgunApiKey;
+    const isMailgunSetup = mailgunDomain && mailgunApiKey;
 
     const data = isMailgunSetup ? [
         {
-            heading: 'Status',
             key: 'status',
-            value: 'Mailgun is set up ✅'
+            value: (
+                <IconLabel icon='check-circle' iconColor='green'>
+                    Mailgun is set up
+                </IconLabel>
+            )
         }
     ] : [
         {

@@ -42,40 +42,38 @@ const Modal: React.FC<ModalProps> = ({size = 'md', title, okLabel, cancelLabel, 
         });
     }
 
-    let modalStyles = 'relative z-50 mx-auto flex flex-col justify-between bg-white shadow-xl w-full';
+    let modalStyles = 'relative rounded overflow-hidden z-50 mx-auto flex flex-col justify-between bg-white shadow-xl w-full';
     let backdropStyles = 'fixed inset-0 h-[100vh] w-[100vw] overflow-y-scroll ';
 
     switch (size) {
     case 'sm':
         modalStyles += ' max-w-[480px] p-8';
+        backdropStyles += ' p-[8vmin]';
         break;
 
     case 'md':
         modalStyles += ' max-w-[720px] p-8';
+        backdropStyles += ' p-[8vmin]';
         break;
 
     case 'lg':
-        modalStyles += ' max-w-[940px] p-10';
+        modalStyles += ' max-w-[1020px] p-12';
+        backdropStyles += ' p-[4vmin]';
         break;
 
     case 'xl':
-        modalStyles += ' max-w-[1180px] p-12';
+        modalStyles += ' max-w-[1240px] p-14';
+        backdropStyles += ' p-[3vmin]';
         break;
 
     case 'full':
+        modalStyles += ' h-full p-12';
+        backdropStyles += ' p-[2vmin]';
+        break;
+
     case 'bleed':
         modalStyles += ' h-full p-12';
         break;
-    }
-
-    if (size !== 'bleed') {
-        modalStyles += ' rounded-md overflow-hidden';
-    }
-
-    if (size !== 'bleed' && size !== 'full') {
-        backdropStyles += ' p-[8vmin]';
-    } else if (size === 'full') {
-        backdropStyles += ' p-[2vmin]';
     }
 
     const handleBackdropClick = () => {

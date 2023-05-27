@@ -2029,6 +2029,11 @@
     ee-log "^3.0.0"
     section-tests "^1.3.0"
 
+"@doist/react-interpolate@0.4.1":
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/@doist/react-interpolate/-/react-interpolate-0.4.1.tgz#696d14e90ffc849e94a4e3e94578c5eade1590b8"
+  integrity sha512-JxBJMpDlXByMrA7T6Z+tRdCqXlbnM1ikfasLaqMrWvV4TvvrPuD7dngU/X01iP9tpAycfxasNvbNKFs/QehViQ==
+
 "@ebay/nice-modal-react@^1.2.10":
   version "1.2.10"
   resolved "https://registry.yarnpkg.com/@ebay/nice-modal-react/-/nice-modal-react-1.2.10.tgz#6b2406bfce4a5daffc43f5b85f5f238311cdfe93"
@@ -6815,6 +6820,13 @@
   version "3.0.15"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-3.0.15.tgz#967a46942d57d31154efe039edd1162a5a3613eb"
   integrity sha512-snr3G62oXjQBfhma0k54deMwCxa9dG8wc9bTq/XMWHzbKYu2cxbBhBsotE4gibykOJkyXNTqEgTEterSoWDxkw==
+
+"@tryghost/kg-converters@0.0.5":
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-converters/-/kg-converters-0.0.5.tgz#fa1a7956eb9d4745992b20cdf5314bad20ba8b09"
+  integrity sha512-jkZmVv/T4WOgHChrCJA8DFY44krtP0utMMv3Kp3GyHYda86csV8ZR9aQM+W8VlkSr4NP6NdQlfSZ5qlgCITilA==
+  dependencies:
+    lodash "^4.17.21"
 
 "@tryghost/kg-default-atoms@4.0.1":
   version "4.0.1"
@@ -16365,6 +16377,14 @@ eslint-plugin-ghost@3.0.0:
     eslint-plugin-n "^15.6.0"
     eslint-plugin-sort-imports-es6-autofix "0.6.0"
     eslint-plugin-unicorn "42.0.0"
+
+eslint-plugin-i18next@^6.0.1:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-i18next/-/eslint-plugin-i18next-6.0.1.tgz#b0a289179598b247a73881abccb4b73ea8a5e835"
+  integrity sha512-aJ0UlZLVqBK7mdXsl3yFQNz72OPUjSmBfcrMjCNxfMp8YVBAlKE83ZfzzTLCMQvFlXZs0TWYTtoteO/ZiZdDdw==
+  dependencies:
+    lodash "^4.17.21"
+    requireindex "~1.1.0"
 
 eslint-plugin-import@^2.25.3:
   version "2.27.5"
@@ -28744,6 +28764,11 @@ requireindex@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/requireindex/-/requireindex-1.2.0.tgz#3463cdb22ee151902635aa6c9535d4de9c2ef1ef"
   integrity sha512-L9jEkOi3ASd9PYit2cwRfyppc9NoABujTP8/5gFcbERmo5jUoAKovIC3fsF17pkTnGsrByysqX+Kxd2OTNI1ww==
+
+requireindex@~1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/requireindex/-/requireindex-1.1.0.tgz#e5404b81557ef75db6e49c5a72004893fe03e162"
+  integrity sha512-LBnkqsDE7BZKvqylbmn7lTIVdpx4K/QCduRATpO5R+wtPmky/a8pN1bO2D6wXppn1497AJF9mNjqAXr6bdl9jg==
 
 requires-port@^1.0.0:
   version "1.0.0"

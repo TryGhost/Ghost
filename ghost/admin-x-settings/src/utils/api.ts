@@ -1,20 +1,40 @@
-import {Setting} from '../types/api';
+import {Setting, User} from '../types/api';
 import {getGhostPaths} from './helpers';
 
-interface IQueryParams {
+type ApiQueryParams = {
+    limit: string;
+    include: string;
+    [key: string]: string;
+}
+
+type SettingApiQueryParams = {
     group: string;
     [key: string]: string;
 }
 
-// Define the SettingsResponse type
-export interface ISettingsResponse {
-    meta: any;
+type Meta = {
+    pagination: {
+        page: number;
+        limit: number;
+        pages: number;
+        total: number;
+        next: number;
+        prev: number;
+    }
+}
+
+export type SettingsResponseType = {
+    meta: Meta;
     settings: Setting[];
+}
+export type UsersResponseType = {
+    meta: Meta;
+    users: User[];
 }
 
 export async function getSettings() {
     const {apiRoot} = getGhostPaths();
-    const queryParams: IQueryParams = {group: 'site,theme,private,members,portal,newsletter,email,amp,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura'};
+    const queryParams: SettingApiQueryParams = {group: 'site,theme,private,members,portal,newsletter,email,amp,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura'};
     const queryString = Object.keys(queryParams).map((key) => {
         return `${key}=${queryParams[key] || ''}`;
     }).join('&');
@@ -28,7 +48,7 @@ export async function getSettings() {
         mode: 'cors',
         credentials: 'include'
     });
-    const data: ISettingsResponse = await response.json();
+    const data: SettingsResponseType = await response.json();
     return data;
 }
 
@@ -51,6 +71,26 @@ export async function updateSettings(newSettings: Setting[]) {
         credentials: 'include'
     });
 
-    const data: ISettingsResponse = await response.json();
+    const data: SettingsResponseType = await response.json();
+    return data;
+}
+
+export async function getUsers() {
+    const {apiRoot} = getGhostPaths();
+    const queryParams: ApiQueryParams = {limit: 'all', include: 'roles'};
+    const queryString = Object.keys(queryParams).map((key) => {
+        return `${key}=${queryParams[key] || ''}`;
+    }).join('&');
+
+    const response = await fetch(`${apiRoot}/users/?${queryString}`, {
+        headers: {
+            'app-pragma': 'no-cache',
+            'x-ghost-version': '5.47'
+        },
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'include'
+    });
+    const data: UsersResponseType = await response.json();
     return data;
 }
