@@ -23,7 +23,7 @@ function cardTemplate(nodeData) {
             <div class="kg-signup-card-success" style="color: ${nodeData.textColor};">
                 ${nodeData.successMessage || 'Thanks! Now check your email to confirm.'}
             </div>
-                <div class="kg-signup-card-error" style="color: ${nodeData.textColor};" data-members-error></div>
+            <div class="kg-signup-card-error" style="color: ${nodeData.textColor};" data-members-error></div>
         </form>
         `;
 

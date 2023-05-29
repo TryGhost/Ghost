@@ -342,7 +342,7 @@ export function SignupCard({alignment,
                                     </button>
                                 )
                             }),
-                            {title: 'Grey', hex: '#F4F4F4'},
+                            {title: 'Grey', hex: '#F0F0F0'},
                             {title: 'Black', hex: '#000000'},
                             {title: 'Brand color', accent: true}
                         ].filter(Boolean)}
