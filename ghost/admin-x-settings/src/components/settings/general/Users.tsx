@@ -1,3 +1,4 @@
+import Avatar from '../../../admin-x-ds/global/Avatar';
 import Button from '../../../admin-x-ds/global/Button';
 import InviteUserModal from './modals/InviteUserModal';
 import List from '../../../admin-x-ds/global/List';
@@ -20,9 +21,12 @@ const Owner: React.FC<{user: User}> = ({user}) => {
         return null;
     }
     return (
-        <div className='group flex flex-col hover:cursor-pointer' onClick={showDetailModal}>
-            <span>{user.name} &mdash; <strong>Owner</strong> <span className='invisible ml-2 inline-block text-sm font-bold text-green group-hover:visible'>Edit</span></span>
-            <span className='text-xs text-grey-700'>{user.email}</span>
+        <div className='group flex gap-3 hover:cursor-pointer' onClick={showDetailModal}>
+            <Avatar bgColor='yellow' label='DV' />
+            <div className='flex flex-col'>
+                <span>{user.name} &mdash; <strong>Owner</strong> <span className='invisible ml-2 inline-block text-sm font-bold text-green group-hover:visible'>Edit</span></span>
+                <span className='text-xs text-grey-700'>{user.email}</span>
+            </div>
         </div>
     );
 };
@@ -52,6 +56,7 @@ const UsersList: React.FC<UsersListProps> = ({users, updateUser}) => {
                     <ListItem
                         key={user.id}
                         action={<Button color='green' label='Edit' link={true} onClick={() => showDetailModal(user)}/>}
+                        avatar={(<Avatar bgColor='green' label='DV' labelColor='white' />)}
                         detail={user.email}
                         hideActions={true}
                         id={`list-item-${user.id}`}
@@ -103,6 +108,11 @@ const Users: React.FC = () => {
             id: 'users-contributors',
             title: 'Contributors',
             contents: (<UsersList updateUser={updateUser} users={contributorUsers} />)
+        },
+        {
+            id: 'users-invited',
+            title: 'Invited',
+            contents: (<></>)
         }
     ];
 
