@@ -233,22 +233,23 @@ export function SignupCard({alignment,
                             (alignment === 'center') && 'text-center',
                             (layout === 'regular') && 'text-lg sm:text-xl',
                             (layout === 'wide') && 'text-lg sm:text-xl md:text-2xl',
-                            (layout === 'full' || layout === 'split') && 'text-xl md:text-2xl xl:text-3xl'
+                            (layout === 'full' || layout === 'split') && 'text-xl md:text-2xl',
+                            layout === 'full' && 'xl:max-w-[880px]',
                         )}
                         placeholderText={subheaderPlaceholder}
                         singleParagraph={true}
                         textClassName={clsx(
-                            'koenig-lexical-header-subheading relative whitespace-normal caret-current [&:has(br)]:text-left',
+                            'koenig-lexical-header-subheading relative w-full whitespace-normal caret-current [&:has(br)]:text-left',
                             (!isEditing && isEditorEmpty(subheaderTextEditor)) ? 'hidden' : 'peer',
                             (alignment === 'center') && 'text-center',
                             (layout === 'regular') && 'koenig-lexical-header-small !mt-2',
                             (layout === 'regular' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_90px)] [&:has(br)]:sm:pl-[calc(50%_-_100px)]',
                             (layout === 'wide') && 'koenig-lexical-header-medium !mt-3',
                             (layout === 'wide' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_90px)] [&:has(br)]:sm:pl-[calc(50%_-_100px)] [&:has(br)]:md:pl-[calc(50%_-_120px)]',
-                            layout === 'full' ? 'w-3/4' : 'w-full',
+                            layout === 'full' && 'xl:max-w-[880px]',
                             (layout === 'full' || layout === 'split') && 'koenig-lexical-header-large !mt-3',
-                            (layout === 'full' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_100px)] [&:has(br)]:md:pl-[calc(50%_-_120px)] [&:has(br)]:xl:pl-[calc(50%_-_152px)]',
-                            (layout === 'split' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_75px)] [&:has(br)]:md:pl-[calc(50%_-_90px)] [&:has(br)]:xl:pl-[calc(50%_-_112px)]'
+                            (layout === 'full' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_100px)] [&:has(br)]:md:pl-[calc(50%_-_120px)] [&:has(br)]:xl:pl-[calc(880px_-_560px)]',
+                            (layout === 'split' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_75px)] [&:has(br)]:md:pl-[calc(50%_-_90px)]'
                         )}
                     />}
 

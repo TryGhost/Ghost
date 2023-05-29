@@ -140,7 +140,7 @@ export function HeaderCard({isEditing,
                                 'w-full truncate whitespace-normal !text-center !font-medium !leading-snug !tracking-tight opacity-50',
                                 (size === 'small') && 'text-lg sm:text-xl',
                                 (size === 'medium') && 'text-lg sm:text-xl md:text-2xl',
-                                (size === 'large') && 'text-xl md:text-2xl xl:text-3xl',
+                                (size === 'large') && 'text-xl md:text-2xl',
                                 (HEADER_TEXT_COLORS[type])
                             )}
                             placeholderText={subheaderPlaceholder}
@@ -149,7 +149,7 @@ export function HeaderCard({isEditing,
                                 'koenig-lexical-header-subheading relative w-full whitespace-normal text-center [&:has(br)]:text-left',
                                 (size === 'small') && 'koenig-lexical-header-small !mt-2 [&:has(br)]:pl-[calc(50%_-_90px)] [&:has(br)]:sm:pl-[calc(50%_-_100px)]',
                                 (size === 'medium') && 'koenig-lexical-header-medium !mt-3 [&:has(br)]:pl-[calc(50%_-_90px)] [&:has(br)]:sm:pl-[calc(50%_-_100px)] [&:has(br)]:md:pl-[calc(50%_-_120px)]',
-                                (size === 'large') && 'koenig-lexical-header-large !mt-3 [&:has(br)]:pl-[calc(50%_-_100px)] [&:has(br)]:md:pl-[calc(50%_-_120px)] [&:has(br)]:xl:pl-[calc(50%_-_150px)]',
+                                (size === 'large') && 'koenig-lexical-header-large !mt-3 [&:has(br)]:pl-[calc(50%_-_100px)] [&:has(br)]:md:pl-[calc(50%_-_120px)]',
                                 (HEADER_TEXT_COLORS[type])
                             )}
                         />
