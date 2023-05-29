@@ -68,6 +68,23 @@ const Template = ({display, heading, subheader, disclaimer, ...args}) => {
     </div>);
 };
 
+export const Default = Template.bind({});
+Default.args = {
+    display: 'Editing',
+    layout: 'wide',
+    alignment: 'left',
+    showBackgroundImage: false,
+    heading: 'Sign up for Koenig Lexical',
+    subheader: `There's a whole lot to discover in this editor. Let us help you settle in.`,
+    disclaimer: 'No spam. Unsubscribe anytime.',
+    buttonText: '',
+    buttonColor: 'accent',
+    buttonTextColor: '#FFFFFF',
+    backgroundColor: '#F0F0F0',
+    textColor: '#000000',
+    availableLabels: ['First label', 'Second label']
+};
+
 export const Empty = Template.bind({});
 Empty.args = {
     display: 'Editing',
@@ -79,7 +96,9 @@ Empty.args = {
     disclaimer: '',
     buttonText: '',
     buttonColor: '#ffffff',
-    backgroundColor: '#ff0095',
+    buttonTextColor: '#000000',
+    backgroundColor: 'transparent',
+    textColor: '',
     availableLabels: ['First label', 'Second label'],
     headerTextEditorInitialState: editorEmptyState,
     subheaderTextEditorInitialState: editorEmptyState,
