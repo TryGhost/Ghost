@@ -108,7 +108,7 @@
     "eslint-plugin-tailwindcss": "3.11.0",
     "jsdom": "21.1.1",
     "playwright": "1.33.0",
-    "postcss": "8.4.23",
+    "postcss": "8.4.24",
     "postcss-import": "15.1.0",
     "prettier": "2.8.8",
     "react-highlight": "^0.15.0",
