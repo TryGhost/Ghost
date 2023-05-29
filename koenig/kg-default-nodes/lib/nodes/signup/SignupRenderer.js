@@ -14,7 +14,7 @@ function cardTemplate(nodeData) {
         <form class="kg-signup-card-form" data-members-form="signup">
             ${nodeData.labels.map(label => `<input data-members-label type="hidden" value="${label}" />`).join('\n')}
             <div class="kg-signup-card-fields">
-                <input class="kg-signup-card-input ${buttonAccent}" style="border-color: ${nodeData.buttonColor};" id="email" data-members-email="" type="email" required="true" placeholder="yourname@example.com" />
+                <input class="kg-signup-card-input" id="email" data-members-email="" type="email" required="true" placeholder="yourname@example.com" />
                 <button class="kg-signup-card-button ${buttonAccent}" style="background-color: ${nodeData.buttonColor}; color: ${nodeData.buttonTextColor};" type="submit">
                     <span class="kg-signup-card-button-default">${nodeData.buttonText || 'Subscribe'}</span>
                     <span class="kg-signup-card-button-loading" style="background-color: ${nodeData.buttonColor}">${loadingIcon()}</span>

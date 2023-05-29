@@ -11,7 +11,7 @@ const story = {
             control: {type: 'select'}
         },
         size: {
-            options: ['small', 'medium', 'large', 'xlarge'],
+            options: ['small', 'medium', 'large'],
             control: {type: 'select'}
         },
         width: {

@@ -245,6 +245,7 @@ export function SignupCard({alignment,
                             (layout === 'regular' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_90px)] [&:has(br)]:sm:pl-[calc(50%_-_100px)]',
                             (layout === 'wide') && 'koenig-lexical-header-medium !mt-3',
                             (layout === 'wide' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_90px)] [&:has(br)]:sm:pl-[calc(50%_-_100px)] [&:has(br)]:md:pl-[calc(50%_-_120px)]',
+                            layout === 'full' && 'w-3/4',
                             (layout === 'full' || layout === 'split') && 'koenig-lexical-header-large !mt-3',
                             (layout === 'full' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_100px)] [&:has(br)]:md:pl-[calc(50%_-_120px)] [&:has(br)]:xl:pl-[calc(50%_-_152px)]',
                             (layout === 'split' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_75px)] [&:has(br)]:md:pl-[calc(50%_-_90px)] [&:has(br)]:xl:pl-[calc(50%_-_112px)]'
@@ -254,7 +255,7 @@ export function SignupCard({alignment,
                     {/* Subscribe form */}
                     <div className={`w-full ${(layout === 'regular') ? 'peer-[.koenig-lexical]:mt-10' : (layout === 'wide') ? 'peer-[.koenig-lexical]:mt-12 md:w-4/6' : (layout === 'full') ? 'peer-[.koenig-lexical]:mt-12 md:w-4/6 peer-[.koenig-lexical]:md:mt-16 xl:w-1/2' : 'peer-[.koenig-lexical]:mt-10 peer-[.koenig-lexical]:md:mt-16'}`}>
                         <SubscribeForm
-                            buttonSize={`${(layout === 'regular') ? 'medium' : (layout === 'wide') ? 'large' : 'xlarge'}`}
+                            buttonSize={`${(layout === 'regular') ? 'medium' : 'large'}`}
                             buttonStyle={buttonColor ? {
                                 backgroundColor: hexColorValue(buttonColor),
                                 color: hexColorValue(buttonTextColor)
@@ -263,10 +264,6 @@ export function SignupCard({alignment,
                             buttonText={buttonText || 'Subscribe'}
                             dataTestId='signup-card-button'
                             disabled={true}
-                            inputBorderStyle={buttonColor ? {
-                                border: `1px solid ${hexColorValue(buttonColor)}`
-                            } : null}
-                            mobileSize={`${(layout === 'full' || layout === 'split') && 'large'}`}
                             placeholder='yourname@example.com'
                         />
                     </div>

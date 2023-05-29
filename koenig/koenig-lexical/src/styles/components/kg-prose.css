@@ -915,7 +915,7 @@
                     ul,
                     ol
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            @apply text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl;
+            @apply text-4xl sm:text-5xl md:text-6xl lg:text-7xl;
         }
     }
 }
@@ -996,7 +996,7 @@
                     ul,
                     ol
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            @apply text-xl md:text-2xl xl:text-3xl;
+            @apply text-xl md:text-2xl;
         }
     }
 }
