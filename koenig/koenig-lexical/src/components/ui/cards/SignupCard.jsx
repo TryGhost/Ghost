@@ -324,6 +324,7 @@ export function SignupCard({alignment,
                         label='Background'
                         swatches={[
                             (layout !== 'split' && {
+                                title: 'Image',
                                 customContent: (
                                     <button
                                         className={clsx(
@@ -456,7 +457,7 @@ SignupCard.propTypes = {
     handleTextColor: PropTypes.func,
     labels: PropTypes.arrayOf(PropTypes.string),
     layout: PropTypes.oneOf(['regular', 'wide', 'full', 'split']),
-    availableLabels: PropTypes.arrayOf(PropTypes.object),
+    availableLabels: PropTypes.arrayOf(PropTypes.string),
     openFilePicker: PropTypes.func,
     onFileChange: PropTypes.func,
     openImageEditor: PropTypes.func,

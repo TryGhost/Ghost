@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef} from 'react';
+import React, {Fragment, useCallback, useEffect, useRef} from 'react';
 import clsx from 'clsx';
 import {Button} from './Button';
 import {ReactComponent as EyedropperIcon} from '../../assets/icons/kg-eyedropper.svg';
@@ -146,7 +146,7 @@ export function ColorIndicator({value, swatches, onSwatchChange, onTogglePicker}
         <div className='flex gap-1'>
             <div className={`flex items-center gap-1`}>
                 {swatches.map(({customContent, ...swatch}) => (
-                    customContent ?? <ColorSwatch key={swatch.title} isSelected={selectedSwatch === swatch.title} onSelect={onSwatchChange} {...swatch} />
+                    customContent ? <Fragment key={swatch.title}>{customContent}</Fragment> : <ColorSwatch key={swatch.title} isSelected={selectedSwatch === swatch.title} onSelect={onSwatchChange} {...swatch} />
                 ))}
             </div>
             <button aria-label="Pick color" className="relative h-6 w-6 rounded-full border border-grey-200" type="button" onClick={onTogglePicker}>

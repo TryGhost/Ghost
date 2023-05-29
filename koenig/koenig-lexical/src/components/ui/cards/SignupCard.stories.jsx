@@ -55,7 +55,7 @@ const Template = ({display, heading, subheader, disclaimer, ...args}) => {
 
     return (<div className="kg-prose">
         <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
-            <CardWrapper {...display} {...args} cardWidth={cardWidth}>
+            <CardWrapper {...display} cardWidth={cardWidth}>
                 <SignupCard
                     {...display}
                     {...args}
