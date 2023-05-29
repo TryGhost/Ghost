@@ -150,7 +150,11 @@ export function SignupCard({alignment,
             };
         }
 
-        return null;
+        return {
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3ERectangle%3C/title%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cpath fill='%23F2F6F8' d='M0 0h24v24H0z'/%3E%3Cpath fill='%23E5ECF0' d='M0 0h12v12H0zM12 12h12v12H12z'/%3E%3C/g%3E%3C/svg%3E")`,
+            backgroundColor: 'transparent',
+            color: hexColorValue(textColor)
+        };
     };
 
     return (
