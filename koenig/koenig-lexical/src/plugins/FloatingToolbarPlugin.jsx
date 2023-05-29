@@ -7,12 +7,12 @@ import {FloatingLinkToolbar} from '../components/ui/FloatingLinkToolbar';
 import {getSelectedNode} from '../utils/getSelectedNode';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-export default function FloatingToolbarPlugin({anchorElem = document.body, isSnippetsEnabled}) {
+export default function FloatingToolbarPlugin({anchorElem = document.body, isSnippetsEnabled, hiddenFormats = []}) {
     const [editor] = useLexicalComposerContext();
-    return useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled);
+    return useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled, hiddenFormats);
 }
 
-function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled) {
+function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled, hiddenFormats = []) {
     const [toolbarItemType, setToolbarItemType] = React.useState(null);
     const [selectionRangeRect, setSelectionRangeRect] = React.useState(null);
     const [href, setHref] = React.useState(null);
@@ -99,12 +99,12 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled) {
         setToolbarItemType(toolbarItemTypes.link);
         setHref(data.href);
     };
-
     return (
         <>
             <FloatingFormatToolbar
                 anchorElem={anchorElem}
                 editor={editor}
+                hiddenFormats={hiddenFormats}
                 href={href}
                 isSnippetsEnabled={isSnippetsEnabled}
                 selectionRangeRect={selectionRangeRect}

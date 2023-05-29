@@ -21,7 +21,8 @@ const KoenigNestedEditor = ({
     focusNext = null,
     singleParagraph = false,
     hasSettingsPanel = false,
-    defaultKoenigEnterBehaviour = false
+    defaultKoenigEnterBehaviour = false,
+    hiddenFormats = []
 }) => {
     const initialNodes = nodes === 'minimal' ? MINIMAL_NODES : BASIC_NODES;
     const markdownTransformers = nodes === 'minimal' ? MINIMAL_TRANSFORMERS : BASIC_TRANSFORMERS;
@@ -34,6 +35,7 @@ const KoenigNestedEditor = ({
         >
             <KoenigComposableEditor
                 className={textClassName}
+                hiddenFormats={hiddenFormats}
                 inheritStyles={true}
                 isDragEnabled={false}
                 markdownTransformers={markdownTransformers}

@@ -195,6 +195,7 @@ export function SignupCard({alignment,
                         autoFocus={true}
                         focusNext={subheaderTextEditor}
                         hasSettingsPanel={true}
+                        hiddenFormats={['bold']}
                         initialEditor={headerTextEditor}
                         initialEditorState={headerTextEditorInitialState}
                         nodes="minimal"

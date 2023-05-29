@@ -37,7 +37,8 @@ const KoenigComposableEditor = ({
     readOnly = false,
     isDragEnabled = true,
     inheritStyles = false,
-    isSnippetsEnabled = true
+    isSnippetsEnabled = true,
+    hiddenFormats = []
 }) => {
     const {historyState} = useSharedHistoryContext();
     const [editor] = useLexicalComposerContext();
@@ -97,7 +98,7 @@ const KoenigComposableEditor = ({
             {!isCollabActive && <HistoryPlugin externalHistoryState={historyState} />} {/* adds undo/redo, in multiplayer that's handled by yjs */}
             <KoenigBehaviourPlugin containerElem={editorContainerRef} cursorDidExitAtTop={cursorDidExitAtTop} isNested={isNested} />
             <MarkdownShortcutPlugin transformers={markdownTransformers} />
-            {floatingAnchorElem && (<FloatingToolbarPlugin anchorElem={floatingAnchorElem} isSnippetsEnabled={isSnippetsEnabled} />)}
+            {floatingAnchorElem && (<FloatingToolbarPlugin anchorElem={floatingAnchorElem} hiddenFormats={hiddenFormats} isSnippetsEnabled={isSnippetsEnabled} />)}
             <DragDropPastePlugin />
             {registerAPI ? <ExternalControlPlugin registerAPI={registerAPI} /> : null}
             {isDragReorderEnabled && <DragDropReorderPlugin containerElem={editorContainerRef} />}

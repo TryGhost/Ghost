@@ -44,7 +44,8 @@ export default function FormatToolbar({
     isLinkSelected,
     onLinkClick,
     onSnippetClick,
-    arrowStyles
+    arrowStyles,
+    hiddenFormats = []
 }) {
     const [isBold, setIsBold] = React.useState(false);
     const [isItalic, setIsItalic] = React.useState(false);
@@ -63,6 +64,11 @@ export default function FormatToolbar({
     let hideSnippets = !isSnippetsEnabled;
     if (editor._parentEditor) {
         hideSnippets = true;
+    }
+
+    let hideBold = false;
+    if (hiddenFormats.includes('bold')) {
+        hideBold = true;
     }
 
     const updateState = React.useCallback(() => {
@@ -159,6 +165,7 @@ export default function FormatToolbar({
         <ToolbarMenu arrowStyles={arrowStyles}>
             <ToolbarMenuItem
                 data-kg-toolbar-button="bold"
+                hide={hideBold}
                 icon="bold"
                 isActive={isBold}
                 label="Format text as bold"
