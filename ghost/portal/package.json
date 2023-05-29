@@ -76,7 +76,7 @@
     "eslint": "8.37.0",
     "eslint-config-react-app": "7.0.1",
     "eslint-plugin-i18next": "^6.0.1",
-    "jsdom": "22.0.0",
+    "jsdom": "22.1.0",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "vite": "4.3.8",
