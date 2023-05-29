@@ -318,7 +318,7 @@ test.describe('Signup card', async () => {
 
         await page.click('[data-testid="signup-background-color"] button[title="Grey"]');
 
-        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('background-color', 'rgb(244, 244, 244)');
+        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('background-color', 'rgb(240, 240, 240)');
         await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('color', 'rgb(0, 0, 0)');
 
         // Text colour is updated based on the background image
@@ -338,7 +338,7 @@ test.describe('Signup card', async () => {
         await page.locator('[data-testid="signup-layout-split"]').click();
 
         await expect(page.locator('[data-kg-card="signup"] > div:first-child')).not.toHaveCSS('background-image', /blob:/);
-        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('background-color', 'rgb(244, 244, 244)');
+        await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('background-color', 'rgb(240, 240, 240)');
         await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('color', 'rgb(0, 0, 0)');
 
         // When switching back from split layout, text colour is set based on the background colour
