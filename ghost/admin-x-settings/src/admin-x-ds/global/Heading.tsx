@@ -28,7 +28,7 @@ const Heading: React.FC<IHeading> = ({level, children, styles, grey, separator, 
     const newElement = `${useLabelTag ? 'label' : `h${level}`}`;
     styles += (level === 6 || useLabelTag) ? (` block text-2xs font-semibold uppercase tracking-wide ${(grey && 'text-grey-700')}`) : ' ';
 
-    const Element = React.createElement(newElement, {className: styles, ...props}, children);
+    const Element = React.createElement(newElement, {className: styles, key: 'heading-elem', ...props}, children);
 
     if (separator) {
         let gap = (!level || level === 1) ? 2 : 1;

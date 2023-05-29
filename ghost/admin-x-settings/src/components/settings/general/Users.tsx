@@ -3,6 +3,7 @@ import InviteUserModal from './modals/InviteUserModal';
 import List from '../../../admin-x-ds/global/List';
 import ListItem from '../../../admin-x-ds/global/ListItem';
 import NiceModal from '@ebay/nice-modal-react';
+import NoValueLabel from '../../../admin-x-ds/global/NoValueLabel';
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
@@ -28,18 +29,19 @@ const Owner: React.FC<{user: User}> = ({user}) => {
 
 interface UsersListProps {
     users: User[];
+    updateUser?: (user: User) => void;
 }
 
-const UsersList: React.FC<UsersListProps> = ({users}) => {
+const UsersList: React.FC<UsersListProps> = ({users, updateUser}) => {
     const showDetailModal = (user: User) => {
-        NiceModal.show(UserDetailModal, {user});
+        NiceModal.show(UserDetailModal, {user, updateUser});
     };
 
     if (!users || !users.length) {
         return (
-            <div className='mt-2 py-10 text-center text-sm text-grey-700'>
+            <NoValueLabel icon='single-user-neutral-block'>
                 No users found.
-            </div>
+            </NoValueLabel>
         );
     }
 
@@ -67,7 +69,8 @@ const Users: React.FC = () => {
         adminUsers,
         editorUsers,
         authorUsers,
-        contributorUsers
+        contributorUsers,
+        updateUser
     } = useStaffUsers();
 
     const showInviteModal = () => {
@@ -84,22 +87,22 @@ const Users: React.FC = () => {
         {
             id: 'users-admins',
             title: 'Administrators',
-            contents: (<UsersList users={adminUsers} />)
+            contents: (<UsersList updateUser={updateUser} users={adminUsers} />)
         },
         {
             id: 'users-editors',
             title: 'Editors',
-            contents: (<UsersList users={editorUsers} />)
+            contents: (<UsersList updateUser={updateUser} users={editorUsers} />)
         },
         {
             id: 'users-authors',
             title: 'Authors',
-            contents: (<UsersList users={authorUsers} />)
+            contents: (<UsersList updateUser={updateUser} users={authorUsers} />)
         },
         {
             id: 'users-contributors',
             title: 'Contributors',
-            contents: (<UsersList users={contributorUsers} />)
+            contents: (<UsersList updateUser={updateUser} users={contributorUsers} />)
         }
     ];
 

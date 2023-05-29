@@ -82,7 +82,7 @@
     "eslint-plugin-ghost": "3.0.0",
     "minimist": "1.2.8",
     "nock": "13.3.0",
-    "postcss": "8.4.23",
+    "postcss": "8.4.24",
     "rewire": "6.0.0",
     "serve-handler": "6.1.5",
     "webpack-cli": "3.3.12"
