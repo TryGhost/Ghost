@@ -263,6 +263,10 @@
     display: none;
 }
 
+.kg-signup-card-form.loading .kg-signup-card-button-default {
+    color: transparent;
+}
+
 .kg-signup-card-form.loading .kg-signup-card-button-loading {
     display: flex;
 }
