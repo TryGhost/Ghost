@@ -1,3 +1,4 @@
+import Avatar from '../../../../admin-x-ds/global/Avatar';
 import Button from '../../../../admin-x-ds/global/Button';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import Modal from '../../../../admin-x-ds/global/Modal';
@@ -253,6 +254,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
             <div>
                 <div className='-mx-12 -mt-12 bg-gradient-to-tr from-grey-900 to-black p-12 text-white'>
                     <div className='mt-60'>
+                        <Avatar bgColor='green' className='-ml-1 mb-2' label='DV' labelColor='white' size='xl' />
                         <Heading styles='text-white'>{user.name}</Heading>
                         <span className='text-md font-semibold'>Administrator</span>
                     </div>
