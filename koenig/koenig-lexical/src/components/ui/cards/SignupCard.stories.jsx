@@ -98,6 +98,9 @@ Populated.args = {
     disclaimer: 'And here is some disclaimer text.',
     buttonText: 'Subscribe',
     buttonColor: '#000000',
+    buttonTextColor: '#ffffff',
     backgroundColor: '#F3B389',
-    availableLabels: ['First label', 'Second label']
+    textColor: '#000000',
+    availableLabels: ['First label', 'Second label'],
+    handleBackgroundColor: () => {}
 };
