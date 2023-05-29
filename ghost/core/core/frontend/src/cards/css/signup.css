@@ -61,12 +61,12 @@
 /* Split layout image */
 
 .kg-signup-card-image {
-    object-fit: cover;
-    object-position: center;
     /* this will force the image to follow the signup card height */
     height: 0;
     min-height: 100%;
     /**/
+    object-fit: cover;
+    object-position: center;
 }
 
 .kg-signup-card-image.kg-style-accent {
@@ -76,11 +76,11 @@
 /* Heading */
 
 .kg-signup-card h2.kg-signup-card-heading {
+    margin: 0;
     font-size: 4.8vmin;
     font-weight: 700;
     line-height: 1em;
     letter-spacing: -0.01em;
-    margin: 0;
 }
 
 .kg-signup-card h2.kg-signup-card-heading strong {
@@ -96,7 +96,7 @@
 }
 
 .kg-signup-card.kg-width-full.kg-layout-split h2.kg-signup-card-heading {
-    font-size: 6vmin;
+    font-size: 6.4vmin;
 }
 
 /* Subheading */
@@ -106,11 +106,11 @@
 }
 
 .kg-signup-card h3.kg-signup-card-subheading {
+    max-width: 40em;
+    margin: 0;
     font-size: 1.25em;
     font-weight: 500;
     line-height: 1.4em;
-    margin: 0;
-    max-width: 40em;
 }
 
 .kg-signup-card h2 + h3.kg-signup-card-subheading {
@@ -179,17 +179,26 @@
 
 .kg-signup-card-input {
     width: 100%;
-    border: none;
+    height: 4.6rem;
+    margin-right: 3px;
     padding: 12px 16px;
+    border: none;
     font-size: 1.1em;
+}
+
+.kg-signup-card-input:focus,
+.kg-signup-card-input:focus-visible {
+    outline: none;
 }
 
 .kg-signup-card-button {
     display: flex;
     position: relative;
     align-items: center;
+    height: 4.6rem;
+    padding: 0 1.2em;
     outline: none;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+    border: none;
     font-size: 1em;
     font-weight: 600;
     line-height: 1em;
@@ -198,8 +207,6 @@
     letter-spacing: .2px;
     white-space: nowrap;
     text-overflow: ellipsis;
-    height: 4.8rem;
-    padding: 0 1.2em;
     border-radius: 3px;
     transition: opacity .2s ease;
 }
@@ -317,12 +324,13 @@
     }
 
     .kg-signup-card-input {
+        height: 4.2rem;
         padding: 6px 12px;
         font-size: 1em;
     }
 
     .kg-signup-card-button {
-        height: 4.4rem;
+        height: 4.2rem;
     }
 
     .kg-signup-card.kg-width-wide .kg-signup-card-button,
