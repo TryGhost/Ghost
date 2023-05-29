@@ -185,10 +185,10 @@ export function SignupCard({alignment,
                     className={clsx(
                         'mx-auto flex w-full flex-1 flex-col justify-center',
                         (alignment === 'center') && 'items-center',
-                        (layout === 'regular') && 'py-[8rem] px-[6rem] lg:px-[8rem]',
-                        (layout === 'wide') && 'max-w-[740px] py-[10rem] px-[8rem] lg:px-0',
-                        (layout === 'full') && 'py-[8rem] px-[4.8rem] md:py-[12rem] md:px-[8rem] lg:p-[14rem] xl:p-[16rem]',
-                        (layout === 'split') && 'px-[4.8rem] py-[8rem] md:py-[12rem] lg:px-[6rem] lg:py-[16rem]'
+                        (layout === 'regular') && 'py-[8rem] px-[4rem] md:px-[6rem] lg:px-[8rem]',
+                        (layout === 'wide') && 'max-w-[740px] px-[4rem] py-[8rem] md:py-[10rem] md:px-[8rem] lg:px-0',
+                        (layout === 'full') && 'py-[8rem] px-[4rem] md:py-[12rem] md:px-[8rem] lg:p-[14rem] xl:p-[16rem]',
+                        (layout === 'split') && 'px-[4rem] py-[8rem] md:py-[12rem] lg:px-[6rem] lg:py-[16rem]'
                     )}>
                     {/* Heading */}
                     {<KoenigNestedEditor
@@ -203,7 +203,7 @@ export function SignupCard({alignment,
                             (alignment === 'center') && 'text-center',
                             (layout === 'regular') && 'text-3xl sm:text-4xl md:text-5xl',
                             (layout === 'wide') && 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl',
-                            (layout === 'full' || layout === 'split') && 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl'
+                            (layout === 'full' || layout === 'split') && 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl'
                         )}
                         placeholderText={headerPlaceholder}
                         singleParagraph={true}
@@ -216,8 +216,8 @@ export function SignupCard({alignment,
                             (layout === 'wide' || layout === 'split') && 'koenig-lexical-header-small',
                             (layout === 'wide' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_128px)] [&:has(br)]:sm:pl-[calc(50%_-_154px)] [&:has(br)]:md:pl-[calc(50%_-_204px)] [&:has(br)]:lg:pl-[calc(50%_-_254px)]',
                             (layout === 'full' || layout === 'split') && 'koenig-lexical-header-large',
-                            (layout === 'full' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_154px)] [&:has(br)]:sm:pl-[calc(50%_-_204px)] [&:has(br)]:md:pl-[calc(50%_-_254px)] [&:has(br)]:lg:pl-[calc(50%_-_306px)] [&:has(br)]:xl:pl-[calc(50%_-_408px)]',
-                            (layout === 'split' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_71px)] [&:has(br)]:sm:pl-[calc(50%_-_94px)] [&:has(br)]:md:pl-[calc(50%_-_116px)] [&:has(br)]:lg:pl-[calc(50%_-_140px)] [&:has(br)]:xl:pl-[calc(50%_-_186px)]'
+                            (layout === 'full' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_154px)] [&:has(br)]:sm:pl-[calc(50%_-_204px)] [&:has(br)]:md:pl-[calc(50%_-_254px)] [&:has(br)]:lg:pl-[calc(50%_-_306px)]',
+                            (layout === 'split' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_71px)] [&:has(br)]:sm:pl-[calc(50%_-_94px)] [&:has(br)]:md:pl-[calc(50%_-_116px)] [&:has(br)]:lg:pl-[calc(50%_-_140px)]'
                         )}
                     />}
 
@@ -238,14 +238,14 @@ export function SignupCard({alignment,
                         placeholderText={subheaderPlaceholder}
                         singleParagraph={true}
                         textClassName={clsx(
-                            'koenig-lexical-header-subheading relative w-full whitespace-normal caret-current [&:has(br)]:text-left',
+                            'koenig-lexical-header-subheading relative whitespace-normal caret-current [&:has(br)]:text-left',
                             (!isEditing && isEditorEmpty(subheaderTextEditor)) ? 'hidden' : 'peer',
                             (alignment === 'center') && 'text-center',
                             (layout === 'regular') && 'koenig-lexical-header-small !mt-2',
                             (layout === 'regular' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_90px)] [&:has(br)]:sm:pl-[calc(50%_-_100px)]',
                             (layout === 'wide') && 'koenig-lexical-header-medium !mt-3',
                             (layout === 'wide' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_90px)] [&:has(br)]:sm:pl-[calc(50%_-_100px)] [&:has(br)]:md:pl-[calc(50%_-_120px)]',
-                            layout === 'full' && 'w-3/4',
+                            layout === 'full' ? 'w-3/4' : 'w-full',
                             (layout === 'full' || layout === 'split') && 'koenig-lexical-header-large !mt-3',
                             (layout === 'full' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_100px)] [&:has(br)]:md:pl-[calc(50%_-_120px)] [&:has(br)]:xl:pl-[calc(50%_-_152px)]',
                             (layout === 'split' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_75px)] [&:has(br)]:md:pl-[calc(50%_-_90px)] [&:has(br)]:xl:pl-[calc(50%_-_112px)]'

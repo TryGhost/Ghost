@@ -112,7 +112,7 @@ export function HeaderCard({isEditing,
                                 'w-full truncate whitespace-normal !text-center !font-bold !leading-[1.1] !tracking-tight opacity-50',
                                 (size === 'small') && 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl',
                                 (size === 'medium') && 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl',
-                                (size === 'large') && 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl',
+                                (size === 'large') && 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl',
                                 (HEADER_TEXT_COLORS[type])
                             )}
                             placeholderText={headerPlaceholder}
@@ -121,7 +121,7 @@ export function HeaderCard({isEditing,
                                 'koenig-lexical-header-heading relative w-full whitespace-normal text-center font-bold [&:has(br)]:text-left', 
                                 (size === 'small') && 'koenig-lexical-header-small [&:has(br)]:pl-[calc(50%_-_128px)] [&:has(br)]:sm:pl-[calc(50%_-_154px)] [&:has(br)]:md:pl-[calc(50%_-_205px)] [&:has(br)]:lg:pl-[calc(50%_-_256px)]',
                                 (size === 'medium') && 'koenig-lexical-header-medium [&:has(br)]:pl-[calc(50%_-_128px)] [&:has(br)]:sm:pl-[calc(50%_-_154px)] [&:has(br)]:md:pl-[calc(50%_-_205px)] [&:has(br)]:lg:pl-[calc(50%_-_256px)] [&:has(br)]:xl:pl-[calc(50%_-_306px)]',
-                                (size === 'large') && 'koenig-lexical-header-large [&:has(br)]:pl-[calc(50%_-_154px)] [&:has(br)]:sm:pl-[calc(50%_-_205px)] [&:has(br)]:md:pl-[calc(50%_-_256px)] [&:has(br)]:lg:pl-[calc(50%_-_306px)] [&:has(br)]:xl:pl-[calc(50%_-_408px)]',
+                                (size === 'large') && 'koenig-lexical-header-large [&:has(br)]:pl-[calc(50%_-_154px)] [&:has(br)]:sm:pl-[calc(50%_-_205px)] [&:has(br)]:md:pl-[calc(50%_-_256px)] [&:has(br)]:lg:pl-[calc(50%_-_306px)]',
                                 (HEADER_TEXT_COLORS[type])
                             )}
                         />
