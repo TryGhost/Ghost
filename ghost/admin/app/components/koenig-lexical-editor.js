@@ -480,7 +480,7 @@ export default class KoenigLexicalEditor extends Component {
         const multiplayerUsername = this.session.user.name;
 
         return (
-            <div className={['koenig-react-editor', this.args.className].filter(Boolean).join(' ')}>
+            <div className={['koenig-react-editor', 'koenig-lexical', this.args.className].filter(Boolean).join(' ')}>
                 <ErrorHandler>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                         <KoenigComposer
@@ -492,6 +492,7 @@ export default class KoenigLexicalEditor extends Component {
                             multiplayerDocId={multiplayerDocId}
                             multiplayerEndpoint={multiplayerEndpoint}
                             onError={this.onError}
+                            darkMode={this.feature.nightShift}
                         >
                             <KoenigEditor
                                 cursorDidExitAtTop={this.args.cursorDidExitAtTop}
