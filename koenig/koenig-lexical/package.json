@@ -19,7 +19,8 @@
     }
   },
   "scripts": {
-    "dev": "concurrently \"vite\" \"yarn multiplayer\"",
+    "dev": "concurrently \"vite\" \"yarn build --watch\" \"yarn preview -l silent\" \"yarn workspace @tryghost/kg-default-nodes dev\"",
+    "dev:multiplayer": "concurrently \"vite\" \"yarn multiplayer\"",
     "dev:test": "concurrently \"vite --port 5174\" \"yarn multiplayer\"",
     "multiplayer": "HOST=localhost PORT=1234 npx y-websocket-server",
     "build": "vite build",

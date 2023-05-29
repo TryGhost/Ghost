@@ -8,8 +8,8 @@
   "module": "es/kg-default-nodes.js",
   "source": "lib/kg-default-nodes.js",
   "scripts": {
-    "dev": "rollup -c -w --bundleConfigAsCjs",
-    "build": "rollup -c --bundleConfigAsCjs",
+    "dev": "rollup -c -w",
+    "build": "rollup -c",
     "prepare": "NODE_ENV=production yarn build",
     "pretest": "yarn build",
     "test:unit": "NODE_ENV=testing c8 --all --check-coverage --reporter text --reporter cobertura mocha './test/**/*.test.js'",

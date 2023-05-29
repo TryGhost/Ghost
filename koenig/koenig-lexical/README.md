@@ -26,11 +26,8 @@ These cards make external web requests. Since the demo doesn't have a server to 
 ### Running inside Admin
 
 ```bash
-# Within koenig-lexical, start a local web server
-yarn preview --host
-
-# (optional) Within koenig-lexical, automatically rebuild upon change
-yarn build --watch
+# Within koenig-lexical, start all the build/preview steps
+yarn dev
 
 # Within Ghost, run `yarn dev` with `--lexical`
 yarn dev --lexical
