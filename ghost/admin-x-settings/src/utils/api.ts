@@ -1,18 +1,7 @@
-import {Setting, User} from '../types/api';
+import {Setting, User, UserRole} from '../types/api';
 import {getGhostPaths} from './helpers';
 
-type ApiQueryParams = {
-    limit: string;
-    include: string;
-    [key: string]: string;
-}
-
-type SettingApiQueryParams = {
-    group: string;
-    [key: string]: string;
-}
-
-type Meta = {
+interface Meta {
     pagination: {
         page: number;
         limit: number;
@@ -23,74 +12,99 @@ type Meta = {
     }
 }
 
-export type SettingsResponseType = {
+export interface SettingsResponseType {
     meta: Meta;
     settings: Setting[];
 }
-export type UsersResponseType = {
-    meta: Meta;
+
+export interface UsersResponseType {
+    meta?: Meta;
     users: User[];
 }
 
-export async function getSettings() {
-    const {apiRoot} = getGhostPaths();
-    const queryParams: SettingApiQueryParams = {group: 'site,theme,private,members,portal,newsletter,email,amp,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura'};
-    const queryString = Object.keys(queryParams).map((key) => {
-        return `${key}=${queryParams[key] || ''}`;
-    }).join('&');
-
-    const response = await fetch(`${apiRoot}/settings/?${queryString}`, {
-        headers: {
-            'app-pragma': 'no-cache',
-            'x-ghost-version': '5.47'
-        },
-        method: 'GET',
-        mode: 'cors',
-        credentials: 'include'
-    });
-    const data: SettingsResponseType = await response.json();
-    return data;
+export interface RolesResponseType {
+    meta?: Meta;
+    roles: UserRole[];
 }
 
-export async function updateSettings(newSettings: Setting[]) {
-    const {apiRoot} = getGhostPaths();
+interface RequestOptions {
+    method?: string;
+    body?: string;
+}
 
-    const payload = JSON.stringify({
-        settings: newSettings
-    });
+const {apiRoot} = getGhostPaths();
 
-    const response = await fetch(`${apiRoot}/settings/`, {
+function fetcher(url: string, options: RequestOptions) {
+    const endpoint = `${apiRoot}${url}`;
+    return fetch(endpoint, {
         headers: {
             'app-pragma': 'no-cache',
-            'x-ghost-version': '5.47',
+            'x-ghost-version': '5.49',
             'Content-Type': 'application/json'
         },
-        body: payload,
-        method: 'PUT',
-        mode: 'cors',
-        credentials: 'include'
-    });
-
-    const data: SettingsResponseType = await response.json();
-    return data;
-}
-
-export async function getUsers() {
-    const {apiRoot} = getGhostPaths();
-    const queryParams: ApiQueryParams = {limit: 'all', include: 'roles'};
-    const queryString = Object.keys(queryParams).map((key) => {
-        return `${key}=${queryParams[key] || ''}`;
-    }).join('&');
-
-    const response = await fetch(`${apiRoot}/users/?${queryString}`, {
-        headers: {
-            'app-pragma': 'no-cache',
-            'x-ghost-version': '5.47'
-        },
         method: 'GET',
         mode: 'cors',
-        credentials: 'include'
+        credentials: 'include',
+        ...options
     });
-    const data: UsersResponseType = await response.json();
-    return data;
 }
+
+const settingsApi = {
+    browse: async () => {
+        const queryString = `group=site,theme,private,members,portal,newsletter,email,amp,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura`;
+
+        const response = await fetcher(`/settings/?${queryString}`, {});
+
+        const data: SettingsResponseType = await response.json();
+        return data;
+    },
+    edit: async (newSettings: Setting[]) => {
+        const payload = JSON.stringify({
+            settings: newSettings
+        });
+
+        const response = await fetcher(`/settings/`, {
+            method: 'PUT',
+            body: payload
+        });
+
+        const data: SettingsResponseType = await response.json();
+        return data;
+    }
+};
+
+const usersApi = {
+    browse: async () => {
+        const response = await fetcher(`/users/?limit=all&include=roles`, {});
+        const data: UsersResponseType = await response.json();
+        return data;
+    },
+    currentUser: async (): Promise<User> => {
+        const response = await fetcher(`/users/me/`, {});
+        const data: UsersResponseType = await response.json();
+        return data.users[0];
+    },
+    edit: async (editedUser: User) => {
+        const payload = JSON.stringify({
+            users: [editedUser]
+        });
+
+        const response = await fetcher(`/users/${editedUser.id}/?include=roles`, {
+            method: 'PUT',
+            body: payload
+        });
+
+        const data: UsersResponseType = await response.json();
+        return data;
+    }
+};
+
+const rolesApi = {
+    browse: async () => {
+        const response = await fetcher(`/roles/?limit=all`, {});
+        const data: RolesResponseType = await response.json();
+        return data;
+    }
+};
+
+export {settingsApi, usersApi, rolesApi};
