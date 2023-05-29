@@ -88,11 +88,11 @@
 }
 
 .kg-signup-card.kg-width-wide h2.kg-signup-card-heading {
-    font-size: 6vmin;
+    font-size: 5.6vmin;
 }
 
 .kg-signup-card.kg-width-full h2.kg-signup-card-heading {
-    font-size: 7.6vmin;
+    font-size: 7.4vmin;
 }
 
 .kg-signup-card.kg-width-full.kg-layout-split h2.kg-signup-card-heading {
@@ -138,7 +138,13 @@
 
 .kg-signup-card-form {
     position: relative;
+    display: flex;
+    flex-shrink: 0;
     width: 100%;
+}
+
+.align-center .kg-signup-card-form {
+    justify-content: center;
 }
 
 .kg-signup-card-heading + .kg-signup-card-form,
@@ -158,22 +164,17 @@
 
 .kg-signup-card-fields {
     display: flex;
+    width: 100%;
+    padding: 3px;
     background: #FFFFFF;
-    border: 3px solid #FFFFFF;
+    border: 1px solid #E6E6E6;
     border-radius: 4px;
-}
-
-.kg-width-regular .kg-signup-card-fields {
-    border: 2px solid #FFFFFF;
 }
 
 .kg-width-wide .kg-signup-card-fields,
 .kg-width-full .kg-signup-card-fields:not(.kg-layout-split .kg-signup-card-fields) {
+    width: 100%;
     max-width: 500px;
-}
-
-.align-center .kg-signup-card-fields {
-    justify-content: center;
 }
 
 .kg-signup-card-input {
@@ -197,7 +198,7 @@
     letter-spacing: .2px;
     white-space: nowrap;
     text-overflow: ellipsis;
-    height: 3em;
+    height: 4.8rem;
     padding: 0 1.2em;
     border-radius: 3px;
     transition: opacity .2s ease;
@@ -254,10 +255,16 @@
     line-height: 1.4em;
 }
 
+.kg-signup-card-form.error .kg-signup-card-fields {
+    border: 1px solid #FF0000;
+    box-shadow: inset 0 0 0 1px rgba(255, 0, 0, 0.2);
+}
+
 .kg-signup-card-form.error .kg-signup-card-error {
-    display: block;
     position: absolute;
-    top: -32px;
+    bottom: calc(-1rem - 1.6em);
+    display: block;
+    font-size: inherit;
 }
 
 .kg-signup-card-button-loading {
@@ -282,7 +289,8 @@
     margin: 1rem 0 0;
 }
 
-.kg-signup-card-form.success + .kg-signup-card-disclaimer {
+.kg-signup-card-form.success + .kg-signup-card-disclaimer,
+.kg-signup-card-form.error + .kg-signup-card-disclaimer {
     visibility: hidden;
 }
 
@@ -309,8 +317,14 @@
     }
 
     .kg-signup-card-input {
-        font-size: inherit;
+        padding: 6px 12px;
+        font-size: 1em;
     }
+
+    .kg-signup-card-button {
+        height: 4.4rem;
+    }
+
     .kg-signup-card.kg-width-wide .kg-signup-card-button,
     .kg-signup-card.kg-width-full .kg-signup-card-button {
         font-size: 1em;
@@ -318,8 +332,8 @@
 
     .kg-signup-card h3.kg-signup-card-subheading,
     .kg-signup-card.kg-width-wide h3.kg-signup-card-subheading,
-    .kg-signup-card.kg-width-full h3.kg-signup-card-subheading,
-    .kg-signup-card.kg-width-full.kg-layout-split h3.kg-signup-card-subheading {
-        font-size: 1.1em;
+    .kg-signup-card.kg-width-full.kg-layout-split h3.kg-signup-card-subheading,
+    .kg-signup-card.kg-width-full h3.kg-signup-card-subheading:not(.kg-layout-split h3.kg-signup-card-subheading) {
+        font-size: 1em;
     }
 }
