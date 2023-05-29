@@ -47,11 +47,21 @@ interface IconProps {
      * Accepts either predefined sizes or number, in which case the size means the pixel width & height
      */
     size?: IconSize;
+
+    /**
+     * Accepts all colors available in the actual TailwindCSS theme, e.g. `black`, `green-100`
+     */
     color?: string;
     styles?: string;
     className?: string;
 }
 
+/**
+ * Icon guidelines:
+ * - all icons must be SVG's
+ * - all icons must have all it's children color value set `currentColor`
+ * - all strokes must be paths and _NOT_ outlined objects. Stroke width should be set to 1.5px
+ */
 const Icon: React.FC<IconProps> = ({name, size = 'md', color = 'black', className}) => {
     const {SvgIcon} = useDynamicSVGImport(name);
 

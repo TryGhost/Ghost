@@ -3,6 +3,7 @@ import InviteUserModal from './modals/InviteUserModal';
 import List from '../../../admin-x-ds/global/List';
 import ListItem from '../../../admin-x-ds/global/ListItem';
 import NiceModal from '@ebay/nice-modal-react';
+import NoValueLabel from '../../../admin-x-ds/global/NoValueLabel';
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
@@ -38,9 +39,9 @@ const UsersList: React.FC<UsersListProps> = ({users, updateUser}) => {
 
     if (!users || !users.length) {
         return (
-            <div className='mt-2 py-10 text-center text-sm text-grey-700'>
+            <NoValueLabel icon='single-user-neutral-block'>
                 No users found.
-            </div>
+            </NoValueLabel>
         );
     }
 
