@@ -9,6 +9,8 @@ export type UsersHook = {
     editorUsers: User[];
     authorUsers: User[];
     contributorUsers: User[];
+    currentUser: User|null;
+    updateUser?: (user: User) => Promise<void>;
 };
 
 function getUsersByRole(users: User[], role: string): User[] {
@@ -19,20 +21,27 @@ function getUsersByRole(users: User[], role: string): User[] {
     });
 }
 
+function getOwnerUser(users: User[]): User {
+    return getUsersByRole(users, 'Owner')[0];
+}
+
 const useStaffUsers = (): UsersHook => {
-    const {users} = useContext(UsersContext);
-    const ownerUser = getUsersByRole(users, 'Owner')[0] || null;
+    const {users, currentUser, updateUser} = useContext(UsersContext);
+    const ownerUser = getOwnerUser(users);
     const adminUsers = getUsersByRole(users, 'Administrator');
     const editorUsers = getUsersByRole(users, 'Editor');
     const authorUsers = getUsersByRole(users, 'Author');
     const contributorUsers = getUsersByRole(users, 'Contributor');
+
     return {
         users,
         ownerUser,
         adminUsers,
         editorUsers,
         authorUsers,
-        contributorUsers
+        contributorUsers,
+        currentUser,
+        updateUser
     };
 };
 

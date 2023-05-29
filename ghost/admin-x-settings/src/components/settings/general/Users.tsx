@@ -28,11 +28,12 @@ const Owner: React.FC<{user: User}> = ({user}) => {
 
 interface UsersListProps {
     users: User[];
+    updateUser?: (user: User) => void;
 }
 
-const UsersList: React.FC<UsersListProps> = ({users}) => {
+const UsersList: React.FC<UsersListProps> = ({users, updateUser}) => {
     const showDetailModal = (user: User) => {
-        NiceModal.show(UserDetailModal, {user});
+        NiceModal.show(UserDetailModal, {user, updateUser});
     };
 
     if (!users || !users.length) {
@@ -67,7 +68,8 @@ const Users: React.FC = () => {
         adminUsers,
         editorUsers,
         authorUsers,
-        contributorUsers
+        contributorUsers,
+        updateUser
     } = useStaffUsers();
 
     const showInviteModal = () => {
@@ -84,22 +86,22 @@ const Users: React.FC = () => {
         {
             id: 'users-admins',
             title: 'Administrators',
-            contents: (<UsersList users={adminUsers} />)
+            contents: (<UsersList updateUser={updateUser} users={adminUsers} />)
         },
         {
             id: 'users-editors',
             title: 'Editors',
-            contents: (<UsersList users={editorUsers} />)
+            contents: (<UsersList updateUser={updateUser} users={editorUsers} />)
         },
         {
             id: 'users-authors',
             title: 'Authors',
-            contents: (<UsersList users={authorUsers} />)
+            contents: (<UsersList updateUser={updateUser} users={authorUsers} />)
         },
         {
             id: 'users-contributors',
             title: 'Contributors',
-            contents: (<UsersList users={contributorUsers} />)
+            contents: (<UsersList updateUser={updateUser} users={contributorUsers} />)
         }
     ];
 

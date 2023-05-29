@@ -8,6 +8,7 @@ import SettingGroup from '../../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../../admin-x-ds/global/TextField';
 import Toggle from '../../../../admin-x-ds/global/Toggle';
+import useRoles from '../../../../hooks/useRoles';
 import {User} from '../../../../types/api';
 
 interface CustomHeadingProps {
@@ -16,6 +17,7 @@ interface CustomHeadingProps {
 
 interface UserDetailProps {
     user: User;
+    setUserData?: (user: User) => void;
 }
 
 const CustomHeader: React.FC<CustomHeadingProps> = ({children}) => {
@@ -23,17 +25,24 @@ const CustomHeader: React.FC<CustomHeadingProps> = ({children}) => {
         <Heading level={4} separator={true}>{children}</Heading>
     );
 };
-const BasicInputs: React.FC<UserDetailProps> = ({user}) => {
+const BasicInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
+    const {roles} = useRoles();
     return (
         <SettingGroupContent>
             <TextField
                 hint="Use real name so people can recognize you"
                 title="Full name"
                 value={user.name}
+                onChange={(e) => {
+                    setUserData?.({...user, name: e.target.value});
+                }}
             />
             <TextField
                 title="Email"
                 value={user.email}
+                onChange={(e) => {
+                    setUserData?.({...user, email: e.target.value});
+                }}
             />
             <Radio
                 defaultSelectedOption={user.roles[0].name.toLowerCase()}
@@ -61,20 +70,25 @@ const BasicInputs: React.FC<UserDetailProps> = ({user}) => {
                     }
                 ]}
                 title="Role"
-                onSelect={() => {}}
+                onSelect={(value) => {
+                    const role = roles?.find(r => r.name.toLowerCase() === value.toLowerCase());
+                    if (role) {
+                        setUserData?.({...user, roles: [role]});
+                    }
+                }}
             />
         </SettingGroupContent>
     );
 };
 
-const Basic: React.FC<UserDetailProps> = ({user}) => {
+const Basic: React.FC<UserDetailProps> = ({user, setUserData}) => {
     return (
         <SettingGroup
             border={false}
             customHeader={<CustomHeader>Basic info</CustomHeader>}
             title='Basic'
         >
-            <BasicInputs user={user} />
+            <BasicInputs setUserData={setUserData} user={user} />
         </SettingGroup>
     );
 };
@@ -221,9 +235,11 @@ const Password: React.FC = () => {
 
 interface UserDetailModalProps {
     user: User;
+    updateUser?: (user: User) => void;
 }
 
-const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
+const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
+    const [userData, setUserData] = useState(user);
     return (
         <Modal
             okColor='green'
@@ -231,6 +247,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
             size='lg'
             onOk={() => {
                 alert('Clicked OK');
+                updateUser?.(userData);
             }}
         >
             <div>
@@ -241,9 +258,9 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
                     </div>
                 </div>
                 <div className='mt-10 grid grid-cols-2 gap-x-12 gap-y-20 pb-10'>
-                    <Basic user={user} />
-                    <Details user={user} />
-                    <EmailNotifications user={user} />
+                    <Basic setUserData={setUserData} user={userData} />
+                    <Details user={userData} />
+                    <EmailNotifications user={userData} />
                     <Password />
                 </div>
             </div>
