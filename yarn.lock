@@ -2907,10 +2907,10 @@
   resolved "https://registry.yarnpkg.com/@handlebars/parser/-/parser-2.0.0.tgz#5e8b7298f31ff8f7b260e6b7363c7e9ceed7d9c5"
   integrity sha512-EP9uEDZv/L5Qh9IWuMUGJRfwhXJ4h1dqKTT4/3+tY0eu7sPis7xh23j61SYUnNF4vqCQvvUXpDo9Bh/+q1zASA==
 
-"@html-next/vertical-collection@3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@html-next/vertical-collection/-/vertical-collection-3.0.0.tgz#ba16bd2df413e9c25d245ae37ddb1950a5ccdbca"
-  integrity sha512-kpLYZXr3tlYkrSiyhww+f1YkyLMEhCm9h55A+PWPzJXBTZkV12sC5mIbxVcWD7q5QNjy634m6MMvmxfFgDmGoQ==
+"@html-next/vertical-collection@3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@html-next/vertical-collection/-/vertical-collection-3.1.0.tgz#3e271fe36bbf381b5e6f7702fde72f8c6880ae0d"
+  integrity sha512-7mzdEhPA0SzIAqZA/HUwmAYVxzbsKp4l8vB7oBc6A71IGusrNZQUMLl09Vi9wgHahvhBV89LST474cu9k2Iw1Q==
   dependencies:
     babel6-plugin-strip-class-callcheck "^6.0.0"
     broccoli-funnel "^2.0.2"
