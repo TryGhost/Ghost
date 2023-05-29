@@ -17,8 +17,8 @@ export function SubscribeForm({dataTestId, placeholder, value, buttonSize, butto
 
     return (
         <div className={clsx(
-            'relative flex rounded border-white bg-white',
-            buttonSize === 'large' ? 'border-[3px]' : 'border-2',
+            'relative flex rounded border border-grey-500/30 bg-white',
+            buttonSize === 'large' ? 'p-[3px]' : 'p-[2px]',
         )}>
             <input
                 ref={setRef}
