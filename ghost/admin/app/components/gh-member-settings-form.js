@@ -88,7 +88,7 @@ export default class extends Component {
             }
 
             if (!sub.id && sub.tier?.expiry_at) {
-                data.compExpiry = moment(sub.tier.expiry_at).format('D MMM YYYY');
+                data.compExpiry = moment(sub.tier.expiry_at).utc().format('D MMM YYYY');
             }
             return data;
         });

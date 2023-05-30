@@ -2756,6 +2756,16 @@ a.gh-members-emailpreview-subscription-link {
     padding: 15px 18px;
 }
 
+.gh-cp-membertier-duration {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 8px;
+}
+
+.gh-cp-membertier-duration .gh-select {
+    grid-column: 1;
+}
+
 .tier-actions-menu {
     top: calc(100% - 36px);
     right: 0px;
