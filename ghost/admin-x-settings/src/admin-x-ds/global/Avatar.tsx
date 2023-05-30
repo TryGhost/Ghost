@@ -1,12 +1,20 @@
 import React from 'react';
-import {ReactComponent as UserIcon} from '../../assets/icons/single-user-fill.svg';
+import {ReactComponent as UserIcon} from '../assets/icons/single-user-fill.svg';
 
 type AvatarSize = 'sm' | 'md' | 'lg' | 'xl';
 
 interface AvatarProps {
     image?: string;
     label?: string;
+
+    /**
+     * Accepts any valid Tailwindcolor e.g. `black`, `green`
+     */
     labelColor?: string;
+
+    /**
+     * Accepts any valid CSS value e.g. #ffca03
+     */
     bgColor?: string;
     size?: AvatarSize;
     className?: string;
@@ -14,20 +22,14 @@ interface AvatarProps {
 
 const Avatar: React.FC<AvatarProps> = ({image, label, labelColor, bgColor, size, className}) => {
     let avatarSize = '';
-    let fallbackPosition = '';
+    let fallbackPosition = ' -mb-2 ';
 
     switch (size) {
     case 'sm':
         avatarSize = ' w-7 h-7 text-sm ';
-        fallbackPosition = ' -mb-2 ';
-        break;
-    case 'md':
-        avatarSize = ' w-10 h-10 text-md ';
-        fallbackPosition = ' -mb-2 ';
         break;
     case 'lg':
-        avatarSize = ' w-12 h-12 text-md ';
-        fallbackPosition = ' -mb-2 ';
+        avatarSize = ' w-12 h-12 text-xl ';
         break;
     case 'xl':
         avatarSize = ' w-16 h-16 text-2xl ';
@@ -44,7 +46,7 @@ const Avatar: React.FC<AvatarProps> = ({image, label, labelColor, bgColor, size,
         );
     } else if (label) {
         return (
-            <div className={`${bgColor && `bg-${bgColor}`} ${labelColor && `text-${labelColor}`} inline-flex items-center justify-center rounded-full p-2 font-semibold ${avatarSize} ${className && className}`}>{label}</div>
+            <div className={`${labelColor && `text-${labelColor}`} inline-flex items-center justify-center rounded-full p-2 font-semibold ${avatarSize} ${className && className}`} style={bgColor ? {backgroundColor: bgColor} : {}}>{label}</div>
         );
     } else {
         return (

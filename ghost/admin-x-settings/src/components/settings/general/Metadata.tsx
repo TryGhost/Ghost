@@ -4,8 +4,8 @@ import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {ReactComponent as GoogleLogo} from '../../../assets/images/google-logo.svg';
-import {ReactComponent as MagnifyingGlass} from '../../../assets/icons/magnifying-glass.svg';
+import {ReactComponent as GoogleLogo} from '../../../admin-x-ds/assets/images/google-logo.svg';
+import {ReactComponent as MagnifyingGlass} from '../../../admin-x-ds/assets/icons/magnifying-glass.svg';
 
 const Metadata: React.FC = () => {
     const {
