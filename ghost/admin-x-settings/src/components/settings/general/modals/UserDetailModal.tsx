@@ -253,8 +253,11 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
             }}
         >
             <div>
-                <div className='-mx-12 -mt-12 bg-gradient-to-tr from-grey-900 to-black p-12'>
-                    <div className='mt-60 flex gap-4'>
+                <div className={`relative -mx-12 -mt-12 bg-gradient-to-tr from-grey-900 to-black p-12`} style={userData.cover_image ? {backgroundImage: `url(${userData.cover_image})`, backgroundSize: 'cover'} : {}}>
+                    {userData.cover_image && (
+                        <div className='absolute inset-0 z-0 block bg-gradient-to-tr from-[rgba(0,0,0,0.5)] to-[rgba(0,0,0,0.01)]'></div>
+                    )}
+                    <div className='relative z-10 mt-60 flex gap-4'>
                         <Avatar bgColor='#efefef' className='-ml-1' image={userData.profile_image} label={getInitials(userData.name)} size='xl' />
                         <div>
                             <Heading styles='text-white'>{user.name}</Heading>
