@@ -32,6 +32,7 @@ class BatchSendingService {
     #models;
     #db;
     #sentry;
+    #debugStorageFilePath;
 
     // Retry database queries happening before sending the email
     #BEFORE_RETRY_CONFIG = {maxRetries: 10, maxTime: 10 * 60 * 1000, sleep: 2000};
@@ -54,6 +55,7 @@ class BatchSendingService {
      * @param {object} [dependencies.BEFORE_RETRY_CONFIG]
      * @param {object} [dependencies.AFTER_RETRY_CONFIG]
      * @param {object} [dependencies.MAILGUN_API_RETRY_CONFIG]
+     * @param {string} [dependencies.debugStorageFilePath]
      */
     constructor({
         emailRenderer,
@@ -65,7 +67,8 @@ class BatchSendingService {
         sentry,
         BEFORE_RETRY_CONFIG,
         AFTER_RETRY_CONFIG,
-        MAILGUN_API_RETRY_CONFIG
+        MAILGUN_API_RETRY_CONFIG,
+        debugStorageFilePath
     }) {
         this.#emailRenderer = emailRenderer;
         this.#sendingService = sendingService;
@@ -74,6 +77,7 @@ class BatchSendingService {
         this.#models = models;
         this.#db = db;
         this.#sentry = sentry;
+        this.#debugStorageFilePath = debugStorageFilePath;
 
         if (BEFORE_RETRY_CONFIG) {
             this.#BEFORE_RETRY_CONFIG = BEFORE_RETRY_CONFIG;
@@ -533,6 +537,24 @@ class BatchSendingService {
         const BATCH_SIZE = this.#sendingService.getMaximumRecipients();
         if (mappedMemberLikes.length > BATCH_SIZE) {
             logging.error(`Batch ${batchId} has ${mappedMemberLikes.length} members, but the sending service only supports ${BATCH_SIZE} members per batch.`);
+
+            // @NOTE below is a throwaway code, that's why it is dirty and lives here instead of a nice module
+            if (this.#debugStorageFilePath) {
+                try {
+                    const fs = require('fs-extra');
+                    const path = require('path');
+                    const currentTimeFilename = new Date().toISOString().replace(/:/g, '-').replace(/\./gi, '-');
+                    const outputFileName = `email-batch-sending-members-${currentTimeFilename}.json`;
+                    const outputFilePath = path.join(this.#debugStorageFilePath, '/', outputFileName);
+                    const jsonData = JSON.stringify(models, null, 4);
+
+                    logging.info(`Writing members object dump to ${outputFilePath}`);
+                    await fs.writeFile(outputFilePath, jsonData);
+                } catch (e) {
+                    logging.error(`Failed to write members object dump to ${this.#debugStorageFilePath}`);
+                    logging.error(e);
+                }
+            }
         }
 
         return mappedMemberLikes;
