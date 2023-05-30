@@ -59,7 +59,7 @@
     "cli": "^1.17.0"
   },
   "dependencies": {
-    "@extractus/oembed-extractor": "3.1.8",
+    "@extractus/oembed-extractor": "3.1.9",
     "@sentry/node": "7.53.1",
     "@tryghost/adapter-base-cache": "0.1.5",
     "@tryghost/adapter-cache-redis": "0.0.0",
