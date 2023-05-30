@@ -76,13 +76,15 @@ const Modal: React.FC<ModalProps> = ({size = 'md', title, okLabel, cancelLabel, 
         break;
     }
 
-    const handleBackdropClick = () => {
-        modal.remove();
+    const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {        
+        if (e.target === e.currentTarget) {
+            modal.remove();
+        }
     };
 
     return (
-        <div className={backdropStyles} id='modal-backdrop'>
-            <div className='fixed inset-0 z-0 bg-[rgba(0,0,0,0.1)]' onClick={handleBackdropClick}></div>
+        <div className={backdropStyles} id='modal-backdrop' onClick={handleBackdropClick}>
+            <div className='pointer-events-none fixed inset-0 z-0 bg-[rgba(0,0,0,0.1)]'></div>
             <section className={modalStyles}>
                 <div>
                     {title && <Heading level={4}>{title}</Heading>}
