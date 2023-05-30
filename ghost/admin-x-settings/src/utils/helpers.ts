@@ -35,3 +35,14 @@ export function getOptionLabel(
 ): string | undefined {
     return options?.find(option => option.value === value)?.label;
 }
+
+export function getInitials(name: string) {
+    let rgx = new RegExp(/(\p{L}{1})\p{L}+/, 'gu');
+    let rgxInitials = [...name.matchAll(rgx)] || [];
+
+    const initials = (
+        (rgxInitials.shift()?.[1] || '') + (rgxInitials.pop()?.[1] || '')
+    ).toUpperCase();
+
+    return initials;
+}
