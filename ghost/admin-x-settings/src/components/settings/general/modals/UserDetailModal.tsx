@@ -11,6 +11,7 @@ import TextField from '../../../../admin-x-ds/global/TextField';
 import Toggle from '../../../../admin-x-ds/global/Toggle';
 import useRoles from '../../../../hooks/useRoles';
 import {User} from '../../../../types/api';
+import {getInitials} from '../../../../utils/helpers';
 
 interface CustomHeadingProps {
     children?: React.ReactNode;
@@ -252,11 +253,11 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
             }}
         >
             <div>
-                <div className='-mx-12 -mt-12 bg-gradient-to-tr from-grey-900 to-black p-12 text-white'>
+                <div className='-mx-12 -mt-12 bg-gradient-to-tr from-grey-900 to-black p-12'>
                     <div className='mt-60'>
-                        <Avatar bgColor='green' className='-ml-1 mb-2' label='DV' labelColor='white' size='xl' />
+                        <Avatar bgColor='grey-200' className='-ml-1 mb-2' label={getInitials(userData.name)} size='xl' />
                         <Heading styles='text-white'>{user.name}</Heading>
-                        <span className='text-md font-semibold'>Administrator</span>
+                        <span className='text-md font-semibold text-white'>Administrator</span>
                     </div>
                 </div>
                 <div className='mt-10 grid grid-cols-2 gap-x-12 gap-y-20 pb-10'>
