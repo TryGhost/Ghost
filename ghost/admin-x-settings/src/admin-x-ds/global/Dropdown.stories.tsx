@@ -32,6 +32,13 @@ export const Default: Story = {
     }
 };
 
+export const ClearBackground: Story = {
+    args: {
+        options: dropdownOptions,
+        clearBg: true
+    }
+};
+
 export const WithPrompt: Story = {
     args: {
         prompt: 'Select a value',
