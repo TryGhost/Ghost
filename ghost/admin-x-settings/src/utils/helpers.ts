@@ -46,3 +46,15 @@ export function getInitials(name: string) {
 
     return initials;
 }
+
+export function generateAvatarColor(name: string) {
+    const s = 70;
+    const l = 40;
+    let hash = 0;
+    for (var i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    const h = hash % 360;
+    return 'hsl(' + h + ', ' + s + '%, ' + l + '%)';
+}

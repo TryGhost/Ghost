@@ -11,7 +11,7 @@ import TextField from '../../../../admin-x-ds/global/TextField';
 import Toggle from '../../../../admin-x-ds/global/Toggle';
 import useRoles from '../../../../hooks/useRoles';
 import {User} from '../../../../types/api';
-import {getInitials} from '../../../../utils/helpers';
+import {generateAvatarColor, getInitials} from '../../../../utils/helpers';
 
 interface CustomHeadingProps {
     children?: React.ReactNode;
@@ -258,7 +258,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                         <div className='absolute inset-0 z-0 block bg-gradient-to-tr from-[rgba(0,0,0,0.5)] to-[rgba(0,0,0,0.01)]'></div>
                     )}
                     <div className='relative z-10 mt-60 flex gap-4'>
-                        <Avatar bgColor='#efefef' className='-ml-1' image={userData.profile_image} label={getInitials(userData.name)} size='xl' />
+                        <Avatar bgColor={generateAvatarColor((userData.name ? userData.name : userData.email))} className='-ml-1' image={userData.profile_image} label={getInitials(userData.name)} labelColor='white' size='xl' />
                         <div>
                             <Heading styles='text-white'>{user.name}</Heading>
                             <span className='text-md font-semibold text-white'>Administrator</span>
