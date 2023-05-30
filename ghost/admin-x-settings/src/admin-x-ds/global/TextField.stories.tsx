@@ -23,6 +23,13 @@ export const Default: Story = {
     }
 };
 
+export const ClearBackground: Story = {
+    args: {
+        placeholder: 'Enter something',
+        clearBg: true
+    }
+};
+
 export const WithValue: Story = {
     args: {
         placeholder: 'Enter something',

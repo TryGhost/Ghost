@@ -13,18 +13,19 @@ interface TextFieldProps {
     error?: boolean;
     placeholder?: string;
     hint?: React.ReactNode;
+    clearBg?: boolean;
     onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 const TextField: React.FC<TextFieldProps> = ({
-    type = 'text', inputRef, title, value, error, placeholder, hint, onChange, ...props
+    type = 'text', inputRef, title, value, error, placeholder, hint, clearBg = false, onChange, ...props
 }) => {
     return (
         <div className='flex flex-col'>
             {title && <Heading useLabelTag={true}>{title}</Heading>}
             <input
                 ref={inputRef} 
-                className={`border-b bg-grey-100 px-[10px] py-2 ${error ? `border-red` : `border-grey-300 hover:border-grey-400 focus:border-grey-600`} ${title && `mt-2`}`} 
+                className={`border-b ${!clearBg && 'bg-grey-100 px-[10px]'} py-2 ${error ? `border-red` : `border-grey-300 hover:border-grey-400 focus:border-grey-600`} ${title && `mt-2`}`} 
                 defaultValue={value} 
                 placeholder={placeholder} 
                 type={type}
