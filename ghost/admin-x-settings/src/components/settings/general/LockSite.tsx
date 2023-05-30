@@ -33,13 +33,13 @@ const LockSite: React.FC = () => {
                 {
                     key: 'private',
                     value: passwordEnabled ? (
-                        <div className='flex items-center  '>
-                            <Icon color='yellow' name='lock-locked' />
+                        <div className='flex items-center gap-1'>
+                            <Icon color='yellow' name='lock-locked' size='sm' />
                             <span>Your site is password protected</span>
                         </div>
                     ) : (
-                        <div className='flex items-center text-grey-900 '>
-                            <Icon color='black' name='lock-unlocked' />
+                        <div className='flex items-center gap-1 text-grey-900'>
+                            <Icon color='black' name='lock-unlocked' size='sm' />
                             <span>Your site is not password protected</span>
                         </div>
                     )
