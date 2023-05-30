@@ -26,6 +26,7 @@ export async function initialize({page, ...options}: {page: any; title?: string,
         }
         document.body.appendChild(scriptTag);
     }, {url, options});
+
     await page.waitForSelector('iframe');
 
     return {
