@@ -2671,10 +2671,10 @@
   resolved "https://registry.yarnpkg.com/@eslint/js/-/js-8.38.0.tgz#73a8a0d8aa8a8e6fe270431c5e72ae91b5337892"
   integrity sha512-IoD2MfUnOV58ghIHCiil01PcohxjbYR/qCxsoC+xNgUwh1EY8jOOrYmu3d3a71+tJJ23uscEV4X2HJWMsPJu4g==
 
-"@extractus/oembed-extractor@3.1.8":
-  version "3.1.8"
-  resolved "https://registry.yarnpkg.com/@extractus/oembed-extractor/-/oembed-extractor-3.1.8.tgz#79ea7ed65c7688bdf9ee673a0ac5aa122cef5e4e"
-  integrity sha512-k6p8des8ISJY2fuuQDyiUOTlcuPOzWETM2ewF1aywFNSS3EvgGWRwoMsvBKhCrLuvb8NyEKDAJB0SWgt0L793w==
+"@extractus/oembed-extractor@3.1.9":
+  version "3.1.9"
+  resolved "https://registry.yarnpkg.com/@extractus/oembed-extractor/-/oembed-extractor-3.1.9.tgz#8136ce57c22a7706ebaf316f45c01db90d6d0e35"
+  integrity sha512-1yHyEyGVLITg1Xq9eKDom9kpZP1w/onjliUqdpqBoPldb0x9pYYtrTaPqfDN87TWV8EKjSyPPXwXkvMbcQQGXQ==
   dependencies:
     cross-fetch "^3.1.5"
 
