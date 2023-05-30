@@ -59,10 +59,10 @@ const Form: React.FC = () => {
     return (
         <div>
             <form className='flex' onSubmit={submit}>
-                <input className={'flex-1 p-3 border ' + borderStyle} disabled={loading} placeholder='jamie@example.com' type="text" value={email} onChange={e => setEmail(e.target.value)}/>
-                <button className='bg-accent p-3 text-white' disabled={loading} type='submit'>Subscribe</button>
+                <input className={'flex-1 p-3 border ' + borderStyle} data-testid="input" disabled={loading} placeholder='jamie@example.com' type="text" value={email} onChange={e => setEmail(e.target.value)}/>
+                <button className='bg-accent p-3 text-white' data-testid="button" disabled={loading} type='submit'>Subscribe</button>
             </form>
-            {error && <p className='pt-0.5 text-red-500'>{error}</p>}
+            {error && <p className='pt-0.5 text-red-500' data-testid="error-message">{error}</p>}
         </div>
     );
 };
