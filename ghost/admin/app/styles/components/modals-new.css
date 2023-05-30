@@ -281,6 +281,13 @@
     background: var(--whitegrey-l2);
 }
 
+.modal-body svg.gh-date-picker-cal-icon {
+    top: 12px;
+    right: 11px;
+    width: 14px;
+    height: 14px;
+}
+
 /* Modifiers
 /* ---------------------------------------------------------- */
 
