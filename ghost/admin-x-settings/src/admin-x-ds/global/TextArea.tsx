@@ -3,7 +3,7 @@ import React from 'react';
 import Heading from './Heading';
 import Hint from './Hint';
 
-type resizeOptions = 'both' | 'vertical' | 'horizontal' | 'none';
+type ResizeOptions = 'both' | 'vertical' | 'horizontal' | 'none';
 
 interface TextAreaProps {
     inputRef?: React.RefObject<HTMLTextAreaElement>;
@@ -11,7 +11,7 @@ interface TextAreaProps {
     value?: string;
     rows?: number;
     maxLength?: number;
-    resize?: resizeOptions;
+    resize?: ResizeOptions;
     error?: boolean;
     placeholder?: string;
     hint?: React.ReactNode;
