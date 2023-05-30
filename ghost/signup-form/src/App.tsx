@@ -1,4 +1,5 @@
 import React, {ComponentProps} from 'react';
+import i18nLib from '@tryghost/i18n';
 import pages, {Page, PageName} from './pages';
 import {AppContextProvider} from './AppContext';
 import {ContentBox} from './components/ContentBox';
@@ -29,11 +30,16 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         } as Page);
     };
 
+    const i18nLanguage = 'en';
+
+    const i18n = i18nLib(i18nLanguage, 'signup-form');
+
     const context = {
         page,
         api,
         options,
-        setPage: _setPage
+        setPage: _setPage,
+        t: i18n.t
     };
 
     const PageComponent = pages[page.name];
