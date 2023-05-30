@@ -24,7 +24,7 @@ const Owner: React.FC<{user: User}> = ({user}) => {
 
     return (
         <div className='group flex gap-3 hover:cursor-pointer' onClick={showDetailModal}>
-            <Avatar bgColor='grey-200' label={getInitials(user.name)} size='lg' />
+            <Avatar bgColor='#efefef' label={getInitials(user.name)} size='lg' />
             <div className='flex flex-col'>
                 <span>{user.name} &mdash; <strong>Owner</strong> <span className='invisible ml-2 inline-block text-sm font-bold text-green group-hover:visible'>Edit</span></span>
                 <span className='text-xs text-grey-700'>{user.email}</span>
@@ -58,7 +58,7 @@ const UsersList: React.FC<UsersListProps> = ({users, updateUser}) => {
                     <ListItem
                         key={user.id}
                         action={<Button color='green' label='Edit' link={true} onClick={() => showDetailModal(user)}/>}
-                        avatar={(<Avatar bgColor='grey-200' label={getInitials(user.name)} />)}
+                        avatar={(<Avatar bgColor='#efefef' label={getInitials(user.name)} />)}
                         detail={user.email}
                         hideActions={true}
                         id={`list-item-${user.id}`}

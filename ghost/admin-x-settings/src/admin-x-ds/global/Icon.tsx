@@ -22,7 +22,7 @@ function useDynamicSVGImport(
         const importIcon = async (): Promise<void> => {
             try {
                 ImportedIconRef.current = (
-                    await import(`../../assets/icons/${name}.svg`)
+                    await import(`../assets/icons/${name}.svg`)
                 ).ReactComponent;
                 onCompleted?.(name, ImportedIconRef.current);
             } catch (err: any) {
