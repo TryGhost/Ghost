@@ -545,8 +545,7 @@ class BatchSendingService {
                 const currentTimeFilename = new Date().toISOString().replace(/:/g, '-').replace(/\./gi, '-');
                 const outputFileName = `email-batch-sending-members-${currentTimeFilename}.json`;
                 const outputFilePath = path.join(this.#debugStorageFilePath, '/', outputFileName);
-                const jsonModels = models.map(m => m.toJSON());
-                const jsonData = JSON.stringify(jsonModels, null, 4);
+                const jsonData = JSON.stringify(models, null, 4);
 
                 logging.info(`Writing members object dump to ${outputFilePath}`);
                 await fs.writeFile(outputFilePath, jsonData);
