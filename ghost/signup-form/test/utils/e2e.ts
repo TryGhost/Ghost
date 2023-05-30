@@ -6,7 +6,7 @@ type LastApiRequest = {
     body: null | any
 };
 
-export async function initialize({page, ...options}: {page: any; title?: string, description?: string, logo?: string, color?: string, site?: string, labels?: string}) {
+export async function initialize({page, ...options}: {page: any; title?: string, description?: string, logo?: string, color?: string, site?: string, 'label-1'?: string, 'label-2'?: string}) {
     const url = `http://localhost:${E2E_PORT}/signup-form.min.js`;
 
     await page.goto('about:blank');

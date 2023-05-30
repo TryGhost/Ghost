@@ -77,7 +77,7 @@ test.describe('Form', async () => {
         });
 
         test('Send a label when submitting the form', async ({page}) => {
-            const {frame, lastApiRequest} = await initialize({page, title: 'Sign up', labels: 'Hello world'});
+            const {frame, lastApiRequest} = await initialize({page, title: 'Sign up', 'label-1': 'Hello world'});
 
             // Fill out the form
             const emailInput = frame.getByTestId('input');
@@ -96,8 +96,8 @@ test.describe('Form', async () => {
             expect(lastApiRequest.body).toHaveProperty('email', 'jamie@example.com');
         });
 
-        test('Send multiple labels when submitting the form', async ({page}) => {
-            const {frame, lastApiRequest} = await initialize({page, title: 'Sign up', labels: 'Hello world,and another one'});
+        test('Sends multiple labels when submitting the form', async ({page}) => {
+            const {frame, lastApiRequest} = await initialize({page, title: 'Sign up', 'label-1': 'Hello world', 'label-2': 'and another one'});
 
             // Fill out the form
             const emailInput = frame.getByTestId('input');
@@ -113,6 +113,27 @@ test.describe('Form', async () => {
             // Check the request body
             expect(lastApiRequest.body).not.toBeNull();
             expect(lastApiRequest.body).toHaveProperty('labels', ['Hello world', 'and another one']);
+            expect(lastApiRequest.body).toHaveProperty('email', 'hey@example.com');
+        });
+
+        test('Does not send labels when not the right numbering is used', async ({page}) => {
+            // Skip setting label-1, so label-2 is ignored
+            const {frame, lastApiRequest} = await initialize({page, title: 'Sign up', 'label-2': 'and another one'});
+
+            // Fill out the form
+            const emailInput = frame.getByTestId('input');
+            await emailInput.fill('hey@example.com');
+
+            // Click the submit button
+            const submitButton = frame.getByTestId('button');
+            await submitButton.click();
+
+            // Showing the success page
+            await expect(frame.getByTestId('success-page')).toHaveCount(1);
+
+            // Check the request body
+            expect(lastApiRequest.body).not.toBeNull();
+            expect(lastApiRequest.body).toHaveProperty('labels', []);
             expect(lastApiRequest.body).toHaveProperty('email', 'hey@example.com');
         });
 
