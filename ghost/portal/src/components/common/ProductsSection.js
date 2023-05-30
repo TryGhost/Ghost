@@ -824,13 +824,13 @@ function YearlyDiscount({discount, trialDays}) {
     if (hasFreeTrialTier({site})) {
         return (
             <>
-                <span className="gh-portal-discount-label-trial">{t('{{discountPercent}} discount', {discountPercent: discount + '%'})}</span>
+                <span className="gh-portal-discount-label-trial">{t('{{discount}}% discount', {discount})}</span>
             </>
         );
     } else {
         return (
             <>
-                <span className="gh-portal-discount-label">{t('{{discountPercent}} discount', {discountPercent: discount + '%'})}</span>
+                <span className="gh-portal-discount-label">{t('{{discount}}% discount', {discount})}</span>
             </>
         );
     }
