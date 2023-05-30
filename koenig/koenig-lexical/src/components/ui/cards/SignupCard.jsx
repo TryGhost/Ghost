@@ -131,7 +131,11 @@ export function SignupCard({alignment,
     const disclaimerPlaceholder = layout === 'split' ? 'Disclaimer text' : 'Enter disclaimer text';
 
     const hexColorValue = (color) => {
-        return color === 'accent' ? getAccentColor() : color;
+        if (color === 'accent') {
+            const accentColor = getAccentColor().trim();
+            return accentColor;
+        }
+        return color.trim();
     };
 
     const wrapperStyle = () => {
