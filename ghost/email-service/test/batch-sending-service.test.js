@@ -1156,6 +1156,85 @@ describe('Batch Sending Service', function () {
             assert.equal(batch.get('status'), 'submitted');
             assert.equal(batch.get('provider_id'), 'providerid@example.com');
         });
+
+        it('Catches an error when dumping members into a file', async function () {
+            const fs = require('fs-extra');
+
+            const EmailBatch = createModelClass({
+                findOne: {
+                    status: 'pending',
+                    member_segment: null
+                }
+            });
+            const dbMembers = [
+                {
+                    member_id: '123',
+                    member_uuid: '123',
+                    member_email: 'example@example.com',
+                    member_name: 'Test User',
+                    loaded: ['member'],
+                    member: createModel({
+                        created_at: new Date(),
+                        loaded: ['stripeSubscriptions', 'products'],
+                        status: 'free',
+                        stripeSubscriptions: [],
+                        products: []
+                    })
+                },
+                {
+                    member_id: '124',
+                    member_uuid: '124',
+                    member_email: 'example2@example.com',
+                    member_name: 'Test User 2',
+                    loaded: ['member'],
+                    member: createModel({
+                        created_at: new Date(),
+                        status: 'free',
+                        loaded: ['stripeSubscriptions', 'products'],
+                        stripeSubscriptions: [],
+                        products: []
+                    })
+                }
+            ];
+
+            const fsStub = sinon.stub(fs, 'writeFile').rejects('oops');
+
+            const DoubleTheEmailRecipients = createModelClass({
+                findAll: dbMembers
+            });
+
+            const sendingService = {
+                send: sinon.stub().resolves({id: 'providerid@example.com'}),
+                getMaximumRecipients: () => 1
+            };
+
+            const service = new BatchSendingService({
+                models: {
+                    EmailBatch,
+                    EmailRecipient: DoubleTheEmailRecipients
+                },
+                sendingService,
+                BEFORE_RETRY_CONFIG: {maxRetries: 10, maxTime: 2000, sleep: 1},
+                debugStorageFilePath: '/tmp/'
+            });
+
+            await service.sendBatch({
+                email: createModel({}),
+                batch: createModel({}),
+                post: createModel({}),
+                newsletter: createModel({})
+            });
+
+            assert.ok(fsStub.calledOnce);
+            assert.equal(errorLog.callCount, 5, 'should have logged 5 errors');
+            const firstLoggedError = errorLog.firstCall.args[0];
+            const secondLoggedError = errorLog.secondCall.args[0];
+            const thirdLoggedError = errorLog.thirdCall.args[0];
+
+            assert.match(firstLoggedError, /Batch [a-f0-9]{24} has 2 members, but the sending service only supports 1 members per batch/);
+            assert.match(secondLoggedError, /Failed to write members object dump to/);
+            assert.equal(thirdLoggedError.name, 'oops');
+        });
     });
 
     describe('getBatchMembers', function () {
