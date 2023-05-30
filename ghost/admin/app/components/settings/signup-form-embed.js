@@ -40,14 +40,14 @@ export default class SignupFormEmbed extends Component {
         const siteUrl = this.config.blogUrl;
         const scriptUrl = this.config.signupForm.url.replace('{version}', this.config.signupForm.version);
 
-        // We need to fallback to name if slug is not set, because of newly created labels
-        const labels = this.labels.map(l => l.slug || l.name).join(',');
-
         const options = {
             site: siteUrl,
-            labels,
             color: this.settings.accentColor
         };
+
+        for (const [i, label] of this.labels.entries()) {
+            options[`label-${i + 1}`] = label.name;
+        }
 
         if (this.style === 'all-in-one') {
             options.logo = this.settings.icon;
