@@ -28,7 +28,6 @@ export class ImageNode extends KoenigDecoratorNode {
         );
     }
 
-    // used by `@tryghost/url-utils` to transform URLs contained in the serialized JSON
     static get urlTransformMap() {
         return {
             src: 'url',
@@ -106,21 +105,6 @@ export class ImageNode extends KoenigDecoratorNode {
         const element = renderImageNodeToDOM(this, options);
         return {element};
     }
-
-    /* c8 ignore start */
-    createDOM() {
-        const element = document.createElement('div');
-        return element;
-    }
-
-    updateDOM() {
-        return false;
-    }
-
-    isInline() {
-        return false;
-    }
-    /* c8 ignore stop */
 
     getSrc() {
         const self = this.getLatest();
@@ -200,12 +184,6 @@ export class ImageNode extends KoenigDecoratorNode {
     setAlt(alt) {
         const writable = this.getWritable();
         return writable.__alt = alt;
-    }
-
-    // should be overridden
-    /* c8 ignore next 3 */
-    decorate() {
-        return '';
     }
 }
 

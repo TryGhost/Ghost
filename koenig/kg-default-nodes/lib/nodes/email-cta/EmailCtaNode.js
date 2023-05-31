@@ -90,20 +90,6 @@ export class EmailCtaNode extends KoenigDecoratorNode {
         return {element};
     }
 
-    /* c8 ignore start */
-    createDOM() {
-        return document.createElement('div');
-    }
-
-    updateDOM() {
-        return false;
-    }
-
-    isInline() {
-        return false;
-    }
-    /* c8 ignore stop */
-
     getAlignment() {
         const self = this.getLatest();
         return self.__alignment;
@@ -180,12 +166,6 @@ export class EmailCtaNode extends KoenigDecoratorNode {
 
     isEmpty() {
         return !this.__html && (!this.__showButton || (!this.__buttonText && !this.__buttonUrl));
-    }
-
-    // should be overridden
-    /* c8 ignore next 3 */
-    decorate() {
-        return '';
     }
 }
 

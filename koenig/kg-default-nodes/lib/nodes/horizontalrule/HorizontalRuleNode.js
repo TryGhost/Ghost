@@ -16,7 +16,6 @@ export class HorizontalRuleNode extends KoenigDecoratorNode {
         );
     }
 
-    // used by `@tryghost/url-utils` to transform URLs contained in the serialized JSON
     static get urlTransformMap() {
         return {};
     }
@@ -50,27 +49,6 @@ export class HorizontalRuleNode extends KoenigDecoratorNode {
 
     getTextContent() {
         return '\n';
-    }
-
-    /* c8 ignore start */
-    createDOM() {
-        const element = document.createElement('div');
-        return element;
-    }
-
-    updateDOM() {
-        return false;
-    }
-
-    isInline() {
-        return false;
-    }
-    /* c8 ignore stop */
-
-    // should be overridden
-    /* c8 ignore next 3 */
-    decorate() {
-        return '';
     }
 }
 

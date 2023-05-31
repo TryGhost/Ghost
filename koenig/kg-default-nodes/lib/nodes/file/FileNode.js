@@ -18,7 +18,7 @@ export function bytesToSize(bytes) {
 }
 
 export class FileNode extends KoenigDecoratorNode {
-    // file payload properties
+    // payload properties
     __src;
     __fileTitle;
     __fileCaption;
@@ -97,20 +97,6 @@ export class FileNode extends KoenigDecoratorNode {
         return {element};
     }
 
-    // c8 ignore start
-    createDOM() {
-        const element = document.createElement('div');
-        return element;
-    }
-
-    updateDOM() {
-        return false;
-    }
-
-    isInline() {
-        return false;
-    }
-
     getSrc() {
         const self = this.getLatest();
         return self.__src;
@@ -168,10 +154,6 @@ export class FileNode extends KoenigDecoratorNode {
 
     hasEditMode() {
         return true;
-    }
-    // c8 ignore stop
-    decorate() {
-        return '';
     }
 }
 

@@ -6,6 +6,7 @@ import {HtmlParser} from './HtmlParser';
 export const INSERT_HTML_COMMAND = createCommand();
 
 export class HtmlNode extends KoenigDecoratorNode {
+    // payload properties
     __html;
 
     static getType() {
@@ -16,7 +17,6 @@ export class HtmlNode extends KoenigDecoratorNode {
         return new this(node.getDataset(), node.__key);
     }
 
-    // used by `@tryghost/url-utils` to transform URLs contained in the serialized JSON
     static get urlTransformMap() {
         return {
             html: 'html'
@@ -62,21 +62,6 @@ export class HtmlNode extends KoenigDecoratorNode {
         };
     }
 
-    /* c8 ignore start */
-    createDOM() {
-        const element = document.createElement('div');
-        return element;
-    }
-
-    updateDOM() {
-        return false;
-    }
-
-    isInline() {
-        return false;
-    }
-    /* c8 ignore stop */
-
     getHtml() {
         const self = this.getLatest();
         return self.__html;
@@ -85,12 +70,6 @@ export class HtmlNode extends KoenigDecoratorNode {
     setHtml(html) {
         const writable = this.getWritable();
         return writable.__html = html;
-    }
-
-    // should be overwritten
-    /* c8 ignore next 3 */
-    decorate() {
-        return '';
     }
 
     hasEditMode() {

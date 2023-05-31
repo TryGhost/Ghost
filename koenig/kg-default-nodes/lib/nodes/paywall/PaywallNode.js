@@ -17,10 +17,6 @@ export class PaywallNode extends KoenigDecoratorNode {
         );
     }
 
-    static get urlTransformMap() {
-        return {};
-    }
-
     constructor(key) {
         super(key);
     }
@@ -46,26 +42,6 @@ export class PaywallNode extends KoenigDecoratorNode {
     exportDOM(options = {}) {
         const element = renderPaywallNodeToDOM(this, options);
         return {element, type: 'inner'};
-    }
-
-    /* c8 ignore start */
-    createDOM() {
-        return document.createElement('div');
-    }
-
-    updateDOM() {
-        return false;
-    }
-
-    isInline() {
-        return false;
-    }
-    /* c8 ignore stop */
-
-    // should be overridden
-    /* c8 ignore next 3 */
-    decorate() {
-        return '';
     }
 }
 

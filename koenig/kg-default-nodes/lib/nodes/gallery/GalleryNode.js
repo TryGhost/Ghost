@@ -69,21 +69,6 @@ export class GalleryNode extends KoenigDecoratorNode {
         return {element};
     }
 
-    /* c8 ignore start */
-    createDOM() {
-        const element = document.createElement('div');
-        return element;
-    }
-
-    updateDOM() {
-        return false;
-    }
-
-    isInline() {
-        return false;
-    }
-    /* c8 ignore stop */
-
     getImages() {
         const self = this.getLatest();
         return self.__images;
@@ -102,12 +87,6 @@ export class GalleryNode extends KoenigDecoratorNode {
     setCaption(caption) {
         const writable = this.getWritable();
         return writable.__caption = caption;
-    }
-
-    // should be overridden
-    /* c8 ignore next 3 */
-    decorate() {
-        return '';
     }
 
     hasEditMode() {

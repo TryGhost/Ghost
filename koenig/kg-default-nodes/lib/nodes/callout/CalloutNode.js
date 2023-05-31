@@ -69,19 +69,6 @@ export class CalloutNode extends KoenigDecoratorNode {
         return {element};
     }
 
-    createDom() {
-        const element = document.createElement('div');
-        return element;
-    }
-
-    updateDom() {
-        return false;
-    }
-
-    isInline() {
-        return false;
-    }
-
     getCalloutText() {
         const self = this.getLatest();
         return self.__calloutText;
@@ -110,10 +97,6 @@ export class CalloutNode extends KoenigDecoratorNode {
     setCalloutEmoji(emoji) {
         const writeable = this.getWritable();
         writeable.__calloutEmoji = emoji;
-    }
-
-    decorate() {
-        return '';
     }
 
     hasEditMode() {

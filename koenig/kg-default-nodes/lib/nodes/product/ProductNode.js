@@ -30,7 +30,6 @@ export class ProductNode extends KoenigDecoratorNode {
         );
     }
 
-    // used by `@tryghost/url-utils` to transform URLs contained in the serialized JSON
     static get urlTransformMap() {
         return {
             productImageSrc: 'url',
@@ -117,21 +116,6 @@ export class ProductNode extends KoenigDecoratorNode {
         const element = renderProductNodeToDOM(this, options);
         return {element};
     }
-
-    /* c8 ignore start */
-    createDOM() {
-        const element = document.createElement('div');
-        return element;
-    }
-
-    updateDOM() {
-        return false;
-    }
-
-    isInline() {
-        return false;
-    }
-    /* c8 ignore stop */
 
     getProductImageSrc() {
         const self = this.getLatest();
@@ -231,12 +215,6 @@ export class ProductNode extends KoenigDecoratorNode {
     setProductUrl(productUrl) {
         const writable = this.getWritable();
         return writable.__productUrl = productUrl;
-    }
-
-    // should be overridden
-    /* c8 ignore next 3 */
-    decorate() {
-        return '';
     }
 
     hasEditMode() {

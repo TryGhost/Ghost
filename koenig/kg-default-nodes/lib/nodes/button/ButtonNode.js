@@ -22,7 +22,6 @@ export class ButtonNode extends KoenigDecoratorNode {
         );
     }
 
-    // used by `@tryghost/url-utils` to transform URLs contained in the serialized JSON
     static get urlTransformMap() {
         return {
             buttonUrl: 'url'
@@ -78,21 +77,6 @@ export class ButtonNode extends KoenigDecoratorNode {
         return {element};
     }
 
-    /* c8 ignore start */
-    createDOM() {
-        const element = document.createElement('div');
-        return element;
-    }
-
-    updateDOM() {
-        return false;
-    }
-
-    isInline() {
-        return false;
-    }
-    /* c8 ignore stop */
-
     getButtonText() {
         const self = this.getLatest();
         return self.__buttonText;
@@ -121,12 +105,6 @@ export class ButtonNode extends KoenigDecoratorNode {
     setButtonUrl(buttonUrl) {
         const writable = this.getWritable();
         return writable.__buttonUrl = buttonUrl;
-    }
-
-    // should be overridden
-    /* c8 ignore next 3 */
-    decorate() {
-        return '';
     }
 
     hasEditMode() {

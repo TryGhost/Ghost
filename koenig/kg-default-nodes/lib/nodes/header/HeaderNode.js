@@ -7,7 +7,7 @@ export const INSERT_HEADER_COMMAND = createCommand();
 const NODE_TYPE = 'header';
 
 export class HeaderNode extends KoenigDecoratorNode {
-    // header payload properties
+    // payload properties
     __size;
     __style;
     __buttonEnabled;
@@ -111,19 +111,6 @@ export class HeaderNode extends KoenigDecoratorNode {
         return {element};
     }
 
-    /* c8 ignore start */
-    createDOM() {
-        return document.createElement('div');
-    }
-
-    updateDOM() {
-        return false;
-    }
-
-    isInline() {
-        return false;
-    }
-
     getSize() {
         const self = this.getLatest();
         return self.__size;
@@ -210,12 +197,6 @@ export class HeaderNode extends KoenigDecoratorNode {
 
     isEmpty() {
         return !this.header && !this.subheader && (!this.__buttonEnabled || (!this.__buttonText && !this.__buttonUrl)) && !this.__backgroundImageSrc;
-    }
-
-    // should be overridden
-    /* c8 ignore next 3 */
-    decorate() {
-        return '';
     }
 }
 

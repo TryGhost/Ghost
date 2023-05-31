@@ -27,7 +27,6 @@ export class BookmarkNode extends KoenigDecoratorNode {
         );
     }
 
-    // used by `@tryghost/url-utils` to transform URLs contained in the serialized JSON
     static get urlTransformMap() {
         return {
             url: 'url',
@@ -104,21 +103,6 @@ export class BookmarkNode extends KoenigDecoratorNode {
         const element = renderBookmarkNodeToDOM(this, options);
         return {element};
     }
-
-    /* c8 ignore start */
-    createDOM() {
-        const element = document.createElement('div');
-        return element;
-    }
-
-    updateDOM() {
-        return false;
-    }
-
-    isInline() {
-        return false;
-    }
-    /* c8 ignore stop */
 
     getUrl() {
         const self = this.getLatest();
@@ -199,12 +183,6 @@ export class BookmarkNode extends KoenigDecoratorNode {
     setCaption(caption) {
         const writable = this.getWritable();
         return writable.__caption = caption;
-    }
-
-    // should be overridden
-    /* c8 ignore next 3 */
-    decorate() {
-        return '';
     }
 
     hasEditMode() {

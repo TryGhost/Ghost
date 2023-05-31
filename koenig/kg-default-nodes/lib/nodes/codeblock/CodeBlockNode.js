@@ -6,6 +6,7 @@ import {renderCodeBlockNodeToDOM} from './CodeBlockRenderer';
 export const INSERT_CODE_BLOCK_COMMAND = createCommand();
 
 export class CodeBlockNode extends KoenigDecoratorNode {
+    // payload properties
     __code;
     __language;
     __caption;
@@ -15,15 +16,12 @@ export class CodeBlockNode extends KoenigDecoratorNode {
     }
 
     static clone(node) {
-        // must use `this` so the extended class in the Editor uses the correct class when cloning
-        // without needing to override this method
         return new this(
             node.getDataset(),
             node.__key
         );
     }
 
-    // used by `@tryghost/url-utils` to transform URLs contained in the serialized JSON
     static get urlTransformMap() {
         return {
             caption: 'html'
@@ -72,20 +70,6 @@ export class CodeBlockNode extends KoenigDecoratorNode {
         return {element};
     }
 
-    /* c8 ignore start */
-    createDOM() {
-        return document.createElement('div');
-    }
-
-    updateDOM() {
-        return false;
-    }
-
-    isInline() {
-        return false;
-    }
-    /* c8 ignore stop */
-
     getCaption() {
         const self = this.getLatest();
         return self.__caption;
@@ -119,12 +103,6 @@ export class CodeBlockNode extends KoenigDecoratorNode {
     getTextContent() {
         const self = this.getLatest();
         return self.__code;
-    }
-
-    // should be overwritten
-    /* c8 ignore next 3 */
-    decorate() {
-        return '';
     }
 
     hasEditMode() {

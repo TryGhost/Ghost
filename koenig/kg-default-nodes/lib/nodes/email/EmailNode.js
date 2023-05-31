@@ -59,20 +59,6 @@ export class EmailNode extends KoenigDecoratorNode {
         return {element, type: 'inner'};
     }
 
-    /* c8 ignore start */
-    createDOM() {
-        return document.createElement('div');
-    }
-
-    updateDOM() {
-        return false;
-    }
-
-    isInline() {
-        return false;
-    }
-    /* c8 ignore stop */
-
     getHtml() {
         const self = this.getLatest();
         return self.__html;
@@ -89,12 +75,6 @@ export class EmailNode extends KoenigDecoratorNode {
 
     isEmpty() {
         return !this.__html;
-    }
-
-    // should be overridden
-    /* c8 ignore next 3 */
-    decorate() {
-        return '';
     }
 }
 

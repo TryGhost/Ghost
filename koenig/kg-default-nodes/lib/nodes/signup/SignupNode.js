@@ -160,20 +160,6 @@ export class SignupNode extends KoenigDecoratorNode {
         return dataset;
     }
 
-    /* c8 ignore start */
-    createDOM() {
-        return document.createElement('div');
-    }
-
-    updateDOM() {
-        return false;
-    }
-
-    isInline() {
-        return false;
-    }
-    /* c8 ignore stop */
-
     getAlignment() {
         const self = this.getLatest();
         return self.__alignment;
@@ -342,12 +328,6 @@ export class SignupNode extends KoenigDecoratorNode {
             !this.__labels.length &&
             !this.__subheader &&
             !this.__successMessage;
-    }
-
-    // should be overridden
-    /* c8 ignore next 3 */
-    decorate() {
-        return '';
     }
 }
 
