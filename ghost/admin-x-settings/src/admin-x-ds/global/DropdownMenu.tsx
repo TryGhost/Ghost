@@ -6,11 +6,12 @@ import React from 'react';
 // }
 
 interface MenuProps {
+    test?: string;
     // trigger?: React.ReactNode;
     // items: DropdownMenuItem[];
 }
 
-const DropdownMenu: React.FC<MenuProps> = ({}) => {
+const DropdownMenu: React.FC<MenuProps> = ({test}) => {
     return (
         /* DropdownMenu */
         <div className="relative inline-block text-left">
@@ -21,7 +22,7 @@ const DropdownMenu: React.FC<MenuProps> = ({}) => {
                     <Icon name="menu-horizontal" />
                 </button>
             </div>
-
+            {test}
             {/* DropdownMenu List */}
             <div aria-labelledby="menu-button" aria-orientation="vertical" className="absolute left-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none" role="menu">
                 <div className="py-1" role="none">
