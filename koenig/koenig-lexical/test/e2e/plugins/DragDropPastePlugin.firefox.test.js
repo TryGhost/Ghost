@@ -1,5 +1,5 @@
 import path from 'path';
-import {assertHTML, createDataTransfer, focusEditor, html, initialize} from '../../utils/e2e';
+import {assertHTML, createDataTransfer, focusEditor, html, initialize, resetEditor} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
@@ -9,11 +9,22 @@ const __dirname = path.dirname(__filename);
 // Need to get video thumbnail before uploading on the server; for this purpose, convert video to blob https://github.com/TryGhost/Koenig/blob/a04c59c2d81ddc783869c47653aa9d7adf093629/packages/koenig-lexical/src/utils/extractVideoMetadata.js#L45
 // The problem is that Chromium can't read video src as blob
 test.describe('Drag Drop Paste Plugin Firefox', async function () {
-    test.beforeEach(async function ({page}) {
+    let page;
+
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
         await initialize({page});
     });
 
-    test('can drag and drop a video file on the editor', async function ({page}) {
+    test.beforeEach(async () => {
+        await resetEditor({page});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
+    });
+
+    test('can drag and drop a video file on the editor', async function () {
         await focusEditor(page);
 
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/video.mp4');
@@ -26,7 +37,7 @@ test.describe('Drag Drop Paste Plugin Firefox', async function () {
         await expect(await page.getByTestId('media-duration')).toContainText('0:04');
     });
 
-    test('can drag and drop multiple video files on the editor', async function ({page}) {
+    test('can drag and drop multiple video files on the editor', async function () {
         await focusEditor(page);
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/video.mp4');
         const filePath2 = path.relative(process.cwd(), __dirname + '/../fixtures/video.mp4');
@@ -54,7 +65,7 @@ test.describe('Drag Drop Paste Plugin Firefox', async function () {
         `, {ignoreCardContents: true, ignoreInnerSVG: false});
     });
 
-    test('can drag and drop multiple different types of files on the editor', async function ({page}) {
+    test('can drag and drop multiple different types of files on the editor', async function () {
         await focusEditor(page);
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
         const filePath2 = path.relative(process.cwd(), __dirname + '/../fixtures/audio-sample.mp3');

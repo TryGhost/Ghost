@@ -8,6 +8,9 @@ async function insertEmailCard(page) {
     await page.waitForSelector('[data-kg-card="email-cta"]');
 }
 
+// Parellise tests since we aren't using resetEditor
+test.describe.configure({mode: 'parallel'});
+
 test.describe('Email card', async () => {
     test.beforeEach(async ({page}) => {
         await initialize({page});

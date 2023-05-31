@@ -1,12 +1,23 @@
-import {assertHTML, focusEditor, html, initialize} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, resetEditor} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Code Block card', async () => {
-    test.beforeEach(async ({page}) => {
+    let page;
+
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
         await initialize({page});
     });
 
-    test('can import serialized code block card nodes', async function ({page}) {
+    test.beforeEach(async () => {
+        await resetEditor({page});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
+    });
+
+    test('can import serialized code block card nodes', async function () {
         await page.evaluate(() => {
             const serializedState = JSON.stringify({
                 root: {
@@ -36,7 +47,7 @@ test.describe('Code Block card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('renders code block card node', async function ({page}) {
+    test('renders code block card node', async function () {
         await focusEditor(page);
         await page.keyboard.type('```javascript ');
 
@@ -48,7 +59,7 @@ test.describe('Code Block card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('renders code block card node 2', async function ({page}) {
+    test('renders code block card node 2', async function () {
         await focusEditor(page);
         await page.keyboard.type('```javascript');
         await page.keyboard.press('Enter');
@@ -61,7 +72,7 @@ test.describe('Code Block card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('it hides the language input when typing in the code editor and shows it when the mouse moves', async function ({page}) {
+    test('it hides the language input when typing in the code editor and shows it when the mouse moves', async function () {
         await focusEditor(page);
         await page.keyboard.type('```javascript ');
         await page.waitForSelector('[data-kg-card="codeblock"] .cm-editor');

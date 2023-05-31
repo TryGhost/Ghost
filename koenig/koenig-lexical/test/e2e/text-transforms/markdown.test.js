@@ -44,6 +44,9 @@ const EMPHASIS_TRANSFORMS = [{
     html: html`<p dir="ltr"><span class="line-through" data-lexical-text="true">Strikethrough</span></p>`
 }];
 
+// Parellise tests since we aren't using resetEditor
+test.describe.configure({mode: 'parallel'});
+
 test.describe('Markdown', async () => {
     test.beforeEach(async ({page}) => {
         await initialize({page});

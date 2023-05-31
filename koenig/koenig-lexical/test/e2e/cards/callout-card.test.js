@@ -1,15 +1,26 @@
-import {assertHTML, createSnippet, focusEditor, html, initialize, insertCard, isMac} from '../../utils/e2e';
+import {assertHTML, createSnippet, focusEditor, html, initialize, insertCard, isMac, resetEditor} from '../../utils/e2e';
 // import {calloutColorPicker} from '../../../src/components/ui/cards/CalloutCardx';
 import {expect, test} from '@playwright/test';
 
 test.describe('Callout Card', async () => {
     const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
 
-    test.beforeEach(async ({page}) => {
+    let page;
+
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
         await initialize({page});
     });
 
-    test('can import serialized callout card nodes', async function ({page}) {
+    test.beforeEach(async () => {
+        await resetEditor({page});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
+    });
+
+    test('can import serialized callout card nodes', async function () {
         await page.evaluate(() => {
             const serializedState = JSON.stringify({
                 root: {
@@ -59,7 +70,7 @@ test.describe('Callout Card', async () => {
         await expect(page.getByTestId('callout-bg-blue')).toBeVisible();
     });
 
-    test('renders callout card', async function ({page}) {
+    test('renders callout card', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'callout'});
 
@@ -72,7 +83,7 @@ test.describe('Callout Card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('has settings panel', async function ({page}) {
+    test('has settings panel', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'callout'});
 
@@ -83,7 +94,7 @@ test.describe('Callout Card', async () => {
         await expect(colorPicker).toBeVisible();
     });
 
-    test('can edit callout card', async function ({page}) {
+    test('can edit callout card', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'callout'});
 
@@ -93,7 +104,7 @@ test.describe('Callout Card', async () => {
         await expect(calloutCard).toContainText('💡Hello World ');
     });
 
-    test('can toggle emoji', async function ({page}) {
+    test('can toggle emoji', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'callout'});
 
@@ -107,7 +118,7 @@ test.describe('Callout Card', async () => {
         await expect(calloutCard).not.toContainText('💡');
     });
 
-    test('can render emoji picker', async function ({page}) {
+    test('can render emoji picker', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'callout'});
 
@@ -116,7 +127,7 @@ test.describe('Callout Card', async () => {
         await expect(emojiPickerContainer).toBeVisible();
     });
 
-    test('colour picker renders all colours', async function ({page}) {
+    test('colour picker renders all colours', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'callout'});
 
@@ -126,7 +137,7 @@ test.describe('Callout Card', async () => {
         // }));
     });
 
-    test('can change background color', async function ({page}) {
+    test('can change background color', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'callout'});
 
@@ -138,7 +149,7 @@ test.describe('Callout Card', async () => {
         await expect(greenCallout).toBeVisible();
     });
 
-    test('can select an emoji', async function ({page}) {
+    test('can select an emoji', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'callout'});
 
@@ -150,7 +161,7 @@ test.describe('Callout Card', async () => {
         await expect(calloutCard).toContainText('😂');
     });
 
-    test('has edit toolbar', async function ({page}) {
+    test('has edit toolbar', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'callout'});
 
@@ -166,7 +177,7 @@ test.describe('Callout Card', async () => {
         await expect(editButton).toBeVisible();
     });
 
-    test('can toggle edit', async function ({page}) {
+    test('can toggle edit', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'callout'});
 
@@ -184,7 +195,7 @@ test.describe('Callout Card', async () => {
         await expect(calloutCard).toHaveAttribute('data-kg-card-editing', 'true');
     });
 
-    test('syncs display state content', async function ({page}) {
+    test('syncs display state content', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'callout'});
         await page.keyboard.type('testing nesting');
@@ -217,7 +228,7 @@ test.describe('Callout Card', async () => {
             `, {ignoreCardContents: false});
     });
 
-    test('can toggle edit mode with CMD+ENTER', async function ({page}) {
+    test('can toggle edit mode with CMD+ENTER', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'callout'});
         await page.keyboard.type('testing nesting');
@@ -262,7 +273,7 @@ test.describe('Callout Card', async () => {
             `, {ignoreCardContents: true});
     });
 
-    test('can leave edit mode with ESCAPE', async function ({page}) {
+    test('can leave edit mode with ESCAPE', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'callout'});
         await page.keyboard.type('testing nesting');
@@ -277,7 +288,7 @@ test.describe('Callout Card', async () => {
             `, {ignoreCardContents: true});
     });
 
-    test('can add snippet', async function ({page}) {
+    test('can add snippet', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'callout'});
         await page.keyboard.type('testing nesting');
@@ -294,7 +305,7 @@ test.describe('Callout Card', async () => {
         await expect(await page.locator('[data-kg-card="callout"]')).toHaveCount(2);
     });
 
-    test('keeps focus on previous editor when changing size opts', async function ({page}) {
+    test('keeps focus on previous editor when changing size opts', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'callout'});
 

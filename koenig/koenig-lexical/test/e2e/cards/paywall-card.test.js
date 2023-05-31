@@ -1,4 +1,4 @@
-import {assertHTML, focusEditor, html, initialize} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, resetEditor} from '../../utils/e2e';
 import {test} from '@playwright/test';
 
 async function insertPaywallCard(page) {
@@ -8,11 +8,22 @@ async function insertPaywallCard(page) {
 }
 
 test.describe('Paywall card', async () => {
-    test.beforeEach(async ({page}) => {
+    let page;
+
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
         await initialize({page});
     });
 
-    test('can import serialized paywall card nodes', async function ({page}) {
+    test.beforeEach(async () => {
+        await resetEditor({page});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
+    });
+
+    test('can import serialized paywall card nodes', async function () {
         await page.evaluate(() => {
             const serializedState = JSON.stringify({
                 root: {
@@ -39,7 +50,7 @@ test.describe('Paywall card', async () => {
         `);
     });
 
-    test('renders paywall card node from slash command', async function ({page}) {
+    test('renders paywall card node from slash command', async function () {
         await focusEditor(page);
         await insertPaywallCard(page);
 
@@ -55,7 +66,7 @@ test.describe('Paywall card', async () => {
         `);
     });
 
-    test('focuses on the next paragraph when rendered', async function ({page}) {
+    test('focuses on the next paragraph when rendered', async function () {
         await focusEditor(page);
         await insertPaywallCard(page);
 

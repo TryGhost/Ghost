@@ -1,18 +1,29 @@
-import {assertHTML, assertPosition, assertSelection, focusEditor, html, initialize, insertCard} from '../utils/e2e';
+import {assertHTML, assertPosition, assertSelection, focusEditor, html, initialize, insertCard, resetEditor} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Plus button', async () => {
-    test.beforeEach(async ({page}) => {
+    let page;
+
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
         await initialize({page});
     });
 
+    test.beforeEach(async () => {
+        await resetEditor({page});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
+    });
+
     test.describe('with caret', function () {
-        test('appears on empty editor', async function ({page}) {
+        test('appears on empty editor', async function () {
             await focusEditor(page);
             expect(await page.locator('[data-kg-plus-button]')).not.toBeNull();
         });
 
-        test('moves when selection moves between empty paragraphs', async function ({page}) {
+        test('moves when selection moves between empty paragraphs', async function () {
             await focusEditor(page);
 
             // expect button to be positioned for first paragraph
@@ -33,7 +44,7 @@ test.describe('Plus button', async () => {
             await assertPosition(page, '[data-kg-plus-button]', {y: firstParaRect.y}, {threshold: 5});
         });
 
-        test('disappears when starting to type', async function ({page}) {
+        test('disappears when starting to type', async function () {
             await focusEditor(page);
             expect(await page.locator('[data-kg-plus-button]')).not.toBeNull();
 
@@ -41,7 +52,7 @@ test.describe('Plus button', async () => {
             await expect(await page.locator('[data-kg-plus-button]')).toHaveCount(0);
         });
 
-        test('does not appear on list sections', async function ({page}) {
+        test('does not appear on list sections', async function () {
             await focusEditor(page);
             await page.keyboard.type('- ');
 
@@ -61,7 +72,7 @@ test.describe('Plus button', async () => {
             await expect(await page.locator('[data-kg-plus-button]')).toHaveCount(0);
         });
 
-        test('is shown after deleting all paragraph contents', async function ({page}) {
+        test('is shown after deleting all paragraph contents', async function () {
             await focusEditor(page);
             await page.keyboard.type('t');
 
@@ -75,7 +86,7 @@ test.describe('Plus button', async () => {
     });
 
     test.describe('with mouse movement', async function () {
-        test('appears over blank paragraphs', async function ({page}) {
+        test('appears over blank paragraphs', async function () {
             await expect(await page.locator('[data-kg-plus-button]')).toHaveCount(0);
 
             const pHandle = await page.locator('[data-lexical-editor] > p');
@@ -84,7 +95,7 @@ test.describe('Plus button', async () => {
             expect(await page.locator('[data-kg-plus-button]')).not.toBeNull();
         });
 
-        test('moves when mouse moves', async function ({page}) {
+        test('moves when mouse moves', async function () {
             await focusEditor(page);
             await page.keyboard.press('Enter');
             await page.keyboard.press('Enter');
@@ -102,7 +113,7 @@ test.describe('Plus button', async () => {
             await assertPosition(page, '[data-kg-plus-button]', {y: secondPHandleBox.y}, {threshold: 5});
         });
 
-        test('does not appear over populated paragraphs', async function ({page}) {
+        test('does not appear over populated paragraphs', async function () {
             await focusEditor(page);
             await page.keyboard.press('Enter');
             await page.keyboard.type('Testing');
@@ -120,7 +131,7 @@ test.describe('Plus button', async () => {
             await expect(await page.locator('[data-kg-plus-button]')).toHaveCount(0);
         });
 
-        test('does not appear over list sections', async function ({page}) {
+        test('does not appear over list sections', async function () {
             await focusEditor(page);
             await page.keyboard.press('Enter');
 
@@ -141,7 +152,7 @@ test.describe('Plus button', async () => {
             await expect(await page.locator('[data-kg-plus-button]')).toHaveCount(0);
         });
 
-        test('disappears from hovered p when typing on focused p', async function ({page}) {
+        test('disappears from hovered p when typing on focused p', async function () {
             await focusEditor(page);
             await page.keyboard.press('Enter');
 
@@ -155,7 +166,7 @@ test.describe('Plus button', async () => {
             await expect(await page.locator('[data-kg-plus-button]')).toHaveCount(0);
         });
 
-        test('returns to caret position when over non-empty element', async function ({page}) {
+        test('returns to caret position when over non-empty element', async function () {
             await focusEditor(page);
             await page.keyboard.press('Enter');
             await page.keyboard.type('Testing');
@@ -179,7 +190,7 @@ test.describe('Plus button', async () => {
             await assertPosition(page, '[data-kg-plus-button]', {y: pHandle3Box.y}, {threshold: 5});
         });
 
-        test('does not appear over an empty paragraph in a card', async function ({page}) {
+        test('does not appear over an empty paragraph in a card', async function () {
             await focusEditor(page);
             await insertCard(page, {cardName: 'callout'});
 
@@ -192,14 +203,14 @@ test.describe('Plus button', async () => {
     });
 
     test.describe('menu', function () {
-        test('opens on button click', async function ({page}) {
+        test('opens on button click', async function () {
             await focusEditor(page);
             await expect(await page.locator('[data-kg-plus-menu]')).toHaveCount(0);
             await page.click('[data-kg-plus-button]');
             expect(await page.locator('[data-kg-plus-menu]')).not.toBeNull();
         });
 
-        test('closes on click outside', async function ({page}) {
+        test('closes on click outside', async function () {
             await focusEditor(page);
             await page.click('[data-kg-plus-button]');
             expect(await page.locator('[data-kg-plus-menu]')).not.toBeNull();
@@ -207,14 +218,14 @@ test.describe('Plus button', async () => {
             await expect(await page.locator('[data-kg-plus-menu]')).toHaveCount(0);
         });
 
-        test('does not close on click inside', async function ({page}) {
+        test('does not close on click inside', async function () {
             await focusEditor(page);
             await page.click('[data-kg-plus-button]');
             await page.click('[data-kg-plus-menu] [role="separator"] > span');
             expect(await page.locator('[data-kg-plus-menu]')).not.toBeNull();
         });
 
-        test('closes on escape', async function ({page}) {
+        test('closes on escape', async function () {
             await focusEditor(page);
             await page.click('[data-kg-plus-button]');
             expect(await page.locator('[data-kg-plus-menu]')).not.toBeNull();
@@ -222,7 +233,7 @@ test.describe('Plus button', async () => {
             await expect(await page.locator('[data-kg-plus-menu]')).toHaveCount(0);
         });
 
-        test('does not move on empty p mouseover when open', async function ({page}) {
+        test('does not move on empty p mouseover when open', async function () {
             await focusEditor(page);
             await page.keyboard.press('Enter');
             await page.keyboard.press('Enter');
@@ -244,7 +255,7 @@ test.describe('Plus button', async () => {
             await assertPosition(page, '[data-kg-plus-menu]', {y: p3Box.y}, {threshold: 5});
         });
 
-        test('moves cursor when opening', async function ({page}) {
+        test('moves cursor when opening', async function () {
             await focusEditor(page);
             await page.keyboard.press('Enter');
 
@@ -267,7 +278,7 @@ test.describe('Plus button', async () => {
             });
         });
 
-        test('closes when typing', async function ({page}) {
+        test('closes when typing', async function () {
             await focusEditor(page);
             await page.click('[data-kg-plus-button]');
             expect(await page.locator('[data-kg-plus-menu]')).not.toBeNull();
@@ -278,7 +289,7 @@ test.describe('Plus button', async () => {
                 .toBe('Test');
         });
 
-        test('closes and moves focus on up/down', async function ({page}) {
+        test('closes and moves focus on up/down', async function () {
             await focusEditor(page);
             await page.keyboard.press('Enter');
             await page.click('[data-kg-plus-button]');
@@ -308,7 +319,7 @@ test.describe('Plus button', async () => {
             await assertPosition(page, '[data-kg-plus-button]', {y: p1Box.y}, {threshold: 5});
         });
 
-        test('inserts card and closes menu when card item clicked', async function ({page}) {
+        test('inserts card and closes menu when card item clicked', async function () {
             await focusEditor(page);
             await page.click('[data-kg-plus-button]');
             await page.click('[data-kg-card-menu-item="Divider"]');
@@ -332,7 +343,7 @@ test.describe('Plus button', async () => {
             });
         });
 
-        test('deselects a selected card when plus button is clicked', async function ({page}) {
+        test('deselects a selected card when plus button is clicked', async function () {
             await focusEditor(page);
             await page.keyboard.type('--- ');
             await page.click('[data-kg-card="horizontalrule"]');
@@ -360,7 +371,7 @@ test.describe('Plus button', async () => {
             `);
         });
 
-        test('exits a card\'s edit mode when plus button is clicked', async function ({page}) {
+        test('exits a card\'s edit mode when plus button is clicked', async function () {
             await focusEditor(page);
             await page.keyboard.type('/');
             await page.click('[data-kg-card-menu-item="Markdown"]');

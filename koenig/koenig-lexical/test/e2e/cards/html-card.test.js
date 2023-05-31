@@ -1,12 +1,23 @@
-import {assertHTML, createSnippet, focusEditor, html, initialize} from '../../utils/e2e';
+import {assertHTML, createSnippet, focusEditor, html, initialize, resetEditor} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Html card', async () => {
-    test.beforeEach(async ({page}) => {
+    let page;
+
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
         await initialize({page});
     });
 
-    test('can import serialized html card nodes', async function ({page}) {
+    test.beforeEach(async () => {
+        await resetEditor({page});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
+    });
+
+    test('can import serialized html card nodes', async function () {
         await page.evaluate(() => {
             const serializedState = JSON.stringify({
                 root: {
@@ -36,7 +47,7 @@ test.describe('Html card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('renders html card node from slash entry', async function ({page}) {
+    test('renders html card node from slash entry', async function () {
         await focusEditor(page);
         await page.keyboard.type('/html');
         await page.waitForSelector('[data-kg-card-menu-item="HTML"][data-kg-cardmenu-selected="true"]');
@@ -51,7 +62,7 @@ test.describe('Html card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('can add snippet', async function ({page}) {
+    test('can add snippet', async function () {
         await focusEditor(page);
         // insert new card
         await page.keyboard.type('/html');

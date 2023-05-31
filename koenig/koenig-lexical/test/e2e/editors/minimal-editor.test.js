@@ -1,12 +1,23 @@
-import {assertHTML, focusEditor, html, initialize} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, resetEditor} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Koening Editor with minimal nodes', async function () {
-    test.beforeEach(async function ({page}) {
+    let page;
+
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
         await initialize({page, uri: '/#/minimal?content=false'});
     });
 
-    test('can add basic text', async function ({page}) {
+    test.beforeEach(async () => {
+        await resetEditor({page});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
+    });
+
+    test('can add basic text', async function () {
         await focusEditor(page);
 
         await page.keyboard.type('Hello World');
@@ -16,7 +27,7 @@ test.describe('Koening Editor with minimal nodes', async function () {
         `);
     });
 
-    test('restricts to single paragraph by typing manually', async function ({page}) {
+    test('restricts to single paragraph by typing manually', async function () {
         await focusEditor(page);
 
         await page.keyboard.type('Hello World');
@@ -28,7 +39,7 @@ test.describe('Koening Editor with minimal nodes', async function () {
         `);
     });
 
-    test('ignores hr card shortcut', async function ({page}) {
+    test('ignores hr card shortcut', async function () {
         await focusEditor(page);
 
         await page.keyboard.type('--- ');
@@ -39,7 +50,7 @@ test.describe('Koening Editor with minimal nodes', async function () {
         `);
     });
 
-    test('ignores code block card shortcut', async function ({page}) {
+    test('ignores code block card shortcut', async function () {
         await focusEditor(page);
         await page.keyboard.type('```javascript ');
 
@@ -48,7 +59,7 @@ test.describe('Koening Editor with minimal nodes', async function () {
         `);
     });
 
-    test('ignores image card shortcut', async function ({page}) {
+    test('ignores image card shortcut', async function () {
         await focusEditor(page);
 
         await page.keyboard.type('image! ');
@@ -58,7 +69,7 @@ test.describe('Koening Editor with minimal nodes', async function () {
         `);
     });
 
-    test('ignores slash menu on blank paragraph', async function ({page}) {
+    test('ignores slash menu on blank paragraph', async function () {
         await focusEditor(page);
         await expect(await page.locator('[data-kg-slash-menu]')).toHaveCount(0);
         await page.keyboard.type('/');
@@ -66,7 +77,7 @@ test.describe('Koening Editor with minimal nodes', async function () {
     });
 
     test.describe('Floating format toolbar', async () => {
-        test('appears on text selection', async function ({page}) {
+        test('appears on text selection', async function () {
             await focusEditor(page);
             await page.keyboard.type('text for selection');
 
@@ -81,7 +92,7 @@ test.describe('Koening Editor with minimal nodes', async function () {
             expect(await page.locator('[data-kg-floating-toolbar]')).not.toBeNull();
         });
 
-        test('does not has heading buttons', async function ({page}) {
+        test('does not has heading buttons', async function () {
             await focusEditor(page);
             await page.keyboard.type('text for selection');
 

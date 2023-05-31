@@ -1,14 +1,25 @@
-import {assertHTML, focusEditor,initialize, isMac} from '../../utils/e2e';
+import {assertHTML, focusEditor, initialize, isMac, resetEditor} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Mobiledoc Copy Plugin', async function () {
     const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
 
-    test.beforeEach(async function ({page}) {
+    let page;
+
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
         await initialize({page});
     });
 
-    test('adds mobiledoc to clipboard when copying', async function ({page}) {
+    test.beforeEach(async () => {
+        await resetEditor({page});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
+    });
+
+    test('adds mobiledoc to clipboard when copying', async function () {
         await focusEditor(page);
 
         // set up a custom event handler to capture the clipboard data from the copy event
@@ -35,7 +46,7 @@ test.describe('Mobiledoc Copy Plugin', async function () {
         expect(clipboardMobiledoc).toEqual('{"version":"0.3.1","ghostVersion":"4.0","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"Hello World"]]]]}');
     });
 
-    test('adds mobiledoc to clipboard when cutting', async function ({page}) {
+    test('adds mobiledoc to clipboard when cutting', async function () {
         await focusEditor(page);
 
         // set up a custom event handler to capture the clipboard data from the copy event

@@ -17,6 +17,9 @@ import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Parellise tests since we aren't using resetEditor
+test.describe.configure({mode: 'parallel'});
+
 test.describe('Image card', async () => {
     test.beforeEach(async ({page}) => {
         await initialize({page});

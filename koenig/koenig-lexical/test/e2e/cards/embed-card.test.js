@@ -1,12 +1,23 @@
-import {assertHTML, createSnippet, focusEditor, html, initialize, pasteText} from '../../utils/e2e';
+import {assertHTML, createSnippet, focusEditor, html, initialize, pasteText, resetEditor} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Embed card', async () => {
-    test.beforeEach(async ({page}) => {
+    let page;
+
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
         await initialize({page});
     });
 
-    test('can import serialized embed card nodes', async function ({page}) {
+    test.beforeEach(async () => {
+        await resetEditor({page});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
+    });
+
+    test('can import serialized embed card nodes', async function () {
         await page.evaluate(() => {
             const serializedState = JSON.stringify({
                 root: {
@@ -49,7 +60,7 @@ test.describe('Embed card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('renders embed card node', async function ({page}) {
+    test('renders embed card node', async function () {
         await focusEditor(page);
         await insertEmbedCard(page);
 
@@ -61,7 +72,7 @@ test.describe('Embed card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('can interact with url input after inserting', async function ({page}) {
+    test('can interact with url input after inserting', async function () {
         await focusEditor(page);
         await insertEmbedCard(page);
 
@@ -73,7 +84,7 @@ test.describe('Embed card', async () => {
     });
 
     test.describe('Valid URL handling', async () => {
-        test('shows loading wheel', async function ({page}) {
+        test('shows loading wheel', async function () {
             await focusEditor(page);
             await insertEmbedCard(page);
 
@@ -85,7 +96,7 @@ test.describe('Embed card', async () => {
             await expect(await page.getByTestId('embed-url-loading-spinner')).toBeVisible();
         });
 
-        test('displays expected metadata', async function ({page}) {
+        test('displays expected metadata', async function () {
             await focusEditor(page);
             await insertEmbedCard(page);
 
@@ -97,7 +108,7 @@ test.describe('Embed card', async () => {
         });
 
         // TODO: the caption editor is very nested, and we don't have an actual input field here, so we aren't testing for filling it
-        test('caption displays on insert', async function ({page}) {
+        test('caption displays on insert', async function () {
             await focusEditor(page);
             await insertEmbedCard(page);
 
@@ -111,7 +122,7 @@ test.describe('Embed card', async () => {
     });
 
     test.describe('Error Handling', async () => {
-        test('bad url entry shows error message', async function ({page}) {
+        test('bad url entry shows error message', async function () {
             await focusEditor(page);
             await insertEmbedCard(page);
 
@@ -123,7 +134,7 @@ test.describe('Embed card', async () => {
             await expect(await page.getByTestId('embed-url-error-message')).toContainText('There was an error when parsing the URL.');
         });
 
-        test('retry button bring back url input', async function ({page}) {
+        test('retry button bring back url input', async function () {
             await focusEditor(page);
             await insertEmbedCard(page);
 
@@ -143,7 +154,7 @@ test.describe('Embed card', async () => {
         });
 
         // todo: test is failing, need to figure if the error in test logic or on code
-        test.skip('paste as link button removes card and inserts text node link', async function ({page}) {
+        test.skip('paste as link button removes card and inserts text node link', async function () {
             await focusEditor(page);
             await insertEmbedCard(page);
 
@@ -165,7 +176,7 @@ test.describe('Embed card', async () => {
             `);
         });
 
-        test('close button removes card', async function ({page}) {
+        test('close button removes card', async function () {
             await focusEditor(page);
             await insertEmbedCard(page);
 
@@ -183,7 +194,7 @@ test.describe('Embed card', async () => {
         });
     });
 
-    test('can add snippet', async function ({page}) {
+    test('can add snippet', async function () {
         await focusEditor(page);
         await insertEmbedCard(page);
 
@@ -204,7 +215,7 @@ test.describe('Embed card', async () => {
         await expect(await page.locator('[data-kg-card="embed"]')).toHaveCount(2);
     });
 
-    test('can convert link to embed card on paste', async function ({page}) {
+    test('can convert link to embed card on paste', async function () {
         await focusEditor(page);
         await pasteText(page, 'https://ghost.org/');
         await expect(await page.getByTestId('embed-url-loading-container')).toBeVisible();

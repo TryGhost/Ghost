@@ -1,12 +1,23 @@
-import {assertHTML, focusEditor, html, initialize} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, resetEditor} from '../../utils/e2e';
 import {test} from '@playwright/test';
 
 test.describe('Renders horizontal line rule', async () => {
-    test.beforeEach(async ({page}) => {
+    let page;
+
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
         await initialize({page});
     });
 
-    test('renders horizontal line rule', async function ({page}) {
+    test.beforeEach(async () => {
+        await resetEditor({page});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
+    });
+
+    test('renders horizontal line rule', async function () {
         await focusEditor(page);
         await page.keyboard.type('--- ');
         await assertHTML(page, html`

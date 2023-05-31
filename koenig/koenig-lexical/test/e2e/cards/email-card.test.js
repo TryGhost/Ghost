@@ -1,4 +1,4 @@
-import {assertHTML, createSnippet, focusEditor, html, initialize} from '../../utils/e2e';
+import {assertHTML, createSnippet, focusEditor, html, initialize, resetEditor} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 async function insertEmailCard(page) {
@@ -9,11 +9,22 @@ async function insertEmailCard(page) {
 }
 
 test.describe('Email card', async () => {
-    test.beforeEach(async ({page}) => {
+    let page;
+
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
         await initialize({page});
     });
 
-    test('can import serialized email card nodes', async function ({page}) {
+    test.beforeEach(async () => {
+        await resetEditor({page});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
+    });
+
+    test('can import serialized email card nodes', async function () {
         await page.evaluate(() => {
             const serializedState = JSON.stringify({
                 root: {
@@ -54,7 +65,7 @@ test.describe('Email card', async () => {
         `, {ignoreInnerSVG: true, ignoreCardToolbarContents: true});
     });
 
-    test('renders email card node in edit mode from slash command', async function ({page}) {
+    test('renders email card node in edit mode from slash command', async function () {
         await focusEditor(page);
         await insertEmailCard(page);
 
@@ -89,7 +100,7 @@ test.describe('Email card', async () => {
         `, {ignoreInnerSVG: true, ignoreCardToolbarContents: true});
     });
 
-    test('contains `Hey {first_name, "there"}` by default when rendered', async function ({page}) {
+    test('contains `Hey {first_name, "there"}` by default when rendered', async function () {
         await focusEditor(page);
         await insertEmailCard(page);
 
@@ -97,7 +108,7 @@ test.describe('Email card', async () => {
         await expect(htmlContent).toContainText('Hey {first_name, "there"},');
     });
 
-    test('renders in display mode when unfocused', async function ({page}) {
+    test('renders in display mode when unfocused', async function () {
         await focusEditor(page);
         await insertEmailCard(page);
 
@@ -108,7 +119,7 @@ test.describe('Email card', async () => {
         await expect(emailCard).toHaveAttribute('data-kg-card-editing', 'false');
     });
 
-    test('renders an action toolbar', async function ({page}) {
+    test('renders an action toolbar', async function () {
         await focusEditor(page);
         await insertEmailCard(page);
 
@@ -119,7 +130,7 @@ test.describe('Email card', async () => {
         await expect(editButton).toBeVisible();
     });
 
-    test('is removed when left empty', async function ({page}) {
+    test('is removed when left empty', async function () {
         await focusEditor(page);
         await insertEmailCard(page);
 
@@ -135,7 +146,7 @@ test.describe('Email card', async () => {
         await expect(emailCard).not.toBeVisible();
     });
 
-    test('it can contain lists', async function ({page}) {
+    test('it can contain lists', async function () {
         await focusEditor(page);
         await insertEmailCard(page);
 
@@ -148,7 +159,7 @@ test.describe('Email card', async () => {
         await expect(emailCard).toHaveText('List item 1');
     });
 
-    test('can add snippet', async function ({page}) {
+    test('can add snippet', async function () {
         await focusEditor(page);
         await insertEmailCard(page);
 

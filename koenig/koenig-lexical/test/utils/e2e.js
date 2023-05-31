@@ -13,16 +13,23 @@ export async function initialize({page, uri = '/#/?content=false'}) {
     await page.setViewportSize({width: 1000, height: 1000});
 
     await page.goto(url);
-    await page.reload(); // required with hash URLs otherwise app doesn't always reset
     await page.waitForSelector('.koenig-lexical');
 
     await exposeLexicalEditor(page);
+}
+
+export async function resetEditor({page}) {
+    await page.evaluate(() => {
+        window.lexicalEditor.setEditorState(window.originalEditorState);
+        window.lexicalEditor.blur();
+    });
 }
 
 async function exposeLexicalEditor(page) {
     await page.waitForSelector('[data-lexical-editor]');
     await page.evaluate(() => {
         window.lexicalEditor = document.querySelector('[data-lexical-editor]').__lexicalEditor;
+        window.originalEditorState = window.lexicalEditor.getEditorState();
     });
 }
 

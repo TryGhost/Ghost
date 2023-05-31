@@ -1,12 +1,23 @@
-import {assertHTML, focusEditor, html, initialize} from '../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, resetEditor} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Floating format toolbar', async () => {
-    test.beforeEach(async ({page}) => {
+    let page;
+
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
         await initialize({page});
     });
 
-    test('appears on text selection', async function ({page}) {
+    test.beforeEach(async () => {
+        await resetEditor({page});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
+    });
+
+    test('appears on text selection', async function () {
         await focusEditor(page);
         await page.keyboard.type('text for selection');
 
@@ -21,7 +32,7 @@ test.describe('Floating format toolbar', async () => {
         expect(await page.locator('[data-kg-floating-toolbar]')).not.toBeNull();
     });
 
-    test('appears on paragraph selection', async function ({page}) {
+    test('appears on paragraph selection', async function () {
         await focusEditor(page);
         await expect(await page.locator('[data-kg-floating-toolbar]')).toHaveCount(0);
         await test.step('Insert paragraphs', async () => {
@@ -48,7 +59,7 @@ test.describe('Floating format toolbar', async () => {
         await expect(await page.locator('[data-kg-floating-toolbar]')).toBeVisible();
     });
 
-    test('disappears on selection removal', async function ({page}) {
+    test('disappears on selection removal', async function () {
         await focusEditor(page);
         await page.keyboard.type('text for selection');
         await page.keyboard.down('Shift');
@@ -92,7 +103,7 @@ test.describe('Floating format toolbar', async () => {
         }];
 
         BASIC_TOGGLES.forEach((testCase) => {
-            test(`toggles ${testCase.button}`, async function ({page}) {
+            test(`toggles ${testCase.button}`, async function () {
                 await focusEditor(page);
                 await page.keyboard.type('text for selection');
 
@@ -118,7 +129,7 @@ test.describe('Floating format toolbar', async () => {
             });
         });
 
-        test('toggles h4 to h2', async function ({page}) {
+        test('toggles h4 to h2', async function () {
             await focusEditor(page);
             await page.keyboard.type('#### header for selection');
 
@@ -145,7 +156,7 @@ test.describe('Floating format toolbar', async () => {
             expect(await page.$eval(buttonSelector, e => e.dataset.kgActive)).toEqual('false');
         });
 
-        test('toggles h4 to h3', async function ({page}) {
+        test('toggles h4 to h3', async function () {
             await focusEditor(page);
             await page.keyboard.type('#### header for selection');
 
@@ -172,7 +183,7 @@ test.describe('Floating format toolbar', async () => {
             expect(await page.$eval(buttonSelector, e => e.dataset.kgActive)).toEqual('false');
         });
 
-        test('cycles through quote styles', async function ({page}) {
+        test('cycles through quote styles', async function () {
             await focusEditor(page);
             await page.keyboard.type('quote text');
 
@@ -205,7 +216,7 @@ test.describe('Floating format toolbar', async () => {
             expect(await page.$eval(buttonSelector, e => e.dataset.kgActive)).toEqual('false');
         });
 
-        test('can create link', async function ({page}) {
+        test('can create link', async function () {
             await focusEditor(page);
             await page.keyboard.type('link');
 

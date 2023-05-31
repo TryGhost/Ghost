@@ -1,6 +1,9 @@
 import {assertHTML, assertSelection, focusEditor, html, initialize} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 
+// Parellise tests since we aren't using resetEditor
+test.describe.configure({mode: 'parallel'});
+
 test.describe('Title behaviour (ExternalControlPlugin)', async () => {
     test.beforeEach(async ({page}) => {
         await initialize({page});
