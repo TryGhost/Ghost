@@ -35,10 +35,10 @@ export default function EmailReceivingPage() {
                 <p>
                     <Interpolate
                         syntax={SYNTAX_I18NEXT}
-                        string={t(`The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your {{accountSettingsButton}}.`)}
+                        string={t(`The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.`)}
                         mapping={{
                             memberEmail: <strong>{member.email}</strong>,
-                            accountSettingsButton: <button className="gh-portal-btn-text" onClick={() => onAction('switchPage', {lastPage: 'emailReceivingFAQ', page: 'accountProfile'})}>{t('account settings area')}</button>
+                            button: <button className="gh-portal-btn-text" onClick={() => onAction('switchPage', {lastPage: 'emailReceivingFAQ', page: 'accountProfile'})}/>
                         }}
                     />
                 </p>

@@ -18,9 +18,10 @@ interface IHeading {
      * Uses &lt;label&gt; tag and standardised styling for form labels
      */
     useLabelTag?: boolean;
+    className?: string;
 }
 
-const Heading: React.FC<IHeading> = ({level, children, styles, grey, separator, useLabelTag, ...props}) => {
+const Heading: React.FC<IHeading> = ({level, children, styles, grey, separator, useLabelTag, className, ...props}) => {
     if (!level) {
         level = 1;
     }
@@ -28,7 +29,7 @@ const Heading: React.FC<IHeading> = ({level, children, styles, grey, separator, 
     const newElement = `${useLabelTag ? 'label' : `h${level}`}`;
     styles += (level === 6 || useLabelTag) ? (` block text-2xs font-semibold uppercase tracking-wide ${(grey && 'text-grey-700')}`) : ' ';
 
-    const Element = React.createElement(newElement, {className: styles, key: 'heading-elem', ...props}, children);
+    const Element = React.createElement(newElement, {className: styles + ' ' + className, key: 'heading-elem', ...props}, children);
 
     if (separator) {
         let gap = (!level || level === 1) ? 2 : 1;

@@ -1,39 +1,40 @@
 const i18next = require('i18next');
 
 const SUPPORTED_LOCALES = [
-    'af',
-    'bg',
-    'ca',
-    'cs',
-    'da',
-    'de',
-    'en',
-    'eo',
-    'es',
-    'fi',
-    'fr',
-    'hu',
-    'id',
-    'it',
-    'ko',
-    'mn',
-    'nl',
-    'no',
-    'pl',
-    'pt',
-    'pt-BR',
-    'ro',
-    'ru',
-    'si',
-    'sl',
-    'sq',
-    'sr',
-    'sv',
-    'tr',
-    'uk',
-    'uz',
-    'vi',
-    'zh'
+    'af', // Afrikaans
+    'bg', // Bulgarian
+    'ca', // Catalan
+    'cs', // Czech
+    'da', // Danish
+    'de', // German
+    'en', // English
+    'eo', // Esperanto
+    'es', // Spanish
+    'fi', // Finnish
+    'fr', // French
+    'hu', // Hungarian
+    'id', // Indonesian
+    'it', // Italian
+    'ko', // Korean
+    'mn', // Mongolian
+    'nl', // Dutch
+    'no', // Norwegian
+    'pl', // Polish
+    'pt', // Portuguese
+    'pt-BR', // Portuguese (Brazil)
+    'ro', // Romanian
+    'ru', // Russian
+    'si', // Sinhala
+    'sl', // Slovenian
+    'sq', // Albanian
+    'sr', // Serbian
+    'sv', // Swedish
+    'tr', // Turkish
+    'uk', // Ukrainian
+    'uz', // Uzbek
+    'vi', // Vietnamese
+    'zh', // Chinese
+    'zh-Hant' // Traditional Chinese
 ];
 
 /**
