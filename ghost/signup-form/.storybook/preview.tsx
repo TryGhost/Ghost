@@ -1,7 +1,7 @@
 import React from 'react';
 
-import '../src/styles/demo.css';
 import type { Preview } from "@storybook/react";
+import './storybook.css';
 
 const preview: Preview = {
 	parameters: {
@@ -20,7 +20,7 @@ const preview: Preview = {
 	},
 	decorators: [
 		(Story) => (
-			<div className="signup-form" style={{ padding: '24px' }}>
+			<div className="signup-form" style={{padding: '24px'}}>
 				{/* 👇 Decorators in Storybook also accept a function. Replace <Story/> with Story() to enable it  */}
 				<Story />
 			</div>
