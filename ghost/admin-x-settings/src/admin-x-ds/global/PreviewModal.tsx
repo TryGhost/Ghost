@@ -48,7 +48,7 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
             key: 'ok-modal',
             label: okLabel, 
             color: okColor,
-            styles: 'min-w-[80px]',
+            className: 'min-w-[80px]',
             onClick: onOk
         });
     }

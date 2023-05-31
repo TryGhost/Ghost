@@ -9,7 +9,7 @@ export interface IButton {
     fullWidth?: boolean;
     link?: boolean;
     disabled?: boolean;
-    styles?: string;
+    className?: string;
     onClick?: () => void;
 }
 
@@ -20,14 +20,16 @@ const Button: React.FC<IButton> = ({
     link,
     disabled,
     onClick,
-    styles,
+    className,
     ...props
 }) => {
     if (!color) {
         color = 'clear';
     }
+
+    let styles = className;
     
-    styles += ' transition flex items-center justify-center rounded-sm text-sm';
+    styles += ' transition whitespace-nowrap flex items-center justify-center rounded-sm text-sm';
     styles += ((link && color !== 'clear' && color !== 'black') || (!link && color !== 'clear')) ? ' font-bold' : ' font-semibold';
     styles += !link ? ' px-4 h-9' : '';
 
