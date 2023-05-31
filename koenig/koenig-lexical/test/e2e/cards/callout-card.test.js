@@ -20,26 +20,23 @@ test.describe('Callout Card', async () => {
     });
 
     test('can import serialized callout card nodes', async function () {
-        await page.evaluate(() => {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'callout',
-                        calloutText: '<p dir="ltr"><span>Hello World</span></p>',
-                        calloutEmoji: '😚',
-                        backgroundColor: 'blue'
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
-            const editor = window.lexicalEditor;
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
-        });
+        const contentParam = encodeURIComponent(JSON.stringify({
+            root: {
+                children: [{
+                    type: 'callout',
+                    calloutText: '<p dir="ltr"><span>Hello World</span></p>',
+                    calloutEmoji: '😚',
+                    backgroundColor: 'blue'
+                }],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        }));
+
+        await initialize({page, uri: `/#/?content=${contentParam}`});
 
         // NOTE: don't ignore contents, we care that the data is deserialized and displayed correctly
         await assertHTML(page, html`
@@ -320,5 +317,42 @@ test.describe('Callout Card', async () => {
         // Expect content to have 'Hello World'
         const content = page.locator('[data-kg-card="callout"]');
         await expect(content).toContainText('Hello world');
+    });
+
+    test('can undo/redo without losing content', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'callout'});
+
+        await page.keyboard.type('Hello world');
+        await page.keyboard.press('Enter');
+        await page.keyboard.press('Backspace');
+        await page.keyboard.press('Backspace');
+        await page.keyboard.press(`${ctrlOrCmd}+z`);
+
+        // NOTE: don't ignore contents, we care that the data is displayed correctly
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="callout">
+                    <div>
+                        <div><button type="button">💡</button></div>
+                        <div>
+                            <div data-kg="editor">
+                                <div
+                                    contenteditable="false"
+                                    spellcheck="true"
+                                    data-lexical-editor="true"
+                                    aria-autocomplete="none"
+                                >
+                                    <p dir="ltr"><span data-lexical-text="true">Hello world</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div></div>
+                    <div data-kg-card-toolbar="callout"></div>
+                </div>
+            </div>
+            <p><br /></p>
+        `, {ignoreCardToolbarContents: true});
     });
 });

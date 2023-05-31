@@ -2,12 +2,11 @@ import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import MINIMAL_NODES from './MinimalNodes';
 import React from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
-import generateEditorState from '../utils/generateEditorState';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {CalloutNode as BaseCalloutNode, INSERT_CALLOUT_COMMAND} from '@tryghost/kg-default-nodes';
 import {ReactComponent as CalloutCardIcon} from '../assets/icons/kg-card-type-callout.svg';
 import {CalloutNodeComponent} from './CalloutNodeComponent';
-import {createEditor} from 'lexical';
+import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 
 // re-export here so we don't need to import from multiple places throughout the app
 export {INSERT_CALLOUT_COMMAND} from '@tryghost/kg-default-nodes';
@@ -31,14 +30,13 @@ export class CalloutNode extends BaseCalloutNode {
 
     constructor(dataset = {}, key) {
         super(dataset, key);
-        // set up and populate nested editor from the serialized HTML
-        this.__textEditor = dataset.textEditor || createEditor({nodes: MINIMAL_NODES});
-        this.__textEditorInitialState = dataset.textEditorInitialState;
-        if (!this.__textEditorInitialState) {
-            this.__textEditorInitialState = generateEditorState({
-                editor: createEditor({nodes: MINIMAL_NODES}),
-                initialHtml: dataset.calloutText ? `<p>${dataset.calloutText}</p>` : '' // wrap with paragraph to interpret as ParagraphNode (needed for nested editor)
-            });
+
+        // set up nested editor instances
+        setupNestedEditor(this, '__textEditor', {editor: dataset.textEditor, nodes: MINIMAL_NODES});
+
+        // populate nested editors on initial construction
+        if (!dataset.textEditor && dataset.calloutText) {
+            populateNestedEditor(this, '__textEditor', `<p>${dataset.calloutText}</p>`); // we serialize with no wrapper
         }
     }
 
