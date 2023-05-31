@@ -3,11 +3,11 @@ import NiceModal from '@ebay/nice-modal-react';
 
 const InviteUserModal = NiceModal.create(() => {
     return (
-        <Modal 
+        <Modal
             size='md'
             title='Invite users'
             onOk={() => {
-                alert('Clicked OK'); 
+                // Handle invite user
             }}
         >
             <div className='py-4'>
