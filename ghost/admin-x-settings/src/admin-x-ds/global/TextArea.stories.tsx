@@ -23,6 +23,13 @@ export const Default: Story = {
     }
 };
 
+export const ClearBackground: Story = {
+    args: {
+        placeholder: 'Enter description',
+        clearBg: true
+    }
+};
+
 export const WithValue: Story = {
     args: {
         placeholder: 'Enter description',
@@ -41,6 +48,14 @@ export const WithHint: Story = {
     args: {
         placeholder: 'Enter description',
         hint: 'Here\'s some hint'
+    }
+};
+
+export const Resizeable: Story = {
+    args: {
+        title: 'Description',
+        placeholder: 'Try do resize this, I dare you...',
+        resize: 'both'
     }
 };
 

@@ -11,6 +11,7 @@ import TabView from '../../../admin-x-ds/global/TabView';
 import UserDetailModal from './modals/UserDetailModal';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import {User} from '../../../types/api';
+import {generateAvatarColor, getInitials} from '../../../utils/helpers';
 
 const Owner: React.FC<{user: User}> = ({user}) => {
     const showDetailModal = () => {
@@ -20,9 +21,10 @@ const Owner: React.FC<{user: User}> = ({user}) => {
     if (!user) {
         return null;
     }
+
     return (
         <div className='group flex gap-3 hover:cursor-pointer' onClick={showDetailModal}>
-            <Avatar bgColor='yellow' label='DV' />
+            <Avatar bgColor={generateAvatarColor((user.name ? user.name : user.email))} image={user.profile_image} label={getInitials(user.name)} labelColor='white' size='lg' />
             <div className='flex flex-col'>
                 <span>{user.name} &mdash; <strong>Owner</strong> <span className='invisible ml-2 inline-block text-sm font-bold text-green group-hover:visible'>Edit</span></span>
                 <span className='text-xs text-grey-700'>{user.email}</span>
@@ -56,7 +58,7 @@ const UsersList: React.FC<UsersListProps> = ({users, updateUser}) => {
                     <ListItem
                         key={user.id}
                         action={<Button color='green' label='Edit' link={true} onClick={() => showDetailModal(user)}/>}
-                        avatar={(<Avatar bgColor='green' label='DV' labelColor='white' />)}
+                        avatar={(<Avatar bgColor={generateAvatarColor((user.name ? user.name : user.email))} image={user.profile_image} label={getInitials(user.name)} labelColor='white' />)}
                         detail={user.email}
                         hideActions={true}
                         id={`list-item-${user.id}`}

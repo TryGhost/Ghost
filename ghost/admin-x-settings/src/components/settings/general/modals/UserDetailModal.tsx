@@ -11,6 +11,7 @@ import TextField from '../../../../admin-x-ds/global/TextField';
 import Toggle from '../../../../admin-x-ds/global/Toggle';
 import useRoles from '../../../../hooks/useRoles';
 import {User} from '../../../../types/api';
+import {generateAvatarColor, getInitials} from '../../../../utils/helpers';
 
 interface CustomHeadingProps {
     children?: React.ReactNode;
@@ -252,11 +253,16 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
             }}
         >
             <div>
-                <div className='-mx-12 -mt-12 bg-gradient-to-tr from-grey-900 to-black p-12 text-white'>
-                    <div className='mt-60'>
-                        <Avatar bgColor='green' className='-ml-1 mb-2' label='DV' labelColor='white' size='xl' />
-                        <Heading styles='text-white'>{user.name}</Heading>
-                        <span className='text-md font-semibold'>Administrator</span>
+                <div className={`relative -mx-12 -mt-12 bg-gradient-to-tr from-grey-900 to-black p-12`} style={userData.cover_image ? {backgroundImage: `url(${userData.cover_image})`, backgroundSize: 'cover'} : {}}>
+                    {userData.cover_image && (
+                        <div className='absolute inset-0 z-0 block bg-gradient-to-tr from-[rgba(0,0,0,0.5)] to-[rgba(0,0,0,0.01)]'></div>
+                    )}
+                    <div className='relative z-10 mt-60 flex gap-4'>
+                        <Avatar bgColor={generateAvatarColor((userData.name ? userData.name : userData.email))} className='-ml-1' image={userData.profile_image} label={getInitials(userData.name)} labelColor='white' size='xl' />
+                        <div>
+                            <Heading styles='text-white'>{user.name}</Heading>
+                            <span className='text-md font-semibold text-white'>Administrator</span>
+                        </div>
                     </div>
                 </div>
                 <div className='mt-10 grid grid-cols-2 gap-x-12 gap-y-20 pb-10'>

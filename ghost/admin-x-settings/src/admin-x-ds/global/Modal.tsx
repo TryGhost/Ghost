@@ -14,12 +14,25 @@ export interface ModalProps {
     cancelLabel?: string;
     leftButtonLabel?: string;
     customFooter?: React.ReactNode;
+    noPadding?: boolean;
     onOk?: () => void;
     onCancel?: () => void;
     children?: React.ReactNode;
 }
 
-const Modal: React.FC<ModalProps> = ({size = 'md', title, okLabel, cancelLabel, customFooter, leftButtonLabel, onOk, okColor, onCancel, children}) => {
+const Modal: React.FC<ModalProps> = ({
+    size = 'md', 
+    title, 
+    okLabel = 'OK', 
+    cancelLabel = 'Cancel', 
+    customFooter, 
+    leftButtonLabel, 
+    noPadding = false, 
+    onOk, 
+    okColor = 'black', 
+    onCancel, 
+    children
+}) => {
     const modal = useModal();
 
     let buttons: IButton[] = [];
@@ -27,7 +40,7 @@ const Modal: React.FC<ModalProps> = ({size = 'md', title, okLabel, cancelLabel, 
     if (!customFooter) {
         buttons.push({
             key: 'cancel-modal',
-            label: cancelLabel ? cancelLabel : 'Cancel', 
+            label: cancelLabel, 
             onClick: (onCancel ? onCancel : () => {
                 modal.remove();
             })
@@ -35,8 +48,8 @@ const Modal: React.FC<ModalProps> = ({size = 'md', title, okLabel, cancelLabel, 
 
         buttons.push({
             key: 'ok-modal',
-            label: okLabel ? okLabel : 'OK', 
-            color: okColor ? okColor : 'black',
+            label: okLabel, 
+            color: okColor,
             styles: 'min-w-[80px]',
             onClick: onOk
         });
@@ -47,46 +60,48 @@ const Modal: React.FC<ModalProps> = ({size = 'md', title, okLabel, cancelLabel, 
 
     switch (size) {
     case 'sm':
-        modalStyles += ' max-w-[480px] p-8';
+        modalStyles += ` max-w-[480px] ${!noPadding && 'p-8'}`;
         backdropStyles += ' p-[8vmin]';
         break;
 
     case 'md':
-        modalStyles += ' max-w-[720px] p-8';
+        modalStyles += ` max-w-[720px] ${!noPadding && 'p-8'}`;
         backdropStyles += ' p-[8vmin]';
         break;
 
     case 'lg':
-        modalStyles += ' max-w-[1020px] p-12';
+        modalStyles += ` max-w-[1020px] ${!noPadding && 'p-12'}`;
         backdropStyles += ' p-[4vmin]';
         break;
 
     case 'xl':
-        modalStyles += ' max-w-[1240px] p-14';
+        modalStyles += ` max-w-[1240px] ${!noPadding && 'p-14'}`;
         backdropStyles += ' p-[3vmin]';
         break;
 
     case 'full':
-        modalStyles += ' h-full p-12';
+        modalStyles += ` h-full ${!noPadding && 'p-12'}`;
         backdropStyles += ' p-[2vmin]';
         break;
 
     case 'bleed':
-        modalStyles += ' h-full p-12';
+        modalStyles += ` h-full ${!noPadding && 'p-12'}`;
         break;
     }
 
-    const handleBackdropClick = () => {
-        modal.remove();
+    const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {        
+        if (e.target === e.currentTarget) {
+            modal.remove();
+        }
     };
 
     return (
-        <div className={backdropStyles} id='modal-backdrop'>
-            <div className='fixed inset-0 z-0 bg-[rgba(0,0,0,0.1)]' onClick={handleBackdropClick}></div>
+        <div className={backdropStyles} id='modal-backdrop' onClick={handleBackdropClick}>
+            <div className='pointer-events-none fixed inset-0 z-0 bg-[rgba(0,0,0,0.1)]'></div>
             <section className={modalStyles}>
-                <div>
+                <div className='h-full'>
                     {title && <Heading level={4}>{title}</Heading>}
-                    <div>{children}</div>
+                    {children}
                 </div>
                 {customFooter ? customFooter : 
                     <div className='w-100 flex items-center justify-between gap-6'>

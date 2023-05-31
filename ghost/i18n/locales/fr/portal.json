@@ -115,7 +115,7 @@
     "Successfully unsubscribed": "Désabonnement réussi",
     "Thanks for the feedback!": "Merci pour votre avis !",
     "That didn't go to plan": "Cela n’a pas fonctionné comme prévu",
-    "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your {{accountSettingsButton}}.": "",
+    "The email address we have for you is {{memberEmail}} — if that's not correct, you can update it in your <button>account settings area</button>.": "",
     "There was a problem submitting your feedback. Please try again a little later.": "Il y a eu un problème pour soumettre votre commentaire. Veuillez réessayer un peu plus tard.",
     "This site is invite-only, contact the owner for access.": "Ce site est réservé aux invités, contactez le propriétaire pour y accéder.",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Pour confirmer votre inscription, cliquez sur le lien de confirmation envoyé dans votre boite de réception. S’il ne vous parvient pas dans les 3 minutes, vérifiez votre dossier spam.",

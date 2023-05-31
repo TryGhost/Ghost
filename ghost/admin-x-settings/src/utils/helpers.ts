@@ -35,3 +35,26 @@ export function getOptionLabel(
 ): string | undefined {
     return options?.find(option => option.value === value)?.label;
 }
+
+export function getInitials(name: string) {
+    let rgx = new RegExp(/(\p{L}{1})\p{L}+/, 'gu');
+    let rgxInitials = [...name.matchAll(rgx)] || [];
+
+    const initials = (
+        (rgxInitials.shift()?.[1] || '') + (rgxInitials.pop()?.[1] || '')
+    ).toUpperCase();
+
+    return initials;
+}
+
+export function generateAvatarColor(name: string) {
+    const s = 70;
+    const l = 40;
+    let hash = 0;
+    for (var i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    const h = hash % 360;
+    return 'hsl(' + h + ', ' + s + '%, ' + l + '%)';
+}

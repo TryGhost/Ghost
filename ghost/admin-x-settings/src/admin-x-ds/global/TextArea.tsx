@@ -3,7 +3,7 @@ import React from 'react';
 import Heading from './Heading';
 import Hint from './Hint';
 
-type resizeOptions = 'both' | 'vertical' | 'horizontal' | 'none';
+type ResizeOptions = 'both' | 'vertical' | 'horizontal' | 'none';
 
 interface TextAreaProps {
     inputRef?: React.RefObject<HTMLTextAreaElement>;
@@ -11,15 +11,16 @@ interface TextAreaProps {
     value?: string;
     rows?: number;
     maxLength?: number;
-    resize?: resizeOptions;
+    resize?: ResizeOptions;
     error?: boolean;
     placeholder?: string;
     hint?: React.ReactNode;
+    clearBg?: boolean;
     onChange?: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
 }
 
-const TextArea: React.FC<TextAreaProps> = ({inputRef, title, value, rows = 4, maxLength, resize, error, placeholder, hint, onChange, ...props}) => {
-    let styles = `border-b bg-grey-100 px-[10px] py-2 ${error ? `border-red` : `border-grey-300 hover:border-grey-400 focus:border-grey-600`} ${title && `mt-2`}`;
+const TextArea: React.FC<TextAreaProps> = ({inputRef, title, value, rows = 3, maxLength, resize = 'none', error, placeholder, hint, clearBg = false, onChange, ...props}) => {
+    let styles = `border-b ${!clearBg && 'bg-grey-100 px-[10px]'} py-2 ${error ? `border-red` : `border-grey-300 hover:border-grey-400 focus:border-grey-600`} ${title && `mt-2`}`;
 
     switch (resize) {
     case 'both':

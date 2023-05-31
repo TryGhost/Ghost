@@ -1,6 +1,7 @@
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
+import TextArea from '../../../admin-x-ds/global/TextArea';
 import TextField from '../../../admin-x-ds/global/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 
@@ -21,7 +22,7 @@ const TitleAndDescription: React.FC = () => {
         updateSetting('title', e.target.value);
     };
 
-    const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         updateSetting('description', e.target.value);
     };
 
@@ -44,7 +45,7 @@ const TitleAndDescription: React.FC = () => {
     );
 
     const inputFields = (
-        <SettingGroupContent columns={2}>
+        <SettingGroupContent>
             <TextField
                 hint="The name of your site"
                 inputRef={focusRef}
@@ -53,13 +54,12 @@ const TitleAndDescription: React.FC = () => {
                 value={title}
                 onChange={handleTitleChange}
             />
-            <TextField
-                hint="Used in your theme, meta data and search results"
-                placeholder="Enter something"
+            <TextArea
+                hint="A short description, used in your theme, meta data and search results"
+                placeholder="Site description"
                 title="Site description"
                 value={description}
-                onChange={handleDescriptionChange}
-            />
+                onChange={handleDescriptionChange} />
         </SettingGroupContent>
     );
 

@@ -24,6 +24,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
+        env:
+          FORCE_COLOR: 0
         with:
           node-version: "16.13.0"
           cache: yarn

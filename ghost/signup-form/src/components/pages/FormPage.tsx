@@ -16,10 +16,10 @@ export const FormPage: React.FC = () => {
     const description = options.description;
     const logo = options.logo;
 
-    return <div className='bg-grey-300 p-24'>
+    return <div className='flex h-[52vmax] min-h-[320px] flex-col items-center justify-center bg-grey-200 p-6 md:p-8'>
         {logo && <img alt={title} src={logo} width='100' />}
-        {title && <h1 className="text-4xl font-bold">{title}</h1>}
-        {description && <p className='pb-3'>{description}</p>}
+        {title && <h1 className="text-center text-lg font-bold sm:text-xl md:text-2xl lg:text-3xl">{title}</h1>}
+        {description && <p className='mb-5 text-center'>{description}</p>}
 
         <Form />
     </div>;
@@ -54,15 +54,15 @@ const Form: React.FC = () => {
         }
     };
 
-    const borderStyle = error ? 'border-red-500' : 'border-grey-500';
+    const borderStyle = error ? '!border-red-500' : 'border-grey-300';
 
     return (
-        <div>
-            <form className='flex' onSubmit={submit}>
-                <input className={'flex-1 p-3 border ' + borderStyle} disabled={loading} placeholder='jamie@example.com' type="text" value={email} onChange={e => setEmail(e.target.value)}/>
-                <button className='bg-accent p-3 text-white' disabled={loading} type='submit'>Subscribe</button>
+        <>
+            <form className='relative flex w-full max-w-[440px]' onSubmit={submit}>
+                <input className={'flex-1 py-[1rem] pl-3 border rounded-[.5rem] hover:border-grey-400 transition focus-visible:border-grey-500 focus-visible:outline-none ' + borderStyle} data-testid="input" disabled={loading} placeholder='jamie@example.com' type="text" value={email} onChange={e => setEmail(e.target.value)}/>
+                <button className='absolute inset-y-0 right-[.3rem] my-auto h-[3rem] rounded-[.3rem] bg-accent px-3 py-2 text-white' data-testid="button" disabled={loading} type='submit'>Subscribe</button>
             </form>
-            {error && <p className='pt-0.5 text-red-500'>{error}</p>}
-        </div>
+            {error && <p className='pt-0.5 text-red-500' data-testid="error-message">{error}</p>}
+        </>
     );
 };
