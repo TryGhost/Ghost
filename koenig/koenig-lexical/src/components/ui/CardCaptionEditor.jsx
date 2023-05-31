@@ -2,6 +2,7 @@ import KoenigCaptionEditor from '../KoenigCaptionEditor';
 import React from 'react';
 import {$canShowPlaceholderCurry} from '@lexical/text';
 import {TextInput} from './TextInput';
+import {isEditorEmpty} from '../../utils/isEditorEmpty';
 
 function CaptionInput({captionEditor, captionEditorInitialState, placeholder, dataTestId}) {
     return (
@@ -70,7 +71,7 @@ export function CardCaptionEditor({
         }
     }, [isSelected, setIsEditingAlt]);
 
-    const isCaptionEmpty = captionEditor.getEditorState().read($canShowPlaceholderCurry(false));
+    const isCaptionEmpty = isEditorEmpty(captionEditor);
 
     return (
         ((isSelected || !isCaptionEmpty) &&

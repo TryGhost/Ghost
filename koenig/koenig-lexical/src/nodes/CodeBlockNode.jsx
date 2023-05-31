@@ -1,15 +1,15 @@
 import React from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
-import generateEditorState from '../utils/generateEditorState';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {CodeBlockNode as BaseCodeBlockNode} from '@tryghost/kg-default-nodes';
 import {ReactComponent as CodeBlockIcon} from '../assets/icons/kg-card-type-gen-embed.svg';
 import {CodeBlockNodeComponent} from './CodeBlockNodeComponent';
 import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
-import {createEditor} from 'lexical';
+import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 
 // re-export here so we don't need to import from multiple places throughout the app
 export {INSERT_CODE_BLOCK_COMMAND} from '@tryghost/kg-default-nodes';
+
 export class CodeBlockNode extends BaseCodeBlockNode {
     // transient properties used to control node behaviour
     __openInEditMode = false;
@@ -22,22 +22,11 @@ export class CodeBlockNode extends BaseCodeBlockNode {
         const {_openInEditMode} = dataset;
         this.__openInEditMode = _openInEditMode || false;
 
-        // set up and populate nested editors from the serialized HTML
-        this.__captionEditor = dataset.captionEditor || createEditor({nodes: MINIMAL_NODES});
-        this.__captionEditorInitialState = dataset.captionEditorInitialState;
+        setupNestedEditor(this, '__captionEditor', {editor: dataset.captionEditor, nodes: MINIMAL_NODES});
 
-        if (!this.__captionEditorInitialState) {
-            // wrap the caption in a paragraph so it gets parsed correctly
-            // - we serialize with no wrapper so the renderer can decide how to wrap it
-            const initialHtml = dataset.caption ? `<p>${dataset.caption}</p>` : null;
-
-            // store the initial state separately as it's passed in to `<CollaborationPlugin />`
-            // for use when there is no YJS document already stored
-            this.__captionEditorInitialState = generateEditorState({
-                // create a new editor instance so we don't pre-fill an editor that will be filled by YJS content
-                editor: createEditor({nodes: MINIMAL_NODES}),
-                initialHtml
-            });
+        // populate nested editors on initial construction
+        if (!dataset.captionEditor && dataset.caption) {
+            populateNestedEditor(this, '__captionEditor', `<p>${dataset.caption}</p>`); // we serialize with no wrapper
         }
     }
 

@@ -166,6 +166,7 @@ export function CodeBlockCard({captionEditor, captionEditorInitialState, code, i
                     captionEditor={captionEditor}
                     captionEditorInitialState={captionEditorInitialState}
                     captionPlaceholder="Type caption for code block (optional)"
+                    dataTestId="codeblock-caption"
                     isSelected={isSelected}
                 />
             </>

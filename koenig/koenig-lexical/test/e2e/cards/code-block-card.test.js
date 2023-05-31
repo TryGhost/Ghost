@@ -1,7 +1,8 @@
-import {assertHTML, focusEditor, html, initialize} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, isMac} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Code Block card', async () => {
+    const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
     let page;
 
     test.beforeAll(async ({browser}) => {
@@ -17,33 +18,51 @@ test.describe('Code Block card', async () => {
     });
 
     test('can import serialized code block card nodes', async function () {
-        await page.evaluate(() => {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'codeblock',
-                        code: '<script></script>',
-                        language: 'javascript',
-                        caption: 'A code block'
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
-            const editor = window.lexicalEditor;
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
-        });
+        const contentParam = encodeURIComponent(JSON.stringify({
+            root: {
+                children: [{
+                    type: 'codeblock',
+                    code: '<script></script>',
+                    language: 'javascript',
+                    caption: 'A code block'
+                }],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        }));
+
+        await initialize({page, uri: `/#/?content=${contentParam}`});
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="codeblock">
+                    <div>
+                        <pre><code>&lt;script&gt;&lt;/script&gt;</code></pre>
+                        <div><span>javascript</span></div>
+                    </div>
+                    <figcaption>
+                        <div>
+                            <div>
+                                <div data-kg="editor">
+                                    <div
+                                        contenteditable="true"
+                                        spellcheck="true"
+                                        data-lexical-editor="true"
+                                        role="textbox">
+                                        <p dir="ltr">
+                                            <span data-lexical-text="true">A code block</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </figcaption>
                 </div>
             </div>
-        `, {ignoreCardContents: true});
+        `, {ignoreCardContents: false});
     });
 
     test('renders code block card node', async function () {
@@ -92,5 +111,49 @@ test.describe('Code Block card', async () => {
         // The language input should be visible
         await expect(languageInput).toHaveClass(/opacity-100/);
         await expect(languageInput).not.toHaveClass(/opacity-0/);
+    });
+
+    test('can undo/redo without losing caption', async function () {
+        await focusEditor(page);
+        await page.keyboard.type('```javascript ');
+        await page.waitForSelector('[data-kg-card="codeblock"] .cm-editor');
+
+        await page.keyboard.type('Here are some words');
+        await page.keyboard.press('Escape');
+        await page.click('[data-testid="codeblock-caption"]');
+        await page.keyboard.type('My caption');
+        await page.keyboard.press('Enter');
+        await page.keyboard.press('Backspace');
+        await page.keyboard.press('Backspace');
+        await page.keyboard.press(`${ctrlOrCmd}+z`);
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="codeblock">
+                    <div>
+                        <pre><code>Here are some words</code></pre>
+                        <div><span>javascript</span></div>
+                    </div>
+                    <figcaption>
+                        <div>
+                            <div>
+                                <div data-kg="editor">
+                                    <div
+                                        contenteditable="true"
+                                        spellcheck="true"
+                                        data-lexical-editor="true"
+                                        role="textbox">
+                                        <p dir="ltr">
+                                            <span data-lexical-text="true">My caption</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </figcaption>
+                    <div data-kg-card-toolbar="button"></div>
+                </div>
+            </div>
+        `, {ignoreCardContents: false, ignoreCardToolbarContents: true});
     });
 });
