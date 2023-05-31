@@ -1,16 +1,16 @@
 import Icon from './Icon';
 import React from 'react';
 
-export type DropdownMenuItem = {
-    label: string;
-}
+// export type DropdownMenuItem = {
+//     label: string;
+// }
 
 interface MenuProps {
     // trigger?: React.ReactNode;
     // items: DropdownMenuItem[];
 }
 
-const DropdownMenu: React.FC<MenuProps> = ({items}) => {
+const DropdownMenu: React.FC<MenuProps> = ({}) => {
     return (
         /* DropdownMenu */
         <div className="relative inline-block text-left">
