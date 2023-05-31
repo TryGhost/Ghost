@@ -221,7 +221,7 @@ function DemoApp({editorType, isMultiplayer}) {
                 multiplayerEndpoint={WEBSOCKET_ENDPOINT}
                 nodes={getAllowedNodes({editorType})}
             >
-                <div className={`relative h-full grow ${darkMode ? 'dark' : ''}`}>
+                <div className={`koenig-demo relative h-full grow ${darkMode ? 'dark' : ''}`}>
                     {
                         !isMultiplayer && searchParams !== 'false'
                             ? <InitialContentToggle defaultContent={defaultContent} searchParams={searchParams} setSearchParams={setSearchParams} setTitle={setTitle} />

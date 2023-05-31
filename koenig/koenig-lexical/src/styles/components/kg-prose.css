@@ -1003,18 +1003,3 @@
 .kg-header-accent, .kg-callout-accent {
     --kg-accent-color: #fff;
 }
-
-/* Table */
-.koenig-lexical table {
-    font-size: 1.75rem;
-    margin: 0;
-    font-family: georgia,serif;
-    letter-spacing: .02rem;
-    line-height: 1.6em;
-}
-
-.koenig-lexical table tr td,
-.koenig-lexical table tr th {
-    vertical-align: top;
-    border-bottom: 1px solid var(--grey-200);
-}

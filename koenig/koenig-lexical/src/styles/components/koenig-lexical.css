@@ -38,7 +38,7 @@
 /* Dark mode */
 .koenig-lexical > .dark, .koenig-lexical.dark, .dark .koenig-lexical {
     &:not(.kg-inherit-styles) {
-        background-color: var(--black);
+        /* background-color: var(--black); */
 
         > * {
             color: var(--grey-300);
@@ -48,6 +48,13 @@
 
 .dark ::selection {
     background: var(--grey-900);
+}
+
+/* Background fix for Koenig demo */
+.koenig-demo > .dark, .koenig-demo.dark, .dark .koenig-demo {
+    &:not(.kg-inherit-styles) {
+        background-color: var(--black);
+    }
 }
 
 .koenig-lexical.koenig-lexical-caption {
@@ -139,4 +146,26 @@ em-emoji-picker {
 /* tailwind `hidden` class conflicts with ghost styles */
 .kg-cardmenu-card-hover button {
     display: none;
+}
+
+/* Table */
+.koenig-lexical table {
+    font-size: 1.75rem;
+    margin: 0;
+    font-family: georgia,serif;
+    letter-spacing: .02rem;
+    line-height: 1.6em;
+}
+
+.koenig-lexical table tr td,
+.koenig-lexical table tr th {
+    vertical-align: top;
+    border-bottom: 1px solid var(--grey-200);
+}
+
+.koenig-lexical > .dark, .koenig-lexical.dark, .dark .koenig-lexical {
+    table tr td,
+    table tr th {
+        border-bottom: 1px solid var(--grey-900);
+    }
 }
