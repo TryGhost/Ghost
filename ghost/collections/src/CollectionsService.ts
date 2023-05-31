@@ -1,11 +1,19 @@
 import {Collection} from './Collection';
 import {PostDTO} from './PostDTO';
+import {CollectionPost} from './CollectionPost';
 
 type CollectionsServiceDeps = {
     collectionsRepository: any;
     postsRepository: {
         getBulk: any;
     }
+};
+
+type CollectionPostDTO = {
+    id?: string;
+    post_id: string;
+    collection_id: string;
+    sort_order?: number;
 };
 
 export class CollectionsService {
@@ -32,9 +40,34 @@ export class CollectionsService {
         const postIds = postDTOs.map(post => post.id);
         const posts = await this.postsRepository.getBulk(postIds);
 
-        collection.posts = posts.map((post: any) => post.id);
+        for (const post of posts) {
+            const collectionPost = await CollectionPost.create({
+                post_id: post.id,
+                collection_id: collection.id
+            });
+
+            collection.addPost(collectionPost);
+        }
 
         return collection;
+    }
+
+    async addPost(collectionPost: CollectionPostDTO): Promise<any> {
+        const collection = await this.collectionsRepository.getById(collectionPost.collection_id);
+
+        if (!collection) {
+            return null;
+        }
+
+        if (!collection.canAddPost(collectionPost)) {
+            return null;
+        }
+
+        const collectionPostEntity = await CollectionPost.create(collectionPost);
+        collection.addPost(collectionPostEntity);
+        const savedPostCollection = await this.collectionsRepository.saveCollectionPost(collectionPostEntity);
+
+        return savedPostCollection;
     }
 
     async edit(data: any): Promise<Collection | null> {

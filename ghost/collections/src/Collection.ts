@@ -1,10 +1,8 @@
-// have to use requires until there are type definitions for these modules
-
 import {ValidationError} from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 
 import ObjectID from 'bson-objectid';
-import {PostDTO} from './PostDTO';
+import {CollectionPost} from './CollectionPost';
 
 const messages = {
     invalidIDProvided: 'Invalid ID provided for Collection',
@@ -23,7 +21,7 @@ export class Collection {
     updatedAt: Date;
     deleted: boolean;
 
-    posts: PostDTO[];
+    posts: CollectionPost[];
 
     private constructor(data: any) {
         this.id = data.id;
@@ -52,10 +50,24 @@ export class Collection {
             updatedAt: this.updatedAt,
             posts: this.posts.map(post => ({
                 id: post.id,
-                title: post.title,
-                slug: post.slug
+                postId: post.postId,
+                sortOrder: post.sortOrder
             }))
         };
+    }
+
+    async canAddPost(newCollectionPost: CollectionPost): Promise<Boolean> {
+        const existingCollectionPost = this.posts.find(p => p.id === newCollectionPost.id);
+
+        if (existingCollectionPost) {
+            return false;
+        }
+
+        return true;
+    }
+
+    addPost(collectionPost: CollectionPost) {
+        this.posts.push(collectionPost);
     }
 
     static validateDateField(date: any, fieldName: string): Date {
