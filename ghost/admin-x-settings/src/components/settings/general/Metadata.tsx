@@ -10,6 +10,7 @@ import {ReactComponent as MagnifyingGlass} from '../../../admin-x-ds/assets/icon
 const Metadata: React.FC = () => {
     const {
         currentState,
+        saveState,
         focusRef,
         handleSave,
         handleCancel,
@@ -79,6 +80,7 @@ const Metadata: React.FC = () => {
         <SettingGroup
             description='Extra content for search engines'
             navid='metadata'
+            saveState={saveState}
             state={currentState}
             title='Metadata'
             onCancel={handleCancel}
