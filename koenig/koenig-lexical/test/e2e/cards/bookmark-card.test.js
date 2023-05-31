@@ -1,7 +1,8 @@
-import {assertHTML, createSnippet, focusEditor, html, initialize, insertCard} from '../../utils/e2e';
+import {assertHTML, createSnippet, focusEditor, html, initialize, insertCard, isMac} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Bookmark card', async () => {
+    const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
     let page;
 
     test.beforeAll(async ({browser}) => {
@@ -17,38 +18,69 @@ test.describe('Bookmark card', async () => {
     });
 
     test('can import serialized bookmark card nodes', async function () {
-        await page.evaluate(() => {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'bookmark',
-                        url: 'https://www.ghost.org/',
+        const contentParam = encodeURIComponent(JSON.stringify({
+            root: {
+                children: [{
+                    type: 'bookmark',
+                    url: 'https://www.ghost.org/',
+                    caption: 'caption here',
+                    metadata: {
                         icon: 'https://www.ghost.org/favicon.ico',
                         title: 'Ghost: The Creator Economy Platform',
                         description: 'lorem ipsum dolor amet lorem ipsum dolor amet',
                         author: 'ghost',
                         publisher: 'Ghost - The Professional Publishing Platform',
-                        thumbnail: 'https://ghost.org/images/meta/ghost.png',
-                        caption: 'caption here'
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
-            const editor = window.lexicalEditor;
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
-        });
+                        thumbnail: 'https://ghost.org/images/meta/ghost.png'
+                    }
+                }],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        }));
+
+        await initialize({page, uri: `/#/?content=${contentParam}`});
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="bookmark">
+                    <div>
+                        <div>
+                            <div>
+                                <div>Ghost: The Creator Economy Platform</div>
+                                <div>lorem ipsum dolor amet lorem ipsum dolor amet</div>
+                                <div>
+                                    <img alt="" src="https://www.ghost.org/favicon.ico" />
+                                    <span>Ghost - The Professional Publishing Platform</span>
+                                    <span>ghost</span>
+                                </div>
+                            </div>
+                            <div><img alt="" src="https://ghost.org/images/meta/ghost.png" /></div>
+                            <div></div>
+                        </div>
+                        <figcaption>
+                            <div>
+                                <div>
+                                    <div data-kg="editor">
+                                        <div
+                                            contenteditable="true"
+                                            spellcheck="true"
+                                            data-lexical-editor="true"
+                                            role="textbox">
+                                            <p dir="ltr">
+                                                <span data-lexical-text="true">caption here</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </figcaption>
+                    </div>
                 </div>
             </div>
-        `, {ignoreCardContents: true});
+        `, {ignoreCardToolbarContents: true, ignoreInnerSVG: true});
     });
 
     test('renders bookmark card node', async function () {
@@ -206,5 +238,67 @@ test.describe('Bookmark card', async () => {
         await page.waitForSelector('[data-kg-cardmenu-selected="true"]');
         await page.keyboard.press('Enter');
         await expect(await page.locator('[data-kg-card="bookmark"]')).toHaveCount(2);
+    });
+
+    test('can undo/redo without losing caption', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'bookmark'});
+
+        const urlInput = await page.getByTestId('bookmark-url');
+        await urlInput.fill('https://ghost.org/');
+        await urlInput.press('Enter');
+        await expect(await page.getByTestId('bookmark-description')).toBeVisible();
+
+        await page.click('[data-testid="bookmark-caption"]');
+        await page.keyboard.type('My test caption');
+        await page.keyboard.press('Enter');
+        await page.keyboard.press('Backspace');
+        await page.keyboard.press('Backspace');
+        await page.keyboard.press(`${ctrlOrCmd}+z`);
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="bookmark">
+                    <div>
+                        <div>
+                            <div>
+                                <div>Ghost: The Creator Economy Platform</div>
+                                <div>
+                                    The former of the two songs addresses the issue of negative rumors
+                                    in a relationship, while the latter, with a more upbeat pulse, is a
+                                    classic club track; the single is highlighted by a hyped bridge.
+                                </div>
+                                <div>
+                                    <img alt="" src="https://www.ghost.org/favicon.ico" />
+                                    <span>Ghost - The Professional Publishing Platform</span>
+                                    <span>Author McAuthory</span>
+                                </div>
+                            </div>
+                            <div><img alt="" src="https://ghost.org/images/meta/ghost.png" /></div>
+                            <div></div>
+                        </div>
+                        <figcaption>
+                            <div>
+                                <div>
+                                    <div data-kg="editor">
+                                        <div
+                                            contenteditable="true"
+                                            spellcheck="true"
+                                            data-lexical-editor="true"
+                                            role="textbox">
+                                            <p dir="ltr">
+                                                <span data-lexical-text="true">My test caption</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </figcaption>
+                    </div>
+                    <div data-kg-card-toolbar="bookmark"></div>
+                </div>
+            </div>
+            <p><br /></p>
+        `, {ignoreCardToolbarContents: true, ignoreInnerSVG: true});
     });
 });

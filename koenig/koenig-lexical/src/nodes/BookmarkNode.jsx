@@ -2,9 +2,8 @@ import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import React, {useCallback} from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
-import generateEditorState from '../utils/generateEditorState';
 import {$createLinkNode} from '@lexical/link';
-import {$createParagraphNode, $createTextNode, $getNodeByKey, createEditor} from 'lexical';
+import {$createParagraphNode, $createTextNode, $getNodeByKey} from 'lexical';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {BookmarkNode as BaseBookmarkNode, INSERT_BOOKMARK_COMMAND} from '@tryghost/kg-default-nodes';
@@ -13,6 +12,7 @@ import {ReactComponent as BookmarkCardIcon} from '../assets/icons/kg-card-type-b
 import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem} from '../components/ui/ToolbarMenu.jsx';
+import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 // re-export here so we don't need to import from multiple places throughout the app
@@ -202,27 +202,13 @@ export class BookmarkNode extends BaseBookmarkNode {
 
         this.__createdWithUrl = !!dataset.url;
 
-        // set up and populate nested editors from the serialized HTML
-        this.__captionEditor = dataset.captionEditor || createEditor({nodes: MINIMAL_NODES});
-        this.__captionEditorInitialState = dataset.captionEditorInitialState;
+        // set up nested editor instances
+        setupNestedEditor(this, '__captionEditor', {editor: dataset.captionEditor, nodes: MINIMAL_NODES});
 
-        if (!this.__captionEditorInitialState) {
-            // wrap the caption in a paragraph so it gets parsed correctly
-            // - we serialize with no wrapper so the renderer can decide how to wrap it
-            const initialHtml = dataset.caption ? `<p>${dataset.caption}</p>` : null;
-
-            // store the initial state separately as it's passed in to `<CollaborationPlugin />`
-            // for use when there is no YJS document already stored
-            this.__captionEditorInitialState = generateEditorState({
-                // create a new editor instance so we don't pre-fill an editor that will be filled by YJS content
-                editor: createEditor({nodes: MINIMAL_NODES}),
-                initialHtml
-            });
+        // populate nested editors on initial construction
+        if (!dataset.captionEditor && dataset.caption) {
+            populateNestedEditor(this, '__captionEditor', `<p>${dataset.caption}</p>`); // we serialize with no wrapper
         }
-    }
-
-    createDOM() {
-        return document.createElement('div');
     }
 
     getDataset() {
@@ -250,6 +236,10 @@ export class BookmarkNode extends BaseBookmarkNode {
         }
 
         return json;
+    }
+
+    createDOM() {
+        return document.createElement('div');
     }
 
     updateDOM() {
