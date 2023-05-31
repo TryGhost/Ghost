@@ -7,7 +7,7 @@ export type DropdownMenuItem = {
 
 interface MenuProps {
     // trigger?: React.ReactNode;
-    items: DropdownMenuItem[];
+    // items: DropdownMenuItem[];
 }
 
 const DropdownMenu: React.FC<MenuProps> = ({items}) => {
