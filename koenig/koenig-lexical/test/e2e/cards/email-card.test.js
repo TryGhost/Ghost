@@ -1,4 +1,4 @@
-import {assertHTML, createSnippet, focusEditor, html, initialize} from '../../utils/e2e';
+import {assertHTML, createSnippet, focusEditor, html, initialize, isMac} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 async function insertEmailCard(page) {
@@ -9,6 +9,7 @@ async function insertEmailCard(page) {
 }
 
 test.describe('Email card', async () => {
+    const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
     let page;
 
     test.beforeAll(async ({browser}) => {
@@ -24,24 +25,21 @@ test.describe('Email card', async () => {
     });
 
     test('can import serialized email card nodes', async function () {
-        await page.evaluate(() => {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'email',
-                        html: '<p>A paragraph</p>'
-                    }],
-                    direction: 'ltr',
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
-            const editor = window.lexicalEditor;
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
-        });
+        const contentParam = encodeURIComponent(JSON.stringify({
+            root: {
+                children: [{
+                    type: 'email',
+                    html: '<p>A paragraph</p>'
+                }],
+                direction: 'ltr',
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        }));
+
+        await initialize({page, uri: `/#/?content=${contentParam}`});
 
         await assertHTML(page, html`
         <div data-lexical-decorator="true" contenteditable="false">
@@ -172,5 +170,20 @@ test.describe('Email card', async () => {
         await page.waitForSelector('[data-kg-cardmenu-selected="true"]');
         await page.keyboard.press('Enter');
         await expect(await page.locator('[data-kg-card="email"]')).toHaveCount(2);
+    });
+
+    test('can undo/redo without losing html content', async function () {
+        await focusEditor(page);
+        await insertEmailCard(page);
+
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('- List item 1');
+        await page.keyboard.press('Enter');
+        await page.keyboard.press('Escape');
+        await page.keyboard.press('Backspace');
+        await page.keyboard.press(`${ctrlOrCmd}+z`);
+
+        const emailCard = page.locator('[data-kg-card="email"] ul > li:first-child');
+        await expect(emailCard).toHaveText('List item 1');
     });
 });
