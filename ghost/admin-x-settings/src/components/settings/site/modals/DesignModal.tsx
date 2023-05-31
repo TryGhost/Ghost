@@ -1,15 +1,16 @@
-import Button from '../../../admin-x-ds/global/Button';
-import DesktopChrome from '../../../admin-x-ds/global/DesktopChrome';
-import Heading from '../../../admin-x-ds/global/Heading';
-import Hint from '../../../admin-x-ds/global/Hint';
+import Button from '../../../../admin-x-ds/global/Button';
+import DesktopChrome from '../../../../admin-x-ds/global/DesktopChrome';
+import Heading from '../../../../admin-x-ds/global/Heading';
+import Hint from '../../../../admin-x-ds/global/Hint';
 import NiceModal from '@ebay/nice-modal-react';
-import PreviewModal from '../../../admin-x-ds/global/PreviewModal';
+import PreviewModal from '../../../../admin-x-ds/global/PreviewModal';
 import React from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TabView from '../../../admin-x-ds/global/TabView';
-import TextField from '../../../admin-x-ds/global/TextField';
-import {Tab} from '../../../admin-x-ds/global/TabView';
+import SettingGroup from '../../../../admin-x-ds/settings/SettingGroup';
+import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
+import TabView from '../../../../admin-x-ds/global/TabView';
+import TextField from '../../../../admin-x-ds/global/TextField';
+import useSettingGroup from '../../../../hooks/useSettingGroup';
+import {Tab} from '../../../../admin-x-ds/global/TabView';
 
 const Preview: React.FC = () => {
     return (
@@ -24,6 +25,12 @@ const Preview: React.FC = () => {
 };
 
 const Brand: React.FC = () => {
+    const {
+        getSettingValues
+    } = useSettingGroup();
+
+    const [description, accentColor] = getSettingValues(['description', 'accent_color']) as string[];
+
     return (
         <div className='mt-7'>
             <SettingGroupContent>
@@ -32,16 +39,18 @@ const Brand: React.FC = () => {
                     clearBg={true}
                     hint='Used in your theme, meta data and search results' 
                     title='Site description'
+                    value={description}
                 />
                 <div className='flex items-center justify-between gap-3'>
                     <Heading level={6}>Accent color</Heading>
-                    <div className='relative max-w-[90px]'>
-                        <span className='absolute left-1 top-[9px] text-grey-600'>#</span>
+                    <div className='relative max-w-[70px]'>
+                        {/* <span className='absolute left-1 top-[9px] text-grey-600'>#</span> */}
                         <TextField 
                             key='accent-color'
                             className='text-right'
                             clearBg={true}
-                            maxLength={6}
+                            maxLength={7}
+                            value={accentColor}
                         />
                     </div>
                 </div>
@@ -65,6 +74,30 @@ const Brand: React.FC = () => {
     );
 };
 
+const SiteWide: React.FC = () => {
+    return (
+        <div className='mt-2'>
+            Site wide design settings
+        </div>
+    );
+};
+
+const Homepage: React.FC = () => {
+    return (
+        <div className='mt-2'>
+            Homepage design settings
+        </div>
+    );
+};
+
+const Post: React.FC = () => {
+    return (
+        <div className='mt-2'>
+            Post design settings
+        </div>
+    );
+};
+
 const Sidebar: React.FC = () => {
     const tabs: Tab[] = [
         {
@@ -75,17 +108,17 @@ const Sidebar: React.FC = () => {
         {
             id: 'site-wide',
             title: 'Site wide',
-            contents: 'Site wide'
+            contents: <SiteWide />
         },
         {
             id: 'homepage',
             title: 'Homepage',
-            contents: 'Homepage'
+            contents: <Homepage />
         },
         {
             id: 'post',
             title: 'Post',
-            contents: 'Post'
+            contents: <Post />
         }
     ];
 
@@ -94,7 +127,7 @@ const Sidebar: React.FC = () => {
     );
 };
 
-const Design: React.FC = () => {
+const DesignModal: React.FC = () => {
     const openPreviewModal = () => {
         NiceModal.show(PreviewModal, {
             title: 'Design',
@@ -115,4 +148,4 @@ const Design: React.FC = () => {
     );
 };
 
-export default Design;
+export default DesignModal;
