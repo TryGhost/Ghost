@@ -33,7 +33,8 @@ const SUPPORTED_LOCALES = [
     'uk', // Ukrainian
     'uz', // Uzbek
     'vi', // Vietnamese
-    'zh' // Chinese
+    'zh', // Chinese
+    'zh-Hant' // Traditional Chinese
 ];
 
 /**
