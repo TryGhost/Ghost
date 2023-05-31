@@ -13,9 +13,19 @@ import useStaffUsers from '../../../hooks/useStaffUsers';
 import {User} from '../../../types/api';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
 
-const Owner: React.FC<{user: User}> = ({user}) => {
+interface OwnerProps {
+    user: User;
+    updateUser?: (user: User) => void;
+}
+
+interface UsersListProps {
+    users: User[];
+    updateUser?: (user: User) => void;
+}
+
+const Owner: React.FC<OwnerProps> = ({user, updateUser}) => {
     const showDetailModal = () => {
-        NiceModal.show(UserDetailModal, {user});
+        NiceModal.show(UserDetailModal, {user, updateUser});
     };
 
     if (!user) {
@@ -32,11 +42,6 @@ const Owner: React.FC<{user: User}> = ({user}) => {
         </div>
     );
 };
-
-interface UsersListProps {
-    users: User[];
-    updateUser?: (user: User) => void;
-}
 
 const UsersList: React.FC<UsersListProps> = ({users, updateUser}) => {
     const showDetailModal = (user: User) => {
@@ -123,7 +128,7 @@ const Users: React.FC = () => {
             customButtons={buttons}
             title='Users and permissions'
         >
-            <Owner user={ownerUser} />
+            <Owner updateUser={updateUser} user={ownerUser} />
             <TabView tabs={tabs} />
         </SettingGroup>
     );

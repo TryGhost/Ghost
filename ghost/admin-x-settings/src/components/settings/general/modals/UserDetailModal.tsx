@@ -4,14 +4,14 @@ import Heading from '../../../../admin-x-ds/global/Heading';
 import Modal from '../../../../admin-x-ds/global/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 import Radio from '../../../../admin-x-ds/global/Radio';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import SettingGroup from '../../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../../admin-x-ds/global/TextField';
 import Toggle from '../../../../admin-x-ds/global/Toggle';
 import useRoles from '../../../../hooks/useRoles';
 import {User} from '../../../../types/api';
-import {generateAvatarColor, getInitials} from '../../../../utils/helpers';
+import {generateAvatarColor, getInitials, isOwnerUser} from '../../../../utils/helpers';
 
 interface CustomHeadingProps {
     children?: React.ReactNode;
@@ -27,8 +27,57 @@ const CustomHeader: React.FC<CustomHeadingProps> = ({children}) => {
         <Heading level={4} separator={true}>{children}</Heading>
     );
 };
-const BasicInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
+
+const RoleSelector: React.FC<UserDetailProps> = ({user, setUserData}) => {
     const {roles} = useRoles();
+    if (isOwnerUser(user)) {
+        return (
+            <>
+                <Heading level={6}>Role</Heading>
+                <div>
+                    This user is the owner of the site. To change their role, you need to transfer the ownership first.
+                </div>
+            </>
+        );
+    }
+
+    return (
+        <Radio
+            defaultSelectedOption={user.roles[0].name.toLowerCase()}
+            id='role'
+            options={[
+                {
+                    hint: 'Can create and edit their own posts, but cannot publish. An Editor needs to approve and publish for them.',
+                    label: 'Contributor',
+                    value: 'contributor'
+                },
+                {
+                    hint: 'A trusted user who can create, edit and publish their own posts, but can’t modify others.',
+                    label: 'Author',
+                    value: 'author'
+                },
+                {
+                    hint: 'Can invite and manage other Authors and Contributors, as well as edit and publish any posts on the site.',
+                    label: 'Editor',
+                    value: 'editor'
+                },
+                {
+                    hint: 'Trusted staff user who should be able to manage all content and users, as well as site settings and options.',
+                    label: 'Administrator',
+                    value: 'administrator'
+                }
+            ]}
+            title="Role"
+            onSelect={(value) => {
+                const role = roles?.find(r => r.name.toLowerCase() === value.toLowerCase());
+                if (role) {
+                    setUserData?.({...user, roles: [role]});
+                }
+            }}
+        />
+    );
+};
+const BasicInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
     return (
         <SettingGroupContent>
             <TextField
@@ -46,39 +95,7 @@ const BasicInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
                     setUserData?.({...user, email: e.target.value});
                 }}
             />
-            <Radio
-                defaultSelectedOption={user.roles[0].name.toLowerCase()}
-                id='role'
-                options={[
-                    {
-                        hint: 'Can create and edit their own posts, but cannot publish. An Editor needs to approve and publish for them.',
-                        label: 'Contributor',
-                        value: 'contributor'
-                    },
-                    {
-                        hint: 'A trusted user who can create, edit and publish their own posts, but can’t modify others.',
-                        label: 'Author',
-                        value: 'author'
-                    },
-                    {
-                        hint: 'Can invite and manage other Authors and Contributors, as well as edit and publish any posts on the site.',
-                        label: 'Editor',
-                        value: 'editor'
-                    },
-                    {
-                        hint: 'Trusted staff user who should be able to manage all content and users, as well as site settings and options.',
-                        label: 'Administrator',
-                        value: 'administrator'
-                    }
-                ]}
-                title="Role"
-                onSelect={(value) => {
-                    const role = roles?.find(r => r.name.toLowerCase() === value.toLowerCase());
-                    if (role) {
-                        setUserData?.({...user, roles: [role]});
-                    }
-                }}
-            />
+            <RoleSelector setUserData={setUserData} user={user} />
         </SettingGroupContent>
     );
 };
@@ -95,52 +112,70 @@ const Basic: React.FC<UserDetailProps> = ({user, setUserData}) => {
     );
 };
 
-const DetailsInputs: React.FC<UserDetailProps> = ({user}) => {
+const DetailsInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
     return (
         <SettingGroupContent>
             <TextField
                 hint="https://example.com/author"
                 title="Slug"
                 value={user.slug}
+                onChange={(e) => {
+                    setUserData?.({...user, slug: e.target.value});
+                }}
             />
             <TextField
                 title="Location"
                 value={user.location}
+                onChange={(e) => {
+                    setUserData?.({...user, location: e.target.value});
+                }}
             />
             <TextField
                 title="Website"
                 value={user.website}
+                onChange={(e) => {
+                    setUserData?.({...user, website: e.target.value});
+                }}
             />
             <TextField
                 title="Facebook profile"
                 value={user.facebook}
+                onChange={(e) => {
+                    setUserData?.({...user, facebook: e.target.value});
+                }}
             />
             <TextField
                 title="Twitter profile"
                 value={user.twitter}
+                onChange={(e) => {
+                    setUserData?.({...user, twitter: e.target.value});
+                }}
             />
             <TextField
                 hint="Recommended: 200 characters."
                 title="Bio"
                 value={user.bio}
+                onChange={(e) => {
+                    setUserData?.({...user, bio: e.target.value});
+                }}
             />
         </SettingGroupContent>
     );
 };
 
-const Details: React.FC<UserDetailProps> = ({user}) => {
+const Details: React.FC<UserDetailProps> = ({user, setUserData}) => {
     return (
         <SettingGroup
             border={false}
             customHeader={<CustomHeader>Details</CustomHeader>}
             title='Details'
         >
-            <DetailsInputs user={user} />
+            <DetailsInputs setUserData={setUserData} user={user} />
         </SettingGroup>
     );
 };
 
-const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user}) => {
+const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
     return (
         <SettingGroupContent>
             <Toggle
@@ -149,6 +184,9 @@ const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user}) => {
                 hint='Every time a member comments on one of your posts'
                 id='comments'
                 label='Comments'
+                onChange={(e) => {
+                    setUserData?.({...user, comment_notifications: e.target.checked});
+                }}
             />
             <Toggle
                 checked={user.free_member_signup_notification}
@@ -156,6 +194,9 @@ const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user}) => {
                 hint='Every time a new free member signs up'
                 id='new-signups'
                 label='New signups'
+                onChange={(e) => {
+                    setUserData?.({...user, free_member_signup_notification: e.target.checked});
+                }}
             />
             <Toggle
                 checked={user.paid_subscription_started_notification}
@@ -163,6 +204,9 @@ const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user}) => {
                 hint='Every time a member starts a new paid subscription'
                 id='new-paid-members'
                 label='New paid members'
+                onChange={(e) => {
+                    setUserData?.({...user, paid_subscription_started_notification: e.target.checked});
+                }}
             />
             <Toggle
                 checked={user.paid_subscription_canceled_notification}
@@ -170,6 +214,9 @@ const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user}) => {
                 hint='Every time a member cancels their paid subscription'
                 id='paid-member-cancellations'
                 label='Paid member cancellations'
+                onChange={(e) => {
+                    setUserData?.({...user, paid_subscription_canceled_notification: e.target.checked});
+                }}
             />
             <Toggle
                 checked={user.milestone_notifications}
@@ -177,19 +224,23 @@ const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user}) => {
                 hint='Occasional summaries of your audience & revenue growth'
                 id='milestones'
                 label='Milestones'
+                onChange={(e) => {
+                    setUserData?.({...user, milestone_notifications: e.target.checked});
+                }}
             />
         </SettingGroupContent>
     );
 };
 
-const EmailNotifications: React.FC<UserDetailProps> = ({user}) => {
+const EmailNotifications: React.FC<UserDetailProps> = ({user, setUserData}) => {
     return (
         <SettingGroup
             border={false}
             customHeader={<CustomHeader>Email notifications</CustomHeader>}
             title='Email notifications'
+
         >
-            <EmailNotificationsInputs user={user} />
+            <EmailNotificationsInputs setUserData={setUserData} user={user} />
         </SettingGroup>
     );
 };
@@ -242,14 +293,31 @@ interface UserDetailModalProps {
 
 const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
     const [userData, setUserData] = useState(user);
+    const [saveState, setSaveState] = useState('');
+
+    let okLabel = saveState === 'saved' ? 'Saved' : 'Save';
+    if (saveState === 'saving') {
+        okLabel = 'Saving...';
+    }
+
+    // remove saved state after 2 seconds
+    useEffect(() => {
+        if (saveState === 'saved') {
+            setTimeout(() => {
+                setSaveState('');
+            }, 2000);
+        }
+    }, [saveState]);
+
     return (
         <Modal
             okColor='green'
-            okLabel='Save'
+            okLabel={okLabel}
             size='lg'
-            onOk={() => {
-                alert('Clicked OK');
-                updateUser?.(userData);
+            onOk={async () => {
+                setSaveState('saving');
+                await updateUser?.(userData);
+                setSaveState('saved');
             }}
         >
             <div>
@@ -267,8 +335,8 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                 </div>
                 <div className='mt-10 grid grid-cols-2 gap-x-12 gap-y-20 pb-10'>
                     <Basic setUserData={setUserData} user={userData} />
-                    <Details user={userData} />
-                    <EmailNotifications user={userData} />
+                    <Details setUserData={setUserData} user={userData} />
+                    <EmailNotifications setUserData={setUserData} user={userData} />
                     <Password />
                 </div>
             </div>
