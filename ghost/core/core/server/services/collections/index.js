@@ -24,6 +24,7 @@ class CollectionsServiceWrapper {
             read: collectionsService.getById.bind(collectionsService),
             add: collectionsService.save.bind(collectionsService),
             edit: collectionsService.edit.bind(collectionsService),
+            addPost: collectionsService.addPost.bind(collectionsService),
             destroy: collectionsService.destroy.bind(collectionsService)
         };
     }
