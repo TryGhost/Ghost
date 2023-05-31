@@ -26,13 +26,13 @@ export default function generateEditorState({editor, initialHtml}) {
 
             // Insert them at a selection.
             $insertNodes(filteredNodes);
-        }, {discrete: true});
+        }, {discrete: true, tag: 'history-merge'});
     } else {
         // for empty initial values, create a paragraph because a completely empty
         // root won't accept focus
         editor.update(() => {
             $getRoot().append($createParagraphNode());
-        }, {discrete: true});
+        }, {discrete: true, tag: 'history-merge'});
     }
 
     return editor.getEditorState();

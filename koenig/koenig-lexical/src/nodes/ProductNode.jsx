@@ -1,46 +1,15 @@
 import React from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
-import generateEditorState from '../utils/generateEditorState';
-import {$createParagraphNode, $getRoot, createEditor} from 'lexical';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {BASIC_NODES, KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
 import {ProductNode as BaseProductNode, INSERT_PRODUCT_COMMAND} from '@tryghost/kg-default-nodes';
 import {ReactComponent as ProductCardIcon} from '../assets/icons/kg-card-type-product.svg';
 import {ProductNodeComponent} from './ProductNodeComponent';
 import {isEditorEmpty} from '../utils/isEditorEmpty';
+import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors.js';
 
 // re-export here, so we don't need to import from multiple places throughout the app
 export {INSERT_PRODUCT_COMMAND} from '@tryghost/kg-default-nodes';
-
-function setupNestedEditor(node, editorProperty, {editor, nodes = MINIMAL_NODES} = {}) {
-    if (editor) {
-        node[editorProperty] = editor;
-    } else {
-        node[editorProperty] = createEditor({nodes});
-        node[editorProperty].update(() => {
-            $getRoot().clear();
-            $getRoot().append($createParagraphNode());
-        });
-    }
-}
-
-function populateNestedEditor(node, editorProperty, html) {
-    if (!html) {
-        return;
-    }
-
-    const nestedEditor = node[editorProperty];
-    const editorState = generateEditorState({
-        editor: nestedEditor,
-        initialHtml: html
-    });
-    nestedEditor.setEditorState(editorState);
-
-    // store the initial state separately as it's passed in to `<CollaborationPlugin />`
-    // for use when there is no YJS document already stored
-    node[`${editorProperty}InitialState`] = editorState;
-}
-
 export class ProductNode extends BaseProductNode {
     __titleEditor;
     __titleEditorInitialState;
