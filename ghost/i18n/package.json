@@ -5,8 +5,10 @@
   "author": "Ghost Foundation",
   "private": true,
   "main": "index.js",
+  "types": "./build/i18n.d.ts",
   "scripts": {
     "dev": "echo \"Implement me!\"",
+    "build": "tsc",
     "test:unit:base": "NODE_ENV=testing c8 --include index.js --include lib --check-coverage --100  --reporter text --reporter cobertura mocha './test/**/*.test.js'",
     "test:unit": "yarn test:unit:base && yarn translate",
     "test": "yarn test:unit",
@@ -25,7 +27,8 @@
   "devDependencies": {
     "c8": "7.13.0",
     "i18next-parser": "8.0.0",
-    "mocha": "10.2.0"
+    "mocha": "10.2.0",
+    "typescript": "5.0.4"
   },
   "dependencies": {
     "i18next": "22.5.0"
