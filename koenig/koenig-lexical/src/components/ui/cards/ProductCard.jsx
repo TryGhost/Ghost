@@ -26,10 +26,8 @@ export function ProductCard({
     isPinturaEnabled,
     openImageEditor,
     onRemoveImage,
-    title,
     titleEditor,
     titleEditorInitialState,
-    description,
     descriptionEditor,
     descriptionEditorInitialState,
     onRatingChange
@@ -53,7 +51,7 @@ export function ProductCard({
 
                 <div className="!m-0 flex items-start justify-between">
                     {
-                        (isEditing || !!title || !isEditorEmpty(titleEditor)) && (
+                        (isEditing || !isEditorEmpty(titleEditor)) && (
                             <div className="mr-2 flex-1">
                                 <KoenigNestedEditor
                                     autoFocus={true}
@@ -77,7 +75,7 @@ export function ProductCard({
                 </div>
 
                 {
-                    (isEditing || !!description || !isEditorEmpty(descriptionEditor)) && (
+                    (isEditing || !isEditorEmpty(descriptionEditor)) && (
                         <div className="!mt-2">
                             <KoenigNestedEditor
                                 hasSettingsPanel={true}

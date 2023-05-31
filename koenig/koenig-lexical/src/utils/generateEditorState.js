@@ -35,5 +35,5 @@ export default function generateEditorState({editor, initialHtml}) {
         }, {discrete: true});
     }
 
-    return JSON.stringify(editor.getEditorState());
+    return editor.getEditorState();
 }

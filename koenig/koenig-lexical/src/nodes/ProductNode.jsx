@@ -1,16 +1,45 @@
 import React from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import generateEditorState from '../utils/generateEditorState';
+import {$createParagraphNode, $getRoot, createEditor} from 'lexical';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {BASIC_NODES, KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
 import {ProductNode as BaseProductNode, INSERT_PRODUCT_COMMAND} from '@tryghost/kg-default-nodes';
 import {ReactComponent as ProductCardIcon} from '../assets/icons/kg-card-type-product.svg';
 import {ProductNodeComponent} from './ProductNodeComponent';
-import {createEditor} from 'lexical';
 import {isEditorEmpty} from '../utils/isEditorEmpty';
 
 // re-export here, so we don't need to import from multiple places throughout the app
 export {INSERT_PRODUCT_COMMAND} from '@tryghost/kg-default-nodes';
+
+function setupNestedEditor(node, editorProperty, {editor, nodes = MINIMAL_NODES} = {}) {
+    if (editor) {
+        node[editorProperty] = editor;
+    } else {
+        node[editorProperty] = createEditor({nodes});
+        node[editorProperty].update(() => {
+            $getRoot().clear();
+            $getRoot().append($createParagraphNode());
+        });
+    }
+}
+
+function populateNestedEditor(node, editorProperty, html) {
+    if (!html) {
+        return;
+    }
+
+    const nestedEditor = node[editorProperty];
+    const editorState = generateEditorState({
+        editor: nestedEditor,
+        initialHtml: html
+    });
+    nestedEditor.setEditorState(editorState);
+
+    // store the initial state separately as it's passed in to `<CollaborationPlugin />`
+    // for use when there is no YJS document already stored
+    node[`${editorProperty}InitialState`] = editorState;
+}
 
 export class ProductNode extends BaseProductNode {
     __titleEditor;
@@ -34,25 +63,16 @@ export class ProductNode extends BaseProductNode {
     constructor(dataset = {}, key) {
         super(dataset, key);
 
-        // set up and populate nested editors from the serialized HTML
-        this.__titleEditor = dataset.titleEditor || createEditor({nodes: MINIMAL_NODES});
-        this.__titleEditorInitialState = dataset.titleEditorInitialState;
-        if (!this.__titleEditorInitialState) {
-            // wrap the header in a paragraph so it gets parsed correctly
-            // - we serialize with no wrapper so the renderer can decide how to wrap it
-            const initialHtml = dataset.productTitle ? `<p>${dataset.productTitle}</p>` : null;
-            this.__titleEditorInitialState = generateEditorState({
-                editor: createEditor({nodes: MINIMAL_NODES}),
-                initialHtml
-            });
+        // set up nested editor instances
+        setupNestedEditor(this, '__titleEditor', {editor: dataset.titleEditor, nodes: MINIMAL_NODES});
+        setupNestedEditor(this, '__descriptionEditor', {editor: dataset.descriptionEditor, nodes: BASIC_NODES});
+
+        // populate nested editors on initial construction
+        if (!dataset.titleEditor && dataset.productTitle) {
+            populateNestedEditor(this, '__titleEditor', `<p>${dataset.productTitle}</p>`); // we serialize with no wrapper
         }
-        this.__descriptionEditor = dataset.descriptionEditor || createEditor({nodes: BASIC_NODES});
-        this.__descriptionEditorInitialState = dataset.descriptionEditorInitialState;
-        if (!this.__descriptionEditorInitialState) {
-            this.__descriptionEditorInitialState = generateEditorState({
-                editor: createEditor({nodes: BASIC_NODES}),
-                initialHtml: dataset.productDescription
-            });
+        if (!dataset.descriptionEditor) {
+            populateNestedEditor(this, '__descriptionEditor', dataset.productDescription);
         }
     }
 

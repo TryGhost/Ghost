@@ -101,7 +101,7 @@ function DemoApp({editorType, isMultiplayer}) {
     const {snippets, createSnippet, deleteSnippet} = useSnippets();
 
     const darkMode = searchParams.get('darkMode') === 'true';
-    const hideContent = searchParams.get('content') === 'false';
+    const contentParam = searchParams.get('content');
 
     const defaultContent = React.useMemo(() => {
         return JSON.stringify(getDefaultContent({editorType}));
@@ -111,8 +111,13 @@ function DemoApp({editorType, isMultiplayer}) {
         if (isMultiplayer) {
             return null;
         }
-        return hideContent ? undefined : defaultContent;
-    }, [isMultiplayer, hideContent, defaultContent]);
+
+        if (contentParam === 'false') {
+            return undefined;
+        }
+
+        return contentParam ? decodeURIComponent(contentParam) : defaultContent;
+    }, [isMultiplayer, contentParam, defaultContent]);
 
     const [title, setTitle] = useState(initialContent ? 'Meet the Koenig editor.' : '');
     const [editorAPI, setEditorAPI] = useState(null);

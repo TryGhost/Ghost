@@ -1,11 +1,12 @@
 import path from 'path';
-import {assertHTML, createDataTransfer, createSnippet, focusEditor, html, initialize, insertCard} from '../../utils/e2e';
+import {assertHTML, createDataTransfer, createSnippet, focusEditor, html, initialize, insertCard, isMac} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 test.describe('Product card', async () => {
+    const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
     let page;
 
     test.beforeAll(async ({browser}) => {
@@ -21,30 +22,28 @@ test.describe('Product card', async () => {
     });
 
     test('can import serialized product card nodes', async function () {
-        await page.evaluate(() => {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'product',
-                        productImageSrc: '/content/images/2022/11/koenig-lexical.jpg',
-                        productTitle: '<span>This is <em>title</em></span>',
-                        productDescription: '<p dir="ltr"><span>Description</span></p>',
-                        productUrl: 'https://google.com/',
-                        productButton: 'Button',
-                        productButtonEnabled: true,
-                        productRatingEnabled: true
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
-            const editor = window.lexicalEditor;
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
-        });
+        const contentParam = encodeURIComponent(JSON.stringify({
+            root: {
+                children: [{
+                    type: 'product',
+                    productImageSrc: '/content/images/2022/11/koenig-lexical.jpg',
+                    productTitle: '<span>This is <em>title</em></span>',
+                    productDescription: '<p dir="ltr"><span>Description</span></p>',
+                    productUrl: 'https://google.com/',
+                    productButton: 'Button',
+                    productButtonEnabled: true,
+                    productRatingEnabled: true,
+                    productStarRating: 4
+                }],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        }));
+
+        await initialize({page, uri: `/#/?content=${contentParam}`});
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
@@ -366,6 +365,81 @@ test.describe('Product card', async () => {
             </div>
             <p><br /></p>
         `, {ignoreCardContents: true});
+    });
+
+    test('can undo/redo without losing nested editor content', async ({page}) => {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'product'});
+
+        await page.keyboard.type('Test title');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('Test description');
+        await page.keyboard.press('Escape');
+        await page.keyboard.press('Backspace');
+        await page.keyboard.press(`${ctrlOrCmd}+z`);
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div
+                    data-kg-card-editing="false"
+                    data-kg-card-selected="false"
+                    data-kg-card="product">
+                    <div>
+                        <div>
+                            <div>
+                                <div>
+                                    <button name="placeholder-button" type="button">
+                                        <svg></svg>
+                                        <p>Click to select a product image</p>
+                                    </button>
+                                </div>
+                            </div>
+                            <form>
+                                <input
+                                    accept="image/gif,image/jpg,image/jpeg,image/png,image/svg+xml,image/webp"
+                                    hidden=""
+                                    name="image-input"
+                                    type="file" />
+                            </form>
+                        </div>
+                        <div>
+                            <div>
+                                <div>
+                                    <div data-kg="editor">
+                                        <div
+                                            contenteditable="false"
+                                            spellcheck="true"
+                                            data-lexical-editor="true"
+                                            aria-autocomplete="none">
+                                            <p dir="ltr">
+                                                <span data-lexical-text="true">Test title</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div>
+                                <div data-kg="editor">
+                                    <div
+                                        contenteditable="false"
+                                        spellcheck="true"
+                                        data-lexical-editor="true"
+                                        aria-autocomplete="none">
+                                        <p dir="ltr">
+                                            <span data-lexical-text="true">Test description</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div></div>
+                </div>
+            </div>
+            <p><br /></p>
+        `, {ignoreCardToolbarContents: true, ignoreInnerSVG: true});
     });
 });
 
