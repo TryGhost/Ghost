@@ -97,7 +97,7 @@ const Modal: React.FC<ModalProps> = ({
 
     return (
         <div className={backdropStyles} id='modal-backdrop' onClick={handleBackdropClick}>
-            <div className='pointer-events-none fixed inset-0 z-0 bg-[rgba(0,0,0,0.1)]'></div>
+            <div className='pointer-events-none fixed inset-0 z-0 bg-[rgba(206,212,207,0.15)] backdrop-blur-[3px]'></div>
             <section className={modalStyles}>
                 <div className='h-full'>
                     {title && <Heading level={4}>{title}</Heading>}
