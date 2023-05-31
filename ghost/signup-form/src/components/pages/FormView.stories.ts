@@ -4,7 +4,8 @@ import {FormView} from './FormView';
 
 const meta = {
     title: 'Form View',
-    component: FormView
+    component: FormView,
+    tags: ['autodocs']
 } satisfies Meta<typeof FormView>;
 
 export default meta;

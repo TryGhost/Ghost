@@ -4,7 +4,8 @@ import {SuccessView} from './SuccessView';
 
 const meta = {
     title: 'Success View',
-    component: SuccessView
+    component: SuccessView,
+    tags: ['autodocs']
 } satisfies Meta<typeof SuccessView>;
 
 export default meta;
