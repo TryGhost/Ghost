@@ -1,9 +1,9 @@
 const models = require('../../models');
 const {
     CollectionsService,
-    CollectionsRepositoryInMemory,
-    PostsDataRepositoryBookshelf
+    CollectionsRepositoryInMemory
 } = require('@tryghost/collections');
+const PostsDataRepositoryBookshelf = require('./PostsDataRepositoryBookshelf');
 
 class CollectionsServiceWrapper {
     api;

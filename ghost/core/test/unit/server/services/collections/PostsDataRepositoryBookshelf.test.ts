@@ -1,9 +1,9 @@
-import sinon from 'sinon';
-import assert from 'assert';
-import {PostsDataRepositoryBookshelf} from '../src/PostsDataRepositoryBookshelf';
+const sinon = require('sinon');
+const assert = require('assert');
+const {PostsDataRepositoryBookshelf} = require('../../../../../core/server/services/collections/PostsDataRepositoryBookshelf');
 
 describe('PostsDataRepositoryBookshelf', function () {
-    let Post: any;
+    let Post;
 
     beforeEach(async function () {
         Post = {
