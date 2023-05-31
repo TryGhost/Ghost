@@ -93,6 +93,15 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
                 onClick: handleEdit
             }
         );
+    } else if (saveState === 'saved') {
+        viewButtons.push(
+            {
+                label: 'Saved',
+                key: 'edit',
+                color: 'green',
+                onClick: handleEdit
+            }
+        );
     }
 
     let editButtons: IButton[] = [
