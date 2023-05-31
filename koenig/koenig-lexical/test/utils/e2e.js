@@ -12,7 +12,13 @@ export async function initialize({page, uri = '/#/?content=false'}) {
 
     await page.setViewportSize({width: 1000, height: 1000});
 
+    const currentUrl = page.url();
     await page.goto(url);
+    if (currentUrl !== 'about:blank') {
+        // Reload only if we were already on a page
+        await page.reload();
+    }
+
     await page.waitForSelector('.koenig-lexical');
 
     await exposeLexicalEditor(page);
