@@ -27,6 +27,7 @@ const COMMENTS_ENABLED_OPTIONS = [
 const Access: React.FC = () => {
     const {
         currentState,
+        saveState,
         handleSave,
         handleCancel,
         updateSetting,
@@ -99,6 +100,7 @@ const Access: React.FC = () => {
     return (
         <SettingGroup
             description='Set up default access options for subscription and posts'
+            saveState={saveState}
             state={currentState}
             title='Access'
             onCancel={handleCancel}

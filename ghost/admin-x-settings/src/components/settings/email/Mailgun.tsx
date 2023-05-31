@@ -15,6 +15,7 @@ const MAILGUN_REGIONS = [
 const MailGun: React.FC = () => {
     const {
         currentState,
+        saveState,
         handleSave,
         handleCancel,
         updateSetting,
@@ -96,6 +97,7 @@ const MailGun: React.FC = () => {
     return (
         <SettingGroup
             description={groupDescription}
+            saveState={saveState}
             state={currentState}
             title='Mailgun'
             onCancel={handleCancel}

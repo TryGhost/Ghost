@@ -8,6 +8,7 @@ import useSettingGroup from '../../../hooks/useSettingGroup';
 const TitleAndDescription: React.FC = () => {
     const {
         currentState,
+        saveState,
         focusRef,
         handleSave,
         handleCancel,
@@ -67,6 +68,7 @@ const TitleAndDescription: React.FC = () => {
         <SettingGroup
             description='The details used to identify your publication around the web'
             navid='title-and-description'
+            saveState={saveState}
             state={currentState}
             title='Title & description'
             onCancel={handleCancel}

@@ -7,6 +7,7 @@ import useSettingGroup from '../../../hooks/useSettingGroup';
 const Facebook: React.FC = () => {
     const {
         currentState,
+        saveState,
         focusRef,
         handleSave,
         handleCancel,
@@ -51,6 +52,7 @@ const Facebook: React.FC = () => {
         <SettingGroup
             description='Customize structured data of your site'
             navid='facebook'
+            saveState={saveState}
             state={currentState}
             title='Facebook card'
             onCancel={handleCancel}

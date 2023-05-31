@@ -37,6 +37,7 @@ const Hint: React.FC<HintProps> = ({timezone}) => {
 const TimeZone: React.FC = () => {
     const {
         currentState,
+        saveState,
         handleSave,
         handleCancel,
         updateSetting,
@@ -83,6 +84,7 @@ const TimeZone: React.FC = () => {
     return (
         <SettingGroup
             description='Set the time and date of your publication, used for all published posts'
+            saveState={saveState}
             state={currentState}
             title='Site timezone'
             onCancel={handleCancel}

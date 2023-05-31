@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react';
+import {SaveState, TSettingGroupStates} from '../admin-x-ds/settings/SettingGroup';
 import {Setting, SettingValue} from '../types/api';
 import {SettingsContext} from '../components/providers/SettingsProvider';
-import {TSettingGroupStates} from '../admin-x-ds/settings/SettingGroup';
 import {useContext, useReducer, useRef, useState} from 'react';
 
 interface LocalSetting extends Setting {
@@ -10,6 +10,7 @@ interface LocalSetting extends Setting {
 
 export interface SettingGroupHook {
     currentState: TSettingGroupStates;
+    saveState: SaveState;
     focusRef: React.RefObject<HTMLInputElement>;
     handleSave: () => void;
     handleCancel: () => void;
@@ -66,6 +67,8 @@ const useSettingGroup = (): SettingGroupHook => {
     // create a state to track the current state of the setting group
     const [currentState, setCurrentState] = useState<TSettingGroupStates>('view');
 
+    const [saveState, setSaveState] = useState<SaveState>('');
+
     // focus the input field when the state changes to edit
     useEffect(() => {
         if (currentState === 'edit' && focusRef.current) {
@@ -73,8 +76,17 @@ const useSettingGroup = (): SettingGroupHook => {
         }
     }, [currentState]);
 
+    // Reset saved state after 2 seconds
+    useEffect(() => {
+        if (saveState === 'saved') {
+            setTimeout(() => {
+                setSaveState('');
+            }, 2000);
+        }
+    }, [saveState]);
+
     // function to save the changed settings via API
-    const handleSave = () => {
+    const handleSave = async () => {
         const changedSettings = localSettings?.filter(setting => setting.dirty)
             ?.map((setting) => {
                 return {
@@ -82,9 +94,12 @@ const useSettingGroup = (): SettingGroupHook => {
                     value: setting.value
                 };
             });
-        if (changedSettings.length) {            
-            saveSettings?.(changedSettings);
+        if (!changedSettings?.length) {
+            return;
         }
+        setSaveState('saving');
+        await saveSettings?.(changedSettings);
+        setSaveState('saved');
         setCurrentState('view');
     };
 
@@ -123,6 +138,7 @@ const useSettingGroup = (): SettingGroupHook => {
 
     return {
         currentState,
+        saveState,
         focusRef,
         handleSave,
         handleCancel,

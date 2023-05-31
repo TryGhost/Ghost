@@ -5,7 +5,7 @@ import {settingsApi} from '../../utils/api';
 // Define the Settings Context
 interface SettingsContextProps {
   settings: Setting[] | null;
-  saveSettings: (updatedSettings: Setting[]) => void;
+  saveSettings: (updatedSettings: Setting[]) => Promise<void>;
 }
 
 interface SettingsProviderProps {
@@ -14,7 +14,7 @@ interface SettingsProviderProps {
 
 const SettingsContext = createContext<SettingsContextProps>({
     settings: null,
-    saveSettings: () => []
+    saveSettings: async () => {}
 });
 
 // Create a Settings Provider component

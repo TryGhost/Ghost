@@ -7,6 +7,7 @@ import useSettingGroup from '../../../hooks/useSettingGroup';
 const Twitter: React.FC = () => {
     const {
         currentState,
+        saveState,
         focusRef,
         handleSave,
         handleCancel,
@@ -51,6 +52,7 @@ const Twitter: React.FC = () => {
         <SettingGroup
             description='Customize structured data of your site'
             navid='twitter'
+            saveState={saveState}
             state={currentState}
             title='Twitter card'
             onCancel={handleCancel}

@@ -7,6 +7,7 @@ import useSettingGroup from '../../../hooks/useSettingGroup';
 const PublicationLanguage: React.FC = () => {
     const {
         currentState,
+        saveState,
         handleSave,
         handleCancel,
         updateSetting,
@@ -54,6 +55,7 @@ const PublicationLanguage: React.FC = () => {
     return (
         <SettingGroup
             description="Set the language/locale which is used on your site"
+            saveState={saveState}
             state={currentState}
             title="Publication Language"
             onCancel={handleCancel}
