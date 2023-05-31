@@ -61,7 +61,7 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
             title=''
         >
             <div className='flex h-full grow'>
-                <div className='grow'>
+                <div className='flex grow flex-col'>
                     {preview}
                 </div>
                 <div className='flex h-full basis-[400px] flex-col gap-3 border-l border-grey-100'>
