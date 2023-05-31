@@ -1,4 +1,4 @@
-import {assertHTML, assertSelection, dragMouse, focusEditor, html, initialize, resetEditor} from '../utils/e2e';
+import {assertHTML, assertSelection, dragMouse, focusEditor, html, initialize} from '../utils/e2e';
 import {test} from '@playwright/test';
 
 test.describe('Selection behaviour', async () => {
@@ -6,11 +6,10 @@ test.describe('Selection behaviour', async () => {
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
-        await initialize({page});
     });
 
     test.beforeEach(async () => {
-        await resetEditor({page});
+        await initialize({page});
     });
 
     test.afterAll(async () => {

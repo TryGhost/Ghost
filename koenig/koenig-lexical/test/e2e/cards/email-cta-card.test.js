@@ -8,16 +8,23 @@ async function insertEmailCard(page) {
     await page.waitForSelector('[data-kg-card="email-cta"]');
 }
 
-// Parellise tests since we aren't using resetEditor
-test.describe.configure({mode: 'parallel'});
-
 test.describe('Email card', async () => {
-    test.beforeEach(async ({page}) => {
+    let page;
+
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
+    });
+
+    test.beforeEach(async () => {
         await initialize({page});
     });
 
+    test.afterAll(async () => {
+        await page.close();
+    });
+
     test.describe('import JSON', async () => {
-        test('can import a email CTA card node', async function ({page}) {
+        test('can import a email CTA card node', async function () {
             await page.evaluate(() => {
                 const serializedState = JSON.stringify({
                     root: {
@@ -61,7 +68,7 @@ test.describe('Email card', async () => {
             `, {ignoreInnerSVG: true, ignoreCardToolbarContents: true});
         });
 
-        test('can import a email CTA card node with dividers', async function ({page}) {
+        test('can import a email CTA card node with dividers', async function () {
             await page.evaluate(() => {
                 const serializedState = JSON.stringify({
                     root: {
@@ -107,7 +114,7 @@ test.describe('Email card', async () => {
             `, {ignoreInnerSVG: true, ignoreCardToolbarContents: true});
         });
 
-        test('can import a email CTA card node with centered content', async function ({page}) {
+        test('can import a email CTA card node with centered content', async function () {
             await page.evaluate(() => {
                 const serializedState = JSON.stringify({
                     root: {
@@ -154,7 +161,7 @@ test.describe('Email card', async () => {
             `, {ignoreInnerSVG: true, ignoreCardToolbarContents: true, ignoreClasses: false});
         });
 
-        test('can import a email CTA card node with a button', async function ({page}) {
+        test('can import a email CTA card node with a button', async function () {
             await page.evaluate(() => {
                 const serializedState = JSON.stringify({
                     root: {
@@ -205,14 +212,14 @@ test.describe('Email card', async () => {
     });
 
     test.describe('settings panel', async () => {
-        test('renders a settings panel', async function ({page}) {
+        test('renders a settings panel', async function () {
             await focusEditor(page);
             await insertEmailCard(page);
 
             await expect(await page.getByTestId('settings-panel')).toBeVisible();
         });
 
-        test('allows to center content', async function ({page}) {
+        test('allows to center content', async function () {
             await focusEditor(page);
             await insertEmailCard(page);
 
@@ -225,7 +232,7 @@ test.describe('Email card', async () => {
             await expect(content).toHaveClass(/text-center/);
         });
 
-        test('allows to hide/show dividers', async function ({page}) {
+        test('allows to hide/show dividers', async function () {
             await focusEditor(page);
             await insertEmailCard(page);
 
@@ -248,7 +255,7 @@ test.describe('Email card', async () => {
             await expect(bottomDivider).toBeHidden();
         });
 
-        test('allows to show/hide a button', async function ({page}) {
+        test('allows to show/hide a button', async function () {
             await focusEditor(page);
             await insertEmailCard(page);
 
@@ -271,7 +278,7 @@ test.describe('Email card', async () => {
         });
     });
 
-    test('renders the email CTA card node with a settings panel from slash command', async function ({page}) {
+    test('renders the email CTA card node with a settings panel from slash command', async function () {
         await focusEditor(page);
         await insertEmailCard(page);
 
@@ -345,7 +352,7 @@ test.describe('Email card', async () => {
         `, {ignoreInnerSVG: true, ignoreCardToolbarContents: true});
     });
 
-    test('renders in display mode when unfocused', async function ({page}) {
+    test('renders in display mode when unfocused', async function () {
         await focusEditor(page);
         await insertEmailCard(page);
 
@@ -360,7 +367,7 @@ test.describe('Email card', async () => {
         await expect(emailCard).toHaveAttribute('data-kg-card-editing', 'false');
     });
 
-    test('renders an action toolbar', async function ({page}) {
+    test('renders an action toolbar', async function () {
         await focusEditor(page);
         await insertEmailCard(page);
 
@@ -378,7 +385,7 @@ test.describe('Email card', async () => {
         await expect(editButton).toBeVisible();
     });
 
-    test('is removed when left empty', async function ({page}) {
+    test('is removed when left empty', async function () {
         await focusEditor(page);
         await insertEmailCard(page);
 
@@ -390,7 +397,7 @@ test.describe('Email card', async () => {
         await expect(emailCard).not.toBeVisible();
     });
 
-    test('it can contain lists', async function ({page}) {
+    test('it can contain lists', async function () {
         await focusEditor(page);
         await insertEmailCard(page);
 
@@ -401,7 +408,7 @@ test.describe('Email card', async () => {
         await expect(emailCard).toHaveText('List item 1');
     });
 
-    test('can add snippet', async function ({page}) {
+    test('can add snippet', async function () {
         await focusEditor(page);
         await insertEmailCard(page);
 
@@ -420,7 +427,7 @@ test.describe('Email card', async () => {
         await expect(await page.locator('[data-kg-card="email-cta"]')).toHaveCount(2);
     });
 
-    test('keeps focus on previous editor when changing size opts', async function ({page}) {
+    test('keeps focus on previous editor when changing size opts', async function () {
         await focusEditor(page);
         await insertEmailCard(page);
 

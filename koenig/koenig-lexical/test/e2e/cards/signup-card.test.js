@@ -5,15 +5,22 @@ import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Parellise tests since we aren't using resetEditor
-test.describe.configure({mode: 'parallel'});
-
 test.describe('Signup card', async () => {
-    test.beforeEach(async ({page}) => {
+    let page;
+
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
+    });
+
+    test.beforeEach(async () => {
         await initialize({page});
     });
 
-    test('can import serialized signup card nodes', async function ({page}) {
+    test.afterAll(async () => {
+        await page.close();
+    });
+
+    test('can import serialized signup card nodes', async function () {
         await page.evaluate(() => {
             const serializedState = JSON.stringify({
                 root: {
@@ -95,7 +102,7 @@ test.describe('Signup card', async () => {
         `);
     });
 
-    test('renders signup card node', async function ({page}) {
+    test('renders signup card node', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
@@ -108,7 +115,7 @@ test.describe('Signup card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('can edit header', async function ({page}) {
+    test('can edit header', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
@@ -119,7 +126,7 @@ test.describe('Signup card', async () => {
         await expect(firstEditor).toHaveText('Sign up for Koenig Lexical, my friends');
     });
 
-    test('can edit subheader', async function ({page}) {
+    test('can edit subheader', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
@@ -132,7 +139,7 @@ test.describe('Signup card', async () => {
         await expect(secondEditor).toHaveText(`There's a whole lot to discover in this editor. Let us help you settle in. Cool.`);
     });
 
-    test('can edit disclaimer', async function ({page}) {
+    test('can edit disclaimer', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
@@ -146,7 +153,7 @@ test.describe('Signup card', async () => {
         await expect(thirdEditor).toHaveText('No spam. Unsubscribe anytime. For real.');
     });
 
-    test('header, subheader and disclaimer texts are prepopulated', async function ({page}) {
+    test('header, subheader and disclaimer texts are prepopulated', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
@@ -159,7 +166,7 @@ test.describe('Signup card', async () => {
         await expect(thirdEditor).toHaveText(/No spam. Unsubscribe anytime./);
     });
 
-    test('nested editors are hidden when not in edit mode', async function ({page}) {
+    test('nested editors are hidden when not in edit mode', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
@@ -173,7 +180,7 @@ test.describe('Signup card', async () => {
         await expect(firstEditor).toHaveClass(/hidden/);
     });
 
-    test('can edit button text', async function ({page}) {
+    test('can edit button text', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
@@ -186,7 +193,7 @@ test.describe('Signup card', async () => {
         await expect(page.getByTestId('signup-card-button')).toHaveText('Subscribe now');
     });
 
-    test('can change the button background color and text color', async function ({page}) {
+    test('can change the button background color and text color', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
@@ -207,7 +214,7 @@ test.describe('Signup card', async () => {
         await expect(page.locator('[data-testid="signup-card-button"]')).toHaveCSS('color', 'rgb(0, 0, 0)');
     });
 
-    test('can change the background color and text color', async function ({page}) {
+    test('can change the background color and text color', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
@@ -229,7 +236,7 @@ test.describe('Signup card', async () => {
         await expect(container).toHaveCSS('color', 'rgb(0, 0, 0)');
     });
 
-    test('can add and remove background image', async function ({page}) {
+    test('can add and remove background image', async function () {
         const filePath = path.relative(process.cwd(), __dirname + `/../fixtures/large-image.jpeg`);
 
         await focusEditor(page);
@@ -267,7 +274,7 @@ test.describe('Signup card', async () => {
         await expect(page.locator('[data-testid="media-upload-filled"] img')).toHaveAttribute('src', /blob:/);
     });
 
-    test('can switch between background image and color', async function ({page}) {
+    test('can switch between background image and color', async function () {
         const filePath = path.relative(process.cwd(), __dirname + `/../fixtures/large-image.jpeg`);
 
         await focusEditor(page);
@@ -311,7 +318,7 @@ test.describe('Signup card', async () => {
         await expect(page.locator('[data-testid="media-upload-setting"]')).not.toBeVisible();
     });
 
-    test('can update the text color in split vs regular layout', async function ({page}) {
+    test('can update the text color in split vs regular layout', async function () {
         const filePath = path.relative(process.cwd(), __dirname + `/../fixtures/large-image.jpeg`);
 
         await focusEditor(page);
@@ -352,7 +359,7 @@ test.describe('Signup card', async () => {
         await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('color', 'rgb(255, 255, 255)');
     });
 
-    test('can add and remove background image in split layout', async function ({page}) {
+    test('can add and remove background image in split layout', async function () {
         const filePath = path.relative(process.cwd(), __dirname + `/../fixtures/large-image.jpeg`);
         const fileChooserPromise = page.waitForEvent('filechooser');
 
@@ -373,7 +380,7 @@ test.describe('Signup card', async () => {
         await expect(page.locator('[data-testid="signup-card-container"] [data-testid="media-upload-filled"] img')).toHaveAttribute('src', /blob:/);
     });
 
-    test('can add and remove labels', async function ({page}) {
+    test('can add and remove labels', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
@@ -402,7 +409,7 @@ test.describe('Signup card', async () => {
         await expect(page.locator('[data-testid="labels-dropdown"] [data-testid="multiselect-dropdown-selected"]')).toHaveCount(0);
     });
 
-    test('changes the alignment options from the settings panel', async function ({page}) {
+    test('changes the alignment options from the settings panel', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
@@ -417,7 +424,7 @@ test.describe('Signup card', async () => {
     });
 
     // TODO: fix and restore after the layout changes are finialized in the signup card
-    test.skip('changes the layout options from the settings panel', async function ({page}) {
+    test.skip('changes the layout options from the settings panel', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
@@ -441,7 +448,7 @@ test.describe('Signup card', async () => {
         await expect(container).toHaveClass(/h-auto sm:h-\[80vh\]/);
     });
 
-    test('keeps focus on previous editor when changing layout opts', async function ({page}) {
+    test('keeps focus on previous editor when changing layout opts', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
@@ -460,7 +467,7 @@ test.describe('Signup card', async () => {
         await expect(header).toHaveText('Hello world');
     });
 
-    test('keeps focus on previous editor when changing alignment opts', async function ({page}) {
+    test('keeps focus on previous editor when changing alignment opts', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
@@ -480,7 +487,7 @@ test.describe('Signup card', async () => {
         await expect(subheader).toHaveText('Hello world');
     });
 
-    test('can swap split layout sides on image', async function ({page}) {
+    test('can swap split layout sides on image', async function () {
         const filePath = path.relative(process.cwd(), __dirname + `/../fixtures/large-image.jpeg`);
         const fileChooserPromise = page.waitForEvent('filechooser');
         await focusEditor(page);

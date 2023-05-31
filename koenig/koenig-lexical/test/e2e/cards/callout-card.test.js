@@ -1,4 +1,4 @@
-import {assertHTML, createSnippet, focusEditor, html, initialize, insertCard, isMac, resetEditor} from '../../utils/e2e';
+import {assertHTML, createSnippet, focusEditor, html, initialize, insertCard, isMac} from '../../utils/e2e';
 // import {calloutColorPicker} from '../../../src/components/ui/cards/CalloutCardx';
 import {expect, test} from '@playwright/test';
 
@@ -9,11 +9,10 @@ test.describe('Callout Card', async () => {
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
-        await initialize({page});
     });
 
     test.beforeEach(async () => {
-        await resetEditor({page});
+        await initialize({page});
     });
 
     test.afterAll(async () => {

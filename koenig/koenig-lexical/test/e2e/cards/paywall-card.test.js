@@ -1,4 +1,4 @@
-import {assertHTML, focusEditor, html, initialize, resetEditor} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize} from '../../utils/e2e';
 import {test} from '@playwright/test';
 
 async function insertPaywallCard(page) {
@@ -12,11 +12,10 @@ test.describe('Paywall card', async () => {
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
-        await initialize({page});
     });
 
     test.beforeEach(async () => {
-        await resetEditor({page});
+        await initialize({page});
     });
 
     test.afterAll(async () => {

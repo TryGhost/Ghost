@@ -1,5 +1,5 @@
 import path from 'path';
-import {assertHTML, createDataTransfer, focusEditor, html, initialize, resetEditor} from '../../utils/e2e';
+import {assertHTML, createDataTransfer, focusEditor, html, initialize} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
@@ -13,11 +13,10 @@ test.describe('Drag Drop Paste Plugin Firefox', async function () {
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
-        await initialize({page});
     });
 
     test.beforeEach(async () => {
-        await resetEditor({page});
+        await initialize({page});
     });
 
     test.afterAll(async () => {

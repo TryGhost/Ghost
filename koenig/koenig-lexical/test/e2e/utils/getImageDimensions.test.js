@@ -1,7 +1,7 @@
 import path from 'path';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
-import {focusEditor, initialize, resetEditor} from '../../utils/e2e';
+import {focusEditor, initialize} from '../../utils/e2e';
 import {getImageDimensions} from '../../../src/utils/getImageDimensions';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -11,11 +11,10 @@ test.describe('Image card', async () => {
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
-        await initialize({page});
     });
 
     test.beforeEach(async () => {
-        await resetEditor({page});
+        await initialize({page});
     });
 
     test.afterAll(async () => {

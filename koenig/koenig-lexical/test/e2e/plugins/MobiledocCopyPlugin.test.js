@@ -1,4 +1,4 @@
-import {assertHTML, focusEditor, initialize, isMac, resetEditor} from '../../utils/e2e';
+import {assertHTML, focusEditor, initialize, isMac} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Mobiledoc Copy Plugin', async function () {
@@ -8,11 +8,10 @@ test.describe('Mobiledoc Copy Plugin', async function () {
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
-        await initialize({page});
     });
 
     test.beforeEach(async () => {
-        await resetEditor({page});
+        await initialize({page});
     });
 
     test.afterAll(async () => {

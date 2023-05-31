@@ -14,11 +14,21 @@ async function createHeaderCard({page}) {
 }
 
 test.describe('Header card', async () => {
-    test.beforeEach(async ({page}) => {
+    let page;
+
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
+    });
+
+    test.beforeEach(async () => {
         await initialize({page});
     });
 
-    test('can import serialized header card nodes', async function ({page}) {
+    test.afterAll(async () => {
+        await page.close();
+    });
+
+    test('can import serialized header card nodes', async function () {
         await page.evaluate(() => {
             const serializedState = JSON.stringify({
                 root: {
@@ -78,7 +88,7 @@ test.describe('Header card', async () => {
         `, {});
     });
 
-    test('renders header card node', async function ({page}) {
+    test('renders header card node', async function () {
         await createHeaderCard({page});
 
         await assertHTML(page, html`
@@ -90,7 +100,7 @@ test.describe('Header card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('can edit header', async function ({page}) {
+    test('can edit header', async function () {
         await createHeaderCard({page});
 
         await page.keyboard.type('Hello world');
@@ -98,7 +108,7 @@ test.describe('Header card', async () => {
         await expect(firstEditor).toHaveText('Hello world');
     });
 
-    test('can edit sub header', async function ({page}) {
+    test('can edit sub header', async function () {
         await createHeaderCard({page});
 
         await page.keyboard.type('Hello world');
@@ -113,7 +123,7 @@ test.describe('Header card', async () => {
         await expect(secondEditor).toHaveText('Hello subheader');
     });
 
-    test('can edit sub header via arrow keys', async function ({page}) {
+    test('can edit sub header via arrow keys', async function () {
         await createHeaderCard({page});
 
         await page.keyboard.type('Hello');
@@ -132,7 +142,7 @@ test.describe('Header card', async () => {
         await expect(secondEditor).toHaveText('blah blah blah something very long');
     });
 
-    test('can add and remove button', async function ({page}) {
+    test('can add and remove button', async function () {
         await createHeaderCard({page});
 
         // click on the toggle with data-testid="header-button-toggle"
@@ -160,7 +170,7 @@ test.describe('Header card', async () => {
         await expect(page.getByTestId('header-card-button')).toHaveCount(0);
     });
 
-    test('can change the size', async function ({page}) {
+    test('can change the size', async function () {
         await createHeaderCard({page});
 
         // Check that the default size is small
@@ -193,7 +203,7 @@ test.describe('Header card', async () => {
         expect(height3).toBeGreaterThan(height2);
     });
 
-    test('can change the background color', async function ({page}) {
+    test('can change the background color', async function () {
         await createHeaderCard({page});
 
         const lightButton = page.locator('[aria-label="Light"]');
@@ -222,7 +232,7 @@ test.describe('Header card', async () => {
         await expect(page.locator('[data-kg-card="header"] > div:first-child')).toHaveClass(/ bg-accent /);
     });
 
-    test('can add and remove background image', async function ({page}) {
+    test('can add and remove background image', async function () {
         const filePath = path.relative(process.cwd(), __dirname + `/../fixtures/large-image.jpeg`);
 
         await createHeaderCard({page});
@@ -243,7 +253,7 @@ test.describe('Header card', async () => {
         await expect(page.getByTestId('image-picker-background')).toHaveAttribute('src', /blob:/);
     });
 
-    test('can select the text by dragging and replace it', async function ({page}) {
+    test('can select the text by dragging and replace it', async function () {
         await createHeaderCard({page});
 
         await page.keyboard.type('HelloHello');
@@ -266,7 +276,7 @@ test.describe('Header card', async () => {
         await expect(page.locator('[data-kg-card="header"] [data-kg="editor"]').nth(0)).toHaveText('Hello world');
     });
 
-    test('can select the text by dragging and bold it', async function ({page}) {
+    test('can select the text by dragging and bold it', async function () {
         await createHeaderCard({page});
 
         await page.keyboard.type('HelloHello');
@@ -301,7 +311,7 @@ test.describe('Header card', async () => {
         await expect(helloSpan).toHaveText('Hello');
     });
 
-    test('keeps focus on previous editor when changing size opts', async function ({page}) {
+    test('keeps focus on previous editor when changing size opts', async function () {
         await createHeaderCard({page});
 
         // Start editing the header

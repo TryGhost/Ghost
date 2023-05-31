@@ -2,8 +2,18 @@ import {assertHTML, focusEditor, html, initialize, pasteHtml, pasteLexical, past
 import {test} from '@playwright/test';
 
 test.describe('Restrict Content Plugin', async function () {
-    test('restricted content editor accepts input', async function ({page}) {
-        await initialize({page, uri: '/#/contentrestricted?paragraphs=1'});
+    let page;
+
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
+    });
+
+    test.afterAll(async () => {
+        await page.close();
+    });
+
+    test('restricted content editor accepts input', async function () {
+        await initialize({page, force: true, uri: '/#/contentrestricted?paragraphs=1'});
 
         await focusEditor(page);
 
@@ -14,8 +24,8 @@ test.describe('Restrict Content Plugin', async function () {
         `);
     });
 
-    test('can not add more than specified number of paragraphs by typing manually', async function ({page}) {
-        await initialize({page, uri: '/#/contentrestricted?paragraphs=1'});
+    test('can not add more than specified number of paragraphs by typing manually', async function () {
+        await initialize({page, force: true, uri: '/#/contentrestricted?paragraphs=1'});
 
         await focusEditor(page);
 
@@ -27,8 +37,8 @@ test.describe('Restrict Content Plugin', async function () {
         `);
     });
 
-    test('can not add more than specified number of paragraphs by pasting plain text', async function ({page}) {
-        await initialize({page, uri: '/#/contentrestricted?paragraphs=1'});
+    test('can not add more than specified number of paragraphs by pasting plain text', async function () {
+        await initialize({page, force: true, uri: '/#/contentrestricted?paragraphs=1'});
 
         await focusEditor(page);
 
@@ -39,8 +49,8 @@ test.describe('Restrict Content Plugin', async function () {
         `);
     });
 
-    test('can not add more than specified number of paragraphs by pasting HTML', async function ({page}) {
-        await initialize({page, uri: '/#/contentrestricted?paragraphs=1'});
+    test('can not add more than specified number of paragraphs by pasting HTML', async function () {
+        await initialize({page, force: true, uri: '/#/contentrestricted?paragraphs=1'});
 
         await focusEditor(page);
 
@@ -51,8 +61,8 @@ test.describe('Restrict Content Plugin', async function () {
         `);
     });
 
-    test('can not add more than specified number of paragraphs by pasting Lexical', async function ({page}) {
-        await initialize({page, uri: '/#/contentrestricted?paragraphs=1'});
+    test('can not add more than specified number of paragraphs by pasting Lexical', async function () {
+        await initialize({page, force: true, uri: '/#/contentrestricted?paragraphs=1'});
 
         await focusEditor(page);
 
@@ -65,8 +75,8 @@ test.describe('Restrict Content Plugin', async function () {
         `);
     });
 
-    test('can not add more than specified number of paragraphs when paragraphs > 1', async function ({page}) {
-        await initialize({page, uri: '/#/contentrestricted?paragraphs=3'});
+    test('can not add more than specified number of paragraphs when paragraphs > 1', async function () {
+        await initialize({page, force: true, uri: '/#/contentrestricted?paragraphs=3'});
 
         await focusEditor(page);
 
@@ -85,8 +95,8 @@ test.describe('Restrict Content Plugin', async function () {
         `);
     });
 
-    test('formats in paragraphs are preserved', async function ({page}) {
-        await initialize({page, uri: '/#/contentrestricted?paragraphs=1'});
+    test('formats in paragraphs are preserved', async function () {
+        await initialize({page, force: true, uri: '/#/contentrestricted?paragraphs=1'});
 
         await focusEditor(page);
         await pasteHtml(page, '<p><strong>Hello World</strong></p><p>Extra</p>');
@@ -96,8 +106,8 @@ test.describe('Restrict Content Plugin', async function () {
         `);
     });
 
-    test('formats in first list item are preserved when converting to paragraph', async function ({page}) {
-        await initialize({page, uri: '/#/contentrestricted?paragraphs=1'});
+    test('formats in first list item are preserved when converting to paragraph', async function () {
+        await initialize({page, force: true, uri: '/#/contentrestricted?paragraphs=1'});
 
         await focusEditor(page);
         await pasteHtml(page, '<ul><li><strong>Hello World</strong></li><li>Extra</li></ul>');
@@ -107,8 +117,8 @@ test.describe('Restrict Content Plugin', async function () {
         `);
     });
 
-    test('headings are converted to paragraphs', async function ({page}) {
-        await initialize({page, uri: '/#/contentrestricted?paragraphs=1'});
+    test('headings are converted to paragraphs', async function () {
+        await initialize({page, force: true, uri: '/#/contentrestricted?paragraphs=1'});
 
         await focusEditor(page);
         await pasteHtml(page, '<h1><em>Hello World</em></h1>');
@@ -118,8 +128,8 @@ test.describe('Restrict Content Plugin', async function () {
         `);
     });
 
-    test('pasting over a selection does not bypass the restriction', async function ({page}) {
-        await initialize({page, uri: '/#/contentrestricted?paragraphs=1'});
+    test('pasting over a selection does not bypass the restriction', async function () {
+        await initialize({page, force: true, uri: '/#/contentrestricted?paragraphs=1'});
 
         await focusEditor(page);
         await page.keyboard.type('Test');

@@ -10,25 +10,41 @@ const {JSDOM} = jsdom;
 export async function initialize({page, uri = '/#/?content=false'}) {
     const url = `http://localhost:${E2E_PORT}${uri}`;
 
-    await page.setViewportSize({width: 1000, height: 1000});
-
-    const currentUrl = page.url();
-    await page.goto(url);
-    if (currentUrl !== 'about:blank') {
-        // Reload only if we were already on a page
-        await page.reload();
+    const currentViewportSize = page.viewportSize();
+    if (currentViewportSize.width !== 1000 || currentViewportSize.height !== 1000) {
+        await page.setViewportSize({width: 1000, height: 1000});
     }
 
-    await page.waitForSelector('.koenig-lexical');
+    const currentUrl = page.url();
+    if (currentUrl === 'about:blank') {
+        // First page load
+        await page.goto(url);
 
-    await exposeLexicalEditor(page);
-}
+        await page.waitForSelector('.koenig-lexical');
 
-export async function resetEditor({page}) {
-    await page.evaluate(() => {
-        window.lexicalEditor.setEditorState(window.originalEditorState);
-        window.lexicalEditor.blur();
-    });
+        await exposeLexicalEditor(page);
+    } else {
+        // Subsequent pages nagivated to using react router
+        await page.evaluate(async ([navigateTo, force]) => {
+            window.lexicalEditor.blur();
+            window.lexicalEditor.setEditorState(window.originalEditorState);
+
+            if (force) {
+                // Purposefully navigate away from the current page to ensure component is reloaded
+                window.navigate('/404');
+                await new Promise((res) => {
+                    setTimeout(() => {
+                        // Navigate in a task to ensure React Router cannot optimise out our first navigation
+                        window.navigate(navigateTo);
+                        res();
+                    }, 10);
+                });
+            } else {
+                await window.navigate(navigateTo);
+            }
+        }, [uri.slice(2), currentUrl === url]);
+        await exposeLexicalEditor(page);
+    }
 }
 
 async function exposeLexicalEditor(page) {

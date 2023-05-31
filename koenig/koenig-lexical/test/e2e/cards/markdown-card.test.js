@@ -7,8 +7,7 @@ import {
     html,
     initialize,
     insertCard,
-    isMac,
-    resetEditor
+    isMac
 } from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
@@ -22,11 +21,10 @@ test.describe('Markdown card', async () => {
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
-        await initialize({page});
     });
 
     test.beforeEach(async () => {
-        await resetEditor({page});
+        await initialize({page});
     });
 
     test.afterAll(async () => {

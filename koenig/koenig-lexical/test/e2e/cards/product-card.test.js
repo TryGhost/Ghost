@@ -6,11 +6,21 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 test.describe('Product card', async () => {
-    test.beforeEach(async ({page}) => {
+    let page;
+
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
+    });
+
+    test.beforeEach(async () => {
         await initialize({page});
     });
 
-    test('can import serialized product card nodes', async function ({page}) {
+    test.afterAll(async () => {
+        await page.close();
+    });
+
+    test('can import serialized product card nodes', async function () {
         await page.evaluate(() => {
             const serializedState = JSON.stringify({
                 root: {
@@ -92,7 +102,7 @@ test.describe('Product card', async () => {
             `, {ignoreCardToolbarContents: true, ignoreInnerSVG: true});
     });
 
-    test('renders product card node', async function ({page}) {
+    test('renders product card node', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'product'});
 
@@ -104,7 +114,7 @@ test.describe('Product card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('can upload image file', async function ({page}) {
+    test('can upload image file', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'product'});
         await uploadImg(page);
@@ -120,7 +130,7 @@ test.describe('Product card', async () => {
         await expect(await page.getByTestId('media-placeholder')).toBeVisible();
     });
 
-    test('can show errors for failed image upload', async function ({page}) {
+    test('can show errors for failed image upload', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'product'});
         await uploadImg(page, 'large-image-fail.jpeg');
@@ -129,7 +139,7 @@ test.describe('Product card', async () => {
         await expect(await page.getByTestId('media-placeholder-errors')).toBeVisible();
     });
 
-    test('can upload dropped image', async function ({page}) {
+    test('can upload dropped image', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
 
         await focusEditor(page);
@@ -152,7 +162,7 @@ test.describe('Product card', async () => {
         await expect(await page.getByTestId('product-card-image')).toBeVisible();
     });
 
-    test('can show errors if was dropped a file with wrong extension', async function ({page}) {
+    test('can show errors if was dropped a file with wrong extension', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image-fail.jpeg');
 
         await focusEditor(page);
@@ -175,7 +185,7 @@ test.describe('Product card', async () => {
         await expect(await page.getByTestId('media-placeholder-errors')).toBeVisible();
     });
 
-    test('can show/hide rating starts if rating enabled/disabled', async function ({page}) {
+    test('can show/hide rating starts if rating enabled/disabled', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'product'});
 
@@ -193,7 +203,7 @@ test.describe('Product card', async () => {
         await expect(productStars).toBeVisible();
     });
 
-    test('can show/hide button if button settings was enabled/disabled', async function ({page}) {
+    test('can show/hide button if button settings was enabled/disabled', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'product'});
 
@@ -221,7 +231,7 @@ test.describe('Product card', async () => {
         await expect(await button.getAttribute('href')).toEqual('https://google.com/');
     });
 
-    test('can fill title and description', async ({page}) => {
+    test('can fill title and description', async () => {
         await focusEditor(page);
         await insertCard(page, {cardName: 'product'});
         await page.keyboard.type('Title');
@@ -313,7 +323,7 @@ test.describe('Product card', async () => {
             `, {ignoreCardToolbarContents: true, ignoreInnerSVG: true});
     });
 
-    test('can add snippet', async function ({page}) {
+    test('can add snippet', async function () {
         await focusEditor(page);
         // insert new card
         await insertCard(page, {cardName: 'product'});
@@ -334,7 +344,7 @@ test.describe('Product card', async () => {
         await expect(await page.locator('[data-kg-card="product"]')).toHaveCount(2);
     });
 
-    test('renders product card toolbar', async ({page}) => {
+    test('renders product card toolbar', async () => {
         await focusEditor(page);
         await insertCard(page, {cardName: 'product'});
         await page.keyboard.type('Title');

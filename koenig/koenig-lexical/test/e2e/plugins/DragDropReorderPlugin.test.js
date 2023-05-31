@@ -1,5 +1,5 @@
 import path from 'path';
-import {assertHTML, dragMouse, focusEditor, html, initialize, resetEditor} from '../../utils/e2e';
+import {assertHTML, dragMouse, focusEditor, html, initialize} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
@@ -10,11 +10,10 @@ test.describe('Drag Drop Reorder Plugin', async function () {
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
-        await initialize({page});
     });
 
     test.beforeEach(async () => {
-        await resetEditor({page});
+        await initialize({page});
     });
 
     test.afterAll(async () => {

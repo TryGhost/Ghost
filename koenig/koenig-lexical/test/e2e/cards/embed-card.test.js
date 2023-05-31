@@ -1,4 +1,4 @@
-import {assertHTML, createSnippet, focusEditor, html, initialize, pasteText, resetEditor} from '../../utils/e2e';
+import {assertHTML, createSnippet, focusEditor, html, initialize, pasteText} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Embed card', async () => {
@@ -6,11 +6,10 @@ test.describe('Embed card', async () => {
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
-        await initialize({page});
     });
 
     test.beforeEach(async () => {
-        await resetEditor({page});
+        await initialize({page});
     });
 
     test.afterAll(async () => {

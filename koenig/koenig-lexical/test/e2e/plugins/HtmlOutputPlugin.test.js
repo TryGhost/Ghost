@@ -2,11 +2,21 @@ import {assertHTML, focusEditor, html, initialize, isMac, pasteText} from '../..
 import {expect, test} from '@playwright/test';
 
 test.describe('Html Output Plugin', async function () {
-    test.beforeEach(async function ({page}) {
+    let page;
+
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
+    });
+
+    test.beforeEach(async () => {
         await initialize({page, uri: '/#/html-output'});
     });
 
-    test('can render html to editor', async function ({page}) {
+    test.afterAll(async () => {
+        await page.close();
+    });
+
+    test('can render html to editor', async function () {
         await focusEditor(page);
 
         await assertHTML(page, html`
@@ -19,7 +29,7 @@ test.describe('Html Output Plugin', async function () {
         `);
     });
 
-    test('can parse editor state to html', async function ({page}) {
+    test('can parse editor state to html', async function () {
         const ctrl = isMac() ? 'Meta' : 'Control';
         await focusEditor(page);
 

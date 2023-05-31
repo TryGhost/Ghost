@@ -1,4 +1,4 @@
-import {assertHTML, assertSelection, focusEditor, html, initialize, insertCard, resetEditor} from '../utils/e2e';
+import {assertHTML, assertSelection, focusEditor, html, initialize, insertCard} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Slash menu', async () => {
@@ -6,11 +6,10 @@ test.describe('Slash menu', async () => {
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
-        await initialize({page});
     });
 
     test.beforeEach(async () => {
-        await resetEditor({page});
+        await initialize({page});
     });
 
     test.afterAll(async () => {
