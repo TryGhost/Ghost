@@ -1,6 +1,5 @@
 import * as React from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
-import generateEditorState from '../utils/generateEditorState';
 import {$canShowPlaceholderCurry} from '@lexical/text';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {BASIC_NODES, KoenigCardWrapper} from '../index.js';
@@ -8,7 +7,7 @@ import {EmailCtaNode as BaseEmailCtaNode, INSERT_EMAIL_CTA_COMMAND} from '@trygh
 import {ReactComponent as EmailCtaCardIcon} from '../assets/icons/kg-card-type-email-cta.svg';
 import {EmailCtaNodeComponent} from './EmailCtaNodeComponent';
 import {ReactComponent as EmailIndicatorIcon} from '../assets/icons/kg-indicator-email.svg';
-import {createEditor} from 'lexical';
+import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 
 // re-export here so we don't need to import from multiple places throughout the app
 export {INSERT_EMAIL_CTA_COMMAND} from '@tryghost/kg-default-nodes';
@@ -33,14 +32,12 @@ export class EmailCtaNode extends BaseEmailCtaNode {
     constructor(dataset = {}, key) {
         super(dataset, key);
 
-        // create nested editor
-        this.__htmlEditor = dataset.htmlEditor || createEditor({nodes: BASIC_NODES});
-        this.__htmlEditorInitialState = dataset.htmlEditorInitialState;
-        if (!this.__htmlEditorInitialState) {
-            this.__htmlEditorInitialState = generateEditorState({
-                editor: createEditor({nodes: BASIC_NODES}),
-                initialHtml: dataset.html
-            });
+        // set up nested editor instances
+        setupNestedEditor(this, '__htmlEditor', {editor: dataset.htmlEditor, nodes: BASIC_NODES});
+
+        // populate nested editors on initial construction
+        if (!dataset.htmlEditor) {
+            populateNestedEditor(this, '__htmlEditor', dataset.html);
         }
     }
 

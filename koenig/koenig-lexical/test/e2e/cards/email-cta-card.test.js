@@ -1,4 +1,4 @@
-import {assertHTML, createSnippet, focusEditor, html, initialize} from '../../utils/e2e';
+import {assertHTML, createSnippet, focusEditor, html, initialize, isMac} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 async function insertEmailCard(page) {
@@ -9,6 +9,7 @@ async function insertEmailCard(page) {
 }
 
 test.describe('Email card', async () => {
+    const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
     let page;
 
     test.beforeAll(async ({browser}) => {
@@ -25,28 +26,25 @@ test.describe('Email card', async () => {
 
     test.describe('import JSON', async () => {
         test('can import a email CTA card node', async function () {
-            await page.evaluate(() => {
-                const serializedState = JSON.stringify({
-                    root: {
-                        children: [{
-                            type: 'email-cta',
-                            alignment: 'left',
-                            html: '<p>Hello</p>',
-                            segment: 'status:free',
-                            showButton: false,
-                            showDividers: false
-                        }],
-                        direction: 'ltr',
-                        format: '',
-                        indent: 0,
-                        type: 'root',
-                        version: 1
-                    }
-                });
-                const editor = window.lexicalEditor;
-                const editorState = editor.parseEditorState(serializedState);
-                editor.setEditorState(editorState);
-            });
+            const contentParam = encodeURIComponent(JSON.stringify({
+                root: {
+                    children: [{
+                        type: 'email-cta',
+                        alignment: 'left',
+                        html: '<p>Hello</p>',
+                        segment: 'status:free',
+                        showButton: false,
+                        showDividers: false
+                    }],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+
+            await initialize({page, uri: `/#/?content=${contentParam}`});
 
             await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
@@ -443,5 +441,37 @@ test.describe('Email card', async () => {
         // Expect content to have 'Hello World'
         const content = page.locator('[data-kg-card="email-cta"] > div > div.koenig-lexical');
         await expect(content).toHaveText('Hello world');
+    });
+
+    test('can undo/redo without losing html content', async function () {
+        await focusEditor(page);
+        await insertEmailCard(page);
+
+        await page.keyboard.type('Hello');
+        await page.keyboard.press('Escape');
+        await page.keyboard.press('Backspace');
+        await page.keyboard.press(`${ctrlOrCmd}+z`);
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div><svg></svg></div>
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="email-cta">
+                    <div>
+                        <div>Free members</div>
+                        <hr />
+                        <div>
+                            <div data-kg="editor">
+                                <div contenteditable="false" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none">
+                                    <p dir="ltr"><span data-lexical-text="true">Hello</span></p>
+                                </div>
+                            </div>
+                        </div>
+                        <hr />
+                        <div></div>
+                    </div>
+                </div>
+            </div>
+            <p><br /></p>
+            `, {ignoreInnerSVG: true, ignoreCardToolbarContents: true});
     });
 });
