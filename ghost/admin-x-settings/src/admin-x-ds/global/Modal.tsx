@@ -4,10 +4,15 @@ import Heading from './Heading';
 import React from 'react';
 import {useModal} from '@ebay/nice-modal-react';
 
-export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'bleed';
+export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'bleed' | number;
 
 export interface ModalProps {
+
+    /**
+     * Possible values are: `sm`, `md`, `lg`, `xl, `full`, `bleed`. Yu can also use any number to set an arbitrary width.
+     */
     size?: ModalSize;
+
     title?: string;
     okLabel?: string;
     okColor?: string;
@@ -55,37 +60,42 @@ const Modal: React.FC<ModalProps> = ({
         });
     }
 
-    let modalStyles = 'relative rounded overflow-hidden z-50 mx-auto flex flex-col justify-between bg-white shadow-xl w-full';
-    let backdropStyles = 'fixed inset-0 h-[100vh] w-[100vw] overflow-y-scroll ';
+    let modalClasses = 'relative rounded overflow-hidden z-50 mx-auto flex flex-col justify-between bg-white shadow-xl w-full';
+    let backdropClasses = 'fixed inset-0 h-[100vh] w-[100vw] overflow-y-scroll ';
 
     switch (size) {
     case 'sm':
-        modalStyles += ` max-w-[480px] ${!noPadding && 'p-8'}`;
-        backdropStyles += ' p-[8vmin]';
+        modalClasses += ` max-w-[480px] ${!noPadding && 'p-8'}`;
+        backdropClasses += ' p-[8vmin]';
         break;
 
     case 'md':
-        modalStyles += ` max-w-[720px] ${!noPadding && 'p-8'}`;
-        backdropStyles += ' p-[8vmin]';
+        modalClasses += ` max-w-[720px] ${!noPadding && 'p-8'}`;
+        backdropClasses += ' p-[8vmin]';
         break;
 
     case 'lg':
-        modalStyles += ` max-w-[1020px] ${!noPadding && 'p-12'}`;
-        backdropStyles += ' p-[4vmin]';
+        modalClasses += ` max-w-[1020px] ${!noPadding && 'p-12'}`;
+        backdropClasses += ' p-[4vmin]';
         break;
 
     case 'xl':
-        modalStyles += ` max-w-[1240px] ${!noPadding && 'p-14'}`;
-        backdropStyles += ' p-[3vmin]';
+        modalClasses += ` max-w-[1240px] ${!noPadding && 'p-14'}`;
+        backdropClasses += ' p-[3vmin]';
         break;
 
     case 'full':
-        modalStyles += ` h-full ${!noPadding && 'p-12'}`;
-        backdropStyles += ' p-[2vmin]';
+        modalClasses += ` h-full ${!noPadding && 'p-12'}`;
+        backdropClasses += ' p-[2vmin]';
         break;
 
     case 'bleed':
-        modalStyles += ` h-full ${!noPadding && 'p-12'}`;
+        modalClasses += ` h-full ${!noPadding && 'p-12'}`;
+        break;
+
+    default: 
+        modalClasses += ` ${!noPadding && 'p-8'}`;
+        backdropClasses += ' p-[8vmin]';
         break;
     }
 
@@ -95,10 +105,14 @@ const Modal: React.FC<ModalProps> = ({
         }
     };
 
+    const modalStyles = (typeof size === 'number') ? {
+        width: size + 'px'
+    } : {};
+
     return (
-        <div className={backdropStyles} id='modal-backdrop' onClick={handleBackdropClick}>
+        <div className={backdropClasses} id='modal-backdrop' onClick={handleBackdropClick}>
             <div className='pointer-events-none fixed inset-0 z-0 bg-[rgba(98,109,121,0.15)] backdrop-blur-[3px]'></div>
-            <section className={modalStyles}>
+            <section className={modalClasses} style={modalStyles}>
                 <div className='h-full'>
                     {title && <Heading level={4}>{title}</Heading>}
                     {children}
