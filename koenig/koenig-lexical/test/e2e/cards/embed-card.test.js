@@ -1,7 +1,8 @@
-import {assertHTML, createSnippet, focusEditor, html, initialize, pasteText} from '../../utils/e2e';
+import {assertHTML, createSnippet, focusEditor, html, initialize, isMac, pasteText} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Embed card', async () => {
+    const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
     let page;
 
     test.beforeAll(async ({browser}) => {
@@ -17,46 +18,71 @@ test.describe('Embed card', async () => {
     });
 
     test('can import serialized embed card nodes', async function () {
-        await page.evaluate(() => {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'embed',
-                        html: '<iframe width="200" height="113" src="https://www.youtube.com/embed/7hCPODjJO7s?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen title="Project Binky - Episode 1  - Austin Mini GT-Four - Turbo Charged 4WD Mini"></iframe>',
-                        metadata: {
-                            author_name: 'Bad Obsession Motorsport',
-                            author_url: 'https://www.youtube.com/@BadObsessionMotorsport',
-                            height: 113,
-                            provider_name: 'YouTube',
-                            provider_url: 'https://www.youtube.com/',
-                            thumbnail_height: 360,
-                            thumbnail_url: 'https://i.ytimg.com/vi/7hCPODjJO7s/hqdefault.jpg',
-                            thumbnail_width: '480',
-                            title: 'Project Binky - Episode 1  - Austin Mini GT-Four - Turbo Charged 4WD Mini',
-                            version: '1.0',
-                            width: 200
-                        },
-                        embedType: 'video',
-                        url: 'https://www.youtube.com/watch?v=7hCPODjJO7s'
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
-            const editor = window.lexicalEditor;
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
-        });
+        const contentParam = encodeURIComponent(JSON.stringify({
+            root: {
+                children: [{
+                    type: 'embed',
+                    html: '<iframe width="200" height="113" src="https://www.youtube.com/embed/7hCPODjJO7s?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen title="Project Binky - Episode 1  - Austin Mini GT-Four - Turbo Charged 4WD Mini"></iframe>',
+                    metadata: {
+                        author_name: 'Bad Obsession Motorsport',
+                        author_url: 'https://www.youtube.com/@BadObsessionMotorsport',
+                        height: 113,
+                        provider_name: 'YouTube',
+                        provider_url: 'https://www.youtube.com/',
+                        thumbnail_height: 360,
+                        thumbnail_url: 'https://i.ytimg.com/vi/7hCPODjJO7s/hqdefault.jpg',
+                        thumbnail_width: '480',
+                        title: 'Project Binky - Episode 1  - Austin Mini GT-Four - Turbo Charged 4WD Mini',
+                        version: '1.0',
+                        width: 200
+                    },
+                    embedType: 'video',
+                    url: 'https://www.youtube.com/watch?v=7hCPODjJO7s',
+                    caption: 'This is a <i>caption</i>'
+                }],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        }));
+
+        await initialize({page, uri: `/#/?content=${contentParam}`});
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="embed">
+                    <div>
+                        <div>
+                            <iframe
+                                srcdoc='<iframe width="200" height="113" src="https://www.youtube.com/embed/7hCPODjJO7s?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen title="Project Binky - Episode 1  - Austin Mini GT-Four - Turbo Charged 4WD Mini"></iframe>'
+                                tabindex="-1"
+                                title="embed-card-iframe"></iframe>
+                            <div></div>
+                        </div>
+                        <figcaption>
+                            <div>
+                                <div>
+                                    <div data-kg="editor">
+                                        <div
+                                            contenteditable="true"
+                                            spellcheck="true"
+                                            data-lexical-editor="true"
+                                            role="textbox">
+                                            <p dir="ltr">
+                                                <span data-lexical-text="true">This is a</span>
+                                                <em data-lexical-text="true">caption</em>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </figcaption>
+                    </div>
                 </div>
             </div>
-        `, {ignoreCardContents: true});
+        `, {ignoreCardContents: false});
     });
 
     test('renders embed card node', async function () {
@@ -220,6 +246,86 @@ test.describe('Embed card', async () => {
         await expect(await page.getByTestId('embed-url-loading-container')).toBeVisible();
         await expect(await page.getByTestId('embed-url-loading-container')).toBeHidden();
         await expect(await page.getByTestId('embed-iframe')).toBeVisible();
+    });
+
+    test('can delete and undo without losing caption', async function () {
+        const contentParam = encodeURIComponent(JSON.stringify({
+            root: {
+                children: [{
+                    type: 'embed',
+                    html: '<iframe width="200" height="113" src="https://www.youtube.com/embed/7hCPODjJO7s?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen title="Project Binky - Episode 1  - Austin Mini GT-Four - Turbo Charged 4WD Mini"></iframe>',
+                    metadata: {
+                        author_name: 'Bad Obsession Motorsport',
+                        author_url: 'https://www.youtube.com/@BadObsessionMotorsport',
+                        height: 113,
+                        provider_name: 'YouTube',
+                        provider_url: 'https://www.youtube.com/',
+                        thumbnail_height: 360,
+                        thumbnail_url: 'https://i.ytimg.com/vi/7hCPODjJO7s/hqdefault.jpg',
+                        thumbnail_width: '480',
+                        title: 'Project Binky - Episode 1  - Austin Mini GT-Four - Turbo Charged 4WD Mini',
+                        version: '1.0',
+                        width: 200
+                    },
+                    embedType: 'video',
+                    url: 'https://www.youtube.com/watch?v=7hCPODjJO7s'
+                }],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        }));
+
+        await initialize({page, uri: `/#/?content=${contentParam}`});
+
+        await focusEditor(page);
+        await expect(page.getByTestId('embed-iframe')).toBeVisible();
+
+        await page.click('[data-kg-card="embed"]');
+        await page.click('[data-testid="embed-caption"]');
+        await page.keyboard.type('test caption');
+        await page.keyboard.press('Enter');
+        await page.keyboard.press('Backspace');
+        await page.keyboard.press('Backspace');
+        await page.keyboard.press(`${ctrlOrCmd}+z`);
+
+        await page.waitForSelector('[title="embed-card-iframe"][style]');
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="embed">
+                    <div>
+                        <div>
+                            <iframe
+                                srcdoc='<iframe width="200" height="113" src="https://www.youtube.com/embed/7hCPODjJO7s?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen title="Project Binky - Episode 1  - Austin Mini GT-Four - Turbo Charged 4WD Mini"></iframe>'
+                                tabindex="-1"
+                                title="embed-card-iframe"></iframe>
+                            <div></div>
+                        </div>
+                        <figcaption>
+                            <div>
+                                <div>
+                                    <div data-kg="editor">
+                                        <div
+                                            contenteditable="true"
+                                            spellcheck="true"
+                                            data-lexical-editor="true"
+                                            role="textbox">
+                                            <p dir="ltr">
+                                                <span data-lexical-text="true">test caption</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </figcaption>
+                    </div>
+                    <div data-kg-card-toolbar="embed"></div>
+                </div>
+            </div>
+        `, {ignoreCardToolbarContents: true});
     });
 });
 
