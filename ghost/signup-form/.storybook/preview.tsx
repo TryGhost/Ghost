@@ -1,8 +1,7 @@
 import React from 'react';
 
 import type { Preview } from "@storybook/react";
-import '../src/styles/demo.css';
-import '../src/styles/iframe.css';
+import './storybook.css';
 
 const preview: Preview = {
 	parameters: {
