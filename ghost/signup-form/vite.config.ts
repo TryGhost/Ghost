@@ -51,7 +51,7 @@ export default (function viteConfig() {
             commonjsOptions: {
                 include: [/ghost/, /packages/, /node_modules/],
                 dynamicRequireRoot: '../',
-                dynamicRequireTargets: SUPPORTED_LOCALES.map(locale => `../i18n/locales/${locale}/portal.json`)
+                dynamicRequireTargets: SUPPORTED_LOCALES.map(locale => `../i18n/locales/${locale}/signup-form.json`)
             }
         },
         test: {
