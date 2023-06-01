@@ -1,6 +1,5 @@
-import {expect} from '@playwright/test';
+import {expect, test} from '@playwright/test';
 import {initialize} from '../utils/e2e';
-import {test} from '@playwright/test';
 
 test.describe('Form', async () => {
     test.describe('Display options', () => {
@@ -20,10 +19,23 @@ test.describe('Form', async () => {
             expect(await p.innerText()).toBe('Sign up to get the latest news and updates.');
         });
 
-        test('Uses the accent color', async ({page}) => {
+        test('Uses the background color for full layout', async ({page}) => {
+            // Need rgb notation here, because getComputedStyle returns rgb notation
+            const color = 'rgb(123, 255, 0)';
+            const {frame} = await initialize({page, title: 'Title', backgroundColor: color});
+            const wrapper = frame.getByTestId('wrapper');
+
+            // Check calculated background color of the button
+            const backgroundColor = await wrapper.evaluate((el) => {
+                return window.getComputedStyle(el).backgroundColor;
+            });
+            expect(backgroundColor).toBe(color);
+        });
+
+        test('Uses the button color', async ({page}) => {
             // Need rgb notation here, because getComputedStyle returns rgb notation
             const color = 'rgb(255, 123, 0)';
-            const {frame} = await initialize({page, color});
+            const {frame} = await initialize({page, buttonColor: color});
             const submitButton = frame.getByRole('button');
 
             // Check calculated background color of the button
