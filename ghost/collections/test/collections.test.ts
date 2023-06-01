@@ -1,31 +1,15 @@
 import assert from 'assert';
-import {CollectionsService, CollectionsRepositoryInMemory, PostsDataRepositoryInMemory} from '../src/index';
-import {PostDTO} from '../src/PostDTO';
-
-import {posts as postFixtures} from './fixtures/posts';
-
-const buildPostsRepositoryWithFixtures = async (): Promise<PostsDataRepositoryInMemory> => {
-    const repository = new PostsDataRepositoryInMemory();
-
-    for (const post of postFixtures) {
-        const postDTO = await PostDTO.map(post);
-        await repository.save(postDTO);
-    }
-
-    return repository;
-};
+import {CollectionsService, CollectionsRepositoryInMemory} from '../src/index';
+import {posts} from './fixtures/posts';
 
 describe('CollectionsService', function () {
     let collectionsService: CollectionsService;
-    let postsRepository: PostsDataRepositoryInMemory;
 
     beforeEach(async function () {
         const collectionsRepository = new CollectionsRepositoryInMemory();
-        postsRepository = await buildPostsRepositoryWithFixtures();
 
         collectionsService = new CollectionsService({
-            collectionsRepository,
-            postsRepository
+            collectionsRepository
         });
     });
 
@@ -34,13 +18,11 @@ describe('CollectionsService', function () {
     });
 
     it('Can do CRUD operations on a collection', async function () {
-        const savedCollection = await collectionsService.save({
+        const savedCollection = await collectionsService.createCollection({
             title: 'testing collections',
             description: 'testing collections description',
             type: 'manual',
-            filter: null,
-            feature_image: null,
-            deleted: false
+            filter: null
         });
 
         const createdCollection = await collectionsService.getById(savedCollection.id);
@@ -58,13 +40,32 @@ describe('CollectionsService', function () {
         assert.equal(deletedCollection, null, 'Collection should be deleted');
     });
 
-    describe('edit', function () {
-        it('Can edit existing collection', async function () {
-            const savedCollection = await collectionsService.save({
+    describe('addPostToCollection', function () {
+        it('Can add a Post to a Collection', async function () {
+            const collection = await collectionsService.createCollection({
                 title: 'testing collections',
                 description: 'testing collections description',
-                type: 'manual',
-                deleted: false
+                type: 'manual'
+            });
+
+            const editedCollection = await collectionsService.addPostToCollection(collection.id, posts[0]);
+
+            assert.equal(editedCollection?.posts.length, 1, 'Collection should have one post');
+            assert.equal(editedCollection?.posts[0].id, posts[0].id, 'Collection should have the correct post');
+        });
+
+        it('Does not error when trying to add a post to a collection that does not exist', async function () {
+            const editedCollection = await collectionsService.addPostToCollection('fake id', posts[0]);
+            assert(editedCollection === null);
+        });
+    });
+
+    describe('edit', function () {
+        it('Can edit existing collection', async function () {
+            const savedCollection = await collectionsService.createCollection({
+                title: 'testing collections',
+                description: 'testing collections description',
+                type: 'manual'
             });
 
             const editedCollection = await collectionsService.edit({
@@ -84,14 +85,11 @@ describe('CollectionsService', function () {
         });
 
         it('Adds a Post to a Collection', async function () {
-            const collection = await collectionsService.save({
+            const collection = await collectionsService.createCollection({
                 title: 'testing collections',
                 description: 'testing collections description',
-                type: 'manual',
-                deleted: false
+                type: 'manual'
             });
-
-            const posts = await postsRepository.getAll();
 
             const editedCollection = await collectionsService.edit({
                 id: collection.id,
@@ -101,7 +99,7 @@ describe('CollectionsService', function () {
             });
 
             assert.equal(editedCollection?.posts.length, 1, 'Collection should have one post');
-            assert.equal(editedCollection?.posts[0].id, posts[0].id, 'Collection should have the correct post');
+            assert.equal(editedCollection?.posts[0], posts[0].id, 'Collection should have the correct post');
         });
     });
 });
