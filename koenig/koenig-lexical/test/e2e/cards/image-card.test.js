@@ -3,6 +3,7 @@ import {
     assertHTML,
     createDataTransfer,
     createSnippet,
+    ctrlOrCmd,
     enterUntilScrolled,
     expectUnchangedScrollPosition,
     focusEditor,
@@ -33,37 +34,55 @@ test.describe('Image card', async () => {
     });
 
     test('can import serialized image card nodes', async function () {
-        await page.evaluate(() => {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'image',
-                        src: '/content/images/2022/11/koenig-lexical.jpg',
-                        width: 3840,
-                        height: 2160,
-                        title: 'This is a title',
-                        altText: 'This is some alt text',
-                        caption: 'This is a <b>caption</b>',
-                        cardWidth: 'wide'
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
-            const editor = window.lexicalEditor;
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
-        });
+        const contentParam = encodeURIComponent(JSON.stringify({
+            root: {
+                children: [{
+                    type: 'image',
+                    src: '/content/images/2022/11/koenig-lexical.jpg',
+                    width: 3840,
+                    height: 2160,
+                    title: 'This is a title',
+                    altText: 'This is some alt text',
+                    caption: 'This is a <b>caption</b>',
+                    cardWidth: 'wide'
+                }],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        }));
+
+        await initialize({page, uri: `/#/?content=${contentParam}`});
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="image">
+                    <figure data-kg-card-width="wide">
+                        <div><img alt="" src="/content/images/2022/11/koenig-lexical.jpg" /></div>
+                        <figcaption>
+                            <div>
+                                <div>
+                                    <div data-kg="editor">
+                                        <div
+                                            contenteditable="true"
+                                            spellcheck="true"
+                                            data-lexical-editor="true"
+                                            role="textbox">
+                                            <p dir="ltr">
+                                                <span data-lexical-text="true">This is a</span>
+                                                <strong data-lexical-text="true">caption</strong>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </figcaption>
+                    </figure>
                 </div>
             </div>
-        `, {ignoreCardContents: true});
+        `, {ignoreCardContents: false});
     });
 
     test('can upload image with `data:` url', async function () {
@@ -980,6 +999,52 @@ test.describe('Image card', async () => {
             // image should be top-level and shouldn't have paragraph as a parent
             await expect(await page.getByTestId('image-card-populated')).toBeVisible();
             await expect(page.locator('p:has([data-kg-card="image"])')).toHaveCount(0);
+        });
+    });
+
+    test.describe('caption', function () {
+        test.beforeEach(async function () {
+            const contentParam = encodeURIComponent(JSON.stringify({
+                root: {
+                    children: [{
+                        type: 'image',
+                        src: '/content/images/2022/11/koenig-lexical.jpg',
+                        width: 3840,
+                        height: 2160,
+                        title: 'This is a title',
+                        alt: 'This is some alt text',
+                        caption: 'This is a <b>caption</b>',
+                        cardWidth: 'wide'
+                    }],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+
+            await initialize({page, uri: `/#/?content=${contentParam}`});
+        });
+
+        test('can delete node and undo without losing caption', async function () {
+            await page.click('.koenig-lexical');
+            await page.keyboard.press('ArrowUp');
+            await page.waitForSelector('[data-kg-card="image"][data-kg-card-selected="true"]');
+            await page.keyboard.press('Backspace');
+            await expect(page.locator('[data-kg-card="image"]')).not.toBeVisible();
+            await page.keyboard.press(`${ctrlOrCmd()}+z`);
+
+            await expect(page.getByTestId('image-caption-editor')).toHaveText('This is a caption');
+        });
+
+        test('can toggle between alt and caption', async function () {
+            await expect(page.getByTestId('image-caption-editor')).toHaveText('This is a caption');
+            await page.click('[data-kg-card="image"]'); // alt toggle not shown until selected
+            await page.click('[data-testid="alt-toggle-button"]');
+            await expect(page.getByTestId('image-caption-editor')).toHaveValue('This is some alt text');
+            await page.click('[data-testid="alt-toggle-button"]');
+            await expect(page.getByTestId('image-caption-editor')).toHaveText('This is a caption');
         });
     });
 });

@@ -24,10 +24,11 @@ export function FloatingLinkToolbar({anchorElem, onEditLink, disabled}) {
         }
 
         const onMouseEnter = (event) => {
+            if (toolbarRef.current?.contains(event.target)) {
+                return;
+            }
+
             editor.update(() => {
-                if (toolbarRef.current?.contains(event.target)) {
-                    return;
-                }
                 const node = $getNearestNodeFromDOMNode(event.target);
                 setTargetElem(event.target);
                 const isLink = $isLinkNode(node) || $isLinkNode(node?.getParent());
@@ -51,6 +52,7 @@ export function FloatingLinkToolbar({anchorElem, onEditLink, disabled}) {
         document.addEventListener('mousemove', onMouseEnterDebounced);
 
         return () => {
+            onMouseEnterDebounced.cancel();
             document.removeEventListener('mousemove', onMouseEnterDebounced);
         };
     }, [disabled, editor, linkNode]);
