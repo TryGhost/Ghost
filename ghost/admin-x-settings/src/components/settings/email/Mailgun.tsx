@@ -1,7 +1,7 @@
-import Dropdown from '../../../admin-x-ds/global/Dropdown';
 import IconLabel from '../../../admin-x-ds/global/IconLabel';
 import Link from '../../../admin-x-ds/global/Link';
 import React from 'react';
+import Select from '../../../admin-x-ds/global/Select';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/TextField';
@@ -60,7 +60,7 @@ const MailGun: React.FC = () => {
     const inputs = (
         <SettingGroupContent>
             <div className='grid grid-cols-[120px_auto] gap-x-3 gap-y-6'>
-                <Dropdown
+                <Select
                     defaultSelectedOption={mailgunRegion}
                     options={MAILGUN_REGIONS}
                     title="Mailgun region"

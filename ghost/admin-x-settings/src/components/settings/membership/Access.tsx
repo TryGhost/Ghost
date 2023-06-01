@@ -1,5 +1,5 @@
-import Dropdown from '../../../admin-x-ds/global/Dropdown';
 import React from 'react';
+import Select from '../../../admin-x-ds/global/Select';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import useSettingGroup from '../../../hooks/useSettingGroup';
@@ -67,7 +67,7 @@ const Access: React.FC = () => {
 
     const form = (
         <SettingGroupContent columns={1}>
-            <Dropdown
+            <Select
                 defaultSelectedOption={membersSignupAccess}
                 hint='Who should be able to subscribe to your site?'
                 options={MEMBERS_SIGNUP_ACCESS_OPTIONS}
@@ -76,7 +76,7 @@ const Access: React.FC = () => {
                     updateSetting('members_signup_access', value);
                 }}
             />
-            <Dropdown
+            <Select
                 defaultSelectedOption={defaultContentVisibility}
                 hint='When a new post is created, who should have access?'
                 options={DEFAULT_CONTENT_VISIBILITY_OPTIONS}
@@ -85,7 +85,7 @@ const Access: React.FC = () => {
                     updateSetting('default_content_visibility', value);
                 }}
             />
-            <Dropdown
+            <Select
                 defaultSelectedOption={commentsEnabled}
                 hint='Who can comment on posts?'
                 options={COMMENTS_ENABLED_OPTIONS}

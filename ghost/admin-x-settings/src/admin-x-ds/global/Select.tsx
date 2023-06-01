@@ -3,15 +3,15 @@ import React, {useEffect, useState} from 'react';
 import Heading from './Heading';
 import Hint from './Hint';
 
-export interface DropdownOption {
+export interface SelectOption {
     value: string;
     label: string;
 }
 
-interface DropdownProps {
+interface SelectProps {
     title?: string;
     prompt?: string;
-    options: DropdownOption[];
+    options: SelectOption[];
     onSelect: (value: string) => void;
     error?:boolean;
     hint?: React.ReactNode;
@@ -19,7 +19,7 @@ interface DropdownProps {
     clearBg?: boolean;
 }
 
-const Dropdown: React.FC<DropdownProps> = ({title, prompt, options, onSelect, error, hint, defaultSelectedOption, clearBg = false}) => {
+const Select: React.FC<SelectProps> = ({title, prompt, options, onSelect, error, hint, defaultSelectedOption, clearBg = false}) => {
     const [selectedOption, setSelectedOption] = useState(defaultSelectedOption);
 
     useEffect(() => {
@@ -55,4 +55,4 @@ const Dropdown: React.FC<DropdownProps> = ({title, prompt, options, onSelect, er
     );
 };
 
-export default Dropdown;
+export default Select;
