@@ -37,7 +37,6 @@ const ALPHA_FEATURES = [
     'websockets',
     'stripeAutomaticTax',
     'makingItRain',
-    'postHistory',
     'postDiffing',
     'imageEditor',
     'signupCard',

@@ -20,7 +20,6 @@ const {Tag} = require('./tag');
 const {Newsletter} = require('./newsletter');
 const {BadRequestError} = require('@tryghost/errors');
 const {PostRevisions} = require('@tryghost/post-revisions');
-const labs = require('../../shared/labs');
 
 const messages = {
     isAlreadyPublished: 'Your post is already published, please reload your page.',
@@ -869,80 +868,45 @@ Post = ghostBookshelf.Model.extend({
                     });
             });
         }
+        if (!model.get('mobiledoc') && !options.importing && !options.migrating) {
+            const postRevisions = new PostRevisions({
+                config: {
+                    max_revisions: POST_REVISIONS_COUNT,
+                    revision_interval_ms: POST_REVISIONS_INTERVAL_MS
+                }
+            });
+            const authorId = this.contextUser(options);
+            ops.push(async function updateRevisions() {
+                const revisionModels = await ghostBookshelf.model('PostRevision')
+                    .findAll(Object.assign({
+                        filter: `post_id:${model.id}`,
+                        columns: ['id', 'lexical', 'created_at', 'author_id', 'title', 'reason', 'post_status', 'created_at_ts', 'feature_image']
+                    }, _.pick(options, 'transacting')));
 
-        if (!labs.isSet('postHistory')) {
-            if (model.hasChanged('lexical') && !model.get('mobiledoc') && !options.importing && !options.migrating) {
-                ops.push(function updateRevisions() {
-                    return ghostBookshelf.model('PostRevision')
-                        .findAll(Object.assign({
-                            filter: `post_id:${model.id}`,
-                            columns: ['id']
-                        }, _.pick(options, 'transacting')))
-                        .then((revisions) => {
-                            // Store previous + latest lexical content
-                            if (!revisions.length && options.method !== 'insert') {
-                                model.set('post_revisions', [{
-                                    post_id: model.id,
-                                    lexical: model.previous('lexical'),
-                                    created_at_ts: Date.now() - 1
-                                }, {
-                                    post_id: model.id,
-                                    lexical: model.get('lexical'),
-                                    created_at_ts: Date.now()
-                                }]);
-                            } else {
-                                const revisionsJSON = revisions.toJSON().slice(0, POST_REVISIONS_COUNT - 1);
+                const revisions = revisionModels.toJSON();
 
-                                model.set('post_revisions', revisionsJSON.concat([{
-                                    post_id: model.id,
-                                    lexical: model.get('lexical'),
-                                    created_at_ts: Date.now()
-                                }]));
-                            }
-                        });
-                });
-            }
-        } else {
-            if (!model.get('mobiledoc') && !options.importing && !options.migrating) {
-                const postRevisions = new PostRevisions({
-                    config: {
-                        max_revisions: POST_REVISIONS_COUNT,
-                        revision_interval_ms: POST_REVISIONS_INTERVAL_MS
-                    }
-                });
-                const authorId = this.contextUser(options);
-                ops.push(async function updateRevisions() {
-                    const revisionModels = await ghostBookshelf.model('PostRevision')
-                        .findAll(Object.assign({
-                            filter: `post_id:${model.id}`,
-                            columns: ['id', 'lexical', 'created_at', 'author_id', 'title', 'reason', 'post_status', 'created_at_ts', 'feature_image']
-                        }, _.pick(options, 'transacting')));
+                const current = {
+                    id: model.id,
+                    lexical: model.get('lexical'),
+                    html: model.get('html'),
+                    author_id: authorId,
+                    feature_image: model.get('feature_image'),
+                    feature_image_alt: model.get('posts_meta')?.feature_image_alt,
+                    feature_image_caption: model.get('posts_meta')?.feature_image_caption,
+                    title: model.get('title'),
+                    post_status: model.get('status')
+                };
 
-                    const revisions = revisionModels.toJSON();
-
-                    const current = {
-                        id: model.id,
-                        lexical: model.get('lexical'),
-                        html: model.get('html'),
-                        author_id: authorId,
-                        feature_image: model.get('feature_image'),
-                        feature_image_alt: model.get('posts_meta')?.feature_image_alt,
-                        feature_image_caption: model.get('posts_meta')?.feature_image_caption,
-                        title: model.get('title'),
-                        post_status: model.get('status')
-                    };
-
-                    // This can be refactored once we have the status stored in each revision
-                    const revisionOptions = {
-                        forceRevision: options.save_revision,
-                        isPublished: newStatus === 'published',
-                        newStatus,
-                        olderStatus
-                    };
-                    const newRevisions = await postRevisions.getRevisions(current, revisions, revisionOptions);
-                    model.set('post_revisions', newRevisions);
-                });
-            }
+                // This can be refactored once we have the status stored in each revision
+                const revisionOptions = {
+                    forceRevision: options.save_revision,
+                    isPublished: newStatus === 'published',
+                    newStatus,
+                    olderStatus
+                };
+                const newRevisions = await postRevisions.getRevisions(current, revisions, revisionOptions);
+                model.set('post_revisions', newRevisions);
+            });
         }
 
         if (this.get('tiers')) {

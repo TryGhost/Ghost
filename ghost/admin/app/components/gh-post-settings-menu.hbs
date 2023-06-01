@@ -446,18 +446,16 @@
         </div>
         {{/if}}
 
-        {{#if (feature 'postHistory')}}
-            {{#if this.showPostHistory}}
-                <GhFullscreenModal
-                    @modal="post-history"
-                    @model={{hash
-                        post=this.post
-                        editorAPI=this.editorAPI
-                        toggleSettingsMenu=this.toggleSettingsMenu
-                    }}
-                    @close={{this.closePostHistory}}
-                    @modifier="total-overlay post-history" />
-            {{/if}}
+        {{#if this.showPostHistory}}
+            <GhFullscreenModal
+                @modal="post-history"
+                @model={{hash
+                    post=this.post
+                    editorAPI=this.editorAPI
+                    toggleSettingsMenu=this.toggleSettingsMenu
+                }}
+                @close={{this.closePostHistory}}
+                @modifier="total-overlay post-history" />
         {{/if}}
     </div>
 </div>

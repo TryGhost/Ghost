@@ -69,7 +69,6 @@ export default class FeatureService extends Service {
     @feature('stripeAutomaticTax') stripeAutomaticTax;
     @feature('makingItRain') makingItRain;
     @feature('i18n') i18n;
-    @feature('postHistory') postHistory;
     @feature('postDiffing') postDiffing;
     @feature('announcementBar') announcementBar;
     @feature('imageEditor') imageEditor;
