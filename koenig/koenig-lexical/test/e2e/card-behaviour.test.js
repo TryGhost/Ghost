@@ -19,8 +19,8 @@ test.describe('Card behaviour', async () => {
     test.describe('CLICKS', function () {
         test('click selects card', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
+            await page.keyboard.type('---');
 
             // clicking first HR card makes it selected
             await page.click('hr');
@@ -57,7 +57,7 @@ test.describe('Card behaviour', async () => {
 
         test('click keeps selection', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.click('hr');
             await page.click('hr');
 
@@ -73,7 +73,7 @@ test.describe('Card behaviour', async () => {
 
         test('click off deselects', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.click('hr');
             await page.click('p');
 
@@ -89,7 +89,7 @@ test.describe('Card behaviour', async () => {
 
         test('click outside editor deselects', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.click('hr');
             await page.click('body');
 
@@ -266,7 +266,7 @@ test.describe('Card behaviour', async () => {
         test('with selected card after paragraph', async function () {
             await focusEditor(page);
             await page.keyboard.press('Enter');
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.click('hr');
 
             await assertHTML(page, html`
@@ -302,8 +302,8 @@ test.describe('Card behaviour', async () => {
         // moves selection to previous card
         test('when selected card is after card', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
+            await page.keyboard.type('---');
 
             await page.keyboard.press('ArrowLeft');
 
@@ -345,7 +345,7 @@ test.describe('Card behaviour', async () => {
     test.describe('RIGHT', function () {
         test('with selected card before paragraph', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.click('hr');
 
             await assertHTML(page, html`
@@ -379,8 +379,8 @@ test.describe('Card behaviour', async () => {
         // moves selection to previous card
         test('when selected card is before card', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
+            await page.keyboard.type('---');
             await page.click('hr');
 
             await assertHTML(page, html`
@@ -483,8 +483,8 @@ test.describe('Card behaviour', async () => {
         // selects the previous card
         test('with selected card after card', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
+            await page.keyboard.type('---');
             await page.click('[data-lexical-decorator]:nth-of-type(2)');
 
             // sanity check, second card is selected
@@ -515,7 +515,7 @@ test.describe('Card behaviour', async () => {
         // selects the card once caret reaches top of paragraph
         test('moving through paragraph to card', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await expect(await page.locator('[data-kg-card="horizontalrule"]')).toBeVisible();
             // three lines of text - paste it because keyboard.type is slow for long text
             const text = 'Chislic bacon flank andouille picanha turkey porchetta chuck venison shank. Beef sirloin bresaola, meatball hamburger pork belly shankle. Frankfurter brisket t-bone alcatra porchetta tongue flank pork chop kevin picanha prosciutto meatball.';
@@ -582,7 +582,7 @@ test.describe('Card behaviour', async () => {
 
         test('moving through paragraph with breaks to card', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.keyboard.type('First line');
             await page.keyboard.down('Shift');
             await page.keyboard.press('Enter');
@@ -639,7 +639,7 @@ test.describe('Card behaviour', async () => {
         // moves caret to beginning of paragraph
         test('with selected card before paragraph', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.keyboard.type('First line');
             await page.keyboard.down('Shift');
             await page.keyboard.press('Enter');
@@ -677,8 +677,8 @@ test.describe('Card behaviour', async () => {
         // selects the next card
         test('with selected card before card', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
+            await page.keyboard.type('---');
             await page.click('[data-lexical-decorator]');
 
             // sanity check, first card is selected
@@ -716,7 +716,7 @@ test.describe('Card behaviour', async () => {
             await page.keyboard.up('Shift');
             await page.keyboard.type('Second line after break');
             await page.keyboard.press('Enter');
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
 
             // place cursor at beginning of first line
             const pHandle = await page.locator('[data-lexical-editor] > p').nth(0);
@@ -770,7 +770,7 @@ test.describe('Card behaviour', async () => {
 
         test('with selected card at end of document', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.keyboard.press('Backspace');
 
             // sanity check
@@ -806,7 +806,7 @@ test.describe('Card behaviour', async () => {
     test.describe('ENTER', function () {
         test('with selected card creates paragraph after and moves selection', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.click('hr');
 
             await assertHTML(page, html`
@@ -845,7 +845,7 @@ test.describe('Card behaviour', async () => {
             await focusEditor(page);
             await page.keyboard.type('Testing');
             await page.keyboard.press('Enter');
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.click('hr');
 
             await assertHTML(page, html`
@@ -875,8 +875,8 @@ test.describe('Card behaviour', async () => {
 
         test('with selected card after card', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
+            await page.keyboard.type('---');
             await page.click('[data-lexical-decorator]:nth-of-type(2) hr');
 
             await assertHTML(page, html`
@@ -907,7 +907,7 @@ test.describe('Card behaviour', async () => {
 
         test('with selected card as first section followed by paragraph', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.keyboard.type('Testing');
             await page.click('hr');
             await page.keyboard.press('Backspace');
@@ -926,8 +926,8 @@ test.describe('Card behaviour', async () => {
 
         test('with selected card as first section followed by card', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
+            await page.keyboard.type('---');
             await page.click('hr');
             await page.keyboard.press('Backspace');
 
@@ -943,7 +943,7 @@ test.describe('Card behaviour', async () => {
 
         test('with selected card as only node', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.keyboard.press('Backspace');
             await page.keyboard.press('Backspace');
 
@@ -955,7 +955,7 @@ test.describe('Card behaviour', async () => {
         // deletes empty paragraph, selects card
         test('on empty paragraph after card', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.keyboard.press('Enter');
             await page.keyboard.type('Populated paragraph after empty paragraph');
             await page.keyboard.press('ArrowUp');
@@ -985,7 +985,7 @@ test.describe('Card behaviour', async () => {
             await focusEditor(page);
             await page.keyboard.type('First paragraph');
             await page.keyboard.press('Enter');
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.keyboard.type('Second paragraph');
             for (let i = 0; i < 'Second paragraph'.length; i++) {
                 await page.keyboard.press('ArrowLeft');
@@ -999,7 +999,7 @@ test.describe('Card behaviour', async () => {
                         <hr>
                     </div>
                 </div>
-                <p><span data-lexical-text="true">Second paragraph</span></p>
+                <p dir="ltr"><span data-lexical-text="true">Second paragraph</span></p>
             `);
 
             // sanity check - cursor is at beginning of second paragraph
@@ -1014,7 +1014,7 @@ test.describe('Card behaviour', async () => {
 
             await assertHTML(page, html`
                 <p dir="ltr"><span data-lexical-text="true">First paragraph</span></p>
-                <p><span data-lexical-text="true">Second paragraph</span></p>
+                <p dir="ltr"><span data-lexical-text="true">Second paragraph</span></p>
             `);
 
             await assertSelection(page, {
@@ -1029,7 +1029,7 @@ test.describe('Card behaviour', async () => {
     test.describe('DELETE', function () {
         test('with selected card before paragraph', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.keyboard.type('Testing');
             await page.click('hr');
 
@@ -1058,8 +1058,8 @@ test.describe('Card behaviour', async () => {
 
         test('with selected card before card', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
+            await page.keyboard.type('---');
             await page.click('hr');
 
             await page.keyboard.press('Delete');
@@ -1076,7 +1076,7 @@ test.describe('Card behaviour', async () => {
 
         test('with selected card as only node', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.keyboard.press('Backspace');
             await page.keyboard.press('Delete');
 
@@ -1089,7 +1089,7 @@ test.describe('Card behaviour', async () => {
         test('on empty paragraph before card', async function () {
             await focusEditor(page);
             await page.keyboard.press('Enter');
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.keyboard.press('ArrowUp');
             await page.keyboard.press('ArrowUp');
 
@@ -1140,7 +1140,7 @@ test.describe('Card behaviour', async () => {
             await focusEditor(page);
             await page.keyboard.type('First paragraph');
             await page.keyboard.press('Enter');
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.keyboard.type('Second paragraph');
             await page.click('p:nth-of-type(1)');
 
@@ -1155,7 +1155,7 @@ test.describe('Card behaviour', async () => {
 
             await assertHTML(page, html`
                 <p dir="ltr"><span data-lexical-text="true">First paragraph</span></p>
-                <p><span data-lexical-text="true">Second paragraph</span></p>
+                <p dir="ltr"><span data-lexical-text="true">Second paragraph</span></p>
             `);
 
             await assertSelection(page, {
@@ -1176,7 +1176,7 @@ test.describe('Card behaviour', async () => {
     test.describe('CMD+ENTER', function () {
         test('with a non-edit-mode card selected', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.click('hr');
 
             await expect(await page.locator('[data-kg-card-selected="true"]')).not.toBeNull();
@@ -1289,7 +1289,7 @@ test.describe('Card behaviour', async () => {
         test('with an edit mode card that is empty before another card', async function () {
             await focusEditor(page);
             await page.keyboard.press('Enter');
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.keyboard.press('ArrowUp');
             await page.keyboard.press('ArrowUp');
             await page.keyboard.type('``` ');
@@ -1331,7 +1331,7 @@ test.describe('Card behaviour', async () => {
             await focusEditor(page);
             await page.keyboard.type('First');
             await page.keyboard.press('Enter');
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.keyboard.type('Second');
             await page.keyboard.press('ArrowUp');
             await page.keyboard.press('ArrowUp');
@@ -1364,7 +1364,7 @@ test.describe('Card behaviour', async () => {
             await focusEditor(page);
             await page.keyboard.type('First');
             await page.keyboard.press('Enter');
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.keyboard.type('Second');
 
             // sanity check
@@ -1396,7 +1396,7 @@ test.describe('Card behaviour', async () => {
             await focusEditor(page);
             await page.keyboard.type('First');
             await page.keyboard.press('Enter');
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.keyboard.type('Second');
             await page.keyboard.press('ArrowUp');
 
@@ -1412,8 +1412,8 @@ test.describe('Card behaviour', async () => {
 
         test('with selected card and card at top', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
+            await page.keyboard.type('---');
             await page.keyboard.press('ArrowUp');
 
             await page.keyboard.press('Meta+ArrowUp');
@@ -1443,7 +1443,7 @@ test.describe('Card behaviour', async () => {
 
         test('with caret in text and card at top', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.keyboard.type('First');
             await page.keyboard.press('Enter');
             await page.keyboard.type('Second');
@@ -1471,7 +1471,7 @@ test.describe('Card behaviour', async () => {
             await focusEditor(page);
             await page.keyboard.type('First');
             await page.keyboard.press('Enter');
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.keyboard.type('Second');
             await page.keyboard.press('ArrowUp');
 
@@ -1487,8 +1487,8 @@ test.describe('Card behaviour', async () => {
 
         test('with selected card and card at bottom', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
+            await page.keyboard.type('---');
             await page.keyboard.press('Backspace');
             await page.keyboard.press('ArrowUp');
 
@@ -1522,7 +1522,7 @@ test.describe('Card behaviour', async () => {
             await page.keyboard.press('Enter');
             await page.keyboard.type('Second');
             await page.keyboard.press('Enter');
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.keyboard.press('Backspace');
             await page.keyboard.press('ArrowUp');
             await page.keyboard.press('ArrowUp');

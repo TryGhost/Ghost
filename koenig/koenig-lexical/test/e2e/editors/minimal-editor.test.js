@@ -41,7 +41,7 @@ test.describe('Koening Editor with minimal nodes', async function () {
     test('ignores hr card shortcut', async function () {
         await focusEditor(page);
 
-        await page.keyboard.type('--- ');
+        await page.keyboard.type('---');
         await page.keyboard.press('Enter');
 
         await assertHTML(page, html`

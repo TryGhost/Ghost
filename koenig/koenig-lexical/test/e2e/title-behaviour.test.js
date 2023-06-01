@@ -162,7 +162,7 @@ test.describe('Title behaviour (ExternalControlPlugin)', async () => {
 
             test('selects card if that is first section in doc', async function () {
                 await focusEditor(page);
-                await page.keyboard.type('--- ');
+                await page.keyboard.type('---');
 
                 await page.getByTestId('post-title').click();
                 await page.keyboard.press('ArrowDown');
@@ -217,7 +217,7 @@ test.describe('Title behaviour (ExternalControlPlugin)', async () => {
 
             test('with selected card at start of doc moves to title', async function () {
                 await focusEditor(page);
-                await page.keyboard.type('--- ');
+                await page.keyboard.type('---');
                 await page.keyboard.press('ArrowUp');
                 await page.keyboard.press('ArrowUp');
 
@@ -281,7 +281,7 @@ test.describe('Title behaviour (ExternalControlPlugin)', async () => {
                 await focusEditor(page);
                 await page.keyboard.type('One');
                 await page.keyboard.press('Enter');
-                await page.keyboard.type('--- ');
+                await page.keyboard.type('---');
                 await page.keyboard.press('ArrowUp');
                 await page.keyboard.press('ArrowUp');
 
@@ -313,7 +313,7 @@ test.describe('Title behaviour (ExternalControlPlugin)', async () => {
 
             test('with selected card at start of doc moves to title', async function () {
                 await focusEditor(page);
-                await page.keyboard.type('--- ');
+                await page.keyboard.type('---');
                 await page.keyboard.press('ArrowUp');
                 await page.keyboard.press('ArrowLeft');
 
@@ -377,7 +377,7 @@ test.describe('Title behaviour (ExternalControlPlugin)', async () => {
                 await focusEditor(page);
                 await page.keyboard.type('One');
                 await page.keyboard.press('Enter');
-                await page.keyboard.type('--- ');
+                await page.keyboard.type('---');
                 await page.keyboard.press('ArrowUp');
                 await page.keyboard.press('ArrowLeft');
 
@@ -400,7 +400,7 @@ test.describe('Title behaviour (ExternalControlPlugin)', async () => {
 
             test('moves cursor to title when card is selected', async function () {
                 await focusEditor(page);
-                await page.keyboard.type('--- ');
+                await page.keyboard.type('---');
                 await page.keyboard.press('ArrowUp');
                 await page.keyboard.press('Shift+Tab');
 

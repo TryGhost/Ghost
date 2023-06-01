@@ -80,7 +80,7 @@ test.describe('List behaviour', async () => {
 
         test('at beginning of populated list after card', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.keyboard.type('- first li');
             await page.keyboard.press('Enter');
             await page.keyboard.type('second li');

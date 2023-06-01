@@ -1,5 +1,12 @@
 import {$createHorizontalRuleNode, INSERT_HORIZONTAL_RULE_COMMAND} from '../nodes/HorizontalRuleNode';
-import {$getSelection, $isParagraphNode, $isRangeSelection, COMMAND_PRIORITY_EDITOR} from 'lexical';
+import {
+    $createParagraphNode,
+    $getSelection,
+    $isParagraphNode,
+    $isRangeSelection,
+    COMMAND_PRIORITY_EDITOR
+} from 'lexical';
+import {getSelectedNode} from '../utils/getSelectedNode.js';
 import {useEffect} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -43,6 +50,49 @@ export const HorizontalRulePlugin = () => {
             },
             COMMAND_PRIORITY_EDITOR
         );
+    }, [editor]);
+
+    // added markdown shortcut to divider card
+    useEffect(() => {
+        return editor.registerUpdateListener(() => {
+            editor.update(() => {
+                // don't do anything when using IME input
+                if (editor.isComposing()) {
+                    return;
+                }
+
+                const selection = $getSelection();
+                if (!$isRangeSelection(selection) || !selection.type === 'text' || !selection.isCollapsed()) {
+                    return;
+                }
+
+                const dividerRegExp = /^(---|\*\*\*|___)\s?$/;
+                const node = getSelectedNode(selection).getTopLevelElement();
+                if (!node || !$isParagraphNode(node) || !node.getTextContent().match(dividerRegExp)) {
+                    return;
+                }
+
+                const nativeSelection = window.getSelection();
+                const anchorNode = nativeSelection.anchorNode;
+                const rootElement = editor.getRootElement();
+
+                if (anchorNode?.nodeType !== Node.TEXT_NODE || !rootElement.contains(anchorNode)) {
+                    return;
+                }
+
+                const line = $createHorizontalRuleNode();
+                const parentNode = node.getTopLevelElement();
+
+                if (parentNode.getNextSibling()) {
+                    parentNode.replace(line);
+                } else {
+                    parentNode.insertBefore(line);
+                    parentNode.replace($createParagraphNode());
+                }
+
+                line.selectNext();
+            });
+        });
     }, [editor]);
 
     return null;

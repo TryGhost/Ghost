@@ -344,7 +344,7 @@ test.describe('Plus button', async () => {
 
         test('deselects a selected card when plus button is clicked', async function () {
             await focusEditor(page);
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.click('[data-kg-card="horizontalrule"]');
 
             await assertHTML(page, html`

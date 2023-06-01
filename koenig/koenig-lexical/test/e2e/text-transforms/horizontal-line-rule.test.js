@@ -18,7 +18,7 @@ test.describe('Renders horizontal line rule', async () => {
 
     test('renders horizontal line rule', async function () {
         await focusEditor(page);
-        await page.keyboard.type('--- ');
+        await page.keyboard.type('---');
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">

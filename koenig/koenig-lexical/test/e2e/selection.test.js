@@ -23,7 +23,7 @@ test.describe('Selection behaviour', async () => {
         await focusEditor(page);
         await page.keyboard.type('First paragraph');
         await page.keyboard.press('Enter');
-        await page.keyboard.type('--- ');
+        await page.keyboard.type('---');
         await page.keyboard.type('Second paragraph');
 
         const firstPBoundingBox = await page.locator('p').nth(0).boundingBox();
@@ -46,7 +46,7 @@ test.describe('Selection behaviour', async () => {
         await focusEditor(page);
         await page.keyboard.type('First paragraph');
         await page.keyboard.press('Enter');
-        await page.keyboard.type('--- ');
+        await page.keyboard.type('---');
         await page.keyboard.type('Second paragraph');
 
         const firstPBoundingBox = await page.locator('p').nth(0).boundingBox();
@@ -61,7 +61,7 @@ test.describe('Selection behaviour', async () => {
                     <hr>
                 </div>
             </div>
-            <p><span data-lexical-text="true">Second paragraph</span></p>
+            <p dir="ltr"><span data-lexical-text="true">Second paragraph</span></p>
         `);
     });
 });

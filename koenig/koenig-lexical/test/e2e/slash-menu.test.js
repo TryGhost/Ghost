@@ -333,7 +333,7 @@ test.describe('Slash menu', async () => {
         test('can insert card at beginning of document before card', async function () {
             await focusEditor(page);
             await page.keyboard.press('Enter');
-            await page.keyboard.type('--- ');
+            await page.keyboard.type('---');
             await page.keyboard.press('ArrowUp');
             await page.keyboard.press('ArrowUp');
             await insertCard(page, {cardName: 'callout'});
