@@ -17,7 +17,6 @@ const messages = {
 const GA_FEATURES = [
     'audienceFeedback',
     'themeErrorsNotification',
-    'emailErrors',
     'outboundLinkTagging',
     'announcementBar'
 ];
