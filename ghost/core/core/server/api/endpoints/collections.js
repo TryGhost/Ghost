@@ -116,9 +116,9 @@ module.exports = {
         // @NOTE: should have permissions when moving out of Alpha
         permissions: false,
         async query(frame) {
-            const collectionPost = await collectionsService.api.addPost(Object.assign(frame.data.collections[0], {
-                collection_id: frame.options.id
-            }), frame.options);
+            const collectionPost = await collectionsService.api.addPost(frame.options.id, {
+                id: frame.data.posts[0].id
+            });
 
             if (!collectionPost) {
                 throw new errors.NotFoundError({
