@@ -12,6 +12,10 @@ export class AsideNode extends ElementNode {
         );
     }
 
+    static get urlTransformMap() {
+        return {};
+    }
+
     constructor(key) {
         super(key);
     }
@@ -37,6 +41,20 @@ export class AsideNode extends ElementNode {
         const parser = new AsideParser(this);
         return parser.DOMConversionMap;
     }
+
+    /* c8 ignore start */
+    createDOM() {
+        return document.createElement('div');
+    }
+
+    updateDOM() {
+        return false;
+    }
+
+    isInline() {
+        return false;
+    }
+    /* c8 ignore stop */
 }
 
 export function $createAsideNode() {
