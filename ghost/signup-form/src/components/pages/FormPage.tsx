@@ -11,7 +11,7 @@ export const FormPage: React.FC = () => {
 
     const submit = async ({email}: { email: string }) => {
         if (!isValidEmail(email)) {
-            setError(t(`Please enter a valid email address.`));
+            setError(t(`Please enter a valid email address`));
             return;
         }
 
@@ -25,7 +25,7 @@ export const FormPage: React.FC = () => {
             });
         } catch (_) {
             setLoading(false);
-            setError(t(`Something went wrong, please try again.`));
+            setError(t(`Something went wrong, please try again`));
         }
     };
 
