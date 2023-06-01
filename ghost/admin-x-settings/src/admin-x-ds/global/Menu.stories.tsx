@@ -5,7 +5,8 @@ import Menu from './Menu';
 const meta = {
     title: 'Global / Menu',
     component: Menu,
-    tags: ['autodocs']
+    tags: ['autodocs'],
+    decorators: [(_story: any) => (<div style={{maxWidth: '600px', margin: '0 auto'}}>{_story()}</div>)]
 } satisfies Meta<typeof Menu>;
 
 export default meta;
@@ -19,6 +20,14 @@ const items = [
 
 export const Default: Story = {
     args: {
-        items
+        items: items,
+        position: 'right'
+    }
+};
+
+export const Left: Story = {
+    args: {
+        items: items,
+        position: 'left'
     }
 };

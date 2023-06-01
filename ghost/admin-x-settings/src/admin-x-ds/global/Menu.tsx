@@ -33,7 +33,7 @@ const Menu: React.FC<MenuProps> = ({items, position, className}) => {
 
     return (
         /* Menu */
-        <div className={className}>
+        <div className={`relative inline-block ${className}`}>
             {/* Menu Trigger */}
             <div>
                 <button aria-expanded="true" aria-haspopup="true" className="flex items-center rounded-sm bg-grey-100 px-2 py-1 text-grey-400 hover:text-grey-600" id="menu-button" type="button">
