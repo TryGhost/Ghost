@@ -29,18 +29,25 @@ export interface RolesResponseType {
 
 interface RequestOptions {
     method?: string;
-    body?: string;
+    body?: string | FormData;
+    headers?: {
+        'Content-Type'?: string;
+    };
 }
 
 const {apiRoot} = getGhostPaths();
 
 function fetcher(url: string, options: RequestOptions) {
     const endpoint = `${apiRoot}${url}`;
+    // By default, we set the Content-Type header to application/json
+    const headers = options?.headers || {
+        'Content-Type': 'application/json'
+    };
     return fetch(endpoint, {
         headers: {
             'app-pragma': 'no-cache',
             'x-ghost-version': '5.49',
-            'Content-Type': 'application/json'
+            ...headers
         },
         method: 'GET',
         mode: 'cors',
@@ -107,4 +114,28 @@ const rolesApi = {
     }
 };
 
-export {settingsApi, usersApi, rolesApi};
+const siteApi = {
+    browse: async () => {
+        const response = await fetcher(`/site/`, {});
+        const data: any = await response.json();
+        return data;
+    }
+};
+
+const imagesApi = {
+    upload: async ({file}: {file: File}) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('purpose', 'image');
+
+        const response = await fetcher(`/images/upload/`, {
+            method: 'POST',
+            body: formData,
+            headers: {}
+        });
+        const data: any = await response.json();
+        return data;
+    }
+};
+
+export {settingsApi, usersApi, rolesApi, siteApi, imagesApi};
