@@ -3,13 +3,11 @@ import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import MINIMAL_NODES from './MinimalNodes';
 import React from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
-import generateEditorState from '../utils/generateEditorState';
-// import populateNestedEditor from '../utils/populateNestedEditor';
 import {$canShowPlaceholderCurry} from '@lexical/text';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {HeaderNode as BaseHeaderNode, INSERT_HEADER_COMMAND} from '@tryghost/kg-default-nodes';
 import {ReactComponent as HeaderCardIcon} from '../assets/icons/kg-card-type-header.svg';
-import {createEditor} from 'lexical';
+import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 export {INSERT_HEADER_COMMAND} from '@tryghost/kg-default-nodes';
 
 export class HeaderNode extends BaseHeaderNode {
@@ -34,28 +32,15 @@ export class HeaderNode extends BaseHeaderNode {
     constructor(dataset = {}, key) {
         super(dataset, key);
 
-        this.__headerTextEditor = dataset.headerTextEditor || createEditor({nodes: MINIMAL_NODES});
-        this.__headerTextEditorInitialState = dataset.headerTextEditorInitialState;
-        if (!this.__headerTextEditorInitialState) {
-            // wrap the header in a paragraph so it gets parsed correctly
-            // - we serialize with no wrapper so the renderer can decide how to wrap it
-            const initialHtml = dataset.header ? `<p>${dataset.header}</p>` : null;
-            this.__headerTextEditorInitialState = generateEditorState({
-                editor: createEditor({nodes: MINIMAL_NODES}),
-                initialHtml
-            });
-        }
+        setupNestedEditor(this, '__headerTextEditor', {editor: dataset.headerTextEditor, nodes: MINIMAL_NODES});
+        setupNestedEditor(this, '__subheaderTextEditor', {editor: dataset.subheaderTextEditor, nodes: MINIMAL_NODES});
 
-        this.__subheaderTextEditor = dataset.subheaderTextEditor || createEditor({nodes: MINIMAL_NODES});
-        this.__subheaderTextEditorInitialState = dataset.subheaderTextEditorInitialState;
-        if (!this.__subheaderTextEditorInitialState) {
-            // wrap the header in a paragraph so it gets parsed correctly
-            // - we serialize with no wrapper so the renderer can decide how to wrap it
-            const initialHtml = dataset.subheader ? `<p>${dataset.subheader}</p>` : null;
-            this.__subheaderTextEditorInitialState = generateEditorState({
-                editor: createEditor({nodes: MINIMAL_NODES}),
-                initialHtml
-            });
+        // populate nested editors on initial construction
+        if (!dataset.headerTextEditor && dataset.header) {
+            populateNestedEditor(this, '__headerTextEditor', `<p>${dataset.header}</p>`); // we serialize with no wrapper
+        }
+        if (!dataset.subheaderTextEditor && dataset.subheader) {
+            populateNestedEditor(this, '__subheaderTextEditor', `<p>${dataset.subheader}</p>`); // we serialize with no wrapper
         }
     }
 

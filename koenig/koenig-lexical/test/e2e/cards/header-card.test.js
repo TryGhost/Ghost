@@ -1,5 +1,5 @@
 import path from 'path';
-import {assertHTML, focusEditor, html, initialize} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, isMac} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
@@ -14,6 +14,7 @@ async function createHeaderCard({page}) {
 }
 
 test.describe('Header card', async () => {
+    const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
     let page;
 
     test.beforeAll(async ({browser}) => {
@@ -29,31 +30,28 @@ test.describe('Header card', async () => {
     });
 
     test('can import serialized header card nodes', async function () {
-        await page.evaluate(() => {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'header',
-                        size: 'small',
-                        style: 'image',
-                        buttonEnabled: false,
-                        buttonUrl: '',
-                        buttonText: '',
-                        header: '<span>hello world</span>',
-                        subheader: '<span>hello sub</span>',
-                        backgroundImageSrc: 'blob:http://localhost:5173/fa0956a8-5fb4-4732-9368-18f9d6d8d25a'
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
-            const editor = window.lexicalEditor;
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
-        });
+        const contentParam = encodeURIComponent(JSON.stringify({
+            root: {
+                children: [{
+                    type: 'header',
+                    size: 'small',
+                    style: 'image',
+                    buttonEnabled: false,
+                    buttonUrl: '',
+                    buttonText: '',
+                    header: '<span>hello world</span>',
+                    subheader: '<span>hello sub</span>',
+                    backgroundImageSrc: 'blob:http://localhost:5173/fa0956a8-5fb4-4732-9368-18f9d6d8d25a'
+                }],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        }));
+
+        await initialize({page, uri: `/#/?content=${contentParam}`});
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
@@ -326,5 +324,49 @@ test.describe('Header card', async () => {
         // Expect header to have 'Hello World'
         const header = page.locator('[data-kg-card="header"] [data-kg="editor"]').nth(0);
         await expect(header).toHaveText('Hello world');
+    });
+
+    test('can undo/redo without losing nested editor content', async () => {
+        await createHeaderCard({page});
+
+        await page.keyboard.type('Test title');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('Test description');
+        await page.keyboard.press('Escape');
+        await page.keyboard.press('Backspace');
+        await page.keyboard.press(`${ctrlOrCmd}+z`);
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="header">
+                    <div>
+                        <div>
+                            <div data-kg="editor">
+                                <div
+                                    contenteditable="false"
+                                    spellcheck="true"
+                                    data-lexical-editor="true"
+                                    aria-autocomplete="none">
+                                    <p dir="ltr"><span data-lexical-text="true">Test title</span></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div data-kg="editor">
+                                <div
+                                    contenteditable="false"
+                                    spellcheck="true"
+                                    data-lexical-editor="true"
+                                    aria-autocomplete="none">
+                                    <p dir="ltr"><span data-lexical-text="true">Test description</span></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div></div>
+                    </div>
+                </div>
+            </div>
+            <p><br /></p>
+        `, {});
     });
 });

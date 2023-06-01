@@ -367,7 +367,7 @@ test.describe('Product card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('can undo/redo without losing nested editor content', async ({page}) => {
+    test('can undo/redo without losing nested editor content', async () => {
         await focusEditor(page);
         await insertCard(page, {cardName: 'product'});
 

@@ -1,6 +1,5 @@
 import KoenigCaptionEditor from '../KoenigCaptionEditor';
 import React from 'react';
-import {$canShowPlaceholderCurry} from '@lexical/text';
 import {TextInput} from './TextInput';
 import {isEditorEmpty} from '../../utils/isEditorEmpty';
 
