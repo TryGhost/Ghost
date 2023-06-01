@@ -4,11 +4,10 @@ import MINIMAL_NODES from './MinimalNodes';
 import React from 'react';
 import SignupNodeComponent from './SignupNodeComponent';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
-import generateEditorState from '../utils/generateEditorState';
 import {$canShowPlaceholderCurry} from '@lexical/text';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {SignupNode as BaseSignupNode, INSERT_SIGNUP_COMMAND} from '@tryghost/kg-default-nodes';
-import {createEditor} from 'lexical';
+import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 
 import {ReactComponent as SignupCardIcon} from '../assets/icons/kg-card-type-signup.svg';
 
@@ -43,34 +42,22 @@ export class SignupNode extends BaseSignupNode {
     constructor(dataset = {}, key) {
         super(dataset, key);
 
-        this.__disclaimerTextEditor = dataset.disclaimerTextEditor || createEditor({nodes: BASIC_NODES});
-        this.__disclaimerTextEditorInitialState = dataset.disclaimerTextEditorInitialState;
-        if (!this.__disclaimerTextEditorInitialState) {
-            const initialHtml = dataset.disclaimer ? `<p>${dataset.disclaimer}</p>` : null;
-            this.__disclaimerTextEditorInitialState = generateEditorState({
-                editor: createEditor({nodes: MINIMAL_NODES}),
-                initialHtml
-            });
+        setupNestedEditor(this, '__disclaimerTextEditor', {editor: dataset.disclaimerTextEditor, nodes: BASIC_NODES});
+        // populate nested editors on initial construction
+        if (!dataset.disclaimerTextEditor && dataset.disclaimer) {
+            populateNestedEditor(this, '__disclaimerTextEditor', `<p>${dataset.disclaimer}</p>`);
         }
 
-        this.__headerTextEditor = dataset.headerTextEditor || createEditor({nodes: MINIMAL_NODES});
-        this.__headerTextEditorInitialState = dataset.headerTextEditorInitialState;
-        if (!this.__headerTextEditorInitialState) {
-            const initialHtml = dataset.header ? `<p>${dataset.header}</p>` : null;
-            this.__headerTextEditorInitialState = generateEditorState({
-                editor: createEditor({nodes: MINIMAL_NODES}),
-                initialHtml
-            });
+        setupNestedEditor(this, '__headerTextEditor', {editor: dataset.headerTextEditor, nodes: MINIMAL_NODES});
+        // populate nested editors on initial construction
+        if (!dataset.headerTextEditor && dataset.header) {
+            populateNestedEditor(this, '__headerTextEditor', `<p>${dataset.header}</p>`);
         }
 
-        this.__subheaderTextEditor = dataset.subheaderTextEditor || createEditor({nodes: MINIMAL_NODES});
-        this.__subheaderTextEditorInitialState = dataset.subheaderTextEditorInitialState;
-        if (!this.__subheaderTextEditorInitialState) {
-            const initialHtml = dataset.subheader ? `<p>${dataset.subheader}</p>` : null;
-            this.__subheaderTextEditorInitialState = generateEditorState({
-                editor: createEditor({nodes: MINIMAL_NODES}),
-                initialHtml
-            });
+        setupNestedEditor(this, '__subheaderTextEditor', {editor: dataset.subheaderTextEditor, nodes: MINIMAL_NODES});
+        // populate nested editors on initial construction
+        if (!dataset.subheaderTextEditor && dataset.subheader) {
+            populateNestedEditor(this, '__subheaderTextEditor', `<p>${dataset.subheader}</p>`);
         }
     }
 

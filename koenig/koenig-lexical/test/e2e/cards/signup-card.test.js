@@ -1,5 +1,5 @@
 import path from 'path';
-import {assertHTML, focusEditor, html, initialize, insertCard} from '../../utils/e2e';
+import {assertHTML, ctrlOrCmd, focusEditor, html, initialize, insertCard} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
@@ -21,37 +21,34 @@ test.describe('Signup card', async () => {
     });
 
     test('can import serialized signup card nodes', async function () {
-        await page.evaluate(() => {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        alignment: 'left',
-                        backgroundColor: 'accent',
-                        backgroundImageSrc: '__GHOST_URL__/content/images/2023/05/fake-image.jpg',
-                        buttonColor: '#ffffff',
-                        buttonText: '',
-                        buttonTextColor: '#000000',
-                        disclaimer: '<span>Disclaimer</span>',
-                        header: '<span>Header</span>',
-                        labels: [],
-                        layout: 'split',
-                        subheader: '<span>Subheader</span>',
-                        textColor: '#FFFFFF',
-                        type: 'signup',
-                        swaped: false,
-                        version: 1
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
+        const contentParam = encodeURIComponent(JSON.stringify({
+            root: {
+                children: [{
+                    alignment: 'left',
+                    backgroundColor: 'accent',
+                    backgroundImageSrc: '__GHOST_URL__/content/images/2023/05/fake-image.jpg',
+                    buttonColor: '#ffffff',
+                    buttonText: '',
+                    buttonTextColor: '#000000',
+                    disclaimer: '<span>Disclaimer</span>',
+                    header: '<span>Header</span>',
+                    labels: [],
+                    layout: 'split',
+                    subheader: '<span>Subheader</span>',
+                    textColor: '#FFFFFF',
+                    type: 'signup',
+                    swaped: false,
                     version: 1
-                }
-            });
-            const editor = window.lexicalEditor;
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
-        });
+                }],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        }));
+
+        await initialize({page, uri: `/#/?content=${contentParam}`});
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
@@ -504,5 +501,73 @@ test.describe('Signup card', async () => {
         // Check the parent class name was updated
         const swappedContainer = await page.locator('[data-testid="signup-card-container"]');
         await expect(swappedContainer).toHaveClass(/sm:flex-row-reverse/);
+    });
+
+    test('can undo/redo without losing nested editor content', async () => {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'signup'});
+
+        await page.click('[data-testid="signup-header-editor"]');
+        await page.keyboard.press(`${ctrlOrCmd()}+ArrowRight`);
+        await page.keyboard.type(' Header');
+
+        await page.click('[data-testid="signup-subheader-editor"]');
+        await page.keyboard.press(`${ctrlOrCmd()}+ArrowRight`);
+        await page.keyboard.type(' Subheader');
+
+        await page.click('[data-testid="signup-disclaimer-editor"]');
+        await page.keyboard.press(`${ctrlOrCmd()}+ArrowRight`);
+        await page.keyboard.type(' Disclaimer');
+
+        await page.keyboard.press('Escape');
+        await page.keyboard.press('Backspace');
+        await page.keyboard.press(`${ctrlOrCmd()}+z`);
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="signup">
+                    <div>
+                        <div>
+                            <div>
+                                <div data-kg="editor">
+                                    <div contenteditable="false" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none">
+                                        <p dir="ltr"><span data-lexical-text="true">
+                                            Sign up for Koenig Lexical Header
+                                        </span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div data-kg="editor">
+                                    <div contenteditable="false" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none">
+                                        <p dir="ltr"><span data-lexical-text="true">
+                                            There's a whole lot to discover in this editor. Let us help you settle in. Subheader
+                                        </span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div>
+                                    <input placeholder="yourname@example.com" tabindex="-1" readonly="" value="" />
+                                    <button disabled="" type="button"><span>Subscribe</span></button>
+                                </div>
+                            </div>
+                            <div>
+                                <div data-kg="editor">
+                                    <div contenteditable="true" spellcheck="true" data-lexical-editor="true" role="textbox">
+                                        <p dir="ltr"><span data-lexical-text="true">
+                                            No spam. Unsubscribe anytime. Disclaimer
+                                        </span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div></div>
+                    </div>
+                    <div data-kg-card-toolbar="signup"></div>
+                </div>
+            </div>
+            <p><br /></p>
+        `, {ignoreCardToolbarContents: true, ignoreInnerSVG: true});
     });
 });
