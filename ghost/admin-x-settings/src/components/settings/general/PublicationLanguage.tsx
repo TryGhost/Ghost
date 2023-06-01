@@ -55,13 +55,13 @@ const PublicationLanguage: React.FC = () => {
     return (
         <SettingGroup
             description="Set the language/locale which is used on your site"
+            navid='publication-language'
             saveState={saveState}
             state={currentState}
             title="Publication Language"
             onCancel={handleCancel}
             onSave={handleSave}
             onStateChange={handleStateChange}
-            navid='publication-language'
         >
             {currentState === 'view' ? values : inputFields }
         </SettingGroup>

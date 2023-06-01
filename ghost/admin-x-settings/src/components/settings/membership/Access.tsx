@@ -100,13 +100,13 @@ const Access: React.FC = () => {
     return (
         <SettingGroup
             description='Set up default access options for subscription and posts'
+            navid='access'
             saveState={saveState}
             state={currentState}
             title='Access'
             onCancel={handleCancel}
             onSave={handleSave}
             onStateChange={handleStateChange}
-            navid='access'
         >
             {currentState === 'view' ? values : form}
         </SettingGroup>

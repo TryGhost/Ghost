@@ -126,8 +126,8 @@ const Users: React.FC = () => {
     return (
         <SettingGroup
             customButtons={buttons}
-            title='Users and permissions'
             navid='users'
+            title='Users and permissions'
         >
             <Owner updateUser={updateUser} user={ownerUser} />
             <TabView tabs={tabs} />

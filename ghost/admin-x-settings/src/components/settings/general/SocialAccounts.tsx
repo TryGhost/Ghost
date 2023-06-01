@@ -90,11 +90,11 @@ const SocialAccounts: React.FC = () => {
     return (
         <SettingGroup
             description='Link your social accounts for full structured data and rich card support'
+            navid='social-accounts'
             state={currentState}
             title='Social accounts'
             onSave={handleSave}
             onStateChange={handleStateChange}
-            navid='social-accounts'
         >
             {currentState === 'view' ? values : inputs}
         </SettingGroup>
