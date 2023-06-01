@@ -32,7 +32,7 @@ const Twitter: React.FC = () => {
     };
 
     const handleImageDelete = () => {
-        alert('Delete twitter iamge');
+        alert('Delete twitter image');
     };
 
     const values = (
