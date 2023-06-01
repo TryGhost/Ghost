@@ -5,8 +5,17 @@
 /* ---------------------------------------------------------- */
 @font-face {
     font-family: "Inter";
-    src: url("fonts/Inter.ttf") format("truetype-variations");
+    src: url("fonts/Inter-roman.var.woff2") format("woff2");
     font-weight: 100 900;
+    font-style: normal;
+    font-named-instance: "Regular";
+}
+@font-face {
+    font-family: "Inter";
+    src: url("fonts/Inter-italic.var.woff2") format("woff2");
+    font-weight: 100 900;
+    font-style: italic;
+    font-named-instance: "Italic";
 }
 
 
