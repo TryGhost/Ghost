@@ -182,7 +182,6 @@
   },
   "dependencies": {
     "jose": "4.13.1",
-    "node-htmldiff": "^0.9.4",
     "path-browserify": "1.0.1",
     "webpack": "5.77.0"
   }
