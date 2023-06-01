@@ -1,6 +1,6 @@
-import React, {createContext, useCallback, useEffect, useState} from 'react';
+import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
+import {ServicesContext} from './ServiceProvider';
 import {Setting} from '../../types/api';
-import {settingsApi} from '../../utils/api';
 
 // Define the Settings Context
 interface SettingsContextProps {
@@ -19,13 +19,14 @@ const SettingsContext = createContext<SettingsContextProps>({
 
 // Create a Settings Provider component
 const SettingsProvider: React.FC<SettingsProviderProps> = ({children}) => {
+    const {api} = useContext(ServicesContext);
     const [settings, setSettings] = useState <Setting[] | null> (null);
 
     useEffect(() => {
         const fetchSettings = async (): Promise<void> => {
             try {
                 // Make an API call to fetch the settings
-                const data = await settingsApi.browse();
+                const data = await api.settings.browse();
                 setSettings(data.settings);
             } catch (error) {
                 // Log error in settings API
@@ -34,18 +35,18 @@ const SettingsProvider: React.FC<SettingsProviderProps> = ({children}) => {
 
         // Fetch the initial settings from the API
         fetchSettings();
-    }, []);
+    }, [api]);
 
     const saveSettings = useCallback(async (updatedSettings: Setting[]): Promise<void> => {
         try {
             // Make an API call to save the updated settings
-            const data = await settingsApi.edit(updatedSettings);
+            const data = await api.settings.edit(updatedSettings);
 
             setSettings(data.settings);
         } catch (error) {
             // Log error in settings API
         }
-    }, []);
+    }, [api]);
 
     // Provide the settings and the saveSettings function to the children components
     return (
