@@ -43,7 +43,7 @@ describe('Collections API', function () {
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init('users');
+        await fixtureManager.init('users', 'posts');
         await agent.loginAsOwner();
     });
 
@@ -122,7 +122,7 @@ describe('Collections API', function () {
         assert.equal(readResponse.body.collections[0].title, 'Test Collection to Read');
     });
 
-    describe('edit', function () {
+    describe('Edit', function () {
         let collectionToEdit;
 
         before(async function () {
@@ -328,5 +328,31 @@ describe('Collections API', function () {
                     id: anyErrorId
                 }]
             });
+    });
+
+    describe('Automatic Collection Filtering', function () {
+        it('Creates an automatic Collection with a featured filter', async function () {
+            const collection = {
+                title: 'Test Collection',
+                description: 'Test Collection Description',
+                type: 'automatic',
+                filter: 'featured:true'
+            };
+
+            await agent
+                .post('/collections/')
+                .body({
+                    collections: [collection]
+                })
+                .expectStatus(201)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('collections')
+                })
+                .matchBodySnapshot({
+                    collections: [buildMatcher(0)]
+                });
+        });
     });
 });
