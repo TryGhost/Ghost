@@ -49,7 +49,7 @@ export default (function viteConfig() {
                 output: {}
             },
             commonjsOptions: {
-                include: [/ghost/, /packages/, /node_modules/],
+                include: [/ghost/, /node_modules/],
                 dynamicRequireRoot: '../',
                 dynamicRequireTargets: SUPPORTED_LOCALES.map(locale => `../i18n/locales/${locale}/signup-form.json`)
             }
