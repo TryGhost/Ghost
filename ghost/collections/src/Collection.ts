@@ -5,7 +5,11 @@ import ObjectID from 'bson-objectid';
 
 const messages = {
     invalidIDProvided: 'Invalid ID provided for Collection',
-    invalidDateProvided: 'Invalid date provided for {fieldName}'
+    invalidDateProvided: 'Invalid date provided for {fieldName}',
+    invalidFilterProvided: {
+        message: 'Invalid filter provided for automatic Collection',
+        context: 'Automatic type of collection should always have a filter value'
+    }
 };
 
 export class Collection {
@@ -106,6 +110,13 @@ export class Collection {
         } else {
             throw new ValidationError({
                 message: tpl(messages.invalidIDProvided)
+            });
+        }
+
+        if (data.type === 'automatic' && !data.filter) {
+            throw new ValidationError({
+                message: tpl(messages.invalidFilterProvided.message),
+                context: tpl(messages.invalidFilterProvided.context)
             });
         }
 
