@@ -1,5 +1,5 @@
 import assert from 'assert';
-import {CollectionsService, CollectionsRepositoryInMemory} from '../src/index';
+import {CollectionsService, CollectionsRepositoryInMemory, Collection} from '../src/index';
 import {posts} from './fixtures/posts';
 
 describe('CollectionsService', function () {
@@ -38,6 +38,16 @@ describe('CollectionsService', function () {
         const deletedCollection = await collectionsService.getById(savedCollection.id);
 
         assert.equal(deletedCollection, null, 'Collection should be deleted');
+    });
+
+    describe('toDTO', function () {
+        it('Can map Collection entity to DTO object', async function () {
+            const collection = await Collection.create({});
+            const dto = collectionsService.toDTO(collection);
+
+            assert.equal(dto.id, collection.id, 'DTO should have the same id as the entity');
+            assert.equal(dto.title, null, 'DTO should return null if nullable property of the entity is unassigned');
+        });
     });
 
     describe('addPostToCollection', function () {

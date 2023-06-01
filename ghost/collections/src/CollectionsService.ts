@@ -74,13 +74,22 @@ export class CollectionsService {
     }
 
     fromDTO(data: any): any {
-        return {
+        const mappedDTO: {[index: string]:any} = {
             title: data.title,
             slug: data.slug,
             description: data.description,
             featureImage: data.feature_image,
             filter: data.filter
         };
+
+        // delete out keys that contain undefined values
+        for (const key of Object.keys(mappedDTO)) {
+            if (mappedDTO[key] === undefined) {
+                delete mappedDTO[key];
+            }
+        }
+
+        return mappedDTO;
     }
 
     async createCollection(data: CollectionInputDTO): Promise<CollectionDTO> {
