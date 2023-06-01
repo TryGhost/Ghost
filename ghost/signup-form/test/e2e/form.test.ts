@@ -190,7 +190,7 @@ test.describe('Form', async () => {
         });
 
         test('Shows error message on network issues', async ({page}) => {
-            const {frame} = await initialize({page, title: 'Sign up', site: '127.0.0.1:9999'});
+            const {frame} = await initialize({page, title: 'Sign up', site: 'http://localhost:1234/invalid'});
 
             // Fill out the form
             const emailInput = frame.getByTestId('input');
