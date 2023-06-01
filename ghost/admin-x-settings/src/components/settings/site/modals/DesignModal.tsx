@@ -141,10 +141,9 @@ const DesignModal: React.FC = () => {
         <SettingGroup
             customButtons={<Button color='green' label='Customize' link onClick={openPreviewModal}/>}
             description="Customize your site and manage themes"
+            navid='branding-and-design'
             title="Branding and design"
-        >
-            
-        </SettingGroup>
+        />
     );
 };
 

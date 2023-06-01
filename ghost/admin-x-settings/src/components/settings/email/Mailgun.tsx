@@ -97,6 +97,7 @@ const MailGun: React.FC = () => {
     return (
         <SettingGroup
             description={groupDescription}
+            navid='mailgun'
             saveState={saveState}
             state={currentState}
             title='Mailgun'

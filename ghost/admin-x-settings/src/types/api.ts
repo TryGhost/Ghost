@@ -44,3 +44,14 @@ export type UserRole = {
     created_at: string;
     updated_at: string;
 };
+
+export type SiteData = {
+    title: string;
+    description: string;
+    logo: string;
+    icon: string;
+    accent_color: string;
+    url: string;
+    locale: string;
+    version: string;
+};

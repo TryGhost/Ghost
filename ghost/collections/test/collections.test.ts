@@ -1,31 +1,15 @@
 import assert from 'assert';
-import {CollectionsService, CollectionsRepositoryInMemory, PostsDataRepositoryInMemory} from '../src/index';
-import {PostDTO} from '../src/PostDTO';
-
-import {posts as postFixtures} from './fixtures/posts';
-
-const buildPostsRepositoryWithFixtures = async (): Promise<PostsDataRepositoryInMemory> => {
-    const repository = new PostsDataRepositoryInMemory();
-
-    for (const post of postFixtures) {
-        const postDTO = await PostDTO.map(post);
-        await repository.save(postDTO);
-    }
-
-    return repository;
-};
+import {CollectionsService, CollectionsRepositoryInMemory, Collection} from '../src/index';
+import {posts} from './fixtures/posts';
 
 describe('CollectionsService', function () {
     let collectionsService: CollectionsService;
-    let postsRepository: PostsDataRepositoryInMemory;
 
     beforeEach(async function () {
         const collectionsRepository = new CollectionsRepositoryInMemory();
-        postsRepository = await buildPostsRepositoryWithFixtures();
 
         collectionsService = new CollectionsService({
-            collectionsRepository,
-            postsRepository
+            collectionsRepository
         });
     });
 
@@ -34,13 +18,11 @@ describe('CollectionsService', function () {
     });
 
     it('Can do CRUD operations on a collection', async function () {
-        const savedCollection = await collectionsService.save({
+        const savedCollection = await collectionsService.createCollection({
             title: 'testing collections',
             description: 'testing collections description',
             type: 'manual',
-            filter: null,
-            feature_image: null,
-            deleted: false
+            filter: null
         });
 
         const createdCollection = await collectionsService.getById(savedCollection.id);
@@ -58,21 +40,55 @@ describe('CollectionsService', function () {
         assert.equal(deletedCollection, null, 'Collection should be deleted');
     });
 
-    describe('edit', function () {
-        it('Can edit existing collection', async function () {
-            const savedCollection = await collectionsService.save({
+    describe('toDTO', function () {
+        it('Can map Collection entity to DTO object', async function () {
+            const collection = await Collection.create({});
+            const dto = collectionsService.toDTO(collection);
+
+            assert.equal(dto.id, collection.id, 'DTO should have the same id as the entity');
+            assert.equal(dto.title, null, 'DTO should return null if nullable property of the entity is unassigned');
+        });
+    });
+
+    describe('addPostToCollection', function () {
+        it('Can add a Post to a Collection', async function () {
+            const collection = await collectionsService.createCollection({
                 title: 'testing collections',
                 description: 'testing collections description',
-                type: 'manual',
-                deleted: false
+                type: 'manual'
+            });
+
+            const editedCollection = await collectionsService.addPostToCollection(collection.id, posts[0]);
+
+            assert.equal(editedCollection?.posts.length, 1, 'Collection should have one post');
+            assert.equal(editedCollection?.posts[0].id, posts[0].id, 'Collection should have the correct post');
+        });
+
+        it('Does not error when trying to add a post to a collection that does not exist', async function () {
+            const editedCollection = await collectionsService.addPostToCollection('fake id', posts[0]);
+            assert(editedCollection === null);
+        });
+    });
+
+    describe('edit', function () {
+        it('Can edit existing collection', async function () {
+            const savedCollection = await collectionsService.createCollection({
+                title: 'testing collections',
+                description: 'testing collections description',
+                type: 'manual'
             });
 
             const editedCollection = await collectionsService.edit({
                 id: savedCollection.id,
-                description: 'Edited description'
+                title: 'Edited title',
+                description: 'Edited description',
+                feature_image: '/assets/images/edited.jpg'
             });
 
+            assert.equal(editedCollection?.title, 'Edited title', 'Collection title should be edited');
             assert.equal(editedCollection?.description, 'Edited description', 'Collection description should be edited');
+            assert.equal(editedCollection?.feature_image, '/assets/images/edited.jpg', 'Collection feature_image should be edited');
+            assert.equal(editedCollection?.type, 'manual', 'Collection type should not be edited');
         });
 
         it('Resolves to null when editing unexistend collection', async function () {
@@ -84,14 +100,11 @@ describe('CollectionsService', function () {
         });
 
         it('Adds a Post to a Collection', async function () {
-            const collection = await collectionsService.save({
+            const collection = await collectionsService.createCollection({
                 title: 'testing collections',
                 description: 'testing collections description',
-                type: 'manual',
-                deleted: false
+                type: 'manual'
             });
-
-            const posts = await postsRepository.getAll();
 
             const editedCollection = await collectionsService.edit({
                 id: collection.id,
@@ -102,6 +115,36 @@ describe('CollectionsService', function () {
 
             assert.equal(editedCollection?.posts.length, 1, 'Collection should have one post');
             assert.equal(editedCollection?.posts[0].id, posts[0].id, 'Collection should have the correct post');
+            assert.equal(editedCollection?.posts[0].sort_order, 0, 'Collection should have the correct post sort order');
+        });
+
+        it('Removes a Post from a Collection', async function () {
+            const collection = await collectionsService.createCollection({
+                title: 'testing collections',
+                description: 'testing collections description',
+                type: 'manual'
+            });
+
+            let editedCollection = await collectionsService.edit({
+                id: collection.id,
+                posts: [{
+                    id: posts[0].id
+                }, {
+                    id: posts[1].id
+                }]
+            });
+
+            assert.equal(editedCollection?.posts.length, 2, 'Collection should have two posts');
+
+            editedCollection = await collectionsService.removePostFromCollection(collection.id, posts[0].id);
+
+            assert.equal(editedCollection?.posts.length, 1, 'Collection should have one posts');
+        });
+
+        it('Returns null when removing post from non existing collection', async function () {
+            const collection = await collectionsService.removePostFromCollection('i-do-not-exist', posts[0].id);
+
+            assert.equal(collection, null, 'Collection should be null');
         });
     });
 });

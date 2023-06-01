@@ -1965,7 +1965,7 @@ describe('Members API', function () {
             await testWithAttribution(attribution, {
                 id: null,
                 url: null,
-                type: 'url',
+                type: null,
                 title: null,
                 referrer_source: null,
                 referrer_medium: null,
@@ -1979,7 +1979,7 @@ describe('Members API', function () {
             await testWithAttribution(attribution, {
                 id: null,
                 url: null,
-                type: 'url',
+                type: null,
                 title: null,
                 referrer_source: null,
                 referrer_medium: null,
@@ -2000,7 +2000,6 @@ describe('Members API', function () {
                 })
                 .matchBodySnapshot({
                     events: new Array(subscriptionAttributions.length).fill({
-                        type: anyString,
                         data: anyObject
                     })
                 })

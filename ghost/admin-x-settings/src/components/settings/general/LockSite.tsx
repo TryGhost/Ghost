@@ -77,6 +77,7 @@ const LockSite: React.FC = () => {
     return (
         <SettingGroup
             description='Enable protection with a simple shared password.'
+            navid='locksite'
             saveState={saveState}
             state={currentState}
             title='Make site private'

@@ -116,6 +116,7 @@ const DefaultRecipients: React.FC = () => {
     return (
         <SettingGroup
             description='When you publish new content, who do you usually want to send it to?'
+            navid='default-recipients'
             saveState={saveState}
             state={currentState}
             title='Default recipients'

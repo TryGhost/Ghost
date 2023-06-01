@@ -11,7 +11,8 @@ const {
     anyErrorId,
     anyLocationFor,
     anyObjectId,
-    anyISODateTime
+    anyISODateTime,
+    anyNumber
 } = matchers;
 
 const matchCollection = {
@@ -24,12 +25,16 @@ const matchCollection = {
  *
  * @param {number} postCount
  */
-const buildMatcher = (postCount) => {
+const buildMatcher = (postCount, opts = {}) => {
+    let obj = {
+        id: anyObjectId
+    };
+    if (opts.withSortOrder) {
+        obj.sort_order = anyNumber;
+    }
     return {
         ...matchCollection,
-        posts: Array(postCount).fill({
-            id: anyObjectId
-        })
+        posts: Array(postCount).fill(obj)
     };
 };
 
@@ -177,7 +182,7 @@ describe('Collections API', function () {
                 });
         });
 
-        it('Can add a Post to a Collection', async function () {
+        it('Can add Posts and append Post to a Collection', async function () {
             const postsToAttach = [{
                 id: fixtureManager.get('posts', 0).id
             }, {
@@ -207,7 +212,7 @@ describe('Collections API', function () {
             assert.equal(editResponse.body.collections[0].posts.length, 3, 'Posts should have been added to a Collection');
 
             // verify the posts are persisted across requests
-            const readResponse = await agent
+            let readResponse = await agent
                 .get(`/collections/${collectionId}/`)
                 .expectStatus(200)
                 .matchHeaderSnapshot({
@@ -219,6 +224,64 @@ describe('Collections API', function () {
                 });
 
             assert.equal(readResponse.body.collections[0].posts.length, 3, 'Posts should have been added to a Collection');
+
+            //adds a single Post to existing Posts attached to a Collection
+            await agent
+                .post(`/collections/${collectionId}/posts`)
+                .body({
+                    posts: [{
+                        id: fixtureManager.get('posts', 4).id
+                    }]
+                })
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [buildMatcher(4, {withSortOrder: true})]
+                });
+
+            // verify the posts are persisted across requests
+            readResponse = await agent
+                .get(`/collections/${collectionId}/`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [buildMatcher(4, {withSortOrder: true})]
+                });
+
+            assert.equal(readResponse.body.collections[0].posts.length, 4, 'Post should have been added to a Collection');
+        });
+
+        it('Can remove a Post from a Collection', async function () {
+            const collectionId = collectionToEdit.id;
+            const readResponse = await agent
+                .get(`/collections/${collectionId}/`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [buildMatcher(4, {withSortOrder: true})]
+                });
+
+            const postIdToRemove = readResponse.body.collections[0].posts[0]?.id;
+
+            await agent
+                .delete(`/collections/${collectionId}/posts/${postIdToRemove}`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [buildMatcher(3, {withSortOrder: true})]
+                });
         });
     });
 

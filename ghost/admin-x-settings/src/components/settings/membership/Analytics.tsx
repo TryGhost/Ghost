@@ -73,6 +73,7 @@ const Analytics: React.FC = () => {
         <SettingGroup
             description='Decide what data you collect from your members'
             hideEditButton={true}
+            navid='analytics'
             saveState={saveState}
             state={currentState}
             title='Analytics'

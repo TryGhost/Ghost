@@ -15,7 +15,7 @@ export const SuccessView: React.FC<{
     }
     return (
         <div
-            className='flex h-[52vmax] min-h-[320px] flex-col items-center justify-center bg-grey-200 p-6 md:p-8'
+            className='flex h-[100vh] flex-col items-center justify-center bg-grey-200 p-6 md:p-8'
             data-testid="success-page"
             style={{backgroundColor, color: backgroundColor && textColorForBackgroundColor(backgroundColor)}}
         >

@@ -1,6 +1,6 @@
-import React, {createContext, useEffect, useState} from 'react';
+import React, {createContext, useContext, useEffect, useState} from 'react';
+import {ServicesContext} from './ServiceProvider';
 import {UserRole} from '../../types/api';
-import {rolesApi} from '../../utils/api';
 
 interface RolesContextProps {
     roles: UserRole[];
@@ -15,12 +15,13 @@ const RolesContext = createContext<RolesContextProps>({
 });
 
 const RolesProvider: React.FC<RolesProviderProps> = ({children}) => {
+    const {api} = useContext(ServicesContext);
     const [roles, setRoles] = useState <UserRole[]> ([]);
 
     useEffect(() => {
         const fetchRoles = async (): Promise<void> => {
             try {
-                const rolesData = await rolesApi.browse();
+                const rolesData = await api.roles.browse();
                 setRoles(rolesData.roles);
             } catch (error) {
                 // Log error in API
@@ -28,7 +29,7 @@ const RolesProvider: React.FC<RolesProviderProps> = ({children}) => {
         };
 
         fetchRoles();
-    }, []);
+    }, [api]);
 
     return (
         <RolesContext.Provider value={{

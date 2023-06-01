@@ -1,10 +1,7 @@
-// have to use requires until there are type definitions for these modules
-
 import {ValidationError} from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 
 import ObjectID from 'bson-objectid';
-import {PostDTO} from './PostDTO';
 
 const messages = {
     invalidIDProvided: 'Invalid ID provided for Collection',
@@ -23,7 +20,36 @@ export class Collection {
     updatedAt: Date;
     deleted: boolean;
 
-    posts: PostDTO[];
+    _posts: string[];
+    get posts() {
+        return this._posts;
+    }
+    /**
+     * @param post {{id: string}} - The post to add to the collection
+     * @param index {number} - The index to insert the post at, use negative numbers to count from the end.
+     */
+    addPost(post: {id: string}, index: number = -0) {
+        // if (this.type === 'automatic') {
+        //     TODO: Test the post against the NQL filter stored in `this.filter`
+        //     This will need the `post` param to include more data.
+        // }
+
+        if (this.posts.includes(post.id)) {
+            this._posts = this.posts.filter(id => id !== post.id);
+        }
+
+        if (index < 0 || Object.is(index, -0)) {
+            index = this.posts.length + index;
+        }
+
+        this.posts.splice(index, 0, post.id);
+    }
+
+    removePost(id: string) {
+        if (this.posts.includes(id)) {
+            this._posts = this.posts.filter(postId => postId !== id);
+        }
+    }
 
     private constructor(data: any) {
         this.id = data.id;
@@ -36,7 +62,7 @@ export class Collection {
         this.createdAt = data.createdAt;
         this.updatedAt = data.updatedAt;
         this.deleted = data.deleted;
-        this.posts = data.posts;
+        this._posts = data.posts;
     }
 
     toJSON() {
@@ -50,11 +76,7 @@ export class Collection {
             featureImage: this.featureImage,
             createdAt: this.createdAt,
             updatedAt: this.updatedAt,
-            posts: this.posts.map(post => ({
-                id: post.id,
-                title: post.title,
-                slug: post.slug
-            }))
+            posts: this.posts
         };
     }
 
