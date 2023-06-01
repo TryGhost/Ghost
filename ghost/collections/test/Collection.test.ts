@@ -138,4 +138,22 @@ describe('Collection', function () {
         assert(collection.posts.length as number === 4);
         assert(collection.posts[collection.posts.length - 2] === '3');
     });
+
+    it('Removes a post by id', async function () {
+        const collection = await Collection.create({
+            title: 'Testing adding posts'
+        });
+
+        assert.equal(collection.posts.length, 0);
+
+        collection.addPost({
+            id: '0'
+        });
+
+        assert.equal(collection.posts.length, 1);
+
+        collection.removePost('0');
+
+        assert.equal(collection.posts.length, 0);
+    });
 });
