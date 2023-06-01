@@ -51,11 +51,9 @@ describe('Collection', function () {
 
         assert.equal(json.posts.length, 2, 'should have 2 posts');
         const serializedPost = json.posts[0];
-        assert.equal(Object.keys(serializedPost).length, 3, 'should only have 3 keys');
+        assert.equal(Object.keys(serializedPost).length, 1, 'should only have 1 key');
         assert.deepEqual(Object.keys(serializedPost), [
-            'id',
-            'title',
-            'slug'
+            'id'
         ]);
     });
 
@@ -109,5 +107,35 @@ describe('Collection', function () {
             assert.equal(err.message, 'Invalid date provided for created_at', 'Error message should match');
             return true;
         });
+    });
+
+    it('Can add posts to different positions', async function () {
+        const collection = await Collection.create({
+            title: 'Testing adding posts'
+        });
+
+        assert(collection.posts.length === 0);
+
+        const posts = [{
+            id: '0'
+        }, {
+            id: '1'
+        }, {
+            id: '2'
+        }, {
+            id: '3'
+        }];
+
+        collection.addPost(posts[0]);
+        collection.addPost(posts[1]);
+        collection.addPost(posts[2], 1);
+        collection.addPost(posts[3], 0);
+
+        assert(collection.posts.length as number === 4);
+        assert(collection.posts[0] === '3');
+
+        collection.addPost(posts[3], -1);
+        assert(collection.posts.length as number === 4);
+        assert(collection.posts[collection.posts.length - 2] === '3');
     });
 });
