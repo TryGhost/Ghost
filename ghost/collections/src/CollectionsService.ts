@@ -119,6 +119,10 @@ export class CollectionsService {
             collection.title = data.title;
         }
 
+        if (data.description) {
+            collection.description = data.description;
+        }
+
         await this.collectionsRepository.save(collection);
 
         return collection;
