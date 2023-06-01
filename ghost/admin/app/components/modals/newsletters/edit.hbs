@@ -8,7 +8,7 @@
                 <div class="modal-fullsettings-body-labs">
                     <div class="modal-fullsettings-top">
                         <Modals::Newsletters::Edit::Settings @newsletter={{@data.newsletter}} @openSection={{this.openSection}} @toggleSection={{this.toggleSection}} />
-                        {{#if (feature 'makingItRain')}}
+                        {{#if (feature 'emailCustomization')}}
                             <Modals::Newsletters::Edit::DesignLabs @newsletter={{@data.newsletter}} @openSection={{this.openSection}} @toggleSection={{this.toggleSection}} />
                         {{else}}
                             <Modals::Newsletters::Edit::Design @newsletter={{@data.newsletter}} @openSection={{this.openSection}} @toggleSection={{this.toggleSection}} />
@@ -61,7 +61,7 @@
                         data-test-button="save-newsletter"
                     />
                 </div>
-                {{#if (feature 'makingItRain')}}
+                {{#if (feature 'emailCustomization')}}
                     <Modals::Newsletters::Edit::PreviewLabs @newsletter={{@data.newsletter}} />
                 {{else}}
                     <Modals::Newsletters::Edit::Preview @newsletter={{@data.newsletter}} />
