@@ -6,12 +6,12 @@ export type MenuItem = {
     label: string;
 }
 
-type PositionOptions = 'left' | 'right';
+type MenuPosition = 'left' | 'right';
 
 interface MenuProps {
     // trigger?: React.ReactNode;
     items: MenuItem[];
-    position?: PositionOptions;
+    position?: MenuPosition;
     className?: string;
 }
 
