@@ -70,10 +70,15 @@ describe('CollectionsService', function () {
 
             const editedCollection = await collectionsService.edit({
                 id: savedCollection.id,
-                description: 'Edited description'
+                title: 'Edited title',
+                description: 'Edited description',
+                feature_image: '/assets/images/edited.jpg'
             });
 
+            assert.equal(editedCollection?.title, 'Edited title', 'Collection title should be edited');
             assert.equal(editedCollection?.description, 'Edited description', 'Collection description should be edited');
+            assert.equal(editedCollection?.feature_image, '/assets/images/edited.jpg', 'Collection feature_image should be edited');
+            assert.equal(editedCollection?.type, 'manual', 'Collection type should not be edited');
         });
 
         it('Resolves to null when editing unexistend collection', async function () {
@@ -99,7 +104,8 @@ describe('CollectionsService', function () {
             });
 
             assert.equal(editedCollection?.posts.length, 1, 'Collection should have one post');
-            assert.equal(editedCollection?.posts[0], posts[0].id, 'Collection should have the correct post');
+            assert.equal(editedCollection?.posts[0].id, posts[0].id, 'Collection should have the correct post');
+            assert.equal(editedCollection?.posts[0].sort_order, 0, 'Collection should have the correct post sort order');
         });
     });
 });
