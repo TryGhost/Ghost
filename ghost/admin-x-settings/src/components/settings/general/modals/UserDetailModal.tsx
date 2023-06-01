@@ -1,6 +1,7 @@
 import Avatar from '../../../../admin-x-ds/global/Avatar';
 import Button from '../../../../admin-x-ds/global/Button';
 import Heading from '../../../../admin-x-ds/global/Heading';
+import IconButton from '../../../../admin-x-ds/global/IconButton';
 import Menu from '../../../../admin-x-ds/global/Menu';
 import Modal from '../../../../admin-x-ds/global/Modal';
 import NiceModal from '@ebay/nice-modal-react';
@@ -338,7 +339,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                         <div className='absolute inset-0 z-0 block bg-gradient-to-tr from-[rgba(0,0,0,0.5)] to-[rgba(0,0,0,0.01)]'></div>
                     )}
                     <div className="absolute right-8 top-8">
-                        <Menu items={items} position='left'></Menu>
+                        <Menu items={items} position='left' trigger={<IconButton iconName='menu-horizontal'></IconButton>}></Menu>
                     </div>
                     <div className='relative z-10 mt-60 flex gap-4'>
                         <Avatar bgColor={generateAvatarColor((userData.name ? userData.name : userData.email))} className='-ml-1' image={userData.profile_image} label={getInitials(userData.name)} labelColor='white' size='xl' />
