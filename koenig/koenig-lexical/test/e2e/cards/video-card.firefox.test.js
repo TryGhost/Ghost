@@ -1,5 +1,14 @@
 import path from 'path';
-import {assertHTML, createDataTransfer, createSnippet, focusEditor, html, initialize, insertCard} from '../../utils/e2e';
+import {
+    assertHTML,
+    createDataTransfer,
+    createSnippet,
+    ctrlOrCmd,
+    focusEditor,
+    html,
+    initialize,
+    insertCard
+} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
@@ -24,36 +33,79 @@ test.describe('Video card', async () => {
     });
 
     test('can import serialized video card nodes', async function () {
-        await page.evaluate(() => {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'video',
-                        src: '/content/images/2022/11/koenig-lexical.jpg',
-                        width: 100,
-                        height: 100,
-                        title: 'This is a title',
-                        duration: 60,
-                        thumbnailSrc: '/content/images/2022/12/koenig-lexical.png'
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
-            const editor = window.lexicalEditor;
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
-        });
+        const contentParam = encodeURIComponent(JSON.stringify({
+            root: {
+                children: [{
+                    type: 'video',
+                    src: '/content/images/2022/11/koenig-lexical.jpg',
+                    width: 100,
+                    height: 100,
+                    caption: 'This is a caption',
+                    duration: 60,
+                    thumbnailSrc: '/content/images/2022/12/koenig-lexical.png'
+                }],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        }));
+
+        await initialize({page, uri: `/#/?content=${contentParam}`});
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="video">
+                    <figure>
+                        <div>
+                          <div>
+                            <img
+                              alt="Video thumbnail"
+                              src="/content/images/2022/12/koenig-lexical.png" />
+                          </div>
+                          <div>
+                            <button type="button"><svg></svg></button>
+                          </div>
+                          <div>
+                            <div>
+                              <svg></svg>
+                              <div>
+                                <span>0:00</span>
+                                /
+                                <span>1:00</span>
+                              </div>
+                              <div><button type="button"></button></div>
+                              <button type="button">1×</button>
+                              <button type="button"><svg></svg></button>
+                              <div>
+                                <div></div>
+                                <button type="button"></button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <figcaption>
+                          <div>
+                            <div>
+                              <div data-kg="editor">
+                                <div
+                                  spellcheck="true"
+                                  data-lexical-editor="true"
+                                  role="textbox"
+                                  contenteditable="true">
+                                  <p dir="ltr">
+                                    <span data-lexical-text="true">This is a caption</span>
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </figcaption>
+                      </figure>
                 </div>
             </div>
-        `, {ignoreCardContents: true});
+        `, {ignoreCardToolbarContents: true, ignoreInnerSVG: true});
     });
 
     test('renders video card node', async function () {
@@ -357,6 +409,74 @@ test.describe('Video card', async () => {
         await page.waitForSelector('[data-kg-cardmenu-selected="true"]');
         await page.keyboard.press('Enter');
         await expect(await page.locator('[data-kg-card="video"]')).toHaveCount(2);
+    });
+
+    test('can undo/redo without losing nested editor content', async () => {
+        await focusEditor(page);
+        // Upload video
+        await uploadVideo(page);
+        await page.waitForSelector('[data-testid="media-upload-placeholder"]');
+
+        await page.click('[data-testid="video-card-caption"]');
+        await page.keyboard.type('Test caption');
+        await page.keyboard.press('Escape');
+        await page.keyboard.press('Backspace');
+        await page.keyboard.press(`${ctrlOrCmd()}+z`);
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="video">
+                    <figure>
+                        <div>
+                          <div>
+                            <img
+                              alt="Video thumbnail"
+                              src="blob:..." />
+                          </div>
+                          <div>
+                            <button type="button"><svg></svg></button>
+                          </div>
+                          <div>
+                            <div>
+                              <svg></svg>
+                              <div>
+                                <span>0:00</span>
+                                /
+                                <span>0:04</span>
+                              </div>
+                              <div><button type="button"></button></div>
+                              <button type="button">1×</button>
+                              <button type="button"><svg></svg></button>
+                              <div>
+                                <div></div>
+                                <button type="button"></button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <figcaption>
+                          <div>
+                            <div>
+                              <div data-kg="editor">
+                                <div
+                                  spellcheck="true"
+                                  data-lexical-editor="true"
+                                  role="textbox"
+                                  contenteditable="true">
+                                  <p dir="ltr">
+                                    <span data-lexical-text="true">Test caption</span>
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </figcaption>
+                      </figure>
+                    <div data-kg-card-toolbar="video"></div>
+                </div>
+            </div>
+            <p><br /></p>
+        `, {ignoreCardToolbarContents: true, ignoreInnerSVG: true});
     });
 });
 
