@@ -210,6 +210,7 @@ export function GalleryCard({
                 captionEditor={captionEditor}
                 captionEditorInitialState={captionEditorInitialState}
                 captionPlaceholder="Type caption for gallery (optional)"
+                dataTestId="gallery-card-caption"
                 isSelected={isSelected}
             />
         </figure>
