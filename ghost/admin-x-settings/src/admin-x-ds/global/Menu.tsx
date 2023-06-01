@@ -1,4 +1,3 @@
-import Icon from './Icon';
 import React, {useState} from 'react';
 
 export type MenuItem = {
@@ -9,16 +8,16 @@ export type MenuItem = {
 type MenuPosition = 'left' | 'right';
 
 interface MenuProps {
-    // trigger?: React.ReactNode;
+    trigger?: React.ReactNode;
     items: MenuItem[];
     position?: MenuPosition;
     className?: string;
 }
 
-const Menu: React.FC<MenuProps> = ({items, position, className}) => {
+const Menu: React.FC<MenuProps> = ({trigger, items, position, className}) => {
     const [menuOpen, setMenuOpen] = useState(false);
 
-    let menuListStyles = 'absolute z-40 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none';
+    let menuListStyles = 'absolute z-40 mt-2 min-w-[160px] w-max origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none';
 
     const toggleMenu = () => {
         setMenuOpen(!menuOpen);
@@ -49,11 +48,12 @@ const Menu: React.FC<MenuProps> = ({items, position, className}) => {
         <div className={`relative inline-block ${className}`}>
             <div className={`fixed inset-0 z-40 ${menuOpen ? 'block' : 'hidden'}`} onClick={handleBackdropClick}></div>
             {/* Menu Trigger */}
-            <div className='relative z-50'>
-                <button aria-expanded="true" aria-haspopup="true" className="flex items-center rounded-sm bg-grey-100 px-2 py-1 text-grey-400 hover:text-grey-600" id="menu-button" type="button" onClick={toggleMenu}>
+            <div className='relative z-50' onClick={toggleMenu}>
+                {/* <button aria-expanded="true" aria-haspopup="true" className="flex items-center rounded-sm bg-grey-100 px-2 py-1 text-grey-400 hover:text-grey-600" id="menu-button" type="button" onClick={toggleMenu}>
                     <span className="sr-only">Open menu</span>
                     <Icon color="grey-900" name="menu-horizontal" />
-                </button>
+                </button> */}
+                {trigger}
             </div>
             {/* Menu List */}
             <div aria-labelledby="menu-button" aria-orientation="vertical" className={menuListStyles} role="menu">
