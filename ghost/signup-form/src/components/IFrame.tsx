@@ -10,7 +10,7 @@ export default class IFrame extends Component<any> {
     iframeHead: any;
     iframeRoot: any;
 
-    constructor(props: {onResize: (el: HTMLElement) => void, children: any}) {
+    constructor(props: {onResize?: (el: HTMLElement) => void, children: any}) {
         super(props);
         this.setNode = this.setNode.bind(this);
         this.node = null;

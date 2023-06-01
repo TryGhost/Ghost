@@ -39,9 +39,10 @@ const Preview: React.FC<SignupFormOptions & {
                 return simulateApiError ? false : true;
             }
         },
-        options
+        options,
+        scriptTag: document.createElement('div')
     }}>
-        <div style={{width: '100%', height: '100%', padding: '24px', backgroundColor: pageBackgroundColor, color: pageTextColor}}>
+        <div style={{width: '100%', height: '100%', backgroundColor: pageBackgroundColor, color: pageTextColor}}>
             <ContentBox>
                 <PageComponent {...data} />
             </ContentBox>

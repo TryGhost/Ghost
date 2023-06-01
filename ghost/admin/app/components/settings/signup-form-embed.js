@@ -42,17 +42,21 @@ export default class SignupFormEmbed extends Component {
 
         const options = {
             site: siteUrl,
-            color: this.settings.accentColor
+            'button-color': this.settings.accentColor
         };
 
         for (const [i, label] of this.labels.entries()) {
             options[`label-${i + 1}`] = label.name;
         }
 
+        let style = 'height: 58px';
+
         if (this.style === 'all-in-one') {
             options.logo = this.settings.icon;
             options.title = this.settings.title;
             options.description = this.settings.description;
+            options['background-color'] = '#f9f9f9';
+            style = 'height: 60vh; min-height: 400px;';
         }
 
         let dataOptionsString = '';
@@ -60,7 +64,7 @@ export default class SignupFormEmbed extends Component {
             dataOptionsString += ` data-${key}="${escapeHtml(value)}"`;
         }
 
-        return `<script src="${encodeURI(scriptUrl)}"${dataOptionsString}></script>`;
+        return `<div style="${escapeHtml(style)}"><script src="${encodeURI(scriptUrl)}"${dataOptionsString}></script></div>`;
     }
 
     @task
