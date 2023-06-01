@@ -4,7 +4,7 @@
         <div class="gh-expandable-block">
             <div class="gh-expandable-header">
                 <div>
-                    <h4 class="gh-expandable-title">Embeddable Sigup Form</h4>
+                    <h4 class="gh-expandable-title">Embeddable Signup Form</h4>
                     <p class="gh-expandable-description">Grow your audience from anywhere on the web</p>
                 </div>
                 <button type="button" class="gh-btn" {{on "click" (toggle "opened" this)}}>
@@ -38,6 +38,15 @@
                                     />
                                     <p>Members who sign up via the form will have these labels.</p>
                                 </div>
+                            </div>
+
+                            <div class="form-group gh-stack-item row">
+                                <label class="fw6 f8">Background color</label>
+                                <Modals::Newsletters::Components::ColorPicker
+                                    @color={{this.backgroundColor}}
+                                    @presetColors={{this.backgroundPresetColors}}
+                                    @onColorChange={{this.setBackgroundColor}}
+                                />
                             </div>
                         </div>
                     </div>

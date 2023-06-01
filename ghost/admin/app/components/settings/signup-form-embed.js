@@ -24,6 +24,7 @@ export default class SignupFormEmbed extends Component {
     @tracked opened = false;
     @tracked style = 'all-in-one';
     @tracked labels = [];
+    @tracked backgroundColor = '#f9f9f9';
     @inject config;
     @service notifications;
 
@@ -35,6 +36,28 @@ export default class SignupFormEmbed extends Component {
     @action
     setLabels(labels) {
         this.labels = labels;
+    }
+
+    @action
+    setBackgroundColor(backgroundColor) {
+        this.backgroundColor = backgroundColor;
+    }
+
+    get backgroundPresetColors() {
+        return [
+            {
+                value: '#f9f9f9',
+                name: 'Light grey',
+                class: '',
+                style: 'background: #f9f9f9 !important;'
+            },
+            {
+                value: '#000000',
+                name: 'Black',
+                class: '',
+                style: 'background: #000000 !important;'
+            }
+        ];
     }
 
     get generatedCode() {
@@ -58,9 +81,8 @@ export default class SignupFormEmbed extends Component {
             options.title = this.settings.title;
             options.description = this.settings.description;
 
-            const backgroundColor = '#f9f9f9';
-            options['background-color'] = backgroundColor;
-            options['text-color'] = textColorForBackgroundColor(backgroundColor).hex();
+            options['background-color'] = this.backgroundColor;
+            options['text-color'] = textColorForBackgroundColor(this.backgroundColor).hex();
 
             style = 'height: 40vmin; min-height: 360px;';
         }
