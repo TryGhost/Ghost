@@ -1,3 +1,4 @@
+import ImageUpload from '../../../admin-x-ds/global/ImageUpload';
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
@@ -26,12 +27,27 @@ const Twitter: React.FC = () => {
         updateSetting('twitter_description', e.target.value);
     };
 
+    const handleImageUpload = (file: File) => {
+        alert(file.name);
+    };
+
+    const handleImageDelete = () => {
+        alert('Delete twitter iamge');
+    };
+
     const values = (
         <></>
     );
 
     const inputFields = (
         <SettingGroupContent>
+            <ImageUpload
+                height='200px'
+                id='twitter-image'
+                label='Upload twitter image'
+                onDelete={handleImageDelete}
+                onUpload={handleImageUpload}
+            />
             <TextField
                 inputRef={focusRef}
                 placeholder={siteTitle}

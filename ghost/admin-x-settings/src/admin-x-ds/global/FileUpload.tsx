@@ -8,10 +8,12 @@ export interface FileUploadProps {
      * Can be any component that has no default onClick eventh handline. E.g. buttons and links won't work
      */
     children?: React.ReactNode;
+    className?: string;
     onUpload: (file: File) => void;
+    style: {}
 }
 
-const FileUpload: React.FC<FileUploadProps> = ({id, onUpload, children, ...props}) => {
+const FileUpload: React.FC<FileUploadProps> = ({id, onUpload, children, style, ...props}) => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -31,7 +33,7 @@ const FileUpload: React.FC<FileUploadProps> = ({id, onUpload, children, ...props
     }, [handleFileUpload]);
 
     return (
-        <label htmlFor={id} {...props}>
+        <label htmlFor={id} style={style} {...props}>
             <input id={id} type="file" hidden onChange={handleFileChange} />
             {children}
         </label>
