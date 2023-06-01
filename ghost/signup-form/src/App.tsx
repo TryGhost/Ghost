@@ -41,7 +41,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
     const data = page.data as any; // issue with TypeScript understanding the type here when passing it to the component
 
     return (
-        <div>
+        <>
             <AppContextProvider value={context}>
                 <Frame>
                     <ContentBox>
@@ -49,7 +49,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
                     </ContentBox>
                 </Frame>
             </AppContextProvider>
-        </div>
+        </>
     );
 };
 
