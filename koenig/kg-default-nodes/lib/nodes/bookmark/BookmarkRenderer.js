@@ -173,7 +173,7 @@ function frontendTemplate(node, document) {
 
     if (caption) {
         const figCaption = document.createElement('figcaption');
-        figCaption.textContent = caption;
+        figCaption.innerHTML = caption;
         card.appendChild(figCaption);
     }
 
