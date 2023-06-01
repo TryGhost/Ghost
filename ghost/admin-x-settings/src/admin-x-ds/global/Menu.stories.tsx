@@ -1,12 +1,13 @@
 import type {Meta, StoryObj} from '@storybook/react';
 
+import Button from './Button';
 import Menu from './Menu';
 
 const meta = {
     title: 'Global / Menu',
     component: Menu,
     tags: ['autodocs'],
-    decorators: [(_story: any) => (<div style={{maxWidth: '600px', margin: '0 auto'}}>{_story()}</div>)]
+    decorators: [(_story: any) => (<div style={{maxWidth: '100px', margin: '0 auto'}}>{_story()}</div>)]
 } satisfies Meta<typeof Menu>;
 
 export default meta;
@@ -18,16 +19,40 @@ const items = [
     {id: 'item-3', label: 'Item 3'}
 ];
 
+const longItems = [
+    {id: 'item-1', label: 'This is a really, really long item that nobody should be using but oh well'},
+    {id: 'item-2', label: 'Item 2'},
+    {id: 'item-3', label: 'Item 3'}
+];
+
 export const Default: Story = {
+    args: {
+        trigger: <Button color='green' label="Click"></Button>,
+        items: items,
+        position: 'left'
+    },
+    decorators: [
+        ThisStory => (
+            <div style={{maxWidth: '100px', margin: '0 auto'}}><ThisStory /></div>
+        )
+    ]
+};
+
+export const Right: Story = {
     args: {
         items: items,
         position: 'right'
-    }
+    },
+    decorators: [
+        ThisStory => (
+            <div style={{maxWidth: '100px', margin: '0 auto'}}><ThisStory /></div>
+        )
+    ]
 };
 
-export const Left: Story = {
+export const LongLabels: Story = {
     args: {
-        items: items,
-        position: 'left'
+        items: longItems,
+        position: 'right'
     }
 };
