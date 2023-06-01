@@ -40,6 +40,7 @@ export const Default: Story = {
 
 export const Right: Story = {
     args: {
+        trigger: <Button color='green' label="Click"></Button>,
         items: items,
         position: 'right'
     },
@@ -52,6 +53,7 @@ export const Right: Story = {
 
 export const LongLabels: Story = {
     args: {
+        trigger: <Button color='green' label="Click"></Button>,
         items: longItems,
         position: 'right'
     }
