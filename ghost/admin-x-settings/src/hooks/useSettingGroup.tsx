@@ -1,6 +1,6 @@
 import React, {useEffect} from 'react';
 import {SaveState, TSettingGroupStates} from '../admin-x-ds/settings/SettingGroup';
-import {Setting, SettingValue} from '../types/api';
+import {Setting, SettingValue, SiteData} from '../types/api';
 import {SettingsContext} from '../components/providers/SettingsProvider';
 import {useContext, useReducer, useRef, useState} from 'react';
 
@@ -11,6 +11,7 @@ interface LocalSetting extends Setting {
 export interface SettingGroupHook {
     currentState: TSettingGroupStates;
     saveState: SaveState;
+    siteData: SiteData | null;
     focusRef: React.RefObject<HTMLInputElement>;
     handleSave: () => void;
     handleCancel: () => void;
@@ -59,7 +60,7 @@ const useSettingGroup = (): SettingGroupHook => {
     const focusRef = useRef<HTMLInputElement>(null);
 
     // get the settings and saveSettings function from the Settings Context
-    const {settings, saveSettings} = useContext(SettingsContext) || {};
+    const {siteData, settings, saveSettings} = useContext(SettingsContext) || {};
 
     // create a local state to store the settings
     const [localSettings, dispatch] = useReducer<SettingsReducer>(settingsReducer, settings || []);
@@ -140,6 +141,7 @@ const useSettingGroup = (): SettingGroupHook => {
         currentState,
         saveState,
         focusRef,
+        siteData,
         handleSave,
         handleCancel,
         updateSetting,
