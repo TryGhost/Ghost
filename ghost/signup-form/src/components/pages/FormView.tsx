@@ -17,6 +17,7 @@ export const FormView: React.FC<FormProps & {
     return (
         <div
             className='flex h-[52vmax] min-h-[320px] flex-col items-center justify-center p-6 md:p-8'
+            data-testid="wrapper"
             style={{backgroundColor, color: backgroundColor && textColorForBackgroundColor(backgroundColor)}}
         >
             {logo && <img alt={title} src={logo} width='100' />}
