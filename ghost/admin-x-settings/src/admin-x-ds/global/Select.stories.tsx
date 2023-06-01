@@ -1,11 +1,11 @@
 import type {Meta, StoryObj} from '@storybook/react';
 
-import Dropdown from './Dropdown';
-import {DropdownOption} from './Dropdown';
+import Select from './Select';
+import {SelectOption} from './Select';
 
 const meta = {
-    title: 'Global / Dropdown',
-    component: Dropdown,
+    title: 'Global / Select',
+    component: Select,
     tags: ['autodocs'],
     decorators: [(_story: any) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)],
     argTypes: {
@@ -13,12 +13,12 @@ const meta = {
             control: 'text'
         }
     }
-} satisfies Meta<typeof Dropdown>;
+} satisfies Meta<typeof Select>;
 
 export default meta;
-type Story = StoryObj<typeof Dropdown>;
+type Story = StoryObj<typeof Select>;
 
-const dropdownOptions: DropdownOption[] = [
+const selectOptions: SelectOption[] = [
     {value: 'option-1', label: 'Option 1'},
     {value: 'option-2', label: 'Option 2'},
     {value: 'option-3', label: 'Option 3'},
@@ -28,13 +28,13 @@ const dropdownOptions: DropdownOption[] = [
 
 export const Default: Story = {
     args: {
-        options: dropdownOptions
+        options: selectOptions
     }
 };
 
 export const ClearBackground: Story = {
     args: {
-        options: dropdownOptions,
+        options: selectOptions,
         clearBg: true
     }
 };
@@ -42,21 +42,21 @@ export const ClearBackground: Story = {
 export const WithPrompt: Story = {
     args: {
         prompt: 'Select a value',
-        options: dropdownOptions
+        options: selectOptions
     }
 };
 
 export const WithHeading: Story = {
     args: {
         title: 'Title',
-        options: dropdownOptions
+        options: selectOptions
     }
 };
 
 export const WithHint: Story = {
     args: {
         title: 'Title',
-        options: dropdownOptions,
+        options: selectOptions,
         hint: 'Here\'s some hint'
     }
 };
@@ -64,7 +64,7 @@ export const WithHint: Story = {
 export const WithDefaultSelectedOption: Story = {
     args: {
         title: 'Title',
-        options: dropdownOptions,
+        options: selectOptions,
         defaultSelectedOption: 'option-3',
         hint: 'Here\'s some hint'
     }
@@ -73,7 +73,7 @@ export const WithDefaultSelectedOption: Story = {
 export const Error: Story = {
     args: {
         title: 'Title',
-        options: dropdownOptions,
+        options: selectOptions,
         hint: 'Invalid value',
         error: true
     }

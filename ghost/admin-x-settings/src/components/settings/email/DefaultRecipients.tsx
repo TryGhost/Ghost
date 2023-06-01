@@ -1,5 +1,5 @@
-import Dropdown from '../../../admin-x-ds/global/Dropdown';
 import React from 'react';
+import Select from '../../../admin-x-ds/global/Select';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import useSettingGroup from '../../../hooks/useSettingGroup';
@@ -101,7 +101,7 @@ const DefaultRecipients: React.FC = () => {
 
     const form = (
         <SettingGroupContent columns={1}>
-            <Dropdown
+            <Select
                 defaultSelectedOption={emailRecipientValue}
                 hint='Who should be able to subscribe to your site?'
                 options={RECIPIENT_FILTER_OPTIONS}

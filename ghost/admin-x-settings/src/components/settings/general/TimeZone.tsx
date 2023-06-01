@@ -1,5 +1,5 @@
-import Dropdown from '../../../admin-x-ds/global/Dropdown';
 import React, {useEffect, useState} from 'react';
+import Select from '../../../admin-x-ds/global/Select';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import timezoneData from '@tryghost/timezone-data';
@@ -71,7 +71,7 @@ const TimeZone: React.FC = () => {
     );
     const inputFields = (
         <SettingGroupContent columns={1}>
-            <Dropdown
+            <Select
                 defaultSelectedOption={publicationTimezone}
                 hint={<Hint timezone={publicationTimezone} />}
                 options={timezoneOptions}
