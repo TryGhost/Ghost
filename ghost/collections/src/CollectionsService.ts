@@ -3,6 +3,7 @@ import {CollectionRepository} from './CollectionRepository';
 
 type CollectionsServiceDeps = {
     collectionsRepository: CollectionRepository;
+    postsRepository: IPostsRepository;
 };
 
 type CollectionPostDTO = {
@@ -49,10 +50,17 @@ type CollectionPostInputDTO = {
     published_at: Date;
 };
 
+type IPostsRepository = {
+    getAll(options: {filter?: string}): Promise<any[]>;
+}
+
 export class CollectionsService {
     collectionsRepository: CollectionRepository;
+    postsRepository: IPostsRepository;
+
     constructor(deps: CollectionsServiceDeps) {
         this.collectionsRepository = deps.collectionsRepository;
+        this.postsRepository = deps.postsRepository;
     }
 
     toDTO(collection: Collection): CollectionDTO {
@@ -102,6 +110,16 @@ export class CollectionsService {
             featureImage: data.feature_image
         });
 
+        if (collection.type === 'automatic' && collection.filter) {
+            const posts = await this.postsRepository.getAll({
+                filter: collection.filter
+            });
+
+            for (const post of posts) {
+                collection.addPost(post);
+            }
+        }
+
         await this.collectionsRepository.save(collection);
 
         return this.toDTO(collection);
@@ -128,8 +146,20 @@ export class CollectionsService {
             return null;
         }
 
-        if (data.posts) {
+        if (collection.type === 'manual' && data.posts) {
             for (const post of data.posts) {
+                collection.addPost(post);
+            }
+        }
+
+        if ((collection.type === 'automatic' || data.type === 'automatic') && data.filter) {
+            const posts = await this.postsRepository.getAll({
+                filter: data.filter
+            });
+
+            collection.removeAllPosts();
+
+            for (const post of posts) {
                 collection.addPost(post);
             }
         }

@@ -7,10 +7,18 @@ class CollectionsServiceWrapper {
     api;
 
     constructor() {
+        const models = require('../../models');
         const collectionsRepositoryInMemory = new CollectionsRepositoryInMemory();
 
         const collectionsService = new CollectionsService({
-            collectionsRepository: collectionsRepositoryInMemory
+            collectionsRepository: collectionsRepositoryInMemory,
+            postsRepository: {
+                getAll: async ({filter}) => {
+                    return models.Post.findAll({
+                        filter
+                    });
+                }
+            }
         });
 
         this.api = {

@@ -351,7 +351,7 @@ describe('Collections API', function () {
                     location: anyLocationFor('collections')
                 })
                 .matchBodySnapshot({
-                    collections: [buildMatcher(0)]
+                    collections: [buildMatcher(2)]
                 });
         });
     });

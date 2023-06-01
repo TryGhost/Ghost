@@ -9,7 +9,16 @@ Object {
       "feature_image": null,
       "filter": "featured:true",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "posts": Array [],
+      "posts": Array [
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 0,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 1,
+        },
+      ],
       "title": "Test Collection",
       "type": "automatic",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -22,7 +31,7 @@ exports[`Collections API Automatic Collection Filtering Creates an automatic Col
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "277",
+  "content-length": "374",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
