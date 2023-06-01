@@ -337,7 +337,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                     {userData.cover_image && (
                         <div className='absolute inset-0 z-0 block bg-gradient-to-tr from-[rgba(0,0,0,0.5)] to-[rgba(0,0,0,0.01)]'></div>
                     )}
-                    <div className="absolute right-4 top-4">
+                    <div className="absolute right-8 top-8">
                         <Menu items={items} position='left'></Menu>
                     </div>
                     <div className='relative z-10 mt-60 flex gap-4'>
