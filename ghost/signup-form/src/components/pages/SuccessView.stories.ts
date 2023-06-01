@@ -15,7 +15,8 @@ export const Full: Story = {
     args: {
         email: 'test@example.com',
         isMinimal: false,
-        backgroundColor: '#eeeeee'
+        backgroundColor: '#eeeeee',
+        textColor: '#000000'
     }
 };
 
@@ -23,7 +24,8 @@ export const FullDark: Story = {
     args: {
         email: 'test@example.com',
         isMinimal: false,
-        backgroundColor: '#333333'
+        backgroundColor: '#333333',
+        textColor: '#ffffff'
     }
 };
 

@@ -35,7 +35,6 @@
         "prepublishOnly": "yarn build"
     },
     "dependencies": {
-        "@tryghost/color-utils": "^0.1.26",
         "react": "^18.2.0",
         "react-dom": "^18.2.0"
     },
