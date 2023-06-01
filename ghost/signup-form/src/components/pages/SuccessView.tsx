@@ -7,23 +7,23 @@ export const SuccessView: React.FC<{
     isMinimal: boolean;
     backgroundColor?: string;
 }> = ({email,isMinimal,backgroundColor}) => {
-    const {i18n} = useAppContext();
+    const {i} = useAppContext();
 
     if (isMinimal) {
         return (
             <div>
-                <h1 className="text-xl font-bold">{i18n(`Now check your email!`)}</h1>
+                <h1 className="text-xl font-bold">{i(`Now check your email!`)}</h1>
             </div>
         );
     }
     return (
         <div
-            className='flex h-[100vh] flex-col items-center justify-center bg-grey-200 p-6 md:p-8'
+            className='bg-grey-200 flex h-[100vh] flex-col items-center justify-center p-6 md:p-8'
             data-testid="success-page"
             style={{backgroundColor, color: backgroundColor && textColorForBackgroundColor(backgroundColor)}}
         >
-            <h1 className='text-center text-lg font-bold sm:text-xl md:text-2xl lg:text-3xl'>{i18n(`Now check your email!`)}</h1>
-            <p className='mb-5 text-center'>{i18n(`An email has been send to ${email}.`)}</p>
+            <h1 className='text-center text-lg font-bold sm:text-xl md:text-2xl lg:text-3xl'>{i(`Now check your email!`)}</h1>
+            <p className='mb-5 text-center'>{i(`An email has been send to ${email}.`)}</p>
         </div>
     );
 };

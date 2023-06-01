@@ -36,7 +36,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         api,
         options,
         setPage: _setPage,
-        i18n: i18n.t,
+        t: i18n.t,
         scriptTag
     };
 
