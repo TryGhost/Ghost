@@ -45,6 +45,12 @@ export class Collection {
         this.posts.splice(index, 0, post.id);
     }
 
+    removePost(id: string) {
+        if (this.posts.includes(id)) {
+            this._posts = this.posts.filter(postId => postId !== id);
+        }
+    }
+
     private constructor(data: any) {
         this.id = data.id;
         this.title = data.title;

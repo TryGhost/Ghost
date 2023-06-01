@@ -117,5 +117,34 @@ describe('CollectionsService', function () {
             assert.equal(editedCollection?.posts[0].id, posts[0].id, 'Collection should have the correct post');
             assert.equal(editedCollection?.posts[0].sort_order, 0, 'Collection should have the correct post sort order');
         });
+
+        it('Removes a Post from a Collection', async function () {
+            const collection = await collectionsService.createCollection({
+                title: 'testing collections',
+                description: 'testing collections description',
+                type: 'manual'
+            });
+
+            let editedCollection = await collectionsService.edit({
+                id: collection.id,
+                posts: [{
+                    id: posts[0].id
+                }, {
+                    id: posts[1].id
+                }]
+            });
+
+            assert.equal(editedCollection?.posts.length, 2, 'Collection should have two posts');
+
+            editedCollection = await collectionsService.removePostFromCollection(collection.id, posts[0].id);
+
+            assert.equal(editedCollection?.posts.length, 1, 'Collection should have one posts');
+        });
+
+        it('Returns null when removing post from non existing collection', async function () {
+            const collection = await collectionsService.removePostFromCollection('i-do-not-exist', posts[0].id);
+
+            assert.equal(collection, null, 'Collection should be null');
+        });
     });
 });

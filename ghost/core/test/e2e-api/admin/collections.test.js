@@ -256,6 +256,33 @@ describe('Collections API', function () {
 
             assert.equal(readResponse.body.collections[0].posts.length, 4, 'Post should have been added to a Collection');
         });
+
+        it('Can remove a Post from a Collection', async function () {
+            const collectionId = collectionToEdit.id;
+            const readResponse = await agent
+                .get(`/collections/${collectionId}/`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [buildMatcher(4, {withSortOrder: true})]
+                });
+
+            const postIdToRemove = readResponse.body.collections[0].posts[0]?.id;
+
+            await agent
+                .delete(`/collections/${collectionId}/posts/${postIdToRemove}`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [buildMatcher(3, {withSortOrder: true})]
+                });
+        });
     });
 
     it('Can delete a Collection', async function () {

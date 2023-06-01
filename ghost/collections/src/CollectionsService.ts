@@ -175,4 +175,19 @@ export class CollectionsService {
 
         return collection;
     }
+
+    async removePostFromCollection(id: string, postId: string): Promise<CollectionDTO | null> {
+        const collection = await this.getById(id);
+
+        if (!collection) {
+            return null;
+        }
+
+        if (collection) {
+            collection.removePost(postId);
+            await this.collectionsRepository.save(collection);
+        }
+
+        return this.toDTO(collection);
+    }
 }
