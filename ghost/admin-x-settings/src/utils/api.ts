@@ -27,6 +27,26 @@ export interface RolesResponseType {
     roles: UserRole[];
 }
 
+export interface SiteResponseType {
+    site: {
+        title: string;
+        description: string;
+        logo: string;
+        icon: string;
+        accent_color: string;
+        url: string;
+        locale: string;
+        version: string;
+    };
+}
+
+export interface ImagesResponseType {
+    images: {
+        url: string;
+        ref: string;
+    }[];
+}
+
 interface RequestOptions {
     method?: string;
     body?: string | FormData;
@@ -35,107 +55,137 @@ interface RequestOptions {
     };
 }
 
-const {apiRoot} = getGhostPaths();
-
-function fetcher(url: string, options: RequestOptions) {
-    const endpoint = `${apiRoot}${url}`;
-    // By default, we set the Content-Type header to application/json
-    const headers = options?.headers || {
-        'Content-Type': 'application/json'
+interface API {
+    settings: {
+        browse: () => Promise<SettingsResponseType>;
+        edit: (newSettings: Setting[]) => Promise<SettingsResponseType>;
     };
-    return fetch(endpoint, {
-        headers: {
-            'app-pragma': 'no-cache',
-            'x-ghost-version': '5.49',
-            ...headers
-        },
-        method: 'GET',
-        mode: 'cors',
-        credentials: 'include',
-        ...options
-    });
+    users: {
+        browse: () => Promise<UsersResponseType>;
+        currentUser: () => Promise<User>;
+        edit: (editedUser: User) => Promise<UsersResponseType>;
+    };
+    roles: {
+        browse: () => Promise<RolesResponseType>;
+    };
+    site: {
+        browse: () => Promise<SiteResponseType>;
+    };
+    images: {
+        upload: ({file}: {file: File}) => Promise<ImagesResponseType>;
+    };
 }
 
-const settingsApi = {
-    browse: async () => {
-        const queryString = `group=site,theme,private,members,portal,newsletter,email,amp,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura`;
+interface GhostApiOptions {
+    ghostVersion: string;
+}
 
-        const response = await fetcher(`/settings/?${queryString}`, {});
+function setupGhostApi({ghostVersion}: GhostApiOptions): API {
+    const {apiRoot} = getGhostPaths();
 
-        const data: SettingsResponseType = await response.json();
-        return data;
-    },
-    edit: async (newSettings: Setting[]) => {
-        const payload = JSON.stringify({
-            settings: newSettings
+    function fetcher(url: string, options: RequestOptions) {
+        const endpoint = `${apiRoot}${url}`;
+        // By default, we set the Content-Type header to application/json
+        const defaultHeaders = {
+            'app-pragma': 'no-cache',
+            'x-ghost-version': ghostVersion
+        };
+        const headers = options?.headers || {
+            'Content-Type': 'application/json'
+        };
+        return fetch(endpoint, {
+            headers: {
+                ...defaultHeaders,
+                ...headers
+            },
+            method: 'GET',
+            mode: 'cors',
+            credentials: 'include',
+            ...options
         });
-
-        const response = await fetcher(`/settings/`, {
-            method: 'PUT',
-            body: payload
-        });
-
-        const data: SettingsResponseType = await response.json();
-        return data;
     }
-};
 
-const usersApi = {
-    browse: async () => {
-        const response = await fetcher(`/users/?limit=all&include=roles`, {});
-        const data: UsersResponseType = await response.json();
-        return data;
-    },
-    currentUser: async (): Promise<User> => {
-        const response = await fetcher(`/users/me/`, {});
-        const data: UsersResponseType = await response.json();
-        return data.users[0];
-    },
-    edit: async (editedUser: User) => {
-        const payload = JSON.stringify({
-            users: [editedUser]
-        });
+    const api: API = {
+        settings: {
+            browse: async () => {
+                const queryString = `group=site,theme,private,members,portal,newsletter,email,amp,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura`;
 
-        const response = await fetcher(`/users/${editedUser.id}/?include=roles`, {
-            method: 'PUT',
-            body: payload
-        });
+                const response = await fetcher(`/settings/?${queryString}`, {});
 
-        const data: UsersResponseType = await response.json();
-        return data;
-    }
-};
+                const data: SettingsResponseType = await response.json();
+                return data;
+            },
+            edit: async (newSettings: Setting[]) => {
+                const payload = JSON.stringify({
+                    settings: newSettings
+                });
 
-const rolesApi = {
-    browse: async () => {
-        const response = await fetcher(`/roles/?limit=all`, {});
-        const data: RolesResponseType = await response.json();
-        return data;
-    }
-};
+                const response = await fetcher(`/settings/`, {
+                    method: 'PUT',
+                    body: payload
+                });
 
-const siteApi = {
-    browse: async () => {
-        const response = await fetcher(`/site/`, {});
-        const data: any = await response.json();
-        return data;
-    }
-};
+                const data: SettingsResponseType = await response.json();
+                return data;
+            }
+        },
+        users: {
+            browse: async () => {
+                const response = await fetcher(`/users/?limit=all&include=roles`, {});
+                const data: UsersResponseType = await response.json();
+                return data;
+            },
+            currentUser: async (): Promise<User> => {
+                const response = await fetcher(`/users/me/`, {});
+                const data: UsersResponseType = await response.json();
+                return data.users[0];
+            },
+            edit: async (editedUser: User) => {
+                const payload = JSON.stringify({
+                    users: [editedUser]
+                });
 
-const imagesApi = {
-    upload: async ({file}: {file: File}) => {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('purpose', 'image');
+                const response = await fetcher(`/users/${editedUser.id}/?include=roles`, {
+                    method: 'PUT',
+                    body: payload
+                });
 
-        const response = await fetcher(`/images/upload/`, {
-            method: 'POST',
-            body: formData,
-            headers: {}
-        });
-        const data: any = await response.json();
-        return data;
-    }
-};
+                const data: UsersResponseType = await response.json();
+                return data;
+            }
+        },
+        roles: {
+            browse: async () => {
+                const response = await fetcher(`/roles/?limit=all`, {});
+                const data: RolesResponseType = await response.json();
+                return data;
+            }
+        },
+        site: {
+            browse: async () => {
+                const response = await fetcher(`/site/`, {});
+                const data: any = await response.json();
+                return data;
+            }
+        },
+        images: {
+            upload: async ({file}: {file: File}) => {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('purpose', 'image');
 
-export {settingsApi, usersApi, rolesApi, siteApi, imagesApi};
+                const response = await fetcher(`/images/upload/`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {}
+                });
+                const data: any = await response.json();
+                return data;
+            }
+        }
+    };
+
+    return api;
+}
+
+export default setupGhostApi;
