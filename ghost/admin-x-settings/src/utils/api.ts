@@ -1,4 +1,4 @@
-import {Setting, User, UserRole} from '../types/api';
+import {Setting, SiteData, User, UserRole} from '../types/api';
 import {getGhostPaths} from './helpers';
 
 interface Meta {
@@ -28,16 +28,7 @@ export interface RolesResponseType {
 }
 
 export interface SiteResponseType {
-    site: {
-        title: string;
-        description: string;
-        logo: string;
-        icon: string;
-        accent_color: string;
-        url: string;
-        locale: string;
-        version: string;
-    };
+    site: SiteData;
 }
 
 export interface ImagesResponseType {

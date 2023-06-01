@@ -1,7 +1,7 @@
 import * as i18nLib from '@tryghost/i18n';
 import React, {ComponentProps} from 'react';
 import pages, {Page, PageName} from './pages';
-import {AppContextProvider} from './AppContext';
+import {AppContextProvider, AppContextType} from './AppContext';
 import {ContentBox} from './components/ContentBox';
 import {Frame} from './components/Frame';
 import {setupGhostApi} from './utils/api';
@@ -31,12 +31,13 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
     };
 
     const i18n = i18nLib.default('en', 'signup-form');
-    const context = {
+    const context: AppContextType = {
         page,
         api,
         options,
         setPage: _setPage,
-        i18n: i18n.t
+        i18n: i18n.t,
+        scriptTag
     };
 
     const PageComponent = pages[page.name];

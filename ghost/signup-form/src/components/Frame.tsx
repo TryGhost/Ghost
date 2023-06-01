@@ -1,6 +1,7 @@
 import IFrame from './IFrame';
 import React, {useCallback, useState} from 'react';
 import styles from '../styles/iframe.css?inline';
+import {useAppContext} from '../AppContext';
 
 type FrameProps = {
     children: React.ReactNode
@@ -15,9 +16,9 @@ export const Frame: React.FC<FrameProps> = ({children}) => {
         height: '0px' // = default height
     };
     return (
-        <ResizableFrame style={style} title="signup frame">
+        <FullHeightFrame style={style} title="signup frame">
             {children}
-        </ResizableFrame>
+        </FullHeightFrame>
     );
 };
 
@@ -27,28 +28,46 @@ type ResizableFrameProps = FrameProps & {
 };
 
 /**
- * This TailwindFrame has the same height as it contents and mimics a shadow DOM component
+ * This TailwindFrame has the same height as its container
  */
-const ResizableFrame: React.FC<ResizableFrameProps> = ({children, style, title}) => {
+const FullHeightFrame: React.FC<ResizableFrameProps> = ({children, style, title}) => {
+    const {scriptTag} = useAppContext();
     const [iframeStyle, setIframeStyle] = useState(style);
-    const onResize = useCallback((iframeRoot: HTMLElement) => {
+
+    const onResize = useCallback((element: HTMLElement) => {
         setIframeStyle((current) => {
             return {
                 ...current,
-                height: `${iframeRoot.scrollHeight}px`
+                height: `${element.scrollHeight}px`,
+                width: `${element.scrollWidth}px`
             };
         });
     }, []);
 
+    React.useEffect(() => {
+        const element = scriptTag.parentElement;
+        if (!element) {
+            return;
+        }
+        const observer = new ResizeObserver(_ => onResize(element));
+        observer.observe(element);
+
+        return () => {
+            observer.unobserve(element);
+        };
+    }, [scriptTag, onResize]);
+
     return (
-        <TailwindFrame style={iframeStyle} title={title} onResize={onResize}>
-            {children}
-        </TailwindFrame>
+        <div style={{position: 'absolute'}}>
+            <TailwindFrame style={iframeStyle} title={title}>
+                {children}
+            </TailwindFrame>
+        </div>
     );
 };
 
 type TailwindFrameProps = ResizableFrameProps & {
-    onResize: (el: HTMLElement) => void
+    onResize?: (el: HTMLElement) => void
 };
 
 /**
