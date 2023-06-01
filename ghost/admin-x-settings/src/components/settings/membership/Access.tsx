@@ -106,6 +106,7 @@ const Access: React.FC = () => {
             onCancel={handleCancel}
             onSave={handleSave}
             onStateChange={handleStateChange}
+            navid='access'
         >
             {currentState === 'view' ? values : form}
         </SettingGroup>

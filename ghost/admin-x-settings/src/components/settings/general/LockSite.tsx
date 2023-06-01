@@ -83,6 +83,7 @@ const LockSite: React.FC = () => {
             onCancel={handleCancel}
             onSave={handleSave}
             onStateChange={handleStateChange}
+            navid='locksite'
         >
             {currentState === 'view' ? values : inputs}
         </SettingGroup>

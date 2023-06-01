@@ -94,6 +94,7 @@ const SocialAccounts: React.FC = () => {
             title='Social accounts'
             onSave={handleSave}
             onStateChange={handleStateChange}
+            navid='social-accounts'
         >
             {currentState === 'view' ? values : inputs}
         </SettingGroup>

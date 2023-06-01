@@ -122,6 +122,7 @@ const DefaultRecipients: React.FC = () => {
             onCancel={handleCancel}
             onSave={handleSave}
             onStateChange={handleStateChange}
+            navid='default-recipients'
         >
             {currentState === 'view' ? values : form}
         </SettingGroup>

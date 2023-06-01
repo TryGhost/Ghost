@@ -103,6 +103,7 @@ const MailGun: React.FC = () => {
             onCancel={handleCancel}
             onSave={handleSave}
             onStateChange={handleStateChange}
+            navid='mailgun'
         >
             {currentState === 'view' ? values : inputs}
         </SettingGroup>

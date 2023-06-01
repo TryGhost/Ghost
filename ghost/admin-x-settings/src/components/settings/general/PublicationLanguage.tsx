@@ -61,6 +61,7 @@ const PublicationLanguage: React.FC = () => {
             onCancel={handleCancel}
             onSave={handleSave}
             onStateChange={handleStateChange}
+            navid='publication-language'
         >
             {currentState === 'view' ? values : inputFields }
         </SettingGroup>
