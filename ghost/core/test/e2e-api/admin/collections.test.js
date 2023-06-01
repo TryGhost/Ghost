@@ -11,7 +11,8 @@ const {
     anyErrorId,
     anyLocationFor,
     anyObjectId,
-    anyISODateTime
+    anyISODateTime,
+    anyNumber
 } = matchers;
 
 const matchCollection = {
@@ -24,12 +25,16 @@ const matchCollection = {
  *
  * @param {number} postCount
  */
-const buildMatcher = (postCount) => {
+const buildMatcher = (postCount, opts = {}) => {
+    let obj = {
+        id: anyObjectId
+    };
+    if (opts.withSortOrder) {
+        obj.sort_order = anyNumber;
+    }
     return {
         ...matchCollection,
-        posts: Array(postCount).fill({
-            id: anyObjectId
-        })
+        posts: Array(postCount).fill(obj)
     };
 };
 
@@ -234,9 +239,7 @@ describe('Collections API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    posts: [{
-                        id: anyObjectId
-                    }]
+                    collections: [buildMatcher(4, {withSortOrder: true})]
                 });
 
             // verify the posts are persisted across requests
@@ -248,7 +251,7 @@ describe('Collections API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    collections: [buildMatcher(3)]
+                    collections: [buildMatcher(4, {withSortOrder: true})]
                 });
 
             assert.equal(readResponse.body.collections[0].posts.length, 4, 'Post should have been added to a Collection');
