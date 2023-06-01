@@ -1,13 +1,12 @@
 import React from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
-import generateEditorState from '../utils/generateEditorState';
 import {$canShowPlaceholderCurry} from '@lexical/text';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {BASIC_NODES, KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
 import {ToggleNode as BaseToggleNode, INSERT_TOGGLE_COMMAND} from '@tryghost/kg-default-nodes';
 import {ReactComponent as ToggleCardIcon} from '../assets/icons/kg-card-type-toggle.svg';
 import {ToggleNodeComponent} from './ToggleNodeComponent';
-import {createEditor} from 'lexical';
+import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 
 // re-export here so we don't need to import from multiple places throughout the app
 export {INSERT_TOGGLE_COMMAND} from '@tryghost/kg-default-nodes';
@@ -34,31 +33,15 @@ export class ToggleNode extends BaseToggleNode {
     constructor(dataset = {}, key) {
         super(dataset, key);
 
-        // set up and populate nested editors from the serialized HTML
-        this.__headingEditor = dataset.headingEditor || createEditor({nodes: MINIMAL_NODES});
-        this.__headingEditorInitialState = dataset.headingEditorInitialState;
-        if (!this.__headingEditorInitialState) {
-            // wrap the heading in a paragraph so it gets parsed correctly
-            // - we serialize with no wrapper so the renderer can decide how to wrap it
-            const initialHtml = dataset.heading ? `<p>${dataset.heading}</p>` : null;
+        setupNestedEditor(this, '__headingEditor', {editor: dataset.headingEditor, nodes: MINIMAL_NODES});
+        setupNestedEditor(this, '__contentEditor', {editor: dataset.contentEditor, nodes: BASIC_NODES});
 
-            // store the initial state separately as it's passed in to `<CollaborationPlugin />`
-            // for use when there is no YJS document already stored
-            this.__headingEditorInitialState = generateEditorState({
-                // create a new editor instance so we don't pre-fill an editor that will be filled by YJS content
-                editor: createEditor({nodes: MINIMAL_NODES}),
-                initialHtml
-            });
+        // populate nested editors on initial construction
+        if (!dataset.headingEditor && dataset.heading) {
+            populateNestedEditor(this, '__headingEditor', `<p>${dataset.heading}</p>`);
         }
-
-        this.__contentEditor = dataset.contentEditor || createEditor({nodes: BASIC_NODES});
-        this.__contentEditorInitialState = dataset.contentEditorInitialState;
-        if (!dataset.contentEditor) {
-            this.__contentEditorInitialState = generateEditorState({
-                // create a new editor instance so we don't pre-fill an editor that will be filled by YJS content
-                editor: createEditor({nodes: BASIC_NODES}),
-                initialHtml: dataset.content
-            });
+        if (!dataset.contentEditor && dataset.content) {
+            populateNestedEditor(this, '__contentEditor', dataset.content);
         }
     }
 

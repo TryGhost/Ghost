@@ -338,6 +338,10 @@ export function isMac() {
     return process.platform === 'darwin';
 }
 
+export function ctrlOrCmd() {
+    return isMac() ? 'Meta' : 'Control';
+}
+
 // note: we always use lowercase for the cardName but we use start case for the menu item attribute
 export async function insertCard(page, {cardName}) {
     let card = startCase(cardName);

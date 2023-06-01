@@ -1,4 +1,4 @@
-import {assertHTML, createSnippet, focusEditor, html, initialize} from '../../utils/e2e';
+import {assertHTML, createSnippet, ctrlOrCmd, focusEditor, html, initialize} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 async function insertToggleCard(page) {
@@ -24,25 +24,22 @@ test.describe('Toggle card', async () => {
     });
 
     test('can import serialized toggle card nodes', async function () {
-        await page.evaluate(() => {
-            const serializedState = JSON.stringify({
-                root: {
-                    children: [{
-                        type: 'toggle',
-                        heading: '<span><em>Heading</em></span>', // heading shouldn't have wrapper element like <p> or <h4>
-                        content: '<p dir="ltr"><span>Content</span></p>'
-                    }],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            });
-            const editor = window.lexicalEditor;
-            const editorState = editor.parseEditorState(serializedState);
-            editor.setEditorState(editorState);
-        });
+        const contentParam = encodeURIComponent(JSON.stringify({
+            root: {
+                children: [{
+                    type: 'toggle',
+                    heading: '<span><em>Heading</em></span>', // heading shouldn't have wrapper element like <p> or <h4>
+                    content: '<p dir="ltr"><span>Content</span></p>'
+                }],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        }));
+
+        await initialize({page, uri: `/#/?content=${contentParam}`});
 
         await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
@@ -258,5 +255,62 @@ test.describe('Toggle card', async () => {
         await page.waitForSelector('[data-kg-cardmenu-selected="true"]');
         await page.keyboard.press('Enter');
         await expect(await page.locator('[data-kg-card="toggle"]')).toHaveCount(2);
+    });
+
+    test('can undo/redo without losing nested editor content', async () => {
+        await focusEditor(page);
+        await insertToggleCard(page);
+
+        await page.keyboard.type('Test title');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('Test description');
+        await page.keyboard.press('Escape');
+        await page.keyboard.press('Backspace');
+        await page.keyboard.press(`${ctrlOrCmd()}+z`);
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="toggle">
+                    <div class="rounded border border-grey/40 py-4 px-6 dark:border-grey/30">
+                        <div class="flex cursor-text items-start justify-between">
+                            <div class="mr-2 w-full">
+                                <div class="koenig-lexical-toggle-heading">
+                                    <div data-kg="editor">
+                                        <div
+                                            contenteditable="false"
+                                            spellcheck="true"
+                                            data-lexical-editor="true"
+                                            aria-autocomplete="none"
+                                        >
+                                            <p dir="ltr"><span data-lexical-text="true">Test title</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div
+                                class="ml-auto mt-[-1px] flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center">
+                                <svg></svg>
+                            </div>
+                        </div>
+                        <div class="mt-2 w-full visible">
+                            <div class="koenig-lexical-toggle-description">
+                                <div data-kg="editor">
+                                    <div
+                                        contenteditable="false"
+                                        spellcheck="true"
+                                        data-lexical-editor="true"
+                                        aria-autocomplete="none"
+                                    >
+                                        <p dir="ltr"><span data-lexical-text="true">Test description</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div></div>
+                </div>
+            </div>
+            <p><br /></p>
+        `, {ignoreCardToolbarContents: true, ignoreInnerSVG: true});
     });
 });
