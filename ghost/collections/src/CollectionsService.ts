@@ -15,7 +15,7 @@ type ManualCollection = {
     type: 'manual';
     slug?: string;
     description?: string;
-    featureImage?: string;
+    feature_image?: string;
     filter?: null;
 };
 
@@ -25,7 +25,7 @@ type AutomaticCollection = {
     filter: string;
     slug?: string;
     description?: string;
-    featureImage?: string;
+    feature_image?: string;
 };
 
 type CollectionInputDTO = ManualCollection | AutomaticCollection;
@@ -73,6 +73,16 @@ export class CollectionsService {
         };
     }
 
+    fromDTO(data: any): any {
+        return {
+            title: data.title,
+            slug: data.slug,
+            description: data.description,
+            featureImage: data.feature_image,
+            filter: data.filter
+        };
+    }
+
     async createCollection(data: CollectionInputDTO): Promise<CollectionDTO> {
         const collection = await Collection.create({
             title: data.title,
@@ -80,7 +90,7 @@ export class CollectionsService {
             description: data.description,
             type: data.type,
             filter: data.filter,
-            featureImage: data.featureImage
+            featureImage: data.feature_image
         });
 
         await this.collectionsRepository.save(collection);
@@ -102,7 +112,7 @@ export class CollectionsService {
         return this.toDTO(collection);
     }
 
-    async edit(data: any): Promise<Collection | null> {
+    async edit(data: any): Promise<CollectionDTO | null> {
         const collection = await this.collectionsRepository.getById(data.id);
 
         if (!collection) {
@@ -115,17 +125,13 @@ export class CollectionsService {
             }
         }
 
-        if (data.title) {
-            collection.title = data.title;
-        }
+        const collectionData = this.fromDTO(data);
 
-        if (data.description) {
-            collection.description = data.description;
-        }
+        Object.assign(collection, collectionData);
 
         await this.collectionsRepository.save(collection);
 
-        return collection;
+        return this.toDTO(collection);
     }
 
     async getById(id: string): Promise<Collection | null> {
