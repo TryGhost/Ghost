@@ -97,13 +97,13 @@ const MailGun: React.FC = () => {
     return (
         <SettingGroup
             description={groupDescription}
+            navid='mailgun'
             saveState={saveState}
             state={currentState}
             title='Mailgun'
             onCancel={handleCancel}
             onSave={handleSave}
             onStateChange={handleStateChange}
-            navid='mailgun'
         >
             {currentState === 'view' ? values : inputs}
         </SettingGroup>

@@ -12,7 +12,7 @@ const SettingNavItem: React.FC<Props> = ({
     onClick = () => {}
 }) => {
     return (
-        <li><button className="block px-0 py-1 text-sm" name={navid} onClick={onClick}>{title}</button></li>
+        <li><button className="block px-0 py-1 text-sm" name={navid} type='button' onClick={onClick}>{title}</button></li>
     );
 };
 

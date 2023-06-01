@@ -84,13 +84,13 @@ const TimeZone: React.FC = () => {
     return (
         <SettingGroup
             description='Set the time and date of your publication, used for all published posts'
+            navid='timezone'
             saveState={saveState}
             state={currentState}
             title='Site timezone'
             onCancel={handleCancel}
             onSave={handleSave}
             onStateChange={handleStateChange}
-            navid='timezone'
         >
             {currentState === 'view' ? viewContent : inputFields}
         </SettingGroup>

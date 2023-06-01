@@ -116,13 +116,13 @@ const DefaultRecipients: React.FC = () => {
     return (
         <SettingGroup
             description='When you publish new content, who do you usually want to send it to?'
+            navid='default-recipients'
             saveState={saveState}
             state={currentState}
             title='Default recipients'
             onCancel={handleCancel}
             onSave={handleSave}
             onStateChange={handleStateChange}
-            navid='default-recipients'
         >
             {currentState === 'view' ? values : form}
         </SettingGroup>
