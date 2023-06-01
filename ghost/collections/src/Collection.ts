@@ -1,5 +1,3 @@
-// have to use requires until there are type definitions for these modules
-
 import {ValidationError} from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 
@@ -22,6 +20,31 @@ export class Collection {
     updatedAt: Date;
     deleted: boolean;
 
+    _posts: string[];
+    get posts() {
+        return this._posts;
+    }
+    /**
+     * @param post {{id: string}} - The post to add to the collection
+     * @param index {number} - The index to insert the post at, use negative numbers to count from the end.
+     */
+    addPost(post: {id: string}, index: number = -0) {
+        // if (this.type === 'automatic') {
+        //     TODO: Test the post against the NQL filter stored in `this.filter`
+        //     This will need the `post` param to include more data.
+        // }
+
+        if (this.posts.includes(post.id)) {
+            this._posts = this.posts.filter(id => id !== post.id);
+        }
+
+        if (index < 0 || Object.is(index, -0)) {
+            index = this.posts.length + index;
+        }
+
+        this.posts.splice(index, 0, post.id);
+    }
+
     private constructor(data: any) {
         this.id = data.id;
         this.title = data.title;
@@ -33,6 +56,7 @@ export class Collection {
         this.createdAt = data.createdAt;
         this.updatedAt = data.updatedAt;
         this.deleted = data.deleted;
+        this._posts = data.posts;
     }
 
     toJSON() {
@@ -45,7 +69,8 @@ export class Collection {
             filter: this.filter,
             featureImage: this.featureImage,
             createdAt: this.createdAt,
-            updatedAt: this.updatedAt
+            updatedAt: this.updatedAt,
+            posts: this.posts
         };
     }
 
@@ -87,7 +112,8 @@ export class Collection {
             featureImage: data.feature_image || null,
             createdAt: Collection.validateDateField(data.created_at, 'created_at'),
             updatedAt: Collection.validateDateField(data.updated_at, 'updated_at'),
-            deleted: data.deleted || false
+            deleted: data.deleted || false,
+            posts: data.posts || []
         });
     }
 }

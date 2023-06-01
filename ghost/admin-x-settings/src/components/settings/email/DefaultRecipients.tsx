@@ -49,6 +49,7 @@ function getDefaultRecipientValue({
 const DefaultRecipients: React.FC = () => {
     const {
         currentState,
+        saveState,
         handleSave,
         handleCancel,
         updateSetting,
@@ -115,6 +116,7 @@ const DefaultRecipients: React.FC = () => {
     return (
         <SettingGroup
             description='When you publish new content, who do you usually want to send it to?'
+            saveState={saveState}
             state={currentState}
             title='Default recipients'
             onCancel={handleCancel}

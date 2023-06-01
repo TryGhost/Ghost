@@ -8,6 +8,7 @@ import useSettingGroup from '../../../hooks/useSettingGroup';
 const Analytics: React.FC = () => {
     const {
         currentState,
+        saveState,
         handleSave,
         handleCancel,
         updateSetting,
@@ -72,6 +73,7 @@ const Analytics: React.FC = () => {
         <SettingGroup
             description='Decide what data you collect from your members'
             hideEditButton={true}
+            saveState={saveState}
             state={currentState}
             title='Analytics'
             onCancel={handleCancel}

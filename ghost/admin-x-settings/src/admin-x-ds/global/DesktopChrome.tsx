@@ -29,6 +29,8 @@ const DesktopChrome: React.FC<DesktopChromeProps> = ({
     const trafficLightSize = size === 'sm' ? 'w-[6px] h-[6px]' : 'w-[10px] h-[10px]';
     const trafficLightContainerStyle = size === 'sm' ? 'gap-[5px] w-[36px] ' : 'gap-2 w-[56px] ';
 
+    contentClasses += ' h-full';
+
     if (headerCenter) {
         containerSize += size === 'sm' ? ' pr-[48px]' : ' pr-[68px]';
     }

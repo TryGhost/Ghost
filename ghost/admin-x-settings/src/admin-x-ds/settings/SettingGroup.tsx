@@ -4,12 +4,14 @@ import SettingGroupHeader from './SettingGroupHeader';
 import {IButton} from '../global/Button';
 
 export type TSettingGroupStates = 'view' | 'edit' | 'unsaved';
+export type SaveState = 'saving' | 'saved' | 'error' | '';
 
 interface SettingGroupProps {
     navid?:string;
     title?: string;
     description?: React.ReactNode;
     state?: TSettingGroupStates;
+    saveState?: SaveState;
     customHeader?: React.ReactNode;
     customButtons?: React.ReactNode;
     children?: React.ReactNode;
@@ -35,6 +37,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     title,
     description,
     state,
+    saveState,
     customHeader,
     customButtons,
     children,
@@ -59,7 +62,6 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
 
     const handleSave = () => {
         onSave?.();
-        onStateChange?.('view');
     };
 
     switch (state) {
@@ -79,9 +81,22 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     let viewButtons = [];
 
     if (!hideEditButton) {
+        let label = 'Edit';
+        if (saveState === 'saved') {
+            label = 'Saved';
+        }
         viewButtons.push(
             {
-                label: 'Edit',
+                label,
+                key: 'edit',
+                color: 'green',
+                onClick: handleEdit
+            }
+        );
+    } else if (saveState === 'saved') {
+        viewButtons.push(
+            {
+                label: 'Saved',
                 key: 'edit',
                 color: 'green',
                 onClick: handleEdit
@@ -98,9 +113,13 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     ];
 
     if (state === 'unsaved' || alwaysShowSaveButton) {
+        let label = 'Save';
+        if (saveState === 'saving') {
+            label = 'Saving...';
+        }
         editButtons.push(
             {
-                label: 'Save',
+                label,
                 key: 'save',
                 color: 'green',
                 onClick: handleSave
@@ -112,7 +131,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
         <div className={`flex flex-col gap-6 rounded ${border && 'border p-5 md:p-7'} ${styles}`} id={navid && navid}>
             {customHeader ? customHeader :
                 <SettingGroupHeader description={description} title={title!}>
-                    {customButtons ? customButtons : 
+                    {customButtons ? customButtons :
                         (onStateChange && <ButtonGroup buttons={state === 'view' ? viewButtons : editButtons} link={true} />)}
                 </SettingGroupHeader>
             }

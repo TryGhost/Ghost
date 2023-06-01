@@ -1,4 +1,4 @@
-import {Setting, SettingValue} from '../types/api';
+import {Setting, SettingValue, User} from '../types/api';
 
 export interface IGhostPaths {
     adminRoot: string;
@@ -57,4 +57,8 @@ export function generateAvatarColor(name: string) {
 
     const h = hash % 360;
     return 'hsl(' + h + ', ' + s + '%, ' + l + '%)';
+}
+
+export function isOwnerUser(user: User) {
+    return user.roles.some(role => role.name === 'Owner');
 }

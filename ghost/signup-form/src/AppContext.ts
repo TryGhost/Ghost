@@ -7,7 +7,8 @@ export type SignupFormOptions = {
     title?: string,
     description?: string,
     logo?: string,
-    color?: string,
+    backgroundColor?: string,
+    buttonColor?: string,
     site: string,
     labels: string[],
 };

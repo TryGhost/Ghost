@@ -20,7 +20,12 @@ describe('Collection', function () {
 
     it('Can serialize Collection to JSON', async function () {
         const collection = await Collection.create({
-            title: 'Serialize me'
+            title: 'Serialize me',
+            posts: [{
+                id: 'post-1'
+            }, {
+                id: 'post-2'
+            }]
         });
 
         const json = collection.toJSON();
@@ -30,7 +35,7 @@ describe('Collection', function () {
         assert.equal(json.title, 'Serialize me');
         assert.ok(collection.createdAt instanceof Date);
         assert.ok(collection.updatedAt instanceof Date);
-        assert.equal(Object.keys(json).length, 9, 'should only have 9 keys');
+        assert.equal(Object.keys(json).length, 10, 'should only have 9 keys + 1 posts relation');
         assert.deepEqual(Object.keys(json), [
             'id',
             'title',
@@ -40,7 +45,15 @@ describe('Collection', function () {
             'filter',
             'featureImage',
             'createdAt',
-            'updatedAt'
+            'updatedAt',
+            'posts'
+        ]);
+
+        assert.equal(json.posts.length, 2, 'should have 2 posts');
+        const serializedPost = json.posts[0];
+        assert.equal(Object.keys(serializedPost).length, 1, 'should only have 1 key');
+        assert.deepEqual(Object.keys(serializedPost), [
+            'id'
         ]);
     });
 
@@ -94,5 +107,35 @@ describe('Collection', function () {
             assert.equal(err.message, 'Invalid date provided for created_at', 'Error message should match');
             return true;
         });
+    });
+
+    it('Can add posts to different positions', async function () {
+        const collection = await Collection.create({
+            title: 'Testing adding posts'
+        });
+
+        assert(collection.posts.length === 0);
+
+        const posts = [{
+            id: '0'
+        }, {
+            id: '1'
+        }, {
+            id: '2'
+        }, {
+            id: '3'
+        }];
+
+        collection.addPost(posts[0]);
+        collection.addPost(posts[1]);
+        collection.addPost(posts[2], 1);
+        collection.addPost(posts[3], 0);
+
+        assert(collection.posts.length as number === 4);
+        assert(collection.posts[0] === '3');
+
+        collection.addPost(posts[3], -1);
+        assert(collection.posts.length as number === 4);
+        assert(collection.posts[collection.posts.length - 2] === '3');
     });
 });

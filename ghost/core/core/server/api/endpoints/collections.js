@@ -91,6 +91,45 @@ module.exports = {
         }
     },
 
+    addPost: {
+        docName: 'collection_posts',
+        statusCode: 200,
+        headers: {},
+        options: [
+            'id'
+        ],
+        data: [
+            'post_id'
+        ],
+        validation: {
+            options: {
+                id: {
+                    required: true
+                }
+            },
+            data: {
+                post_id: {
+                    required: true
+                }
+            }
+        },
+        // @NOTE: should have permissions when moving out of Alpha
+        permissions: false,
+        async query(frame) {
+            const collectionPost = await collectionsService.api.addPost(frame.options.id, {
+                id: frame.data.posts[0].id
+            });
+
+            if (!collectionPost) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.collectionNotFound)
+                });
+            }
+
+            return collectionPost;
+        }
+    },
+
     destroy: {
         statusCode: 204,
         headers: {
