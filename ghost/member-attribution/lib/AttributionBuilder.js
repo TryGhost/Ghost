@@ -2,7 +2,7 @@
  * @typedef {object} AttributionResource
  * @prop {string|null} id
  * @prop {string|null} url (absolute URL)
- * @prop {'page'|'post'|'author'|'tag'|'url'} type
+ * @prop {'page'|'post'|'author'|'tag'|'url'|null} type
  * @prop {string|null} title
  * @prop {string|null} referrerSource
  * @prop {string|null} referrerMedium
@@ -17,7 +17,7 @@ class Attribution {
      * @param {object} data
      * @param {string|null} [data.id]
      * @param {string|null} [data.url] Relative to subdirectory
-     * @param {'page'|'post'|'author'|'tag'|'url'} [data.type]
+     * @param {'page'|'post'|'author'|'tag'|'url'|null} [data.type]
      * @param {string|null} [data.referrerSource]
      * @param {string|null} [data.referrerMedium]
      * @param {string|null} [data.referrerUrl]
@@ -49,6 +49,17 @@ class Attribution {
      */
     getResource(model) {
         if (!this.id || this.type === 'url' || !this.type || !model) {
+            if (!this.url) {
+                return {
+                    id: null,
+                    type: null,
+                    url: null,
+                    title: null,
+                    referrerSource: this.referrerSource,
+                    referrerMedium: this.referrerMedium,
+                    referrerUrl: this.referrerUrl
+                };
+            }
             return {
                 id: null,
                 type: 'url',
