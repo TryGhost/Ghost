@@ -27,7 +27,7 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: "16.13.0"
+          node-version: "18.12.1"
           cache: yarn
 
       - run: yarn --prefer-offline

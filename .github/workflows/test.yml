@@ -24,7 +24,7 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: '16.13.0'
+          node-version: '18.12.1'
           cache: yarn
 
       - uses: actions/cache@v3
@@ -54,7 +54,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: "16.13.0"
+          node-version: "18.12.1"
 
       - run: yarn --prefer-offline
       - run: yarn workspace ghost-admin run test
@@ -98,7 +98,7 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: '16.13.0'
+          node-version: '18.12.1'
           cache: yarn
 
       - name: Shutdown MySQL
@@ -160,7 +160,7 @@ jobs:
       - run: yarn test:unit
 
       - uses: actions/upload-artifact@v3
-        if: startsWith(matrix.node, '16')
+        if: startsWith(matrix.node, '18')
         with:
           name: unit-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
@@ -182,7 +182,7 @@ jobs:
           - DB: mysql8
             NODE_ENV: testing-mysql
         include:
-          - node: 16.13.0
+          - node: 18.12.1
             env:
               DB: sqlite3
               NODE_ENV: testing
@@ -245,7 +245,7 @@ jobs:
           echo "test_time=$(($endTime-$startTime))" >> $GITHUB_ENV
 
       - uses: actions/upload-artifact@v3
-        if: startsWith(matrix.node, '16') && contains(matrix.env.DB, 'mysql')
+        if: startsWith(matrix.node, '18') && contains(matrix.env.DB, 'mysql')
         with:
           name: e2e-coverage
           path: |
