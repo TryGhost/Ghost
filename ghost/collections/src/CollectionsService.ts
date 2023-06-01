@@ -1,73 +1,105 @@
 import {Collection} from './Collection';
-import {PostDTO} from './PostDTO';
-import {CollectionPost} from './CollectionPost';
+import {CollectionRepository} from './CollectionRepository';
 
 type CollectionsServiceDeps = {
-    collectionsRepository: any;
-    postsRepository: {
-        getBulk: any;
-    }
+    collectionsRepository: CollectionRepository;
 };
 
 type CollectionPostDTO = {
-    id?: string;
-    post_id: string;
-    collection_id: string;
-    sort_order?: number;
+    id: string;
+    sort_order: number;
+};
+
+type ManualCollection = {
+    title: string;
+    type: 'manual';
+    slug?: string;
+    description?: string;
+    featureImage?: string;
+    filter?: null;
+};
+
+type AutomaticCollection = {
+    title: string;
+    type: 'automatic';
+    filter: string;
+    slug?: string;
+    description?: string;
+    featureImage?: string;
+};
+
+type CollectionInputDTO = ManualCollection | AutomaticCollection;
+
+type CollectionDTO = {
+    id: string;
+    title: string | null;
+    slug: string;
+    description: string | null;
+    feature_image: string | null;
+    type: 'manual' | 'automatic';
+    filter: string | null;
+    created_at: Date;
+    updated_at: Date | null;
+    posts: CollectionPostDTO[];
+};
+
+type CollectionPostInputDTO = {
+    id: string;
+    featured: boolean;
+    published_at: Date;
 };
 
 export class CollectionsService {
-    collectionsRepository: any;
-    postsRepository: any;
-
+    collectionsRepository: CollectionRepository;
     constructor(deps: CollectionsServiceDeps) {
         this.collectionsRepository = deps.collectionsRepository;
-        this.postsRepository = deps.postsRepository;
     }
 
-    async save(data: any): Promise<Collection> {
-        const collection = await Collection.create(data);
+    toDTO(collection: Collection): CollectionDTO {
+        return {
+            id: collection.id,
+            title: collection.title || null,
+            slug: collection.slug,
+            description: collection.description || null,
+            feature_image: collection.featureImage || null,
+            type: collection.type,
+            filter: collection.filter,
+            created_at: collection.createdAt,
+            updated_at: collection.updatedAt,
+            posts: collection.posts.map((postId, index) => ({
+                id: postId,
+                sort_order: index
+            }))
+        };
+    }
+
+    async createCollection(data: CollectionInputDTO): Promise<CollectionDTO> {
+        const collection = await Collection.create({
+            title: data.title,
+            slug: data.slug,
+            description: data.description,
+            type: data.type,
+            filter: data.filter,
+            featureImage: data.featureImage
+        });
+
         await this.collectionsRepository.save(collection);
-        return collection;
+
+        return this.toDTO(collection);
     }
 
-    /**
-     *
-     * @param collection to add tags to
-     * @param postIds
-     */
-    private async addPosts(collection: Collection, postDTOs: PostDTO[]) : Promise<Collection> {
-        const postIds = postDTOs.map(post => post.id);
-        const posts = await this.postsRepository.getBulk(postIds);
-
-        for (const post of posts) {
-            const collectionPost = await CollectionPost.create({
-                post_id: post.id,
-                collection_id: collection.id
-            });
-
-            collection.addPost(collectionPost);
-        }
-
-        return collection;
-    }
-
-    async addPost(collectionPost: CollectionPostDTO): Promise<any> {
-        const collection = await this.collectionsRepository.getById(collectionPost.collection_id);
+    async addPostToCollection(collectionId: string, post: CollectionPostInputDTO): Promise<CollectionDTO | null> {
+        const collection = await this.collectionsRepository.getById(collectionId);
 
         if (!collection) {
             return null;
         }
 
-        if (!collection.canAddPost(collectionPost)) {
-            return null;
-        }
+        collection.addPost(post);
 
-        const collectionPostEntity = await CollectionPost.create(collectionPost);
-        collection.addPost(collectionPostEntity);
-        const savedPostCollection = await this.collectionsRepository.saveCollectionPost(collectionPostEntity);
+        this.collectionsRepository.save(collection);
 
-        return savedPostCollection;
+        return this.toDTO(collection);
     }
 
     async edit(data: any): Promise<Collection | null> {
@@ -78,10 +110,15 @@ export class CollectionsService {
         }
 
         if (data.posts) {
-            await this.addPosts(collection, data.posts);
+            for (const post of data.posts) {
+                collection.addPost(post);
+            }
         }
 
-        Object.assign(collection, data);
+        if (data.title) {
+            collection.title = data.title;
+        }
+
         await this.collectionsRepository.save(collection);
 
         return collection;
@@ -114,7 +151,7 @@ export class CollectionsService {
 
         if (collection) {
             collection.deleted = true;
-            await this.save(collection);
+            await this.collectionsRepository.save(collection);
         }
 
         return collection;
