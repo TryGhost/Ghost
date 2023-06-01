@@ -510,16 +510,14 @@ test.describe('Signup card', async () => {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
-        await page.click('[data-testid="signup-header-editor"]');
-        await page.keyboard.press(`${ctrlOrCmd()}+ArrowRight`);
-        await page.keyboard.type(' Header');
+        await page.keyboard.press('Shift+Tab');
+        await page.keyboard.press('Shift+Tab');
+        await page.keyboard.type('Header. ');
 
-        await page.click('[data-testid="signup-subheader-editor"]');
-        await page.keyboard.press(`${ctrlOrCmd()}+ArrowRight`);
+        await page.keyboard.press('Enter');
         await page.keyboard.type(' Subheader');
 
-        await page.click('[data-testid="signup-disclaimer-editor"]');
-        await page.keyboard.press(`${ctrlOrCmd()}+ArrowRight`);
+        await page.keyboard.press('Enter');
         await page.keyboard.type(' Disclaimer');
 
         await page.keyboard.press('Escape');
@@ -535,7 +533,7 @@ test.describe('Signup card', async () => {
                                 <div data-kg="editor">
                                     <div contenteditable="false" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none">
                                         <p dir="ltr"><span data-lexical-text="true">
-                                            Sign up for Koenig Lexical Header
+                                            Header. Sign up for Koenig Lexical
                                         </span></p>
                                     </div>
                                 </div>
