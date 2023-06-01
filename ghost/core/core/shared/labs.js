@@ -35,7 +35,7 @@ const ALPHA_FEATURES = [
     'lexicalMultiplayer',
     'websockets',
     'stripeAutomaticTax',
-    'makingItRain',
+    'emailCustomization',
     'postDiffing',
     'imageEditor',
     'signupCard',
