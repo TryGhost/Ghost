@@ -17,7 +17,6 @@ const messages = {
 const GA_FEATURES = [
     'audienceFeedback',
     'themeErrorsNotification',
-    'emailErrors',
     'outboundLinkTagging',
     'announcementBar'
 ];
@@ -36,7 +35,7 @@ const ALPHA_FEATURES = [
     'lexicalMultiplayer',
     'websockets',
     'stripeAutomaticTax',
-    'makingItRain',
+    'emailCustomization',
     'postDiffing',
     'imageEditor',
     'signupCard',
