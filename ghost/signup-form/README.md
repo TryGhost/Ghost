@@ -9,9 +9,15 @@ Embed a Ghost signup form on any site.
 - Run `yarn` in Ghost monorepo root
 - Run `yarn` in this directory
 
-### Running the development version
+### Running via Ghost `yarn dev` in root folder
 
-Run `yarn dev` to start the development server to test/develop the form standalone. 
+You can automatically start the signup-form dev server when developing Ghost by running Ghost (in root folder) via `yarn dev --all`. This will only build the production build, without the demo site.
+
+Running via `yarn dev --all --signup` or `yarn dev --signup` will also serve the demo site on `http://localhost:6173`.
+
+### Running the development version only
+
+Run `yarn dev` (in package folder) to start the development server to test/develop the form standalone. 
 - This will generate a demo site on http://localhost:6173
 - This will build and watch the production build and host it on http://localhost:6174/signup-form.min.js (different port!)
 

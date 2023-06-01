@@ -82,6 +82,17 @@ if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {
     COMMAND_GHOST.env['portal__url'] = 'http://localhost:5368/umd/portal.min.js';
 }
 
+if (DASH_DASH_ARGS.includes('signup') || DASH_DASH_ARGS.includes('all')) {
+    commands.push({
+        name: 'signup-form',
+        command: DASH_DASH_ARGS.includes('signup') ? 'yarn dev' : 'yarn preview',
+        cwd: path.resolve(__dirname, '../ghost/signup-form'),
+        prefixColor: 'magenta',
+        env: {}
+    });
+    COMMAND_GHOST.env['signupForm__url'] = 'http://localhost:6174/signup-form.min.js';
+}
+
 if (DASH_DASH_ARGS.includes('announcement-bar') || DASH_DASH_ARGS.includes('announcementBar') || DASH_DASH_ARGS.includes('announcementbar') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'announcement-bar',
