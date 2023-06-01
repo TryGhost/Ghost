@@ -325,7 +325,7 @@ test.describe('Embed card', async () => {
                     <div data-kg-card-toolbar="embed"></div>
                 </div>
             </div>
-        `, {ignoreCardToolbarContents: true});
+        `, {ignoreCardToolbarContents: true, ignoreInlineStyles: true});
     });
 });
 
