@@ -16,7 +16,6 @@ export default defineConfig({
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 2 : 0,
     workers: process.env.CI ? 2 : undefined,
-    maxFailures: process.env.CI ? 10 : 0,
     /* Reporter to use. See https://playwright.dev/docs/test-reporters */
     reporter: [['html'], [process.env.CI ? 'github' : 'list']],
     /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
