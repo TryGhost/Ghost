@@ -49,7 +49,7 @@ export default class SignupFormEmbed extends Component {
             options[`label-${i + 1}`] = label.name;
         }
 
-        let style = 'height: 58px';
+        let style = 'min-height: 58px';
 
         if (this.style === 'all-in-one') {
             options.logo = this.settings.icon;

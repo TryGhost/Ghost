@@ -2,6 +2,7 @@ import IFrame from './IFrame';
 import React, {useCallback, useState} from 'react';
 import styles from '../styles/iframe.css?inline';
 import {useAppContext} from '../AppContext';
+import {isMinimal} from '../utils/helpers';
 
 type FrameProps = {
     children: React.ReactNode
@@ -12,9 +13,20 @@ type FrameProps = {
  */
 export const Frame: React.FC<FrameProps> = ({children}) => {
     const style: React.CSSProperties = {
+        display: 'block', // iframe is by default inline, if we don't add this, the container will take up more height due to spaces, causing layout jumps
         width: '100%',
         height: '0px' // = default height
     };
+
+    const {options} = useAppContext();
+    if (isMinimal(options)) {
+        return (
+            <ResizableFrame style={style} title="signup frame">
+                {children}
+            </ResizableFrame>
+        );
+    }
+
     return (
         <FullHeightFrame style={style} title="signup frame">
             {children}
@@ -25,6 +37,27 @@ export const Frame: React.FC<FrameProps> = ({children}) => {
 type ResizableFrameProps = FrameProps & {
     style: React.CSSProperties,
     title: string,
+};
+
+/**
+ * This TailwindFrame has the same height as it contents and mimics a shadow DOM component
+ */
+const ResizableFrame: React.FC<ResizableFrameProps> = ({children, style, title}) => {
+    const [iframeStyle, setIframeStyle] = useState(style);
+    const onResize = useCallback((iframeRoot: HTMLElement) => {
+        setIframeStyle((current) => {
+            return {
+                ...current,
+                height: `${iframeRoot.scrollHeight}px`
+            };
+        });
+    }, []);
+
+    return (
+        <TailwindFrame style={iframeStyle} title={title} onResize={onResize}>
+            {children}
+        </TailwindFrame>
+    );
 };
 
 /**
@@ -65,6 +98,7 @@ const FullHeightFrame: React.FC<ResizableFrameProps> = ({children, style, title}
         </div>
     );
 };
+
 
 type TailwindFrameProps = ResizableFrameProps & {
     onResize?: (el: HTMLElement) => void
