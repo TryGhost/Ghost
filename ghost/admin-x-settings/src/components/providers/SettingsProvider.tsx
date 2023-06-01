@@ -16,7 +16,7 @@ interface SettingsProviderProps {
 const SettingsContext = createContext<SettingsContextProps>({
     settings: null,
     siteData: null,
-    saveSettings: async () => {},
+    saveSettings: async () => {}
 });
 
 // Create a Settings Provider component
