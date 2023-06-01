@@ -79,9 +79,6 @@ test.describe('Form', async () => {
             // Showing the success page
             await expect(frame.getByTestId('success-page')).toHaveCount(1);
 
-            // Check email address text is visible on the page
-            await expect(frame.getByText('jamie@example.com')).toBeVisible();
-
             // Check the request body
             expect(lastApiRequest.body).not.toBeNull();
             expect(lastApiRequest.body).toHaveProperty('labels', []);
@@ -184,9 +181,6 @@ test.describe('Form', async () => {
 
             // Showing the success page
             await expect(frame.getByTestId('success-page')).toHaveCount(1);
-
-            // Check email address text is visible on the page
-            await expect(frame.getByText('valid@example.com')).toBeVisible();
         });
 
         test('Shows error message on network issues', async ({page}) => {

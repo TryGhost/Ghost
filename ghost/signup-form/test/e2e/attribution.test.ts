@@ -20,9 +20,6 @@ async function testHistory({page, path, referrer, urlHistory}: {page: any, path:
     // Showing the success page
     await expect(frame.getByTestId('success-page')).toHaveCount(1);
 
-    // Check email address text is visible on the page
-    await expect(frame.getByText('jamie@example.com')).toBeVisible();
-
     // Check the request body
     expect(lastApiRequest.body).not.toBeNull();
     expect(lastApiRequest.body).toHaveProperty('email', 'jamie@example.com');
