@@ -90,6 +90,7 @@ const TimeZone: React.FC = () => {
             onCancel={handleCancel}
             onSave={handleSave}
             onStateChange={handleStateChange}
+            navid='timezone'
         >
             {currentState === 'view' ? viewContent : inputFields}
         </SettingGroup>

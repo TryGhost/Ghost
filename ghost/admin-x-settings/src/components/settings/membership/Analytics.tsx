@@ -79,6 +79,7 @@ const Analytics: React.FC = () => {
             onCancel={handleCancel}
             onSave={handleSave}
             onStateChange={handleStateChange}
+            navid='analytics'
         >
             {inputs}
             <div className='mt-1'>

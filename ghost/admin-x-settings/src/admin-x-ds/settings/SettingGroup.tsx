@@ -128,7 +128,8 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     }
 
     return (
-        <div className={`flex flex-col gap-6 rounded ${border && 'border p-5 md:p-7'} ${styles}`} id={navid && navid}>
+        <div className={`relative flex flex-col gap-6 rounded ${border && 'border p-5 md:p-7'} ${styles}`}>
+            <div id={navid && navid} className='absolute top-[-60px]'></div>
             {customHeader ? customHeader :
                 <SettingGroupHeader description={description} title={title!}>
                     {customButtons ? customButtons :

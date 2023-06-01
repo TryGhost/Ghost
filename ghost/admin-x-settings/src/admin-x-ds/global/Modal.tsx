@@ -61,7 +61,7 @@ const Modal: React.FC<ModalProps> = ({
     }
 
     let modalClasses = 'relative rounded overflow-hidden z-50 mx-auto flex flex-col justify-between bg-white shadow-xl w-full';
-    let backdropClasses = 'fixed inset-0 h-[100vh] w-[100vw] overflow-y-scroll ';
+    let backdropClasses = 'fixed inset-0 h-[100vh] w-[100vw] overflow-y-scroll z-40 ';
 
     switch (size) {
     case 'sm':
