@@ -56,7 +56,7 @@ export default class SignupFormEmbed extends Component {
             options.title = this.settings.title;
             options.description = this.settings.description;
             options['background-color'] = '#f9f9f9';
-            style = 'height: 60vh; min-height: 400px;';
+            style = 'height: 40vmin; min-height: 360px;';
         }
 
         let dataOptionsString = '';
