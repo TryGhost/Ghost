@@ -44,7 +44,8 @@
     "@ebay/nice-modal-react": "^1.2.10",
     "@tryghost/timezone-data": "0.3.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "validator": "7.2.0"
   },
   "devDependencies": {
     "@storybook/addon-essentials": "7.0.18",
@@ -59,6 +60,7 @@
     "@tailwindcss/line-clamp": "0.4.4",
     "@types/react": "18.0.28",
     "@types/react-dom": "18.0.11",
+    "@types/validator": "^13.7.17",
     "@typescript-eslint/eslint-plugin": "5.57.1",
     "@typescript-eslint/parser": "5.57.1",
     "@vitejs/plugin-react": "4.0.0",
