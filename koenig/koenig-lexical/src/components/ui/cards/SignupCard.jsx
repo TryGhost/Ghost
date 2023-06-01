@@ -201,6 +201,7 @@ export function SignupCard({alignment,
                     {/* Heading */}
                     {<KoenigNestedEditor
                         autoFocus={true}
+                        dataTestId="signup-header-editor"
                         focusNext={subheaderTextEditor}
                         hasSettingsPanel={true}
                         hiddenFormats={['bold']}
@@ -232,6 +233,7 @@ export function SignupCard({alignment,
 
                     {/* Subheading */}
                     {<KoenigNestedEditor
+                        dataTestId="signup-subheader-editor"
                         focusNext={disclaimerTextEditor}
                         hasSettingsPanel={true}
                         initialEditor={subheaderTextEditor}
@@ -280,6 +282,7 @@ export function SignupCard({alignment,
 
                     {/* Disclaimer */}
                     <KoenigNestedEditor
+                        dataTestId="signup-disclaimer-editor"
                         hasSettingsPanel={true}
                         initialEditor={disclaimerTextEditor}
                         initialEditorState={disclaimerTextEditorInitialState}

@@ -1,6 +1,5 @@
 import React from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
-import generateEditorState from '../utils/generateEditorState';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {ImageNode as BaseImageNode, INSERT_IMAGE_COMMAND} from '@tryghost/kg-default-nodes';
 import {ReactComponent as GIFIcon} from '../assets/icons/kg-card-type-gif.svg';
@@ -9,7 +8,6 @@ import {ImageNodeComponent} from './ImageNodeComponent';
 import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
 import {OPEN_TENOR_SELECTOR_COMMAND, OPEN_UNSPLASH_SELECTOR_COMMAND} from '../plugins/KoenigSelectorPlugin.jsx';
 import {ReactComponent as UnsplashIcon} from '../assets/icons/kg-card-type-unsplash.svg';
-import {createEditor} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 
 // re-export here so we don't need to import from multiple places throughout the app
@@ -65,7 +63,7 @@ export class ImageNode extends BaseImageNode {
     constructor(dataset = {}, key) {
         super(dataset, key);
 
-        const {previewSrc, triggerFileDialog, initialFile, selector, isImageHidden, caption} = dataset;
+        const {previewSrc, triggerFileDialog, initialFile, selector, isImageHidden} = dataset;
 
         this.__previewSrc = previewSrc || '';
         // don't trigger the file dialog when rendering if we've already been given a url
