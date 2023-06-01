@@ -162,7 +162,7 @@ export default function render(node, document, options) {
     const caption = node.getCaption();
     if (caption) {
         const figcaption = document.createElement('figcaption');
-        figcaption.textContent = caption;
+        figcaption.innerHTML = caption;
         figure.appendChild(figcaption);
         figure.setAttribute('class', `${figure.getAttribute('class')} kg-card-hascaption`);
     }
