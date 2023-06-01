@@ -1,8 +1,8 @@
 import IFrame from './IFrame';
 import React, {useCallback, useState} from 'react';
 import styles from '../styles/iframe.css?inline';
-import {useAppContext} from '../AppContext';
 import {isMinimal} from '../utils/helpers';
+import {useAppContext} from '../AppContext';
 
 type FrameProps = {
     children: React.ReactNode
@@ -98,7 +98,6 @@ const FullHeightFrame: React.FC<ResizableFrameProps> = ({children, style, title}
         </div>
     );
 };
-
 
 type TailwindFrameProps = ResizableFrameProps & {
     onResize?: (el: HTMLElement) => void
