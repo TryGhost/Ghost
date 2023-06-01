@@ -13,7 +13,8 @@ export function useOptions(scriptTag: HTMLElement) {
             title: scriptTag.dataset.title || undefined,
             description: scriptTag.dataset.description || undefined,
             logo: scriptTag.dataset.logo || undefined,
-            color: scriptTag.dataset.color || undefined,
+            backgroundColor: scriptTag.dataset.backgroundColor || undefined,
+            buttonColor: scriptTag.dataset.buttonColor || undefined,
             site: scriptTag.dataset.site || window.location.origin,
             labels
         };
