@@ -20,9 +20,9 @@ export const FormView: React.FC<FormProps & {
             data-testid="wrapper"
             style={{backgroundColor, color: backgroundColor && textColorForBackgroundColor(backgroundColor)}}
         >
-            {logo && <img alt={title} className='h-[64px] w-auto mb-2' src={logo}/>}
+            {logo && <img alt={title} className='mb-2 h-[64px] w-auto' src={logo}/>}
             {title && <h1 className="text-center text-lg font-bold sm:text-xl md:text-2xl lg:text-3xl">{title}</h1>}
-            {description && <p className='mb-4 md:mb-5 text-center font-medium'>{description}</p>}
+            {description && <p className='mb-4 text-center font-medium md:mb-5'>{description}</p>}
 
             <Form {...formProps} />
         </div>
@@ -59,13 +59,13 @@ const Form: React.FC<FormProps> = ({loading, error, buttonColor, onSubmit}) => {
                     onChange={e => setEmail(e.target.value)}
                 />
                 <button
-                    className='absolute inset-y-0 right-[.2rem] sm:right-[.3rem] my-auto h-7 sm:h-[3rem] rounded-[.3rem] px-2 sm:px-3 text-white'
+                    className='absolute inset-y-0 right-[.2rem] my-auto h-7 rounded-[.3rem] px-2 text-white sm:right-[.3rem] sm:h-[3rem] sm:px-3'
                     data-testid="button"
                     disabled={loading}
                     style={{backgroundColor: buttonColor, color: buttonColor && textColorForBackgroundColor(buttonColor)}}
                     type='submit'
                 >Subscribe</button>
-                {error && <p className='absolute left-0 -bottom-4 pt-0.5 text-red-500' data-testid="error-message">{error}</p>}
+                {error && <p className='absolute -bottom-4 left-0 pt-0.5 text-red-500' data-testid="error-message">{error}</p>}
             </form>
         </>
     );
