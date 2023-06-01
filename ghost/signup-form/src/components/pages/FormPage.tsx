@@ -25,7 +25,7 @@ export const FormPage: React.FC = () => {
             });
         } catch (_) {
             setLoading(false);
-            setError(t(`Something went wrong, please try again`));
+            setError(t(`Something went wrong, please try again.`));
         }
     };
 
