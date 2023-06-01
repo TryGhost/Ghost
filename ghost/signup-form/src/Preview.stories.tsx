@@ -75,6 +75,8 @@ export const Full: Story = {
         title: 'Signup Forms Weekly',
         description: 'An independent publication about embeddable signup forms.',
         logo: 'https://user-images.githubusercontent.com/65487235/157884383-1b75feb1-45d8-4430-b636-3f7e06577347.png',
+        backgroundColor: '#eeeeee',
+        buttonColor: '#ff0095',
         site: 'localhost',
         labels: ['label-1', 'label-2'],
         simulateApiError: false,
@@ -89,6 +91,7 @@ export const Minimal: Story = {
     args: {
         site: 'localhost',
         labels: ['label-1', 'label-2'],
+        buttonColor: '#ff0095',
         simulateApiError: false,
         pageBackgroundColor: '#ffffff',
         pageTextColor: '#000000'
@@ -101,6 +104,7 @@ export const MinimalOnDark: Story = {
     args: {
         site: 'localhost',
         labels: ['label-1', 'label-2'],
+        buttonColor: '#ff0095',
         simulateApiError: false,
         pageBackgroundColor: '#122334',
         pageTextColor: '#f7f7f7'
