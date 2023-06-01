@@ -18,6 +18,7 @@ export type AppContextType = {
     setPage: <T extends PageName>(name: T, data: ComponentProps<typeof pages[T]>) => void,
     options: SignupFormOptions,
     api: GhostApi,
+    scriptTag: HTMLElement
 }
 
 const AppContext = React.createContext<AppContextType>({} as any);
