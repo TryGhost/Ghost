@@ -1,3 +1,4 @@
+import * as i18nLib from '@tryghost/i18n';
 import React, {ComponentProps} from 'react';
 import pages, {Page, PageName} from './pages';
 import {AppContextProvider} from './AppContext';
@@ -29,16 +30,17 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         } as Page);
     };
 
+    const i18n = i18nLib.default('en', 'signup-form');
     const context = {
         page,
         api,
         options,
-        setPage: _setPage
+        setPage: _setPage,
+        i18n: i18n.t
     };
 
     const PageComponent = pages[page.name];
     const data = page.data as any; // issue with TypeScript understanding the type here when passing it to the component
-
     return (
         <div>
             <AppContextProvider value={context}>

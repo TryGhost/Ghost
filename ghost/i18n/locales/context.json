@@ -166,6 +166,7 @@
     "Your subscription will expire on {{expiryDate}}": "A message indicating when the member's subscription will expire",
     "Your subscription will renew on {{renewalDate}}": "A message indicating when the member's subscription will be renewed",
     "Your subscription will start on {{subscriptionStart}}": "A message for trial users indicating when their subscription will start",
+    "hello": "",
     "{{amount}} days free": "A label for an offer, explaining how long the trial is",
     "{{amount}} off": "A label for an offer, explaining how much the discount is for",
     "{{amount}} off for first {{number}} months.": "A label for an offer, explaining how many months are discounted",
