@@ -30,9 +30,11 @@
 
         <GhContentCover />
 
-        {{#unless this.session.user.isContributor}}
-            <GhMobileNavBar />
-        {{/unless}}
+        {{#if this.session.user}}
+            {{#unless this.session.user.isContributor}}
+                <GhMobileNavBar />
+            {{/unless}}
+        {{/if}}
     </div>
 
     {{#if this.settings.accentColor}}
