@@ -337,7 +337,9 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                     {userData.cover_image && (
                         <div className='absolute inset-0 z-0 block bg-gradient-to-tr from-[rgba(0,0,0,0.5)] to-[rgba(0,0,0,0.01)]'></div>
                     )}
-                    <Menu className='absolute right-4 top-4' items={items} position='left'></Menu>
+                    <div className="absolute right-4 top-4">
+                        <Menu items={items} position='left'></Menu>
+                    </div>
                     <div className='relative z-10 mt-60 flex gap-4'>
                         <Avatar bgColor={generateAvatarColor((userData.name ? userData.name : userData.email))} className='-ml-1' image={userData.profile_image} label={getInitials(userData.name)} labelColor='white' size='xl' />
                         <div>
