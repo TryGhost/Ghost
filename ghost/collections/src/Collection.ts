@@ -55,6 +55,10 @@ export class Collection {
         }
     }
 
+    removeAllPosts() {
+        this._posts = [];
+    }
+
     private constructor(data: any) {
         this.id = data.id;
         this.title = data.title;

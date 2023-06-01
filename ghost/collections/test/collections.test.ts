@@ -1,15 +1,36 @@
 import assert from 'assert';
 import {CollectionsService, CollectionsRepositoryInMemory, Collection} from '../src/index';
+import {PostsRepositoryInMemory} from './fixtures/PostsRepositoryInMemory';
 import {posts} from './fixtures/posts';
+
+const initPostsRepository = (): PostsRepositoryInMemory => {
+    const postsRepository = new PostsRepositoryInMemory();
+
+    for (const post of posts) {
+        const collectionPost = {
+            id: post.id,
+            title: post.title,
+            slug: post.slug,
+            featured: post.featured,
+            published_at: post.published_at,
+            deleted: false
+        };
+        postsRepository.save(collectionPost);
+    }
+
+    return postsRepository;
+};
 
 describe('CollectionsService', function () {
     let collectionsService: CollectionsService;
 
     beforeEach(async function () {
         const collectionsRepository = new CollectionsRepositoryInMemory();
+        const postsRepository = initPostsRepository();
 
         collectionsService = new CollectionsService({
-            collectionsRepository
+            collectionsRepository,
+            postsRepository
         });
     });
 
@@ -145,6 +166,42 @@ describe('CollectionsService', function () {
             const collection = await collectionsService.removePostFromCollection('i-do-not-exist', posts[0].id);
 
             assert.equal(collection, null, 'Collection should be null');
+        });
+    });
+
+    describe('Automatic Collections', function () {
+        it('Can create an automatic collection', async function () {
+            const collection = await collectionsService.createCollection({
+                title: 'I am automatic',
+                description: 'testing automatic collection',
+                type: 'automatic',
+                filter: 'featured:true'
+            });
+
+            assert.equal(collection.type, 'automatic', 'Collection should be automatic');
+            assert.equal(collection.filter, 'featured:true', 'Collection should have the correct filter');
+
+            assert.equal(collection.posts.length, 1, 'Collection should have one post');
+        });
+
+        it('Populates collection when the type is changed to automatic and filter is present', async function () {
+            const collection = await collectionsService.createCollection({
+                title: 'I am automatic',
+                description: 'testing automatic collection',
+                type: 'manual'
+            });
+
+            assert.equal(collection.type, 'manual', 'Collection should be manual');
+            assert.equal(collection.posts.length, 0, 'Collection should have no posts');
+
+            const automaticCollection = await collectionsService.edit({
+                id: collection.id,
+                type: 'automatic',
+                filter: 'featured:true'
+            });
+
+            assert.equal(automaticCollection?.posts.length, 1, 'Collection should have one post');
+            assert.equal(automaticCollection?.posts[0].id, 'post-3-featured', 'Collection should have the correct post');
         });
     });
 });
