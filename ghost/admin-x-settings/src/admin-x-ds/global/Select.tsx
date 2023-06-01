@@ -38,7 +38,7 @@ const Select: React.FC<SelectProps> = ({title, prompt, options, onSelect, error,
         <div className='flex flex-col'>
             {title && <Heading useLabelTag={true}>{title}</Heading>}
             <div className={`relative w-full after:pointer-events-none after:absolute ${clearBg ? 'after:right-0' : 'after:right-4'} after:block after:h-2 after:w-2 after:rotate-45 after:border-[1px] after:border-l-0 after:border-t-0 after:border-grey-900 after:content-[''] ${title ? 'after:top-[22px]' : 'after:top-[14px]'}`}>
-                <select className={`w-full cursor-pointer appearance-none border-b ${!clearBg && 'bg-grey-100 px-[10px]'} py-2 outline-none ${error ? `border-red` : `border-grey-300 hover:border-grey-400 focus:border-grey-600`} ${title && `mt-2`}`} value={selectedOption} onChange={handleOptionChange}>
+                <select className={`w-full cursor-pointer appearance-none border-b ${!clearBg && 'bg-grey-75 px-[10px]'} py-2 outline-none ${error ? `border-red` : `border-grey-500 hover:border-grey-700 focus:border-black`} ${title && `mt-2`}`} value={selectedOption} onChange={handleOptionChange}>
                     {prompt && <option value="">{prompt}</option>}
                     {options.map(option => (
                         <option

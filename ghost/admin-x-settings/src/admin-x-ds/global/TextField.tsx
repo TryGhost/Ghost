@@ -39,10 +39,10 @@ const TextField: React.FC<TextFieldProps> = ({
         <div className='flex flex-col'>
             {title && <Heading useLabelTag={true}>{title}</Heading>}
             <input
-                ref={inputRef}
-                className={`border-b ${!clearBg && 'bg-grey-100 px-[10px]'} py-2 ${error ? `border-red` : `border-grey-300 hover:border-grey-400 focus:border-black`} ${(title && !clearBg) && `mt-2`} ${className}`}
-                defaultValue={value}
-                maxLength={maxLength}
+                ref={inputRef} 
+                className={`border-b ${!clearBg && 'bg-grey-75 px-[10px]'} py-2 ${error ? `border-red` : `border-grey-500 hover:border-grey-700 focus:border-black`} ${(title && !clearBg) && `mt-2`} ${className}`} 
+                defaultValue={value} 
+                maxLength={maxLength} 
                 placeholder={placeholder}
                 type={type}
                 onBlur={onBlur}
