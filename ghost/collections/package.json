@@ -32,5 +32,12 @@
         "@tryghost/in-memory-repository": "0.0.0",
         "@tryghost/tpl": "^0.1.25",
         "bson-objectid": "^2.0.4"
+    },
+    "c8": {
+        "exclude": [
+            "src/CollectionRepository.ts",
+            "src/**/*.d.ts",
+            "test/**/*.ts"
+        ]
     }
 }
