@@ -20,7 +20,7 @@ export const FormView: React.FC<FormProps & {
             data-testid="wrapper"
             style={{backgroundColor, color: backgroundColor && textColorForBackgroundColor(backgroundColor)}}
         >
-            {logo && <img alt={title} src={logo} width='100' />}
+            {logo && <img alt={title} src={logo} className='h-[50px] w-auto'/>}
             {title && <h1 className="text-center text-lg font-bold sm:text-xl md:text-2xl lg:text-3xl">{title}</h1>}
             {description && <p className='mb-5 text-center'>{description}</p>}
 
