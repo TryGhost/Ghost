@@ -3,6 +3,7 @@ import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
+import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {tracked} from '@glimmer/tracking';
 
 function escapeHtml(unsafe) {
@@ -42,7 +43,8 @@ export default class SignupFormEmbed extends Component {
 
         const options = {
             site: siteUrl,
-            'button-color': this.settings.accentColor
+            'button-color': this.settings.accentColor,
+            'button-text-color': textColorForBackgroundColor(this.settings.accentColor).hex()
         };
 
         for (const [i, label] of this.labels.entries()) {
@@ -55,7 +57,11 @@ export default class SignupFormEmbed extends Component {
             options.logo = this.settings.icon;
             options.title = this.settings.title;
             options.description = this.settings.description;
-            options['background-color'] = '#f9f9f9';
+
+            const backgroundColor = '#f9f9f9';
+            options['background-color'] = backgroundColor;
+            options['text-color'] = textColorForBackgroundColor(backgroundColor).hex();
+
             style = 'height: 40vmin; min-height: 360px;';
         }
 

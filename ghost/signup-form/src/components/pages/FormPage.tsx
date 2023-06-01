@@ -32,11 +32,13 @@ export const FormPage: React.FC = () => {
     return <FormView
         backgroundColor={options.backgroundColor}
         buttonColor={options.buttonColor}
+        buttonTextColor={options.buttonTextColor}
         description={options.description}
         error={error}
         isMinimal={isMinimal(options)}
         loading={loading}
         logo={options.logo}
+        textColor={options.textColor}
         title={options.title}
         onSubmit={submit}
     />;
