@@ -78,6 +78,10 @@ describe('UrlTranslator', function () {
             });
         });
 
+        it('skips items without path and type', async function () {
+            should(await translator.getResourceDetails({time: 123})).eql(null);
+        });
+
         it('returns posts for explicit items', async function () {
             should(await translator.getResourceDetails({id: 'my-post', type: 'post', time: 123})).eql({
                 type: 'post',
