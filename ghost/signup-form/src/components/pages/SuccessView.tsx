@@ -23,7 +23,7 @@ export const SuccessView: React.FC<{
             style={{backgroundColor, color: backgroundColor && textColorForBackgroundColor(backgroundColor)}}
         >
             <h1 className='text-center text-lg font-bold sm:text-xl md:text-2xl lg:text-3xl'>{i(`Now check your email!`)}</h1>
-            <p className='mb-5 text-center'>{i(`An email has been send to ${email}.`)}</p>
+            <p className='mb-5 text-center'>{i(`An email has been send to ${email}`)}</p>
         </div>
     );
 };
