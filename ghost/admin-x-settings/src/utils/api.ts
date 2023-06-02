@@ -27,6 +27,22 @@ export interface RolesResponseType {
     roles: UserRole[];
 }
 
+export interface UserInvite {
+    created_at: string;
+    email: string;
+    expires: string;
+    id: string;
+    role_id: string;
+    role?: string;
+    status: string;
+    updated_at: string;
+}
+
+export interface InvitesResponseType {
+    meta?: Meta;
+    invites: UserInvite[];
+}
+
 export interface SiteResponseType {
     site: SiteData;
 }
@@ -79,6 +95,9 @@ interface API {
     images: {
         upload: ({file}: {file: File}) => Promise<ImagesResponseType>;
     };
+    invites: {
+        browse: () => Promise<InvitesResponseType>;
+    }
 }
 
 interface GhostApiOptions {
@@ -201,6 +220,13 @@ function setupGhostApi({ghostVersion}: GhostApiOptions): API {
                     headers: {}
                 });
                 const data: any = await response.json();
+                return data;
+            }
+        },
+        invites: {
+            browse: async () => {
+                const response = await fetcher(`/invites/`, {});
+                const data: InvitesResponseType = await response.json();
                 return data;
             }
         }

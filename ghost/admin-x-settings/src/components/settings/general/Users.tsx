@@ -11,6 +11,7 @@ import TabView from '../../../admin-x-ds/global/TabView';
 import UserDetailModal from './modals/UserDetailModal';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import {User} from '../../../types/api';
+import {UserInvite} from '../../../utils/api';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
 
 interface OwnerProps {
@@ -20,6 +21,11 @@ interface OwnerProps {
 
 interface UsersListProps {
     users: User[];
+    updateUser?: (user: User) => void;
+}
+
+interface InviteListProps {
+    users: UserInvite[];
     updateUser?: (user: User) => void;
 }
 
@@ -67,8 +73,50 @@ const UsersList: React.FC<UsersListProps> = ({users, updateUser}) => {
                         detail={user.email}
                         hideActions={true}
                         id={`list-item-${user.id}`}
-                        title={user.name}
+                        title={user.name || ''}
                         onClick={() => showDetailModal(user)} />
+                );
+            })}
+        </List>
+    );
+};
+
+const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
+    if (!users || !users.length) {
+        return (
+            <NoValueLabel icon='single-user-neutral-block'>
+                No users found.
+            </NoValueLabel>
+        );
+    }
+
+    const actions = (
+        <div className='flex'>
+            <Button color='red' label='Revoke' link={true} onClick={() => {
+                // Revoke invite
+            }}/>
+            <Button className='ml-2' color='green' label='Resend' link={true} onClick={() => {
+                // Resend invite
+            }}/>
+        </div>
+    );
+
+    return (
+        <List>
+            {users.map((user) => {
+                return (
+                    <ListItem
+                        key={user.id}
+                        action={actions}
+                        avatar={(<Avatar bgColor={generateAvatarColor((user.email))} image={''} label={''} labelColor='white' />)}
+                        detail={user.role}
+                        hideActions={true}
+                        id={`list-item-${user.id}`}
+                        title={user.email}
+                        onClick={() => {
+                            // do nothing
+                        }}
+                    />
                 );
             })}
         </List>
@@ -82,6 +130,7 @@ const Users: React.FC = () => {
         editorUsers,
         authorUsers,
         contributorUsers,
+        invites,
         updateUser
     } = useStaffUsers();
 
@@ -119,7 +168,7 @@ const Users: React.FC = () => {
         {
             id: 'users-invited',
             title: 'Invited',
-            contents: (<></>)
+            contents: (<InvitesUserList updateUser={updateUser} users={invites} />)
         }
     ];
 
