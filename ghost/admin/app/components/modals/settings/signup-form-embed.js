@@ -112,7 +112,7 @@ export default class SignupFormEmbedModal extends Component {
             dataOptionsString += ` data-${key}="${escapeHtml(value)}"`;
         }
 
-        const code = `<div style="${escapeHtml(style)}"><script src="${encodeURI(scriptUrl)}"${dataOptionsString}></script></div>`;
+        const code = `<div style="${escapeHtml(style)}"><script src="${encodeURI(scriptUrl)}"${dataOptionsString} async></script></div>`;
 
         if (preview && this.style === 'minimal') {
             // Add background
