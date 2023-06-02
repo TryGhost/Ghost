@@ -1,5 +1,5 @@
-<span
-    class="gh-select mt2"
+{{!-- <span
+    class="gh-select"
     data-select-text="test"
     tabindex="0"
 >
@@ -13,4 +13,10 @@
         @update={{this.setRecipients}}
     />
     {{svg-jar "arrow-down-small"}}
-</span>
+</span> --}}
+
+
+<div class="gh-btn-group">
+    <button class="gh-btn {{if (eq this.selectedOption.value "all-in-one") "gh-btn-group-selected"}}" type="button" {{action "this.setRecipients" "all-in-one"}}><span>Branded</span></button>
+    <button class="gh-btn {{if (eq this.selectedOption.value "minimal") "gh-btn-group-selected"}}" type="button" {{action "this.setRecipients" "minimal"}}><span>Minimal</span></button>
+</div>
