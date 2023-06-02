@@ -24,12 +24,12 @@ export default class SignupFormEmbedModal extends Component {
     @service feature;
     @tracked style = 'all-in-one';
     @tracked labels = [];
-    @tracked backgroundColor = '#f9f9f9';
+    @tracked backgroundColor = '#F1F3F4';
     @inject config;
     @service notifications;
 
     static modalOptions = {
-        className: 'fullwidth-modal'
+        className: 'fullwidth-modal gh-signup-form-embed'
     };
 
     @action
@@ -50,10 +50,10 @@ export default class SignupFormEmbedModal extends Component {
     get backgroundPresetColors() {
         return [
             {
-                value: '#f9f9f9',
+                value: '#F1F3F4',
                 name: 'Light grey',
                 class: '',
-                style: 'background: #f9f9f9 !important;'
+                style: 'background: #F1F3F4 !important;'
             },
             {
                 value: '#000000',
