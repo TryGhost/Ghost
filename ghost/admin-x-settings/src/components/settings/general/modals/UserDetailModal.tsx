@@ -285,7 +285,8 @@ const Password: React.FC<UserDetailProps> = ({user}) => {
         if (saveState === 'saved') {
             setTimeout(() => {
                 setSaveState('');
-            }, 2000);
+                setEditPassword(false);
+            }, 2500);
         }
     }, [saveState]);
 
