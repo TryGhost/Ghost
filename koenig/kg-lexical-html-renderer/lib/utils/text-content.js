@@ -31,12 +31,16 @@ class TextContent {
         }
 
         // remove formats that shouldn't be applied to this node
-        this.currentFormats = this.currentFormats.filter(format => node.hasFormat(format));
-        // update the current node to be the closest parent with the current formats (or move along with the root)
-        if (this.currentFormats[0]) {
-            const closest = this.currentNode.closest(FORMAT_TAG_MAP[this.currentFormats[0]]);
-            this.currentNode = closest || this.root;
-        } else {
+        this.currentFormats.forEach((format) => {
+            if (!node.hasFormat(format)) {
+                this.currentFormats.shift();
+                this.currentNode = this.currentFormats[0]
+                    ? this.currentNode.closest(FORMAT_TAG_MAP[this.currentFormats[0]])
+                    : this.root;
+            }
+        });
+
+        if (!this.currentNode) {
             this.currentNode = this.root;
         }
 
