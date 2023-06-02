@@ -100,7 +100,11 @@ export default class SignupFormEmbedModal extends Component {
         }
 
         if (preview) {
-            style = 'height: 100vh';
+            if (this.style === 'minimal') {
+                style = 'max-width: 500px;position: absolute; left: 50%; top:50%; transform: translate(-50%, -50%);';
+            } else {
+                style = 'height: 100vh';
+            }
         }
 
         let dataOptionsString = '';
@@ -108,18 +112,23 @@ export default class SignupFormEmbedModal extends Component {
             dataOptionsString += ` data-${key}="${escapeHtml(value)}"`;
         }
 
-        return `<div style="${escapeHtml(style)}"><script src="${encodeURI(scriptUrl)}"${dataOptionsString}></script></div>`;
+        const code = `<div style="${escapeHtml(style)}"><script src="${encodeURI(scriptUrl)}"${dataOptionsString}></script></div>`;
+
+        if (preview && this.style === 'minimal') {
+            // Add background
+            return `<div style="position: absolute; z-index: -1; top: 0; left: 0; width: 100%; height: 100%; background-image: linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%), linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%);background-size: 16px 16px;background-position: 0 0, 8px 8px;;"></div>${code}`;
+        }
+
+        return code;
     }
 
     @task
     *copyText() {
         // Copy this.generatedCode tp the clipboard
-        const el = document.createElement('textarea');
-        el.value = this.generatedCode;
-        document.body.appendChild(el);
+        const el = document.getElementById('gh-signup-form-embed-code-input');
         el.select();
         document.execCommand('copy');
-        document.body.removeChild(el);
+        this.notifications.showNotification('Code copied to clipboard!');
 
         yield true;
         return true;
