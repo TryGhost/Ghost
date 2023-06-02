@@ -20,6 +20,7 @@ export type AppContextType = {
     setPage: <T extends PageName>(name: T, data: ComponentProps<typeof pages[T]>) => void,
     options: SignupFormOptions,
     api: GhostApi,
+    t: any,
     scriptTag: HTMLElement
 }
 

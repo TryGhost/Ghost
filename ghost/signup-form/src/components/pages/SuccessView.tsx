@@ -1,4 +1,5 @@
 import React from 'react';
+import {useAppContext} from '../../AppContext';
 
 export const SuccessView: React.FC<{
     email: string;
@@ -8,10 +9,11 @@ export const SuccessView: React.FC<{
     backgroundColor?: string;
     textColor?: string;
 }> = ({isMinimal, title, logo, backgroundColor, textColor}) => {
+    const {t} = useAppContext();
     if (isMinimal) {
         return (
             <div>
-                <h1 className="text-xl font-bold">Now check your email!</h1>
+                <h1 className="text-xl font-bold">{t(`Now check your email!`)}</h1>
             </div>
         );
     }
@@ -22,8 +24,8 @@ export const SuccessView: React.FC<{
             style={{backgroundColor, color: textColor}}
         >
             {logo && <img alt={title} className='mb-2 h-[64px] w-auto' src={logo}/>}
-            <h1 className='text-center text-lg font-bold sm:text-xl md:text-2xl lg:text-3xl'>Now check your email!</h1>
-            <p className='mb-4 text-center sm:mb-[4.1rem]'>To complete signup, click the confirmation link in your inbox. If it doesn&apos;t arrive within 3 minutes, check your spam folder!</p>
+            <h1 className='text-center text-lg font-bold sm:text-xl md:text-2xl lg:text-3xl'>{t(`Now check your email!`)}</h1>
+            <p className='mb-4 text-center sm:mb-[4.1rem]'>{t(`To complete signup, click the confirmation link in your inbox. If it doesn&apos;t arrive within 3 minutes, check your spam folder!`)}</p>
         </div>
     );
 };
