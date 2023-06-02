@@ -349,6 +349,7 @@ const Password: React.FC<UserDetailProps> = ({user}) => {
                         if (confirmNewPasswordRef.current) {
                             confirmNewPasswordRef.current.value = '';
                         }
+                        setSaveState('');
                         return;
                     }
                     try {
