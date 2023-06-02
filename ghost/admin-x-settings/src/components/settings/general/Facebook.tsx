@@ -2,8 +2,10 @@ import ImageUpload from '../../../admin-x-ds/global/ImageUpload';
 import React, {useContext} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
+import TextArea from '../../../admin-x-ds/global/TextArea';
 import TextField from '../../../admin-x-ds/global/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
+import {ReactComponent as FacebookLogo} from '../../../admin-x-ds/assets/images/facebook-logo.svg';
 import {FileService, ServicesContext} from '../../providers/ServiceProvider';
 
 const Facebook: React.FC = () => {
@@ -28,7 +30,7 @@ const Facebook: React.FC = () => {
         updateSetting('og_title', e.target.value);
     };
 
-    const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         updateSetting('og_description', e.target.value);
     };
 
@@ -46,30 +48,50 @@ const Facebook: React.FC = () => {
     );
 
     const inputFields = (
-        <SettingGroupContent>
-            <ImageUpload
-                height='200px'
-                id='twitter-image'
-                imageURL={facebookImage}
-                onDelete={handleImageDelete}
-                onUpload={handleImageUpload}
-            >
-                Upload Facebook image
-            </ImageUpload>
-            <TextField
-                inputRef={focusRef}
-                placeholder={siteTitle}
-                title="Facebook title"
-                value={facebookTitle}
-                onChange={handleTitleChange}
-            />
-            <TextField
-                placeholder={siteDescription}
-                title="Facebook description"
-                value={facebookDescription}
-                onChange={handleDescriptionChange}
-            />
-        </SettingGroupContent>
+        <div>
+            <div className="mb-4 flex items-center gap-2">
+                <div>
+                    <FacebookLogo className='h-10 w-10' />
+                </div>
+                <div>
+                    <div className="mb-1 font-semibold leading-none text-grey-900">{siteTitle}</div>
+                    <div className="leading-none text-grey-700">2h</div>
+                </div>
+            </div>
+            <div>
+                <div className="mb-2 h-3 w-full rounded bg-grey-200"></div>
+                <div className="mb-4 h-3 w-3/5 rounded bg-grey-200"></div>
+                <SettingGroupContent className="overflow-hidden rounded-md border border-grey-300">
+                    <ImageUpload
+                        className="rounded-b-none border-b-0"
+                        height='300px'
+                        id='twitter-image'
+                        imageURL={facebookImage}
+                        label='Upload Facebook image'
+                        onDelete={handleImageDelete}
+                        onUpload={handleImageUpload}
+                    />
+                    <div className="flex flex-col gap-x-6 gap-y-7 px-4 pb-7">
+                        <TextField
+                            clearBg={true}
+                            inputRef={focusRef}
+                            placeholder={siteTitle}
+                            title="Facebook title"
+                            value={facebookTitle}
+                            onChange={handleTitleChange}
+                        />
+                        <TextArea
+                            clearBg={true}
+                            placeholder={siteDescription}
+                            rows={2}
+                            title="Facebook description"
+                            value={facebookDescription}
+                            onChange={handleDescriptionChange}
+                        />
+                    </div>
+                </SettingGroupContent>
+            </div>
+        </div>
     );
 
     return (

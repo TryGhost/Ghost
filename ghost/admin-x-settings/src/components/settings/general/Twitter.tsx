@@ -2,9 +2,11 @@ import ImageUpload from '../../../admin-x-ds/global/ImageUpload';
 import React, {useContext} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
+import TextArea from '../../../admin-x-ds/global/TextArea';
 import TextField from '../../../admin-x-ds/global/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {FileService, ServicesContext} from '../../providers/ServiceProvider';
+import {ReactComponent as TwitterLogo} from '../../../admin-x-ds/assets/images/twitter-logo.svg';
 
 const Twitter: React.FC = () => {
     const {
@@ -28,7 +30,7 @@ const Twitter: React.FC = () => {
         updateSetting('twitter_title', e.target.value);
     };
 
-    const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         updateSetting('twitter_description', e.target.value);
     };
 
@@ -50,30 +52,48 @@ const Twitter: React.FC = () => {
     );
 
     const inputFields = (
-        <SettingGroupContent>
-            <ImageUpload
-                height='200px'
-                id='twitter-image'
-                imageURL={twitterImage}
-                onDelete={handleImageDelete}
-                onUpload={handleImageUpload}
-            >
-                Upload twitter image
-            </ImageUpload>
-            <TextField
-                inputRef={focusRef}
-                placeholder={siteTitle}
-                title="Twitter title"
-                value={twitterTitle}
-                onChange={handleTitleChange}
-            />
-            <TextField
-                placeholder={siteDescription}
-                title="Twitter description"
-                value={twitterDescription}
-                onChange={handleDescriptionChange}
-            />
-        </SettingGroupContent>
+        <div className="flex gap-3">
+            <div className="pt-1">
+                <TwitterLogo className='-mb-1 h-10 w-10' />
+            </div>
+            <div className="w-full">
+                <div className="mb-2">
+                    <span className="mr-1 font-semibold text-grey-900">{siteTitle}</span>
+                    <span className="text-grey-700">&#183; 2h</span>
+                </div>
+                <div className="mb-2 h-3 w-full rounded bg-grey-200"></div>
+                <div className="mb-4 h-3 w-3/5 rounded bg-grey-200"></div>
+                <SettingGroupContent className="overflow-hidden rounded-md border border-grey-300">
+                    <ImageUpload
+                        className="rounded-b-none border-b-0"
+                        height='300px'
+                        id='twitter-image'
+                        imageURL={twitterImage}
+                        label='Upload Twitter image'
+                        onDelete={handleImageDelete}
+                        onUpload={handleImageUpload}
+                    />
+                    <div className="flex flex-col gap-x-6 gap-y-7 px-4 pb-7">
+                        <TextField
+                            clearBg={true}
+                            inputRef={focusRef}
+                            placeholder={siteTitle}
+                            title="Twitter title"
+                            value={twitterTitle}
+                            onChange={handleTitleChange}
+                        />
+                        <TextArea
+                            clearBg={true}
+                            placeholder={siteDescription}
+                            rows={2}
+                            title="Twitter description"
+                            value={twitterDescription}
+                            onChange={handleDescriptionChange}
+                        />
+                    </div>
+                </SettingGroupContent>
+            </div>
+        </div>
     );
 
     return (
@@ -88,7 +108,9 @@ const Twitter: React.FC = () => {
             onStateChange={handleStateChange}
         >
             {values}
-            {currentState !== 'view' ? inputFields : ''}
+            <div>
+                {currentState !== 'view' ? inputFields : ''}
+            </div>
         </SettingGroup>
     );
 };
