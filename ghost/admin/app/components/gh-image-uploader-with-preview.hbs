@@ -1,7 +1,7 @@
 {{#if @image}}
     <div class="gh-image-uploader -with-image">
         <div><img src={{@image}}></div>
-        {{#if (feature 'imageEditor')}}
+        {{#if (feature 'lexicalEditor')}}
             <KoenigImageEditor
                 @imageSrc={{@image}}
                 @saveUrl={{@update}}
