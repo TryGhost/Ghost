@@ -3,6 +3,7 @@ import React, {useState} from 'react';
 export type MenuItem = {
     id: string,
     label: string;
+    onClick?: () => void
 }
 
 type MenuPosition = 'left' | 'right';
@@ -55,7 +56,7 @@ const Menu: React.FC<MenuProps> = ({trigger, items, position, className}) => {
             <div aria-labelledby="menu-button" aria-orientation="vertical" className={menuListStyles} role="menu">
                 <div className="py-1" role="none">
                     {items.map(item => (
-                        <button key={item.id} className="block w-full cursor-pointer px-4 py-2 text-left text-sm text-grey-900 hover:bg-grey-100" type="button">{item.label}</button>
+                        <button key={item.id} className="block w-full cursor-pointer px-4 py-2 text-left text-sm text-grey-900 hover:bg-grey-100" type="button" onClick={item.onClick}>{item.label}</button>
                     ))}
                 </div>
             </div>
