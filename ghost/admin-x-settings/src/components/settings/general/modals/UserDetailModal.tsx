@@ -1,6 +1,7 @@
 import Avatar from '../../../../admin-x-ds/global/Avatar';
 import Button from '../../../../admin-x-ds/global/Button';
 import Heading from '../../../../admin-x-ds/global/Heading';
+import Icon from '../../../../admin-x-ds/global/Icon';
 import IconButton from '../../../../admin-x-ds/global/IconButton';
 import Menu from '../../../../admin-x-ds/global/Menu';
 import Modal from '../../../../admin-x-ds/global/Modal';
@@ -36,7 +37,8 @@ const RoleSelector: React.FC<UserDetailProps> = ({user, setUserData}) => {
         return (
             <>
                 <Heading level={6}>Role</Heading>
-                <div>
+                <div className='flex h-[295px] flex-col items-center justify-center gap-3 bg-grey-75 px-10 py-20 text-center text-sm text-grey-800'>
+                    <Icon color='grey-800' name='crown' size='lg' />
                     This user is the owner of the site. To change their role, you need to transfer the ownership first.
                 </div>
             </>
