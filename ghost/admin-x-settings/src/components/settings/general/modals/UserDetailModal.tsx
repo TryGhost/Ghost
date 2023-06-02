@@ -1,5 +1,6 @@
 import Avatar from '../../../../admin-x-ds/global/Avatar';
 import Button from '../../../../admin-x-ds/global/Button';
+import ConfirmationModal from '../../../../admin-x-ds/global/ConfirmationModal';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import Icon from '../../../../admin-x-ds/global/Icon';
 import Menu from '../../../../admin-x-ds/global/Menu';
@@ -295,8 +296,44 @@ interface UserDetailModalProps {
 }
 
 const UserMenuTrigger = () => (
-    <Button color='grey' icon='menu-horizontal' />
+    <Button color='white' icon='menu-horizontal' size='sm' />
 );
+
+const confirmMakeOwner = () => {
+    NiceModal.show(ConfirmationModal, {
+        title: 'Transfer Ownership',
+        prompt: 'Are you sure you want to transfer the ownership of this blog? You will not be able to undo this action.',
+        okLabel: 'Yep — I\'m sure',
+        okColor: 'red'
+    });
+};
+
+const confirmDelete = () => {
+    NiceModal.show(ConfirmationModal, {
+        title: 'Are you sure you want to delete this user?',
+        prompt: (
+            <>
+                <p className='mb-3'>The [user] will be permanently deleted and all their posts will be automatically assigned to the [site owner name].</p>
+                <p>To make these easy to find in the future, each post will be given an internal tag of [new internal tag with username]</p>
+            </>
+        ),
+        okLabel: 'Delete user',
+        okColor: 'red'
+    });
+};
+
+const confirmSuspend = () => {
+    NiceModal.show(ConfirmationModal, {
+        title: 'Are you sure you want to suspend this user?',
+        prompt: (
+            <>
+                <strong>WARNING:</strong> This user will no longer be able to log in but their posts will be kept.
+            </>
+        ),
+        okLabel: 'Suspend',
+        okColor: 'red'
+    });
+};
 
 const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
     const [userData, setUserData] = useState(user);
@@ -305,15 +342,18 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
     const menuItems = [
         {
             id: 'make-owner',
-            label: 'Make owner'
+            label: 'Make owner',
+            onClick: confirmMakeOwner
         },
         {
             id: 'delete-user',
-            label: 'Delete user'
+            label: 'Delete user',
+            onClick: confirmDelete
         },
         {
             id: 'suspend-user',
-            label: 'Suspend user'
+            label: 'Suspend user',
+            onClick: confirmSuspend
         },
         {
             id: 'view-user-activity',

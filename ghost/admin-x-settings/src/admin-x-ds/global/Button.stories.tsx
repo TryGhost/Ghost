@@ -22,6 +22,14 @@ export const Default: Story = {
     }
 };
 
+export const Small: Story = {
+    args: {
+        size: 'sm',
+        label: 'Button',
+        color: 'black'
+    }
+};
+
 export const Black: Story = {
     args: {
         label: 'Button',
@@ -51,8 +59,16 @@ export const LinkButton: Story = {
     }
 };
 
-export const IconButton: Story = {
+export const Icon: Story = {
     args: {
+        icon: 'menu-horizontal',
+        color: 'green'
+    }
+};
+
+export const IconSmall: Story = {
+    args: {
+        size: 'sm',
         icon: 'menu-horizontal',
         color: 'green'
     }
