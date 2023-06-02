@@ -91,7 +91,7 @@ const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
     }
 
     const actions = (
-        <div className='flex'>
+        <div className='flex gap-2'>
             <Button color='red' label='Revoke' link={true} onClick={() => {
                 // Revoke invite
             }}/>
