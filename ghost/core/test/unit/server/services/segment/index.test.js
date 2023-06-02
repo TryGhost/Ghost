@@ -6,6 +6,6 @@ describe('Segment Analytics Service', function () {
     it('Provides expected public API', async function () {
         segmentService = require('../../../../../core/server/services/segment');
 
-        assert.ok(segmentService.initAndRun);
+        assert.ok(segmentService.init);
     });
 });
