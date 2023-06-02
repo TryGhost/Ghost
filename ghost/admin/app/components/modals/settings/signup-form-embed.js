@@ -109,7 +109,22 @@ export default class SignupFormEmbedModal extends Component {
         }
 
         let dataOptionsString = '';
-        for (const [key, value] of Object.entries(options)) {
+        const preferredOrder = [
+            'background-color',
+            'text-color',
+            'button-color',
+            'button-text-color',
+            'title',
+            'description',
+            'logo',
+            'site',
+            'locale'
+        ];
+        const sortedKeys = Object.keys(options).sort((a, b) => {
+            return preferredOrder.indexOf(a) - preferredOrder.indexOf(b);
+        });
+        for (const key of sortedKeys) {
+            const value = options[key];
             dataOptionsString += ` data-${key}="${escapeHtml(value)}"`;
         }
 
