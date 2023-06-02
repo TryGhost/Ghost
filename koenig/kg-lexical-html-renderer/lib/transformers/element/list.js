@@ -6,6 +6,7 @@ const exportList = function (node, options, exportChildren) {
     }
 
     const tag = node.getTag();
+    const start = node.getStart();
 
     const exportListContent = (listNode) => {
         const output = [];
@@ -30,7 +31,12 @@ const exportList = function (node, options, exportChildren) {
 
     const listContent = exportListContent(node);
 
-    return `<${tag}>${listContent}</${tag}>`;
+    // CASE: list has a start value specified > 1
+    if (start !== 1 && start !== null && start !== undefined) {
+        return `<${tag} start="${start}">${listContent}</${tag}>`;
+    } else {
+        return `<${tag}>${listContent}</${tag}>`;
+    }
 };
 
 module.exports = {

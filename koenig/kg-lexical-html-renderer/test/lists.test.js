@@ -46,6 +46,11 @@ describe('Lists', function () {
         output: '<ol><li><strong>bold</strong></li><li><em>italic</em></li><li><strong><em>bold+italic</em></strong></li></ol>'
     }));
 
+    it('ol with start value > 1', shouldRender({
+        input: `{"root":{"children":[{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"two","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"listitem","version":1,"value":2},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"three","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"listitem","version":1,"value":3}],"direction":"ltr","format":"","indent":0,"type":"list","version":1,"listType":"number","start":2,"tag":"ol"}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
+        output: '<ol start="2"><li>two</li><li>three</li></ol>'
+    }));
+
     it('containing double formats', shouldRender({
         input: `{
             "root": {
