@@ -14,7 +14,9 @@ export function useOptions(scriptTag: HTMLElement) {
             description: scriptTag.dataset.description || undefined,
             logo: scriptTag.dataset.logo || undefined,
             backgroundColor: scriptTag.dataset.backgroundColor || undefined,
+            textColor: scriptTag.dataset.textColor || undefined,
             buttonColor: scriptTag.dataset.buttonColor || undefined,
+            buttonTextColor: scriptTag.dataset.buttonTextColor || undefined,
             site: scriptTag.dataset.site || window.location.origin,
             labels
         };

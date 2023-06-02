@@ -10,5 +10,11 @@ type SuccessPageProps = {
 export const SuccessPage: React.FC<SuccessPageProps> = ({email}) => {
     const {options} = useAppContext();
 
-    return <SuccessView backgroundColor={options.backgroundColor} email={email} isMinimal={isMinimal(options)} />;
+    return <SuccessView
+        backgroundColor={options.backgroundColor}
+        email={email}
+        isMinimal={isMinimal(options)}
+        logo={options.logo}
+        textColor={options.textColor}
+        title={options.title} />;
 };
