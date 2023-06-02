@@ -1,9 +1,11 @@
 import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
 import {ServicesContext} from './ServiceProvider';
 import {User} from '../../types/api';
+import {UserInvite} from '../../utils/api';
 
 interface UsersContextProps {
     users: User[];
+    invites: UserInvite[];
     currentUser: User|null;
     updateUser?: (user: User) => Promise<void>;
 }
@@ -14,12 +16,14 @@ interface UsersProviderProps {
 
 const UsersContext = createContext<UsersContextProps>({
     users: [],
+    invites: [],
     currentUser: null
 });
 
 const UsersProvider: React.FC<UsersProviderProps> = ({children}) => {
     const {api} = useContext(ServicesContext);
     const [users, setUsers] = useState <User[]> ([]);
+    const [invites, setInvites] = useState <UserInvite[]> ([]);
     const [currentUser, setCurrentUser] = useState <User|null> (null);
 
     useEffect(() => {
@@ -28,8 +32,10 @@ const UsersProvider: React.FC<UsersProviderProps> = ({children}) => {
                 // get list of staff users from the API
                 const data = await api.users.browse();
                 const user = await api.users.currentUser();
+                const invitesRes = await api.invites.browse();
                 setUsers(data.users);
                 setCurrentUser(user);
+                setInvites(invitesRes.invites);
             } catch (error) {
                 // Log error in API
             }
@@ -58,6 +64,7 @@ const UsersProvider: React.FC<UsersProviderProps> = ({children}) => {
     return (
         <UsersContext.Provider value={{
             users,
+            invites,
             currentUser,
             updateUser
         }}>

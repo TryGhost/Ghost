@@ -1,9 +1,12 @@
+import {RolesContext} from '../components/providers/RolesProvider';
 import {User} from '../types/api';
+import { UserInvite } from '../utils/api';
 import {UsersContext} from '../components/providers/UsersProvider';
 import {useContext} from 'react';
 
 export type UsersHook = {
     users: User[];
+    invites: UserInvite[];
     ownerUser: User;
     adminUsers: User[];
     editorUsers: User[];
@@ -26,13 +29,22 @@ function getOwnerUser(users: User[]): User {
 }
 
 const useStaffUsers = (): UsersHook => {
-    const {users, currentUser, updateUser} = useContext(UsersContext);
+    const {users, currentUser, updateUser, invites} = useContext(UsersContext);
+    const {roles} = useContext(RolesContext);
     const ownerUser = getOwnerUser(users);
     const adminUsers = getUsersByRole(users, 'Administrator');
     const editorUsers = getUsersByRole(users, 'Editor');
     const authorUsers = getUsersByRole(users, 'Author');
     const contributorUsers = getUsersByRole(users, 'Contributor');
-
+    const mappedInvites = invites?.map((invite) => {
+        let role = roles.find((r) => {
+            return invite.role_id === r.id;
+        });
+        return {
+            ...invite,
+            role: role?.name
+        };
+    });
     return {
         users,
         ownerUser,
@@ -41,6 +53,7 @@ const useStaffUsers = (): UsersHook => {
         authorUsers,
         contributorUsers,
         currentUser,
+        invites: mappedInvites,
         updateUser
     };
 };
