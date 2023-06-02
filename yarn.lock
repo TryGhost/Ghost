@@ -6922,10 +6922,10 @@
     lodash "^4.17.21"
     luxon "^3.3.0"
 
-"@tryghost/kg-lexical-html-renderer@0.1.49":
-  version "0.1.49"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-0.1.49.tgz#f46ebfa962ad2927cefc40c135dd69dcab163568"
-  integrity sha512-LuKYVyMlNrhW1WeCi+lJQj+rEKIaI6E+bwoS9cm0eyqKpImmfRYjSS+ihzJ7rEoH36cVMRlSQtAxi1s31DO7+Q==
+"@tryghost/kg-lexical-html-renderer@0.1.50":
+  version "0.1.50"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-0.1.50.tgz#6dca43455d4e43e794ab1047f0f76ac749e1f1e0"
+  integrity sha512-SCU1RIs5xXJEAGdP2/Gs+5/JfZJJfVmneZHv8rGyrkOED0mLTzf2uCY8/et8GGvQvf39krCxYPePzlUmZ7SCTA==
   dependencies:
     "@lexical/clipboard" "^0.11.0"
     "@lexical/code" "^0.11.0"
@@ -6934,7 +6934,7 @@
     "@lexical/list" "^0.11.0"
     "@lexical/rich-text" "^0.11.0"
     "@tryghost/kg-default-nodes" "^0.0.51"
-    jsdom "^21.0.0"
+    jsdom "^22.1.0"
     lexical "^0.11.0"
     prettier "^2.7.1"
 
@@ -21576,7 +21576,7 @@ jscodeshift@^0.14.0:
     temp "^0.8.4"
     write-file-atomic "^2.3.0"
 
-jsdom@22.1.0:
+jsdom@22.1.0, jsdom@^22.1.0:
   version "22.1.0"
   resolved "https://registry.yarnpkg.com/jsdom/-/jsdom-22.1.0.tgz#0fca6d1a37fbeb7f4aac93d1090d782c56b611c8"
   integrity sha512-/9AVW7xNbsBv6GfWho4TTNjEo9fe6Zhf9O7s0Fhhr3u+awPwAJMKwAMXnkk5vBxflqLW9hTHX/0cs+P3gW+cQw==
