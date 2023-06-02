@@ -9,65 +9,60 @@
 
     <div class="modal-signup-form-embed-main">
         <header class="modal-header">
-            <h1>Embed a signup form</h1>
+            <h1>Embed signup form</h1>
         </header>
 
         <div class="modal-body">
-
-            <div class="gh-signup-form-container">
-                <div class="gh-stack-item gh-setting-first">
-                    <div class="flex-grow-1">
-                        <label class="gh-setting-title">
-                            Choose layout
-                        </label>
-
-                            <Settings::SignupForm::StyleSelect
-                            @value={{this.style}}
-                            @onChange={{this.setStyle}}
-                        />
-                    </div>
+            <GhFormGroup class="gh-signup-form-container">
+                <div class="gh-stack-item row">
+                    <label class="modal-fullsettings-title">
+                        Layout
+                    </label>
+                        <Settings::SignupForm::StyleSelect
+                        @value={{this.style}}
+                        @onChange={{this.setStyle}}
+                    />
                 </div>
 
-                <div class="gh-stack-item gh-setting-first">
-                    <div class="flex-grow-1">
-                        <label class="gh-setting-title">
-                            Apply labels at signup
-                        </label>
-
-                        <GhMemberLabelInput
-                            @onChange={{this.setLabels}}
-                            @allowEdit={{false}}
-                            @labels={{this.labels}}
-                            @triggerId="label-input"
-                            @placeholder="Select"
-                        />
-                    </div>
+                <div class="gh-stack-item row">
+                    <label class="modal-fullsettings-title">
+                        Background color
+                    </label>
+                    <Modals::Newsletters::Components::ColorPicker
+                        @color={{this.backgroundColor}}
+                        @presetColors={{this.backgroundPresetColors}}
+                        @onColorChange={{this.setBackgroundColor}}
+                    />
                 </div>
 
-
-                <div>
-                    <div class="form-group gh-stack-item row">
-                        <label class="fw6 f8">Background color</label>
-                        <Modals::Newsletters::Components::ColorPicker
-                            @color={{this.backgroundColor}}
-                            @presetColors={{this.backgroundPresetColors}}
-                            @onColorChange={{this.setBackgroundColor}}
-                        />
-                    </div>
+                <div class="gh-stack-item">
+                    <label class="modal-fullsettings-title">
+                        Labels at signup
+                    </label>
+                    <GhMemberLabelInput
+                        @onChange={{this.setLabels}}
+                        @allowEdit={{false}}
+                        @labels={{this.labels}}
+                        @triggerId="label-input"
+                        @placeholder="Select"
+                    />
                 </div>
 
-                <div class="gh-stack-item gh-setting-first">
+                <div class="gh-stack-item">
                     <div class="flex-grow-1">
-                        <label class="gh-setting-title">
+                        <label class="modal-fullsettings-title">
                             Embed code
                         </label>
-
-                        <textarea id="gh-signup-form-embed-code-input" class="gh-input" readonly>{{this.generatedCode}}</textarea>
-                        <p>Copy and paste this HTML code somewhere inside the &lt;body&gt; tag of your site.</p>
+                        <GhTextarea
+                            @id="gh-signup-form-embed-code-input"
+                            @class="gh-input gh-signup-form-embed-code-input"
+                            @value={{this.generatedCode}}
+                            readonly
+                        />
+                        <p>Copy and paste this HTML code somewhere inside the <code>&lt;body&gt;</code> tag of your site.</p>
                     </div>
                 </div>
-            </div>
-
+            </GhFormGroup>
 
         </div>
 

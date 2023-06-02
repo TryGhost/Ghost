@@ -3073,6 +3073,78 @@ p.theme-validation-details {
     color: var(--midgrey);
 }
 
+/* Signup form modal */
+.gh-signup-form-embed {
+    margin: 6vw 0;
+}
+
+.gh-signup-form-iframe {
+    width: 100%;
+    border: 0;
+}
+
+.fullwidth-modal {
+    max-width: 100%;
+}
+
+.epm-modal .modal-signup-form-embed {
+    display: grid;
+    grid-template-columns: 5fr 3fr;
+    max-width: 1120px;
+    max-height: 520px;
+    margin: 32px;
+    padding: 0;
+}
+
+.modal-signup-form-embed-preview {
+    position: relative;
+    margin: 1.6rem;
+    margin-right: 0;
+}
+
+.modal-signup-form-embed-preview iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+}
+
+.modal-signup-form-embed-main {
+    padding: 32px;
+    height: 100%;
+}
+
+.modal-signup-form-embed-main .modal-body {
+    overflow-y: auto;
+    height: 320px;
+}
+
+.modal-signup-form-embed-main .form-group {
+    margin-bottom: 0;
+}
+
+.gh-signup-form-container .gh-stack-item {
+    margin-bottom: 1.6rem;
+}
+
+.gh-signup-form-container .gh-stack-item:last-child {
+    margin-bottom: 0;
+}
+
+.gh-signup-form-embed-code-input {
+    min-height: 72px;
+    background: var(--whitegrey-l2);
+    font-family: var(--font-family-mono);
+    font-size: 1.35rem;
+}
+
+.gh-signup-form-embed-code-input:focus {
+    background: var(--whitegrey-l2);
+    border-color: var(--lightgrey-l1) !important;
+    box-shadow: none;
+}
+
 /* History log
 /* ---------------------------------------------------------- */
 .gh-history-filter-li {
@@ -3750,62 +3822,4 @@ p.theme-validation-details {
     display: inline;
     padding: 0;
     height: auto;
-}
-
-/* Signup form */
-
-.gh-signup-form-embed-code {
-    display: flex;
-}
-
-.gh-signup-form-embed-code button {
-    flex-shrink: 0;
-    /* Overlap the input to keep the button radius */
-    margin-left: -5px;
-}
-
-.gh-signup-form-embed-code input {
-    min-width: 0; /* Make sure this input can shrink inside a flex container */
-    font-family: Consolas,Liberation Mono,Menlo,Courier,monospace;
-    font-size: .9em;
-}
-
-.gh-signup-form-iframe {
-    width: 100%;
-    border: 0;
-}
-
-.fullwidth-modal {
-    max-width: 100%;
-}
-
-.epm-modal .modal-signup-form-embed {
-    display: flex;
-    flex-direction: row;
-    margin: 32px;
-    align-items: stretch;
-    padding: 0;
-}
-
-.modal-signup-form-embed-preview {
-    flex-basis: 65%;
-    position: relative;
-    min-width: 500px;
-}
-
-.modal-signup-form-embed-preview iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-}
-
-.modal-signup-form-embed-main {
-    flex-basis: 35%;
-    flex-shrink: 0;
-    padding: 32px;
-    max-height: 80vh;
-    min-width: 400px;
-    overflow-y: auto;
 }

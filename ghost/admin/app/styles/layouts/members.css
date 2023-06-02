@@ -1743,14 +1743,14 @@ p.gh-members-import-errordetail:first-of-type {
     overflow: hidden;
     padding: 4px;
     margin-right: -4px;
+    background: none;
 }
 
 .gh-email-design-color-picker .gh-btn-group p {
     opacity: 1;
     margin: 0;
     color: var(--midgrey);
-    font-size: 1.2rem;
-    font-weight: 500;
+    font-weight: 400;
     transition: all .15s ease-in-out;
     transition-delay: .03s;
 }

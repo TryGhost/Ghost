@@ -1,16 +1,5 @@
-<span
-    class="gh-select mt2"
-    data-select-text="test"
-    tabindex="0"
->
-    <OneWaySelect
-        @id="portal-button-style"
-        @name="portal[button-style]"
-        @options={{this.options}}
-        @optionValuePath="value"
-        @optionLabelPath="name"
-        @value={{this.selectedOption.value}}
-        @update={{this.setRecipients}}
-    />
-    {{svg-jar "arrow-down-small"}}
-</span>
+<div class="gh-btn-group">
+    {{#each this.options as |option|}}
+        <button class="gh-btn {{if (eq this.selectedOption.value option.value) "gh-btn-group-selected"}}" type="button" {{on "click" (fn this.setRecipients option)}}><span>{{option.name}}</span></button>
+    {{/each}}
+</div>

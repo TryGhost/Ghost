@@ -20,4 +20,9 @@ export default class StyleSelect extends Component {
     setRecipients(option) {
         this.args.onChange(option.value);
     }
+
+    @action
+    changeOption(option) {
+        this.option = option;
+    }
 }
