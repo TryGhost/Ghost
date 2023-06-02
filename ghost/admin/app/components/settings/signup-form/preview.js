@@ -43,7 +43,7 @@ export default class Preview extends Component {
 
         const height = this.iframeRoot.scrollHeight || this.cachedHeight;
 
-        this.iframe.style.height = `${height}px`;
+        //this.iframe.style.height = `${height}px`;
 
         if (height > 30) {
             this.cachedHeight = height;
