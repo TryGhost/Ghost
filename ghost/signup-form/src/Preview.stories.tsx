@@ -88,7 +88,8 @@ export const Full: Story = {
         labels: ['label-1', 'label-2'],
         simulateApiError: false,
         pageBackgroundColor: '#ffffff',
-        pageTextColor: '#000000'
+        pageTextColor: '#000000',
+        locale: 'en'
     },
 
     play
@@ -102,7 +103,8 @@ export const Minimal: Story = {
         buttonTextColor: '#ffffff',
         simulateApiError: false,
         pageBackgroundColor: '#ffffff',
-        pageTextColor: '#000000'
+        pageTextColor: '#000000',
+        locale: 'en'
     },
 
     play
@@ -116,7 +118,8 @@ export const MinimalOnDark: Story = {
         buttonTextColor: '#ffffff',
         simulateApiError: false,
         pageBackgroundColor: '#122334',
-        pageTextColor: '#f7f7f7'
+        pageTextColor: '#f7f7f7',
+        locale: 'en'
     },
 
     play

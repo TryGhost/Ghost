@@ -79,7 +79,8 @@ export default class SignupFormEmbedModal extends Component {
         const options = {
             site: siteUrl,
             'button-color': this.settings.accentColor,
-            'button-text-color': textColorForBackgroundColor(this.settings.accentColor).hex()
+            'button-text-color': textColorForBackgroundColor(this.settings.accentColor).hex(),
+            locale: this.settings.locale
         };
 
         for (const [i, label] of this.labels.entries()) {

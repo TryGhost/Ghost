@@ -18,7 +18,8 @@ export function useOptions(scriptTag: HTMLElement) {
             buttonColor: scriptTag.dataset.buttonColor || undefined,
             buttonTextColor: scriptTag.dataset.buttonTextColor || undefined,
             site: scriptTag.dataset.site || window.location.origin,
-            labels
+            labels,
+            locale: scriptTag.dataset.locale || 'en'
         };
     }, [scriptTag]);
 

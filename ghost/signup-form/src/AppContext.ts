@@ -13,6 +13,7 @@ export type SignupFormOptions = {
     buttonTextColor?: string,
     site: string,
     labels: string[],
+    locale: string
 };
 
 export type AppContextType = {
