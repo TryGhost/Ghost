@@ -8,7 +8,7 @@
         data-test-button="lexical-editor-feedback"
     >
         <span class="gh-editor-feedback" data-trigger="true"> {{!-- data-trigger attr used for dropdown closing --}}
-            Feedback?
+            Beta feedback
         </span>
     </dd.Trigger>
 
@@ -20,7 +20,6 @@
                 </header>
 
                 <div class="">
-                    {{!-- <p>Have any issues? Feedback? Let us know!</p> --}}
                     <FeedbackLexical::Textarea
                         @feedbackMessage={{this.feedbackMessage}}
                         @updateFeedbackMessage={{this.updateFeedbackMessage}}
