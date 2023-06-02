@@ -134,15 +134,15 @@
     "When an inbox fails to accept an email it is commonly called a bounce. In many cases, this can be temporary. However, in some cases, a bounced email can be returned as a permanent failure when an email address is invalid or non-existent.": "Cuando una bandeja de entrada no acepta un correo electrónico, comúnmente se le llama rebote. En muchos casos, esto puede ser temporal. Sin embargo, en algunos casos, un correo electrónico rebotado puede devolverse como una falla permanente cuando una dirección de correo electrónico no es válida o no existe.",
     "Why has my email been disabled?": "¿Por qué mi correo electronico ha sido desabilitado.",
     "Yearly": "Anual",
-    "You currently have a free membership, upgrade to a paid subscription for full access.": "",
+    "You currently have a free membership, upgrade to a paid subscription for full access.": "Usted tiene una membresía gratuita, actualice a una suscripción paga para obtener acceso completo.",
     "You have been successfully resubscribed": "Te has vuelto a suscribir con éxito",
-    "You're currently not receiving emails": "",
-    "You're not receiving emails": "",
+    "You're currently not receiving emails": "Actualmente no estás recibiendo correos electrónicos",
+    "You're not receiving emails": "No estás recibiendo correos electrónicos",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "No estás recibiendo correos electrónicos porque marcaste un mensaje reciente como spam o porque no se pudieron entregar los mensajes a la dirección de correo electrónico proporcionada.",
-    "You've successfully signed in.": "",
+    "You've successfully signed in.": "Has iniciado sesión correctamente.",
     "Your account": "Tu cuenta",
     "Your input helps shape what gets published.": "Tu opinión ayuda a definir lo que se publica.",
-    "Your subscription will expire on {{expiryDate}}": "",
-    "Your subscription will renew on {{renewalDate}}": "",
-    "Your subscription will start on {{subscriptionStart}}": ""
+    "Your subscription will expire on {{expiryDate}}": "Su suscripción caducará el {{expiryDate}} ",
+    "Your subscription will renew on {{renewalDate}}": "Su suscripción se renovará el {{renewalDate}}",
+    "Your subscription will start on {{subscriptionStart}}": "Su suscripción comenzará el {{subscriptionStart}}"
 }
