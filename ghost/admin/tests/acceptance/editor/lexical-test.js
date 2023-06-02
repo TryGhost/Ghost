@@ -30,7 +30,7 @@ describe('Acceptance: Lexical editor', function () {
     });
 
     it('redirects to signin when not authenticated', async function () {
-        await visit('/lexical-editor/post/');
+        await visit('/editor-beta/post/');
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
 
@@ -40,21 +40,21 @@ describe('Acceptance: Lexical editor', function () {
         config.save();
 
         await loginAsRole('Administrator', this.server);
-        await visit('/lexical-editor/post/');
+        await visit('/editor-beta/post/');
 
         expect(currentURL(), 'currentURL').to.equal('/posts');
     });
 
     it('loads when editor.url is present', async function () {
         await loginAsRole('Administrator', this.server);
-        await visit('/lexical-editor/post/');
-        expect(currentURL(), 'currentURL').to.equal('/lexical-editor/post/');
+        await visit('/editor-beta/post/');
+        expect(currentURL(), 'currentURL').to.equal('/editor-beta/post/');
     });
 
     it('shows feedback link in lexical editor', async function () {
         await loginAsRole('Administrator', this.server);
-        await visit('/lexical-editor/post/');
-        expect(currentURL(), 'currentURL').to.equal('/lexical-editor/post/');
+        await visit('/editor-beta/post/');
+        expect(currentURL(), 'currentURL').to.equal('/editor-beta/post/');
 
         expect(find('.gh-editor-feedback'), 'feedback button').to.exist;
     });
@@ -67,7 +67,7 @@ describe('Acceptance: Lexical editor', function () {
         await loginAsRole('Administrator', this.server);
         await visit(`/editor/post/${post.id}`);
 
-        expect(currentURL()).to.equal(`/lexical-editor/post/${post.id}`);
+        expect(currentURL()).to.equal(`/editor-beta/post/${post.id}`);
     });
 
     it('redirects lexical editor to mobiledoc editor when post.mobiledoc is present', async function () {
@@ -76,7 +76,7 @@ describe('Acceptance: Lexical editor', function () {
         });
 
         await loginAsRole('Administrator', this.server);
-        await visit(`/lexical-editor/post/${post.id}`);
+        await visit(`/editor-beta/post/${post.id}`);
 
         expect(currentURL()).to.equal(`/editor/post/${post.id}`);
     });
