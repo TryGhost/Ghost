@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const ModelEventsAnalytics = require('../../../../../core/server/services/segment/ModelEventsAnalytics');
 
 // Stubbed dependencies
-const logging = require('@tryghost/logging');
+const events = require('../../../../../core/server/lib/common/events');
 
 describe('ModelEventsAnalytics', function () {
     describe('Constructor', function () {
@@ -19,11 +19,13 @@ describe('ModelEventsAnalytics', function () {
         let analyticsStub;
         let sentryStub;
         let loggingStub;
+        let eventStub;
 
         beforeEach(function () {
             analyticsStub = sinon.stub();
             sentryStub = sinon.stub();
-            loggingStub = sinon.stub(logging, 'error');
+            loggingStub = sinon.stub();
+            eventStub = sinon.stub();
         });
 
         afterEach(function () {
@@ -40,14 +42,22 @@ describe('ModelEventsAnalytics', function () {
                 prefix: 'Pro: ',
                 sentry: {
                     captureException: sentryStub
+                },
+                events: {
+                    on: eventStub
+                },
+                logging: {
+                    error: loggingStub
                 }
             });
 
-            modelEventsAnalytics.subscribeToModelEvents();
+            modelEventsAnalytics.subscribeToEvents();
+
+            assert(eventStub.callCount === 4);
             assert(loggingStub.callCount === 0);
         });
 
-        it('handles milestone created event for 100 members', async function () {
+        it('handles common model events', async function () {
             modelEventsAnalytics = new ModelEventsAnalytics({
                 analytics: {
                     track: analyticsStub
@@ -59,35 +69,51 @@ describe('ModelEventsAnalytics', function () {
                 prefix: 'Pro: ',
                 sentry: {
                     captureException: sentryStub
+                },
+                events,
+                logging: {
+                    error: loggingStub
                 }
             });
 
-            modelEventsAnalytics.subscribeToModelEvents();
+            modelEventsAnalytics.subscribeToEvents();
 
-            assert(analyticsStub.callCount === 1);
-            assert(analyticsStub.calledWith({
+            events.emit('theme.uploaded', {name: 'Custom Super Theme'});
+            events.emit('post.published');
+            events.emit('page.published');
+            events.emit('integration.added');
+
+            assert(analyticsStub.callCount === 4);
+            assert(analyticsStub.getCall(0).calledWithExactly({
                 userId: '1234',
                 properties: {email: 'john@test.com'},
-                event: 'Pro: 100 members reached'
+                event: 'Pro: Theme Uploaded',
+                name: 'Custom Super Theme'
             }));
-        });
 
-        it('handles milestone created event for $100 ARR', async function () {
-            modelEventsAnalytics = new ModelEventsAnalytics({
-                analytics: {
-                    track: analyticsStub
-                },
-                trackDefaults: {
-                    userId: '9876',
-                    properties: {email: 'john+arr@test.com'}
-                },
-                prefix: 'Pro: ',
-                sentry: {
-                    captureException: sentryStub
-                }
-            });
+            assert(analyticsStub.getCall(1).calledWithExactly({
+                userId: '1234',
+                properties: {email: 'john@test.com'},
+                event: 'Pro: Post Published'
+            }));
 
-            modelEventsAnalytics.subscribeToModelEvents();
+            assert(analyticsStub.getCall(2).calledWithExactly({
+                userId: '1234',
+                properties: {email: 'john@test.com'},
+                event: 'Pro: Page Published'
+            }));
+
+            assert(analyticsStub.getCall(3).calledWithExactly({
+                userId: '1234',
+                properties: {email: 'john@test.com'},
+                event: 'Pro: Custom Integration Added'
+            }));
+
+            events.emit('post.unpublished');
+
+            // Analytics should not be called again
+            assert(analyticsStub.callCount === 4);
+            assert(loggingStub.callCount === 0);
         });
 
         it('can handle tracking errors', async function () {
@@ -100,9 +126,23 @@ describe('ModelEventsAnalytics', function () {
                 prefix: '',
                 sentry: {
                     captureException: sentryStub
+                },
+                events,
+                logging: {
+                    error: loggingStub
                 }
             });
 
-            modelEventsAnalytics.subscribeToModelEvents();
+            modelEventsAnalytics.subscribeToEvents();
+
+            try {
+                events.emit('post.published');
+            } catch (err) {
+                assert(analyticsStub.callCount === 1);
+                assert(sentryStub.callCount === 1);
+                assert(sentryStub.calledWith(error));
+                assert(loggingStub.callCount === 1);
+            }
+        });
     });
 });
