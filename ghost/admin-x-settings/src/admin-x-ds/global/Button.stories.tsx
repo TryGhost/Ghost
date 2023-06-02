@@ -50,3 +50,10 @@ export const LinkButton: Story = {
         link: true
     }
 };
+
+export const IconButton: Story = {
+    args: {
+        icon: 'menu-horizontal',
+        color: 'green'
+    }
+};
