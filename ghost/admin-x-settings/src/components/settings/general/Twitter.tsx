@@ -1,9 +1,10 @@
 import ImageUpload from '../../../admin-x-ds/global/ImageUpload';
-import React from 'react';
+import React, {useContext} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
+import {FileService, ServicesContext} from '../../providers/ServiceProvider';
 
 const Twitter: React.FC = () => {
     const {
@@ -17,7 +18,11 @@ const Twitter: React.FC = () => {
         handleStateChange
     } = useSettingGroup();
 
-    const [twitterTitle, twitterDescription, siteTitle, siteDescription] = getSettingValues(['twitter_title', 'twitter_description', 'title', 'description']) as string[];
+    const {fileService} = useContext(ServicesContext) as {fileService: FileService};
+
+    const [
+        twitterTitle, twitterDescription, twitterImage, siteTitle, siteDescription
+    ] = getSettingValues(['twitter_title', 'twitter_description', 'twitter_image', 'title', 'description']) as string[];
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         updateSetting('twitter_title', e.target.value);
@@ -27,12 +32,17 @@ const Twitter: React.FC = () => {
         updateSetting('twitter_description', e.target.value);
     };
 
-    const handleImageUpload = (file: File) => {
-        alert(file.name);
+    const handleImageUpload = async (file: File) => {
+        try {
+            const imageUrl = await fileService.uploadImage(file);
+            updateSetting('twitter_image', imageUrl);
+        } catch (err: any) {
+            // handle error
+        }
     };
 
     const handleImageDelete = () => {
-        alert('Delete twitter image');
+        updateSetting('twitter_image', '');
     };
 
     const values = (
@@ -44,6 +54,7 @@ const Twitter: React.FC = () => {
             <ImageUpload
                 height='200px'
                 id='twitter-image'
+                imageURL={twitterImage}
                 label='Upload twitter image'
                 onDelete={handleImageDelete}
                 onUpload={handleImageUpload}
