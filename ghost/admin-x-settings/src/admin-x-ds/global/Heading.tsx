@@ -21,7 +21,16 @@ interface IHeading {
     className?: string;
 }
 
-const Heading: React.FC<IHeading> = ({level, children, styles, grey, separator, useLabelTag, className, ...props}) => {
+const Heading: React.FC<IHeading> = ({
+    level, 
+    children, 
+    styles = '', 
+    grey, 
+    separator, 
+    useLabelTag, 
+    className = '', 
+    ...props
+}) => {
     if (!level) {
         level = 1;
     }

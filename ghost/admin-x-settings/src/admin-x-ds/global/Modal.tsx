@@ -23,6 +23,7 @@ export interface ModalProps {
     onOk?: () => void;
     onCancel?: () => void;
     children?: React.ReactNode;
+    backDrop?: boolean;
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -36,7 +37,8 @@ const Modal: React.FC<ModalProps> = ({
     onOk, 
     okColor = 'black', 
     onCancel, 
-    children
+    children,
+    backDrop = true
 }) => {
     const modal = useModal();
 
@@ -99,8 +101,12 @@ const Modal: React.FC<ModalProps> = ({
         break;
     }
 
+    if (!backDrop) {
+        modalClasses += ' border border-grey-100 ';
+    }
+
     const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {        
-        if (e.target === e.currentTarget) {
+        if (e.target === e.currentTarget && backDrop) {
             modal.remove();
         }
     };
@@ -111,7 +117,7 @@ const Modal: React.FC<ModalProps> = ({
 
     return (
         <div className={backdropClasses} id='modal-backdrop' onClick={handleBackdropClick}>
-            <div className='pointer-events-none fixed inset-0 z-0 bg-[rgba(98,109,121,0.15)] backdrop-blur-[3px]'></div>
+            <div className={`pointer-events-none fixed inset-0 z-0 ${backDrop && 'bg-[rgba(98,109,121,0.15)] backdrop-blur-[3px]'}`}></div>
             <section className={modalClasses} style={modalStyles}>
                 <div className='h-full'>
                     {title && <Heading level={4}>{title}</Heading>}
