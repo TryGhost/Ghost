@@ -76,6 +76,7 @@
     "postcss": "8.4.24",
     "postcss-import": "^15.1.0",
     "prop-types": "15.8.1",
+    "react-select": "^5.7.3",
     "rollup-plugin-node-builtins": "2.1.2",
     "storybook": "7.0.18",
     "stylelint": "15.6.1",
