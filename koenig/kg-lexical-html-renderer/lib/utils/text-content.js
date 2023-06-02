@@ -23,6 +23,7 @@ class TextContent {
         this.root = this.doc.createElement('div');
         this.currentNode = this.root;
         this.currentFormats = [];
+        this.queuedLineBreaks = 0;
     }
 
     addTextNode(node/*, parentNode, options*/) {
@@ -45,7 +46,7 @@ class TextContent {
         }
 
         // insert any queued line breaks
-        this._insertQueuedLineBreak();
+        this._insertQueuedLineBreaks();
 
         // add any new format tags for this node
         Object.entries(FORMAT_TAG_MAP).forEach(([format, tag]) => {
@@ -66,7 +67,7 @@ class TextContent {
     }
 
     addLineBreak() {
-        this.queueLineBreak = true;
+        this.queuedLineBreaks = this.queuedLineBreaks + 1;
     }
 
     addLinkNode(node, parentNode, exportChildren, options) {
@@ -87,7 +88,7 @@ class TextContent {
     }
 
     render() {
-        this._insertQueuedLineBreak();
+        this._insertQueuedLineBreaks();
         return this.root.innerHTML;
     }
 
@@ -95,13 +96,16 @@ class TextContent {
         this.root = this.doc.createElement('DIV');
         this.currentNode = this.root;
         this.currentFormats = [];
+        this.queuedLineBreaks = 0;
     }
 
-    _insertQueuedLineBreak() {
-        if (this.queueLineBreak) {
+    _insertQueuedLineBreaks() {
+        while (this.queuedLineBreaks > 0) {
             this.currentNode.append(this.doc.createElement('BR'));
-            this.queueLineBreak = false;
+            this.queuedLineBreaks = this.queuedLineBreaks - 1;
         }
+
+        this.queuedLineBreaks = 0;
     }
 }
 
