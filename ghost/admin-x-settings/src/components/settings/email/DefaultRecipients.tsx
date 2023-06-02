@@ -1,8 +1,10 @@
+import MultiSelect, {MultiSelectOption} from '../../../admin-x-ds/global/MultiSelect';
 import React from 'react';
 import Select from '../../../admin-x-ds/global/Select';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import useSettingGroup from '../../../hooks/useSettingGroup';
+import {MultiValue} from 'react-select';
 import {getOptionLabel} from '../../../utils/helpers';
 
 type RefipientValueArgs = {
@@ -110,6 +112,24 @@ const DefaultRecipients: React.FC = () => {
                     setDefaultRecipientValue(value);
                 }}
             />
+            {(emailRecipientValue === 'segment') && (
+                <MultiSelect 
+                    defaultValues={[
+                        {value: 'option2', label: 'Fake tier 2'}
+                    ]}
+                    options={[
+                        {value: 'option1', label: 'Fake tier 1'},
+                        {value: 'option2', label: 'Fake tier 2'},
+                        {value: 'option3', label: 'Fake tier 3'}
+                    ]}
+                    title='Select tiers'
+                    onChange={(selected: MultiValue<MultiSelectOption>) => {
+                        selected?.map(o => (
+                            alert(`${o.label} (${o.value})`)
+                        ));
+                    }}
+                />
+            )}
         </SettingGroupContent>
     );
 
