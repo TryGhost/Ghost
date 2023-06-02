@@ -29,13 +29,16 @@ class TextContent {
         if (!$isTextNode(node)) {
             return;
         }
-        
+
         // remove formats that shouldn't be applied to this node
         this.currentFormats = this.currentFormats.filter(format => node.hasFormat(format));
         // update the current node to be the closest parent with the current formats (or move along with the root)
-        this.currentNode = this.currentFormats[0]
-            ? this.currentNode.closest(FORMAT_TAG_MAP[this.currentFormats[0]])
-            : this.root;
+        if (this.currentFormats[0]) {
+            const closest = this.currentNode.closest(FORMAT_TAG_MAP[this.currentFormats[0]]);
+            this.currentNode = closest || this.root;
+        } else {
+            this.currentNode = this.root;
+        }
 
         // insert any queued line breaks
         this._insertQueuedLineBreak();
