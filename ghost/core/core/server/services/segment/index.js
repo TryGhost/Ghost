@@ -1,6 +1,9 @@
 const Analytics = require('analytics-node');
 const config = require('../../../shared/config');
 const sentry = require('../../../shared/sentry');
+const logging = require('@tryghost/logging');
+const DomainEvents = require('@tryghost/domain-events');
+const events = require('../../lib/common/events');
 
 const ModelEventsAnalytics = require('./ModelEventsAnalytics');
 const DomainEventsAnalytics = require('./DomainEventsAnalytics');
@@ -14,14 +17,18 @@ module.exports.init = function () {
         analytics,
         trackDefaults,
         prefix,
-        sentry
+        sentry,
+        DomainEvents,
+        logging
     });
 
     const modelEventsAnalytics = new ModelEventsAnalytics({
         analytics,
         trackDefaults,
         prefix,
-        sentry
+        sentry,
+        events,
+        logging
     });
 
     // Listen to model events

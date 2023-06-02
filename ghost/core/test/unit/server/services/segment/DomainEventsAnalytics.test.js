@@ -8,7 +8,6 @@ const DomainEventsAnalytics = require('../../../../../core/server/services/segme
 // Stubbed dependencies
 const DomainEvents = require('@tryghost/domain-events');
 const {MilestoneCreatedEvent} = require('@tryghost/milestones');
-const logging = require('@tryghost/logging');
 
 describe('DomainEventsAnalytics', function () {
     describe('Constructor', function () {
@@ -18,15 +17,17 @@ describe('DomainEventsAnalytics', function () {
     });
 
     describe('Domain events analytics service', function () {
-        let domainAnalytics;
+        let domainEventsAnalytics;
         let analyticsStub;
         let sentryStub;
         let loggingStub;
+        let domainEventsStub;
 
         beforeEach(function () {
             analyticsStub = sinon.stub();
             sentryStub = sinon.stub();
-            loggingStub = sinon.stub(logging, 'error');
+            loggingStub = sinon.stub();
+            domainEventsStub = sinon.stub();
         });
 
         afterEach(function () {
@@ -34,9 +35,7 @@ describe('DomainEventsAnalytics', function () {
         });
 
         it('subscribes to events', async function () {
-            const domainEventsStub = sinon.stub(DomainEvents, 'subscribe').resolves();
-
-            domainAnalytics = new DomainEventsAnalytics({
+            domainEventsAnalytics = new DomainEventsAnalytics({
                 analytics: analyticsStub,
                 trackDefaults: {
                     userId: '1234',
@@ -45,16 +44,22 @@ describe('DomainEventsAnalytics', function () {
                 prefix: 'Pro: ',
                 sentry: {
                     captureException: sentryStub
+                },
+                DomainEvents: {
+                    subscribe: domainEventsStub
+                },
+                logging: {
+                    error: loggingStub
                 }
             });
 
-            domainAnalytics.subscribeToDomainEvents();
+            domainEventsAnalytics.subscribeToEvents();
             assert(domainEventsStub.callCount === 1);
             assert(loggingStub.callCount === 0);
         });
 
         it('handles milestone created event for 100 members', async function () {
-            domainAnalytics = new DomainEventsAnalytics({
+            domainEventsAnalytics = new DomainEventsAnalytics({
                 analytics: {
                     track: analyticsStub
                 },
@@ -65,10 +70,14 @@ describe('DomainEventsAnalytics', function () {
                 prefix: 'Pro: ',
                 sentry: {
                     captureException: sentryStub
+                },
+                DomainEvents,
+                logging: {
+                    error: loggingStub
                 }
             });
 
-            domainAnalytics.subscribeToDomainEvents();
+            domainEventsAnalytics.subscribeToEvents();
 
             DomainEvents.dispatch(MilestoneCreatedEvent.create({
                 milestone: {
@@ -106,7 +115,7 @@ describe('DomainEventsAnalytics', function () {
         });
 
         it('handles milestone created event for $100 ARR', async function () {
-            domainAnalytics = new DomainEventsAnalytics({
+            domainEventsAnalytics = new DomainEventsAnalytics({
                 analytics: {
                     track: analyticsStub
                 },
@@ -117,10 +126,14 @@ describe('DomainEventsAnalytics', function () {
                 prefix: 'Pro: ',
                 sentry: {
                     captureException: sentryStub
+                },
+                DomainEvents,
+                logging: {
+                    error: loggingStub
                 }
             });
 
-            domainAnalytics.subscribeToDomainEvents();
+            domainEventsAnalytics.subscribeToEvents();
 
             DomainEvents.dispatch(MilestoneCreatedEvent.create({
                 milestone: {
@@ -162,7 +175,7 @@ describe('DomainEventsAnalytics', function () {
 
         it('can handle tracking errors', async function () {
             let error = new Error('Test error');
-            domainAnalytics = new DomainEventsAnalytics({
+            domainEventsAnalytics = new DomainEventsAnalytics({
                 analytics: {
                     track: analyticsStub.throws(error)
                 },
@@ -170,10 +183,14 @@ describe('DomainEventsAnalytics', function () {
                 prefix: '',
                 sentry: {
                     captureException: sentryStub
+                },
+                DomainEvents,
+                logging: {
+                    error: loggingStub
                 }
             });
 
-            domainAnalytics.subscribeToDomainEvents();
+            domainEventsAnalytics.subscribeToEvents();
 
             try {
                 DomainEvents.dispatch(MilestoneCreatedEvent.create({
