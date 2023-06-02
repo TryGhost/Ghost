@@ -38,12 +38,25 @@ export interface ImagesResponseType {
     }[];
 }
 
+export interface PasswordUpdateResponseType {
+    password: [{
+        message: string;
+    }];
+}
+
 interface RequestOptions {
     method?: string;
     body?: string | FormData;
     headers?: {
         'Content-Type'?: string;
     };
+}
+
+interface UpdatePasswordOptions {
+    newPassword: string;
+    confirmNewPassword: string;
+    userId: string;
+    oldPassword?: string;
 }
 
 interface API {
@@ -55,6 +68,7 @@ interface API {
         browse: () => Promise<UsersResponseType>;
         currentUser: () => Promise<User>;
         edit: (editedUser: User) => Promise<UsersResponseType>;
+        updatePassword: (options: UpdatePasswordOptions) => Promise<PasswordUpdateResponseType>;
     };
     roles: {
         browse: () => Promise<RolesResponseType>;
@@ -142,6 +156,22 @@ function setupGhostApi({ghostVersion}: GhostApiOptions): API {
                 });
 
                 const data: UsersResponseType = await response.json();
+                return data;
+            },
+            updatePassword: async ({newPassword, confirmNewPassword, userId, oldPassword}) => {
+                const payload = JSON.stringify({
+                    password: [{
+                        user_id: userId,
+                        oldPassword: oldPassword || '',
+                        newPassword: newPassword,
+                        ne2Password: confirmNewPassword
+                    }]
+                });
+                const response = await fetcher(`/users/password/`, {
+                    method: 'PUT',
+                    body: payload
+                });
+                const data: PasswordUpdateResponseType = await response.json();
                 return data;
             }
         },

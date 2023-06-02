@@ -7,12 +7,13 @@ import Menu from '../../../../admin-x-ds/global/Menu';
 import Modal from '../../../../admin-x-ds/global/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 import Radio from '../../../../admin-x-ds/global/Radio';
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import SettingGroup from '../../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../../admin-x-ds/global/TextField';
 import Toggle from '../../../../admin-x-ds/global/Toggle';
 import useRoles from '../../../../hooks/useRoles';
+import {ServicesContext} from '../../../providers/ServiceProvider';
 import {User} from '../../../../types/api';
 import {generateAvatarColor, getInitials, isOwnerUser} from '../../../../utils/helpers';
 
@@ -249,8 +250,44 @@ const EmailNotifications: React.FC<UserDetailProps> = ({user, setUserData}) => {
     );
 };
 
-const Password: React.FC = () => {
+function passwordValidation({password, confirmPassword}: {password: string; confirmPassword: string}) {
+    const errors: {
+        newPassword?: string;
+        confirmNewPassword?: string;
+    } = {};
+    if (password !== confirmPassword) {
+        errors.newPassword = 'Your new passwords do not match';
+        errors.confirmNewPassword = 'Your new passwords do not match';
+    }
+    if (password.length < 10) {
+        errors.newPassword = 'Password must be at least 10 characters';
+    }
+
+    //ToDo: add more validations
+
+    return errors;
+}
+
+const Password: React.FC<UserDetailProps> = ({user}) => {
     const [editPassword, setEditPassword] = useState(false);
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmNewPassword, setConfirmNewPassword] = useState('');
+    const [saveState, setSaveState] = useState<'saving'|'saved'|'error'|''>('');
+    const [errors, setErrors] = useState<{
+        newPassword?: string;
+        confirmNewPassword?: string;
+    }>({});
+    const newPasswordRef = useRef<HTMLInputElement>(null);
+    const confirmNewPasswordRef = useRef<HTMLInputElement>(null);
+    const {api} = useContext(ServicesContext);
+
+    useEffect(() => {
+        if (saveState === 'saved') {
+            setTimeout(() => {
+                setSaveState('');
+            }, 2000);
+        }
+    }, [saveState]);
 
     const showPasswordInputs = () => {
         setEditPassword(true);
@@ -263,18 +300,70 @@ const Password: React.FC = () => {
             onClick={showPasswordInputs}
         />
     );
-
+    let buttonLabel = 'Change password';
+    if (saveState === 'saving') {
+        buttonLabel = 'Updating...';
+    } else if (saveState === 'saved') {
+        buttonLabel = 'Updated';
+    } else if (saveState === 'error') {
+        buttonLabel = 'Retry';
+    }
     const form = (
         <>
             <TextField
+                error={!!errors.newPassword}
+                hint={errors.newPassword}
+                inputRef={newPasswordRef}
                 title="New password"
                 type="password"
                 value=''
+                onChange={(e) => {
+                    setNewPassword(e.target.value);
+                }}
             />
             <TextField
+                error={!!errors.confirmNewPassword}
+                hint={errors.confirmNewPassword}
+                inputRef={confirmNewPasswordRef}
                 title="Verify password"
                 type="password"
                 value=''
+                onChange={(e) => {
+                    setConfirmNewPassword(e.target.value);
+                }}
+            />
+            <Button
+                color='red'
+                label={buttonLabel}
+                onClick={async () => {
+                    setSaveState('saving');
+                    const validationErrros = passwordValidation({password: newPassword, confirmPassword: confirmNewPassword});
+                    setErrors(validationErrros);
+                    if (Object.keys(validationErrros).length > 0) {
+                        // show errors
+                        setNewPassword('');
+                        setConfirmNewPassword('');
+                        if (newPasswordRef.current) {
+                            newPasswordRef.current.value = '';
+                        }
+                        if (confirmNewPasswordRef.current) {
+                            confirmNewPasswordRef.current.value = '';
+                        }
+                        return;
+                    }
+                    try {
+                        await api.users.updatePassword({
+                            newPassword,
+                            confirmNewPassword,
+                            oldPassword: '',
+                            userId: user?.id
+                        });
+                        setSaveState('saved');
+                    } catch (e) {
+                        setSaveState('error');
+                        // show errors
+                    }
+                }}
             />
         </>
     );
@@ -284,6 +373,7 @@ const Password: React.FC = () => {
             border={false}
             customHeader={<CustomHeader>Password</CustomHeader>}
             title='Password'
+
         >
             {editPassword ? form : view}
         </SettingGroup>
@@ -406,7 +496,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                     <Basic setUserData={setUserData} user={userData} />
                     <Details setUserData={setUserData} user={userData} />
                     <EmailNotifications setUserData={setUserData} user={userData} />
-                    <Password />
+                    <Password user={userData} />
                 </div>
             </div>
         </Modal>
