@@ -1,9 +1,10 @@
 import ImageUpload from '../../../admin-x-ds/global/ImageUpload';
-import React from 'react';
+import React, {useContext} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
+import {FileService, ServicesContext} from '../../providers/ServiceProvider';
 
 const Facebook: React.FC = () => {
     const {
@@ -17,7 +18,11 @@ const Facebook: React.FC = () => {
         handleStateChange
     } = useSettingGroup();
 
-    const [facebookTitle, facebookDescription, siteTitle, siteDescription] = getSettingValues(['og_title', 'og_description', 'title', 'description']) as string[];
+    const {fileService} = useContext(ServicesContext) as {fileService: FileService};
+
+    const [
+        facebookTitle, facebookDescription, facebookImage, siteTitle, siteDescription
+    ] = getSettingValues(['og_title', 'og_description', 'og_image', 'title', 'description']) as string[];
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         updateSetting('og_title', e.target.value);
@@ -27,12 +32,13 @@ const Facebook: React.FC = () => {
         updateSetting('og_description', e.target.value);
     };
 
-    const handleImageUpload = (file: File) => {
-        alert(file.name);
+    const handleImageUpload = async (file: File) => {
+        const imageUrl = await fileService.uploadImage(file);
+        updateSetting('og_image', imageUrl);
     };
 
     const handleImageDelete = () => {
-        alert('Delete Facebook image');
+        updateSetting('og_image', '');
     };
 
     const values = (
@@ -44,6 +50,7 @@ const Facebook: React.FC = () => {
             <ImageUpload
                 height='200px'
                 id='twitter-image'
+                imageURL={facebookImage}
                 label='Upload Facebook image'
                 onDelete={handleImageDelete}
                 onUpload={handleImageUpload}
