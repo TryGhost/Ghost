@@ -20,7 +20,7 @@ interface TextAreaProps {
 }
 
 const TextArea: React.FC<TextAreaProps> = ({inputRef, title, value, rows = 3, maxLength, resize = 'none', error, placeholder, hint, clearBg = false, onChange, ...props}) => {
-    let styles = `border-b ${!clearBg && 'bg-grey-75 px-[10px]'} py-2 ${error ? `border-red` : `border-grey-500 hover:border-grey-700 focus:border-black`} ${title && `mt-2`}`;
+    let styles = `border-b ${clearBg ? 'bg-transparent' : 'bg-grey-75 px-[10px]'} py-2 ${error ? `border-red` : `border-grey-500 hover:border-grey-700 focus:border-black`} ${(title && !clearBg) && `mt-2`}`;
 
     switch (resize) {
     case 'both':
