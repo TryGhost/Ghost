@@ -69,7 +69,6 @@ export default class FeatureService extends Service {
     @feature('emailCustomization') emailCustomization;
     @feature('i18n') i18n;
     @feature('announcementBar') announcementBar;
-    @feature('imageEditor') imageEditor;
     @feature('signupCard') signupCard;
     @feature('signupForm') signupForm;
     @feature('collections') collections;

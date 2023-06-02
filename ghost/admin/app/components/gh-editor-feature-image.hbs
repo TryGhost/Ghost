@@ -40,7 +40,7 @@
             <div class="gh-editor-feature-image">
                 <img src={{@image}}>
                 <div class="gh-editor-feature-image-overlay"></div>
-                {{#if (feature 'imageEditor')}}
+                {{#if (feature 'lexicalEditor')}}
                     <KoenigImageEditor
                         @imageSrc={{@image}}
                         @saveImage={{fn this.saveImage uploader.setFiles}}
