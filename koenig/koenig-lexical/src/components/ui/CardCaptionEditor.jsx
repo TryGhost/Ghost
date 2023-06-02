@@ -19,6 +19,10 @@ function CaptionInput({captionEditor, captionEditorInitialState, placeholder, da
 }
 
 function AltTextInput({value, placeholder, onChange, readOnly, dataTestId, autoFocus = true}) {
+    const handleChange = (e) => {
+        onChange?.(e.target.value);
+    };
+
     return (
         <TextInput
             autoFocus={autoFocus}
@@ -27,7 +31,7 @@ function AltTextInput({value, placeholder, onChange, readOnly, dataTestId, autoF
             placeholder={placeholder}
             readOnly={readOnly}
             value={value}
-            onChange={onChange}
+            onChange={handleChange}
         />
     );
 }

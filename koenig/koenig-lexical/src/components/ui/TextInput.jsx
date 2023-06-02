@@ -6,7 +6,7 @@ export function TextInput({value, onChange, ...args}) {
 
     const handleOnChange = (e) => {
         saveSelectionRange(e);
-        onChange(e.target.value);
+        onChange(e);
     };
 
     return (

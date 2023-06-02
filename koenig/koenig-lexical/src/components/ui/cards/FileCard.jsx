@@ -4,6 +4,7 @@ import React from 'react';
 import {ReactComponent as FileUploadIcon} from '../../../assets/icons/kg-file-upload.svg';
 import {MediaPlaceholder} from '../MediaPlaceholder';
 import {ProgressBar} from '../ProgressBar';
+import {TextInput} from '../TextInput.jsx';
 import {openFileSelection} from '../../../utils/openFileSelection';
 
 function FileUploading({progress}) {
@@ -41,8 +42,28 @@ function PopulatedFileCard({isEditing, title, titlePlaceholder, desc, descPlaceh
             <div className="flex justify-between rounded border border-grey/30 p-2">
                 <div className={`flex w-full flex-col px-2 font-sans ${((title || desc) || isEditing) ? 'justify-between' : 'justify-center'}`} {...args}>
                     {(isEditing || title || desc) && <div className="flex flex-col">
-                        { (isEditing || title) && <input className="h-[30px] bg-transparent text-lg font-bold leading-none tracking-tight text-black dark:text-grey-200" data-kg-file-card="fileTitle" maxLength="80" placeholder={titlePlaceholder} value={title} onChange={handleFileTitle} />}
-                        { (isEditing || desc) && <input className="h-[26px] bg-transparent pb-1 text-[1.6rem] font-normal leading-none text-grey-700 placeholder:text-grey-500 dark:text-grey-300 dark:placeholder:text-grey-800" data-kg-file-card="fileDescription" maxLength="100" placeholder={descPlaceholder} value={desc} onChange={handleFileDesc} />}
+                        {
+                            (isEditing || title) && (
+                                <TextInput
+                                    className="h-[30px] bg-transparent text-lg font-bold leading-none tracking-tight text-black dark:text-grey-200"
+                                    data-kg-file-card="fileTitle"
+                                    maxLength="80"
+                                    placeholder={titlePlaceholder}
+                                    value={title}
+                                    onChange={handleFileTitle}
+                                />
+                            )
+                        }
+                        { (isEditing || desc) && (
+                            <TextInput
+                                className="h-[26px] bg-transparent pb-1 text-[1.6rem] font-normal leading-none text-grey-700 placeholder:text-grey-500 dark:text-grey-300 dark:placeholder:text-grey-800"
+                                data-kg-file-card="fileDescription"
+                                maxLength="100"
+                                placeholder={descPlaceholder}
+                                value={desc}
+                                onChange={handleFileDesc}
+                            />
+                        )}
                     </div>}
                     <div className="!mt-0 py-1 text-sm font-medium text-grey-900 dark:text-grey-200" data-kg-file-card="dataset">
                         {name}
@@ -60,13 +81,13 @@ function PopulatedFileCard({isEditing, title, titlePlaceholder, desc, descPlaceh
 }
 
 export function FileCard(
-    {isPopulated, 
-        fileTitle, 
-        fileTitlePlaceholder, 
-        fileDesc, 
-        fileDescPlaceholder, 
-        fileName, 
-        fileSize, 
+    {isPopulated,
+        fileTitle,
+        fileTitlePlaceholder,
+        fileDesc,
+        fileDescPlaceholder,
+        fileName,
+        fileSize,
         fileDragHandler,
         isEditing,
         fileInputRef,
@@ -95,21 +116,21 @@ export function FileCard(
     }
     if (isPopulated) {
         return (
-            <PopulatedFileCard 
+            <PopulatedFileCard
                 desc={fileDesc}
                 descPlaceholder={fileDescPlaceholder}
-                handleFileDesc={handleFileDesc} 
+                handleFileDesc={handleFileDesc}
                 handleFileTitle={handleFileTitle}
                 isEditing={isEditing}
                 name={fileName}
                 size={fileSize}
                 title={fileTitle}
                 titlePlaceholder={fileTitlePlaceholder}
-                {...args} 
+                {...args}
             />
         );
     }
-    
+
     return (
         <>
             <EmptyFileCard

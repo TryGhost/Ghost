@@ -9,6 +9,7 @@ import {ImageUploadForm} from '../ImageUploadForm';
 import {MediaPlaceholder} from '../MediaPlaceholder';
 import {MediaPlayer} from '../MediaPlayer';
 import {ProgressBar} from '../ProgressBar';
+import {TextInput} from '../TextInput';
 import {openFileSelection} from '../../../utils/openFileSelection';
 
 function AudioUploading({progress}) {
@@ -195,7 +196,7 @@ function PopulatedAudioCard({
             />
             <div className="flex h-20 w-full flex-col justify-between px-4">
                 {(isEditing || title) && (
-                    <input
+                    <TextInput
                         className="font-sans text-lg font-bold text-black"
                         data-testid="audio-caption"
                         name="title"
