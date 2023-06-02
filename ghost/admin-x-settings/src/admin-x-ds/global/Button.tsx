@@ -1,9 +1,11 @@
+import Icon from './Icon';
 import React from 'react';
 
 export type ButtonColor = 'clear' | 'grey' | 'black' | 'green' | 'red';
 
 export interface IButton {
-    label: string;
+    label?: string;
+    icon?: string;
     key?: string;
     color?: string;
     fullWidth?: boolean;
@@ -14,13 +16,14 @@ export interface IButton {
 }
 
 const Button: React.FC<IButton> = ({
-    label,
-    color,
+    label = '',
+    icon = '',
+    color = 'clear',
     fullWidth,
     link,
     disabled,
     onClick,
-    className,
+    className = '',
     ...props
 }) => {
     if (!color) {
@@ -62,6 +65,7 @@ const Button: React.FC<IButton> = ({
             onClick={onClick}
             {...props}
         >
+            {icon && <Icon color={(color === 'clear' || color === 'grey' ? 'black' : 'white')} name={icon} />}
             {label}
         </button>
     );
