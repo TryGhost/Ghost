@@ -49,10 +49,6 @@ const Menu: React.FC<MenuProps> = ({trigger, items, position, className}) => {
             <div className={`fixed inset-0 z-40 ${menuOpen ? 'block' : 'hidden'}`} onClick={handleBackdropClick}></div>
             {/* Menu Trigger */}
             <div className='relative z-50' onClick={toggleMenu}>
-                {/* <button aria-expanded="true" aria-haspopup="true" className="flex items-center rounded-sm bg-grey-100 px-2 py-1 text-grey-400 hover:text-grey-600" id="menu-button" type="button" onClick={toggleMenu}>
-                    <span className="sr-only">Open menu</span>
-                    <Icon color="grey-900" name="menu-horizontal" />
-                </button> */}
                 {trigger}
             </div>
             {/* Menu List */}
