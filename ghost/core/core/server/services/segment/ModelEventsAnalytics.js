@@ -1,62 +1,106 @@
 const _ = require('lodash');
-const logging = require('@tryghost/logging');
-// Listens to model events to layer on analytics - also uses the "fake" theme.uploaded event from the theme API
-const events = require('../../lib/common/events');
 
-const TO_TRACK = [
-    {
-        event: 'post.published',
-        name: 'Post Published'
-    },
-    {
-        event: 'page.published',
-        name: 'Page Published'
-    },
-    {
-        event: 'theme.uploaded',
-        name: 'Theme Uploaded',
-        // {keyOnSuppliedEventData: keyOnTrackedEventData}
-        // - used to extract specific properties from event data and give them meaningful names
-        data: {name: 'name'}
-    },
-    {
-        event: 'integration.added',
-        name: 'Custom Integration Added'
-    },
-    {
-        event: 'settings.edited',
-        name: 'Stripe enabled',
-        data: {key: 'key', value: 'value'}
-    }
-];
+/**
+ * @typedef {import('@tryghost/logging')} logging
+ */
 
+/**
+ * @typedef {import('analytics-node')} analytics
+ */
+
+/**
+ * @typedef {import('../../../shared/sentry')} sentry
+ */
+
+/**
+ * @typedef {import('../../lib/common/events')} events
+ */
+
+/**
+ * @typedef {object} IModelEventsAnalytics
+ * @param {analytics} analytics
+ * @param {logging} logging
+ * @param {object} trackDefaults
+ * @param {string} prefix
+ * @param {sentry} sentry
+ * @param {events} events
+ * @prop {} subscribeToEvents
+ */
+
+/**
+ * Listens to model events to layer on analytics - also uses the "fake" theme.uploaded
+ * event from the theme API
+ */
 module.exports = class ModelEventsAnalytics {
+    /** @type {analytics} */
     #analytics;
+    /** @type {object} */
     #trackDefaults;
+    /** @type {string} */
     #prefix;
+    /** @type {sentry} */
     #sentry;
-    #toTrack;
+    /** @type {events} */
+    #events;
+    /** @type {logging} */
+    #logging;
+
+    /**
+     * @type {Array<{event: string, name: string, data?: object}>}
+     */
+    #toTrack = [
+        {
+            event: 'post.published',
+            name: 'Post Published'
+        },
+        {
+            event: 'page.published',
+            name: 'Page Published'
+        },
+        {
+            event: 'theme.uploaded',
+            name: 'Theme Uploaded',
+            // {keyOnSuppliedEventData: keyOnTrackedEventData}
+            // - used to extract specific properties from event data and give them meaningful names
+            data: {name: 'name'}
+        },
+        {
+            event: 'integration.added',
+            name: 'Custom Integration Added'
+        }
+    ];
 
     constructor(deps) {
         this.#analytics = deps.analytics;
         this.#trackDefaults = deps.trackDefaults;
         this.#prefix = deps.prefix;
         this.#sentry = deps.sentry;
-        this.#toTrack = TO_TRACK;
+        this.#events = deps.events;
+        this.#logging = deps.logging;
     }
 
-    subscribeToModelEvents() {
+    async #handleEvent(event) {
+        try {
+            this.#analytics.track(event);
+        } catch (err) {
+            this.#logging.error(err);
+            this.#sentry.captureException(err);
+        }
+    }
+
+    subscribeToEvents() {
         this.#toTrack.forEach(({event, name, data = {}}) => {
-            events.on(event, function (eventData = {}) {
+            this.#events.on(event, async (eventData = {}) => {
                 // extract desired properties from eventData and rename keys if necessary
                 const mappedData = _.mapValues(data || {}, v => eventData[v]);
 
-                try {
-                    this.#analytics.track(_.extend(this.#trackDefaults, mappedData, {event: this.#prefix + name}));
-                } catch (err) {
-                    logging.error(err);
-                    this.#sentry.captureException(err);
-                }
+                const eventToTrack = {
+                    ...this.#trackDefaults,
+                    event: this.#prefix + name,
+                    ...mappedData
+                };
+
+                await this.#handleEvent(eventToTrack);
             });
         });
     }
