@@ -1,4 +1,3 @@
-import Avatar from '../../../../admin-x-ds/global/Avatar';
 import Button from '../../../../admin-x-ds/global/Button';
 import ConfirmationModal from '../../../../admin-x-ds/global/ConfirmationModal';
 import Heading from '../../../../admin-x-ds/global/Heading';
@@ -16,7 +15,7 @@ import Toggle from '../../../../admin-x-ds/global/Toggle';
 import useRoles from '../../../../hooks/useRoles';
 import {ServicesContext} from '../../../providers/ServiceProvider';
 import {User} from '../../../../types/api';
-import {generateAvatarColor, getInitials, isOwnerUser} from '../../../../utils/helpers';
+import {isOwnerUser} from '../../../../utils/helpers';
 
 interface CustomHeadingProps {
     children?: React.ReactNode;
@@ -469,7 +468,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
         }
     }, [saveState]);
 
-    const fileUploadButtonClasses = 'absolute right-[104px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium';
+    const fileUploadButtonClasses = 'absolute right-[104px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium z-10';
 
     return (
         <Modal
@@ -502,8 +501,25 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                     <div className="absolute bottom-12 right-12">
                         <Menu items={menuItems} position='left' trigger={<UserMenuTrigger />}></Menu>
                     </div>
-                    <div className='pointer-events-none relative z-10 flex gap-4 px-12 pb-12 pt-60'>
-                        <Avatar bgColor={generateAvatarColor((userData.name ? userData.name : userData.email))} className='-ml-1' image={userData.profile_image} label={getInitials(userData.name)} labelColor='white' size='xl' />
+                    <div className='relative flex items-center gap-4 px-12 pb-12 pt-60'>
+
+                        <ImageUpload
+                            deleteButtonClassName='invisible absolute -right-2 -top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible'
+                            fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer'
+                            height='80px'
+                            id='avatar'
+                            imageClassName='relative rounded-full group bg-cover -ml-2'
+                            imageURL={userData.profile_image}
+                            width='80px'
+                            onDelete={() => {
+                                alert('deleted');
+                            }}
+                            onUpload={() => {
+                                alert('uploaded');
+                            }}
+                        >
+                            <Icon color='white' name='user-add' size='lg' />
+                        </ImageUpload>
                         <div>
                             <Heading styles='text-white'>{user.name}</Heading>
                             <span className='text-md font-semibold text-white'>Administrator</span>
