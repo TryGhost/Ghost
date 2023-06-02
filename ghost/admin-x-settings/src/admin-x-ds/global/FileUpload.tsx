@@ -9,7 +9,7 @@ export interface FileUploadProps {
     children?: React.ReactNode;
     className?: string;
     onUpload: (file: File) => void;
-    style: {}
+    style?: {}
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({id, onUpload, children, style, ...props}) => {

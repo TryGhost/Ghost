@@ -55,10 +55,11 @@ const Twitter: React.FC = () => {
                 height='200px'
                 id='twitter-image'
                 imageURL={twitterImage}
-                label='Upload twitter image'
                 onDelete={handleImageDelete}
                 onUpload={handleImageUpload}
-            />
+            >
+                Upload twitter image
+            </ImageUpload>
             <TextField
                 inputRef={focusRef}
                 placeholder={siteTitle}

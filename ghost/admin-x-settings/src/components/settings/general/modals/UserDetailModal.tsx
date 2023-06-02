@@ -3,6 +3,7 @@ import Button from '../../../../admin-x-ds/global/Button';
 import ConfirmationModal from '../../../../admin-x-ds/global/ConfirmationModal';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import Icon from '../../../../admin-x-ds/global/Icon';
+import ImageUpload from '../../../../admin-x-ds/global/ImageUpload';
 import Menu from '../../../../admin-x-ds/global/Menu';
 import Modal from '../../../../admin-x-ds/global/Modal';
 import NiceModal from '@ebay/nice-modal-react';
@@ -387,7 +388,9 @@ interface UserDetailModalProps {
 }
 
 const UserMenuTrigger = () => (
-    <Button color='white' icon='menu-horizontal' size='sm' />
+    <div className='flex h-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] px-3 opacity-80 hover:opacity-100'>
+        <Icon color='white' name='menu-horizontal' size='sm' />
+    </div>
 );
 
 const confirmMakeOwner = () => {
@@ -466,6 +469,8 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
         }
     }, [saveState]);
 
+    const fileUploadButtonClasses = 'absolute right-[104px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium';
+
     return (
         <Modal
             okColor='green'
@@ -478,21 +483,33 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
             }}
         >
             <div>
-                <div className={`relative -mx-12 -mt-12 bg-gradient-to-tr from-grey-900 to-black p-12`} style={userData.cover_image ? {backgroundImage: `url(${userData.cover_image})`, backgroundSize: 'cover'} : {}}>
-                    {userData.cover_image && (
-                        <div className='absolute inset-0 z-0 block bg-gradient-to-tr from-[rgba(0,0,0,0.5)] to-[rgba(0,0,0,0.01)]'></div>
-                    )}
-                    <div className="absolute right-8 top-8">
+                <div className={`relative -mx-12 -mt-12 bg-gradient-to-tr from-grey-900 to-black`}>
+                    <ImageUpload
+                        deleteButtonClassName={fileUploadButtonClasses}
+                        deleteButtonContent='Delete cover image'
+                        fileUploadClassName={fileUploadButtonClasses}
+                        height={userData.cover_image ? '100%' : '32px'}
+                        id='cover-image'
+                        imageClassName='absolute inset-0 bg-cover group'
+                        imageURL={userData.cover_image || ''}
+                        onDelete={() => {
+                            alert('deleted');
+                        }}
+                        onUpload={() => {
+                            alert('uploaded');
+                        }}
+                    >Upload cover image</ImageUpload>
+                    <div className="absolute bottom-12 right-12">
                         <Menu items={menuItems} position='left' trigger={<UserMenuTrigger />}></Menu>
                     </div>
-                    <div className='relative z-10 mt-60 flex gap-4'>
+                    <div className='pointer-events-none relative z-10 flex gap-4 px-12 pb-12 pt-60'>
                         <Avatar bgColor={generateAvatarColor((userData.name ? userData.name : userData.email))} className='-ml-1' image={userData.profile_image} label={getInitials(userData.name)} labelColor='white' size='xl' />
                         <div>
                             <Heading styles='text-white'>{user.name}</Heading>
                             <span className='text-md font-semibold text-white'>Administrator</span>
                         </div>
                     </div>
-                </div>
+                </div>                
                 <div className='mt-10 grid grid-cols-2 gap-x-12 gap-y-20 pb-10'>
                     <Basic setUserData={setUserData} user={userData} />
                     <Details setUserData={setUserData} user={userData} />

@@ -51,10 +51,11 @@ const Facebook: React.FC = () => {
                 height='200px'
                 id='twitter-image'
                 imageURL={facebookImage}
-                label='Upload Facebook image'
                 onDelete={handleImageDelete}
                 onUpload={handleImageUpload}
-            />
+            >
+                Upload Facebook image
+            </ImageUpload>
             <TextField
                 inputRef={focusRef}
                 placeholder={siteTitle}

@@ -15,7 +15,7 @@ type Story = StoryObj<typeof ImageUpload>;
 export const Default: Story = {
     args: {
         id: 'image-upload-test',
-        label: 'Upload image',
+        children: 'Upload image',
         onUpload: (file: File) => {
             alert(`You're uploading: ${file.name}`);
         }
@@ -25,7 +25,7 @@ export const Default: Story = {
 export const Resized: Story = {
     args: {
         id: 'image-upload-test',
-        label: 'Upload image',
+        children: 'Upload image',
         width: '480px',
         height: '320px',
         onUpload: (file: File) => {
@@ -37,7 +37,7 @@ export const Resized: Story = {
 export const ImageUploaded: Story = {
     args: {
         id: 'image-upload-test',
-        label: 'Upload image',
+        children: 'Upload image',
         width: '480px',
         height: '320px',
         imageURL: 'https://images.unsplash.com/photo-1685374156924-5230519f4ab3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMTc3M3wwfDF8YWxsfDI1fHx8fHx8Mnx8MTY4NTYzNzE3M3w&ixlib=rb-4.0.3&q=80&w=2000',
