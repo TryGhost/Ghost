@@ -3775,17 +3775,37 @@ p.theme-validation-details {
     border: 0;
 }
 
-@media (min-width: 800px) {
-    .gh-signup-form-container {
-        display: flex;
-        gap: 20px;
-        width: 100%;
-    }
+.fullwidth-modal {
+    max-width: 100%;
+}
 
-    .gh-signup-form-container > * {
-        flex-basis: 0;
-        flex-shrink: 0;
-        min-width: 0;
-        flex-grow: 1;
-    }
+.epm-modal .modal-signup-form-embed {
+    display: flex;
+    flex-direction: row;
+    margin: 32px;
+    align-items: stretch;
+    padding: 0;
+}
+
+.modal-signup-form-embed-preview {
+    flex-basis: 65%;
+    position: relative;
+    min-width: 500px;
+}
+
+.modal-signup-form-embed-preview iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+}
+
+.modal-signup-form-embed-main {
+    flex-basis: 35%;
+    flex-shrink: 0;
+    padding: 32px;
+    max-height: 80vh;
+    min-width: 400px;
+    overflow-y: auto;
 }

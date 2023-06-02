@@ -1,0 +1,82 @@
+<div class="modal-content modal-signup-form-embed" data-test-modal="signup-form-embed">
+    <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-signup-form-embed-preview">
+        <Settings::SignupForm::Preview
+            @html={{this.previewCode}}
+        />
+    </div>
+
+    <div class="modal-signup-form-embed-main">
+        <header class="modal-header">
+            <h1>Embed a signup form</h1>
+        </header>
+
+        <div class="modal-body">
+
+            <div class="gh-signup-form-container">
+                <div class="gh-stack-item gh-setting-first">
+                    <div class="flex-grow-1">
+                        <label class="gh-setting-title">
+                            Choose layout
+                        </label>
+
+                            <Settings::SignupForm::StyleSelect
+                            @value={{this.style}}
+                            @onChange={{this.setStyle}}
+                        />
+                    </div>
+                </div>
+
+                <div class="gh-stack-item gh-setting-first">
+                    <div class="flex-grow-1">
+                        <label class="gh-setting-title">
+                            Apply labels at signup
+                        </label>
+
+                        <GhMemberLabelInput
+                            @onChange={{this.setLabels}}
+                            @allowEdit={{false}}
+                            @labels={{this.labels}}
+                            @triggerId="label-input"
+                        />
+                    </div>
+                </div>
+
+
+                <div>
+                    <div class="form-group gh-stack-item row">
+                        <label class="fw6 f8">Background color</label>
+                        <Modals::Newsletters::Components::ColorPicker
+                            @color={{this.backgroundColor}}
+                            @presetColors={{this.backgroundPresetColors}}
+                            @onColorChange={{this.setBackgroundColor}}
+                        />
+                    </div>
+                </div>
+
+                <div class="gh-stack-item gh-setting-first">
+                    <div class="flex-grow-1">
+                        <label class="gh-setting-title">
+                            Embed code
+                        </label>
+
+                        <textarea id="gh-signup-form-embed-code-input" class="gh-input" readonly>{{this.generatedCode}}</textarea>
+                        <p>Copy and paste this HTML code somewhere inside the &lt;body&gt; tag of your site.</p>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+        <div class="modal-footer">
+            <GhTaskButton
+                @buttonText="Copy code"
+                @task={{this.copyText}}
+                @successText="Copied"
+                @class="gh-btn gh-btn-black gh-btn-icon"
+            />
+        </div>
+    </div>
+</div>
