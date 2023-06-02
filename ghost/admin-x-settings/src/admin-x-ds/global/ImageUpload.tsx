@@ -13,11 +13,11 @@ interface ImageUploadProps {
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
-    id, 
-    label, 
-    width, 
-    height = '120px', 
-    imageURL, 
+    id,
+    label,
+    width,
+    height = '120px',
+    imageURL,
     onUpload,
     onDelete
 }) => {

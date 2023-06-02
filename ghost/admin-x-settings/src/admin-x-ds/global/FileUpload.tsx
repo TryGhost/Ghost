@@ -1,5 +1,4 @@
-import React, {useCallback, useEffect} from 'react';
-import {ChangeEvent, useState} from 'react';
+import React, {ChangeEvent} from 'react';
 
 export interface FileUploadProps {
     id: string;
@@ -14,23 +13,12 @@ export interface FileUploadProps {
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({id, onUpload, children, style, ...props}) => {
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files && event.target.files.length > 0) {
-            setSelectedFile(event.target.files[0]);
-        }
-    };
-
-    const handleFileUpload = useCallback(() => {
+        const selectedFile = event.target.files?.[0];
         if (selectedFile) {
             onUpload?.(selectedFile);
         }
-    }, [onUpload, selectedFile]);
-
-    useEffect(() => {
-        handleFileUpload();
-    }, [handleFileUpload]);
+    };
 
     return (
         <label htmlFor={id} style={style} {...props}>

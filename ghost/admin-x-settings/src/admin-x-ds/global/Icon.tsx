@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 
 interface UseDynamicSVGImportOptions {
     onCompleted?: (
@@ -12,8 +12,8 @@ function useDynamicSVGImport(
     name: string,
     options: UseDynamicSVGImportOptions = {}
 ) {
-    const ImportedIconRef = useRef<React.FC<React.SVGProps<SVGSVGElement>>>();
     const [loading, setLoading] = useState(false);
+    const [SvgComponent, setSvgComponent] = useState<React.FC<React.SVGProps<SVGSVGElement>> | null | undefined>(null);
     const [error, setError] = useState<Error>();
 
     const {onCompleted, onError} = options;
@@ -21,21 +21,22 @@ function useDynamicSVGImport(
         setLoading(true);
         const importIcon = async (): Promise<void> => {
             try {
-                ImportedIconRef.current = (
+                const SvgIcon: React.FC<React.SVGProps<SVGSVGElement>> = (
                     await import(`../assets/icons/${name}.svg`)
                 ).ReactComponent;
-                onCompleted?.(name, ImportedIconRef.current);
+                setSvgComponent(() => SvgIcon);
+                onCompleted?.(name, SvgIcon);
             } catch (err: any) {
                 onError?.(err);
-                setError(err);
+                setError(() => err);
             } finally {
-                setLoading(false);
+                setLoading(() => false);
             }
         };
         importIcon();
     }, [name, onCompleted, onError]);
 
-    return {error, loading, SvgIcon: ImportedIconRef.current};
+    return {error, loading, SvgComponent};
 }
 
 export type IconSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | number;
@@ -62,8 +63,8 @@ interface IconProps {
  * - all icons must have all it's children color value set `currentColor`
  * - all strokes must be paths and _NOT_ outlined objects. Stroke width should be set to 1.5px
  */
-const Icon: React.FC<IconProps> = ({name, size = 'md', color = 'black', className}) => {
-    const {SvgIcon} = useDynamicSVGImport(name);
+const Icon: React.FC<IconProps> = ({name, size = 'md', color = 'black', className = ''}) => {
+    const {SvgComponent} = useDynamicSVGImport(name);
 
     let styles = '';
 
@@ -81,7 +82,7 @@ const Icon: React.FC<IconProps> = ({name, size = 'md', color = 'black', classNam
         case 'xl':
             styles = 'w-10 h-10';
             break;
-        
+
         default:
             styles = 'w-5 h-5';
             break;
@@ -92,9 +93,9 @@ const Icon: React.FC<IconProps> = ({name, size = 'md', color = 'black', classNam
         styles += ` text-${color}`;
     }
 
-    if (SvgIcon) {       
+    if (SvgComponent) {
         return (
-            <SvgIcon className={`${styles} ${className}`} />
+            <SvgComponent className={`${styles} ${className}`} />
         );
     }
     return null;
