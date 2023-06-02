@@ -28,7 +28,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                 height: height,
                 backgroundImage: `url(${imageURL})`
             }}>
-                <button className='absolute right-4 top-4 hidden h-8 w-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:flex' type='button' onClick={onDelete}>
+                <button className='invisible absolute right-4 top-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible' type='button' onClick={onDelete}>
                     <Icon color='white' name='trash' size='sm' />
                 </button>
             </div>
