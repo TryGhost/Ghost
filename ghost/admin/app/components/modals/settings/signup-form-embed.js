@@ -137,14 +137,31 @@ export default class SignupFormEmbedModal extends Component {
         return code;
     }
 
-    @task
-    *copyText() {
+    doCopy() {
         // Copy this.generatedCode tp the clipboard
         const el = document.getElementById('gh-signup-form-embed-code-input');
         el.select();
         document.execCommand('copy');
+    }
+
+    /**
+     * Calling this task will make the button green, so avoid using if you don't want that
+     */
+    @task
+    *copyText() {
+        // Copy this.generatedCode tp the clipboard
+        this.doCopy();
 
         yield true;
         return true;
+    }
+
+    @action
+    copyTextOnMouseUp() {
+        // Check if there is no current text selection anywhere on the page, otherwise skip copying
+        // This is so users can still select text manually without copying automatically
+        if (window.getSelection().toString() === '') {
+            this.doCopy();
+        }
     }
 }

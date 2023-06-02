@@ -58,6 +58,7 @@
                             @class="gh-input gh-signup-form-embed-code-input"
                             @value={{this.generatedCode}}
                             readonly
+                            {{on "mouseup" this.copyTextOnMouseUp}}
                         />
                         <p>Copy and paste this HTML code somewhere inside the <code>&lt;body&gt;</code> tag of your site.</p>
                     </div>
