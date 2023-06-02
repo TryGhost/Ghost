@@ -1,3 +1,4 @@
+import * as i18nLib from '@tryghost/i18n';
 import React, {ComponentProps, useState} from 'react';
 import pages, {Page, PageName} from './pages';
 import {AppContextProvider, SignupFormOptions} from './AppContext';
@@ -26,6 +27,8 @@ const Preview: React.FC<SignupFormOptions & {
     const PageComponent = pages[page.name];
     const data = page.data as any;
 
+    const i18n = i18nLib.default('en', 'signup-form');
+
     return <AppContextProvider value={{
         page,
         setPage: _setPage,
@@ -39,6 +42,7 @@ const Preview: React.FC<SignupFormOptions & {
                 return simulateApiError ? false : true;
             }
         },
+        t: i18n.t,
         options,
         scriptTag: document.createElement('div')
     }}>

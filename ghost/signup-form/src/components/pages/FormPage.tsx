@@ -7,11 +7,11 @@ import {useAppContext} from '../../AppContext';
 export const FormPage: React.FC = () => {
     const [error, setError] = React.useState('');
     const [loading, setLoading] = React.useState(false);
-    const {api, setPage, options} = useAppContext();
+    const {api, setPage, options, t} = useAppContext();
 
     const submit = async ({email}: { email: string }) => {
         if (!isValidEmail(email)) {
-            setError('Please enter a valid email address');
+            setError(t(`Please enter a valid email address`));
             return;
         }
 
@@ -25,7 +25,7 @@ export const FormPage: React.FC = () => {
             });
         } catch (_) {
             setLoading(false);
-            setError('Something went wrong, please try again.');
+            setError(t(`Something went wrong, please try again.`));
         }
     };
 
