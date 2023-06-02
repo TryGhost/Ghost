@@ -19,6 +19,9 @@ export default defineConfig((config) => {
             'process.env.NODE_ENV': JSON.stringify(config.mode),
             REACT_APP_VERSION: JSON.stringify(process.env.npm_package_version)
         },
+        preview: {
+            port: 4175
+        },
         server: {
             port: 5368
         },

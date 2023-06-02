@@ -79,7 +79,7 @@ if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {
         prefixColor: 'magenta',
         env: {}
     });
-    COMMAND_GHOST.env['portal__url'] = 'http://localhost:5368/umd/portal.min.js';
+    COMMAND_GHOST.env['portal__url'] = 'http://localhost:4175/portal.min.js';
 }
 
 if (DASH_DASH_ARGS.includes('signup') || DASH_DASH_ARGS.includes('all')) {
