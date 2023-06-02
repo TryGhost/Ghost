@@ -166,6 +166,10 @@
         </div>
     </section>
 
+    {{#if (feature "signupForm")}}
+        <Settings::SignupFormEmbed />
+    {{/if}}
+
     {{#if this.showPortalSettings}}
         <GhFullscreenModal
             @modal="portal-settings"
