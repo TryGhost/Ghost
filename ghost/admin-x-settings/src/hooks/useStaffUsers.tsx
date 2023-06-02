@@ -1,6 +1,6 @@
 import {RolesContext} from '../components/providers/RolesProvider';
 import {User} from '../types/api';
-import { UserInvite } from '../utils/api';
+import {UserInvite} from '../utils/api';
 import {UsersContext} from '../components/providers/UsersProvider';
 import {useContext} from 'react';
 
