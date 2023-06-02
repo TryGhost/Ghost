@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/koenig-lexical",
-  "version": "0.2.16",
+  "version": "0.2.17",
   "repository": "https://github.com/TryGhost/Koenig/tree/master/packages/koenig-lexical",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -121,5 +121,6 @@
     "vite": "4.3.8",
     "vite-plugin-svgr": "^3.2.0",
     "vitest": "0.31.3"
-  }
+  },
+  "gitHead": "1b25c63a23285d60d8c938c95240c9f70fd705de"
 }
