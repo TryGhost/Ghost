@@ -26,7 +26,6 @@ export default class SignupFormEmbedModal extends Component {
     @tracked labels = [];
     @tracked backgroundColor = '#F1F3F4';
     @inject config;
-    @service notifications;
 
     static modalOptions = {
         className: 'fullwidth-modal gh-signup-form-embed'
@@ -144,7 +143,6 @@ export default class SignupFormEmbedModal extends Component {
         const el = document.getElementById('gh-signup-form-embed-code-input');
         el.select();
         document.execCommand('copy');
-        this.notifications.showNotification('Code copied to clipboard!');
 
         yield true;
         return true;
