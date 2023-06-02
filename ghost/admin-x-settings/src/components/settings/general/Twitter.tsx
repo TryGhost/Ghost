@@ -65,7 +65,7 @@ const Twitter: React.FC = () => {
                 <div className="mb-4 h-3 w-3/5 rounded bg-grey-200"></div>
                 <SettingGroupContent className="overflow-hidden rounded-md border border-grey-300">
                     <ImageUpload
-                        className="rounded-b-none border-b-0"
+                        fileUploadClassName='flex cursor-pointer items-center justify-center rounded rounded-b-none border border-grey-100 border-b-0 bg-grey-75 p-3 text-sm font-semibold text-grey-800 hover:text-black'
                         height='300px'
                         id='twitter-image'
                         imageURL={twitterImage}
