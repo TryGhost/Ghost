@@ -67,10 +67,11 @@ const Facebook: React.FC = () => {
                         height='300px'
                         id='twitter-image'
                         imageURL={facebookImage}
-                        label='Upload Facebook image'
                         onDelete={handleImageDelete}
                         onUpload={handleImageUpload}
-                    />
+                    >
+                        Upload Facebook image
+                    </ImageUpload>
                     <div className="flex flex-col gap-x-6 gap-y-7 px-4 pb-7">
                         <TextField
                             clearBg={true}
