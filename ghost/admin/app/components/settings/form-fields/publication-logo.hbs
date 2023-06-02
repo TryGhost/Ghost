@@ -24,7 +24,7 @@
                             {{on "click" uploader.triggerFileDialog}}
                             data-test-logo-img
                         >
-                        {{#if (feature 'imageEditor')}}
+                        {{#if (feature 'lexicalEditor')}}
                         <KoenigImageEditor
                             @className="gh-setting-action-smallimg-delete gh-setting-action-smallimg-edit"
                             @imageSrc={{this.settings.logo}}

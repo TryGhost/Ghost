@@ -587,3 +587,5 @@ add|ember-template-lint|no-invalid-interactive|3|4|3|4|1e038cea298e74d9c774ed441
 remove|ember-template-lint|no-invalid-interactive|3|4|3|4|8e05ced79d8f5f5e13cd43033670b3b1e14db3ab|1681776000000|1692144000000|1697328000000|app/components/gh-editor-feature-image.hbs
 remove|ember-template-lint|no-action|21|127|21|127|7233183d00299a45a813392b99c8442210cdaeb3|1681862400000|1692230400000|1697414400000|app/components/modal-post-history.hbs
 remove|ember-template-lint|require-valid-alt-text|13|20|13|20|41dff435a7aba8088be689c6d9b1e76bef081d17|1682035200000|1692403200000|1697587200000|app/components/modal-post-history.hbs
+remove|ember-template-lint|no-invalid-interactive|3|4|3|4|1e038cea298e74d9c774ed441ca6daf50060a8ec|1685318400000|1695686400000|1700874000000|app/components/gh-editor-feature-image.hbs
+add|ember-template-lint|no-invalid-interactive|3|4|3|4|6f7786d5ed3e8c09f39e3595839ee291749aeb01|1685664000000|1696032000000|1701219600000|app/components/gh-editor-feature-image.hbs
