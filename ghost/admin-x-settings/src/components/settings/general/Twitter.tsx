@@ -56,7 +56,7 @@ const Twitter: React.FC = () => {
             <div className="pt-1">
                 <TwitterLogo className='-mb-1 h-10 w-10' />
             </div>
-            <div className="w-full">
+            <div className="mr-[52px] w-full">
                 <div className="mb-2">
                     <span className="mr-1 font-semibold text-grey-900">{siteTitle}</span>
                     <span className="text-grey-700">&#183; 2h</span>
@@ -109,9 +109,7 @@ const Twitter: React.FC = () => {
             onStateChange={handleStateChange}
         >
             {values}
-            <div>
-                {currentState !== 'view' ? inputFields : ''}
-            </div>
+            {currentState !== 'view' ? inputFields : ''}
         </SettingGroup>
     );
 };
