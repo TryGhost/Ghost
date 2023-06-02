@@ -40,7 +40,7 @@ const TextField: React.FC<TextFieldProps> = ({
             {title && <Heading useLabelTag={true}>{title}</Heading>}
             <input
                 ref={inputRef} 
-                className={`border-b ${!clearBg && 'bg-grey-75 px-[10px]'} py-2 ${error ? `border-red` : `border-grey-500 hover:border-grey-700 focus:border-black`} ${(title && !clearBg) && `mt-2`} ${className}`} 
+                className={`border-b ${clearBg ? 'bg-transparent' : 'bg-grey-75 px-[10px]'} py-2 ${error ? `border-red` : `border-grey-500 hover:border-grey-700 focus:border-black`} ${(title && !clearBg) && `mt-2`} ${className}`} 
                 defaultValue={value} 
                 maxLength={maxLength} 
                 placeholder={placeholder}
