@@ -7,7 +7,7 @@ const meta = {
     title: 'Global / Menu',
     component: Menu,
     tags: ['autodocs'],
-    decorators: [(_story: any) => (<div style={{maxWidth: '100px', margin: '0 auto'}}>{_story()}</div>)]
+    decorators: [(_story: any) => (<div style={{maxWidth: '100px', margin: '0 auto', padding: '100px 0 200px'}}>{_story()}</div>)]
 } satisfies Meta<typeof Menu>;
 
 export default meta;
