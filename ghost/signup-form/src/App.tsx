@@ -30,7 +30,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         } as Page);
     };
 
-    const i18n = i18nLib.default('en', 'signup-form');
+    const i18n = i18nLib.default(options.locale, 'signup-form');
     const context: AppContextType = {
         page,
         api,

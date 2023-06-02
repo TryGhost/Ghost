@@ -1,4 +1,5 @@
 import React, {FormEventHandler} from 'react';
+import {useAppContext} from '../../AppContext';
 
 export const FormView: React.FC<FormProps & {
     isMinimal: boolean
@@ -39,6 +40,7 @@ type FormProps = {
 
 const Form: React.FC<FormProps> = ({loading, error, buttonColor, buttonTextColor, onSubmit}) => {
     const [email, setEmail] = React.useState('');
+    const {t} = useAppContext();
 
     const borderStyle = error ? '!border-red-500' : 'border-grey-300';
 
@@ -65,7 +67,7 @@ const Form: React.FC<FormProps> = ({loading, error, buttonColor, buttonTextColor
                     disabled={loading}
                     style={{backgroundColor: buttonColor, color: buttonTextColor}}
                     type='submit'
-                >Subscribe</button>
+                >{t('Subscribe')}</button>
                 {error && <p className='absolute -bottom-4 left-0 pt-0.5 text-red-500' data-testid="error-message">{error}</p>}
             </form>
         </>
