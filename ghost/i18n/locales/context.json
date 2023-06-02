@@ -134,7 +134,6 @@
     "There was a problem submitting your feedback. Please try again a little later.": "An error message for when submitting feedback has failed",
     "This email address will not be used.": "This is in the footer of signup verification emails, and comes right after 'If you did not make this request, you can simply delete this message.'",
     "This site is invite-only, contact the owner for access.": "A message on the member login screen indicating that a site is not-open to public signups",
-    "To complete signup, click the confirmation link in your inbox. If it doesn&apos;t arrive within 3 minutes, check your spam folder!": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "A confirmation message displayed during the signup process, indicating that the person signing up needs to go and check their email - and reminding them to check their spam folder, too",
     "Try free for {{amount}} days, then {{originalPrice}}.": "A label for an offer with a free trial",
     "Unlock access to all newsletters by becoming a paid subscriber.": "A message to encourage members to upgrade to a paid subscription",
