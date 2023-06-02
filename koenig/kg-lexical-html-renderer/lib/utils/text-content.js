@@ -32,11 +32,12 @@ class TextContent {
         }
 
         // remove formats that shouldn't be applied to this node
-        this.currentFormats.forEach((format) => {
+        // NOTE: ensure we're working with a copy of the array otherwise forEach bails early when we use .shift()
+        Array.from(this.currentFormats).forEach((format) => {
             if (!node.hasFormat(format)) {
                 this.currentFormats.shift();
                 this.currentNode = this.currentFormats[0]
-                    ? this.currentNode.closest(FORMAT_TAG_MAP[this.currentFormats[0]])
+                    ? this.currentNode.parentNode
                     : this.root;
             }
         });

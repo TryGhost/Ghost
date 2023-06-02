@@ -63,12 +63,12 @@ describe('Format combinations', function () {
         output: `<p><em>Italic <strong>Strong</strong></em></p>`
     }));
 
-    it.skip('bold+italic+bold', shouldRender({
+    it('bold+italic+bold', shouldRender({
         input: `{"root":{"children":[{"children":[{"detail":0,"format":1,"mode":"normal","style":"","text":"Strong ","type":"text","version":1},{"detail":0,"format":3,"mode":"normal","style":"","text":"Italic","type":"text","version":1},{"detail":0,"format":1,"mode":"normal","style":"","text":" Strong","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
         output: `<p><strong>Strong <em>Italic</em> Strong</strong></p>`
     }));
 
-    it.skip('italic+bold+italic', shouldRender({
+    it('italic+bold+italic', shouldRender({
         input: `{"root":{"children":[{"children":[{"detail":0,"format":2,"mode":"normal","style":"","text":"Italic ","type":"text","version":1},{"detail":0,"format":3,"mode":"normal","style":"","text":"Strong","type":"text","version":1},{"detail":0,"format":2,"mode":"normal","style":"","text":" Italic","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
         output: `<p><em>Italic <strong>Strong</strong> Italic</em></p>`
     }));
