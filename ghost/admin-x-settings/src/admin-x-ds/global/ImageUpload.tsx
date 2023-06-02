@@ -14,7 +14,6 @@ interface ImageUploadProps {
     deleteButtonContent?: React.ReactNode;
     onUpload: (file: File) => void;
     onDelete: () => void;
-    className?: string;
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -28,8 +27,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     deleteButtonClassName = 'invisible absolute right-4 top-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible',
     deleteButtonContent = <Icon color='white' name='trash' size='sm' />,
     onUpload,
-    onDelete,
-    className
+    onDelete
 }) => {
     if (imageURL) {
         return (
