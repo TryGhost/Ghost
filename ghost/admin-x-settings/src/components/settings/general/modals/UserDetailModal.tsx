@@ -299,14 +299,22 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
     const [userData, setUserData] = useState(user);
     const [saveState, setSaveState] = useState('');
 
-    const items = [
+    const menuItems = [
         {
-            id: 'view-user-activity',
-            label: 'View user activity'
+            id: 'make-owner',
+            label: 'Make owner'
+        },
+        {
+            id: 'delete-user',
+            label: 'Delete user'
         },
         {
             id: 'suspend-user',
             label: 'Suspend user'
+        },
+        {
+            id: 'view-user-activity',
+            label: 'View user activity'
         }
     ];
 
@@ -341,7 +349,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                         <div className='absolute inset-0 z-0 block bg-gradient-to-tr from-[rgba(0,0,0,0.5)] to-[rgba(0,0,0,0.01)]'></div>
                     )}
                     <div className="absolute right-8 top-8">
-                        <Menu items={items} position='left' trigger={<IconButton iconName='menu-horizontal'></IconButton>}></Menu>
+                        <Menu items={menuItems} position='left' trigger={<IconButton iconName='menu-horizontal'></IconButton>}></Menu>
                     </div>
                     <div className='relative z-10 mt-60 flex gap-4'>
                         <Avatar bgColor={generateAvatarColor((userData.name ? userData.name : userData.email))} className='-ml-1' image={userData.profile_image} label={getInitials(userData.name)} labelColor='white' size='xl' />
