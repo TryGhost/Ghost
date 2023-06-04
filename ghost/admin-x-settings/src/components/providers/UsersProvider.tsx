@@ -8,6 +8,7 @@ interface UsersContextProps {
     invites: UserInvite[];
     currentUser: User|null;
     updateUser?: (user: User) => Promise<void>;
+    setInvites: (invites: UserInvite[]) => void;
 }
 
 interface UsersProviderProps {
@@ -17,7 +18,8 @@ interface UsersProviderProps {
 const UsersContext = createContext<UsersContextProps>({
     users: [],
     invites: [],
-    currentUser: null
+    currentUser: null,
+    setInvites: () => {}
 });
 
 const UsersProvider: React.FC<UsersProviderProps> = ({children}) => {
@@ -66,7 +68,8 @@ const UsersProvider: React.FC<UsersProviderProps> = ({children}) => {
             users,
             invites,
             currentUser,
-            updateUser
+            updateUser,
+            setInvites
         }}>
             {children}
         </UsersContext.Provider>

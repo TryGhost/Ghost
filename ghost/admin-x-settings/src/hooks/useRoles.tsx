@@ -4,13 +4,25 @@ import {useContext} from 'react';
 
 export type RolesHook = {
     roles: UserRole[];
+    assignableRoles: UserRole[];
+    getRoleId: (roleName: string, roles: UserRole[]) => string;
 };
 
+function getRoleId(roleName: string, roles: UserRole[]): string {
+    const role = roles.find((r) => {
+        return r.name.toLowerCase() === roleName?.toLowerCase();
+    });
+
+    return role?.id || '';
+}
+
 const useRoles = (): RolesHook => {
-    const {roles} = useContext(RolesContext);
+    const {roles, assignableRoles} = useContext(RolesContext);
 
     return {
-        roles
+        roles,
+        assignableRoles,
+        getRoleId
     };
 };
 
