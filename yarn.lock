@@ -6922,10 +6922,10 @@
     lodash "^4.17.21"
     luxon "^3.3.0"
 
-"@tryghost/kg-lexical-html-renderer@0.1.50":
-  version "0.1.50"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-0.1.50.tgz#6dca43455d4e43e794ab1047f0f76ac749e1f1e0"
-  integrity sha512-SCU1RIs5xXJEAGdP2/Gs+5/JfZJJfVmneZHv8rGyrkOED0mLTzf2uCY8/et8GGvQvf39krCxYPePzlUmZ7SCTA==
+"@tryghost/kg-lexical-html-renderer@0.1.51":
+  version "0.1.51"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-0.1.51.tgz#9ac66fb3a037c5e23329ddd267325705dd145170"
+  integrity sha512-dMt6A4nk9K3Vsgk3Z+10DqhZfyjh9Rf6QXgh6Nq7fXg3WvN+8dDCWqv63H0Z1SeYQEYTAcbgtr5IhnlI2sqjgg==
   dependencies:
     "@lexical/clipboard" "^0.11.0"
     "@lexical/code" "^0.11.0"
