@@ -14,6 +14,7 @@ export type UsersHook = {
     contributorUsers: User[];
     currentUser: User|null;
     updateUser?: (user: User) => Promise<void>;
+    setInvites: (invites: UserInvite[]) => void;
 };
 
 function getUsersByRole(users: User[], role: string): User[] {
@@ -29,7 +30,7 @@ function getOwnerUser(users: User[]): User {
 }
 
 const useStaffUsers = (): UsersHook => {
-    const {users, currentUser, updateUser, invites} = useContext(UsersContext);
+    const {users, currentUser, updateUser, invites, setInvites} = useContext(UsersContext);
     const {roles} = useContext(RolesContext);
     const ownerUser = getOwnerUser(users);
     const adminUsers = getUsersByRole(users, 'Administrator');
@@ -45,6 +46,7 @@ const useStaffUsers = (): UsersHook => {
             role: role?.name
         };
     });
+
     return {
         users,
         ownerUser,
@@ -54,7 +56,8 @@ const useStaffUsers = (): UsersHook => {
         contributorUsers,
         currentUser,
         invites: mappedInvites,
-        updateUser
+        updateUser,
+        setInvites
     };
 };
 

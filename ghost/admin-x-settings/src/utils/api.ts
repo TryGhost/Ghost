@@ -68,6 +68,12 @@ interface RequestOptions {
     };
 }
 
+interface BrowseRoleOptions {
+    queryParams: {
+        [key: string]: string;
+    }
+}
+
 interface UpdatePasswordOptions {
     newPassword: string;
     confirmNewPassword: string;
@@ -87,7 +93,7 @@ interface API {
         updatePassword: (options: UpdatePasswordOptions) => Promise<PasswordUpdateResponseType>;
     };
     roles: {
-        browse: () => Promise<RolesResponseType>;
+        browse: (options?: BrowseRoleOptions) => Promise<RolesResponseType>;
     };
     site: {
         browse: () => Promise<SiteResponseType>;
@@ -97,6 +103,13 @@ interface API {
     };
     invites: {
         browse: () => Promise<InvitesResponseType>;
+        add: ({email, roleId} : {
+            email: string;
+            roleId: string;
+            expires?: number;
+            status?: string;
+            token?: string;
+        }) => Promise<InvitesResponseType>;
     }
 }
 
@@ -195,8 +208,14 @@ function setupGhostApi({ghostVersion}: GhostApiOptions): API {
             }
         },
         roles: {
-            browse: async () => {
-                const response = await fetcher(`/roles/?limit=all`, {});
+            browse: async (options?: BrowseRoleOptions) => {
+                const queryParams = options?.queryParams || {};
+                queryParams.limit = 'all';
+                const queryString = Object.keys(options?.queryParams || {})
+                    .map(key => `${key}=${options?.queryParams[key]}`)
+                    .join('&');
+
+                const response = await fetcher(`/roles/?${queryString}`, {});
                 const data: RolesResponseType = await response.json();
                 return data;
             }
@@ -226,6 +245,23 @@ function setupGhostApi({ghostVersion}: GhostApiOptions): API {
         invites: {
             browse: async () => {
                 const response = await fetcher(`/invites/`, {});
+                const data: InvitesResponseType = await response.json();
+                return data;
+            },
+            add: async ({email, roleId}) => {
+                const payload = JSON.stringify({
+                    invites: [{
+                        email: email,
+                        role_id: roleId,
+                        expires: null,
+                        status: null,
+                        token: null
+                    }]
+                });
+                const response = await fetcher(`/invites/`, {
+                    method: 'POST',
+                    body: payload
+                });
                 const data: InvitesResponseType = await response.json();
                 return data;
             }
