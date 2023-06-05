@@ -379,5 +379,40 @@ describe('Collections API', function () {
                     collections: [buildMatcher(7)]
                 });
         });
+
+        it('Creates an automatic Collection with a relational tag filter', async function () {
+            const collection = {
+                title: 'Test Collection with relational tag filter',
+                description: 'Test Collection Description with relational tag filter',
+                type: 'automatic',
+                filter: 'tag:kitchen-sink'
+            };
+
+            const automaticTagCollection = await agent
+                .post('/collections/')
+                .body({
+                    collections: [collection]
+                })
+                .expectStatus(201)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('collections')
+                })
+                .matchBodySnapshot({
+                    collections: [buildMatcher(2)]
+                });
+
+            const kitchenSinkTagPosts = await agent
+                .get('/posts/?filter=tag:kitchen-sink');
+
+            assert.equal(automaticTagCollection.body.collections[0].posts.length, 2);
+            assert.equal(kitchenSinkTagPosts.body.posts.length, 2);
+
+            const collectionPostIds = automaticTagCollection.body.collections[0].posts.map(p => p.id);
+            const tagFilteredPosts = kitchenSinkTagPosts.body.posts.map(p => p.id);
+
+            assert.deepEqual(collectionPostIds, tagFilteredPosts);
+        });
     });
 });
