@@ -26,7 +26,7 @@ describe('i18n', function () {
             });
 
             it('can translate `Now check your email!`', function () {
-                assert.equal(t('Now check your email!'), 'Nou kyk na u e-pos!');
+                assert.equal(t('Now check your email!'), 'Kyk nou in jou e-pos!');
             });
         });
     });
