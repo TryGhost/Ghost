@@ -139,6 +139,33 @@ export class CollectionsService {
         return this.toDTO(collection);
     }
 
+    async #updateAutomaticCollectionItems(collection: Collection, filter?:string) {
+        const collectionFilter = filter || collection.filter;
+
+        if (collectionFilter) {
+            const posts = await this.postsRepository.getAll({
+                filter: collectionFilter
+            });
+
+            collection.removeAllPosts();
+
+            for (const post of posts) {
+                collection.addPost(post);
+            }
+        }
+    }
+
+    async updateAutomaticCollections() {
+        const collections = await this.collectionsRepository.getAll({
+            filter: 'type:automatic'
+        });
+
+        for (const collection of collections) {
+            await this.#updateAutomaticCollectionItems(collection);
+            await this.collectionsRepository.save(collection);
+        }
+    }
+
     async edit(data: any): Promise<CollectionDTO | null> {
         const collection = await this.collectionsRepository.getById(data.id);
 
@@ -153,15 +180,7 @@ export class CollectionsService {
         }
 
         if ((collection.type === 'automatic' || data.type === 'automatic') && data.filter) {
-            const posts = await this.postsRepository.getAll({
-                filter: data.filter
-            });
-
-            collection.removeAllPosts();
-
-            for (const post of posts) {
-                collection.addPost(post);
-            }
+            await this.#updateAutomaticCollectionItems(collection, data.filter);
         }
 
         const collectionData = this.fromDTO(data);

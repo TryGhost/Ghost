@@ -8,6 +8,7 @@ class CollectionsServiceWrapper {
 
     constructor() {
         const models = require('../../models');
+        const events = require('../../lib/common/events');
         const collectionsRepositoryInMemory = new CollectionsRepositoryInMemory();
 
         const collectionsService = new CollectionsService({
@@ -21,6 +22,17 @@ class CollectionsServiceWrapper {
                 }
             }
         });
+
+        // @NOTE: these should be reworked to use the "Event" classes
+        //        instead of Bookshelf model events
+        const updateEvents = require('./update-events');
+
+        // @NOTE: naive update implementation to keep things simple for the first version
+        for (const event of updateEvents) {
+            events.on(event, () => {
+                collectionsService.updateAutomaticCollections();
+            });
+        }
 
         this.api = {
             browse: collectionsService.getAll.bind(collectionsService),
