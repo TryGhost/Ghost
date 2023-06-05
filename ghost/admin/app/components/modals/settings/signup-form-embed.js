@@ -103,7 +103,7 @@ export default class SignupFormEmbedModal extends Component {
 
         if (preview) {
             if (this.style === 'minimal') {
-                style = 'max-width: 500px;position: absolute; left: 50%; top:50%; transform: translate(-50%, -50%);';
+                style = 'max-width: 400px;width: 100%;position: absolute; left: 50%; top:50%; transform: translate(-50%, -50%);';
             } else {
                 style = 'height: 100vh';
             }
