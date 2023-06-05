@@ -1,39 +1,49 @@
 import Modal from './Modal';
-import NiceModal from '@ebay/nice-modal-react';
-import React from 'react';
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import React, {useState} from 'react';
 
 export interface ConfirmationModalProps {
     title?: string;
     prompt?: React.ReactNode;
     cancelLabel?: string;
     okLabel?: string;
+    okRunningLabel?: string;
     okColor?: string;
     onCancel?: () => void;
-    onOk?: () => void;
+    onOk?: (modal?: {
+        remove: () => void;
+    }) => void;
     customFooter?: React.ReactNode;
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
-    title = 'Are you sure?', 
+    title = 'Are you sure?',
     prompt,
-    cancelLabel = 'Cancel', 
-    okLabel = 'OK', 
+    cancelLabel = 'Cancel',
+    okLabel = 'OK',
+    okRunningLabel = '...',
     okColor = 'black',
-    onCancel, 
-    onOk, 
+    onCancel,
+    onOk,
     customFooter
 }) => {
+    const modal = useModal();
+    const [taskState, setTaskState] = useState<'running' | ''>('');
     return (
-        <Modal 
+        <Modal
             backDrop={false}
             cancelLabel={cancelLabel}
             customFooter={customFooter}
             okColor={okColor}
-            okLabel={okLabel}
+            okLabel={taskState === 'running' ? okRunningLabel : okLabel}
             size={540}
             title={title}
             onCancel={onCancel}
-            onOk={onOk}
+            onOk={async () => {
+                setTaskState('running');
+                await onOk?.(modal);
+                setTaskState('');
+            }}
         >
             <div className='py-4'>
                 {prompt}

@@ -416,22 +416,37 @@ const confirmDelete = () => {
     });
 };
 
-const confirmSuspend = () => {
-    NiceModal.show(ConfirmationModal, {
-        title: 'Are you sure you want to suspend this user?',
-        prompt: (
-            <>
-                <strong>WARNING:</strong> This user will no longer be able to log in but their posts will be kept.
-            </>
-        ),
-        okLabel: 'Suspend',
-        okColor: 'red'
-    });
-};
-
 const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
+    const {api} = useContext(ServicesContext);
     const [userData, setUserData] = useState(user);
     const [saveState, setSaveState] = useState('');
+
+    const confirmSuspend = (_user: User) => {
+        let warningText = 'This user will no longer be able to log in but their posts will be kept.';
+        if (_user.status === 'inactive') {
+            warningText = 'This user will be able to log in again and will have the same permissions they had previously.';
+        }
+        NiceModal.show(ConfirmationModal, {
+            title: 'Are you sure you want to suspend this user?',
+            prompt: (
+                <>
+                    <strong>WARNING:</strong> {warningText}
+                </>
+            ),
+            okLabel: _user.status === 'inactive' ? 'Un-suspend' : 'Suspend',
+            okRunningLabel: _user.status === 'inactive' ? 'Un-suspending...' : 'Suspending...',
+            okColor: 'red',
+            onOk: async (modal) => {
+                await api.users.edit({
+                    ..._user,
+                    status: _user.status === 'inactive' ? 'active' : 'inactive'
+                });
+                modal?.remove();
+            }
+        });
+    };
+
+    let suspendUserLabel = user?.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
 
     const menuItems = [
         {
@@ -442,12 +457,16 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
         {
             id: 'delete-user',
             label: 'Delete user',
-            onClick: confirmDelete
+            onClick: () => {
+                confirmDelete();
+            }
         },
         {
             id: 'suspend-user',
-            label: 'Suspend user',
-            onClick: confirmSuspend
+            label: suspendUserLabel,
+            onClick: () => {
+                confirmSuspend(user);
+            }
         },
         {
             id: 'view-user-activity',
@@ -470,6 +489,8 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
     }, [saveState]);
 
     const fileUploadButtonClasses = 'absolute right-[104px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium z-10';
+
+    const suspendedText = user.status === 'inactive' ? ' (Suspended)' : '';
 
     return (
         <Modal
@@ -522,11 +543,11 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                             <Icon color='white' name='user-add' size='lg' />
                         </ImageUpload>
                         <div>
-                            <Heading styles='text-white'>{user.name}</Heading>
+                            <Heading styles='text-white'>{user.name}{suspendedText}</Heading>
                             <span className='text-md font-semibold text-white'>Administrator</span>
                         </div>
                     </div>
-                </div>                
+                </div>
                 <div className='mt-10 grid grid-cols-2 gap-x-12 gap-y-20 pb-10'>
                     <Basic setUserData={setUserData} user={userData} />
                     <Details setUserData={setUserData} user={userData} />
