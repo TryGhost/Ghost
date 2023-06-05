@@ -6,7 +6,8 @@ export class CollectionsRepositoryInMemory extends InMemoryRepository<string, Co
         return {
             title: entity.title,
             description: entity.description,
-            feature_image: entity.featureImage
+            feature_image: entity.featureImage,
+            type: entity.type
         };
     }
 }
