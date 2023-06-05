@@ -8,6 +8,7 @@ export type SaveState = 'saving' | 'saved' | 'error' | '';
 
 interface SettingGroupProps {
     navid?:string;
+    testId?: string;
     title?: string;
     description?: React.ReactNode;
     state?: TSettingGroupStates;
@@ -34,6 +35,7 @@ interface SettingGroupProps {
 
 const SettingGroup: React.FC<SettingGroupProps> = ({
     navid,
+    testId,
     title,
     description,
     state,
@@ -128,7 +130,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     }
 
     return (
-        <div className={`relative flex flex-col gap-6 rounded ${border && 'border p-5 md:p-7'} ${styles}`}>
+        <div className={`relative flex flex-col gap-6 rounded ${border && 'border p-5 md:p-7'} ${styles}`} data-testid={testId}>
             <div className='absolute top-[-60px]' id={navid && navid}></div>
             {customHeader ? customHeader :
                 <SettingGroupHeader description={description} title={title!}>

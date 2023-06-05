@@ -124,3 +124,4 @@ const SettingsProvider: React.FC<SettingsProviderProps> = ({children}) => {
 };
 
 export {SettingsContext, SettingsProvider};
+

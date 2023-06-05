@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useId} from 'react';
 
 import Heading from './Heading';
 import Hint from './Hint';
@@ -20,6 +20,8 @@ interface TextAreaProps {
 }
 
 const TextArea: React.FC<TextAreaProps> = ({inputRef, title, value, rows = 3, maxLength, resize = 'none', error, placeholder, hint, clearBg = false, onChange, ...props}) => {
+    const id = useId();
+
     let styles = `border-b ${clearBg ? 'bg-transparent' : 'bg-grey-75 px-[10px]'} py-2 ${error ? `border-red` : `border-grey-500 hover:border-grey-700 focus:border-black`} ${(title && !clearBg) && `mt-2`}`;
 
     switch (resize) {
@@ -42,11 +44,12 @@ const TextArea: React.FC<TextAreaProps> = ({inputRef, title, value, rows = 3, ma
 
     return (
         <div className='flex flex-col'>
-            {title && <Heading useLabelTag={true}>{title}</Heading>}
+            {title && <Heading htmlFor={id} useLabelTag={true}>{title}</Heading>}
             <textarea
-                ref={inputRef} 
+                ref={inputRef}
                 className={styles}
-                defaultValue={value} 
+                defaultValue={value}
+                id={id}
                 maxLength={maxLength}
                 placeholder={placeholder}
                 rows={rows}
