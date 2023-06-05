@@ -26,12 +26,12 @@ const GA_FEATURES = [
 const BETA_FEATURES = [
     'i18n',
     'activitypub',
-    'webmentions'
+    'webmentions',
+    'lexicalEditor'
 ];
 
 const ALPHA_FEATURES = [
     'urlCache',
-    'lexicalEditor',
     'lexicalMultiplayer',
     'websockets',
     'stripeAutomaticTax',
