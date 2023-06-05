@@ -26,7 +26,7 @@ const Toast: React.FC<ToastProps> = ({
     children,
     props
 }) => {
-    let classNames = `flex w-[300px] items-start justify-between rounded py-3 px-4 text-sm font-medium text-white gap-6`;
+    let classNames = `flex w-[300px] items-start justify-between rounded py-3 px-4 text-sm font-medium text-white gap-6 z-[90] `;
 
     if (t.visible) {
         classNames += ' animate-toaster-in';
