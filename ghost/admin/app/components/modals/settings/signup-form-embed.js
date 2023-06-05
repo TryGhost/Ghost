@@ -89,7 +89,9 @@ export default class SignupFormEmbedModal extends Component {
         let style = 'min-height: 58px';
 
         if (this.style === 'all-in-one') {
-            options.logo = this.settings.icon;
+            // We serve twice the size of the icon to support high resolution screens
+            // (note that you'll need to change the resolution in the backend config as well, as not all resolutions are supported)
+            options.logo = this.settings.icon.replace(/\/content\/images\//, '/content/images/size/w128h128/');
             options.title = this.settings.title;
             options.description = this.settings.description;
 
