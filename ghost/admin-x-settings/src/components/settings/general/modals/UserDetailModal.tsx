@@ -573,7 +573,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                         </ImageUpload>
                         <div>
                             <Heading styles='text-white'>{user.name}{suspendedText}</Heading>
-                            <span className='text-md font-semibold text-white'>Administrator</span>
+                            <span className='text-md font-semibold capitalize text-white'>{user.roles[0].name.toLowerCase()}</span>
                         </div>
                     </div>
                 </div>
