@@ -13,7 +13,11 @@ export function buildCardMenu(nodes, {query, config} = {}) {
             return;
         }
 
-        if (query && (!item.matches || !item.matches.find(m => m.startsWith(query)))) {
+        const matches = typeof item?.matches === 'function'
+            ? item?.matches?.(query, item.label)
+            : item?.matches?.find?.(m => m.startsWith(query));
+
+        if (query && !matches) {
             return;
         }
 
@@ -79,7 +83,7 @@ function buildSnippetMenuItem(data, config) {
         label: data.name,
         Icon: SnippetCardIcon,
         section: 'Snippets',
-        matches: [name],
+        matches: query => name.indexOf(query) > -1,
         insertCommand: INSERT_SNIPPET_COMMAND,
         insertParams: data,
         onRemove: () => config.deleteSnippet(data)

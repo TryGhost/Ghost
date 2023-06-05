@@ -73,6 +73,7 @@ We use [Vitest](https://vitest.dev) for unit tests and [Playwright](https://play
 - `yarn test` runs all tests and exits
 - `yarn test:unit` runs unit tests
 - `yarn test:unit:watch` runs unit tests and starts a test watcher that re-runs tests on file changes
+- `yarn test:unit:watch --ui` runs unit tests and opens a browser UI for exploring and re-running tests
 - `yarn test:e2e` runs e2e tests
 - `yarn test:e2e --headed` runs tests in browser so you can watch the tests execute
 - `yarn test:slowmo` same as `yarn test:e2e --headed` but adds 100ms delay between instructions to make it easier to see what's happening (note that some tests may fail or timeout due to the added delays)

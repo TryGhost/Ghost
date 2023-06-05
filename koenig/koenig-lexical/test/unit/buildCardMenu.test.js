@@ -334,5 +334,80 @@ describe('buildCardMenu', function () {
                 ]]
             ]));
         });
+
+        it('can pass function to matches', async function () {
+            const matchFn = (query, label) => label.includes(query);
+            const nodes = [
+                ['one', {kgMenu: {
+                    label: 'One wow',
+                    desc: 'Card test one',
+                    Icon,
+                    insertCommand: 'insert_card_one',
+                    matches: matchFn
+                }}],
+                ['two', {kgMenu: {
+                    label: 'Two',
+                    desc: 'Card test two',
+                    Icon,
+                    insertCommand: 'insert_card_two',
+                    matches: matchFn
+                }}]
+            ];
+
+            const cardMenu = buildCardMenu(nodes, {query: 'wow'});
+
+            expect(cardMenu.menu).deep.equal(new Map([
+                ['Primary', [
+                    {
+                        label: 'One wow',
+                        desc: 'Card test one',
+                        Icon,
+                        insertCommand: 'insert_card_one',
+                        matches: matchFn,
+                        nodeType: 'one'
+                    }
+                ]]
+            ]));
+        });
+
+        it('can filter snippets', async function () {
+            const snippets = [{name: 'One snippet'}, {name: 'Two snippet'}];
+            const cardMenu = buildCardMenu([], {query: 'snip', config: {snippets}});
+
+            expect(cardMenu.menu).toEqual(new Map([
+                ['Snippets', [
+                    {
+                        Icon: expect.any(Function),
+                        insertCommand: {},
+                        insertParams: {
+                            name: 'One snippet'
+                        },
+                        label: 'One snippet',
+                        matches: expect.any(Function),
+                        onRemove: expect.any(Function),
+                        section: 'Snippets',
+                        type: 'snippet'
+                    },
+                    {
+                        Icon: expect.any(Function),
+                        insertCommand: {},
+                        insertParams: {
+                            name: 'Two snippet'
+                        },
+                        label: 'Two snippet',
+                        matches: expect.any(Function),
+                        onRemove: expect.any(Function),
+                        section: 'Snippets',
+                        type: 'snippet'
+                    }
+                ]]
+            ]));
+        });
+
+        it('returns empty value if no snippet matches ', async function () {
+            const snippets = [{name: 'One snippet'}, {name: 'Two snippet'}];
+            const cardMenu = buildCardMenu([], {query: 'sniptr', config: {snippets}});
+            expect(cardMenu.menu).deep.equal(new Map());
+        });
     });
 });
