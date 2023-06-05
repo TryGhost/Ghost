@@ -354,5 +354,30 @@ describe('Collections API', function () {
                     collections: [buildMatcher(2)]
                 });
         });
+
+        it('Creates an automatic Collection with a published_at filter', async function () {
+            const collection = {
+                title: 'Test Collection with published_at filter',
+                description: 'Test Collection Description with published_at filter',
+                type: 'automatic',
+                // should return all available posts
+                filter: 'published_at:>=2022-05-25'
+            };
+
+            await agent
+                .post('/collections/')
+                .body({
+                    collections: [collection]
+                })
+                .expectStatus(201)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('collections')
+                })
+                .matchBodySnapshot({
+                    collections: [buildMatcher(7)]
+                });
+        });
     });
 });
