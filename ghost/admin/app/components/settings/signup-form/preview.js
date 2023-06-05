@@ -5,6 +5,7 @@ import {tracked} from '@glimmer/tracking';
 export default class Preview extends Component {
     iframe;
     iframeRoot;
+    isContentLoaded = false;
 
     /**
      * When updating the frame, to avoid layout jumps, we'll reuse the last known height
@@ -15,7 +16,9 @@ export default class Preview extends Component {
     @action
     onLoad(event) {
         this.iframe = event.currentTarget;
-        this.updateContent();
+        if (!this.isContentLoaded) {
+            this.updateContent();
+        }
         this.onResize();
         (new ResizeObserver(() => this.onResize(this.iframeRoot)))?.observe?.(this.iframeRoot);
     }
@@ -33,6 +36,10 @@ export default class Preview extends Component {
         this.iframe.contentWindow.document.close();
 
         this.iframeRoot = this.iframe.contentDocument.body;
+
+        // fix for Safari causing the iframe load to inifite loop
+        // Set the flag indicating the content has been loaded
+        this.isContentLoaded = true;
     }
 
     @action
