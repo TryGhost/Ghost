@@ -5,16 +5,33 @@ import NiceModal from '@ebay/nice-modal-react';
 import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
 import {ServicesProvider} from './components/providers/ServiceProvider';
+import {Toaster} from 'react-hot-toast';
+import {showToast} from './admin-x-ds/global/Toast';
 
 interface AppProps {
     ghostVersion: string;
 }
 
 function App({ghostVersion}: AppProps) {
+    // const notify = () => toast.success('Here is your toast.', {
+    //     duration: 10000000,
+    //     position: 'bottom-left'
+    // });
+
+    const notify = () => showToast({
+        message: 'Hello toast',
+        options: {
+            duration: 1000000,
+            position: 'bottom-left'
+        }
+    });
+
     return (
         <ServicesProvider ghostVersion={ghostVersion}>
             <DataProvider>
                 <div className="admin-x-settings">
+                    <Toaster />
+                    <button type='button' onClick={notify}>Make me a toast</button>
                     <NiceModal.Provider>
                         <div className='fixed left-6 top-4'>
                             <Button label='&larr; Done' link={true} onClick={() => window.history.back()} />
