@@ -1,8 +1,7 @@
-import React, {useEffect} from 'react';
+import React, {useContext, useEffect, useReducer, useRef, useState} from 'react';
 import {SaveState, TSettingGroupStates} from '../admin-x-ds/settings/SettingGroup';
 import {Setting, SettingValue, SiteData} from '../types/api';
 import {SettingsContext} from '../components/providers/SettingsProvider';
-import {useContext, useReducer, useRef, useState} from 'react';
 
 interface LocalSetting extends Setting {
     dirty?: boolean;
@@ -85,6 +84,17 @@ const useSettingGroup = (): SettingGroupHook => {
             }, 2000);
         }
     }, [saveState]);
+
+    // reset the local state when there's a new settings API response, unless currently editing
+    useEffect(() => {
+        if (saveState === 'saving' || currentState === 'view') {
+            dispatch({
+                type: 'resetAll',
+                payload: settings || []
+            });
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [settings]);
 
     // function to save the changed settings via API
     const handleSave = async () => {

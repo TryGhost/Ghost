@@ -70,6 +70,7 @@ const TitleAndDescription: React.FC = () => {
             navid='title-and-description'
             saveState={saveState}
             state={currentState}
+            testId='title-and-description'
             title='Title & description'
             onCancel={handleCancel}
             onSave={handleSave}
