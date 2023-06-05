@@ -22,6 +22,12 @@ export interface UsersResponseType {
     users: User[];
 }
 
+export interface DeleteUserResponse {
+    meta: {
+        filename: string;
+    }
+}
+
 export interface RolesResponseType {
     meta?: Meta;
     roles: UserRole[];
@@ -90,6 +96,7 @@ interface API {
         browse: () => Promise<UsersResponseType>;
         currentUser: () => Promise<User>;
         edit: (editedUser: User) => Promise<UsersResponseType>;
+        delete: (userId: string) => Promise<DeleteUserResponse>;
         updatePassword: (options: UpdatePasswordOptions) => Promise<PasswordUpdateResponseType>;
     };
     roles: {
@@ -204,6 +211,13 @@ function setupGhostApi({ghostVersion}: GhostApiOptions): API {
                     body: payload
                 });
                 const data: PasswordUpdateResponseType = await response.json();
+                return data;
+            },
+            delete: async (userId: string) => {
+                const response = await fetcher(`/users/${userId}/`, {
+                    method: 'DELETE'
+                });
+                const data: DeleteUserResponse = await response.json();
                 return data;
             }
         },
