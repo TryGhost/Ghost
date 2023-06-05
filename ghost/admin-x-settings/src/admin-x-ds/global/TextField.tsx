@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useId} from 'react';
 
 import Heading from './Heading';
 import Hint from './Hint';
@@ -35,14 +35,17 @@ const TextField: React.FC<TextFieldProps> = ({
     maxLength,
     ...props
 }) => {
+    const id = useId();
+
     return (
         <div className='flex flex-col'>
-            {title && <Heading useLabelTag={true}>{title}</Heading>}
+            {title && <Heading htmlFor={id} useLabelTag={true}>{title}</Heading>}
             <input
-                ref={inputRef} 
-                className={`border-b ${clearBg ? 'bg-transparent' : 'bg-grey-75 px-[10px]'} py-2 ${error ? `border-red` : `border-grey-500 hover:border-grey-700 focus:border-black`} ${(title && !clearBg) && `mt-2`} ${className}`} 
-                defaultValue={value} 
-                maxLength={maxLength} 
+                ref={inputRef}
+                className={`border-b ${clearBg ? 'bg-transparent' : 'bg-grey-75 px-[10px]'} py-2 ${error ? `border-red` : `border-grey-500 hover:border-grey-700 focus:border-black`} ${(title && !clearBg) && `mt-2`} ${className}`}
+                defaultValue={value}
+                id={id}
+                maxLength={maxLength}
                 placeholder={placeholder}
                 type={type}
                 onBlur={onBlur}
