@@ -3078,21 +3078,6 @@ p.theme-validation-details {
     margin: 6vw 0;
 }
 
-.gh-signup-form-iframe {
-    width: 100%;
-    border: 0;
-    opacity: 1;
-    z-index: 0;
-    transition: none;
-}
-
-.gh-signup-form-iframe.gh-iframe-hidden {
-    opacity: 0;
-    z-index: 1;
-    transition: 0.3s opacity;
-    pointer-events: none;
-}
-
 .fullwidth-modal {
     max-width: 100%;
 }
@@ -3110,14 +3095,31 @@ p.theme-validation-details {
     position: relative;
     margin: 1.6rem;
     margin-right: 0;
+    overflow: hidden;
 }
 
-.modal-signup-form-embed-preview iframe {
+.gh-signup-form-iframe {
     position: absolute;
     top: 0;
     left: 0;
     height: 100%;
     width: 100%;
+    border: 0;
+    opacity: 1;
+    z-index: 0;
+    transition: none;
+}
+
+.gh-signup-form-iframe.gh-iframe-hidden {
+    opacity: 0;
+    z-index: 1;
+    transition: 0.3s opacity;
+    pointer-events: none;
+}
+
+.gh-signup-form-iframe.gh-style-minimal {
+    width: 200%;
+    left: -50%;
 }
 
 .modal-signup-form-embed-main {
