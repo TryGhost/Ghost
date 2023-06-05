@@ -9,8 +9,8 @@ export default class Preview extends Component {
 
     @tracked
         iframes = [
-            {element: null, html: '', loading: true},
-            {element: null, html: '', loading: true}
+            {element: null, html: '', loading: true, style: ''},
+            {element: null, html: '', loading: true, style: ''}
         ];
 
     @tracked
@@ -18,6 +18,14 @@ export default class Preview extends Component {
 
     get visibleHtml() {
         return this.iframes[this.visibleIframeIndex].html;
+    }
+
+    get firstIframeStyle() {
+        return this.iframes[0].style;
+    }
+
+    get secondIframeStyle() {
+        return this.iframes[1].style;
     }
 
     @action
@@ -37,6 +45,9 @@ export default class Preview extends Component {
             // Finished loading this iframe
             iframe.loading = false;
             this.visibleIframeIndex = index;
+
+            // Force tracked update
+            this.iframes = [...this.iframes];
         }
     }
 
@@ -65,10 +76,14 @@ export default class Preview extends Component {
         iframe.loading = true;
         const html = `<html><head><style>body, html {padding: 0; margin: 0;}</style></head><body>${this.args.html}</body></html>`;
         iframe.html = this.args.html;
+        iframe.style = this.args.style;
 
         // Set the iframe's new HTML
         iframe.element.contentWindow.document.open();
         iframe.element.contentWindow.document.write(html);
         iframe.element.contentWindow.document.close();
+
+        // Force tracked update
+        this.iframes = [...this.iframes];
     }
 }
