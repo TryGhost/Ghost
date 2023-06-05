@@ -13,7 +13,7 @@ import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupCon
 import TextField from '../../../../admin-x-ds/global/TextField';
 import Toggle from '../../../../admin-x-ds/global/Toggle';
 import useRoles from '../../../../hooks/useRoles';
-import {ServicesContext} from '../../../providers/ServiceProvider';
+import {FileService, ServicesContext} from '../../../providers/ServiceProvider';
 import {User} from '../../../../types/api';
 import {isOwnerUser} from '../../../../utils/helpers';
 
@@ -420,6 +420,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
     const {api} = useContext(ServicesContext);
     const [userData, setUserData] = useState(user);
     const [saveState, setSaveState] = useState('');
+    const {fileService} = useContext(ServicesContext) as {fileService: FileService};
 
     const confirmSuspend = (_user: User) => {
         let warningText = 'This user will no longer be able to log in but their posts will be kept.';
@@ -444,6 +445,34 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                 modal?.remove();
             }
         });
+    };
+
+    const handleImageUpload = async (image: string, file: File) => {
+        try {
+            const imageUrl = await fileService.uploadImage(file);
+
+            switch (image) {
+            case 'cover_image':
+                setUserData?.({...user, cover_image: imageUrl});
+                break;
+            case 'profile_image':
+                setUserData?.({...user, profile_image: imageUrl});
+                break;
+            }
+        } catch (err: any) {
+            // handle error
+        }
+    };
+
+    const handleImageDelete = (image: string) => {
+        switch (image) {
+        case 'cover_image':
+            setUserData?.({...user, cover_image: ''});
+            break;
+        case 'profile_image':
+            setUserData?.({...user, profile_image: ''});
+            break;
+        }
     };
 
     let suspendUserLabel = user?.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
@@ -514,10 +543,10 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                         imageClassName='absolute inset-0 bg-cover group'
                         imageURL={userData.cover_image || ''}
                         onDelete={() => {
-                            alert('deleted');
+                            handleImageDelete('cover_image');
                         }}
-                        onUpload={() => {
-                            alert('uploaded');
+                        onUpload={(file: File) => {
+                            handleImageUpload('cover_image', file);
                         }}
                     >Upload cover image</ImageUpload>
                     <div className="absolute bottom-12 right-12">
@@ -534,10 +563,10 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                             imageURL={userData.profile_image}
                             width='80px'
                             onDelete={() => {
-                                alert('deleted');
+                                handleImageDelete('profile_image');
                             }}
-                            onUpload={() => {
-                                alert('uploaded');
+                            onUpload={(file: File) => {
+                                handleImageUpload('profile_image', file);
                             }}
                         >
                             <Icon color='white' name='user-add' size='lg' />
