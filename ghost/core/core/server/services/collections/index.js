@@ -15,7 +15,8 @@ class CollectionsServiceWrapper {
             postsRepository: {
                 getAll: async ({filter}) => {
                     return models.Post.findAll({
-                        filter
+                        // @NOTE: enforce "post" type to avoid ever fetching pages
+                        filter: `(${filter})+type:post`
                     });
                 }
             }
