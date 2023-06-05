@@ -540,7 +540,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                         fileUploadClassName={fileUploadButtonClasses}
                         height={userData.cover_image ? '100%' : '32px'}
                         id='cover-image'
-                        imageClassName='absolute inset-0 bg-cover group'
+                        imageClassName='absolute inset-0 bg-cover group bg-center'
                         imageURL={userData.cover_image || ''}
                         onDelete={() => {
                             handleImageDelete('cover_image');
@@ -559,7 +559,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                             fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer'
                             height='80px'
                             id='avatar'
-                            imageClassName='relative rounded-full group bg-cover -ml-2'
+                            imageClassName='relative rounded-full group bg-cover bg-center -ml-2'
                             imageURL={userData.profile_image}
                             width='80px'
                             onDelete={() => {
