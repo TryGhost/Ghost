@@ -3081,6 +3081,16 @@ p.theme-validation-details {
 .gh-signup-form-iframe {
     width: 100%;
     border: 0;
+    opacity: 1;
+    z-index: 0;
+    transition: none;
+}
+
+.gh-signup-form-iframe.gh-iframe-hidden {
+    opacity: 0;
+    z-index: 1;
+    transition: 0.3s opacity;
+    pointer-events: none;
 }
 
 .fullwidth-modal {
