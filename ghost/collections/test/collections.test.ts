@@ -181,7 +181,7 @@ describe('CollectionsService', function () {
             assert.equal(collection.type, 'automatic', 'Collection should be automatic');
             assert.equal(collection.filter, 'featured:true', 'Collection should have the correct filter');
 
-            assert.equal(collection.posts.length, 1, 'Collection should have one post');
+            assert.equal(collection.posts.length, 2, 'Collection should have two posts');
         });
 
         it('Populates collection when the type is changed to automatic and filter is present', async function () {
@@ -200,8 +200,30 @@ describe('CollectionsService', function () {
                 filter: 'featured:true'
             });
 
-            assert.equal(automaticCollection?.posts.length, 1, 'Collection should have one post');
+            assert.equal(automaticCollection?.posts.length, 2, 'Collection should have two featured post');
             assert.equal(automaticCollection?.posts[0].id, 'post-3-featured', 'Collection should have the correct post');
+        });
+
+        it('Updates the automatic collection posts when the filter is changed', async function () {
+            let collection = await collectionsService.createCollection({
+                title: 'I am automatic',
+                description: 'testing automatic collection',
+                type: 'automatic',
+                filter: 'featured:true'
+            });
+
+            assert.equal(collection?.type, 'automatic', 'Collection should be automatic');
+            assert.equal(collection?.posts.length, 2, 'Collection should have two featured post');
+            assert.equal(collection?.posts[0].id, 'post-3-featured', 'Collection should have the correct post');
+            assert.equal(collection?.posts[1].id, 'post-4-featured', 'Collection should have the correct post');
+
+            let updatedCollection = await collectionsService.edit({
+                id: collection.id,
+                filter: 'slug:post-2'
+            });
+
+            assert.equal(updatedCollection?.posts.length, 1, 'Collection should have one post');
+            assert.equal(updatedCollection?.posts[0].id, 'post-2', 'Collection should have the correct post');
         });
     });
 });
