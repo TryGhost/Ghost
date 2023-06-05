@@ -2,6 +2,7 @@
     --color-background: 0, 0, 0 !important;
     --color-foreground: 255, 255, 255 !important;
     --font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Droid Sans, Helvetica Neue, sans-serif !important;
+    --editor-modal-border-radius: 3px !important;
 }
 
 /* .PinturaModal {
@@ -17,7 +18,13 @@
     grid-column: 1 / -1 !important;
 }
 
-.PinturaRoot[data-env~=landscape] > .PinturaNavTools {
+.PinturaRoot[data-env~=landscape] .PinturaStage {
+    margin: auto !important;
+    max-width: calc(100% - 190px) !important;
+    width: 100% !important;
+}
+
+.PinturaRoot > .PinturaNavTools {
     padding: 24px 24px 0 !important;
 }
 
@@ -62,15 +69,15 @@
     background: none !important;
 } */
 
-.PinturaNavGroup {
+.PinturaRoot[data-env~=landscape] .PinturaNavGroup {
     margin-left: 0 !important;
 }
 
-.PinturaUtilMain {
+.PinturaRoot[data-env~=landscape] .PinturaUtilMain {
     padding-right: 0 !important;
 }
 
-.PinturaUtilFooter {
+.PinturaRoot[data-env~=landscape] .PinturaUtilFooter {
     padding-right: 0 !important;
 }
 
@@ -124,15 +131,15 @@
     border-style: solid !important;
     border-width: 4px 4px 0 0 !important;
     display: inline-block !important;
-    height: 16px !important;
+    height: 20px !important;
     position: relative !important;
     transform: rotate(-90deg) !important;
-    width: 16px !important;
+    width: 20px !important;
     border-color: rgba(255, 255, 255, 1) !important;
 }
 
 .PinturaRectManipulator[data-shape~=circle][data-direction=tr] {
-    left: -16px !important;
+    left: -20px !important;
 }
 
 .PinturaRectManipulator[data-shape~=circle][data-direction=tr]::after {
@@ -140,7 +147,7 @@
 }
 
 .PinturaRectManipulator[data-shape~=circle][data-direction=bl] {
-    top: -16px !important;
+    top: -20px !important;
 }
 
 .PinturaRectManipulator[data-shape~=circle][data-direction=bl]::after {
@@ -148,8 +155,8 @@
 }
 
 .PinturaRectManipulator[data-shape~=circle][data-direction=br] {
-    top: -16px !important;
-    left: -16px !important;
+    top: -20px !important;
+    left: -20px !important;
 }
 
 .PinturaRectManipulator[data-shape~=circle][data-direction=br]::after {
