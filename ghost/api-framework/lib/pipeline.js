@@ -10,24 +10,6 @@ const validators = require('./validators');
 const STAGES = {
     validation: {
         /**
-         * @description Controller validation.
-         *
-         * Validates the controller configuration.
-         *
-         * @param {Object} apiImpl - Controller configuration.
-         * @return {Promise}
-         */
-        controller(apiImpl) {
-            debug('stages: controller validation');
-            const tasks = [];
-
-            tasks.push(function doControllerConfigurationHeadersValidation() {
-                return validators.controller.configuration.headers(apiImpl);
-            });
-
-            return sequence(tasks);
-        },
-        /**
          * @description Input validation.
          *
          * We call the shared validator which runs the request through:
@@ -42,7 +24,7 @@ const STAGES = {
          * @return {Promise}
          */
         input(apiUtils, apiConfig, apiImpl, frame) {
-            debug('stages: input validation');
+            debug('stages: validation');
             const tasks = [];
 
             // CASE: do validation completely yourself
@@ -257,9 +239,6 @@ const pipeline = (apiController, apiUtils, apiType) => {
             }
 
             return Promise.resolve()
-                .then(() => {
-                    return STAGES.validation.controller(apiImpl);
-                })
                 .then(() => {
                     return STAGES.validation.input(apiUtils, apiConfig, apiImpl, frame);
                 })

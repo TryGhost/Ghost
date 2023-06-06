@@ -52,6 +52,9 @@ module.exports = {
     getScheduled: {
         // NOTE: this method is for internal use only by DefaultScheduler
         //       it is not exposed anywhere!
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: false,
         validation: {
             options: {
