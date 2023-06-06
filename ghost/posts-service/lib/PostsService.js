@@ -11,7 +11,8 @@ const messages = {
     invalidTiers: 'Invalid tiers value.',
     invalidTags: 'Invalid tags value.',
     invalidEmailSegment: 'The email segment parameter doesn\'t contain a valid filter',
-    unsupportedBulkAction: 'Unsupported bulk action'
+    unsupportedBulkAction: 'Unsupported bulk action',
+    postNotFound: 'Post not found.'
 };
 
 class PostsService {
@@ -22,6 +23,20 @@ class PostsService {
         this.stats = stats;
         this.emailService = emailService;
         this.postsExporter = postsExporter;
+    }
+
+    async readPost(frame) {
+        const model = await this.models.Post.findOne(frame.data, frame.options);
+
+        if (!model) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.postNotFound)
+            });
+        }
+
+        const dto = model.toJSON(frame.options);
+
+        return dto;
     }
 
     async editPost(frame) {
