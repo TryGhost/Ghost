@@ -82,7 +82,10 @@ describe('Collections API', function () {
                 etag: anyEtag
             })
             .matchBodySnapshot({
-                collections: Array(2).fill(buildMatcher(0))
+                collections: [
+                    buildMatcher(2),
+                    buildMatcher(0)
+                ]
             });
     });
 
