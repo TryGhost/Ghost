@@ -450,6 +450,10 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                 });
                 setUserData(updatedUserData);
                 modal?.remove();
+                showToast({
+                    message: _user.status === 'inactive' ? 'User un-suspended' : 'User suspended',
+                    type: 'success'
+                });
             }
         });
     };
@@ -616,14 +620,14 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
             }}
         >
             <div>
-                <div className={`relative -mx-12 -mt-12 bg-gradient-to-tr from-grey-900 to-black`}>
+                <div className={`relative -mx-12 -mt-12 rounded-t bg-gradient-to-tr from-grey-900 to-black`}>
                     <ImageUpload
                         deleteButtonClassName={fileUploadButtonClasses}
                         deleteButtonContent='Delete cover image'
                         fileUploadClassName={fileUploadButtonClasses}
                         height={userData.cover_image ? '100%' : '32px'}
                         id='cover-image'
-                        imageClassName='absolute inset-0 bg-cover group bg-center'
+                        imageClassName='absolute inset-0 bg-cover group bg-center rounded-t overflow-hidden'
                         imageURL={userData.cover_image || ''}
                         onDelete={() => {
                             handleImageDelete('cover_image');
