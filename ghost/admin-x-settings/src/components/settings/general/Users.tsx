@@ -67,6 +67,10 @@ const UsersList: React.FC<UsersListProps> = ({users, updateUser}) => {
     return (
         <List>
             {users.map((user) => {
+                let title = user.name || '';
+                if (user.status === 'inactive') {
+                    title = `${title} (Suspended)`;
+                }
                 return (
                     <ListItem
                         key={user.id}
@@ -75,7 +79,7 @@ const UsersList: React.FC<UsersListProps> = ({users, updateUser}) => {
                         detail={user.email}
                         hideActions={true}
                         id={`list-item-${user.id}`}
-                        title={user.name || ''}
+                        title={title}
                         onClick={() => showDetailModal(user)} />
                 );
             })}
@@ -85,6 +89,7 @@ const UsersList: React.FC<UsersListProps> = ({users, updateUser}) => {
 
 const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
     const {api} = useContext(ServicesContext);
+    const {setInvites} = useStaffUsers();
     const [revokeState, setRevokeState] = useState<'progress'|''>('');
     const [resendState, setResendState] = useState<'progress'|''>('');
     let revokeActionLabel = 'Revoke';
@@ -104,6 +109,8 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
                 onClick={async () => {
                     setRevokeState('progress');
                     await api.invites.delete(invite.id);
+                    const res = await api.invites.browse();
+                    setInvites(res.invites);
                     setRevokeState('');
                     showToast({
                         message: `Invitation revoked(${invite.email})`,
@@ -123,6 +130,8 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
                         email: invite.email,
                         roleId: invite.role_id
                     });
+                    const res = await api.invites.browse();
+                    setInvites(res.invites);
                     setResendState('');
                     showToast({
                         message: `Invitation resent!(${invite.email})`,
