@@ -593,6 +593,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
             okColor='green'
             okLabel={okLabel}
             size='lg'
+            stickyFooter={true}
             onOk={async () => {
                 setSaveState('saving');
                 if (!validator.isEmail(userData.email)) {
