@@ -62,3 +62,7 @@ export function generateAvatarColor(name: string) {
 export function isOwnerUser(user: User) {
     return user.roles.some(role => role.name === 'Owner');
 }
+
+export function isAdminUser(user: User) {
+    return user.roles.some(role => role.name === 'Administrator');
+}
