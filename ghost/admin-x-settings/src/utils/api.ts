@@ -98,6 +98,7 @@ interface API {
         edit: (editedUser: User) => Promise<UsersResponseType>;
         delete: (userId: string) => Promise<DeleteUserResponse>;
         updatePassword: (options: UpdatePasswordOptions) => Promise<PasswordUpdateResponseType>;
+        makeOwner: (userId: string) => Promise<UsersResponseType>;
     };
     roles: {
         browse: (options?: BrowseRoleOptions) => Promise<RolesResponseType>;
@@ -117,6 +118,7 @@ interface API {
             status?: string;
             token?: string;
         }) => Promise<InvitesResponseType>;
+        delete: (inviteId: string) => Promise<void>;
     }
 }
 
@@ -219,6 +221,19 @@ function setupGhostApi({ghostVersion}: GhostApiOptions): API {
                 });
                 const data: DeleteUserResponse = await response.json();
                 return data;
+            },
+            makeOwner: async (userId: string) => {
+                const payload = JSON.stringify({
+                    owner: [{
+                        id: userId
+                    }]
+                });
+                const response = await fetcher(`/users/owner/`, {
+                    method: 'PUT',
+                    body: payload
+                });
+                const data: UsersResponseType = await response.json();
+                return data;
             }
         },
         roles: {
@@ -278,6 +293,12 @@ function setupGhostApi({ghostVersion}: GhostApiOptions): API {
                 });
                 const data: InvitesResponseType = await response.json();
                 return data;
+            },
+            delete: async (inviteId: string) => {
+                await fetcher(`/invites/${inviteId}/`, {
+                    method: 'DELETE'
+                });
+                return;
             }
         }
     };

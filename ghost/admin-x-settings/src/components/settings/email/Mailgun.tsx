@@ -100,6 +100,7 @@ const MailGun: React.FC = () => {
             navid='mailgun'
             saveState={saveState}
             state={currentState}
+            testId='mailgun'
             title='Mailgun'
             onCancel={handleCancel}
             onSave={handleSave}

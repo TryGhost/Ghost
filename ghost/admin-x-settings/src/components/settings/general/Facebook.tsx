@@ -65,7 +65,7 @@ const Facebook: React.FC = () => {
                     <ImageUpload
                         fileUploadClassName='flex cursor-pointer items-center justify-center rounded rounded-b-none border border-grey-100 border-b-0 bg-grey-75 p-3 text-sm font-semibold text-grey-800 hover:text-black'
                         height='300px'
-                        id='twitter-image'
+                        id='facebook-image'
                         imageURL={facebookImage}
                         onDelete={handleImageDelete}
                         onUpload={handleImageUpload}
@@ -101,6 +101,7 @@ const Facebook: React.FC = () => {
             navid='facebook'
             saveState={saveState}
             state={currentState}
+            testId='facebook'
             title='Facebook card'
             onCancel={handleCancel}
             onSave={handleSave}

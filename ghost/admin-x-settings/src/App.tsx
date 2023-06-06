@@ -5,6 +5,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
 import {ServicesProvider} from './components/providers/ServiceProvider';
+import {Toaster} from 'react-hot-toast';
 
 interface AppProps {
     ghostVersion: string;
@@ -15,6 +16,7 @@ function App({ghostVersion}: AppProps) {
         <ServicesProvider ghostVersion={ghostVersion}>
             <DataProvider>
                 <div className="admin-x-settings">
+                    <Toaster />
                     <NiceModal.Provider>
                         <div className='fixed left-6 top-4'>
                             <Button label='&larr; Done' link={true} onClick={() => window.history.back()} />
