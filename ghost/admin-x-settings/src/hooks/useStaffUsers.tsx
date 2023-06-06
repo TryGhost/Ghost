@@ -1,8 +1,8 @@
+import React, {useContext} from 'react';
 import {RolesContext} from '../components/providers/RolesProvider';
 import {User} from '../types/api';
 import {UserInvite} from '../utils/api';
 import {UsersContext} from '../components/providers/UsersProvider';
-import {useContext} from 'react';
 
 export type UsersHook = {
     users: User[];
@@ -15,6 +15,7 @@ export type UsersHook = {
     currentUser: User|null;
     updateUser?: (user: User) => Promise<void>;
     setInvites: (invites: UserInvite[]) => void;
+    setUsers: React.Dispatch<React.SetStateAction<User[]>>
 };
 
 function getUsersByRole(users: User[], role: string): User[] {
@@ -30,7 +31,7 @@ function getOwnerUser(users: User[]): User {
 }
 
 const useStaffUsers = (): UsersHook => {
-    const {users, currentUser, updateUser, invites, setInvites} = useContext(UsersContext);
+    const {users, currentUser, updateUser, invites, setInvites, setUsers} = useContext(UsersContext);
     const {roles} = useContext(RolesContext);
     const ownerUser = getOwnerUser(users);
     const adminUsers = getUsersByRole(users, 'Administrator');
@@ -57,7 +58,8 @@ const useStaffUsers = (): UsersHook => {
         currentUser,
         invites: mappedInvites,
         updateUser,
-        setInvites
+        setInvites,
+        setUsers
     };
 };
 

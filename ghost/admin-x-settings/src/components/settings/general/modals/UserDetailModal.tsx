@@ -13,6 +13,8 @@ import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupCon
 import TextField from '../../../../admin-x-ds/global/TextField';
 import Toggle from '../../../../admin-x-ds/global/Toggle';
 import useRoles from '../../../../hooks/useRoles';
+import useStaffUsers from '../../../../hooks/useStaffUsers';
+import validator from 'validator';
 import {FileService, ServicesContext} from '../../../providers/ServiceProvider';
 import {MenuItem} from '../../../../admin-x-ds/global/Menu';
 import {User} from '../../../../types/api';
@@ -26,6 +28,10 @@ interface CustomHeadingProps {
 interface UserDetailProps {
     user: User;
     setUserData?: (user: User) => void;
+    errors?: {
+        url?: string;
+        email?: string;
+    };
 }
 
 const CustomHeader: React.FC<CustomHeadingProps> = ({children}) => {
@@ -84,7 +90,7 @@ const RoleSelector: React.FC<UserDetailProps> = ({user, setUserData}) => {
         />
     );
 };
-const BasicInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
+const BasicInputs: React.FC<UserDetailProps> = ({errors, user, setUserData}) => {
     return (
         <SettingGroupContent>
             <TextField
@@ -96,6 +102,8 @@ const BasicInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
                 }}
             />
             <TextField
+                error={!!errors?.email}
+                hint={errors?.email || ''}
                 title="Email"
                 value={user.email}
                 onChange={(e) => {
@@ -107,19 +115,19 @@ const BasicInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
     );
 };
 
-const Basic: React.FC<UserDetailProps> = ({user, setUserData}) => {
+const Basic: React.FC<UserDetailProps> = ({errors, user, setUserData}) => {
     return (
         <SettingGroup
             border={false}
             customHeader={<CustomHeader>Basic info</CustomHeader>}
             title='Basic'
         >
-            <BasicInputs setUserData={setUserData} user={user} />
+            <BasicInputs errors={errors} setUserData={setUserData} user={user} />
         </SettingGroup>
     );
 };
 
-const DetailsInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
+const DetailsInputs: React.FC<UserDetailProps> = ({errors, user, setUserData}) => {
     return (
         <SettingGroupContent>
             <TextField
@@ -138,6 +146,8 @@ const DetailsInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
                 }}
             />
             <TextField
+                error={!!errors?.url}
+                hint={errors?.url || ''}
                 title="Website"
                 value={user.website}
                 onChange={(e) => {
@@ -170,14 +180,14 @@ const DetailsInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
     );
 };
 
-const Details: React.FC<UserDetailProps> = ({user, setUserData}) => {
+const Details: React.FC<UserDetailProps> = ({errors, user, setUserData}) => {
     return (
         <SettingGroup
             border={false}
             customHeader={<CustomHeader>Details</CustomHeader>}
             title='Details'
         >
-            <DetailsInputs setUserData={setUserData} user={user} />
+            <DetailsInputs errors={errors} setUserData={setUserData} user={user} />
         </SettingGroup>
     );
 };
@@ -397,8 +407,14 @@ const UserMenuTrigger = () => (
 
 const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
     const {api} = useContext(ServicesContext);
+    const {users, setUsers, ownerUser} = useStaffUsers();
     const [userData, setUserData] = useState(user);
     const [saveState, setSaveState] = useState('');
+    const [errors, setErrors] = useState<{
+        email?: string;
+        url?: string;
+    }>({});
+
     const {fileService} = useContext(ServicesContext) as {fileService: FileService};
     const mainModal = useModal();
 
@@ -418,28 +434,41 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
             okRunningLabel: _user.status === 'inactive' ? 'Un-suspending...' : 'Suspending...',
             okColor: 'red',
             onOk: async (modal) => {
-                await api.users.edit({
+                const updatedUserData = {
                     ..._user,
                     status: _user.status === 'inactive' ? 'active' : 'inactive'
+                };
+                const res = await api.users.edit(updatedUserData);
+                const updatedUser = res.users[0];
+                setUsers((_users) => {
+                    return _users.map((u) => {
+                        if (u.id === updatedUser.id) {
+                            return updatedUser;
+                        }
+                        return u;
+                    });
                 });
+                setUserData(updatedUserData);
                 modal?.remove();
             }
         });
     };
 
-    const confirmDelete = (_user: User) => {
+    const confirmDelete = (_user: User, {owner}: {owner: User}) => {
         NiceModal.show(ConfirmationModal, {
             title: 'Are you sure you want to delete this user?',
             prompt: (
                 <>
-                    <p className='mb-3'>The [user] will be permanently deleted and all their posts will be automatically assigned to the [site owner name].</p>
-                    <p>To make these easy to find in the future, each post will be given an internal tag of [new internal tag with username]</p>
+                    <p className='mb-3'><span className='font-bold'>{_user.name || _user.email}</span> will be permanently deleted and all their posts will be automatically assigned to the <span className='font-bold'>{owner.name}</span>.</p>
+                    <p>To make these easy to find in the future, each post will be given an internal tag of <span className='font-bold'>#{user.slug}</span></p>
                 </>
             ),
             okLabel: 'Delete user',
             okColor: 'red',
             onOk: async (modal) => {
                 await api.users.delete(_user?.id);
+                const newUsers = users.filter(u => u.id !== _user.id);
+                setUsers(newUsers);
                 modal?.remove();
                 mainModal?.remove();
                 showToast({
@@ -457,7 +486,8 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
             okLabel: 'Yep — I\'m sure',
             okColor: 'red',
             onOk: async (modal) => {
-                await api.users.makeOwner(user.id);
+                const res = await api.users.makeOwner(user.id);
+                setUsers(res.users);
                 modal?.remove();
                 showToast({
                     message: 'Ownership transferred',
@@ -503,11 +533,11 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
         }
     };
 
-    let suspendUserLabel = user?.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
+    let suspendUserLabel = userData?.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
 
     let menuItems: MenuItem[] = [];
 
-    if (isAdminUser(user)) {
+    if (isAdminUser(userData)) {
         menuItems.push({
             id: 'make-owner',
             label: 'Make owner',
@@ -520,14 +550,14 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
             id: 'delete-user',
             label: 'Delete user',
             onClick: () => {
-                confirmDelete(user);
+                confirmDelete(user, {owner: ownerUser});
             }
         },
         {
             id: 'suspend-user',
             label: suspendUserLabel,
             onClick: () => {
-                confirmSuspend(user);
+                confirmSuspend(userData);
             }
         },
         {
@@ -555,7 +585,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
 
     const fileUploadButtonClasses = 'absolute right-[104px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium z-10';
 
-    const suspendedText = user.status === 'inactive' ? ' (Suspended)' : '';
+    const suspendedText = userData.status === 'inactive' ? ' (Suspended)' : '';
 
     return (
         <Modal
@@ -564,6 +594,21 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
             size='lg'
             onOk={async () => {
                 setSaveState('saving');
+                if (!validator.isEmail(userData.email)) {
+                    setErrors?.((_errors) => {
+                        return {..._errors, email: 'Please enter a valid email address'};
+                    });
+                    setSaveState('');
+                    return;
+                }
+                if (!validator.isURL(userData.url)) {
+                    setErrors?.((_errors) => {
+                        return {..._errors, url: 'Please enter a valid URL'};
+                    });
+                    setSaveState('');
+                    return;
+                }
+
                 await updateUser?.(userData);
                 setSaveState('saved');
             }}
@@ -614,8 +659,8 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                     </div>
                 </div>
                 <div className='mt-10 grid grid-cols-2 gap-x-12 gap-y-20 pb-10'>
-                    <Basic setUserData={setUserData} user={userData} />
-                    <Details setUserData={setUserData} user={userData} />
+                    <Basic errors={errors} setUserData={setUserData} user={userData} />
+                    <Details errors={errors} setUserData={setUserData} user={userData} />
                     <EmailNotifications setUserData={setUserData} user={userData} />
                     <Password user={userData} />
                 </div>
