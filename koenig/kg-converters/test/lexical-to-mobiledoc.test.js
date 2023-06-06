@@ -2750,4 +2750,39 @@ describe('lexicalToMobiledoc', function () {
             }));
         });
     });
+
+    describe('card specifics', function () {
+        it('renames HR', function () {
+            const result = lexicalToMobiledoc(JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            type: 'horizontalrule',
+                            version: 1
+                        }
+                    ],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+
+            assert.equal(result, JSON.stringify({
+                version: MOBILEDOC_VERSION,
+                ghostVersion: GHOST_VERSION,
+                atoms: [],
+                cards: [
+                    ['hr', {
+                        version: 1
+                    }]
+                ],
+                markups: [],
+                sections: [
+                    [10, 0]
+                ]
+            }));
+        });
+    });
 });

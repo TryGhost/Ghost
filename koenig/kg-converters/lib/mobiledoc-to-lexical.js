@@ -72,7 +72,7 @@ const MARKUP_TO_FORMAT = {
 
 const CARD_NAME_MAP = {
     code: 'codeblock',
-    horizontalrule: 'hr'
+    hr: 'horizontalrule'
 };
 
 const CARD_PROPERTY_MAP = {

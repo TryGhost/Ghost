@@ -71,7 +71,7 @@ const KNOWN_CARDS = [
 
 const CARD_NAME_MAP = {
     codeblock: 'code',
-    hr: 'horizontalrule'
+    horizontalrule: 'hr'
 };
 
 const CARD_PROPERTY_MAP = {
