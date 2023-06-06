@@ -8,10 +8,13 @@ export const FormView: React.FC<FormProps & {
     logo?: string
     backgroundColor?: string
     textColor?: string
-}> = ({isMinimal, title, description, logo, backgroundColor, textColor, ...formProps}) => {
+}> = ({isMinimal, title, description, logo, backgroundColor, textColor, error, ...formProps}) => {
     if (isMinimal) {
         return (
-            <Form {...formProps} />
+            <>
+                <Form {...formProps} />
+                {error && <p className='text-red-500' data-testid="error-message">{error}</p>}
+            </>
         );
     }
 
@@ -24,8 +27,11 @@ export const FormView: React.FC<FormProps & {
             {logo && <img alt={title} className='mb-2 h-[64px] w-auto' src={logo}/>}
             {title && <h1 className="text-center text-lg font-bold sm:text-xl md:text-2xl lg:text-3xl">{title}</h1>}
             {description && <p className='mb-4 text-center font-medium md:mb-5'>{description}</p>}
+            <div className='relative w-full max-w-[440px]'>
+                <Form {...formProps} />
+                <p className={`h-5 w-full text-left text-red-500 ${error ? 'visible' : 'invisible'}`} data-testid="error-message">{error}</p>
+            </div>
 
-            <Form {...formProps} />
         </div>
     );
 };
@@ -42,8 +48,6 @@ const Form: React.FC<FormProps> = ({loading, error, buttonColor, buttonTextColor
     const [email, setEmail] = React.useState('');
     const {t} = useAppContext();
 
-    const borderStyle = error ? '!border-red-500' : 'border-grey-300';
-
     const submitHandler: FormEventHandler<HTMLFormElement> = (e) => {
         e.preventDefault();
         onSubmit({email});
@@ -53,7 +57,7 @@ const Form: React.FC<FormProps> = ({loading, error, buttonColor, buttonTextColor
         <>
             <form className='relative flex w-full max-w-[440px]' onSubmit={submitHandler}>
                 <input
-                    className={'flex-1 p-2 sm:py-[1rem] sm:px-3 border rounded-[.5rem] text-grey-900 hover:border-grey-400 transition focus-visible:border-grey-500 focus-visible:outline-none ' + borderStyle}
+                    className={`flex-1 rounded-[.5rem] border p-2 text-grey-900 transition hover:border-grey-400 focus-visible:border-grey-500 focus-visible:outline-none sm:px-3 sm:py-[1rem] ${error ? 'border-red-500' : 'border-grey-300'}`}
                     data-testid="input"
                     disabled={loading}
                     placeholder='jamie@example.com'
@@ -68,7 +72,6 @@ const Form: React.FC<FormProps> = ({loading, error, buttonColor, buttonTextColor
                     style={{backgroundColor: buttonColor, color: buttonTextColor}}
                     type='submit'
                 >{t('Subscribe')}</button>
-                {error && <p className='absolute -bottom-4 left-0 pt-0.5 text-red-500' data-testid="error-message">{error}</p>}
             </form>
         </>
     );
