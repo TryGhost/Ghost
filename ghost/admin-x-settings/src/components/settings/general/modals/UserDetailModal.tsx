@@ -473,10 +473,14 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
 
             switch (image) {
             case 'cover_image':
-                setUserData?.({...user, cover_image: imageUrl});
+                setUserData?.((_user) => {
+                    return {..._user, cover_image: imageUrl};
+                });
                 break;
             case 'profile_image':
-                setUserData?.({...user, profile_image: imageUrl});
+                setUserData?.((_user) => {
+                    return {..._user, profile_image: imageUrl};
+                });
                 break;
             }
         } catch (err: any) {
@@ -487,10 +491,14 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
     const handleImageDelete = (image: string) => {
         switch (image) {
         case 'cover_image':
-            setUserData?.({...user, cover_image: ''});
+            setUserData?.((_user) => {
+                return {..._user, cover_image: ''};
+            });
             break;
         case 'profile_image':
-            setUserData?.({...user, profile_image: ''});
+            setUserData?.((_user) => {
+                return {..._user, profile_image: ''};
+            });
             break;
         }
     };
