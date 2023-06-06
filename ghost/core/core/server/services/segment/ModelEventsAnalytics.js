@@ -9,7 +9,8 @@ const _ = require('lodash');
  */
 
 /**
- * @typedef {import('../../../shared/sentry')} sentry
+ * @typedef {object} IExceptionHandler
+ * @prop {(err: Error) => void} captureException
  */
 
 /**
@@ -22,7 +23,7 @@ const _ = require('lodash');
  * @param {logging} logging
  * @param {object} trackDefaults
  * @param {string} prefix
- * @param {sentry} sentry
+ * @param {IExceptionHandler} exceptionHandler
  * @param {events} events
  * @prop {} subscribeToEvents
  */
@@ -38,8 +39,8 @@ module.exports = class ModelEventsAnalytics {
     #trackDefaults;
     /** @type {string} */
     #prefix;
-    /** @type {sentry} */
-    #sentry;
+    /** @type {IExceptionHandler} */
+    #exceptionHandler;
     /** @type {events} */
     #events;
     /** @type {logging} */
@@ -74,7 +75,7 @@ module.exports = class ModelEventsAnalytics {
         this.#analytics = deps.analytics;
         this.#trackDefaults = deps.trackDefaults;
         this.#prefix = deps.prefix;
-        this.#sentry = deps.sentry;
+        this.#exceptionHandler = deps.exceptionHandler;
         this.#events = deps.events;
         this.#logging = deps.logging;
     }
@@ -84,7 +85,7 @@ module.exports = class ModelEventsAnalytics {
             this.#analytics.track(event);
         } catch (err) {
             this.#logging.error(err);
-            this.#sentry.captureException(err);
+            this.#exceptionHandler.captureException(err);
         }
     }
 

@@ -9,7 +9,8 @@ const {MilestoneCreatedEvent} = require('@tryghost/milestones');
  */
 
 /**
- * @typedef {import('../../../shared/sentry')} sentry
+ * @typedef {object} IExceptionHandler
+ * @prop {(err: Error) => void} captureException
  */
 
 /**
@@ -22,7 +23,7 @@ const {MilestoneCreatedEvent} = require('@tryghost/milestones');
  * @param {logging} logging
  * @param {object} trackDefaults
  * @param {string} prefix
- * @param {sentry} sentry
+ * @param {IExceptionHandler} exceptionHandler
  * @param {DomainEvents} DomainEvents
  * @prop {} subscribeToEvents
  */
@@ -34,8 +35,8 @@ module.exports = class DomainEventsAnalytics {
     #trackDefaults;
     /** @type {string} */
     #prefix;
-    /** @type {sentry} */
-    #sentry;
+    /** @type {IExceptionHandler} */
+    #exceptionHandler;
     /** @type {logging} */
     #logging;
     /** @type {DomainEvents} */
@@ -45,7 +46,7 @@ module.exports = class DomainEventsAnalytics {
         this.#analytics = deps.analytics;
         this.#trackDefaults = deps.trackDefaults;
         this.#prefix = deps.prefix;
-        this.#sentry = deps.sentry;
+        this.#exceptionHandler = deps.exceptionHandler;
         this.#logging = deps.logging;
         this.#DomainEvents = deps.DomainEvents;
     }
@@ -63,13 +64,13 @@ module.exports = class DomainEventsAnalytics {
         if (event.data.milestone
             && event.data.milestone.value === 100
         ) {
-            const eventName = event.data.milestone.type === 'arr' ? '$100 MRR reached' : '100 members reached';
+            const eventName = event.data.milestone.type === 'arr' ? '$100 MRR reached' : '100 Members reached';
 
             try {
                 this.#analytics.track(Object.assign(this.#trackDefaults, {}, {event: this.#prefix + eventName}));
             } catch (err) {
                 this.#logging.error(err);
-                this.#sentry.captureException(err);
+                this.#exceptionHandler.captureException(err);
             }
         }
     }

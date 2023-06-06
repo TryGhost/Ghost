@@ -17,13 +17,13 @@ describe('ModelEventsAnalytics', function () {
     describe('Model events analytics service', function () {
         let modelEventsAnalytics;
         let analyticsStub;
-        let sentryStub;
+        let exceptionHandlerStub;
         let loggingStub;
         let eventStub;
 
         beforeEach(function () {
             analyticsStub = sinon.stub();
-            sentryStub = sinon.stub();
+            exceptionHandlerStub = sinon.stub();
             loggingStub = sinon.stub();
             eventStub = sinon.stub();
         });
@@ -40,8 +40,8 @@ describe('ModelEventsAnalytics', function () {
                     properties: {email: 'john@test.com'}
                 },
                 prefix: 'Pro: ',
-                sentry: {
-                    captureException: sentryStub
+                exceptionHandler: {
+                    captureException: exceptionHandlerStub
                 },
                 events: {
                     on: eventStub
@@ -67,8 +67,8 @@ describe('ModelEventsAnalytics', function () {
                     properties: {email: 'john@test.com'}
                 },
                 prefix: 'Pro: ',
-                sentry: {
-                    captureException: sentryStub
+                exceptionHandler: {
+                    captureException: exceptionHandlerStub
                 },
                 events,
                 logging: {
@@ -124,8 +124,8 @@ describe('ModelEventsAnalytics', function () {
                 },
                 trackDefaults: {},
                 prefix: '',
-                sentry: {
-                    captureException: sentryStub
+                exceptionHandler: {
+                    captureException: exceptionHandlerStub
                 },
                 events,
                 logging: {
@@ -139,8 +139,8 @@ describe('ModelEventsAnalytics', function () {
                 events.emit('post.published');
             } catch (err) {
                 assert(analyticsStub.callCount === 1);
-                assert(sentryStub.callCount === 1);
-                assert(sentryStub.calledWith(error));
+                assert(exceptionHandlerStub.callCount === 1);
+                assert(exceptionHandlerStub.calledWith(error));
                 assert(loggingStub.callCount === 1);
             }
         });

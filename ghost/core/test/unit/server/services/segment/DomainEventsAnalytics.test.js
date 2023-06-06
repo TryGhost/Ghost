@@ -19,13 +19,13 @@ describe('DomainEventsAnalytics', function () {
     describe('Domain events analytics service', function () {
         let domainEventsAnalytics;
         let analyticsStub;
-        let sentryStub;
+        let exceptionHandlerStub;
         let loggingStub;
         let domainEventsStub;
 
         beforeEach(function () {
             analyticsStub = sinon.stub();
-            sentryStub = sinon.stub();
+            exceptionHandlerStub = sinon.stub();
             loggingStub = sinon.stub();
             domainEventsStub = sinon.stub();
         });
@@ -42,8 +42,8 @@ describe('DomainEventsAnalytics', function () {
                     properties: {email: 'john@test.com'}
                 },
                 prefix: 'Pro: ',
-                sentry: {
-                    captureException: sentryStub
+                exceptionHandler: {
+                    captureException: exceptionHandlerStub
                 },
                 DomainEvents: {
                     subscribe: domainEventsStub
@@ -68,8 +68,8 @@ describe('DomainEventsAnalytics', function () {
                     properties: {email: 'john@test.com'}
                 },
                 prefix: 'Pro: ',
-                sentry: {
-                    captureException: sentryStub
+                exceptionHandler: {
+                    captureException: exceptionHandlerStub
                 },
                 DomainEvents,
                 logging: {
@@ -95,7 +95,7 @@ describe('DomainEventsAnalytics', function () {
             assert(analyticsStub.calledWith({
                 userId: '1234',
                 properties: {email: 'john@test.com'},
-                event: 'Pro: 100 members reached'
+                event: 'Pro: 100 Members reached'
             }));
 
             DomainEvents.dispatch(MilestoneCreatedEvent.create({
@@ -124,8 +124,8 @@ describe('DomainEventsAnalytics', function () {
                     properties: {email: 'john+arr@test.com'}
                 },
                 prefix: 'Pro: ',
-                sentry: {
-                    captureException: sentryStub
+                exceptionHandler: {
+                    captureException: exceptionHandlerStub
                 },
                 DomainEvents,
                 logging: {
@@ -181,8 +181,8 @@ describe('DomainEventsAnalytics', function () {
                 },
                 trackDefaults: {},
                 prefix: '',
-                sentry: {
-                    captureException: sentryStub
+                exceptionHandler: {
+                    captureException: exceptionHandlerStub
                 },
                 DomainEvents,
                 logging: {
@@ -207,8 +207,8 @@ describe('DomainEventsAnalytics', function () {
                 await DomainEvents.allSettled();
             } catch (err) {
                 assert(analyticsStub.callCount === 1);
-                assert(sentryStub.callCount === 1);
-                assert(sentryStub.calledWith(error));
+                assert(exceptionHandlerStub.callCount === 1);
+                assert(exceptionHandlerStub.calledWith(error));
                 assert(loggingStub.callCount === 1);
             }
         });

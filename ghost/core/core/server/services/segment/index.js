@@ -17,7 +17,7 @@ module.exports.init = function () {
         analytics,
         trackDefaults,
         prefix,
-        sentry,
+        exceptionHandler: sentry,
         DomainEvents,
         logging
     });
@@ -26,14 +26,14 @@ module.exports.init = function () {
         analytics,
         trackDefaults,
         prefix,
-        sentry,
+        exceptionHandler: sentry,
         events,
         logging
     });
 
     // Listen to model events
-    modelEventsAnalytics.subscribeToModelEvents();
+    modelEventsAnalytics.subscribeToEvents();
 
     // Listen to domain events
-    subscribeToDomainEvents.subscribeToDomainEvents();
+    subscribeToDomainEvents.subscribeToEvents();
 };
