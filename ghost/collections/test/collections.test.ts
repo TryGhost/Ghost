@@ -71,6 +71,22 @@ describe('CollectionsService', function () {
         });
     });
 
+    describe('getCollectionsForPost', function () {
+        it('Can get collections for a post', async function () {
+            const collection = await collectionsService.createCollection({
+                title: 'testing collections',
+                type: 'manual'
+            });
+
+            await collectionsService.addPostToCollection(collection.id, posts[0]);
+
+            const collections = await collectionsService.getCollectionsForPost(posts[0].id);
+
+            assert.equal(collections.length, 1, 'There should be one collection');
+            assert.equal(collections[0].id, collection.id, 'Collection should be the correct one');
+        });
+    });
+
     describe('addPostToCollection', function () {
         it('Can add a Post to a Collection', async function () {
             const collection = await collectionsService.createCollection({
