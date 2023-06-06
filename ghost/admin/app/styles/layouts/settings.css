@@ -3117,11 +3117,6 @@ p.theme-validation-details {
     pointer-events: none;
 }
 
-.gh-signup-form-iframe.gh-style-minimal {
-    width: 200%;
-    left: -50%;
-}
-
 .modal-signup-form-embed-main {
     padding: 32px;
     height: 100%;
