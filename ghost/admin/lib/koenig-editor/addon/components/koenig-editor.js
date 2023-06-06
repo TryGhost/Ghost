@@ -32,6 +32,7 @@ import {getOwner} from '@ember/application';
 import {getParent} from '../lib/dnd/utils';
 import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {guidFor} from '@ember/object/internals';
+import {mobiledocToLexical} from '@tryghost/kg-converters';
 import {run} from '@ember/runloop';
 import {svgJar} from 'ghost-admin/helpers/svg-jar';
 import {task, waitForProperty} from 'ember-concurrency';
@@ -192,7 +193,7 @@ export default class KoenigEditor extends Component {
             cards,
             unknownCardHandler: ({env}) => {
                 console.warn(`Unknown card encountered: ${env.name}`); //eslint-disable-line
-                
+
                 env.remove();
             }
         }, options);
@@ -464,6 +465,11 @@ export default class KoenigEditor extends Component {
         this._pasteHandler = run.bind(this, this.handlePaste);
         editorElement.addEventListener('paste', this._pasteHandler);
 
+        // on window so we can catch the event after mobiledoc has processed it
+        this._cutCopyHandler = run.bind(this, this.handleCutAndCopy);
+        window.addEventListener('copy', this._cutCopyHandler);
+        window.addEventListener('cut', this._cutCopyHandler);
+
         if (this.scrollContainerSelector) {
             this._scrollContainer = document.querySelector(this.scrollContainerSelector);
         }
@@ -506,6 +512,8 @@ export default class KoenigEditor extends Component {
 
         window.removeEventListener('keydown', this._keydownHandler);
         window.removeEventListener('keyup', this._keyupHandler);
+        window.removeEventListener('copy', this._cutCopyHandler);
+        window.removeEventListener('cut', this._cutCopyHandler);
 
         let editorElement = this.element.querySelector('[data-kg="editor"]');
         editorElement.removeEventListener('paste', this._pasteHandler);
@@ -982,6 +990,35 @@ export default class KoenigEditor extends Component {
         }
     }
 
+    handleCutAndCopy(event) {
+        const MOBILEDOC_REGEX = new RegExp(/data-mobiledoc='(.*?)'>/);
+
+        const html = event.clipboardData.getData('text/html') || '';
+
+        if (MOBILEDOC_REGEX.test(html)) {
+            const mobiledocString = html.match(MOBILEDOC_REGEX)?.[1];
+            const lexicalString = mobiledocToLexical(mobiledocString);
+
+            // we get a full Lexical doc from the converter but Lexical only
+            // stores an array of nodes in it's copied dataset
+            const lexical = JSON.parse(lexicalString);
+            let nodes = lexical.root.children;
+
+            // for a single-paragraph text selection Lexical only stores the
+            // text children in the nodes array
+            if (nodes.length === 1 && nodes[0].type === 'paragraph') {
+                nodes = nodes[0].children;
+            }
+
+            const lexicalData = {
+                namespace: 'KoenigEditor',
+                nodes
+            };
+
+            event.clipboardData.setData('application/x-lexical-editor', JSON.stringify(lexicalData));
+        }
+    }
+
     handlePaste(event) {
         let {editor} = this;
 
@@ -989,6 +1026,41 @@ export default class KoenigEditor extends Component {
         // of the editor canvas. Avoids double-paste of content when pasting
         // into cards
         if (!editor.cursor.isAddressable(event.target)) {
+            return;
+        }
+
+        // if the event has a application/x-editor-mobiledoc mimetype, modify
+        // the text/html content to mimic the behaviour of a normal mobiledoc paste
+        if (event.clipboardData.getData('application/x-mobiledoc-editor')) {
+            // prevent mobiledoc's default paste event handler firing
+            event.preventDefault();
+            event.stopImmediatePropagation();
+
+            // extract mobiledoc and update html to match how mobiledoc handles it's own copy data
+            const mobiledoc = event.clipboardData.getData('application/x-mobiledoc-editor');
+            const html = event.clipboardData.getData('text/html');
+            const modifiedHtml = `<div data-mobiledoc='${mobiledoc}'>${html}</div>`;
+            const text = event.clipboardData.getData('text/plain');
+
+            // we can't modify the paste event itself so we trigger a mock
+            // paste event with our own data
+            const pasteEvent = {
+                type: 'paste',
+                preventDefault() { },
+                target: editor.element,
+                clipboardData: {
+                    getData(type) {
+                        if (type === 'text/plain') {
+                            return text;
+                        }
+                        if (type === 'text/html') {
+                            return modifiedHtml;
+                        }
+                    }
+                }
+            };
+
+            editor.triggerEvent(editor.element, 'paste', pasteEvent);
             return;
         }
 

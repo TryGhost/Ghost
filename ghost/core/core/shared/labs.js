@@ -17,7 +17,6 @@ const messages = {
 const GA_FEATURES = [
     'audienceFeedback',
     'themeErrorsNotification',
-    'emailErrors',
     'outboundLinkTagging',
     'announcementBar'
 ];
@@ -27,22 +26,20 @@ const GA_FEATURES = [
 const BETA_FEATURES = [
     'i18n',
     'activitypub',
-    'webmentions'
+    'webmentions',
+    'lexicalEditor'
 ];
 
 const ALPHA_FEATURES = [
     'urlCache',
-    'lexicalEditor',
     'lexicalMultiplayer',
     'websockets',
     'stripeAutomaticTax',
-    'makingItRain',
-    'postHistory',
-    'postDiffing',
-    'imageEditor',
+    'emailCustomization',
     'signupCard',
     'collections',
-    'adminXSettings'
+    'adminXSettings',
+    'signupForm'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

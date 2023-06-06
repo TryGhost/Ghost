@@ -1539,3 +1539,9 @@ kbd {
 .gh-update-banner {
     background: var(--main-color-content-greybg);
 }
+
+/* Staff */
+.gh-roles-container .popover {
+    background: var(--dark-main-bg-color);
+    box-shadow: 0 0 1px rgba(0,0,0,.65), 0 8px 28px rgba(0,0,0,.72);
+}

@@ -1,13 +1,164 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Collections API Automatic Collection Filtering Creates an automatic Collection with a featured filter 1: [body] 1`] = `
+Object {
+  "collections": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": "Test Collection Description",
+      "feature_image": null,
+      "filter": "featured:true",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 0,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 1,
+        },
+      ],
+      "title": "Test Collection",
+      "type": "automatic",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Collections API Automatic Collection Filtering Creates an automatic Collection with a featured filter 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "374",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/collections\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Collections API Automatic Collection Filtering Creates an automatic Collection with a published_at filter 1: [body] 1`] = `
+Object {
+  "collections": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": "Test Collection Description with published_at filter",
+      "feature_image": null,
+      "filter": "published_at:>=2022-05-25",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 0,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 1,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 2,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 3,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 4,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 5,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 6,
+        },
+      ],
+      "title": "Test Collection with published_at filter",
+      "type": "automatic",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Collections API Automatic Collection Filtering Creates an automatic Collection with a published_at filter 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "681",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/collections\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Collections API Automatic Collection Filtering Creates an automatic Collection with a relational tag filter 1: [body] 1`] = `
+Object {
+  "collections": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": "Test Collection Description with relational tag filter",
+      "feature_image": null,
+      "filter": "tag:kitchen-sink",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 0,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 1,
+        },
+      ],
+      "title": "Test Collection with relational tag filter",
+      "type": "automatic",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Collections API Automatic Collection Filtering Creates an automatic Collection with a relational tag filter 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "431",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/collections\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Collections API Can add a Collection 1: [body] 1`] = `
 Object {
   "collections": Array [
     Object {
-      "deleted": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": "Test Collection Description",
+      "feature_image": null,
+      "filter": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [],
       "title": "Test Collection",
+      "type": "manual",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
     },
   ],
 }
@@ -17,7 +168,7 @@ exports[`Collections API Can add a Collection 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "137",
+  "content-length": "263",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -32,20 +183,46 @@ exports[`Collections API Can browse Collections 1: [body] 1`] = `
 Object {
   "collections": Array [
     Object {
-      "deleted": false,
-      "description": "Test Collection Description",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": "Collection of featured posts",
+      "feature_image": null,
+      "filter": "featured:true",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+      ],
+      "slug": "featured",
+      "title": "Featured Posts",
+      "type": "automatic",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": "Test Collection Description",
+      "feature_image": null,
+      "filter": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [],
       "title": "Test Collection",
+      "type": "manual",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
     },
   ],
   "meta": Object {
     "pagination": Object {
-      "limit": 1,
+      "limit": 2,
       "next": null,
       "page": 1,
       "pages": 1,
       "prev": null,
-      "total": 1,
+      "total": 2,
     },
   },
 }
@@ -55,7 +232,7 @@ exports[`Collections API Can browse Collections 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "224",
+  "content-length": "725",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -68,9 +245,15 @@ exports[`Collections API Can delete a Collection 1: [body] 1`] = `
 Object {
   "collections": Array [
     Object {
-      "deleted": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feature_image": null,
+      "filter": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [],
       "title": "Test Collection to Delete",
+      "type": "manual",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
     },
   ],
 }
@@ -80,7 +263,7 @@ exports[`Collections API Can delete a Collection 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "103",
+  "content-length": "248",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -140,9 +323,14 @@ exports[`Collections API Can edit a Collection 1: [body] 1`] = `
 Object {
   "collections": Array [
     Object {
-      "deleted": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feature_image": null,
+      "filter": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "title": "Test Collection to Edit",
+      "type": "manual",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
     },
   ],
 }
@@ -152,7 +340,7 @@ exports[`Collections API Can edit a Collection 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "101",
+  "content-length": "235",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -167,9 +355,14 @@ exports[`Collections API Can edit a Collection 3: [body] 1`] = `
 Object {
   "collections": Array [
     Object {
-      "deleted": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feature_image": null,
+      "filter": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "title": "Test Collection Edited",
+      "type": "manual",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
     },
   ],
 }
@@ -179,7 +372,7 @@ exports[`Collections API Can edit a Collection 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "100",
+  "content-length": "234",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -193,9 +386,15 @@ exports[`Collections API Can read a Collection 1: [body] 1`] = `
 Object {
   "collections": Array [
     Object {
-      "deleted": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feature_image": null,
+      "filter": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [],
       "title": "Test Collection to Read",
+      "type": "manual",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
     },
   ],
 }
@@ -205,7 +404,7 @@ exports[`Collections API Can read a Collection 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "101",
+  "content-length": "246",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -220,9 +419,15 @@ exports[`Collections API Can read a Collection 3: [body] 1`] = `
 Object {
   "collections": Array [
     Object {
-      "deleted": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feature_image": null,
+      "filter": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [],
       "title": "Test Collection to Read",
+      "type": "manual",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
     },
   ],
 }
@@ -232,7 +437,348 @@ exports[`Collections API Can read a Collection 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "101",
+  "content-length": "246",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Collections API Edit Can add Posts and append Post to a Collection 1: [body] 1`] = `
+Object {
+  "collections": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feature_image": null,
+      "filter": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 0,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 1,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 2,
+        },
+      ],
+      "title": "Test Collection Edited",
+      "type": "manual",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Collections API Edit Can add Posts and append Post to a Collection 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "391",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Collections API Edit Can add Posts and append Post to a Collection 3: [body] 1`] = `
+Object {
+  "collections": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feature_image": null,
+      "filter": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 0,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 1,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 2,
+        },
+      ],
+      "title": "Test Collection Edited",
+      "type": "manual",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Collections API Edit Can add Posts and append Post to a Collection 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "391",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Collections API Edit Can add Posts and append Post to a Collection 5: [body] 1`] = `
+Object {
+  "collections": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feature_image": null,
+      "filter": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+      ],
+      "title": "Test Collection Edited",
+      "type": "manual",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Collections API Edit Can add Posts and append Post to a Collection 6: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "440",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Collections API Edit Can add Posts and append Post to a Collection 7: [body] 1`] = `
+Object {
+  "collections": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feature_image": null,
+      "filter": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+      ],
+      "title": "Test Collection Edited",
+      "type": "manual",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Collections API Edit Can add Posts and append Post to a Collection 8: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "440",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Collections API Edit Can edit a Collection 1: [body] 1`] = `
+Object {
+  "collections": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feature_image": null,
+      "filter": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [],
+      "title": "Test Collection Edited",
+      "type": "manual",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Collections API Edit Can edit a Collection 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "245",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Collections API Edit Can remove a Post from a Collection 1: [body] 1`] = `
+Object {
+  "collections": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feature_image": null,
+      "filter": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+      ],
+      "title": "Test Collection Edited",
+      "type": "manual",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Collections API Edit Can remove a Post from a Collection 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "440",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Collections API Edit Can remove a Post from a Collection 3: [body] 1`] = `
+Object {
+  "collections": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feature_image": null,
+      "filter": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+      ],
+      "title": "Test Collection Edited",
+      "type": "manual",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Collections API Edit Can remove a Post from a Collection 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "391",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Collections API Edit Fails to edit unexistent Collection 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Collection not found.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Resource not found error, cannot edit collection.",
+      "property": null,
+      "type": "NotFoundError",
+    },
+  ],
+}
+`;
+
+exports[`Collections API Edit Fails to edit unexistent Collection 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "254",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -260,6 +806,442 @@ Object {
 `;
 
 exports[`Collections API Fails to edit unexistent Collection 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "254",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Collections API edit Can add Posts and append Post to a Collection 1: [body] 1`] = `
+Object {
+  "collections": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feature_image": null,
+      "filter": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 0,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 1,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 2,
+        },
+      ],
+      "title": "Test Collection Edited",
+      "type": "manual",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Collections API edit Can add Posts and append Post to a Collection 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "391",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Collections API edit Can add Posts and append Post to a Collection 3: [body] 1`] = `
+Object {
+  "collections": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feature_image": null,
+      "filter": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 0,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 1,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 2,
+        },
+      ],
+      "title": "Test Collection Edited",
+      "type": "manual",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Collections API edit Can add Posts and append Post to a Collection 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "391",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Collections API edit Can add Posts and append Post to a Collection 5: [body] 1`] = `
+Object {
+  "collections": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feature_image": null,
+      "filter": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+      ],
+      "title": "Test Collection Edited",
+      "type": "manual",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Collections API edit Can add Posts and append Post to a Collection 6: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "440",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Collections API edit Can add Posts and append Post to a Collection 7: [body] 1`] = `
+Object {
+  "collections": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feature_image": null,
+      "filter": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+      ],
+      "title": "Test Collection Edited",
+      "type": "manual",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Collections API edit Can add Posts and append Post to a Collection 8: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "440",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Collections API edit Can add a Post to a Collection 1: [body] 1`] = `
+Object {
+  "collections": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feature_image": null,
+      "filter": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        },
+      ],
+      "title": "Test Collection Edited",
+      "type": "manual",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Collections API edit Can add a Post to a Collection 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "346",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Collections API edit Can add a Post to a Collection 3: [body] 1`] = `
+Object {
+  "collections": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feature_image": null,
+      "filter": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        },
+      ],
+      "title": "Test Collection Edited",
+      "type": "manual",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Collections API edit Can add a Post to a Collection 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "346",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Collections API edit Can edit a Collection 1: [body] 1`] = `
+Object {
+  "collections": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feature_image": null,
+      "filter": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [],
+      "title": "Test Collection Edited",
+      "type": "manual",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Collections API edit Can edit a Collection 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "245",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Collections API edit Can remove a Post from a Collection 1: [body] 1`] = `
+Object {
+  "collections": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feature_image": null,
+      "filter": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+      ],
+      "title": "Test Collection Edited",
+      "type": "manual",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Collections API edit Can remove a Post from a Collection 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "440",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Collections API edit Can remove a Post from a Collection 3: [body] 1`] = `
+Object {
+  "collections": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feature_image": null,
+      "filter": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+      ],
+      "title": "Test Collection Edited",
+      "type": "manual",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Collections API edit Can remove a Post from a Collection 3: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Collections API edit Can remove a Post from a Collection 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "391",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Collections API edit Fails to edit unexistent Collection 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Collection not found.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Resource not found error, cannot edit collection.",
+      "property": null,
+      "type": "NotFoundError",
+    },
+  ],
+}
+`;
+
+exports[`Collections API edit Fails to edit unexistent Collection 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",

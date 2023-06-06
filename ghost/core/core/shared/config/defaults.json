@@ -176,7 +176,7 @@
     },
     "portal": {
         "url": "https://cdn.jsdelivr.net/ghost/portal@~{version}/umd/portal.min.js",
-        "version": "2.32"
+        "version": "2.33"
     },
     "sodoSearch": {
         "url": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/sodo-search.min.js",
@@ -199,6 +199,10 @@
     "adminX": {
         "url": "https://cdn.jsdelivr.net/ghost/admin-x-settings@~{version}/dist/admin-x-settings.umd.js",
         "version": "0.0"
+    },
+    "signupForm": {
+        "url": "https://cdn.jsdelivr.net/ghost/signup-form@~{version}/umd/signup-form.min.js",
+        "version": "0"
     },
     "tenor": {
         "googleApiKey": null,

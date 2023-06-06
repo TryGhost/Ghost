@@ -5,6 +5,8 @@ import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark-fill
 import {ReactComponent as WarningIcon} from '../../images/icons/warning-fill.svg';
 import {getSupportAddress} from '../../utils/helpers';
 import {clearURLParams} from '../../utils/notifications';
+import Interpolate from '@doist/react-interpolate';
+import {SYNTAX_I18NEXT} from '@doist/react-interpolate';
 
 export const PopupNotificationStyles = `
     .gh-portal-popupnotification {
@@ -77,24 +79,24 @@ export const PopupNotificationStyles = `
     }
 
     @keyframes popupnotification-slidein {
-        0% { 
-            transform: translateY(-10px); 
+        0% {
+            transform: translateY(-10px);
             opacity: 0;
         }
         60% { transform: translateY(2px); }
-        100% { 
-            transform: translateY(0); 
+        100% {
+            transform: translateY(0);
             opacity: 1.0;
         }
     }
 
     @keyframes popupnotification-slideout {
-        0% { 
+        0% {
             transform: translateY(0);
             opacity: 1.0;
         }
         40% { transform: translateY(2px); }
-        100% { 
+        100% {
             transform: translateY(-10px);
             opacity: 0;
         }
@@ -110,7 +112,7 @@ const CloseButton = ({hide = false, onClose}) => {
     );
 };
 
-const NotificationText = ({message, site}) => {
+const NotificationText = ({message, site, t}) => {
     const supportAddress = getSupportAddress({site});
     const supportAddressMail = `mailto:${supportAddress}`;
     if (message) {
@@ -119,9 +121,18 @@ const NotificationText = ({message, site}) => {
         );
     }
     return (
-        <p> An unexpected error occured. Please try again or <a href={supportAddressMail} onClick={() => {
-            supportAddressMail && window.open(supportAddressMail);
-        }}>contact support</a> if the error persists.</p>
+        <p>
+            <Interpolate
+                syntax={SYNTAX_I18NEXT}
+                string={t('An unexpected error occured. Please try again or <a>contact support</a> if the error persists.')}
+                mapping={{
+                    // eslint-disable-next-line jsx-a11y/anchor-has-content
+                    a: <a href={supportAddressMail} onClick={() => {
+                        supportAddressMail && window.open(supportAddressMail);
+                    }}/>
+                }}
+            />
+        </p>
     );
 };
 
@@ -187,7 +198,7 @@ export default class PopupNotification extends React.Component {
     }
 
     render() {
-        const {popupNotification, site} = this.context;
+        const {popupNotification, site, t} = this.context;
         const {className} = this.state;
         const {type, status, closeable, message} = popupNotification;
         const statusClass = status ? ` ${status}` : '';
@@ -196,7 +207,7 @@ export default class PopupNotification extends React.Component {
         return (
             <div className={`gh-portal-popupnotification${statusClass}${slideClass}`} onAnimationEnd={e => this.onAnimationEnd(e)}>
                 {(status === 'error' ? <WarningIcon className='gh-portal-popupnotification-icon error' alt=''/> : <CheckmarkIcon className='gh-portal-popupnotification-icon success' alt=''/>)}
-                <NotificationText type={type} status={status} message={message} site={site} />
+                <NotificationText type={type} status={status} message={message} site={site} t={t} />
                 <CloseButton hide={!closeable} onClose={e => this.closeNotification(e)}/>
             </div>
         );

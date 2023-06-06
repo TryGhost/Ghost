@@ -56,15 +56,31 @@
         <div class="gh-main-section">
             <h4 class="gh-main-section-header small bn">Beta features</h4>
             <div class="gh-expandable">
+                <Labs::Lexical />
+
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
                             <h4 class="gh-expandable-title">Substack migrator</h4>
-                            <p class="gh-expandable-description">Import all your content, members and paid subscriptions</p>
+                            <p class="gh-expandable-description">A <a href="https://ghost.org/help/importing-from-substack/" target="_blank" rel="noopener noreferrer">step-by-step tool</a> to easily import all your content, members and paid subscriptions</p>
                         </div>
                         <LinkTo @route="migrate" class="gh-btn" data-test-link="migrate">
                             <span>Open</span>
                         </LinkTo>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Portal translation</h4>
+                            <p class="gh-expandable-description">
+                                Translate your membership flows into your publication language (<a href="https://github.com/TryGhost/Ghost/tree/main/ghost/i18n/locales" target="_blank" rel="noopener noreferrer">supported languages</a>). Don’t see yours? <a href="https://forum.ghost.org/t/help-translate-ghost-beta/37461" target="_blank" rel="noopener noreferrer">Get involved</a>
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="i18n" />
+                        </div>
                     </div>
                 </div>
 
@@ -165,19 +181,6 @@
                     </div>
                     </GhUploader>
                 </div>
-                <div class="gh-expandable-block">
-                    <div class="gh-expandable-header">
-                        <div>
-                            <h4 class="gh-expandable-title">Enable Portal translations (beta)</h4>
-                            <p class="gh-expandable-description">
-                               Enable support for translations in the members signup/login system
-                            </p>
-                        </div>
-                        <div class="for-switch">
-                            <GhFeatureFlag @flag="i18n" />
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -199,8 +202,6 @@
                         </div>
                     </div>
                 </div>
-
-                <Labs::Lexical />
 
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
@@ -225,19 +226,6 @@
                         </div>
                         <div class="for-switch">
                             <GhFeatureFlag @flag="webmentions" />
-                        </div>
-                    </div>
-                </div>
-                <div class="gh-expandable-block">
-                    <div class="gh-expandable-header">
-                        <div>
-                            <h4 class="gh-expandable-title">Show email errors</h4>
-                            <p class="gh-expandable-description">
-                                This makes email errors visible in the UI.
-                            </p>
-                        </div>
-                        <div class="for-switch">
-                            <GhFeatureFlag @flag="emailErrors" />
                         </div>
                     </div>
                 </div>
@@ -270,54 +258,13 @@
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
-                            <h4 class="gh-expandable-title">Making it rain</h4>
+                            <h4 class="gh-expandable-title">Email customization</h4>
                             <p class="gh-expandable-description">
-                               Building momentum in the eyes of our publishers.
+                                Adding more control over the newsletter template
                             </p>
                         </div>
                         <div class="for-switch">
-                            <GhFeatureFlag @flag="makingItRain" />
-                        </div>
-                    </div>
-                </div>
-                <div class="gh-expandable-block">
-                    <div class="gh-expandable-header">
-                        <div>
-                            <h4 class="gh-expandable-title">Post history</h4>
-                            <p class="gh-expandable-description">
-                                Enables post history revision within the editor
-                            </p>
-                        </div>
-                        <div class="for-switch">
-                            <GhFeatureFlag @flag="postHistory" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="gh-expandable-block">
-                    <div class="gh-expandable-header">
-                        <div>
-                            <h4 class="gh-expandable-title">Revision Diffing</h4>
-                            <p class="gh-expandable-description">
-                                Enables showing post history differences within the editor
-                            </p>
-                        </div>
-                        <div class="for-switch">
-                            <GhFeatureFlag @flag="postDiffing" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="gh-expandable-block">
-                    <div class="gh-expandable-header">
-                        <div>
-                            <h4 class="gh-expandable-title">Image Editor</h4>
-                            <p class="gh-expandable-description">
-                                Allows publishers to edit images in the lexical editor
-                            </p>
-                        </div>
-                        <div class="for-switch">
-                            <GhFeatureFlag @flag="imageEditor" />
+                            <GhFeatureFlag @flag="emailCustomization" />
                         </div>
                     </div>
                 </div>
@@ -332,6 +279,20 @@
                         </div>
                         <div class="for-switch">
                             <GhFeatureFlag @flag="signupCard" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Signup Form</h4>
+                            <p class="gh-expandable-description">
+                                Adds an option to generate embed code for the signup form in the email newsletter settings.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="signupForm" />
                         </div>
                     </div>
                 </div>

@@ -40,7 +40,7 @@ Router.map(function () {
         this.route('edit', {path: ':type/:post_id'});
     });
 
-    this.route('lexical-editor', function () {
+    this.route('lexical-editor', {path: 'editor-beta'}, function () {
         this.route('new', {path: ':type'});
         this.route('edit', {path: ':type/:post_id'});
     });
@@ -49,6 +49,10 @@ Router.map(function () {
     this.route('tags');
     this.route('tag.new', {path: '/tags/new'});
     this.route('tag', {path: '/tags/:tag_slug'});
+
+    this.route('collections');
+    this.route('collection.new', {path: '/collection/new'});
+    this.route('collection', {path: '/collection/:collection_slug'});
 
     this.route('settings-x');
     this.route('settings');

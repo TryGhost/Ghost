@@ -3,7 +3,8 @@ import React, {useContext} from 'react';
 import EmailSettings from './settings/email/EmailSettings';
 import GeneralSettings from './settings/general/GeneralSettings';
 import MembershipSettings from './settings/membership/MembershipSettings';
-import {SettingsContext} from './SettingsProvider';
+import SiteSettings from './settings/site/SiteSettings';
+import {SettingsContext} from './providers/SettingsProvider';
 
 const Settings: React.FC = () => {
     const {settings} = useContext(SettingsContext) || {};
@@ -20,6 +21,7 @@ const Settings: React.FC = () => {
     return (
         <>
             <GeneralSettings />
+            <SiteSettings />
             <MembershipSettings />
             <EmailSettings />
         </>

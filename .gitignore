@@ -67,6 +67,7 @@ typings/
 *.sublime-*
 .vscode/*
 !.vscode/launch.json
+!.vscode/settings.json
 
 # OSX
 .DS_Store
@@ -130,6 +131,13 @@ Caddyfile
 /ghost/sodo-search/public/main.css
 /ghost/sodo-search/umd
 
+# Signup Form and local environments
+/ghost/signup-form/umd
+/ghost/signup-form/.env*.local
+/ghost/signup-form/test-results/
+/ghost/signup-form/playwright-report/
+/ghost/signup-form/playwright/.cache/
+
 # Announcement-Bar
 /ghost/announcement-bar/umd
 
@@ -142,3 +150,6 @@ Caddyfile
 # Admin X
 /ghost/admin-x-settings/dist
 /ghost/admin-x-settings/dist-ssr
+/ghost/admin-x-settings/test-results/
+/ghost/admin-x-settings/playwright-report/
+/ghost/admin-x-settings/playwright/.cache/

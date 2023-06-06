@@ -1,12 +1,18 @@
 import React from 'react';
 
 interface Props {
-    title: string;
+    title: React.ReactNode;
+    navid?: string;
+    onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
-const SettingNavItem: React.FC<Props> = ({title}) => {
+const SettingNavItem: React.FC<Props> = ({
+    title, 
+    navid = '', 
+    onClick = () => {}
+}) => {
     return (
-        <li><a className="block px-0 py-1 text-sm" href="_blank">{title}</a></li>
+        <li><button className="block px-0 py-1 text-sm" name={navid} type='button' onClick={onClick}>{title}</button></li>
     );
 };
 

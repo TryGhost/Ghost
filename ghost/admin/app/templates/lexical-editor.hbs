@@ -132,14 +132,12 @@
             @close={{this.toggleReAuthenticateModal}}
             @modifier="action wide" />
     {{/if}}
-    {{#if (feature 'postHistory')}}
-        {{#if this.showPostHistory}}
-            <GhFullscreenModal
-                @modal="post-history"
-                @model={{this.post}}
-                @close={{this.closePostHistory}}
-                @modifier="total-overlay post-history" />
-        {{/if}}
+    {{#if this.showPostHistory}}
+        <GhFullscreenModal
+            @modal="post-history"
+            @model={{this.post}}
+            @close={{this.closePostHistory}}
+            @modifier="total-overlay post-history" />
     {{/if}}
 {{/if}}
 

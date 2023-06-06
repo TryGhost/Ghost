@@ -23,6 +23,13 @@ export const Default: Story = {
     }
 };
 
+export const ClearBackground: Story = {
+    args: {
+        placeholder: 'Enter something',
+        clearBg: true
+    }
+};
+
 export const WithValue: Story = {
     args: {
         placeholder: 'Enter something',
@@ -41,6 +48,15 @@ export const WithHint: Story = {
     args: {
         title: 'Title',
         placeholder: 'Enter something',
+        hint: 'Here\'s some hint'
+    }
+};
+
+export const PasswordType: Story = {
+    args: {
+        title: 'Password',
+        type: 'password',
+        placeholder: 'Enter password',
         hint: 'Here\'s some hint'
     }
 };
