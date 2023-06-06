@@ -98,3 +98,6 @@ export {
     BASIC_TRANSFORMERS,
     MINIMAL_TRANSFORMERS
 };
+
+// eslint-disable-next-line no-undef
+export const version = __APP_VERSION__ ? __APP_VERSION__ : 'development';
