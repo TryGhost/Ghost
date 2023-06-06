@@ -9,12 +9,14 @@ export default class Preview extends Component {
 
     @tracked
         iframes = [
-            {element: null, html: '', loading: true, style: ''},
-            {element: null, html: '', loading: true, style: ''}
+            {element: null, html: '', loading: false, style: ''},
+            {element: null, html: '', loading: false, style: ''}
         ];
 
     @tracked
         visibleIframeIndex = 0;
+
+    lastChange = new Date();
 
     get visibleHtml() {
         return this.iframes[this.visibleIframeIndex].html;
@@ -35,28 +37,70 @@ export default class Preview extends Component {
             return;
         }
 
+        if (iframe.timer) {
+            clearTimeout(iframe.timer);
+            iframe.timer = null;
+        }
+
         if (!iframe.element) {
             iframe.element = event.currentTarget;
 
             if (index === this.visibleIframeIndex) {
-                this.updateContent(index);
+                setTimeout(() => {
+                    this.updateContent(index);
+                });
             }
         } else {
-            // Finished loading this iframe
-            iframe.loading = false;
-            this.visibleIframeIndex = index;
+            if (!iframe.loading) {
+                return;
+            }
+            // We need to wait until the iframe is fully rendered. The onLoad is kinda okay in Chrome, but on Safari it is fired too early
+            // So we need to poll if needed
+            // Check if this iframe element has an iframe inside of the body
+            // If so, we need to wait for that iframe to load as well
+            const iframeElement = iframe.element.contentWindow.document.querySelector('iframe');
 
-            // Force tracked update
-            this.iframes = [...this.iframes];
+            // Check that iframe contains a non empty body
+            const hasChildren = iframeElement && iframeElement.contentWindow.document.body && iframeElement.contentWindow.document.body.children.length > 0;
+
+            if (hasChildren) {
+                // Finished loading this iframe
+                this.visibleIframeIndex = index;
+
+                // Force tracked update
+                this.iframes = [...this.iframes];
+                iframe.loading = false;
+            } else {
+                // Wait 50ms
+                iframe.timer = setTimeout(() => {
+                    this.onLoad(index, event);
+                }, 50);
+            }
         }
     }
 
     @action onChangeHtml() {
-        // Get next iframe
-        throttle(this, this.throttledUpdate, 300, false);
+        // Check if no loading iframes
+        if (!this.iframes[0].loading && !this.iframes[1].loading && this.lastChange < new Date() - 500) {
+            // We make it feel more responsive by updating the frame immediately, but only if the last change was more than 500ms ago
+            // otherwise we get a lot of flickering
+
+            this.lastChange = new Date();
+            this.throttledUpdate();
+            return;
+        }
+
+        // Only update the iframe after 400ms, with 400ms in between
+        this.lastChange = new Date();
+        throttle(this, this.throttledUpdate, 400, false);
     }
 
     throttledUpdate() {
+        const currentVisibleHtml = this.iframes[this.visibleIframeIndex].html;
+        if (currentVisibleHtml === this.args.html) {
+            return;
+        }
+
         // Update the invisible iframe content
         const index = this.visibleIframeIndex === 0 ? 1 : 0;
         this.updateContent(index);
@@ -69,8 +113,9 @@ export default class Preview extends Component {
             return;
         }
 
-        if (index === this.visibleIframeIndex && !iframe.loading) {
-            return;
+        if (iframe.timer) {
+            clearTimeout(iframe.timer);
+            iframe.timer = null;
         }
 
         iframe.loading = true;
