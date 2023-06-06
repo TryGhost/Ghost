@@ -15,6 +15,10 @@ export default class UpdateSnippetModal extends Component {
             }
             if (lexical) {
                 snippet.lexical = lexical;
+
+                if (!snippet.mobiledoc) {
+                    snippet.mobiledoc = {};
+                }
             }
 
             yield snippet.save();
