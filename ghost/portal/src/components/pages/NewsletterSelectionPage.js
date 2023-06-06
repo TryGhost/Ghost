@@ -1,11 +1,11 @@
 import AppContext from '../../AppContext';
 import React, {useContext, useState} from 'react';
 import Switch from '../common/Switch';
-import {getSiteNewsletters} from '../../utils/helpers';
+import {getSiteNewsletters, hasOnlyFreePlan} from '../../utils/helpers';
 import ActionButton from '../common/ActionButton';
 import {ReactComponent as LockIcon} from '../../images/icons/lock.svg';
 
-function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribedNewsletters}) {
+function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribedNewsletters, t}) {
     const isChecked = subscribedNewsletters.some((d) => {
         return d.id === newsletter?.id;
     });
@@ -17,7 +17,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
                     <p>{newsletter.description}</p>
                 </div>
                 <div class="gh-portal-lock-icon-container">
-                    <LockIcon className='gh-portal-lock-icon' alt='' title="Unlock access to all newsletters by becoming a paid subscriber." />
+                    <LockIcon className='gh-portal-lock-icon' alt='' title={t('Unlock access to all newsletters by becoming a paid subscriber.')} />
                 </div>
             </section>
         );
@@ -48,7 +48,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
 }
 
 function NewsletterPrefs({subscribedNewsletters, setSubscribedNewsletters}) {
-    const {site} = useContext(AppContext);
+    const {site, t} = useContext(AppContext);
     const newsletters = getSiteNewsletters({site});
     return newsletters.map((newsletter) => {
         return (
@@ -57,6 +57,7 @@ function NewsletterPrefs({subscribedNewsletters, setSubscribedNewsletters}) {
                 newsletter={newsletter}
                 subscribedNewsletters={subscribedNewsletters}
                 setSubscribedNewsletters={setSubscribedNewsletters}
+                t={t}
             />
         );
     });
@@ -116,15 +117,17 @@ export default function NewsletterSelectionPage({pageData, onBack}) {
                             style={{width: '100%'}}
                         />
                     </div>
-                    <div>
-                        <button
-                            className='gh-portal-btn gh-portal-btn-link gh-portal-btn-different-plan'
-                            onClick = {() => {
-                                onBack();
-                            }}>
-                            <span>{t('Choose a different plan')}</span>
-                        </button>
-                    </div>
+                    {!hasOnlyFreePlan({site}) ? (
+                        <div>
+                            <button
+                                className='gh-portal-btn gh-portal-btn-link gh-portal-btn-different-plan'
+                                onClick = {() => {
+                                    onBack();
+                                }}>
+                                <span>{t('Choose a different plan')}</span>
+                            </button>
+                        </div>
+                    ) : null}
                 </div>
             </footer>
         </div>

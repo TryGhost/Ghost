@@ -166,7 +166,7 @@ export const FeedbackPageStyles = `
 `;
 
 function ErrorPage({error}) {
-    const {onAction} = useContext(AppContext);
+    const {onAction, t} = useContext(AppContext);
 
     return (
         <div className='gh-portal-content gh-portal-feedback with-footer'>
@@ -174,7 +174,7 @@ function ErrorPage({error}) {
             <div class="gh-feedback-icon gh-feedback-icon-error">
                 <ThumbErrorIcon />
             </div>
-            <h1 className="gh-portal-main-title">Sorry, that didn’t work.</h1>
+            <h1 className="gh-portal-main-title">{t('Sorry, that didn’t work.')}</h1>
             <div>
                 <p className="gh-portal-text-center">{error}</p>
             </div>
@@ -184,7 +184,7 @@ function ErrorPage({error}) {
                 onClick = {() => onAction('closePopup')}
                 disabled={false}
                 brandColor='#000000'
-                label={'Close'}
+                label={t('Close')}
                 isRunning={false}
                 tabindex='3'
                 classes={'sticky bottom'}
@@ -301,7 +301,7 @@ const ConfirmFeedback = ({positive}) => {
 };
 
 export default function FeedbackPage() {
-    const {site, pageData, member} = useContext(AppContext);
+    const {site, pageData, member, t} = useContext(AppContext);
     const {uuid, postId, score: initialScore} = pageData;
     const [score, setScore] = useState(initialScore);
     const positive = score === 1;
@@ -318,7 +318,7 @@ export default function FeedbackPage() {
             await sendFeedback({siteUrl: site.url, uuid, postId, score: selectedScore});
             setScore(selectedScore);
         } catch (e) {
-            const text = HumanReadableError.getMessageFromError(e, 'There was a problem submitting your feedback. Please try again a little later.');
+            const text = HumanReadableError.getMessageFromError(e, t('There was a problem submitting your feedback. Please try again a little later.'));
             setError(text);
         }
         setLoading(false);

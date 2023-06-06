@@ -173,8 +173,8 @@ export default class EditorController extends Controller {
     get snippets() {
         return this._snippets
             .reject(snippet => snippet.get('isNew'))
-            .sort((a, b) => a.name.localeCompare(b.name))
-            .filterBy('lexical', null);
+            .reject(snippet => ['{}', '"{}"'].includes(JSON.stringify(snippet.mobiledoc)))
+            .sort((a, b) => a.name.localeCompare(b.name));
     }
 
     @computed('session.user.{isAdmin,isEditor}')

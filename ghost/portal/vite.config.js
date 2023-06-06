@@ -17,35 +17,38 @@ export default defineConfig((config) => {
         clearScreen: false,
         define: {
             'process.env.NODE_ENV': JSON.stringify(config.mode),
-            REACT_APP_VERSION: JSON.stringify(process.env.npm_package_version),
+            REACT_APP_VERSION: JSON.stringify(process.env.npm_package_version)
+        },
+        preview: {
+            port: 4175
         },
         server: {
-            port: 5368,
+            port: 5368
         },
         plugins: [
             cssInjectedByJsPlugin(),
             reactPlugin(),
-            svgrPlugin(),
+            svgrPlugin()
         ],
         esbuild: {
-            loader: "jsx",
+            loader: 'jsx',
             include: /src\/.*\.jsx?$/,
-            exclude: [],
+            exclude: []
         },
         optimizeDeps: {
             esbuildOptions: {
                 plugins: [
                     {
-                        name: "load-js-files-as-jsx",
+                        name: 'load-js-files-as-jsx',
                         setup(build) {
-                            build.onLoad({ filter: /src\/.*\.js$/ }, async (args) => ({
-                                loader: "jsx",
-                                contents: await fs.readFile(args.path, "utf8"),
+                            build.onLoad({filter: /src\/.*\.js$/}, async args => ({
+                                loader: 'jsx',
+                                contents: await fs.readFile(args.path, 'utf8')
                             }));
-                        },
-                    },
-                ],
-            },
+                        }
+                    }
+                ]
+            }
         },
         build: {
             outDir: resolve(__dirname, 'umd'),
@@ -57,17 +60,17 @@ export default defineConfig((config) => {
                 entry: resolve(__dirname, 'src/index.js'),
                 formats: ['umd'],
                 name: pkg.name,
-                fileName: (format) => `${outputFileName}.min.js`,
+                fileName: format => `${outputFileName}.min.js`
             },
             rollupOptions: {
                 output: {
-                    manualChunks: false,
+                    manualChunks: false
                 }
             },
             commonjsOptions: {
                 include: [/ghost/, /node_modules/],
                 dynamicRequireRoot: '../',
-                dynamicRequireTargets: SUPPORTED_LOCALES.map((locale) => `../i18n/locales/${locale}/portal.json`),
+                dynamicRequireTargets: SUPPORTED_LOCALES.map(locale => `../i18n/locales/${locale}/portal.json`)
             }
         },
         test: {

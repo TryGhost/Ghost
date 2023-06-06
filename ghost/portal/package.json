@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/portal",
-  "version": "2.32.0",
+  "version": "2.33.0",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -17,7 +17,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "dev": "concurrently \"vite\" \"yarn build:watch\"",
+    "dev": "concurrently \"yarn preview -l silent\" \"yarn build:watch\"",
     "build": "vite build",
     "build:watch": "vite build --watch",
     "preview": "vite preview",
@@ -33,10 +33,12 @@
   "eslintConfig": {
     "extends": [
       "react-app",
-      "plugin:ghost/browser"
+      "plugin:ghost/browser",
+      "plugin:i18next/recommended"
     ],
     "plugins": [
-      "ghost"
+      "ghost",
+      "i18next"
     ]
   },
   "browserslist": {
@@ -60,24 +62,26 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "7.21.8",
-    "@sentry/react": "7.49.0",
-    "@sentry/tracing": "7.49.0",
+    "@doist/react-interpolate": "0.4.1",
+    "@sentry/react": "7.54.0",
+    "@sentry/tracing": "7.54.0",
     "@testing-library/jest-dom": "5.16.5",
     "@testing-library/react": "12.1.5",
     "@tryghost/i18n": "0.0.0",
     "@vitejs/plugin-react": "4.0.0",
     "@vitest/coverage-c8": "0.29.8",
     "@vitest/ui": "0.29.8",
-    "concurrently": "8.0.1",
+    "concurrently": "8.1.0",
     "cross-fetch": "3.1.6",
     "eslint": "8.37.0",
     "eslint-config-react-app": "7.0.1",
-    "jsdom": "22.0.0",
+    "eslint-plugin-i18next": "^6.0.1",
+    "jsdom": "22.1.0",
     "react": "17.0.2",
     "react-dom": "17.0.2",
-    "vite": "4.3.6",
+    "vite": "4.3.9",
     "vite-plugin-css-injected-by-js": "3.1.1",
     "vite-plugin-svgr": "3.2.0",
-    "vitest": "0.31.0"
+    "vitest": "0.31.4"
   }
 }

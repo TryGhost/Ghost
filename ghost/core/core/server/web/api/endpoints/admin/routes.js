@@ -18,6 +18,15 @@ module.exports = function apiRoutes() {
     // ## Public
     router.get('/site', mw.publicAdminApi, http(api.site.read));
 
+    // ## Collections
+    router.get('/collections', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.browse));
+    router.get('/collections/:id', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.read));
+    router.post('/collections', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.add));
+    router.put('/collections/:id', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.edit));
+    router.del('/collections/:id', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.destroy));
+    router.post('/collections/:id/posts', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.addPost));
+    router.del('/collections/:id/posts/:post_id', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.destroyPost));
+
     // ## Configuration
     router.get('/config', mw.authAdminApi, http(api.config.read));
 

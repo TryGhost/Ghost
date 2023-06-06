@@ -1,144 +1,82 @@
-import ButtonGroup from '../../../admin-x-ds/global/ButtonGroup';
-import React, {useContext, useEffect, useRef, useState} from 'react';
+import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupHeader from '../../../admin-x-ds/settings/SettingGroupHeader';
-import SettingGroupInputs from '../../../admin-x-ds/settings/SettingGroupInputs';
-import SettingGroupValues from '../../../admin-x-ds/settings/SettingGroupValues';
+import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
+import TextArea from '../../../admin-x-ds/global/TextArea';
 import TextField from '../../../admin-x-ds/global/TextField';
-import {ButtonColors, IButton} from '../../../admin-x-ds/global/Button';
-import {SettingsContext} from '../../SettingsProvider';
-import {TSettingGroupStates} from '../../../admin-x-ds/settings/SettingGroup';
-import {getSettingValue} from '../../../utils/helpers';
+import useSettingGroup from '../../../hooks/useSettingGroup';
 
 const TitleAndDescription: React.FC = () => {
-    const [isEditMode, setIsEditMode] = useState(false);
-    const [isEdited, setIsEdited] = useState(false);
-    const {settings, saveSettings} = useContext(SettingsContext) || {};
-    const savedSiteTitle = getSettingValue(settings, 'title');
-    const savedSiteDescription = getSettingValue(settings, 'description');
-    const [siteTitle, setSiteTitleValue] = useState(savedSiteTitle);
-    const [siteDescription, setSiteDescriptionValue] = useState(savedSiteDescription);
-    const siteTitleRef = useRef<HTMLInputElement>(null);
+    const {
+        currentState,
+        saveState,
+        focusRef,
+        handleSave,
+        handleCancel,
+        updateSetting,
+        getSettingValues,
+        handleStateChange
+    } = useSettingGroup();
 
-    useEffect(() => {
-        if (isEditMode && siteTitleRef.current) {
-            siteTitleRef.current.focus();
-        }
-    }, [isEditMode]);
-
-    const handleEditClick = () => {
-        setIsEditMode(true);
-    };
-
-    const handleCancelClick = () => {
-        setIsEditMode(false);
-    };
+    const [title, description] = getSettingValues(['title', 'description']) as string[];
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setIsEdited(true);
-        setSiteTitleValue(e.target.value);
+        updateSetting('title', e.target.value);
     };
 
-    const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setIsEdited(true);
-        setSiteDescriptionValue(e.target.value);
+    const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        updateSetting('description', e.target.value);
     };
 
-    const viewButtons = [
-        {
-            label: 'Edit',
-            key: 'edit',
-            color: ButtonColors.Green,
-            onClick: handleEditClick
-        }
-    ];
-
-    let editButtons: IButton[] = [
-        {
-            label: 'Cancel',
-            key: 'cancel',
-            onClick: handleCancelClick
-        }
-    ];
-
-    if (isEdited) {
-        editButtons.push(
-            {
-                label: 'Save',
-                key: 'save',
-                disabled: !isEdited,
-                color: ButtonColors.Green,
-                onClick: () => {
-                    saveSettings?.([
-                        {
-                            key: 'title',
-                            value: siteTitle
-                        },
-                        {
-                            key: 'description',
-                            value: siteDescription
-                        }
-                    ]);
-                    setIsEdited(false);
-                    setIsEditMode(false);
+    const values = (
+        <SettingGroupContent
+            columns={2}
+            values={[
+                {
+                    heading: 'Site title',
+                    key: 'site-title',
+                    value: title
+                },
+                {
+                    heading: 'Site description',
+                    key: 'site-description',
+                    value: description
                 }
-            }
-        );
-    }
-
-    const viewValues = [
-        {
-            heading: 'Site title',
-            key: 'site-title',
-            value: siteTitle
-        },
-        {
-            heading: 'Site description',
-            key: 'site-description',
-            value: siteDescription
-        }
-    ];
-
-    const inputFields = (
-        <SettingGroupInputs columns={2}>
-            <TextField
-                hint="The name of your site"
-                inputRef={siteTitleRef}
-                placeholder="Site title"
-                title="Site title"
-                value={siteTitle}
-                onChange={handleTitleChange}
-            />
-            <TextField
-                hint="Used in your theme, meta data and search results"
-                placeholder="Enter something"
-                title="Site description"
-                value={siteDescription}
-                onChange={handleDescriptionChange}
-            />
-        </SettingGroupInputs>
+            ]}
+        />
     );
 
-    let settingGroupState: TSettingGroupStates = 'view';
-
-    if (isEditMode) {
-        settingGroupState = 'edit';
-    }
-
-    if (isEdited) {
-        settingGroupState = 'unsaved';
-    }
+    const inputFields = (
+        <SettingGroupContent>
+            <TextField
+                hint="The name of your site"
+                inputRef={focusRef}
+                placeholder="Site title"
+                title="Site title"
+                value={title}
+                onChange={handleTitleChange}
+            />
+            <TextArea
+                hint="A short description, used in your theme, meta data and search results"
+                placeholder="Site description"
+                title="Site description"
+                value={description}
+                onChange={handleDescriptionChange} />
+        </SettingGroupContent>
+    );
 
     return (
-        <SettingGroup state={settingGroupState}>
-            <SettingGroupHeader
-                description="The details used to identify your publication around the web"
-                title="Title & description"
-            >
-                <ButtonGroup buttons={isEditMode ? editButtons : viewButtons} link={true} />
-            </SettingGroupHeader>
-            {isEditMode ? inputFields : <SettingGroupValues columns={2} values={viewValues} />
-            }
+        <SettingGroup
+            description='The details used to identify your publication around the web'
+            navid='title-and-description'
+            saveState={saveState}
+            state={currentState}
+            testId='title-and-description'
+            title='Title & description'
+            onCancel={handleCancel}
+            onSave={handleSave}
+            onStateChange={handleStateChange}
+        >
+            {currentState === 'view' ? values : inputFields }
         </SettingGroup>
     );
 };

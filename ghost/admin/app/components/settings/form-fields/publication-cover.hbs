@@ -24,7 +24,7 @@
                         {{on "click" uploader.triggerFileDialog}}
                         data-test-cover-img
                     >
-                    {{#if (feature 'imageEditor')}}
+                    {{#if (feature 'lexicalEditor')}}
                     <KoenigImageEditor
                         @className="gh-setting-action-largeimg-delete gh-setting-action-largeimg-edit"
                         @imageSrc={{this.settings.coverImage}}

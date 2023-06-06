@@ -1,51 +1,99 @@
-import ButtonGroup from '../../../admin-x-ds/global/ButtonGroup';
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
+import Select from '../../../admin-x-ds/global/Select';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupHeader from '../../../admin-x-ds/settings/SettingGroupHeader';
-import SettingGroupValues from '../../../admin-x-ds/settings/SettingGroupValues';
-import {ButtonColors} from '../../../admin-x-ds/global/Button';
-import {SettingsContext} from '../../SettingsProvider';
-import {getLocalTime, getSettingValue} from '../../../utils/helpers';
+import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
+import timezoneData from '@tryghost/timezone-data';
+import useSettingGroup from '../../../hooks/useSettingGroup';
+import {getLocalTime} from '../../../utils/helpers';
 
-const TimeZone: React.FC = () => {
-    const {settings} = useContext(SettingsContext) || {};
-    const publicationTimezone = getSettingValue(settings, 'timezone');
+interface TimezoneDataDropdownOption {
+    name: string;
+    label: string;
+}
 
-    const [currentTime, setCurrentTime] = useState(getLocalTime(publicationTimezone));
+interface HintProps {
+    timezone: string;
+}
+
+const Hint: React.FC<HintProps> = ({timezone}) => {
+    const [currentTime, setCurrentTime] = useState(getLocalTime(timezone));
+
     useEffect(() => {
         const timer = setInterval(() => {
-            setCurrentTime(getLocalTime(publicationTimezone));
+            setCurrentTime(getLocalTime(timezone));
         }, 1000);
 
         return () => {
             clearInterval(timer);
         };
-    }, [publicationTimezone]);
+    }, [timezone]);
+    return (
+        <>
+            The local time here is currently {currentTime}
+        </>
+    );
+};
 
-    const buttons = [
-        {
-            label: 'Edit',
-            color: ButtonColors.Green
-        }
-    ];
+const TimeZone: React.FC = () => {
+    const {
+        currentState,
+        saveState,
+        handleSave,
+        handleCancel,
+        updateSetting,
+        getSettingValues,
+        handleStateChange
+    } = useSettingGroup();
 
-    const viewValues = [
-        {
-            key: 'site-timezone',
-            value: publicationTimezone,
-            hint: `The local time here is currently ${currentTime}`
-        }
-    ];
+    const [publicationTimezone] = getSettingValues(['timezone']) as string[];
+
+    const timezoneOptions = timezoneData.map((tzOption: TimezoneDataDropdownOption) => {
+        return {
+            value: tzOption.name,
+            label: tzOption.label
+        };
+    });
+
+    const handleTimezoneChange = (value: string) => {
+        updateSetting('timezone', value);
+    };
+
+    const viewContent = (
+        <SettingGroupContent values={[
+            {
+                key: 'site-timezone',
+                value: publicationTimezone,
+                hint: (
+                    <Hint timezone={publicationTimezone} />
+                )
+            }
+        ]} />
+    );
+    const inputFields = (
+        <SettingGroupContent columns={1}>
+            <Select
+                defaultSelectedOption={publicationTimezone}
+                hint={<Hint timezone={publicationTimezone} />}
+                options={timezoneOptions}
+                title="Site timezone"
+                onSelect={handleTimezoneChange}
+            />
+        </SettingGroupContent>
+    );
 
     return (
-        <SettingGroup>
-            <SettingGroupHeader
-                description="Set the time and date of your publication, used for all published posts"
-                title="Site timezone"
-            >
-                <ButtonGroup buttons={buttons} link={true} />
-            </SettingGroupHeader>
-            <SettingGroupValues values={viewValues} />
+        <SettingGroup
+            description='Set the time and date of your publication, used for all published posts'
+            navid='timezone'
+            saveState={saveState}
+            state={currentState}
+            testId='timezone'
+            title='Site timezone'
+            onCancel={handleCancel}
+            onSave={handleSave}
+            onStateChange={handleStateChange}
+        >
+            {currentState === 'view' ? viewContent : inputFields}
         </SettingGroup>
     );
 };

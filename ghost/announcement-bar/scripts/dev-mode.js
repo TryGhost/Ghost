@@ -4,7 +4,6 @@ const chokidar = require('chokidar');
 const chalk = require('chalk');
 const {spawn} = require('child_process');
 const minimist = require('minimist');
-const ora = require('ora');
 
 /* eslint-disable no-console */
 const log = console.log;
@@ -16,7 +15,7 @@ let spinner;
 let stdOutChunks = [];
 let stdErrChunks = [];
 
-const {v, verbose, port = 5370, basic, b} = minimist(process.argv.slice(2));
+const {v, verbose, port = 5371, basic, b} = minimist(process.argv.slice(2));
 const showVerbose = !!(v || verbose);
 const showBasic = !!(b || basic);
 
@@ -78,15 +77,6 @@ function printBuildComplete(code) {
     log();
 }
 
-function printBuildStart() {
-    if (showVerbose) {
-        log(chalk.bold.greenBright.bgBlackBright(`${'-'.repeat(32)}Building${'-'.repeat(32)}`));
-        log();
-    } else {
-        spinner = ora(chalk.magentaBright.bold('Bundling files, hang on...')).start();
-    }
-}
-
 function onBuildComplete(code) {
     buildProcess = null;
     printBuildComplete(code);
@@ -114,7 +104,6 @@ function buildPortal() {
         return;
     }
     printFileChanges();
-    printBuildStart();
     fileChanges = [];
     const options = getBuildOptions();
     buildProcess = spawn('yarn build', options);
@@ -171,7 +160,6 @@ function startDevServer() {
     });
 
     server.listen(port, () => {
-        log(chalk.whiteBright(`Announcement-Bar dev server is running on http://localhost:${port}`));
         watchFiles();
     });
 }

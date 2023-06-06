@@ -181,6 +181,11 @@
     button,
     select {
         text-transform: none;
+        letter-spacing: inherit;
+        border-radius: inherit;
+        appearance: auto;
+        -webkit-appearance: auto;
+        background: unset;
     }
 
     /*

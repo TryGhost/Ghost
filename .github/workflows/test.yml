@@ -24,7 +24,7 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: '16.13.0'
+          node-version: '18.12.1'
           cache: yarn
 
       - uses: actions/cache@v3
@@ -54,7 +54,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: "16.13.0"
+          node-version: "18.12.1"
 
       - run: yarn --prefer-offline
       - run: yarn workspace ghost-admin run test
@@ -66,7 +66,7 @@ jobs:
         working-directory: ghost/admin
       - uses: actions/upload-artifact@v3
         with:
-          name: coverage
+          name: admin-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
 
       - uses: tryghost/actions/actions/slack-build@main
@@ -98,7 +98,7 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: '16.13.0'
+          node-version: '18.12.1'
           cache: yarn
 
       - name: Shutdown MySQL
@@ -160,9 +160,9 @@ jobs:
       - run: yarn test:unit
 
       - uses: actions/upload-artifact@v3
-        if: startsWith(matrix.node, '16')
+        if: startsWith(matrix.node, '18')
         with:
-          name: coverage
+          name: unit-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
 
       - uses: tryghost/actions/actions/slack-build@main
@@ -182,7 +182,7 @@ jobs:
           - DB: mysql8
             NODE_ENV: testing-mysql
         include:
-          - node: 16.13.0
+          - node: 18.12.1
             env:
               DB: sqlite3
               NODE_ENV: testing
@@ -211,9 +211,11 @@ jobs:
           mysql database: 'ghost_testing'
           mysql root password: 'root'
 
-      - run: yarn --prefer-offline
+      - name: Install dependencies
+        run: yarn --prefer-offline
 
-      - run: date +%s > ${{ runner.temp }}/startTime # Get start time for test suite
+      - name: Record start time
+        run: date +%s > ${{ runner.temp }}/startTime # Get start time for test suite
 
       - name: Set env vars (SQLite)
         if: contains(matrix.env.DB, 'sqlite')
@@ -223,20 +225,33 @@ jobs:
         if: contains(matrix.env.DB, 'mysql')
         run: echo "database__connection__password=root" >> $GITHUB_ENV
 
-      - name: Run tests
+      - name: E2E tests
         working-directory: ghost/core
-        run: yarn test:ci
+        run: yarn test:ci:e2e
+
+      - name: Regression tests
+        working-directory: ghost/core
+        run: yarn test:ci:regression
+
+      - name: Integration tests
+        working-directory: ghost/core
+        run: yarn test:ci:integration
 
       # Get runtime in seconds for test suite
-      - run: |
+      - name: Record test duration
+        run: |
           startTime="$(cat ${{ runner.temp }}/startTime)"
           endTime="$(date +%s)"
           echo "test_time=$(($endTime-$startTime))" >> $GITHUB_ENV
 
-      - uses: codecov/codecov-action@v3
-        if: startsWith(matrix.node, '16') && contains(matrix.env.DB, 'mysql')
+      - uses: actions/upload-artifact@v3
+        if: startsWith(matrix.node, '18') && contains(matrix.env.DB, 'mysql')
         with:
-          flags: e2e-tests
+          name: e2e-coverage
+          path: |
+            ghost/*/coverage-e2e/cobertura-coverage.xml
+            ghost/*/coverage-integration/cobertura-coverage.xml
+            ghost/*/coverage-regression/cobertura-coverage.xml
 
       # Continue on error if TailScale service is down
       - name: Tailscale Action
@@ -249,7 +264,8 @@ jobs:
 
       # Report time taken to metrics service
       # Continue on error if previous TailScale step fails
-      - uses: tryghost/action-trigger-metric@main
+      - name: Store test duration
+        uses: tryghost/action-trigger-metric@main
         timeout-minutes: 1
         continue-on-error: true
         if: (github.event_name == 'push' && github.repository_owner == 'TryGhost') || (github.event_name == 'pull_request' && startsWith(github.head_ref, 'TryGhost/'))
@@ -340,16 +356,39 @@ jobs:
 
   coverage:
     name: Coverage
-    needs: [unit-tests, admin-tests]
+    needs: [unit-tests, admin-tests, database-tests]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Restore coverage
+
+      - name: Restore Admin coverage
         uses: actions/download-artifact@v3
         with:
-          path: ghost
-      - run: rsync -av --remove-source-files ghost/coverage/* ghost/
-      - uses: codecov/codecov-action@v3
+          name: admin-coverage
+      - name: Restore E2E coverage
+        uses: actions/download-artifact@v3
+        with:
+          name: e2e-coverage
+
+      - name: Move coverage
+        run: |
+          rsync -av --remove-source-files admin/* ghost/admin
+          rsync -av --remove-source-files core/* ghost/core
+
+      - name: Upload E2E test coverage
+        uses: codecov/codecov-action@v3
+        with:
+          flags: e2e-tests
+          move_coverage_to_trash: true
+
+      - name: Restore Unit test coverage
+        uses: actions/download-artifact@v3
+        with:
+          name: unit-coverage
+          path: coverage
+      - run: rsync -av --remove-source-files coverage/* ghost/
+      - name: Upload unit test coverage
+        uses: codecov/codecov-action@v3
         with:
           flags: unit-tests
 

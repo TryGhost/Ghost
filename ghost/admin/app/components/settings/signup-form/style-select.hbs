@@ -1,0 +1,5 @@
+<div class="gh-btn-group">
+    {{#each this.options as |option|}}
+        <button class="gh-btn {{if (eq this.selectedOption.value option.value) "gh-btn-group-selected"}}" type="button" {{on "click" (fn this.setRecipients option)}}><span>{{option.name}}</span></button>
+    {{/each}}
+</div>

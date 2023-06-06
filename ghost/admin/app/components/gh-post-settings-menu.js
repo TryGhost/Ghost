@@ -145,8 +145,7 @@ export default class GhPostSettingsMenu extends Component {
     }
 
     get canViewPostHistory() {
-        let showPostHistory = this.feature.postHistory === true
-            && this.post.lexical !== null
+        let showPostHistory = this.post.lexical !== null
             && this.post.emailOnly === false;
 
         if (this.post.isPublished === true) {

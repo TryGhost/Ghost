@@ -20,6 +20,7 @@ module.exports = {
             grey: {
                 DEFAULT: '#ABB4BE',
                 50: '#FAFAFB',
+                75: '#F9FAFB',
                 100: '#F4F5F6',
                 200: '#EBEEF0',
                 300: '#DDE1E5',
@@ -92,6 +93,37 @@ module.exports = {
             none: '0 0 #0000'
         },
         extend: {
+            keyframes: {
+                toasterIn: {
+                    '0.00%': {
+                        opacity: '0',
+                        transform: 'translateX(-232.05px)'
+                    },
+                    '26.52%': {
+                        opacity: '0.5',
+                        transform: 'translateX(5.90px)'
+                    },
+                    '63.26%': {
+                        opacity: '1',
+                        transform: 'translateX(-1.77px)'
+                    },
+                    '100.00%': {
+                        transform: 'translateX(0px)'
+                    }
+                },
+                toasterOut: {
+                    '0%': {
+                        opacity: '1'
+                    },
+                    '100%': {
+                        opacity: '0'
+                    }
+                }
+            },
+            animation: {
+                'toaster-in': 'toasterIn 0.8s cubic-bezier(0.445, 0.050, 0.550, 0.950)',
+                'toaster-out': 'toasterOut 0.4s 0s 1 ease forwards'
+            },
             spacing: {
                 px: '1px',
                 0: '0px',
@@ -184,6 +216,9 @@ module.exports = {
                 tight: '1.35em',
                 tighter: '1.25em',
                 supertight: '1.1em'
+            },
+            transition: {
+                basic: 'all 0.4s ease'
             }
         }
     }

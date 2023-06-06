@@ -419,6 +419,7 @@
 .gh-editor-feedback-dropdown-header h3 {
     font-size: 1.9rem;
     font-weight: 600;
+    margin-bottom: 16px;
 }
 
 .gh-editor-feedback-dropdown p {
@@ -508,12 +509,54 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     height: 4px;
 }
 
+.gh-editor-feature-image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: linear-gradient(180deg,rgba(0,0,0,.2),transparent 40%,transparent);
+    transition: all .1s ease-in;
+    opacity: 0;
+}
+
+.gh-editor-feature-image:hover .gh-editor-feature-image-overlay {
+    opacity: 1;
+}
+
 .gh-editor-feature-image .image-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.6rem;
+    height: 3.2rem;
+    padding: 0;
+    background: var(--white);
+    color: var(--darkgrey);
+    border-radius: 4px;
+    transition: all .1s ease-in;
     opacity: 0;
 }
 
 .gh-editor-feature-image:hover .image-action {
+    opacity: .85;
+}
+
+.gh-editor-feature-image .image-action svg {
+    width: 1.6rem;
+    height: 1.6rem;
+}
+
+.gh-editor-feature-image .image-action:hover {
     opacity: 1;
+}
+
+.gh-editor-feature-image .image-action:hover svg {
+    color: var(--black);
+}
+
+.gh-editor-feature-image .image-action svg path {
+    fill: var(--darkgrey);
 }
 
 .gh-editor-feature-image-add-button {

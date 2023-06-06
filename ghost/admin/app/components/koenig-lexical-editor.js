@@ -151,7 +151,7 @@ export default class KoenigLexicalEditor extends Component {
     get pinturaConfig() {
         const jsUrl = this.getImageEditorJSUrl();
         const cssUrl = this.getImageEditorCSSUrl();
-        if (!this.feature.imageEditor || !jsUrl || !cssUrl) {
+        if (!this.feature.lexicalEditor || !jsUrl || !cssUrl) {
             return null;
         }
         return {
@@ -252,12 +252,7 @@ export default class KoenigLexicalEditor extends Component {
         const fetchLabels = async () => {
             const labels = await this.fetchLabelsTask.perform();
 
-            return labels.toArray().map((label) => {
-                return {
-                    id: label.id,
-                    name: label.name
-                };
-            });
+            return labels.map(label => label.name);
         };
 
         const defaultCardConfig = {
@@ -276,7 +271,9 @@ export default class KoenigLexicalEditor extends Component {
             fetchLabels,
             feature: {
                 signupCard: this.feature.get('signupCard')
-            }
+            },
+            siteTitle: this.settings.title,
+            siteDescription: this.settings.description
         };
         const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig});
 
@@ -483,7 +480,7 @@ export default class KoenigLexicalEditor extends Component {
         const multiplayerUsername = this.session.user.name;
 
         return (
-            <div className={['koenig-react-editor', this.args.className].filter(Boolean).join(' ')}>
+            <div className={['koenig-react-editor', 'koenig-lexical', this.args.className].filter(Boolean).join(' ')}>
                 <ErrorHandler>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                         <KoenigComposer
@@ -495,6 +492,7 @@ export default class KoenigLexicalEditor extends Component {
                             multiplayerDocId={multiplayerDocId}
                             multiplayerEndpoint={multiplayerEndpoint}
                             onError={this.onError}
+                            darkMode={this.feature.nightShift}
                         >
                             <KoenigEditor
                                 cursorDidExitAtTop={this.args.cursorDidExitAtTop}

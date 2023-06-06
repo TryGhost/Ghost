@@ -583,3 +583,10 @@ add|ember-template-lint|no-action|56|85|56|85|bb78ad59bc384ea0de5e9459da9d85f173
 add|ember-template-lint|no-action|57|38|57|38|3ad187464ff78253a0ea4dd17dcfcf0423f66864|1678147200000|1688511600000|1693695600000|lib/koenig-editor/addon/components/koenig-card-embed.hbs
 remove|ember-template-lint|require-iframe-title|6|4|6|4|62bc251294f2cbea568fcc8d8e46bb5fe1915bc9|1675296000000|1685660400000|1690844400000|app/components/gh-html-iframe.hbs
 remove|ember-template-lint|require-iframe-title|7|4|7|4|62bc251294f2cbea568fcc8d8e46bb5fe1915bc9|1675296000000|1685660400000|1690844400000|app/components/gh-html-iframe.hbs
+add|ember-template-lint|no-invalid-interactive|3|4|3|4|1e038cea298e74d9c774ed441ca6daf50060a8ec|1685318400000|1695686400000|1700874000000|app/components/gh-editor-feature-image.hbs
+remove|ember-template-lint|no-invalid-interactive|3|4|3|4|8e05ced79d8f5f5e13cd43033670b3b1e14db3ab|1681776000000|1692144000000|1697328000000|app/components/gh-editor-feature-image.hbs
+remove|ember-template-lint|no-action|21|127|21|127|7233183d00299a45a813392b99c8442210cdaeb3|1681862400000|1692230400000|1697414400000|app/components/modal-post-history.hbs
+remove|ember-template-lint|require-valid-alt-text|13|20|13|20|41dff435a7aba8088be689c6d9b1e76bef081d17|1682035200000|1692403200000|1697587200000|app/components/modal-post-history.hbs
+remove|ember-template-lint|no-invalid-interactive|3|4|3|4|1e038cea298e74d9c774ed441ca6daf50060a8ec|1685318400000|1695686400000|1700874000000|app/components/gh-editor-feature-image.hbs
+add|ember-template-lint|no-invalid-interactive|3|4|3|4|6f7786d5ed3e8c09f39e3595839ee291749aeb01|1685664000000|1696032000000|1701219600000|app/components/gh-editor-feature-image.hbs
+remove|ember-template-lint|no-forbidden-elements|152|20|152|20|966511a5bc154d46999a9594e3d39eb6ee5028a8|1675296000000|1685660400000|1690844400000|app/components/gh-nav-menu/main.hbs

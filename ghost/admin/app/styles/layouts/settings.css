@@ -3073,6 +3073,100 @@ p.theme-validation-details {
     color: var(--midgrey);
 }
 
+/* Signup form modal */
+.gh-signup-form-embed {
+    margin: 6vw 0;
+}
+
+.fullwidth-modal {
+    max-width: 100%;
+}
+
+.epm-modal .modal-signup-form-embed {
+    display: grid;
+    grid-template-columns: 5fr 3fr;
+    max-width: 1120px;
+    max-height: 520px;
+    margin: 32px;
+    padding: 0;
+}
+
+@media (max-width: 960px) {
+    .epm-modal .modal-signup-form-embed {
+        grid-template-columns: 1fr;
+    }
+}
+
+.modal-signup-form-embed-preview {
+    position: relative;
+    margin: 1.6rem;
+    margin-right: 0;
+    overflow: hidden;
+    border: 1px solid var(--whitegrey);
+}
+
+@media (max-width: 960px) {
+    .modal-signup-form-embed-preview {
+        display: none;
+    }
+}
+
+.gh-signup-form-iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    border: 0;
+    opacity: 1;
+    z-index: 0;
+    transition: none;
+}
+
+.gh-signup-form-iframe.gh-iframe-hidden {
+    opacity: 0;
+    z-index: 1;
+    transition: 0.3s opacity;
+    pointer-events: none;
+}
+
+.modal-signup-form-embed-main {
+    padding: 32px;
+    height: 100%;
+}
+
+.modal-signup-form-embed-main .modal-body {
+    height: 320px;
+    margin: -4px;
+    padding: 4px;
+    overflow-y: auto;
+}
+
+.modal-signup-form-embed-main .form-group {
+    margin-bottom: 0;
+}
+
+.gh-signup-form-container .gh-stack-item {
+    margin-bottom: 1.6rem;
+}
+
+.gh-signup-form-container .gh-stack-item:last-child {
+    margin-bottom: 0;
+}
+
+.gh-signup-form-embed-code-input {
+    min-height: 72px;
+    background: var(--whitegrey-l2);
+    font-family: var(--font-family-mono);
+    font-size: 1.35rem;
+}
+
+.gh-signup-form-embed-code-input:focus {
+    background: var(--whitegrey-l2);
+    border-color: var(--lightgrey-l1) !important;
+    box-shadow: none;
+}
+
 /* History log
 /* ---------------------------------------------------------- */
 .gh-history-filter-li {

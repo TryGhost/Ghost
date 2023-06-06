@@ -2,15 +2,13 @@ import {InMemoryRepository} from '@tryghost/in-memory-repository';
 import {Collection} from './Collection';
 
 export class CollectionsRepositoryInMemory extends InMemoryRepository<string, Collection> {
-    constructor() {
-        super();
-    }
-
     protected toPrimitive(entity: Collection): object {
         return {
             title: entity.title,
+            slug: entity.slug,
             description: entity.description,
-            feature_image: entity.feature_image
+            feature_image: entity.featureImage,
+            type: entity.type
         };
     }
 }

@@ -3,7 +3,7 @@
         {{#if this.url}}
             <div class="gh-image-uploader -with-image">
                 <div><img src={{this.url}} alt="" role="presentation"></div>
-                {{#if (feature 'imageEditor')}}
+                {{#if (feature 'lexicalEditor')}}
                     <KoenigImageEditor
                         @imageSrc={{this.url}}
                         @saveUrl={{this.fileUploaded}}

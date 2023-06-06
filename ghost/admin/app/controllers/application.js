@@ -17,6 +17,16 @@ export default class ApplicationController extends Controller {
         return this.config.hostSettings?.billing?.enabled;
     }
 
+    get showScriptExtension() {
+        const {session} = this;
+
+        if (!session.isAuthenticated || !session.user) {
+            return false;
+        }
+
+        return this.config.clientExtensions?.script;
+    }
+
     get showNavMenu() {
         let {router, session, ui} = this;
 
