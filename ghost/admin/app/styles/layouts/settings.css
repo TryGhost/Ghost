@@ -3091,11 +3091,24 @@ p.theme-validation-details {
     padding: 0;
 }
 
+@media (max-width: 960px) {
+    .epm-modal .modal-signup-form-embed {
+        grid-template-columns: 1fr;
+    }
+}
+
 .modal-signup-form-embed-preview {
     position: relative;
     margin: 1.6rem;
     margin-right: 0;
     overflow: hidden;
+    border: 1px solid var(--whitegrey);
+}
+
+@media (max-width: 960px) {
+    .modal-signup-form-embed-preview {
+        display: none;
+    }
 }
 
 .gh-signup-form-iframe {
