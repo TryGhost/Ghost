@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {mockApi, updatedSettingsResponse} from '../utils/e2e';
+import {mockApi, updatedSettingsResponse} from '../../utils/e2e';
 
 test.describe('Title and description settings', async () => {
     test('Supports editing the title and description', async ({page}) => {

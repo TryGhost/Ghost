@@ -67,7 +67,9 @@ const LockSite: React.FC = () => {
                 <TextField
                     hint={hint}
                     placeholder="Enter password"
+                    title="Site password"
                     value={password}
+                    hideTitle
                     onChange={handlePasswordChange}
                 />
             }
@@ -80,6 +82,7 @@ const LockSite: React.FC = () => {
             navid='locksite'
             saveState={saveState}
             state={currentState}
+            testId='locksite'
             title='Make site private'
             onCancel={handleCancel}
             onSave={handleSave}

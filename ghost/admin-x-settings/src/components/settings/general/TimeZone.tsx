@@ -87,6 +87,7 @@ const TimeZone: React.FC = () => {
             navid='timezone'
             saveState={saveState}
             state={currentState}
+            testId='timezone'
             title='Site timezone'
             onCancel={handleCancel}
             onSave={handleSave}

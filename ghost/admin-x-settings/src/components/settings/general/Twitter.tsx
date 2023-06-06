@@ -103,6 +103,7 @@ const Twitter: React.FC = () => {
             navid='twitter'
             saveState={saveState}
             state={currentState}
+            testId='twitter'
             title='Twitter card'
             onCancel={handleCancel}
             onSave={handleSave}

@@ -103,6 +103,7 @@ const Access: React.FC = () => {
             navid='access'
             saveState={saveState}
             state={currentState}
+            testId='access'
             title='Access'
             onCancel={handleCancel}
             onSave={handleSave}

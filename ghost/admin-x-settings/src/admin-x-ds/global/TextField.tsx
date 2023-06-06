@@ -1,13 +1,14 @@
-import React, {useId} from 'react';
-
 import Heading from './Heading';
 import Hint from './Hint';
+import React, {useId} from 'react';
+import clsx from 'clsx';
 
 type TextFieldType = 'text' | 'number' | 'email' | 'password' | 'file' | 'date' | 'time' | 'search';
 
 interface TextFieldProps {
     inputRef?: React.RefObject<HTMLInputElement>;
     title?: string;
+    hideTitle?: boolean;
     type?: TextFieldType;
     value?: string;
     error?: boolean;
@@ -24,6 +25,7 @@ const TextField: React.FC<TextFieldProps> = ({
     type = 'text',
     inputRef,
     title,
+    hideTitle,
     value,
     error,
     placeholder,
@@ -39,10 +41,16 @@ const TextField: React.FC<TextFieldProps> = ({
 
     return (
         <div className='flex flex-col'>
-            {title && <Heading htmlFor={id} useLabelTag={true}>{title}</Heading>}
+            {title && <Heading className={hideTitle ? 'sr-only' : ''} htmlFor={id} useLabelTag={true}>{title}</Heading>}
             <input
                 ref={inputRef}
-                className={`border-b ${clearBg ? 'bg-transparent' : 'bg-grey-75 px-[10px]'} py-2 ${error ? `border-red` : `border-grey-500 hover:border-grey-700 focus:border-black`} ${(title && !clearBg) && `mt-2`} ${className}`}
+                className={clsx(
+                    'border-b py-2',
+                    clearBg ? 'bg-transparent' : 'bg-grey-75 px-[10px]',
+                    error ? `border-red` : `border-grey-500 hover:border-grey-700 focus:border-black`,
+                    (title && !hideTitle && !clearBg) && `mt-2`,
+                    className
+                )}
                 defaultValue={value}
                 id={id}
                 maxLength={maxLength}

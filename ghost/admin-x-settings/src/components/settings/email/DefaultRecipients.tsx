@@ -107,13 +107,13 @@ const DefaultRecipients: React.FC = () => {
                 defaultSelectedOption={emailRecipientValue}
                 hint='Who should be able to subscribe to your site?'
                 options={RECIPIENT_FILTER_OPTIONS}
-                title="Subscription access"
+                title="Default Newsletter recipients"
                 onSelect={(value) => {
                     setDefaultRecipientValue(value);
                 }}
             />
             {(emailRecipientValue === 'segment') && (
-                <MultiSelect 
+                <MultiSelect
                     defaultValues={[
                         {value: 'option2', label: 'Fake tier 2'}
                     ]}
@@ -139,6 +139,7 @@ const DefaultRecipients: React.FC = () => {
             navid='default-recipients'
             saveState={saveState}
             state={currentState}
+            testId='default-recipients'
             title='Default recipients'
             onCancel={handleCancel}
             onSave={handleSave}

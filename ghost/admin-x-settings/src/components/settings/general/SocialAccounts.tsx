@@ -160,6 +160,7 @@ const SocialAccounts: React.FC = () => {
             navid='social-accounts'
             saveState={saveState}
             state={currentState}
+            testId='social-accounts'
             title='Social accounts'
             onCancel={handleCancel}
             onSave={() => {
