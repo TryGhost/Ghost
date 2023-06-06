@@ -2,6 +2,7 @@ import Button, {IButton} from './Button';
 import ButtonGroup from './ButtonGroup';
 import Heading from './Heading';
 import React from 'react';
+import clsx from 'clsx';
 import {useModal} from '@ebay/nice-modal-react';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'bleed' | number;
@@ -24,21 +25,23 @@ export interface ModalProps {
     onCancel?: () => void;
     children?: React.ReactNode;
     backDrop?: boolean;
+    backDropClick?: boolean;
 }
 
 const Modal: React.FC<ModalProps> = ({
-    size = 'md', 
-    title, 
-    okLabel = 'OK', 
-    cancelLabel = 'Cancel', 
-    customFooter, 
-    leftButtonLabel, 
-    noPadding = false, 
-    onOk, 
-    okColor = 'black', 
-    onCancel, 
+    size = 'md',
+    title,
+    okLabel = 'OK',
+    cancelLabel = 'Cancel',
+    customFooter,
+    leftButtonLabel,
+    noPadding = false,
+    onOk,
+    okColor = 'black',
+    onCancel,
     children,
-    backDrop = true
+    backDrop = true,
+    backDropClick = true
 }) => {
     const modal = useModal();
 
@@ -47,7 +50,7 @@ const Modal: React.FC<ModalProps> = ({
     if (!customFooter) {
         buttons.push({
             key: 'cancel-modal',
-            label: cancelLabel, 
+            label: cancelLabel,
             onClick: (onCancel ? onCancel : () => {
                 modal.remove();
             })
@@ -55,7 +58,7 @@ const Modal: React.FC<ModalProps> = ({
 
         buttons.push({
             key: 'ok-modal',
-            label: okLabel, 
+            label: okLabel,
             color: okColor,
             className: 'min-w-[80px]',
             onClick: onOk
@@ -95,14 +98,14 @@ const Modal: React.FC<ModalProps> = ({
         modalClasses += ` h-full ${!noPadding && 'p-12'}`;
         break;
 
-    default: 
+    default:
         modalClasses += ` ${!noPadding && 'p-8'}`;
         backdropClasses += ' p-[8vmin]';
         break;
     }
 
-    const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {        
-        if (e.target === e.currentTarget && backDrop) {
+    const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (e.target === e.currentTarget && backDropClick) {
             modal.remove();
         }
     };
@@ -113,13 +116,16 @@ const Modal: React.FC<ModalProps> = ({
 
     return (
         <div className={backdropClasses} id='modal-backdrop' onClick={handleBackdropClick}>
-            <div className={`pointer-events-none fixed inset-0 z-0 bg-[rgba(98,109,121,0.15)] backdrop-blur-[3px]`}></div>
+            <div className={clsx(
+                'pointer-events-none fixed inset-0 z-0',
+                backDrop && 'bg-[rgba(98,109,121,0.15)] backdrop-blur-[3px]'
+            )}></div>
             <section className={modalClasses} style={modalStyles}>
                 <div className='h-full'>
                     {title && <Heading level={4}>{title}</Heading>}
                     {children}
                 </div>
-                {customFooter ? customFooter : 
+                {customFooter ? customFooter :
                     <div className='w-100 flex items-center justify-between gap-6'>
                         <div>
                             {leftButtonLabel &&

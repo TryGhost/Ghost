@@ -589,6 +589,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
 
     return (
         <Modal
+            backDropClick={false}
             okColor='green'
             okLabel={okLabel}
             size='lg'
