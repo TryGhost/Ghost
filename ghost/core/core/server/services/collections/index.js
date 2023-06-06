@@ -44,6 +44,16 @@ class CollectionsServiceWrapper {
             destroyCollectionPost: collectionsService.removePostFromCollection.bind(collectionsService)
         };
     }
+
+    async init() {
+        this.api.add({
+            title: 'Featured Posts',
+            slug: 'featured',
+            description: 'Collection of featured posts',
+            type: 'automatic',
+            filter: 'featured:true'
+        });
+    }
 }
 
 module.exports = new CollectionsServiceWrapper();
