@@ -5,7 +5,7 @@ import Icon from '../../../../admin-x-ds/global/Icon';
 import ImageUpload from '../../../../admin-x-ds/global/ImageUpload';
 import Menu from '../../../../admin-x-ds/global/Menu';
 import Modal from '../../../../admin-x-ds/global/Modal';
-import NiceModal from '@ebay/nice-modal-react';
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import Radio from '../../../../admin-x-ds/global/Radio';
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import SettingGroup from '../../../../admin-x-ds/settings/SettingGroup';
@@ -14,8 +14,10 @@ import TextField from '../../../../admin-x-ds/global/TextField';
 import Toggle from '../../../../admin-x-ds/global/Toggle';
 import useRoles from '../../../../hooks/useRoles';
 import {FileService, ServicesContext} from '../../../providers/ServiceProvider';
+import {MenuItem} from '../../../../admin-x-ds/global/Menu';
 import {User} from '../../../../types/api';
-import {isOwnerUser} from '../../../../utils/helpers';
+import {isAdminUser, isOwnerUser} from '../../../../utils/helpers';
+import {showToast} from '../../../../admin-x-ds/global/Toast';
 
 interface CustomHeadingProps {
     children?: React.ReactNode;
@@ -393,34 +395,12 @@ const UserMenuTrigger = () => (
     </div>
 );
 
-const confirmMakeOwner = () => {
-    NiceModal.show(ConfirmationModal, {
-        title: 'Transfer Ownership',
-        prompt: 'Are you sure you want to transfer the ownership of this blog? You will not be able to undo this action.',
-        okLabel: 'Yep — I\'m sure',
-        okColor: 'red'
-    });
-};
-
-const confirmDelete = () => {
-    NiceModal.show(ConfirmationModal, {
-        title: 'Are you sure you want to delete this user?',
-        prompt: (
-            <>
-                <p className='mb-3'>The [user] will be permanently deleted and all their posts will be automatically assigned to the [site owner name].</p>
-                <p>To make these easy to find in the future, each post will be given an internal tag of [new internal tag with username]</p>
-            </>
-        ),
-        okLabel: 'Delete user',
-        okColor: 'red'
-    });
-};
-
 const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
     const {api} = useContext(ServicesContext);
     const [userData, setUserData] = useState(user);
     const [saveState, setSaveState] = useState('');
     const {fileService} = useContext(ServicesContext) as {fileService: FileService};
+    const mainModal = useModal();
 
     const confirmSuspend = (_user: User) => {
         let warningText = 'This user will no longer be able to log in but their posts will be kept.';
@@ -443,6 +423,46 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                     status: _user.status === 'inactive' ? 'active' : 'inactive'
                 });
                 modal?.remove();
+            }
+        });
+    };
+
+    const confirmDelete = (_user: User) => {
+        NiceModal.show(ConfirmationModal, {
+            title: 'Are you sure you want to delete this user?',
+            prompt: (
+                <>
+                    <p className='mb-3'>The [user] will be permanently deleted and all their posts will be automatically assigned to the [site owner name].</p>
+                    <p>To make these easy to find in the future, each post will be given an internal tag of [new internal tag with username]</p>
+                </>
+            ),
+            okLabel: 'Delete user',
+            okColor: 'red',
+            onOk: async (modal) => {
+                await api.users.delete(_user?.id);
+                modal?.remove();
+                mainModal?.remove();
+                showToast({
+                    message: 'User deleted',
+                    type: 'success'
+                });
+            }
+        });
+    };
+
+    const confirmMakeOwner = () => {
+        NiceModal.show(ConfirmationModal, {
+            title: 'Transfer Ownership',
+            prompt: 'Are you sure you want to transfer the ownership of this blog? You will not be able to undo this action.',
+            okLabel: 'Yep — I\'m sure',
+            okColor: 'red',
+            onOk: async (modal) => {
+                await api.users.makeOwner(user.id);
+                modal?.remove();
+                showToast({
+                    message: 'Ownership transferred',
+                    type: 'success'
+                });
             }
         });
     };
@@ -477,17 +497,22 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
 
     let suspendUserLabel = user?.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
 
-    const menuItems = [
-        {
+    let menuItems: MenuItem[] = [];
+
+    if (isAdminUser(user)) {
+        menuItems.push({
             id: 'make-owner',
             label: 'Make owner',
             onClick: confirmMakeOwner
-        },
+        });
+    }
+
+    menuItems = menuItems.concat([
         {
             id: 'delete-user',
             label: 'Delete user',
             onClick: () => {
-                confirmDelete();
+                confirmDelete(user);
             }
         },
         {
@@ -499,9 +524,12 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
         },
         {
             id: 'view-user-activity',
-            label: 'View user activity'
+            label: 'View user activity',
+            onClick: () => {
+                // TODO: show user activity
+            }
         }
-    ];
+    ]);
 
     let okLabel = saveState === 'saved' ? 'Saved' : 'Save';
     if (saveState === 'saving') {

@@ -98,6 +98,7 @@ interface API {
         edit: (editedUser: User) => Promise<UsersResponseType>;
         delete: (userId: string) => Promise<DeleteUserResponse>;
         updatePassword: (options: UpdatePasswordOptions) => Promise<PasswordUpdateResponseType>;
+        makeOwner: (userId: string) => Promise<UsersResponseType>;
     };
     roles: {
         browse: (options?: BrowseRoleOptions) => Promise<RolesResponseType>;
@@ -218,6 +219,19 @@ function setupGhostApi({ghostVersion}: GhostApiOptions): API {
                     method: 'DELETE'
                 });
                 const data: DeleteUserResponse = await response.json();
+                return data;
+            },
+            makeOwner: async (userId: string) => {
+                const payload = JSON.stringify({
+                    owner: [{
+                        id: userId
+                    }]
+                });
+                const response = await fetcher(`/users/owner/`, {
+                    method: 'PUT',
+                    body: payload
+                });
+                const data: UsersResponseType = await response.json();
                 return data;
             }
         },
