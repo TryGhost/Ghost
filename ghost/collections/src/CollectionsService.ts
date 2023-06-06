@@ -195,6 +195,14 @@ export class CollectionsService {
         };
     }
 
+    async getCollectionsForPost(postId: string): Promise<CollectionDTO[]> {
+        const collections = await this.collectionsRepository.getAll({
+            filter: `posts:${postId}`
+        });
+
+        return collections.map(collection => this.toDTO(collection));
+    }
+
     async destroy(id: string): Promise<Collection | null> {
         const collection = await this.getById(id);
 
