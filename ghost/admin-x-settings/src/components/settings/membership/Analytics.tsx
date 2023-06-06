@@ -76,6 +76,7 @@ const Analytics: React.FC = () => {
             navid='analytics'
             saveState={saveState}
             state={currentState}
+            testId='analytics'
             title='Analytics'
             onCancel={handleCancel}
             onSave={handleSave}

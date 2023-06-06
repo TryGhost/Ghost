@@ -103,6 +103,7 @@ const Metadata: React.FC = () => {
             navid='metadata'
             saveState={saveState}
             state={currentState}
+            testId='metadata'
             title='Metadata'
             onCancel={handleCancel}
             onSave={handleSave}

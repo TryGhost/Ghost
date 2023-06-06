@@ -19,6 +19,9 @@ interface Responses {
     site?: {
         browse?: any
     }
+    images?: {
+        upload?: any
+    }
 }
 
 export async function mockApi({page,responses}: {page: Page, responses?: Responses}) {
@@ -51,6 +54,14 @@ export async function mockApi({page,responses}: {page: Page, responses?: Respons
         lastApiRequest
     });
 
+    await mockApiResponse({
+        page,
+        path: /\/ghost\/api\/admin\/images\/upload\/$/,
+        method: 'POST',
+        response: responses?.images?.upload ?? {images: [{url: 'http://example.com/image.png', ref: null}]},
+        lastApiRequest
+    });
+
     return lastApiRequest;
 }
 
@@ -71,7 +82,7 @@ async function mockApiResponse({page, path, method, response, lastApiRequest}: {
     });
 }
 
-export function updatedSettingsResponse(newSettings: Array<{ key: string, value: string }>) {
+export function updatedSettingsResponse(newSettings: Array<{ key: string, value: string | boolean | null }>) {
     return {
         ...responseFixtures.settings,
         settings: responseFixtures.settings.settings.map((setting) => {
