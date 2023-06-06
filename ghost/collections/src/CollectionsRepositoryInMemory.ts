@@ -5,6 +5,7 @@ export class CollectionsRepositoryInMemory extends InMemoryRepository<string, Co
     protected toPrimitive(entity: Collection): object {
         return {
             title: entity.title,
+            slug: entity.slug,
             description: entity.description,
             feature_image: entity.featureImage,
             type: entity.type

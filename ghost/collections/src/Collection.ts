@@ -127,6 +127,7 @@ export class Collection {
         return new Collection({
             id: id.toHexString(),
             title: data.title,
+            slug: data.slug,
             description: data.description || null,
             type: data.type || 'manual',
             filter: data.filter || null,
