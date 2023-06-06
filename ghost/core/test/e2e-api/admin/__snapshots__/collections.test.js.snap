@@ -191,13 +191,14 @@ Object {
       "posts": Array [
         Object {
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "sort_order": 0,
+          "sort_order": Any<Number>,
         },
         Object {
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "sort_order": 1,
+          "sort_order": Any<Number>,
         },
       ],
+      "slug": "featured",
       "title": "Featured Posts",
       "type": "automatic",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -231,7 +232,7 @@ exports[`Collections API Can browse Collections 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "707",
+  "content-length": "725",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

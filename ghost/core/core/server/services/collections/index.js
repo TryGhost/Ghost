@@ -46,13 +46,17 @@ class CollectionsServiceWrapper {
     }
 
     async init() {
-        this.api.add({
-            title: 'Featured Posts',
-            slug: 'featured',
-            description: 'Collection of featured posts',
-            type: 'automatic',
-            filter: 'featured:true'
-        });
+        const featuredCollections = await this.api.browse({filter: 'slug:featured'});
+
+        if (!featuredCollections.data.length) {
+            this.api.add({
+                title: 'Featured Posts',
+                slug: 'featured',
+                description: 'Collection of featured posts',
+                type: 'automatic',
+                filter: 'featured:true'
+            });
+        }
     }
 }
 
