@@ -1,5 +1,14 @@
 import {Collection} from './Collection';
 import {CollectionRepository} from './CollectionRepository';
+import tpl from '@tryghost/tpl';
+import {MethodNotAllowedError} from '@tryghost/errors';
+
+const messages = {
+    cannotDeleteBuiltInCollectionError: {
+        message: 'Cannot delete builtin collection',
+        context: 'The collection {id} is a builtin collection and cannot be deleted'
+    }
+};
 
 type CollectionsServiceDeps = {
     collectionsRepository: CollectionRepository;
@@ -18,6 +27,7 @@ type ManualCollection = {
     description?: string;
     feature_image?: string;
     filter?: null;
+    deletable?: boolean;
 };
 
 type AutomaticCollection = {
@@ -27,6 +37,7 @@ type AutomaticCollection = {
     slug?: string;
     description?: string;
     feature_image?: string;
+    deletable?: boolean;
 };
 
 type CollectionInputDTO = ManualCollection | AutomaticCollection;
@@ -107,7 +118,8 @@ export class CollectionsService {
             description: data.description,
             type: data.type,
             filter: data.filter,
-            featureImage: data.feature_image
+            featureImage: data.feature_image,
+            deletable: data.deletable
         });
 
         if (collection.type === 'automatic' && collection.filter) {
@@ -218,6 +230,15 @@ export class CollectionsService {
         const collection = await this.getById(id);
 
         if (collection) {
+            if (collection.deletable === false) {
+                throw new MethodNotAllowedError({
+                    message: tpl(messages.cannotDeleteBuiltInCollectionError.message),
+                    context: tpl(messages.cannotDeleteBuiltInCollectionError.context, {
+                        id: collection.id
+                    })
+                });
+            }
+
             collection.deleted = true;
             await this.collectionsRepository.save(collection);
         }

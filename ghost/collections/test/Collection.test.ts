@@ -169,4 +169,30 @@ describe('Collection', function () {
 
         assert.equal(collection.posts.length, 0);
     });
+
+    it('Cannot set non deletable collection to deleted', async function () {
+        const collection = await Collection.create({
+            title: 'Testing adding posts',
+            deletable: false
+        });
+
+        assert.equal(collection.deleted, false);
+
+        collection.deleted = true;
+
+        assert.equal(collection.deleted, false);
+    });
+
+    it('Can set deletable collection to deleted', async function () {
+        const collection = await Collection.create({
+            title: 'Testing adding posts',
+            deletable: true
+        });
+
+        assert.equal(collection.deleted, false);
+
+        collection.deleted = true;
+
+        assert.equal(collection.deleted, true);
+    });
 });
