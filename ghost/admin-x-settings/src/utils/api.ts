@@ -118,6 +118,7 @@ interface API {
             status?: string;
             token?: string;
         }) => Promise<InvitesResponseType>;
+        delete: (inviteId: string) => Promise<void>;
     }
 }
 
@@ -292,6 +293,12 @@ function setupGhostApi({ghostVersion}: GhostApiOptions): API {
                 });
                 const data: InvitesResponseType = await response.json();
                 return data;
+            },
+            delete: async (inviteId: string) => {
+                await fetcher(`/invites/${inviteId}/`, {
+                    method: 'DELETE'
+                });
+                return;
             }
         }
     };
