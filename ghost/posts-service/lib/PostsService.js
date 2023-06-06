@@ -16,13 +16,14 @@ const messages = {
 };
 
 class PostsService {
-    constructor({urlUtils, models, isSet, stats, emailService, postsExporter}) {
+    constructor({urlUtils, models, isSet, stats, emailService, postsExporter, collectionsService}) {
         this.urlUtils = urlUtils;
         this.models = models;
         this.isSet = isSet;
         this.stats = stats;
         this.emailService = emailService;
         this.postsExporter = postsExporter;
+        this.collectionsService = collectionsService;
     }
 
     async readPost(frame) {
@@ -35,6 +36,10 @@ class PostsService {
         }
 
         const dto = model.toJSON(frame.options);
+
+        if (frame?.original?.query?.include?.includes('collections')) {
+            dto.collections = await this.collectionsService.getCollectionsForPost(model.id);
+        }
 
         return dto;
     }

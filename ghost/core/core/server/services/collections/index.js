@@ -28,7 +28,8 @@ class CollectionsServiceWrapper {
             edit: collectionsService.edit.bind(collectionsService),
             addPost: collectionsService.addPostToCollection.bind(collectionsService),
             destroy: collectionsService.destroy.bind(collectionsService),
-            destroyCollectionPost: collectionsService.removePostFromCollection.bind(collectionsService)
+            destroyCollectionPost: collectionsService.removePostFromCollection.bind(collectionsService),
+            getCollectionsForPost: collectionsService.getCollectionsForPost.bind(collectionsService)
         };
     }
 }
