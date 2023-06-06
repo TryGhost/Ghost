@@ -455,8 +455,7 @@ describe('Front-end members behavior', function () {
                     .expect(200)
                     .expect(assertContentIsPresent);
 
-                // Give a little time for the MemberPageViewEvent to be processed by any subscribers that write to the database
-                await testUtils.sleep(250);
+                await DomainEvents.allSettled();
 
                 assert(spy.calledOnce, 'A page view from a member should generate a MemberPageViewEvent event');
                 member = await models.Member.findOne({email});
@@ -540,8 +539,7 @@ describe('Front-end members behavior', function () {
                     .expect(200)
                     .expect(assertContentIsPresent);
 
-                // Give a little time for the MemberPageViewEvent to be processed by any subscribers that write to the database
-                await testUtils.sleep(250);
+                await DomainEvents.allSettled();
 
                 assert(spy.calledOnce, 'A page view from a member should generate a MemberPageViewEvent event');
                 member = await models.Member.findOne({email});
