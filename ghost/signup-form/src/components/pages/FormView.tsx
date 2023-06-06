@@ -12,7 +12,7 @@ export const FormView: React.FC<FormProps & {
     if (isMinimal) {
         return (
             <>
-                <Form {...formProps} />
+                <Form error={error} {...formProps} />
                 {error && <p className='text-red-500' data-testid="error-message">{error}</p>}
             </>
         );
@@ -28,7 +28,7 @@ export const FormView: React.FC<FormProps & {
             {title && <h1 className="text-center text-lg font-bold sm:text-xl md:text-2xl lg:text-3xl">{title}</h1>}
             {description && <p className='mb-4 text-center font-medium md:mb-5'>{description}</p>}
             <div className='relative w-full max-w-[440px]'>
-                <Form {...formProps} />
+                <Form error={error} {...formProps} />
                 <p className={`h-5 w-full text-left text-red-500 ${error ? 'visible' : 'invisible'}`} data-testid="error-message">{error}</p>
             </div>
 
@@ -57,7 +57,7 @@ const Form: React.FC<FormProps> = ({loading, error, buttonColor, buttonTextColor
         <>
             <form className='relative flex w-full max-w-[440px]' onSubmit={submitHandler}>
                 <input
-                    className={`flex-1 rounded-[.5rem] border p-2 text-grey-900 transition hover:border-grey-400 focus-visible:border-grey-500 focus-visible:outline-none sm:px-3 sm:py-[1rem] ${error ? 'border-red-500' : 'border-grey-300'}`}
+                    className={`flex-1 rounded-[.5rem] border p-2 text-grey-900 transition hover:border-grey-400 focus-visible:border-grey-500 focus-visible:outline-none sm:px-3 sm:py-[1rem] ${error ? '!border-red-500' : 'border-grey-300'}`}
                     data-testid="input"
                     disabled={loading}
                     placeholder='jamie@example.com'
