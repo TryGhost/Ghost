@@ -92,6 +92,12 @@ const createEmailedPost = async function createEmailedPost({postOptions, emailOp
     return {post, email};
 };
 
+const sleep = ms => (
+    new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    })
+);
+
 module.exports = {
     startGhost: e2eUtils.startGhost,
     stopGhost: e2eUtils.stopGhost,
@@ -162,5 +168,6 @@ module.exports = {
             contributor: DataGenerator.Content.roles[4].id
         }
     },
-    cacheRules: cacheRules
+    cacheRules: cacheRules,
+    sleep
 };
