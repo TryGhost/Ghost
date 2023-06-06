@@ -5,14 +5,16 @@ import List from '../../../admin-x-ds/global/List';
 import ListItem from '../../../admin-x-ds/global/ListItem';
 import NiceModal from '@ebay/nice-modal-react';
 import NoValueLabel from '../../../admin-x-ds/global/NoValueLabel';
-import React from 'react';
+import React, {useContext, useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
 import UserDetailModal from './modals/UserDetailModal';
 import useStaffUsers from '../../../hooks/useStaffUsers';
+import {ServicesContext} from '../../providers/ServiceProvider';
 import {User} from '../../../types/api';
 import {UserInvite} from '../../../utils/api';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
+import {showToast} from '../../../admin-x-ds/global/Toast';
 
 interface OwnerProps {
     user: User;
@@ -81,6 +83,57 @@ const UsersList: React.FC<UsersListProps> = ({users, updateUser}) => {
     );
 };
 
+const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
+    const {api} = useContext(ServicesContext);
+    const [revokeState, setRevokeState] = useState<'progress'|''>('');
+    const [resendState, setResendState] = useState<'progress'|''>('');
+    let revokeActionLabel = 'Revoke';
+    if (revokeState === 'progress') {
+        revokeActionLabel = 'Revoking...';
+    }
+    let resendActionLabel = 'Resend';
+    if (resendState === 'progress') {
+        resendActionLabel = 'Resending...';
+    }
+    return (
+        <div className='flex gap-2'>
+            <Button
+                color='red'
+                label={revokeActionLabel}
+                link={true}
+                onClick={async () => {
+                    setRevokeState('progress');
+                    await api.invites.delete(invite.id);
+                    setRevokeState('');
+                    showToast({
+                        message: `Invitation revoked(${invite.email})`,
+                        type: 'success'
+                    });
+                }}
+            />
+            <Button
+                className='ml-2'
+                color='green'
+                label={resendActionLabel}
+                link={true}
+                onClick={async () => {
+                    setResendState('progress');
+                    await api.invites.delete(invite.id);
+                    await api.invites.add({
+                        email: invite.email,
+                        roleId: invite.role_id
+                    });
+                    setResendState('');
+                    showToast({
+                        message: `Invitation resent!(${invite.email})`,
+                        type: 'success'
+                    });
+                }}
+            />
+        </div>
+    );
+};
+
 const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
     if (!users || !users.length) {
         return (
@@ -90,24 +143,13 @@ const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
         );
     }
 
-    const actions = (
-        <div className='flex gap-2'>
-            <Button color='red' label='Revoke' link={true} onClick={() => {
-                // Revoke invite
-            }}/>
-            <Button className='ml-2' color='green' label='Resend' link={true} onClick={() => {
-                // Resend invite
-            }}/>
-        </div>
-    );
-
     return (
         <List>
             {users.map((user) => {
                 return (
                     <ListItem
                         key={user.id}
-                        action={actions}
+                        action={<UserInviteActions invite={user} />}
                         avatar={(<Avatar bgColor={generateAvatarColor((user.email))} image={''} label={''} labelColor='white' />)}
                         detail={user.role}
                         hideActions={true}
