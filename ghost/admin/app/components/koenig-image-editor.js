@@ -19,10 +19,16 @@ export default class KoenigImageEditor extends Component {
     }
 
     get pinturaJsUrl() {
+        if (!this.settings.pintura) {
+            return null;
+        }
         return this.config.pintura?.js || this.settings.pinturaJsUrl;
     }
 
     get pinturaCSSUrl() {
+        if (!this.settings.pintura) {
+            return null;
+        }
         return this.config.pintura?.css || this.settings.pinturaCssUrl;
     }
 
