@@ -75,7 +75,7 @@ const Modal: React.FC<ModalProps> = ({
     let modalClasses = clsx('relative z-50 mx-auto flex w-full flex-col justify-between rounded bg-white shadow-xl');
     let backdropClasses = clsx('fixed inset-0 z-40 h-[100vh] w-[100vw] overflow-y-scroll ');
 
-    let padding;
+    let padding = '';
 
     let footerContainerBottom = '';
 
@@ -83,52 +83,52 @@ const Modal: React.FC<ModalProps> = ({
     case 'sm':
         modalClasses += ' max-w-[480px] ';
         backdropClasses += ' p-[8vmin]';
-        padding = 8;
+        padding = 'p-8';
         footerContainerBottom = 'calc(-1 * (8vmin + 48px)';
         break;
 
     case 'md':
         modalClasses += ' max-w-[720px] ';
         backdropClasses += ' p-[8vmin]';
-        padding = 8;
+        padding = 'p-8';
         footerContainerBottom = 'calc(-1 * (8vmin + 48px)';
         break;
 
     case 'lg':
         modalClasses += ' max-w-[1020px] ';
         backdropClasses += ' p-[4vmin]';
-        padding = 12;
+        padding = 'p-12';
         footerContainerBottom = 'calc(-1 * (4vmin + 68px)';
         break;
 
     case 'xl':
         modalClasses += ' max-w-[1240px] ';
         backdropClasses += ' p-[3vmin]';
-        padding = 14;
+        padding = 'p-12';
         footerContainerBottom = 'calc(-1 * (3vmin + 68px)';
         break;
 
     case 'full':
         modalClasses += ' h-full ';
         backdropClasses += ' p-[2vmin]';
-        padding = 12;
+        padding = 'p-12';
         footerContainerBottom = 'calc(-1 * (2vmin + 68px)';
         break;
 
     case 'bleed':
         modalClasses += ' h-full ';
-        padding = 12;
+        padding = 'p-12';
         break;
 
     default:
         backdropClasses += ' p-[8vmin]';
         footerContainerBottom = 'calc(-1 * (8vmin + 48px)';
-        padding = 8;
+        padding = 'p-8';
         break;
     }
 
     if (noPadding) {
-        padding = 0;
+        padding = 'p-0';
     }
 
     let footerContainerClasses = clsx(
@@ -139,11 +139,11 @@ const Modal: React.FC<ModalProps> = ({
     );
 
     let footerClasses = clsx(
-        `px-${padding} pb-${padding} ${stickyFooter && `pt-8`} z-[101] flex items-center justify-between`,
+        `${padding} ${stickyFooter ? 'pt-8' : 'pt-0'} z-[101] flex items-center justify-between`,
         stickyFooter && `sticky bottom-[-48px] rounded-b bg-white`
     );
 
-    let contentClasses = `p-${padding}`;
+    let contentClasses = `${padding}`;
 
     if (!customFooter) {
         contentClasses += ' pb-0 ';
