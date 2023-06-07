@@ -172,7 +172,7 @@
 }
 
 .kg-width-wide .kg-signup-card-fields,
-.kg-width-full .kg-signup-card-fields:not(.kg-layout-split .kg-signup-card-fields) {
+.kg-width-full .kg-signup-card-fields {
     width: 100%;
     max-width: 500px;
 }
