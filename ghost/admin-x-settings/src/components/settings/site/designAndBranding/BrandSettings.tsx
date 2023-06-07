@@ -1,6 +1,6 @@
-import Button from '../../../../admin-x-ds/global/Button';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import Hint from '../../../../admin-x-ds/global/Hint';
+import ImageUpload from '../../../../admin-x-ds/global/ImageUpload';
 import React from 'react';
 import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../../admin-x-ds/global/TextField';
@@ -40,16 +40,38 @@ const BrandSettings: React.FC = () => {
                     <Heading level={6}>Publication icon</Heading>
                     <div className='mt-2 flex gap-3'>
                         <Hint className='mr-5'>A square, social icon, at least 60x60px</Hint>
-                        <Button color='grey' label='Upload icon' />
+                        <ImageUpload
+                            height='36px'
+                            id='logo'
+                            width='150px'
+                            onDelete={() => {}}
+                            onUpload={() => {}}
+                        >
+                        Upload icon
+                        </ImageUpload>
                     </div>
                 </div>
                 <div>
-                    <Heading level={6}>Publication logo</Heading>
-                    <Button className='mt-2' color='grey' fullWidth={true} label='Upload logo' />
+                    <Heading className='mb-2' level={6}>Publication logo</Heading>
+                    <ImageUpload
+                        height='80px'
+                        id='logo'
+                        onDelete={() => {}}
+                        onUpload={() => {}}
+                    >
+                    Upload logo
+                    </ImageUpload>
                 </div>
                 <div>
-                    <Heading level={6}>Publication cover</Heading>
-                    <Button className='mt-2' color='grey' fullWidth={true} label='Upload cover' />
+                    <Heading className='mb-2' level={6}>Publication cover</Heading>
+                    <ImageUpload
+                        height='140px'
+                        id='cover'
+                        onDelete={() => {}}
+                        onUpload={() => {}}
+                    >
+                    Upload cover
+                    </ImageUpload>
                 </div>
             </SettingGroupContent>
         </div>

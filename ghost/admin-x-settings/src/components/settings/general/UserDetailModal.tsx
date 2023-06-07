@@ -629,6 +629,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                         id='cover-image'
                         imageClassName='absolute inset-0 bg-cover group bg-center rounded-t overflow-hidden'
                         imageURL={userData.cover_image || ''}
+                        unstyled={true}
                         onDelete={() => {
                             handleImageDelete('cover_image');
                         }}
@@ -640,14 +641,14 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                         <Menu items={menuItems} position='left' trigger={<UserMenuTrigger />}></Menu>
                     </div>
                     <div className='relative flex items-center gap-4 px-12 pb-12 pt-60'>
-
                         <ImageUpload
                             deleteButtonClassName='invisible absolute -right-2 -top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible'
-                            fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer'
-                            height='80px'
+                            deleteButtonContent={<Icon color='white' name='trash' size='sm' />}
+                            fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
                             id='avatar'
-                            imageClassName='relative rounded-full group bg-cover bg-center -ml-2'
+                            imageClassName='relative rounded-full group bg-cover bg-center -ml-2 h-[80px] w-[80px]'
                             imageURL={userData.profile_image}
+                            unstyled={true}
                             width='80px'
                             onDelete={() => {
                                 handleImageDelete('profile_image');
