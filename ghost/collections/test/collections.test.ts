@@ -1,5 +1,5 @@
 import assert from 'assert';
-import {CollectionsService, CollectionsRepositoryInMemory, Collection} from '../src/index';
+import {CollectionsService, CollectionsRepositoryInMemory} from '../src/index';
 import {PostsRepositoryInMemory} from './fixtures/PostsRepositoryInMemory';
 import {posts} from './fixtures/posts';
 
@@ -61,13 +61,38 @@ describe('CollectionsService', function () {
         assert.equal(deletedCollection, null, 'Collection should be deleted');
     });
 
-    describe('toDTO', function () {
-        it('Can map Collection entity to DTO object', async function () {
-            const collection = await Collection.create({});
-            const dto = collectionsService.toDTO(collection);
+    it('Throws when built in collection is attempted to be deleted', async function () {
+        const collection = await collectionsService.createCollection({
+            title: 'Featured Posts',
+            slug: 'featured',
+            description: 'Collection of featured posts',
+            type: 'automatic',
+            deletable: false,
+            filter: 'featured:true'
+        });
 
-            assert.equal(dto.id, collection.id, 'DTO should have the same id as the entity');
-            assert.equal(dto.title, null, 'DTO should return null if nullable property of the entity is unassigned');
+        await assert.rejects(async () => {
+            await collectionsService.destroy(collection.id);
+        }, (err: any) => {
+            assert.equal(err.message, 'Cannot delete builtin collection', 'Error message should match');
+            assert.equal(err.context, `The collection ${collection.id} is a builtin collection and cannot be deleted`, 'Error context should match');
+            return true;
+        });
+    });
+
+    describe('getCollectionsForPost', function () {
+        it('Can get collections for a post', async function () {
+            const collection = await collectionsService.createCollection({
+                title: 'testing collections',
+                type: 'manual'
+            });
+
+            await collectionsService.addPostToCollection(collection.id, posts[0]);
+
+            const collections = await collectionsService.getCollectionsForPost(posts[0].id);
+
+            assert.equal(collections.length, 1, 'There should be one collection');
+            assert.equal(collections[0].id, collection.id, 'Collection should be the correct one');
         });
     });
 
@@ -181,7 +206,7 @@ describe('CollectionsService', function () {
             assert.equal(collection.type, 'automatic', 'Collection should be automatic');
             assert.equal(collection.filter, 'featured:true', 'Collection should have the correct filter');
 
-            assert.equal(collection.posts.length, 1, 'Collection should have one post');
+            assert.equal(collection.posts.length, 2, 'Collection should have two posts');
         });
 
         it('Populates collection when the type is changed to automatic and filter is present', async function () {
@@ -200,8 +225,55 @@ describe('CollectionsService', function () {
                 filter: 'featured:true'
             });
 
-            assert.equal(automaticCollection?.posts.length, 1, 'Collection should have one post');
+            assert.equal(automaticCollection?.posts.length, 2, 'Collection should have two featured post');
             assert.equal(automaticCollection?.posts[0].id, 'post-3-featured', 'Collection should have the correct post');
+        });
+
+        it('Updates the automatic collection posts when the filter is changed', async function () {
+            let collection = await collectionsService.createCollection({
+                title: 'I am automatic',
+                description: 'testing automatic collection',
+                type: 'automatic',
+                filter: 'featured:true'
+            });
+
+            assert.equal(collection?.type, 'automatic', 'Collection should be automatic');
+            assert.equal(collection?.posts.length, 2, 'Collection should have two featured post');
+            assert.equal(collection?.posts[0].id, 'post-3-featured', 'Collection should have the correct post');
+            assert.equal(collection?.posts[1].id, 'post-4-featured', 'Collection should have the correct post');
+
+            let updatedCollection = await collectionsService.edit({
+                id: collection.id,
+                filter: 'slug:post-2'
+            });
+
+            assert.equal(updatedCollection?.posts.length, 1, 'Collection should have one post');
+            assert.equal(updatedCollection?.posts[0].id, 'post-2', 'Collection should have the correct post');
+        });
+
+        // @NOTE: add a more comprehensive test as this one is too basic
+        it('Updates all automatic collections', async function () {
+            let collection1 = await collectionsService.createCollection({
+                title: 'Featured Collection 1',
+                description: 'testing automatic collection',
+                type: 'automatic',
+                filter: 'featured:true'
+            });
+
+            let collection2 = await collectionsService.createCollection({
+                title: 'Featured Collection 2',
+                description: 'testing automatic collection',
+                type: 'automatic',
+                filter: 'featured:true'
+            });
+
+            assert.equal(collection1.posts.length, 2);
+            assert.equal(collection2.posts.length, 2);
+
+            await collectionsService.updateAutomaticCollections();
+
+            assert.equal(collection1.posts.length, 2);
+            assert.equal(collection2.posts.length, 2);
         });
     });
 });

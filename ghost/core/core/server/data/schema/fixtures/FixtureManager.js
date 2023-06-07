@@ -69,6 +69,7 @@ class FixtureManager {
      */
     async addAllFixtures(options) {
         const localOptions = _.merge({
+            autoRefresh: false,
             context: {internal: true},
             migrating: true
         }, options);

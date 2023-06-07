@@ -35,12 +35,12 @@ const LockSite: React.FC = () => {
                     key: 'private',
                     value: passwordEnabled ? (
                         <div className='flex items-center gap-1'>
-                            <Icon color='yellow' name='lock-locked' size='sm' />
+                            <Icon colorClass='text-yellow' name='lock-locked' size='sm' />
                             <span>Your site is password protected</span>
                         </div>
                     ) : (
                         <div className='flex items-center gap-1 text-grey-900'>
-                            <Icon color='black' name='lock-unlocked' size='sm' />
+                            <Icon colorClass='text-black' name='lock-unlocked' size='sm' />
                             <span>Your site is not password protected</span>
                         </div>
                     )
@@ -67,7 +67,9 @@ const LockSite: React.FC = () => {
                 <TextField
                     hint={hint}
                     placeholder="Enter password"
+                    title="Site password"
                     value={password}
+                    hideTitle
                     onChange={handlePasswordChange}
                 />
             }
@@ -80,6 +82,7 @@ const LockSite: React.FC = () => {
             navid='locksite'
             saveState={saveState}
             state={currentState}
+            testId='locksite'
             title='Make site private'
             onCancel={handleCancel}
             onSave={handleSave}

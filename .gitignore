@@ -19,6 +19,8 @@ lib-cov
 # Coverage directory used by tools like istanbul
 coverage
 coverage-e2e
+coverage-integration
+coverage-regression
 coverage_*
 
 # nyc test coverage
@@ -150,3 +152,6 @@ Caddyfile
 # Admin X
 /ghost/admin-x-settings/dist
 /ghost/admin-x-settings/dist-ssr
+/ghost/admin-x-settings/test-results/
+/ghost/admin-x-settings/playwright-report/
+/ghost/admin-x-settings/playwright/.cache/

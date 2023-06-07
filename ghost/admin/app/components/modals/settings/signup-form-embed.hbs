@@ -4,6 +4,7 @@
     <div class="modal-signup-form-embed-preview">
         <Settings::SignupForm::Preview
             @html={{this.previewCode}}
+            @style={{this.style}}
         />
     </div>
 
@@ -24,16 +25,18 @@
                     />
                 </div>
 
-                <div class="gh-stack-item row">
-                    <label class="modal-fullsettings-title">
-                        Background color
-                    </label>
-                    <Modals::Newsletters::Components::ColorPicker
-                        @color={{this.backgroundColor}}
-                        @presetColors={{this.backgroundPresetColors}}
-                        @onColorChange={{this.setBackgroundColor}}
-                    />
-                </div>
+                {{#unless (eq this.style 'minimal')}}
+                    <div class="gh-stack-item row">
+                        <label class="modal-fullsettings-title">
+                            Background color
+                        </label>
+                        <Modals::Newsletters::Components::ColorPicker
+                            @color={{this.backgroundColor}}
+                            @presetColors={{this.backgroundPresetColors}}
+                            @onColorChange={{this.setBackgroundColor}}
+                        />
+                    </div>
+                {{/unless}}
 
                 <div class="gh-stack-item">
                     <label class="modal-fullsettings-title">

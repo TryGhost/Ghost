@@ -3078,11 +3078,6 @@ p.theme-validation-details {
     margin: 6vw 0;
 }
 
-.gh-signup-form-iframe {
-    width: 100%;
-    border: 0;
-}
-
 .fullwidth-modal {
     max-width: 100%;
 }
@@ -3096,18 +3091,43 @@ p.theme-validation-details {
     padding: 0;
 }
 
+@media (max-width: 960px) {
+    .epm-modal .modal-signup-form-embed {
+        grid-template-columns: 1fr;
+    }
+}
+
 .modal-signup-form-embed-preview {
     position: relative;
     margin: 1.6rem;
     margin-right: 0;
+    overflow: hidden;
+    border: 1px solid var(--whitegrey);
 }
 
-.modal-signup-form-embed-preview iframe {
+@media (max-width: 960px) {
+    .modal-signup-form-embed-preview {
+        display: none;
+    }
+}
+
+.gh-signup-form-iframe {
     position: absolute;
     top: 0;
     left: 0;
     height: 100%;
     width: 100%;
+    border: 0;
+    opacity: 1;
+    z-index: 0;
+    transition: none;
+}
+
+.gh-signup-form-iframe.gh-iframe-hidden {
+    opacity: 0;
+    z-index: 1;
+    transition: 0.3s opacity;
+    pointer-events: none;
 }
 
 .modal-signup-form-embed-main {
@@ -3116,8 +3136,10 @@ p.theme-validation-details {
 }
 
 .modal-signup-form-embed-main .modal-body {
-    overflow-y: auto;
     height: 320px;
+    margin: -4px;
+    padding: 4px;
+    overflow-y: auto;
 }
 
 .modal-signup-form-embed-main .form-group {

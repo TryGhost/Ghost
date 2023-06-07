@@ -514,7 +514,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     top: 0;
     left: 0;
     right: 0;
-    bottom: 0;
+    bottom: 100px;
     background-image: linear-gradient(180deg,rgba(0,0,0,.2),transparent 40%,transparent);
     transition: all .1s ease-in;
     opacity: 0;

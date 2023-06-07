@@ -1,11 +1,12 @@
-import Modal from '../../../../admin-x-ds/global/Modal';
+import Modal from '../../../admin-x-ds/global/Modal';
 import NiceModal from '@ebay/nice-modal-react';
-import Radio from '../../../../admin-x-ds/global/Radio';
-import TextField from '../../../../admin-x-ds/global/TextField';
-import useRoles from '../../../../hooks/useRoles';
-import useStaffUsers from '../../../../hooks/useStaffUsers';
+import Radio from '../../../admin-x-ds/global/Radio';
+import TextField from '../../../admin-x-ds/global/TextField';
+import useRoles from '../../../hooks/useRoles';
+import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
-import {ServicesContext} from '../../../providers/ServiceProvider';
+import {ServicesContext} from '../../providers/ServiceProvider';
+import {showToast} from '../../../admin-x-ds/global/Toast';
 import {useContext, useEffect, useRef, useState} from 'react';
 
 type RoleType = 'administrator' | 'editor' | 'author' | 'contributor';
@@ -43,7 +44,7 @@ const InviteUserModal = NiceModal.create(() => {
     } else if (saveState === 'saved') {
         okLabel = 'Invite sent!';
     } else if (saveState === 'error') {
-        okLabel = 'Failed to send. Retry?';
+        okLabel = 'Retry';
     }
 
     const handleSendInvitation = async () => {
@@ -68,8 +69,18 @@ const InviteUserModal = NiceModal.create(() => {
             setInvites([...invites, res.invites[0]]);
 
             setSaveState('saved');
+
+            showToast({
+                message: `Invitation successfully sent to ${email}`,
+                type: 'success'
+            });
         } catch (e: any) {
             setSaveState('error');
+
+            showToast({
+                message: `Failed to send invitation to ${email}`,
+                type: 'error'
+            });
             return;
         }
     };

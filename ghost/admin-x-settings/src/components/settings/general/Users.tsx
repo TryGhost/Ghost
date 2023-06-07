@@ -1,18 +1,20 @@
 import Avatar from '../../../admin-x-ds/global/Avatar';
 import Button from '../../../admin-x-ds/global/Button';
-import InviteUserModal from './modals/InviteUserModal';
+import InviteUserModal from './InviteUserModal';
 import List from '../../../admin-x-ds/global/List';
 import ListItem from '../../../admin-x-ds/global/ListItem';
 import NiceModal from '@ebay/nice-modal-react';
 import NoValueLabel from '../../../admin-x-ds/global/NoValueLabel';
-import React from 'react';
+import React, {useContext, useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
-import UserDetailModal from './modals/UserDetailModal';
+import UserDetailModal from './UserDetailModal';
 import useStaffUsers from '../../../hooks/useStaffUsers';
+import {ServicesContext} from '../../providers/ServiceProvider';
 import {User} from '../../../types/api';
 import {UserInvite} from '../../../utils/api';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
+import {showToast} from '../../../admin-x-ds/global/Toast';
 
 interface OwnerProps {
     user: User;
@@ -65,6 +67,10 @@ const UsersList: React.FC<UsersListProps> = ({users, updateUser}) => {
     return (
         <List>
             {users.map((user) => {
+                let title = user.name || '';
+                if (user.status === 'inactive') {
+                    title = `${title} (Suspended)`;
+                }
                 return (
                     <ListItem
                         key={user.id}
@@ -73,11 +79,67 @@ const UsersList: React.FC<UsersListProps> = ({users, updateUser}) => {
                         detail={user.email}
                         hideActions={true}
                         id={`list-item-${user.id}`}
-                        title={user.name || ''}
+                        title={title}
                         onClick={() => showDetailModal(user)} />
                 );
             })}
         </List>
+    );
+};
+
+const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
+    const {api} = useContext(ServicesContext);
+    const {setInvites} = useStaffUsers();
+    const [revokeState, setRevokeState] = useState<'progress'|''>('');
+    const [resendState, setResendState] = useState<'progress'|''>('');
+    let revokeActionLabel = 'Revoke';
+    if (revokeState === 'progress') {
+        revokeActionLabel = 'Revoking...';
+    }
+    let resendActionLabel = 'Resend';
+    if (resendState === 'progress') {
+        resendActionLabel = 'Resending...';
+    }
+    return (
+        <div className='flex gap-2'>
+            <Button
+                color='red'
+                label={revokeActionLabel}
+                link={true}
+                onClick={async () => {
+                    setRevokeState('progress');
+                    await api.invites.delete(invite.id);
+                    const res = await api.invites.browse();
+                    setInvites(res.invites);
+                    setRevokeState('');
+                    showToast({
+                        message: `Invitation revoked(${invite.email})`,
+                        type: 'success'
+                    });
+                }}
+            />
+            <Button
+                className='ml-2'
+                color='green'
+                label={resendActionLabel}
+                link={true}
+                onClick={async () => {
+                    setResendState('progress');
+                    await api.invites.delete(invite.id);
+                    await api.invites.add({
+                        email: invite.email,
+                        roleId: invite.role_id
+                    });
+                    const res = await api.invites.browse();
+                    setInvites(res.invites);
+                    setResendState('');
+                    showToast({
+                        message: `Invitation resent!(${invite.email})`,
+                        type: 'success'
+                    });
+                }}
+            />
+        </div>
     );
 };
 
@@ -90,24 +152,13 @@ const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
         );
     }
 
-    const actions = (
-        <div className='flex gap-2'>
-            <Button color='red' label='Revoke' link={true} onClick={() => {
-                // Revoke invite
-            }}/>
-            <Button className='ml-2' color='green' label='Resend' link={true} onClick={() => {
-                // Resend invite
-            }}/>
-        </div>
-    );
-
     return (
         <List>
             {users.map((user) => {
                 return (
                     <ListItem
                         key={user.id}
-                        action={actions}
+                        action={<UserInviteActions invite={user} />}
                         avatar={(<Avatar bgColor={generateAvatarColor((user.email))} image={''} label={''} labelColor='white' />)}
                         detail={user.role}
                         hideActions={true}

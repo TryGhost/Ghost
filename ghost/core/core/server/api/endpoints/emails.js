@@ -16,6 +16,9 @@ module.exports = {
     docName: 'emails',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'limit',
             'fields',
@@ -30,6 +33,9 @@ module.exports = {
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'fields'
         ],
@@ -57,6 +63,9 @@ module.exports = {
     },
 
     retry: {
+        headers: {
+            cacheInvalidate: false
+        },
         data: [
             'id'
         ],
@@ -67,6 +76,9 @@ module.exports = {
     },
 
     browseBatches: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'limit',
             'fields',
@@ -95,6 +107,9 @@ module.exports = {
     },
 
     browseFailures: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'limit',
             'fields',
@@ -123,6 +138,9 @@ module.exports = {
     },
 
     analyticsStatus: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: {
             method: 'browse'
         },
@@ -132,6 +150,9 @@ module.exports = {
     },
 
     scheduleAnalytics: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: {
             method: 'browse'
         },
@@ -148,6 +169,9 @@ module.exports = {
     },
 
     cancelScheduledAnalytics: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: {
             method: 'browse'
         },

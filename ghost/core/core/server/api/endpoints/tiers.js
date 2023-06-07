@@ -4,6 +4,9 @@ module.exports = {
     docName: 'tiers',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'limit',
             'fields',
@@ -22,6 +25,9 @@ module.exports = {
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         data: [
             'id'
         ],

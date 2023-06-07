@@ -61,12 +61,21 @@ export const WithHint: Story = {
     }
 };
 
-export const WithDefaultSelectedOption: Story = {
+export const WithDefaultSelected: Story = {
     args: {
         title: 'Title',
         options: selectOptions,
         defaultSelectedOption: 'option-3',
         hint: 'Here\'s some hint'
+    }
+};
+
+export const WithCallback: Story = {
+    args: {
+        options: selectOptions,
+        onSelect: (value: string) => {
+            alert(value);
+        }
     }
 };
 
@@ -76,5 +85,12 @@ export const Error: Story = {
         options: selectOptions,
         hint: 'Invalid value',
         error: true
+    }
+};
+
+export const Unstyled: Story = {
+    args: {
+        options: selectOptions,
+        unstyled: true
     }
 };

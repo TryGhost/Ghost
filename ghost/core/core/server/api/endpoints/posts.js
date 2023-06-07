@@ -1,6 +1,4 @@
 const models = require('../../models');
-const tpl = require('@tryghost/tpl');
-const errors = require('@tryghost/errors');
 const getPostServiceInstance = require('../../services/posts/posts-service');
 const allowedIncludes = [
     'tags',
@@ -21,15 +19,14 @@ const allowedIncludes = [
 ];
 const unsafeAttrs = ['status', 'authors', 'visibility'];
 
-const messages = {
-    postNotFound: 'Post not found.'
-};
-
 const postsService = getPostServiceInstance();
 
 module.exports = {
     docName: 'posts',
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'filter',
@@ -72,7 +69,8 @@ module.exports = {
                     const datetime = (new Date()).toJSON().substring(0, 10);
                     return `post-analytics.${datetime}.csv`;
                 }
-            }
+            },
+            cacheInvalidate: false
         },
         response: {
             format: 'plain'
@@ -89,6 +87,9 @@ module.exports = {
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'fields',
@@ -118,22 +119,15 @@ module.exports = {
             unsafeAttrs: unsafeAttrs
         },
         query(frame) {
-            return models.Post.findOne(frame.data, frame.options)
-                .then((model) => {
-                    if (!model) {
-                        throw new errors.NotFoundError({
-                            message: tpl(messages.postNotFound)
-                        });
-                    }
-
-                    return model;
-                });
+            return postsService.readPost(frame);
         }
     },
 
     add: {
         statusCode: 201,
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'formats',
@@ -167,7 +161,9 @@ module.exports = {
     },
 
     edit: {
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'id',
@@ -286,7 +282,8 @@ module.exports = {
         headers: {
             location: {
                 resolve: postsService.generateCopiedPostLocationFromUrl
-            }
+            },
+            cacheInvalidate: false
         },
         options: [
             'id',

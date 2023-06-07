@@ -1,21 +1,25 @@
-import Button from '../../../../admin-x-ds/global/Button';
-import ConfirmationModal from '../../../../admin-x-ds/global/ConfirmationModal';
-import Heading from '../../../../admin-x-ds/global/Heading';
-import Icon from '../../../../admin-x-ds/global/Icon';
-import ImageUpload from '../../../../admin-x-ds/global/ImageUpload';
-import Menu from '../../../../admin-x-ds/global/Menu';
-import Modal from '../../../../admin-x-ds/global/Modal';
-import NiceModal from '@ebay/nice-modal-react';
-import Radio from '../../../../admin-x-ds/global/Radio';
+import Button from '../../../admin-x-ds/global/Button';
+import ConfirmationModal from '../../../admin-x-ds/global/ConfirmationModal';
+import Heading from '../../../admin-x-ds/global/Heading';
+import Icon from '../../../admin-x-ds/global/Icon';
+import ImageUpload from '../../../admin-x-ds/global/ImageUpload';
+import Menu from '../../../admin-x-ds/global/Menu';
+import Modal from '../../../admin-x-ds/global/Modal';
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import Radio from '../../../admin-x-ds/global/Radio';
 import React, {useContext, useEffect, useRef, useState} from 'react';
-import SettingGroup from '../../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../../admin-x-ds/global/TextField';
-import Toggle from '../../../../admin-x-ds/global/Toggle';
-import useRoles from '../../../../hooks/useRoles';
-import {ServicesContext} from '../../../providers/ServiceProvider';
-import {User} from '../../../../types/api';
-import {isOwnerUser} from '../../../../utils/helpers';
+import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
+import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
+import TextField from '../../../admin-x-ds/global/TextField';
+import Toggle from '../../../admin-x-ds/global/Toggle';
+import useRoles from '../../../hooks/useRoles';
+import useStaffUsers from '../../../hooks/useStaffUsers';
+import validator from 'validator';
+import {FileService, ServicesContext} from '../../providers/ServiceProvider';
+import {MenuItem} from '../../../admin-x-ds/global/Menu';
+import {User} from '../../../types/api';
+import {isAdminUser, isOwnerUser} from '../../../utils/helpers';
+import {showToast} from '../../../admin-x-ds/global/Toast';
 
 interface CustomHeadingProps {
     children?: React.ReactNode;
@@ -24,6 +28,10 @@ interface CustomHeadingProps {
 interface UserDetailProps {
     user: User;
     setUserData?: (user: User) => void;
+    errors?: {
+        url?: string;
+        email?: string;
+    };
 }
 
 const CustomHeader: React.FC<CustomHeadingProps> = ({children}) => {
@@ -39,7 +47,7 @@ const RoleSelector: React.FC<UserDetailProps> = ({user, setUserData}) => {
             <>
                 <Heading level={6}>Role</Heading>
                 <div className='flex h-[295px] flex-col items-center justify-center gap-3 bg-grey-75 px-10 py-20 text-center text-sm text-grey-800'>
-                    <Icon color='grey-800' name='crown' size='lg' />
+                    <Icon colorClass='text-grey-800' name='crown' size='lg' />
                     This user is the owner of the site. To change their role, you need to transfer the ownership first.
                 </div>
             </>
@@ -82,7 +90,7 @@ const RoleSelector: React.FC<UserDetailProps> = ({user, setUserData}) => {
         />
     );
 };
-const BasicInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
+const BasicInputs: React.FC<UserDetailProps> = ({errors, user, setUserData}) => {
     return (
         <SettingGroupContent>
             <TextField
@@ -94,6 +102,8 @@ const BasicInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
                 }}
             />
             <TextField
+                error={!!errors?.email}
+                hint={errors?.email || ''}
                 title="Email"
                 value={user.email}
                 onChange={(e) => {
@@ -105,19 +115,19 @@ const BasicInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
     );
 };
 
-const Basic: React.FC<UserDetailProps> = ({user, setUserData}) => {
+const Basic: React.FC<UserDetailProps> = ({errors, user, setUserData}) => {
     return (
         <SettingGroup
             border={false}
             customHeader={<CustomHeader>Basic info</CustomHeader>}
             title='Basic'
         >
-            <BasicInputs setUserData={setUserData} user={user} />
+            <BasicInputs errors={errors} setUserData={setUserData} user={user} />
         </SettingGroup>
     );
 };
 
-const DetailsInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
+const DetailsInputs: React.FC<UserDetailProps> = ({errors, user, setUserData}) => {
     return (
         <SettingGroupContent>
             <TextField
@@ -136,6 +146,8 @@ const DetailsInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
                 }}
             />
             <TextField
+                error={!!errors?.url}
+                hint={errors?.url || ''}
                 title="Website"
                 value={user.website}
                 onChange={(e) => {
@@ -168,14 +180,14 @@ const DetailsInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
     );
 };
 
-const Details: React.FC<UserDetailProps> = ({user, setUserData}) => {
+const Details: React.FC<UserDetailProps> = ({errors, user, setUserData}) => {
     return (
         <SettingGroup
             border={false}
             customHeader={<CustomHeader>Details</CustomHeader>}
             title='Details'
         >
-            <DetailsInputs setUserData={setUserData} user={user} />
+            <DetailsInputs errors={errors} setUserData={setUserData} user={user} />
         </SettingGroup>
     );
 };
@@ -389,37 +401,22 @@ interface UserDetailModalProps {
 
 const UserMenuTrigger = () => (
     <div className='flex h-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] px-3 opacity-80 hover:opacity-100'>
-        <Icon color='white' name='menu-horizontal' size='sm' />
+        <Icon colorClass='text-white' name='menu-horizontal' size='sm' />
     </div>
 );
 
-const confirmMakeOwner = () => {
-    NiceModal.show(ConfirmationModal, {
-        title: 'Transfer Ownership',
-        prompt: 'Are you sure you want to transfer the ownership of this blog? You will not be able to undo this action.',
-        okLabel: 'Yep — I\'m sure',
-        okColor: 'red'
-    });
-};
-
-const confirmDelete = () => {
-    NiceModal.show(ConfirmationModal, {
-        title: 'Are you sure you want to delete this user?',
-        prompt: (
-            <>
-                <p className='mb-3'>The [user] will be permanently deleted and all their posts will be automatically assigned to the [site owner name].</p>
-                <p>To make these easy to find in the future, each post will be given an internal tag of [new internal tag with username]</p>
-            </>
-        ),
-        okLabel: 'Delete user',
-        okColor: 'red'
-    });
-};
-
 const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
     const {api} = useContext(ServicesContext);
+    const {users, setUsers, ownerUser} = useStaffUsers();
     const [userData, setUserData] = useState(user);
     const [saveState, setSaveState] = useState('');
+    const [errors, setErrors] = useState<{
+        email?: string;
+        url?: string;
+    }>({});
+
+    const {fileService} = useContext(ServicesContext) as {fileService: FileService};
+    const mainModal = useModal();
 
     const confirmSuspend = (_user: User) => {
         let warningText = 'This user will no longer be able to log in but their posts will be kept.';
@@ -437,42 +434,144 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
             okRunningLabel: _user.status === 'inactive' ? 'Un-suspending...' : 'Suspending...',
             okColor: 'red',
             onOk: async (modal) => {
-                await api.users.edit({
+                const updatedUserData = {
                     ..._user,
                     status: _user.status === 'inactive' ? 'active' : 'inactive'
+                };
+                const res = await api.users.edit(updatedUserData);
+                const updatedUser = res.users[0];
+                setUsers((_users) => {
+                    return _users.map((u) => {
+                        if (u.id === updatedUser.id) {
+                            return updatedUser;
+                        }
+                        return u;
+                    });
                 });
+                setUserData(updatedUserData);
                 modal?.remove();
+                showToast({
+                    message: _user.status === 'inactive' ? 'User un-suspended' : 'User suspended',
+                    type: 'success'
+                });
             }
         });
     };
 
-    let suspendUserLabel = user?.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
+    const confirmDelete = (_user: User, {owner}: {owner: User}) => {
+        NiceModal.show(ConfirmationModal, {
+            title: 'Are you sure you want to delete this user?',
+            prompt: (
+                <>
+                    <p className='mb-3'><span className='font-bold'>{_user.name || _user.email}</span> will be permanently deleted and all their posts will be automatically assigned to the <span className='font-bold'>{owner.name}</span>.</p>
+                    <p>To make these easy to find in the future, each post will be given an internal tag of <span className='font-bold'>#{user.slug}</span></p>
+                </>
+            ),
+            okLabel: 'Delete user',
+            okColor: 'red',
+            onOk: async (modal) => {
+                await api.users.delete(_user?.id);
+                const newUsers = users.filter(u => u.id !== _user.id);
+                setUsers(newUsers);
+                modal?.remove();
+                mainModal?.remove();
+                showToast({
+                    message: 'User deleted',
+                    type: 'success'
+                });
+            }
+        });
+    };
 
-    const menuItems = [
-        {
+    const confirmMakeOwner = () => {
+        NiceModal.show(ConfirmationModal, {
+            title: 'Transfer Ownership',
+            prompt: 'Are you sure you want to transfer the ownership of this blog? You will not be able to undo this action.',
+            okLabel: 'Yep — I\'m sure',
+            okColor: 'red',
+            onOk: async (modal) => {
+                const res = await api.users.makeOwner(user.id);
+                setUsers(res.users);
+                modal?.remove();
+                showToast({
+                    message: 'Ownership transferred',
+                    type: 'success'
+                });
+            }
+        });
+    };
+
+    const handleImageUpload = async (image: string, file: File) => {
+        try {
+            const imageUrl = await fileService.uploadImage(file);
+
+            switch (image) {
+            case 'cover_image':
+                setUserData?.((_user) => {
+                    return {..._user, cover_image: imageUrl};
+                });
+                break;
+            case 'profile_image':
+                setUserData?.((_user) => {
+                    return {..._user, profile_image: imageUrl};
+                });
+                break;
+            }
+        } catch (err: any) {
+            // handle error
+        }
+    };
+
+    const handleImageDelete = (image: string) => {
+        switch (image) {
+        case 'cover_image':
+            setUserData?.((_user) => {
+                return {..._user, cover_image: ''};
+            });
+            break;
+        case 'profile_image':
+            setUserData?.((_user) => {
+                return {..._user, profile_image: ''};
+            });
+            break;
+        }
+    };
+
+    let suspendUserLabel = userData?.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
+
+    let menuItems: MenuItem[] = [];
+
+    if (isAdminUser(userData)) {
+        menuItems.push({
             id: 'make-owner',
             label: 'Make owner',
             onClick: confirmMakeOwner
-        },
+        });
+    }
+
+    menuItems = menuItems.concat([
         {
             id: 'delete-user',
             label: 'Delete user',
             onClick: () => {
-                confirmDelete();
+                confirmDelete(user, {owner: ownerUser});
             }
         },
         {
             id: 'suspend-user',
             label: suspendUserLabel,
             onClick: () => {
-                confirmSuspend(user);
+                confirmSuspend(userData);
             }
         },
         {
             id: 'view-user-activity',
-            label: 'View user activity'
+            label: 'View user activity',
+            onClick: () => {
+                // TODO: show user activity
+            }
         }
-    ];
+    ]);
 
     let okLabel = saveState === 'saved' ? 'Saved' : 'Save';
     if (saveState === 'saving') {
@@ -490,67 +589,85 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
 
     const fileUploadButtonClasses = 'absolute right-[104px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium z-10';
 
-    const suspendedText = user.status === 'inactive' ? ' (Suspended)' : '';
+    const suspendedText = userData.status === 'inactive' ? ' (Suspended)' : '';
 
     return (
         <Modal
+            backDropClick={false}
             okColor='green'
             okLabel={okLabel}
             size='lg'
+            stickyFooter={true}
             onOk={async () => {
                 setSaveState('saving');
+                if (!validator.isEmail(userData.email)) {
+                    setErrors?.((_errors) => {
+                        return {..._errors, email: 'Please enter a valid email address'};
+                    });
+                    setSaveState('');
+                    return;
+                }
+                if (!validator.isURL(userData.url)) {
+                    setErrors?.((_errors) => {
+                        return {..._errors, url: 'Please enter a valid URL'};
+                    });
+                    setSaveState('');
+                    return;
+                }
+
                 await updateUser?.(userData);
                 setSaveState('saved');
             }}
         >
             <div>
-                <div className={`relative -mx-12 -mt-12 bg-gradient-to-tr from-grey-900 to-black`}>
+                <div className={`relative -mx-12 -mt-12 rounded-t bg-gradient-to-tr from-grey-900 to-black`}>
                     <ImageUpload
                         deleteButtonClassName={fileUploadButtonClasses}
                         deleteButtonContent='Delete cover image'
                         fileUploadClassName={fileUploadButtonClasses}
                         height={userData.cover_image ? '100%' : '32px'}
                         id='cover-image'
-                        imageClassName='absolute inset-0 bg-cover group'
+                        imageClassName='absolute inset-0 bg-cover group bg-center rounded-t overflow-hidden'
                         imageURL={userData.cover_image || ''}
+                        unstyled={true}
                         onDelete={() => {
-                            alert('deleted');
+                            handleImageDelete('cover_image');
                         }}
-                        onUpload={() => {
-                            alert('uploaded');
+                        onUpload={(file: File) => {
+                            handleImageUpload('cover_image', file);
                         }}
                     >Upload cover image</ImageUpload>
                     <div className="absolute bottom-12 right-12">
                         <Menu items={menuItems} position='left' trigger={<UserMenuTrigger />}></Menu>
                     </div>
                     <div className='relative flex items-center gap-4 px-12 pb-12 pt-60'>
-
                         <ImageUpload
                             deleteButtonClassName='invisible absolute -right-2 -top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible'
-                            fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer'
-                            height='80px'
+                            deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
+                            fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
                             id='avatar'
-                            imageClassName='relative rounded-full group bg-cover -ml-2'
+                            imageClassName='relative rounded-full group bg-cover bg-center -ml-2 h-[80px] w-[80px]'
                             imageURL={userData.profile_image}
+                            unstyled={true}
                             width='80px'
                             onDelete={() => {
-                                alert('deleted');
+                                handleImageDelete('profile_image');
                             }}
-                            onUpload={() => {
-                                alert('uploaded');
+                            onUpload={(file: File) => {
+                                handleImageUpload('profile_image', file);
                             }}
                         >
-                            <Icon color='white' name='user-add' size='lg' />
+                            <Icon colorClass='text-white' name='user-add' size='lg' />
                         </ImageUpload>
                         <div>
                             <Heading styles='text-white'>{user.name}{suspendedText}</Heading>
-                            <span className='text-md font-semibold text-white'>Administrator</span>
+                            <span className='text-md font-semibold capitalize text-white'>{user.roles[0].name.toLowerCase()}</span>
                         </div>
                     </div>
                 </div>
                 <div className='mt-10 grid grid-cols-2 gap-x-12 gap-y-20 pb-10'>
-                    <Basic setUserData={setUserData} user={userData} />
-                    <Details setUserData={setUserData} user={userData} />
+                    <Basic errors={errors} setUserData={setUserData} user={userData} />
+                    <Details errors={errors} setUserData={setUserData} user={userData} />
                     <EmailNotifications setUserData={setUserData} user={userData} />
                     <Password user={userData} />
                 </div>

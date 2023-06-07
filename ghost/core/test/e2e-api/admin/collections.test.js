@@ -12,7 +12,8 @@ const {
     anyLocationFor,
     anyObjectId,
     anyISODateTime,
-    anyNumber
+    anyNumber,
+    anyString
 } = matchers;
 
 const matchCollection = {
@@ -82,7 +83,10 @@ describe('Collections API', function () {
                 etag: anyEtag
             })
             .matchBodySnapshot({
-                collections: [matchCollection]
+                collections: [
+                    buildMatcher(2, {withSortOrder: true}),
+                    buildMatcher(0)
+                ]
             });
     });
 
@@ -330,6 +334,29 @@ describe('Collections API', function () {
             });
     });
 
+    it('Cannot delete a built in collection', async function () {
+        const builtInCollection = await agent
+            .get('/collections/?filter=slug:featured')
+            .expectStatus(200);
+
+        assert.ok(builtInCollection.body.collections);
+        assert.equal(builtInCollection.body.collections.length, 1);
+
+        await agent
+            .delete(`/collections/${builtInCollection.body.collections[0].id}/`)
+            .expectStatus(405)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId,
+                    context: anyString
+                }]
+            });
+    });
+
     describe('Automatic Collection Filtering', function () {
         it('Creates an automatic Collection with a featured filter', async function () {
             const collection = {
@@ -353,6 +380,66 @@ describe('Collections API', function () {
                 .matchBodySnapshot({
                     collections: [buildMatcher(2)]
                 });
+        });
+
+        it('Creates an automatic Collection with a published_at filter', async function () {
+            const collection = {
+                title: 'Test Collection with published_at filter',
+                description: 'Test Collection Description with published_at filter',
+                type: 'automatic',
+                // should return all available posts
+                filter: 'published_at:>=2022-05-25'
+            };
+
+            await agent
+                .post('/collections/')
+                .body({
+                    collections: [collection]
+                })
+                .expectStatus(201)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('collections')
+                })
+                .matchBodySnapshot({
+                    collections: [buildMatcher(7)]
+                });
+        });
+
+        it('Creates an automatic Collection with a relational tag filter', async function () {
+            const collection = {
+                title: 'Test Collection with relational tag filter',
+                description: 'Test Collection Description with relational tag filter',
+                type: 'automatic',
+                filter: 'tag:kitchen-sink'
+            };
+
+            const automaticTagCollection = await agent
+                .post('/collections/')
+                .body({
+                    collections: [collection]
+                })
+                .expectStatus(201)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('collections')
+                })
+                .matchBodySnapshot({
+                    collections: [buildMatcher(2)]
+                });
+
+            const kitchenSinkTagPosts = await agent
+                .get('/posts/?filter=tag:kitchen-sink');
+
+            assert.equal(automaticTagCollection.body.collections[0].posts.length, 2);
+            assert.equal(kitchenSinkTagPosts.body.posts.length, 2);
+
+            const collectionPostIds = automaticTagCollection.body.collections[0].posts.map(p => p.id);
+            const tagFilteredPosts = kitchenSinkTagPosts.body.posts.map(p => p.id);
+
+            assert.deepEqual(collectionPostIds, tagFilteredPosts);
         });
     });
 });

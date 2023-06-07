@@ -22,12 +22,24 @@ export class Collection {
     featureImage: string | null;
     createdAt: Date;
     updatedAt: Date;
-    deleted: boolean;
+    deletable: boolean;
+    _deleted: boolean = false;
 
     _posts: string[];
     get posts() {
         return this._posts;
     }
+
+    public get deleted() {
+        return this._deleted;
+    }
+
+    public set deleted(value: boolean) {
+        if (this.deletable) {
+            this._deleted = value;
+        }
+    }
+
     /**
      * @param post {{id: string}} - The post to add to the collection
      * @param index {number} - The index to insert the post at, use negative numbers to count from the end.
@@ -69,6 +81,7 @@ export class Collection {
         this.featureImage = data.featureImage;
         this.createdAt = data.createdAt;
         this.updatedAt = data.updatedAt;
+        this.deletable = data.deletable;
         this.deleted = data.deleted;
         this._posts = data.posts;
     }
@@ -127,6 +140,7 @@ export class Collection {
         return new Collection({
             id: id.toHexString(),
             title: data.title,
+            slug: data.slug,
             description: data.description || null,
             type: data.type || 'manual',
             filter: data.filter || null,
@@ -134,6 +148,7 @@ export class Collection {
             createdAt: Collection.validateDateField(data.created_at, 'created_at'),
             updatedAt: Collection.validateDateField(data.updated_at, 'updated_at'),
             deleted: data.deleted || false,
+            deletable: (data.deletable !== false),
             posts: data.posts || []
         });
     }
