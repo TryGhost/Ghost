@@ -14,12 +14,13 @@ export interface PreviewModalProps {
     okColor?: string;
     onCancel?: () => void;
     onOk?: () => void;
+    buttonsDisabled?: boolean
     customButtons?: React.ReactNode;
     customHeader?: React.ReactNode;
     sidebarPadding?: boolean;
 }
 
-const PreviewModal: React.FC<PreviewModalProps> = ({
+export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     title,
     sidebar,
     preview,
@@ -28,6 +29,7 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
     okColor = 'black',
     onCancel,
     onOk,
+    buttonsDisabled,
     customButtons,
     customHeader,
     sidebarPadding = true
@@ -41,7 +43,8 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
             label: cancelLabel,
             onClick: (onCancel ? onCancel : () => {
                 modal.remove();
-            })
+            }),
+            disabled: buttonsDisabled
         });
 
         buttons.push({
@@ -49,7 +52,8 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
             label: okLabel,
             color: okColor,
             className: 'min-w-[80px]',
-            onClick: onOk
+            onClick: onOk,
+            disabled: buttonsDisabled
         });
     }
 
@@ -82,4 +86,4 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
     );
 };
 
-export default NiceModal.create(PreviewModal);
+export default NiceModal.create(PreviewModalContent);

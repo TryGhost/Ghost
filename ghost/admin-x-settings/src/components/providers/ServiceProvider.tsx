@@ -1,6 +1,5 @@
-import React from 'react';
+import React, {createContext} from 'react';
 import setupGhostApi from '../../utils/api';
-import {createContext} from 'react';
 
 export interface FileService {
     uploadImage: (file: File) => Promise<string>;
@@ -21,6 +20,7 @@ const ServicesContext = createContext<ServicesContextProps>({
 });
 
 const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion}) => {
+    // TODO: Will this re-render? (if so, will it make duplicate requests because the api object is different?)
     const apiService = setupGhostApi({ghostVersion});
     const fileService = {
         uploadImage: async (file: File): Promise<string> => {

@@ -1,4 +1,4 @@
-import {Setting, SiteData, User, UserRole} from '../types/api';
+import {CustomThemeSetting, Setting, SiteData, User, UserRole} from '../types/api';
 import {getGhostPaths} from './helpers';
 
 interface Meta {
@@ -47,6 +47,10 @@ export interface UserInvite {
 export interface InvitesResponseType {
     meta?: Meta;
     invites: UserInvite[];
+}
+
+export interface CustomThemeSettingsResponseType {
+    custom_theme_settings: CustomThemeSetting[];
 }
 
 export interface SiteResponseType {
@@ -119,6 +123,10 @@ interface API {
             token?: string;
         }) => Promise<InvitesResponseType>;
         delete: (inviteId: string) => Promise<void>;
+    };
+    customThemeSettings: {
+        browse: () => Promise<CustomThemeSettingsResponseType>
+        edit: (newSettings: CustomThemeSetting[]) => Promise<CustomThemeSettingsResponseType>
     }
 }
 
@@ -129,7 +137,7 @@ interface GhostApiOptions {
 function setupGhostApi({ghostVersion}: GhostApiOptions): API {
     const {apiRoot} = getGhostPaths();
 
-    function fetcher(url: string, options: RequestOptions) {
+    function fetcher(url: string, options: RequestOptions = {}) {
         const endpoint = `${apiRoot}${url}`;
         // By default, we set the Content-Type header to application/json
         const defaultHeaders = {
@@ -299,6 +307,23 @@ function setupGhostApi({ghostVersion}: GhostApiOptions): API {
                     method: 'DELETE'
                 });
                 return;
+            }
+        },
+        customThemeSettings: {
+            browse: async () => {
+                const response = await fetcher('/custom_theme_settings/');
+
+                const data: CustomThemeSettingsResponseType = await response.json();
+                return data;
+            },
+            edit: async (newSettings) => {
+                const response = await fetcher('/custom_theme_settings/', {
+                    method: 'PUT',
+                    body: JSON.stringify({custom_theme_settings: newSettings})
+                });
+
+                const data: CustomThemeSettingsResponseType = await response.json();
+                return data;
             }
         }
     };

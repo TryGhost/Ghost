@@ -59,6 +59,15 @@ export function generateAvatarColor(name: string) {
     return 'hsl(' + h + ', ' + s + '%, ' + l + '%)';
 }
 
+export function humanizeSettingKey(key: string) {
+    const allCaps = ['API', 'CTA', 'RSS'];
+
+    return key
+        .replace(/^[a-z]/, char => char.toUpperCase())
+        .replace(/_/g, ' ')
+        .replace(new RegExp(`\\b(${allCaps.join('|')})\\b`, 'ig'), match => match.toUpperCase());
+}
+
 export function isOwnerUser(user: User) {
     return user.roles.some(role => role.name === 'Owner');
 }
