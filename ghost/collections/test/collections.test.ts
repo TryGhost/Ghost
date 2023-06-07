@@ -1,5 +1,5 @@
 import assert from 'assert';
-import {CollectionsService, CollectionsRepositoryInMemory, Collection} from '../src/index';
+import {CollectionsService, CollectionsRepositoryInMemory} from '../src/index';
 import {PostsRepositoryInMemory} from './fixtures/PostsRepositoryInMemory';
 import {posts} from './fixtures/posts';
 
@@ -80,13 +80,19 @@ describe('CollectionsService', function () {
         });
     });
 
-    describe('toDTO', function () {
-        it('Can map Collection entity to DTO object', async function () {
-            const collection = await Collection.create({});
-            const dto = collectionsService.toDTO(collection);
+    describe('getCollectionsForPost', function () {
+        it('Can get collections for a post', async function () {
+            const collection = await collectionsService.createCollection({
+                title: 'testing collections',
+                type: 'manual'
+            });
 
-            assert.equal(dto.id, collection.id, 'DTO should have the same id as the entity');
-            assert.equal(dto.title, null, 'DTO should return null if nullable property of the entity is unassigned');
+            await collectionsService.addPostToCollection(collection.id, posts[0]);
+
+            const collections = await collectionsService.getCollectionsForPost(posts[0].id);
+
+            assert.equal(collections.length, 1, 'There should be one collection');
+            assert.equal(collections[0].id, collection.id, 'Collection should be the correct one');
         });
     });
 
