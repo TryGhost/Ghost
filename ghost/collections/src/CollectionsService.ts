@@ -77,7 +77,7 @@ export class CollectionsService {
     private toDTO(collection: Collection): CollectionDTO {
         return {
             id: collection.id,
-            title: collection.title || null,
+            title: collection.title,
             slug: collection.slug,
             description: collection.description || null,
             feature_image: collection.featureImage || null,

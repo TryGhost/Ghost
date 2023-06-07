@@ -80,16 +80,6 @@ describe('CollectionsService', function () {
         });
     });
 
-    describe('toDTO', function () {
-        it('Can map Collection entity to DTO object', async function () {
-            const collection = await Collection.create({});
-            const dto = collectionsService.toDTO(collection);
-
-            assert.equal(dto.id, collection.id, 'DTO should have the same id as the entity');
-            assert.equal(dto.title, null, 'DTO should return null if nullable property of the entity is unassigned');
-        });
-    });
-
     describe('getCollectionsForPost', function () {
         it('Can get collections for a post', async function () {
             const collection = await collectionsService.createCollection({
