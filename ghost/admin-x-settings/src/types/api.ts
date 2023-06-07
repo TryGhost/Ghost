@@ -55,3 +55,22 @@ export type SiteData = {
     locale: string;
     version: string;
 };
+
+type CustomThemeSettingData =
+    { type: 'text', value: string | null, default: string | null } |
+    { type: 'color', value: string, default: string } |
+    { type: 'image', value: string | null } |
+    { type: 'boolean', value: boolean, default: boolean } |
+    {
+        type: 'select',
+        value: string
+        default: string
+        options: string[]
+    };
+
+export type CustomThemeSetting = CustomThemeSettingData & {
+    id: string
+    key: string
+    // homepage and post are the only two groups we handle, but technically theme authors can put other things in package.json
+    group?: 'homepage' | 'post' | string
+}

@@ -3,13 +3,11 @@ import Hint from './Hint';
 import React, {useId} from 'react';
 import clsx from 'clsx';
 
-type TextFieldType = 'text' | 'number' | 'email' | 'password' | 'file' | 'date' | 'time' | 'search';
-
 interface TextFieldProps {
     inputRef?: React.RefObject<HTMLInputElement>;
     title?: string;
     hideTitle?: boolean;
-    type?: TextFieldType;
+    type?: React.InputHTMLAttributes<HTMLInputElement>['type'];
     value?: string;
     error?: boolean;
     placeholder?: string;

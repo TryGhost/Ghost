@@ -1,17 +1,22 @@
 import Heading from '../../../../admin-x-ds/global/Heading';
 import Hint from '../../../../admin-x-ds/global/Hint';
 import ImageUpload from '../../../../admin-x-ds/global/ImageUpload';
-import React from 'react';
+import React, {useContext} from 'react';
 import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../../admin-x-ds/global/TextField';
-import useSettingGroup from '../../../../hooks/useSettingGroup';
+import {ServicesContext} from '../../../providers/ServiceProvider';
+import {SettingValue} from '../../../../types/api';
 
-const BrandSettings: React.FC = () => {
-    const {
-        getSettingValues
-    } = useSettingGroup();
+export interface BrandSettingValues {
+    description: string
+    accentColor: string
+    icon: string | null
+    logo: string | null
+    coverImage: string | null
+}
 
-    const [description, accentColor] = getSettingValues(['description', 'accent_color']) as string[];
+const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key: string, value: SettingValue) => void }> = ({values,updateSetting}) => {
+    const {fileService} = useContext(ServicesContext);
 
     return (
         <div className='mt-7'>
@@ -21,7 +26,8 @@ const BrandSettings: React.FC = () => {
                     clearBg={true}
                     hint='Used in your theme, meta data and search results'
                     title='Site description'
-                    value={description}
+                    value={values.description}
+                    onChange={event => updateSetting('description', event.target.value)}
                 />
                 <div className='flex items-center justify-between gap-3'>
                     <Heading level={6}>Accent color</Heading>
@@ -32,7 +38,9 @@ const BrandSettings: React.FC = () => {
                             className='text-right'
                             clearBg={true}
                             maxLength={7}
-                            value={accentColor}
+                            type='color'
+                            value={values.accentColor}
+                            onChange={event => updateSetting('accent_color', event.target.value)}
                         />
                     </div>
                 </div>
@@ -44,8 +52,10 @@ const BrandSettings: React.FC = () => {
                             height='36px'
                             id='logo'
                             width='150px'
-                            onDelete={() => {}}
-                            onUpload={() => {}}
+                            onDelete={() => updateSetting('icon', null)}
+                            onUpload={async (file) => {
+                                updateSetting('icon', await fileService!.uploadImage(file));
+                            }}
                         >
                         Upload icon
                         </ImageUpload>
@@ -56,8 +66,10 @@ const BrandSettings: React.FC = () => {
                     <ImageUpload
                         height='80px'
                         id='logo'
-                        onDelete={() => {}}
-                        onUpload={() => {}}
+                        onDelete={() => updateSetting('logo', null)}
+                        onUpload={async (file) => {
+                            updateSetting('logo', await fileService!.uploadImage(file));
+                        }}
                     >
                     Upload logo
                     </ImageUpload>
@@ -67,8 +79,10 @@ const BrandSettings: React.FC = () => {
                     <ImageUpload
                         height='140px'
                         id='cover'
-                        onDelete={() => {}}
-                        onUpload={() => {}}
+                        onDelete={() => updateSetting('cover_image', null)}
+                        onUpload={async (file) => {
+                            updateSetting('cover_image', await fileService!.uploadImage(file));
+                        }}
                     >
                     Upload cover
                     </ImageUpload>
