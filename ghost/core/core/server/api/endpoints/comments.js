@@ -4,6 +4,9 @@ module.exports = {
     docName: 'comments',
 
     edit: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'id'
         ],

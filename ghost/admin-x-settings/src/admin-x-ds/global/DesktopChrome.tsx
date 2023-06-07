@@ -15,12 +15,12 @@ interface DesktopChromeProps {
 }
 
 const DesktopChrome: React.FC<DesktopChromeProps> = ({
-    size = 'md', 
-    trafficLights = true, 
-    children, 
+    size = 'md',
+    trafficLights = true,
+    children,
     chromeClasses = '',
-    headerClasses = '', 
-    contentClasses = '', 
+    headerClasses = '',
+    contentClasses = '',
     header,
     headerCenter = true,
     border = false
@@ -29,16 +29,16 @@ const DesktopChrome: React.FC<DesktopChromeProps> = ({
     const trafficLightSize = size === 'sm' ? 'w-[6px] h-[6px]' : 'w-[10px] h-[10px]';
     const trafficLightContainerStyle = size === 'sm' ? 'gap-[5px] w-[36px] ' : 'gap-2 w-[56px] ';
 
-    contentClasses += ' h-full';
+    contentClasses += ' grow';
 
     if (headerCenter) {
         containerSize += size === 'sm' ? ' pr-[48px]' : ' pr-[68px]';
     }
 
     return (
-        <div className={`h-full ${border ? 'rounded-sm border border-grey-100' : ''} ${chromeClasses}`}>
+        <div className={`flex h-full grow-0 flex-col ${border ? 'rounded-sm border border-grey-100' : ''} ${chromeClasses}`}>
             <header className={`flex items-center justify-between bg-grey-50 ${containerSize} ${headerClasses}`}>
-                {trafficLights && 
+                {trafficLights &&
                     <div className={`flex items-center ${trafficLightContainerStyle}`}>
                         <div className={`rounded-full bg-grey-500 ${trafficLightSize}`}></div>
                         <div className={`rounded-full bg-grey-500 ${trafficLightSize}`}></div>
