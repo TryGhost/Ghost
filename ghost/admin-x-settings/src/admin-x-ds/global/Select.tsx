@@ -86,7 +86,7 @@ const Select: React.FC<SelectProps> = ({
 
     return (
         <div className='flex w-full flex-col'>
-            {title && <Heading htmlFor={id} useLabelTag={true}>{title}</Heading>}
+            {title && <Heading grey={selectedOption || !prompt ? true : false} htmlFor={id} useLabelTag={true}>{title}</Heading>}
             <div className={containerClasses}>
                 <select className={selectClasses} id={id} value={selectedOption} onChange={handleOptionChange}>
                     {prompt && <option className={optionClasses} value="">{prompt}</option>}

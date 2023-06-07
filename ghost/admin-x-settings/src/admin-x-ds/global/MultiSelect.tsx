@@ -42,7 +42,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     case 'grey':
         multiValueColor = 'bg-grey-300 text-black';
         break;
-    
+
     default:
         break;
     }
@@ -65,8 +65,8 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
 
     return (
         <div className='flex flex-col'>
-            {title && <Heading useLabelTag={true}>{title}</Heading>}
-            <ReactSelect 
+            {title && <Heading grey={defaultValues ? true : false} useLabelTag={true}>{title}</Heading>}
+            <ReactSelect
                 classNames={{
                     menuList: () => 'z-50',
                     valueContainer: () => customClasses.valueContainer,

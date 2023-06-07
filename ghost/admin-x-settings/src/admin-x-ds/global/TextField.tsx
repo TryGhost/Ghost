@@ -39,7 +39,7 @@ const TextField: React.FC<TextFieldProps> = ({
 
     return (
         <div className='flex flex-col'>
-            {title && <Heading className={hideTitle ? 'sr-only' : ''} htmlFor={id} useLabelTag={true}>{title}</Heading>}
+            {title && <Heading className={hideTitle ? 'sr-only' : ''} grey={value ? true : false} htmlFor={id} useLabelTag={true}>{title}</Heading>}
             <input
                 ref={inputRef}
                 className={clsx(

@@ -44,7 +44,7 @@ const TextArea: React.FC<TextAreaProps> = ({inputRef, title, value, rows = 3, ma
 
     return (
         <div className='flex flex-col'>
-            {title && <Heading htmlFor={id} useLabelTag={true}>{title}</Heading>}
+            {title && <Heading grey={value ? true : false} htmlFor={id} useLabelTag={true}>{title}</Heading>}
             <textarea
                 ref={inputRef}
                 className={styles}

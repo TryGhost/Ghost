@@ -35,7 +35,7 @@ type Heading6Props = {
 type HeadingLabelProps = {
     useLabelTag: true,
     level?: never,
-    grey?: never } & HeadingBaseProps & React.LabelHTMLAttributes<HTMLLabelElement>
+    grey?: boolean } & HeadingBaseProps & React.LabelHTMLAttributes<HTMLLabelElement>
 
 const Heading: React.FC<Heading1to5Props | Heading6Props | HeadingLabelProps> = ({
     level,
