@@ -951,6 +951,20 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         }
                         return true;
                     }
+
+                    // if a link is pasted in a populated text node, insert a link
+                    if (nodeContent.length > 0) {
+                        const textNode = selection.extract()[0];
+                        const parentNode = textNode.getParent();
+                        const link = linkMatch[1];
+                        const linkNode = $createLinkNode(link);
+                        const linkTextNode = $createTextNode(link);
+                        linkNode.append(linkTextNode);
+                        parentNode.append(linkNode);
+                        parentNode.selectEnd();
+                        return true; 
+                    }
+
                     // if a link is pasted in a blank text node, insert an embed card (may turn into bookmark)
                     if (!selectionContent.length > 0 && !nodeContent.length > 0) {
                         const url = linkMatch[1];
