@@ -4,6 +4,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import PreviewModal from '../../../admin-x-ds/global/PreviewModal';
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
+import StickyFooter from '../../../admin-x-ds/global/StickyFooter';
 import TabView from '../../../admin-x-ds/global/TabView';
 import ThemePreview from './designAndBranding/ThemePreivew';
 import ThemeSettings from './designAndBranding/ThemeSettings';
@@ -34,7 +35,17 @@ const Sidebar: React.FC = () => {
     ];
 
     return (
-        <TabView tabs={tabs} />
+        <>
+            <div className='p-7'>
+                <TabView tabs={tabs} />
+            </div>
+            <StickyFooter>
+                <button className='flex w-full cursor-pointer flex-col px-7' type='button' onClick={() => {}}>
+                    <strong>Change theme</strong>
+                    <span className='text-sm text-grey-600'>Casper</span>
+                </button>
+            </StickyFooter>
+        </>
     );
 };
 
@@ -44,7 +55,8 @@ const DesignModal: React.FC = () => {
             title: 'Design',
             okLabel: 'Save',
             preview: <ThemePreview />,
-            sidebar: <Sidebar />
+            sidebar: <Sidebar />,
+            sidebarPadding: false
         });
     };
 
