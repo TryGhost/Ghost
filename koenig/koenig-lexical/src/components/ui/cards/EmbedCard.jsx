@@ -44,7 +44,7 @@ function EmbedIframe({dataTestId, html}) {
     const handleResize = () => {
         // get ratio from nested iframe if present (eg, Vimeo)
         const firstElement = iframeRef.current.contentDocument.body.firstChild;
-        
+
         // won't have an iframe if the embed is invalid or fetching
         if (!firstElement) {
             return;
@@ -56,7 +56,7 @@ function EmbedIframe({dataTestId, html}) {
             if (widthAttr.indexOf('%') === -1) {
                 const heightAttr = parseInt(firstElement.getAttribute('height'));
                 if (widthAttr && heightAttr) {
-                    const ratio = widthAttr / heightAttr;
+                    const ratio = parseInt(widthAttr) / heightAttr;
                     const newHeight = iframeRef.current.offsetWidth / ratio;
                     firstElement.style.height = `${newHeight}px`;
                     iframeRef.current.style.height = `${newHeight}px`;
@@ -87,7 +87,7 @@ function EmbedIframe({dataTestId, html}) {
         subtree: true
     };
     const mutationObserver = new MutationObserver(handleResize);
-    
+
     const handleLoad = () => {
         const iframeBody = iframeRef.current.contentDocument.body;
         // apply styles
