@@ -21,7 +21,7 @@ jobs:
               labels: ["migration"]
             })
 
-      - uses: peter-evans/create-or-update-comment@542d5c2467125bf0a74bd75f1ec2cf9b7eda44bb
+      - uses: peter-evans/create-or-update-comment@5825e577e369343190925b317e13e821c7993725
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
