@@ -144,7 +144,7 @@ export function SignupCard({alignment,
                 backgroundImage: `url(${backgroundImageSrc})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center center',
-                backgroundColor: 'bg-grey-950',
+                backgroundColor: 'white',
                 color: hexColorValue(textColor)
             };
         } else if (backgroundColor && textColor) {
