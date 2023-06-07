@@ -1,4 +1,4 @@
-import React, {createContext} from 'react';
+import React, {createContext, useMemo} from 'react';
 import setupGhostApi from '../../utils/api';
 
 export interface FileService {
@@ -20,14 +20,14 @@ const ServicesContext = createContext<ServicesContextProps>({
 });
 
 const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion}) => {
-    // TODO: Will this re-render? (if so, will it make duplicate requests because the api object is different?)
-    const apiService = setupGhostApi({ghostVersion});
-    const fileService = {
+    const apiService = useMemo(() => setupGhostApi({ghostVersion}), [ghostVersion]);
+    const fileService = useMemo(() => ({
         uploadImage: async (file: File): Promise<string> => {
             const response = await apiService.images.upload({file});
             return response.images[0].url;
         }
-    };
+    }), [apiService]);
+
     return (
         <ServicesContext.Provider value={{
             api: apiService,
