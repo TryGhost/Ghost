@@ -1,6 +1,6 @@
 import Avatar from '../../../admin-x-ds/global/Avatar';
 import Button from '../../../admin-x-ds/global/Button';
-import InviteUserModal from './modals/InviteUserModal';
+import InviteUserModal from './InviteUserModal';
 import List from '../../../admin-x-ds/global/List';
 import ListItem from '../../../admin-x-ds/global/ListItem';
 import NiceModal from '@ebay/nice-modal-react';
@@ -8,7 +8,7 @@ import NoValueLabel from '../../../admin-x-ds/global/NoValueLabel';
 import React, {useContext, useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
-import UserDetailModal from './modals/UserDetailModal';
+import UserDetailModal from './UserDetailModal';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import {ServicesContext} from '../../providers/ServiceProvider';
 import {User} from '../../../types/api';

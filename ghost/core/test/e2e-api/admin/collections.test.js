@@ -12,7 +12,8 @@ const {
     anyLocationFor,
     anyObjectId,
     anyISODateTime,
-    anyNumber
+    anyNumber,
+    anyString
 } = matchers;
 
 const matchCollection = {
@@ -329,6 +330,29 @@ describe('Collections API', function () {
             .matchBodySnapshot({
                 errors: [{
                     id: anyErrorId
+                }]
+            });
+    });
+
+    it('Cannot delete a built in collection', async function () {
+        const builtInCollection = await agent
+            .get('/collections/?filter=slug:featured')
+            .expectStatus(200);
+
+        assert.ok(builtInCollection.body.collections);
+        assert.equal(builtInCollection.body.collections.length, 1);
+
+        await agent
+            .delete(`/collections/${builtInCollection.body.collections[0].id}/`)
+            .expectStatus(405)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId,
+                    context: anyString
                 }]
             });
     });
