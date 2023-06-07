@@ -247,7 +247,7 @@ const stopGhost = async () => {
         // NOTE: similarly to urlService.reset() there doesn't seem to be a need for this call
         //       probable best location for this type of cleanup if it's needed is registering
         //       a hood during the "server cleanup" phase of the server stop
-        urlService.resetGenerators();
+        urlService.reset();
     }
 };
 

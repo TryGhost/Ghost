@@ -22,7 +22,7 @@ module.exports.init = ({urlCache} = {}) => {
 };
 
 module.exports.reset = () => {
-    urlService.softReset();
+    urlService.reset();
 },
 
 module.exports.resetGenerators = () => {
