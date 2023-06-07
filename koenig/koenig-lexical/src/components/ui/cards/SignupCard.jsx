@@ -54,6 +54,7 @@ export function SignupCard({alignment,
     disclaimerTextEditorInitialState,
     isSwapped,
     handleSwapLayout,
+    handleButtonTextBlur,
     setFileInputRef}) {
     const [backgroundColorPickerExpanded, setBackgroundColorPickerExpanded] = useState(false);
     const [buttonColorPickerExpanded, setButtonColorPickerExpanded] = useState(false);
@@ -422,6 +423,7 @@ export function SignupCard({alignment,
                         placeholder='Add button text'
                         value={buttonText}
                         hideLabel
+                        onBlur={handleButtonTextBlur}
                         onChange={handleButtonText}
                     />
                     <MultiSelectDropdownSetting

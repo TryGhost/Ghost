@@ -118,6 +118,15 @@ function SignupNodeComponent({
         });
     };
 
+    const handleButtonTextBlur = (event) => {
+        if (!event.target.value) {
+            editor.update(() => {
+                const node = $getNodeByKey(nodeKey);
+                node.setButtonText('Subscribe');
+            });
+        }
+    };
+
     const handleClearBackgroundImage = () => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
@@ -207,6 +216,7 @@ function SignupNodeComponent({
                 handleBackgroundColor={handleBackgroundColor}
                 handleButtonColor={handleButtonColor}
                 handleButtonText={handleButtonText}
+                handleButtonTextBlur={handleButtonTextBlur}
                 handleClearBackgroundImage={handleClearBackgroundImage}
                 handleHideBackgroundImage={handleHideBackgroundImage}
                 handleLabels={handleLabels}

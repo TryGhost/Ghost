@@ -51,11 +51,11 @@ export function ToggleSetting({label, description, isChecked, onChange, dataTest
     );
 }
 
-export function InputSetting({label, hideLabel, description, onChange, value, placeholder, dataTestId}) {
+export function InputSetting({label, hideLabel, description, onChange, value, placeholder, dataTestId, onBlur}) {
     return (
         <div className="mt-2 flex w-full flex-col justify-between gap-2 text-[1.3rem] first:mt-0">
             <div className={hideLabel ? 'sr-only' : 'font-bold text-grey-900 dark:text-grey-200'}>{label}</div>
-            <Input dataTestId={dataTestId} placeholder={placeholder} value={value} onChange={onChange} />
+            <Input dataTestId={dataTestId} placeholder={placeholder} value={value} onBlur={onBlur} onChange={onChange} />
             {description &&
                 <p className="text-[1.25rem] font-normal leading-snug text-grey-700">{description}</p>
             }
