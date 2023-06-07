@@ -1,3 +1,4 @@
+import trackEvent from '../utils/analytics';
 import {useCallback, useEffect, useState} from 'react';
 
 export default function usePinturaEditor({
@@ -62,6 +63,7 @@ export default function usePinturaEditor({
     }, [config?.cssUrl]);
 
     const openEditor = useCallback(({image, handleSave}) => {
+        trackEvent('Image Edit Button Clicked', {location: 'editor'});
         if (image && isEnabled) {
             // add a timestamp to the image src to bypass cache
             // avoids cors issues with cached images
@@ -73,6 +75,7 @@ export default function usePinturaEditor({
             const imageSrc = imageUrl.href;
             const editor = window.pintura.openDefaultEditor({
                 src: imageSrc,
+                enableTransparencyGrid: true,
                 util: 'crop',
                 utils: [
                     'crop',
@@ -123,7 +126,8 @@ export default function usePinturaEditor({
                 ],
                 locale: {
                     labelButtonExport: 'Save and close'
-                }
+                },
+                previewPad: true
             });
 
             editor.on('loaderror', () => {
@@ -133,6 +137,7 @@ export default function usePinturaEditor({
             editor.on('process', (result) => {
                 // save edited image
                 handleSave(result.dest);
+                trackEvent('Image Edit Saved', {location: 'editor'});
             });
         }
     }, [isEnabled]);
