@@ -71,8 +71,10 @@ const Modal: React.FC<ModalProps> = ({
         }
     }
 
-    //bg-[linear-gradient(0deg,rgba(255,255,255,1)_85%,rgba(255,255,255,0)_100%)]
-    let modalClasses = clsx('relative z-50 mx-auto flex w-full flex-col justify-between rounded bg-white shadow-xl');
+    let modalClasses = clsx(
+        'relative z-50 mx-auto flex w-full flex-col justify-between rounded bg-white shadow-xl'
+        // !stickyFooter && ' overflow-hidden'
+    );
     let backdropClasses = clsx('fixed inset-0 z-40 h-[100vh] w-[100vw] overflow-y-scroll ');
 
     let padding = '';
