@@ -1,10 +1,10 @@
-import Button from '../../../../../admin-x-ds/global/Button';
-import Heading from '../../../../../admin-x-ds/global/Heading';
-import Hint from '../../../../../admin-x-ds/global/Hint';
+import Button from '../../../../admin-x-ds/global/Button';
+import Heading from '../../../../admin-x-ds/global/Heading';
+import Hint from '../../../../admin-x-ds/global/Hint';
 import React from 'react';
-import SettingGroupContent from '../../../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../../../admin-x-ds/global/TextField';
-import useSettingGroup from '../../../../../hooks/useSettingGroup';
+import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
+import TextField from '../../../../admin-x-ds/global/TextField';
+import useSettingGroup from '../../../../hooks/useSettingGroup';
 
 const BrandSettings: React.FC = () => {
     const {
