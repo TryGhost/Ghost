@@ -123,6 +123,7 @@ const DefaultRecipients: React.FC = () => {
                         {value: 'option3', label: 'Fake tier 3'}
                     ]}
                     title='Select tiers'
+                    clearBg
                     onChange={(selected: MultiValue<MultiSelectOption>) => {
                         selected?.map(o => (
                             alert(`${o.label} (${o.value})`)
