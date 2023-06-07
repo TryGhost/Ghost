@@ -24,7 +24,19 @@ const labs = require('../../../../../../../shared/labs');
 module.exports = async (model, frame, options = {}) => {
     const {tiers: tiersData} = options || {};
 
-    const jsonModel = model.toJSON(frame.options);
+    // NOTE: `model` is now overloaded and may be a bookshelf model or a POJO
+    let jsonModel = model;
+    if (typeof model.toJSON === 'function') {
+        jsonModel = model.toJSON(frame.options);
+    } else {
+        // This is to satisy the interface which extraAttrs needs
+        model = {
+            id: jsonModel.id,
+            get(attr) {
+                return jsonModel[attr];
+            }
+        };
+    }
 
     // Map email_recipient_filter to email_segment
     jsonModel.email_segment = jsonModel.email_recipient_filter;

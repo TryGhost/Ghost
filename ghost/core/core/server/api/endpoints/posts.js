@@ -1,6 +1,4 @@
 const models = require('../../models');
-const tpl = require('@tryghost/tpl');
-const errors = require('@tryghost/errors');
 const getPostServiceInstance = require('../../services/posts/posts-service');
 const allowedIncludes = [
     'tags',
@@ -20,10 +18,6 @@ const allowedIncludes = [
     'post_revisions.author'
 ];
 const unsafeAttrs = ['status', 'authors', 'visibility'];
-
-const messages = {
-    postNotFound: 'Post not found.'
-};
 
 const postsService = getPostServiceInstance();
 
@@ -118,16 +112,7 @@ module.exports = {
             unsafeAttrs: unsafeAttrs
         },
         query(frame) {
-            return models.Post.findOne(frame.data, frame.options)
-                .then((model) => {
-                    if (!model) {
-                        throw new errors.NotFoundError({
-                            message: tpl(messages.postNotFound)
-                        });
-                    }
-
-                    return model;
-                });
+            return postsService.readPost(frame);
         }
     },
 
