@@ -50,16 +50,23 @@ function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedType, meta
         setUrlError(false);
     };
 
-    const handlePasteAsLink = useCallback(() => {
+    const handlePasteAsLink = useCallback((href) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
+            if (!node) {
+                return;
+            }
             const paragraph = $createParagraphNode()
-                .append($createLinkNode(urlInputValue)
-                    .append($createTextNode(urlInputValue)));
+                .append($createLinkNode(href)
+                    .append($createTextNode(href)));
             node.replace(paragraph);
-            paragraph.selectEnd();
+
+            if (!paragraph.getNextSibling()) {
+                paragraph.insertAfter($createParagraphNode());
+            }
+            paragraph.selectNext();
         });
-    }, [editor, nodeKey, urlInputValue]);
+    }, [editor, nodeKey]);
 
     const handleClose = () => {
         editor.update(() => {
@@ -69,7 +76,6 @@ function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedType, meta
     };
 
     const fetchMetadata = async (href) => {
-        editor.getRootElement().focus(); // focus editor before causing the input element to dismount
         setLoading(true);
         let response;
         const type = createdWithUrl ? '' : 'embed';
@@ -86,6 +92,12 @@ function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedType, meta
                 return;
             }
         } catch (e) {
+            if (createdWithUrl) {
+                setLoading(false);
+                handlePasteAsLink(href);
+
+                return;
+            }
             setLoading(false);
             setUrlError(true);
             return;
@@ -96,6 +108,11 @@ function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedType, meta
             node.setMetadata(response);
             node.setEmbedType(response.type);
             node.setHtml(response.html);
+
+            // select next node if card was pasted from link
+            if (createdWithUrl) {
+                node.selectNext();
+            }
         });
         setLoading(false);
         // We only do this for init

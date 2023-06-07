@@ -96,6 +96,10 @@ export function BookmarkNodeComponent({author, nodeKey, url, icon, title, descri
             node.setDescription(response.metadata.description);
             node.setPublisher(response.metadata.publisher);
             node.setThumbnail(response.metadata.thumbnail);
+
+            if (createdWithUrl) {
+                node.selectNext();
+            }
         });
         setLoading(false);
         // We only do this for init

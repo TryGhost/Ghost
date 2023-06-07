@@ -178,6 +178,13 @@ test.describe('Embed card', async () => {
             await expect(retryButton).not.toBeVisible();
         });
 
+        test('should convert url to link if can\'t extract metadata', async function () {
+            await focusEditor(page);
+            await pasteText(page, 'https://ghost.org/should-convert-to-link');
+
+            await expect(page.locator('a[href="https://ghost.org/should-convert-to-link"]')).toBeVisible();
+        });
+
         // todo: test is failing, need to figure if the error in test logic or on code
         test.skip('paste as link button removes card and inserts text node link', async function () {
             await focusEditor(page);

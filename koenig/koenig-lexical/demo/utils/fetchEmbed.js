@@ -301,6 +301,10 @@ export async function fetchEmbed(url, {type}) {
                 thumbnail_url: 'https://i.ytimg.com/vi/E5yFcdPAGv0/hqdefault.jpg',
                 type: 'video'
             };
+            // for tests, should convert url to link
+            if (url === 'https://ghost.org/should-convert-to-link') {
+                throw new Error();
+            }
             return returnData;
         }
     } catch (e) {
