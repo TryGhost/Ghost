@@ -19,6 +19,7 @@ const notImplemented = function (req, res, next) {
         site: ['GET'],
         posts: ['GET', 'PUT', 'DELETE', 'POST'],
         pages: ['GET', 'PUT', 'DELETE', 'POST'],
+        collections: ['GET', 'PUT', 'DELETE', 'POST'],
         images: ['POST'],
         webhooks: ['POST', 'PUT', 'DELETE'],
         actions: ['GET'],
