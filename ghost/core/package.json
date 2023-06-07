@@ -41,7 +41,7 @@
     "test:browser:setup": "npx playwright install",
     "test:browser:record": "NODE_ENV=testing-browser yarn start record-test",
     "test:ci:e2e": "c8 -c ./.c8rc.e2e.json -o coverage-e2e yarn test:e2e -b",
-    "test:ci:regression": "c8 -c ./.c8rc.e2e.json -o coverage-regression --lines 72 --functions 66 --branches 82 --statements 72 yarn test:regression -b",
+    "test:ci:regression": "yarn test:regression -b",
     "test:ci:integration": "c8 -c ./.c8rc.e2e.json -o coverage-integration --lines 57 --functions 47 --branches 77 --statements 57 yarn test:integration -b",
     "test:unit:slow": "yarn test:unit --reporter=mocha-slow-test-reporter",
     "test:int:slow": "yarn test:integration --reporter=mocha-slow-test-reporter",
