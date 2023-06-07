@@ -4,6 +4,7 @@ const {
 } = require('@tryghost/collections');
 
 class CollectionsServiceWrapper {
+    /** @type {CollectionsService} */
     api;
 
     constructor() {
@@ -34,23 +35,14 @@ class CollectionsServiceWrapper {
             });
         }
 
-        this.api = {
-            browse: collectionsService.getAll.bind(collectionsService),
-            read: collectionsService.getById.bind(collectionsService),
-            add: collectionsService.createCollection.bind(collectionsService),
-            edit: collectionsService.edit.bind(collectionsService),
-            addPost: collectionsService.addPostToCollection.bind(collectionsService),
-            destroy: collectionsService.destroy.bind(collectionsService),
-            destroyCollectionPost: collectionsService.removePostFromCollection.bind(collectionsService),
-            getCollectionsForPost: collectionsService.getCollectionsForPost.bind(collectionsService)
-        };
+        this.api = collectionsService;
     }
 
     async init() {
-        const featuredCollections = await this.api.browse({filter: 'slug:featured'});
+        const featuredCollections = await this.api.getAll({filter: 'slug:featured'});
 
         if (!featuredCollections.data.length) {
-            this.api.add({
+            this.api.createCollection({
                 title: 'Featured Posts',
                 slug: 'featured',
                 description: 'Collection of featured posts',
