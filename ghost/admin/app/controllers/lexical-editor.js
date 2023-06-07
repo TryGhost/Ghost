@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/ember';
 import ConfirmEditorLeaveModal from '../components/modals/editor/confirm-leave';
 import Controller, {inject as controller} from '@ember/controller';
 import DeletePostModal from '../components/modals/delete-post';
@@ -797,6 +798,16 @@ export default class LexicalEditorController extends Controller {
                 } catch (e) {
                     snippet.lexical = null;
                     snippetFixSaves.push(snippet.save());
+
+                    console.error(e); // eslint-disable-line no-console
+
+                    if (this.config.sentry_dsn) {
+                        Sentry.captureException(e, {
+                            tags: {
+                                lexical: true
+                            }
+                        });
+                    }
                 }
             }
         });
