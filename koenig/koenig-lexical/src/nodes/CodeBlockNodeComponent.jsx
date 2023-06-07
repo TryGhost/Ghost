@@ -67,7 +67,7 @@ export function CodeBlockNodeComponent({nodeKey, captionEditor, captionEditorIni
                         hide={!cardConfig.createSnippet}
                         icon="snippet"
                         isActive={false}
-                        label="Snippet"
+                        label="Create snippet"
                         onClick={() => setShowSnippetToolbar(true)}
                     />
                 </ToolbarMenu>

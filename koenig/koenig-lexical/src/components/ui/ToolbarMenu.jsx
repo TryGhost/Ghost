@@ -67,6 +67,7 @@ export function ToolbarMenuItem({label, isActive, onClick, icon, dataTestId, hid
                 className="flex h-9 w-9 cursor-pointer items-center justify-center transition-opacity hover:opacity-75"
                 data-kg-active={isActive}
                 data-testid={dataTestId}
+                title={label}
                 type="button"
                 onClick={onClick}
             >

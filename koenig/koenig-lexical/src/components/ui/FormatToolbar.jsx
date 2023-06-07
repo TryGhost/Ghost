@@ -218,7 +218,7 @@ export default function FormatToolbar({
                 hide={hideSnippets}
                 icon="snippet"
                 isActive={false}
-                label="Snippet"
+                label="Create snippet"
                 onClick={onSnippetClick}
             />
         </ToolbarMenu>

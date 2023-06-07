@@ -223,7 +223,7 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
                         hide={!cardConfig.createSnippet}
                         icon="snippet"
                         isActive={false}
-                        label="Snippet"
+                        label="Create snippet"
                         onClick={() => setShowSnippetToolbar(true)}
                     />
                     <ToolbarMenuSeparator hide={!isPinturaEnabled} />

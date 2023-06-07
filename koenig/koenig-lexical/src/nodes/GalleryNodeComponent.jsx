@@ -189,7 +189,7 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
                         hide={!cardConfig.createSnippet}
                         icon="snippet"
                         isActive={false}
-                        label="Snippet"
+                        label="Create snippet"
                         onClick={() => setShowSnippetToolbar(true)}
                     />
                 </ToolbarMenu>

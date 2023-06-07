@@ -169,7 +169,7 @@ function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedType, meta
                         hide={!cardConfig.createSnippet}
                         icon="snippet"
                         isActive={false}
-                        label="Snippet"
+                        label="Create snippet"
                         onClick={() => setShowSnippetToolbar(true)}
                     />
                 </ToolbarMenu>

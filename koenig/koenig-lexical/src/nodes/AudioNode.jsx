@@ -146,7 +146,7 @@ function AudioNodeComponent({nodeKey, initialFile, src, thumbnailSrc, title, dur
                         hide={!cardConfig.createSnippet}
                         icon="snippet"
                         isActive={false}
-                        label="Snippet"
+                        label="Create snippet"
                         onClick={() => setShowSnippetToolbar(true)}
                     />
                 </ToolbarMenu>
