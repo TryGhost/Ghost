@@ -125,7 +125,7 @@ function addRootChild(child, mobiledoc, lexical) {
         // Otherwise direction should be null
         // Not sure if this is necessary:
         // if we don't plan to support RTL, we could just set 'ltr' in all cases and ignore null
-        if (lexical.root.children[0].children.length > 0) {
+        if (lexicalChild.children?.length > 0) {
             lexical.root.direction = 'ltr';
         }
     } else if (sectionTypeIdentifier === 2) {

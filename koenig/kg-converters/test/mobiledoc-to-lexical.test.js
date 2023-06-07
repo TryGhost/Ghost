@@ -2159,6 +2159,42 @@ describe('mobiledocToLexical', function () {
                 }
             }));
         });
+
+        it('renders paragraph when first section is a card', function () {
+            const result = mobiledocToLexical(JSON.stringify({
+                version: '0.3.2',
+                atoms: [],
+                cards: [
+                    ['test', {card: 1}]
+                ],
+                markups: [],
+                sections: [
+                    [10, 0],
+                    [1, 'p', []]
+                ]
+            }));
+
+            assert.equal(result, JSON.stringify({
+                root: {
+                    children: [{
+                        type: 'test',
+                        card: 1
+                    }, {
+                        children: [],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'paragraph',
+                        version: 1
+                    }],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+        });
     });
 
     describe('card specifics', function () {
