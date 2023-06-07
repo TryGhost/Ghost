@@ -35,6 +35,7 @@ const db = require('./db-utils');
 
 // Services that need resetting
 const settingsService = require('../../core/server/services/settings/settings-service');
+const events = require('../../core/server/lib/common/events');
 const supertest = require('supertest');
 const {stopGhost} = require('./e2e-utils');
 const adapterManager = require('../../core/server/services/adapter-manager');
@@ -51,6 +52,7 @@ require('./assertions');
  * @returns {Promise<Express.Application>} ghost
  */
 const startGhost = async (options = {}) => {
+    events.removeAllListeners();
     await mentionsJobsService.allSettled();
     await jobsService.allSettled();
     await DomainEvents.allSettled();

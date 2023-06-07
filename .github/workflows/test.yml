@@ -176,6 +176,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     strategy:
+      fail-fast: false
       matrix:
         node: [ '16.13.0', '18.12.1' ]
         env:
