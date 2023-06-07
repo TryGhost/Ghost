@@ -47,7 +47,7 @@ const RoleSelector: React.FC<UserDetailProps> = ({user, setUserData}) => {
             <>
                 <Heading level={6}>Role</Heading>
                 <div className='flex h-[295px] flex-col items-center justify-center gap-3 bg-grey-75 px-10 py-20 text-center text-sm text-grey-800'>
-                    <Icon color='grey-800' name='crown' size='lg' />
+                    <Icon colorClass='text-grey-800' name='crown' size='lg' />
                     This user is the owner of the site. To change their role, you need to transfer the ownership first.
                 </div>
             </>
@@ -401,7 +401,7 @@ interface UserDetailModalProps {
 
 const UserMenuTrigger = () => (
     <div className='flex h-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] px-3 opacity-80 hover:opacity-100'>
-        <Icon color='white' name='menu-horizontal' size='sm' />
+        <Icon colorClass='text-white' name='menu-horizontal' size='sm' />
     </div>
 );
 
@@ -643,7 +643,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                     <div className='relative flex items-center gap-4 px-12 pb-12 pt-60'>
                         <ImageUpload
                             deleteButtonClassName='invisible absolute -right-2 -top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible'
-                            deleteButtonContent={<Icon color='white' name='trash' size='sm' />}
+                            deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
                             fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
                             id='avatar'
                             imageClassName='relative rounded-full group bg-cover bg-center -ml-2 h-[80px] w-[80px]'
@@ -657,7 +657,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                                 handleImageUpload('profile_image', file);
                             }}
                         >
-                            <Icon color='white' name='user-add' size='lg' />
+                            <Icon colorClass='text-white' name='user-add' size='lg' />
                         </ImageUpload>
                         <div>
                             <Heading styles='text-white'>{user.name}{suspendedText}</Heading>

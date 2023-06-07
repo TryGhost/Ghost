@@ -66,7 +66,7 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
                 </div>
                 <div className='flex h-full basis-[400px] flex-col gap-3 border-l border-grey-100'>
                     {customHeader ? customHeader : (
-                        <div className='flex justify-between gap-3 px-7 pt-7'>
+                        <div className='flex justify-between gap-3 px-7 pt-5'>
                             <>
                                 <Heading className='mt-1' level={4}>{title}</Heading>
                                 {customButtons ? customButtons : <ButtonGroup buttons={buttons} /> }

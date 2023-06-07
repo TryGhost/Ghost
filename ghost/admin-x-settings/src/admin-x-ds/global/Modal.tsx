@@ -73,59 +73,51 @@ const Modal: React.FC<ModalProps> = ({
     }
 
     let modalClasses = clsx(
-        'relative z-50 mx-auto flex w-full flex-col justify-between rounded bg-white shadow-xl'
+        'relative z-50 mx-auto flex max-h-[100%] w-full flex-col justify-between overflow-y-auto overflow-x-hidden rounded bg-white shadow-xl'
         // !stickyFooter && ' overflow-hidden'
     );
     let backdropClasses = clsx('fixed inset-0 z-40 h-[100vh] w-[100vw] overflow-y-scroll ');
 
     let padding = '';
 
-    let footerContainerBottom = '';
-
     switch (size) {
     case 'sm':
         modalClasses += ' max-w-[480px] ';
         backdropClasses += ' p-[8vmin]';
         padding = 'p-8';
-        footerContainerBottom = '-8vmin';
         break;
 
     case 'md':
         modalClasses += ' max-w-[720px] ';
         backdropClasses += ' p-[8vmin]';
         padding = 'p-8';
-        footerContainerBottom = '-8vmin';
         break;
 
     case 'lg':
         modalClasses += ' max-w-[1020px] ';
         backdropClasses += ' p-[4vmin]';
-        padding = 'p-12';
-        footerContainerBottom = '-4vmin';
+        padding = 'p-8';
         break;
 
     case 'xl':
         modalClasses += ' max-w-[1240px] ';
         backdropClasses += ' p-[3vmin]';
-        padding = 'p-12';
-        footerContainerBottom = '-3vmin';
+        padding = 'p-10';
         break;
 
     case 'full':
         modalClasses += ' h-full ';
         backdropClasses += ' p-[2vmin]';
-        padding = 'p-12';
-        footerContainerBottom = '-2vmin';
+        padding = 'p-10';
         break;
 
     case 'bleed':
         modalClasses += ' h-full ';
-        padding = 'p-12';
+        padding = 'p-10';
         break;
 
     default:
         backdropClasses += ' p-[8vmin]';
-        footerContainerBottom = '-8vmin';
         padding = 'p-8';
         break;
     }
@@ -139,7 +131,10 @@ const Modal: React.FC<ModalProps> = ({
         'flex w-full items-center justify-between'
     );
 
-    let contentClasses = `${padding} h-full`;
+    let contentClasses = clsx(
+        padding,
+        size === 'full' && 'h-full'
+    );
 
     if (!customFooter) {
         contentClasses += ' pb-0 ';
@@ -169,7 +164,7 @@ const Modal: React.FC<ModalProps> = ({
     );
 
     const footer = (stickyFooter ?
-        <StickyFooter shiftY={footerContainerBottom}>
+        <StickyFooter height={84}>
             {footerContent}
         </StickyFooter>
         :

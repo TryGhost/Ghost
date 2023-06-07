@@ -52,14 +52,14 @@ const Toast: React.FC<ToastProps> = ({
         <div className={classNames}>
             <div className='flex items-start gap-3'>
                 {props?.icon && (typeof props.icon === 'string' ?
-                    <div className='mt-0.5'><Icon className='grow' color={props.type === 'success' ? 'green' : 'white'} name={props.icon} size='sm' /></div> : props.icon)}
+                    <div className='mt-0.5'><Icon className='grow' colorClass={props.type === 'success' ? 'text-green' : 'text-white'} name={props.icon} size='sm' /></div> : props.icon)}
                 {children}
             </div>
             <button className='cursor-pointer' type='button' onClick={() => {
                 toast.dismiss(t.id);
             }}>
                 <div className='mt-1'>
-                    <Icon color='white' name='close' size='xs' />
+                    <Icon colorClass='text-white' name='close' size='xs' />
                 </div>
             </button>
         </div>

@@ -33,7 +33,7 @@ const MailGun: React.FC = () => {
         {
             key: 'status',
             value: (
-                <IconLabel icon='check-circle' iconColor='green'>
+                <IconLabel icon='check-circle' iconColorClass='text-green'>
                     Mailgun is set up
                 </IconLabel>
             )
