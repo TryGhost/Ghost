@@ -14,7 +14,7 @@ type Story = StoryObj<typeof IconLabel>;
 export const Default: Story = {
     args: {
         icon: 'check-circle',
-        iconColor: 'green',
+        iconColorClass: 'text-green',
         children: 'Here\'s a label with icon'
     }
 };
