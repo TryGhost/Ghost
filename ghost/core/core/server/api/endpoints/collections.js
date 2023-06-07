@@ -10,6 +10,9 @@ module.exports = {
     docName: 'collections',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'limit',
             'order',
@@ -24,6 +27,9 @@ module.exports = {
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         data: [
             'id'
         ],
@@ -55,7 +61,9 @@ module.exports = {
     },
 
     edit: {
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'id'
         ],
@@ -95,7 +103,9 @@ module.exports = {
     addPost: {
         docName: 'collection_posts',
         statusCode: 200,
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'id'
         ],
