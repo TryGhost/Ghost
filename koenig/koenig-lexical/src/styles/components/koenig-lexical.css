@@ -138,8 +138,10 @@ em-emoji-picker {
 }
 
 /* Toolbar */
-[data-kg-floating-toolbar=true] .fill-white g, 
-[data-kg-floating-toolbar=true] .fill-white path {
+[data-kg-floating-toolbar=true] .fill-white g,
+[data-kg-floating-toolbar=true] .fill-white path,
+[data-kg-card-toolbar] .fill-white g,
+[data-kg-card-toolbar] .fill-white path {
     fill: #fff;
 }
 
