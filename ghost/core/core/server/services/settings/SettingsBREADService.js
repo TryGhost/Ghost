@@ -5,6 +5,7 @@ const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./setti
 const logging = require('@tryghost/logging');
 const MagicLink = require('@tryghost/magic-link');
 const verifyEmailTemplate = require('./emails/verify-email');
+const stripeService = require('../../services/stripe');
 
 const EMAIL_KEYS = ['members_support_address'];
 const messages = {
@@ -213,7 +214,7 @@ class SettingsBREADService {
         // remove any email properties that are not allowed to be set without verification
         const {filteredSettings: refilteredSettings, emailsToVerify} = await this.prepSettingsForEmailVerification(filteredSettings, getSetting);
 
-        const modelArray = await this.SettingsModel.edit(refilteredSettings, options).then((result) => {
+        const modelArray = await this.SettingsModel.edit(refilteredSettings, options).then(async (result) => {
             // TODO: temporary fix for starting/stopping lexicalMultiplayer service when labs flag is changed
             //       this should be removed along with the flag, or set up in a more generic way
             const labsSetting = result.find(setting => setting.get('key') === 'labs');
@@ -226,6 +227,18 @@ class SettingsBREADService {
                     lexicalMultiplayer.enable();
                 } else if (previous.lexicalMultiplayer && !current.lexicalMultiplayer) {
                     lexicalMultiplayer.disable();
+                }
+            }
+
+            // Detect if Stripe is now connected in live mode
+            const stripePublicKeySetting = result.find(setting => setting.get('key') === 'stripe_connect_publishable_key');
+            if (stripePublicKeySetting) {
+                const previous = stripePublicKeySetting.previousAttributes().value;
+                const current = stripePublicKeySetting.get('value');
+
+                if (current?.match(/pk_test/) && (!previous?.match(/pk_test/) || !previous)) {
+                    // This method currently only triggers a DomainEvent
+                    await stripeService.connect();
                 }
             }
 
