@@ -479,5 +479,6 @@ SignupCard.propTypes = {
     disclaimerTextEditorInitialState: PropTypes.object,
     isSwapped: PropTypes.bool,
     handleSwapLayout: PropTypes.func,
-    setFileInputRef: PropTypes.func
+    setFileInputRef: PropTypes.func,
+    handleButtonTextBlur: PropTypes.func
 };
