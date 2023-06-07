@@ -6884,10 +6884,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-3.0.17.tgz#7b3ac455f739c550346c79b0dfdf67bc67d18977"
   integrity sha512-Mr/7dQILSzP5ggxkGNAfbAyNUOWpqJ8AuhY6EwwC8xvFwVPM9QKdRtC+ZumstOWaClnWxikxumLsZbX3LjRhCw==
 
-"@tryghost/kg-converters@0.0.6":
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-converters/-/kg-converters-0.0.6.tgz#44e96c1907b9dc59ead2f5ea42ce612f3ded1a2d"
-  integrity sha512-Q/wm7PKl+G2PG+Sfw1NaVOMebfI/zrYnB3FH3W4GSF4JsyanmBGhfL09k2zIN4VQpP5LOxOhAII7g26jwWiBPg==
+"@tryghost/kg-converters@0.0.7":
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-converters/-/kg-converters-0.0.7.tgz#22ddd4166d1603ffaa28173ec9ad781a430423a2"
+  integrity sha512-mIFbfcK7PpSpZk52d67yJ3PsuQhsBq5XSDGO9hAOFWluGBIqtViDcvCOnk/XaN4nHbq/rRtklt2bxYBAUmsu2g==
   dependencies:
     lodash "^4.17.21"
 
