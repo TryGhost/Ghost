@@ -11,6 +11,9 @@ export default (function viteDemoConfig() {
             react()
         ],
         base: '/',
+        define: {
+            __APP_VERSION__: JSON.stringify('0.0.0')
+        },
         resolve: {
             alias: {
                 // required to prevent double-bundling of yjs due to cjs/esm mismatch
