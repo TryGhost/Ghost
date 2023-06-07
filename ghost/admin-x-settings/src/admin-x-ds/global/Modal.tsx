@@ -169,7 +169,7 @@ const Modal: React.FC<ModalProps> = ({
     );
 
     const footer = (stickyFooter ?
-        <StickyFooter bgTWColor='white' shiftY={footerContainerBottom}>
+        <StickyFooter shiftY={footerContainerBottom}>
             {footerContent}
         </StickyFooter>
         :

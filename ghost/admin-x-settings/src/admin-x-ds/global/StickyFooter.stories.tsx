@@ -31,6 +31,7 @@ const footerContents = (
 
 export const Default: Story = {
     args: {
-        children: footerContents
+        children: footerContents,
+        contentBgColorClass: 'bg-[#efefef]'
     }
 };

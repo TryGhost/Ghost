@@ -3,34 +3,61 @@ import clsx from 'clsx';
 
 interface StickyFooterProps {
     shiftY?: string;
-    bgTWColor: string;
+    footerBgColorClass?: string;
+    contentBgColorClass?: string;
+    height?: number;
     children?: React.ReactNode;
-
-    containerClasses?: string;
-    contentClasses?: string;
 }
 
-const StickyFooter: React.FC<StickyFooterProps> = ({shiftY, bgTWColor = 'white', children, containerClasses, contentClasses}) => {
-    const footerContainerBottom = shiftY ? `calc(${shiftY})` : '0';
-    const shadowBottom = shiftY ? `calc(${shiftY} + 72px)` : '72px';
-
-    const footerContainerClasses = clsx(
-        'w-100 sticky z-[100]',
-        containerClasses
+const StickyFooter: React.FC<StickyFooterProps> = ({
+    shiftY,
+    footerBgColorClass = 'bg-white',
+    contentBgColorClass = 'bg-white',
+    height = 96,
+    children
+}) => {
+    const containerClasses = clsx(
+        'w-100 sticky bottom-[-24px] z-[9997] m-0 box-border p-0'
     );
+    const containerBottom = shiftY ? `calc(${shiftY} - 24px)` : '-24px';
+    const containerHeight = `${height + 24}px`;
 
-    const shadowClasses = `sticky bottom-[72px] mx-2 block h-[22px] rounded-full shadow-[0_0_0_1px_rgba(0,0,0,.025),0_-8px_16px_-3px_rgba(0,0,0,.08)]`;
-
-    const footerClasses = clsx(
-        `bg-${bgTWColor} sticky z-[101] mb-[-24px] flex min-h-[48px] items-center justify-between`,
-        contentClasses
+    const coverClasses = clsx(
+        'sticky z-[9998] block h-[24px]',
+        contentBgColorClass
     );
+    const coverBottom = '0';
+
+    const contentClasses = clsx(
+        `sticky z-[9999] mb-[-24px] flex items-center justify-between`,
+        // 'min-h-[48px]',
+        'h-[96px]',
+        footerBgColorClass
+    );
+    const contentBottom = '0';
+    const contentHeight = `${height}px`;
+
+    const shadowClasses = `sticky mx-2 block h-[24px] rounded-full shadow-[0_0_0_1px_rgba(0,0,0,.025),0_-8px_16px_-3px_rgba(0,0,0,.08)]`;
+    const shadowBottom = shiftY ? `calc(${shiftY} + ${height - 24}px)` : `${height - 24}px`;
 
     return (
-        <div className={footerContainerClasses} style={{
-            bottom: footerContainerBottom
-        }}>
-            <div className={footerClasses}>
+        <div className={containerClasses}
+            style={{
+                bottom: containerBottom,
+                height: containerHeight
+            }}
+        >
+            <div className={coverClasses}
+                style={{
+                    bottom: coverBottom
+                }}
+            ></div>
+            <div className={contentClasses}
+                style={{
+                    bottom: contentBottom,
+                    height: contentHeight
+                }}
+            >
                 {children}
             </div>
             <div className={shadowClasses}

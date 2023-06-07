@@ -73,7 +73,7 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
                             </>
                         </div>
                     )}
-                    <div className={`grow ${sidebarPadding && 'p-7'}`}>
+                    <div className={`grow ${sidebarPadding && 'p-7'} flex flex-col justify-between overflow-y-auto`}>
                         {sidebar}
                     </div>
                 </div>
