@@ -226,6 +226,8 @@ class FixtureManager {
             });
         }
 
+        const existingModels = await models[modelFixture.name].findAll(options);
+
         const results = await sequence(modelFixture.entries.map(entry => async () => {
             let data = {};
 
@@ -242,8 +244,8 @@ class FixtureManager {
                 data.status = 'all';
             }
 
-            const found = await models[modelFixture.name].findOne(data, options);
-            if (!found) {
+            const foundModel = _.find(existingModels, data);
+            if (!foundModel) {
                 return models[modelFixture.name].add(entry, options);
             }
         }));
