@@ -7,19 +7,19 @@ interface LinkProps extends React.ComponentPropsWithoutRef<'a'> {
      * Tailwind color name
      */
     color?: string;
-    classes?: string;
     children?: React.ReactNode;
+    className?: string;
 }
 
 /**
  * Standard link with default styling
  */
-const Link: React.FC<LinkProps> = ({href, color, classes, children, ...props}) => {
+const Link: React.FC<LinkProps> = ({href, color, className, children, ...props}) => {
     if (!color) {
         color = 'green';
     }
 
-    let styles = (color === 'black') ? `transition text-black hover:text-black-700 ${classes}` : `text-${color} hover:text-${color}-400 ${classes}`;
+    let styles = (color === 'black') ? `transition text-black hover:text-black-700 ${className}` : `text-${color} hover:text-${color}-400 ${className}`;
 
     return <a className={styles} href={href} {...props}>{children}</a>;
 };

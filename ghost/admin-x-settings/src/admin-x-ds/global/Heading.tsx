@@ -21,9 +21,21 @@ interface HeadingBaseProps {
     className?: string;
 }
 
-type Heading1to5Props = { useLabelTag?: false, level?: Exclude<HeadingLevel, 6>, grey?: never } & HeadingBaseProps & React.HTMLAttributes<HTMLHeadingElement>
-type Heading6Props = { useLabelTag?: false, level: 6, grey?: boolean } & HeadingBaseProps & React.HTMLAttributes<HTMLHeadingElement>
-type HeadingLabelProps = { useLabelTag: true, level?: never, grey?: never } & HeadingBaseProps & React.LabelHTMLAttributes<HTMLLabelElement>
+type Heading1to5Props = {
+    useLabelTag?: false,
+    level?: Exclude<HeadingLevel, 6>,
+    grey?: never
+} & HeadingBaseProps & React.HTMLAttributes<HTMLHeadingElement>
+
+type Heading6Props = {
+    useLabelTag?: false,
+    level: 6,
+    grey?: boolean } & HeadingBaseProps & React.HTMLAttributes<HTMLHeadingElement>
+
+type HeadingLabelProps = {
+    useLabelTag: true,
+    level?: never,
+    grey?: never } & HeadingBaseProps & React.LabelHTMLAttributes<HTMLLabelElement>
 
 const Heading: React.FC<Heading1to5Props | Heading6Props | HeadingLabelProps> = ({
     level,
