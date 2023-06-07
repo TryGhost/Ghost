@@ -14,6 +14,9 @@ const postsService = getPostServiceInstance();
 module.exports = {
     docName: 'pages',
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'filter',
@@ -45,6 +48,9 @@ module.exports = {
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'fields',
@@ -90,7 +96,9 @@ module.exports = {
 
     add: {
         statusCode: 201,
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'formats',
@@ -113,9 +121,7 @@ module.exports = {
         query(frame) {
             return models.Post.add(frame.data.pages[0], frame.options)
                 .then((model) => {
-                    if (model.get('status') !== 'published') {
-                        this.headers.cacheInvalidate = false;
-                    } else {
+                    if (model.get('status') === 'published') {
                         this.headers.cacheInvalidate = true;
                     }
 
@@ -125,7 +131,9 @@ module.exports = {
     },
 
     edit: {
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'id',
@@ -245,7 +253,8 @@ module.exports = {
         headers: {
             location: {
                 resolve: postsService.generateCopiedPostLocationFromUrl
-            }
+            },
+            cacheInvalidate: false
         },
         options: [
             'id',

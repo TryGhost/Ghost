@@ -118,6 +118,9 @@ module.exports = {
     },
 
     isSetup: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: false,
         async query() {
             const isSetup = await auth.setup.checkIsSetup();
@@ -132,6 +135,9 @@ module.exports = {
     },
 
     generateResetToken: {
+        headers: {
+            cacheInvalidate: false
+        },
         validation: {
             docName: 'password_reset'
         },
@@ -154,6 +160,9 @@ module.exports = {
     },
 
     resetPassword: {
+        headers: {
+            cacheInvalidate: false
+        },
         validation: {
             docName: 'password_reset',
             data: {
@@ -188,6 +197,9 @@ module.exports = {
     },
 
     acceptInvitation: {
+        headers: {
+            cacheInvalidate: false
+        },
         validation: {
             docName: 'invitations'
         },
@@ -204,6 +216,9 @@ module.exports = {
     },
 
     isInvitation: {
+        headers: {
+            cacheInvalidate: false
+        },
         data: [
             'email'
         ],
@@ -226,6 +241,9 @@ module.exports = {
 
     resetAllPasswords: {
         statusCode: 204,
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: true,
         async query(frame) {
             await userService.resetAllPasswords(frame.options);

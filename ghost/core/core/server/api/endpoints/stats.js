@@ -3,6 +3,9 @@ const statsService = require('../../services/stats');
 module.exports = {
     docName: 'stats',
     memberCountHistory: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: {
             docName: 'members',
             method: 'browse'
@@ -12,6 +15,9 @@ module.exports = {
         }
     },
     mrr: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: {
             docName: 'members',
             method: 'browse'
@@ -21,6 +27,9 @@ module.exports = {
         }
     },
     subscriptions: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: {
             docName: 'members',
             method: 'browse'
@@ -30,6 +39,9 @@ module.exports = {
         }
     },
     postReferrers: {
+        headers: {
+            cacheInvalidate: false
+        },
         data: [
             'id'
         ],
@@ -42,6 +54,9 @@ module.exports = {
         }
     },
     referrersHistory: {
+        headers: {
+            cacheInvalidate: false
+        },
         data: [
             'id'
         ],

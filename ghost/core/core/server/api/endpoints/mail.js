@@ -40,6 +40,9 @@ module.exports = {
     docName: 'mail',
 
     send: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: true,
         query(frame) {
             return _private.sendMail(frame.data);

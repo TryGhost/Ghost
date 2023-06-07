@@ -10,6 +10,9 @@ module.exports = {
     docName: 'offers',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'filter'
         ],
@@ -23,6 +26,9 @@ module.exports = {
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         data: ['id'],
         permissions: true,
         async query(frame) {

@@ -9,6 +9,9 @@ const messages = {
 module.exports = {
     docName: 'member_signin_urls',
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         data: [
             'id'
         ],

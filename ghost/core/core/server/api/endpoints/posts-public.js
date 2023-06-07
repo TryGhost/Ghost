@@ -25,6 +25,9 @@ module.exports = {
     docName: 'posts',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         cache: postsPublicService.api?.cache,
         options: [
             'include',
@@ -58,6 +61,9 @@ module.exports = {
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'fields',

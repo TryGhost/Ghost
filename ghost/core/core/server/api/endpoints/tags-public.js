@@ -14,6 +14,9 @@ module.exports = {
     docName: 'tags',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         cache: tagsPublicService.api?.cache,
         options: [
             'include',
@@ -38,6 +41,9 @@ module.exports = {
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'filter',

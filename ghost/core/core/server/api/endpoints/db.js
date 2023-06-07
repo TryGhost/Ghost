@@ -12,6 +12,9 @@ module.exports = {
     docName: 'db',
 
     backupContent: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: true,
         options: [
             'include',
@@ -48,7 +51,8 @@ module.exports = {
             disposition: {
                 type: 'file',
                 value: () => (exporter.fileName())
-            }
+            },
+            cacheInvalidate: false
         },
         permissions: true,
         async query(frame) {
@@ -103,6 +107,9 @@ module.exports = {
     },
 
     inlineMedia: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: {
             method: 'importContent'
         },

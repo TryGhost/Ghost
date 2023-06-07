@@ -13,6 +13,9 @@ module.exports = {
     docName: 'tags',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'filter',
@@ -36,6 +39,9 @@ module.exports = {
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'filter',
@@ -91,7 +97,9 @@ module.exports = {
     },
 
     edit: {
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'id',
             'include'

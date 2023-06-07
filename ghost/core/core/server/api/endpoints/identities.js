@@ -26,6 +26,9 @@ const sign = async (claims, options) => {
 module.exports = {
     docName: 'identities',
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: true,
         async query(frame) {
             const token = await sign({sub: frame.user.get('email')});
