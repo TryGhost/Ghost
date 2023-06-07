@@ -20,14 +20,14 @@ export interface PreviewModalProps {
 }
 
 const PreviewModal: React.FC<PreviewModalProps> = ({
-    title, 
-    sidebar, 
-    preview, 
-    cancelLabel = 'Cancel', 
-    okLabel = 'OK', 
+    title,
+    sidebar,
+    preview,
+    cancelLabel = 'Cancel',
+    okLabel = 'OK',
     okColor = 'black',
-    onCancel, 
-    onOk, 
+    onCancel,
+    onOk,
     customButtons,
     customHeader,
     sidebarPadding = true
@@ -46,7 +46,7 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
 
         buttons.push({
             key: 'ok-modal',
-            label: okLabel, 
+            label: okLabel,
             color: okColor,
             className: 'min-w-[80px]',
             onClick: onOk
@@ -54,7 +54,7 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
     }
 
     return (
-        <Modal 
+        <Modal
             customFooter={(<></>)}
             noPadding={true}
             size='full'
@@ -68,7 +68,7 @@ const PreviewModal: React.FC<PreviewModalProps> = ({
                     {customHeader ? customHeader : (
                         <div className='flex justify-between gap-3 px-7 pt-7'>
                             <>
-                                <Heading className='mt-1' level={4}>{title}</Heading> 
+                                <Heading className='mt-1' level={4}>{title}</Heading>
                                 {customButtons ? customButtons : <ButtonGroup buttons={buttons} /> }
                             </>
                         </div>

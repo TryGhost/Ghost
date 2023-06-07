@@ -143,7 +143,7 @@ const Modal: React.FC<ModalProps> = ({
         stickyFooter && `sticky bottom-[-48px] rounded-b bg-white`
     );
 
-    let contentClasses = `${padding}`;
+    let contentClasses = `${padding} h-full`;
 
     if (!customFooter) {
         contentClasses += ' pb-0 ';
