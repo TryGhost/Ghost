@@ -87,35 +87,35 @@ const Modal: React.FC<ModalProps> = ({
         modalClasses += ' max-w-[480px] ';
         backdropClasses += ' p-[8vmin]';
         padding = 'p-8';
-        footerContainerBottom = 'calc(-1 * 8vmin)';
+        footerContainerBottom = '-8vmin';
         break;
 
     case 'md':
         modalClasses += ' max-w-[720px] ';
         backdropClasses += ' p-[8vmin]';
         padding = 'p-8';
-        footerContainerBottom = 'calc(-1 * 8vmin)';
+        footerContainerBottom = '-8vmin';
         break;
 
     case 'lg':
         modalClasses += ' max-w-[1020px] ';
         backdropClasses += ' p-[4vmin]';
         padding = 'p-12';
-        footerContainerBottom = 'calc(-1 * 4vmin)';
+        footerContainerBottom = '-4vmin';
         break;
 
     case 'xl':
         modalClasses += ' max-w-[1240px] ';
         backdropClasses += ' p-[3vmin]';
         padding = 'p-12';
-        footerContainerBottom = 'calc(-1 * 3vmin)';
+        footerContainerBottom = '-3vmin';
         break;
 
     case 'full':
         modalClasses += ' h-full ';
         backdropClasses += ' p-[2vmin]';
         padding = 'p-12';
-        footerContainerBottom = 'calc(-1 * 2vmin)';
+        footerContainerBottom = '-2vmin';
         break;
 
     case 'bleed':
@@ -125,7 +125,7 @@ const Modal: React.FC<ModalProps> = ({
 
     default:
         backdropClasses += ' p-[8vmin]';
-        footerContainerBottom = 'calc(-1 * 8vmin)';
+        footerContainerBottom = '-8vmin';
         padding = 'p-8';
         break;
     }
@@ -137,8 +137,6 @@ const Modal: React.FC<ModalProps> = ({
     let footerClasses = clsx(
         `${padding} ${stickyFooter ? 'py-6' : 'pt-0'}`,
         'flex w-full items-center justify-between'
-        // `${padding} ${stickyFooter ? 'pt-8' : 'pt-0'} z-[101]`,
-        // stickyFooter && `sticky bottom-[-48px] rounded-b bg-white`
     );
 
     let contentClasses = `${padding} h-full`;
