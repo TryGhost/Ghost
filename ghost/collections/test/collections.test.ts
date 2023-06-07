@@ -1,5 +1,5 @@
 import assert from 'assert';
-import {CollectionsService, CollectionsRepositoryInMemory, Collection} from '../src/index';
+import {CollectionsService, CollectionsRepositoryInMemory} from '../src/index';
 import {PostsRepositoryInMemory} from './fixtures/PostsRepositoryInMemory';
 import {posts} from './fixtures/posts';
 
