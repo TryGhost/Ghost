@@ -73,8 +73,7 @@ class PopupContent extends React.Component {
 }
 
 function SearchBox() {
-    const {searchValue, dispatch} = useContext(AppContext);
-    const inputRef = useRef(null);
+    const {searchValue, dispatch, inputRef} = useContext(AppContext);
     const containerRef = useRef(null);
     useEffect(() => {
         setTimeout(() => {
@@ -94,7 +93,7 @@ function SearchBox() {
         return () => {
             containeRefNode?.ownerDocument.removeEventListener('keyup', keyUphandler);
         };
-    }, [dispatch]);
+    }, [dispatch, inputRef]);
 
     let className = 'z-10 relative flex items-center py-5 px-4 sm:px-7 bg-white rounded-t-lg shadow';
     if (!searchValue) {

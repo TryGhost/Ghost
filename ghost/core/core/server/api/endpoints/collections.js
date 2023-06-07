@@ -13,7 +13,8 @@ module.exports = {
         options: [
             'limit',
             'order',
-            'page'
+            'page',
+            'filter'
         ],
         // @NOTE: should have permissions when moving out of Alpha
         permissions: false,

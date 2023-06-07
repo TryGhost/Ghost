@@ -42,12 +42,8 @@ class CollectionsServiceWrapper {
         const featuredCollections = await this.api.getAll({filter: 'slug:featured'});
 
         if (!featuredCollections.data.length) {
-            this.api.createCollection({
-                title: 'Featured Posts',
-                slug: 'featured',
-                description: 'Collection of featured posts',
-                type: 'automatic',
-                filter: 'featured:true'
+            require('./built-in-collections').forEach((collection) => {
+                this.api.createCollection(collection);
             });
         }
     }

@@ -61,6 +61,25 @@ describe('CollectionsService', function () {
         assert.equal(deletedCollection, null, 'Collection should be deleted');
     });
 
+    it('Throws when built in collection is attempted to be deleted', async function () {
+        const collection = await collectionsService.createCollection({
+            title: 'Featured Posts',
+            slug: 'featured',
+            description: 'Collection of featured posts',
+            type: 'automatic',
+            deletable: false,
+            filter: 'featured:true'
+        });
+
+        await assert.rejects(async () => {
+            await collectionsService.destroy(collection.id);
+        }, (err: any) => {
+            assert.equal(err.message, 'Cannot delete builtin collection', 'Error message should match');
+            assert.equal(err.context, `The collection ${collection.id} is a builtin collection and cannot be deleted`, 'Error context should match');
+            return true;
+        });
+    });
+
     describe('toDTO', function () {
         it('Can map Collection entity to DTO object', async function () {
             const collection = await Collection.create({});

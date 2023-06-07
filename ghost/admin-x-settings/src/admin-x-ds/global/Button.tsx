@@ -33,8 +33,8 @@ const Button: React.FC<IButton> = ({
         color = 'clear';
     }
 
-    let styles = className;
-    
+    let styles = '';
+
     styles += ' transition whitespace-nowrap flex items-center justify-center rounded-sm text-sm';
     styles += ((link && color !== 'clear' && color !== 'black') || (!link && color !== 'clear')) ? ' font-bold' : ' font-semibold';
     styles += !link ? `${size === 'sm' ? ' px-3 h-7 ' : ' px-4 h-9 '}` : '';
@@ -62,6 +62,7 @@ const Button: React.FC<IButton> = ({
 
     styles += (fullWidth && !link) ? ' w-full' : '';
     styles += (disabled) ? ' opacity-40' : ' cursor-pointer';
+    styles += ` ${className}`;
 
     return (
         <button

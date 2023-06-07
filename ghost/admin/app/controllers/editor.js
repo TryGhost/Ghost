@@ -173,7 +173,7 @@ export default class EditorController extends Controller {
     get snippets() {
         return this._snippets
             .reject(snippet => snippet.get('isNew'))
-            .reject(snippet => JSON.stringify(snippet.mobiledoc) === '{}')
+            .reject(snippet => ['{}', '"{}"'].includes(JSON.stringify(snippet.mobiledoc)))
             .sort((a, b) => a.name.localeCompare(b.name));
     }
 

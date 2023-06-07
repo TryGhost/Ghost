@@ -3136,8 +3136,10 @@ p.theme-validation-details {
 }
 
 .modal-signup-form-embed-main .modal-body {
-    overflow-y: auto;
     height: 320px;
+    margin: -4px;
+    padding: 4px;
+    overflow-y: auto;
 }
 
 .modal-signup-form-embed-main .form-group {

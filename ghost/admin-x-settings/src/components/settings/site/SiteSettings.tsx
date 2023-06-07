@@ -1,4 +1,4 @@
-import DesignModal from './modals/DesignModal';
+import DesignModal from './DesignModal';
 import React from 'react';
 import SettingSection from '../../../admin-x-ds/settings/SettingSection';
 

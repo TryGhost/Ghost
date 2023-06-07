@@ -19,6 +19,8 @@ export default class App extends React.Component {
             indexStarted: false,
             indexComplete: false
         };
+
+        this.inputRef = React.createRef();
     }
 
     componentDidMount() {
@@ -88,6 +90,18 @@ export default class App extends React.Component {
             this.setState({
                 showPopup: true
             });
+
+            const tmpElement = document.createElement('input');
+            tmpElement.style.opacity = '0';
+            tmpElement.style.position = 'fixed';
+            tmpElement.style.top = '0';
+            document.body.appendChild(tmpElement);
+            tmpElement.focus();
+
+            setTimeout(() => {
+                this.inputRef.current.focus();
+                document.body.removeChild(tmpElement);
+            }, 150);
         };
 
         this.customTriggerButtons = this.getCustomTriggerButtons();
@@ -140,6 +154,7 @@ export default class App extends React.Component {
                 searchIndex: this.state.searchIndex,
                 indexComplete: this.state.indexComplete,
                 searchValue: this.state.searchValue,
+                inputRef: this.inputRef,
                 onAction: () => {},
                 dispatch: (action, data) => {
                     if (action === 'update') {

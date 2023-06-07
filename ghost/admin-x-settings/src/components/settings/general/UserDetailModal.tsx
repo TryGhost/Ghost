@@ -1,25 +1,25 @@
-import Button from '../../../../admin-x-ds/global/Button';
-import ConfirmationModal from '../../../../admin-x-ds/global/ConfirmationModal';
-import Heading from '../../../../admin-x-ds/global/Heading';
-import Icon from '../../../../admin-x-ds/global/Icon';
-import ImageUpload from '../../../../admin-x-ds/global/ImageUpload';
-import Menu from '../../../../admin-x-ds/global/Menu';
-import Modal from '../../../../admin-x-ds/global/Modal';
+import Button from '../../../admin-x-ds/global/Button';
+import ConfirmationModal from '../../../admin-x-ds/global/ConfirmationModal';
+import Heading from '../../../admin-x-ds/global/Heading';
+import Icon from '../../../admin-x-ds/global/Icon';
+import ImageUpload from '../../../admin-x-ds/global/ImageUpload';
+import Menu from '../../../admin-x-ds/global/Menu';
+import Modal from '../../../admin-x-ds/global/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import Radio from '../../../../admin-x-ds/global/Radio';
+import Radio from '../../../admin-x-ds/global/Radio';
 import React, {useContext, useEffect, useRef, useState} from 'react';
-import SettingGroup from '../../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../../admin-x-ds/global/TextField';
-import Toggle from '../../../../admin-x-ds/global/Toggle';
-import useRoles from '../../../../hooks/useRoles';
-import useStaffUsers from '../../../../hooks/useStaffUsers';
+import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
+import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
+import TextField from '../../../admin-x-ds/global/TextField';
+import Toggle from '../../../admin-x-ds/global/Toggle';
+import useRoles from '../../../hooks/useRoles';
+import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
-import {FileService, ServicesContext} from '../../../providers/ServiceProvider';
-import {MenuItem} from '../../../../admin-x-ds/global/Menu';
-import {User} from '../../../../types/api';
-import {isAdminUser, isOwnerUser} from '../../../../utils/helpers';
-import {showToast} from '../../../../admin-x-ds/global/Toast';
+import {FileService, ServicesContext} from '../../providers/ServiceProvider';
+import {MenuItem} from '../../../admin-x-ds/global/Menu';
+import {User} from '../../../types/api';
+import {isAdminUser, isOwnerUser} from '../../../utils/helpers';
+import {showToast} from '../../../admin-x-ds/global/Toast';
 
 interface CustomHeadingProps {
     children?: React.ReactNode;
@@ -450,6 +450,10 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                 });
                 setUserData(updatedUserData);
                 modal?.remove();
+                showToast({
+                    message: _user.status === 'inactive' ? 'User un-suspended' : 'User suspended',
+                    type: 'success'
+                });
             }
         });
     };
@@ -589,9 +593,11 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
 
     return (
         <Modal
+            backDropClick={false}
             okColor='green'
             okLabel={okLabel}
             size='lg'
+            stickyFooter={true}
             onOk={async () => {
                 setSaveState('saving');
                 if (!validator.isEmail(userData.email)) {
@@ -614,15 +620,16 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
             }}
         >
             <div>
-                <div className={`relative -mx-12 -mt-12 bg-gradient-to-tr from-grey-900 to-black`}>
+                <div className={`relative -mx-12 -mt-12 rounded-t bg-gradient-to-tr from-grey-900 to-black`}>
                     <ImageUpload
                         deleteButtonClassName={fileUploadButtonClasses}
                         deleteButtonContent='Delete cover image'
                         fileUploadClassName={fileUploadButtonClasses}
                         height={userData.cover_image ? '100%' : '32px'}
                         id='cover-image'
-                        imageClassName='absolute inset-0 bg-cover group bg-center'
+                        imageClassName='absolute inset-0 bg-cover group bg-center rounded-t overflow-hidden'
                         imageURL={userData.cover_image || ''}
+                        unstyled={true}
                         onDelete={() => {
                             handleImageDelete('cover_image');
                         }}
@@ -634,14 +641,14 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                         <Menu items={menuItems} position='left' trigger={<UserMenuTrigger />}></Menu>
                     </div>
                     <div className='relative flex items-center gap-4 px-12 pb-12 pt-60'>
-
                         <ImageUpload
                             deleteButtonClassName='invisible absolute -right-2 -top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible'
-                            fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer'
-                            height='80px'
+                            deleteButtonContent={<Icon color='white' name='trash' size='sm' />}
+                            fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
                             id='avatar'
-                            imageClassName='relative rounded-full group bg-cover bg-center -ml-2'
+                            imageClassName='relative rounded-full group bg-cover bg-center -ml-2 h-[80px] w-[80px]'
                             imageURL={userData.profile_image}
+                            unstyled={true}
                             width='80px'
                             onDelete={() => {
                                 handleImageDelete('profile_image');

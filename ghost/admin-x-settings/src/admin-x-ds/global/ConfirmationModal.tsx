@@ -31,7 +31,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     const [taskState, setTaskState] = useState<'running' | ''>('');
     return (
         <Modal
-            backDrop={false}
+            backDropClick={false}
             cancelLabel={cancelLabel}
             customFooter={customFooter}
             okColor={okColor}
@@ -45,7 +45,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 setTaskState('');
             }}
         >
-            <div className='py-4'>
+            <div className='py-4 leading-9'>
                 {prompt}
             </div>
         </Modal>
