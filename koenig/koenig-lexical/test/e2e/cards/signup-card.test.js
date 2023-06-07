@@ -80,7 +80,7 @@ test.describe('Signup card', async () => {
                             </div>
                             <div>
                                 <div>
-                                    <input placeholder="yourname@example.com" tabindex="-1" readonly="" value="" />
+                                    <input placeholder="Your email" tabindex="-1" readonly="" value="" />
                                     <button disabled="" type="button"><span>Subscribe</span></button>
                                 </div>
                             </div>
@@ -549,7 +549,7 @@ test.describe('Signup card', async () => {
                             </div>
                             <div>
                                 <div>
-                                    <input placeholder="yourname@example.com" tabindex="-1" readonly="" value="" />
+                                    <input placeholder="Your email" tabindex="-1" readonly="" value="" />
                                     <button disabled="" type="button"><span>Subscribe</span></button>
                                 </div>
                             </div>

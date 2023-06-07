@@ -196,7 +196,7 @@ export function SignupCard({alignment,
                         (layout === 'regular') && 'py-[8rem] px-[4rem] md:px-[6rem] lg:px-[8rem]',
                         (layout === 'wide') && 'max-w-[740px] px-[4rem] py-[8rem] md:py-[10rem] md:px-[8rem] lg:px-0',
                         (layout === 'full') && 'py-[8rem] px-[4rem] md:py-[12rem] md:px-[8rem] lg:p-[14rem] xl:p-[16rem]',
-                        (layout === 'split') && 'px-[4rem] py-[8rem] md:py-[12rem] lg:px-[6rem] lg:py-[16rem]'
+                        (layout === 'split') && 'px-[4rem] py-[8rem] md:px-[6rem] md:py-[12rem] lg:px-[8rem] lg:py-[16rem]'
                     )}>
                     {/* Heading */}
                     {<KoenigNestedEditor
@@ -209,11 +209,11 @@ export function SignupCard({alignment,
                         initialEditorState={headerTextEditorInitialState}
                         nodes="minimal"
                         placeholderClassName={clsx(
-                            'h-[110%] w-full truncate whitespace-normal !font-bold !leading-[1.1] !tracking-tight opacity-50',
+                            'h-[110%] w-full truncate whitespace-normal !font-bold !leading-[1.1] !tracking-tight !text-grey-700 opacity-50',
                             (alignment === 'center') && 'text-center',
                             (layout === 'regular') && 'text-3xl sm:text-4xl md:text-5xl',
-                            (layout === 'wide') && 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl',
-                            (layout === 'full' || layout === 'split') && 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl'
+                            (layout === 'wide' || layout === 'split') && 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl',
+                            (layout === 'full') && 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl'
                         )}
                         placeholderText={headerPlaceholder}
                         singleParagraph={true}
@@ -225,9 +225,9 @@ export function SignupCard({alignment,
                             (layout === 'regular' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_128px)] [&:has(br)]:sm:pl-[calc(50%_-_154px)] [&:has(br)]:md:pl-[calc(50%_-_204px)]',
                             (layout === 'wide' || layout === 'split') && 'koenig-lexical-header-small',
                             (layout === 'wide' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_128px)] [&:has(br)]:sm:pl-[calc(50%_-_154px)] [&:has(br)]:md:pl-[calc(50%_-_204px)] [&:has(br)]:lg:pl-[calc(50%_-_254px)]',
-                            (layout === 'full' || layout === 'split') && 'koenig-lexical-header-large',
+                            (layout === 'full') && 'koenig-lexical-header-large',
                             (layout === 'full' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_154px)] [&:has(br)]:sm:pl-[calc(50%_-_204px)] [&:has(br)]:md:pl-[calc(50%_-_254px)] [&:has(br)]:lg:pl-[calc(50%_-_306px)]',
-                            (layout === 'split' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_71px)] [&:has(br)]:sm:pl-[calc(50%_-_94px)] [&:has(br)]:md:pl-[calc(50%_-_116px)] [&:has(br)]:lg:pl-[calc(50%_-_140px)]'
+                            (layout === 'split' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_59px)] [&:has(br)]:sm:pl-[calc(50%_-_71px)] [&:has(br)]:md:pl-[calc(50%_-_94px)] [&:has(br)]:lg:pl-[calc(50%_-_118px)]'
                         )}
                     />}
 
@@ -240,7 +240,7 @@ export function SignupCard({alignment,
                         initialEditorState={subheaderTextEditorInitialState}
                         nodes="minimal"
                         placeholderClassName={clsx(
-                            'h-[110%] w-full truncate whitespace-normal !font-medium !leading-snug !tracking-tight opacity-50',
+                            'h-[110%] w-full truncate whitespace-normal !font-medium !leading-snug !tracking-tight !text-grey-700 opacity-60',
                             (alignment === 'center') && 'text-center',
                             (layout === 'regular') && 'text-lg sm:text-xl',
                             (layout === 'wide') && 'text-lg sm:text-xl md:text-2xl',
@@ -255,17 +255,17 @@ export function SignupCard({alignment,
                             (alignment === 'center') && 'text-center',
                             (layout === 'regular') && 'koenig-lexical-header-small !mt-2',
                             (layout === 'regular' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_90px)] [&:has(br)]:sm:pl-[calc(50%_-_100px)]',
-                            (layout === 'wide') && 'koenig-lexical-header-medium !mt-3',
+                            (layout === 'wide' || layout === 'split') && 'koenig-lexical-header-medium !mt-3',
                             (layout === 'wide' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_90px)] [&:has(br)]:sm:pl-[calc(50%_-_100px)] [&:has(br)]:md:pl-[calc(50%_-_120px)]',
                             layout === 'full' && 'xl:max-w-[880px]',
-                            (layout === 'full' || layout === 'split') && 'koenig-lexical-header-large !mt-3',
+                            (layout === 'full') && 'koenig-lexical-header-large !mt-3',
                             (layout === 'full' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_100px)] [&:has(br)]:md:pl-[calc(50%_-_120px)] [&:has(br)]:xl:pl-[calc(880px_-_560px)]',
                             (layout === 'split' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_75px)] [&:has(br)]:md:pl-[calc(50%_-_90px)]'
                         )}
                     />}
 
                     {/* Subscribe form */}
-                    <div className={`w-full ${(layout === 'regular') ? 'peer-[.koenig-lexical]:mt-10' : (layout === 'wide') ? 'peer-[.koenig-lexical]:mt-12 md:w-4/6' : (layout === 'full') ? 'peer-[.koenig-lexical]:mt-12 md:w-4/6 peer-[.koenig-lexical]:md:mt-16 xl:w-1/2' : 'peer-[.koenig-lexical]:mt-10 peer-[.koenig-lexical]:md:mt-16'}`}>
+                    <div className={`w-full ${(layout === 'regular') ? 'peer-[.koenig-lexical]:mt-10' : (layout === 'wide') ? 'peer-[.koenig-lexical]:mt-12 md:w-2/3' : (layout === 'full') ? 'peer-[.koenig-lexical]:mt-12 md:w-2/3 peer-[.koenig-lexical]:md:mt-16 xl:w-1/2' : 'max-w-[500px] peer-[.koenig-lexical]:mt-10 peer-[.koenig-lexical]:md:mt-16'}`}>
                         <SubscribeForm
                             buttonSize={`${(layout === 'regular') ? 'medium' : 'large'}`}
                             buttonStyle={buttonColor ? {
@@ -276,7 +276,7 @@ export function SignupCard({alignment,
                             buttonText={buttonText || 'Subscribe'}
                             dataTestId='signup-card-button'
                             disabled={true}
-                            placeholder='yourname@example.com'
+                            placeholder='Your email'
                         />
                     </div>
 
@@ -287,7 +287,7 @@ export function SignupCard({alignment,
                         initialEditor={disclaimerTextEditor}
                         initialEditorState={disclaimerTextEditorInitialState}
                         nodes="minimal"
-                        placeholderClassName={`truncate opacity-50 w-full h-[110%] whitespace-normal !leading-snug !font-normal !text-[1.6rem] !tracking-tight ${(alignment === 'center' && 'text-center')}`}
+                        placeholderClassName={`truncate opacity-80 w-full h-[110%] whitespace-normal !leading-snug !font-normal !text-[1.6rem] !tracking-tight !text-grey-700 ${(alignment === 'center' && 'text-center')}`}
                         placeholderText={disclaimerPlaceholder}
                         singleParagraph={true}
                         textClassName={clsx(
