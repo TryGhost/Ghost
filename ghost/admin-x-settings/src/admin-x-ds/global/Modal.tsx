@@ -2,6 +2,7 @@ import Button, {IButton} from './Button';
 import ButtonGroup from './ButtonGroup';
 import Heading from './Heading';
 import React from 'react';
+import StickyFooter from './StickyFooter';
 import clsx from 'clsx';
 import {useModal} from '@ebay/nice-modal-react';
 
@@ -86,35 +87,35 @@ const Modal: React.FC<ModalProps> = ({
         modalClasses += ' max-w-[480px] ';
         backdropClasses += ' p-[8vmin]';
         padding = 'p-8';
-        footerContainerBottom = 'calc(-1 * (8vmin + 48px)';
+        footerContainerBottom = 'calc(-1 * 8vmin)';
         break;
 
     case 'md':
         modalClasses += ' max-w-[720px] ';
         backdropClasses += ' p-[8vmin]';
         padding = 'p-8';
-        footerContainerBottom = 'calc(-1 * (8vmin + 48px)';
+        footerContainerBottom = 'calc(-1 * 8vmin)';
         break;
 
     case 'lg':
         modalClasses += ' max-w-[1020px] ';
         backdropClasses += ' p-[4vmin]';
         padding = 'p-12';
-        footerContainerBottom = 'calc(-1 * (4vmin + 68px)';
+        footerContainerBottom = 'calc(-1 * 4vmin)';
         break;
 
     case 'xl':
         modalClasses += ' max-w-[1240px] ';
         backdropClasses += ' p-[3vmin]';
         padding = 'p-12';
-        footerContainerBottom = 'calc(-1 * (3vmin + 68px)';
+        footerContainerBottom = 'calc(-1 * 3vmin)';
         break;
 
     case 'full':
         modalClasses += ' h-full ';
         backdropClasses += ' p-[2vmin]';
         padding = 'p-12';
-        footerContainerBottom = 'calc(-1 * (2vmin + 68px)';
+        footerContainerBottom = 'calc(-1 * 2vmin)';
         break;
 
     case 'bleed':
@@ -124,7 +125,7 @@ const Modal: React.FC<ModalProps> = ({
 
     default:
         backdropClasses += ' p-[8vmin]';
-        footerContainerBottom = 'calc(-1 * (8vmin + 48px)';
+        footerContainerBottom = 'calc(-1 * 8vmin)';
         padding = 'p-8';
         break;
     }
@@ -133,16 +134,11 @@ const Modal: React.FC<ModalProps> = ({
         padding = 'p-0';
     }
 
-    let footerContainerClasses = clsx(
-        'w-100',
-        stickyFooter && 'sticky z-[100] mb-[-24px]',
-        `${stickyFooter ? 'before:sticky' : 'before:hidden'} before:bottom-0 before:z-[100] before:block before:h-[24px] before:bg-white before:content-['']`,
-        `${stickyFooter ? 'after:sticky' : 'after:hidden'} after:bottom-[72px] after:block after:h-[24px] after:shadow-[0_0_0_1px_rgba(0,0,0,.04),0_-8px_16px_-3px_rgba(0,0,0,.15)] after:content-['']`
-    );
-
     let footerClasses = clsx(
-        `${padding} ${stickyFooter ? 'pt-8' : 'pt-0'} z-[101] flex items-center justify-between`,
-        stickyFooter && `sticky bottom-[-48px] rounded-b bg-white`
+        `${padding} ${stickyFooter ? 'py-6' : 'pt-0'}`,
+        'flex w-full items-center justify-between'
+        // `${padding} ${stickyFooter ? 'pt-8' : 'pt-0'} z-[101]`,
+        // stickyFooter && `sticky bottom-[-48px] rounded-b bg-white`
     );
 
     let contentClasses = `${padding} h-full`;
@@ -161,6 +157,29 @@ const Modal: React.FC<ModalProps> = ({
         width: size + 'px'
     } : {};
 
+    const footerContent = (
+        <div className={footerClasses}>
+            <div>
+                {leftButtonLabel &&
+                <Button label={leftButtonLabel} link={true} />
+                }
+            </div>
+            <div className='flex gap-3'>
+                <ButtonGroup buttons={buttons}/>
+            </div>
+        </div>
+    );
+
+    const footer = (stickyFooter ?
+        <StickyFooter bgTWColor='white' shiftY={footerContainerBottom}>
+            {footerContent}
+        </StickyFooter>
+        :
+        <>
+            {footerContent}
+        </>
+    );
+
     return (
         <div className={backdropClasses} id='modal-backdrop' onClick={handleBackdropClick}>
             <div className={clsx(
@@ -175,20 +194,7 @@ const Modal: React.FC<ModalProps> = ({
                     </div>
                 </div>
                 {customFooter ? customFooter :
-                    <div className={footerContainerClasses} style={{
-                        bottom: `${stickyFooter && footerContainerBottom}`
-                    }}>
-                        <div className={footerClasses}>
-                            <div>
-                                {leftButtonLabel &&
-                                <Button label={leftButtonLabel} link={true} />
-                                }
-                            </div>
-                            <div className='flex gap-3'>
-                                <ButtonGroup buttons={buttons}/>
-                            </div>
-                        </div>
-                    </div>
+                    footer
                 }
             </section>
         </div>

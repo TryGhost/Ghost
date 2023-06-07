@@ -1,16 +1,18 @@
 import type {Meta, StoryObj} from '@storybook/react';
 
-const Component = () => null;
+import BoilerPlate from './Boilerplate';
 
 const meta = {
     title: 'Meta / Boilerplate story',
-    component: Component,
+    component: BoilerPlate,
     tags: ['autodocs']
-} satisfies Meta<typeof Component>;
+} satisfies Meta<typeof BoilerPlate>;
 
 export default meta;
-type Story = StoryObj<typeof Component>;
+type Story = StoryObj<typeof BoilerPlate>;
 
 export const Default: Story = {
-    args: {}
+    args: {
+        children: 'This is a boilerplate component. Use as a basis to create new components.'
+    }
 };
