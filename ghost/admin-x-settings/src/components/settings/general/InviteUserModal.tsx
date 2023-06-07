@@ -1,12 +1,12 @@
-import Modal from '../../../../admin-x-ds/global/Modal';
+import Modal from '../../../admin-x-ds/global/Modal';
 import NiceModal from '@ebay/nice-modal-react';
-import Radio from '../../../../admin-x-ds/global/Radio';
-import TextField from '../../../../admin-x-ds/global/TextField';
-import useRoles from '../../../../hooks/useRoles';
-import useStaffUsers from '../../../../hooks/useStaffUsers';
+import Radio from '../../../admin-x-ds/global/Radio';
+import TextField from '../../../admin-x-ds/global/TextField';
+import useRoles from '../../../hooks/useRoles';
+import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
-import {ServicesContext} from '../../../providers/ServiceProvider';
-import {showToast} from '../../../../admin-x-ds/global/Toast';
+import {ServicesContext} from '../../providers/ServiceProvider';
+import {showToast} from '../../../admin-x-ds/global/Toast';
 import {useContext, useEffect, useRef, useState} from 'react';
 
 type RoleType = 'administrator' | 'editor' | 'author' | 'contributor';

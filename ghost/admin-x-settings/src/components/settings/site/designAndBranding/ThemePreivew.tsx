@@ -1,4 +1,4 @@
-import DesktopChrome from '../../../../../admin-x-ds/global/DesktopChrome';
+import DesktopChrome from '../../../../admin-x-ds/global/DesktopChrome';
 import React from 'react';
 
 const ThemePreview: React.FC = () => {

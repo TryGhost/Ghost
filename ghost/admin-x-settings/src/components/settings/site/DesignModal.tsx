@@ -1,13 +1,13 @@
 import BrandSettings from './designAndBranding/BrandSettings';
-import Button from '../../../../admin-x-ds/global/Button';
+import Button from '../../../admin-x-ds/global/Button';
 import NiceModal from '@ebay/nice-modal-react';
-import PreviewModal from '../../../../admin-x-ds/global/PreviewModal';
+import PreviewModal from '../../../admin-x-ds/global/PreviewModal';
 import React from 'react';
-import SettingGroup from '../../../../admin-x-ds/settings/SettingGroup';
-import TabView from '../../../../admin-x-ds/global/TabView';
+import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
+import TabView from '../../../admin-x-ds/global/TabView';
 import ThemePreview from './designAndBranding/ThemePreivew';
 import ThemeSettings from './designAndBranding/ThemeSettings';
-import {Tab} from '../../../../admin-x-ds/global/TabView';
+import {Tab} from '../../../admin-x-ds/global/TabView';
 
 const Sidebar: React.FC = () => {
     const tabs: Tab[] = [
