@@ -35,7 +35,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         imageClassName = imageClassName || 'group relative bg-cover';
         fileUploadClassName = fileUploadClassName || 'flex cursor-pointer items-center justify-center rounded border border-grey-100 bg-grey-75 p-3 text-sm font-semibold text-grey-800 hover:text-black';
         deleteButtonClassName = deleteButtonClassName || 'invisible absolute right-4 top-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible';
-        deleteButtonContent = deleteButtonContent || <Icon color='white' name='trash' size='sm' />;
+        deleteButtonContent = deleteButtonContent || <Icon colorClass='text-white' name='trash' size='sm' />;
     }
 
     if (imageURL) {

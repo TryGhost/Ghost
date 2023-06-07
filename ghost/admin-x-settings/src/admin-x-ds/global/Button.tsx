@@ -8,6 +8,7 @@ export interface IButton {
     size?: ButtonSize;
     label?: string;
     icon?: string;
+    iconColorClass?: string;
     key?: string;
     color?: string;
     fullWidth?: boolean;
@@ -21,6 +22,7 @@ const Button: React.FC<IButton> = ({
     size = 'md',
     label = '',
     icon = '',
+    iconColorClass = 'text-black',
     color = 'clear',
     fullWidth,
     link,
@@ -72,7 +74,7 @@ const Button: React.FC<IButton> = ({
             onClick={onClick}
             {...props}
         >
-            {icon && <Icon color={(color === 'clear' || color === 'grey' || color === 'white' ? 'black' : 'white')} name={icon} size={size === 'sm' ? 'sm' : 'md'} />}
+            {icon && <Icon colorClass={iconColorClass} name={icon} size={size === 'sm' ? 'sm' : 'md'} />}
             {label}
         </button>
     );
