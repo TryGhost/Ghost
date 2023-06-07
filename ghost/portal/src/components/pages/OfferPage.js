@@ -533,7 +533,7 @@ export default class OfferPage extends React.Component {
         };
 
         const originalPrice = this.getOriginalPrice({offer, product});
-        const renewsLabel = t(`Renews at {{price}}.`, {price: originalPrice});
+        const renewsLabel = t(`Renews at {{price}}.`, {price: originalPrice, interpolation: {escapeValue: false}});
 
         let offerLabel = '';
         let useRenewsLabel = false;
@@ -556,7 +556,8 @@ export default class OfferPage extends React.Component {
             return (
                 <p className="footnote">{t('Try free for {{amount}} days, then {{originalPrice}}.', {
                     amount: offer.amount,
-                    originalPrice: originalPrice
+                    originalPrice: originalPrice,
+                    interpolation: {escapeValue: false}
                 })} <span class="gh-portal-cancel">{t('Cancel anytime.')}</span></p>
             );
         }
