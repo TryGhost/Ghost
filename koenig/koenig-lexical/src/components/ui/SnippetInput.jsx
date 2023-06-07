@@ -14,7 +14,7 @@ export function SnippetInput({
     arrowStyles
 }) {
     const snippetRef = useRef(null);
-    const [isCreateButtonActive, setIsCreateButtonActive] = useState(false);
+    const [isCreateButtonActive, setIsCreateButtonActive] = useState(true);
     const [activeMenuItem, setActiveMenuItem] = useState(-1);
     const getSuggestedList = () => {
         return snippets.filter(snippet => snippet.name.toLowerCase().indexOf(value.toLowerCase()) !== -1);
