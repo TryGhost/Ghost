@@ -53,6 +53,13 @@
                         </div>
                         <div class="period">Yearly</div>
                     </div>
+                    <div class="gh-tier-card-price" data-test-one-time-price>
+                        <div class="flex items-start">
+                            <span class="currency">{{currency-symbol this.tierCurrency}}</span>
+                            <span class="amount" data-test-amount-one-time-price>{{gh-price-amount @tier.oneTimePrice}}</span>
+                        </div>
+                        <div class="period">One-Time</div>
+                    </div>
                 </div>
                 {{#if this.isFreeTrialEnabled}}
                 <div class="gh-tier-free-trial-label">

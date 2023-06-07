@@ -64,7 +64,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         },
 
         tiers() {
-            const url = contentEndpointFor({resource: 'tiers', params: '&include=monthly_price,yearly_price,benefits'});
+            const url = contentEndpointFor({resource: 'tiers', params: '&include=monthly_price,yearly_price,one_time_price,benefits'});
             return makeRequest({
                 url,
                 method: 'GET',

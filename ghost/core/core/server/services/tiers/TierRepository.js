@@ -74,6 +74,7 @@ module.exports = class TierRepository {
             currency: json.currency,
             monthlyPrice: json.monthly_price,
             yearlyPrice: json.yearly_price,
+            oneTimePrice: json.one_time_price,
             createdAt: json.created_at,
             updatedAt: json.updated_at,
             benefits: json.benefits.map(item => item.name)
@@ -128,6 +129,7 @@ module.exports = class TierRepository {
             currency: tier.currency,
             monthly_price: tier.monthlyPrice,
             yearly_price: tier.yearlyPrice,
+            one_time_price: tier.oneTimePrice,
             created_at: tier.createdAt,
             updated_at: tier.updatedAt,
             benefits: tier.benefits.map(name => ({name}))

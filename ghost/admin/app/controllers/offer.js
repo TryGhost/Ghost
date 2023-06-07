@@ -110,7 +110,7 @@ export default class OffersController extends Controller {
 
     @task({drop: true})
     *fetchTiers() {
-        this.tiers = yield this.store.query('tier', {filter: 'type:paid+active:true', include: 'monthly_price,yearly_price'});
+        this.tiers = yield this.store.query('tier', {filter: 'type:paid+active:true', include: 'one_time_price,monthly_price,yearly_price'});
         this.tiers = this.tiers.filter((d) => {
             return d.monthlyPrice && d.yearlyPrice;
         });

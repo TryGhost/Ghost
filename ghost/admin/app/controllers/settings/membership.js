@@ -38,6 +38,7 @@ export default class MembersAccessController extends Controller {
     @tracked welcomePageURL;
     @tracked stripeMonthlyAmount = 5;
     @tracked stripeYearlyAmount = 50;
+    @tracked stripeOneTimeAmount = 60;
     @tracked currency = 'usd';
     @tracked stripePlanError = '';
 
@@ -77,11 +78,15 @@ export default class MembersAccessController extends Controller {
         if (this.tier) {
             const monthlyPrice = this.tier.get('monthlyPrice');
             const yearlyPrice = this.tier.get('yearlyPrice');
+            const oneTimePrice = this.tier.get('oneTimePrice');
 
             if (monthlyPrice?.amount && parseFloat(this.stripeMonthlyAmount) !== (monthlyPrice.amount / 100)) {
                 return true;
             }
             if (yearlyPrice?.amount && parseFloat(this.stripeYearlyAmount) !== (yearlyPrice.amount / 100)) {
+                return true;
+            }
+            if (oneTimePrice?.amount && parseFloat(this.stripeOneTimeAmount) !== (oneTimePrice.amount / 100)) {
                 return true;
             }
         }
@@ -168,8 +173,10 @@ export default class MembersAccessController extends Controller {
         try {
             const yearlyAmount = this.stripeYearlyAmount;
             const monthlyAmount = this.stripeMonthlyAmount;
+            const oneTimeAmount = this.stripeOneTimeAmount;
             const symbol = getSymbol(this.currency);
-            if (!yearlyAmount || yearlyAmount < 1 || !monthlyAmount || monthlyAmount < 1) {
+            if (!yearlyAmount || yearlyAmount < 1 || !monthlyAmount || monthlyAmount < 1 
+                || !oneTimeAmount || oneTimeAmount < 1) {
                 throw new TypeError(`Subscription amount must be at least ${symbol}1.00`);
             }
 
@@ -255,6 +262,7 @@ export default class MembersAccessController extends Controller {
             return tier.id;
         });
 
+        //TODO - update onetime
         const newUrl = new URL(this.membersUtils.getPortalPreviewUrl({
             button: false,
             monthlyPrice,
@@ -333,7 +341,7 @@ export default class MembersAccessController extends Controller {
     @task({drop: true})
     *fetchTiers() {
         this.tiers = yield this.store.query('tier', {
-            include: 'monthly_price,yearly_price,benefits'
+            include: 'one_time_price,monthly_price,yearly_price,benefits'
         });
         this.tier = this.paidTiers.firstObject;
         this.setupPortalTier(this.tier);

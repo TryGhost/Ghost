@@ -100,7 +100,7 @@ export const site = getSiteData({
     isStripeConfigured: true,
     portalButton: true,
     portalName: true,
-    portalPlans: ['free', 'monthly', 'yearly'],
+    portalPlans: ['free', 'monthly', 'yearly', 'oneTime'],
     portalButtonIcon: 'icon-1',
     portalButtonSignupText: 'Subscribe now',
     portalButtonStyle: 'icon-and-text',

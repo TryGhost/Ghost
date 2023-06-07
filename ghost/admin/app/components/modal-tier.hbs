@@ -102,6 +102,19 @@
                                         />
                                         <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/year</span>
                                     </div>
+                                    <div class="gh-input-group">
+                                        <GhTextInput
+                                            @id="oneTimePrice"
+                                            @value={{readonly this.stripeOneTimeAmount}}
+                                            @type="number"
+                                            @input={{action (mut this.stripeOneTimeAmount) value="target.value"}}
+                                            @focus-out={{this.validateStripePlans}}
+                                            @placeholder=''
+                                            data-test-title-input={{true}}
+                                            data-test-input="one-time-price"
+                                        />
+                                        <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/one-time</span>
+                                    </div>
                                 </div>
                                 {{#if this.stripePlanError}}
                                     <p class="response w-100"><span class="red">{{this.stripePlanError}}</span></p>
@@ -207,6 +220,7 @@
                             <div>
                                 <button class="gh-btn {{if (eq this.previewCadence "monthly") "selected"}}" type="button" {{on "click" (fn this.changeCadence "monthly")}}><span>Monthly</span></button>
                                 <button class="gh-btn {{if (eq this.previewCadence "yearly") "selected"}}" type="button" {{on "click" (fn this.changeCadence "yearly")}}><span>Yearly</span></button>
+                                <button class="gh-btn {{if (eq this.previewCadence "oneTime") "selected"}}" type="button" {{on "click" (fn this.changeCadence "oneTime")}}><span>One-Time</span></button>
                             </div>
                         </div>
                     {{/if}}
@@ -233,11 +247,16 @@
                                                     {{format-number this.stripeMonthlyAmount}}
                                                 </span>
                                                 <span class="billing-period">/month</span>
-                                            {{else}}
+                                            {{else if (eq this.previewCadence "yearly")}}
                                                 <span class="amount">
                                                     {{format-number this.stripeYearlyAmount}}
                                                 </span>
                                                 <span class="billing-period">/year</span>
+                                            {{else if (eq this.previewCadence "oneTime")}}
+                                                <span class="amount">
+                                                    {{format-number this.stripeOneTimeAmount}}
+                                                </span>
+                                                <span class="billing-period">/one-time</span>
                                             {{/if}}
                                         </div>
                                             {{#if this.isFreeTrialEnabled}}

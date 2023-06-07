@@ -30,6 +30,10 @@ class ProductsImporter extends TableImporter {
                 return p.stripe_product_id === stripeProduct.stripe_product_id &&
                     p.interval === 'yearly';
             });
+            const oneTimePrice = stripePrices.find((p) => {
+                return p.stripe_product_id === stripeProduct.stripe_product_id &&
+                    p.interval === 'oneTime';
+            });
 
             const update = {};
             if (monthlyPrice) {
@@ -37,6 +41,9 @@ class ProductsImporter extends TableImporter {
             }
             if (yearlyPrice) {
                 update.yearly_price_id = yearlyPrice.id;
+            }
+            if (oneTimePrice) {
+                update.one_time_price_id = oneTimePrice.id;
             }
 
             if (Object.keys(update).length > 0) {
@@ -63,6 +70,7 @@ class ProductsImporter extends TableImporter {
             tierInfo.currency = 'USD';
             tierInfo.monthly_price = count * 500;
             tierInfo.yearly_price = count * 5000;
+            tierInfo.one_time_price = count * 6000;
         }
         return Object.assign({}, {
             id: faker.database.mongodbObjectId(),

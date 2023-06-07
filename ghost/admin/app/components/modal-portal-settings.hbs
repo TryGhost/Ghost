@@ -135,6 +135,27 @@
                                                         <p>Yearly</p>
                                                     </label>
                                                 </div>
+                                                <div class="form-group mb0 for-checkbox">
+                                                    <label
+                                                        class="checkbox"
+                                                        for="one-time-plan"
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            id="one-time-plan"
+                                                            name="one-time-plan"
+                                                            checked={{this.isOneTimeChecked}}
+                                                            disabled={{or
+                                                                (not this.membersUtils.isStripeEnabled)
+                                                                (not-eq this.settings.membersSignupAccess "all")
+                                                            }}
+                                                            class="gh-input post-settings-featured"
+                                                            {{on "click" (action "togglePlan" "oneTime")}}
+                                                        >
+                                                        <span class="input-toggle-component"></span>
+                                                        <p>One-Time</p>
+                                                    </label>
+                                                </div>
                                             {{/if}}
                                         {{/if}}
                                     </div>

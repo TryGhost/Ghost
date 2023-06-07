@@ -464,11 +464,13 @@ module.exports = {
         currency: {type: 'string', maxlength: 50, nullable: true},
         monthly_price: {type: 'integer', unsigned: true, nullable: true},
         yearly_price: {type: 'integer', unsigned: true, nullable: true},
+        one_time_price: {type: 'integer', unsigned: true, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         // To be removed in future
         monthly_price_id: {type: 'string', maxlength: 24, nullable: true},
-        yearly_price_id: {type: 'string', maxlength: 24, nullable: true}
+        yearly_price_id: {type: 'string', maxlength: 24, nullable: true},
+        one_time_price_id: {type: 'string', maxlength: 24, nullable: true}
     },
     offers: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -478,7 +480,7 @@ module.exports = {
         code: {type: 'string', maxlength: 191, nullable: false, unique: true},
         product_id: {type: 'string', maxlength: 24, nullable: false, references: 'products.id'},
         stripe_coupon_id: {type: 'string', maxlength: 255, nullable: true, unique: true},
-        interval: {type: 'string', maxlength: 50, nullable: false, validations: {isIn: [['month', 'year']]}},
+        interval: {type: 'string', maxlength: 50, nullable: false, validations: {isIn: [['month', 'year', 'oneTime']]}},
         currency: {type: 'string', maxlength: 50, nullable: true},
         discount_type: {type: 'string', maxlength: 50, nullable: false, validations: {isIn: [['percent', 'amount', 'trial']]}},
         discount_amount: {type: 'integer', nullable: false},
@@ -652,7 +654,7 @@ module.exports = {
         // These are null if type !== 'paid'
         cadence: {
             type: 'string', maxlength: 50, nullable: true, validations: {
-                isIn: [['month', 'year']]
+                isIn: [['month', 'year', 'oneTime']]
             }
         },
         currency: {type: 'string', maxlength: 50, nullable: true},

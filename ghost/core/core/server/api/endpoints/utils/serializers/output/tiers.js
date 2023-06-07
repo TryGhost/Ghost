@@ -63,6 +63,7 @@ function serializeTier(tier, options) {
         visibility: json.visibility,
         benefits: json.benefits,
         currency: json.currency,
+        one_time_price: json.oneTimePrice,
         monthly_price: json.monthlyPrice,
         yearly_price: json.yearlyPrice,
         trial_days: json.trialDays
@@ -74,6 +75,7 @@ function serializeTier(tier, options) {
 
     if (serialized.type === 'free') {
         delete serialized.currency;
+        delete serialized.one_time_price;
         delete serialized.monthly_price;
         delete serialized.yearly_price;
     }
@@ -114,6 +116,7 @@ function createSerializer(debugString, serialize) {
 /**
  * @typedef {FreeTier} PaidTier
  * @prop {string} currency
+ * @prop {number} one_time_price
  * @prop {number} monthly_price
  * @prop {number} yearly_price
  */
@@ -121,6 +124,7 @@ function createSerializer(debugString, serialize) {
 /**
  * @typedef {FreeTier | PaidTier} SerializedTier
  * @prop {string} currency
+ * @prop {number} one_time_price
  * @prop {number} monthly_price
  * @prop {number} yearly_price
  */

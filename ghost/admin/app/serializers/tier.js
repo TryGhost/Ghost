@@ -4,6 +4,10 @@ export default class TierSerializer extends ApplicationSerializer {
     serialize() {
         let json = super.serialize(...arguments);
 
+        if (json?.one_time_price) {
+            json.one_time_price = Math.round(json.one_time_price);
+        }
+
         if (json?.monthly_price) {
             json.monthly_price = Math.round(json.monthly_price);
         }

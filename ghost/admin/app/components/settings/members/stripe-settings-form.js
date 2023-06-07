@@ -265,12 +265,13 @@ export default class StripeSettingsForm extends Component {
 
     @task
     *saveTier() {
-        const tiers = yield this.store.query('tier', {filter: 'type:paid', include: 'monthly_price, yearly_price'});
+        const tiers = yield this.store.query('tier', {filter: 'type:paid', include: 'one_time_price, monthly_price, yearly_price'});
         const tier = tiers.firstObject;
 
         if (tier) {
             tier.monthlyPrice = 500;
             tier.yearlyPrice = 5000;
+            tier.oneTimePrice = 6000;
             tier.currency = 'usd';
 
             let pollTimeout = 0;
@@ -307,7 +308,7 @@ export default class StripeSettingsForm extends Component {
                 let response = yield this.settings.save();
 
                 yield this.saveTier.perform();
-                this.settings.portalPlans = ['free', 'monthly', 'yearly'];
+                this.settings.portalPlans = ['free', 'monthly', 'yearly', 'oneTime'];
 
                 response = yield this.settings.save();
 

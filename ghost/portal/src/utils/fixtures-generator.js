@@ -27,7 +27,7 @@ export function getSiteData({
     products = getProductsData({numOfProducts: 1}),
     portalProducts = products.map(p => p.id),
     accentColor: accent_color = '#45C32E',
-    portalPlans: portal_plans = ['free', 'monthly', 'yearly'],
+    portalPlans: portal_plans = ['free', 'monthly', 'yearly', 'oneTime'],
     allowSelfSignup: allow_self_signup = true,
     membersSignupAccess: members_signup_access = 'all',
     freePriceName: free_price_name = 'Free',
@@ -314,7 +314,7 @@ export function getSubscriptionData({
 export function getTestSite() {
     const products = getProductsData({numOfProducts: 1});
     const portalProducts = products.map(p => p.id);
-    const portalPlans = ['free', 'monthly', 'yearly'];
+    const portalPlans = ['free', 'monthly', 'yearly', 'oneTime'];
     return getSiteData({
         products,
         portalPlans,

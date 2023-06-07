@@ -116,6 +116,19 @@ export function getFilteredPrices({prices, currency}) {
 }
 
 export function getPriceFromSubscription({subscription}) {
+
+    let cadence;
+    if(subscription.price?.interval === 'month')
+    {
+        cadence = 'month'
+    } else if(subscription.price?.interval === 'year') {
+        cadence = 'year'
+    } else if(subscription.price?.interval === 'oneTime') {
+        cadence = 'oneTime'
+    } else {
+        cadence = 'year'
+    }
+
     if (subscription && subscription.price) {
         return {
             ...subscription.price,
@@ -124,7 +137,7 @@ export function getPriceFromSubscription({subscription}) {
             price: subscription.price.amount / 100,
             name: subscription.price.nickname,
             tierId: subscription.tier?.id,
-            cadence: subscription.price?.interval === 'month' ? 'month' : 'year',
+            cadence: cadence,
             currency: subscription.price.currency.toLowerCase(),
             currency_symbol: getCurrencySymbol(subscription.price.currency)
         };
@@ -173,6 +186,8 @@ export function hasPrice({site = {}, plan}) {
         return prices && prices.length > 0 && prices.find(p => p.name === 'Monthly');
     } else if (plan === 'yearly') {
         return prices && prices.length > 0 && prices.find(p => p.name === 'Yearly');
+    } else if (plan === 'oneTime') {
+        return prices && prices.length > 0 && prices.find(p => p.name === 'OneTime');
     } else if (plan) {
         return prices && prices.length > 0 && prices.find(p => p.id === plan);
     }
@@ -194,6 +209,12 @@ export function getCheckoutSessionDataFromPlanAttribute(site, plan) {
             tierId: defaultTier.id
         };
     }
+    if (plan === 'oneTime') {
+        return {
+            cadence: 'oneTime',
+            tierId: defaultTier.id
+        };
+    }
     return {
         priceId: plan
     };
@@ -201,6 +222,8 @@ export function getCheckoutSessionDataFromPlanAttribute(site, plan) {
 
 export function getQueryPrice({site = {}, priceId}) {
     const prices = getAvailablePrices({site});
+
+    console.log(prices);
     if (priceId === 'free') {
         return !prices || prices.length === 0 || prices.find(p => p.type === 'free');
     } else if (prices && prices.length > 0 && priceId === 'monthly') {
@@ -211,6 +234,10 @@ export function getQueryPrice({site = {}, priceId}) {
         const yearlyByName = prices.find(p => p.name === 'Yearly');
         const yearlyByInterval = prices.find(p => p.interval === 'year');
         return yearlyByName || yearlyByInterval;
+    } else if (prices && prices.length > 0 && priceId === 'oneTime') {
+        const oneTimeByName = prices.find(p => p.name === 'OneTime');
+        const oneTimeByInterval = prices.find(p => p.interval === 'oneTime');
+        return oneTimeByName || oneTimeByInterval;
     } else if (prices && prices.length > 0 && priceId) {
         return prices.find(p => p.id === priceId);
     }
@@ -261,7 +288,8 @@ export function transformApiSiteData({site}) {
             return {
                 ...product,
                 monthlyPrice: product.monthly_price,
-                yearlyPrice: product.yearly_price
+                yearlyPrice: product.yearly_price,
+                oneTimePrice: product.one_time_price
             };
         });
 
@@ -320,7 +348,7 @@ export function transformApiSiteData({site}) {
 export function getAvailableProducts({site}) {
     const {portal_products: portalProducts, products = [], portal_plans: portalPlans = []} = site || {};
 
-    if (!portalPlans.includes('monthly') && !portalPlans.includes('yearly')) {
+    if (!portalPlans.includes('monthly') && !portalPlans.includes('yearly') && !portalPlans.includes('oneTime')) {
         return [];
     }
 
@@ -330,9 +358,10 @@ export function getAvailableProducts({site}) {
         }
         return product.type !== 'paid';
     }).filter((product) => {
-        return !!(product.monthlyPrice && product.yearlyPrice);
+        return !!(product.monthlyPrice && product.yearlyPrice && product.oneTimePrice);
     }).filter((product) => {
-        return !!(Object.keys(product.monthlyPrice).length > 0 && Object.keys(product.yearlyPrice).length > 0);
+        return !!(Object.keys(product.monthlyPrice).length > 0 
+            && Object.keys(product.yearlyPrice).length > 0 && Object.keys(product.oneTimePrice).length > 0);
     }).filter((product) => {
         if (portalProducts && products.length > 1) {
             return portalProducts.includes(product.id);
@@ -349,6 +378,10 @@ export function getAvailableProducts({site}) {
             ...product.yearlyPrice,
             currency_symbol: getCurrencySymbol(product.yearlyPrice.currency)
         };
+        product.oneTimePrice = {
+            ...product.oneTimePrice,
+            currency_symbol: getCurrencySymbol(product.oneTimePrice.currency)
+        };
         return product;
     });
 }
@@ -361,14 +394,15 @@ export function getFreeProduct({site}) {
 export function getAllProductsForSite({site}) {
     const {products = [], portal_plans: portalPlans = []} = site || {};
 
-    if (!portalPlans.includes('monthly') && !portalPlans.includes('yearly')) {
+    if (!portalPlans.includes('monthly') && !portalPlans.includes('yearly') && !portalPlans.includes('oneTime')) {
         return [];
     }
 
     return products.filter(product => !!product).filter((product) => {
-        return !!(product.monthlyPrice && product.yearlyPrice);
+        return !!(product.monthlyPrice && product.yearlyPrice && product.oneTimePrice);
     }).filter((product) => {
-        return !!(Object.keys(product.monthlyPrice).length > 0 && Object.keys(product.yearlyPrice).length > 0);
+        return !!(Object.keys(product.monthlyPrice).length > 0 
+            && Object.keys(product.yearlyPrice).length > 0 && Object.keys(product.oneTimePrice).length > 0);
     }).sort((productA, productB) => {
         return productA?.monthlyPrice?.amount - productB?.monthlyPrice?.amount;
     }).map((product) => {
@@ -379,6 +413,10 @@ export function getAllProductsForSite({site}) {
         product.yearlyPrice = {
             ...product.yearlyPrice,
             currency_symbol: getCurrencySymbol(product.yearlyPrice.currency)
+        };
+        product.oneTimePrice = {
+            ...product.oneTimePrice,
+            currency_symbol: getCurrencySymbol(product.oneTimePrice.currency)
         };
         return product;
     });
@@ -444,6 +482,7 @@ export function freeHasBenefitsOrDescription({site}) {
     return false;
 }
 
+//TODO: oneTime what's this?
 export function getProductBenefits({product, site = null}) {
     if (product?.monthlyPrice && product?.yearlyPrice) {
         const productBenefits = product?.benefits || [];
@@ -471,6 +510,9 @@ export function getPricesFromProducts({site = null, products = null}) {
         if (product.monthlyPrice && product.yearlyPrice) {
             accumPrices.push(product.monthlyPrice);
             accumPrices.push(product.yearlyPrice);
+        }
+        if(product.oneTimePrice) {
+            accumPrices.push(product.oneTimePrice);
         }
         return accumPrices;
     }, []);
@@ -598,6 +640,9 @@ export function getAvailablePrices({site, products = null}) {
         }
         if (price.interval === 'year') {
             return portalPlans.includes('yearly');
+        }
+        if (price.interval === 'oneTime') {
+            return portalPlans.includes('oneTime');
         }
         return false;
     }).sort((a, b) => {
@@ -839,6 +884,21 @@ function createYearlyPrice({tier, priceId}) {
     return null;
 }
 
+function createOneTimePrice({tier, priceId}) {
+    if (tier?.one_time_price) {
+        return {
+            id: `price-${priceId}`,
+            active: true,
+            type: 'recurring',
+            nickname: 'One-Time',
+            currency: tier.currency,
+            amount: tier.one_time_price,
+            interval: 'oneTime'
+        };
+    }
+    return null;
+}
+
 function createBenefits({tier}) {
     return tier?.benefits?.map((benefit) => {
         return {
@@ -857,12 +917,16 @@ export const transformApiTiersData = ({tiers}) => {
         let yearlyPrice = createYearlyPrice({tier, priceId});
         priceId += 1;
 
+        let oneTimePrice = createOneTimePrice({tier, priceId});
+        priceId += 1;
+
         let benefits = createBenefits({tier});
         return {
             ...tier,
             benefits: benefits,
             monthly_price: monthlyPrice,
-            yearly_price: yearlyPrice
+            yearly_price: yearlyPrice,
+            one_time_price: oneTimePrice
         };
     });
 };

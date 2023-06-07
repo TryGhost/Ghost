@@ -25,7 +25,8 @@ class ProductsImporter extends BaseImporter {
             id: importedObject.id,
             originalId: this.originalIdMap[importedObject.id],
             monthly_price_id: originalObject.monthly_price_id,
-            yearly_price_id: originalObject.yearly_price_id
+            yearly_price_id: originalObject.yearly_price_id,
+            one_time_price_id: originalObject.one_time_price_id,
         };
     }
 
@@ -60,7 +61,18 @@ class ProductsImporter extends BaseImporter {
                 row.yearly_price = row.yearly_price || yearlyStripePrice?.amount;
                 row.currency = yearlyStripePrice?.currency;
             }
-            if (!row.yearly_price || !row.currency || !row.monthly_price) {
+            if (!row.one_time_price || !row.currency) {
+                const oneTimeStripePrice = _.find(
+                    this.requiredFromFile.stripe_prices,
+                    {id: row.one_time_price_id}
+                ) || _.find(
+                    this.requiredExistingData.stripe_prices,
+                    {id: row.one_time_price_id}
+                );
+                row.yearly_price = row.one_time_price || oneTimeStripePrice?.amount;
+                row.currency = oneTimeStripePrice?.currency;
+            }
+            if (!row.yearly_price || !row.currency || !row.monthly_price || !row.one_time_price) {
                 invalidRows.push(row.id);
             }
         });

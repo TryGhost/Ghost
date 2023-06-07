@@ -36,6 +36,11 @@ function convertTierInput(input) {
         delete converted.yearly_price;
     }
 
+    if (Reflect.has(converted, 'one_time_price')) {
+        converted.oneTimePrice = converted.one_time_price;
+        delete converted.one_time_price;
+    }
+
     return converted;
 }
 
@@ -46,7 +51,7 @@ module.exports = {
             forceActiveFilter(frame);
 
             // CASE: content api includes these by default
-            const defaultRelations = ['monthly_price', 'yearly_price', 'benefits'];
+            const defaultRelations = ['one_time_price','monthly_price', 'yearly_price', 'benefits'];
             if (!frame.options.withRelated) {
                 frame.options.withRelated = defaultRelations;
             } else {
@@ -70,6 +75,9 @@ module.exports = {
             }
             if (relation === 'yearly_price') {
                 return 'yearlyPrice';
+            }
+            if (relation === 'one_time_price') {
+                return 'oneTimePrice';
             }
             return relation;
         });

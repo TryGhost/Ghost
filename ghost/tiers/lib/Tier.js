@@ -125,6 +125,9 @@ module.exports = class Tier {
         if (cadence === 'year') {
             return this.yearlyPrice;
         }
+        if (cadence === 'oneTime') {
+            return this.oneTimePrice;
+        }
         throw new ValidationError({
             message: 'Invalid cadence'
         });
@@ -148,7 +151,16 @@ module.exports = class Tier {
         this.#yearlyPrice = validateYearlyPrice(value, this.#type);
     }
 
-    updatePricing({currency, monthlyPrice, yearlyPrice}) {
+    /** @type {number|null} */
+    #oneTimePrice;
+    get oneTimePrice() {
+        return this.#oneTimePrice;
+    }
+    set oneTimePrice(value) {
+        this.#oneTimePrice = validateOneTimePrice(value, this.#type);
+    }
+
+    updatePricing({currency, oneTimePrice, monthlyPrice, yearlyPrice}) {
         if (this.#type !== 'paid' && (currency || monthlyPrice || yearlyPrice)) {
             throw new ValidationError({
                 message: 'Cannot set pricing for free tiers'
@@ -158,14 +170,17 @@ module.exports = class Tier {
         const newCurrency = validateCurrency(currency, this.#type);
         const newMonthlyPrice = validateMonthlyPrice(monthlyPrice, this.#type);
         const newYearlyPrice = validateYearlyPrice(yearlyPrice, this.#type);
+        const newOneTimePrice = validateOneTimePrice(oneTimePrice, this.#type);
 
-        if (newCurrency === this.#currency && newMonthlyPrice === this.#monthlyPrice && newYearlyPrice === this.#yearlyPrice) {
+        if (newCurrency === this.#currency && newMonthlyPrice === this.#monthlyPrice 
+            && newYearlyPrice === this.#yearlyPrice && newOneTimePrice === this.#oneTimePrice) {
             return;
         }
 
         this.#currency = newCurrency;
         this.#monthlyPrice = newMonthlyPrice;
         this.#yearlyPrice = newYearlyPrice;
+        this.#oneTimePrice = newOneTimePrice;
 
         this.events.push(TierPriceChangeEvent.create({
             tier: this
@@ -198,6 +213,7 @@ module.exports = class Tier {
             currency: this.#currency,
             monthlyPrice: this.#monthlyPrice,
             yearlyPrice: this.#yearlyPrice,
+            oneTimePrice: this.#oneTimePrice,
             createdAt: this.#createdAt,
             updatedAt: this.#updatedAt,
             benefits: this.#benefits
@@ -220,6 +236,7 @@ module.exports = class Tier {
         this.#currency = data.currency;
         this.#monthlyPrice = data.monthly_price;
         this.#yearlyPrice = data.yearly_price;
+        this.#oneTimePrice = data.one_time_price;
         this.#createdAt = data.created_at;
         this.#updatedAt = data.updated_at;
         this.#benefits = data.benefits;
@@ -257,6 +274,7 @@ module.exports = class Tier {
         let trialDays = validateTrialDays(data.trialDays || 0, type);
         let monthlyPrice = validateMonthlyPrice(data.monthlyPrice || null, type);
         let yearlyPrice = validateYearlyPrice(data.yearlyPrice || null , type);
+        let oneTimePrice = validateOneTimePrice(data.oneTimePrice || null , type);
         let createdAt = validateCreatedAt(data.createdAt);
         let updatedAt = validateUpdatedAt(data.updatedAt);
         let benefits = validateBenefits(data.benefits);
@@ -274,6 +292,7 @@ module.exports = class Tier {
             currency,
             monthly_price: monthlyPrice,
             yearly_price: yearlyPrice,
+            one_time_price: oneTimePrice,
             created_at: createdAt,
             updated_at: updatedAt,
             benefits
@@ -445,6 +464,36 @@ function validateYearlyPrice(value, type) {
         if (value !== null) {
             throw new ValidationError({
                 message: 'Free Tiers cannot have a yearly price'
+            });
+        }
+        return null;
+    }
+    if (!value) {
+        return 5000;
+    }
+    if (!Number.isSafeInteger(value)) {
+        throw new ValidationError({
+            message: 'Tier prices must be an integer.'
+        });
+    }
+    if (value < 0) {
+        throw new ValidationError({
+            message: 'Tier prices must not be negative'
+        });
+    }
+    if (value > 9999999999) {
+        throw new ValidationError({
+            message: 'Tier prices may not exceed 999999.99'
+        });
+    }
+    return value;
+}
+
+function validateOneTimePrice(value, type) {
+    if (type === 'free') {
+        if (value !== null) {
+            throw new ValidationError({
+                message: 'Free Tiers cannot have a one-time price'
             });
         }
         return null;

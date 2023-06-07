@@ -75,7 +75,7 @@ export default class GhMembersSegmentSelect extends Component {
 
         // fetch all tiers w̶i̶t̶h̶ c̶o̶u̶n̶t̶s̶
         // TODO: add `include: 'count.members` to query once API supports
-        const tiers = yield this.store.query('tier', {filter: 'type:paid', limit: 'all', include: 'monthly_price,yearly_price,benefits'});
+        const tiers = yield this.store.query('tier', {filter: 'type:paid', limit: 'all', include: 'one_time_price,monthly_price,yearly_price,benefits'});
 
         if (tiers.length > 0) {
             const activeTiersGroup = {

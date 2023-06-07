@@ -578,7 +578,8 @@ const fixtures = {
             return models.Product.edit({
                 ...defaultProduct.toJSON(),
                 monthly_price_id: DataGenerator.forKnex.stripe_prices[1].id,
-                yearly_price_id: DataGenerator.forKnex.stripe_prices[2].id
+                yearly_price_id: DataGenerator.forKnex.stripe_prices[2].id,
+                one_time_price_id: DataGenerator.forKnex.stripe_prices[3].id
             }, _.merge({id: defaultProduct.id}, context.internal));
         }).then(function () {
             return sequence(_.cloneDeep(DataGenerator.forKnex.stripe_customer_subscriptions).map(subscription => () => {

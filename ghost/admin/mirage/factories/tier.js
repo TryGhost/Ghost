@@ -9,5 +9,6 @@ export default Factory.extend({
     visibility: 'none',
     currency: 'usd',
     monthly_price: 500,
-    yearly_price: 5000
+    yearly_price: 5000,
+    one_time_price: 6000
 });

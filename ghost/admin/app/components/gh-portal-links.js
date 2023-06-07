@@ -69,7 +69,7 @@ export default class GhPortalLinks extends Component {
     }
 
     @task(function* () {
-        const tiers = yield this.store.query('tier', {filter: 'type:paid+active:true', include: 'monthly_price,yearly_price'}) || [];
+        const tiers = yield this.store.query('tier', {filter: 'type:paid+active:true', include: 'one_time_price,monthly_price,yearly_price'}) || [];
         this.set('tiers', tiers);
         if (tiers.length > 0) {
             this.set('selectedTier', {

@@ -37,6 +37,7 @@ export default class ModalTierPrice extends ModalBase {
     @tracked periodVal;
     @tracked stripeMonthlyAmount = 5;
     @tracked stripeYearlyAmount = 50;
+    @tracked stripeOneTimeAmount = 60;
     @tracked currency = 'usd';
     @tracked stripePlanError = '';
     @tracked benefits = emberA([]);
@@ -79,11 +80,15 @@ export default class ModalTierPrice extends ModalBase {
         this.savedBenefits = this.model.tier?.get('benefits');
         const monthlyPrice = this.tier.get('monthlyPrice');
         const yearlyPrice = this.tier.get('yearlyPrice');
+        const oneTimePrice = this.tier.get('oneTimePrice');
         if (monthlyPrice) {
             this.stripeMonthlyAmount = (monthlyPrice / 100);
         }
         if (yearlyPrice) {
             this.stripeYearlyAmount = (yearlyPrice / 100);
+        }
+        if(oneTimePrice) {
+            this.stripeOneTimeAmount = (oneTimePrice / 100);
         }
         this.currency = this.tier.get('currency') || 'usd';
         this.benefits = this.tier.get('benefits') || emberA([]);
@@ -178,8 +183,10 @@ export default class ModalTierPrice extends ModalBase {
         if (!this.isFreeTier) {
             const monthlyAmount = Math.round(this.stripeMonthlyAmount * 100);
             const yearlyAmount = Math.round(this.stripeYearlyAmount * 100);
+            const oneTimeAmount = Math.round(this.stripeOneTimeAmount * 100);
             this.tier.set('monthlyPrice', monthlyAmount);
             this.tier.set('yearlyPrice', yearlyAmount);
+            this.tier.set('oneTimePrice', oneTimeAmount);
             this.tier.set('currency', this.currency);
         }
 
@@ -213,12 +220,13 @@ export default class ModalTierPrice extends ModalBase {
         try {
             const yearlyAmount = this.stripeYearlyAmount;
             const monthlyAmount = this.stripeMonthlyAmount;
+            const oneTimeAmount = this.stripeOneTimeAmount;
             const symbol = getSymbol(this.currency);
-            if (!yearlyAmount || yearlyAmount < 1 || !monthlyAmount || monthlyAmount < 1) {
+            if (!yearlyAmount || yearlyAmount < 1 || !monthlyAmount || monthlyAmount < 1 || !oneTimeAmount || oneTimeAmount < 1) {
                 throw new TypeError(`Subscription amount must be at least ${symbol}1.00`);
             }
 
-            if (yearlyAmount > MAX_AMOUNT || monthlyAmount > MAX_AMOUNT) {
+            if (yearlyAmount > MAX_AMOUNT || monthlyAmount > MAX_AMOUNT || oneTimeAmount > MAX_AMOUNT) {
                 throw new TypeError(`Subscription amount cannot be higher than ${symbol}${MAX_AMOUNT}`);
             }
         } catch (err) {
@@ -233,6 +241,7 @@ export default class ModalTierPrice extends ModalBase {
         this.newBenefit = TierBenefitItem.create({isNew: true, name: ''});
     }
 
+    //TODO: figure out discount onetime
     calculateDiscount() {
         const discount = this.stripeMonthlyAmount ? 100 - Math.floor((this.stripeYearlyAmount / 12 * 100) / this.stripeMonthlyAmount) : 0;
         this.discountValue = discount > 0 ? discount : 0;

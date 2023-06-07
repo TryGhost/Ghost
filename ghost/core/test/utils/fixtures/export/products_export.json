@@ -15,6 +15,7 @@
           "description": "Our daily newsletter",
           "monthly_price_id": "614b122e63d2191233117343",
           "yearly_price_id": "614b122f63d2191233117344",
+          "one_time_price_id": "614b122f63d2191233117345",
           "type": "paid",
           "active": 1,
           "welcome_page_url": "/welcome",

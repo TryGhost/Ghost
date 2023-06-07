@@ -18,12 +18,14 @@ module.exports = {
                 description: json.description,
                 type: json.type,
                 currency: json.type === 'paid' ? json.currency?.toLowerCase() : null,
+                one_time_price: json.oneTimePrice,
                 monthly_price: json.monthlyPrice,
                 yearly_price: json.yearlyPrice,
                 created_at: json.createdAt,
                 updated_at: json.updatedAt,
                 monthly_price_id: null,
-                yearly_price_id: null
+                yearly_price_id: null,
+                one_time_price_id: null
             };
         }) || [];
         const emailPost = await mappers.posts(model, frame, {tiers});

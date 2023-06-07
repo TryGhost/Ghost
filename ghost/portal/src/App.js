@@ -385,6 +385,17 @@ export default class App extends React.Component {
                     amount: yearlyPrice,
                     type: 'recurring',
                     interval: 'year'
+                },
+                {
+                    id: 'one-time',
+                    stripe_price_id: 'dummy_stripe_one_time',
+                    stripe_product_id: 'dummy_stripe_product',
+                    active: 1,
+                    nickname: 'One-Time',
+                    currency: currency,
+                    amount: yearlyPrice,
+                    type: 'recurring',
+                    interval: 'year'
                 }
             ];
         }

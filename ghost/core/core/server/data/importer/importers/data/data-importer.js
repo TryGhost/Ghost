@@ -168,7 +168,7 @@ DataImporter = {
                 const productOps = [];
 
                 _.forEach(importedProducts, (importedProduct) => {
-                    return _.forEach(['monthly_price_id', 'yearly_price_id'], (field) => {
+                    return _.forEach(['monthly_price_id', 'yearly_price_id', 'one_time_price_id'], (field) => {
                         const mappedPrice = _.find(importedStripePrices, {originalId: importedProduct[field]});
                         if (mappedPrice) {
                             productOps.push(() => {

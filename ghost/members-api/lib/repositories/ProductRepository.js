@@ -155,6 +155,7 @@ class ProductRepository {
      * @param {StripePriceInput[]} data.stripe_prices
      * @param {StripePriceInput|null} data.monthly_price
      * @param {StripePriceInput|null} data.yearly_price
+     * @param {StripePriceInput|null} data.one_time_price
      * @param {string} data.product_id
      * @param {string} data.stripe_product_id
      * @param {number} data.trial_days
@@ -218,6 +219,11 @@ class ProductRepository {
             productData.currency = data.yearly_price.currency;
         }
 
+        if (data.one_time_price) {
+            productData.one_time_price = data.one_time_price.amount;
+            productData.currency = data.one_time_price.currency;
+        }
+
         if (Reflect.has(data, 'trial_days')) {
             productData.trial_days = data.trial_days;
         }
@@ -234,7 +240,7 @@ class ProductRepository {
                 stripe_product_id: stripeProduct.id
             }, options);
 
-            if (data.monthly_price || data.yearly_price) {
+            if (data.monthly_price || data.yearly_price || data.one_time_price) {
                 if (data.monthly_price) {
                     const price = await this._stripeAPIService.createPrice({
                         product: stripeProduct.id,
@@ -284,6 +290,32 @@ class ProductRepository {
 
                     await this._Product.edit({yearly_price_id: stripePrice.id}, {id: product.id, transacting: options.transacting});
                 }
+
+                if (data.one_time_price) {
+
+                    //TODO - SET ONETIME PRICE
+                    const price = await this._stripeAPIService.createPrice({
+                        product: stripeProduct.id,
+                        active: true,
+                        nickname: `Onetime`,
+                        currency: data.one_time_price.currency,
+                        amount: data.one_time_price.amount,
+                        type: 'onetime'
+                    });
+
+                    const stripePrice = await this._StripePrice.add({
+                        stripe_price_id: price.id,
+                        stripe_product_id: stripeProduct.id,
+                        active: true,
+                        nickname: price.nickname,
+                        currency: price.currency,
+                        amount: price.unit_amount,
+                        type: 'onetime'
+                    }, options);
+
+                    await this._Product.edit({one_time_price_id: stripePrice.id}, {id: product.id, transacting: options.transacting});
+                }
+
             } else if (data.stripe_prices) {
                 for (const newPrice of data.stripe_prices) {
                     const price = await this._stripeAPIService.createPrice({
@@ -330,6 +362,7 @@ class ProductRepository {
      * @param {BenefitInput[]} data.benefits
      *
      * @param {StripePriceInput[]} [data.stripe_prices]
+     * @param {StripePriceInput|null} data.one_time_price
      * @param {StripePriceInput|null} data.monthly_price
      * @param {StripePriceInput|null} data.yearly_price
      *
@@ -362,6 +395,10 @@ class ProductRepository {
             validatePrice(data.monthly_price);
         }
 
+        if (data.one_time_price) {
+            validatePrice(data.one_time_price);
+        }
+
         if (data.stripe_prices) {
             data.stripe_prices.forEach(validatePrice);
         }
@@ -392,6 +429,11 @@ class ProductRepository {
         if (data.yearly_price) {
             productData.yearly_price = data.yearly_price.amount;
             productData.currency = data.yearly_price.currency;
+        }
+
+        if (data.one_time_price) {
+            productData.one_time_price = data.one_time_price.amount;
+            productData.currency = data.one_time_price.currency;
         }
 
         if (Reflect.has(data, 'active')) {
@@ -461,7 +503,7 @@ class ProductRepository {
 
             const defaultStripeProduct = product.related('stripeProducts').first();
 
-            if (data.monthly_price || data.yearly_price) {
+            if (data.monthly_price || data.yearly_price || data.one_time_price) {
                 if (data.monthly_price) {
                     const existingPrice = await this._StripePrice.findOne({
                         stripe_product_id: defaultStripeProduct.get('stripe_product_id'),
@@ -558,6 +600,54 @@ class ProductRepository {
 
                     product = await this._Product.edit({yearly_price_id: priceModel.id}, {...options, id: product.id});
                 }
+
+                if (data.one_time_price) {
+
+                    //TODO fix onetime price amount
+                    const existingPrice = await this._StripePrice.findOne({
+                        stripe_product_id: defaultStripeProduct.get('stripe_product_id'),
+                        amount: data.one_time_price.amount,
+                        currency: data.one_time_price.currency,
+                        type: 'one_time',
+                        active: true
+                    }, options);
+                    let priceModel;
+
+                    if (existingPrice) {
+                        priceModel = existingPrice;
+
+                        await this._stripeAPIService.updatePrice(priceModel.get('stripe_price_id'), {
+                            active: true
+                        });
+
+                        await this._StripePrice.edit({
+                            active: true
+                        }, {...options, id: priceModel.id});
+                    } else {
+                        const price = await this._stripeAPIService.createPrice({
+                            product: defaultStripeProduct.get('stripe_product_id'),
+                            active: true,
+                            nickname: `OneTime`,
+                            currency: data.one_time_price.currency,
+                            amount: data.one_time_price.amount,
+                            type: 'one_time'
+                        });
+
+                        const stripePrice = await this._StripePrice.add({
+                            stripe_price_id: price.id,
+                            stripe_product_id: defaultStripeProduct.get('stripe_product_id'),
+                            active: true,
+                            nickname: price.nickname,
+                            currency: price.currency,
+                            amount: price.unit_amount,
+                            type: 'one_time'
+                        }, options);
+
+                        priceModel = stripePrice;
+                    }
+
+                    product = await this._Product.edit({one_time_price_id: priceModel.id}, {...options, id: product.id});
+                }
             } else if (data.stripe_prices) {
                 const newPrices = data.stripe_prices.filter(price => !price.stripe_price_id);
                 const existingPrices = data.stripe_prices.filter((price) => {
@@ -636,6 +726,7 @@ class ProductRepository {
             await product.related('stripePrices').fetch(options);
             await product.related('monthlyPrice').fetch(options);
             await product.related('yearlyPrice').fetch(options);
+            await product.related('oneTimePrice').fetch(options);
             await product.related('benefits').fetch(options);
         }
 

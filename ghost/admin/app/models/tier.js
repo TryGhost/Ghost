@@ -12,6 +12,7 @@ export default Model.extend(ValidationEngine, {
     visibility: attr('string', {defaultValue: 'none'}),
     type: attr('string', {defaultValue: 'paid'}),
     currency: attr('string'),
+    oneTimePrice: attr('number'),
     monthlyPrice: attr('number'),
     yearlyPrice: attr('number'),
     trialDays: attr('number', {defaultValue: 0}),

@@ -91,6 +91,10 @@ export default ModalComponent.extend({
         const allowedPlans = this.settings.portalPlans || [];
         return (this.membersUtils.paidMembersEnabled && allowedPlans.includes('yearly'));
     }),
+    isOneTimeChecked: computed('settings.portalPlans.[]', 'membersUtils.paidMembersEnabled', function () {
+        const allowedPlans = this.settings.portalPlans || [];
+        return (this.membersUtils.paidMembersEnabled && allowedPlans.includes('oneTime'));
+    }),
     tiers: computed('model.tiers.[]', 'changedTiers.[]', 'isPreloading', function () {
         const paidTiers = this.model.tiers?.filter(tier => tier.type === 'paid' && tier.active === true);
         if (this.isPreloading || !paidTiers?.length) {

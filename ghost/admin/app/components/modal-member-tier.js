@@ -42,7 +42,7 @@ export default class ModalMemberTier extends ModalComponent {
 
     @task({drop: true})
     *fetchTiers() {
-        this.tiers = yield this.store.query('tier', {filter: 'type:paid+active:true', include: 'monthly_price,yearly_price,benefits'});
+        this.tiers = yield this.store.query('tier', {filter: 'type:paid+active:true', include: 'one_time_price,monthly_price,yearly_price,benefits'});
 
         this.loadingTiers = false;
         if (this.tiers.length > 0) {
