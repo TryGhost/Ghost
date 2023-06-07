@@ -273,7 +273,7 @@ export function SignupCard({alignment,
                                 color: hexColorValue(buttonTextColor)
                             } : {backgroundColor: `#000000`,
                                 color: `#ffffff`}}
-                            buttonText={buttonText || 'Subscribe'}
+                            buttonText={buttonText}
                             dataTestId='signup-card-button'
                             disabled={true}
                             placeholder='Your email'
@@ -360,7 +360,7 @@ export function SignupCard({alignment,
                             handleBackgroundColor(color, matchingTextColor(color));
                             setBackgroundColorPickerExpanded(false);
                         }}
-                        onTogglePicker={(isExpanded) => {
+                        onTogglePicker={ (isExpanded) => {
                             if (isExpanded) {
                                 if (layout !== 'split') {
                                     handleHideBackgroundImage();
@@ -420,7 +420,7 @@ export function SignupCard({alignment,
                         dataTestId='signup-button-text'
                         label='Button text'
                         placeholder='Add button text'
-                        value={buttonText || 'Subscribe'}
+                        value={buttonText}
                         hideLabel
                         onChange={handleButtonText}
                     />
