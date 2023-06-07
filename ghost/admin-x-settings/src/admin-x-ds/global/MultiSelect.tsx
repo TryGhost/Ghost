@@ -48,7 +48,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     }
 
     const customClasses = {
-        control: `w-full cursor-pointer appearance-none min-h-[40px] border-b ${!clearBg && 'bg-grey-75 px-[10px]'} py-2 outline-none ${error ? 'border-red' : 'border-grey-500 hover:border-grey-700'} ${title && 'mt-2'}`,
+        control: `w-full cursor-pointer appearance-none min-h-[40px] border-b ${!clearBg && 'bg-grey-75 px-[10px]'} py-2 outline-none ${error ? 'border-red' : 'border-grey-500 hover:border-grey-700'} ${(title && !clearBg) && 'mt-2'}`,
         valueContainer: 'gap-1',
         placeHolder: 'text-grey-600',
         menu: 'shadow py-2 rounded-b z-50 bg-white',
