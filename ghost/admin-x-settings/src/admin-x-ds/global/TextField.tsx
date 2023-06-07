@@ -28,7 +28,7 @@ const TextField: React.FC<TextFieldProps> = ({
     error,
     placeholder,
     hint,
-    clearBg = false,
+    clearBg = true,
     onChange,
     onBlur,
     className = '',
@@ -43,7 +43,7 @@ const TextField: React.FC<TextFieldProps> = ({
             <input
                 ref={inputRef}
                 className={clsx(
-                    'border-b py-2',
+                    'h-10 border-b py-2',
                     clearBg ? 'bg-transparent' : 'bg-grey-75 px-[10px]',
                     error ? `border-red` : `border-grey-500 hover:border-grey-700 focus:border-black`,
                     (title && !hideTitle && !clearBg) && `mt-2`,
