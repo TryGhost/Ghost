@@ -37,7 +37,7 @@ class PostsService {
 
         const dto = model.toJSON(frame.options);
 
-        if (frame?.original?.query?.include?.includes('collections')) {
+        if (this.isSet('collections') && frame?.original?.query?.include?.includes('collections')) {
             dto.collections = await this.collectionsService.getCollectionsForPost(model.id);
         }
 
