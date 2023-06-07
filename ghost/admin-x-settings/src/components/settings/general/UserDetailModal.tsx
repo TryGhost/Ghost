@@ -36,7 +36,7 @@ interface UserDetailProps {
 
 const CustomHeader: React.FC<CustomHeadingProps> = ({children}) => {
     return (
-        <Heading level={4} separator={true}>{children}</Heading>
+        <Heading level={4}>{children}</Heading>
     );
 };
 
