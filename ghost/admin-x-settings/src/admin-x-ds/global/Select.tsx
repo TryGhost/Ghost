@@ -85,7 +85,7 @@ const Select: React.FC<SelectProps> = ({
     const optionClasses = optionClassName;
 
     return (
-        <>
+        <div className='flex w-full flex-col'>
             {title && <Heading htmlFor={id} useLabelTag={true}>{title}</Heading>}
             <div className={containerClasses}>
                 <select className={selectClasses} id={id} value={selectedOption} onChange={handleOptionChange}>
@@ -102,7 +102,7 @@ const Select: React.FC<SelectProps> = ({
                 </select>
             </div>
             {hint && <Hint color={error ? 'red' : ''}>{hint}</Hint>}
-        </>
+        </div>
     );
 };
 
