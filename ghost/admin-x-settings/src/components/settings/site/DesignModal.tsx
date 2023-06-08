@@ -106,6 +106,7 @@ const DesignModal: React.FC = () => {
 
     return <PreviewModalContent
         buttonsDisabled={saveState === 'saving'}
+        cancelLabel='Close'
         okLabel='Save'
         preview={<ThemePreview />}
         previewToolbarURLs={urlOptions}
