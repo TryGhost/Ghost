@@ -1,4 +1,5 @@
 import Component from '@glimmer/component';
+import trackEvent from '../../../utils/analytics';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
@@ -147,6 +148,8 @@ export default class SignupFormEmbedModal extends Component {
         const el = document.getElementById('gh-signup-form-embed-code-input');
         el.select();
         document.execCommand('copy');
+
+        trackEvent('Copied Embeddable Signup Form Code', {style: this.style, labels: this.labels.length});
     }
 
     /**
