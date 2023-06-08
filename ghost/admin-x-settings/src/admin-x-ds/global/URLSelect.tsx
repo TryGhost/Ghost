@@ -13,7 +13,7 @@ const URLSelect: React.FC<URLSelectProps> = ({options, onSelect}) => {
     );
 
     const containerClasses = clsx(
-        'relative w-full max-w-[320px] self-center after:pointer-events-none',
+        'relative w-full max-w-[380px] self-center after:pointer-events-none',
         `after:absolute after:right-4 after:top-[9px] after:block after:h-2 after:w-2 after:rotate-45 after:border-[1px] after:border-l-0 after:border-t-0 after:border-grey-900 after:content-['']`
     );
 
