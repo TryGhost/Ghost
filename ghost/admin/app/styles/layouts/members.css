@@ -1746,50 +1746,17 @@ p.gh-members-import-errordetail:first-of-type {
     background: none;
 }
 
-.gh-email-design-color-picker .gh-btn-group p {
-    opacity: 1;
-    margin: 0;
-    color: var(--midgrey);
-    font-weight: 400;
-    transition: all .15s ease-in-out;
-    transition-delay: .03s;
-}
-
-.gh-email-design-color-picker .gh-btn-group:hover p {
-    opacity: 0;
-    transition: all .15s ease-in-out;
-    transition-delay: .03s;
-}
-
 .gh-btn-group .gh-email-design-color {
     display: block;
-    opacity: 0;
+    opacity: 1;
     position: relative;
     z-index: 2;
-    width: 0;
-    height: 0;
-    margin: 0;
+    width: 22px;
+    height: 22px;
+    margin: 0 0 0 6px;
     border: none;
     border-radius: 999px;
     box-shadow: inset 0 0 0 1px var(--lightgrey-l1);
-    transition: all .15s ease-in-out;
-    transition-delay: .03s;
-}
-
-.gh-btn-group:hover .gh-email-design-color {
-    opacity: 1;
-    width: 22px;
-    height: 22px;
-    margin: 0 0 0 6px;
-    transition: all .15s ease-in-out;
-    transition-delay: .03s;
-}
-
-.gh-email-design-color.gh-btn-group-selected {
-    opacity: 1;
-    width: 22px;
-    height: 22px;
-    margin: 0 0 0 6px;
 }
 
 .gh-email-design-color.gh-btn-group-selected::before {
@@ -1799,15 +1766,8 @@ p.gh-members-import-errordetail:first-of-type {
     left: -4px;
     right: -4px;
     bottom: -4px;
-    opacity: 0;
     border: 2px solid var(--green);
     border-radius: 999px;
-    transition: all .15s ease-in-out;
-    transition-delay: .03s;
-}
-
-.gh-btn-group:hover .gh-email-design-color.gh-btn-group-selected::before {
-    opacity: 1;
     transition: all .15s ease-in-out;
     transition-delay: .03s;
 }
