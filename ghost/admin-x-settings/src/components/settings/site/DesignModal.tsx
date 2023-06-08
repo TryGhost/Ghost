@@ -9,6 +9,7 @@ import ThemeSettings from './designAndBranding/ThemeSettings';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {CustomThemeSetting, SettingValue} from '../../../types/api';
 import {PreviewModalContent} from '../../../admin-x-ds/global/PreviewModal';
+import {SelectOption} from '../../../admin-x-ds/global/Select';
 import {ServicesContext} from '../../providers/ServiceProvider';
 
 const Sidebar: React.FC<{
@@ -94,10 +95,28 @@ const DesignModal: React.FC = () => {
         )));
     };
 
+    const urlOptions: SelectOption[] = [
+        {value: 'homepage', label: 'Homepage'},
+        {value: 'post', label: 'Post'}
+    ];
+
+    const onSelectURL = (url: string) => {
+        alert(url);
+    };
+
+    const onSelectDesktopView = () => {
+        alert('Desktop selected');
+    };
+
+    const onSelectMobileView = () => {
+        alert('Mobile selected');
+    };
+
     return <PreviewModalContent
         buttonsDisabled={saveState === 'saving'}
         okLabel='Save'
         preview={<ThemePreview />}
+        previewToolbarURLs={urlOptions}
         sidebar={<Sidebar
             brandSettings={{description, accentColor, icon, logo, coverImage}}
             themeSettingSections={themeSettingSections}
@@ -132,6 +151,9 @@ const DesignModal: React.FC = () => {
             await handleSave();
             modal.remove();
         }}
+        onSelectDesktopView={onSelectDesktopView}
+        onSelectMobileView={onSelectMobileView}
+        onSelectURL={onSelectURL}
     />;
 };
 
