@@ -18,7 +18,7 @@
 
         <div class="mt6">
             <label for="label-input"><span class="fw6 f8 dib mb1">Label these members</span></label>
-            <GhMemberLabelInput @labels={{this.labels}} @onChange={{this.updateLabels}} @disabled={{@disabled}} @triggerId="label-input" />
+            <GhMemberLabelInput @labels={{this.labels}} @onChange={{this.updateLabels}} @disabled={{@disabled}} @triggerId="label-input" @renderInPlace={{true}} />
         </div>
     </GhFormGroup>
 {{else}}
