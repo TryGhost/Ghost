@@ -152,7 +152,6 @@ export default function HtmlEditor({darkMode, html, updateHtml}) {
                 autoFocus={true} // autofocus the editor whenever it is rendered
                 basicSetup={false} // basic setup includes unnecessary extensions
                 extensions={extensions}
-                // theme={darkMode ? githubDark : githubLight}
                 value={html}
                 onChange={onChange}
             />
