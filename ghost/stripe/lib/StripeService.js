@@ -3,8 +3,7 @@ const StripeAPI = require('./StripeAPI');
 const StripeMigrations = require('./StripeMigrations');
 const WebhookController = require('./WebhookController');
 const DomainEvents = require('@tryghost/domain-events');
-const StripeLiveEnabledEvent = require('./StripeLiveEnabledEvent');
-const StripeLiveDisabledEvent = require('./StripeLiveDisabledEvent');
+const {StripeLiveEnabledEvent, StripeLiveDisabledEvent} = require('./events');
 
 module.exports = class StripeService {
     constructor({

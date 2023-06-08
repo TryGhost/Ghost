@@ -236,7 +236,7 @@ class SettingsBREADService {
                 const previous = stripePublicKeySetting.previousAttributes().value;
                 const current = stripePublicKeySetting.get('value');
 
-                if (current?.match(/pk_test/) && (!previous?.match(/pk_test/) || !previous)) {
+                if (current?.match(/pk_live/) && (!previous?.match(/pk_live/) || !previous)) {
                     // This method currently only triggers a DomainEvent
                     await stripeService.connect();
                 }
