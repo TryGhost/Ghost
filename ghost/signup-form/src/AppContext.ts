@@ -6,7 +6,7 @@ import {GhostApi} from './utils/api';
 export type SignupFormOptions = {
     title?: string,
     description?: string,
-    logo?: string,
+    icon?: string,
     backgroundColor?: string,
     textColor?: string,
     buttonColor?: string,

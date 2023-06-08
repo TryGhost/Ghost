@@ -6,10 +6,10 @@ export const FormView: React.FC<FormProps & {
     isMinimal: boolean
     title?: string
     description?: string
-    logo?: string
+    icon?: string
     backgroundColor?: string
     textColor?: string
-}> = ({isMinimal, title, description, logo, backgroundColor, textColor, error, ...formProps}) => {
+}> = ({isMinimal, title, description, icon, backgroundColor, textColor, error, ...formProps}) => {
     if (isMinimal) {
         return (
             <>
@@ -25,7 +25,7 @@ export const FormView: React.FC<FormProps & {
             data-testid="wrapper"
             style={{backgroundColor, color: textColor}}
         >
-            {logo && <img alt={title} className='mb-2 h-[64px] w-auto' src={logo}/>}
+            {icon && <img alt={title} className='mb-2 h-[64px] w-auto' src={icon}/>}
             {title && <h1 className="text-center text-lg font-bold sm:text-xl md:text-2xl lg:text-3xl">{title}</h1>}
             {description && <p className='mb-4 text-center font-medium md:mb-5'>{description}</p>}
             <div className='relative w-full max-w-[440px]'>

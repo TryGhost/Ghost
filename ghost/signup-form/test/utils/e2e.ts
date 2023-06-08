@@ -7,7 +7,7 @@ type LastApiRequest = {
     body: null | any
 };
 
-export async function initialize({page, path, ...options}: {page: Page, path?: string; title?: string, description?: string, logo?: string, backgroundColor?: string, buttonColor?: string, site?: string, 'label-1'?: string, 'label-2'?: string}) {
+export async function initialize({page, path, ...options}: {page: Page, path?: string; title?: string, description?: string, icon?: string, backgroundColor?: string, buttonColor?: string, site?: string, 'label-1'?: string, 'label-2'?: string}) {
     const sitePath = `${MOCKED_SITE_URL}${path ?? ''}`;
     await page.route(sitePath, async (route) => {
         await route.fulfill({
