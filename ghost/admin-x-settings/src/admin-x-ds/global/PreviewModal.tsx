@@ -1,5 +1,5 @@
 import ButtonGroup from './ButtonGroup';
-import DesktopChrome from './DesktopChrome';
+import DesktopChromeHeader from './DesktopChromeHeader';
 import Heading from './Heading';
 import Modal from './Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
@@ -81,16 +81,17 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
         );
 
         preview = (
-            <DesktopChrome
-                chromeClasses='bg-grey-50'
-                toolbarCenter={toolbarCenter}
-                toolbarClasses='m-2'
-                toolbarRight={toolbarRight}
-            >
-                <div className='flex h-full items-center justify-center bg-grey-50 text-sm text-grey-400'>
+            <>
+                <div className='bg-grey-50 p-2 pl-3'>
+                    <DesktopChromeHeader
+                        toolbarCenter={toolbarCenter}
+                        toolbarRight={toolbarRight}
+                    />
+                </div>
+                <div className='flex h-full grow items-center justify-center bg-grey-50 text-sm text-grey-400'>
                     {preview}
                 </div>
-            </DesktopChrome>
+            </>
         );
     }
 
