@@ -1,9 +1,11 @@
 import React from 'react';
 
 const ThemePreview: React.FC = () => {
+    const tempURL = window.location.origin;
+
     return (
         <>
-            preview iframe
+            <iframe height="100%" src={tempURL} title="Temporary Preivew" width="100%" />
         </>
     );
 };
