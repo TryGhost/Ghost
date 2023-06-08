@@ -9,9 +9,8 @@ import type {PlayFunction} from '@storybook/types';
 
 const Preview: React.FC<SignupFormOptions & {
     pageBackgroundColor: string
-    pageTextColor: string
     simulateApiError: boolean
-}> = ({simulateApiError, pageBackgroundColor, pageTextColor, ...options}) => {
+}> = ({simulateApiError, pageBackgroundColor, ...options}) => {
     const [page, setPage] = useState<Page>({
         name: 'FormPage',
         data: {}
@@ -46,7 +45,7 @@ const Preview: React.FC<SignupFormOptions & {
         options,
         scriptTag: document.createElement('div')
     }}>
-        <div style={{width: '100%', height: '100%', backgroundColor: pageBackgroundColor, color: pageTextColor}}>
+        <div style={{width: '100%', height: '100%', backgroundColor: pageBackgroundColor}}>
             <ContentBox>
                 <PageComponent {...data} />
             </ContentBox>
@@ -79,7 +78,7 @@ export const Full: Story = {
     args: {
         title: 'Signup Forms Weekly',
         description: 'An independent publication about embeddable signup forms.',
-        logo: 'https://user-images.githubusercontent.com/65487235/157884383-1b75feb1-45d8-4430-b636-3f7e06577347.png',
+        icon: 'https://user-images.githubusercontent.com/65487235/157884383-1b75feb1-45d8-4430-b636-3f7e06577347.png',
         backgroundColor: '#eeeeee',
         textColor: '#000000',
         buttonColor: '#ff0095',
@@ -88,7 +87,6 @@ export const Full: Story = {
         labels: ['label-1', 'label-2'],
         simulateApiError: false,
         pageBackgroundColor: '#ffffff',
-        pageTextColor: '#000000',
         locale: 'en'
     },
 
@@ -103,7 +101,6 @@ export const Minimal: Story = {
         buttonTextColor: '#ffffff',
         simulateApiError: false,
         pageBackgroundColor: '#ffffff',
-        pageTextColor: '#000000',
         locale: 'en'
     },
 
@@ -118,7 +115,6 @@ export const MinimalOnDark: Story = {
         buttonTextColor: '#ffffff',
         simulateApiError: false,
         pageBackgroundColor: '#122334',
-        pageTextColor: '#f7f7f7',
         locale: 'en'
     },
 
