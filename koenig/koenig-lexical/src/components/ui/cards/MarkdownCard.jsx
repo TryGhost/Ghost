@@ -29,7 +29,13 @@ function MarkdownDisplay({markdown}) {
     const markdownHtml = MarkdownRenderer.render(markdown);
     const sanitizedHtml = sanitizeHtml(markdownHtml, {replaceJS: true});
 
-    return <div dangerouslySetInnerHTML={{__html: sanitizedHtml}} className="whitespace-normal"></div>;
+    return (
+        <div className="relative">
+            <div dangerouslySetInnerHTML={{__html: sanitizedHtml}} className="whitespace-normal"></div>
+            {/* Read-only overlay - prevents links etc being clickable and causing unexpected quits */}
+            <div className="absolute inset-0 z-50 mt-0"></div>
+        </div>
+    );
 }
 
 MarkdownCard.propTypes = {

@@ -40,10 +40,13 @@ test.describe('Html card', async () => {
             <div data-lexical-decorator="true" contenteditable="false">
                 <div><svg></svg></div>
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="html">
-                    <div><p>test content</p></div>
+                    <div>
+                        <div><p>test content</p></div>
+                        <div></div>
+                    </div>
                 </div>
             </div>
-        `, {ignoreCardContents: true});
+        `);
     });
 
     test('renders html card node from slash entry', async function () {

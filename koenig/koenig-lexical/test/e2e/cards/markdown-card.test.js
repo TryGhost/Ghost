@@ -56,7 +56,10 @@ test.describe('Markdown card', async () => {
             <div data-lexical-decorator="true" contenteditable="false">
                 <div><svg></svg></div>
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="markdown">
-                    <div><h1 id="this-is-a-heading">This is a heading</h1></div>
+                    <div>
+                        <div><h1 id="this-is-a-heading">This is a heading</h1></div>
+                        <div></div>
+                    </div>
                 </div>
             </div>
         `);
