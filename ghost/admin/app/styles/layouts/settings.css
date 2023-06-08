@@ -3137,8 +3137,8 @@ p.theme-validation-details {
 
 .modal-signup-form-embed-main .modal-body {
     height: 320px;
-    margin: -4px;
-    padding: 4px;
+    margin: -32px;
+    padding: 32px;
     overflow-y: auto;
 }
 
