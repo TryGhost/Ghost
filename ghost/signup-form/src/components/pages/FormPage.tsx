@@ -35,9 +35,9 @@ export const FormPage: React.FC = () => {
         buttonTextColor={options.buttonTextColor}
         description={options.description}
         error={error}
+        icon={options.icon}
         isMinimal={isMinimal(options)}
         loading={loading}
-        logo={options.logo}
         textColor={options.textColor}
         title={options.title}
         onSubmit={submit}
