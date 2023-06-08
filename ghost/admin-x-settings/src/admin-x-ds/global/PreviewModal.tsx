@@ -1,9 +1,10 @@
 import ButtonGroup from './ButtonGroup';
 import DesktopChromeHeader from './DesktopChromeHeader';
 import Heading from './Heading';
+import MobileChrome from './MobileChrome';
 import Modal from './Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React from 'react';
+import React, {useState} from 'react';
 import URLSelect from './URLSelect';
 import {IButton} from './Button';
 import {SelectOption} from './Select';
@@ -52,6 +53,16 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     const modal = useModal();
     let buttons: IButton[] = [];
 
+    const [view, setView] = useState('desktop');
+
+    if (view === 'mobile') {
+        preview = (
+            <MobileChrome>
+                {preview}
+            </MobileChrome>
+        );
+    }
+
     if (previewToolbar) {
         let toolbarCenter = (<></>);
         if (previewToolbarURLs) {
@@ -60,6 +71,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             );
         }
 
+        const unSelectedIconColorClass = 'text-grey-500';
         const toolbarRight = (
             <ButtonGroup
                 buttons={[
@@ -67,14 +79,19 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                         icon: 'laptop',
                         link: true,
                         size: 'sm',
-                        onClick: onSelectDesktopView
+                        iconColorClass: (view === 'desktop' ? 'text-black' : unSelectedIconColorClass),
+                        onClick: onSelectDesktopView || (() => {
+                            setView('desktop');
+                        })
                     },
                     {
                         icon: 'mobile',
                         link: true,
                         size: 'sm',
-                        iconColorClass: 'text-grey-500',
-                        onClick: onSelectMobileView
+                        iconColorClass: (view === 'mobile' ? 'text-black' : unSelectedIconColorClass),
+                        onClick: onSelectMobileView || (() => {
+                            setView('mobile');
+                        })
                     }
                 ]}
             />
