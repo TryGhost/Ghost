@@ -118,6 +118,7 @@ export function SnippetInput({
 }
 
 SnippetInput.propTypes = {
+    darkMode: PropTypes.bool,
     value: PropTypes.string,
     onChange: PropTypes.func,
     onCreateSnippet: PropTypes.func,

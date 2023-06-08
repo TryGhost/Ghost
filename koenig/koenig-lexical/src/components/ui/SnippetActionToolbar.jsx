@@ -8,7 +8,7 @@ import {useKoenigSelectedCardContext} from '../../context/KoenigSelectedCardCont
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export function SnippetActionToolbar({onClose, ...props}) {
-    const {cardConfig: {snippets, createSnippet}} = React.useContext(KoenigComposerContext);
+    const {cardConfig: {snippets, createSnippet}, darkMode} = React.useContext(KoenigComposerContext);
     const [editor] = useLexicalComposerContext();
     const {selectedCardKey} = useKoenigSelectedCardContext();
     const [value, setValue] = React.useState('');
@@ -39,6 +39,7 @@ export function SnippetActionToolbar({onClose, ...props}) {
 
     return (
         <SnippetInput
+            darkMode={darkMode}
             snippets={snippets}
             value={value}
             onChange={handleChange}
