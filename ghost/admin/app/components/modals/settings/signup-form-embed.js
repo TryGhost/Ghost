@@ -59,6 +59,12 @@ export default class SignupFormEmbedModal extends Component {
                 name: 'Black',
                 class: '',
                 style: 'background: #000000 !important;'
+            },
+            {
+                value: this.settings.accentColor,
+                name: 'Accent',
+                class: '',
+                style: 'background: ' + this.settings.accentColor + ' !important;'
             }
         ];
     }
