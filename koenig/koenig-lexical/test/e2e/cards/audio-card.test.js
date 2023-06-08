@@ -77,8 +77,8 @@ test.describe('Audio card', async () => {
         await uploadAudio(page);
 
         // Check that audio file was uploaded
-        await expect(await page.getByTestId('audio-caption')).toBeVisible();
-        expect(await page.getByTestId('audio-caption').inputValue()).toEqual('Audio sample');
+        await expect(await page.getByTestId('audio-title')).toBeVisible();
+        expect(await page.getByTestId('audio-title').inputValue()).toEqual('Audio sample');
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
@@ -168,12 +168,12 @@ test.describe('Audio card', async () => {
         await uploadAudio(page);
 
         // Change title
-        await expect(await page.getByTestId('audio-caption')).toBeVisible();
-        await page.getByTestId('audio-caption').click();
+        await expect(await page.getByTestId('audio-title')).toBeVisible();
+        await page.getByTestId('audio-title').click();
         await page.keyboard.type(' 1');
 
         // Check that title updated
-        expect(await page.getByTestId('audio-caption').inputValue()).toEqual('Audio sample 1');
+        expect(await page.getByTestId('audio-title').inputValue()).toEqual('Audio sample 1');
     });
 
     test('can upload and remove a thumbnail image', async function () {
@@ -254,7 +254,7 @@ test.describe('Audio card', async () => {
         await uploadAudio(page);
 
         // Leave editing mode to display the toolbar
-        await expect(await page.getByTestId('audio-caption')).toBeVisible();
+        await expect(await page.getByTestId('audio-title')).toBeVisible();
         await page.keyboard.press('Escape');
 
         // Check that the toolbar is displayed
@@ -266,7 +266,7 @@ test.describe('Audio card', async () => {
         await uploadAudio(page);
 
         // Leave editing mode to display the toolbar
-        await expect(await page.getByTestId('audio-caption')).toBeVisible();
+        await expect(await page.getByTestId('audio-title')).toBeVisible();
         await page.keyboard.press('Escape');
 
         // Check that the toolbar is displayed
@@ -292,8 +292,8 @@ test.describe('Audio card', async () => {
         await expect(await page.getByTestId('media-duration')).toContainText('0:19');
         await page.keyboard.press('Escape');
 
-        // Caption input should be read only
-        await expect(await page.getByTestId('audio-caption')).toHaveAttribute('readOnly', '');
+        // Title input should be read only
+        await expect(await page.getByTestId('audio-title')).toHaveAttribute('readOnly', '');
 
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
         // Create and dispatch data transfer
@@ -348,8 +348,8 @@ test.describe('Audio card', async () => {
         await uploadAudio(page);
 
         // Check that audio file was uploaded
-        await expect(await page.getByTestId('audio-caption')).toBeVisible();
-        expect(await page.getByTestId('audio-caption').inputValue()).toEqual('Audio sample');
+        await expect(await page.getByTestId('audio-title')).toBeVisible();
+        expect(await page.getByTestId('audio-title').inputValue()).toEqual('Audio sample');
 
         // create snippet
         await page.keyboard.press('Escape');

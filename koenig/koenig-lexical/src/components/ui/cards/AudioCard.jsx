@@ -198,7 +198,7 @@ function PopulatedAudioCard({
                 {(isEditing || title) && (
                     <TextInput
                         className="font-sans text-lg font-bold text-black"
-                        data-testid="audio-caption"
+                        data-testid="audio-title"
                         name="title"
                         placeholder={placeholder}
                         readOnly={!isEditing}
