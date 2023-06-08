@@ -1,5 +1,5 @@
-import * as i18nLib from '@tryghost/i18n';
 import React, {ComponentProps, useState} from 'react';
+import i18nLib from '@tryghost/i18n';
 import pages, {Page, PageName} from './pages';
 import {AppContextProvider, SignupFormOptions} from './AppContext';
 import {ContentBox} from './components/ContentBox';
@@ -27,7 +27,7 @@ const Preview: React.FC<SignupFormOptions & {
     const PageComponent = pages[page.name];
     const data = page.data as any;
 
-    const i18n = i18nLib.default('en', 'signup-form');
+    const i18n = i18nLib(options.locale || 'en', 'signup-form');
 
     return <AppContextProvider value={{
         page,
