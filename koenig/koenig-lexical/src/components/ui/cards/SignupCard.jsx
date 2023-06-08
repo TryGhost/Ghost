@@ -65,7 +65,7 @@ export function SignupCard({alignment,
 
     useEffect(() => {
         if (backgroundImageSrc && layout !== 'split') {
-            new FastAverageColor().getColorAsync(backgroundImageSrc).then((color) => {
+            new FastAverageColor().getColorAsync(backgroundImageSrc, {defaultColor: [255, 255, 255, 255]}).then((color) => {
                 handleTextColor(matchingTextColor(color.hex));
             });
         }

@@ -60,6 +60,9 @@ export class SignupParser {
                             const successMessage = domNode.querySelector('.kg-signup-card-success')?.textContent?.trim() || '';
                             const labels = [...domNode.querySelectorAll('input[data-members-label]')].map(input => input.value);
 
+                            const isAccentBackground = domNode.querySelector('.kg-signup-card-container')?.classList?.contains('kg-style-accent') ?? false;
+                            const isAccentButton = domNode.querySelector('.kg-signup-card-button')?.classList?.contains('kg-style-accent') ?? false;
+
                             const isSwapped = domNode.classList.contains('kg-swapped');
 
                             const payload = {
@@ -69,8 +72,8 @@ export class SignupParser {
                                 subheader,
                                 disclaimer,
                                 backgroundImageSrc,
-                                backgroundColor: rgbToHex(backgroundColor) || 'accent',
-                                buttonColor: rgbToHex(buttonColor) || '#ffffff',
+                                backgroundColor: isAccentBackground ? 'accent' : (rgbToHex(backgroundColor) || '#ffffff'),
+                                buttonColor: isAccentButton ? 'accent' : (rgbToHex(buttonColor) || '#ffffff'),
                                 textColor: rgbToHex(textColor) || '#ffffff',
                                 buttonTextColor: rgbToHex(buttonTextColor) || '#000000',
                                 alignment,
