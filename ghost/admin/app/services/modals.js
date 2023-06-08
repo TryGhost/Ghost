@@ -36,7 +36,7 @@ export default class ModalsService extends EPMModalsService {
     addEventHandlers() {
         if (!this.backdropClickHandler) {
             this.backdropClickHandler = bind(this, this.handleBackdropClick);
-            document.body.addEventListener('click', this.backdropClickHandler, {capture: true, passive: false});
+            document.body.addEventListener('mousedown', this.backdropClickHandler, {capture: true, passive: false});
         }
 
         if (!this.escapeKeyHandler) {
@@ -46,7 +46,7 @@ export default class ModalsService extends EPMModalsService {
     }
 
     removeEventHandlers() {
-        document.body.removeEventListener('click', this.backdropClickHandler, {capture: true, passive: false});
+        document.body.removeEventListener('mousedown', this.backdropClickHandler, {capture: true, passive: false});
         this.backdropClickHandler = null;
 
         document.removeEventListener('keydown', this.escapeKeyHandler, {capture: true, passive: false});
