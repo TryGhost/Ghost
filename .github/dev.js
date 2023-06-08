@@ -4,6 +4,13 @@ const exec = util.promisify(require('child_process').exec);
 
 const concurrently = require('concurrently');
 
+// check we're running on Node 18 and above
+const nodeVersion = parseInt(process.versions.node.split('.')[0]);
+if (nodeVersion < 18) {
+    console.error('`yarn dev` requires Node v18 or above. Please upgrade your version of Node.');
+    process.exit(1);
+}
+
 const config = require('../ghost/core/core/shared/config/loader').loadNconf({
     customConfigPath: path.join(__dirname, '../ghost/core')
 });
