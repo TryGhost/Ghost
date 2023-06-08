@@ -104,14 +104,6 @@ const DesignModal: React.FC = () => {
         alert(url);
     };
 
-    const onSelectDesktopView = () => {
-        alert('Desktop selected');
-    };
-
-    const onSelectMobileView = () => {
-        alert('Mobile selected');
-    };
-
     return <PreviewModalContent
         buttonsDisabled={saveState === 'saving'}
         okLabel='Save'
@@ -151,8 +143,6 @@ const DesignModal: React.FC = () => {
             await handleSave();
             modal.remove();
         }}
-        onSelectDesktopView={onSelectDesktopView}
-        onSelectMobileView={onSelectMobileView}
         onSelectURL={onSelectURL}
     />;
 };
