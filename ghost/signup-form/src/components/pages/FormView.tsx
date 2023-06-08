@@ -1,4 +1,5 @@
 import React, {FormEventHandler} from 'react';
+import {ReactComponent as LoadingIcon} from '../../../assets/icons/spinner.svg';
 import {useAppContext} from '../../AppContext';
 
 export const FormView: React.FC<FormProps & {
@@ -55,9 +56,9 @@ const Form: React.FC<FormProps> = ({loading, error, buttonColor, buttonTextColor
 
     return (
         <>
-            <form className='relative flex w-full max-w-[440px]' onSubmit={submitHandler}>
+            <form className='relative mx-auto flex w-full max-w-[440px]' onSubmit={submitHandler}>
                 <input
-                    className={`flex-1 rounded-[.5rem] border p-2 text-grey-900 transition hover:border-grey-400 focus-visible:border-grey-500 focus-visible:outline-none sm:px-3 sm:py-[1rem] ${error ? '!border-red-500' : 'border-grey-300'}`}
+                    className={`flex-1 rounded-[.5rem] border bg-white p-2 text-grey-900 transition hover:border-grey-400 focus-visible:border-grey-500 focus-visible:outline-none disabled:bg-white sm:px-3 sm:py-[1rem] ${error ? '!border-red-500' : 'border-grey-300'}`}
                     data-testid="input"
                     disabled={loading}
                     placeholder='jamie@example.com'
@@ -71,7 +72,10 @@ const Form: React.FC<FormProps> = ({loading, error, buttonColor, buttonTextColor
                     disabled={loading}
                     style={{backgroundColor: buttonColor, color: buttonTextColor}}
                     type='submit'
-                >{t('Subscribe')}</button>
+                >
+                    <span className={`${loading ? 'invisible' : 'visible'}`}>{t('Subscribe')}</span>
+                    {loading && <span className='absolute inset-0 flex items-center justify-center'><LoadingIcon /></span>}
+                </button>
             </form>
         </>
     );
