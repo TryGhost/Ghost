@@ -5,7 +5,6 @@ const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./setti
 const logging = require('@tryghost/logging');
 const MagicLink = require('@tryghost/magic-link');
 const verifyEmailTemplate = require('./emails/verify-email');
-const stripeService = require('../../services/stripe');
 
 const EMAIL_KEYS = ['members_support_address'];
 const messages = {
@@ -237,6 +236,8 @@ class SettingsBREADService {
                 const current = stripePublicKeySetting.get('value');
 
                 if (current?.match(/pk_live/) && (!previous?.match(/pk_live/) || !previous)) {
+                    // Require the Stripe service here as it breaks existing tests otherwise
+                    const stripeService = require('../stripe');
                     // This method currently only triggers a DomainEvent
                     await stripeService.connect();
                 }
