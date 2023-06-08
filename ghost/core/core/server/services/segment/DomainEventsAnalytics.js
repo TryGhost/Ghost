@@ -1,4 +1,5 @@
 const {MilestoneCreatedEvent} = require('@tryghost/milestones');
+const {StripeLiveEnabledEvent, StripeLiveDisabledEvent} = require('@tryghost/members-stripe-service').events;
 
 /**
  * @typedef {import('@tryghost/logging')} logging
@@ -75,9 +76,34 @@ module.exports = class DomainEventsAnalytics {
         }
     }
 
+    /**
+     *
+     * @param {StripeLiveEnabledEvent|StripeLiveDisabledEvent} type
+     *
+     * @returns {Promise<void>}
+     */
+    async #handleStripeEvent(type) {
+        const eventName = type === StripeLiveDisabledEvent ? 'Stripe Live Disabled' : 'Stripe Live Enabled';
+
+        try {
+            this.#analytics.track(Object.assign(this.#trackDefaults, {}, {event: this.#prefix + eventName}));
+        } catch (err) {
+            this.#logging.error(err);
+            this.#exceptionHandler.captureException(err);
+        }
+    }
+
     subscribeToEvents() {
         this.#DomainEvents.subscribe(MilestoneCreatedEvent, async (event) => {
             await this.#handleMilestoneCreatedEvent(event);
+        });
+
+        this.#DomainEvents.subscribe(StripeLiveEnabledEvent, async () => {
+            await this.#handleStripeEvent(StripeLiveEnabledEvent);
+        });
+
+        this.#DomainEvents.subscribe(StripeLiveDisabledEvent, async () => {
+            await this.#handleStripeEvent(StripeLiveDisabledEvent);
         });
     }
 };
