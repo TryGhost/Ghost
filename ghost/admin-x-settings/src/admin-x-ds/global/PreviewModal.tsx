@@ -102,6 +102,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                 <div className='bg-grey-50 p-2 pl-3'>
                     <DesktopChromeHeader
                         toolbarCenter={toolbarCenter}
+                        toolbarLeft={view === 'mobile' ? <></> : ''}
                         toolbarRight={toolbarRight}
                     />
                 </div>
