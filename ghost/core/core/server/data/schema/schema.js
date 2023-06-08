@@ -1021,5 +1021,12 @@ module.exports = {
         currency: {type: 'string', maxlength: 24, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         email_sent_at: {type: 'dateTime', nullable: true}
+    },
+    mail_events: {
+        id: {type: 'string', maxlength: 100, nullable: false, primary: true},
+        type: {type: 'string', maxlength: 50, nullable: false},
+        message_id: {type: 'string', maxlength: 150, nullable: false},
+        recipient: {type: 'string', maxlength: 191, nullable: false},
+        occurred_at: {type: 'dateTime', nullable: false}
     }
 };
