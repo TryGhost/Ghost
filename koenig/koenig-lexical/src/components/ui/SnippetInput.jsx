@@ -9,7 +9,6 @@ export function SnippetInput({
     onCreateSnippet,
     onUpdateSnippet,
     onClose,
-    darkMode,
     snippets = [],
     arrowStyles
 }) {
@@ -94,7 +93,6 @@ export function SnippetInput({
     return (
         <div
             ref={snippetRef}
-            className={`${darkMode ? 'dark' : ''}`}
             onClick={e => e.stopPropagation()} // prevents card from losing selected state
         >
             <form onSubmit={handleSubmit}>
@@ -118,7 +116,6 @@ export function SnippetInput({
 }
 
 SnippetInput.propTypes = {
-    darkMode: PropTypes.bool,
     value: PropTypes.string,
     onChange: PropTypes.func,
     onCreateSnippet: PropTypes.func,
