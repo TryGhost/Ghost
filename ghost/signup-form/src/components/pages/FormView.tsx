@@ -13,7 +13,7 @@ export const FormView: React.FC<FormProps & {
     if (isMinimal) {
         return (
             <>
-                <Form error={error} {...formProps} />
+                <Form error={error} isMinimal={isMinimal} {...formProps} />
                 {error && <p className='text-red-500' data-testid="error-message">{error}</p>}
             </>
         );
@@ -40,12 +40,14 @@ export const FormView: React.FC<FormProps & {
 type FormProps = {
     buttonColor?: string
     buttonTextColor?: string
+    isMinimal?: boolean
     loading: boolean
+    success: boolean
     error?: string
     onSubmit: (values: { email: string }) => void
 }
 
-const Form: React.FC<FormProps> = ({loading, error, buttonColor, buttonTextColor, onSubmit}) => {
+const Form: React.FC<FormProps> = ({isMinimal, loading, success, error, buttonColor, buttonTextColor, onSubmit}) => {
     const [email, setEmail] = React.useState('');
     const {t} = useAppContext();
 
@@ -60,21 +62,22 @@ const Form: React.FC<FormProps> = ({loading, error, buttonColor, buttonTextColor
                 <input
                     className={`flex-1 rounded-[.5rem] border bg-white p-2 text-grey-900 transition hover:border-grey-400 focus-visible:border-grey-500 focus-visible:outline-none disabled:bg-white sm:px-3 sm:py-[1rem] ${error ? '!border-red-500' : 'border-grey-300'}`}
                     data-testid="input"
-                    disabled={loading}
+                    disabled={loading || success}
                     placeholder='jamie@example.com'
                     type="text"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                 />
                 <button
-                    className='absolute inset-y-0 right-[.2rem] my-auto h-7 rounded-[.3rem] px-2 font-medium text-white sm:right-[.3rem] sm:h-[3rem] sm:px-3'
+                    className='absolute inset-y-0 right-[.2rem] my-auto grid h-7 items-center justify-items-center rounded-[.3rem] px-2 font-medium text-white sm:right-[.3rem] sm:h-[3rem] sm:px-3'
                     data-testid="button"
-                    disabled={loading}
+                    disabled={loading || success}
                     style={{backgroundColor: buttonColor, color: buttonTextColor}}
                     type='submit'
                 >
-                    <span className={`${loading ? 'invisible' : 'visible'}`}>{t('Subscribe')}</span>
-                    {loading && <span className='absolute inset-0 flex items-center justify-center'><LoadingIcon /></span>}
+                    <span className={`col-start-1 row-start-1 ${loading || success ? 'invisible' : 'visible'}`}>{t('Subscribe')}</span>
+                    {isMinimal && <span className={`col-start-1 row-start-1 ${loading || !success ? 'invisible' : 'visible'}`}>{t('Email sent')}</span>}
+                    {loading && <span className='inset-0 col-start-1 row-start-1 flex items-center justify-center'><LoadingIcon /></span>}
                 </button>
             </form>
         </>
