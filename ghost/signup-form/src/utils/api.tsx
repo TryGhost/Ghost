@@ -33,10 +33,8 @@ export const setupGhostApi = ({siteUrl}: {siteUrl: string}) => {
             });
 
             if (response.status < 200 || response.status >= 300) {
-                return false;
+                throw new Error(response.statusText);
             }
-
-            return true;
         }
     };
 };

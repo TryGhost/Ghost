@@ -206,6 +206,30 @@ test.describe('Form', async () => {
             await expect(errorMessage).toHaveCount(1);
             expect(await errorMessage.innerText()).toBe('Something went wrong, please try again.');
         });
+
+        test('Shows error message on 4xx status codes', async ({page}) => {
+            const {frame} = await initialize({page, title: 'Sign up', apiStatus: 400});
+
+            // Fill out the form
+            const emailInput = frame.getByTestId('input');
+            await emailInput.fill('valid@example.com');
+
+            // Click the submit button
+            const submitButton = frame.getByTestId('button');
+            await submitButton.click();
+
+            // Check input and button are not gone
+            await expect(frame.getByTestId('input')).toHaveCount(1);
+            await expect(frame.getByTestId('button')).toHaveCount(1);
+
+            // Not showing the success page
+            await expect(frame.getByTestId('success-page')).toHaveCount(0);
+
+            // Check error message is visible on the page
+            const errorMessage = frame.getByTestId('error-message');
+            await expect(errorMessage).toHaveCount(1);
+            expect(await errorMessage.innerText()).toBe('Something went wrong, please try again.');
+        });
     });
 });
 
