@@ -1,7 +1,7 @@
 import {$createCodeBlockNode, $isCodeBlockNode, CodeBlockNode} from '../nodes/CodeBlockNode';
 import {$createHorizontalRuleNode, $isHorizontalRuleNode, HorizontalRuleNode} from '../nodes/HorizontalRuleNode';
 import {$createImageNode, $isImageNode, ImageNode} from '../nodes/ImageNode';
-import {$createNodeSelection, $setSelection} from 'lexical';
+import {$createNodeSelection, $setSelection, TextNode} from 'lexical';
 import {
     HEADING,
     ORDERED_LIST,
@@ -85,6 +85,7 @@ export const IMAGE = {
     type: 'element'
 };
 
+// custom text format transformers
 export const SUBSCRIPT = {
     format: ['subscript'],
     tag: '~',
@@ -95,6 +96,29 @@ export const SUPERSCRIPT = {
     format: ['superscript'],
     tag: '^',
     type: 'text-format'
+};
+
+// custom text match transformers
+export const EN_DASH = {
+    dependencies: [TextNode],
+    regExp:
+        /\s(--)\s/,
+    replace: (textNode) => {
+        textNode.setTextContent(` – `);
+    },
+    trigger: ' ',
+    type: 'text-match'
+};
+
+export const EM_DASH = {
+    dependencies: [TextNode],
+    regExp:
+        /\s(---)\s/,
+    replace: (textNode) => {
+        textNode.setTextContent(` — `);
+    },
+    trigger: ' ',
+    type: 'text-match'
 };
 
 export const ELEMENT_TRANSFORMERS = [
@@ -112,17 +136,24 @@ export const CUSTOM_TEXT_FORMAT_TRANSFORMERS = [
     SUPERSCRIPT
 ];
 
+export const CUSTOM_TEXT_MATCH_TRANSFORMERS = [
+    EN_DASH,
+    EM_DASH
+];
+
 export const DEFAULT_TRANSFORMERS = [
     ...ELEMENT_TRANSFORMERS,
     ...TEXT_FORMAT_TRANSFORMERS,
     ...CUSTOM_TEXT_FORMAT_TRANSFORMERS,
-    ...TEXT_MATCH_TRANSFORMERS
+    ...TEXT_MATCH_TRANSFORMERS,
+    ...CUSTOM_TEXT_MATCH_TRANSFORMERS
 ];
 
 export const MINIMAL_TRANSFORMERS = [
     ...TEXT_FORMAT_TRANSFORMERS,
     ...CUSTOM_TEXT_FORMAT_TRANSFORMERS,
-    ...TEXT_MATCH_TRANSFORMERS
+    ...TEXT_MATCH_TRANSFORMERS,
+    ...CUSTOM_TEXT_MATCH_TRANSFORMERS
 ];
 
 export const BASIC_TRANSFORMERS = [
@@ -130,7 +161,8 @@ export const BASIC_TRANSFORMERS = [
     ORDERED_LIST,
     ...TEXT_FORMAT_TRANSFORMERS,
     ...CUSTOM_TEXT_FORMAT_TRANSFORMERS,
-    ...TEXT_MATCH_TRANSFORMERS
+    ...TEXT_MATCH_TRANSFORMERS,
+    ...CUSTOM_TEXT_MATCH_TRANSFORMERS
 ];
 
 export default function MarkdownShortcutPlugin({transformers = DEFAULT_TRANSFORMERS} = {}) {
