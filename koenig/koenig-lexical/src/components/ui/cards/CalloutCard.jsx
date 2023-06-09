@@ -183,7 +183,7 @@ CalloutCard.propTypes = {
     handleColorChange: PropTypes.func,
     changeEmoji: PropTypes.func,
     textEditor: PropTypes.object,
-    textEditorInitialState: PropTypes.string,
+    textEditorInitialState: PropTypes.object,
     nodeKey: PropTypes.string,
     toggleEmojiPicker: PropTypes.func,
     showEmojiPicker: PropTypes.bool

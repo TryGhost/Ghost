@@ -247,7 +247,7 @@ HeaderCard.propTypes = {
     openFilePicker: PropTypes.func,
     onFileChange: PropTypes.func,
     headerTextEditor: PropTypes.object,
-    headerTextEditorInitialState: PropTypes.string,
+    headerTextEditorInitialState: PropTypes.object,
     subheaderTextEditor: PropTypes.object,
-    subheaderTextEditorInitialState: PropTypes.string
+    subheaderTextEditorInitialState: PropTypes.object
 };

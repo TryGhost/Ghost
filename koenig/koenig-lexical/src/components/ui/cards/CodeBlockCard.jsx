@@ -265,7 +265,7 @@ CodeBlockCard.propTypes = {
     darkMode: PropTypes.bool,
     language: PropTypes.string,
     captionEditor: PropTypes.object,
-    captionEditorInitialState: PropTypes.string,
+    captionEditorInitialState: PropTypes.object,
     isEditing: PropTypes.bool,
     isSelected: PropTypes.bool,
     updateCode: PropTypes.func,

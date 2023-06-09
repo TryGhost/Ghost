@@ -159,8 +159,8 @@ ProductCard.propTypes = {
     title: PropTypes.string,
     description: PropTypes.string,
     titleEditor: PropTypes.object,
-    titleEditorInitialState: PropTypes.string,
+    titleEditorInitialState: PropTypes.object,
     descriptionEditor: PropTypes.object,
-    descriptionEditorInitialState: PropTypes.string,
+    descriptionEditorInitialState: PropTypes.object,
     onRatingChange: PropTypes.func
 };

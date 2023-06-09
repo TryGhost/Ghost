@@ -160,7 +160,7 @@ EmailCtaCard.propTypes = {
     suggestedUrls: PropTypes.array,
     handleSegmentChange: PropTypes.func,
     htmlEditor: PropTypes.object,
-    htmlEditorInitialState: PropTypes.string
+    htmlEditorInitialState: PropTypes.object
 };
 
 EmailCtaCard.defaultProps = {

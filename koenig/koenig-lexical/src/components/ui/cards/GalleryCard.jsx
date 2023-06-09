@@ -252,7 +252,7 @@ GalleryCard.propTypes = {
     isSelected: PropTypes.bool,
     onFileChange: PropTypes.func,
     captionEditor: PropTypes.object,
-    captionEditorInitialState: PropTypes.string,
+    captionEditorInitialState: PropTypes.object,
     errorMessage: PropTypes.string,
     clearErrorMessage: PropTypes.func,
     deleteImage: PropTypes.func,

@@ -191,7 +191,7 @@ export function VideoCard({
 
 VideoCard.propTypes = {
     captionEditor: PropTypes.object,
-    captionEditorInitialState: PropTypes.string,
+    captionEditorInitialState: PropTypes.object,
     isSelected: PropTypes.bool,
     isEditing: PropTypes.bool
 };

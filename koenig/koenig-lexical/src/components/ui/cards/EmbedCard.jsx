@@ -138,7 +138,7 @@ EmbedCard.propTypes = {
     handlePasteAsLink: PropTypes.func,
     handleClose: PropTypes.func,
     captionEditor: PropTypes.object,
-    captionEditorInitialState: PropTypes.string
+    captionEditorInitialState: PropTypes.object
 };
 
 EmbedIframe.propTypes = {

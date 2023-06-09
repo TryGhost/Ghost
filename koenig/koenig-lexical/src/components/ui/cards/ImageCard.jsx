@@ -173,7 +173,7 @@ ImageCard.propTypes = {
     src: PropTypes.string,
     onFileChange: PropTypes.func,
     captionEditor: PropTypes.object,
-    captionEditorInitialState: PropTypes.string,
+    captionEditorInitialState: PropTypes.object,
     altText: PropTypes.string,
     setAltText: PropTypes.func,
     setFigureRef: PropTypes.func,
