@@ -12,7 +12,5 @@ export const SuccessPage: React.FC<SuccessPageProps> = ({email}) => {
     return <SuccessView
         backgroundColor={options.backgroundColor}
         email={email}
-        icon={options.icon}
-        textColor={options.textColor}
-        title={options.title} />;
+        textColor={options.textColor} />;
 };
