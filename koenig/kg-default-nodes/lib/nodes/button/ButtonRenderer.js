@@ -1,4 +1,7 @@
+import {addCreateDocumentOption} from '../../utils/add-create-document-option';
+
 export function renderButtonNodeToDOM(node, options = {}) {
+    addCreateDocumentOption(options);
     const document = options.createDocument();
 
     if (!node.getButtonUrl() || node.getButtonUrl().trim() === '') {
