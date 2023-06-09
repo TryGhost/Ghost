@@ -23,6 +23,7 @@ export const Full: Story = {
         loading: false,
         error: '',
         isMinimal: false,
+        success: false,
         onSubmit: () => {}
     }
 };
@@ -39,6 +40,7 @@ export const FullDark: Story = {
         loading: false,
         error: '',
         isMinimal: false,
+        success: false,
         onSubmit: () => {}
     }
 };
@@ -50,6 +52,33 @@ export const Minimal: Story = {
         loading: false,
         error: '',
         isMinimal: true,
+        success: false,
+        onSubmit: () => {}
+    },
+    tags: ['transparency-grid']
+};
+
+export const MinimalLoading: Story = {
+    args: {
+        buttonColor: '#ff0095',
+        buttonTextColor: '#ffffff',
+        loading: true,
+        error: '',
+        isMinimal: true,
+        success: false,
+        onSubmit: () => {}
+    },
+    tags: ['transparency-grid']
+};
+
+export const MinimalSucceeded: Story = {
+    args: {
+        buttonColor: '#ff0095',
+        buttonTextColor: '#ffffff',
+        loading: false,
+        error: '',
+        isMinimal: true,
+        success: true,
         onSubmit: () => {}
     },
     tags: ['transparency-grid']

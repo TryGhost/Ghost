@@ -48,6 +48,7 @@
     "Email newsletter": "Title for the email newsletter settings",
     "Email preference updated.": "A confirmation message when email settings have been changed",
     "Email preferences": "A label for email settings",
+    "Email sent": "",
     "Emails": "A label for a list of emails",
     "Emails disabled": "Title for a message in portal telling members that they are not receiving emails, due to repeated delivery failures to their address",
     "Ends {{offerEndDate}}": "Label for an offer which expires",

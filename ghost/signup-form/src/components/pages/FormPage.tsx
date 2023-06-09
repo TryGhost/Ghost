@@ -7,7 +7,9 @@ import {useAppContext} from '../../AppContext';
 export const FormPage: React.FC = () => {
     const [error, setError] = React.useState('');
     const [loading, setLoading] = React.useState(false);
+    const [success, setSuccess] = React.useState(false);
     const {api, setPage, options, t} = useAppContext();
+    const minimal = isMinimal(options);
 
     const submit = async ({email}: { email: string }) => {
         if (!isValidEmail(email)) {
@@ -20,9 +22,16 @@ export const FormPage: React.FC = () => {
 
         try {
             await api.sendMagicLink({email, labels: options.labels});
-            setPage('SuccessPage', {
-                email
-            });
+
+            if (minimal) {
+                // Don't go to the success page, but show the success state in the form
+                setSuccess(true);
+                setLoading(false);
+            } else {
+                setPage('SuccessPage', {
+                    email
+                });
+            }
         } catch (_) {
             setLoading(false);
             setError(t(`Something went wrong, please try again.`));
@@ -36,8 +45,9 @@ export const FormPage: React.FC = () => {
         description={options.description}
         error={error}
         icon={options.icon}
-        isMinimal={isMinimal(options)}
+        isMinimal={minimal}
         loading={loading}
+        success={success}
         textColor={options.textColor}
         title={options.title}
         onSubmit={submit}

@@ -3,20 +3,12 @@ import {useAppContext} from '../../AppContext';
 
 export const SuccessView: React.FC<{
     email: string;
-    isMinimal: boolean;
     title?: string;
     icon?: string;
     backgroundColor?: string;
     textColor?: string;
-}> = ({isMinimal, title, icon, backgroundColor, textColor}) => {
+}> = ({title, icon, backgroundColor, textColor}) => {
     const {t} = useAppContext();
-    if (isMinimal) {
-        return (
-            <div>
-                <h1 className="text-xl font-bold">{t(`Now check your email!`)}</h1>
-            </div>
-        );
-    }
     return (
         <div
             className='flex h-[100vh] flex-col items-center justify-center bg-grey-200 px-4 sm:px-6 md:px-10'
