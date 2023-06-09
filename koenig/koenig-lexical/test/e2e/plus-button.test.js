@@ -380,6 +380,7 @@ test.describe('Plus button', async () => {
             const pHandle = await page.locator('[data-lexical-editor] > p').nth(0);
             await pHandle.hover();
             await page.click('[data-kg-plus-button]');
+            await expect(page.locator('[data-kg-card="markdown"]')).toBeVisible();
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
