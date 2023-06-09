@@ -154,7 +154,7 @@ em-emoji-picker {
 .koenig-lexical table {
     font-size: 1.75rem;
     margin: 0;
-    font-family: georgia,serif;
+    font-family: georgia,Times,serif;
     letter-spacing: .02rem;
     line-height: 1.6em;
 }

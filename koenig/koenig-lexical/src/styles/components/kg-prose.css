@@ -309,7 +309,7 @@
             ul,
             ol
         ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-family: georgia,serif;
+            font-family: georgia,Times,serif;
             font-weight: 400;
             line-height: 1.6em;
             font-size: 2.0rem;
@@ -831,7 +831,7 @@
                     ul,
                     ol
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-family: georgia,serif;
+            font-family: georgia,Times,serif;
             line-height: 1.5;
         }
     }
