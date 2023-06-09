@@ -122,7 +122,7 @@
     "useWorkspaces": true
   },
   "devDependencies": {
-    "concurrently": "8.1.0",
+    "concurrently": "8.2.0",
     "eslint-plugin-ghost": "3.1.0",
     "husky": "8.0.3",
     "lerna": "6.6.2",
