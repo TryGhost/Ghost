@@ -55,7 +55,7 @@ export class EmailNode extends KoenigDecoratorNode {
     }
 
     exportDOM(options = {}) {
-        const element = renderEmailNodeToDOM(this, options);
+        const {element} = renderEmailNodeToDOM(this, options);
         return {element, type: 'inner'};
     }
 

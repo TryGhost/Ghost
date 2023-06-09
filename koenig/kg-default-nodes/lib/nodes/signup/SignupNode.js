@@ -95,8 +95,8 @@ export class SignupNode extends KoenigDecoratorNode {
     }
 
     exportDOM(options = {}) {
-        const element = renderSignupCardToDOM(this, options);
-        return {element};
+        const {element, type} = renderSignupCardToDOM(this, options);
+        return {element, type};
     }
 
     static importJSON(serializedNode) {

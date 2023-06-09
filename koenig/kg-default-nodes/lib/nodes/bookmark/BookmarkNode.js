@@ -100,8 +100,8 @@ export class BookmarkNode extends KoenigDecoratorNode {
 
     // renderer used when copying node >> html
     exportDOM(options = {}) {
-        const element = renderBookmarkNodeToDOM(this, options);
-        return {element};
+        const {element, type} = renderBookmarkNodeToDOM(this, options);
+        return {element, type};
     }
 
     getUrl() {

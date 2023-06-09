@@ -93,8 +93,8 @@ export class FileNode extends KoenigDecoratorNode {
     }
 
     exportDOM(options = {}) {
-        const element = renderFileNodeToDOM(this, options);
-        return {element};
+        const {element, type} = renderFileNodeToDOM(this, options);
+        return {element, type};
     }
 
     getSrc() {

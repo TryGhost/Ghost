@@ -6,7 +6,7 @@ export function renderBookmarkNodeToDOM(node, options = {}) {
     const document = options.createDocument();
 
     if (!node.getUrl() || node.getUrl().trim() === '') {
-        return document.createTextNode('');
+        return {element: document.createElement('span'), type: 'inner'};
     }
 
     if (options.target === 'email') {
@@ -99,7 +99,7 @@ function emailTemplate(node, document) {
         <![endif]-->`;
 
     div.innerHTML = html;
-    return div;
+    return {element: div};
 }
 
 function frontendTemplate(node, document) {
@@ -177,5 +177,5 @@ function frontendTemplate(node, document) {
         card.appendChild(figCaption);
     }
 
-    return card;
+    return {element: card};
 }

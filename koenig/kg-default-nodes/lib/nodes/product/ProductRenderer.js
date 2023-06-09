@@ -6,7 +6,7 @@ export function renderProductNodeToDOM(node, options = {}) {
     const document = options.createDocument();
 
     if (node.isEmpty()) {
-        return document.createTextNode('');
+        return {element: document.createElement('span'), type: 'inner'};
     }
 
     const templateData = {
@@ -29,7 +29,7 @@ export function renderProductNodeToDOM(node, options = {}) {
     const element = document.createElement('div');
     element.innerHTML = htmlString.trim();
 
-    return element.firstElementChild;
+    return {element: element.firstElementChild};
 }
 
 export function cardTemplate({data}) {

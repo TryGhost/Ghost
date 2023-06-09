@@ -207,7 +207,7 @@ describe('EmailCtaNode', function () {
             const emailNode = $createEmailCtaNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
 
-            element.should.be.empty();
+            element.outerHTML.should.equal('<span></span>');
         }));
 
         it('does not render if all empty', editorTest(function () {
@@ -228,7 +228,7 @@ describe('EmailCtaNode', function () {
             const emailNode = $createEmailCtaNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
 
-            element.should.be.empty();
+            element.outerHTML.should.equal('<span></span>');
         }));
 
         it('does not render if button text empty', editorTest(function () {
@@ -249,7 +249,7 @@ describe('EmailCtaNode', function () {
             const emailNode = $createEmailCtaNode(payload);
             const {element} = emailNode.exportDOM({...exportOptions, ...options});
 
-            element.should.be.empty();
+            element.outerHTML.should.equal('<span></span>');
         }));
 
         it('does not render button if button text empty', editorTest(function () {

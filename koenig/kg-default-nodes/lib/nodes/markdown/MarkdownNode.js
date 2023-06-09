@@ -49,7 +49,7 @@ export class MarkdownNode extends KoenigDecoratorNode {
     }
 
     exportDOM(options = {}) {
-        const element = renderMarkdownNodeToDOM(this, options);
+        const {element} = renderMarkdownNodeToDOM(this, options);
         return {
             element,
             type: 'inner'

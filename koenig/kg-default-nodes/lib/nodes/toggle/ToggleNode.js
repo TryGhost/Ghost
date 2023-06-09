@@ -67,8 +67,8 @@ export class ToggleNode extends KoenigDecoratorNode {
     }
 
     exportDOM(options = {}) {
-        const element = renderToggleNodeToDOM(this, options);
-        return {element};
+        const {element, type} = renderToggleNodeToDOM(this, options);
+        return {element, type};
     }
 
     getContent() {

@@ -6,7 +6,7 @@ export function renderCodeBlockNodeToDOM(node, options = {}) {
     const document = options.createDocument();
 
     if (!node.getCode() || node.getCode().trim() === '') {
-        return document.createTextNode('');
+        return {element: document.createElement('span'), type: 'inner'};
     }
 
     const pre = document.createElement('pre');
@@ -28,8 +28,8 @@ export function renderCodeBlockNodeToDOM(node, options = {}) {
         figcaption.appendChild(document.createTextNode(node.getCaption()));
         figure.appendChild(figcaption);
 
-        return figure;
+        return {element: figure};
     } else {
-        return pre;
+        return {element: pre};
     }
 }

@@ -16,7 +16,7 @@ export function renderEmbedNodeToDOM(node, options = {}) {
 
 function renderTemplate(node, document, options) {
     if (node.isEmpty()) {
-        return document.createTextNode('');
+        return {element: document.createElement('span'), type: 'inner'};
     }
     const isEmail = options.target === 'email';
     const metadata = node.getMetadata();
@@ -68,5 +68,5 @@ function renderTemplate(node, document, options) {
         figure.setAttribute('class', `${figure.getAttribute('class')} kg-card-hascaption`);
     }
 
-    return figure;
+    return {element: figure};
 }

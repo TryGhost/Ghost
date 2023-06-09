@@ -6,7 +6,7 @@ export function renderAudioNodeToDOM(node, options = {}) {
     const document = options.createDocument();
 
     if (!node.getSrc() || node.getSrc().trim() === '') {
-        return document.createTextNode('');
+        return {element: document.createElement('span'), type: 'inner'};
     }
 
     return frontendTemplate(node, document);
@@ -158,5 +158,5 @@ function frontendTemplate(node, document) {
     audioPlayerContainer.appendChild(audioPlayer);
     cardDiv.appendChild(audioPlayerContainer);
 
-    return cardDiv;
+    return {element: cardDiv};
 }

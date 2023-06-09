@@ -175,12 +175,11 @@ describe('CodeBlockNode', function () {
             `);
         }));
 
-        it('renders nothing when code is undefined or empty', editorTest(function () {
+        it('renders empty span when code is undefined or empty', editorTest(function () {
             const codeBlockNode = $createCodeBlockNode({code: ''});
             const {element} = codeBlockNode.exportDOM(exportOptions);
 
-            element.textContent.should.equal('');
-            should(element.outerHTML).be.undefined();
+            element.outerHTML.should.equal('<span></span>');
         }));
 
         it('renders a figure if a caption is provided', editorTest(function () {

@@ -17,7 +17,7 @@ export function renderEmailCtaNodeToDOM(node, options = {}) {
     const hasButton = showButton && !!buttonText && !!buttonUrl;
 
     if ((!html && !hasButton) || options.target !== 'email') {
-        return document.createTextNode('');
+        return {element: document.createElement('span'), type: 'inner'};
     }
 
     const container = document.createElement('div');
@@ -61,5 +61,5 @@ export function renderEmailCtaNodeToDOM(node, options = {}) {
         container.appendChild(document.createElement('hr'));
     }
 
-    return container;
+    return {element: container};
 }

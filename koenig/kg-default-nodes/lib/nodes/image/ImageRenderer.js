@@ -10,7 +10,7 @@ export function renderImageNodeToDOM(node, options = {}) {
     const document = options.createDocument();
 
     if (!node.getSrc() || node.getSrc().trim() === '') {
-        return document.createTextNode('');
+        return {element: document.createElement('span'), type: 'inner'};
     }
 
     const figure = document.createElement('figure');
@@ -120,5 +120,5 @@ export function renderImageNodeToDOM(node, options = {}) {
         figure.appendChild(caption);
     }
 
-    return figure;
+    return {element: figure};
 }

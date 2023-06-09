@@ -254,7 +254,7 @@ describe('ProductNode', function () {
             `);
         }));
 
-        it('renders nothing if title, description, button and image are missing', editorTest(function () {
+        it('renders empty span if title, description, button and image are missing', editorTest(function () {
             const payload = {
                 productTitle: '',
                 productDescription: ''
@@ -262,8 +262,7 @@ describe('ProductNode', function () {
             const productNode = $createProductNode(payload);
             const {element} = productNode.exportDOM(exportOptions);
 
-            element.textContent.should.equal('');
-            should(element.outerHTML).be.undefined();
+            element.outerHTML.should.equal('<span></span>');
         }));
 
         it('renders if only title is present', editorTest(function () {

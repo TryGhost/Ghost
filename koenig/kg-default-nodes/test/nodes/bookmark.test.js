@@ -167,12 +167,11 @@ describe('BookmarkNode', function () {
             element.innerHTML.should.containEql('<table class="kg-card kg-bookmark-card--outlook"');
         }));
 
-        it('renders nothing with a missing src', editorTest(function () {
+        it('renders an empty span with a missing src', editorTest(function () {
             const bookmarkNode = $createBookmarkNode();
             const {element} = bookmarkNode.exportDOM(exportOptions);
 
-            element.textContent.should.equal('');
-            should(element.outerHTML).be.undefined();
+            element.outerHTML.should.equal('<span></span>');
         }));
     });
 

@@ -43,8 +43,8 @@ export class HorizontalRuleNode extends KoenigDecoratorNode {
     }
 
     exportDOM(options = {}) {
-        const element = renderHorizontalRuleToDOM(this, options);
-        return {element};
+        const {element, type} = renderHorizontalRuleToDOM(this, options);
+        return {element, type};
     }
 
     getTextContent() {

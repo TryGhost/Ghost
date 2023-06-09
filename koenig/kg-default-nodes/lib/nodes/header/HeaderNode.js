@@ -107,8 +107,8 @@ export class HeaderNode extends KoenigDecoratorNode {
     }
 
     exportDOM(options = {}) {
-        const element = renderHeaderNodeToDOM(this, options);
-        return {element};
+        const {element, type} = renderHeaderNodeToDOM(this, options);
+        return {element, type};
     }
 
     getSize() {

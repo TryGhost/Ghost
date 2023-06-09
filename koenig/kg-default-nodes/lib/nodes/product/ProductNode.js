@@ -113,8 +113,8 @@ export class ProductNode extends KoenigDecoratorNode {
     }
 
     exportDOM(options = {}) {
-        const element = renderProductNodeToDOM(this, options);
-        return {element};
+        const {element, type} = renderProductNodeToDOM(this, options);
+        return {element, type};
     }
 
     getProductImageSrc() {

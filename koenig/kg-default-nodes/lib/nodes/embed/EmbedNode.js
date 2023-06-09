@@ -83,8 +83,8 @@ export class EmbedNode extends KoenigDecoratorNode {
 
     // renderer used when copying node >> html
     exportDOM(options = {}) {
-        const element = renderEmbedNodeToDOM(this, options);
-        return {element};
+        const {element, type} = renderEmbedNodeToDOM(this, options);
+        return {element, type};
     }
 
     getUrl() {

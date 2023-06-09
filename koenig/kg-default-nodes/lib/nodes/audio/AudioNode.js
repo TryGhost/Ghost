@@ -85,8 +85,8 @@ export class AudioNode extends KoenigDecoratorNode {
     }
 
     exportDOM(options = {}) {
-        const element = renderAudioNodeToDOM(this, options);
-        return {element};
+        const {element, type} = renderAudioNodeToDOM(this, options);
+        return {element, type};
     }
 
     getSrc() {

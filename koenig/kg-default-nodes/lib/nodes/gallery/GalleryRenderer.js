@@ -41,7 +41,7 @@ export function renderGalleryNodeToDOM(node, options = {}) {
 
     const validImages = node.getImages().filter(isValidImage);
     if (!validImages.length) {
-        return document.createTextNode('');
+        return {element: document.createElement('span'), type: 'inner'};
     }
 
     const figure = document.createElement('figure');
@@ -153,5 +153,5 @@ export function renderGalleryNodeToDOM(node, options = {}) {
         figure.setAttribute('class', `${figure.getAttribute('class')} kg-card-hascaption`);
     }
 
-    return figure;
+    return {element: figure};
 }

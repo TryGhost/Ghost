@@ -12,5 +12,5 @@ export function renderMarkdownNodeToDOM(node, options = {}) {
 
     div.innerHTML = html;
 
-    return div;
+    return {element: div};
 }

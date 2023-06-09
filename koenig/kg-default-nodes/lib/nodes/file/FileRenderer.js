@@ -6,7 +6,7 @@ export function renderFileNodeToDOM(node, options = {}) {
     const document = options.createDocument();
   
     if (!node.getSrc() || node.getSrc().trim() === '') {
-        return document.createTextNode('');
+        return {element: document.createElement('span'), type: 'inner'};
     }
   
     const card = document.createElement('div');
@@ -94,5 +94,5 @@ export function renderFileNodeToDOM(node, options = {}) {
   
     card.appendChild(container);
   
-    return card;
+    return {element: card};
 }

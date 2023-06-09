@@ -65,8 +65,8 @@ export class GalleryNode extends KoenigDecoratorNode {
     }
 
     exportDOM(options = {}) {
-        const element = renderGalleryNodeToDOM(this, options);
-        return {element};
+        const {element, type} = renderGalleryNodeToDOM(this, options);
+        return {element, type};
     }
 
     getImages() {

@@ -86,8 +86,8 @@ export class EmailCtaNode extends KoenigDecoratorNode {
     }
 
     exportDOM(options = {}) {
-        const element = renderEmailCtaNodeToDOM(this, options);
-        return {element};
+        const {element, type} = renderEmailCtaNodeToDOM(this, options);
+        return {element, type};
     }
 
     getAlignment() {

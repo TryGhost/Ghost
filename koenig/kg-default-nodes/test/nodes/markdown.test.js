@@ -91,11 +91,11 @@ describe('MarkdownNode', function () {
             `);
         }));
 
-        it('renders nothing with a missing src', editorTest(function () {
+        it('renders an empty div with a missing src', editorTest(function () {
             const markdownNode = $createMarkdownNode();
             const {element} = markdownNode.exportDOM(exportOptions);
 
-            element.innerHTML.should.equal('');
+            element.outerHTML.should.equal('<div></div>');
         }));
     });
 

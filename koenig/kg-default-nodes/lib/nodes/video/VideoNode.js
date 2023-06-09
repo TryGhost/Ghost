@@ -128,8 +128,8 @@ export class VideoNode extends KoenigDecoratorNode {
     }
 
     exportDOM(options = {}) {
-        const element = renderVideoNodeToDOM(this, options);
-        return {element};
+        const {element, type} = renderVideoNodeToDOM(this, options);
+        return {element, type};
     }
 
     getSrc() {

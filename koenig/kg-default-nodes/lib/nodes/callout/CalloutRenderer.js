@@ -19,5 +19,5 @@ export function renderCalloutNodeToDOM(node, options = {}) {
     textElement.classList.add('kg-callout-text');
     textElement.innerHTML = node.getCalloutText();
     element.appendChild(textElement);
-    return element;
+    return {element: element};
 }

@@ -19,7 +19,7 @@ export function renderHeaderNodeToDOM(node, options = {}) {
     const document = options.createDocument();
 
     if (!node.getHeader() && !node.getSubheader() && (!node.getButtonEnabled() || (!node.getButtonUrl() || !node.getButtonText()))) {
-        return document.createTextNode('');
+        return {element: document.createElement('span'), type: 'inner'};
     }
 
     const templateData = {
@@ -67,5 +67,5 @@ export function renderHeaderNodeToDOM(node, options = {}) {
         div.appendChild(buttonElement);
     }
 
-    return div;
+    return {element: div};
 }

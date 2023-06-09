@@ -8,5 +8,5 @@ export function renderPaywallNodeToDOM(_, options = {}) {
 
     div.innerHTML = '<!--members-only-->';
 
-    return div;
+    return {element: div};
 }

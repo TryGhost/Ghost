@@ -103,12 +103,11 @@ describe('ButtonNode', function () {
             output.should.containEql('<td align="center">');
         }));
 
-        it('renders nothing with a missing buttonUrl', editorTest(function () {
+        it('renders an empty span with a missing buttonUrl', editorTest(function () {
             const buttonNode = $createButtonNode();
             const {element} = buttonNode.exportDOM(exportOptions);
 
-            element.textContent.should.equal('');
-            should(element.outerHTML).be.undefined();
+            element.outerHTML.should.equal('<span></span>');
         }));
     });
 

@@ -65,8 +65,8 @@ export class CalloutNode extends KoenigDecoratorNode {
     }
 
     exportDOM(options = {}) {
-        const element = renderCalloutNodeToDOM(this, options);
-        return {element};
+        const {element, type} = renderCalloutNodeToDOM(this, options);
+        return {element, type};
     }
 
     getCalloutText() {

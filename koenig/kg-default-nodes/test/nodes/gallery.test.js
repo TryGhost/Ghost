@@ -596,20 +596,18 @@ describe('GalleryNode', function () {
     });
 
     describe('exportDOM', function () {
-        it('renders nothing with no images', editorTest(function () {
+        it('renders empty span with no images', editorTest(function () {
             const galleryNode = $createGalleryNode({images: [], caption: null});
             const {element} = galleryNode.exportDOM(exportOptions);
 
-            element.textContent.should.equal('');
-            should(element.outerHTML).be.undefined();
+            element.outerHTML.should.equal('<span></span>');
         }));
 
-        it('renders nothing with no valid images', editorTest(function () {
+        it('renders empty span no valid images', editorTest(function () {
             const galleryNode = $createGalleryNode({images: [{src: 'undefined'}], caption: null});
             const {element} = galleryNode.exportDOM(exportOptions);
 
-            element.textContent.should.equal('');
-            should(element.outerHTML).be.undefined();
+            element.outerHTML.should.equal('<span></span>');
         }));
 
         it('renders', editorTest(function () {

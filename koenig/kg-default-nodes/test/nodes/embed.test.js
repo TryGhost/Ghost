@@ -310,12 +310,11 @@ describe('EmbedNode', function () {
             element.outerHTML.should.containEql('<v:group xmlns');
         }));
 
-        it('renders nothing with missing data', editorTest(function () {
+        it('renders empty span with missing data', editorTest(function () {
             const embedNode = $createEmbedNode();
             const {element} = embedNode.exportDOM(exportOptions);
 
-            element?.textContent.should.equal('');
-            should(element?.outerHTML).be.undefined();
+            element.outerHTML.should.equal('<span></span>');
         }));
     });
 

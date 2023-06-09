@@ -8,12 +8,12 @@ export function renderEmailNodeToDOM(node, options = {}) {
     const html = node.getHtml();
 
     if (!html || options.target !== 'email') {
-        return document.createTextNode('');
+        return {element: document.createElement('span'), type: 'inner'};
     }
 
     const cleanedHtml = wrapReplacementStrings(removeSpaces(html));
     const div = document.createElement('div');
     div.innerHTML = cleanedHtml;
 
-    return div;
+    return {element: div};
 }

@@ -6,7 +6,7 @@ export function renderVideoNodeToDOM(node, options = {}) {
     const document = options.createDocument();
 
     if (!node.getSrc() || node.getSrc().trim() === '') {
-        return document.createTextNode('');
+        return {element: document.createElement('span'), type: 'inner'};
     }
 
     const cardClasses = getCardClasses(node).join(' ');
@@ -18,7 +18,7 @@ export function renderVideoNodeToDOM(node, options = {}) {
     const element = document.createElement('div');
     element.innerHTML = htmlString.trim();
 
-    return element.firstElementChild;
+    return {element: element.firstElementChild};
 }
 
 export function cardTemplate({node, cardClasses}) {

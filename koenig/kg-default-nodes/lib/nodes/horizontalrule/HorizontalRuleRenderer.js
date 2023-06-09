@@ -6,5 +6,5 @@ export function renderHorizontalRuleToDOM(_, options = {}) {
     const document = options.createDocument();
 
     const hr = document.createElement('hr');
-    return hr;
+    return {element: hr};
 }

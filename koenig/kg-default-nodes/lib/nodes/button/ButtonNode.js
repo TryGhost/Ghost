@@ -73,8 +73,8 @@ export class ButtonNode extends KoenigDecoratorNode {
 
     // renderer used when copying node >> html
     exportDOM(options = {}) {
-        const element = renderButtonNodeToDOM(this, options);
-        return {element};
+        const {element, type} = renderButtonNodeToDOM(this, options);
+        return {element, type};
     }
 
     getButtonText() {

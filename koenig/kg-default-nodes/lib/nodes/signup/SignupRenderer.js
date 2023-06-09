@@ -109,7 +109,7 @@ export function renderSignupCardToDOM(dataset, options = {}) {
             pElement.remove();
         }
     }
-    return element.firstElementChild;
+    return {element: element.firstElementChild};
 }
 
 export function getCardClasses(nodeData) {

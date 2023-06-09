@@ -2,7 +2,7 @@ export function renderButtonNodeToDOM(node, options = {}) {
     const document = options.createDocument();
 
     if (!node.getButtonUrl() || node.getButtonUrl().trim() === '') {
-        return document.createTextNode('');
+        return {element: document.createElement('span'), type: 'inner'};
     }
 
     if (options.target === 'email') {
@@ -24,7 +24,7 @@ function frontendTemplate(node, document) {
     button.textContent = node.getButtonText() || 'Button Title';
 
     cardDiv.appendChild(button);
-    return cardDiv;
+    return {element: cardDiv};
 }
 
 function emailTemplate(node, document) {
@@ -53,7 +53,7 @@ function emailTemplate(node, document) {
     button.textContent = node.getButtonText();
     cell.appendChild(button);
 
-    return parent;
+    return {element: parent};
 }
 
 function getCardClasses(node) {

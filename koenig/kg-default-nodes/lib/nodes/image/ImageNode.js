@@ -102,8 +102,8 @@ export class ImageNode extends KoenigDecoratorNode {
     }
 
     exportDOM(options = {}) {
-        const element = renderImageNodeToDOM(this, options);
-        return {element};
+        const {element, type} = renderImageNodeToDOM(this, options);
+        return {element, type};
     }
 
     getSrc() {

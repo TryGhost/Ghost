@@ -66,8 +66,8 @@ export class CodeBlockNode extends KoenigDecoratorNode {
     }
 
     exportDOM(options = {}) {
-        const element = renderCodeBlockNodeToDOM(this, options);
-        return {element};
+        const {element, type} = renderCodeBlockNodeToDOM(this, options);
+        return {element, type};
     }
 
     getCaption() {
