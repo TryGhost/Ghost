@@ -1754,9 +1754,16 @@ p.gh-members-import-errordetail:first-of-type {
     width: 20px;
     height: 20px;
     margin: 0 0 0 8px;
-    border: none;
+    border: 1px solid var(--lightgrey-l1);
     border-radius: 999px;
-    box-shadow: inset 0 0 0 1px var(--lightgrey-l1);
+}
+
+.gh-btn-group .gh-email-design-color.gh-btn-group-selected {
+    outline: 2px solid var(--green);
+}
+
+.gh-btn-group .gh-email-design-color.gh-btn-group-selected.custom {
+    outline: none;
 }
 
 .gh-btn-group .gh-email-design-color > div {
@@ -1795,20 +1802,6 @@ p.gh-members-import-errordetail:first-of-type {
     border-radius: 999px;
     transition: all .15s ease-in-out;
     transition-delay: .03s;
-}
-
-.gh-email-design-color.gh-btn-group-selected::before {
-    content: "";
-    position: absolute;
-    top: -4px;
-    left: -4px;
-    right: -4px;
-    bottom: -4px;
-    border: 2px solid var(--green);
-    border-radius: 999px;
-    transition: all .15s ease-in-out;
-    transition-delay: .03s;
-    z-index: 0;
 }
 
 .gh-btn-group .gh-email-design-color.transparent {
