@@ -39,7 +39,7 @@ const Button: React.FC<IButton> = ({
 
     styles += ' transition whitespace-nowrap flex items-center justify-center rounded-sm text-sm';
     styles += ((link && color !== 'clear' && color !== 'black') || (!link && color !== 'clear')) ? ' font-bold' : ' font-semibold';
-    styles += !link ? `${size === 'sm' ? ' px-3 h-7 ' : ' px-4 h-9 '}` : '';
+    styles += !link ? `${size === 'sm' ? ' px-3 h-7 ' : ' px-4 h-[34px] '}` : '';
 
     switch (color) {
     case 'black':
