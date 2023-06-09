@@ -69,15 +69,15 @@ const Form: React.FC<FormProps> = ({isMinimal, loading, success, error, buttonCo
                     onChange={e => setEmail(e.target.value)}
                 />
                 <button
-                    className='absolute inset-y-0 right-[.2rem] my-auto grid h-7 items-center justify-items-center rounded-[.3rem] px-2 font-medium text-white xs:right-[.3rem] xs:h-[3rem] xs:px-3'
+                    className='absolute inset-y-0 right-[.2rem] my-auto grid h-7 touch-manipulation items-center justify-items-center overflow-hidden rounded-[.3rem] px-2 font-medium text-white xs:right-[.3rem] xs:h-[3rem] xs:px-3'
                     data-testid="button"
                     disabled={loading || success}
                     style={{backgroundColor: buttonColor, color: buttonTextColor}}
                     type='submit'
                 >
-                    <span className={`col-start-1 row-start-1 ${loading || success ? 'invisible' : 'visible'}`}>{t('Subscribe')}</span>
-                    {isMinimal && <span className={`col-start-1 row-start-1 ${loading || !success ? 'invisible' : 'visible'}`}>{t('Email sent')}</span>}
-                    {loading && <span className='inset-0 col-start-1 row-start-1 flex items-center justify-center'><LoadingIcon /></span>}
+                    <span className={`whitespace-no-wrap col-start-1 row-start-1 transition-opacity duration-200 ${loading || success ? 'opacity-0' : 'opacity-1'}`}>{t('Subscribe')}</span>
+                    {isMinimal && <span className={`whitespace-no-wrap col-start-1 row-start-1 [transition:margin_300ms,opacity_200ms] ${loading || !success ? 'mx-[-40px] opacity-0' : 'opacity-1 mx-0'}`}>{t('Email sent')}</span>}
+                    <span className={`inset-0 col-start-1 row-start-1 flex items-center justify-center transition-opacity duration-200 ${loading ? 'opacity-1' : 'opacity-0'}`}><LoadingIcon /></span>
                 </button>
             </form>
         </>
