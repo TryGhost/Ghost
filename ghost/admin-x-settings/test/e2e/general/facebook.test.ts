@@ -22,7 +22,7 @@ test.describe('Facebook settings', async () => {
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles(`${__dirname}/../../utils/images/image.png`);
 
-        await expect(section.locator('[style*="background-image"]')).toHaveCSS('background-image', 'url("http://example.com/image.png")');
+        await expect(section.getByRole('img')).toBeVisible();
 
         await section.getByLabel('Facebook title').fill('Facetitle');
         await section.getByLabel('Facebook description').fill('Facescription');
