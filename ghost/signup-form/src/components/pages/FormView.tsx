@@ -63,7 +63,7 @@ const Form: React.FC<FormProps> = ({isMinimal, loading, success, error, buttonCo
                     className={`flex-1 rounded-[.5rem] border bg-white p-2 text-grey-900 transition hover:border-grey-400 focus-visible:border-grey-500 focus-visible:outline-none disabled:bg-white xs:px-3 xs:py-[1rem] ${error ? '!border-red-500' : 'border-grey-300'}`}
                     data-testid="input"
                     disabled={loading || success}
-                    placeholder='jamie@example.com'
+                    placeholder={t('Your email address')}
                     type="text"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
