@@ -167,5 +167,5 @@ export default function render(node, document, options) {
         figure.setAttribute('class', `${figure.getAttribute('class')} kg-card-hascaption`);
     }
 
-    return figure;
+    return {element: figure};
 }
