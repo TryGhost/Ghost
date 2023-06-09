@@ -60,7 +60,7 @@ const Form: React.FC<FormProps> = ({isMinimal, loading, success, error, buttonCo
         <>
             <form className='relative mx-auto flex w-full' onSubmit={submitHandler}>
                 <input
-                    className={`flex-1 rounded-[.5rem] border bg-white p-2 text-grey-900 transition hover:border-grey-400 focus-visible:border-grey-500 focus-visible:outline-none disabled:bg-white sm:px-3 sm:py-[1rem] ${error ? '!border-red-500' : 'border-grey-300'}`}
+                    className={`flex-1 rounded-[.5rem] border bg-white p-2 text-grey-900 transition hover:border-grey-400 focus-visible:border-grey-500 focus-visible:outline-none disabled:bg-white xs:px-3 xs:py-[1rem] ${error ? '!border-red-500' : 'border-grey-300'}`}
                     data-testid="input"
                     disabled={loading || success}
                     placeholder='jamie@example.com'
@@ -69,7 +69,7 @@ const Form: React.FC<FormProps> = ({isMinimal, loading, success, error, buttonCo
                     onChange={e => setEmail(e.target.value)}
                 />
                 <button
-                    className='absolute inset-y-0 right-[.2rem] my-auto grid h-7 items-center justify-items-center rounded-[.3rem] px-2 font-medium text-white sm:right-[.3rem] sm:h-[3rem] sm:px-3'
+                    className='absolute inset-y-0 right-[.2rem] my-auto grid h-7 items-center justify-items-center rounded-[.3rem] px-2 font-medium text-white xs:right-[.3rem] xs:h-[3rem] xs:px-3'
                     data-testid="button"
                     disabled={loading || success}
                     style={{backgroundColor: buttonColor, color: buttonTextColor}}
