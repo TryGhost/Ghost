@@ -142,7 +142,7 @@ const DesignModal: React.FC = () => {
         }}
         onOk={async () => {
             await handleSave();
-            modal.remove();
+            // modal.remove();
         }}
         onSelectURL={onSelectURL}
     />;
