@@ -115,7 +115,8 @@ const DesignModal: React.FC = () => {
                     accentColor,
                     icon,
                     logo,
-                    coverImage
+                    coverImage,
+                    themeSettings
                 }}
             />
         }
