@@ -202,7 +202,7 @@
     },
     "signupForm": {
         "url": "https://cdn.jsdelivr.net/ghost/signup-form@~{version}/umd/signup-form.min.js",
-        "version": "0"
+        "version": "0.1"
     },
     "tenor": {
         "googleApiKey": null,
