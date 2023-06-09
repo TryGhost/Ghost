@@ -108,7 +108,17 @@ const DesignModal: React.FC = () => {
         buttonsDisabled={saveState === 'saving'}
         cancelLabel='Close'
         okLabel='Save'
-        preview={<ThemePreview />}
+        preview={
+            <ThemePreview
+                settings={{
+                    description,
+                    accentColor,
+                    icon,
+                    logo,
+                    coverImage
+                }}
+            />
+        }
         previewToolbarURLs={urlOptions}
         sidebar={<Sidebar
             brandSettings={{description, accentColor, icon, logo, coverImage}}
