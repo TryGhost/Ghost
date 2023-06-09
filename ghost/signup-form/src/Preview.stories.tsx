@@ -38,7 +38,11 @@ const Preview: React.FC<SignupFormOptions & {
                     setTimeout(resolve, 2000);
                 });
 
-                return simulateApiError ? false : true;
+                if (simulateApiError) {
+                    throw new Error('API Error');
+                }
+
+                return;
             }
         },
         t: i18n.t,
