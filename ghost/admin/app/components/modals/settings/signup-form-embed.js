@@ -96,7 +96,7 @@ export default class SignupFormEmbedModal extends Component {
             options[`label-${i + 1}`] = label.name;
         }
 
-        let style = 'min-height: 58px';
+        let style = 'min-height: 58px; max-width: 440px;';
 
         if (this.style === 'all-in-one') {
             // We serve twice the size of the icon to support high resolution screens
@@ -113,7 +113,7 @@ export default class SignupFormEmbedModal extends Component {
 
         if (preview) {
             if (this.style === 'minimal') {
-                style = 'max-width: 400px;width: 100%;position: absolute; left: 50%; top:50%; transform: translate(-50%, -50%);';
+                style = 'max-width: 440px;width: 100%;position: absolute; left: 50%; top:50%; transform: translate(-50%, -50%);';
             } else {
                 style = 'height: 100vh';
             }
