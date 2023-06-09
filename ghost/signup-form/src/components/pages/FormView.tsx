@@ -67,7 +67,7 @@ const Form: React.FC<FormProps> = ({loading, error, buttonColor, buttonTextColor
                     onChange={e => setEmail(e.target.value)}
                 />
                 <button
-                    className='absolute inset-y-0 right-[.2rem] my-auto h-7 rounded-[.3rem] px-2 text-white sm:right-[.3rem] sm:h-[3rem] sm:px-3'
+                    className='absolute inset-y-0 right-[.2rem] my-auto h-7 rounded-[.3rem] px-2 font-medium text-white sm:right-[.3rem] sm:h-[3rem] sm:px-3'
                     data-testid="button"
                     disabled={loading}
                     style={{backgroundColor: buttonColor, color: buttonTextColor}}
