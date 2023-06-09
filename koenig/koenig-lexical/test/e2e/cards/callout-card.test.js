@@ -328,6 +328,7 @@ test.describe('Callout Card', async () => {
         await page.keyboard.press('Backspace');
         await page.keyboard.press('Backspace');
         await page.keyboard.press(`${ctrlOrCmd}+z`);
+        await expect(page.locator('[data-kg-card="callout"]')).toBeVisible();
 
         // NOTE: don't ignore contents, we care that the data is displayed correctly
         await assertHTML(page, html`
