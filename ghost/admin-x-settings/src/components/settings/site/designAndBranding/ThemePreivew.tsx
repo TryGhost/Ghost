@@ -1,12 +1,14 @@
 import React, {useEffect, useRef} from 'react';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
+import {CustomThemeSetting} from '../../../../types/api';
 
 type BrandSettings = {
-    description: string,
-    accentColor: string,
-    icon: string,
-    logo: string,
-    coverImage: string
+    description: string;
+    accentColor: string;
+    icon: string;
+    logo: string;
+    coverImage: string;
+    themeSettings: Array<CustomThemeSetting & { dirty?: boolean }>;
 }
 
 interface ThemePreviewProps {
@@ -29,14 +31,29 @@ function getPreviewData({
     accentColor,
     icon,
     logo,
-    coverImage
-}: BrandSettings): string {
+    coverImage,
+    themeSettings
+}: {
+    description: string;
+    accentColor: string;
+    icon: string;
+    logo: string;
+    coverImage: string;
+    themeSettings: Array<CustomThemeSetting & { dirty?: boolean }>,
+}): string {
     const params = new URLSearchParams();
     params.append('c', accentColor);
     params.append('d', description);
     params.append('icon', icon);
     params.append('logo', logo);
     params.append('cover', coverImage);
+    const themeSettingsObj: {
+        [key: string]: string;
+    } = {};
+    themeSettings.forEach((setting) => {
+        themeSettingsObj[setting.key] = setting.value as string;
+    });
+    params.append('custom', JSON.stringify(themeSettingsObj));
 
     return params.toString();
 }
