@@ -6,6 +6,7 @@ import {tracked} from '@glimmer/tracking';
 
 const US = {flag: '🇺🇸', name: 'US', baseUrl: 'https://api.mailgun.net/v3'};
 const EU = {flag: '🇪🇺', name: 'EU', baseUrl: 'https://api.eu.mailgun.net/v3'};
+const DEFAULT_MAILGUN_BATCH_SIZE = 1000;
 
 export default class Newsletters extends Component {
     @service settings;
@@ -39,7 +40,8 @@ export default class Newsletters extends Component {
         return {
             apiKey: this.settings.mailgunApiKey || '',
             domain: this.settings.mailgunDomain || '',
-            baseUrl: this.settings.mailgunBaseUrl || ''
+            baseUrl: this.settings.mailgunBaseUrl || '',
+            batchSize: this.settings.mailgunBatchSize || DEFAULT_MAILGUN_BATCH_SIZE
         };
     }
 
@@ -62,6 +64,14 @@ export default class Newsletters extends Component {
     @action
     setMailgunRegion(region) {
         this.settings.mailgunBaseUrl = region.baseUrl;
+    }
+
+    @action
+    setMailgunBatchSize(event) {
+        this.settings.mailgunBatchSize = Math.abs(parseInt(event.target.value)) || DEFAULT_MAILGUN_BATCH_SIZE;
+        if (!this.settings.mailgunBaseUrl) {
+            this.settings.mailgunBaseUrl = this.mailgunRegion.baseUrl;
+        }
     }
 
     @action

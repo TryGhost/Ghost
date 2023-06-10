@@ -4076,6 +4076,16 @@
             "updated_at": "2021-03-24T17:34:10.000Z"
           },
           {
+            "id": "aa26ce065f12aa4df0b1159a",
+            "group": "email",
+            "key": "mailgun_batch_size",
+            "value": null,
+            "type": "number",
+            "flags": null,
+            "created_at": "2021-03-24T17:34:10.000Z",
+            "updated_at": "2021-03-24T17:34:10.000Z"
+          },
+          {
             "id": "605ac142a2d5a6aa9e101ffc",
             "group": "email",
             "key": "email_track_opens",

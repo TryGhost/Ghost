@@ -46,7 +46,7 @@ export default class SettingsService extends Service.extend(ValidationEngine) {
     }
 
     get mailgunIsConfigured() {
-        return this.mailgunApiKey && this.mailgunDomain && this.mailgunBaseUrl;
+        return this.mailgunApiKey && this.mailgunDomain && this.mailgunBaseUrl && this.mailgunBatchSize;
     }
 
     // the settings API endpoint is a little weird as it's singular and we have

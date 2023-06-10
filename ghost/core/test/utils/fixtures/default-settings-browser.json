@@ -372,6 +372,10 @@
             "defaultValue": null,
             "type": "string"
         },
+        "mailgun_batch_size": {
+            "defaultValue": null,
+            "type": "number"
+        },
         "email_track_opens": {
             "defaultValue": "true",
             "validations": {

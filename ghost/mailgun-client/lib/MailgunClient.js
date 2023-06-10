@@ -4,11 +4,11 @@ const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
 const errors = require('@tryghost/errors');
 
+const DEFAULT_MAILGUN_BATCH_SIZE = 1000;
+
 module.exports = class MailgunClient {
     #config;
     #settings;
-
-    static BATCH_SIZE = 1000;
 
     constructor({config, settings}) {
         this.#config = config;
@@ -38,9 +38,11 @@ module.exports = class MailgunClient {
             return null;
         }
 
-        if (Object.keys(recipientData).length > MailgunClient.BATCH_SIZE) {
+        const batchSize = this.getBatchSize();
+
+        if (Object.keys(recipientData).length > batchSize) {
             throw new errors.IncorrectUsageError({
-                message: `Mailgun only supports sending to ${MailgunClient.BATCH_SIZE} recipients at a time`
+                message: `Mailgun only supports sending to ${batchSize} recipients at a time`
             });
         }
 
@@ -244,6 +246,20 @@ module.exports = class MailgunClient {
                 enhancedCode: event['delivery-status']['enhanced-code']?.toString()?.substring(0, 50) ?? null
             } : null
         };
+    }
+
+    getBatchSize() {
+        const bulkEmailConfig = this.#config.get('bulkEmail');
+        const batchSizeSetting = this.#settings.get('mailgun_batch_size');
+        const batchSizeConfig = bulkEmailConfig?.mailgun?.batchSize;
+
+        if (!batchSizeConfig && !batchSizeSetting) {
+            return null;
+        }
+
+        const batchSize = batchSizeConfig || batchSizeSetting;
+
+        return Math.abs(parseInt(batchSize)) || DEFAULT_MAILGUN_BATCH_SIZE;
     }
 
     #getConfig() {

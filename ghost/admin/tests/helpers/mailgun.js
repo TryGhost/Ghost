@@ -10,6 +10,10 @@ export function enableMailgun(server, enabled = true) {
     server.db.settings.find({key: 'mailgun_base_url'})
         ? server.db.settings.update({key: 'mailgun_base_url'}, {value: (enabled ? 'MAILGUN_BASE_URL' : null)})
         : server.create('setting', {key: 'mailgun_base_url', value: (enabled ? 'MAILGUN_BASE_URL' : null), group: 'email'});
+
+    server.db.settings.find({key: 'mailgun_batch_size'})
+        ? server.db.settings.update({key: 'mailgun_batch_size'}, {value: (enabled ? 'mailgun_batch_size' : null)})
+        : server.create('setting', {key: 'mailgun_batch_size', value: (enabled ? 'mailgun_batch_size' : null), group: 'email'});
 }
 
 export function disableMailgun(server) {

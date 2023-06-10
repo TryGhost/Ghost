@@ -48,6 +48,7 @@ const EDITABLE_SETTINGS = [
     'mailgun_api_key',
     'mailgun_domain',
     'mailgun_base_url',
+    'mailgun_batch_size',
     'email_track_opens',
     'email_track_clicks',
     'members_track_sources',

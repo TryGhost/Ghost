@@ -349,6 +349,21 @@ describe('Acceptance: Settings - Labs', function () {
             expect(find('[data-test-lexical-feedback-textarea]')).to.not.exist;
         });
 
+        it('sets the mailgunBatchSize to the default', async function () {
+            await visit('/settings/members');
+
+            await fillIn('[data-test-mailgun-api-key-input]', 'i_am_an_api_key');
+            await fillIn('[data-test-mailgun-domain-input]', 'https://domain.tld');
+
+            await click('[data-test-button="save-members-settings"]');
+
+            const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+            const params = JSON.parse(lastRequest.requestBody);
+
+            expect(params.settings.findBy('key', 'mailgun_batch_size').value).not.to.equal(null);
+            expect(typeof params.settings.findBy('key', 'mailgun_batch_size').value).to.equal('number');
+        });
+
         it('allows the user to send lexical feedback', async function () {
             enableLabsFlag(this.server, 'lexicalEditor');
             // mock successful request
