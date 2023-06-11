@@ -115,7 +115,10 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({settings}) => {
     return (
         <>
             <iframe
-                ref={iframeRef} height="100%" title="Site Preview"
+                ref={iframeRef}
+                data-testid="theme-preview"
+                height="100%"
+                title="Site Preview"
                 width="100%"
             ></iframe>
         </>

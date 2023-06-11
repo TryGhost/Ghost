@@ -5,7 +5,7 @@ import {Setting, SiteData} from '../../types/api';
 // Define the Settings Context
 interface SettingsContextProps {
     settings: Setting[] | null;
-    saveSettings: (updatedSettings: Setting[]) => Promise<void>;
+    saveSettings: (updatedSettings: Setting[]) => Promise<Setting[]>;
     siteData: SiteData | null;
 }
 
@@ -16,7 +16,7 @@ interface SettingsProviderProps {
 const SettingsContext = createContext<SettingsContextProps>({
     settings: null,
     siteData: null,
-    saveSettings: async () => {}
+    saveSettings: async () => []
 });
 
 function serialiseSettingsData(settings: Setting[]): Setting[] {
@@ -100,16 +100,20 @@ const SettingsProvider: React.FC<SettingsProviderProps> = ({children}) => {
         fetchSettings();
     }, [api]);
 
-    const saveSettings = useCallback(async (updatedSettings: Setting[]): Promise<void> => {
+    const saveSettings = useCallback(async (updatedSettings: Setting[]) => {
         try {
             // handle transformation for settings before save
             updatedSettings = deserializeSettings(updatedSettings);
             // Make an API call to save the updated settings
             const data = await api.settings.edit(updatedSettings);
+            const newSettings = serialiseSettingsData(data.settings);
 
-            setSettings(serialiseSettingsData(data.settings));
+            setSettings(newSettings);
+
+            return newSettings;
         } catch (error) {
             // Log error in settings API
+            return [];
         }
     }, [api]);
 
