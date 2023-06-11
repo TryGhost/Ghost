@@ -47,7 +47,7 @@ export const TwoColumns: Story = {
 
 export const Editing: Story = {
     args: {
-        state: 'edit',
+        isEditing: true,
         title: SingleColumn.args?.title,
         description: SingleColumn.args?.description,
         children: twoColEdit
@@ -56,7 +56,8 @@ export const Editing: Story = {
 
 export const Unsaved: Story = {
     args: {
-        state: 'unsaved',
+        isEditing: true,
+        saveState: 'unsaved',
         title: SingleColumn.args?.title,
         description: SingleColumn.args?.description,
         children: twoColEdit
