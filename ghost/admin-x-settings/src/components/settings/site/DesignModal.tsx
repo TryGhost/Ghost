@@ -6,11 +6,13 @@ import StickyFooter from '../../../admin-x-ds/global/StickyFooter';
 import TabView, {Tab} from '../../../admin-x-ds/global/TabView';
 import ThemePreview from './designAndBranding/ThemePreivew';
 import ThemeSettings from './designAndBranding/ThemeSettings';
-import useSettingGroup from '../../../hooks/useSettingGroup';
-import {CustomThemeSetting, SettingValue} from '../../../types/api';
+import useForm from '../../../hooks/useForm';
+import {CustomThemeSetting, Setting, SettingValue} from '../../../types/api';
 import {PreviewModalContent} from '../../../admin-x-ds/global/PreviewModal';
 import {SelectOption} from '../../../admin-x-ds/global/Select';
 import {ServicesContext} from '../../providers/ServiceProvider';
+import {SettingsContext} from '../../providers/SettingsProvider';
+import {getSettingValues} from '../../../utils/helpers';
 
 const Sidebar: React.FC<{
     brandSettings: BrandSettingValues
@@ -50,7 +52,7 @@ const DesignModal: React.FC = () => {
     const modal = useModal();
 
     const {api} = useContext(ServicesContext);
-    const [themeSettings, setThemeSettings] = useState<Array<CustomThemeSetting & { dirty?: boolean }>>([]);
+    const [themeSettings, setThemeSettings] = useState<Array<CustomThemeSetting>>([]);
 
     useEffect(() => {
         api.customThemeSettings.browse().then((response) => {
@@ -58,21 +60,45 @@ const DesignModal: React.FC = () => {
         });
     }, [api]);
 
+    const {settings} = useContext(SettingsContext);
+
     const {
+        formState,
         saveState,
         handleSave,
-        updateSetting,
-        getSettingValues,
-        dirty
-    } = useSettingGroup({
+        updateForm
+    } = useForm({
+        initialState: {
+            settings: settings as Array<Setting & { dirty?: boolean }>,
+            themeSettings: themeSettings as Array<CustomThemeSetting & { dirty?: boolean }>
+        },
         onSave: async () => {
-            if (themeSettings.some(setting => setting.dirty)) {
-                const response = await api.customThemeSettings.edit(themeSettings);
+            if (formState.themeSettings.some(setting => setting.dirty)) {
+                const response = await api.customThemeSettings.edit(formState.themeSettings);
                 setThemeSettings(response.custom_theme_settings);
+                updateForm(state => ({...state, themeSettings: response.custom_theme_settings}));
+            }
+
+            if (formState.settings.some(setting => setting.dirty)) {
+                const response = await api.settings.edit(formState.settings);
+                updateForm(state => ({...state, settings: response.settings}));
             }
         }
     });
-    const [description, accentColor, icon, logo, coverImage] = getSettingValues(['description', 'accent_color', 'icon', 'logo', 'cover_image']) as string[];
+
+    const updateBrandSetting = (key: string, value: SettingValue) => {
+        updateForm(state => ({...state, settings: state.settings.map(setting => (
+            setting.key === key ? {...setting, value, dirty: true} : setting
+        ))}));
+    };
+
+    const updateThemeSetting = (updated: CustomThemeSetting) => {
+        updateForm(state => ({...state, themeSettings: themeSettings.map(setting => (
+            setting.key === updated.key ? {...updated, dirty: true} : setting
+        ))}));
+    };
+
+    const [description, accentColor, icon, logo, coverImage] = getSettingValues(formState.settings, ['description', 'accent_color', 'icon', 'logo', 'cover_image']) as string[];
 
     const themeSettingGroups = themeSettings.reduce((groups, setting) => {
         const group = (setting.group === 'homepage' || setting.group === 'post') ? setting.group : 'site-wide';
@@ -83,17 +109,11 @@ const DesignModal: React.FC = () => {
         };
     }, {} as {[key: string]: CustomThemeSetting[] | undefined});
 
-    const themeSettingSections = Object.entries(themeSettingGroups).map(([id, settings]) => ({
+    const themeSettingSections = Object.entries(themeSettingGroups).map(([id, group]) => ({
         id,
-        settings: settings || [],
+        settings: group || [],
         title: id === 'site-wide' ? 'Site wide' : (id === 'homepage' ? 'Homepage' : 'Post')
     }));
-
-    const updateThemeSetting = (updated: CustomThemeSetting) => {
-        setThemeSettings(themeSettings.map(setting => (
-            setting.key === updated.key ? {...updated, dirty: true} : setting
-        )));
-    };
 
     const urlOptions: SelectOption[] = [
         {value: 'homepage', label: 'Homepage'},
@@ -124,13 +144,13 @@ const DesignModal: React.FC = () => {
         sidebar={<Sidebar
             brandSettings={{description, accentColor, icon, logo, coverImage}}
             themeSettingSections={themeSettingSections}
-            updateBrandSetting={updateSetting}
+            updateBrandSetting={updateBrandSetting}
             updateThemeSetting={updateThemeSetting}
         />}
         sidebarPadding={false}
         title='Design'
         onCancel={() => {
-            if (dirty || themeSettings.some(setting => setting.dirty)) {
+            if (saveState === 'unsaved') {
                 NiceModal.show(ConfirmationModal, {
                     title: 'Are you sure you want to leave this page?',
                     prompt: (
