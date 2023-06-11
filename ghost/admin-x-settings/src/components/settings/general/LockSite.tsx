@@ -6,19 +6,20 @@ import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupConten
 import TextField from '../../../admin-x-ds/global/TextField';
 import Toggle from '../../../admin-x-ds/global/Toggle';
 import useSettingGroup from '../../../hooks/useSettingGroup';
+import {getSettingValues} from '../../../utils/helpers';
 
 const LockSite: React.FC = () => {
     const {
-        currentState,
+        localSettings,
+        isEditing,
         saveState,
         handleSave,
         handleCancel,
         updateSetting,
-        getSettingValues,
-        handleStateChange
+        handleEditingChange
     } = useSettingGroup();
 
-    const [passwordEnabled, password] = getSettingValues(['is_private', 'password']) as [boolean, string];
+    const [passwordEnabled, password] = getSettingValues(localSettings, ['is_private', 'password']) as [boolean, string];
 
     const handleToggleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         updateSetting('is_private', e.target.checked);
@@ -79,16 +80,16 @@ const LockSite: React.FC = () => {
     return (
         <SettingGroup
             description='Enable protection with a simple shared password.'
+            isEditing={isEditing}
             navid='locksite'
             saveState={saveState}
-            state={currentState}
             testId='locksite'
             title='Make site private'
             onCancel={handleCancel}
+            onEditingChange={handleEditingChange}
             onSave={handleSave}
-            onStateChange={handleStateChange}
         >
-            {currentState === 'view' ? values : inputs}
+            {isEditing ? inputs : values}
         </SettingGroup>
     );
 };
