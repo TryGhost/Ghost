@@ -10,6 +10,7 @@ import {IButton} from './Button';
 import {SelectOption} from './Select';
 
 export interface PreviewModalProps {
+    testId?: string;
     title?: string;
     sidebar?: React.ReactNode;
     preview?: React.ReactNode;
@@ -31,6 +32,7 @@ export interface PreviewModalProps {
 }
 
 export const PreviewModalContent: React.FC<PreviewModalProps> = ({
+    testId,
     title,
     sidebar,
     preview,
@@ -138,6 +140,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             customFooter={(<></>)}
             noPadding={true}
             size='full'
+            testId={testId}
             title=''
         >
             <div className='flex h-full grow'>

@@ -60,7 +60,7 @@ const DesignModal: React.FC = () => {
         });
     }, [api]);
 
-    const {settings} = useContext(SettingsContext);
+    const {settings, saveSettings} = useContext(SettingsContext);
 
     const {
         formState,
@@ -80,8 +80,8 @@ const DesignModal: React.FC = () => {
             }
 
             if (formState.settings.some(setting => setting.dirty)) {
-                const response = await api.settings.edit(formState.settings);
-                updateForm(state => ({...state, settings: response.settings}));
+                const newSettings = await saveSettings(formState.settings.filter(setting => setting.dirty));
+                updateForm(state => ({...state, settings: newSettings}));
             }
         }
     });
@@ -127,7 +127,7 @@ const DesignModal: React.FC = () => {
     return <PreviewModalContent
         buttonsDisabled={saveState === 'saving'}
         cancelLabel='Close'
-        okLabel='Save'
+        okLabel={saveState === 'saved' ? 'Saved' : (saveState === 'saving' ? 'Saving ...' : 'Save')}
         preview={
             <ThemePreview
                 settings={{
@@ -148,6 +148,7 @@ const DesignModal: React.FC = () => {
             updateThemeSetting={updateThemeSetting}
         />}
         sidebarPadding={false}
+        testId='design-modal'
         title='Design'
         onCancel={() => {
             if (saveState === 'unsaved') {

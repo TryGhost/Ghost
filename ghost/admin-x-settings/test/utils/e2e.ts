@@ -8,7 +8,8 @@ type LastApiRequest = {
 
 const responseFixtures = {
     settings: JSON.parse(readFileSync(`${__dirname}/responses/settings.json`).toString()),
-    site: JSON.parse(readFileSync(`${__dirname}/responses/site.json`).toString())
+    site: JSON.parse(readFileSync(`${__dirname}/responses/site.json`).toString()),
+    custom_theme_settings: JSON.parse(readFileSync(`${__dirname}/responses/custom_theme_settings.json`).toString())
 };
 
 interface Responses {
@@ -22,6 +23,13 @@ interface Responses {
     images?: {
         upload?: any
     }
+    custom_theme_settings?: {
+        browse?: any
+        edit?: any
+    }
+    previewHtml: {
+        homepage?: string
+    }
 }
 
 export async function mockApi({page,responses}: {page: Page, responses?: Responses}) {
@@ -32,42 +40,66 @@ export async function mockApi({page,responses}: {page: Page, responses?: Respons
 
     await mockApiResponse({
         page,
-        path: /\/ghost\/api\/admin\/settings\/\?group=.+/,
-        method: 'GET',
-        response: responses?.settings?.browse ?? responseFixtures.settings,
+        path: /\/ghost\/api\/admin\/settings\//,
+        responses: {
+            GET: {body: responses?.settings?.browse ?? responseFixtures.settings},
+            PUT: {body: responses?.settings?.edit ?? responseFixtures.settings}
+        },
         lastApiRequest
     });
 
     await mockApiResponse({
         page,
         path: /\/ghost\/api\/admin\/site\//,
-        method: 'GET',
-        response: responses?.site?.browse ?? responseFixtures.site,
-        lastApiRequest
-    });
-
-    await mockApiResponse({
-        page,
-        path: /\/ghost\/api\/admin\/settings\/$/,
-        method: 'PUT',
-        response: responses?.settings?.edit ?? responseFixtures.settings,
+        responses: {
+            GET: {body: responses?.site?.browse ?? responseFixtures.site}
+        },
         lastApiRequest
     });
 
     await mockApiResponse({
         page,
         path: /\/ghost\/api\/admin\/images\/upload\/$/,
-        method: 'POST',
-        response: responses?.images?.upload ?? {images: [{url: 'http://example.com/image.png', ref: null}]},
+        responses: {
+            POST: {body: responses?.images?.upload ?? {images: [{url: 'http://example.com/image.png', ref: null}]}}
+        },
         lastApiRequest
+    });
+
+    await mockApiResponse({
+        page,
+        path: /\/ghost\/api\/admin\/custom_theme_settings\/$/,
+        responses: {
+            GET: {body: responses?.custom_theme_settings?.browse ?? responseFixtures.custom_theme_settings},
+            PUT: {body: responses?.custom_theme_settings?.edit ?? responseFixtures.custom_theme_settings}
+        },
+        lastApiRequest
+    });
+
+    await page.route(responseFixtures.site.site.url, async (route) => {
+        if (!route.request().headers()['x-ghost-preview']) {
+            return route.continue();
+        }
+
+        await route.fulfill({
+            status: 200,
+            body: responses?.previewHtml?.homepage ?? '<html><head><style></style></head><body><div>test</div></body></html>'
+        });
     });
 
     return lastApiRequest;
 }
 
-async function mockApiResponse({page, path, method, response, lastApiRequest}: { page: Page; path: string | RegExp; method: string; response: any; lastApiRequest: LastApiRequest }) {
+interface MockResponse {
+    body: any
+    status?: number
+}
+
+async function mockApiResponse({page, path, lastApiRequest, responses}: { page: Page; path: string | RegExp; lastApiRequest: LastApiRequest, responses: { [method: string]: MockResponse } }) {
     await page.route(path, async (route) => {
-        if (route.request().method() !== method) {
+        const response = responses[route.request().method()];
+
+        if (!response) {
             return route.continue();
         }
 
@@ -76,8 +108,8 @@ async function mockApiResponse({page, path, method, response, lastApiRequest}: {
         lastApiRequest.url = route.request().url();
 
         await route.fulfill({
-            status: 200,
-            body: JSON.stringify(response)
+            status: response.status || 200,
+            body: JSON.stringify(response.body)
         });
     });
 }
