@@ -136,6 +136,7 @@ export default function HtmlEditor({darkMode, html, updateHtml}) {
     
     // Base extensions for the CodeMirror editor
     const extensions = [
+        EditorView.lineWrapping, // wraps lines that exceed the viewport width
         syntaxHighlighting(editorHighlightStyle), // customizes syntax highlighting rules
         editorCSS,
         lineNumbers(), // adds line numbers to the gutter
