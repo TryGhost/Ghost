@@ -131,14 +131,24 @@ export function DropdownSetting({label, description, value, menu, onChange}) {
     );
 }
 
-export function MultiSelectDropdownSetting({label, description, items, availableItems, onChange, dataTestId}) {
+/**
+ *
+ * @param {object} options
+ * @param {T[]} options.items The curretly selected items
+ * @param {T[]} options.availableItems The items available for selection
+ * @param {boolean} options.allowAdd Whether to allow adding new items
+ * @returns
+ */
+export function MultiSelectDropdownSetting({label, description, placeholder = '', items, availableItems, onChange, dataTestId, allowAdd = true}) {
     return (
         <div className="mt-2 flex w-full flex-col justify-between gap-2 text-[1.3rem] first:mt-0">
             <div className="font-bold text-grey-900 dark:text-grey-200">{label}</div>
             <MultiSelectDropdown
+                allowAdd={allowAdd}
                 availableItems={availableItems}
                 dataTestId={dataTestId}
                 items={items}
+                placeholder={placeholder}
                 onChange={onChange}
             />
             {description &&

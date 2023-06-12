@@ -432,6 +432,7 @@ export function SignupCard({alignment,
                         description='These labels will be applied to members who sign up via this form.'
                         items={labels}
                         label='Labels'
+                        placeholder='Select'
                         onChange={handleLabels}
                     />
                 </SettingsPanel>

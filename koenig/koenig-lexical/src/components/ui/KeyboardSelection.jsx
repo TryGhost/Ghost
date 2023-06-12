@@ -9,8 +9,20 @@ import React from 'react';
  * @param {(T, selected) => import('react').ReactElement} [options.getItem]
  */
 export function KeyboardSelection({items, getItem, onSelect, defaultSelected}) {
-    const defaultIndex = items.findIndex(item => item === defaultSelected);
-    const [selectedIndex, setSelectedIndex] = React.useState(defaultIndex === -1 ? 0 : defaultIndex);
+    const defaultIndex = Math.max(0, items.findIndex(item => item === defaultSelected));
+    const [selectedIndex, setSelectedIndex] = React.useState(defaultIndex);
+
+    // If items change, check if the selectedIndex is still valid, and if not, reset it to 0
+    React.useEffect(() => {
+        if (selectedIndex >= items.length) {
+            setSelectedIndex(defaultIndex);
+        }
+    }, [items, selectedIndex, defaultIndex]);
+
+    // If the default index changes, select it again
+    React.useEffect(() => {
+        setSelectedIndex(defaultIndex);
+    }, [defaultIndex]);
 
     const handleKeydown = React.useCallback((event) => {
         if (event.key === 'ArrowDown') {

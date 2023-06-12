@@ -33,7 +33,7 @@ function Item({item, selected, onChange}) {
     );
 }
 
-export function MultiSelectDropdown({items = [], availableItems = [], onChange, dataTestId}) {
+export function MultiSelectDropdown({placeholder = '', items = [], availableItems = [], onChange, dataTestId, allowAdd = true}) {
     const [open, setOpen] = React.useState(false);
     const [filter, setFilter] = React.useState('');
     const inputRef = React.useRef(null);
@@ -49,6 +49,7 @@ export function MultiSelectDropdown({items = [], availableItems = [], onChange, 
 
     const handleBlur = () => {
         setOpen(false);
+        setFilter('');
     };
 
     const handleSelect = (item) => {
@@ -85,10 +86,19 @@ export function MultiSelectDropdown({items = [], availableItems = [], onChange, 
         ai => !selectedItems.some(ii => ii.name === ai.name)
     );
 
-    const filteredItems = nonSelectedItems.filter(item => item.name.toLowerCase().includes(filter.toLowerCase()));
-    const emptyItem = filter && !selectedItems?.some(item => item.name.toLowerCase() === filter.toLowerCase())
-        ? [{name: filter, label: <>Add <strong>&quot;{filter}&quot;...</strong></>}]
-        : [{name: '', label: 'Type to search'}];
+    const filteredItems = nonSelectedItems.filter(item => item.name.toLocaleLowerCase().includes(filter.toLocaleLowerCase()));
+    let prefixItem = '';
+    const defaultSelected = filteredItems[0];
+
+    if (filter && allowAdd) {
+        // Check if we don't have an exact match
+        const exactMatch = items.find(item => item.toLocaleLowerCase() === filter.toLocaleLowerCase()) || availableItems.find(item => item.toLocaleLowerCase() === filter.toLocaleLowerCase());
+        if (!exactMatch) {
+            filteredItems.unshift({name: filter, label: <>Add <strong>&quot;{filter}&quot;...</strong></>});
+        }
+    } else if (!filter) {
+        prefixItem = getItem({name: '', label: 'Type to search'}, false);
+    }
 
     return (
         <div className="relative font-sans text-sm font-normal" data-testid={dataTestId}>
@@ -114,7 +124,7 @@ export function MultiSelectDropdown({items = [], availableItems = [], onChange, 
                     <input
                         ref={inputRef}
                         className="h-full w-full min-w-[5rem] appearance-none bg-transparent px-1 leading-none outline-none"
-                        placeholder=""
+                        placeholder={selectedItems.length === 0 ? placeholder : ''}
                         value={filter}
                         onBlur={handleBlur}
                         onChange={event => setFilter(event.target.value)}
@@ -125,11 +135,13 @@ export function MultiSelectDropdown({items = [], availableItems = [], onChange, 
 
                 <ArrowIcon className={`absolute right-2 top-4 h-2 w-2 text-grey-600 ${open && 'rotate-180'}`} />
             </div>
-            {open && (
+            {open && !!filteredItems.length && (
                 <DropdownContainer>
+                    {prefixItem}
                     <KeyboardSelection
+                        defaultSelected={defaultSelected}
                         getItem={getItem}
-                        items={filteredItems.length ? filteredItems : emptyItem}
+                        items={filteredItems}
                         onSelect={handleSelect}
                     />
                 </DropdownContainer>
