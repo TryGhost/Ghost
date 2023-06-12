@@ -2,16 +2,14 @@ import ButtonGroup from '../global/ButtonGroup';
 import React from 'react';
 import SettingGroupHeader from './SettingGroupHeader';
 import {IButton} from '../global/Button';
-
-export type TSettingGroupStates = 'view' | 'edit' | 'unsaved';
-export type SaveState = 'saving' | 'saved' | 'error' | '';
+import {SaveState} from '../../hooks/useForm';
 
 interface SettingGroupProps {
     navid?:string;
     testId?: string;
     title?: string;
     description?: React.ReactNode;
-    state?: TSettingGroupStates;
+    isEditing?: boolean;
     saveState?: SaveState;
     customHeader?: React.ReactNode;
     customButtons?: React.ReactNode;
@@ -28,7 +26,7 @@ interface SettingGroupProps {
     /**
      * Default buttons only appear if onStateChange is implemented
      */
-    onStateChange?: (newState: TSettingGroupStates) => void
+    onEditingChange?: (isEditing: boolean) => void
     onSave?: () => void
     onCancel?: () => void
 }
@@ -38,7 +36,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     testId,
     title,
     description,
-    state,
+    isEditing,
     saveState,
     customHeader,
     customButtons,
@@ -47,37 +45,29 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     alwaysShowSaveButton = true,
     border = true,
     styles,
-    onStateChange,
+    onEditingChange,
     onSave,
     onCancel
 }) => {
     const handleEdit = () => {
-        if (onStateChange) {
-            onStateChange('edit');
-        }
+        onEditingChange?.(true);
     };
 
     const handleCancel = () => {
         onCancel?.();
-        onStateChange?.('view');
+        onEditingChange?.(false);
     };
 
     const handleSave = () => {
         onSave?.();
     };
 
-    switch (state) {
-    case 'edit':
-        styles += ' border-grey-300';
-        break;
-
-    case 'unsaved':
+    if (saveState === 'unsaved') {
         styles += ' border-green';
-        break;
-
-    default:
+    } else if (isEditing){
+        styles += ' border-grey-300';
+    } else {
         styles += ' border-grey-200';
-        break;
     }
 
     let viewButtons = [];
@@ -114,7 +104,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
         }
     ];
 
-    if (state === 'unsaved' || alwaysShowSaveButton) {
+    if (saveState === 'unsaved' || alwaysShowSaveButton) {
         let label = 'Save';
         if (saveState === 'saving') {
             label = 'Saving...';
@@ -135,7 +125,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
             {customHeader ? customHeader :
                 <SettingGroupHeader description={description} title={title!}>
                     {customButtons ? customButtons :
-                        (onStateChange && <ButtonGroup buttons={state === 'view' ? viewButtons : editButtons} link={true} />)}
+                        (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} link={true} />)}
                 </SettingGroupHeader>
             }
             {children}

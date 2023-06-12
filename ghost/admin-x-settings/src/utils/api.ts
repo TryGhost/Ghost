@@ -1,4 +1,4 @@
-import {Setting, SiteData, User, UserRole} from '../types/api';
+import {CustomThemeSetting, Post, Setting, SiteData, User, UserRole} from '../types/api';
 import {getGhostPaths} from './helpers';
 
 interface Meta {
@@ -47,6 +47,24 @@ export interface UserInvite {
 export interface InvitesResponseType {
     meta?: Meta;
     invites: UserInvite[];
+}
+
+export interface CustomThemeSettingsResponseType {
+    custom_theme_settings: CustomThemeSetting[];
+}
+
+export interface PostsResponseType {
+    meta: {
+        pagination: {
+            page: number
+            limit: number
+            pages: number
+            total: number
+            next: number | null
+            prev: number | null
+        }
+    }
+    posts: Post[];
 }
 
 export interface SiteResponseType {
@@ -119,6 +137,13 @@ interface API {
             token?: string;
         }) => Promise<InvitesResponseType>;
         delete: (inviteId: string) => Promise<void>;
+    };
+    customThemeSettings: {
+        browse: () => Promise<CustomThemeSettingsResponseType>
+        edit: (newSettings: CustomThemeSetting[]) => Promise<CustomThemeSettingsResponseType>
+    };
+    latestPost: {
+        browse: () => Promise<PostsResponseType>
     }
 }
 
@@ -129,7 +154,7 @@ interface GhostApiOptions {
 function setupGhostApi({ghostVersion}: GhostApiOptions): API {
     const {apiRoot} = getGhostPaths();
 
-    function fetcher(url: string, options: RequestOptions) {
+    function fetcher(url: string, options: RequestOptions = {}) {
         const endpoint = `${apiRoot}${url}`;
         // By default, we set the Content-Type header to application/json
         const defaultHeaders = {
@@ -299,6 +324,30 @@ function setupGhostApi({ghostVersion}: GhostApiOptions): API {
                     method: 'DELETE'
                 });
                 return;
+            }
+        },
+        customThemeSettings: {
+            browse: async () => {
+                const response = await fetcher('/custom_theme_settings/');
+
+                const data: CustomThemeSettingsResponseType = await response.json();
+                return data;
+            },
+            edit: async (newSettings) => {
+                const response = await fetcher('/custom_theme_settings/', {
+                    method: 'PUT',
+                    body: JSON.stringify({custom_theme_settings: newSettings})
+                });
+
+                const data: CustomThemeSettingsResponseType = await response.json();
+                return data;
+            }
+        },
+        latestPost: {
+            browse: async () => {
+                const response = await fetcher('/posts/?filter=status%3Apublished&order=published_at%20DESC&limit=1&fields=id,url');
+                const data: PostsResponseType = await response.json();
+                return data;
             }
         }
     };

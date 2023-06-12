@@ -1,5 +1,5 @@
-import * as i18nLib from '@tryghost/i18n';
 import React, {ComponentProps, useState} from 'react';
+import i18nLib from '@tryghost/i18n';
 import pages, {Page, PageName} from './pages';
 import {AppContextProvider, SignupFormOptions} from './AppContext';
 import {ContentBox} from './components/ContentBox';
@@ -9,9 +9,8 @@ import type {PlayFunction} from '@storybook/types';
 
 const Preview: React.FC<SignupFormOptions & {
     pageBackgroundColor: string
-    pageTextColor: string
     simulateApiError: boolean
-}> = ({simulateApiError, pageBackgroundColor, pageTextColor, ...options}) => {
+}> = ({simulateApiError, pageBackgroundColor, ...options}) => {
     const [page, setPage] = useState<Page>({
         name: 'FormPage',
         data: {}
@@ -27,7 +26,7 @@ const Preview: React.FC<SignupFormOptions & {
     const PageComponent = pages[page.name];
     const data = page.data as any;
 
-    const i18n = i18nLib.default('en', 'signup-form');
+    const i18n = i18nLib(options.locale || 'en', 'signup-form');
 
     return <AppContextProvider value={{
         page,
@@ -39,14 +38,18 @@ const Preview: React.FC<SignupFormOptions & {
                     setTimeout(resolve, 2000);
                 });
 
-                return simulateApiError ? false : true;
+                if (simulateApiError) {
+                    throw new Error('API Error');
+                }
+
+                return;
             }
         },
         t: i18n.t,
         options,
         scriptTag: document.createElement('div')
     }}>
-        <div style={{width: '100%', height: '100%', backgroundColor: pageBackgroundColor, color: pageTextColor}}>
+        <div style={{width: '100%', height: '100%', backgroundColor: pageBackgroundColor}}>
             <ContentBox>
                 <PageComponent {...data} />
             </ContentBox>
@@ -79,7 +82,7 @@ export const Full: Story = {
     args: {
         title: 'Signup Forms Weekly',
         description: 'An independent publication about embeddable signup forms.',
-        logo: 'https://user-images.githubusercontent.com/65487235/157884383-1b75feb1-45d8-4430-b636-3f7e06577347.png',
+        icon: 'https://user-images.githubusercontent.com/65487235/157884383-1b75feb1-45d8-4430-b636-3f7e06577347.png',
         backgroundColor: '#eeeeee',
         textColor: '#000000',
         buttonColor: '#ff0095',
@@ -88,7 +91,6 @@ export const Full: Story = {
         labels: ['label-1', 'label-2'],
         simulateApiError: false,
         pageBackgroundColor: '#ffffff',
-        pageTextColor: '#000000',
         locale: 'en'
     },
 
@@ -103,7 +105,6 @@ export const Minimal: Story = {
         buttonTextColor: '#ffffff',
         simulateApiError: false,
         pageBackgroundColor: '#ffffff',
-        pageTextColor: '#000000',
         locale: 'en'
     },
 
@@ -118,7 +119,6 @@ export const MinimalOnDark: Story = {
         buttonTextColor: '#ffffff',
         simulateApiError: false,
         pageBackgroundColor: '#122334',
-        pageTextColor: '#f7f7f7',
         locale: 'en'
     },
 

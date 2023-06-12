@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.50.4",
+  "version": "5.51.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -103,8 +103,8 @@
     "@tryghost/kg-card-factory": "4.0.8",
     "@tryghost/kg-default-atoms": "4.0.1",
     "@tryghost/kg-default-cards": "9.1.0",
-    "@tryghost/kg-default-nodes": "0.0.51",
-    "@tryghost/kg-lexical-html-renderer": "0.1.51",
+    "@tryghost/kg-default-nodes": "0.0.59",
+    "@tryghost/kg-lexical-html-renderer": "0.1.59",
     "@tryghost/kg-mobiledoc-html-renderer": "6.0.8",
     "@tryghost/limit-service": "1.2.6",
     "@tryghost/link-redirects": "0.0.0",
@@ -226,7 +226,7 @@
   },
   "devDependencies": {
     "@actions/core": "1.10.0",
-    "@playwright/test": "1.34.3",
+    "@playwright/test": "1.35.0",
     "@tryghost/express-test": "0.13.4",
     "@tryghost/webhook-mock-receiver": "0.2.6",
     "@types/common-tags": "1.8.1",

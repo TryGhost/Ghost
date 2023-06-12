@@ -36,7 +36,7 @@ interface UserDetailProps {
 
 const CustomHeader: React.FC<CustomHeadingProps> = ({children}) => {
     return (
-        <Heading level={4} separator={true}>{children}</Heading>
+        <Heading level={4}>{children}</Heading>
     );
 };
 
@@ -594,7 +594,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
     return (
         <Modal
             backDropClick={false}
-            okColor='green'
+            cancelLabel='Close'
             okLabel={okLabel}
             size='lg'
             stickyFooter={true}
@@ -627,7 +627,8 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                         fileUploadClassName={fileUploadButtonClasses}
                         height={userData.cover_image ? '100%' : '32px'}
                         id='cover-image'
-                        imageClassName='absolute inset-0 bg-cover group bg-center rounded-t overflow-hidden'
+                        imageClassName='w-full h-full object-cover'
+                        imageContainerClassName='absolute inset-0 bg-cover group bg-center rounded-t overflow-hidden'
                         imageURL={userData.cover_image || ''}
                         unstyled={true}
                         onDelete={() => {
@@ -640,13 +641,14 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                     <div className="absolute bottom-12 right-12">
                         <Menu items={menuItems} position='left' trigger={<UserMenuTrigger />}></Menu>
                     </div>
-                    <div className='relative flex items-center gap-4 px-12 pb-12 pt-60'>
+                    <div className='relative flex items-center gap-4 px-12 pb-7 pt-60'>
                         <ImageUpload
                             deleteButtonClassName='invisible absolute -right-2 -top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible'
                             deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
                             fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
                             id='avatar'
-                            imageClassName='relative rounded-full group bg-cover bg-center -ml-2 h-[80px] w-[80px]'
+                            imageClassName='w-full h-full object-cover rounded-full'
+                            imageContainerClassName='relative group bg-cover bg-center -ml-2 h-[80px] w-[80px]'
                             imageURL={userData.profile_image}
                             unstyled={true}
                             width='80px'
@@ -665,7 +667,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                         </div>
                     </div>
                 </div>
-                <div className='mt-10 grid grid-cols-2 gap-x-12 gap-y-20 pb-10'>
+                <div className='mt-10 grid grid-cols-2 gap-x-12 gap-y-20'>
                     <Basic errors={errors} setUserData={setUserData} user={userData} />
                     <Details errors={errors} setUserData={setUserData} user={userData} />
                     <EmailNotifications setUserData={setUserData} user={userData} />

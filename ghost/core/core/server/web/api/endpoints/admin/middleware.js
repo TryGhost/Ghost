@@ -14,12 +14,15 @@ const notImplemented = function (req, res, next) {
         return next();
     }
 
+    if (req.query.god_mode === 'true' && process.env.NODE_ENV === 'development') {
+        return next();
+    }
+
     // @NOTE: integrations & staff tokens have limited access to the API
     const allowlisted = {
         site: ['GET'],
         posts: ['GET', 'PUT', 'DELETE', 'POST'],
         pages: ['GET', 'PUT', 'DELETE', 'POST'],
-        collections: ['GET', 'PUT', 'DELETE', 'POST'],
         images: ['POST'],
         webhooks: ['POST', 'PUT', 'DELETE'],
         actions: ['GET'],

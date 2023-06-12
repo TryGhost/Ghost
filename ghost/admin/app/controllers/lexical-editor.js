@@ -937,7 +937,7 @@ export default class LexicalEditorController extends Controller {
                 this.cancelAutosave();
                 this.autosaveTask.cancelAll();
             }
-            await this.autosaveTask.perform({leavingEditor: true});
+            await this.autosaveTask.perform({leavingEditor: true, backgroundSave: false});
             return transition.retry();
         }
 
