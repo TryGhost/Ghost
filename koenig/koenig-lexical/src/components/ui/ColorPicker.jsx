@@ -11,12 +11,20 @@ export function ColorPicker({value, eyedropper, hasTransparentOption, onChange, 
     const inputWrapperRef = useRef(null);
 
     const stopPropagation = useCallback((e) => {
-        // Prevent clashing with dragging the settings panel around
         e.stopPropagation();
-        e.preventDefault();
+  
+        const inputElement = inputWrapperRef.current?.querySelector('input');
+        const isInputField = e.target === inputElement;
+      
+        // Allow text selection for events on the input field
+        if (isInputField) {
+            return;
+        }
 
         // Prevent closing the color picker when clicking somewhere inside it
         inputWrapperRef.current?.querySelector('input')?.focus();
+
+        e.preventDefault();
     }, []);
 
     const isUsingColorPicker = useRef(false);
@@ -71,13 +79,17 @@ export function ColorPicker({value, eyedropper, hasTransparentOption, onChange, 
         hexValue = '';
     }
 
+    const focusHexInputOnClick = useCallback((e) => {
+        inputWrapperRef.current?.querySelector('input')?.focus();
+    }, []);
+
     return (
         <div className="mt-2" onMouseDown={stopPropagation} onTouchStart={stopPropagation}>
             <HexColorPicker color={hexValue || '#ffffff'} onChange={onChange} onMouseDown={startUsingColorPicker} onTouchStart={startUsingColorPicker} />
             <div className="mt-3 flex gap-2">
-                <div ref={inputWrapperRef} className={`relative flex w-full items-center ${INPUT_CLASSES}`}>
+                <div ref={inputWrapperRef} className={`relative flex w-full items-center ${INPUT_CLASSES}`} onClick={focusHexInputOnClick}>
                     <span className='ml-1 mr-2 text-grey-700'>#</span>
-                    <HexColorInput aria-label="Color value" className='w-full bg-transparent' color={hexValue} onBlur={onBlurHandler} onChange={onChange} />
+                    <HexColorInput aria-label="Color value" className='z-50 w-full bg-transparent' color={hexValue} onBlur={onBlurHandler} onChange={onChange} />
                     {eyedropper && !!window.EyeDropper && (
                         <button
                             className="absolute inset-y-0 right-3 my-auto h-4 w-4 p-[1px]"
