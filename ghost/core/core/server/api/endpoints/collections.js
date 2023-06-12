@@ -96,47 +96,6 @@ module.exports = {
         }
     },
 
-    addPost: {
-        statusCode: 200,
-        headers: {
-            cacheInvalidate: false
-        },
-        options: [
-            'id'
-        ],
-        data: [
-            'post_id'
-        ],
-        validation: {
-            options: {
-                id: {
-                    required: true
-                }
-            },
-            data: {
-                post_id: {
-                    required: true
-                }
-            }
-        },
-        permissions: {
-            method: 'edit'
-        },
-        async query(frame) {
-            const collectionPost = await collectionsService.api.addPostToCollection(frame.options.id, {
-                id: frame.data.posts[0].id
-            });
-
-            if (!collectionPost) {
-                throw new errors.NotFoundError({
-                    message: tpl(messages.collectionNotFound)
-                });
-            }
-
-            return collectionPost;
-        }
-    },
-
     destroy: {
         statusCode: 204,
         headers: {
@@ -155,41 +114,6 @@ module.exports = {
         permissions: true,
         async query(frame) {
             return await collectionsService.api.destroy(frame.options.id);
-        }
-    },
-
-    destroyPost: {
-        statusCode: 200,
-        headers: {
-            cacheInvalidate: true
-        },
-        options: [
-            'id',
-            'post_id'
-        ],
-        validation: {
-            options: {
-                id: {
-                    required: true
-                },
-                post_id: {
-                    required: true
-                }
-            }
-        },
-        permissions: {
-            method: 'edit'
-        },
-        async query(frame) {
-            const collection = await collectionsService.api.removePostFromCollection(frame.options.id, frame.options.post_id);
-
-            if (!collection) {
-                throw new errors.NotFoundError({
-                    message: tpl(messages.collectionNotFound)
-                });
-            }
-
-            return collection;
         }
     }
 };
