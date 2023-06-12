@@ -35,7 +35,7 @@ export class CalloutNode extends KoenigDecoratorNode {
     constructor({calloutText, calloutEmoji, backgroundColor} = {}, key) {
         super(key);
         this.__calloutText = calloutText || '';
-        this.__calloutEmoji = calloutEmoji || '💡';
+        this.__calloutEmoji = calloutEmoji !== undefined ? calloutEmoji : '💡';
         this.__backgroundColor = backgroundColor || 'blue';
     }
 

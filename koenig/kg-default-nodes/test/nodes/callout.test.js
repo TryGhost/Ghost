@@ -35,6 +35,7 @@ describe('CalloutNode', function () {
             calloutEmoji: '💡',
             backgroundColor: 'blue'
         };
+
         exportOptions = {
             exportFormat: 'html',
             createDocument() {
@@ -91,9 +92,14 @@ describe('CalloutNode', function () {
                 </div>
                 `);
         }));
+
         it('can render to HTML with no emoji', editorTest(function () {
-            const node = $createCalloutNode(dataset);
-            node.setCalloutEmoji(null);
+            const dataset2 = {
+                calloutText: 'This is a callout',
+                calloutEmoji: '',
+                backgroundColor: 'blue'
+            };
+            const node = $createCalloutNode(dataset2);
             const {element} = node.exportDOM(exportOptions);
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-callout-card kg-callout-card-blue">
@@ -126,6 +132,19 @@ describe('CalloutNode', function () {
             nodes[0].getBackgroundColor().should.equal('red');
             nodes[0].getCalloutText().should.equal('This is a callout');
             nodes[0].getCalloutEmoji().should.equal('💡');
+        }));
+
+        it('parses callout card with no emoji', editorTest(function () {
+            const dom = (new JSDOM(html`
+                <div class="kg-card kg-callout-card kg-callout-card-red">
+                    <div class="kg-callout-text">This is a callout</div>
+                </div>
+                    `)).window.document;
+            const nodes = $generateNodesFromDOM(editor, dom);
+            nodes.length.should.equal(1);
+            nodes[0].getBackgroundColor().should.equal('red');
+            nodes[0].getCalloutText().should.equal('This is a callout');
+            nodes[0].getCalloutEmoji().should.equal('');
         }));
     });
 

@@ -26,7 +26,11 @@ export function CalloutNodeComponent({nodeKey, textEditor, textEditorInitialStat
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             setHasEmoji(event.target.checked);
-            node.setCalloutEmoji(event.target.checked ? emoji : '');
+            if (event.target.checked && emoji === '') {
+                node.setCalloutEmoji('💡');
+            } else {
+                node.setCalloutEmoji(event.target.checked ? emoji : '');
+            }
         });
     };
 
