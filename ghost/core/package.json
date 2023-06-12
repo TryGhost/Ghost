@@ -25,7 +25,7 @@
     "build": "yarn build:css",
     "build:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
     "test": "yarn test:unit",
-    "test:base": "mocha --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js --retries=2 --reporter=./test/utils/mocha-retry-reporter.js",
+    "test:base": "DEBUG=* mocha --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js --retries=2 --reporter=./test/utils/mocha-retry-reporter.js",
     "test:single": "mocha --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js --timeout=60000",
     "test:all": "yarn test:unit && yarn test:integration && yarn test:e2e && yarn lint",
     "test:debug": "DEBUG=ghost:test* yarn test",
