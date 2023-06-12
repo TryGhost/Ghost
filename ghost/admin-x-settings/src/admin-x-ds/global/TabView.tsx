@@ -9,10 +9,11 @@ export type Tab = {
 
 interface TabViewProps {
     tabs: Tab[];
+    onTabChange?: (id: string) => void;
     defaultSelected?: string;
 }
 
-const TabView: React.FC<TabViewProps> = ({tabs, defaultSelected}) => {
+const TabView: React.FC<TabViewProps> = ({tabs, onTabChange, defaultSelected}) => {
     if (tabs.length !== 0 && defaultSelected === undefined) {
         defaultSelected = tabs[0].id;
     }
@@ -26,6 +27,7 @@ const TabView: React.FC<TabViewProps> = ({tabs, defaultSelected}) => {
     const handleTabChange = (e: React.MouseEvent<HTMLButtonElement>) => {
         const newTab = e.currentTarget.id;
         setSelectedTab(newTab);
+        onTabChange?.(newTab);
     };
 
     return (

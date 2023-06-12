@@ -1,5 +1,4 @@
 import React, {useEffect, useRef} from 'react';
-import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {CustomThemeSetting} from '../../../../types/api';
 
 type BrandSettings = {
@@ -13,17 +12,7 @@ type BrandSettings = {
 
 interface ThemePreviewProps {
     settings: BrandSettings
-}
-
-function getApiUrl({siteUrl, path = ''}: {
-    siteUrl: string;
-    path?: string;
-}): string {
-    const url = new URL(siteUrl);
-    const subdir = url.pathname.endsWith('/') ? url.pathname : `${url.pathname}/`;
-    const fullPath = `${subdir}${path.replace(/^\//, '')}`;
-
-    return `${url.origin}${fullPath}`;
+    url: string
 }
 
 function getPreviewData({
@@ -58,20 +47,16 @@ function getPreviewData({
     return params.toString();
 }
 
-const ThemePreview: React.FC<ThemePreviewProps> = ({settings}) => {
+const ThemePreview: React.FC<ThemePreviewProps> = ({settings,url}) => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
-    const {siteData} = useSettingGroup();
-    const apiEndpoint = getApiUrl({
-        siteUrl: siteData?.url || '',
-        path: ''
-    });
+
     useEffect(() => {
-        if (!apiEndpoint) {
+        if (!url) {
             return;
         }
 
         // Fetch theme preview HTML
-        fetch(apiEndpoint, {
+        fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'text/html;charset=utf-8',
@@ -111,7 +96,7 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({settings}) => {
             .catch(() => {
                 // handle error in fetching data
             });
-    }, [apiEndpoint, settings]);
+    }, [url, settings]);
     return (
         <>
             <iframe

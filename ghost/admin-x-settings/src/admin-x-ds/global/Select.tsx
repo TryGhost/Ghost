@@ -9,7 +9,7 @@ export interface SelectOption {
     label: string;
 }
 
-interface SelectProps {
+export interface SelectProps {
     title?: string;
     prompt?: string;
     options: SelectOption[];

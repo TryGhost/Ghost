@@ -4,10 +4,10 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useContext, useEffect, useState} from 'react';
 import StickyFooter from '../../../admin-x-ds/global/StickyFooter';
 import TabView, {Tab} from '../../../admin-x-ds/global/TabView';
-import ThemePreview from './designAndBranding/ThemePreivew';
+import ThemePreview from './designAndBranding/ThemePreview';
 import ThemeSettings from './designAndBranding/ThemeSettings';
 import useForm from '../../../hooks/useForm';
-import {CustomThemeSetting, Setting, SettingValue} from '../../../types/api';
+import {CustomThemeSetting, Post, Setting, SettingValue, SiteData} from '../../../types/api';
 import {PreviewModalContent} from '../../../admin-x-ds/global/PreviewModal';
 import {SelectOption} from '../../../admin-x-ds/global/Select';
 import {ServicesContext} from '../../providers/ServiceProvider';
@@ -19,7 +19,8 @@ const Sidebar: React.FC<{
     updateBrandSetting: (key: string, value: SettingValue) => void
     themeSettingSections: Array<{id: string, title: string, settings: CustomThemeSetting[]}>
     updateThemeSetting: (updated: CustomThemeSetting) => void
-}> = ({brandSettings,updateBrandSetting,themeSettingSections,updateThemeSetting}) => {
+    onTabChange: (id: string) => void
+}> = ({brandSettings,updateBrandSetting,themeSettingSections,updateThemeSetting,onTabChange}) => {
     const tabs: Tab[] = [
         {
             id: 'brand',
@@ -36,7 +37,7 @@ const Sidebar: React.FC<{
     return (
         <>
             <div className='p-7'>
-                <TabView tabs={tabs} />
+                <TabView tabs={tabs} onTabChange={onTabChange} />
             </div>
             <StickyFooter>
                 <button className='flex w-full cursor-pointer flex-col px-7' type='button' onClick={() => {}}>
@@ -48,11 +49,21 @@ const Sidebar: React.FC<{
     );
 };
 
+function getHomepageUrl(siteData: SiteData): string {
+    const url = new URL(siteData.url);
+    const subdir = url.pathname.endsWith('/') ? url.pathname : `${url.pathname}/`;
+
+    return `${url.origin}${subdir}`;
+}
+
 const DesignModal: React.FC = () => {
     const modal = useModal();
 
     const {api} = useContext(ServicesContext);
+    const {settings, siteData, saveSettings} = useContext(SettingsContext);
     const [themeSettings, setThemeSettings] = useState<Array<CustomThemeSetting>>([]);
+    const [latestPost, setLatestPost] = useState<Post | null>(null);
+    const [selectedUrl, setSelectedUrl] = useState(getHomepageUrl(siteData!));
 
     useEffect(() => {
         api.customThemeSettings.browse().then((response) => {
@@ -60,7 +71,11 @@ const DesignModal: React.FC = () => {
         });
     }, [api]);
 
-    const {settings, saveSettings} = useContext(SettingsContext);
+    useEffect(() => {
+        api.latestPost.browse().then((response) => {
+            setLatestPost(response.posts[0]);
+        });
+    }, [api]);
 
     const {
         formState,
@@ -116,12 +131,20 @@ const DesignModal: React.FC = () => {
     }));
 
     const urlOptions: SelectOption[] = [
-        {value: 'homepage', label: 'Homepage'},
-        {value: 'post', label: 'Post'}
-    ];
+        {value: getHomepageUrl(siteData!), label: 'Homepage'},
+        latestPost && {value: latestPost.url, label: 'Post'}
+    ].filter((option): option is SelectOption => Boolean(option));
 
     const onSelectURL = (url: string) => {
-        alert(url);
+        setSelectedUrl(url);
+    };
+
+    const onTabChange = (id: string) => {
+        if (id === 'post' && latestPost) {
+            setSelectedUrl(latestPost.url);
+        } else {
+            setSelectedUrl(getHomepageUrl(siteData!));
+        }
     };
 
     return <PreviewModalContent
@@ -138,14 +161,17 @@ const DesignModal: React.FC = () => {
                     coverImage,
                     themeSettings
                 }}
+                url={selectedUrl}
             />
         }
         previewToolbarURLs={urlOptions}
+        selectedURL={selectedUrl}
         sidebar={<Sidebar
             brandSettings={{description, accentColor, icon, logo, coverImage}}
             themeSettingSections={themeSettingSections}
             updateBrandSetting={updateBrandSetting}
             updateThemeSetting={updateThemeSetting}
+            onTabChange={onTabChange}
         />}
         sidebarPadding={false}
         testId='design-modal'

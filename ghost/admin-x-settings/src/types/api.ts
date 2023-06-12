@@ -56,6 +56,11 @@ export type SiteData = {
     version: string;
 };
 
+export type Post = {
+    id: string;
+    url: string;
+};
+
 type CustomThemeSettingData =
     { type: 'text', value: string | null, default: string | null } |
     { type: 'color', value: string, default: string } |
