@@ -29,7 +29,7 @@ export function EmailCtaNodeComponent({
     const handleToolbarEdit = (event) => {
         event.preventDefault();
         event.stopPropagation();
-        editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey});
+        editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey, focusEditor: false});
     };
 
     const handleSegmentChange = (value) => {

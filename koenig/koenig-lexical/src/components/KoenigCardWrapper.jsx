@@ -42,7 +42,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
                         const clickedDifferentEditor = !cardNode;
 
                         if (isSelected && (cardNode?.hasEditMode?.() && !isEditing)) {
-                            editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey});
+                            editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey, focusEditor: !clickedDifferentEditor});
                         } else if (!isSelected) {
                             editor.dispatchCommand(SELECT_CARD_COMMAND, {cardKey: nodeKey, focusEditor: !clickedDifferentEditor});
                         }

@@ -76,7 +76,7 @@ function SignupNodeComponent({
     const handleToolbarEdit = (event) => {
         event.preventDefault();
         event.stopPropagation();
-        editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey});
+        editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey, focusEditor: false});
     };
 
     const imageUploader = fileUploader.useFileUpload('image');

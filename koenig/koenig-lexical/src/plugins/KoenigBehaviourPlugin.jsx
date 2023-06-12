@@ -252,11 +252,11 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             ),
             editor.registerCommand(
                 EDIT_CARD_COMMAND,
-                ({cardKey}) => {
+                ({cardKey, focusEditor}) => {
                     if (selectedCardKey && selectedCardKey !== cardKey) {
                         $deselectCard(editor, selectedCardKey);
                     }
-                    $selectCard(editor, cardKey);
+                    $selectCard(editor, cardKey, focusEditor);
 
                     setSelectedCardKey(cardKey);
 

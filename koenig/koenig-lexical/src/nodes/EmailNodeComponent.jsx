@@ -18,7 +18,7 @@ export function EmailNodeComponent({nodeKey, htmlEditor, htmlEditorInitialState}
     const handleToolbarEdit = (event) => {
         event.preventDefault();
         event.stopPropagation();
-        editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey});
+        editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey, focusEditor: false});
     };
 
     React.useEffect(() => {
