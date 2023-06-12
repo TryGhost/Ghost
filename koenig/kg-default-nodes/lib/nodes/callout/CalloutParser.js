@@ -23,7 +23,7 @@ export class CalloutParser {
 
                             const payload = {
                                 calloutText: textNode && textNode.innerHTML.trim(),
-                                calloutEmoji: emojiNode && emojiNode.innerHTML.trim(),
+                                calloutEmoji: emojiNode && emojiNode.innerHTML.trim() || '',
                                 backgroundColor: color
                             };
 
