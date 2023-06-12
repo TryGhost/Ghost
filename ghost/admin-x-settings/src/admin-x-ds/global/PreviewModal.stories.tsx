@@ -14,7 +14,13 @@ const meta = {
         <NiceModal.Provider>
             <PreviewModalContainer {...context.args} />
         </NiceModal.Provider>
-    )]
+    )],
+    argTypes: {
+        sidebar: {control: 'text'},
+        preview: {control: 'text'},
+        sidebarButtons: {control: 'text'},
+        sidebarHeader: {control: 'text'}
+    }
 } satisfies Meta<typeof PreviewModal>;
 
 export default meta;
@@ -79,5 +85,12 @@ export const CustomSidebarHeader: Story = {
                 <Heading level={3}>A custom header here</Heading>
             </div>
         )
+    }
+};
+
+export const FullBleed: Story = {
+    args: {
+        ...Default.args,
+        size: 'bleed'
     }
 };

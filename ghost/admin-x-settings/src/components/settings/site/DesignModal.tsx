@@ -1,4 +1,5 @@
 import BrandSettings, {BrandSettingValues} from './designAndBranding/BrandSettings';
+import ChangeThemeModal from './designAndBranding/ChangeThemeModal';
 import ConfirmationModal from '../../../admin-x-ds/global/ConfirmationModal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useContext, useEffect, useState} from 'react';
@@ -20,7 +21,15 @@ const Sidebar: React.FC<{
     themeSettingSections: Array<{id: string, title: string, settings: CustomThemeSetting[]}>
     updateThemeSetting: (updated: CustomThemeSetting) => void
     onTabChange: (id: string) => void
-}> = ({brandSettings,updateBrandSetting,themeSettingSections,updateThemeSetting,onTabChange}) => {
+    onChangeTheme: () => void
+}> = ({
+    brandSettings,
+    updateBrandSetting,
+    themeSettingSections,
+    updateThemeSetting,
+    onTabChange,
+    onChangeTheme
+}) => {
     const tabs: Tab[] = [
         {
             id: 'brand',
@@ -40,7 +49,7 @@ const Sidebar: React.FC<{
                 <TabView tabs={tabs} onTabChange={onTabChange} />
             </div>
             <StickyFooter>
-                <button className='flex w-full cursor-pointer flex-col px-7' type='button' onClick={() => {}}>
+                <button className='m m-3 flex w-full cursor-pointer flex-col rounded p-4 transition-all hover:bg-grey-100' type='button' onClick={onChangeTheme}>
                     <strong>Change theme</strong>
                     <span className='text-sm text-grey-600'>Casper</span>
                 </button>
@@ -147,35 +156,44 @@ const DesignModal: React.FC = () => {
         }
     };
 
-    return <PreviewModalContent
-        buttonsDisabled={saveState === 'saving'}
-        cancelLabel='Close'
-        okLabel={saveState === 'saved' ? 'Saved' : (saveState === 'saving' ? 'Saving ...' : 'Save')}
-        preview={
-            <ThemePreview
-                settings={{
-                    description,
-                    accentColor,
-                    icon,
-                    logo,
-                    coverImage,
-                    themeSettings
-                }}
-                url={selectedUrl}
-            />
-        }
-        previewToolbarURLs={urlOptions}
-        selectedURL={selectedUrl}
-        sidebar={<Sidebar
+    const showThemeModal = () => {
+        NiceModal.show(ChangeThemeModal);
+    };
+
+    const previewContent =
+        <ThemePreview
+            settings={{
+                description,
+                accentColor,
+                icon,
+                logo,
+                coverImage,
+                themeSettings
+            }}
+            url={selectedUrl}
+        />;
+    const sidebarContent =
+        <Sidebar
             brandSettings={{description, accentColor, icon, logo, coverImage}}
             themeSettingSections={themeSettingSections}
             updateBrandSetting={updateBrandSetting}
             updateThemeSetting={updateThemeSetting}
+            onChangeTheme={showThemeModal}
             onTabChange={onTabChange}
-        />}
+        />;
+
+    return <PreviewModalContent
+        buttonsDisabled={saveState === 'saving'}
+        okLabel={saveState === 'saved' ? 'Saved' : (saveState === 'saving' ? 'Saving...' : 'Save and close')}
+        preview={previewContent}
+        previewToolbarURLs={urlOptions}
+        selectedURL={selectedUrl}
+        sidebar={sidebarContent}
         sidebarPadding={false}
+        size='full'
         testId='design-modal'
         title='Design'
+        trafficLights={false}
         onCancel={() => {
             if (saveState === 'unsaved') {
                 NiceModal.show(ConfirmationModal, {
@@ -200,7 +218,7 @@ const DesignModal: React.FC = () => {
         }}
         onOk={async () => {
             await handleSave();
-            // modal.remove();
+            modal.remove();
         }}
         onSelectURL={onSelectURL}
     />;
