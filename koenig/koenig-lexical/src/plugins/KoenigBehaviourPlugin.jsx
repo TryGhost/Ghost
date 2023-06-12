@@ -108,6 +108,12 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
     // deselect cards on mousedown outside of the editor container
     React.useEffect(() => {
         const onMousedown = (event) => {
+            if (!document.body.contains(event.target)) {
+                // The event target is no longer in the DOM
+                // This is possible if we have listeners in the capture phase of the event (e.g. dropdowns)
+                return;
+            }
+
             if (containerElem.current && !containerElem.current.contains(event.target)) {
                 editor.update(() => {
                     const selection = $getSelection();
@@ -962,7 +968,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         linkNode.append(linkTextNode);
                         parentNode.append(linkNode);
                         parentNode.selectEnd();
-                        return true; 
+                        return true;
                     }
 
                     // if a link is pasted in a blank text node, insert an embed card (may turn into bookmark)
