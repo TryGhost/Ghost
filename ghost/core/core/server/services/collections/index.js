@@ -39,12 +39,14 @@ class CollectionsServiceWrapper {
     }
 
     async init() {
-        const featuredCollections = await this.api.getAll({filter: 'slug:featured'});
+        const existingBuiltins = await this.api.getAll({filter: 'slug:featured'});
 
-        if (!featuredCollections.data.length) {
-            require('./built-in-collections').forEach((collection) => {
-                this.api.createCollection(collection);
-            });
+        if (!existingBuiltins.data.length) {
+            const builtInCollections = require('./built-in-collections');
+
+            for (const collection of builtInCollections) {
+                await this.api.createCollection(collection);
+            }
         }
     }
 }

@@ -84,6 +84,7 @@ describe('Collections API', function () {
             })
             .matchBodySnapshot({
                 collections: [
+                    buildMatcher(11, {withSortOrder: true}),
                     buildMatcher(2, {withSortOrder: true}),
                     buildMatcher(0)
                 ]

@@ -184,6 +184,63 @@ Object {
   "collections": Array [
     Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": "Collection with all posts",
+      "feature_image": null,
+      "filter": "status:published",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": Any<Number>,
+        },
+      ],
+      "slug": "index",
+      "title": "Index",
+      "type": "automatic",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": "Collection of featured posts",
       "feature_image": null,
       "filter": "featured:true",
@@ -217,12 +274,12 @@ Object {
   ],
   "meta": Object {
     "pagination": Object {
-      "limit": 2,
+      "limit": 3,
       "next": null,
       "page": 1,
       "pages": 1,
       "prev": null,
-      "total": 2,
+      "total": 3,
     },
   },
 }
@@ -232,7 +289,7 @@ exports[`Collections API Can browse Collections 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "725",
+  "content-length": "1530",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
