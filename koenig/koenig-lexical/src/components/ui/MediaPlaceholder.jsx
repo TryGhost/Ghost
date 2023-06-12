@@ -41,7 +41,7 @@ export function MediaPlaceholder({
     return (
         <div
             ref={placeholderRef}
-            className="h-full w-full" {...props}
+            className="not-kg-prose h-full w-full" {...props}
             data-testid={dataTestId}
         >
             <div className={`relative flex h-full items-center justify-center border bg-grey-50 dark:bg-grey-950 ${size === 'xsmall' ? 'before:pb-[12.5%]' : 'before:pb-[62.5%]'} ${borderStyle === 'dashed' ? 'rounded border-dashed border-grey/40' : 'border-grey/20 dark:border-grey/10'}`}>
