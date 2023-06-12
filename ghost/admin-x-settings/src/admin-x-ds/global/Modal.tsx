@@ -15,6 +15,7 @@ export interface ModalProps {
      */
     size?: ModalSize;
 
+    testId?: string;
     title?: string;
     okLabel?: string;
     okColor?: string;
@@ -32,6 +33,7 @@ export interface ModalProps {
 
 const Modal: React.FC<ModalProps> = ({
     size = 'md',
+    testId,
     title,
     okLabel = 'OK',
     cancelLabel = 'Cancel',
@@ -179,7 +181,7 @@ const Modal: React.FC<ModalProps> = ({
                 'pointer-events-none fixed inset-0 z-0',
                 backDrop && 'bg-[rgba(98,109,121,0.15)] backdrop-blur-[3px]'
             )}></div>
-            <section className={modalClasses} style={modalStyles}>
+            <section className={modalClasses} data-testid={testId} style={modalStyles}>
                 <div className={contentClasses}>
                     <div className='h-full'>
                         {title && <Heading level={4}>{title}</Heading>}

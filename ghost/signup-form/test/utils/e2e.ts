@@ -7,7 +7,7 @@ type LastApiRequest = {
     body: null | any
 };
 
-export async function initialize({page, path, ...options}: {page: Page, path?: string; title?: string, description?: string, logo?: string, backgroundColor?: string, buttonColor?: string, site?: string, 'label-1'?: string, 'label-2'?: string}) {
+export async function initialize({page, path, apiStatus, ...options}: {page: Page, path?: string; title?: string, description?: string, icon?: string, backgroundColor?: string, buttonColor?: string, site?: string, 'label-1'?: string, 'label-2'?: string, apiStatus?: number}) {
     const sitePath = `${MOCKED_SITE_URL}${path ?? ''}`;
     await page.route(sitePath, async (route) => {
         await route.fulfill({
@@ -20,7 +20,7 @@ export async function initialize({page, path, ...options}: {page: Page, path?: s
     await page.setViewportSize({width: 1000, height: 1000});
 
     await page.goto(sitePath);
-    const lastApiRequest = await mockApi({page});
+    const lastApiRequest = await mockApi({page, status: apiStatus});
 
     if (!options.site) {
         options.site = MOCKED_SITE_URL;
@@ -44,7 +44,7 @@ export async function initialize({page, path, ...options}: {page: Page, path?: s
     };
 }
 
-export async function mockApi({page}: {page: any}) {
+export async function mockApi({page, status = 200}: {page: any, status?: number}) {
     const lastApiRequest: LastApiRequest = {
         body: null
     };
@@ -54,7 +54,7 @@ export async function mockApi({page}: {page: any}) {
         lastApiRequest.body = requestBody;
 
         await route.fulfill({
-            status: 200,
+            status,
             body: 'ok'
         });
     });

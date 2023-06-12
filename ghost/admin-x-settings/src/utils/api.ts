@@ -1,4 +1,4 @@
-import {CustomThemeSetting, Setting, SiteData, User, UserRole} from '../types/api';
+import {CustomThemeSetting, Post, Setting, SiteData, User, UserRole} from '../types/api';
 import {getGhostPaths} from './helpers';
 
 interface Meta {
@@ -51,6 +51,20 @@ export interface InvitesResponseType {
 
 export interface CustomThemeSettingsResponseType {
     custom_theme_settings: CustomThemeSetting[];
+}
+
+export interface PostsResponseType {
+    meta: {
+        pagination: {
+            page: number
+            limit: number
+            pages: number
+            total: number
+            next: number | null
+            prev: number | null
+        }
+    }
+    posts: Post[];
 }
 
 export interface SiteResponseType {
@@ -127,6 +141,9 @@ interface API {
     customThemeSettings: {
         browse: () => Promise<CustomThemeSettingsResponseType>
         edit: (newSettings: CustomThemeSetting[]) => Promise<CustomThemeSettingsResponseType>
+    };
+    latestPost: {
+        browse: () => Promise<PostsResponseType>
     }
 }
 
@@ -323,6 +340,13 @@ function setupGhostApi({ghostVersion}: GhostApiOptions): API {
                 });
 
                 const data: CustomThemeSettingsResponseType = await response.json();
+                return data;
+            }
+        },
+        latestPost: {
+            browse: async () => {
+                const response = await fetcher('/posts/?filter=status%3Apublished&order=published_at%20DESC&limit=1&fields=id,url');
+                const data: PostsResponseType = await response.json();
                 return data;
             }
         }

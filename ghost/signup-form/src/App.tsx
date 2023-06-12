@@ -1,5 +1,5 @@
-import * as i18nLib from '@tryghost/i18n';
 import React, {ComponentProps} from 'react';
+import i18nLib from '@tryghost/i18n';
 import pages, {Page, PageName} from './pages';
 import {AppContextProvider, AppContextType} from './AppContext';
 import {ContentBox} from './components/ContentBox';
@@ -30,7 +30,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         } as Page);
     };
 
-    const i18n = i18nLib.default(options.locale, 'signup-form');
+    const i18n = i18nLib(options.locale, 'signup-form');
     const context: AppContextType = {
         page,
         api,

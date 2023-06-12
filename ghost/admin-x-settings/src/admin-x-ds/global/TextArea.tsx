@@ -19,7 +19,20 @@ interface TextAreaProps {
     onChange?: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
 }
 
-const TextArea: React.FC<TextAreaProps> = ({inputRef, title, value, rows = 3, maxLength, resize = 'none', error, placeholder, hint, clearBg = false, onChange, ...props}) => {
+const TextArea: React.FC<TextAreaProps> = ({
+    inputRef,
+    title,
+    value,
+    rows = 3,
+    maxLength,
+    resize = 'none',
+    error,
+    placeholder,
+    hint,
+    clearBg = true,
+    onChange,
+    ...props
+}) => {
     const id = useId();
 
     let styles = `border-b ${clearBg ? 'bg-transparent' : 'bg-grey-75 px-[10px]'} py-2 ${error ? `border-red` : `border-grey-500 hover:border-grey-700 focus:border-black`} ${(title && !clearBg) && `mt-2`}`;
@@ -44,7 +57,7 @@ const TextArea: React.FC<TextAreaProps> = ({inputRef, title, value, rows = 3, ma
 
     return (
         <div className='flex flex-col'>
-            {title && <Heading htmlFor={id} useLabelTag={true}>{title}</Heading>}
+            {title && <Heading grey={value ? true : false} htmlFor={id} useLabelTag={true}>{title}</Heading>}
             <textarea
                 ref={inputRef}
                 className={styles}

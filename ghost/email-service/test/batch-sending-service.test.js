@@ -8,9 +8,11 @@ const errors = require('@tryghost/errors');
 
 describe('Batch Sending Service', function () {
     let errorLog;
+    let warnLog;
 
     beforeEach(function () {
         errorLog = sinon.stub(logging, 'error');
+        warnLog = sinon.stub(logging, 'warn');
         sinon.stub(logging, 'info');
     });
 
@@ -885,6 +887,7 @@ describe('Batch Sending Service', function () {
         it('Truncates recipients if more than the maximum are returned in a batch', async function () {
             const EmailBatch = createModelClass({
                 findOne: {
+                    id: '123_batch_id',
                     status: 'pending',
                     member_segment: null
                 }
@@ -896,6 +899,7 @@ describe('Batch Sending Service', function () {
                     {
                         member_id: '123',
                         member_uuid: '123',
+                        batch_id: '123_batch_id',
                         member_email: 'example@example.com',
                         member_name: 'Test User',
                         loaded: ['member'],
@@ -910,6 +914,7 @@ describe('Batch Sending Service', function () {
                     {
                         member_id: '124',
                         member_uuid: '124',
+                        batch_id: '123_batch_id',
                         member_email: 'example2@example.com',
                         member_name: 'Test User 2',
                         loaded: ['member'],
@@ -924,6 +929,7 @@ describe('Batch Sending Service', function () {
                     {
                         member_id: '125',
                         member_uuid: '125',
+                        batch_id: '123_batch_id',
                         member_email: 'example3@example.com',
                         member_name: 'Test User 3',
                         loaded: ['member'],
@@ -935,10 +941,11 @@ describe('Batch Sending Service', function () {
                             products: []
                         })
                     },
-                    // NOTE: one recipient with a duplicate data
+                    // NOTE: one recipient from a different batch
                     {
                         member_id: '125',
                         member_uuid: '125',
+                        batch_id: '124_ANOTHER_batch_id',
                         member_email: 'example3@example.com',
                         member_name: 'Test User 3',
                         loaded: ['member'],
@@ -966,20 +973,23 @@ describe('Batch Sending Service', function () {
 
             const result = await service.sendBatch({
                 email: createModel({}),
-                batch: createModel({}),
+                batch: createModel({
+                    id: '123_batch_id'
+                }),
                 post: createModel({}),
                 newsletter: createModel({})
             });
 
             assert.equal(result, true);
-            sinon.assert.calledThrice(errorLog);
-            const firstLoggedError = errorLog.firstCall.args[0];
-            const secondLoggedError = errorLog.secondCall.args[0];
-            const thirdLoggedError = errorLog.thirdCall.args[0];
 
-            assert.match(firstLoggedError, /Batch [a-f0-9]{24} has 4 members, but the sending service only supports 2 members per batch/);
-            assert.match(secondLoggedError, /Email batch [a-f0-9]{24} has 4 members, which exceeds the maximum of 2. Filtering to unique members/);
-            assert.match(thirdLoggedError, /Email batch [a-f0-9]{24} has 3 members, which exceeds the maximum of 2. Truncating to 2/);
+            sinon.assert.calledOnce(warnLog);
+            const firstLoggedWarn = warnLog.firstCall.args[0];
+            assert.match(firstLoggedWarn, /Email batch 123_batch_id has 4 members, which exceeds the maximum of 2 members per batch. Filtering by batch_id: 123_batch_id/);
+
+            sinon.assert.calledOnce(errorLog);
+            const firstLoggedError = errorLog.firstCall.args[0];
+
+            assert.match(firstLoggedError, /Email batch 123_batch_id has 3 members, which exceeds the maximum of 2. Truncating to 2/);
 
             sinon.assert.calledOnce(sendingService.send);
             const {members} = sendingService.send.firstCall.args[0];
@@ -1041,199 +1051,6 @@ describe('Batch Sending Service', function () {
             assert.equal(loggedExeption.code, 'BULK_EMAIL_DB_RETRY');
 
             sinon.assert.notCalled(sendingService.send);
-        });
-
-        it('Dumps members information into a file when recipients count is over the sender limit', async function () {
-            const fs = require('fs-extra');
-
-            const EmailBatch = createModelClass({
-                findOne: {
-                    status: 'pending',
-                    member_segment: null
-                }
-            });
-            const findOne = sinon.spy(EmailBatch, 'findOne');
-            const fsStub = sinon.stub(fs, 'writeFile').resolves();
-            const dbMembers = [
-                {
-                    member_id: '123',
-                    member_uuid: '123',
-                    member_email: 'example@example.com',
-                    member_name: 'Test User',
-                    loaded: ['member'],
-                    member: createModel({
-                        created_at: new Date(),
-                        loaded: ['stripeSubscriptions', 'products'],
-                        status: 'free',
-                        stripeSubscriptions: [],
-                        products: []
-                    })
-                },
-                {
-                    member_id: '124',
-                    member_uuid: '124',
-                    member_email: 'example2@example.com',
-                    member_name: 'Test User 2',
-                    loaded: ['member'],
-                    member: createModel({
-                        created_at: new Date(),
-                        status: 'free',
-                        loaded: ['stripeSubscriptions', 'products'],
-                        stripeSubscriptions: [],
-                        products: []
-                    })
-                },
-                {
-                    member_id: '125',
-                    member_uuid: '125',
-                    member_email: 'example3@example.com',
-                    member_name: 'Test User 3',
-                    loaded: ['member'],
-                    member: createModel({
-                        created_at: new Date(),
-                        status: 'free',
-                        loaded: ['stripeSubscriptions', 'products'],
-                        stripeSubscriptions: [],
-                        products: []
-                    })
-                },
-                {
-                    member_id: '125',
-                    member_uuid: '125',
-                    member_email: 'example3@example.com',
-                    member_name: 'Test User 3',
-                    loaded: ['member'],
-                    member: createModel({
-                        created_at: new Date(),
-                        status: 'free',
-                        loaded: ['stripeSubscriptions', 'products'],
-                        stripeSubscriptions: [],
-                        products: []
-                    })
-                }
-            ];
-
-            const DoubleTheEmailRecipients = createModelClass({
-                findAll: dbMembers
-            });
-
-            const sendingService = {
-                send: sinon.stub().resolves({id: 'providerid@example.com'}),
-                getMaximumRecipients: () => 2
-            };
-
-            const service = new BatchSendingService({
-                models: {
-                    EmailBatch,
-                    EmailRecipient: DoubleTheEmailRecipients
-                },
-                sendingService,
-                BEFORE_RETRY_CONFIG: {maxRetries: 10, maxTime: 2000, sleep: 1},
-                debugStorageFilePath: '/tmp/'
-            });
-
-            const result = await service.sendBatch({
-                email: createModel({}),
-                batch: createModel({}),
-                post: createModel({}),
-                newsletter: createModel({})
-            });
-
-            // dumps the members into a file
-            assert.ok(fsStub.calledOnce);
-            assert.match(fsStub.firstCall.args[0], /\/tmp\/email-batch-sending-members-(.+)Z\.json/);
-            assert.match(fsStub.firstCall.args[1], /example@example.com/gi);
-
-            // still sends the batch
-            assert.equal(result, true);
-            sinon.assert.calledOnce(sendingService.send);
-
-            const {members} = sendingService.send.firstCall.args[0];
-            assert.equal(members.length, 2);
-
-            sinon.assert.calledOnce(findOne);
-            const batch = await findOne.firstCall.returnValue;
-            assert.equal(batch.get('status'), 'submitted');
-            assert.equal(batch.get('provider_id'), 'providerid@example.com');
-        });
-
-        it('Catches an error when dumping members into a file', async function () {
-            const fs = require('fs-extra');
-
-            const EmailBatch = createModelClass({
-                findOne: {
-                    status: 'pending',
-                    member_segment: null
-                }
-            });
-            const dbMembers = [
-                {
-                    member_id: '123',
-                    member_uuid: '123',
-                    member_email: 'example@example.com',
-                    member_name: 'Test User',
-                    loaded: ['member'],
-                    member: createModel({
-                        created_at: new Date(),
-                        loaded: ['stripeSubscriptions', 'products'],
-                        status: 'free',
-                        stripeSubscriptions: [],
-                        products: []
-                    })
-                },
-                {
-                    member_id: '124',
-                    member_uuid: '124',
-                    member_email: 'example2@example.com',
-                    member_name: 'Test User 2',
-                    loaded: ['member'],
-                    member: createModel({
-                        created_at: new Date(),
-                        status: 'free',
-                        loaded: ['stripeSubscriptions', 'products'],
-                        stripeSubscriptions: [],
-                        products: []
-                    })
-                }
-            ];
-
-            const fsStub = sinon.stub(fs, 'writeFile').rejects('oops');
-
-            const DoubleTheEmailRecipients = createModelClass({
-                findAll: dbMembers
-            });
-
-            const sendingService = {
-                send: sinon.stub().resolves({id: 'providerid@example.com'}),
-                getMaximumRecipients: () => 1
-            };
-
-            const service = new BatchSendingService({
-                models: {
-                    EmailBatch,
-                    EmailRecipient: DoubleTheEmailRecipients
-                },
-                sendingService,
-                BEFORE_RETRY_CONFIG: {maxRetries: 10, maxTime: 2000, sleep: 1},
-                debugStorageFilePath: '/tmp/'
-            });
-
-            await service.sendBatch({
-                email: createModel({}),
-                batch: createModel({}),
-                post: createModel({}),
-                newsletter: createModel({})
-            });
-
-            assert.ok(fsStub.calledOnce);
-            assert.equal(errorLog.callCount, 5, 'should have logged 5 errors');
-            const firstLoggedError = errorLog.firstCall.args[0];
-            const secondLoggedError = errorLog.secondCall.args[0];
-            const thirdLoggedError = errorLog.thirdCall.args[0];
-
-            assert.match(firstLoggedError, /Batch [a-f0-9]{24} has 2 members, but the sending service only supports 1 members per batch/);
-            assert.match(secondLoggedError, /Failed to write members object dump to/);
-            assert.equal(thirdLoggedError.name, 'oops');
         });
     });
 
