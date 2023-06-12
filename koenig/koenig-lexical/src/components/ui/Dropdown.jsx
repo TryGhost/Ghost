@@ -62,7 +62,7 @@ export function Dropdown({value, menu, onChange}) {
     const trigger = selectedItem?.label ?? '';
 
     return (
-        <div className="relative font-sans text-sm font-normal">
+        <div className="relative z-0 font-sans text-sm font-normal">
             <button className={`relative w-full cursor-pointer border border-grey-300 py-2 px-3 text-left font-sans font-normal text-grey-900 focus-visible:outline-none dark:border-grey-900 dark:bg-grey-900 dark:text-white dark:placeholder:text-grey-800 ${open ? 'rounded-t' : 'rounded'}`} type="button" onBlur={handleBlur} onClick={handleOpen} onMouseDownCapture={preventLoseFocus}>
                 {trigger}
                 <ArrowIcon className={`absolute right-2 top-4 h-2 w-2 text-grey-600 ${open && 'rotate-180'}`} />

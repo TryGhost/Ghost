@@ -101,9 +101,9 @@ export function MultiSelectDropdown({placeholder = '', items = [], availableItem
     }
 
     return (
-        <div className="relative font-sans text-sm font-normal" data-testid={dataTestId}>
+        <div className="relative z-0 font-sans text-sm font-normal" data-testid={dataTestId}>
             <div
-                className={`relative flex w-full cursor-text flex-wrap gap-1 border border-grey-300 py-2 pl-3 pr-5 text-left font-sans font-normal text-grey-900 focus-visible:outline-none dark:border-grey-900 dark:bg-grey-900 dark:text-white dark:placeholder:text-grey-800 ${open ? 'rounded-t' : 'rounded'}`}
+                className={`relative flex w-full cursor-text flex-wrap gap-1 rounded border border-grey-300 bg-white py-2 pl-3 pr-5 text-left font-sans font-normal text-grey-900 focus-within:border-green focus-within:shadow-insetgreen focus-visible:outline-none dark:border-grey-900 dark:bg-grey-900 dark:text-white dark:placeholder:text-grey-800`}
                 type="button"
                 onClick={() => inputRef.current.focus()}
             >
@@ -123,7 +123,7 @@ export function MultiSelectDropdown({placeholder = '', items = [], availableItem
                 <div className="flex-1">
                     <input
                         ref={inputRef}
-                        className="h-full w-full min-w-[5rem] appearance-none bg-transparent px-1 leading-none outline-none"
+                        className="h-full w-full min-w-[5rem] appearance-none bg-transparent px-0 leading-none outline-none"
                         placeholder={selectedItems.length === 0 ? placeholder : ''}
                         value={filter}
                         onBlur={handleBlur}

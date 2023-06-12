@@ -61,7 +61,7 @@ export function InputList({dataTestId, listOptions, value, placeholder, onChange
 
     return (
         <>
-            <div className="relative">
+            <div className="relative z-0">
                 <Input
                     dataTestId={dataTestId}
                     placeholder={placeholder}

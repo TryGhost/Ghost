@@ -2,6 +2,9 @@ import React, {useLayoutEffect} from 'react';
 import {debounce} from 'lodash';
 
 /**
+ * Note: when using the DropdownContainer, make sure the input and the dropdown both are in a relative container with a defined z-index (or new stacking context)
+ * Make sure the input has a background color, to avoid the shadow of the dropdown showing through
+ *
  * Displays the dropdown above or below the parent element, depending on the space available in the viewport.
  * The parent should be positioned relative.
  */
@@ -10,10 +13,10 @@ export function DropdownContainer({children}) {
 
     const [placement, setPlacement] = React.useState('bottom');
 
-    let placementClasses = 'mt-[-1px] rounded-b';
+    let placementClasses = 'mt-[-2px] rounded-b border-t-0';
 
     if (placement === 'top') {
-        placementClasses = 'top-0 -translate-y-full rounded-t';
+        placementClasses = 'top-[2px] -translate-y-full rounded-t border-b-0';
     }
 
     const updatePlacement = () => {
@@ -53,7 +56,7 @@ export function DropdownContainer({children}) {
     }, []);
 
     return (
-        <ul ref={divRef} className={`absolute ${placementClasses} max-h-[30vh] w-full overflow-y-auto border border-grey-200 bg-white py-1 shadow dark:border-grey-800 dark:bg-grey-900`}>
+        <ul ref={divRef} className={`absolute ${placementClasses} z-[-1] max-h-[30vh] w-full overflow-y-auto border border-grey-200 bg-white py-1 shadow dark:border-grey-800 dark:bg-grey-900`}>
             {children}
         </ul>
     );
