@@ -7,6 +7,9 @@ module.exports = {
     docName: 'newsletters',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'filter',
@@ -29,6 +32,9 @@ module.exports = {
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'fields',
@@ -102,6 +108,9 @@ module.exports = {
     },
 
     verifyPropertyUpdate: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: {
             method: 'edit'
         },

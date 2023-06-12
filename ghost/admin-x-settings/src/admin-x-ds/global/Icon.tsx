@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import clsx from 'clsx';
 
 interface UseDynamicSVGImportOptions {
     onCompleted?: (
@@ -52,7 +53,7 @@ interface IconProps {
     /**
      * Accepts all colors available in the actual TailwindCSS theme, e.g. `black`, `green-100`
      */
-    color?: string;
+    colorClass?: string;
     styles?: string;
     className?: string;
 }
@@ -63,7 +64,7 @@ interface IconProps {
  * - all icons must have all it's children color value set `currentColor`
  * - all strokes must be paths and _NOT_ outlined objects. Stroke width should be set to 1.5px
  */
-const Icon: React.FC<IconProps> = ({name, size = 'md', color = 'black', className = ''}) => {
+const Icon: React.FC<IconProps> = ({name, size = 'md', colorClass = 'text-black', className = ''}) => {
     const {SvgComponent} = useDynamicSVGImport(name);
 
     let styles = '';
@@ -89,9 +90,10 @@ const Icon: React.FC<IconProps> = ({name, size = 'md', color = 'black', classNam
         }
     }
 
-    if (color) {
-        styles += ` text-${color}`;
-    }
+    styles = clsx(
+        styles,
+        colorClass
+    );
 
     if (SvgComponent) {
         return (

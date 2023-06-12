@@ -5,7 +5,7 @@ import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {MultiValue} from 'react-select';
-import {getOptionLabel} from '../../../utils/helpers';
+import {getOptionLabel, getSettingValues} from '../../../utils/helpers';
 
 type RefipientValueArgs = {
     defaultEmailRecipients: string;
@@ -50,16 +50,16 @@ function getDefaultRecipientValue({
 
 const DefaultRecipients: React.FC = () => {
     const {
-        currentState,
+        localSettings,
+        isEditing,
         saveState,
         handleSave,
         handleCancel,
         updateSetting,
-        getSettingValues,
-        handleStateChange
+        handleEditingChange
     } = useSettingGroup();
 
-    const [defaultEmailRecipients, defaultEmailRecipientsFilter] = getSettingValues([
+    const [defaultEmailRecipients, defaultEmailRecipientsFilter] = getSettingValues(localSettings, [
         'editor_default_email_recipients', 'editor_default_email_recipients_filter'
     ]) as [string, string|null];
 
@@ -107,13 +107,13 @@ const DefaultRecipients: React.FC = () => {
                 defaultSelectedOption={emailRecipientValue}
                 hint='Who should be able to subscribe to your site?'
                 options={RECIPIENT_FILTER_OPTIONS}
-                title="Subscription access"
+                title="Default Newsletter recipients"
                 onSelect={(value) => {
                     setDefaultRecipientValue(value);
                 }}
             />
             {(emailRecipientValue === 'segment') && (
-                <MultiSelect 
+                <MultiSelect
                     defaultValues={[
                         {value: 'option2', label: 'Fake tier 2'}
                     ]}
@@ -123,6 +123,7 @@ const DefaultRecipients: React.FC = () => {
                         {value: 'option3', label: 'Fake tier 3'}
                     ]}
                     title='Select tiers'
+                    clearBg
                     onChange={(selected: MultiValue<MultiSelectOption>) => {
                         selected?.map(o => (
                             alert(`${o.label} (${o.value})`)
@@ -136,15 +137,16 @@ const DefaultRecipients: React.FC = () => {
     return (
         <SettingGroup
             description='When you publish new content, who do you usually want to send it to?'
+            isEditing={isEditing}
             navid='default-recipients'
             saveState={saveState}
-            state={currentState}
+            testId='default-recipients'
             title='Default recipients'
             onCancel={handleCancel}
+            onEditingChange={handleEditingChange}
             onSave={handleSave}
-            onStateChange={handleStateChange}
         >
-            {currentState === 'view' ? values : form}
+            {isEditing ? form : values}
         </SettingGroup>
     );
 };

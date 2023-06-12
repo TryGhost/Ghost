@@ -8,6 +8,7 @@ export interface IButton {
     size?: ButtonSize;
     label?: string;
     icon?: string;
+    iconColorClass?: string;
     key?: string;
     color?: string;
     fullWidth?: boolean;
@@ -21,6 +22,7 @@ const Button: React.FC<IButton> = ({
     size = 'md',
     label = '',
     icon = '',
+    iconColorClass = 'text-black',
     color = 'clear',
     fullWidth,
     link,
@@ -33,11 +35,11 @@ const Button: React.FC<IButton> = ({
         color = 'clear';
     }
 
-    let styles = className;
-    
+    let styles = '';
+
     styles += ' transition whitespace-nowrap flex items-center justify-center rounded-sm text-sm';
     styles += ((link && color !== 'clear' && color !== 'black') || (!link && color !== 'clear')) ? ' font-bold' : ' font-semibold';
-    styles += !link ? `${size === 'sm' ? ' px-3 h-7 ' : ' px-4 h-9 '}` : '';
+    styles += !link ? `${size === 'sm' ? ' px-3 h-7 ' : ' px-4 h-[34px] '}` : '';
 
     switch (color) {
     case 'black':
@@ -62,6 +64,7 @@ const Button: React.FC<IButton> = ({
 
     styles += (fullWidth && !link) ? ' w-full' : '';
     styles += (disabled) ? ' opacity-40' : ' cursor-pointer';
+    styles += ` ${className}`;
 
     return (
         <button
@@ -71,7 +74,7 @@ const Button: React.FC<IButton> = ({
             onClick={onClick}
             {...props}
         >
-            {icon && <Icon color={(color === 'clear' || color === 'grey' || color === 'white' ? 'black' : 'white')} name={icon} size={size === 'sm' ? 'sm' : 'md'} />}
+            {icon && <Icon colorClass={iconColorClass} name={icon} size={size === 'sm' ? 'sm' : 'md'} />}
             {label}
         </button>
     );

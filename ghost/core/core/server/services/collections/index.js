@@ -4,6 +4,7 @@ const {
 } = require('@tryghost/collections');
 
 class CollectionsServiceWrapper {
+    /** @type {CollectionsService} */
     api;
 
     constructor() {
@@ -34,15 +35,19 @@ class CollectionsServiceWrapper {
             });
         }
 
-        this.api = {
-            browse: collectionsService.getAll.bind(collectionsService),
-            read: collectionsService.getById.bind(collectionsService),
-            add: collectionsService.createCollection.bind(collectionsService),
-            edit: collectionsService.edit.bind(collectionsService),
-            addPost: collectionsService.addPostToCollection.bind(collectionsService),
-            destroy: collectionsService.destroy.bind(collectionsService),
-            destroyCollectionPost: collectionsService.removePostFromCollection.bind(collectionsService)
-        };
+        this.api = collectionsService;
+    }
+
+    async init() {
+        const existingBuiltins = await this.api.getAll({filter: 'slug:featured'});
+
+        if (!existingBuiltins.data.length) {
+            const builtInCollections = require('./built-in-collections');
+
+            for (const collection of builtInCollections) {
+                await this.api.createCollection(collection);
+            }
+        }
     }
 }
 

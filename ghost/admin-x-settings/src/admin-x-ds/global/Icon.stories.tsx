@@ -54,7 +54,7 @@ export const ExtraLarge: Story = {
 
 export const Color: Story = {
     args: {
-        color: 'green',
+        colorClass: 'text-green',
         name: 'lock-locked'
     }
 };

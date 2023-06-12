@@ -6,6 +6,7 @@ import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
+import {getSettingValues} from '../../../utils/helpers';
 
 const MAILGUN_REGIONS = [
     {label: '🇺🇸 US', value: 'https://api.mailgun.net/v3'},
@@ -14,16 +15,16 @@ const MAILGUN_REGIONS = [
 
 const MailGun: React.FC = () => {
     const {
-        currentState,
+        localSettings,
+        isEditing,
         saveState,
         handleSave,
         handleCancel,
         updateSetting,
-        getSettingValues,
-        handleStateChange
+        handleEditingChange
     } = useSettingGroup();
 
-    const [mailgunRegion, mailgunDomain, mailgunApiKey] = getSettingValues([
+    const [mailgunRegion, mailgunDomain, mailgunApiKey] = getSettingValues(localSettings, [
         'mailgun_base_url', 'mailgun_domain', 'mailgun_api_key'
     ]) as string[];
 
@@ -33,7 +34,7 @@ const MailGun: React.FC = () => {
         {
             key: 'status',
             value: (
-                <IconLabel icon='check-circle' iconColor='green'>
+                <IconLabel icon='check-circle' iconColorClass='text-green'>
                     Mailgun is set up
                 </IconLabel>
             )
@@ -97,15 +98,16 @@ const MailGun: React.FC = () => {
     return (
         <SettingGroup
             description={groupDescription}
+            isEditing={isEditing}
             navid='mailgun'
             saveState={saveState}
-            state={currentState}
+            testId='mailgun'
             title='Mailgun'
             onCancel={handleCancel}
+            onEditingChange={handleEditingChange}
             onSave={handleSave}
-            onStateChange={handleStateChange}
         >
-            {currentState === 'view' ? values : inputs}
+            {isEditing ? inputs : values}
         </SettingGroup>
     );
 };

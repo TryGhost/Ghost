@@ -1,10 +1,10 @@
 import React from 'react';
 import Separator from './Separator';
 
-type THeadingLevels = 1 | 2 | 3 | 4 | 5 | 6;
+type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
-interface IHeading {
-    level?: THeadingLevels;
+interface HeadingBaseProps {
+    level?: HeadingLevel;
     children?: React.ReactNode;
     styles?: string;
 
@@ -21,14 +21,30 @@ interface IHeading {
     className?: string;
 }
 
-const Heading: React.FC<IHeading> = ({
-    level, 
-    children, 
-    styles = '', 
-    grey, 
-    separator, 
-    useLabelTag, 
-    className = '', 
+type Heading1to5Props = {
+    useLabelTag?: false,
+    level?: Exclude<HeadingLevel, 6>,
+    grey?: never
+} & HeadingBaseProps & React.HTMLAttributes<HTMLHeadingElement>
+
+type Heading6Props = {
+    useLabelTag?: false,
+    level: 6,
+    grey?: boolean } & HeadingBaseProps & React.HTMLAttributes<HTMLHeadingElement>
+
+type HeadingLabelProps = {
+    useLabelTag: true,
+    level?: never,
+    grey?: boolean } & HeadingBaseProps & React.LabelHTMLAttributes<HTMLLabelElement>
+
+const Heading: React.FC<Heading1to5Props | Heading6Props | HeadingLabelProps> = ({
+    level,
+    children,
+    styles = '',
+    grey,
+    separator,
+    useLabelTag,
+    className = '',
     ...props
 }) => {
     if (!level) {

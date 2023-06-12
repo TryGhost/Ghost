@@ -7,24 +7,25 @@ import TextField from '../../../admin-x-ds/global/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {ReactComponent as FacebookLogo} from '../../../admin-x-ds/assets/images/facebook-logo.svg';
 import {FileService, ServicesContext} from '../../providers/ServiceProvider';
+import {getSettingValues} from '../../../utils/helpers';
 
 const Facebook: React.FC = () => {
     const {
-        currentState,
+        localSettings,
+        isEditing,
         saveState,
         focusRef,
         handleSave,
         handleCancel,
         updateSetting,
-        getSettingValues,
-        handleStateChange
+        handleEditingChange
     } = useSettingGroup();
 
     const {fileService} = useContext(ServicesContext) as {fileService: FileService};
 
     const [
         facebookTitle, facebookDescription, facebookImage, siteTitle, siteDescription
-    ] = getSettingValues(['og_title', 'og_description', 'og_image', 'title', 'description']) as string[];
+    ] = getSettingValues(localSettings, ['og_title', 'og_description', 'og_image', 'title', 'description']) as string[];
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         updateSetting('og_title', e.target.value);
@@ -65,7 +66,7 @@ const Facebook: React.FC = () => {
                     <ImageUpload
                         fileUploadClassName='flex cursor-pointer items-center justify-center rounded rounded-b-none border border-grey-100 border-b-0 bg-grey-75 p-3 text-sm font-semibold text-grey-800 hover:text-black'
                         height='300px'
-                        id='twitter-image'
+                        id='facebook-image'
                         imageURL={facebookImage}
                         onDelete={handleImageDelete}
                         onUpload={handleImageUpload}
@@ -98,16 +99,17 @@ const Facebook: React.FC = () => {
     return (
         <SettingGroup
             description='Customize structured data of your site'
+            isEditing={isEditing}
             navid='facebook'
             saveState={saveState}
-            state={currentState}
+            testId='facebook'
             title='Facebook card'
             onCancel={handleCancel}
+            onEditingChange={handleEditingChange}
             onSave={handleSave}
-            onStateChange={handleStateChange}
         >
             {values}
-            {currentState !== 'view' ? inputFields : ''}
+            {isEditing ? inputFields : null}
         </SettingGroup>
     );
 };

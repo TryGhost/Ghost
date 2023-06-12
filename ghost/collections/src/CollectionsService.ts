@@ -1,9 +1,18 @@
 import {Collection} from './Collection';
 import {CollectionRepository} from './CollectionRepository';
+import tpl from '@tryghost/tpl';
+import {MethodNotAllowedError} from '@tryghost/errors';
+
+const messages = {
+    cannotDeleteBuiltInCollectionError: {
+        message: 'Cannot delete builtin collection',
+        context: 'The collection {id} is a builtin collection and cannot be deleted'
+    }
+};
 
 type CollectionsServiceDeps = {
     collectionsRepository: CollectionRepository;
-    postsRepository: IPostsRepository;
+    postsRepository: PostsRepository;
 };
 
 type CollectionPostDTO = {
@@ -18,6 +27,7 @@ type ManualCollection = {
     description?: string;
     feature_image?: string;
     filter?: null;
+    deletable?: boolean;
 };
 
 type AutomaticCollection = {
@@ -27,6 +37,7 @@ type AutomaticCollection = {
     slug?: string;
     description?: string;
     feature_image?: string;
+    deletable?: boolean;
 };
 
 type CollectionInputDTO = ManualCollection | AutomaticCollection;
@@ -50,23 +61,23 @@ type CollectionPostInputDTO = {
     published_at: Date;
 };
 
-type IPostsRepository = {
+interface PostsRepository {
     getAll(options: {filter?: string}): Promise<any[]>;
 }
 
 export class CollectionsService {
-    collectionsRepository: CollectionRepository;
-    postsRepository: IPostsRepository;
+    private collectionsRepository: CollectionRepository;
+    private postsRepository: PostsRepository;
 
     constructor(deps: CollectionsServiceDeps) {
         this.collectionsRepository = deps.collectionsRepository;
         this.postsRepository = deps.postsRepository;
     }
 
-    toDTO(collection: Collection): CollectionDTO {
+    private toDTO(collection: Collection): CollectionDTO {
         return {
             id: collection.id,
-            title: collection.title || null,
+            title: collection.title,
             slug: collection.slug,
             description: collection.description || null,
             feature_image: collection.featureImage || null,
@@ -81,7 +92,7 @@ export class CollectionsService {
         };
     }
 
-    fromDTO(data: any): any {
+    private fromDTO(data: any): any {
         const mappedDTO: {[index: string]:any} = {
             title: data.title,
             slug: data.slug,
@@ -107,7 +118,8 @@ export class CollectionsService {
             description: data.description,
             type: data.type,
             filter: data.filter,
-            featureImage: data.feature_image
+            featureImage: data.feature_image,
+            deletable: data.deletable
         });
 
         if (collection.type === 'automatic' && collection.filter) {
@@ -139,7 +151,7 @@ export class CollectionsService {
         return this.toDTO(collection);
     }
 
-    async #updateAutomaticCollectionItems(collection: Collection, filter?:string) {
+    private async updateAutomaticCollectionItems(collection: Collection, filter?:string) {
         const collectionFilter = filter || collection.filter;
 
         if (collectionFilter) {
@@ -161,7 +173,7 @@ export class CollectionsService {
         });
 
         for (const collection of collections) {
-            await this.#updateAutomaticCollectionItems(collection);
+            await this.updateAutomaticCollectionItems(collection);
             await this.collectionsRepository.save(collection);
         }
     }
@@ -180,7 +192,7 @@ export class CollectionsService {
         }
 
         if ((collection.type === 'automatic' || data.type === 'automatic') && data.filter) {
-            await this.#updateAutomaticCollectionItems(collection, data.filter);
+            await this.updateAutomaticCollectionItems(collection, data.filter);
         }
 
         const collectionData = this.fromDTO(data);
@@ -214,10 +226,27 @@ export class CollectionsService {
         };
     }
 
+    async getCollectionsForPost(postId: string): Promise<CollectionDTO[]> {
+        const collections = await this.collectionsRepository.getAll({
+            filter: `posts:${postId}`
+        });
+
+        return collections.map(collection => this.toDTO(collection));
+    }
+
     async destroy(id: string): Promise<Collection | null> {
         const collection = await this.getById(id);
 
         if (collection) {
+            if (collection.deletable === false) {
+                throw new MethodNotAllowedError({
+                    message: tpl(messages.cannotDeleteBuiltInCollectionError.message),
+                    context: tpl(messages.cannotDeleteBuiltInCollectionError.context, {
+                        id: collection.id
+                    })
+                });
+            }
+
             collection.deleted = true;
             await this.collectionsRepository.save(collection);
         }

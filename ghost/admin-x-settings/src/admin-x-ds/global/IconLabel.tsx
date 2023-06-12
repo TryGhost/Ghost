@@ -3,14 +3,14 @@ import React from 'react';
 
 interface IconLabelProps {
     icon: string;
-    iconColor?: string;
+    iconColorClass?: string;
     children?: React.ReactNode;
 }
 
-const IconLabel: React.FC<IconLabelProps> = ({icon, iconColor, children}) => {
+const IconLabel: React.FC<IconLabelProps> = ({icon, iconColorClass, children}) => {
     return (
         <div className='flex items-center gap-2'>
-            <Icon color={iconColor} name={icon} size='sm' />
+            <Icon colorClass={iconColorClass} name={icon} size='sm' />
             {children}
         </div>
     );

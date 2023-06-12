@@ -3,7 +3,7 @@ import Select from '../../../admin-x-ds/global/Select';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {getOptionLabel} from '../../../utils/helpers';
+import {getOptionLabel, getSettingValues} from '../../../utils/helpers';
 
 const MEMBERS_SIGNUP_ACCESS_OPTIONS = [
     {value: 'all', label: 'Anyone can sign up'},
@@ -26,16 +26,16 @@ const COMMENTS_ENABLED_OPTIONS = [
 
 const Access: React.FC = () => {
     const {
-        currentState,
+        localSettings,
+        isEditing,
         saveState,
         handleSave,
         handleCancel,
         updateSetting,
-        getSettingValues,
-        handleStateChange
+        handleEditingChange
     } = useSettingGroup();
 
-    const [membersSignupAccess, defaultContentVisibility, commentsEnabled] = getSettingValues([
+    const [membersSignupAccess, defaultContentVisibility, commentsEnabled] = getSettingValues(localSettings, [
         'members_signup_access', 'default_content_visibility', 'comments_enabled'
     ]) as string[];
 
@@ -100,15 +100,16 @@ const Access: React.FC = () => {
     return (
         <SettingGroup
             description='Set up default access options for subscription and posts'
+            isEditing={isEditing}
             navid='access'
             saveState={saveState}
-            state={currentState}
+            testId='access'
             title='Access'
             onCancel={handleCancel}
+            onEditingChange={handleEditingChange}
             onSave={handleSave}
-            onStateChange={handleStateChange}
         >
-            {currentState === 'view' ? values : form}
+            {isEditing ? form : values}
         </SettingGroup>
     );
 };
