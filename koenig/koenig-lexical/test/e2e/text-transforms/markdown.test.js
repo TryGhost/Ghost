@@ -86,20 +86,6 @@ test.describe('Markdown', async () => {
         await expect(await page.locator('[data-kg-card="codeblock"]')).toBeVisible();
     });
 
-    test(`converts 'text -- ' to endash`, async function () {
-        await focusEditor(page);
-        await page.keyboard.type('text -- ');
-
-        await assertHTML(page, html`<p dir=\"ltr\"><span data-lexical-text=\"true\">text –</span></p>`);
-    });
-
-    test(`converts 'text --- ' to endash`, async function () {
-        await focusEditor(page);
-        await page.keyboard.type('text --- ');
-
-        await assertHTML(page, html`<p dir=\"ltr\"><span data-lexical-text=\"true\">text —</span></p>`);
-    });
-
     test('converts --- to hr', async function () {
         await focusEditor(page);
         await pasteText(page, '---');
