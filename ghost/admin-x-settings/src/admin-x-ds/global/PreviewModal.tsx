@@ -20,6 +20,7 @@ export interface PreviewModalProps {
     buttonsDisabled?: boolean
     previewToolbar?: boolean;
     previewToolbarURLs?: SelectOption[];
+    selectedURL?: string;
     sidebarButtons?: React.ReactNode;
     sidebarHeader?: React.ReactNode;
     sidebarPadding?: boolean;
@@ -39,8 +40,9 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     cancelLabel = 'Cancel',
     okLabel = 'OK',
     okColor = 'black',
-    previewToolbarURLs,
     previewToolbar = true,
+    previewToolbarURLs,
+    selectedURL,
     buttonsDisabled,
     sidebarButtons,
     sidebarHeader,
@@ -69,7 +71,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
         let toolbarCenter = (<></>);
         if (previewToolbarURLs) {
             toolbarCenter = (
-                <URLSelect options={previewToolbarURLs!} onSelect={onSelectURL ? onSelectURL : () => {}} />
+                <URLSelect defaultSelectedOption={selectedURL} options={previewToolbarURLs!} onSelect={onSelectURL ? onSelectURL : () => {}} />
             );
         }
 

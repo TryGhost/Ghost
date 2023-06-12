@@ -1,13 +1,8 @@
 import React from 'react';
-import Select, {SelectOption} from './Select';
+import Select, {SelectProps} from './Select';
 import clsx from 'clsx';
 
-interface URLSelectProps {
-    options: SelectOption[];
-    onSelect: (value: string) => void;
-}
-
-const URLSelect: React.FC<URLSelectProps> = ({options, onSelect}) => {
+const URLSelect: React.FC<SelectProps> = (props) => {
     const selectClasses = clsx(
         `!h-[unset] w-full appearance-none rounded-full border border-grey-100 bg-white px-3 py-1 text-sm`
     );
@@ -20,10 +15,9 @@ const URLSelect: React.FC<URLSelectProps> = ({options, onSelect}) => {
     return (
         <Select
             containerClassName={containerClasses}
-            options={options}
             selectClassName={selectClasses}
             unstyled={true}
-            onSelect={onSelect}
+            {...props}
         />
     );
 };
