@@ -138,6 +138,9 @@
         },
         "tags": {
           "$ref": "#/definitions/post-tags"
+        },
+        "collections": {
+          "$ref": "#/definitions/post-collections"
         }
       }
     },
@@ -239,6 +242,28 @@
           {
             "type": "string",
             "maxLength": 191
+          }
+        ]
+      }
+    },
+    "post-collections": {
+      "description": "Collections of the post",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 24
+              }
+            },
+            "required": ["id"]
+          },
+          {
+            "type": "string",
+            "maxLength": 24
           }
         ]
       }
