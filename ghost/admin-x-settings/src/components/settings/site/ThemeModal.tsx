@@ -8,23 +8,24 @@ import NiceModal, {NiceModalHandler, useModal} from '@ebay/nice-modal-react';
 import OfficialThemes from './theme/OfficialThemes';
 import React, {useState} from 'react';
 import TabView from '../../../admin-x-ds/global/TabView';
+import {OfficialTheme} from '../../../models/themes';
 import {Theme} from '../../../types/api';
 import {showToast} from '../../../admin-x-ds/global/Toast';
 import {useApi} from '../../providers/ServiceProvider';
 import {useThemes} from '../../../hooks/useThemes';
 
 interface ThemeToolbarProps {
-    selectedTheme: string;
+    selectedTheme: OfficialTheme|null;
     setCurrentTab: (tab: string) => void;
-    setSelectedTheme: (theme: string) => void;
+    setSelectedTheme: (theme: OfficialTheme|null) => void;
     modal: NiceModalHandler<Record<string, unknown>>;
     themes: Theme[];
     setThemes: (themes: Theme[]) => void;
 }
 
 interface ThemeModalContentProps {
-    selectedTheme: string;
-    onSelectTheme: (theme: string) => void;
+    selectedTheme: OfficialTheme|null;
+    onSelectTheme: (theme: OfficialTheme|null) => void;
     currentTab: string;
     themes: Theme[];
     setThemes: (themes: Theme[]) => void;
@@ -48,12 +49,12 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                         type="button"
                         onClick={() => {
                             setCurrentTab('official');
-                            setSelectedTheme('');
+                            setSelectedTheme(null);
                         }}>
                         Official themes
                     </button>
                     &rarr;
-                    <span className='text-sm font-bold'>{selectedTheme}</span>
+                    <span className='text-sm font-bold'>{selectedTheme?.name}</span>
                 </div>
                 <div className='flex w-[33%] justify-end gap-8'>
                     <ButtonGroup
@@ -62,7 +63,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                             {icon: 'mobile', iconColorClass: 'text-grey-500', link: true, size: 'sm'}
                         ]}
                     />
-                    <Button color='green' label={`Install ${selectedTheme}`} />
+                    <Button color='green' label={`Install ${selectedTheme?.name}`} />
                 </div>
             </div>
         );
@@ -133,12 +134,12 @@ const ThemeModalContent: React.FC<ThemeModalContentProps> = ({
 
 const ChangeThemeModal = NiceModal.create(() => {
     const [currentTab, setCurrentTab] = useState('official');
-    const [selectedTheme, setSelectedTheme] = useState('');
+    const [selectedTheme, setSelectedTheme] = useState<OfficialTheme|null>(null);
 
     const modal = useModal();
     const {themes, setThemes} = useThemes();
 
-    const onSelectTheme = (theme: string) => {
+    const onSelectTheme = (theme: OfficialTheme|null) => {
         setSelectedTheme(theme);
     };
 
