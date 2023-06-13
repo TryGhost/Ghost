@@ -6,10 +6,11 @@ import Modal from '../../../admin-x-ds/global/Modal';
 import NewThemePreview from './theme/ThemePreview';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import OfficialThemes from './theme/OfficialThemes';
+import TabView from '../../../admin-x-ds/global/TabView';
 import {useState} from 'react';
 
 const ChangeThemeModal = NiceModal.create(() => {
-    const [currentTab, setCurrentTab] = useState<'official-themes' | 'advanced'>('official-themes');
+    const [currentTab, setCurrentTab] = useState('official');
     const [selectedTheme, setSelectedTheme] = useState('');
 
     const modal = useModal();
@@ -20,14 +21,14 @@ const ChangeThemeModal = NiceModal.create(() => {
 
     let content;
     switch (currentTab) {
-    case 'official-themes':
+    case 'official':
         if (selectedTheme) {
             content = <NewThemePreview selectedTheme={selectedTheme} />;
         } else {
             content = <OfficialThemes onSelectTheme={onSelectTheme} />;
         }
         break;
-    case 'advanced':
+    case 'installed':
         content = <AdvancedThemeSettings />;
         break;
     }
@@ -41,7 +42,7 @@ const ChangeThemeModal = NiceModal.create(() => {
                         className={`text-sm`}
                         type="button"
                         onClick={() => {
-                            setCurrentTab('official-themes');
+                            setCurrentTab('official');
                             setSelectedTheme('');
                         }}>
                         Official themes
@@ -62,25 +63,17 @@ const ChangeThemeModal = NiceModal.create(() => {
     } else {
         toolBar =
             <div className='sticky top-0 flex justify-between gap-3 bg-white p-5 px-7'>
-                <div className='flex gap-8'>
-                    <button
-                        className={`text-sm ${currentTab === 'official-themes' && 'font-bold'}`}
-                        type="button"
-                        onClick={() => {
-                            setCurrentTab('official-themes');
-                            setSelectedTheme('');
-                        }}>
-                        Official themes
-                    </button>
-                    <button
-                        className={`text-sm ${currentTab === 'advanced' && 'font-bold'}`}
-                        type="button"
-                        onClick={() => {
-                            setCurrentTab('advanced');
-                        }}>
-                        Installed
-                    </button>
-                </div>
+                <TabView
+                    border={false}
+                    tabs={[
+                        {id: 'official', title: 'Official themes'},
+                        {id: 'installed', title: 'Installed'}
+                    ]}
+                    onTabChange={(id: string) => {
+                        setCurrentTab(id);
+                    }}
+                />
+
                 <div className='flex items-center gap-3'>
                     <FileUpload id='theme-uplaod' onUpload={(file: File) => {
                         alert(file.name);
