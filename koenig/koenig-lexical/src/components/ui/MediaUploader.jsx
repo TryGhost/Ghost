@@ -17,7 +17,7 @@ export function MediaUploader({
     desc,
     icon,
     size,
-    borderStyle = 'border-transparent',
+    borderStyle = 'solid',
     mimeTypes,
     onFileChange,
     dragHandler,

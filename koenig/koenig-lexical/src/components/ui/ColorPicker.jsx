@@ -6,16 +6,16 @@ import {HexColorInput, HexColorPicker} from 'react-colorful';
 import {INPUT_CLASSES} from './Input';
 import {getAccentColor} from '../../utils/getAccentColor';
 
-export function ColorPicker({value, eyedropper, hasTransparentOption, onChange, onBlur}) {
+export function ColorPicker({value, eyedropper, hasTransparentOption, onChange}) {
     // HexColorInput doesn't support adding a ref on the input itself
     const inputWrapperRef = useRef(null);
 
     const stopPropagation = useCallback((e) => {
         e.stopPropagation();
-  
+
         const inputElement = inputWrapperRef.current?.querySelector('input');
         const isInputField = e.target === inputElement;
-      
+
         // Allow text selection for events on the input field
         if (isInputField) {
             return;
@@ -43,14 +43,6 @@ export function ColorPicker({value, eyedropper, hasTransparentOption, onChange, 
         document.addEventListener('mouseup', stopUsingColorPicker);
         document.addEventListener('touchend', stopUsingColorPicker);
     }, [stopUsingColorPicker]);
-
-    const onBlurHandler = useCallback((e) => {
-        setTimeout(() => {
-            if (!isUsingColorPicker.current && !inputWrapperRef.current?.contains(document.activeElement)) {
-                onBlur();
-            }
-        }, 100);
-    }, [onBlur]);
 
     const openColorPicker = useCallback((e) => {
         e.preventDefault();
@@ -89,13 +81,12 @@ export function ColorPicker({value, eyedropper, hasTransparentOption, onChange, 
             <div className="mt-3 flex gap-2">
                 <div ref={inputWrapperRef} className={`relative flex w-full items-center ${INPUT_CLASSES}`} onClick={focusHexInputOnClick}>
                     <span className='ml-1 mr-2 text-grey-700'>#</span>
-                    <HexColorInput aria-label="Color value" className='z-50 w-full bg-transparent' color={hexValue} onBlur={onBlurHandler} onChange={onChange} />
+                    <HexColorInput aria-label="Color value" className='z-50 w-full bg-transparent' color={hexValue} onChange={onChange} />
                     {eyedropper && !!window.EyeDropper && (
                         <button
                             className="absolute inset-y-0 right-3 my-auto h-4 w-4 p-[1px]"
                             type="button"
-                            onMouseDown={openColorPicker}
-                            onTouchStart={openColorPicker}
+                            onClick={openColorPicker}
                         >
                             <EyedropperIcon className="h-full w-full" />
                         </button>
@@ -135,15 +126,14 @@ function ColorSwatch({hex, accent, transparent, title, isSelected, onSelect}) {
             style={{backgroundColor}}
             title={title}
             type="button"
-            onMouseDown={onSelectHandler}
-            onTouchStart={onSelectHandler}
+            onClick={onSelectHandler}
         >
             {transparent && <div className="absolute left-0 top-0 z-10 w-[136%] origin-left rotate-45 border-b border-b-red" />}
         </button>
     );
 }
 
-export function ColorIndicator({value, swatches, onSwatchChange, onTogglePicker}) {
+export function ColorIndicator({value, swatches, onSwatchChange, onTogglePicker, isExpanded}) {
     let backgroundColor = value;
     let selectedSwatch = swatches.find(swatch => swatch.hex === value)?.title;
     if (value === 'accent') {
@@ -152,6 +142,10 @@ export function ColorIndicator({value, swatches, onSwatchChange, onTogglePicker}
     } else if (value === 'transparent') {
         backgroundColor = 'white';
         selectedSwatch = swatches.find(swatch => swatch.transparent)?.title;
+    }
+
+    if (isExpanded) {
+        selectedSwatch = null;
     }
 
     return (

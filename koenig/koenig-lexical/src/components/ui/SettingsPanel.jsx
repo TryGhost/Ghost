@@ -183,25 +183,44 @@ export function ColorOptionSetting({label, onClick, selectedName, buttons, layou
 }
 
 export function ColorPickerSetting({label, isExpanded, onSwatchChange, onPickerChange, onTogglePicker, value, swatches, eyedropper, hasTransparentOption, dataTestId}) {
-    const {repositionPanel} = useSettingsPanelContext();
+    const mappedPicker = (event) => {
+        onTogglePicker(true);
+    };
 
-    useEffect(() => repositionPanel(), [repositionPanel, isExpanded]);
+    const markClickedInside = (event) => {
+        event.stopPropagation();
+    };
+
+    // Close on click outside
+    React.useEffect(() => {
+        if (isExpanded) {
+            const closePicker = (event) => {
+                onTogglePicker(false);
+            };
+            document.addEventListener('click', closePicker);
+
+            return () => {
+                document.removeEventListener('click', closePicker);
+            };
+        }
+    }, [isExpanded]);
 
     return (
-        <div className="mt-2 flex-col" data-testid={dataTestId}>
+        <div className="mt-2 flex-col" data-testid={dataTestId} onClick={markClickedInside}>
             <div className="flex w-full items-center justify-between text-[1.3rem] first:mt-0">
                 <div className="font-bold text-grey-900 dark:text-grey-200">{label}</div>
 
                 <div className="shrink-0 pl-2">
                     <ColorIndicator
+                        isExpanded={isExpanded}
                         swatches={swatches}
                         value={value}
                         onSwatchChange={onSwatchChange}
-                        onTogglePicker={onTogglePicker}
+                        onTogglePicker={mappedPicker}
                     />
                 </div>
             </div>
-            {isExpanded && <ColorPicker eyedropper={eyedropper} hasTransparentOption={hasTransparentOption} value={value} onBlur={() => onTogglePicker(false)} onChange={onPickerChange} />}
+            {isExpanded && <ColorPicker eyedropper={eyedropper} hasTransparentOption={hasTransparentOption} value={value} onChange={onPickerChange} />}
         </div>
     );
 }

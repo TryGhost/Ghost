@@ -345,6 +345,7 @@ export function SignupCard({alignment,
                                         onClick={() => {
                                             handleShowBackgroundImage();
                                             setBackgroundColorPickerExpanded(false);
+                                            setButtonColorPickerExpanded(false);
                                         }}
                                     >
                                         <ImgBgIcon className="h-[1.4rem] w-[1.4rem]" />
@@ -373,6 +374,9 @@ export function SignupCard({alignment,
                             }
 
                             setBackgroundColorPickerExpanded(isExpanded);
+                            if (isExpanded) {
+                                setButtonColorPickerExpanded(!isExpanded);
+                            }
                         }}
                     />
                     <MediaUploadSetting
@@ -415,7 +419,12 @@ export function SignupCard({alignment,
                             handleButtonColor(color, matchingTextColor(color));
                             setButtonColorPickerExpanded(false);
                         }}
-                        onTogglePicker={setButtonColorPickerExpanded}
+                        onTogglePicker={(isExpanded) => {
+                            setButtonColorPickerExpanded(isExpanded);
+                            if (isExpanded) {
+                                setBackgroundColorPickerExpanded(!isExpanded);
+                            }
+                        }}
                     />
                     <InputSetting
                         dataTestId='signup-button-text'
