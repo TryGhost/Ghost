@@ -27,7 +27,11 @@ export class SignupNode extends BaseSignupNode {
         Icon: SignupCardIcon,
         insertCommand: INSERT_SIGNUP_COMMAND,
         matches: ['signup', 'subscribe'],
-        isHidden: ({config}) => !config?.feature?.signupCard,
+        isHidden: ({config}) => {
+            const isMembersEnabled = config?.membersEnabled;
+            const isSignupCardEnabled = config?.feature?.signupCard;
+            return !(isMembersEnabled && isSignupCardEnabled);
+        },
         insertParams: ({config}) => ({
             header: config?.siteTitle ? `Sign up for ${config.siteTitle}` : '',
             subheader: config?.siteDescription || '',

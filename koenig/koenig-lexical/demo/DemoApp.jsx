@@ -40,7 +40,8 @@ const cardConfig = {
     siteDescription: `There's a whole lot to discover in this editor. Let us help you settle in.`,
     feature: {
         signupCard: true
-    }
+    },
+    membersEnabled: true
 };
 
 function getDefaultContent({editorType}) {
