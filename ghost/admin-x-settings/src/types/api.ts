@@ -66,7 +66,7 @@ export type Tier = {
     name: string;
     description: string | null;
     slug: string;
-    active: true,
+    active: boolean,
     type: string;
     welcome_page_url: string | null;
     created_at: string;
@@ -85,6 +85,27 @@ export type Label = {
     slug: string;
     created_at: string;
     updated_at: string;
+}
+
+export type Offer = {
+    id: string;
+    name: string;
+    code: string;
+    display_title: string;
+    display_description: string;
+    type: string;
+    cadence: string;
+    amount: number;
+    duration: string;
+    duration_in_months: number | null;
+    currency_restriction: boolean;
+    currency: string | null;
+    status: string;
+    redemption_count: number;
+    tier: {
+        id: string;
+        name: string;
+    }
 }
 
 type CustomThemeSettingData =

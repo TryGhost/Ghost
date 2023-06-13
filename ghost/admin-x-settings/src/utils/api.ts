@@ -1,4 +1,4 @@
-import {CustomThemeSetting, Label, Post, Setting, SiteData, Tier, User, UserRole} from '../types/api';
+import {CustomThemeSetting, Label, Offer, Post, Setting, SiteData, Tier, User, UserRole} from '../types/api';
 import {getGhostPaths} from './helpers';
 
 interface Meta {
@@ -66,6 +66,11 @@ export interface TiersResponseType {
 export interface LabelsResponseType {
     meta?: Meta
     labels: Label[]
+}
+
+export interface OffersResponseType {
+    meta?: Meta
+    offers: Offer[]
 }
 
 export interface SiteResponseType {
@@ -151,7 +156,10 @@ interface API {
     };
     labels: {
         browse: () => Promise<LabelsResponseType>
-    }
+    };
+    offers: {
+        browse: () => Promise<OffersResponseType>
+    };
 }
 
 interface GhostApiOptions {
@@ -367,8 +375,15 @@ function setupGhostApi({ghostVersion}: GhostApiOptions): API {
         },
         labels: {
             browse: async () => {
-                const response = await fetcher(`/labels/?limit=all`);
+                const response = await fetcher('/labels/?limit=all');
                 const data: LabelsResponseType = await response.json();
+                return data;
+            }
+        },
+        offers: {
+            browse: async () => {
+                const response = await fetcher('/offers/?limit=all');
+                const data: OffersResponseType = await response.json();
                 return data;
             }
         }
