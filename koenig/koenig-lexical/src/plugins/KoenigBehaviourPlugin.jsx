@@ -383,7 +383,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         const selection = $getSelection();
                         const currentNode = selection.getNodes()[0];
                         const textContent = currentNode.getTextContent();
-                        if (textContent.match(/^```(\w{1,10})/)) {
+                        if (textContent.match(/^```(\w{1,10})?/)) {
                             event.preventDefault();
                             const language = textContent.replace(/^```/,'');
                             const replacementNode = currentNode.getTopLevelElement().insertAfter($createCodeBlockNode({language, _openInEditMode: true}));

@@ -65,29 +65,56 @@ test.describe('Code Block card', async () => {
         `, {ignoreCardContents: false});
     });
 
-    test('renders code block card node', async function () {
-        await focusEditor(page);
-        await page.keyboard.type('```javascript ');
+    test.describe('shortcuts', () => {
+        test('renders with ``` + space', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('``` ');
 
-        await assertHTML(page, html`
-            <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="codeblock">
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="codeblock">
+                    </div>
                 </div>
-            </div>
-        `, {ignoreCardContents: true});
-    });
+            `, {ignoreCardContents: true});
+        });
+        
+        test('renders with ```lang + space', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('```javascript ');
 
-    test('renders code block card node 2', async function () {
-        await focusEditor(page);
-        await page.keyboard.type('```javascript');
-        await page.keyboard.press('Enter');
-
-        await assertHTML(page, html`
-            <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="codeblock">
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="codeblock">
+                    </div>
                 </div>
-            </div>
-        `, {ignoreCardContents: true});
+            `, {ignoreCardContents: true});
+        });
+
+        test('renders with ``` + enter', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('```');
+            await page.keyboard.press('Enter');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="codeblock">
+                    </div>
+                </div>
+            `, {ignoreCardContents: true});
+        });
+
+        test('renders with ```lang + enter', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('```javascript');
+            await page.keyboard.press('Enter');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="codeblock">
+                    </div>
+                </div>
+            `, {ignoreCardContents: true});
+        });
     });
 
     test('it hides the language input when typing in the code editor and shows it when the mouse moves', async function () {
