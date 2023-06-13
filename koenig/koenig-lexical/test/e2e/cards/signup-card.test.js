@@ -61,6 +61,7 @@ test.describe('Signup card', async () => {
                             <div>
                                 <button type="button"><svg></svg></button>
                                 <button type="button"><svg></svg></button>
+                                <button type="button"><svg></svg></button>
                             </div>
                         </div>
                         <div>

@@ -17,6 +17,7 @@ function SignupNodeComponent({
     alignment,
     backgroundColor,
     backgroundImageSrc,
+    backgroundSize,
     buttonColor,
     buttonText,
     buttonTextColor,
@@ -70,6 +71,13 @@ function SignupNodeComponent({
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             node.setAlignment(a);
+        });
+    };
+
+    const handleBackgroundSize = (a) => {
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.setBackgroundSize(a);
         });
     };
 
@@ -205,6 +213,7 @@ function SignupNodeComponent({
                 availableLabels={availableLabels}
                 backgroundColor={backgroundColor}
                 backgroundImageSrc={backgroundImageSrc}
+                backgroundSize={backgroundSize}
                 buttonColor={buttonColor}
                 buttonText={buttonText}
                 buttonTextColor={buttonTextColor}
@@ -214,6 +223,7 @@ function SignupNodeComponent({
                 fileUploader={imageUploader}
                 handleAlignment={handleAlignment}
                 handleBackgroundColor={handleBackgroundColor}
+                handleBackgroundSize={handleBackgroundSize}
                 handleButtonColor={handleButtonColor}
                 handleButtonText={handleButtonText}
                 handleButtonTextBlur={handleButtonTextBlur}

@@ -72,6 +72,7 @@ export function renderSignupCardToDOM(dataset, options = {}) {
         subheader: dataset.__subheader,
         disclaimer: dataset.__disclaimer,
         backgroundImageSrc: dataset.__backgroundImageSrc,
+        backgroundSize: dataset.__backgroundSize,
         backgroundColor: dataset.__backgroundColor,
         buttonColor: dataset.__buttonColor,
         labels: dataset.__labels,
@@ -125,6 +126,10 @@ export function getCardClasses(nodeData) {
 
     if (nodeData.swapped && nodeData.layout === 'split') {
         cardClasses.push('kg-swapped');
+    }
+
+    if (nodeData.layout === 'split') {
+        cardClasses.push('kg-background-size-' + nodeData.backgroundSize);
     }
 
     return cardClasses;

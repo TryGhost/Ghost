@@ -11,6 +11,7 @@ export class SignupNode extends KoenigDecoratorNode {
     __alignment;
     __backgroundColor;
     __backgroundImageSrc;
+    __backgroundSize;
     __textColor;
     __buttonColor;
     __buttonText;
@@ -49,6 +50,7 @@ export class SignupNode extends KoenigDecoratorNode {
             alignment: self.__alignment,
             backgroundColor: self.__backgroundColor,
             backgroundImageSrc: self.__backgroundImageSrc,
+            backgroundSize: self.__backgroundSize,
             textColor: self.__textColor,
             buttonColor: self.__buttonColor,
             buttonText: self.__buttonText,
@@ -66,6 +68,7 @@ export class SignupNode extends KoenigDecoratorNode {
     constructor({alignment,
         backgroundColor,
         backgroundImageSrc,
+        backgroundSize,
         textColor,
         buttonColor,
         buttonTextColor,
@@ -81,6 +84,7 @@ export class SignupNode extends KoenigDecoratorNode {
         this.__alignment = alignment || 'left';
         this.__backgroundColor = backgroundColor || '#F0F0F0';
         this.__backgroundImageSrc = backgroundImageSrc || '';
+        this.__backgroundSize = backgroundSize || 'cover';
         this.__textColor = textColor || (backgroundColor === 'transparent' ? '' : '#000000');
         this.__buttonColor = buttonColor || 'accent';
         this.__buttonTextColor = buttonTextColor || '#FFFFFF';
@@ -103,6 +107,7 @@ export class SignupNode extends KoenigDecoratorNode {
         const {alignment,
             backgroundColor,
             backgroundImageSrc,
+            backgroundSize,
             textColor,
             buttonColor,
             buttonTextColor,
@@ -118,6 +123,7 @@ export class SignupNode extends KoenigDecoratorNode {
             alignment,
             backgroundColor,
             backgroundImageSrc,
+            backgroundSize,
             textColor,
             buttonColor,
             buttonTextColor,
@@ -145,6 +151,7 @@ export class SignupNode extends KoenigDecoratorNode {
             alignment: this.getAlignment(),
             backgroundColor: this.getBackgroundColor(),
             backgroundImageSrc: this.getBackgroundImageSrc(),
+            backgroundSize: this.getBackgroundSize(),
             textColor: this.getTextColor(),
             buttonColor: this.getButtonColor(),
             buttonTextColor: this.getButtonTextColor(),
@@ -188,6 +195,16 @@ export class SignupNode extends KoenigDecoratorNode {
     setBackgroundImageSrc(backgroundImageSrc) {
         const writable = this.getWritable();
         writable.__backgroundImageSrc = backgroundImageSrc;
+    }
+
+    getBackgroundSize() {
+        const self = this.getLatest();
+        return self.__backgroundSize;
+    }
+
+    setBackgroundSize(backgroundSize) {
+        const writable = this.getWritable();
+        writable.__backgroundSize = backgroundSize;
     }
 
     getTextColor() {

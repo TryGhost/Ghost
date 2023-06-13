@@ -123,6 +123,7 @@ export class SignupNode extends BaseSignupNode {
                     alignment={this.getAlignment()}
                     backgroundColor={this.getBackgroundColor()}
                     backgroundImageSrc={this.getBackgroundImageSrc()}
+                    backgroundSize={this.getBackgroundSize()}
                     buttonColor={this.getButtonColor()}
                     buttonText={this.getButtonText()}
                     buttonTextColor={this.getButtonTextColor()}

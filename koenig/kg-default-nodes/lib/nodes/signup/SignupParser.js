@@ -64,6 +64,7 @@ export class SignupParser {
                             const isAccentButton = domNode.querySelector('.kg-signup-card-button')?.classList?.contains('kg-style-accent') ?? false;
 
                             const isSwapped = domNode.classList.contains('kg-swapped');
+                            const backgroundSize = domNode.classList.contains('kg-background-size-contain') ? 'contain' : 'cover';
 
                             const payload = {
                                 layout,
@@ -72,6 +73,7 @@ export class SignupParser {
                                 subheader,
                                 disclaimer,
                                 backgroundImageSrc,
+                                backgroundSize,
                                 backgroundColor: isAccentBackground ? 'accent' : (rgbToHex(backgroundColor) || '#ffffff'),
                                 buttonColor: isAccentButton ? 'accent' : (rgbToHex(buttonColor) || '#ffffff'),
                                 textColor: rgbToHex(textColor) || '#ffffff',

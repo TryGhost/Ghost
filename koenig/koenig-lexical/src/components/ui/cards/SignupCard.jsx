@@ -23,6 +23,7 @@ export function SignupCard({alignment,
     buttonText,
     showBackgroundImage,
     backgroundImageSrc,
+    backgroundSize,
     backgroundColor,
     buttonColor,
     buttonTextColor,
@@ -54,6 +55,7 @@ export function SignupCard({alignment,
     disclaimerTextEditorInitialState,
     isSwapped,
     handleSwapLayout,
+    handleBackgroundSize,
     handleButtonTextBlur,
     setFileInputRef}) {
     const [backgroundColorPickerExpanded, setBackgroundColorPickerExpanded] = useState(false);
@@ -162,6 +164,14 @@ export function SignupCard({alignment,
         };
     };
 
+    const toggleBackgroundSize = () => {
+        if (backgroundSize === 'cover') {
+            handleBackgroundSize('contain');
+        } else {
+            handleBackgroundSize('cover');
+        }
+    };
+
     return (
         <>
             <div className={clsx(
@@ -170,8 +180,12 @@ export function SignupCard({alignment,
             )} data-testid={'signup-card-container'} style={wrapperStyle()}>
                 {layout === 'split' && (
                     <MediaUploader
-                        additionalActions={<IconButton dataTestId="media-upload-swap" Icon={SwapIcon} onClick={handleSwapLayout} />}
+                        additionalActions={<>
+                            <IconButton dataTestId="media-upload-swap" Icon={SwapIcon} onClick={handleSwapLayout} />
+                            <IconButton dataTestId="media-upload-size" Icon={SwapIcon} onClick={toggleBackgroundSize} />
+                        </>}
                         alt='Background image'
+                        backgroundSize={backgroundSize}
                         className="sm:w-1/2"
                         desc='Click to select an image'
                         dragHandler={imageDragHandler}
@@ -457,6 +471,7 @@ SignupCard.propTypes = {
     buttonTextColor: PropTypes.string,
     buttonPlaceholder: PropTypes.string,
     backgroundImageSrc: PropTypes.string,
+    backgroundSize: PropTypes.oneOf(['cover', 'contain']),
     backgroundColor: PropTypes.string,
     textColor: PropTypes.string,
     showBackgroundImage: PropTypes.bool,
@@ -489,6 +504,7 @@ SignupCard.propTypes = {
     disclaimerTextEditorInitialState: PropTypes.object,
     isSwapped: PropTypes.bool,
     handleSwapLayout: PropTypes.func,
+    handleBackgroundSize: PropTypes.func,
     setFileInputRef: PropTypes.func,
     handleButtonTextBlur: PropTypes.func
 };
