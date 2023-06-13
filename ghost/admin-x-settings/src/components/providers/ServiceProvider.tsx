@@ -1,4 +1,4 @@
-import React, {createContext, useMemo} from 'react';
+import React, {createContext, useContext, useMemo} from 'react';
 import setupGhostApi from '../../utils/api';
 
 export interface FileService {
@@ -39,3 +39,7 @@ const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersi
 };
 
 export {ServicesContext, ServicesProvider};
+
+export const useServices = () => useContext(ServicesContext)!;
+
+export const useApi = () => useServices().api;
