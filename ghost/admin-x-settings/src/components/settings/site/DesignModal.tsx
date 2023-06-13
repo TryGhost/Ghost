@@ -1,9 +1,7 @@
 import BrandSettings, {BrandSettingValues} from './designAndBranding/BrandSettings';
-import ChangeThemeModal from './designAndBranding/ChangeThemeModal';
 import ConfirmationModal from '../../../admin-x-ds/global/ConfirmationModal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useContext, useEffect, useState} from 'react';
-import StickyFooter from '../../../admin-x-ds/global/StickyFooter';
 import TabView, {Tab} from '../../../admin-x-ds/global/TabView';
 import ThemePreview from './designAndBranding/ThemePreview';
 import ThemeSettings from './designAndBranding/ThemeSettings';
@@ -20,14 +18,12 @@ const Sidebar: React.FC<{
     themeSettingSections: Array<{id: string, title: string, settings: CustomThemeSetting[]}>
     updateThemeSetting: (updated: CustomThemeSetting) => void
     onTabChange: (id: string) => void
-    onChangeTheme: () => void
 }> = ({
     brandSettings,
     updateBrandSetting,
     themeSettingSections,
     updateThemeSetting,
-    onTabChange,
-    onChangeTheme
+    onTabChange
 }) => {
     const tabs: Tab[] = [
         {
@@ -47,12 +43,6 @@ const Sidebar: React.FC<{
             <div className='p-7'>
                 <TabView tabs={tabs} onTabChange={onTabChange} />
             </div>
-            <StickyFooter>
-                <button className='m m-3 flex w-full cursor-pointer flex-col rounded p-4 transition-all hover:bg-grey-100' type='button' onClick={onChangeTheme}>
-                    <strong>Change theme</strong>
-                    <span className='text-sm text-grey-600'>Casper</span>
-                </button>
-            </StickyFooter>
         </>
     );
 };
@@ -165,10 +155,6 @@ const DesignModal: React.FC = () => {
         }
     };
 
-    const showThemeModal = () => {
-        NiceModal.show(ChangeThemeModal);
-    };
-
     let selectedTabURL = getHomepageUrl(siteData!);
     switch (selectedPreviewTab) {
     case 'homepage':
@@ -197,7 +183,6 @@ const DesignModal: React.FC = () => {
             themeSettingSections={themeSettingSections}
             updateBrandSetting={updateBrandSetting}
             updateThemeSetting={updateThemeSetting}
-            onChangeTheme={showThemeModal}
             onTabChange={onTabChange}
         />;
 
