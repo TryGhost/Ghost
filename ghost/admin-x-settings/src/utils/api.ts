@@ -1,4 +1,4 @@
-import {CustomThemeSetting, Label, Offer, Post, Setting, SiteData, Tier, User, UserRole} from '../types/api';
+import {CustomThemeSetting, Label, Offer, Post, Setting, SiteData, Theme, Tier, User, UserRole} from '../types/api';
 import {getGhostPaths} from './helpers';
 
 interface Meta {
@@ -90,6 +90,10 @@ export interface PasswordUpdateResponseType {
     }];
 }
 
+export interface ThemesResponseType {
+    themes: Theme[];
+}
+
 interface RequestOptions {
     method?: string;
     body?: string | FormData;
@@ -159,6 +163,12 @@ interface API {
     };
     offers: {
         browse: () => Promise<OffersResponseType>
+    };
+    themes: {
+        browse: () => Promise<ThemesResponseType>;
+        activate: (themeName: string) => Promise<ThemesResponseType>;
+        delete: (themeName: string) => Promise<void>;
+        upload: ({file}: {file: File}) => Promise<ThemesResponseType>;
     };
 }
 
@@ -384,6 +394,38 @@ function setupGhostApi({ghostVersion}: GhostApiOptions): API {
             browse: async () => {
                 const response = await fetcher('/offers/?limit=all');
                 const data: OffersResponseType = await response.json();
+                return data;
+            }
+        },
+        themes: {
+            browse: async () => {
+                const response = await fetcher('/themes/');
+                const data: ThemesResponseType = await response.json();
+                return data;
+            },
+            activate: async (themeName: string) => {
+                const response = await fetcher(`/themes/${themeName}/activate/`, {
+                    method: 'PUT'
+                });
+                const data: ThemesResponseType = await response.json();
+                return data;
+            },
+            delete: async (themeName: string) => {
+                await fetcher(`/themes/${themeName}/`, {
+                    method: 'DELETE'
+                });
+                return;
+            },
+            upload: async ({file}: {file: File}) => {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetcher(`/themes/upload/`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {}
+                });
+                const data: ThemesResponseType = await response.json();
                 return data;
             }
         }
