@@ -17,4 +17,10 @@ export class PostsRepositoryInMemory extends InMemoryRepository<string, Collecti
             published_at: entity.published_at
         };
     }
+
+    getBulk(ids: string[]): Promise<CollectionPost[]> {
+        return this.getAll({
+            filter: `id:[${ids.join(',')}]`
+        });
+    }
 }
