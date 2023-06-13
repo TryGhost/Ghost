@@ -16,10 +16,19 @@ class CollectionsServiceWrapper {
             collectionsRepository: collectionsRepositoryInMemory,
             postsRepository: {
                 getAll: async ({filter}) => {
-                    return models.Post.findAll({
+                    const posts = await models.Post.findAll({
                         // @NOTE: enforce "post" type to avoid ever fetching pages
                         filter: `(${filter})+type:post`
                     });
+
+                    return posts.toJSON();
+                },
+                getBulk: async (ids) => {
+                    const posts = await models.Post.findAll({
+                        filter: `id:[${ids.join(',')}]+type:post`
+                    });
+
+                    return posts.toJSON();
                 }
             }
         });

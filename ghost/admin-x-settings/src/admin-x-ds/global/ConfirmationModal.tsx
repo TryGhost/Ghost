@@ -13,7 +13,7 @@ export interface ConfirmationModalProps {
     onOk?: (modal?: {
         remove: () => void;
     }) => void;
-    customFooter?: React.ReactNode;
+    customFooter?: boolean | React.ReactNode;
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -33,7 +33,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         <Modal
             backDropClick={false}
             cancelLabel={cancelLabel}
-            customFooter={customFooter}
+            footer={customFooter}
             okColor={okColor}
             okLabel={taskState === 'running' ? okRunningLabel : okLabel}
             size={540}

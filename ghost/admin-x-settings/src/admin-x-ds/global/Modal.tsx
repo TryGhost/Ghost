@@ -21,7 +21,7 @@ export interface ModalProps {
     okColor?: string;
     cancelLabel?: string;
     leftButtonLabel?: string;
-    customFooter?: React.ReactNode;
+    footer?: boolean | React.ReactNode;
     noPadding?: boolean;
     onOk?: () => void;
     onCancel?: () => void;
@@ -37,7 +37,7 @@ const Modal: React.FC<ModalProps> = ({
     title,
     okLabel = 'OK',
     cancelLabel = 'Cancel',
-    customFooter,
+    footer,
     leftButtonLabel,
     noPadding = false,
     onOk,
@@ -52,7 +52,7 @@ const Modal: React.FC<ModalProps> = ({
 
     let buttons: IButton[] = [];
 
-    if (!customFooter) {
+    if (!footer) {
         if (cancelLabel) {
             buttons.push({
                 key: 'cancel-modal',
@@ -135,12 +135,8 @@ const Modal: React.FC<ModalProps> = ({
 
     let contentClasses = clsx(
         padding,
-        size === 'full' && 'h-full'
+        ((size === 'full' || size === 'bleed') && 'grow')
     );
-
-    if (!customFooter) {
-        contentClasses += ' pb-0 ';
-    }
 
     const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
         if (e.target === e.currentTarget && backDropClick) {
@@ -152,20 +148,27 @@ const Modal: React.FC<ModalProps> = ({
         width: size + 'px'
     } : {};
 
-    const footerContent = (
-        <div className={footerClasses}>
-            <div>
-                {leftButtonLabel &&
-                <Button label={leftButtonLabel} link={true} />
-                }
+    let footerContent;
+    if (footer) {
+        footerContent = footer;
+    } else if (footer === false) {
+        contentClasses += ' pb-0 ';
+    } else {
+        footerContent = (
+            <div className={footerClasses}>
+                <div>
+                    {leftButtonLabel &&
+                    <Button label={leftButtonLabel} link={true} />
+                    }
+                </div>
+                <div className='flex gap-3'>
+                    <ButtonGroup buttons={buttons}/>
+                </div>
             </div>
-            <div className='flex gap-3'>
-                <ButtonGroup buttons={buttons}/>
-            </div>
-        </div>
-    );
+        );
+    }
 
-    const footer = (stickyFooter ?
+    footerContent = (stickyFooter ?
         <StickyFooter height={84}>
             {footerContent}
         </StickyFooter>
@@ -188,9 +191,7 @@ const Modal: React.FC<ModalProps> = ({
                         {children}
                     </div>
                 </div>
-                {customFooter ? customFooter :
-                    footer
-                }
+                {footerContent}
             </section>
         </div>
     );
