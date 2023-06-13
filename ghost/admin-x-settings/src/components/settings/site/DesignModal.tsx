@@ -128,11 +128,6 @@ const DesignModal: React.FC = () => {
         title: id === 'site-wide' ? 'Site wide' : (id === 'homepage' ? 'Homepage' : 'Post')
     }));
 
-    // const urlOptions: SelectOption[] = [
-    //     {value: getHomepageUrl(siteData!), label: 'Homepage'},
-    //     latestPost && {value: latestPost.url, label: 'Post'}
-    // ].filter((option): option is SelectOption => Boolean(option));
-
     let previewTabs: Tab[] = [];
     if (latestPost) {
         previewTabs = [
