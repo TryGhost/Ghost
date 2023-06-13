@@ -48,7 +48,7 @@ export class CalloutNode extends BaseCalloutNode {
         if (this.__textEditor) {
             this.__textEditor.getEditorState().read(() => {
                 const html = $generateHtmlFromNodes(this.__textEditor, null);
-                const cleanedHtml = cleanBasicHtml(html);
+                const cleanedHtml = cleanBasicHtml(html, {allowBr: true});
                 json.calloutText = cleanedHtml;
             });
         }
