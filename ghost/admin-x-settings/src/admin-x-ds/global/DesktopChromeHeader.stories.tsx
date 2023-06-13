@@ -25,6 +25,12 @@ export const Small: Story = {
     }
 };
 
+export const Large: Story = {
+    args: {
+        size: 'lg'
+    }
+};
+
 export const Empty: Story = {
     args: {
         toolbarLeft: <></>
