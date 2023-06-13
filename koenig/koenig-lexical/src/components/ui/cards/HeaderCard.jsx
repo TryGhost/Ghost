@@ -118,10 +118,10 @@ export function HeaderCard({isEditing,
                             placeholderText={headerPlaceholder}
                             singleParagraph={true}
                             textClassName={clsx(
-                                'koenig-lexical-header-heading relative w-full whitespace-normal text-center font-bold [&:has(br)]:text-left', 
-                                (size === 'small') && 'koenig-lexical-header-small [&:has(br)]:pl-[calc(50%_-_128px)] [&:has(br)]:sm:pl-[calc(50%_-_154px)] [&:has(br)]:md:pl-[calc(50%_-_205px)] [&:has(br)]:lg:pl-[calc(50%_-_256px)]',
-                                (size === 'medium') && 'koenig-lexical-header-medium [&:has(br)]:pl-[calc(50%_-_128px)] [&:has(br)]:sm:pl-[calc(50%_-_154px)] [&:has(br)]:md:pl-[calc(50%_-_205px)] [&:has(br)]:lg:pl-[calc(50%_-_256px)] [&:has(br)]:xl:pl-[calc(50%_-_306px)]',
-                                (size === 'large') && 'koenig-lexical-header-large [&:has(br)]:pl-[calc(50%_-_154px)] [&:has(br)]:sm:pl-[calc(50%_-_205px)] [&:has(br)]:md:pl-[calc(50%_-_256px)] [&:has(br)]:lg:pl-[calc(50%_-_306px)]',
+                                'koenig-lexical-header-heading relative w-full whitespace-normal text-left font-bold [&:has(span)]:pl-0 [&:has(span)]:text-center [&:has(span)]:sm:pl-0 [&:has(span)]:md:pl-0 [&:has(span)]:lg:pl-0',
+                                (size === 'small') && 'koenig-lexical-header-small pl-[calc(50%_-_128px)] sm:pl-[calc(50%_-_154px)] md:pl-[calc(50%_-_205px)] lg:pl-[calc(50%_-_256px)]',
+                                (size === 'medium') && 'koenig-lexical-header-medium pl-[calc(50%_-_128px)] sm:pl-[calc(50%_-_154px)] md:pl-[calc(50%_-_205px)] lg:pl-[calc(50%_-_256px)] xl:pl-[calc(50%_-_306px)]',
+                                (size === 'large') && 'koenig-lexical-header-large pl-[calc(50%_-_154px)] sm:pl-[calc(50%_-_205px)] md:pl-[calc(50%_-_256px)] lg:pl-[calc(50%_-_306px)]',
                                 (HEADER_TEXT_COLORS[type])
                             )}
                         />
@@ -146,10 +146,10 @@ export function HeaderCard({isEditing,
                             placeholderText={subheaderPlaceholder}
                             singleParagraph={true}
                             textClassName={clsx(
-                                'koenig-lexical-header-subheading relative w-full whitespace-normal text-center [&:has(br)]:text-left',
-                                (size === 'small') && 'koenig-lexical-header-small !mt-2 [&:has(br)]:pl-[calc(50%_-_90px)] [&:has(br)]:sm:pl-[calc(50%_-_100px)]',
-                                (size === 'medium') && 'koenig-lexical-header-medium !mt-3 [&:has(br)]:pl-[calc(50%_-_90px)] [&:has(br)]:sm:pl-[calc(50%_-_100px)] [&:has(br)]:md:pl-[calc(50%_-_120px)]',
-                                (size === 'large') && 'koenig-lexical-header-large !mt-3 [&:has(br)]:pl-[calc(50%_-_100px)] [&:has(br)]:md:pl-[calc(50%_-_120px)]',
+                                'koenig-lexical-header-subheading relative w-full whitespace-normal text-left [&:has(span)]:pl-0 [&:has(span)]:text-center [&:has(span)]:sm:pl-0 [&:has(span)]:md:pl-0 [&:has(span)]:lg:pl-0',
+                                (size === 'small') && 'koenig-lexical-header-small !mt-2 pl-[calc(50%_-_90px)] sm:pl-[calc(50%_-_100px)]',
+                                (size === 'medium') && 'koenig-lexical-header-medium !mt-3 pl-[calc(50%_-_90px)] sm:pl-[calc(50%_-_100px)] md:pl-[calc(50%_-_120px)]',
+                                (size === 'large') && 'koenig-lexical-header-large !mt-3 pl-[calc(50%_-_100px)] md:pl-[calc(50%_-_120px)]',
                                 (HEADER_TEXT_COLORS[type])
                             )}
                         />
