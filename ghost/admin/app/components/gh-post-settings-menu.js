@@ -150,8 +150,8 @@ export default class GhPostSettingsMenu extends Component {
             return false;
         }
 
-        // Can view history for all unpublished posts
-        if (!this.post.isPublished) {
+        // Can view history for all unpublished/unsent posts
+        if (!this.post.isPublished && !this.post.isSent) {
             return true;
         }
 
