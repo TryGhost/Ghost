@@ -162,9 +162,9 @@ describe('Milestones Service', function () {
         threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
         clock = sinon.useFakeTimers({
             now: threeMonthsAgo.getTime(),
+            shouldAdvanceTime: true,
             toFake: ['setTimeout']
         });
-        sinon.createSandbox();
         configUtils.set('milestones', milestonesConfig);
         mockManager.mockMail();
     });
