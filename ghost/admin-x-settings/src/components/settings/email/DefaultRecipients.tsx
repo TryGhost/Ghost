@@ -5,7 +5,7 @@ import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {GroupBase, MultiValue} from 'react-select';
-import {Label, Tier} from '../../../types/api';
+import {Label, Offer, Tier} from '../../../types/api';
 import {ServicesContext} from '../../providers/ServiceProvider';
 import {getOptionLabel, getSettingValues} from '../../../utils/helpers';
 
@@ -83,6 +83,7 @@ const DefaultRecipients: React.FC = () => {
     const {api} = useContext(ServicesContext);
     const [tiers, setTiers] = useState<Tier[]>([]);
     const [labels, setLabels] = useState<Label[]>([]);
+    const [offers, setOffers] = useState<Offer[]>([]);
 
     useEffect(() => {
         api.tiers.browse().then((response) => {
@@ -91,6 +92,10 @@ const DefaultRecipients: React.FC = () => {
 
         api.labels.browse().then((response) => {
             setLabels(response.labels);
+        });
+
+        api.offers.browse().then((response) => {
+            setOffers(response.offers);
         });
     }, [api]);
 
@@ -123,19 +128,26 @@ const DefaultRecipients: React.FC = () => {
         },
         {
             label: 'Active Tiers',
-            options: tiers.map(tier => ({value: tier.id, label: tier.name, color: 'black'}))
+            options: tiers.filter(({active}) => active).map(tier => ({value: tier.id, label: tier.name, color: 'black'}))
+        },
+        {
+            label: 'Archived Tiers',
+            options: tiers.filter(({active}) => !active).map(tier => ({value: tier.id, label: tier.name, color: 'black'}))
         },
         {
             label: 'Labels',
             options: labels.map(label => ({value: `label:${label.slug}`, label: label.name, color: 'grey'}))
+        },
+        {
+            label: 'Offers',
+            options: offers.map(offer => ({value: `offer_redemptions:${offer.id}`, label: offer.name, color: 'black'}))
         }
     ];
 
-    const segmentOptions = segmentOptionGroups.flatMap(({options}) => options);
-
-    const defaultSelectedSegments = (defaultEmailRecipientsFilter?.split(',') || [])
-        .map(value => segmentOptions.find(option => option.value === value))
-        .filter((option): option is MultiSelectOption => Boolean(option));
+    const filters = defaultEmailRecipientsFilter?.split(',') || [];
+    const defaultSelectedSegments = segmentOptionGroups
+        .flatMap(({options}) => options)
+        .filter(({value}) => filters.includes(value));
 
     const setSelectedSegments = (selected: MultiValue<MultiSelectOption>) => {
         const selectedGroups = selected?.map(({value}) => value).join(',');
@@ -168,7 +180,7 @@ const DefaultRecipients: React.FC = () => {
             {(selectedOption === 'segment') && (
                 <MultiSelect
                     defaultValues={defaultSelectedSegments}
-                    options={segmentOptionGroups}
+                    options={segmentOptionGroups.filter(group => group.options.length > 0)}
                     title='Select tiers'
                     clearBg
                     onChange={setSelectedSegments}
