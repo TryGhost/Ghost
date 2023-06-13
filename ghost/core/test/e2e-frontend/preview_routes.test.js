@@ -20,8 +20,7 @@ function assertCorrectFrontendHeaders(res) {
 
 describe('Frontend Routing: Preview Routes', function () {
     async function addPosts() {
-        await testUtils.clearData();
-        await testUtils.initData();
+        await testUtils.resetDb();
         await testUtils.fixtures.insertPostsAndTags();
     }
 

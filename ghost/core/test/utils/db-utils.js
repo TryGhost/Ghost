@@ -177,25 +177,4 @@ const truncateAll = async () => {
     });
 };
 
-/**
- * @deprecated Use teardown or reset instead
- * Old method for clearing data from the database that also mixes in url service behavior
- */
-module.exports.clearData = async () => {
-    debug('Database reset');
-    await knexMigrator.reset({force: true});
-    urlServiceUtils.reset();
-};
-
-/**
- * @deprecated Use reset instead
- * Old method for clearing data from the database that also mixes in url service behavior
- */
-module.exports.initData = async () => {
-    await knexMigrator.init();
-    await urlServiceUtils.reset();
-    await urlServiceUtils.init();
-    await urlServiceUtils.isFinished();
-};
-
 module.exports.knex = db.knex;

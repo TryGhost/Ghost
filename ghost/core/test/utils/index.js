@@ -97,6 +97,7 @@ module.exports = {
     stopGhost: e2eUtils.stopGhost,
     getExistingData: e2eUtils.getExistingData,
 
+    resetDb: dbUtils.reset,
     teardownDb: dbUtils.teardown,
     truncate: dbUtils.truncate,
     knex: dbUtils.knex,
@@ -134,8 +135,6 @@ module.exports = {
     },
 
     initFixtures: initFixtures,
-    initData: dbUtils.initData,
-    clearData: dbUtils.clearData,
     setupRedirectsFile: redirects.setupFile,
 
     fixtures: fixtureUtils.fixtures,
