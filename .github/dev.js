@@ -115,7 +115,7 @@ if (DASH_DASH_ARGS.includes('search') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'search',
         command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../ghost/sodo-search'),
+        cwd: path.resolve(__dirname, '../apps/sodo-search'),
         prefixColor: '#23de43',
         env: {}
     });
