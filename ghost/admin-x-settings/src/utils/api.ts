@@ -1,4 +1,4 @@
-import {CustomThemeSetting, Post, Setting, SiteData, User, UserRole} from '../types/api';
+import {CustomThemeSetting, Label, Post, Setting, SiteData, Tier, User, UserRole} from '../types/api';
 import {getGhostPaths} from './helpers';
 
 interface Meta {
@@ -54,17 +54,18 @@ export interface CustomThemeSettingsResponseType {
 }
 
 export interface PostsResponseType {
-    meta: {
-        pagination: {
-            page: number
-            limit: number
-            pages: number
-            total: number
-            next: number | null
-            prev: number | null
-        }
-    }
+    meta?: Meta
     posts: Post[];
+}
+
+export interface TiersResponseType {
+    meta?: Meta
+    tiers: Tier[]
+}
+
+export interface LabelsResponseType {
+    meta?: Meta
+    labels: Label[]
 }
 
 export interface SiteResponseType {
@@ -144,6 +145,12 @@ interface API {
     };
     latestPost: {
         browse: () => Promise<PostsResponseType>
+    };
+    tiers: {
+        browse: () => Promise<TiersResponseType>
+    };
+    labels: {
+        browse: () => Promise<LabelsResponseType>
     }
 }
 
@@ -347,6 +354,21 @@ function setupGhostApi({ghostVersion}: GhostApiOptions): API {
             browse: async () => {
                 const response = await fetcher('/posts/?filter=status%3Apublished&order=published_at%20DESC&limit=1&fields=id,url');
                 const data: PostsResponseType = await response.json();
+                return data;
+            }
+        },
+        tiers: {
+            browse: async () => {
+                const filter = encodeURIComponent('type:paid+active:true');
+                const response = await fetcher(`/tiers/?filter=${filter}&limit=all`);
+                const data: TiersResponseType = await response.json();
+                return data;
+            }
+        },
+        labels: {
+            browse: async () => {
+                const response = await fetcher(`/labels/?limit=all`);
+                const data: LabelsResponseType = await response.json();
                 return data;
             }
         }

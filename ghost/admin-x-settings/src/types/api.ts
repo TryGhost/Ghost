@@ -61,6 +61,32 @@ export type Post = {
     url: string;
 };
 
+export type Tier = {
+    id: string;
+    name: string;
+    description: string | null;
+    slug: string;
+    active: true,
+    type: string;
+    welcome_page_url: string | null;
+    created_at: string;
+    updated_at: string;
+    visibility: string;
+    benefits: string[];
+    currency?: string;
+    monthly_price?: number;
+    yearly_price?: number;
+    trial_days: number;
+}
+
+export type Label = {
+    id: string;
+    name: string;
+    slug: string;
+    created_at: string;
+    updated_at: string;
+}
+
 type CustomThemeSettingData =
     { type: 'text', value: string | null, default: string | null } |
     { type: 'color', value: string, default: string } |
