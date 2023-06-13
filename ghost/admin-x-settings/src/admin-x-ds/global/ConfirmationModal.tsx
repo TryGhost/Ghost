@@ -25,7 +25,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     okColor = 'black',
     onCancel,
     onOk,
-    customFooter = false
+    customFooter
 }) => {
     const modal = useModal();
     const [taskState, setTaskState] = useState<'running' | ''>('');

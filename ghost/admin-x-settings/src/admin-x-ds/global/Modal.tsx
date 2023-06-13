@@ -138,10 +138,6 @@ const Modal: React.FC<ModalProps> = ({
         ((size === 'full' || size === 'bleed') && 'grow')
     );
 
-    if (!footer) {
-        contentClasses += ' pb-0 ';
-    }
-
     const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
         if (e.target === e.currentTarget && backDropClick) {
             modal.remove();
@@ -152,30 +148,35 @@ const Modal: React.FC<ModalProps> = ({
         width: size + 'px'
     } : {};
 
-    const footerContent = (
-        <div className={footerClasses}>
-            <div>
-                {leftButtonLabel &&
-                <Button label={leftButtonLabel} link={true} />
-                }
+    let footerContent;
+    if (footer) {
+        footerContent = footer;
+    } else if (footer === false) {
+        contentClasses += ' pb-0 ';
+    } else {
+        footerContent = (
+            <div className={footerClasses}>
+                <div>
+                    {leftButtonLabel &&
+                    <Button label={leftButtonLabel} link={true} />
+                    }
+                </div>
+                <div className='flex gap-3'>
+                    <ButtonGroup buttons={buttons}/>
+                </div>
             </div>
-            <div className='flex gap-3'>
-                <ButtonGroup buttons={buttons}/>
-            </div>
-        </div>
-    );
-
-    if (footer === undefined) {
-        footer = (stickyFooter ?
-            <StickyFooter height={84}>
-                {footerContent}
-            </StickyFooter>
-            :
-            <>
-                {footerContent}
-            </>
         );
     }
+
+    footerContent = (stickyFooter ?
+        <StickyFooter height={84}>
+            {footerContent}
+        </StickyFooter>
+        :
+        <>
+            {footerContent}
+        </>
+    );
 
     return (
         <div className={backdropClasses} id='modal-backdrop' onClick={handleBackdropClick}>
@@ -190,7 +191,7 @@ const Modal: React.FC<ModalProps> = ({
                         {children}
                     </div>
                 </div>
-                {footer}
+                {footerContent}
             </section>
         </div>
     );
