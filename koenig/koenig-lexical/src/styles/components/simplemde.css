@@ -114,6 +114,7 @@
     /* fix visible scrollbars when OSX is set to show them */
     .CodeMirror-scroll {
         overflow: visible !important;
+        padding-bottom: 5rem; /* pad so text doesn't go behind toolbar */
     }
 
     .CodeMirror-scroll:hover {
