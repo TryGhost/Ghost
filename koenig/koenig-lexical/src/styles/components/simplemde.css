@@ -3,7 +3,6 @@
 } */
 
 .koenig-lexical .markdown-editor {
-
         position: static;
         z-index: 0;
         overflow: visible;
@@ -35,6 +34,11 @@
         background: var(--white);
         opacity: 1;
         border-radius: 0;
+    }
+
+    /* override simplemde.css */
+    .editor-toolbar:hover {
+        opacity: 1;
     }
 
     .editor-toolbar a {
@@ -160,5 +164,37 @@
     .CodeMirror-selectedtext {
         color: #000 !important;
         background: color-mod(var(--blue) lightness(+30%));
+    }
+}
+
+/* TODO: we should add darkmode toolbar */
+.koenig-lexical.dark .markdown-editor {
+    .CodeMirror pre {
+        color: var(--grey-100);
+    }
+    .CodeMirror .cm-strong {
+        color: var(--grey-100);
+    }
+    .editor-toolbar {
+        border-top: 1px solid var(--grey-950);
+        background: var(--grey-950);
+    }
+    .editor-toolbar a {
+        color: var(--grey-450) !important;
+    }
+
+    .editor-toolbar a.active,
+    .editor-toolbar a:hover {
+        border-color: var(--black);
+        background: var(--grey-900);
+    }
+
+    .editor-toolbar a.disabled {
+        color: var(--orange) !important;
+    }
+
+    .editor-toolbar i.separator {
+        border-right: none;
+        border-left: color-mod(var(--yellow) l(-3%)) 1px solid;
     }
 }
