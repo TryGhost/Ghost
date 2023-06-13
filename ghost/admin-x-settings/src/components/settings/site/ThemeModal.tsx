@@ -1,6 +1,7 @@
 import AdvancedThemeSettings from './theme/AdvancedThemeSettings';
 import Button from '../../../admin-x-ds/global/Button';
 import ButtonGroup from '../../../admin-x-ds/global/ButtonGroup';
+import FileUpload from '../../../admin-x-ds/global/FileUpload';
 import Modal from '../../../admin-x-ds/global/Modal';
 import NewThemePreview from './theme/ThemePreview';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
@@ -80,16 +81,18 @@ const ChangeThemeModal = NiceModal.create(() => {
                         Installed
                     </button>
                 </div>
-                <ButtonGroup
-                    buttons={[
-                        {label: 'Upload theme', onClick: () => {
-                            alert('Upload');
-                        }},
-                        {label: 'OK', color: 'black', className: 'min-w-[75px]', onClick: () => {
+                <div className='flex items-center gap-3'>
+                    <FileUpload id='theme-uplaod' onUpload={(file: File) => {
+                        alert(file.name);
+                    }}>Upload theme</FileUpload>
+                    <Button
+                        className='min-w-[75px]'
+                        color='black'
+                        label='OK'
+                        onClick = {() => {
                             modal.remove();
-                        }}
-                    ]}
-                />
+                        }} />
+                </div>
             </div>;
     }
 
