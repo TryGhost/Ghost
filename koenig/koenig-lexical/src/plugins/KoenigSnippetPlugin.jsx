@@ -17,7 +17,12 @@ export const KoenigSnippetPlugin = () => {
                 INSERT_SNIPPET_COMMAND,
                 async (dataset) => {
                     editor.update(() => {
-                        const snippetData = JSON.parse(dataset.value);
+                        let snippetData = JSON.parse(dataset.value);
+                        // The string can be escaped; in this case, should parse the string twice to get an object.
+                        // Example of escaped value: "{\"namespace\":\"KoenigEditor\",\"nodes\":[{\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"text\",\"type\":\"text\",\"version\":1}]}"
+                        if (typeof snippetData === 'string') {
+                            snippetData = JSON.parse(snippetData);
+                        }
                         const nodes = $generateNodesFromSerializedNodes(snippetData.nodes);
                         const firstNode = nodes.length === 1 && nodes[0];
                         const lastNode = !!nodes.length && nodes[nodes.length - 1];
