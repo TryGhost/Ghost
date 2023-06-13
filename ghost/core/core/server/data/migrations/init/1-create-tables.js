@@ -10,7 +10,7 @@ module.exports.up = async (options) => {
     const existingTables = await commands.getTables(connection);
     const missingTables = schemaTables.filter(t => !existingTables.includes(t));
 
-    await sequence(missingTables.map((table) => async () => {
+    await sequence(missingTables.map(table => async () => {
         logging.info('Creating table: ' + table);
         await commands.createTable(table, connection);
     }));

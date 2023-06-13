@@ -13,7 +13,7 @@ const loadScheduledResources = async function () {
     const SCHEDULED_RESOURCES = ['post', 'page'];
 
     // Fetches all scheduled resources(posts/pages) with default API
-    const results = await sequence(SCHEDULED_RESOURCES.map((resourceType) => async () => {
+    const results = await sequence(SCHEDULED_RESOURCES.map(resourceType => async () => {
         const result = await api.schedules.getScheduled.query({
             options: {
                 resource: resourceType
