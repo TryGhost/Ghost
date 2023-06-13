@@ -84,7 +84,7 @@ export function ColorPicker({value, eyedropper, hasTransparentOption, onChange})
                     <HexColorInput aria-label="Color value" className='z-50 w-full bg-transparent' color={hexValue} onChange={onChange} />
                     {eyedropper && !!window.EyeDropper && (
                         <button
-                            className="absolute inset-y-0 right-3 my-auto h-4 w-4 p-[1px]"
+                            className="absolute inset-y-0 right-3 z-50 my-auto h-4 w-4 p-[1px]"
                             type="button"
                             onClick={openColorPicker}
                         >
