@@ -2411,10 +2411,10 @@
     resolve "^1.20.0"
     semver "^7.3.2"
 
-"@embroider/macros@1.11.0", "@embroider/macros@^0.50.0 || ^1.0.0", "@embroider/macros@^1.0.0", "@embroider/macros@^1.10.0", "@embroider/macros@^1.2.0", "@embroider/macros@^1.8.0", "@embroider/macros@^1.8.3", "@embroider/macros@^1.9.0":
-  version "1.11.0"
-  resolved "https://registry.yarnpkg.com/@embroider/macros/-/macros-1.11.0.tgz#d6c1f1c1325e8253971483c20059edd08ef5a353"
-  integrity sha512-P/WSB+PqKSja5qXjYvhLyUM0ivcDoI9kkqs+R0GNujfVhS0EIIAMHfD9uHDBbhzFit39pT0QJqgcXGE2rprCPA==
+"@embroider/macros@1.11.1", "@embroider/macros@^0.50.0 || ^1.0.0", "@embroider/macros@^1.0.0", "@embroider/macros@^1.10.0", "@embroider/macros@^1.2.0", "@embroider/macros@^1.8.0", "@embroider/macros@^1.8.3", "@embroider/macros@^1.9.0":
+  version "1.11.1"
+  resolved "https://registry.yarnpkg.com/@embroider/macros/-/macros-1.11.1.tgz#62eeb5bb7907ad01bdf750510c7f46c0192b6605"
+  integrity sha512-yg4Pl5Sw26lKrrtLwk2UEgYkKkztq+Hatn67QYL5A3I3T4IE/bRA3o6xvIslrJNnhyER7jCc2pwusxt3O4HubA==
   dependencies:
     "@embroider/shared-internals" "2.1.0"
     assert-never "^1.2.1"
@@ -6872,12 +6872,12 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-4.0.8.tgz#3799e256ce67f926ad5045a63c2c241b1b6ede5a"
   integrity sha512-mQNs5gw63U26HPsOtlZ8U3jmUHTRMWXECTjIaP1QKWGFcsbAZqNHIGDCbJSqskCqwsrdi8PibZckfYLKozYCCw==
 
-"@tryghost/kg-clean-basic-html@3.0.17", "@tryghost/kg-clean-basic-html@^3.0.17":
+"@tryghost/kg-clean-basic-html@3.0.17":
   version "3.0.17"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-3.0.17.tgz#7b3ac455f739c550346c79b0dfdf67bc67d18977"
   integrity sha512-Mr/7dQILSzP5ggxkGNAfbAyNUOWpqJ8AuhY6EwwC8xvFwVPM9QKdRtC+ZumstOWaClnWxikxumLsZbX3LjRhCw==
 
-"@tryghost/kg-clean-basic-html@^3.0.19":
+"@tryghost/kg-clean-basic-html@^3.0.17", "@tryghost/kg-clean-basic-html@^3.0.19":
   version "3.0.19"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-3.0.19.tgz#52c18089acfc56ac8a20f0048f5fb99c47c6b4b4"
   integrity sha512-6mheKCHAD7TLvFl3BEOZpMenc5lv/+/k6rq49OCYBJISWIbW8SkyqG3Yqgu1BB4cSyMFsprGr7yuOTIHSJPREw==
