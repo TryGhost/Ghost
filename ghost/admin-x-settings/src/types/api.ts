@@ -126,3 +126,14 @@ export type CustomThemeSetting = CustomThemeSettingData & {
     // homepage and post are the only two groups we handle, but technically theme authors can put other things in package.json
     group?: 'homepage' | 'post' | string
 }
+
+export type Theme = {
+    active: boolean;
+    name: string;
+    package: {
+        name?: string;
+        description?: string;
+        version?: string;
+    };
+    templates?: string[];
+}
