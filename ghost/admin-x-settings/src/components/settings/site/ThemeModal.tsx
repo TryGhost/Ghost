@@ -1,10 +1,10 @@
-import AdvancedThemeSettings from './AdvancedThemeSettings';
-import Button from '../../../../admin-x-ds/global/Button';
-import ButtonGroup from '../../../../admin-x-ds/global/ButtonGroup';
-import Modal from '../../../../admin-x-ds/global/Modal';
-import NewThemePreview from './NewThemePreview';
+import AdvancedThemeSettings from './theme/AdvancedThemeSettings';
+import Button from '../../../admin-x-ds/global/Button';
+import ButtonGroup from '../../../admin-x-ds/global/ButtonGroup';
+import Modal from '../../../admin-x-ds/global/Modal';
+import NewThemePreview from './theme/ThemePreview';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import OfficialThemes from './OfficialThemes';
+import OfficialThemes from './theme/OfficialThemes';
 import {useState} from 'react';
 
 const ChangeThemeModal = NiceModal.create(() => {
