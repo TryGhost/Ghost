@@ -36,7 +36,7 @@ export function ProductCardImage({
                     ? (
                         <>
                             <MediaPlaceholder
-                                desc="Click to select a product image"
+                                desc={isEditing ? 'Click to select a product image' : ''}
                                 errors={imgUploader.errors}
                                 filePicker={() => openFileSelection({fileInputRef})}
                                 icon='product'

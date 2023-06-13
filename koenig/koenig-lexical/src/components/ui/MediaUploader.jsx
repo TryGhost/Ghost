@@ -22,6 +22,7 @@ export function MediaUploader({
     mimeTypes,
     onFileChange,
     dragHandler,
+    isEditing = true,
     isLoading,
     isPinturaEnabled,
     openImageEditor,
@@ -55,7 +56,7 @@ export function MediaUploader({
                 <MediaPlaceholder
                     borderStyle={borderStyle}
                     dataTestId="media-upload-placeholder"
-                    desc={desc}
+                    desc={isEditing ? desc : ''}
                     errorDataTestId="media-upload-errors"
                     errors={errors}
                     filePicker={() => openFileSelection({fileInputRef})}

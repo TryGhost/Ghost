@@ -390,7 +390,7 @@ test.describe('Product card', async () => {
                                 <div>
                                     <button name="placeholder-button" type="button">
                                         <svg></svg>
-                                        <p>Click to select a product image</p>
+                                        <p></p>
                                     </button>
                                 </div>
                             </div>

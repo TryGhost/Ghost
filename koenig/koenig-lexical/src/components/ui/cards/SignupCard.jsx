@@ -192,6 +192,7 @@ export function SignupCard({alignment,
                         errors={fileUploader?.errors}
                         icon='image'
                         imgClassName="aspect-[3/2]"
+                        isEditing={isEditing}
                         isLoading={isLoading}
                         isPinturaEnabled={isPinturaEnabled}
                         mimeTypes={['image/*']}
