@@ -295,7 +295,7 @@ describe('SignupNode', function () {
             const signupNode = $createSignupNode(dataset);
             const {element} = signupNode.exportDOM(exportOptions);
             element.outerHTML.should.prettifyTo(html`
-                <div class="kg-card kg-signup-card kg-layout-split kg-width-full" data-lexical-signup-form="" style="display:none">
+                <div class="kg-card kg-signup-card kg-layout-split kg-width-full kg-background-size-cover" data-lexical-signup-form="" style="display:none">
                     <img class="kg-signup-card-image" style="background-color: transparent" src="https://example.com/image.jpg" alt="">
                     <div class="kg-signup-card-container align-center" style="background-color:transparent">
                         <h2 class="kg-signup-card-heading" style="color:#000000">Header</h2>
@@ -326,7 +326,7 @@ describe('SignupNode', function () {
             const signupNode = $createSignupNode(dataset);
             const {element} = signupNode.exportDOM(exportOptions);
             element.outerHTML.should.prettifyTo(html`
-                <div class="kg-card kg-signup-card kg-layout-split kg-width-full kg-swapped" data-lexical-signup-form="" style="display:none">
+                <div class="kg-card kg-signup-card kg-layout-split kg-width-full kg-swapped kg-background-size-cover" data-lexical-signup-form="" style="display:none">
                     <img class="kg-signup-card-image" style="background-color: transparent" src="https://example.com/image.jpg" alt="">
                     <div class="kg-signup-card-container align-center" style="background-color:transparent">
                         <h2 class="kg-signup-card-heading" style="color:#000000">Header</h2>
@@ -494,6 +494,7 @@ describe('SignupNode', function () {
                 alignment: dataset.alignment,
                 backgroundColor: dataset.backgroundColor,
                 backgroundImageSrc: dataset.backgroundImageSrc,
+                backgroundSize: dataset.backgroundSize,
                 textColor: dataset.textColor,
                 buttonColor: dataset.buttonColor,
                 buttonText: dataset.buttonText,
