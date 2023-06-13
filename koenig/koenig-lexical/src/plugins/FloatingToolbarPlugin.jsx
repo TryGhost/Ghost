@@ -99,9 +99,9 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled, hiddenF
         editor.registerCommand(
             KEY_MODIFIER_COMMAND,
             (event) => {
-                const {keyCode, ctrlKey, metaKey} = event;
+                const {keyCode, ctrlKey, metaKey, shiftKey} = event;
                 // ctrl/cmd K with selected text should prompt for link insertion
-                if (keyCode === 75 && (ctrlKey || metaKey)) {
+                if (!shiftKey && keyCode === 75 && (ctrlKey || metaKey)) {
                     const selection = $getSelection();
                     if ($isRangeSelection(selection) && !selection.isCollapsed()) {
                         setToolbarItemType(toolbarItemTypes.link);
@@ -109,6 +109,7 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled, hiddenF
                         return true;
                     }
                 }
+                return false;
             },
             COMMAND_PRIORITY_LOW
         );
