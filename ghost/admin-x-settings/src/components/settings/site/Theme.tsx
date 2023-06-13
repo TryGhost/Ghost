@@ -1,5 +1,5 @@
 import Button from '../../../admin-x-ds/global/Button';
-import ChangeThemeModal from './designAndBranding/ChangeThemeModal';
+import ChangeThemeModal from './ThemeModal';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
