@@ -121,14 +121,11 @@ test.describe('Markdown card', async () => {
 
     test('should toggle spellcheck on Cmd-Alt-S', async function () {
         await focusEditor(page);
-        await page.keyboard.type('/');
-        await page.click('[data-kg-card-menu-item="Markdown"]');
-        await page.click('[data-kg-card="markdown"]');
+        await insertCard(page, {cardName: 'markdown'});
 
-        expect(await page.locator('[title*="Spellcheck"][class*="active"]')).not.toBeNull();
+        await expect(page.locator('[title*="Spellcheck"]')).not.toBeNull();
         await page.keyboard.press(`Control+Alt+S`);
-        expect(await page.locator('[title*="Spellcheck"]')).not.toBeNull();
-        await expect(await page.locator('[title*="Spellcheck"][class*="active"]')).toHaveCount(0);
+        await expect(page.locator('[title*="Spellcheck"][class*="active"]')).toHaveCount(1);
     });
 
     test('should open image upload dialog on Cmd-Alt-I', async function () {
@@ -211,7 +208,7 @@ test.describe('Markdown card', async () => {
         // await expect(await page.getByTestId('progress-bar')).not.toBeVisible();
 
         // wait for image markdown to be inserted
-        await page.waitForSelector('[data-kg-card="markdown"] .cm-formatting-image');
+        await page.waitForSelector('[data-kg-card="markdown"] .cm-image');
 
         await assertRootChildren(page, JSON.stringify([
             {

@@ -81,7 +81,7 @@ export default function MarkdownEditor({
                 {
                     name: 'spellcheck',
                     action: toggleSpellcheck,
-                    className: 'fa fa-check active',
+                    className: 'fa fa-check',
                     title: `Spellcheck (${shortcuts.toggleSpellcheck})`
                 },
                 {
@@ -119,6 +119,10 @@ export default function MarkdownEditor({
         });
 
         addShortcuts();
+
+        // spellchecker turned off by default
+        const codemirror = editor.current.codemirror;
+        codemirror.setOption('mode', 'gfm');
 
         // remove editor on unmount
         return () => {
