@@ -115,7 +115,7 @@ interface UpdatePasswordOptions {
     oldPassword?: string;
 }
 
-interface API {
+export interface API {
     settings: {
         browse: () => Promise<SettingsResponseType>;
         edit: (newSettings: Setting[]) => Promise<SettingsResponseType>;
