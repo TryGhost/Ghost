@@ -21,7 +21,7 @@ export interface ModalProps {
     okColor?: string;
     cancelLabel?: string;
     leftButtonLabel?: string;
-    customFooter?: React.ReactNode;
+    footer?: boolean | React.ReactNode;
     noPadding?: boolean;
     onOk?: () => void;
     onCancel?: () => void;
@@ -37,7 +37,7 @@ const Modal: React.FC<ModalProps> = ({
     title,
     okLabel = 'OK',
     cancelLabel = 'Cancel',
-    customFooter,
+    footer,
     leftButtonLabel,
     noPadding = false,
     onOk,
@@ -52,7 +52,7 @@ const Modal: React.FC<ModalProps> = ({
 
     let buttons: IButton[] = [];
 
-    if (!customFooter) {
+    if (!footer) {
         if (cancelLabel) {
             buttons.push({
                 key: 'cancel-modal',
@@ -135,10 +135,10 @@ const Modal: React.FC<ModalProps> = ({
 
     let contentClasses = clsx(
         padding,
-        size === 'full' && 'h-full'
+        ((size === 'full' || size === 'bleed') && 'grow')
     );
 
-    if (!customFooter) {
+    if (!footer) {
         contentClasses += ' pb-0 ';
     }
 
@@ -165,15 +165,17 @@ const Modal: React.FC<ModalProps> = ({
         </div>
     );
 
-    const footer = (stickyFooter ?
-        <StickyFooter height={84}>
-            {footerContent}
-        </StickyFooter>
-        :
-        <>
-            {footerContent}
-        </>
-    );
+    if (footer === undefined) {
+        footer = (stickyFooter ?
+            <StickyFooter height={84}>
+                {footerContent}
+            </StickyFooter>
+            :
+            <>
+                {footerContent}
+            </>
+        );
+    }
 
     return (
         <div className={backdropClasses} id='modal-backdrop' onClick={handleBackdropClick}>
@@ -188,9 +190,7 @@ const Modal: React.FC<ModalProps> = ({
                         {children}
                     </div>
                 </div>
-                {customFooter ? customFooter :
-                    footer
-                }
+                {footer}
             </section>
         </div>
     );

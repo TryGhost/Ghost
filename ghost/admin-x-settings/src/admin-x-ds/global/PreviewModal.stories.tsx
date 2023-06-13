@@ -4,7 +4,7 @@ import Heading from './Heading';
 import NiceModal from '@ebay/nice-modal-react';
 import PreviewModal from './PreviewModal';
 import PreviewModalContainer from './PreviewModalContainer';
-import {SelectOption} from './Select';
+import {Tab} from './TabView';
 
 const meta = {
     title: 'Global / Modal / Preview Modal',
@@ -14,18 +14,24 @@ const meta = {
         <NiceModal.Provider>
             <PreviewModalContainer {...context.args} />
         </NiceModal.Provider>
-    )]
+    )],
+    argTypes: {
+        sidebar: {control: 'text'},
+        preview: {control: 'text'},
+        sidebarButtons: {control: 'text'},
+        sidebarHeader: {control: 'text'}
+    }
 } satisfies Meta<typeof PreviewModal>;
 
 export default meta;
 type Story = StoryObj<typeof PreviewModal>;
 
-const selectOptions: SelectOption[] = [
-    {value: 'homepage', label: 'Homepage'},
-    {value: 'post', label: 'Post'},
-    {value: 'page', label: 'Page'},
-    {value: 'tag-archive', label: 'Tag archive'},
-    {value: 'author-archive', label: 'Author archive'}
+const previewURLs: Tab[] = [
+    {id: 'homepage', title: 'Homepage'},
+    {id: 'post', title: 'Post'},
+    {id: 'page', title: 'Page'},
+    {id: 'tag-archive', title: 'Tag archive'},
+    {id: 'author-archive', title: 'Author archive'}
 ];
 
 export const Default: Story = {
@@ -41,7 +47,10 @@ export const Default: Story = {
                 Sidebar area
             </div>
         ),
-        previewToolbarURLs: selectOptions
+        previewToolbarTabs: previewURLs,
+        onSelectURL: (id: string) => {
+            alert(id);
+        }
     }
 };
 
@@ -79,5 +88,12 @@ export const CustomSidebarHeader: Story = {
                 <Heading level={3}>A custom header here</Heading>
             </div>
         )
+    }
+};
+
+export const FullBleed: Story = {
+    args: {
+        ...Default.args,
+        size: 'bleed'
     }
 };

@@ -22,7 +22,7 @@ test.describe('Theme settings', async () => {
         await modal.getByLabel('Site description').fill('new description');
         await modal.getByRole('button', {name: 'Save'}).click();
 
-        await expect(modal.getByRole('button', {name: 'Saved'})).toHaveCount(1);
+        await expect(modal).not.toBeVisible();
 
         expect(lastApiRequest.body).toEqual({
             settings: [
@@ -47,7 +47,7 @@ test.describe('Theme settings', async () => {
         await modal.getByLabel('Navigation layout').selectOption('Logo in the middle');
         await modal.getByRole('button', {name: 'Save'}).click();
 
-        await expect(modal.getByRole('button', {name: 'Saved'})).toHaveCount(1);
+        await expect(modal).not.toBeVisible();
 
         expect(lastApiRequest.body).toMatchObject({
             custom_theme_settings: [

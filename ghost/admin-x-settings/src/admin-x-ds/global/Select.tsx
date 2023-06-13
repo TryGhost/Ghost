@@ -71,7 +71,7 @@ const Select: React.FC<SelectProps> = ({
     let selectClasses = '';
     if (!unstyled) {
         selectClasses = clsx(
-            'h-10 w-full cursor-pointer appearance-none border-b py-2 outline-none',
+            'h-10 w-full cursor-pointer appearance-none border-b py-2 pr-5 outline-none',
             !clearBg && 'bg-grey-75 px-[10px]',
             error ? 'border-red' : 'border-grey-500 hover:border-grey-700 focus:border-black',
             (title && !clearBg) && 'mt-2'
