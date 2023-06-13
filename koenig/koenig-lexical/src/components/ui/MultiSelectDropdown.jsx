@@ -8,7 +8,7 @@ function Item({item, selected, onChange}) {
     let selectionClass = '';
 
     if (selected) {
-        selectionClass = 'bg-grey-100';
+        selectionClass = 'bg-grey-100 dark:bg-grey-950';
     }
 
     // We use the capture phase of the mouse down event, otherwise the list option will be removed when blurring the input
