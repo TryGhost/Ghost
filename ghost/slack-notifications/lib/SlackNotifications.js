@@ -204,7 +204,7 @@ class SlackNotifications {
      * @returns {string}
      */
     #getFormattedDate(date) {
-        return moment(date).format('D MMM YYYY');
+        return moment.tz(date,'UTC').format('D MMM YYYY');
     }
 }
 

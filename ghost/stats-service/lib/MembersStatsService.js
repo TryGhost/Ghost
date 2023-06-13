@@ -1,4 +1,4 @@
-const moment = require('moment');
+const moment = require('moment-timezone');
 
 class MembersStatsService {
     /**
@@ -73,7 +73,7 @@ class MembersStatsService {
         let {paid, free, comped} = totals;
 
         // Get today in UTC (default timezone)
-        const today = moment().format('YYYY-MM-DD');
+        const today = moment.utc().format('YYYY-MM-DD');
 
         const cumulativeResults = [];
 
@@ -82,7 +82,7 @@ class MembersStatsService {
             const row = rows[i];
 
             // Convert JSDates to YYYY-MM-DD (in UTC)
-            const date = moment(row.date).format('YYYY-MM-DD');
+            const date = moment.tz(row.date, 'UTC').format('YYYY-MM-DD');
             if (date > today) {
                 // Skip results that are in the future (fix for invalid events)
                 continue;
@@ -105,7 +105,7 @@ class MembersStatsService {
         }
 
         // Now also add the oldest day we have left over (this one will be zero, which is also needed as a data point for graphs)
-        const oldestDate = rows.length > 0 ? moment(rows[0].date).add(-1, 'days').format('YYYY-MM-DD') : today;
+        const oldestDate = rows.length > 0 ? moment.tz(rows[0].date, 'UTC').add(-1, 'days').format('YYYY-MM-DD') : today;
 
         cumulativeResults.unshift({
             date: oldestDate,

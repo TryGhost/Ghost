@@ -32,6 +32,7 @@
     "sqlite3": "5.1.6"
   },
   "dependencies": {
-    "moment": "2.29.3"
+    "moment": "2.29.3",
+    "moment-timezone": "0.5.23"
   }
 }
