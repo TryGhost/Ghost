@@ -4,7 +4,7 @@ import Heading from './Heading';
 import NiceModal from '@ebay/nice-modal-react';
 import PreviewModal from './PreviewModal';
 import PreviewModalContainer from './PreviewModalContainer';
-import {SelectOption} from './Select';
+import {Tab} from './TabView';
 
 const meta = {
     title: 'Global / Modal / Preview Modal',
@@ -26,12 +26,12 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof PreviewModal>;
 
-const selectOptions: SelectOption[] = [
-    {value: 'homepage', label: 'Homepage'},
-    {value: 'post', label: 'Post'},
-    {value: 'page', label: 'Page'},
-    {value: 'tag-archive', label: 'Tag archive'},
-    {value: 'author-archive', label: 'Author archive'}
+const previewURLs: Tab[] = [
+    {id: 'homepage', title: 'Homepage'},
+    {id: 'post', title: 'Post'},
+    {id: 'page', title: 'Page'},
+    {id: 'tag-archive', title: 'Tag archive'},
+    {id: 'author-archive', title: 'Author archive'}
 ];
 
 export const Default: Story = {
@@ -47,7 +47,10 @@ export const Default: Story = {
                 Sidebar area
             </div>
         ),
-        previewToolbarURLs: selectOptions
+        previewToolbarTabs: previewURLs,
+        onSelectURL: (id: string) => {
+            alert(id);
+        }
     }
 };
 

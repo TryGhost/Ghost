@@ -10,7 +10,6 @@ import ThemeSettings from './designAndBranding/ThemeSettings';
 import useForm from '../../../hooks/useForm';
 import {CustomThemeSetting, Post, Setting, SettingValue, SiteData} from '../../../types/api';
 import {PreviewModalContent} from '../../../admin-x-ds/global/PreviewModal';
-import {SelectOption} from '../../../admin-x-ds/global/Select';
 import {ServicesContext} from '../../providers/ServiceProvider';
 import {SettingsContext} from '../../providers/SettingsProvider';
 import {getSettingValues} from '../../../utils/helpers';
@@ -72,7 +71,7 @@ const DesignModal: React.FC = () => {
     const {settings, siteData, saveSettings} = useContext(SettingsContext);
     const [themeSettings, setThemeSettings] = useState<Array<CustomThemeSetting>>([]);
     const [latestPost, setLatestPost] = useState<Post | null>(null);
-    const [selectedUrl, setSelectedUrl] = useState(getHomepageUrl(siteData!));
+    const [selectedPreviewTab, setSelectedPreviewTab] = useState('home');
 
     useEffect(() => {
         api.customThemeSettings.browse().then((response) => {
@@ -139,26 +138,46 @@ const DesignModal: React.FC = () => {
         title: id === 'site-wide' ? 'Site wide' : (id === 'homepage' ? 'Homepage' : 'Post')
     }));
 
-    const urlOptions: SelectOption[] = [
-        {value: getHomepageUrl(siteData!), label: 'Homepage'},
-        latestPost && {value: latestPost.url, label: 'Post'}
-    ].filter((option): option is SelectOption => Boolean(option));
+    // const urlOptions: SelectOption[] = [
+    //     {value: getHomepageUrl(siteData!), label: 'Homepage'},
+    //     latestPost && {value: latestPost.url, label: 'Post'}
+    // ].filter((option): option is SelectOption => Boolean(option));
 
-    const onSelectURL = (url: string) => {
-        setSelectedUrl(url);
+    let previewTabs: Tab[] = [];
+    if (latestPost) {
+        previewTabs = [
+            {id: 'homepage', title: 'Homepage'},
+            {id: 'post', title: 'Post'}
+        ];
+    }
+
+    const onSelectURL = (id: string) => {
+        if (previewTabs.length) {
+            setSelectedPreviewTab(id);
+        }
     };
 
     const onTabChange = (id: string) => {
         if (id === 'post' && latestPost) {
-            setSelectedUrl(latestPost.url);
+            setSelectedPreviewTab('post');
         } else {
-            setSelectedUrl(getHomepageUrl(siteData!));
+            setSelectedPreviewTab('home');
         }
     };
 
     const showThemeModal = () => {
         NiceModal.show(ChangeThemeModal);
     };
+
+    let selectedTabURL = getHomepageUrl(siteData!);
+    switch (selectedPreviewTab) {
+    case 'homepage':
+        selectedTabURL = getHomepageUrl(siteData!);
+        break;
+    case 'post':
+        selectedTabURL = latestPost!.url;
+        break;
+    }
 
     const previewContent =
         <ThemePreview
@@ -170,7 +189,7 @@ const DesignModal: React.FC = () => {
                 coverImage,
                 themeSettings
             }}
-            url={selectedUrl}
+            url={selectedTabURL}
         />;
     const sidebarContent =
         <Sidebar
@@ -184,16 +203,15 @@ const DesignModal: React.FC = () => {
 
     return <PreviewModalContent
         buttonsDisabled={saveState === 'saving'}
+        defaultTab='homepage'
         okLabel={saveState === 'saved' ? 'Saved' : (saveState === 'saving' ? 'Saving...' : 'Save and close')}
         preview={previewContent}
-        previewToolbarURLs={urlOptions}
-        selectedURL={selectedUrl}
+        previewToolbarTabs={previewTabs}
         sidebar={sidebarContent}
         sidebarPadding={false}
         size='full'
         testId='design-modal'
         title='Design'
-        trafficLights={false}
         onCancel={() => {
             if (saveState === 'unsaved') {
                 NiceModal.show(ConfirmationModal, {

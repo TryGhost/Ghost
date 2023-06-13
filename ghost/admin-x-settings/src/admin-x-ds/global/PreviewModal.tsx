@@ -5,9 +5,9 @@ import MobileChrome from './MobileChrome';
 import Modal, {ModalSize} from './Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
-import URLSelect from './URLSelect';
+import Select, {SelectOption} from './Select';
+import TabView, {Tab} from './TabView';
 import {IButton} from './Button';
-import {SelectOption} from './Select';
 
 export interface PreviewModalProps {
     testId?: string;
@@ -19,10 +19,11 @@ export interface PreviewModalProps {
     okLabel?: string;
     okColor?: string;
     buttonsDisabled?: boolean
-    trafficLights?: boolean;
     previewToolbar?: boolean;
     previewToolbarURLs?: SelectOption[];
     selectedURL?: string;
+    previewToolbarTabs?: Tab[];
+    defaultTab?: string;
     sidebarButtons?: React.ReactNode;
     sidebarHeader?: React.ReactNode;
     sidebarPadding?: boolean;
@@ -46,8 +47,9 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     previewToolbar = true,
     previewToolbarURLs,
     selectedURL,
+    previewToolbarTabs,
+    defaultTab,
     buttonsDisabled,
-    trafficLights = true,
     sidebarButtons,
     sidebarHeader,
     sidebarPadding = true,
@@ -72,11 +74,19 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     }
 
     if (previewToolbar) {
-        let toolbarCenter = (<></>);
+        let toolbarLeft = (<></>);
         if (previewToolbarURLs) {
-            toolbarCenter = (
-                <URLSelect defaultSelectedOption={selectedURL} options={previewToolbarURLs!} onSelect={onSelectURL ? onSelectURL : () => {}} />
+            toolbarLeft = (
+                <Select defaultSelectedOption={selectedURL} options={previewToolbarURLs!} onSelect={onSelectURL ? onSelectURL : () => {}} />
             );
+        } else if (previewToolbarTabs) {
+            toolbarLeft = <TabView
+                border={false}
+                defaultSelected={defaultTab}
+                tabs={previewToolbarTabs}
+                width='wide'
+                onTabChange={onSelectURL}
+            />;
         }
 
         const unSelectedIconColorClass = 'text-grey-500';
@@ -107,13 +117,12 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
 
         preview = (
             <>
-                <div className='bg-grey-50 p-2 pl-3'>
-                    <DesktopChromeHeader
-                        toolbarCenter={toolbarCenter}
-                        toolbarLeft={view === 'mobile' || !trafficLights ? <></> : ''}
-                        toolbarRight={toolbarRight}
-                    />
-                </div>
+                <DesktopChromeHeader
+                    size='lg'
+                    toolbarCenter={<></>}
+                    toolbarLeft={toolbarLeft}
+                    toolbarRight={toolbarRight}
+                />
                 <div className='flex h-full grow items-center justify-center bg-grey-50 text-sm text-grey-400'>
                     {preview}
                 </div>
@@ -154,16 +163,14 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                     {preview}
                 </div>
                 {sidebar &&
-                    <div className='flex h-full basis-[400px] flex-col gap-3 border-l border-grey-100'>
+                    <div className='flex h-full basis-[400px] flex-col border-l border-grey-100'>
                         {sidebarHeader ? sidebarHeader : (
-                            <div className='flex justify-between gap-3 px-7 pt-5'>
-                                <>
-                                    <Heading className='mt-1' level={4}>{title}</Heading>
-                                    {sidebarButtons ? sidebarButtons : <ButtonGroup buttons={buttons} /> }
-                                </>
+                            <div className='flex max-h-[74px] items-start justify-between gap-3 px-7 py-5'>
+                                <Heading className='mt-1' level={4}>{title}</Heading>
+                                {sidebarButtons ? sidebarButtons : <ButtonGroup buttons={buttons} /> }
                             </div>
                         )}
-                        <div className={`grow ${sidebarPadding && 'p-7'} flex flex-col justify-between overflow-y-auto`}>
+                        <div className={`grow ${sidebarPadding && 'p-7 pt-0'} flex flex-col justify-between overflow-y-auto`}>
                             {sidebar}
                         </div>
                     </div>
