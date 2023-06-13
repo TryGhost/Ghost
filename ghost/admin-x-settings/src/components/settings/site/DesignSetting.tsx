@@ -12,7 +12,7 @@ const DesignSetting: React.FC = () => {
     return (
         <SettingGroup
             customButtons={<Button color='green' label='Customize' link onClick={openPreviewModal}/>}
-            description="Customize your site and manage themes"
+            description="Customize the look and feel of your site"
             navid='branding-and-design'
             testId='design'
             title="Branding and design"

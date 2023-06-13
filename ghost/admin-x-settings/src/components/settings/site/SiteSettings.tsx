@@ -7,8 +7,8 @@ const SiteSettings: React.FC = () => {
     return (
         <>
             <SettingSection title="Site">
-                <DesignSetting />
                 <Theme />
+                <DesignSetting />
             </SettingSection>
         </>
     );
