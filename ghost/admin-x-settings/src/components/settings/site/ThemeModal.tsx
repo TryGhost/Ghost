@@ -4,38 +4,43 @@ import ButtonGroup from '../../../admin-x-ds/global/ButtonGroup';
 import FileUpload from '../../../admin-x-ds/global/FileUpload';
 import Modal from '../../../admin-x-ds/global/Modal';
 import NewThemePreview from './theme/ThemePreview';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import NiceModal, {NiceModalHandler, useModal} from '@ebay/nice-modal-react';
 import OfficialThemes from './theme/OfficialThemes';
+import React, {useState} from 'react';
 import TabView from '../../../admin-x-ds/global/TabView';
-import {useState} from 'react';
+import {Theme} from '../../../types/api';
+import {showToast} from '../../../admin-x-ds/global/Toast';
+import {useApi} from '../../providers/ServiceProvider';
+import {useThemes} from '../../../hooks/useThemes';
 
-const ChangeThemeModal = NiceModal.create(() => {
-    const [currentTab, setCurrentTab] = useState('official');
-    const [selectedTheme, setSelectedTheme] = useState('');
+interface ThemeToolbarProps {
+    selectedTheme: string;
+    setCurrentTab: (tab: string) => void;
+    setSelectedTheme: (theme: string) => void;
+    modal: NiceModalHandler<Record<string, unknown>>;
+    themes: Theme[];
+    setThemes: (themes: Theme[]) => void;
+}
 
-    const modal = useModal();
+interface ThemeModalContentProps {
+    selectedTheme: string;
+    onSelectTheme: (theme: string) => void;
+    currentTab: string;
+    themes: Theme[];
+    setThemes: (themes: Theme[]) => void;
+}
 
-    const onSelectTheme = (theme: string) => {
-        setSelectedTheme(theme);
-    };
-
-    let content;
-    switch (currentTab) {
-    case 'official':
-        if (selectedTheme) {
-            content = <NewThemePreview selectedTheme={selectedTheme} />;
-        } else {
-            content = <OfficialThemes onSelectTheme={onSelectTheme} />;
-        }
-        break;
-    case 'installed':
-        content = <AdvancedThemeSettings />;
-        break;
-    }
-
-    let toolBar;
+const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
+    selectedTheme,
+    setCurrentTab,
+    setSelectedTheme,
+    modal,
+    themes,
+    setThemes
+}) => {
+    const api = useApi();
     if (selectedTheme) {
-        toolBar =
+        return (
             <div className='sticky top-0 flex justify-between gap-3 bg-white p-5 px-7'>
                 <div className='flex w-[33%] items-center gap-2'>
                     <button
@@ -59,9 +64,10 @@ const ChangeThemeModal = NiceModal.create(() => {
                     />
                     <Button color='green' label={`Install ${selectedTheme}`} />
                 </div>
-            </div>;
+            </div>
+        );
     } else {
-        toolBar =
+        return (
             <div className='sticky top-0 flex justify-between gap-3 bg-white p-5 px-7'>
                 <TabView
                     border={false}
@@ -75,8 +81,13 @@ const ChangeThemeModal = NiceModal.create(() => {
                 />
 
                 <div className='flex items-center gap-3'>
-                    <FileUpload id='theme-uplaod' onUpload={(file: File) => {
-                        alert(file.name);
+                    <FileUpload id='theme-uplaod' onUpload={async (file: File) => {
+                        const data = await api.themes.upload({file});
+                        const uploadedTheme = data.themes[0];
+                        setThemes([...themes, uploadedTheme]);
+                        showToast({
+                            message: `Theme uploaded - ${uploadedTheme.name}`
+                        });
                     }}>Upload theme</FileUpload>
                     <Button
                         className='min-w-[75px]'
@@ -86,8 +97,50 @@ const ChangeThemeModal = NiceModal.create(() => {
                             modal.remove();
                         }} />
                 </div>
-            </div>;
+            </div>
+        );
     }
+};
+
+const ThemeModalContent: React.FC<ThemeModalContentProps> = ({
+    currentTab,
+    selectedTheme,
+    onSelectTheme,
+    themes,
+    setThemes
+}) => {
+    switch (currentTab) {
+    case 'official':
+        if (selectedTheme) {
+            return (
+                <NewThemePreview selectedTheme={selectedTheme} />
+            );
+        } else {
+            return (
+                <OfficialThemes onSelectTheme={onSelectTheme} />
+            );
+        }
+    case 'installed':
+        return (
+            <AdvancedThemeSettings
+                setThemes={setThemes}
+                themes={themes}
+            />
+        );
+    }
+    return null;
+};
+
+const ChangeThemeModal = NiceModal.create(() => {
+    const [currentTab, setCurrentTab] = useState('official');
+    const [selectedTheme, setSelectedTheme] = useState('');
+
+    const modal = useModal();
+    const {themes, setThemes} = useThemes();
+
+    const onSelectTheme = (theme: string) => {
+        setSelectedTheme(theme);
+    };
 
     return (
         <Modal
@@ -99,8 +152,21 @@ const ChangeThemeModal = NiceModal.create(() => {
         >
             <div className='flex h-full justify-between'>
                 <div className='grow'>
-                    {toolBar}
-                    {content}
+                    <ThemeToolbar
+                        modal={modal}
+                        selectedTheme={selectedTheme}
+                        setCurrentTab={setCurrentTab}
+                        setSelectedTheme={setSelectedTheme}
+                        setThemes={setThemes}
+                        themes={themes}
+                    />
+                    <ThemeModalContent
+                        currentTab={currentTab}
+                        selectedTheme={selectedTheme}
+                        setThemes={setThemes}
+                        themes={themes}
+                        onSelectTheme={onSelectTheme}
+                    />
                 </div>
             </div>
         </Modal>

@@ -79,3 +79,16 @@ export function isOwnerUser(user: User) {
 export function isAdminUser(user: User) {
     return user.roles.some(role => role.name === 'Administrator');
 }
+
+export function downloadFile(url: string) {
+    let iframe = document.getElementById('iframeDownload');
+
+    if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.id = 'iframeDownload';
+        iframe.style.display = 'none';
+        document.body.append(iframe);
+    }
+
+    iframe.setAttribute('src', url);
+}
