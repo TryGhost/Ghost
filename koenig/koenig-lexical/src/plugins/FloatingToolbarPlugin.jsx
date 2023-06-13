@@ -116,7 +116,6 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled, hiddenF
                 }
                 // ctrl/cmd alt U should strikethrough
                 if (altKey && keyCode === 85 && (ctrlKey || metaKey)) {
-                    console.log(`ctrl/cmd alt U`)
                     editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough');
                     return true;
                 }
