@@ -1,5 +1,5 @@
 import KoenigComposerContext from '../../context/KoenigComposerContext.jsx';
-import React, {createContext, useContext, useEffect} from 'react';
+import React from 'react';
 import clsx from 'clsx';
 import useSettingsPanelReposition from '../../hooks/useSettingsPanelReposition';
 import {ButtonGroup} from './ButtonGroup';
@@ -12,26 +12,20 @@ import {MediaUploader} from './MediaUploader';
 import {MultiSelectDropdown} from './MultiSelectDropdown';
 import {Toggle} from './Toggle';
 
-const SettingsPanelContext = createContext();
-
-export const useSettingsPanelContext = () => useContext(SettingsPanelContext);
-
 export function SettingsPanel({children, darkMode}) {
-    const {ref,repositionPanel} = useSettingsPanelReposition();
+    const {ref} = useSettingsPanelReposition();
 
     return (
         // Ideally we would use Portal to avoid issues with transformed ancestors (https://bugs.chromium.org/p/chromium/issues/detail?id=20574)
         // However, Portal causes problems with drag/drop, focus, etc
-        <SettingsPanelContext.Provider value={{repositionPanel}}>
-            <div className={`!mt-0 ${darkMode ? 'dark' : ''}`}>
-                <div ref={ref}
-                    className="not-kg-prose z-[9999999] m-0 flex w-[320px] flex-col gap-2 rounded-lg bg-white bg-clip-padding p-6 font-sans shadow dark:bg-grey-950"
-                    data-testid="settings-panel"
-                >
-                    {children}
-                </div>
+        <div className={`!mt-0 ${darkMode ? 'dark' : ''}`}>
+            <div ref={ref}
+                className="not-kg-prose fixed left-0 top-0 z-[9999999] m-0 flex w-[320px] flex-col gap-2 rounded-lg bg-white bg-clip-padding p-6 font-sans shadow dark:bg-grey-950"
+                data-testid="settings-panel"
+            >
+                {children}
             </div>
-        </SettingsPanelContext.Provider>
+        </div>
     );
 }
 
