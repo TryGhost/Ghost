@@ -305,7 +305,7 @@
 }
 
 .gh-editor-header {
-    position: fixed;
+    position: absolute;
     top: 0;
     right: 0;
     left: 0;
@@ -361,7 +361,7 @@
 }
 
 .gh-editor-wordcount-container {
-    position: fixed;
+    position: absolute;
     right: 30px;
     bottom: 30px;
     display: flex;

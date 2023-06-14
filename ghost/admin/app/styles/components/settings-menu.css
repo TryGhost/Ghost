@@ -5,7 +5,7 @@
 /* ---------------------------------------------------------- */
 
 .settings-menu-toggle {
-    position: fixed;
+    position: absolute;
     top: 30px;
     right: 24px;
     z-index: 9999;
@@ -76,13 +76,6 @@
     }
 }
 
-@media (max-width: 500px) {
-    .settings-menu-container {
-        width: 100vw;
-        min-width: 100vw;
-    }
-}
-
 .settings-menu-container .settings-menu-pane {
     position: absolute;
     top: 0;
@@ -107,13 +100,6 @@
     right: auto;
     bottom: auto;
     height: 100vh;
-}
-
-@media (max-width: 500px) {
-    .settings-menu-container .settings-menu-pane {
-        width: 100vw;
-        min-width: 100vw;
-    }
 }
 
 /* Header
