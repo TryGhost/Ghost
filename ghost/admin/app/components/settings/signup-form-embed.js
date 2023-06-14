@@ -5,6 +5,7 @@ import {inject as service} from '@ember/service';
 
 export default class SignupFormEmbed extends Component {
     @service modals;
+    @service settings;
 
     @action
     open() {
