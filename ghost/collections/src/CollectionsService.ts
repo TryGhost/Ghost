@@ -1,5 +1,5 @@
 import {Collection} from './Collection';
-import {CollectionRepository} from './CollectionRepository';
+import {CollectionRepository} from './collection-repository';
 import tpl from '@tryghost/tpl';
 import {MethodNotAllowedError, NotFoundError} from '@tryghost/errors';
 

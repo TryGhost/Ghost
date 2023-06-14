@@ -35,7 +35,7 @@
     },
     "c8": {
         "exclude": [
-            "src/CollectionRepository.ts",
+            "src/collection-repository.ts",
             "src/**/*.d.ts",
             "test/**/*.ts"
         ]
