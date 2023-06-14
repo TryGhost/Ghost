@@ -101,7 +101,9 @@ export default class SignupFormEmbedModal extends Component {
         if (this.style === 'all-in-one') {
             // We serve twice the size of the icon to support high resolution screens
             // (note that you'll need to change the resolution in the backend config as well, as not all resolutions are supported)
-            options.icon = this.settings.icon.replace(/\/content\/images\//, '/content/images/size/w192h192/');
+            if (this.settings.icon || !this.settings.icon === '') {
+                options.icon = this.settings.icon.replace(/\/content\/images\//, '/content/images/size/w192h192/');
+            }
             options.title = this.settings.title;
             options.description = this.settings.description;
 
