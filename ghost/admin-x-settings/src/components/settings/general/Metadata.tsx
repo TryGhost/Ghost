@@ -2,7 +2,7 @@ import Heading from '../../../admin-x-ds/global/Heading';
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../admin-x-ds/global/TextField';
+import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {ReactComponent as GoogleLogo} from '../../../admin-x-ds/assets/images/google-logo.svg';
 import {ReactComponent as MagnifyingGlass} from '../../../admin-x-ds/assets/icons/magnifying-glass.svg';

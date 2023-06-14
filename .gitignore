@@ -130,8 +130,8 @@ Caddyfile
 /ghost/portal/umd
 
 # Sodo-Search
-/ghost/sodo-search/public/main.css
-/ghost/sodo-search/umd
+/apps/sodo-search/public/main.css
+/apps/sodo-search/umd
 
 # Signup Form and local environments
 /ghost/signup-form/umd
@@ -141,13 +141,14 @@ Caddyfile
 /ghost/signup-form/playwright/.cache/
 
 # Announcement-Bar
-/ghost/announcement-bar/umd
+/apps/announcement-bar/umd
 
 # Build files
+/apps/*/build
 /ghost/*/build
 
 # Typescript build artifacts
-/ghost/*/tsconfig.tsbuildinfo
+tsconfig.tsbuildinfo
 
 # Admin X
 /ghost/admin-x-settings/dist

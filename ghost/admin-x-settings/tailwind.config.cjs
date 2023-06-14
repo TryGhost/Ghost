@@ -216,9 +216,6 @@ module.exports = {
                 tight: '1.35em',
                 tighter: '1.25em',
                 supertight: '1.1em'
-            },
-            transition: {
-                basic: 'all 0.4s ease'
             }
         }
     }

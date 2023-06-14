@@ -229,10 +229,6 @@ jobs:
         working-directory: ghost/core
         run: yarn test:ci:e2e
 
-      - name: Regression tests
-        working-directory: ghost/core
-        run: yarn test:ci:regression
-
       - name: Integration tests
         working-directory: ghost/core
         run: yarn test:ci:integration
@@ -287,6 +283,67 @@ jobs:
                 "password": "${{ secrets.ELASTICSEARCH_PASSWORD }}"
               }
             }
+
+      - uses: tryghost/actions/actions/slack-build@main
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  regression-tests:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
+    strategy:
+      matrix:
+        include:
+          - node: 18.12.1
+            env:
+              DB: mysql8
+              NODE_ENV: testing-mysql
+          - node: 18.12.1
+            env:
+              DB: sqlite3
+              NODE_ENV: testing
+    env:
+      DB: ${{ matrix.env.DB }}
+      NODE_ENV: ${{ matrix.env.NODE_ENV }}
+    name: Regression Tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: yarn
+
+      - name: Shutdown MySQL
+        run: sudo service mysql stop
+        if: matrix.env.DB == 'mysql8'
+
+      - uses: daniellockyer/mysql-action@main
+        if: matrix.env.DB == 'mysql8'
+        with:
+          authentication plugin: 'caching_sha2_password'
+          mysql version: '8.0'
+          mysql database: 'ghost_testing'
+          mysql root password: 'root'
+
+      - name: Install dependencies
+        run: yarn --prefer-offline
+
+      - name: Set env vars (SQLite)
+        if: contains(matrix.env.DB, 'sqlite')
+        run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> $GITHUB_ENV
+
+      - name: Set env vars (MySQL)
+        if: contains(matrix.env.DB, 'mysql')
+        run: echo "database__connection__password=root" >> $GITHUB_ENV
+
+      - name: Regression tests
+        working-directory: ghost/core
+        run: yarn test:ci:regression
 
       - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -393,7 +450,7 @@ jobs:
           flags: unit-tests
 
   canary:
-    needs: [lint, ghost-cli, admin-tests, migrations, unit-tests, database-tests]
+    needs: [lint, ghost-cli, admin-tests, migrations, unit-tests, database-tests, regression-tests]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     name: Canary
     secrets: inherit
