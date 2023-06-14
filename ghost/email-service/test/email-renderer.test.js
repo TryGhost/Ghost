@@ -1,6 +1,7 @@
 const {EmailRenderer} = require('../');
 const assert = require('assert');
 const cheerio = require('cheerio');
+const moment = require('moment-timezone');
 const {createModel, createModelClass} = require('./utils');
 const linkReplacer = require('@tryghost/link-replacer');
 const sinon = require('sinon');
@@ -1520,7 +1521,9 @@ describe('Email renderer', function () {
         let emailRenderer;
 
         beforeEach(function () {
-            settings = {};
+            settings = {
+                timezone: 'Etc/UTC'
+            };
             labsEnabled = true;
             emailRenderer = new EmailRenderer({
                 audienceFeedbackService: {
