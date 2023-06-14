@@ -63,7 +63,22 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                             {icon: 'mobile', iconColorClass: 'text-grey-500', link: true, size: 'sm'}
                         ]}
                     />
-                    <Button color='green' label={`Install ${selectedTheme?.name}`} />
+                    <Button
+                        color='green'
+                        label={`Install ${selectedTheme?.name}`}
+                        onClick={async () => {
+                            const data = await api.themes.install(selectedTheme.ref);
+                            const installedTheme = data.themes[0];
+                            setThemes([
+                                ...themes.map(theme => ({...theme, active: false})),
+                                installedTheme
+                            ]);
+                            showToast({
+                                message: `Theme installed - ${installedTheme.name}`
+                            });
+                            setCurrentTab('installed');
+                        }}
+                    />
                 </div>
             </div>
         );
