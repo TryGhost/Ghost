@@ -114,7 +114,7 @@
     "postcss-import": "15.1.0",
     "prettier": "2.8.8",
     "react-highlight": "^0.15.0",
-    "react-router-dom": "6.12.1",
+    "react-router-dom": "6.13.0",
     "storybook": "^7.0.12",
     "stylelint": "^15.6.1",
     "tailwindcss": "3.2.7",
