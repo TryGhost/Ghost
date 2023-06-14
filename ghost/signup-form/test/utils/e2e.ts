@@ -7,8 +7,8 @@ type LastApiRequest = {
     body: null | any
 };
 
-export async function initialize({page, path, apiStatus, ...options}: {page: Page, path?: string; title?: string, description?: string, icon?: string, backgroundColor?: string, buttonColor?: string, site?: string, 'label-1'?: string, 'label-2'?: string, apiStatus?: number}) {
-    const sitePath = `${MOCKED_SITE_URL}${path ?? ''}`;
+export async function initialize({page, path, apiStatus, embeddedOnUrl, ...options}: {page: Page, embeddedOnUrl?: string, path?: string; title?: string, description?: string, icon?: string, backgroundColor?: string, buttonColor?: string, site?: string, 'label-1'?: string, 'label-2'?: string, apiStatus?: number}) {
+    const sitePath = `${embeddedOnUrl ?? MOCKED_SITE_URL}${path ?? ''}`;
     await page.route(sitePath, async (route) => {
         await route.fulfill({
             status: 200,
