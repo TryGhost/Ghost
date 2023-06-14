@@ -3,6 +3,9 @@
         <label class="gh-setting-title gh-theme-setting-title" for={{this.selectId}}>
             {{humanize-setting-key @setting.key}}
         </label>
+        {{#if @setting.description}}
+            <div class="gh-setting-desc">{{@setting.description}}</div>
+        {{/if}}
 
         <span class="gh-select">
             <select class="ember-select" name={{this.selectName}} id={{this.selectId}} {{on "change" this.setSelection}}>

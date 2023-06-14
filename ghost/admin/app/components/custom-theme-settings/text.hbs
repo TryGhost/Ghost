@@ -3,6 +3,9 @@
         <label class="gh-setting-title gh-theme-setting-title" for={{this.inputId}}>
             {{humanize-setting-key @setting.key}}
         </label>
+        {{#if @setting.description}}
+            <div class="gh-setting-desc">{{@setting.description}}</div>
+        {{/if}}
 
         <input
             type="text"

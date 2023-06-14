@@ -10,6 +10,9 @@
                 {{#each uploader.errors as |error|}}
                     <div class="gh-setting-error" data-test-error="icon">{{or error.context error.message}}</div>
                 {{/each}}
+                {{#if @setting.description}}
+                    <div class="gh-setting-desc {{if @setting.value "mb3" "mb0"}}" style="margin-top: 10px">{{@setting.description}}</div>
+                {{/if}}
             </div>
             <div class="gh-setting-action gh-uploadbutton-container flex flex-column items-stretch">
                 {{#if uploader.isUploading}}
