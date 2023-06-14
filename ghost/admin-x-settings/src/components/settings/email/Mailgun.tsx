@@ -1,10 +1,10 @@
 import IconLabel from '../../../admin-x-ds/global/IconLabel';
 import Link from '../../../admin-x-ds/global/Link';
 import React from 'react';
-import Select from '../../../admin-x-ds/global/Select';
+import Select from '../../../admin-x-ds/global/form/Select';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../admin-x-ds/global/TextField';
+import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {getSettingValues} from '../../../utils/helpers';
 

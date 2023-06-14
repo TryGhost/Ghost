@@ -1,5 +1,5 @@
 import BrandSettings, {BrandSettingValues} from './designAndBranding/BrandSettings';
-import ConfirmationModal from '../../../admin-x-ds/global/ConfirmationModal';
+import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useContext, useEffect, useState} from 'react';
 import TabView, {Tab} from '../../../admin-x-ds/global/TabView';
@@ -7,7 +7,7 @@ import ThemePreview from './designAndBranding/ThemePreview';
 import ThemeSettings from './designAndBranding/ThemeSettings';
 import useForm from '../../../hooks/useForm';
 import {CustomThemeSetting, Post, Setting, SettingValue, SiteData} from '../../../types/api';
-import {PreviewModalContent} from '../../../admin-x-ds/global/PreviewModal';
+import {PreviewModalContent} from '../../../admin-x-ds/global/modal/PreviewModal';
 import {ServicesContext} from '../../providers/ServiceProvider';
 import {SettingsContext} from '../../providers/SettingsProvider';
 import {getSettingValues} from '../../../utils/helpers';
@@ -127,11 +127,6 @@ const DesignModal: React.FC = () => {
         settings: group || [],
         title: id === 'site-wide' ? 'Site wide' : (id === 'homepage' ? 'Homepage' : 'Post')
     }));
-
-    // const urlOptions: SelectOption[] = [
-    //     {value: getHomepageUrl(siteData!), label: 'Homepage'},
-    //     latestPost && {value: latestPost.url, label: 'Post'}
-    // ].filter((option): option is SelectOption => Boolean(option));
 
     let previewTabs: Tab[] = [];
     if (latestPost) {

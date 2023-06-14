@@ -115,7 +115,7 @@ interface UpdatePasswordOptions {
     oldPassword?: string;
 }
 
-interface API {
+export interface API {
     settings: {
         browse: () => Promise<SettingsResponseType>;
         edit: (newSettings: Setting[]) => Promise<SettingsResponseType>;
@@ -168,6 +168,7 @@ interface API {
         browse: () => Promise<ThemesResponseType>;
         activate: (themeName: string) => Promise<ThemesResponseType>;
         delete: (themeName: string) => Promise<void>;
+        install: (repo: string) => Promise<ThemesResponseType>;
         upload: ({file}: {file: File}) => Promise<ThemesResponseType>;
     };
 }
@@ -415,6 +416,13 @@ function setupGhostApi({ghostVersion}: GhostApiOptions): API {
                     method: 'DELETE'
                 });
                 return;
+            },
+            install: async (repo) => {
+                const response = await fetcher(`/themes/install/?source=github&ref=${encodeURIComponent(repo)}`, {
+                    method: 'POST'
+                });
+                const data: ThemesResponseType = await response.json();
+                return data;
             },
             upload: async ({file}: {file: File}) => {
                 const formData = new FormData();
