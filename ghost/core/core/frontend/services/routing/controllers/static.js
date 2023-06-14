@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const Promise = require('bluebird');
 const debug = require('@tryghost/debug')('services:routing:controllers:static');
 const renderer = require('../../rendering');
 
@@ -36,13 +35,13 @@ function processQuery(query, locals) {
 module.exports = function staticController(req, res, next) {
     debug('staticController', res.routerOptions);
 
-    let props = {};
+    let promises = [];
 
     _.each(res.routerOptions.data, function (query, name) {
-        props[name] = processQuery(query, res.locals);
+        promises.push(processQuery(query, res.locals));
     });
 
-    return Promise.props(props)
+    return Promise.all(promises)
         .then(function handleResult(result) {
             let response = {};
 
