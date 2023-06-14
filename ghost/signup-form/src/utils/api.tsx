@@ -19,7 +19,7 @@ export const setupGhostApi = ({siteUrl}: {siteUrl: string}) => {
                 email,
                 emailType: 'signup',
                 labels,
-                urlHistory: getUrlHistory()
+                urlHistory: getUrlHistory({siteUrl})
             });
 
             const response = await fetch(url, {
