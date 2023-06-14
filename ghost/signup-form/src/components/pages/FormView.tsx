@@ -58,9 +58,9 @@ const Form: React.FC<FormProps> = ({isMinimal, loading, success, error, buttonCo
 
     return (
         <>
-            <form className={`relative mx-auto flex w-full rounded-[.5rem] border bg-white p-2 text-grey-900 transition hover:border-grey-400 focus-visible:border-grey-500`} onSubmit={submitHandler}>
+            <form className={`relative flex w-full rounded-[.5rem] border bg-white p-[3px] text-grey-900 transition hover:border-grey-400 focus-visible:border-grey-500 ${error ? '!border-red-500' : 'border-grey-300'}`} onSubmit={submitHandler}>
                 <input
-                    className={`grow focus-visible:outline-none disabled:bg-white xs:px-3 xs:py-[1rem]`}
+                    className={`w-full px-2 py-1 focus-visible:outline-none disabled:bg-white xs:p-2`}
                     data-testid="input"
                     disabled={loading || success}
                     placeholder={t('Your email address')}
@@ -69,7 +69,7 @@ const Form: React.FC<FormProps> = ({isMinimal, loading, success, error, buttonCo
                     onChange={e => setEmail(e.target.value)}
                 />
                 <button
-                    className='relative inset-y-0 my-auto grid h-7 touch-manipulation items-center justify-items-center overflow-hidden rounded-[.3rem] px-2 font-medium text-white xs:right-[.3rem] xs:h-[3rem] xs:px-3'
+                    className='my-auto grid h-7 touch-manipulation grid-cols-[1fr] items-center rounded-[.3rem] px-2 font-medium text-white xs:h-[3rem] xs:px-3'
                     data-testid="button"
                     disabled={loading || success}
                     style={{backgroundColor: buttonColor, color: buttonTextColor}}
