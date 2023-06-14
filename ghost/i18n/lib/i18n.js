@@ -13,11 +13,13 @@ const SUPPORTED_LOCALES = [
     'fi', // Finnish
     'fr', // French
     'hi', // Hindi
+    'hr', // Croatian
     'hu', // Hungarian
     'id', // Indonesian
     'it', // Italian
     'ko', // Korean
     'mn', // Mongolian
+    'ms', // Malay
     'nl', // Dutch
     'no', // Norwegian
     'pl', // Polish

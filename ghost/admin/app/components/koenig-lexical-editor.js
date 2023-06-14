@@ -82,7 +82,7 @@ const fetchKoenig = function () {
         } else {
             await import(`https://${url.host}${url.pathname}`);
         }
-
+        
         return window['@tryghost/koenig-lexical'];
     };
 
@@ -195,12 +195,14 @@ export default class KoenigLexicalEditor extends Component {
 
         if (this.config.sentry_dsn) {
             Sentry.captureException(error, {
-                tags: {
-                    lexical: true
+                tags: {lexical: true},
+                contexts: {
+                    koenig: {
+                        version: window['@tryghost/koenig-lexical']?.version
+                    }
                 }
             });
         }
-
         // don't rethrow, Lexical will attempt to gracefully recover
     }
 
@@ -272,6 +274,7 @@ export default class KoenigLexicalEditor extends Component {
             feature: {
                 signupCard: this.feature.get('signupCard')
             },
+            membersEnabled: this.settings.get('membersSignupAccess') === 'all',
             siteTitle: this.settings.title,
             siteDescription: this.settings.description
         };

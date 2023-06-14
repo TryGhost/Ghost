@@ -1,4 +1,5 @@
 import Component from '@glimmer/component';
+import trackEvent from '../../../utils/analytics';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
@@ -59,6 +60,12 @@ export default class SignupFormEmbedModal extends Component {
                 name: 'Black',
                 class: '',
                 style: 'background: #000000 !important;'
+            },
+            {
+                value: this.settings.accentColor,
+                name: 'Accent',
+                class: '',
+                style: 'background: ' + this.settings.accentColor + ' !important;'
             }
         ];
     }
@@ -89,24 +96,26 @@ export default class SignupFormEmbedModal extends Component {
             options[`label-${i + 1}`] = label.name;
         }
 
-        let style = 'min-height: 58px';
+        let style = 'min-height: 58px;max-width: 440px;margin: 0 auto;width: 100%';
 
         if (this.style === 'all-in-one') {
             // We serve twice the size of the icon to support high resolution screens
             // (note that you'll need to change the resolution in the backend config as well, as not all resolutions are supported)
-            options.logo = this.settings.icon.replace(/\/content\/images\//, '/content/images/size/w192h192/');
+            if (this.settings.icon || !this.settings.icon === '') {
+                options.icon = this.settings.icon.replace(/\/content\/images\//, '/content/images/size/w192h192/');
+            }
             options.title = this.settings.title;
             options.description = this.settings.description;
 
             options['background-color'] = this.backgroundColor;
             options['text-color'] = textColorForBackgroundColor(this.backgroundColor).hex();
 
-            style = 'height: 40vmin; min-height: 360px;';
+            style = 'height: 40vmin;min-height: 360px';
         }
 
         if (preview) {
             if (this.style === 'minimal') {
-                style = 'max-width: 400px;width: 100%;position: absolute; left: 50%; top:50%; transform: translate(-50%, -50%);';
+                style = 'min-height: 58px; max-width: 440px;width: 100%;position: absolute; left: 50%; top:50%; transform: translate(-50%, -50%);';
             } else {
                 style = 'height: 100vh';
             }
@@ -120,7 +129,7 @@ export default class SignupFormEmbedModal extends Component {
             'button-text-color',
             'title',
             'description',
-            'logo',
+            'icon',
             'site',
             'locale'
         ];
@@ -147,6 +156,8 @@ export default class SignupFormEmbedModal extends Component {
         const el = document.getElementById('gh-signup-form-embed-code-input');
         el.select();
         document.execCommand('copy');
+
+        trackEvent('Copied Embeddable Signup Form Code', {style: this.style, labels: this.labels.length});
     }
 
     /**

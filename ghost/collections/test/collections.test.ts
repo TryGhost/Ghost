@@ -1,5 +1,5 @@
 import assert from 'assert';
-import {CollectionsService, CollectionsRepositoryInMemory, Collection} from '../src/index';
+import {CollectionsService, CollectionsRepositoryInMemory} from '../src/index';
 import {PostsRepositoryInMemory} from './fixtures/PostsRepositoryInMemory';
 import {posts} from './fixtures/posts';
 
@@ -61,13 +61,88 @@ describe('CollectionsService', function () {
         assert.equal(deletedCollection, null, 'Collection should be deleted');
     });
 
-    describe('toDTO', function () {
-        it('Can map Collection entity to DTO object', async function () {
-            const collection = await Collection.create({});
-            const dto = collectionsService.toDTO(collection);
+    it('Throws when built in collection is attempted to be deleted', async function () {
+        const collection = await collectionsService.createCollection({
+            title: 'Featured Posts',
+            slug: 'featured',
+            description: 'Collection of featured posts',
+            type: 'automatic',
+            deletable: false,
+            filter: 'featured:true'
+        });
 
-            assert.equal(dto.id, collection.id, 'DTO should have the same id as the entity');
-            assert.equal(dto.title, null, 'DTO should return null if nullable property of the entity is unassigned');
+        await assert.rejects(async () => {
+            await collectionsService.destroy(collection.id);
+        }, (err: any) => {
+            assert.equal(err.message, 'Cannot delete builtin collection', 'Error message should match');
+            assert.equal(err.context, `The collection ${collection.id} is a builtin collection and cannot be deleted`, 'Error context should match');
+            return true;
+        });
+    });
+
+    describe('getCollectionsForPost', function () {
+        it('Can get collections for a post', async function () {
+            const collection = await collectionsService.createCollection({
+                title: 'testing collections',
+                type: 'manual'
+            });
+
+            await collectionsService.addPostToCollection(collection.id, posts[0]);
+
+            const collections = await collectionsService.getCollectionsForPost(posts[0].id);
+
+            assert.equal(collections.length, 1, 'There should be one collection');
+            assert.equal(collections[0].id, collection.id, 'Collection should be the correct one');
+        });
+    });
+
+    describe('getAllPosts', function () {
+        it('Can get paged posts of a collection', async function () {
+            const collection = await collectionsService.createCollection({
+                title: 'testing paging',
+                type: 'manual'
+            });
+
+            for (const post of posts) {
+                await collectionsService.addPostToCollection(collection.id, post);
+            }
+
+            const postsPage1 = await collectionsService.getAllPosts(collection.id, {page: 1, limit: 2});
+
+            assert.ok(postsPage1, 'Posts should be returned');
+            assert.equal(postsPage1.meta.pagination.page, 1, 'Page should be 1');
+            assert.equal(postsPage1.meta.pagination.limit, 2, 'Limit should be 2');
+            assert.equal(postsPage1.meta.pagination.pages, 2, 'Pages should be 2');
+            assert.equal(postsPage1.data.length, 2, 'There should be 2 posts');
+            assert.equal(postsPage1.data[0].id, posts[0].id, 'First post should be the correct one');
+            assert.equal(postsPage1.data[1].id, posts[1].id, 'Second post should be the correct one');
+            assert.deepEqual(Object.keys(postsPage1.data[0]), [
+                'id',
+                'slug',
+                'title',
+                'featured',
+                'featured_image'
+            ], 'Posts should have only specific attributes');
+
+            const postsPage2 = await collectionsService.getAllPosts(collection.id, {page: 2, limit: 2});
+
+            assert.ok(postsPage2, 'Posts should be returned');
+            assert.equal(postsPage2.meta.pagination.page, 2, 'Page should be 2');
+            assert.equal(postsPage2.meta.pagination.limit, 2, 'Limit should be 2');
+            assert.equal(postsPage2.meta.pagination.pages, 2, 'Pages should be 2');
+            assert.equal(postsPage2.data.length, 2, 'There should be 2 posts');
+            assert.equal(postsPage2.data[0].id, posts[2].id, 'First post should be the correct one');
+            assert.equal(postsPage2.data[1].id, posts[3].id, 'Second post should be the correct one');
+        });
+
+        it('Throws when trying to get posts of a collection that does not exist', async function () {
+            await assert.rejects(async () => {
+                await collectionsService.getAllPosts('fake id', {});
+            }, (err: any) => {
+                assert.equal(err.message, 'Collection not found', 'Error message should match');
+                assert.equal(err.context, 'Collection with id: fake id does not exist', 'Error context should match');
+                return true;
+            });
         });
     });
 

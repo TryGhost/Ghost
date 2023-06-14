@@ -4,6 +4,13 @@ const exec = util.promisify(require('child_process').exec);
 
 const concurrently = require('concurrently');
 
+// check we're running on Node 18 and above
+const nodeVersion = parseInt(process.versions.node.split('.')[0]);
+if (nodeVersion < 18) {
+    console.error('`yarn dev` requires Node v18 or above. Please upgrade your version of Node.');
+    process.exit(1);
+}
+
 const config = require('../ghost/core/core/shared/config/loader').loadNconf({
     customConfigPath: path.join(__dirname, '../ghost/core')
 });
@@ -97,7 +104,7 @@ if (DASH_DASH_ARGS.includes('announcement-bar') || DASH_DASH_ARGS.includes('anno
     commands.push({
         name: 'announcement-bar',
         command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../ghost/announcement-bar'),
+        cwd: path.resolve(__dirname, '../apps/announcement-bar'),
         prefixColor: '#DC9D00',
         env: {}
     });
@@ -108,7 +115,7 @@ if (DASH_DASH_ARGS.includes('search') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'search',
         command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../ghost/sodo-search'),
+        cwd: path.resolve(__dirname, '../apps/sodo-search'),
         prefixColor: '#23de43',
         env: {}
     });

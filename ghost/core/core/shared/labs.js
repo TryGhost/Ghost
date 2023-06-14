@@ -18,7 +18,8 @@ const GA_FEATURES = [
     'audienceFeedback',
     'themeErrorsNotification',
     'outboundLinkTagging',
-    'announcementBar'
+    'announcementBar',
+    'signupForm'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -38,8 +39,7 @@ const ALPHA_FEATURES = [
     'emailCustomization',
     'signupCard',
     'collections',
-    'adminXSettings',
-    'signupForm'
+    'adminXSettings'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/ember';
 import ConfirmEditorLeaveModal from '../components/modals/editor/confirm-leave';
 import Controller, {inject as controller} from '@ember/controller';
 import DeletePostModal from '../components/modals/delete-post';
@@ -391,7 +392,7 @@ export default class LexicalEditorController extends Controller {
         const existingSnippet = this.snippets.find(snippet => snippet.name.toLowerCase() === snippetNameLC);
 
         if (existingSnippet) {
-            await this.confirmUpdateSnippet(existingSnippet, {lexical: data.value});
+            await this.confirmUpdateSnippet(existingSnippet, {lexical: JSON.parse(data.value)});
         } else {
             await this.saveNewSnippet(data);
         }
@@ -797,6 +798,16 @@ export default class LexicalEditorController extends Controller {
                 } catch (e) {
                     snippet.lexical = null;
                     snippetFixSaves.push(snippet.save());
+
+                    console.error(e); // eslint-disable-line no-console
+
+                    if (this.config.sentry_dsn) {
+                        Sentry.captureException(e, {
+                            tags: {
+                                lexical: true
+                            }
+                        });
+                    }
                 }
             }
         });
@@ -926,7 +937,7 @@ export default class LexicalEditorController extends Controller {
                 this.cancelAutosave();
                 this.autosaveTask.cancelAll();
             }
-            await this.autosaveTask.perform({leavingEditor: true});
+            await this.autosaveTask.perform({leavingEditor: true, backgroundSave: false});
             return transition.retry();
         }
 

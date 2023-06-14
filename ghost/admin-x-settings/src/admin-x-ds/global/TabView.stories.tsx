@@ -29,3 +29,10 @@ export const DefaultSelected: Story = {
         defaultSelected: 'tab-2'
     }
 };
+
+export const NoBorder: Story = {
+    args: {
+        tabs: tabs,
+        border: false
+    }
+};

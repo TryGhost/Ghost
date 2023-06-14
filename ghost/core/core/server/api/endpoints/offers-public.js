@@ -10,6 +10,9 @@ module.exports = {
     docName: 'offers',
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         data: ['id'],
         permissions: true,
         async query(frame) {

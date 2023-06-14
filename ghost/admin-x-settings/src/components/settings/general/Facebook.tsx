@@ -1,30 +1,31 @@
-import ImageUpload from '../../../admin-x-ds/global/ImageUpload';
+import ImageUpload from '../../../admin-x-ds/global/form/ImageUpload';
 import React, {useContext} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextArea from '../../../admin-x-ds/global/TextArea';
-import TextField from '../../../admin-x-ds/global/TextField';
+import TextArea from '../../../admin-x-ds/global/form/TextArea';
+import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {ReactComponent as FacebookLogo} from '../../../admin-x-ds/assets/images/facebook-logo.svg';
 import {FileService, ServicesContext} from '../../providers/ServiceProvider';
+import {getSettingValues} from '../../../utils/helpers';
 
 const Facebook: React.FC = () => {
     const {
-        currentState,
+        localSettings,
+        isEditing,
         saveState,
         focusRef,
         handleSave,
         handleCancel,
         updateSetting,
-        getSettingValues,
-        handleStateChange
+        handleEditingChange
     } = useSettingGroup();
 
     const {fileService} = useContext(ServicesContext) as {fileService: FileService};
 
     const [
         facebookTitle, facebookDescription, facebookImage, siteTitle, siteDescription
-    ] = getSettingValues(['og_title', 'og_description', 'og_image', 'title', 'description']) as string[];
+    ] = getSettingValues(localSettings, ['og_title', 'og_description', 'og_image', 'title', 'description']) as string[];
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         updateSetting('og_title', e.target.value);
@@ -98,17 +99,17 @@ const Facebook: React.FC = () => {
     return (
         <SettingGroup
             description='Customize structured data of your site'
+            isEditing={isEditing}
             navid='facebook'
             saveState={saveState}
-            state={currentState}
             testId='facebook'
             title='Facebook card'
             onCancel={handleCancel}
+            onEditingChange={handleEditingChange}
             onSave={handleSave}
-            onStateChange={handleStateChange}
         >
             {values}
-            {currentState !== 'view' ? inputFields : ''}
+            {isEditing ? inputFields : null}
         </SettingGroup>
     );
 };

@@ -4,6 +4,7 @@ const {
 } = require('@tryghost/collections');
 
 class CollectionsServiceWrapper {
+    /** @type {CollectionsService} */
     api;
 
     constructor() {
@@ -15,10 +16,19 @@ class CollectionsServiceWrapper {
             collectionsRepository: collectionsRepositoryInMemory,
             postsRepository: {
                 getAll: async ({filter}) => {
-                    return models.Post.findAll({
+                    const posts = await models.Post.findAll({
                         // @NOTE: enforce "post" type to avoid ever fetching pages
                         filter: `(${filter})+type:post`
                     });
+
+                    return posts.toJSON();
+                },
+                getBulk: async (ids) => {
+                    const posts = await models.Post.findAll({
+                        filter: `id:[${ids.join(',')}]+type:post`
+                    });
+
+                    return posts.toJSON();
                 }
             }
         });
@@ -34,28 +44,18 @@ class CollectionsServiceWrapper {
             });
         }
 
-        this.api = {
-            browse: collectionsService.getAll.bind(collectionsService),
-            read: collectionsService.getById.bind(collectionsService),
-            add: collectionsService.createCollection.bind(collectionsService),
-            edit: collectionsService.edit.bind(collectionsService),
-            addPost: collectionsService.addPostToCollection.bind(collectionsService),
-            destroy: collectionsService.destroy.bind(collectionsService),
-            destroyCollectionPost: collectionsService.removePostFromCollection.bind(collectionsService)
-        };
+        this.api = collectionsService;
     }
 
     async init() {
-        const featuredCollections = await this.api.browse({filter: 'slug:featured'});
+        const existingBuiltins = await this.api.getAll({filter: 'slug:featured'});
 
-        if (!featuredCollections.data.length) {
-            this.api.add({
-                title: 'Featured Posts',
-                slug: 'featured',
-                description: 'Collection of featured posts',
-                type: 'automatic',
-                filter: 'featured:true'
-            });
+        if (!existingBuiltins.data.length) {
+            const builtInCollections = require('./built-in-collections');
+
+            for (const collection of builtInCollections) {
+                await this.api.createCollection(collection);
+            }
         }
     }
 }

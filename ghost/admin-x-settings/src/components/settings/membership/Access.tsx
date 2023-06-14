@@ -1,9 +1,13 @@
-import React from 'react';
-import Select from '../../../admin-x-ds/global/Select';
+import MultiSelect, {MultiSelectOption} from '../../../admin-x-ds/global/form/MultiSelect';
+import React, {useContext, useEffect, useState} from 'react';
+import Select from '../../../admin-x-ds/global/form/Select';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {getOptionLabel} from '../../../utils/helpers';
+import {GroupBase, MultiValue} from 'react-select';
+import {ServicesContext} from '../../providers/ServiceProvider';
+import {Tier} from '../../../types/api';
+import {getOptionLabel, getSettingValues} from '../../../utils/helpers';
 
 const MEMBERS_SIGNUP_ACCESS_OPTIONS = [
     {value: 'all', label: 'Anyone can sign up'},
@@ -26,22 +30,50 @@ const COMMENTS_ENABLED_OPTIONS = [
 
 const Access: React.FC = () => {
     const {
-        currentState,
+        localSettings,
+        isEditing,
         saveState,
         handleSave,
         handleCancel,
         updateSetting,
-        getSettingValues,
-        handleStateChange
+        handleEditingChange
     } = useSettingGroup();
 
-    const [membersSignupAccess, defaultContentVisibility, commentsEnabled] = getSettingValues([
-        'members_signup_access', 'default_content_visibility', 'comments_enabled'
+    const [membersSignupAccess, defaultContentVisibility, defaultContentVisibilityTiers, commentsEnabled] = getSettingValues(localSettings, [
+        'members_signup_access', 'default_content_visibility', 'default_content_visibility_tiers', 'comments_enabled'
     ]) as string[];
 
     const membersSignupAccessLabel = getOptionLabel(MEMBERS_SIGNUP_ACCESS_OPTIONS, membersSignupAccess);
     const defaultContentVisibilityLabel = getOptionLabel(DEFAULT_CONTENT_VISIBILITY_OPTIONS, defaultContentVisibility);
     const commentsEnabledLabel = getOptionLabel(COMMENTS_ENABLED_OPTIONS, commentsEnabled);
+
+    const {api} = useContext(ServicesContext);
+    const [tiers, setTiers] = useState<Tier[]>([]);
+
+    useEffect(() => {
+        api.tiers.browse().then((response) => {
+            setTiers(response.tiers);
+        });
+    }, [api]);
+
+    const tierOptionGroups: GroupBase<MultiSelectOption>[] = [
+        {
+            label: 'Active Tiers',
+            options: tiers.filter(({active}) => active).map(tier => ({value: tier.id, label: tier.name}))
+        },
+        {
+            label: 'Archived Tiers',
+            options: tiers.filter(({active}) => !active).map(tier => ({value: tier.id, label: tier.name}))
+        }
+    ];
+
+    const contentVisibilityTiers = JSON.parse(defaultContentVisibilityTiers || '[]') as string[];
+    const selectedTierOptions = tierOptionGroups.flatMap(group => group.options).filter(option => contentVisibilityTiers.includes(option.value));
+
+    const setSelectedTiers = (selectedOptions: MultiValue<MultiSelectOption>) => {
+        const selectedTiers = selectedOptions.map(option => option.value);
+        updateSetting('default_content_visibility_tiers', JSON.stringify(selectedTiers));
+    };
 
     const values = (
         <SettingGroupContent
@@ -85,6 +117,16 @@ const Access: React.FC = () => {
                     updateSetting('default_content_visibility', value);
                 }}
             />
+            {defaultContentVisibility === 'tiers' && (
+                <MultiSelect
+                    color='black'
+                    defaultValues={selectedTierOptions}
+                    options={tierOptionGroups.filter(group => group.options.length > 0)}
+                    title='Select tiers'
+                    clearBg
+                    onChange={setSelectedTiers}
+                />
+            )}
             <Select
                 defaultSelectedOption={commentsEnabled}
                 hint='Who can comment on posts?'
@@ -100,16 +142,16 @@ const Access: React.FC = () => {
     return (
         <SettingGroup
             description='Set up default access options for subscription and posts'
+            isEditing={isEditing}
             navid='access'
             saveState={saveState}
-            state={currentState}
             testId='access'
             title='Access'
             onCancel={handleCancel}
+            onEditingChange={handleEditingChange}
             onSave={handleSave}
-            onStateChange={handleStateChange}
         >
-            {currentState === 'view' ? values : form}
+            {isEditing ? form : values}
         </SettingGroup>
     );
 };

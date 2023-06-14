@@ -1,9 +1,10 @@
 import React, {useRef, useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../admin-x-ds/global/TextField';
+import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import validator from 'validator';
+import {getSettingValues} from '../../../utils/helpers';
 
 function validateFacebookUrl(newUrl: string) {
     const errMessage = 'The URL must be in a format like https://www.facebook.com/yourPage';
@@ -60,14 +61,14 @@ function validateTwitterUrl(newUrl: string) {
 
 const SocialAccounts: React.FC = () => {
     const {
-        currentState,
+        localSettings,
+        isEditing,
         saveState,
         handleSave,
         handleCancel,
         updateSetting,
         focusRef,
-        getSettingValues,
-        handleStateChange
+        handleEditingChange
     } = useSettingGroup();
 
     const [errors, setErrors] = useState<{
@@ -77,7 +78,7 @@ const SocialAccounts: React.FC = () => {
 
     const twitterInputRef = useRef<HTMLInputElement>(null);
 
-    const [facebookUrl, twitterUrl] = getSettingValues(['facebook', 'twitter']) as string[];
+    const [facebookUrl, twitterUrl] = getSettingValues(localSettings, ['facebook', 'twitter']) as string[];
 
     const values = (
         <SettingGroupContent
@@ -97,7 +98,6 @@ const SocialAccounts: React.FC = () => {
     );
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>, type:'facebook' | 'twitter') => {
-        handleStateChange('unsaved');
         if (type === 'facebook') {
             updateSetting('facebook', e.target.value);
         } else {
@@ -157,12 +157,13 @@ const SocialAccounts: React.FC = () => {
     return (
         <SettingGroup
             description='Link your social accounts for full structured data and rich card support'
+            isEditing={isEditing}
             navid='social-accounts'
             saveState={saveState}
-            state={currentState}
             testId='social-accounts'
             title='Social accounts'
             onCancel={handleCancel}
+            onEditingChange={handleEditingChange}
             onSave={() => {
                 const formErrors: {
                     facebook?: string;
@@ -185,9 +186,8 @@ const SocialAccounts: React.FC = () => {
                     handleSave();
                 }
             }}
-            onStateChange={handleStateChange}
         >
-            {currentState === 'view' ? values : inputs}
+            {isEditing ? inputs : values}
         </SettingGroup>
     );
 };

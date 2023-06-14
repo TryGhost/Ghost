@@ -69,6 +69,10 @@
     object-position: center;
 }
 
+.kg-background-size-contain .kg-signup-card-image {
+    object-fit: contain;
+}
+
 .kg-signup-card-image.kg-style-accent {
     background-color: var(--ghost-accent-color);
 }
@@ -172,7 +176,7 @@
 }
 
 .kg-width-wide .kg-signup-card-fields,
-.kg-width-full .kg-signup-card-fields:not(.kg-layout-split .kg-signup-card-fields) {
+.kg-width-full .kg-signup-card-fields {
     width: 100%;
     max-width: 500px;
 }

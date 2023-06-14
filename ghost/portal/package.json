@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/portal",
-  "version": "2.33.0",
+  "version": "2.33.1",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -61,7 +61,7 @@
     ]
   },
   "devDependencies": {
-    "@babel/eslint-parser": "7.21.8",
+    "@babel/eslint-parser": "7.22.5",
     "@doist/react-interpolate": "0.4.1",
     "@sentry/react": "7.54.0",
     "@sentry/tracing": "7.54.0",
@@ -71,7 +71,7 @@
     "@vitejs/plugin-react": "4.0.0",
     "@vitest/coverage-c8": "0.29.8",
     "@vitest/ui": "0.29.8",
-    "concurrently": "8.1.0",
+    "concurrently": "8.2.0",
     "cross-fetch": "3.1.6",
     "eslint": "8.37.0",
     "eslint-config-react-app": "7.0.1",

@@ -6,6 +6,9 @@ module.exports = {
     docName: 'settings',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: true,
         query() {
             // @TODO: decouple settings cache from API knowledge

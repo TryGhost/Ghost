@@ -1,23 +1,24 @@
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextArea from '../../../admin-x-ds/global/TextArea';
-import TextField from '../../../admin-x-ds/global/TextField';
+import TextArea from '../../../admin-x-ds/global/form/TextArea';
+import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
+import {getSettingValues} from '../../../utils/helpers';
 
 const TitleAndDescription: React.FC = () => {
     const {
-        currentState,
+        localSettings,
+        isEditing,
         saveState,
         focusRef,
         handleSave,
         handleCancel,
         updateSetting,
-        getSettingValues,
-        handleStateChange
+        handleEditingChange
     } = useSettingGroup();
 
-    const [title, description] = getSettingValues(['title', 'description']) as string[];
+    const [title, description] = getSettingValues(localSettings, ['title', 'description']) as string[];
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         updateSetting('title', e.target.value);
@@ -67,16 +68,16 @@ const TitleAndDescription: React.FC = () => {
     return (
         <SettingGroup
             description='The details used to identify your publication around the web'
+            isEditing={isEditing}
             navid='title-and-description'
             saveState={saveState}
-            state={currentState}
             testId='title-and-description'
             title='Title & description'
             onCancel={handleCancel}
+            onEditingChange={handleEditingChange}
             onSave={handleSave}
-            onStateChange={handleStateChange}
         >
-            {currentState === 'view' ? values : inputFields }
+            {isEditing ? inputFields : values}
         </SettingGroup>
     );
 };

@@ -12,6 +12,9 @@ module.exports = {
     docName: 'snippets',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'limit',
             'order',
@@ -33,7 +36,9 @@ module.exports = {
     },
 
     read: {
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'formats'
         ],
@@ -57,7 +62,9 @@ module.exports = {
 
     add: {
         statusCode: 201,
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'formats'
         ],
@@ -75,7 +82,9 @@ module.exports = {
     },
 
     edit: {
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'id',
             'formats'
@@ -104,7 +113,9 @@ module.exports = {
 
     destroy: {
         statusCode: 204,
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'id'
         ],
