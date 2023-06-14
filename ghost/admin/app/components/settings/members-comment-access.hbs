@@ -10,6 +10,7 @@
         @options={{this.options}}
         @selected={{this.selectedOption}}
         @onChange={{this.setCommentAccess}}
+        @disabled={{eq this.settings.membersSignupAccess "none"}}
         @triggerClass="gh-setting-dropdown"
         @dropdownClass="gh-setting-dropdown-list"
         as |option|
