@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import Select from '../../../admin-x-ds/global/Select';
+import Select from '../../../admin-x-ds/global/form/Select';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import timezoneData from '@tryghost/timezone-data';

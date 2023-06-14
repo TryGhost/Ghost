@@ -1,8 +1,8 @@
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextArea from '../../../admin-x-ds/global/TextArea';
-import TextField from '../../../admin-x-ds/global/TextField';
+import TextArea from '../../../admin-x-ds/global/form/TextArea';
+import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {getSettingValues} from '../../../utils/helpers';
 

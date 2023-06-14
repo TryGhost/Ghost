@@ -1,8 +1,8 @@
 import AdvancedThemeSettings from './theme/AdvancedThemeSettings';
 import Button from '../../../admin-x-ds/global/Button';
 import ButtonGroup from '../../../admin-x-ds/global/ButtonGroup';
-import FileUpload from '../../../admin-x-ds/global/FileUpload';
-import Modal from '../../../admin-x-ds/global/Modal';
+import FileUpload from '../../../admin-x-ds/global/form/FileUpload';
+import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NewThemePreview from './theme/ThemePreview';
 import NiceModal, {NiceModalHandler, useModal} from '@ebay/nice-modal-react';
 import OfficialThemes from './theme/OfficialThemes';
@@ -45,7 +45,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
 
         return (
             <div className='sticky top-0 flex justify-between gap-3 bg-grey-50 p-5 px-7'>
-                <div className='flex items-center gap-2'>
+                <div className='flex w-[33%] items-center gap-2'>
                     <button
                         className={`text-sm`}
                         type="button"
@@ -58,7 +58,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                     &rarr;
                     <span className='text-sm font-bold'>{selectedTheme?.name}</span>
                 </div>
-                <div className='flex justify-end gap-8'>
+                <div className='flex w-[33%] justify-end gap-8'>
                     <ButtonGroup
                         buttons={[
                             {icon: 'laptop', link: true, size: 'sm'},

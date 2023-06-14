@@ -4,7 +4,7 @@ import MultiSelect, {MultiSelectOption} from './MultiSelect';
 import {MultiValue} from 'react-select';
 
 const meta = {
-    title: 'Global / Select / Multiselect',
+    title: 'Global / Form / Multiselect',
     component: MultiSelect,
     tags: ['autodocs']
 } satisfies Meta<typeof MultiSelect>;

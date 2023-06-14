@@ -1,5 +1,5 @@
 import FileUpload from './FileUpload';
-import Icon from './Icon';
+import Icon from '../Icon';
 import React from 'react';
 import clsx from 'clsx';
 

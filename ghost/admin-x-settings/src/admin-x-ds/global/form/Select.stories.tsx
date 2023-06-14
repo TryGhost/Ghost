@@ -4,7 +4,7 @@ import Select from './Select';
 import {SelectOption} from './Select';
 
 const meta = {
-    title: 'Global / Select / Simple select',
+    title: 'Global / Simple select',
     component: Select,
     tags: ['autodocs'],
     decorators: [(_story: any) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)],
