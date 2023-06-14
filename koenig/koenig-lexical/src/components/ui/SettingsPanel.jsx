@@ -18,7 +18,7 @@ export function SettingsPanel({children, darkMode}) {
     return (
         // Ideally we would use Portal to avoid issues with transformed ancestors (https://bugs.chromium.org/p/chromium/issues/detail?id=20574)
         // However, Portal causes problems with drag/drop, focus, etc
-        <div className={`!mt-0 ${darkMode ? 'dark' : ''}`}>
+        <div className={`!mt-0 touch-none ${darkMode ? 'dark' : ''}`}>
             <div ref={ref}
                 className="not-kg-prose fixed left-0 top-0 z-[9999999] m-0 flex w-[320px] flex-col gap-2 rounded-lg bg-white bg-clip-padding p-6 font-sans shadow dark:bg-grey-950"
                 data-testid="settings-panel"
