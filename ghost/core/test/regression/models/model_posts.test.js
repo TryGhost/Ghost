@@ -1752,17 +1752,17 @@ describe('Post Model', function () {
             post.tags = postTags;
             post.status = 'published';
 
-            return Promise.props({
-                post: models.Post.add(post, _.extend({}, context, {withRelated: ['tags']})),
-                tag1: models.Tag.add(extraTags[0], context),
-                tag2: models.Tag.add(extraTags[1], context),
-                tag3: models.Tag.add(extraTags[2], context)
-            }).then(function (result) {
-                postJSON = result.post.toJSON({withRelated: ['tags']});
-                tagJSON.push(result.tag1.toJSON());
-                tagJSON.push(result.tag2.toJSON());
-                tagJSON.push(result.tag3.toJSON());
-                editOptions = _.extend({}, context, {id: postJSON.id, withRelated: ['tags']});
+            return Promise.all([
+                models.Post.add(post, _.extend({}, context, { withRelated: ['tags'] })),
+                models.Tag.add(extraTags[0], context),
+                models.Tag.add(extraTags[1], context),
+                models.Tag.add(extraTags[2], context)
+            ]).then(function (result) {
+                postJSON = result[0].toJSON({ withRelated: ['tags'] });
+                tagJSON.push(result[1].toJSON());
+                tagJSON.push(result[2].toJSON());
+                tagJSON.push(result[3].toJSON());
+                editOptions = _.extend({}, context, { id: postJSON.id, withRelated: ['tags'] });
 
                 // reset the eventSpy here
                 sinon.restore();
