@@ -203,7 +203,7 @@ export default function useMovable({adjustOnResize, adjustOnDrag} = {}) {
 
     const addActiveEventListeners = useCallback(() => {
         window.addEventListener('touchend', dragEnd, {capture: true, passive: false});
-        window.addEventListener('touchmove', dragEnd, {capture: true, passive: false});
+        window.addEventListener('touchmove', drag, {capture: true, passive: false});
         window.addEventListener('mouseup', dragEnd, {capture: true, passive: false});
         window.addEventListener('mousemove', drag, {capture: true, passive: false});
     }, [dragEnd, drag]);
