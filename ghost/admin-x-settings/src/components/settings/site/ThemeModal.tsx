@@ -41,6 +41,8 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
 }) => {
     const api = useApi();
     if (selectedTheme) {
+        const installedTheme = themes.find(theme => theme.name.toLowerCase() === selectedTheme.name.toLowerCase());
+
         return (
             <div className='sticky top-0 flex justify-between gap-3 bg-white p-5 px-7'>
                 <div className='flex w-[33%] items-center gap-2'>
@@ -63,7 +65,23 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                             {icon: 'mobile', iconColorClass: 'text-grey-500', link: true, size: 'sm'}
                         ]}
                     />
-                    <Button color='green' label={`Install ${selectedTheme?.name}`} />
+                    <Button
+                        color='green'
+                        disabled={Boolean(installedTheme)}
+                        label={installedTheme?.active ? 'Activated' : (installedTheme ? 'Installed' : `Install ${selectedTheme?.name}`)}
+                        onClick={async () => {
+                            const data = await api.themes.install(selectedTheme.ref);
+                            const newlyInstalledTheme = data.themes[0];
+                            setThemes([
+                                ...themes.map(theme => ({...theme, active: false})),
+                                newlyInstalledTheme
+                            ]);
+                            showToast({
+                                message: `Theme installed - ${newlyInstalledTheme.name}`
+                            });
+                            setCurrentTab('installed');
+                        }}
+                    />
                 </div>
             </div>
         );
