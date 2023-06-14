@@ -48,14 +48,17 @@ module.exports = function staticController(req, res, next) {
             if (res.routerOptions.data) {
                 response.data = {};
 
+                let resultIndex = 0;
                 _.each(res.routerOptions.data, function (config, name) {
-                    response.data[name] = result[name][config.resource];
+                    response.data[name] = result[resultIndex][config.resource];
 
                     if (config.type === 'browse') {
-                        response.data[name].meta = result[name].meta;
+                        response.data[name].meta = result[resultIndex].meta;
                         // @TODO: remove in Ghost 3.0 (see https://github.com/TryGhost/Ghost/issues/10434)
-                        response.data[name][config.resource] = result[name][config.resource];
+                        response.data[name][config.resource] = result[resultIndex][config.resource];
                     }
+
+                    resultIndex++;
                 });
             }
 
