@@ -12,7 +12,7 @@ export function useOptions(scriptTag: HTMLElement) {
         return {
             title: scriptTag.dataset.title || undefined,
             description: scriptTag.dataset.description || undefined,
-            logo: scriptTag.dataset.logo || undefined,
+            icon: scriptTag.dataset.icon || undefined,
             backgroundColor: scriptTag.dataset.backgroundColor || undefined,
             textColor: scriptTag.dataset.textColor || undefined,
             buttonColor: scriptTag.dataset.buttonColor || undefined,

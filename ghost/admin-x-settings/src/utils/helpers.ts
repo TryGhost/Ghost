@@ -59,10 +59,36 @@ export function generateAvatarColor(name: string) {
     return 'hsl(' + h + ', ' + s + '%, ' + l + '%)';
 }
 
+export function humanizeSettingKey(key: string) {
+    const allCaps = ['API', 'CTA', 'RSS'];
+
+    return key
+        .replace(/^[a-z]/, char => char.toUpperCase())
+        .replace(/_/g, ' ')
+        .replace(new RegExp(`\\b(${allCaps.join('|')})\\b`, 'ig'), match => match.toUpperCase());
+}
+
+export function getSettingValues(settings: Setting[] | null, keys: string[]): Array<SettingValue | undefined> {
+    return keys.map(key => settings?.find(setting => setting.key === key)?.value);
+}
+
 export function isOwnerUser(user: User) {
     return user.roles.some(role => role.name === 'Owner');
 }
 
 export function isAdminUser(user: User) {
     return user.roles.some(role => role.name === 'Administrator');
+}
+
+export function downloadFile(url: string) {
+    let iframe = document.getElementById('iframeDownload');
+
+    if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.id = 'iframeDownload';
+        iframe.style.display = 'none';
+        document.body.append(iframe);
+    }
+
+    iframe.setAttribute('src', url);
 }

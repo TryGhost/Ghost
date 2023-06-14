@@ -1,30 +1,31 @@
-import ImageUpload from '../../../admin-x-ds/global/ImageUpload';
+import ImageUpload from '../../../admin-x-ds/global/form/ImageUpload';
 import React, {useContext} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextArea from '../../../admin-x-ds/global/TextArea';
-import TextField from '../../../admin-x-ds/global/TextField';
+import TextArea from '../../../admin-x-ds/global/form/TextArea';
+import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {FileService, ServicesContext} from '../../providers/ServiceProvider';
 import {ReactComponent as TwitterLogo} from '../../../admin-x-ds/assets/images/twitter-logo.svg';
+import {getSettingValues} from '../../../utils/helpers';
 
 const Twitter: React.FC = () => {
     const {
-        currentState,
+        localSettings,
+        isEditing,
         saveState,
         focusRef,
         handleSave,
         handleCancel,
         updateSetting,
-        getSettingValues,
-        handleStateChange
+        handleEditingChange
     } = useSettingGroup();
 
     const {fileService} = useContext(ServicesContext) as {fileService: FileService};
 
     const [
         twitterTitle, twitterDescription, twitterImage, siteTitle, siteDescription
-    ] = getSettingValues(['twitter_title', 'twitter_description', 'twitter_image', 'title', 'description']) as string[];
+    ] = getSettingValues(localSettings, ['twitter_title', 'twitter_description', 'twitter_image', 'title', 'description']) as string[];
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         updateSetting('twitter_title', e.target.value);
@@ -100,17 +101,17 @@ const Twitter: React.FC = () => {
     return (
         <SettingGroup
             description='Customize structured data of your site'
+            isEditing={isEditing}
             navid='twitter'
             saveState={saveState}
-            state={currentState}
             testId='twitter'
             title='Twitter card'
             onCancel={handleCancel}
+            onEditingChange={handleEditingChange}
             onSave={handleSave}
-            onStateChange={handleStateChange}
         >
             {values}
-            {currentState !== 'view' ? inputFields : ''}
+            {isEditing ? inputFields : null}
         </SettingGroup>
     );
 };

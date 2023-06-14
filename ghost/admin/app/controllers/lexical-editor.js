@@ -392,7 +392,7 @@ export default class LexicalEditorController extends Controller {
         const existingSnippet = this.snippets.find(snippet => snippet.name.toLowerCase() === snippetNameLC);
 
         if (existingSnippet) {
-            await this.confirmUpdateSnippet(existingSnippet, {lexical: data.value});
+            await this.confirmUpdateSnippet(existingSnippet, {lexical: JSON.parse(data.value)});
         } else {
             await this.saveNewSnippet(data);
         }
@@ -937,7 +937,7 @@ export default class LexicalEditorController extends Controller {
                 this.cancelAutosave();
                 this.autosaveTask.cancelAll();
             }
-            await this.autosaveTask.perform({leavingEditor: true});
+            await this.autosaveTask.perform({leavingEditor: true, backgroundSave: false});
             return transition.retry();
         }
 

@@ -55,3 +55,85 @@ export type SiteData = {
     locale: string;
     version: string;
 };
+
+export type Post = {
+    id: string;
+    url: string;
+};
+
+export type Tier = {
+    id: string;
+    name: string;
+    description: string | null;
+    slug: string;
+    active: boolean,
+    type: string;
+    welcome_page_url: string | null;
+    created_at: string;
+    updated_at: string;
+    visibility: string;
+    benefits: string[];
+    currency?: string;
+    monthly_price?: number;
+    yearly_price?: number;
+    trial_days: number;
+}
+
+export type Label = {
+    id: string;
+    name: string;
+    slug: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export type Offer = {
+    id: string;
+    name: string;
+    code: string;
+    display_title: string;
+    display_description: string;
+    type: string;
+    cadence: string;
+    amount: number;
+    duration: string;
+    duration_in_months: number | null;
+    currency_restriction: boolean;
+    currency: string | null;
+    status: string;
+    redemption_count: number;
+    tier: {
+        id: string;
+        name: string;
+    }
+}
+
+type CustomThemeSettingData =
+    { type: 'text', value: string | null, default: string | null } |
+    { type: 'color', value: string, default: string } |
+    { type: 'image', value: string | null } |
+    { type: 'boolean', value: boolean, default: boolean } |
+    {
+        type: 'select',
+        value: string
+        default: string
+        options: string[]
+    };
+
+export type CustomThemeSetting = CustomThemeSettingData & {
+    id: string
+    key: string
+    // homepage and post are the only two groups we handle, but technically theme authors can put other things in package.json
+    group?: 'homepage' | 'post' | string
+}
+
+export type Theme = {
+    active: boolean;
+    name: string;
+    package: {
+        name?: string;
+        description?: string;
+        version?: string;
+    };
+    templates?: string[];
+}

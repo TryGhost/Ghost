@@ -38,7 +38,7 @@
 
 .ember-power-select-dropdown {
     position: absolute;
-    z-index: 9999;
+    z-index: 10001;
     box-sizing: border-box;
     margin: 0;
     border: var(--input-border);
@@ -332,7 +332,7 @@
     color: var(--accent-color);
     background: none;
 }
-  
+
 .tag-token:not(.tag-token--internal)::after {
     position: absolute;
     top: -1px;

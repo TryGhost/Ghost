@@ -48,6 +48,7 @@
                         @labels={{this.labels}}
                         @triggerId="label-input"
                         @placeholder="Select"
+                        @renderInPlace={{false}}
                     />
                 </div>
 
@@ -63,7 +64,7 @@
                             readonly
                             {{on "mouseup" this.copyTextOnMouseUp}}
                         />
-                        <p>Copy and paste this HTML code somewhere inside the <code>&lt;body&gt;</code> tag of your site.</p>
+                        <p>Paste this code onto any website where you'd like your signup to appear.</p>
                     </div>
                 </div>
             </GhFormGroup>

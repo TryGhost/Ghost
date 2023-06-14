@@ -22,6 +22,10 @@ const matchCollection = {
     updated_at: anyISODateTime
 };
 
+const matchCollectionPost = {
+    id: anyObjectId
+};
+
 /**
  *
  * @param {number} postCount
@@ -74,20 +78,58 @@ describe('Collections API', function () {
             });
     });
 
-    it('Can browse Collections', async function () {
-        await agent
-            .get('/collections/')
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                collections: [
-                    buildMatcher(2, {withSortOrder: true}),
-                    buildMatcher(0)
-                ]
-            });
+    describe('Browse', function () {
+        it('Can browse Collections', async function () {
+            await agent
+                .get('/collections/')
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [
+                        buildMatcher(11, {withSortOrder: true}),
+                        buildMatcher(2, {withSortOrder: true}),
+                        buildMatcher(0),
+                        buildMatcher(0)
+                    ]
+                });
+        });
+    });
+
+    describe('Browse Posts', function () {
+        it('Can browse Collections Posts', async function () {
+            const collections = await agent.get('/collections/');
+            const indexCollection = collections.body.collections.find(c => c.slug === 'index');
+
+            await agent
+                .get(`/collections/${indexCollection.id}/posts/`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collection_posts: Array(11).fill(matchCollectionPost)
+                });
+        });
+
+        it('Can browse Collections Posts using paging parameters', async function () {
+            const collections = await agent.get('/collections/');
+            const indexCollection = collections.body.collections.find(c => c.slug === 'index');
+
+            await agent
+                .get(`/collections/${indexCollection.id}/posts/?limit=2&page=2`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collection_posts: Array(2).fill(matchCollectionPost)
+                });
+        });
     });
 
     it('Can read a Collection', async function () {
@@ -183,108 +225,6 @@ describe('Collections API', function () {
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag
-                });
-        });
-
-        it('Can add Posts and append Post to a Collection', async function () {
-            const postsToAttach = [{
-                id: fixtureManager.get('posts', 0).id
-            }, {
-                id: fixtureManager.get('posts', 2).id
-            }, {
-                id: fixtureManager.get('posts', 3).id
-            }];
-
-            const collectionId = collectionToEdit.id;
-
-            const editResponse = await agent
-                .put(`/collections/${collectionId}/`)
-                .body({
-                    collections: [{
-                        posts: postsToAttach
-                    }]
-                })
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    collections: [buildMatcher(3)]
-                });
-
-            assert.equal(editResponse.body.collections[0].posts.length, 3, 'Posts should have been added to a Collection');
-
-            // verify the posts are persisted across requests
-            let readResponse = await agent
-                .get(`/collections/${collectionId}/`)
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    collections: [buildMatcher(3)]
-                });
-
-            assert.equal(readResponse.body.collections[0].posts.length, 3, 'Posts should have been added to a Collection');
-
-            //adds a single Post to existing Posts attached to a Collection
-            await agent
-                .post(`/collections/${collectionId}/posts`)
-                .body({
-                    posts: [{
-                        id: fixtureManager.get('posts', 4).id
-                    }]
-                })
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    collections: [buildMatcher(4, {withSortOrder: true})]
-                });
-
-            // verify the posts are persisted across requests
-            readResponse = await agent
-                .get(`/collections/${collectionId}/`)
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    collections: [buildMatcher(4, {withSortOrder: true})]
-                });
-
-            assert.equal(readResponse.body.collections[0].posts.length, 4, 'Post should have been added to a Collection');
-        });
-
-        it('Can remove a Post from a Collection', async function () {
-            const collectionId = collectionToEdit.id;
-            const readResponse = await agent
-                .get(`/collections/${collectionId}/`)
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    collections: [buildMatcher(4, {withSortOrder: true})]
-                });
-
-            const postIdToRemove = readResponse.body.collections[0].posts[0]?.id;
-
-            await agent
-                .delete(`/collections/${collectionId}/posts/${postIdToRemove}`)
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    collections: [buildMatcher(3, {withSortOrder: true})]
                 });
         });
     });

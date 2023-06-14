@@ -1,10 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import Select from '../../../admin-x-ds/global/Select';
+import Select from '../../../admin-x-ds/global/form/Select';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import timezoneData from '@tryghost/timezone-data';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {getLocalTime} from '../../../utils/helpers';
+import {getLocalTime, getSettingValues} from '../../../utils/helpers';
 
 interface TimezoneDataDropdownOption {
     name: string;
@@ -36,16 +36,16 @@ const Hint: React.FC<HintProps> = ({timezone}) => {
 
 const TimeZone: React.FC = () => {
     const {
-        currentState,
+        localSettings,
+        isEditing,
         saveState,
         handleSave,
         handleCancel,
         updateSetting,
-        getSettingValues,
-        handleStateChange
+        handleEditingChange
     } = useSettingGroup();
 
-    const [publicationTimezone] = getSettingValues(['timezone']) as string[];
+    const [publicationTimezone] = getSettingValues(localSettings, ['timezone']) as string[];
 
     const timezoneOptions = timezoneData.map((tzOption: TimezoneDataDropdownOption) => {
         return {
@@ -84,16 +84,16 @@ const TimeZone: React.FC = () => {
     return (
         <SettingGroup
             description='Set the time and date of your publication, used for all published posts'
+            isEditing={isEditing}
             navid='timezone'
             saveState={saveState}
-            state={currentState}
             testId='timezone'
             title='Site timezone'
             onCancel={handleCancel}
+            onEditingChange={handleEditingChange}
             onSave={handleSave}
-            onStateChange={handleStateChange}
         >
-            {currentState === 'view' ? viewContent : inputFields}
+            {isEditing ? inputFields : viewContent}
         </SettingGroup>
     );
 };

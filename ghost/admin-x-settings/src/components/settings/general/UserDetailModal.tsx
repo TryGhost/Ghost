@@ -1,17 +1,17 @@
 import Button from '../../../admin-x-ds/global/Button';
-import ConfirmationModal from '../../../admin-x-ds/global/ConfirmationModal';
+import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
 import Heading from '../../../admin-x-ds/global/Heading';
 import Icon from '../../../admin-x-ds/global/Icon';
-import ImageUpload from '../../../admin-x-ds/global/ImageUpload';
+import ImageUpload from '../../../admin-x-ds/global/form/ImageUpload';
 import Menu from '../../../admin-x-ds/global/Menu';
-import Modal from '../../../admin-x-ds/global/Modal';
+import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import Radio from '../../../admin-x-ds/global/Radio';
+import Radio from '../../../admin-x-ds/global/form/Radio';
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../admin-x-ds/global/TextField';
-import Toggle from '../../../admin-x-ds/global/Toggle';
+import TextField from '../../../admin-x-ds/global/form/TextField';
+import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import useRoles from '../../../hooks/useRoles';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
@@ -36,7 +36,7 @@ interface UserDetailProps {
 
 const CustomHeader: React.FC<CustomHeadingProps> = ({children}) => {
     return (
-        <Heading level={4} separator={true}>{children}</Heading>
+        <Heading level={4}>{children}</Heading>
     );
 };
 
@@ -47,7 +47,7 @@ const RoleSelector: React.FC<UserDetailProps> = ({user, setUserData}) => {
             <>
                 <Heading level={6}>Role</Heading>
                 <div className='flex h-[295px] flex-col items-center justify-center gap-3 bg-grey-75 px-10 py-20 text-center text-sm text-grey-800'>
-                    <Icon color='grey-800' name='crown' size='lg' />
+                    <Icon colorClass='text-grey-800' name='crown' size='lg' />
                     This user is the owner of the site. To change their role, you need to transfer the ownership first.
                 </div>
             </>
@@ -401,7 +401,7 @@ interface UserDetailModalProps {
 
 const UserMenuTrigger = () => (
     <div className='flex h-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] px-3 opacity-80 hover:opacity-100'>
-        <Icon color='white' name='menu-horizontal' size='sm' />
+        <Icon colorClass='text-white' name='menu-horizontal' size='sm' />
     </div>
 );
 
@@ -594,7 +594,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
     return (
         <Modal
             backDropClick={false}
-            okColor='green'
+            cancelLabel='Close'
             okLabel={okLabel}
             size='lg'
             stickyFooter={true}
@@ -627,7 +627,8 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                         fileUploadClassName={fileUploadButtonClasses}
                         height={userData.cover_image ? '100%' : '32px'}
                         id='cover-image'
-                        imageClassName='absolute inset-0 bg-cover group bg-center rounded-t overflow-hidden'
+                        imageClassName='w-full h-full object-cover'
+                        imageContainerClassName='absolute inset-0 bg-cover group bg-center rounded-t overflow-hidden'
                         imageURL={userData.cover_image || ''}
                         unstyled={true}
                         onDelete={() => {
@@ -640,13 +641,14 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                     <div className="absolute bottom-12 right-12">
                         <Menu items={menuItems} position='left' trigger={<UserMenuTrigger />}></Menu>
                     </div>
-                    <div className='relative flex items-center gap-4 px-12 pb-12 pt-60'>
+                    <div className='relative flex items-center gap-4 px-12 pb-7 pt-60'>
                         <ImageUpload
                             deleteButtonClassName='invisible absolute -right-2 -top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible'
-                            deleteButtonContent={<Icon color='white' name='trash' size='sm' />}
+                            deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
                             fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
                             id='avatar'
-                            imageClassName='relative rounded-full group bg-cover bg-center -ml-2 h-[80px] w-[80px]'
+                            imageClassName='w-full h-full object-cover rounded-full'
+                            imageContainerClassName='relative group bg-cover bg-center -ml-2 h-[80px] w-[80px]'
                             imageURL={userData.profile_image}
                             unstyled={true}
                             width='80px'
@@ -657,7 +659,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                                 handleImageUpload('profile_image', file);
                             }}
                         >
-                            <Icon color='white' name='user-add' size='lg' />
+                            <Icon colorClass='text-white' name='user-add' size='lg' />
                         </ImageUpload>
                         <div>
                             <Heading styles='text-white'>{user.name}{suspendedText}</Heading>
@@ -665,7 +667,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                         </div>
                     </div>
                 </div>
-                <div className='mt-10 grid grid-cols-2 gap-x-12 gap-y-20 pb-10'>
+                <div className='mt-10 grid grid-cols-2 gap-x-12 gap-y-20'>
                     <Basic errors={errors} setUserData={setUserData} user={userData} />
                     <Details errors={errors} setUserData={setUserData} user={userData} />
                     <EmailNotifications setUserData={setUserData} user={userData} />

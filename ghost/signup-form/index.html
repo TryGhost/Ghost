@@ -24,30 +24,30 @@
                 src="/src/index.tsx"
                 data-title="My site name"
                 data-description="An independent publication about embeddable signup forms."
-                data-logo="https://static.ghost.org/v4.0.0/images/ghost-orb-1.png"
+                data-icon="https://static.ghost.org/v4.0.0/images/ghost-orb-1.png"
                 data-background-color="#F1F3F4"
                 data-button-color="#ff0095"
                 data-site="%VITE_SITE_URL%"
                 data-label-1="Signup form"
-                data-label-2="With logo"
+                data-label-2="With icon"
                 async
             ></script>
         </div>
 
         <hr>
-        <h1>Without logo</h1>
+        <h1>Without icon</h1>
 
         <div style="height: 40vmin; min-height: 360px;">
             <script
                 type="module"
                 src="/src/index.tsx?withoutlogo"
-                data-title="Site without logo"
+                data-title="Site without icon"
                 data-description="An independent publication about embeddable signup forms."
                 data-background-color="#F1F3F4"
                 data-button-color="#ff0095"
                 data-site="%VITE_SITE_URL%"
                 data-label-1="Signup form"
-                data-label-2="Without logo"
+                data-label-2="Without icon"
                 async
             ></script>
         </div>
@@ -55,10 +55,40 @@
         <hr>
         <h1>Minimal</h1>
 
-        <div style="min-height: 58px">
+        <div style="min-height: 58px; max-width: 440px;">
             <script
                 type="module"
                 src="/src/index.tsx?other"
+                data-button-color="#ff0095"
+                data-site="%VITE_SITE_URL%"
+                data-label-1="Signup form"
+                data-label-2="Minimal"
+                async
+            ></script>
+        </div>
+
+        <hr>
+        <h1>Minimal centered</h1>
+
+        <div style="min-height: 58px; max-width: 440px; margin: 0 auto;">
+            <script
+                type="module"
+                src="/src/index.tsx?other-center"
+                data-button-color="#ff0095"
+                data-site="%VITE_SITE_URL%"
+                data-label-1="Signup form"
+                data-label-2="Minimal"
+                async
+            ></script>
+        </div>
+
+        <hr>
+        <h1>Minimal full width</h1>
+
+        <div style="min-height: 58px;">
+            <script
+                type="module"
+                src="/src/index.tsx?other-full"
                 data-button-color="#ff0095"
                 data-site="%VITE_SITE_URL%"
                 data-label-1="Signup form"

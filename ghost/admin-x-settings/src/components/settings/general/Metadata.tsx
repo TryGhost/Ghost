@@ -2,10 +2,11 @@ import Heading from '../../../admin-x-ds/global/Heading';
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../admin-x-ds/global/TextField';
+import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {ReactComponent as GoogleLogo} from '../../../admin-x-ds/assets/images/google-logo.svg';
 import {ReactComponent as MagnifyingGlass} from '../../../admin-x-ds/assets/icons/magnifying-glass.svg';
+import {getSettingValues} from '../../../utils/helpers';
 
 interface SearchEnginePreviewProps {
     title: string;
@@ -56,18 +57,18 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
 
 const Metadata: React.FC = () => {
     const {
-        currentState,
+        localSettings,
+        isEditing,
         saveState,
         siteData,
         focusRef,
         handleSave,
         handleCancel,
         updateSetting,
-        getSettingValues,
-        handleStateChange
+        handleEditingChange
     } = useSettingGroup();
 
-    const [metaTitle, metaDescription, siteTitle, siteDescription] = getSettingValues(['meta_title', 'meta_description', 'title', 'description']) as string[];
+    const [metaTitle, metaDescription, siteTitle, siteDescription] = getSettingValues(localSettings, ['meta_title', 'meta_description', 'title', 'description']) as string[];
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         updateSetting('meta_title', e.target.value);
@@ -100,14 +101,14 @@ const Metadata: React.FC = () => {
     return (
         <SettingGroup
             description='Extra content for search engines'
+            isEditing={isEditing}
             navid='metadata'
             saveState={saveState}
-            state={currentState}
             testId='metadata'
             title='Metadata'
             onCancel={handleCancel}
+            onEditingChange={handleEditingChange}
             onSave={handleSave}
-            onStateChange={handleStateChange}
         >
             <SearchEnginePreview
                 description={metaDescription ? metaDescription : siteDescription}
@@ -115,7 +116,7 @@ const Metadata: React.FC = () => {
                 title={metaTitle ? metaTitle : siteTitle}
                 url={siteData?.url}
             />
-            {currentState !== 'view' ? inputFields : ''}
+            {isEditing ? inputFields : null}
         </SettingGroup>
     );
 };
