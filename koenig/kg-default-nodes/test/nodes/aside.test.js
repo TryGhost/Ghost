@@ -1,5 +1,5 @@
 const {html} = require('../utils');
-const {$getRoot} = require('lexical');
+const {$getRoot, $createParagraphNode, $createTextNode} = require('lexical');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
 const {JSDOM} = require('jsdom');
@@ -95,5 +95,19 @@ describe('AsideNode', function () {
                 }
             });
         });
+    });
+
+    describe('getTextContent', function () {
+        it('returns contents', editorTest(function () {
+            const node = $createAsideNode();
+            node.getTextContent().should.equal('');
+
+            const paragraph = $createParagraphNode();
+            paragraph.append($createTextNode('Hello'));
+
+            node.append(paragraph);
+
+            node.getTextContent().should.equal('Hello');
+        }));
     });
 });

@@ -107,4 +107,11 @@ describe('HorizontalNode', function () {
             });
         });
     });
+
+    describe('getTextContent', function () {
+        it('returns plaintext representation', editorTest(function () {
+            const node = $createHorizontalRuleNode();
+            node.getTextContent().should.equal('---\n\n');
+        }));
+    });
 });

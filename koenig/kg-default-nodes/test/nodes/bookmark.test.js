@@ -46,7 +46,7 @@ describe('BookmarkNode', function () {
 
         exportOptions = {
             createDocument() {
-                return (new JSDOM()).window.document; 
+                return (new JSDOM()).window.document;
             }
         };
     });
@@ -152,7 +152,7 @@ describe('BookmarkNode', function () {
             const prettyExpectedHtml = Prettier.format(expectedHtml, {parser: 'html'});
 
             element.outerHTML.should.prettifyTo(prettyExpectedHtml);
-        })); 
+        }));
 
         it('renders email target', editorTest(function () {
             const options = {
@@ -160,7 +160,7 @@ describe('BookmarkNode', function () {
             };
             const bookmarkNode = $createBookmarkNode(dataset);
             const {element} = bookmarkNode.exportDOM({...exportOptions, ...options});
-            
+
             element.innerHTML.should.containEql('<!--[if !mso !vml]-->');
             element.innerHTML.should.containEql('<figure class="kg-card kg-bookmark-card');
             element.innerHTML.should.containEql('<!--[if vml]>');
@@ -306,7 +306,7 @@ describe('BookmarkNode', function () {
         // Mobiledoc {\"version\":\"0.3.1\",\"atoms\":[],\"cards\":[[\"bookmark\",{\"url\":\"https://slack.engineering/typescript-at-slack-a81307fa288d\",\"metadata\":{\"url\":\"https://slack.engineering/typescript-at-slack-a81307fa288d\",\"title\":\"TypeScript at Slack\",\"description\":\"When Brendan Eich created the very first version of JavaScript for Netscape Navigator 2.0 in merely ten days, it’s likely that he did not expect how far the Slack Desktop App would take his…\",\"author\":\"Felix Rieseberg\",\"publisher\":\"Several People Are Coding\",\"thumbnail\":\"https://miro.medium.com/max/1200/1*-h1bH8gB3I7gPh5AG1HmsQ.png\",\"icon\":\"https://cdn-images-1.medium.com/fit/c/152/152/1*8I-HPL0bfoIzGied-dzOvA.png\"},\"type\":\"bookmark\"}]],\"markups\":[],\"sections\":[[10,0],[1,\"p\",[]]]}
         // Ghost HTML <figure class="kg-card kg-bookmark-card"><a class="kg-bookmark-container" href="https://slack.engineering/typescript-at-slack-a81307fa288d"><div class="kg-bookmark-content"><div class="kg-bookmark-title">TypeScript at Slack</div><div class="kg-bookmark-description">When Brendan Eich created the very first version of JavaScript for Netscape Navigator 2.0 in merely ten days, it’s likely that he did not expect how far the Slack Desktop App would take his…</div><div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="https://cdn-images-1.medium.com/fit/c/152/152/1*8I-HPL0bfoIzGied-dzOvA.png"><span class="kg-bookmark-author">Felix Rieseberg</span><span class="kg-bookmark-publisher">Several People Are Coding</span></div></div><div class="kg-bookmark-thumbnail"><img src="https://miro.medium.com/max/1200/1*-h1bH8gB3I7gPh5AG1HmsQ.png"></div></a></figure>
         // Medium Export HTML <div class="graf graf--mixtapeEmbed graf-after--p"><a href="https://slack.engineering/typescript-at-slack-a81307fa288d" data-href="https://slack.engineering/typescript-at-slack-a81307fa288d" class="markup--anchor markup--mixtapeEmbed-anchor" title="https://slack.engineering/typescript-at-slack-a81307fa288d"><strong class="markup--strong markup--mixtapeEmbed-strong">TypeScript at Slack</strong><br><em class="markup--em markup--mixtapeEmbed-em">Or, How I Learned to Stop Worrying &amp; Trust the Compiler</em>slack.engineering</a><a href="https://slack.engineering/typescript-at-slack-a81307fa288d" class="js-mixtapeImage mixtapeImage u-ignoreBlock" data-media-id="abc123" data-thumbnail-img-id="1*-h1bH8gB3I7gPh5AG1HmsQ.png" style="background-image: url(https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png);"></a></div>
-            
+
             it('parses mixtape block with all data', editorTest(function () {
                 const dom = (new JSDOM(html`<div class="graf graf--mixtapeEmbed graf-after--p"><a href="https://slack.engineering/typescript-at-slack-a81307fa288d" data-href="https://slack.engineering/typescript-at-slack-a81307fa288d" class="markup--anchor markup--mixtapeEmbed-anchor" title="https://slack.engineering/typescript-at-slack-a81307fa288d"><strong class="markup--strong markup--mixtapeEmbed-strong">TypeScript at Slack</strong><br><em class="markup--em markup--mixtapeEmbed-em">Or, How I Learned to Stop Worrying &amp; Trust the Compiler</em>slack.engineering</a><a href="https://slack.engineering/typescript-at-slack-a81307fa288d" class="js-mixtapeImage mixtapeImage u-ignoreBlock" data-media-id="abc123" data-thumbnail-img-id="1*-h1bH8gB3I7gPh5AG1HmsQ.png" style="background-image: url(https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png);"></a></div>`)).window.document;
                 const nodes = $generateNodesFromDOM(editor, dom);
@@ -331,5 +331,19 @@ describe('BookmarkNode', function () {
                 nodes[0].getThumbnail().should.equal('https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png');
             }));
         });
+    });
+
+    describe('getTextContent', function () {
+        it('returns contents', editorTest(function () {
+            const node = $createBookmarkNode();
+            node.getTextContent().should.equal('');
+
+            node.setTitle('Test');
+            node.setDescription('Test description');
+            node.setUrl('https://example.com');
+            node.setCaption('Test <strong>caption</strong>');
+
+            node.getTextContent().should.equal('Test\nTest description\nhttps://example.com\nTest <strong>caption</strong>\n\n');
+        }));
     });
 });

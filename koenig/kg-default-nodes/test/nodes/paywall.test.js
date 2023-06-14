@@ -107,4 +107,13 @@ describe('PaywallNode', function () {
             nodes[0].should.be.instanceof(PaywallNode);
         }));
     });
+
+    describe('getTextContent', function () {
+        it('returns contents', editorTest(function () {
+            const node = $createPaywallNode();
+
+            // paywall nodes don't have text content
+            node.getTextContent().should.equal('');
+        }));
+    });
 });

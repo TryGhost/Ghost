@@ -201,4 +201,15 @@ describe('ButtonNode', function () {
             nodes[0].getAlignment().should.equal('center');
         }));
     });
+
+    describe('getTextContent', function () {
+        it('returns contents', editorTest(function () {
+            const node = $createButtonNode();
+            node.setButtonText('Testing');
+            node.setButtonUrl('http://someblog.com/somepost');
+
+            // button nodes don't have text content
+            node.getTextContent().should.equal('');
+        }));
+    });
 });

@@ -1,6 +1,7 @@
 import {createCommand} from 'lexical';
 import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
 import {renderMarkdownNodeToDOM} from './MarkdownRenderer';
+import readTextContent from '../../utils/read-text-content';
 
 export const INSERT_MARKDOWN_COMMAND = createCommand();
 
@@ -71,6 +72,13 @@ export class MarkdownNode extends KoenigDecoratorNode {
 
     isEmpty() {
         return !this.__markdown;
+    }
+
+    getTextContent() {
+        // NOTE: this varies from previous mobiledoc behaviour which used rendered markdown for word count
+        const self = this.getLatest();
+        const text = readTextContent(self, 'markdown');
+        return text ? `${text}\n\n` : '';
     }
 }
 

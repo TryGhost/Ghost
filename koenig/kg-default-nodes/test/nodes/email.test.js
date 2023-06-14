@@ -346,4 +346,14 @@ describe('EmailNode', function () {
             `);
         }));
     });
+
+    describe('getTextContent', function () {
+        it('returns contents', editorTest(function () {
+            const node = $createEmailNode();
+            node.setHtml('Testing');
+
+            // email nodes don't have text content
+            node.getTextContent().should.equal('');
+        }));
+    });
 });

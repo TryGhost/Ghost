@@ -11,10 +11,10 @@ import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors.j
 // re-export here, so we don't need to import from multiple places throughout the app
 export {INSERT_PRODUCT_COMMAND} from '@tryghost/kg-default-nodes';
 export class ProductNode extends BaseProductNode {
-    __titleEditor;
-    __titleEditorInitialState;
-    __descriptionEditor;
-    __descriptionEditorInitialState;
+    __productTitleEditor;
+    __productTitleEditorInitialState;
+    __productDescriptionEditor;
+    __productDescriptionEditorInitialState;
 
     static kgMenu = [{
         label: 'Product',
@@ -33,15 +33,15 @@ export class ProductNode extends BaseProductNode {
         super(dataset, key);
 
         // set up nested editor instances
-        setupNestedEditor(this, '__titleEditor', {editor: dataset.titleEditor, nodes: MINIMAL_NODES});
-        setupNestedEditor(this, '__descriptionEditor', {editor: dataset.descriptionEditor, nodes: BASIC_NODES});
+        setupNestedEditor(this, '__productTitleEditor', {editor: dataset.productTitleEditor, nodes: MINIMAL_NODES});
+        setupNestedEditor(this, '__productDescriptionEditor', {editor: dataset.productDescriptionEditor, nodes: BASIC_NODES});
 
         // populate nested editors on initial construction
-        if (!dataset.titleEditor && dataset.productTitle) {
-            populateNestedEditor(this, '__titleEditor', `<p>${dataset.productTitle}</p>`); // we serialize with no wrapper
+        if (!dataset.productTitleEditor && dataset.productTitle) {
+            populateNestedEditor(this, '__productTitleEditor', `<p>${dataset.productTitle}</p>`); // we serialize with no wrapper
         }
-        if (!dataset.descriptionEditor) {
-            populateNestedEditor(this, '__descriptionEditor', dataset.productDescription);
+        if (!dataset.productDescriptionEditor) {
+            populateNestedEditor(this, '__productDescriptionEditor', dataset.productDescription);
         }
     }
 
@@ -50,10 +50,10 @@ export class ProductNode extends BaseProductNode {
 
         // client-side only data properties such as nested editors
         const self = this.getLatest();
-        dataset.titleEditor = self.__titleEditor;
-        dataset.titleEditorInitialState = self.__titleEditorInitialState;
-        dataset.descriptionEditor = self.__descriptionEditor;
-        dataset.descriptionEditorInitialState = self.__descriptionEditorInitialState;
+        dataset.productTitleEditor = self.__productTitleEditor;
+        dataset.productTitleEditorInitialState = self.__productTitleEditorInitialState;
+        dataset.productDescriptionEditor = self.__productDescriptionEditor;
+        dataset.productDescriptionEditorInitialState = self.__productDescriptionEditorInitialState;
 
         return dataset;
     }
@@ -63,16 +63,16 @@ export class ProductNode extends BaseProductNode {
 
         // convert nested editor instances back into HTML because their content may not
         // be automatically updated when the nested editor changes
-        if (this.__titleEditor) {
-            this.__titleEditor.getEditorState().read(() => {
-                const html = $generateHtmlFromNodes(this.__titleEditor, null);
+        if (this.__productTitleEditor) {
+            this.__productTitleEditor.getEditorState().read(() => {
+                const html = $generateHtmlFromNodes(this.__productTitleEditor, null);
                 const cleanedHtml = cleanBasicHtml(html, {firstChildInnerContent: true});
                 json.productTitle = cleanedHtml;
             });
         }
-        if (this.__descriptionEditor) {
-            this.__descriptionEditor.getEditorState().read(() => {
-                const html = $generateHtmlFromNodes(this.__descriptionEditor, null);
+        if (this.__productDescriptionEditor) {
+            this.__productDescriptionEditor.getEditorState().read(() => {
+                const html = $generateHtmlFromNodes(this.__productDescriptionEditor, null);
                 const cleanedHtml = cleanBasicHtml(html);
                 json.productDescription = cleanedHtml;
             });
@@ -88,8 +88,8 @@ export class ProductNode extends BaseProductNode {
                     buttonText={this.getProductButton()}
                     buttonUrl={this.getProductUrl()}
                     description={this.getProductDescription()}
-                    descriptionEditor={this.__descriptionEditor}
-                    descriptionEditorInitialState={this.__descriptionEditorInitialState}
+                    descriptionEditor={this.__productDescriptionEditor}
+                    descriptionEditorInitialState={this.__productDescriptionEditorInitialState}
                     imgHeight={this.getProductImageHeight()}
                     imgSrc={this.getProductImageSrc()}
                     imgWidth={this.getProductImageWidth()}
@@ -98,8 +98,8 @@ export class ProductNode extends BaseProductNode {
                     nodeKey={this.getKey()}
                     starRating={this.getProductStarRating()}
                     title={this.getProductTitle()}
-                    titleEditor={this.__titleEditor}
-                    titleEditorInitialState={this.__titleEditorInitialState}
+                    titleEditor={this.__productTitleEditor}
+                    titleEditorInitialState={this.__productTitleEditorInitialState}
                 />
             </KoenigCardWrapper>
         );
@@ -108,8 +108,8 @@ export class ProductNode extends BaseProductNode {
     // override the default `isEmpty` check because we need to check the nested editors
     // rather than the data properties themselves
     isEmpty() {
-        const isTitleEmpty = isEditorEmpty(this.__titleEditor);
-        const isDescriptionEmpty = isEditorEmpty(this.__descriptionEditor);
+        const isTitleEmpty = isEditorEmpty(this.__productTitleEditor);
+        const isDescriptionEmpty = isEditorEmpty(this.__productDescriptionEditor);
         const isButtonFilled = this.getProductButtonEnabled() && this.getProductUrl() && this.getProductButton();
 
         return isTitleEmpty && isDescriptionEmpty && !isButtonFilled && !this.getProductImageSrc() && !this.getProductRatingEnabled();

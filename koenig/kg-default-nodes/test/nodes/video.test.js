@@ -417,4 +417,14 @@ describe('VideoNode', function () {
             nodes[0].getCustomThumbnailSrc().should.equal('/content/images/2022/11/koenig-lexical-custom.jpg');
         }));
     });
+
+    describe('getTextContent', function () {
+        it('returns contents', editorTest(function () {
+            const node = $createVideoNode();
+            node.getTextContent().should.equal('');
+
+            node.setCaption('Test caption');
+            node.getTextContent().should.equal('Test caption\n\n');
+        }));
+    });
 });

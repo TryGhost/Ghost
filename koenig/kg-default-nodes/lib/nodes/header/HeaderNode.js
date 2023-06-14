@@ -2,6 +2,7 @@ import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
 import {renderHeaderNodeToDOM} from './HeaderRenderer';
 import {HeaderParser} from './HeaderParser';
 import {createCommand} from 'lexical';
+import readTextContent from '../../utils/read-text-content';
 
 export const INSERT_HEADER_COMMAND = createCommand();
 const NODE_TYPE = 'header';
@@ -197,6 +198,17 @@ export class HeaderNode extends KoenigDecoratorNode {
 
     isEmpty() {
         return !this.header && !this.subheader && (!this.__buttonEnabled || (!this.__buttonText && !this.__buttonUrl)) && !this.__backgroundImageSrc;
+    }
+
+    getTextContent() {
+        const self = this.getLatest();
+
+        let text = [
+            readTextContent(self, 'header'),
+            readTextContent(self, 'subheader')
+        ].filter(Boolean).join('\n');
+
+        return text ? `${text}\n\n` : '';
     }
 }
 

@@ -2,6 +2,7 @@ import {createCommand} from 'lexical';
 import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
 import {ToggleParser} from './ToggleParser';
 import {renderToggleNodeToDOM} from './ToggleRenderer';
+import readTextContent from '../../utils/read-text-content';
 
 export const INSERT_TOGGLE_COMMAND = createCommand();
 const NODE_TYPE = 'toggle';
@@ -97,6 +98,17 @@ export class ToggleNode extends KoenigDecoratorNode {
 
     isEmpty() {
         return !this.__heading && !this.__content;
+    }
+
+    getTextContent() {
+        const self = this.getLatest();
+
+        const text = [
+            readTextContent(self, 'heading'),
+            readTextContent(self, 'content')
+        ].filter(Boolean).join('\n');
+
+        return text ? `${text}\n\n` : '';
     }
 }
 

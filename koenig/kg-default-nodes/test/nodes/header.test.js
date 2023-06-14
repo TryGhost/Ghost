@@ -176,4 +176,17 @@ describe('HeaderNode', function () {
             node.getButtonText().should.equal('Button');
         }));
     });
+
+    describe('getTextContent', function () {
+        it('returns contents', editorTest(function () {
+            const node = $createHeaderNode();
+            node.getTextContent().should.equal('');
+
+            node.setHeader('Test');
+            node.getTextContent().should.equal('Test\n\n');
+
+            node.setSubheader('Subheader');
+            node.getTextContent().should.equal('Test\nSubheader\n\n');
+        }));
+    });
 });

@@ -172,4 +172,15 @@ describe('MarkdownNode', function () {
             });
         }));
     });
+
+    describe('getTextContent', function () {
+        it('returns contents', editorTest(function () {
+            const node = $createMarkdownNode();
+            node.getTextContent().should.equal('');
+
+            node.setMarkdown('#HEADING\r\n- list\r\n- items');
+
+            node.getTextContent().should.equal('#HEADING\r\n- list\r\n- items\n\n');
+        }));
+    });
 });

@@ -2,6 +2,7 @@ import {createCommand} from 'lexical';
 import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
 import {renderCalloutNodeToDOM} from './CalloutRenderer';
 import {CalloutParser} from './CalloutParser';
+import readTextContent from '../../utils/read-text-content';
 
 export const INSERT_CALLOUT_COMMAND = createCommand();
 const NODE_TYPE = 'callout';
@@ -101,6 +102,12 @@ export class CalloutNode extends KoenigDecoratorNode {
 
     hasEditMode() {
         return true;
+    }
+
+    getTextContent() {
+        const self = this.getLatest();
+        const text = readTextContent(self, 'calloutText');
+        return text ? `${readTextContent(self, 'calloutText')}\n\n` : '';
     }
 }
 

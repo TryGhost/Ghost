@@ -202,4 +202,15 @@ describe('HtmlNode', function () {
             });
         }));
     });
+
+    describe('getTextContent', function () {
+        it('returns contents', editorTest(function () {
+            const node = $createHtmlNode();
+            node.getTextContent().should.equal('');
+
+            node.setHtml('<script>const test = true;</script>');
+
+            node.getTextContent().should.equal('<script>const test = true;</script>\n\n');
+        }));
+    });
 });

@@ -190,4 +190,15 @@ describe('CalloutNode', function () {
             });
         });
     });
+
+    describe('getTextContent', function () {
+        it('returns contents', editorTest(function () {
+            const node = $createCalloutNode();
+            node.getTextContent().should.equal('');
+
+            node.setCalloutText('Test');
+
+            node.getTextContent().should.equal('Test\n\n');
+        }));
+    });
 });

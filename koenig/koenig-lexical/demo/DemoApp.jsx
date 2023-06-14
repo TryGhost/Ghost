@@ -5,6 +5,7 @@ import React, {useState} from 'react';
 import Sidebar from './components/Sidebar';
 import TitleTextBox from './components/TitleTextBox';
 import Watermark from './components/Watermark';
+import WordCount from './components/WordCount';
 import basicContent from './content/basic-content.json';
 import content from './content/content.json';
 import minimalContent from './content/minimal-content.json';
@@ -13,7 +14,8 @@ import {
     BASIC_NODES, BASIC_TRANSFORMERS, KoenigComposableEditor,
     KoenigComposer, KoenigEditor, MINIMAL_NODES, MINIMAL_TRANSFORMERS,
     MobiledocCopyPlugin,
-    RestrictContentPlugin
+    RestrictContentPlugin,
+    WordCountPlugin
 } from '../src';
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
 import {fetchEmbed} from './utils/fetchEmbed';
@@ -62,14 +64,16 @@ function getAllowedNodes({editorType}) {
     return undefined;
 }
 
-function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode}) {
+function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode, setWordCount}) {
     if (editorType === 'basic') {
         return (
             <KoenigComposableEditor
                 cursorDidExitAtTop={cursorDidExitAtTop}
                 markdownTransformers={BASIC_TRANSFORMERS}
                 registerAPI={registerAPI}
-            />
+            >
+                <WordCountPlugin onChange={setWordCount} />
+            </KoenigComposableEditor>
         );
     } else if (editorType === 'minimal') {
         return (
@@ -80,6 +84,7 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode}) {
                 registerAPI={registerAPI}
             >
                 <RestrictContentPlugin paragraphs={1} />
+                <WordCountPlugin onChange={setWordCount} />
             </KoenigComposableEditor>
         );
     }
@@ -91,6 +96,7 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode}) {
             registerAPI={registerAPI}
         >
             <MobiledocCopyPlugin />
+            <WordCountPlugin onChange={setWordCount} />
         </KoenigEditor>
     );
 }
@@ -122,6 +128,7 @@ function DemoApp({editorType, isMultiplayer}) {
 
     const [title, setTitle] = useState(initialContent ? 'Meet the Koenig editor.' : '');
     const [editorAPI, setEditorAPI] = useState(null);
+    const [wordCount, setWordCount] = useState(0);
     const titleRef = React.useRef(null);
     const containerRef = React.useRef(null);
 
@@ -228,6 +235,7 @@ function DemoApp({editorType, isMultiplayer}) {
                 nodes={getAllowedNodes({editorType})}
             >
                 <div className={`koenig-demo relative h-full grow ${darkMode ? 'dark' : ''}`}>
+                    <WordCount wordCount={wordCount} />
                     {
                         !isMultiplayer && searchParams !== 'false'
                             ? <InitialContentToggle defaultContent={defaultContent} searchParams={searchParams} setSearchParams={setSearchParams} setTitle={setTitle} />
@@ -245,6 +253,7 @@ function DemoApp({editorType, isMultiplayer}) {
                                 darkMode={darkMode}
                                 editorType={editorType}
                                 registerAPI={setEditorAPI}
+                                setWordCount={setWordCount}
                             />
                         </div>
                     </div>

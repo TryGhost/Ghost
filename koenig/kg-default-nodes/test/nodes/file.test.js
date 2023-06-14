@@ -89,7 +89,7 @@ describe('FileNode', function () {
             const fileNode = $createFileNode(dataset);
             const {element} = fileNode.exportDOM(exportOptions);
             element.outerHTML.should.equal(`<div class="kg-card kg-file-card"><a class="kg-file-card-container" href="/content/files/2023/03/IMG_0196.jpeg" title="Download" download=""><div class="kg-file-card-contents"><div class="kg-file-card-title">Cool image to download</div><div class="kg-file-card-caption">This is a description</div><div class="kg-file-card-metadata"><div class="kg-file-card-filename">IMG_0196.jpeg</div><div class="kg-file-card-filesize">121 KB</div></div></div><div class="kg-file-card-icon"><svg viewBox="0 0 24 24"><defs><style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><title>download-circle</title><polyline class="a" points="8.25 14.25 12 18 15.75 14.25"></polyline><line class="a" x1="12" y1="6.75" x2="12" y2="18"></line><circle class="a" cx="12" cy="12" r="11.25"></circle></svg></div></a></div>`);
-            
+
             // FIXME: battling to get it pretty printed.
         }));
     });
@@ -208,6 +208,19 @@ describe('FileNode', function () {
                 type: 'file',
                 ...dataset
             });
+        }));
+    });
+
+    describe('getTextContent', function () {
+        it('returns contents', editorTest(function () {
+            const node = $createFileNode();
+            node.getTextContent().should.equal('');
+
+            node.setFileTitle('Testing');
+            node.getTextContent().should.equal('Testing\n\n');
+
+            node.setFileCaption('Test caption');
+            node.getTextContent().should.equal('Testing\nTest caption\n\n');
         }));
     });
 });

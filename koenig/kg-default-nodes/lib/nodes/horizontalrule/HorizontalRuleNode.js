@@ -48,7 +48,7 @@ export class HorizontalRuleNode extends KoenigDecoratorNode {
     }
 
     getTextContent() {
-        return '\n';
+        return '---\n\n';
     }
 }
 

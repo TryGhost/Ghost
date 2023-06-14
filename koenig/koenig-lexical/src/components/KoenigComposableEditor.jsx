@@ -52,7 +52,7 @@ const KoenigComposableEditor = ({
     const {onChange: sharedOnChange} = useSharedOnChangeContext();
     const _onChange = React.useCallback((editorState) => {
         if (sharedOnChange) {
-            // sharedInChange is called for the main editor and nested editors, we want to
+            // sharedOnChange is called for the main editor and nested editors, we want to
             // make sure we don't accidentally serialize only the contents of the nested
             // editor so we need to use the parent editor when it exists
             const primaryEditorState = (editor._parentEditor || editor).getEditorState();

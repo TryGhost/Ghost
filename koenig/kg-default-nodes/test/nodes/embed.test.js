@@ -60,7 +60,7 @@ describe('EmbedNode', function () {
 
         exportOptions = {
             createDocument() {
-                return (new JSDOM()).window.document; 
+                return (new JSDOM()).window.document;
             }
         };
     });
@@ -141,7 +141,7 @@ describe('EmbedNode', function () {
             const prettyExpectedHtml = Prettier.format(expectedHtml, {parser: 'html'});
 
             element.outerHTML.should.prettifyTo(prettyExpectedHtml);
-        })); 
+        }));
 
         it('renders a twitter embed without api token', editorTest(function () {
             const embedNode = $createEmbedNode({
@@ -303,7 +303,7 @@ describe('EmbedNode', function () {
             };
             const embedNode = $createEmbedNode(youtubeEmbed);
             const {element} = embedNode.exportDOM({...exportOptions, ...options});
-            
+
             element.outerHTML.should.containEql('<!--[if !mso !vml]-->');
             element.outerHTML.should.containEql('<a class="kg-video-preview"');
             element.outerHTML.should.containEql('<!--[if vml]>');
@@ -484,7 +484,7 @@ describe('EmbedNode', function () {
                 nodes[0].getHtml().should.prettifyTo('<iframe class="hs-responsive-embed-iframe hs-fullwidth-embed" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" xml="lang" src="https://www.youtube.com/embed/YTVID" width="560" height="315" allowfullscreen="" data-service="youtube"></iframe>');
             }));
         });
-        
+
         describe('figure blockquote', function () {
             // Twitter
             // Mobiledoc {"version":"0.3.1","atoms":[],"cards":[["embed",{"url":"https://twitter.com/iamdevloper/status/1133348012439220226","html":"<blockquote class=\"twitter-tweet\"><p lang=\"en\" dir=\"ltr\">I see &quot;blockchain engineer&quot;, I hear &quot;fancy spreadsheet admin&quot;.</p>&mdash; I Am Devloper (@iamdevloper) <a href=\"https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw\">May 28, 2019</a></blockquote>\n<script async src=\"https://platform.twitter.com/widgets.js\" charset=\"utf-8\"></script>\n","type":"rich"}]],"markups":[],"sections":[[10,0],[1,"p",[]]]}
@@ -530,5 +530,16 @@ describe('EmbedNode', function () {
                 nodes[0].getCaption().should.equal('<a href="https://twitter.com">A Tweet</a>');
             }));
         });
+    });
+
+    describe('getTextContent', function () {
+        it('returns contents', editorTest(function () {
+            const node = $createEmbedNode();
+            node.getTextContent().should.equal('');
+
+            node.setCaption('Test caption');
+
+            node.getTextContent().should.equal('Test caption\n\n');
+        }));
     });
 });

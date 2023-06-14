@@ -207,4 +207,14 @@ describe('AudioNode', function () {
             nodes[0].getMimeType().should.equal('');
         }));
     });
+
+    describe('getTextContent', function () {
+        it('returns contents', editorTest(function () {
+            const node = $createAudioNode();
+            node.setTitle('Testing');
+
+            // audio nodes don't have text content
+            node.getTextContent().should.equal('');
+        }));
+    });
 });

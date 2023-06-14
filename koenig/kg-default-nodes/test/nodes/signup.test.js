@@ -2,7 +2,7 @@ const {createHeadlessEditor} = require('@lexical/headless');
 const {html} = require('../utils');
 const {JSDOM} = require('jsdom');
 const {$getRoot} = require('lexical');
-const {SignupNode, $createSignupNode, $isSignupNode} = require('../../');
+const {SignupNode, $createSignupNode, $isSignupNode, $createPaywallNode} = require('../../');
 const {$generateNodesFromDOM} = require('@lexical/html');
 
 const editorNodes = [SignupNode];
@@ -542,5 +542,14 @@ describe('SignupNode', function () {
                 }
             });
         });
+    });
+
+    describe('getTextContent', function () {
+        it('returns contents', editorTest(function () {
+            const node = $createPaywallNode();
+
+            // signup nodes don't have text content
+            node.getTextContent().should.equal('');
+        }));
     });
 });

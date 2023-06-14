@@ -2,6 +2,7 @@ import {createCommand} from 'lexical';
 import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
 import {ImageParser} from './ImageParser';
 import {renderImageNodeToDOM} from './ImageRenderer';
+import readTextContent from '../../utils/read-text-content';
 
 export const INSERT_IMAGE_COMMAND = createCommand();
 export const UPLOAD_IMAGE_COMMAND = createCommand();
@@ -184,6 +185,12 @@ export class ImageNode extends KoenigDecoratorNode {
     setAlt(alt) {
         const writable = this.getWritable();
         return writable.__alt = alt;
+    }
+
+    getTextContent() {
+        const self = this.getLatest();
+        const text = readTextContent(self, 'caption');
+        return text ? `${text}\n\n` : '';
     }
 }
 

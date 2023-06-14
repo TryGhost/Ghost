@@ -453,4 +453,14 @@ describe('EmailCtaNode', function () {
             `);
         }));
     });
+
+    describe('getTextContent', function () {
+        it('returns contents', editorTest(function () {
+            const node = $createEmailCtaNode();
+            node.setHtml('Testing');
+
+            // email CTA nodes don't have text content
+            node.getTextContent().should.equal('');
+        }));
+    });
 });

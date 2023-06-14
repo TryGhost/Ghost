@@ -2,6 +2,7 @@ import {createCommand} from 'lexical';
 import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
 import {EmbedParser} from './EmbedParser';
 import {renderEmbedNodeToDOM} from './EmbedRenderer';
+import readTextContent from '../../utils/read-text-content';
 
 export const INSERT_EMBED_COMMAND = createCommand();
 
@@ -143,6 +144,12 @@ export class EmbedNode extends KoenigDecoratorNode {
 
     isEmpty() {
         return !this.__url && !this.__html;
+    }
+
+    getTextContent() {
+        const self = this.getLatest();
+        const text = readTextContent(self, 'caption');
+        return text ? `${text}\n\n` : '';
     }
 }
 

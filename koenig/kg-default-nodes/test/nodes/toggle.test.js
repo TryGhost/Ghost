@@ -207,4 +207,17 @@ describe('ToggleNode', function () {
             nodes[0].getContent().should.equal('Content');
         }));
     });
+
+    describe('getTextContent', function () {
+        it('returns contents', editorTest(function () {
+            const node = $createToggleNode();
+            node.getTextContent().should.equal('');
+
+            node.setHeading('header');
+            node.getTextContent().should.equal('header\n\n');
+
+            node.setContent('content');
+            node.getTextContent().should.equal('header\ncontent\n\n');
+        }));
+    });
 });

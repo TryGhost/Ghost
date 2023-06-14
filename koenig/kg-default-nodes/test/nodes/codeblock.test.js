@@ -289,4 +289,16 @@ describe('CodeBlockNode', function () {
             should(nodes[0].getCaption()).be.undefined();
         }));
     });
+
+    describe('getTextContent', function () {
+        it('returns contents', editorTest(function () {
+            const node = $createCodeBlockNode();
+            node.getTextContent().should.equal('');
+
+            node.setCode('<script>const test = true;</script>');
+            node.setCaption('Test caption');
+
+            node.getTextContent().should.equal('<script>const test = true;</script>\nTest caption\n\n');
+        }));
+    });
 });

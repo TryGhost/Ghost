@@ -540,4 +540,17 @@ describe('ProductNode', function () {
             $isProductNode(nodes[0]).should.be.exactly(false);
         }));
     });
+
+    describe('getTextContent', function () {
+        it('returns contents', editorTest(function () {
+            const node = $createProductNode();
+            node.getTextContent().should.equal('');
+
+            node.setProductTitle('Product title!');
+            node.getTextContent().should.equal('Product title!\n\n');
+
+            node.setProductDescription('This product is ok');
+            node.getTextContent().should.equal('Product title!\nThis product is ok\n\n');
+        }));
+    });
 });

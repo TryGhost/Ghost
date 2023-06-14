@@ -30,6 +30,7 @@ import SignupPlugin from './plugins/SignupPlugin';
 import SlashCardMenuPlugin from './plugins/SlashCardMenuPlugin';
 import TogglePlugin from './plugins/TogglePlugin';
 import VideoPlugin from './plugins/VideoPlugin';
+import WordCountPlugin from './plugins/WordCountPlugin';
 
 import AllDefaultPlugins from './plugins/AllDefaultPlugins';
 
@@ -69,6 +70,7 @@ export {
     FilePlugin,
     FloatingToolbarPlugin,
     GalleryPlugin,
+    HeaderPlugin,
     HorizontalRulePlugin,
     HtmlOutputPlugin,
     ImagePlugin,
@@ -78,11 +80,11 @@ export {
     MobiledocCopyPlugin,
     PlusCardMenuPlugin,
     RestrictContentPlugin,
+    SignupPlugin,
     SlashCardMenuPlugin,
     TogglePlugin,
-    HeaderPlugin,
     VideoPlugin,
-    SignupPlugin,
+    WordCountPlugin,
 
     AllDefaultPlugins,
 

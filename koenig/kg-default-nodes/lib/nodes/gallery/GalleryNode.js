@@ -2,6 +2,7 @@ import {createCommand} from 'lexical';
 import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
 import {GalleryParser} from './GalleryParser';
 import {renderGalleryNodeToDOM} from './GalleryRenderer';
+import readTextContent from '../../utils/read-text-content';
 
 export const INSERT_GALLERY_COMMAND = createCommand();
 
@@ -91,6 +92,12 @@ export class GalleryNode extends KoenigDecoratorNode {
 
     hasEditMode() {
         return false;
+    }
+
+    getTextContent() {
+        const self = this.getLatest();
+        const text = readTextContent(self, 'caption');
+        return text ? `${text}\n\n` : '';
     }
 }
 

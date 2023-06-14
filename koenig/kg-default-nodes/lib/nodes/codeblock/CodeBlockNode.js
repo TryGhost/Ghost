@@ -2,6 +2,7 @@ import {createCommand} from 'lexical';
 import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
 import {CodeBlockParser} from './CodeBlockParser';
 import {renderCodeBlockNodeToDOM} from './CodeBlockRenderer';
+import readTextContent from '../../utils/read-text-content';
 
 export const INSERT_CODE_BLOCK_COMMAND = createCommand();
 
@@ -100,17 +101,22 @@ export class CodeBlockNode extends KoenigDecoratorNode {
         self.__language = language;
     }
 
-    getTextContent() {
-        const self = this.getLatest();
-        return self.__code;
-    }
-
     hasEditMode() {
         return true;
     }
 
     isEmpty() {
         return !this.__code;
+    }
+
+    getTextContent() {
+        const self = this.getLatest();
+        const text = [
+            readTextContent(self, 'code'),
+            readTextContent(self, 'caption')
+        ].filter(Boolean).join('\n');
+
+        return text ? `${text}\n\n` : '';
     }
 }
 

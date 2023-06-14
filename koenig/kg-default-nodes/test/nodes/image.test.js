@@ -496,4 +496,14 @@ describe('ImageNode', function () {
             });
         });
     });
+
+    describe('getTextContent', function () {
+        it('returns contents', editorTest(function () {
+            const node = $createImageNode();
+            node.getTextContent().should.equal('');
+
+            node.setCaption('Test caption');
+            node.getTextContent().should.equal('Test caption\n\n');
+        }));
+    });
 });

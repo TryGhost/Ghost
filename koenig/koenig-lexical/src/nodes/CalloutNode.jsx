@@ -12,8 +12,8 @@ import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 export {INSERT_CALLOUT_COMMAND} from '@tryghost/kg-default-nodes';
 
 export class CalloutNode extends BaseCalloutNode {
-    __textEditor;
-    __textEditorInitialState;
+    __calloutTextEditor;
+    __calloutTextEditorInitialState;
 
     static kgMenu = [{
         label: 'Callout',
@@ -32,11 +32,11 @@ export class CalloutNode extends BaseCalloutNode {
         super(dataset, key);
 
         // set up nested editor instances
-        setupNestedEditor(this, '__textEditor', {editor: dataset.textEditor, nodes: MINIMAL_NODES});
+        setupNestedEditor(this, '__calloutTextEditor', {editor: dataset.calloutTextEditor, nodes: MINIMAL_NODES});
 
         // populate nested editors on initial construction
-        if (!dataset.textEditor && dataset.calloutText) {
-            populateNestedEditor(this, '__textEditor', `<p>${dataset.calloutText}</p>`); // we serialize with no wrapper
+        if (!dataset.calloutTextEditor && dataset.calloutText) {
+            populateNestedEditor(this, '__calloutTextEditor', `<p>${dataset.calloutText}</p>`); // we serialize with no wrapper
         }
     }
 
@@ -45,9 +45,9 @@ export class CalloutNode extends BaseCalloutNode {
 
         // convert nested editor instance back into HTML because `text` may not
         // be automatically updated when the nested editor changes
-        if (this.__textEditor) {
-            this.__textEditor.getEditorState().read(() => {
-                const html = $generateHtmlFromNodes(this.__textEditor, null);
+        if (this.__calloutTextEditor) {
+            this.__calloutTextEditor.getEditorState().read(() => {
+                const html = $generateHtmlFromNodes(this.__calloutTextEditor, null);
                 const cleanedHtml = cleanBasicHtml(html, {allowBr: true});
                 json.calloutText = cleanedHtml;
             });
@@ -65,8 +65,8 @@ export class CalloutNode extends BaseCalloutNode {
 
         // client-side only data properties such as nested editors
         const self = this.getLatest();
-        dataset.textEditor = self.__textEditor;
-        dataset.textEditorInitialState = self.__textEditorInitialState;
+        dataset.calloutTextEditor = self.__calloutTextEditor;
+        dataset.calloutTextEditorInitialState = self.__calloutTextEditorInitialState;
 
         return dataset;
     }
@@ -82,8 +82,8 @@ export class CalloutNode extends BaseCalloutNode {
                     backgroundColor={this.__backgroundColor}
                     calloutEmoji={this.__calloutEmoji}
                     nodeKey={this.getKey()}
-                    textEditor={this.__textEditor}
-                    textEditorInitialState={this.__textEditorInitialState}
+                    textEditor={this.__calloutTextEditor}
+                    textEditorInitialState={this.__calloutTextEditorInitialState}
                 />
             </KoenigCardWrapper>
         );

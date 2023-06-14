@@ -2,6 +2,7 @@ import {createCommand} from 'lexical';
 import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
 import {ProductParser} from './ProductParser';
 import {renderProductNodeToDOM} from './ProductRenderer';
+import readTextContent from '../../utils/read-text-content';
 
 export const INSERT_PRODUCT_COMMAND = createCommand();
 const NODE_TYPE = 'product';
@@ -224,6 +225,17 @@ export class ProductNode extends KoenigDecoratorNode {
     isEmpty() {
         const isButtonFilled = this.__productButtonEnabled && this.__productUrl && this.__productButton;
         return !this.__productTitle && !this.__productDescription && !isButtonFilled && !this.__productImageSrc && !this.__productRatingEnabled;
+    }
+
+    getTextContent() {
+        const self = this.getLatest();
+
+        const text = [
+            readTextContent(self, 'productTitle'),
+            readTextContent(self, 'productDescription')
+        ].filter(Boolean).join('\n');
+
+        return text ? `${text}\n\n` : '';
     }
 }
 

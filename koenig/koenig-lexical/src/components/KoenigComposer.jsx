@@ -43,6 +43,7 @@ const KoenigComposer = ({
     }, [enableMultiplayer, initialEditorState, nodes, onError]);
 
     const editorContainerRef = React.useRef(null);
+    const onWordCountChangeRef = React.useRef(null);
 
     if (!fileUploader.useFileUpload) {
         fileUploader.useFileUpload = function () {
@@ -89,7 +90,8 @@ const KoenigComposer = ({
                 multiplayerEndpoint,
                 multiplayerDocId,
                 multiplayerUsername,
-                createWebsocketProvider
+                createWebsocketProvider,
+                onWordCountChangeRef
             }}>
                 <KoenigSelectedCardContext>
                     {enableMultiplayer ? (

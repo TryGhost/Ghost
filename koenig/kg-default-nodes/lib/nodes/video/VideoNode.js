@@ -2,6 +2,7 @@ import {createCommand} from 'lexical';
 import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
 import {VideoParser} from './VideoParser';
 import {renderVideoNodeToDOM} from './VideoRenderer';
+import readTextContent from '../../utils/read-text-content';
 
 export const INSERT_VIDEO_COMMAND = createCommand();
 const NODE_TYPE = 'video';
@@ -272,6 +273,12 @@ export class VideoNode extends KoenigDecoratorNode {
 
     hasEditMode() {
         return true;
+    }
+
+    getTextContent() {
+        const self = this.getLatest();
+        const text = readTextContent(self, 'caption');
+        return text ? `${text}\n\n` : '';
     }
 }
 
