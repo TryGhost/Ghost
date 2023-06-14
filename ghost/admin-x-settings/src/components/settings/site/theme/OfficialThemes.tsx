@@ -130,7 +130,7 @@ const OfficialThemes: React.FC<{
     }];
 
     return (
-        <div className='p-[8vmin] pt-5'>
+        <div className='h-[calc(100vh-74px-40px)] overflow-y-auto overflow-x-hidden p-[8vmin] pt-5'>
             <Heading>Themes</Heading>
             <div className='mt-[6vmin] grid grid-cols-1 gap-[6vmin] sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'>
                 {officialThemes.map((theme) => {
@@ -139,10 +139,10 @@ const OfficialThemes: React.FC<{
                             onSelectTheme?.(theme);
                         }}>
                             {/* <img alt={theme.name} src={`${assetRoot}/${theme.image}`}/> */}
-                            <div className='h-[420px] w-full bg-grey-100 shadow-md transition-all duration-500 hover:scale-[1.05]'>
+                            <div className='w-full bg-grey-100 shadow-md transition-all duration-500 hover:scale-[1.05]'>
                                 <img
                                     alt="Headline Theme"
-                                    className='w-full object-contain'
+                                    className='h-full w-full object-contain'
                                     src={`${assetRoot}/${theme.image}`}
                                 />
                             </div>
