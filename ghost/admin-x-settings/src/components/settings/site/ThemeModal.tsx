@@ -1,4 +1,5 @@
 import AdvancedThemeSettings from './theme/AdvancedThemeSettings';
+import Breadcrumbs from '../../../admin-x-ds/global/Breadcrumbs';
 import Button from '../../../admin-x-ds/global/Button';
 import ButtonGroup from '../../../admin-x-ds/global/ButtonGroup';
 import FileUpload from '../../../admin-x-ds/global/form/FileUpload';
@@ -48,22 +49,20 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         const installedTheme = themes.find(theme => theme.name.toLowerCase() === selectedTheme.name.toLowerCase());
 
         left =
-            <div className='flex w-[33%] items-center gap-2'>
-                <button
-                    className={`text-sm`}
-                    type="button"
-                    onClick={() => {
-                        setCurrentTab('official');
-                        setSelectedTheme(null);
-                    }}>
-                    Official themes
-                </button>
-                &rarr;
-                <span className='text-sm font-bold'>{selectedTheme?.name}</span>
+            <div className='flex items-center gap-2'>
+                <Breadcrumbs
+                    items={[
+                        {label: 'Official themes', onClick: () => {
+                            setCurrentTab('official');
+                            setSelectedTheme(null);
+                        }},
+                        {label: selectedTheme.name}
+                    ]}
+                />
             </div>;
 
         right =
-            <div className='flex w-[33%] justify-end gap-8'>
+            <div className='flex justify-end gap-8'>
                 <ButtonGroup
                     buttons={[
                         {icon: 'laptop', link: true, size: 'sm'},
