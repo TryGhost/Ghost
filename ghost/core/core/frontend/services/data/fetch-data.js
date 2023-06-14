@@ -106,11 +106,17 @@ function fetchData(pathOptions, routerOptions, locals) {
             if (routerOptions.data) {
                 response.data = {};
 
+                let resultIndex = 1;
+
                 _.each(routerOptions.data, function (config, name) {
-                    response.data[name] = results.find(result => result.name === name)[config.resource];
+                    if (results[resultIndex]) {
+                    response.data[name] = results[resultIndex][config.resource];
 
                     if (config.type === 'browse') {
-                        response.data[name].meta = results.find(result => result.name === name).meta;
+                        response.data[name].meta = results[resultIndex].meta;
+                    }
+
+                    resultIndex++;
                     }
                 });
             }
