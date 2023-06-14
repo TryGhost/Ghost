@@ -17039,16 +17039,16 @@ expand-tilde@^2.0.0, expand-tilde@^2.0.2:
   dependencies:
     homedir-polyfill "^1.0.1"
 
-expect@29.3.1:
-  version "29.3.1"
-  resolved "https://registry.yarnpkg.com/expect/-/expect-29.3.1.tgz#92877aad3f7deefc2e3f6430dd195b92295554a6"
-  integrity sha512-gGb1yTgU30Q0O/tQq+z30KBWv24ApkMgFUpvKBkyLUBL68Wv8dHdJxTBZFl/iT8K/bqDHvUYRH6IIN3rToopPA==
+expect@29.5.0, expect@^29.0.0, expect@^29.3.1:
+  version "29.5.0"
+  resolved "https://registry.yarnpkg.com/expect/-/expect-29.5.0.tgz#68c0509156cb2a0adb8865d413b137eeaae682f7"
+  integrity sha512-yM7xqUrCO2JdpFo4XpM82t+PJBFybdqoQuJLDGeDX2ij8NZzqRHyu3Hp188/JX7SWqud+7t4MUdvcgGBICMHZg==
   dependencies:
-    "@jest/expect-utils" "^29.3.1"
-    jest-get-type "^29.2.0"
-    jest-matcher-utils "^29.3.1"
-    jest-message-util "^29.3.1"
-    jest-util "^29.3.1"
+    "@jest/expect-utils" "^29.5.0"
+    jest-get-type "^29.4.3"
+    jest-matcher-utils "^29.5.0"
+    jest-message-util "^29.5.0"
+    jest-util "^29.5.0"
 
 expect@^27.5.1:
   version "27.5.1"
@@ -17070,17 +17070,6 @@ expect@^28.1.3:
     jest-matcher-utils "^28.1.3"
     jest-message-util "^28.1.3"
     jest-util "^28.1.3"
-
-expect@^29.0.0, expect@^29.3.1:
-  version "29.5.0"
-  resolved "https://registry.yarnpkg.com/expect/-/expect-29.5.0.tgz#68c0509156cb2a0adb8865d413b137eeaae682f7"
-  integrity sha512-yM7xqUrCO2JdpFo4XpM82t+PJBFybdqoQuJLDGeDX2ij8NZzqRHyu3Hp188/JX7SWqud+7t4MUdvcgGBICMHZg==
-  dependencies:
-    "@jest/expect-utils" "^29.5.0"
-    jest-get-type "^29.4.3"
-    jest-matcher-utils "^29.5.0"
-    jest-message-util "^29.5.0"
-    jest-util "^29.5.0"
 
 express-brute@1.0.1, express-brute@^1.0.1:
   version "1.0.1"
