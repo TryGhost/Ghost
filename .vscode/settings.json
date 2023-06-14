@@ -4,6 +4,9 @@
   },
   "eslint.workingDirectories": [
     {
+      "pattern": "./apps/*/"
+    },
+    {
       "pattern": "./ghost/*/"
     }
   ],
