@@ -6,6 +6,7 @@ import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NewThemePreview from './theme/ThemePreview';
 import NiceModal, {NiceModalHandler, useModal} from '@ebay/nice-modal-react';
 import OfficialThemes from './theme/OfficialThemes';
+import PageHeader from '../../../admin-x-ds/global/layout/PageHeader';
 import React, {useState} from 'react';
 import TabView from '../../../admin-x-ds/global/TabView';
 import {OfficialTheme} from '../../../models/themes';
@@ -40,85 +41,86 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     setThemes
 }) => {
     const api = useApi();
+
+    let left, right;
+
     if (selectedTheme) {
         const installedTheme = themes.find(theme => theme.name.toLowerCase() === selectedTheme.name.toLowerCase());
 
-        return (
-            <div className='sticky top-0 flex justify-between gap-3 bg-grey-50 p-5 px-7'>
-                <div className='flex w-[33%] items-center gap-2'>
-                    <button
-                        className={`text-sm`}
-                        type="button"
-                        onClick={() => {
-                            setCurrentTab('official');
-                            setSelectedTheme(null);
-                        }}>
-                        Official themes
-                    </button>
-                    &rarr;
-                    <span className='text-sm font-bold'>{selectedTheme?.name}</span>
-                </div>
-                <div className='flex w-[33%] justify-end gap-8'>
-                    <ButtonGroup
-                        buttons={[
-                            {icon: 'laptop', link: true, size: 'sm'},
-                            {icon: 'mobile', iconColorClass: 'text-grey-500', link: true, size: 'sm'}
-                        ]}
-                    />
-                    <Button
-                        color='green'
-                        disabled={Boolean(installedTheme)}
-                        label={installedTheme?.active ? 'Activated' : (installedTheme ? 'Installed' : `Install ${selectedTheme?.name}`)}
-                        onClick={async () => {
-                            const data = await api.themes.install(selectedTheme.ref);
-                            const newlyInstalledTheme = data.themes[0];
-                            setThemes([
-                                ...themes.map(theme => ({...theme, active: false})),
-                                newlyInstalledTheme
-                            ]);
-                            showToast({
-                                message: `Theme installed - ${newlyInstalledTheme.name}`
-                            });
-                            setCurrentTab('installed');
-                        }}
-                    />
-                </div>
-            </div>
-        );
-    } else {
-        return (
-            <div className='sticky top-0 flex justify-between gap-3 bg-white p-5 px-7'>
-                <TabView
-                    border={false}
-                    tabs={[
-                        {id: 'official', title: 'Official themes'},
-                        {id: 'installed', title: 'Installed'}
+        left =
+            <div className='flex w-[33%] items-center gap-2'>
+                <button
+                    className={`text-sm`}
+                    type="button"
+                    onClick={() => {
+                        setCurrentTab('official');
+                        setSelectedTheme(null);
+                    }}>
+                    Official themes
+                </button>
+                &rarr;
+                <span className='text-sm font-bold'>{selectedTheme?.name}</span>
+            </div>;
+
+        right =
+            <div className='flex w-[33%] justify-end gap-8'>
+                <ButtonGroup
+                    buttons={[
+                        {icon: 'laptop', link: true, size: 'sm'},
+                        {icon: 'mobile', iconColorClass: 'text-grey-500', link: true, size: 'sm'}
                     ]}
-                    onTabChange={(id: string) => {
-                        setCurrentTab(id);
+                />
+                <Button
+                    color='green'
+                    disabled={Boolean(installedTheme)}
+                    label={installedTheme?.active ? 'Activated' : (installedTheme ? 'Installed' : `Install ${selectedTheme?.name}`)}
+                    onClick={async () => {
+                        const data = await api.themes.install(selectedTheme.ref);
+                        const newlyInstalledTheme = data.themes[0];
+                        setThemes([
+                            ...themes.map(theme => ({...theme, active: false})),
+                            newlyInstalledTheme
+                        ]);
+                        showToast({
+                            message: `Theme installed - ${newlyInstalledTheme.name}`
+                        });
+                        setCurrentTab('installed');
                     }}
                 />
+            </div>;
+    } else {
+        left =
+            <TabView
+                border={false}
+                tabs={[
+                    {id: 'official', title: 'Official themes'},
+                    {id: 'installed', title: 'Installed'}
+                ]}
+                onTabChange={(id: string) => {
+                    setCurrentTab(id);
+                }} />;
 
-                <div className='flex items-center gap-3'>
-                    <FileUpload id='theme-uplaod' onUpload={async (file: File) => {
-                        const data = await api.themes.upload({file});
-                        const uploadedTheme = data.themes[0];
-                        setThemes([...themes, uploadedTheme]);
-                        showToast({
-                            message: `Theme uploaded - ${uploadedTheme.name}`
-                        });
-                    }}>Upload theme</FileUpload>
-                    <Button
-                        className='min-w-[75px]'
-                        color='black'
-                        label='OK'
-                        onClick = {() => {
-                            modal.remove();
-                        }} />
-                </div>
-            </div>
-        );
+        right =
+            <div className='flex items-center gap-3'>
+                <FileUpload id='theme-uplaod' onUpload={async (file: File) => {
+                    const data = await api.themes.upload({file});
+                    const uploadedTheme = data.themes[0];
+                    setThemes([...themes, uploadedTheme]);
+                    showToast({
+                        message: `Theme uploaded - ${uploadedTheme.name}`
+                    });
+                }}>Upload theme</FileUpload>
+                <Button
+                    className='min-w-[75px]'
+                    color='black'
+                    label='OK'
+                    onClick = {() => {
+                        modal.remove();
+                    }} />
+            </div>;
     }
+
+    return <PageHeader containerClassName={selectedTheme! && 'bg-grey-50'} left={left} right={right} />;
 };
 
 const ThemeModalContent: React.FC<ThemeModalContentProps> = ({
