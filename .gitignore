@@ -126,8 +126,8 @@ Caddyfile
 /ghost/admin/dist
 
 # Portal
-!/ghost/portal/.env
-/ghost/portal/umd
+!/apps/portal/.env
+/apps/portal/umd
 
 # Sodo-Search
 /apps/sodo-search/public/main.css
