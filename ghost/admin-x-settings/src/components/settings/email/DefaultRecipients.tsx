@@ -1,6 +1,6 @@
-import MultiSelect, {MultiSelectOption} from '../../../admin-x-ds/global/MultiSelect';
+import MultiSelect, {MultiSelectOption} from '../../../admin-x-ds/global/form/MultiSelect';
 import React, {useContext, useEffect, useState} from 'react';
-import Select from '../../../admin-x-ds/global/Select';
+import Select from '../../../admin-x-ds/global/form/Select';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import useSettingGroup from '../../../hooks/useSettingGroup';

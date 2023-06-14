@@ -3,7 +3,7 @@ import type {Meta, StoryObj} from '@storybook/react';
 import Checkbox from './Checkbox';
 
 const meta = {
-    title: 'Global / Checkbox',
+    title: 'Global / Form / Checkbox',
     component: Checkbox,
     tags: ['autodocs'],
     decorators: [(_story: any) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)],

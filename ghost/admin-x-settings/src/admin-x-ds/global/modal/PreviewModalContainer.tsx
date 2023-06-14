@@ -1,4 +1,4 @@
-import Button from './Button';
+import Button from '../Button';
 import NiceModal from '@ebay/nice-modal-react';
 import PreviewModal, {PreviewModalProps} from './PreviewModal';
 import React from 'react';

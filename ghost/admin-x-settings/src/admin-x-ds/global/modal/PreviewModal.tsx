@@ -1,13 +1,13 @@
-import ButtonGroup from './ButtonGroup';
-import DesktopChromeHeader from './DesktopChromeHeader';
-import Heading from './Heading';
-import MobileChrome from './MobileChrome';
+import ButtonGroup from '../ButtonGroup';
+import DesktopChromeHeader from '../chrome/DesktopChromeHeader';
+import Heading from '../Heading';
+import MobileChrome from '../chrome/MobileChrome';
 import Modal, {ModalSize} from './Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
-import Select, {SelectOption} from './Select';
-import TabView, {Tab} from './TabView';
-import {IButton} from './Button';
+import Select, {SelectOption} from '../form/Select';
+import TabView, {Tab} from '../TabView';
+import {IButton} from '../Button';
 
 export interface PreviewModalProps {
     testId?: string;

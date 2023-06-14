@@ -1,10 +1,10 @@
 import Heading from '../../../../admin-x-ds/global/Heading';
-import ImageUpload from '../../../../admin-x-ds/global/ImageUpload';
+import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
 import React, {useContext} from 'react';
-import Select from '../../../../admin-x-ds/global/Select';
+import Select from '../../../../admin-x-ds/global/form/Select';
 import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../../admin-x-ds/global/TextField';
-import Toggle from '../../../../admin-x-ds/global/Toggle';
+import TextField from '../../../../admin-x-ds/global/form/TextField';
+import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import {CustomThemeSetting} from '../../../../types/api';
 import {ServicesContext} from '../../../providers/ServiceProvider';
 import {humanizeSettingKey} from '../../../../utils/helpers';

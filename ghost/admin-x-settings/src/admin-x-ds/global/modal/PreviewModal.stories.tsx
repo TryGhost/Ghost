@@ -1,10 +1,10 @@
 import type {Meta, StoryObj} from '@storybook/react';
 
-import Heading from './Heading';
+import Heading from '../Heading';
 import NiceModal from '@ebay/nice-modal-react';
 import PreviewModal from './PreviewModal';
 import PreviewModalContainer from './PreviewModalContainer';
-import {Tab} from './TabView';
+import {Tab} from '../TabView';
 
 const meta = {
     title: 'Global / Modal / Preview Modal',

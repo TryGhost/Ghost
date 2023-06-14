@@ -1,7 +1,7 @@
 import React, {useId} from 'react';
 
-import Heading from './Heading';
-import Hint from './Hint';
+import Heading from '../Heading';
+import Hint from '../Hint';
 
 type ResizeOptions = 'both' | 'vertical' | 'horizontal' | 'none';
 

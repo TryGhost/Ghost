@@ -1,7 +1,7 @@
 import React, {useEffect, useId, useState} from 'react';
 
-import Heading from './Heading';
-import Hint from './Hint';
+import Heading from '../Heading';
+import Hint from '../Hint';
 import clsx from 'clsx';
 
 export interface SelectOption {

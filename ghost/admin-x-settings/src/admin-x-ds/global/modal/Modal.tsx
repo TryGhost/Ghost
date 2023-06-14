@@ -1,8 +1,8 @@
-import Button, {IButton} from './Button';
-import ButtonGroup from './ButtonGroup';
-import Heading from './Heading';
+import Button, {IButton} from '../Button';
+import ButtonGroup from '../ButtonGroup';
+import Heading from '../Heading';
 import React from 'react';
-import StickyFooter from './StickyFooter';
+import StickyFooter from '../StickyFooter';
 import clsx from 'clsx';
 import {useModal} from '@ebay/nice-modal-react';
 

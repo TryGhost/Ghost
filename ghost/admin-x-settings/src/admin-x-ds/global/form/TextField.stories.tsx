@@ -3,7 +3,7 @@ import type {Meta, StoryObj} from '@storybook/react';
 import TextField from './TextField';
 
 const meta = {
-    title: 'Global / Textfield',
+    title: 'Global / Form / Textfield',
     component: TextField,
     tags: ['autodocs'],
     decorators: [(_story: any) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)],
