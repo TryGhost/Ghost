@@ -58,7 +58,7 @@ const Button: React.FC<IButton> = ({
         styles += link ? ' text-white hover:text-white' : ' bg-white text-black';
         break;
     default:
-        styles += link ? ' text-black hover:text-grey-800' : ' bg-transparent text-black hover:text-grey-800';
+        styles += link ? ' text-black hover:text-grey-800' : ' text-black hover:bg-grey-200';
         break;
     }
 

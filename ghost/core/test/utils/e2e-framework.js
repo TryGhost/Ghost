@@ -73,6 +73,9 @@ const startGhost = async (options = {}) => {
     // Adapter cache has to be cleared to avoid reusing cached adapter instances between restarts
     adapterManager.clearCache();
 
+    // Reset the URL service so we clear out all the listeners
+    urlServiceUtils.resetGenerators();
+
     const defaults = {
         backend: true,
         frontend: false,

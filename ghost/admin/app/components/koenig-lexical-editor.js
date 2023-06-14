@@ -274,6 +274,7 @@ export default class KoenigLexicalEditor extends Component {
             feature: {
                 signupCard: this.feature.get('signupCard')
             },
+            membersEnabled: this.settings.get('membersSignupAccess') === 'all',
             siteTitle: this.settings.title,
             siteDescription: this.settings.description
         };
