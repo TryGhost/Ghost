@@ -104,7 +104,7 @@ if (DASH_DASH_ARGS.includes('announcement-bar') || DASH_DASH_ARGS.includes('anno
     commands.push({
         name: 'announcement-bar',
         command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../ghost/announcement-bar'),
+        cwd: path.resolve(__dirname, '../apps/announcement-bar'),
         prefixColor: '#DC9D00',
         env: {}
     });

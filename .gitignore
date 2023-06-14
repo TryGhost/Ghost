@@ -141,7 +141,7 @@ Caddyfile
 /ghost/signup-form/playwright/.cache/
 
 # Announcement-Bar
-/ghost/announcement-bar/umd
+/apps/announcement-bar/umd
 
 # Build files
 /apps/*/build
