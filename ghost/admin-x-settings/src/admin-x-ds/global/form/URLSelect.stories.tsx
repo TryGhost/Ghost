@@ -4,7 +4,7 @@ import URLSelect from './URLSelect';
 import {SelectOption} from './Select';
 
 const meta = {
-    title: 'Global / Select / URL Select',
+    title: 'Global / Form / URL Select',
     component: URLSelect,
     tags: ['autodocs']
 } satisfies Meta<typeof URLSelect>;

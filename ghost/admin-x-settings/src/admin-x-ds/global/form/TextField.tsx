@@ -1,5 +1,5 @@
-import Heading from './Heading';
-import Hint from './Hint';
+import Heading from '../Heading';
+import Hint from '../Hint';
 import React, {useId} from 'react';
 import clsx from 'clsx';
 

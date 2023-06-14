@@ -3,8 +3,8 @@ import type {Meta, StoryObj} from '@storybook/react';
 import SettingGroupContent from './SettingGroupContent';
 
 import * as SettingValueStories from './SettingValue.stories';
-import * as TextFieldStories from '../global/TextField.stories';
-import TextField from '../global/TextField';
+import * as TextFieldStories from '../global/form/TextField.stories';
+import TextField from '../global/form/TextField';
 
 const meta = {
     title: 'Settings / Setting Group / Content',

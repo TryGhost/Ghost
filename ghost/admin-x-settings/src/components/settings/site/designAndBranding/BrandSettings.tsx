@@ -1,9 +1,9 @@
 import Heading from '../../../../admin-x-ds/global/Heading';
 import Hint from '../../../../admin-x-ds/global/Hint';
-import ImageUpload from '../../../../admin-x-ds/global/ImageUpload';
+import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
 import React, {useContext} from 'react';
 import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../../admin-x-ds/global/TextField';
+import TextField from '../../../../admin-x-ds/global/form/TextField';
 import {ServicesContext} from '../../../providers/ServiceProvider';
 import {SettingValue} from '../../../../types/api';
 

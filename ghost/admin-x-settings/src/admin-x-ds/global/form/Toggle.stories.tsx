@@ -3,7 +3,7 @@ import type {Meta, StoryObj} from '@storybook/react';
 import Toggle from './Toggle';
 
 const meta = {
-    title: 'Global / Toggle',
+    title: 'Global / Form / Toggle',
     component: Toggle,
     tags: ['autodocs'],
     decorators: [(_story: any) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)]

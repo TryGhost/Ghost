@@ -3,7 +3,7 @@ import type {Meta, StoryObj} from '@storybook/react';
 import TextArea from './TextArea';
 
 const meta = {
-    title: 'Global / Textarea',
+    title: 'Global / Form / Textarea',
     component: TextArea,
     tags: ['autodocs'],
     decorators: [(_story: any) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)],

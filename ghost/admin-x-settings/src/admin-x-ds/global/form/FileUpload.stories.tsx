@@ -3,7 +3,7 @@ import type {Meta, StoryObj} from '@storybook/react';
 import FileUpload from './FileUpload';
 
 const meta = {
-    title: 'Global / File Upload',
+    title: 'Global / Form / File Upload',
     component: FileUpload,
     tags: ['autodocs']
 } satisfies Meta<typeof FileUpload>;

@@ -1,5 +1,5 @@
 import React from 'react';
-import Separator from './Separator';
+import Separator from '../Separator';
 
 type ToggleSizes = 'sm' | 'md' | 'lg';
 type ToggleDirections = 'ltr' | 'rtl';

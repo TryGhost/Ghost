@@ -3,8 +3,8 @@ import Link from '../../../admin-x-ds/global/Link';
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../admin-x-ds/global/TextField';
-import Toggle from '../../../admin-x-ds/global/Toggle';
+import TextField from '../../../admin-x-ds/global/form/TextField';
+import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {getSettingValues} from '../../../utils/helpers';
 

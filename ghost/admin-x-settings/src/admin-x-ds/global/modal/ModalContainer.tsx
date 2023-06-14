@@ -1,7 +1,7 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 
-import Button from './Button';
+import Button from '../Button';
 import Modal, {ModalProps} from './Modal';
 
 const ModalContainer: React.FC<ModalProps> = ({children, onCancel, ...props}) => {

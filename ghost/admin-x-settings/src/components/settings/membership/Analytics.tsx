@@ -2,7 +2,7 @@ import Button from '../../../admin-x-ds/global/Button';
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import Toggle from '../../../admin-x-ds/global/Toggle';
+import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {getSettingValues} from '../../../utils/helpers';
 

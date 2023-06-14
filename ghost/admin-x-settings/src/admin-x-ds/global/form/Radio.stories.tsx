@@ -4,7 +4,7 @@ import Radio from './Radio';
 import {RadioOption} from './Radio';
 
 const meta = {
-    title: 'Global / Radio',
+    title: 'Global / Form / Radio',
     component: Radio,
     tags: ['autodocs'],
     decorators: [(_story: any) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)],

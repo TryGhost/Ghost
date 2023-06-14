@@ -1,5 +1,5 @@
-import Heading from './Heading';
-import Hint from './Hint';
+import Heading from '../Heading';
+import Hint from '../Hint';
 import React from 'react';
 import {GroupBase, MultiValue, OptionsOrGroups, default as ReactSelect, components} from 'react-select';
 

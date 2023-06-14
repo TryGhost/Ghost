@@ -1,10 +1,10 @@
 import type {Meta, StoryObj} from '@storybook/react';
 
-import Button from './Button';
-import ButtonGroup from './ButtonGroup';
+import Button from '../Button';
+import ButtonGroup from '../ButtonGroup';
 import DesktopChromeHeader from './DesktopChromeHeader';
-import URLSelect from './URLSelect';
-import {SelectOption} from './Select';
+import URLSelect from '../form/URLSelect';
+import {SelectOption} from '../form/Select';
 
 const meta = {
     title: 'Global / Chrome / Desktop Header',
