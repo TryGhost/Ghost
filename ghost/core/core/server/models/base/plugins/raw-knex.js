@@ -1,7 +1,6 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('models:base:raw-knex');
 const plugins = require('@tryghost/bookshelf-plugins');
-const Promise = require('bluebird');
 
 const schema = require('../../../data/schema');
 
@@ -102,10 +101,10 @@ module.exports = function (Bookshelf) {
                         return Promise.resolve([]);
                     }
 
-                    let props = {};
+                    let tasks = [];
 
                     if (!withRelated) {
-                        return _.map(objects, (object) => {
+                        return Promise.all(_.map(objects, (object) => {
                             object = Bookshelf.registry.models[modelName].prototype.toJSON.bind({
                                 attributes: object,
                                 related: function (key) {
@@ -118,13 +117,13 @@ module.exports = function (Bookshelf) {
                             object = Bookshelf.registry.models[modelName].prototype.fixBools(object);
                             object = Bookshelf.registry.models[modelName].prototype.fixDatesWhenFetch(object);
                             return object;
-                        });
+                        }));
                     }
 
                     _.each(withRelated, (withRelatedKey) => {
                         const relation = relations[withRelatedKey];
 
-                        props[relation.name] = (() => {
+                        tasks.push((function fetchRelated() {
                             debug('fetch withRelated', relation.name);
 
                             let relationQuery = Bookshelf.knex(relation.targetTable);
@@ -163,10 +162,10 @@ module.exports = function (Bookshelf) {
                                         return obj;
                                     }, {});
                                 });
-                        })();
+                        })());
                     });
 
-                    return Promise.props(props)
+                    return Promise.all(tasks)
                         .then((relationsToAttach) => {
                             debug('attach relations', modelName);
 
