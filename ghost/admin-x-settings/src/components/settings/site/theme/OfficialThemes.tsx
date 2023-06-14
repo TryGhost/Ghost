@@ -132,21 +132,24 @@ const OfficialThemes: React.FC<{
     return (
         <div className='p-[8vmin] pt-5'>
             <Heading>Themes</Heading>
-            <div className='mt-6 grid grid-cols-3 gap-4'>
+            <div className='mt-[6vmin] grid grid-cols-1 gap-[6vmin] sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'>
                 {officialThemes.map((theme) => {
                     return (
                         <div key={theme.name} className='flex cursor-pointer flex-col gap-3' onClick={() => {
                             onSelectTheme?.(theme);
                         }}>
                             {/* <img alt={theme.name} src={`${assetRoot}/${theme.image}`}/> */}
-                            <div className='h-[420px] w-full bg-grey-100'>
+                            <div className='h-[420px] w-full bg-grey-100 shadow-md transition-all duration-500 hover:scale-[1.05]'>
                                 <img
                                     alt="Headline Theme"
-                                    className='h-full w-full object-contain'
+                                    className='w-full object-contain'
                                     src={`${assetRoot}/${theme.image}`}
                                 />
                             </div>
-                            <span>{theme.name}</span>
+                            <div className='mt-3'>
+                                <Heading level={4}>{theme.name}</Heading>
+                                <span className='text-sm text-grey-700'>{theme.category}</span>
+                            </div>
                         </div>
                     );
                 })}

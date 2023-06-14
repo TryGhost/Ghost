@@ -44,8 +44,8 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         const installedTheme = themes.find(theme => theme.name.toLowerCase() === selectedTheme.name.toLowerCase());
 
         return (
-            <div className='sticky top-0 flex justify-between gap-3 bg-white p-5 px-7'>
-                <div className='flex w-[33%] items-center gap-2'>
+            <div className='sticky top-0 flex justify-between gap-3 bg-grey-50 p-5 px-7'>
+                <div className='flex items-center gap-2'>
                     <button
                         className={`text-sm`}
                         type="button"
@@ -58,7 +58,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                     &rarr;
                     <span className='text-sm font-bold'>{selectedTheme?.name}</span>
                 </div>
-                <div className='flex w-[33%] justify-end gap-8'>
+                <div className='flex justify-end gap-8'>
                     <ButtonGroup
                         buttons={[
                             {icon: 'laptop', link: true, size: 'sm'},
