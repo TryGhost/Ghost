@@ -52,7 +52,7 @@ export function BookmarkNodeComponent({author, nodeKey, url, icon, title, descri
     };
 
     const fetchMetadata = async (href) => {
-        editor.getRootElement().focus(); // focus editor before causing the input element to dismount
+        editor.getRootElement().focus({preventScroll: true}); // focus editor before causing the input element to dismount
         setLoading(true);
         let response;
         try {
