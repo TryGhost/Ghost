@@ -869,6 +869,7 @@ export const transformApiTiersData = ({tiers}) => {
 
 /**
  * Returns the member attribution URL history, which is stored in localStorage, if there is any.
+ * @warning If you make changes here, please also update the one in signup-form!
  * @returns {Object[]|undefined}
  */
 export function getUrlHistory() {
