@@ -38,9 +38,12 @@ export function FloatingFormatToolbar({
     }, [toolbarItemType, updateArrowStyles]);
 
     React.useEffect(() => {
-        document.addEventListener('mouseup', toggleVisibility);
+        document.addEventListener('mouseup', toggleVisibility); // desktop
+        document.addEventListener('touchend', toggleVisibility); // mobile
+
         return () => {
-            document.removeEventListener('mouseup', toggleVisibility);
+            document.removeEventListener('mouseup', toggleVisibility); // desktop
+            document.removeEventListener('touchend', toggleVisibility); // mobile
         };
     }, [toggleVisibility]);
 
