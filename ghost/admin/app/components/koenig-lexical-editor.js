@@ -82,7 +82,7 @@ const fetchKoenig = function () {
         } else {
             await import(`https://${url.host}${url.pathname}`);
         }
-        
+
         return window['@tryghost/koenig-lexical'];
     };
 
@@ -121,6 +121,11 @@ const KoenigComposer = (props) => {
 const KoenigEditor = (props) => {
     const {KoenigEditor: _KoenigEditor} = editorResource.read();
     return <_KoenigEditor {...props} />;
+};
+
+const WordCountPlugin = (props) => {
+    const {WordCountPlugin: _WordCountPlugin} = editorResource.read();
+    return <_WordCountPlugin {...props} />;
 };
 
 export default class KoenigLexicalEditor extends Component {
@@ -503,6 +508,7 @@ export default class KoenigLexicalEditor extends Component {
                                 onChange={this.args.onChange}
                                 registerAPI={this.args.registerAPI}
                             />
+                            <WordCountPlugin onChange={this.args.updateWordCount} />
                         </KoenigComposer>
                     </Suspense>
                 </ErrorHandler>
