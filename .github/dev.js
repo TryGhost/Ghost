@@ -92,7 +92,7 @@ if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'portal',
         command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../ghost/portal'),
+        cwd: path.resolve(__dirname, '../apps/portal'),
         prefixColor: 'magenta',
         env: {}
     });

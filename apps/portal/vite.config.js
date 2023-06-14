@@ -69,8 +69,8 @@ export default defineConfig((config) => {
             },
             commonjsOptions: {
                 include: [/ghost/, /node_modules/],
-                dynamicRequireRoot: '../',
-                dynamicRequireTargets: SUPPORTED_LOCALES.map(locale => `../i18n/locales/${locale}/portal.json`)
+                dynamicRequireRoot: '../../',
+                dynamicRequireTargets: SUPPORTED_LOCALES.map(locale => `../../ghost/i18n/locales/${locale}/portal.json`)
             }
         },
         test: {
