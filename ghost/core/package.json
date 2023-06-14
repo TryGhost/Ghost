@@ -234,7 +234,7 @@
     "cli-progress": "3.12.0",
     "cssnano": "6.0.1",
     "eslint": "8.37.0",
-    "expect": "29.3.1",
+    "expect": "29.5.0",
     "form-data": "4.0.0",
     "inquirer": "8.2.5",
     "jwks-rsa": "3.0.1",
