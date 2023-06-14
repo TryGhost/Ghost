@@ -2,6 +2,7 @@ import KoenigNestedEditor from '../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
 import React, {useEffect, useState} from 'react';
 import clsx from 'clsx';
+import trackEvent from '../../../utils/analytics';
 import {ButtonGroupSetting, ColorPickerSetting, InputSetting, MediaUploadSetting, MultiSelectDropdownSetting, SettingsDivider, SettingsPanel} from '../SettingsPanel';
 import {ReactComponent as CenterAlignIcon} from '../../../assets/icons/kg-align-center.svg';
 import {FastAverageColor} from 'fast-average-color';
@@ -167,9 +168,16 @@ export function SignupCard({alignment,
     const toggleBackgroundSize = () => {
         if (backgroundSize === 'cover') {
             handleBackgroundSize('contain');
+            trackEvent('Signup Card Toggle Size', {size: 'contain'});
         } else {
             handleBackgroundSize('cover');
+            trackEvent('Signup Card Toggle Size', {size: 'cover'});
         }
+    };
+
+    const toggleSwapped = () => {
+        trackEvent('Signup Card Toggle Swapped', {swapped: !isSwapped});
+        handleSwapLayout();
     };
 
     return (
@@ -181,7 +189,7 @@ export function SignupCard({alignment,
                 {layout === 'split' && (
                     <MediaUploader
                         additionalActions={<>
-                            <IconButton dataTestId="media-upload-swap" Icon={SwapIcon} onClick={handleSwapLayout} />
+                            <IconButton dataTestId="media-upload-swap" Icon={SwapIcon} onClick={toggleSwapped} />
                             <IconButton dataTestId="media-upload-size" Icon={SwapIcon} onClick={toggleBackgroundSize} />
                         </>}
                         alt='Background image'
