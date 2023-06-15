@@ -65,7 +65,7 @@ test.describe('Selection behaviour', async () => {
         `);
     });
 
-    test.describe.only('select all - cmd + a', () => {
+    test.describe('select all - cmd + a', () => {
         test('works with first and end nodes being paragraphs', async function () {
             await focusEditor(page);
             await page.keyboard.type('First paragraph');
