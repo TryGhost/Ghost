@@ -687,6 +687,46 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         }
                     }
 
+                    const {metaKey, code} = event;
+                    if (metaKey && code === 'KeyA') {
+                        const selection = $getSelection();
+                        if ($isRangeSelection(selection)) {
+                            const root = $getRoot();
+                            const firstNode = root.getFirstChildOrThrow();
+                            const lastNode = root.getLastChildOrThrow();
+                  
+                            if (firstNode && lastNode) {
+                                if (!$isDecoratorNode(firstNode) && !firstNode.isEmpty()) {
+                                    const firstChild = firstNode.getFirstChild();
+                                    if ($isTextNode(firstChild)) {
+                                        selection.anchor.set(firstChild.getKey(), 0, 'text');
+                                    }
+                                } else {
+                                    selection.anchor.set('root', 0, 'element');
+                                }
+                  
+                                if (!$isDecoratorNode(lastNode) && !lastNode.isEmpty()) {
+                                    const lastChild = lastNode.getLastChild();
+                                    if ($isTextNode(lastChild)) {
+                                        selection.focus.set(
+                                            lastChild.getKey(),
+                                            lastChild.getTextContentSize(),
+                                            'text',
+                                        );
+                                    }
+                                } else {
+                                    selection.focus.set(
+                                        'root',
+                                        lastNode.getIndexWithinParent() + 1,
+                                        'element',
+                                    );
+                                }
+                                event.preventDefault();
+                                return true;
+                            }
+                        }
+                    }
+
                     return false;
                 },
                 COMMAND_PRIORITY_LOW
