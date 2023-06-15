@@ -411,19 +411,19 @@ test.describe('Signup card', async () => {
         await expect(page.locator('[data-testid="labels-dropdown"] [data-testid="multiselect-dropdown-selected"]')).toHaveCount(0);
     });
 
-    /*test('changes the alignment options from the settings panel', async function () {
+    test('changes the alignment options from the settings panel', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
         // Default: left alignment
-        const header = page.locator('[data-testid="signup-card-container"] > div > div:first-child');
-        await expect(header).toHaveClass(/text-left/);
+        const header = page.getByTestId('signup-header-editor');
+        await expect(header).not.toHaveClass(/text-center/);
 
         // Change aligment to center
         const alignmentCenter = page.locator('[data-testid="signup-alignment-center"]');
         await alignmentCenter.click();
         await expect(header).toHaveClass(/text-center/);
-    });*/
+    });
 
     // TODO: fix and restore after the layout changes are finialized in the signup card
     test.skip('changes the layout options from the settings panel', async function () {
