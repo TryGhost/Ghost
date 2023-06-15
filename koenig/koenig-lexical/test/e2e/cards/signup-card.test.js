@@ -20,7 +20,7 @@ test.describe('Signup card', async () => {
         await page.close();
     });
 
-    test.only('can import serialized signup card nodes', async function () {
+    test('can import serialized signup card nodes', async function () {
         const contentParam = encodeURIComponent(JSON.stringify({
             root: {
                 children: [{
