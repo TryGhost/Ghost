@@ -14,7 +14,7 @@ const notImplemented = function (req, res, next) {
         return next();
     }
 
-    if (req.query.god_mode === 'true' && process.env.NODE_ENV === 'development') {
+    if (req.query.god_mode && process.env.NODE_ENV === 'development') {
         return next();
     }
 
