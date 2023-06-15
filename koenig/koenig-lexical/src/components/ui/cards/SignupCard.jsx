@@ -182,6 +182,8 @@ export function SignupCard({alignment,
         handleSwapLayout();
     };
 
+    const correctedBackgroundSize = backgroundSize === 'contain' && backgroundImageSrc ? 'contain' : 'cover';
+
     return (
         <>
             <div className={clsx(
@@ -192,7 +194,7 @@ export function SignupCard({alignment,
                     'flex w-full flex-col transition-colors ease-in-out sm:flex-row',
                     (layout === 'split' && isSwapped) && 'sm:flex-row-reverse',
                     // This is needed to align the content with wide breakout width
-                    (layout === 'split' && (backgroundSize === 'contain')) && 'mx-auto w-[calc(740px+40rem)] xs:w-[calc(740px+8rem)] md:w-[calc(740px+12rem)] lg:w-[calc(740px+22rem)] xl:w-[calc(740px+40rem)]'
+                    (layout === 'split' && (correctedBackgroundSize === 'contain')) && 'mx-auto w-[calc(740px+40rem)] xs:w-[calc(740px+8rem)] md:w-[calc(740px+12rem)] lg:w-[calc(740px+22rem)] xl:w-[calc(740px+40rem)]'
                 )}>
                     {layout === 'split' && (
                         <MediaUploader
@@ -202,12 +204,12 @@ export function SignupCard({alignment,
                             </>}
                             alt='Background image'
                             backgroundSize={backgroundSize}
-                            className={`sm:w-1/2 ${(backgroundSize === 'contain') && 'my-14'}`}
+                            className={`sm:w-1/2 ${(correctedBackgroundSize === 'contain') && 'my-14'}`}
                             desc='Click to select an image'
                             dragHandler={imageDragHandler}
                             errors={fileUploader?.errors}
                             icon='image'
-                            imgClassName={`${(backgroundSize === 'cover') && 'aspect-[3/2]'}`}
+                            imgClassName={`${(correctedBackgroundSize === 'cover') && 'aspect-[3/2]'}`}
                             isEditing={isEditing}
                             isLoading={isLoading}
                             isPinturaEnabled={isPinturaEnabled}
@@ -229,8 +231,8 @@ export function SignupCard({alignment,
                             (layout === 'wide') && 'max-w-[740px] px-[4rem] py-[8rem] md:py-[10rem] md:px-[8rem] lg:px-0',
                             (layout === 'full') && 'py-[8rem] px-[4rem] md:py-[12rem] md:px-[8rem] lg:p-[14rem] xl:p-[16rem]',
                             (layout === 'split') && 'px-[4rem] py-[8rem] md:px-[6rem] md:py-[12rem] lg:px-[8rem] lg:py-[16rem]',
-                            (layout === 'split' && (backgroundSize === 'contain') && isSwapped) && 'pl-0 md:pl-0 lg:pl-0',
-                            (layout === 'split' && (backgroundSize === 'contain') !== isSwapped) && 'pr-0 md:pr-0 lg:pr-0'
+                            (layout === 'split' && (correctedBackgroundSize === 'contain') && isSwapped) && 'pl-0 md:pl-0 lg:pl-0',
+                            (layout === 'split' && (correctedBackgroundSize === 'contain') !== isSwapped) && 'pr-0 md:pr-0 lg:pr-0'
                         )}>
                         {/* Heading */}
                         {<KoenigNestedEditor
@@ -255,9 +257,9 @@ export function SignupCard({alignment,
                                 'koenig-lexical-header-heading relative w-full whitespace-normal font-bold caret-current [&:has(br)]:text-left',
                                 (!isEditing && isEditorEmpty(headerTextEditor)) ? 'hidden' : 'peer',
                                 (alignment === 'center') && 'text-center',
-                                (layout === 'regular' || (layout === 'split' && backgroundSize === 'contain')) && 'koenig-lexical-header-xsmall',
+                                (layout === 'regular' || (layout === 'split' && correctedBackgroundSize === 'contain')) && 'koenig-lexical-header-xsmall',
                                 (layout === 'regular' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_128px)] [&:has(br)]:sm:pl-[calc(50%_-_154px)] [&:has(br)]:md:pl-[calc(50%_-_204px)]',
-                                (layout === 'wide' || (layout === 'split' && backgroundSize === 'cover')) && 'koenig-lexical-header-small',
+                                (layout === 'wide' || (layout === 'split' && correctedBackgroundSize === 'cover')) && 'koenig-lexical-header-small',
                                 (layout === 'wide' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_128px)] [&:has(br)]:sm:pl-[calc(50%_-_154px)] [&:has(br)]:md:pl-[calc(50%_-_204px)] [&:has(br)]:lg:pl-[calc(50%_-_254px)]',
                                 (layout === 'full') && 'koenig-lexical-header-large',
                                 (layout === 'full' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_154px)] [&:has(br)]:sm:pl-[calc(50%_-_204px)] [&:has(br)]:md:pl-[calc(50%_-_254px)] [&:has(br)]:lg:pl-[calc(50%_-_306px)]',
@@ -287,9 +289,9 @@ export function SignupCard({alignment,
                                 'koenig-lexical-header-subheading relative w-full whitespace-normal caret-current [&:has(br)]:text-left',
                                 (!isEditing && isEditorEmpty(subheaderTextEditor)) ? 'hidden' : 'peer',
                                 (alignment === 'center') && 'text-center',
-                                (layout === 'regular' || (layout === 'split' && backgroundSize === 'contain')) && 'koenig-lexical-header-small !mt-2',
+                                (layout === 'regular' || (layout === 'split' && correctedBackgroundSize === 'contain')) && 'koenig-lexical-header-small !mt-2',
                                 (layout === 'regular' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_90px)] [&:has(br)]:sm:pl-[calc(50%_-_100px)]',
-                                (layout === 'wide' || (layout === 'split' && backgroundSize === 'cover')) && 'koenig-lexical-header-medium !mt-3',
+                                (layout === 'wide' || (layout === 'split' && correctedBackgroundSize === 'cover')) && 'koenig-lexical-header-medium !mt-3',
                                 (layout === 'wide' && alignment === 'center') && '[&:has(br)]:pl-[calc(50%_-_90px)] [&:has(br)]:sm:pl-[calc(50%_-_100px)] [&:has(br)]:md:pl-[calc(50%_-_120px)]',
                                 layout === 'full' && 'xl:max-w-[880px]',
                                 (layout === 'full') && 'koenig-lexical-header-large !mt-3',
