@@ -501,7 +501,7 @@ test.describe('Signup card', async () => {
         await fileChooser.setFiles([filePath]);
         await expect(page.locator('[data-testid="signup-card-container"] [data-testid="media-upload-filled"] img')).toHaveAttribute('src', /blob:/);
         // Click swap
-        await page.click('[data-testid="media-upload-swap"]');
+        await page.click('[data-testid="signup-swapped"]');
         // Check the parent class name was updated
         const swappedContainer = await page.locator('[data-testid="signup-card-container"]');
         await expect(swappedContainer).toHaveClass(/sm:flex-row-reverse/);

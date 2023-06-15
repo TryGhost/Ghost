@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import React, {useEffect, useState} from 'react';
 import clsx from 'clsx';
 import trackEvent from '../../../utils/analytics';
-import {ButtonGroupSetting, ColorPickerSetting, InputSetting, MediaUploadSetting, MultiSelectDropdownSetting, SettingsDivider, SettingsPanel} from '../SettingsPanel';
+import {ButtonGroupSetting, ColorPickerSetting, InputSetting, MediaUploadSetting, MultiSelectDropdownSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {ReactComponent as CenterAlignIcon} from '../../../assets/icons/kg-align-center.svg';
 import {ReactComponent as ExpandIcon} from '../../../assets/icons/kg-expand.svg';
 import {FastAverageColor} from 'fast-average-color';
@@ -17,7 +17,6 @@ import {ReactComponent as LeftAlignIcon} from '../../../assets/icons/kg-align-le
 import {MediaUploader} from '../MediaUploader';
 import {ReactComponent as ShrinkIcon} from '../../../assets/icons/kg-shrink.svg';
 import {SubscribeForm} from '../SubscribeForm';
-import {ReactComponent as SwapIcon} from '../../../assets/icons/kg-swap.svg';
 import {getAccentColor} from '../../../utils/getAccentColor';
 import {isEditorEmpty} from '../../../utils/isEditorEmpty';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
@@ -199,7 +198,6 @@ export function SignupCard({alignment,
                     {layout === 'split' && (
                         <MediaUploader
                             additionalActions={<>
-                                <IconButton dataTestId="media-upload-swap" Icon={SwapIcon} onClick={toggleSwapped} />
                                 <IconButton dataTestId="media-upload-size" Icon={(backgroundSize === 'cover') ? ShrinkIcon : ExpandIcon} onClick={toggleBackgroundSize} />
                             </>}
                             alt='Background image'
@@ -360,6 +358,19 @@ export function SignupCard({alignment,
                         selectedName={alignment}
                         onClick={handleAlignment}
                     />
+
+                    {
+                        layout === 'split' && (
+                            <ToggleSetting
+                                checked={isSwapped}
+                                dataTestId='signup-swapped'
+                                label='Flip Layout'
+                                onChange={toggleSwapped}
+                            />
+
+                        )
+                    }
+
                     <ColorPickerSetting
                         dataTestId='signup-background-color'
                         eyedropper={layout === 'split'}
