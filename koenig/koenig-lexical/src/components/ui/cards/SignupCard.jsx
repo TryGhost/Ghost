@@ -166,7 +166,8 @@ export function SignupCard({alignment,
         };
     };
 
-    const toggleBackgroundSize = () => {
+    const toggleBackgroundSize = (event) => {
+        event.stopPropagation();
         if (backgroundSize === 'cover') {
             handleBackgroundSize('contain');
             trackEvent('Signup Card Toggle Size', {size: 'contain'});
