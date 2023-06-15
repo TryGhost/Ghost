@@ -41,7 +41,7 @@ function emailTemplate(node, document) {
     table.setAttribute('border', 0);
     table.setAttribute('cellspacing', 0);
     table.setAttribute('cellpadding', 0);
-    table.setAttribute('alignment',node.getAlignment());
+    table.setAttribute('align',node.getAlignment());
     buttonDiv.appendChild(table);
     
     const row = document.createElement('tr');
