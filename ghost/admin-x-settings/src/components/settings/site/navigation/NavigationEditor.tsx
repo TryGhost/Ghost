@@ -31,7 +31,6 @@ const SortableItem: React.FC<{
         <NavigationItemEditor
             ref={setNodeRef}
             baseUrl={baseUrl}
-            className="flex gap-4 p-2"
             dragHandleProps={{...attributes, ...listeners}}
             item={item}
             style={style}
@@ -49,7 +48,7 @@ const NavigationEditor: React.FC<{
     // Copy items to a local state we can reorder without changing IDs, so that drag and drop animations work nicely
     const [draggableItems, setLocalDraggableItems] = useState<DraggableItem[]>(items.map((item, index) => ({...item, id: index.toString()})));
 
-    const [newItem, setNewItem] = useState<NavigationItem>({label: '', url: ''});
+    const [newItem, setNewItem] = useState<NavigationItem>({label: '', url: baseUrl});
     const [draggingId, setDraggingId] = useState<string | null>(null);
 
     const setDraggableItems = (newItems: DraggableItem[]) => {
@@ -62,8 +61,10 @@ const NavigationEditor: React.FC<{
     };
 
     const addItem = () => {
-        setDraggableItems(draggableItems.concat({...newItem, id: draggableItems.length.toString()}));
-        setNewItem({label: '', url: ''});
+        if (newItem.label && newItem.url) {
+            setDraggableItems(draggableItems.concat({...newItem, id: draggableItems.length.toString()}));
+            setNewItem({label: '', url: baseUrl});
+        }
     };
 
     const removeItem = (id: string) => {
@@ -79,7 +80,7 @@ const NavigationEditor: React.FC<{
         setDraggingId(null);
     };
 
-    return <div className="mb-6 mt-4 rounded border border-grey-100 px-4 pb-4 pt-2">
+    return <div className="w-full">
         <DndContext
             collisionDetection={closestCenter}
             onDragEnd={event => moveItem(event.active.id as string, event.over?.id as string)}
@@ -105,10 +106,11 @@ const NavigationEditor: React.FC<{
             </DragOverlay>
         </DndContext>
 
-        <div className="flex gap-4 p-2 pl-14">
-            <TextField value={newItem.label} onChange={e => setNewItem({...newItem, label: e.target.value})} />
-            <TextField value={newItem.url} onChange={e => setNewItem({...newItem, url: e.target.value})} />
-            <Button icon="user-add" onClick={addItem} />
+        <div className="flex items-center gap-3 p-2">
+            <span className='inline-block w-8'></span>
+            <TextField className='grow' placeholder='New item label' value={newItem.label} onChange={e => setNewItem({...newItem, label: e.target.value})} />
+            <TextField className='ml-2 grow' value={newItem.url} onChange={e => setNewItem({...newItem, url: e.target.value})} />
+            <Button icon="add" iconColorClass='text-green stroke-2' size='sm' onClick={addItem} />
         </div>
     </div>;
 };

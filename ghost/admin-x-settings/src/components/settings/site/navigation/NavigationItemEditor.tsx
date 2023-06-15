@@ -1,4 +1,5 @@
 import Button from '../../../../admin-x-ds/global/Button';
+import Icon from '../../../../admin-x-ds/global/Icon';
 import React, {forwardRef, useEffect, useState} from 'react';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import clsx from 'clsx';
@@ -101,14 +102,28 @@ const NavigationItemEditor = forwardRef<HTMLDivElement, NavigationItemEditorProp
         updateItem?.({url: save});
     };
 
+    const containerClasses = clsx(
+        'flex w-full items-center gap-3 rounded border-b border-grey-200 bg-white py-4 hover:bg-grey-100',
+        isDragging && 'opacity-75'
+    );
+
+    const dragHandleClasses = clsx(
+        'ml-2 cursor-grab pl-2',
+        isDragging ? 'cursor-grabbing' : 'cursor-grap'
+    );
+
+    const textFieldClasses = clsx(
+        'grow border-b border-transparent bg-white px-2 py-0.5 hover:border-grey-300 focus:border-grey-600'
+    );
+
     return (
-        <div ref={ref} className={clsx('flex gap-4 bg-white p-2', isDragging && 'opacity-75')} {...props}>
-            <button className="pl-3 pr-2" type="button" {...dragHandleProps}>
-                <span className="inline-block h-3 w-3 rounded-full bg-black" />
+        <div ref={ref} className={containerClasses} {...props}>
+            <button className={dragHandleClasses} type='button' {...dragHandleProps}>
+                <Icon colorClass='text-grey-500' name='hamburger' size='sm' />
             </button>
-            <TextField value={item.label} onChange={e => updateItem?.({label: e.target.value})} />
-            <TextField value={urlValue} onBlur={updateUrl} onChange={e => setUrlValue(e.target.value)} />
-            <Button icon="trash" onClick={onDelete} />
+            <TextField className={textFieldClasses} value={item.label} unstyled onChange={e => updateItem?.({label: e.target.value})} />
+            <TextField className={textFieldClasses} value={urlValue} unstyled onBlur={updateUrl} onChange={e => setUrlValue(e.target.value)} />
+            <Button className='mr-2' icon="trash" size='sm' onClick={onDelete} />
         </div>
     );
 });
