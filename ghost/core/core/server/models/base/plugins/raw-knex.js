@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('models:base:raw-knex');
 const plugins = require('@tryghost/bookshelf-plugins');
+const Promise = require('bluebird');
 
 const schema = require('../../../data/schema');
 
@@ -101,10 +102,10 @@ module.exports = function (Bookshelf) {
                         return Promise.resolve([]);
                     }
 
-                    let tasks = [];
+                    let props = {};
 
                     if (!withRelated) {
-                        return Promise.all(_.map(objects, (object) => {
+                        return _.map(objects, (object) => {
                             object = Bookshelf.registry.models[modelName].prototype.toJSON.bind({
                                 attributes: object,
                                 related: function (key) {
@@ -117,13 +118,13 @@ module.exports = function (Bookshelf) {
                             object = Bookshelf.registry.models[modelName].prototype.fixBools(object);
                             object = Bookshelf.registry.models[modelName].prototype.fixDatesWhenFetch(object);
                             return object;
-                        }));
+                        });
                     }
 
                     _.each(withRelated, (withRelatedKey) => {
                         const relation = relations[withRelatedKey];
 
-                        tasks.push((function fetchRelated() {
+                        props[relation.name] = (() => {
                             debug('fetch withRelated', relation.name);
 
                             let relationQuery = Bookshelf.knex(relation.targetTable);
@@ -162,10 +163,10 @@ module.exports = function (Bookshelf) {
                                         return obj;
                                     }, {});
                                 });
-                        })());
+                        })();
                     });
 
-                    return Promise.all(tasks)
+                    return Promise.props(props)
                         .then((relationsToAttach) => {
                             debug('attach relations', modelName);
 
