@@ -212,7 +212,7 @@ describe('Posts API', function () {
                 .body({posts: [post]})
                 .expectStatus(201)
                 .matchBodySnapshot({
-                    posts: [Object.assign(matchPostShallowIncludes, {published_at: null})]
+                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
@@ -235,7 +235,7 @@ describe('Posts API', function () {
                 .body({posts: [post]})
                 .expectStatus(201)
                 .matchBodySnapshot({
-                    posts: [Object.assign(matchPostShallowIncludes, {published_at: null})]
+                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
@@ -324,7 +324,7 @@ describe('Posts API', function () {
                 }]})
                 .expectStatus(201)
                 .matchBodySnapshot({
-                    posts: [Object.assign(matchPostShallowIncludes, {published_at: null})]
+                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
@@ -339,7 +339,7 @@ describe('Posts API', function () {
                 .body({posts: [Object.assign({}, postResponse, {mobiledoc: updatedMobiledoc})]})
                 .expectStatus(200)
                 .matchBodySnapshot({
-                    posts: [Object.assign(matchPostShallowIncludes, {published_at: null})]
+                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
@@ -378,7 +378,7 @@ describe('Posts API', function () {
                 }]})
                 .expectStatus(201)
                 .matchBodySnapshot({
-                    posts: [Object.assign(matchPostShallowIncludes, {published_at: null})]
+                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
@@ -393,7 +393,7 @@ describe('Posts API', function () {
                 .body({posts: [Object.assign({}, postResponse, {lexical: updatedLexical})]})
                 .expectStatus(200)
                 .matchBodySnapshot({
-                    posts: [Object.assign(matchPostShallowIncludes, {published_at: null})]
+                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
@@ -473,7 +473,7 @@ describe('Posts API', function () {
                 .post(`/posts/${postResponse.id}/copy?formats=mobiledoc,lexical`)
                 .expectStatus(201)
                 .matchBodySnapshot({
-                    posts: [Object.assign(matchPostShallowIncludes, {published_at: null})]
+                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
