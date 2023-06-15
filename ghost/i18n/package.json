@@ -31,6 +31,6 @@
     "typescript": "5.1.3"
   },
   "dependencies": {
-    "i18next": "22.5.0"
+    "i18next": "23.0.1"
   }
 }
