@@ -1,3 +1,4 @@
+const urlUtils = require('../../../shared/url-utils');
 const models = require('../../models');
 const getPostServiceInstance = require('../../services/posts/posts-service');
 const allowedIncludes = [
@@ -20,6 +21,22 @@ const allowedIncludes = [
 const unsafeAttrs = ['status', 'authors', 'visibility'];
 
 const postsService = getPostServiceInstance();
+
+/**
+ * @param {string} event
+ */
+function getCacheHeaderFromEventString(event, dto) {
+    if (event === 'published_updated' || event === 'unpublished') {
+        return true;
+    }
+    if (event === 'scheduled_updated' || event === 'draft_updated') {
+        return {
+            value: urlUtils.urlFor({
+                relativeUrl: urlUtils.urlJoin('/p', dto.uuid, '/')
+            })
+        };
+    }
+}
 
 module.exports = {
     docName: 'posts',
@@ -162,6 +179,7 @@ module.exports = {
 
     edit: {
         headers: {
+            /** @type {boolean | {value: string}} */
             cacheInvalidate: false
         },
         options: [
@@ -194,9 +212,11 @@ module.exports = {
             unsafeAttrs: unsafeAttrs
         },
         async query(frame) {
-            let model = await postsService.editPost(frame);
-
-            this.headers.cacheInvalidate = postsService.handleCacheInvalidation(model);
+            let model = await postsService.editPost(frame, {
+                eventHandler: (event, dto) => {
+                    this.headers.cacheInvalidate = getCacheHeaderFromEventString(event, dto);
+                }
+            });
 
             return model;
         }
