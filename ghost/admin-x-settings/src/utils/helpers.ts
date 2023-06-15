@@ -68,8 +68,8 @@ export function humanizeSettingKey(key: string) {
         .replace(new RegExp(`\\b(${allCaps.join('|')})\\b`, 'ig'), match => match.toUpperCase());
 }
 
-export function getSettingValues(settings: Setting[] | null, keys: string[]): Array<SettingValue | undefined> {
-    return keys.map(key => settings?.find(setting => setting.key === key)?.value);
+export function getSettingValues<ValueType = SettingValue>(settings: Setting[] | null, keys: string[]): Array<ValueType | undefined> {
+    return keys.map(key => settings?.find(setting => setting.key === key)?.value) as ValueType[];
 }
 
 export function isOwnerUser(user: User) {

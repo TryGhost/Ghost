@@ -1,4 +1,5 @@
 import DesignSetting from './DesignSetting';
+import Navigation from './Navigation';
 import React from 'react';
 import SettingSection from '../../../admin-x-ds/settings/SettingSection';
 import Theme from './Theme';
@@ -9,6 +10,7 @@ const SiteSettings: React.FC = () => {
             <SettingSection title="Site">
                 <Theme />
                 <DesignSetting />
+                <Navigation />
             </SettingSection>
         </>
     );

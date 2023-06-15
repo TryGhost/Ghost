@@ -43,6 +43,8 @@
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.0.8",
+    "@dnd-kit/sortable": "^7.0.2",
     "@ebay/nice-modal-react": "^1.2.10",
     "@tryghost/timezone-data": "0.3.0",
     "clsx": "^1.2.1",

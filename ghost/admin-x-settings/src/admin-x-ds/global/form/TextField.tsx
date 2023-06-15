@@ -49,11 +49,11 @@ const TextField: React.FC<TextFieldProps> = ({
                     (title && !hideTitle && !clearBg) && `mt-2`,
                     className
                 )}
-                defaultValue={value}
                 id={id}
                 maxLength={maxLength}
                 placeholder={placeholder}
                 type={type}
+                value={value}
                 onBlur={onBlur}
                 onChange={onChange}
                 {...props} />
