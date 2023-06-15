@@ -207,6 +207,10 @@
     font-weight: 500;
 }
 
+.gh-setting-title.mb0 {
+    margin-bottom: 0;
+}
+
 .gh-setting-desc {
     line-height: 1.4em;
     color: var(--middarkgrey);
@@ -232,9 +236,13 @@
     letter-spacing: 0.3px;
 }
 
-.gh-setting-desc + .gh-setting-error {
+:is(.gh-setting-title, .gh-setting-desc) + .gh-setting-error {
     margin-top: -4px;
     font-size: 1.3rem;
+}
+
+.gh-setting-title + .gh-setting-error {
+    margin-top: 8px;
 }
 
 .gh-setting-action {
@@ -2100,10 +2108,6 @@ p.theme-validation-details {
 
 .gh-nav-design .kg-settings-headerstyle-btn-group .kg-headerstyle-btn-light {
     border-color: color-mod(var(--lightgrey) l(-5%) s(-10%));
-}
-
-.gh-theme-setting-title {
-    margin-bottom: 1rem;
 }
 
 .gh-design {
