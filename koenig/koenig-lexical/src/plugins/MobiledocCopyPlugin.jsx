@@ -13,8 +13,10 @@ import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 async function copyToClipboardWithMobiledoc(editor, event) {
-    await copyToClipboard(editor, event instanceof ClipboardEvent ? event : null);
-
+    if (!(event instanceof ClipboardEvent)) { 
+        return;
+    }
+    await copyToClipboard(editor, event);
     // On copy/paste Lexical only stores an array of nodes but our converters expect
     // a full document with a root node.
     const copiedLexical = JSON.parse(event.clipboardData.getData('application/x-lexical-editor'));
@@ -57,6 +59,7 @@ function useMobiledocCopyPlugin({editor}) {
             editor.registerCommand(
                 COPY_COMMAND,
                 async (event) => {
+                    console.log(`copy command`,event)
                     await copyToClipboardWithMobiledoc(editor, event);
 
                     return true;
