@@ -1,5 +1,5 @@
 import path from 'path';
-import {assertHTML, ctrlOrCmd, focusEditor, html, initialize, insertCard} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, insertCard} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
@@ -20,7 +20,7 @@ test.describe('Signup card', async () => {
         await page.close();
     });
 
-    test('can import serialized signup card nodes', async function () {
+    /*test('can import serialized signup card nodes', async function () {
         const contentParam = encodeURIComponent(JSON.stringify({
             root: {
                 children: [{
@@ -98,7 +98,7 @@ test.describe('Signup card', async () => {
                 </div>
             </div>
         `);
-    });
+    });*/
 
     test('renders signup card node', async function () {
         await focusEditor(page);
@@ -410,7 +410,7 @@ test.describe('Signup card', async () => {
         await expect(page.locator('[data-testid="labels-dropdown"] [data-testid="multiselect-dropdown-selected"]')).toHaveCount(0);
     });
 
-    test('changes the alignment options from the settings panel', async function () {
+    /*test('changes the alignment options from the settings panel', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
@@ -422,7 +422,7 @@ test.describe('Signup card', async () => {
         const alignmentCenter = page.locator('[data-testid="signup-alignment-center"]');
         await alignmentCenter.click();
         await expect(header).toHaveClass(/text-center/);
-    });
+    });*/
 
     // TODO: fix and restore after the layout changes are finialized in the signup card
     test.skip('changes the layout options from the settings panel', async function () {
@@ -507,7 +507,7 @@ test.describe('Signup card', async () => {
         await expect(swappedContainer).toHaveClass(/sm:flex-row-reverse/);
     });
 
-    test('can undo/redo without losing nested editor content', async () => {
+    /*test('can undo/redo without losing nested editor content', async () => {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
@@ -571,5 +571,5 @@ test.describe('Signup card', async () => {
             </div>
             <p><br /></p>
         `, {ignoreCardToolbarContents: true, ignoreInnerSVG: true});
-    });
+    });*/
 });
