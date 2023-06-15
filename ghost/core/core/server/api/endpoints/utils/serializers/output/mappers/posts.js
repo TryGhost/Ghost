@@ -46,6 +46,16 @@ module.exports = async (model, frame, options = {}) => {
 
     extraAttrs.forPost(frame.options, model, jsonModel);
 
+    const defaultFormats = ['html'];
+    const formatsToKeep = frame.options.formats || frame.options.columns || defaultFormats;
+
+    // Iterate over all known formats, and if they are not in the keep list, remove them
+    _.each(['mobiledoc', 'lexical', 'html', 'plaintext'], function (format) {
+        if (formatsToKeep.indexOf(format) === -1) {
+            delete jsonModel[format];
+        }
+    });
+
     // Attach tiers to custom nql visibility filter
     if (jsonModel.visibility) {
         if (['members', 'public'].includes(jsonModel.visibility) && jsonModel.tiers) {

@@ -333,10 +333,14 @@ module.exports = class EventRepository {
         const {data: models, meta} = await this._MemberCreatedEvent.findPage(options);
 
         const data = models.map((model) => {
+            const json = model.toJSON(options);
+            delete json.postAttribution?.mobiledoc;
+            delete json.postAttribution?.lexical;
+            delete json.postAttribution?.plaintext;
             return {
                 type: 'signup_event',
                 data: {
-                    ...model.toJSON(options),
+                    ...json,
                     attribution: this._memberAttributionService.getEventAttribution(model)
                 }
             };

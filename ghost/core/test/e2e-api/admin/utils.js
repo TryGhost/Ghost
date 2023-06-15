@@ -89,7 +89,8 @@ const expectedProperties = {
         'tiers',
         'newsletter',
         'count',
-        'post_revisions'
+        'post_revisions',
+        'reading_time'
     ],
 
     page: [

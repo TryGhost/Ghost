@@ -78,6 +78,7 @@ const author = (attrs, frame) => {
 const post = (attrs, frame) => {
     const columns = frame && frame.options && frame.options.columns || null;
     const fields = frame && frame.original && frame.original.query && frame.original.query.fields || null;
+
     if (localUtils.isContentAPI(frame)) {
         delete attrs.status;
         delete attrs.email_only;
