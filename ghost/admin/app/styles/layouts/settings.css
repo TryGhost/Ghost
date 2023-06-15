@@ -193,7 +193,8 @@
 }
 
 .gh-setting-title {
-    margin-bottom: 2px;
+    display: block;
+    margin-bottom: 12px;
     font-size: 1.5rem;
     letter-spacing: 0;
     line-height: 1.15em;
@@ -212,11 +213,15 @@
     letter-spacing: 0.3px;
     font-size: 1.3rem;
     font-weight: 400;
-    margin: 4px 0 12px;
+    margin: 8px 0 12px;
 }
 
 .gh-setting-desc.mb0 {
     margin-bottom: 0;
+}
+
+.gh-setting-title + .gh-setting-desc {
+    margin-top: -4px;
 }
 
 .gh-setting-error {
@@ -225,6 +230,11 @@
     color: var(--red);
     font-weight: 300;
     letter-spacing: 0.3px;
+}
+
+.gh-setting-desc + .gh-setting-error {
+    margin-top: -4px;
+    font-size: 1.3rem;
 }
 
 .gh-setting-action {
