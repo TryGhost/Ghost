@@ -110,7 +110,7 @@ const NavigationEditor: React.FC<{
             <span className='inline-block w-8'></span>
             <TextField className='grow' placeholder='New item label' value={newItem.label} onChange={e => setNewItem({...newItem, label: e.target.value})} />
             <TextField className='ml-2 grow' value={newItem.url} onChange={e => setNewItem({...newItem, url: e.target.value})} />
-            <Button icon="add" iconColorClass='text-green stroke-2' size='sm' onClick={addItem} />
+            <Button color='green' icon="add" iconColorClass='text-white' size='sm' onClick={addItem} />
         </div>
     </div>;
 };
