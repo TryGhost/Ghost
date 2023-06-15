@@ -1,18 +1,21 @@
 const {MailEventService,MailEventRepository} = require('@tryghost/mail-events');
-const {MailEvent: Model} = require('../../models/mail-event');
-const config = require('../../../shared/config');
 
-function createMailEventService() {
-    const siteId = config.get('hostSettings:siteId');
-    const mailEventsSecretKey = config.get('hostSettings:mailEventsSecretKey');
-    const payloadSigningKey = `${siteId}${mailEventsSecretKey}`;
+class MailEventsServiceWrapper {
+    /** @type {MailEventService} */
+    service;
 
-    const repository = new MailEventRepository(Model);
-    const mailEventService = new MailEventService(repository, payloadSigningKey);
+    async init() {
+        const config = require('../../../shared/config');
+        const models = require('../../models');
 
-    return mailEventService;
+        const siteId = config.get('hostSettings:siteId');
+        const mailEventsSecretKey = config.get('hostSettings:mailEventsSecretKey');
+        const payloadSigningKey = `${siteId}${mailEventsSecretKey}`;
+
+        const repository = new MailEventRepository(models.MailEvent);
+
+        this.service = new MailEventService(repository, payloadSigningKey);
+    }
 }
 
-module.exports = {
-    createMailEventService
-};
+module.exports = new MailEventsServiceWrapper();

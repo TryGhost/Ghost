@@ -1,5 +1,6 @@
 const {agentProvider} = require('../../utils/e2e-framework');
 const configUtils = require('../../utils/configUtils');
+const mailEvents = require('../../../core/server/services/mail-events');
 
 describe('Mail Events API', function () {
     let agent;
@@ -11,6 +12,9 @@ describe('Mail Events API', function () {
     it('Can add a mail event', async function () {
         configUtils.set('hostSettings:siteId', 123);
         configUtils.set('hostSettings:mailEventsSecretKey', 'foobarbaz');
+
+        // Re-initialise the mail events service with the new config values
+        mailEvents.init();
 
         const payload = {
             // The signature is based on the previous two config values as well as the
