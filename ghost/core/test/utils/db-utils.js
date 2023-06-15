@@ -140,7 +140,7 @@ const truncateAll = async () => {
                 await db.knex.raw('PRAGMA foreign_keys = OFF;');
             }
 
-            await sequence(tables.map((table) => () => { 
+            await sequence(tables.map(table => () => { 
                 return db.knex.raw('DELETE FROM ' + table + ';');
             }));
 
@@ -164,7 +164,7 @@ const truncateAll = async () => {
     await db.knex.transaction(async (trx) => {
         try {
             await db.knex.raw('SET FOREIGN_KEY_CHECKS=0;').transacting(trx);
-            await sequence(tables.map((table) => () => {
+            await sequence(tables.map(table => () => {
                 return db.knex.raw('TRUNCATE ' + table + ';').transacting(trx);
             }));
             await db.knex.raw('SET FOREIGN_KEY_CHECKS=1;').transacting(trx);
