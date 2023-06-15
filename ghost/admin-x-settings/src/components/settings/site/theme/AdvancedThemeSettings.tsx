@@ -1,7 +1,9 @@
 import Button from '../../../../admin-x-ds/global/Button';
+import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import List from '../../../../admin-x-ds/global/List';
 import ListItem from '../../../../admin-x-ds/global/ListItem';
+import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import {Theme} from '../../../../types/api';
 import {downloadFile, getGhostPaths} from '../../../../utils/helpers';
@@ -62,15 +64,39 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
         updateThemes(updatedThemes);
     };
 
-    const handleDelete = async () => {
-        await api.themes.delete(theme.name);
-        const updatedThemes = themes.filter(t => t.name !== theme.name);
-        updateThemes(updatedThemes);
-    };
-
     const handleDownload = async () => {
         const {apiRoot} = getGhostPaths();
         downloadFile(`${apiRoot}/themes/${theme.name}/download`);
+    };
+
+    const handleDelete = async () => {
+        NiceModal.show(ConfirmationModal, {
+            title: 'Are you sure you want to delete this?',
+            prompt: (
+                <>
+                    You are about to delete <strong>&quot;{theme.name}&quot;.</strong> This is permanent! We warned you, k?
+                    Maybe download
+                    {' '}
+                    <span
+                        className='cursor-pointer text-green-500'
+                        onClick={() => {
+                            handleDownload();
+                        }}
+                    >
+                        your theme before continuing
+                    </span>
+                </>
+            ),
+            okLabel: 'Delete',
+            okRunningLabel: 'Deleting',
+            okColor: 'red',
+            onOk: async (modal) => {
+                await api.themes.delete(theme.name);
+                const updatedThemes = themes.filter(t => t.name !== theme.name);
+                updateThemes(updatedThemes);
+                modal?.remove();
+            }
+        });
     };
 
     let actions = [];
