@@ -20,7 +20,7 @@ test.describe('Signup card', async () => {
         await page.close();
     });
 
-    /*test('can import serialized signup card nodes', async function () {
+    test.only('can import serialized signup card nodes', async function () {
         const contentParam = encodeURIComponent(JSON.stringify({
             root: {
                 children: [{
@@ -55,50 +55,51 @@ test.describe('Signup card', async () => {
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="signup">
                     <div>
                         <div>
-                            <img alt="Background image"
-                                src="__GHOST_URL__/content/images/2023/05/fake-image.jpg" />
-                            <div></div>
                             <div>
-                                <button type="button"><svg></svg></button>
-                                <button type="button"><svg></svg></button>
-                                <button type="button"><svg></svg></button>
-                            </div>
-                        </div>
-                        <div>
-                            <div>
-                                <div data-kg="editor">
-                                    <div contenteditable="false" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none">
-                                        <p dir="ltr"><span data-lexical-text="true">Header</span></p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div>
-                                <div data-kg="editor">
-                                    <div contenteditable="false" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none">
-                                        <p dir="ltr"><span data-lexical-text="true">Subheader</span></p>
-                                    </div>
+                                <img alt="Background image"
+                                    src="__GHOST_URL__/content/images/2023/05/fake-image.jpg" />
+                                <div></div>
+                                <div>
+                                    <button type="button"><svg></svg></button>
+                                    <button type="button"><svg></svg></button>
                                 </div>
                             </div>
                             <div>
                                 <div>
-                                    <input placeholder="Your email" tabindex="-1" readonly="" value="" />
-                                    <button disabled="" type="button"><span>Subscribe</span></button>
-                                </div>
-                            </div>
-                            <div>
-                                <div data-kg="editor">
-                                    <div contenteditable="true" spellcheck="true" data-lexical-editor="true" role="textbox">
-                                        <p dir="ltr"><span data-lexical-text="true">Disclaimer</span></p>
+                                    <div data-kg="editor">
+                                        <div contenteditable="false" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none">
+                                            <p dir="ltr"><span data-lexical-text="true">Header</span></p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                                <div>
+                                    <div data-kg="editor">
+                                        <div contenteditable="false" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none">
+                                            <p dir="ltr"><span data-lexical-text="true">Subheader</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div>
+                                        <input placeholder="Your email" tabindex="-1" readonly="" value="" />
+                                        <button disabled="" type="button"><span>Subscribe</span></button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div data-kg="editor">
+                                        <div contenteditable="true" spellcheck="true" data-lexical-editor="true" role="textbox">
+                                            <p dir="ltr"><span data-lexical-text="true">Disclaimer</span></p>
+                                        </div>
+                                    </div>
+                                    </div>
+                                </div>
+                            </div><div>
                         </div>
-                        <div></div>
                     </div>
                 </div>
             </div>
         `);
-    });*/
+    });
 
     test('renders signup card node', async function () {
         await focusEditor(page);
