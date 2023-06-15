@@ -37,7 +37,7 @@ module.exports = function staticController(req, res, next) {
 
     let promises = [];
 
-    _.each(res.routerOptions.data, function (query, name) {
+    _.each(res.routerOptions.data, function (query) {
         promises.push(processQuery(query, res.locals));
     });
 
@@ -58,7 +58,7 @@ module.exports = function staticController(req, res, next) {
                         response.data[name][config.resource] = result[resultIndex][config.resource];
                     }
 
-                    resultIndex++;
+                    resultIndex = resultIndex + 1;
                 });
             }
 

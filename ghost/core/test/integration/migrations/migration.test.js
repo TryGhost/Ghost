@@ -195,15 +195,15 @@ describe('Database Migration (special functions)', function () {
 
             it('should populate all fixtures correctly', function () {
                 const promises = [
-                    Models.Post.findAll({ withRelated: ['tags'] }),
+                    Models.Post.findAll({withRelated: ['tags']}),
                     Models.Tag.findAll(),
                     Models.User.findAll({
                         filter: 'status:inactive',
-                        context: { internal: true },
+                        context: {internal: true},
                         withRelated: ['roles']
                     }),
                     Models.Role.findAll(),
-                    Models.Permission.findAll({ withRelated: ['roles'] })
+                    Models.Permission.findAll({withRelated: ['roles']})
                 ];
 
                 return Promise.all(promises).then(function (result) {
