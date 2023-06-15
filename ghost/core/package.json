@@ -20,6 +20,7 @@
   "contributors": "https://github.com/TryGhost/Ghost/graphs/contributors",
   "license": "MIT",
   "scripts": {
+    "archive": "npm pack",
     "start": "node index",
     "setup": "knex-migrator init",
     "build": "yarn build:css",
