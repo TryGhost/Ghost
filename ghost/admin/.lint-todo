@@ -590,3 +590,6 @@ remove|ember-template-lint|require-valid-alt-text|13|20|13|20|41dff435a7aba8088b
 remove|ember-template-lint|no-invalid-interactive|3|4|3|4|1e038cea298e74d9c774ed441ca6daf50060a8ec|1685318400000|1695686400000|1700874000000|app/components/gh-editor-feature-image.hbs
 add|ember-template-lint|no-invalid-interactive|3|4|3|4|6f7786d5ed3e8c09f39e3595839ee291749aeb01|1685664000000|1696032000000|1701219600000|app/components/gh-editor-feature-image.hbs
 remove|ember-template-lint|no-forbidden-elements|152|20|152|20|966511a5bc154d46999a9594e3d39eb6ee5028a8|1675296000000|1685660400000|1690844400000|app/components/gh-nav-menu/main.hbs
+remove|ember-template-lint|require-input-label|28|20|28|20|dc08ecbcb2f3358fe94e7e2b8f24f7ca17bf77b5|1675296000000|1685660400000|1690844400000|app/components/custom-theme-settings/color.hbs
+add|ember-template-lint|require-input-label|33|16|33|16|91baa7e6ceea36e93d45f5dc9ac213cb7f1d8a59|1686700800000|1697068800000|1702256400000|app/components/custom-theme-settings/color.hbs
+add|ember-template-lint|style-concatenation|3|40|3|40|ba5764956a2805ed8d72306fd9a8b8cd10a97119|1686700800000|1697068800000|1702256400000|app/components/custom-theme-settings/color.hbs
