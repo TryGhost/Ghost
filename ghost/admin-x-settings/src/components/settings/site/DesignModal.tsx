@@ -6,11 +6,11 @@ import TabView, {Tab} from '../../../admin-x-ds/global/TabView';
 import ThemePreview from './designAndBranding/ThemePreview';
 import ThemeSettings from './designAndBranding/ThemeSettings';
 import useForm from '../../../hooks/useForm';
-import {CustomThemeSetting, Post, Setting, SettingValue, SiteData} from '../../../types/api';
+import {CustomThemeSetting, Post, Setting, SettingValue} from '../../../types/api';
 import {PreviewModalContent} from '../../../admin-x-ds/global/modal/PreviewModal';
 import {ServicesContext} from '../../providers/ServiceProvider';
 import {SettingsContext} from '../../providers/SettingsProvider';
-import {getSettingValues} from '../../../utils/helpers';
+import {getHomepageUrl, getSettingValues} from '../../../utils/helpers';
 
 const Sidebar: React.FC<{
     brandSettings: BrandSettingValues
@@ -46,13 +46,6 @@ const Sidebar: React.FC<{
         </>
     );
 };
-
-function getHomepageUrl(siteData: SiteData): string {
-    const url = new URL(siteData.url);
-    const subdir = url.pathname.endsWith('/') ? url.pathname : `${url.pathname}/`;
-
-    return `${url.origin}${subdir}`;
-}
 
 const DesignModal: React.FC = () => {
     const modal = useModal();

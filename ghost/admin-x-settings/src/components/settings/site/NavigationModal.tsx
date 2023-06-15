@@ -1,7 +1,7 @@
-import Heading from '../../../admin-x-ds/global/Heading';
 import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NavigationEditor from './navigation/NavigationEditor';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import TabView from '../../../admin-x-ds/global/TabView';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {NavigationItem} from './navigation/NavigationItemEditor';
 import {getSettingValues} from '../../../utils/helpers';
@@ -26,7 +26,8 @@ const NavigationModal = NiceModal.create(() => {
         <Modal
             buttonsDisabled={saveState === 'saving'}
             scrolling={true}
-            size='full'
+            size='lg'
+            stickyFooter={true}
             title='Navigation'
             onCancel={() => modal.remove()}
             onOk={async () => {
@@ -34,10 +35,22 @@ const NavigationModal = NiceModal.create(() => {
                 modal.remove();
             }}
         >
-            <Heading className="mt-6" level={6}>Primary navigation</Heading>
-            <NavigationEditor baseUrl={siteData!.url} items={navigation} setItems={items => updateSetting('navigation', JSON.stringify(items))} />
-            <Heading level={6}>Secondary navigation</Heading>
-            <NavigationEditor baseUrl={siteData!.url} items={secondaryNavigation} setItems={items => updateSetting('secondary_navigation', JSON.stringify(items))} />
+            <div className='-mb-8 mt-6'>
+                <TabView
+                    tabs={[
+                        {
+                            id: 'primary-nav',
+                            title: 'Primary navigation',
+                            contents: <NavigationEditor baseUrl={siteData!.url} items={navigation} setItems={items => updateSetting('navigation', JSON.stringify(items))} />
+                        },
+                        {
+                            id: 'secondary-nav',
+                            title: 'Secondary navigation',
+                            contents: <NavigationEditor baseUrl={siteData!.url} items={secondaryNavigation} setItems={items => updateSetting('secondary_navigation', JSON.stringify(items))} />
+                        }
+                    ]}
+                />
+            </div>
         </Modal>
     );
 });
