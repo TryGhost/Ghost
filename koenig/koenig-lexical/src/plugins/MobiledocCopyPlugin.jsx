@@ -59,9 +59,7 @@ function useMobiledocCopyPlugin({editor}) {
             editor.registerCommand(
                 COPY_COMMAND,
                 async (event) => {
-                    console.log(`copy command`,event)
                     await copyToClipboardWithMobiledoc(editor, event);
-
                     return true;
                 },
                 COMMAND_PRIORITY_HIGH
