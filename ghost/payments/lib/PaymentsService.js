@@ -108,7 +108,14 @@ class PaymentsService {
             data.customerEmail = email;
         }
 
-        const session = await this.stripeAPIService.createCheckoutSession(price.id, customer, data);
+        var isRecurring = true;
+
+        if(cadence == 'oneTime')
+        {
+            isRecurring = false
+        }
+
+        const session = await this.stripeAPIService.createCheckoutSession(price.id, customer, data, isRecurring);
 
         return session.url;
     }
@@ -228,7 +235,9 @@ class PaymentsService {
         for (const row of rows) {
             try {
                 const price = await this.stripeAPIService.getPrice(row.stripe_price_id);
-                if (price.active && price.currency.toLowerCase() === currency && price.unit_amount === amount && price.recurring?.interval === cadence) {
+                if (price.active && price.currency.toLowerCase() === currency 
+                && price.unit_amount === amount && 
+                (price.recurring?.interval === cadence || (price.type == 'one_time' && cadence == 'oneTime'))) {
                     return {
                         id: price.id
                     };
@@ -271,7 +280,7 @@ class PaymentsService {
             nickname = 'Yearly'
             type = 'recurring';
         } else if(cadence === "oneTime") {
-            nickname = 'OneTime'
+            nickname = 'One-Time'
             type = 'one_time';
         } else {
             nickname = 'Yearly'

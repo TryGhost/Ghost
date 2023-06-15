@@ -363,7 +363,7 @@ module.exports = class StripeAPI {
      *
      * @returns {Promise<import('stripe').Stripe.Checkout.Session>}
      */
-    async createCheckoutSession(priceId, customer, options) {
+    async createCheckoutSession(priceId, customer, options, isRecurring) {
         const metadata = options.metadata || undefined;
         const customerId = customer ? customer.id : undefined;
         const customerEmail = customer ? customer.email : options.customerEmail;
@@ -399,18 +399,18 @@ module.exports = class StripeAPI {
             automatic_tax: {
                 enabled: this._config.enableAutomaticTax
             },
+            mode: !isRecurring ? 'payment' : 'subscription',
             metadata,
             discounts,
-            /*
             line_items: [{
-                price: priceId
+                price: priceId,
+                quantity: 1
             }]
-            */
             // This is deprecated and using the old way of doing things with Plans.
             // It should be replaced with the line_items entry above when possible,
             // however, this would lose the "trial from plan" feature which has also
             // been deprecated by Stripe
-            subscription_data: subscriptionData
+            //subscription_data: subscriptionData
         };
 
         /* We are only allowed to specify one of these; email will be pulled from
@@ -466,6 +466,32 @@ module.exports = class StripeAPI {
         debug(`getPrice(${id}, ${JSON.stringify(options)})`);
 
         return await this._stripe.prices.retrieve(id, options);
+    }
+
+    async getSessionLineItems(id, options = {}) {
+        debug(`getSessionLineItems(${id}, ${JSON.stringify(options)})`);
+        try {
+            await this._rateLimitBucket.throttle();
+            const lineItems = await this._stripe.checkout.sessions.listLineItems(id, options);
+            debug(`getSessionLineItems(${id}, ${JSON.stringify(options)}) -> Success`);
+            return lineItems;
+        } catch (err) {
+            debug(`getSessionLineItems(${id}, ${JSON.stringify(options)}) -> ${err.type}`);
+            throw err;
+        }
+    }
+
+    async getPaymentIntent(id, options = {}) {
+        debug(`getPaymentIntent(${id}, ${JSON.stringify(options)})`);
+        try {
+            await this._rateLimitBucket.throttle();
+            const paymentIntent = await this._stripe.paymentIntents.retrieve(id, options);
+            debug(`getPaymentIntent(${id}, ${JSON.stringify(options)}) -> Success`);
+            return paymentIntent;
+        } catch (err) {
+            debug(`getPaymentIntent(${id}, ${JSON.stringify(options)}) -> ${err.type}`);
+            throw err;
+        }
     }
 
     /**

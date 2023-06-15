@@ -213,7 +213,7 @@ module.exports = class WebhookController {
             }
         }
 
-        if (session.mode === 'subscription') {
+        if (session.mode === 'subscription' || session.mode == 'payment') {
             const customer = await this.api.getCustomer(session.customer, {
                 expand: ['subscriptions.data.default_payment_method']
             });
@@ -221,6 +221,14 @@ module.exports = class WebhookController {
             let member = await this.deps.memberRepository.get({
                 email: customer.email
             });
+
+            const lineItems = await this.api.getSessionLineItems(session.id);
+
+            let paymentIntent = null;
+            if(session.payment_intent)
+            {
+                paymentIntent = await this.api.getPaymentIntent(session.payment_intent);
+            }
 
             const checkoutType = _.get(session, 'metadata.checkoutType');
 
@@ -253,7 +261,9 @@ module.exports = class WebhookController {
                 const memberDataWithStripeCustomer = {
                     ...memberData,
                     stripeCustomer: customer,
-                    offerId
+                    offerId,
+                    payment_intent: paymentIntent,
+                    session_data: lineItems.data[0]
                 };
                 member = await this.deps.memberRepository.create(memberDataWithStripeCustomer);
             } else {

@@ -350,14 +350,44 @@ module.exports = class MemberRepository {
                 email: stripeCustomer.email
             });
 
-            for (const subscription of stripeCustomer.subscriptions.data) {
+            //if not one_time, use subscriptions.data
+            if(stripeCustomer.subscriptions.data.length > 0)
+            {
+
+                for (const subscription of stripeCustomer.subscriptions.data) {
+                    try {
+                        await this.linkSubscription({
+                            id: member.id,
+                            subscription,
+                            offerId,
+                            attribution
+                        }, {batch_id: options.batch_id});
+                    } catch (err) {
+                        if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
+                            throw err;
+                        }
+                        throw new errors.ConflictError({
+                            err
+                        });
+                    }
+                }
+            }
+            else
+            {
+            
+                var oneTimeData = {
+                    id: member.id,
+                    subscriptionData: {
+                        customer: data.stripeCustomer,
+                        price: data.session_data.price,
+                        paymentIntent: data.payment_intent
+                    },
+                    offerId,
+                    attribution
+                }
+
                 try {
-                    await this.linkSubscription({
-                        id: member.id,
-                        subscription,
-                        offerId,
-                        attribution
-                    }, {batch_id: options.batch_id});
+                    await this.linkSubscriptionNew(oneTimeData, {batch_id: options.batch_id});
                 } catch (err) {
                     if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
                         throw err;
@@ -366,7 +396,9 @@ module.exports = class MemberRepository {
                         err
                     });
                 }
+
             }
+
         }
         this.dispatchEvent(MemberCreatedEvent.create({
             memberId: member.id,
@@ -835,6 +867,235 @@ module.exports = class MemberRepository {
         }, options);
 
         return subscription;
+    }
+
+    async linkSubscriptionNew(data, options = {}) {
+        if (!this._stripeAPIService.configured) {
+            throw new errors.BadRequestError({message: tpl(messages.noStripeConnection, {action: 'link Stripe Subscription'})});
+        }
+
+        if (!options.transacting) {
+            return this._Member.transaction((transacting) => {
+                return this.linkSubscriptionNew(data, {
+                    ...options,
+                    transacting
+                });
+            });
+        }
+
+        if (!options.batch_id) {
+            options.batch_id = ObjectId().toHexString();
+        }
+
+        const member = await this._Member.findOne({
+            id: data.id
+        }, {...options, forUpdate: true});
+
+        const customer = await member.related('stripeCustomers').query({
+            where: {
+                customer_id: data.subscriptionData.customer.id
+            }
+        }).fetchOne(options);
+
+        if (!customer) {
+            // Maybe just link the customer?
+            throw new errors.NotFoundError({message: tpl(messages.subscriptionNotFound)});
+        }
+
+        //TODO - what if no payment method?
+        const paymentMethod = data.subscriptionData.paymentIntent.charges.data[0].payment_method_details.card;
+
+        const subscriptionPriceData = data.subscriptionData.price;
+
+        let ghostProduct;
+        try {
+            ghostProduct = await this._productRepository.get({stripe_product_id: data.subscriptionData.price.product}, {...options, forUpdate: true});
+            // Use first Ghost product as default product in case of missing link
+            if (!ghostProduct) {
+                ghostProduct = await this._productRepository.getDefaultProduct({
+                    forUpdate: true,
+                    ...options
+                });
+            }
+
+            // Link Stripe Product & Price to Ghost Product
+            if (ghostProduct) {
+                await this._productRepository.update({
+                    id: ghostProduct.get('id'),
+                    name: ghostProduct.get('name'),
+                    stripe_prices: [
+                        {
+                            stripe_price_id: subscriptionPriceData.id,
+                            stripe_product_id: subscriptionPriceData.product,
+                            active: subscriptionPriceData.active,
+                            nickname: subscriptionPriceData.nickname,
+                            currency: subscriptionPriceData.currency,
+                            amount: subscriptionPriceData.unit_amount,
+                            type: subscriptionPriceData.type,
+                            interval: (subscriptionPriceData.recurring && subscriptionPriceData.recurring.interval) || null
+                        }
+                    ]
+                }, options);
+            } else {
+                // Log error if no Ghost products found
+                logging.error(`There was an error linking subscription - no Products exist.`);
+            }
+        } catch (e) {
+            logging.error(`Failed to handle prices and product for`);
+            logging.error(e);
+        }
+
+        //TODO: DISCOUNT
+
+        var startDate = new Date(data.subscriptionData.paymentIntent.charges.data[0].created * 1000);
+
+
+        const subscriptionData = {
+            customer_id: data.subscriptionData.customer.id,
+            subscription_id: data.subscriptionData.paymentIntent.id,
+            status: "active",
+            cancel_at_period_end: false,
+            cancellation_reason: null,
+            current_period_end: new Date(),
+            start_date: startDate,
+            default_payment_card_last4: paymentMethod.last4 || null,
+            stripe_price_id: subscriptionPriceData.id,
+            plan_id: subscriptionPriceData.id,
+            // trial start and end are returned as Stripe timestamps and need coversion
+            trial_start_at: null,
+            trial_end_at: null,
+            // NOTE: Defaulting to interval as migration to nullable field
+            // turned out to be much bigger problem.
+            // Ideally, would need nickname field to be nullable on the DB level
+            // condition can be simplified once this is done
+            plan_nickname: subscriptionPriceData.nickname || _.get(subscriptionPriceData, 'recurring.interval'),
+            plan_interval: "oneTime",
+            plan_amount: subscriptionPriceData.unit_amount,
+            plan_currency: subscriptionPriceData.currency,
+            mrr: 0,
+            //offer_id: offerId
+        };
+
+        const getStatus = (modelToCheck) => {
+            const status = modelToCheck.get('status');
+            const canceled = modelToCheck.get('cancel_at_period_end');
+
+            if (status === 'canceled') {
+                return 'expired';
+            }
+
+            if (canceled) {
+                return 'canceled';
+            }
+
+            if (this.isActiveSubscriptionStatus(status)) {
+                return 'active';
+            }
+
+            return 'inactive';
+        };
+
+        let eventData = {};
+
+        eventData.created_at = startDate;
+
+        const subscriptionModel = await this._StripeCustomerSubscription.add(subscriptionData, options);
+        await this._MemberPaidSubscriptionEvent.add({
+            member_id: member.id,
+            subscription_id: subscriptionModel.id,
+            type: 'created',
+            source: 'stripe',
+            from_plan: null,
+            to_plan: subscriptionPriceData.id,
+            currency: subscriptionPriceData.currency,
+            mrr_delta: subscriptionModel.get('mrr'),
+            ...eventData
+        }, options);
+
+        const context = options?.context || {};
+        const source = this._resolveContextSource(context);
+
+        const event = SubscriptionCreatedEvent.create({
+            source,
+            tierId: ghostProduct?.get('id'),
+            memberId: member.id,
+            subscriptionId: subscriptionModel.get('id'),
+            attribution: data.attribution,
+            batchId: options.batch_id,
+            offerId: null
+        });
+        this.dispatchEvent(event, options);
+
+        if (getStatus(subscriptionModel) === 'active') {
+            const activatedEvent = SubscriptionActivatedEvent.create({
+                source,
+                tierId: ghostProduct?.get('id'),
+                memberId: member.id,
+                subscriptionId: subscriptionModel.get('id'),
+                offerId: null,
+                attribution: data.attribution,
+                batchId: options.batch_id
+            });
+            this.dispatchEvent(activatedEvent, options);
+        }
+
+        let memberProducts = (await member.related('products').fetch(options)).toJSON();
+        const oldMemberProducts = member.related('products').toJSON();
+        let status = memberProducts.length === 0 ? 'free' : 'comped';
+
+        status = 'paid';
+
+        // This is an active subscription! Add the product
+        if (ghostProduct) {
+            // memberProducts.push(ghostProduct.toJSON());
+            memberProducts = [ghostProduct.toJSON()];
+        }
+
+        let updatedMember;
+        try {
+            // Remove duplicate products from the list
+            memberProducts = _.uniqBy(memberProducts, function (e) {
+                return e.id;
+            });
+            // Edit member with updated products assoicated
+            updatedMember = await this._Member.edit({status: status, products: memberProducts}, {...options, id: data.id});
+        } catch (e) {
+            logging.error(`Failed to update member - ${data.id} - with related products`);
+            logging.error(e);
+            updatedMember = await this._Member.edit({status: status}, {...options, id: data.id});
+        }
+
+        const newMemberProductIds = memberProducts.map(product => product.id);
+        const oldMemberProductIds = oldMemberProducts.map(product => product.id);
+
+        const productsToAdd = _.differenceWith(newMemberProductIds, oldMemberProductIds);
+        const productsToRemove = _.differenceWith(oldMemberProductIds, newMemberProductIds);
+
+        for (const productToAdd of productsToAdd) {
+            await this._MemberProductEvent.add({
+                member_id: member.id,
+                product_id: productToAdd,
+                action: 'added'
+            }, options);
+        }
+
+        for (const productToRemove of productsToRemove) {
+            await this._MemberProductEvent.add({
+                member_id: member.id,
+                product_id: productToRemove,
+                action: 'removed'
+            }, options);
+        }
+
+        if (updatedMember.attributes.status !== updatedMember._previousAttributes.status) {
+            await this._MemberStatusEvent.add({
+                member_id: data.id,
+                from_status: updatedMember._previousAttributes.status,
+                to_status: updatedMember.get('status'),
+                ...eventData
+            }, options);
+        }
+
     }
 
     /**

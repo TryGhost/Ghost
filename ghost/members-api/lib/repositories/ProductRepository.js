@@ -300,7 +300,7 @@ class ProductRepository {
                         nickname: `Onetime`,
                         currency: data.one_time_price.currency,
                         amount: data.one_time_price.amount,
-                        type: 'onetime'
+                        type: 'one_time'
                     });
 
                     const stripePrice = await this._StripePrice.add({
@@ -310,7 +310,7 @@ class ProductRepository {
                         nickname: price.nickname,
                         currency: price.currency,
                         amount: price.unit_amount,
-                        type: 'onetime'
+                        type: 'one_time'
                     }, options);
 
                     await this._Product.edit({one_time_price_id: stripePrice.id}, {id: product.id, transacting: options.transacting});

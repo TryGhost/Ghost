@@ -598,11 +598,14 @@ export function getProductCadenceFromPrice({site, priceId}) {
     }
     const products = getAllProductsForSite({site});
     const tier = products.find((product) => {
-        return (product?.monthlyPrice?.id === priceId) || (product?.yearlyPrice?.id === priceId);
+        return (product?.monthlyPrice?.id === priceId) || (product?.yearlyPrice?.id === priceId) || (product?.oneTimePrice?.id === priceId);
     });
     let cadence = 'month';
     if (tier?.yearlyPrice?.id === priceId) {
         cadence = 'year';
+    }
+    if (tier?.oneTimePrice?.id === priceId) {
+        cadence = 'oneTime';
     }
     return {
         tierId: tier?.id,
@@ -633,7 +636,7 @@ export function getAvailablePrices({site, products = null}) {
             currency_symbol: getCurrencySymbol(d.currency)
         };
     }).filter((price) => {
-        return price.amount !== 0 && price.type === 'recurring';
+        return price.amount !== 0 && (price.type === 'recurring' || price.type === 'one_time');
     }).filter((price) => {
         if (price.interval === 'month') {
             return portalPlans.includes('monthly');
@@ -889,7 +892,7 @@ function createOneTimePrice({tier, priceId}) {
         return {
             id: `price-${priceId}`,
             active: true,
-            type: 'recurring',
+            type: 'one_time',
             nickname: 'One-Time',
             currency: tier.currency,
             amount: tier.one_time_price,

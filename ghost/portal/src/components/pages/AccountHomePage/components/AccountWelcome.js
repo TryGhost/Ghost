@@ -32,6 +32,10 @@ const AccountWelcome = () => {
             return null;
         }
 
+        if(subscription?.plan.interval == 'oneTime') {
+            return null;
+        }
+
         if (subscriptionHasFreeTrial({sub: subscription})) {
             const trialEnd = getDateString(subscription.trial_end_at);
             return (
@@ -40,6 +44,7 @@ const AccountWelcome = () => {
                 </div>
             );
         }
+
         return (
             <div className='gh-portal-section'>
                 <p className='gh-portal-text-center gh-portal-free-ctatext'>Your subscription will renew on {getDateString(currentPeriodEnd)}</p>

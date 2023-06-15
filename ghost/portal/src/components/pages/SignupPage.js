@@ -350,6 +350,8 @@ class SignupPage extends React.Component {
         const {site, pageQuery} = this.context;
         const prices = getSitePrices({site, pageQuery});
 
+        console.log('Prices:', prices);
+
         const selectedPriceId = this.getSelectedPriceId(prices, this.state.plan);
         if (selectedPriceId !== this.state.plan) {
             this.setState({

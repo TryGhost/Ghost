@@ -30,8 +30,9 @@ const PaidAccountActions = () => {
         } = subscription || {};
         let label = '';
         if (price) {
-            const {amount = 0, currency, interval} = price;
-            label = `${Intl.NumberFormat('en', {currency, style: 'currency'}).format(amount / 100)}/${interval}`;
+            console.log(price);
+            const {amount = 0, currency, nickname} = price;
+            label = `${Intl.NumberFormat('en', {currency, style: 'currency'}).format(amount / 100)}/${nickname}`;
         }
         let offerLabelStr = getOfferLabel({price, offer, subscriptionStartDate: startDate});
         const compExpiry = getCompExpiry({member});
@@ -88,6 +89,12 @@ const PaidAccountActions = () => {
         if (hideUpgrade || hasOnlyFreePlan({site})) {
             return null;
         }
+
+        if(subscription?.plan.interval == 'oneTime') {
+            return null;
+        }
+
+
         return (
             <button
                 className='gh-portal-btn gh-portal-btn-list' onClick={e => openUpdatePlan(e)}
@@ -116,6 +123,10 @@ const PaidAccountActions = () => {
             <LoaderIcon className='gh-portal-billing-button-loader' />
         ) : 'Update';
         if (isComplimentary) {
+            return null;
+        }
+
+        if(subscription?.plan.interval == 'oneTime') {
             return null;
         }
 

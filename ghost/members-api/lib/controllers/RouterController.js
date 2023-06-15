@@ -171,7 +171,7 @@ module.exports = class RouterController {
             });
         }
 
-        if (cadence && cadence !== 'month' && cadence !== 'year') {
+        if (cadence && cadence !== 'month' && cadence !== 'year' && cadence !== 'oneTime') {
             throw new BadRequestError({
                 message: tpl(messages.badRequest)
             });
