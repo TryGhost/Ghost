@@ -116,13 +116,6 @@ describe('CollectionsService', function () {
             assert.equal(postsPage1.data.length, 2, 'There should be 2 posts');
             assert.equal(postsPage1.data[0].id, posts[0].id, 'First post should be the correct one');
             assert.equal(postsPage1.data[1].id, posts[1].id, 'Second post should be the correct one');
-            assert.deepEqual(Object.keys(postsPage1.data[0]), [
-                'id',
-                'slug',
-                'title',
-                'featured',
-                'featured_image'
-            ], 'Posts should have only specific attributes');
 
             const postsPage2 = await collectionsService.getAllPosts(collection.id, {page: 2, limit: 2});
 

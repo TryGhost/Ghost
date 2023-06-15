@@ -8,29 +8,13 @@ class CollectionsServiceWrapper {
     api;
 
     constructor() {
-        const models = require('../../models');
+        const postsRepository = require('./PostsRepository').getInstance();
         const events = require('../../lib/common/events');
         const collectionsRepositoryInMemory = new CollectionsRepositoryInMemory();
 
         const collectionsService = new CollectionsService({
             collectionsRepository: collectionsRepositoryInMemory,
-            postsRepository: {
-                getAll: async ({filter}) => {
-                    const posts = await models.Post.findAll({
-                        // @NOTE: enforce "post" type to avoid ever fetching pages
-                        filter: `(${filter})+type:post`
-                    });
-
-                    return posts.toJSON();
-                },
-                getBulk: async (ids) => {
-                    const posts = await models.Post.findAll({
-                        filter: `id:[${ids.join(',')}]+type:post`
-                    });
-
-                    return posts.toJSON();
-                }
-            }
+            postsRepository: postsRepository
         });
 
         // @NOTE: these should be reworked to use the "Event" classes

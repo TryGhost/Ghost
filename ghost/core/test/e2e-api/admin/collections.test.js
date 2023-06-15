@@ -13,6 +13,7 @@ const {
     anyObjectId,
     anyISODateTime,
     anyNumber,
+    anyUuid,
     anyString
 } = matchers;
 
@@ -23,7 +24,11 @@ const matchCollection = {
 };
 
 const matchCollectionPost = {
-    id: anyObjectId
+    id: anyObjectId,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime,
+    published_at: anyISODateTime,
+    uuid: anyUuid
 };
 
 /**
