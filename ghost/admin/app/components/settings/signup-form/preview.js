@@ -119,7 +119,7 @@ export default class Preview extends Component {
         }
 
         iframe.loading = true;
-        const html = `<html><head><style>body, html {padding: 0; margin: 0;}</style></head><body>${this.args.html}</body></html>`;
+        const html = `<html><head><style>body, html {padding: 0; margin: 0; overflow: hidden;}</style></head><body>${this.args.html}</body></html>`;
         iframe.html = this.args.html;
         iframe.style = this.args.style;
 
