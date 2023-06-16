@@ -19,7 +19,8 @@ const matchPageShallowIncludes = {
     tiers: Array(2).fill(tierSnapshot),
     created_at: anyISODateTime,
     updated_at: anyISODateTime,
-    published_at: anyISODateTime
+    published_at: anyISODateTime,
+    post_revisions: anyArray
 };
 
 describe('Pages API', function () {
