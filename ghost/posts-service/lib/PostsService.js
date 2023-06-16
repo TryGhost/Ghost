@@ -12,7 +12,8 @@ const messages = {
     invalidTags: 'Invalid tags value.',
     invalidEmailSegment: 'The email segment parameter doesn\'t contain a valid filter',
     unsupportedBulkAction: 'Unsupported bulk action',
-    postNotFound: 'Post not found.'
+    postNotFound: 'Post not found.',
+    collectionNotFound: 'Collection not found.'
 };
 
 class PostsService {
@@ -33,7 +34,28 @@ class PostsService {
      * @returns {Promise<Object>}
      */
     async browsePosts(options) {
-        return this.models.Post.findPage(options);
+        let posts;
+        if (this.isSet('collections') && options.collection) {
+            let collection = await this.collectionsService.getById(options.collection);
+
+            if (!collection) {
+                collection = await this.collectionsService.getBySlug(options.collection);
+            }
+
+            if (!collection) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.collectionNotFound)
+                });
+            }
+
+            const postIds = collection.posts;
+            options.filter = `id:[${postIds.join(',')}]+type:post`;
+            posts = await this.models.Post.findPage(options);
+        } else {
+            posts = await this.models.Post.findPage(options);
+        }
+
+        return posts;
     }
 
     async readPost(frame) {
