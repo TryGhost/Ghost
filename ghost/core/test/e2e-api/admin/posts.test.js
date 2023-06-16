@@ -121,6 +121,18 @@ describe('Posts API', function () {
             });
     });
 
+    it('Can browse filtering by a collection', async function () {
+        await agent.get('posts/?collection=featured')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                posts: new Array(2).fill(matchPostShallowIncludes)
+            });
+    });
+
     describe('Export', function () {
         it('Can export', async function () {
             const {text} = await agent.get('posts/export')

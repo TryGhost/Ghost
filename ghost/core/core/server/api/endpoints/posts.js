@@ -48,6 +48,7 @@ module.exports = {
             'include',
             'filter',
             'fields',
+            'collection',
             'formats',
             'limit',
             'order',
