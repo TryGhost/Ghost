@@ -4,7 +4,7 @@
             {{humanize-setting-key @setting.key}}
         </label>
         {{#if @setting.description}}
-            <div class="gh-setting-desc">{{@setting.description}}</div>
+            <div class="gh-setting-desc">{{truncate @setting.description 100}}</div>
         {{/if}}
         {{#if this.isInvalid}}
             <div class="gh-setting-error {{if (is-empty @setting.description) "mt3"}}">Enter a color in hex format</div>
