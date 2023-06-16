@@ -136,3 +136,15 @@ export const StickyFooter: Story = {
         children: longContent
     }
 };
+
+export const Dirty: Story = {
+    args: {
+        size: 'md',
+        dirty: true,
+        onOk: () => {
+            alert('Clicked OK!');
+        },
+        title: 'Dirty modal',
+        children: <p>Simulates if there were unsaved changes of a form. Click on Cancel</p>
+    }
+};

@@ -67,7 +67,7 @@ async function handleThemeUpload({
         prompt: (
             <>
                 <strong>{uploadedTheme.name}</strong> uploaded successfully.
-                Do you want to activate it now ?
+                Do you want to activate it now?
             </>
         ),
         okLabel: 'Activate',
