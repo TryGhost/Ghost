@@ -75,8 +75,8 @@ const Form: React.FC<FormProps> = ({isMinimal, loading, success, error, buttonCo
                     style={{backgroundColor: buttonColor, color: buttonTextColor}}
                     type='submit'
                 >
-                    <span className={`whitespace-no-wrap col-start-1 row-start-1 transition-opacity duration-200 ${loading || success ? 'opacity-0' : 'opacity-1'}`}>{t('Subscribe')}</span>
-                    {isMinimal && <span className={`whitespace-no-wrap col-start-1 row-start-1 [transition:margin_300ms,opacity_200ms] ${loading || !success ? 'mx-[-40px] opacity-0' : 'opacity-1 mx-0'}`}>{t('Email sent')}</span>}
+                    <span className={`col-start-1 row-start-1 whitespace-nowrap transition-opacity duration-200 ${loading || success ? 'opacity-0' : 'opacity-1'}`}>{t('Subscribe')}</span>
+                    {isMinimal && <span className={`col-start-1 row-start-1 whitespace-nowrap [transition:margin_300ms,opacity_200ms] ${loading || !success ? 'mx-[-40px] opacity-0' : 'opacity-1 mx-0'}`}>{t('Email sent')}</span>}
                     <span className={`inset-0 col-start-1 row-start-1 flex items-center justify-center transition-opacity duration-200 ${loading ? 'opacity-1' : 'opacity-0'}`}><LoadingIcon /></span>
                 </button>
             </form>
