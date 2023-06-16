@@ -401,7 +401,7 @@ interface UserDetailModalProps {
 
 const UserMenuTrigger = () => (
     <div className='flex h-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] px-3 opacity-80 hover:opacity-100'>
-        <Icon colorClass='text-white' name='menu-horizontal' size='sm' />
+        <Icon colorClass='text-white' name='ellipsis' size='md' />
     </div>
 );
 

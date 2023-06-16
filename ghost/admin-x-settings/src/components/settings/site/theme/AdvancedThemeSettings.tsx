@@ -1,8 +1,8 @@
-import Button from '../../../../admin-x-ds/global/Button';
+import Button, {ButtonProps} from '../../../../admin-x-ds/global/Button';
 import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
-import Heading from '../../../../admin-x-ds/global/Heading';
 import List from '../../../../admin-x-ds/global/List';
 import ListItem from '../../../../admin-x-ds/global/ListItem';
+import Menu from '../../../../admin-x-ds/global/Menu';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import {Theme} from '../../../../types/api';
@@ -21,17 +21,23 @@ interface ThemeSettingProps {
     setThemes: (themes: Theme[]) => void;
 }
 
-function getThemeLabel(theme: Theme): string {
-    let label = theme.package?.name || theme.name;
+function getThemeLabel(theme: Theme): React.ReactNode {
+    let label: React.ReactNode = theme.package?.name || theme.name;
 
     if (isDefaultTheme(theme)) {
         label += ' (default)';
-    } else {
-        label += ` (${theme.name})`;
+    } else if (theme.package?.name !== theme.name) {
+        label =
+            <>
+                {label} <span className='text-grey-600'>({theme.name})</span>
+            </>;
     }
 
     if (isActiveTheme(theme)) {
-        label += ' (active)';
+        label =
+            <span className='font-bold'>
+                {label} &mdash; <span className='text-green'> Active</span>
+            </span>;
     }
 
     return label;
@@ -100,17 +106,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
     };
 
     let actions = [];
-    if (isDeletableTheme(theme)) {
-        actions.push(
-            <Button
-                key='delete'
-                color='red'
-                label={'Delete'}
-                link={true}
-                onClick={handleDelete}
-            />
-        );
-    }
+
     if (!isActiveTheme(theme)) {
         actions.push(
             <Button
@@ -124,20 +120,30 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
         );
     }
 
-    actions.push(
-        <Button
-            key='download'
-            className='ml-2'
-            color='green'
-            label={'Download'}
-            link={true}
-            onClick={handleDownload}
-        />
-    );
+    let menuItems = [
+        {
+            id: 'download',
+            label: 'Download',
+            onClick: handleDownload
+        }
+    ];
+
+    if (isDeletableTheme(theme)) {
+        menuItems.push({
+            id: 'delete',
+            label: 'Delete',
+            onClick: handleDelete
+        });
+    }
+
+    const buttonProps: ButtonProps = {
+        size: 'sm'
+    };
 
     return (
-        <div className='flex gap-2'>
+        <div className='-mr-3 flex items-center gap-4'>
             {actions}
+            <Menu items={menuItems} position='left' triggerButtonProps={buttonProps} />
         </div>
     );
 };
@@ -147,9 +153,7 @@ const ThemeList:React.FC<ThemeSettingProps> = ({
     setThemes
 }) => {
     return (
-        <List
-            title='Installed themes'
-        >
+        <List pageTitle='Installed themes'>
             {themes.map((theme) => {
                 const label = getThemeLabel(theme);
                 const detail = getThemeVersion(theme);
@@ -166,6 +170,7 @@ const ThemeList:React.FC<ThemeSettingProps> = ({
                         }
                         detail={detail}
                         id={`theme-${theme.name}`}
+                        separator={false}
                         title={label}
                     />
                 );
@@ -180,13 +185,10 @@ const AdvancedThemeSettings: React.FC<ThemeSettingProps> = ({
 }) => {
     return (
         <div className='p-[8vmin] pt-5'>
-            <Heading>Installed themes</Heading>
-            <div className='mt-5'>
-                <ThemeList
-                    setThemes={setThemes}
-                    themes={themes}
-                />
-            </div>
+            <ThemeList
+                setThemes={setThemes}
+                themes={themes}
+            />
         </div>
     );
 };

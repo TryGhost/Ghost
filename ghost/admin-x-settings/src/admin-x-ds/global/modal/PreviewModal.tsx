@@ -7,7 +7,7 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import Select, {SelectOption} from '../form/Select';
 import TabView, {Tab} from '../TabView';
-import {IButton} from '../Button';
+import {ButtonProps} from '../Button';
 
 export interface PreviewModalProps {
     testId?: string;
@@ -61,7 +61,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     onSelectMobileView
 }) => {
     const modal = useModal();
-    let buttons: IButton[] = [];
+    let buttons: ButtonProps[] = [];
 
     const [view, setView] = useState('desktop');
 
