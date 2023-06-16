@@ -13,7 +13,7 @@ type Order<T> = {
 type OrderOption<T extends Entity<any>> = Order<T>[];
 
 export abstract class InMemoryRepository<IDType, T extends Entity<IDType>> {
-    private store: T[] = [];
+    protected store: T[] = [];
     private ids: Map<IDType, true> = new Map();
 
     constructor() {}
