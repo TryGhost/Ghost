@@ -1,6 +1,8 @@
+const assert = require('assert');
 const {agentProvider} = require('../../utils/e2e-framework');
 const configUtils = require('../../utils/configUtils');
 const mailEvents = require('../../../core/server/services/mail-events');
+const models = require('../../../core/server/models');
 
 describe('Mail Events API', function () {
     let agent;
@@ -43,6 +45,12 @@ describe('Mail Events API', function () {
                 }
             })
             .body(payload)
-            .expectStatus(200);
+            .expectStatus(200)
+            .matchBodySnapshot({})
+            .matchHeaderSnapshot({});
+
+        const storedMailEvent = await models.MailEvent.findOne({id: 'Ase7i2zsRYeDXztHGENqRA'});
+
+        assert.ok(storedMailEvent, 'Expected mail event was not found in the database');
     });
 });

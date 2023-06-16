@@ -1,4 +1,4 @@
-export default class MailEvent {
+export class MailEvent {
     constructor(
         readonly id: string,
         readonly type: string,

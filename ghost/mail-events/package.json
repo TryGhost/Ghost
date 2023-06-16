@@ -31,6 +31,8 @@
     "c8": {
         "exclude": [
             "src/index.ts",
+            "src/MailEventRepository.ts",
+            "src/InMemoryMailEventRepository.ts",
             "src/**/*.d.ts",
             "test/**/*.ts"
         ]

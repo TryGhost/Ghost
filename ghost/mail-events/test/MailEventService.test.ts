@@ -1,9 +1,9 @@
 import assert from 'assert';
 import sinon from 'sinon';
 
-import MailEvent from '../src/MailEvent';
-import MailEventService from '../src/MailEventService';
-import MailEventRepository from '../src/MailEventRepository';
+import {MailEvent} from '../src/MailEvent';
+import {InMemoryMailEventRepository as MailEventRepository} from '../src/InMemoryMailEventRepository';
+import {MailEventService} from '../src/MailEventService';
 
 const makePayloadEvent = (
     type: string,

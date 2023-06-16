@@ -2,8 +2,8 @@ const crypto = require('crypto');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
-import MailEvent from './MailEvent';
-import MailEventRepository from './MailEventRepository';
+import {MailEvent} from './MailEvent';
+import {MailEventRepository} from './MailEventRepository';
 
 /**
  * @see https://documentation.mailgun.com/en/latest/user_manual.html#events-1
@@ -43,7 +43,7 @@ const VALIDATION_MESSAGES = {
     payloadEventKeyMissing: 'Event [{idx}] is missing "{key}"'
 };
 
-export default class MailEventService {
+export class MailEventService {
     constructor(
         private eventRepository: MailEventRepository,
         private payloadSigningKey: string

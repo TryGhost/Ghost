@@ -1,2 +1,3 @@
-export {default as MailEventRepository} from './MailEventRepository';
-export {default as MailEventService} from './MailEventService';
+export * from './MailEvent';
+export * from './MailEventRepository';
+export * from './MailEventService';
