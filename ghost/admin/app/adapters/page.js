@@ -3,7 +3,16 @@ import ApplicationAdapter from 'ghost-admin/adapters/application';
 export default class Page extends ApplicationAdapter {
     // posts and pages now include everything by default
     buildIncludeURL(store, modelName, id, snapshot, requestType, query) {
-        return this.buildURL(modelName, id, snapshot, requestType, query);
+        const url = this.buildURL(modelName, id, snapshot, requestType, query);
+        const parsedUrl = new URL(url);
+
+        if (snapshot?.adapterOptions?.saveRevision) {
+            const saveRevision = snapshot.adapterOptions.saveRevision;
+            parsedUrl.searchParams.append('save_revision', saveRevision);
+        }
+
+        return parsedUrl.toString();
+        // return this.buildURL(modelName, id, snapshot, requestType, query);
     }
 
     buildURL() {
