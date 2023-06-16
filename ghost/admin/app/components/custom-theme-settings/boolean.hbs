@@ -12,7 +12,7 @@
             </div>
         </div>
         {{#if @setting.description}}
-            <div class="gh-setting-desc" style="margin-top: 1px">{{@setting.description}}</div>
+            <div class="gh-setting-desc" style="margin-top: 1px">{{truncate @setting.description 100}}</div>
         {{/if}}
     </div>
 </div>

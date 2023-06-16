@@ -13,7 +13,7 @@
             {{on "blur" this.triggerOnChange}}
         />
         {{#if @setting.description}}
-            <div class="gh-setting-desc">{{@setting.description}}</div>
+            <div class="gh-setting-desc">{{truncate @setting.description 100}}</div>
         {{/if}}
     </div>
 </div>
