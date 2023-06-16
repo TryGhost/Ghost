@@ -105,7 +105,11 @@ module.exports.enabledHelper = function enabledHelper(options, callback) {
     errDetails.help = tpl(options.errorHelp || messages.errorHelp, {url: options.helpUrl});
 
     // eslint-disable-next-line no-restricted-syntax
-    logging.error(new errors.DisabledFeatureError(errDetails));
+    logging.error(new errors.DisabledFeatureError({
+        message: errDetails.message,
+        context: errDetails.context,
+        help: errDetails.help
+    }));
 
     const {SafeString} = require('express-hbs');
     errString = new SafeString(`<script>console.error("${_.values(errDetails).join(' ')}");</script>`);
