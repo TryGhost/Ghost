@@ -228,6 +228,10 @@ export class CollectionsService {
         return await this.collectionsRepository.getById(id);
     }
 
+    async getBySlug(slug: string): Promise<Collection | null> {
+        return await this.collectionsRepository.getBySlug(slug);
+    }
+
     async getAll(options?: QueryOptions): Promise<{data: CollectionDTO[], meta: any}> {
         const collections = await this.collectionsRepository.getAll(options);
 
