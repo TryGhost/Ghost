@@ -23,7 +23,7 @@ describe('Mail Events API', function () {
             // "events" array below. If you change any of these values, you will need to
             // update the signature otherwise the request will fail
             signature: 'c505cb9b343795954199d5d514bf520b6b133bd9f1580805f0fa150d1b89fdab',
-            events: [
+            mail_events: [
                 {
                     id: 'Ase7i2zsRYeDXztHGENqRA',
                     timestamp: 1521243339.873676,

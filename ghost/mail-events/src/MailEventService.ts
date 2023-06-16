@@ -31,7 +31,7 @@ interface PayloadEvent {
 
 interface Payload {
     signature: string;
-    events: PayloadEvent[];
+    mail_events: PayloadEvent[];
 }
 
 const VALIDATION_MESSAGES = {
@@ -59,16 +59,13 @@ export class MailEventService {
             });
         }
 
-        // Validate the payload
-        this.validatePayload(payload);
-
         // Verify the payload
         await this.verifyPayload(payload);
 
         // Store known events
         const eventTypes = new Set<string>(Object.values(EventType) as string[]);
 
-        for (const payloadEvent of payload.events) {
+        for (const payloadEvent of payload.mail_events) {
             if (eventTypes.has(payloadEvent.event) === false) {
                 continue;
             }
@@ -92,22 +89,7 @@ export class MailEventService {
         }
     }
 
-    private async verifyPayload(payload: Payload) {
-        const data = JSON.stringify(payload.events);
-
-        const signature = crypto
-            .createHmac('sha256', this.payloadSigningKey)
-            .update(data)
-            .digest('hex');
-
-        if (signature !== payload.signature) {
-            throw new errors.UnauthorizedError({
-                message: tpl(VALIDATION_MESSAGES.payloadSignatureInvalid)
-            });
-        }
-    }
-
-    private validatePayload(payload: Payload) {
+    validatePayload(payload: Payload) {
         if (payload.signature === undefined) {
             throw new errors.ValidationError({
                 message: tpl(VALIDATION_MESSAGES.payloadSignatureMissing)
@@ -120,13 +102,13 @@ export class MailEventService {
             });
         }
 
-        if (payload.events === undefined) {
+        if (payload.mail_events === undefined) {
             throw new errors.ValidationError({
                 message: tpl(VALIDATION_MESSAGES.payloadEventsMissing)
             });
         }
 
-        if (Array.isArray(payload.events) === false) {
+        if (Array.isArray(payload.mail_events) === false) {
             throw new errors.ValidationError({
                 message: tpl(VALIDATION_MESSAGES.payloadEventsInvalid)
             });
@@ -134,7 +116,7 @@ export class MailEventService {
 
         const expectedKeys: (keyof PayloadEvent)[] = ['id', 'timestamp', 'event', 'message', 'recipient'];
 
-        for (const [idx, payloadEvent] of payload.events.entries()) {
+        for (const [idx, payloadEvent] of payload.mail_events.entries()) {
             for (const key of expectedKeys) {
                 if (payloadEvent[key] === undefined) {
                     throw new errors.ValidationError({
@@ -148,6 +130,21 @@ export class MailEventService {
                     });
                 }
             }
+        }
+    }
+
+    private async verifyPayload(payload: Payload) {
+        const data = JSON.stringify(payload.mail_events);
+
+        const signature = crypto
+            .createHmac('sha256', this.payloadSigningKey)
+            .update(data)
+            .digest('hex');
+
+        if (signature !== payload.signature) {
+            throw new errors.UnauthorizedError({
+                message: tpl(VALIDATION_MESSAGES.payloadSignatureInvalid)
+            });
         }
     }
 }

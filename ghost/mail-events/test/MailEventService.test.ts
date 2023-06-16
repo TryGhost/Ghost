@@ -44,98 +44,11 @@ describe('MailEventService', function () {
             );
         });
 
-        it('should validate that the payload contains a signature', async function () {
-            await assert.rejects(
-                service.processPayload({} as any),
-                {
-                    name: 'ValidationError',
-                    message: 'Payload is missing "signature"'
-                }
-            );
-        });
-
-        it('should validate that the payload contains a valid signature', async function () {
-            await assert.rejects(
-                service.processPayload({
-                    signature: {}
-                } as any),
-                {
-                    name: 'ValidationError',
-                    message: '"signature" is invalid'
-                }
-            );
-        });
-
-        it('should validate that the payload contains events', async function () {
-            await assert.rejects(
-                service.processPayload({
-                    signature: 'foobarbaz'
-                } as any),
-                {
-                    name: 'ValidationError',
-                    message: 'Payload is missing "events"'
-                }
-            );
-        });
-
-        it('should validate that the payload contains valid events', async function () {
-            await assert.rejects(
-                service.processPayload({
-                    signature: 'foobarbaz',
-                    events: {}
-                } as any),
-                {
-                    name: 'ValidationError',
-                    message: '"events" is not an array'
-                }
-            );
-        });
-
-        it('should validate that events in the payload are valid', async function () {
-            const malformedPayloadEvent = makePayloadEvent('opened') as any;
-            delete malformedPayloadEvent.recipient;
-
-            const payload = {
-                signature: 'foobarbaz',
-                events: [
-                    makePayloadEvent('opened'),
-                    malformedPayloadEvent
-                ]
-            };
-            await assert.rejects(
-                service.processPayload(payload),
-                {
-                    name: 'ValidationError',
-                    message: 'Event [1] is missing "recipient"'
-                }
-            );
-        });
-
-        it('should validate that "message.headers.message-id" is present on an event', async function () {
-            const malformedPayloadEvent = makePayloadEvent('opened') as any;
-            delete malformedPayloadEvent.message.headers;
-
-            const payload = {
-                signature: 'foobarbaz',
-                events: [
-                    makePayloadEvent('opened'),
-                    malformedPayloadEvent
-                ]
-            };
-            await assert.rejects(
-                service.processPayload(payload),
-                {
-                    name: 'ValidationError',
-                    message: 'Event [1] is missing "message.headers.message-id"'
-                }
-            );
-        });
-
         it('should reject if payload verification fails', async function () {
             await assert.rejects(
                 service.processPayload({
                     signature: 'foobarbaz',
-                    events: [
+                    mail_events: [
                         makePayloadEvent('opened')
                     ]
                 } as any),
@@ -154,7 +67,7 @@ describe('MailEventService', function () {
 
             const payload = {
                 signature: '9f2567330688b82759600fad93c93b3e8f571d397c33688a8620400af20b79b3',
-                events: [
+                mail_events: [
                     payloadEvent
                 ]
             };
@@ -179,7 +92,7 @@ describe('MailEventService', function () {
 
             const payload = {
                 signature: '02959cc9731ee575b66969a508f545d19c5968b42a03fa398ce9c93d8e7df0a5',
-                events
+                mail_events: events
             };
 
             await service.processPayload(payload);
@@ -199,7 +112,7 @@ describe('MailEventService', function () {
 
             const payload = {
                 signature: 'd6de350faa9ec56d739ec7ffd5cb4230f90f583df05fe59a6c1a41afac7048df',
-                events
+                mail_events: events
             };
 
             await service.processPayload(payload);
@@ -216,7 +129,7 @@ describe('MailEventService', function () {
 
             const payload = {
                 signature: '9f2567330688b82759600fad93c93b3e8f571d397c33688a8620400af20b79b3',
-                events: [
+                mail_events: [
                     payloadEvent
                 ]
             };
@@ -238,7 +151,7 @@ describe('MailEventService', function () {
 
             const payload = {
                 signature: '9f2567330688b82759600fad93c93b3e8f571d397c33688a8620400af20b79b3',
-                events: [
+                mail_events: [
                     payloadEvent
                 ]
             };
@@ -250,6 +163,92 @@ describe('MailEventService', function () {
                 {
                     name: 'InternalServerError',
                     message: 'Event could not be stored'
+                }
+            );
+        });
+    });
+
+    describe('validatePayload', function () {
+        it('should validate that the payload contains a signature', async function () {
+            await assert.throws(
+                () => service.validatePayload({} as any),
+                {
+                    name: 'ValidationError',
+                    message: 'Payload is missing "signature"'
+                }
+            );
+        });
+
+        it('should validate that the payload contains a valid signature', async function () {
+            await assert.throws(() => {
+                service.validatePayload({
+                    signature: {}
+                } as any);
+            }, {
+                name: 'ValidationError',
+                message: '"signature" is invalid'
+            });
+        });
+
+        it('should validate that the payload contains events', async function () {
+            await assert.throws(() => {
+                service.validatePayload({
+                    signature: 'foobarbaz'
+                } as any);
+            }, {
+                name: 'ValidationError',
+                message: 'Payload is missing "events"'
+            });
+        });
+
+        it('should validate that the payload contains valid events', async function () {
+            await assert.throws(() => {
+                service.validatePayload({
+                    signature: 'foobarbaz',
+                    mail_events: {}
+                } as any);
+            }, {
+                name: 'ValidationError',
+                message: '"events" is not an array'
+            });
+        });
+
+        it('should validate that events in the payload are valid', async function () {
+            const malformedPayloadEvent = makePayloadEvent('opened') as any;
+            delete malformedPayloadEvent.recipient;
+
+            const payload = {
+                signature: 'foobarbaz',
+                mail_events: [
+                    makePayloadEvent('opened'),
+                    malformedPayloadEvent
+                ]
+            };
+            await assert.throws(
+                () => service.validatePayload(payload),
+                {
+                    name: 'ValidationError',
+                    message: 'Event [1] is missing "recipient"'
+                }
+            );
+        });
+
+        it('should validate that "message.headers.message-id" is present on an event', async function () {
+            const malformedPayloadEvent = makePayloadEvent('opened') as any;
+            delete malformedPayloadEvent.message.headers;
+
+            const payload = {
+                signature: 'foobarbaz',
+                mail_events: [
+                    makePayloadEvent('opened'),
+                    malformedPayloadEvent
+                ]
+            };
+            await assert.throws(
+                () => service.validatePayload(payload),
+                {
+                    name: 'ValidationError',
+                    message: 'Event [1] is missing "message.headers.message-id"'
                 }
             );
         });
