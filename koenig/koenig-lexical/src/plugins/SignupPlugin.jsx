@@ -25,7 +25,7 @@ export const SignupPlugin = () => {
                 COMMAND_PRIORITY_LOW
             )
         );
-    });
+    }, [editor]);
 
     return null;
 };

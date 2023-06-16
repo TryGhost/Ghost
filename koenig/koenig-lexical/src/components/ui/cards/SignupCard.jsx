@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import trackEvent from '../../../utils/analytics';
 import {ButtonGroupSetting, ColorPickerSetting, InputSetting, MediaUploadSetting, MultiSelectDropdownSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {ReactComponent as CenterAlignIcon} from '../../../assets/icons/kg-align-center.svg';
+import {Color, textColorForBackgroundColor} from '@tryghost/color-utils';
 import {ReactComponent as ExpandIcon} from '../../../assets/icons/kg-expand.svg';
 import {FastAverageColor} from 'fast-average-color';
 import {IconButton} from '../IconButton';
@@ -19,7 +20,6 @@ import {ReactComponent as ShrinkIcon} from '../../../assets/icons/kg-shrink.svg'
 import {SubscribeForm} from '../SubscribeForm';
 import {getAccentColor} from '../../../utils/getAccentColor';
 import {isEditorEmpty} from '../../../utils/isEditorEmpty';
-import {textColorForBackgroundColor} from '@tryghost/color-utils';
 
 export function SignupCard({alignment,
     buttonText,
@@ -67,10 +67,31 @@ export function SignupCard({alignment,
         return color === 'transparent' ? '' : textColorForBackgroundColor(hexColorValue(color)).hex();
     };
 
+    /**
+     * Convert a semi transparent color to a fully opaque color by merging it with a white background
+     */
+    const mergeWhiteColor = ({r, g, b, a}) => {
+        const aPercentage = a / 255;
+
+        return Color({
+            r: r * aPercentage + 255 * (1 - aPercentage),
+            g: g * aPercentage + 255 * (1 - aPercentage),
+            b: b * aPercentage + 255 * (1 - aPercentage)
+        }).hex();
+    };
+
     useEffect(() => {
         if (backgroundImageSrc && layout !== 'split') {
             new FastAverageColor().getColorAsync(backgroundImageSrc, {defaultColor: [255, 255, 255, 255]}).then((color) => {
-                handleTextColor(matchingTextColor(color.hex));
+                // If we uploaded a transparent image, the average color will be semi transparent, we need to merge it with white
+                // Merge white color to the color
+                const correctedHex = mergeWhiteColor({
+                    r: color.value[0],
+                    g: color.value[1],
+                    b: color.value[2],
+                    a: color.value[3]
+                });
+                handleTextColor(matchingTextColor(correctedHex));
             });
         }
         // This is only needed when the background image or layout is changed
@@ -447,7 +468,10 @@ export function SignupCard({alignment,
                         size='xsmall'
                         src={backgroundImageSrc}
                         onFileChange={onFileChange}
-                        onRemoveMedia={handleClearBackgroundImage}
+                        onRemoveMedia={() => {
+                            handleClearBackgroundImage();
+                            handleTextColor(matchingTextColor(backgroundColor));
+                        }}
                     />
                     <SettingsDivider />
 
