@@ -65,7 +65,7 @@ export default class MailEventService {
         // Verify the payload
         await this.verifyPayload(payload);
 
-        // Persist known events
+        // Store known events
         const eventTypes = new Set<string>(Object.values(EventType) as string[]);
 
         for (const payloadEvent of payload.events) {
@@ -74,7 +74,7 @@ export default class MailEventService {
             }
 
             try {
-                await this.eventRepository.persist(
+                await this.eventRepository.save(
                     new MailEvent(
                         payloadEvent.id,
                         payloadEvent.event,
@@ -85,7 +85,7 @@ export default class MailEventService {
                 );
             } catch (err) {
                 throw new errors.InternalServerError({
-                    message: 'Event could not be persisted',
+                    message: 'Event could not be stored',
                     err: err
                 });
             }

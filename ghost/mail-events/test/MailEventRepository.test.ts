@@ -5,15 +5,15 @@ import MailEvent from '../src/MailEvent';
 import MailEventRepository from '../src/MailEventRepository';
 
 describe('MailEventRepository', function () {
-    describe('persist', function () {
-        it('should persist a mail event', async function () {
+    describe('save', function () {
+        it('should store a mail event', async function () {
             const modelStub = {
                 add: sinon.stub().resolves()
             };
             const event = new MailEvent('abc123', 'opened', '987def', 'foo@bar.baz', Date.now());
             const repository = new MailEventRepository(modelStub);
 
-            await repository.persist(event);
+            await repository.save(event);
 
             assert.ok(modelStub.add.calledOnce);
             assert.ok(modelStub.add.calledWith({

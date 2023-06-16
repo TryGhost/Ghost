@@ -146,7 +146,7 @@ describe('MailEventService', function () {
             );
         });
 
-        it('should persist a single event', async function () {
+        it('should store a single event', async function () {
             const payloadEvent = makePayloadEvent('opened');
 
             // Ensure a fixed timestamp is used so that we know the signature up front
@@ -161,13 +161,13 @@ describe('MailEventService', function () {
 
             await service.processPayload(payload);
 
-            const persistedEvent = repository.persist.getCall(0).args[0];
+            const storedEvent = repository.save.getCall(0).args[0];
 
-            assert.ok(persistedEvent instanceof MailEvent);
-            assert.equal(persistedEvent.id, payloadEvent.id);
+            assert.ok(storedEvent instanceof MailEvent);
+            assert.equal(storedEvent.id, payloadEvent.id);
         });
 
-        it('should persist multiple events', async function () {
+        it('should store multiple events', async function () {
             const events = [
                 makePayloadEvent('opened'),
                 makePayloadEvent('opened')
@@ -184,7 +184,7 @@ describe('MailEventService', function () {
 
             await service.processPayload(payload);
 
-            assert.ok(repository.persist.calledTwice);
+            assert.ok(repository.save.calledTwice);
         });
 
         it('should ignore unknown events', async function () {
@@ -204,8 +204,8 @@ describe('MailEventService', function () {
 
             await service.processPayload(payload);
 
-            assert.ok(repository.persist.calledOnce);
-            assert.equal(repository.persist.getCall(0).args[0].type, 'opened');
+            assert.ok(repository.save.calledOnce);
+            assert.equal(repository.save.getCall(0).args[0].type, 'opened');
         });
 
         it('should ensure event timestamps are converted to ms', async function () {
@@ -223,14 +223,14 @@ describe('MailEventService', function () {
 
             await service.processPayload(payload);
 
-            assert.ok(repository.persist.calledOnce);
+            assert.ok(repository.save.calledOnce);
 
-            const persistedEvent = repository.persist.getCall(0).args[0];
+            const storedEvent = repository.save.getCall(0).args[0];
 
-            assert.equal(persistedEvent.timestampMs, payloadEvent.timestamp * 1000);
+            assert.equal(storedEvent.timestampMs, payloadEvent.timestamp * 1000);
         });
 
-        it('should reject if an event can not be persisted', async function () {
+        it('should reject if an event can not be stored', async function () {
             const payloadEvent = makePayloadEvent('opened');
 
             // Ensure a fixed timestamp is used so that we know the signature up front
@@ -243,13 +243,13 @@ describe('MailEventService', function () {
                 ]
             };
 
-            repository.persist.rejects(new Error('foobarbaz'));
+            repository.save.rejects(new Error('foobarbaz'));
 
             await assert.rejects(
                 service.processPayload(payload),
                 {
                     name: 'InternalServerError',
-                    message: 'Event could not be persisted'
+                    message: 'Event could not be stored'
                 }
             );
         });

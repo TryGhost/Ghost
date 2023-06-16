@@ -15,7 +15,7 @@ interface Model {
 export default class MailEventRepository {
     constructor(private model: Model) {}
 
-    async persist(event: MailEvent) {
+    async save(event: MailEvent) {
         return this.model.add({
             id: event.id,
             type: event.type,
