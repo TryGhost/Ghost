@@ -69,7 +69,7 @@ module.exports = {
             unsafeAttrs: unsafeAttrs
         },
         query(frame) {
-            return models.Post.findPage(frame.options);
+            return postsService.browsePosts(frame.options);
         }
     },
 

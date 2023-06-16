@@ -27,6 +27,15 @@ class PostsService {
         this.collectionsService = collectionsService;
     }
 
+    /**
+     *
+     * @param {Object} options - frame options
+     * @returns {Promise<Object>}
+     */
+    async browsePosts(options) {
+        return this.models.Post.findPage(options);
+    }
+
     async readPost(frame) {
         const model = await this.models.Post.findOne(frame.data, frame.options);
 
