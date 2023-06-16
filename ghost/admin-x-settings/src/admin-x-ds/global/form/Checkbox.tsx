@@ -47,7 +47,7 @@ const Checkbox: React.FC<CheckboxProps> = ({id, title, label, value, onChange, e
                     </div>
                 </label>
             </div>
-            {(separator || error) && <Separator color={error ? 'red' : ''} />}
+            {(separator || error) && <Separator className={error ? 'border-red' : ''} />}
         </div>
     );
 };
