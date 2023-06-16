@@ -12,7 +12,6 @@ export default class Page extends ApplicationAdapter {
         }
 
         return parsedUrl.toString();
-        // return this.buildURL(modelName, id, snapshot, requestType, query);
     }
 
     buildURL() {
