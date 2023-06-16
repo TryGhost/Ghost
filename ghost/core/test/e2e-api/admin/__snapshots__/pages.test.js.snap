@@ -32,7 +32,7 @@ Object {
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Any<Object>,
       "primary_tag": Any<Object>,
       "published_at": null,
