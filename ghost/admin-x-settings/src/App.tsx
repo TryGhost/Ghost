@@ -4,16 +4,18 @@ import Heading from './admin-x-ds/global/Heading';
 import NiceModal from '@ebay/nice-modal-react';
 import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
+import {OfficialTheme} from './models/themes';
 import {ServicesProvider} from './components/providers/ServiceProvider';
 import {Toaster} from 'react-hot-toast';
 
 interface AppProps {
     ghostVersion: string;
+    officialThemes: OfficialTheme[]
 }
 
-function App({ghostVersion}: AppProps) {
+function App({ghostVersion, officialThemes}: AppProps) {
     return (
-        <ServicesProvider ghostVersion={ghostVersion}>
+        <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes}>
             <DataProvider>
                 <div className="admin-x-settings">
                     <Toaster />
