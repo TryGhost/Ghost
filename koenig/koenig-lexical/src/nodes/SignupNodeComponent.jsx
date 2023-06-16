@@ -204,7 +204,8 @@ function SignupNodeComponent({
     useEffect(() => {
         headerTextEditor.setEditable(isEditing);
         subheaderTextEditor.setEditable(isEditing);
-    }, [isEditing, headerTextEditor, subheaderTextEditor]);
+        disclaimerTextEditor.setEditable(isEditing);
+    }, [isEditing, headerTextEditor, subheaderTextEditor, disclaimerTextEditor]);
 
     return (
         <>

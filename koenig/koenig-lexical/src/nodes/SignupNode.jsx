@@ -1,4 +1,3 @@
-import BASIC_NODES from './BasicNodes';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import MINIMAL_NODES from './MinimalNodes';
 import React from 'react';
@@ -46,22 +45,23 @@ export class SignupNode extends BaseSignupNode {
     constructor(dataset = {}, key) {
         super(dataset, key);
 
-        setupNestedEditor(this, '__disclaimerTextEditor', {editor: dataset.disclaimerTextEditor, nodes: BASIC_NODES});
-        // populate nested editors on initial construction
-        if (!dataset.disclaimerTextEditor && dataset.disclaimer) {
-            populateNestedEditor(this, '__disclaimerTextEditor', `<p>${dataset.disclaimer}</p>`);
-        }
-
         setupNestedEditor(this, '__headerTextEditor', {editor: dataset.headerTextEditor, nodes: MINIMAL_NODES});
+        setupNestedEditor(this, '__subheaderTextEditor', {editor: dataset.subheaderTextEditor, nodes: MINIMAL_NODES});
+        setupNestedEditor(this, '__disclaimerTextEditor', {editor: dataset.disclaimerTextEditor, nodes: MINIMAL_NODES});
+
         // populate nested editors on initial construction
         if (!dataset.headerTextEditor && dataset.header) {
             populateNestedEditor(this, '__headerTextEditor', `<p>${dataset.header}</p>`);
         }
 
-        setupNestedEditor(this, '__subheaderTextEditor', {editor: dataset.subheaderTextEditor, nodes: MINIMAL_NODES});
         // populate nested editors on initial construction
         if (!dataset.subheaderTextEditor && dataset.subheader) {
             populateNestedEditor(this, '__subheaderTextEditor', `<p>${dataset.subheader}</p>`);
+        }
+
+        // populate nested editors on initial construction
+        if (!dataset.disclaimerTextEditor && dataset.disclaimer) {
+            populateNestedEditor(this, '__disclaimerTextEditor', `<p>${dataset.disclaimer}</p>`);
         }
     }
 
@@ -71,7 +71,7 @@ export class SignupNode extends BaseSignupNode {
         if (this.__disclaimerTextEditor) {
             this.__disclaimerTextEditor.getEditorState().read(() => {
                 const html = $generateHtmlFromNodes(this.__disclaimerTextEditor, null);
-                const cleanedHtml = cleanBasicHtml(html, {firstChildInnerContent: true});
+                const cleanedHtml = cleanBasicHtml(html, {firstChildInnerContent: true, allowBr: true});
                 json.disclaimer = cleanedHtml;
             });
         }
@@ -79,7 +79,7 @@ export class SignupNode extends BaseSignupNode {
         if (this.__headerTextEditor) {
             this.__headerTextEditor.getEditorState().read(() => {
                 const html = $generateHtmlFromNodes(this.__headerTextEditor, null);
-                const cleanedHtml = cleanBasicHtml(html, {firstChildInnerContent: true});
+                const cleanedHtml = cleanBasicHtml(html, {firstChildInnerContent: true, allowBr: true});
                 json.header = cleanedHtml;
             });
         }
@@ -87,7 +87,7 @@ export class SignupNode extends BaseSignupNode {
         if (this.__subheaderTextEditor) {
             this.__subheaderTextEditor.getEditorState().read(() => {
                 const html = $generateHtmlFromNodes(this.__subheaderTextEditor, null);
-                const cleanedHtml = cleanBasicHtml(html, {firstChildInnerContent: true});
+                const cleanedHtml = cleanBasicHtml(html, {firstChildInnerContent: true, allowBr: true});
                 json.subheader = cleanedHtml;
             });
         }
