@@ -38,8 +38,8 @@ const VALIDATION_MESSAGES = {
     serviceNotConfigured: 'MailEventService is not configured',
     payloadSignatureMissing: 'Payload is missing "signature"',
     payloadSignatureInvalid: '"signature" is invalid',
-    payloadEventsMissing: 'Payload is missing "events"',
-    payloadEventsInvalid: '"events" is not an array',
+    payloadEventsMissing: 'Payload is missing "mail_events"',
+    payloadEventsInvalid: '"mail_events" is not an array',
     payloadEventKeyMissing: 'Event [{idx}] is missing "{key}"'
 };
 
@@ -52,7 +52,7 @@ export class MailEventService {
     async processPayload(payload: Payload) {
         // Verify that the service is configured correctly - We expect a string
         // for the payload signing key but as a safeguard we check the type here
-        // to prevent any unexpected behaviour if anything else is passed in
+        // to prevent any unexpected behaviour if anything else is passed in (i.e undefined)
         if (typeof this.payloadSigningKey !== 'string') {
             throw new errors.InternalServerError({
                 message: tpl(VALIDATION_MESSAGES.serviceNotConfigured)
@@ -60,7 +60,7 @@ export class MailEventService {
         }
 
         // Verify the payload
-        await this.verifyPayload(payload);
+        this.verifyPayload(payload);
 
         // Store known events
         const eventTypes = new Set<string>(Object.values(EventType) as string[]);
@@ -116,24 +116,24 @@ export class MailEventService {
 
         const expectedKeys: (keyof PayloadEvent)[] = ['id', 'timestamp', 'event', 'message', 'recipient'];
 
-        for (const [idx, payloadEvent] of payload.mail_events.entries()) {
-            for (const key of expectedKeys) {
+        payload.mail_events.forEach((payloadEvent, idx) => {
+            expectedKeys.forEach((key) => {
                 if (payloadEvent[key] === undefined) {
                     throw new errors.ValidationError({
                         message: tpl(VALIDATION_MESSAGES.payloadEventKeyMissing, {idx, key})
                     });
                 }
 
-                if (key === 'message' && payloadEvent.message?.headers?.['message-id'] === undefined) {
+                if (key === 'message' && payloadEvent.message.headers?.['message-id'] === undefined) {
                     throw new errors.ValidationError({
                         message: tpl(VALIDATION_MESSAGES.payloadEventKeyMissing, {idx, key: 'message.headers.message-id'})
                     });
                 }
-            }
-        }
+            });
+        });
     }
 
-    private async verifyPayload(payload: Payload) {
+    private verifyPayload(payload: Payload) {
         const data = JSON.stringify(payload.mail_events);
 
         const signature = crypto

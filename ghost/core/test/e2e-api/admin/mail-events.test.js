@@ -1,8 +1,10 @@
 const assert = require('assert');
-const {agentProvider} = require('../../utils/e2e-framework');
+const {agentProvider, matchers} = require('../../utils/e2e-framework');
 const configUtils = require('../../utils/configUtils');
 const mailEvents = require('../../../core/server/services/mail-events');
 const models = require('../../../core/server/models');
+
+const {anyContentVersion, anyEtag} = matchers;
 
 describe('Mail Events API', function () {
     let agent;
@@ -12,17 +14,16 @@ describe('Mail Events API', function () {
     });
 
     it('Can add a mail event', async function () {
-        configUtils.set('hostSettings:siteId', 123);
-        configUtils.set('hostSettings:mailEventsSecretKey', 'foobarbaz');
+        configUtils.set('hostSettings:mailEventsPayloadSigningKey', 'foobarbaz');
 
         // Re-initialise the mail events service with the new config values
         mailEvents.init();
 
         const payload = {
-            // The signature is based on the previous two config values as well as the
-            // "events" array below. If you change any of these values, you will need to
+            // The signature is based on the previous config value as well as the
+            // "mail_events" array below. If you change any of these values, you will need to
             // update the signature otherwise the request will fail
-            signature: 'c505cb9b343795954199d5d514bf520b6b133bd9f1580805f0fa150d1b89fdab',
+            signature: '51ab01400f9a78669733d85fcf344401f5da648f8c95707bc06da0456cb99fbc',
             mail_events: [
                 {
                     id: 'Ase7i2zsRYeDXztHGENqRA',
@@ -47,7 +48,10 @@ describe('Mail Events API', function () {
             .body(payload)
             .expectStatus(200)
             .matchBodySnapshot({})
-            .matchHeaderSnapshot({});
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
 
         const storedMailEvent = await models.MailEvent.findOne({id: 'Ase7i2zsRYeDXztHGENqRA'});
 

@@ -169,8 +169,8 @@ describe('MailEventService', function () {
     });
 
     describe('validatePayload', function () {
-        it('should validate that the payload contains a signature', async function () {
-            await assert.throws(
+        it('should validate that the payload contains a signature', function () {
+            assert.throws(
                 () => service.validatePayload({} as any),
                 {
                     name: 'ValidationError',
@@ -179,8 +179,8 @@ describe('MailEventService', function () {
             );
         });
 
-        it('should validate that the payload contains a valid signature', async function () {
-            await assert.throws(() => {
+        it('should validate that the payload contains a valid signature', function () {
+            assert.throws(() => {
                 service.validatePayload({
                     signature: {}
                 } as any);
@@ -190,30 +190,114 @@ describe('MailEventService', function () {
             });
         });
 
-        it('should validate that the payload contains events', async function () {
-            await assert.throws(() => {
+        it('should validate that the payload contains events', function () {
+            assert.throws(() => {
                 service.validatePayload({
                     signature: 'foobarbaz'
                 } as any);
             }, {
                 name: 'ValidationError',
-                message: 'Payload is missing "events"'
+                message: 'Payload is missing "mail_events"'
             });
         });
 
-        it('should validate that the payload contains valid events', async function () {
-            await assert.throws(() => {
+        it('should validate that the payload contains valid events', function () {
+            assert.throws(() => {
                 service.validatePayload({
                     signature: 'foobarbaz',
                     mail_events: {}
                 } as any);
             }, {
                 name: 'ValidationError',
-                message: '"events" is not an array'
+                message: '"mail_events" is not an array'
             });
         });
 
-        it('should validate that events in the payload are valid', async function () {
+        it('should validate that events in the payload have an id', function () {
+            const malformedPayloadEvent = makePayloadEvent('opened') as any;
+            delete malformedPayloadEvent.id;
+
+            const payload = {
+                signature: 'foobarbaz',
+                mail_events: [
+                    makePayloadEvent('opened'),
+                    malformedPayloadEvent
+                ]
+            };
+
+            assert.throws(
+                () => service.validatePayload(payload),
+                {
+                    name: 'ValidationError',
+                    message: 'Event [1] is missing "id"'
+                }
+            );
+        });
+
+        it('should validate that events in the payload have an timestamp', function () {
+            const malformedPayloadEvent = makePayloadEvent('opened') as any;
+            delete malformedPayloadEvent.timestamp;
+
+            const payload = {
+                signature: 'foobarbaz',
+                mail_events: [
+                    makePayloadEvent('opened'),
+                    malformedPayloadEvent
+                ]
+            };
+
+            assert.throws(
+                () => service.validatePayload(payload),
+                {
+                    name: 'ValidationError',
+                    message: 'Event [1] is missing "timestamp"'
+                }
+            );
+        });
+
+        it('should validate that events in the payload have an event', function () {
+            const malformedPayloadEvent = makePayloadEvent('opened') as any;
+            delete malformedPayloadEvent.event;
+
+            const payload = {
+                signature: 'foobarbaz',
+                mail_events: [
+                    makePayloadEvent('opened'),
+                    malformedPayloadEvent
+                ]
+            };
+
+            assert.throws(
+                () => service.validatePayload(payload),
+                {
+                    name: 'ValidationError',
+                    message: 'Event [1] is missing "event"'
+                }
+            );
+        });
+
+        it('should validate that events in the payload have a message', function () {
+            const malformedPayloadEvent = makePayloadEvent('opened') as any;
+            delete malformedPayloadEvent.message;
+
+            const payload = {
+                signature: 'foobarbaz',
+                mail_events: [
+                    makePayloadEvent('opened'),
+                    malformedPayloadEvent
+                ]
+            };
+
+            assert.throws(
+                () => service.validatePayload(payload),
+                {
+                    name: 'ValidationError',
+                    message: 'Event [1] is missing "message"'
+                }
+            );
+        });
+
+        it('should validate that events in the payload have a recipient', function () {
             const malformedPayloadEvent = makePayloadEvent('opened') as any;
             delete malformedPayloadEvent.recipient;
 
@@ -224,7 +308,8 @@ describe('MailEventService', function () {
                     malformedPayloadEvent
                 ]
             };
-            await assert.throws(
+
+            assert.throws(
                 () => service.validatePayload(payload),
                 {
                     name: 'ValidationError',
@@ -233,7 +318,7 @@ describe('MailEventService', function () {
             );
         });
 
-        it('should validate that "message.headers.message-id" is present on an event', async function () {
+        it('should validate that "message.headers.message-id" is present on an event', function () {
             const malformedPayloadEvent = makePayloadEvent('opened') as any;
             delete malformedPayloadEvent.message.headers;
 
@@ -244,7 +329,8 @@ describe('MailEventService', function () {
                     malformedPayloadEvent
                 ]
             };
-            await assert.throws(
+
+            assert.throws(
                 () => service.validatePayload(payload),
                 {
                     name: 'ValidationError',

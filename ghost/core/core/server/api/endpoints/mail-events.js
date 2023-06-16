@@ -7,7 +7,7 @@ module.exports = {
             cacheInvalidate: false
         },
         permissions: false,
-        query(frame) {
+        async query(frame) {
             return mailEvents.service.processPayload(frame.data);
         }
     }

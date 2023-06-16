@@ -8,9 +8,5 @@ const MailEvent = ghostBookshelf.Model.extend({
 }, {});
 
 module.exports = {
-    /**
-     * @type {object}
-     * @property {function} add
-     */
     MailEvent: ghostBookshelf.model('MailEvent', MailEvent)
 };

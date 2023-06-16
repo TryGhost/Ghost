@@ -4,11 +4,16 @@
  */
 
 /**
+ * @typedef {object} MailEventModel
+ * @property {function} add
+ */
+
+/**
  * @implements MailEventRepository
  */
 module.exports = class BookshelfMailEventRepository {
     /**
-     * @type {Object}
+     * @type {MailEventModel}
      */
     #MailEventModel;
 

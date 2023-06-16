@@ -10,11 +10,7 @@ class MailEventsServiceWrapper {
     async init() {
         const config = require('../../../shared/config');
         const models = require('../../models');
-
-        const siteId = config.get('hostSettings:siteId');
-        const mailEventsSecretKey = config.get('hostSettings:mailEventsSecretKey');
-        const payloadSigningKey = `${siteId}${mailEventsSecretKey}`;
-
+        const payloadSigningKey = config.get('hostSettings:mailEventsPayloadSigningKey');
         const repository = new MailEventRepository(models.MailEvent);
 
         this.service = new MailEventService(repository, payloadSigningKey);
