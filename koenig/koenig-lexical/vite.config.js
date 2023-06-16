@@ -1,17 +1,39 @@
 import pkg from './package.json';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
-import {defineConfig} from 'vitest/config';
+import {defineConfig, loadEnv} from 'vite';
 import {resolve} from 'path';
+import {sentryVitePlugin} from '@sentry/vite-plugin';
 
 const outputFileName = pkg.name[0] === '@' ? pkg.name.slice(pkg.name.indexOf('/') + 1) : pkg.name;
 
 // https://vitejs.dev/config/
-export default (function viteConfig() {
+export default (function viteConfig({mode}) {
+    const env = loadEnv(mode, process.cwd());
+    process.env = {...process.env, ...env};
+
     return defineConfig({
         plugins: [
             svgr(),
-            react()
+            react(),
+
+            // Keep sentryVitePlugin as the last plugin
+            sentryVitePlugin({
+                org: process.env.VITE_SENTRY_ORG,
+                project: process.env.VITE_SENTRY_PROJECT,
+
+                // Auth tokens can be obtained from https://sentry.io/settings/account/api/auth-tokens/
+                // and need `project:releases` and `org:read` scopes
+                authToken: process.env.VITE_SENTRY_AUTH_TOKEN,
+
+                // We're not injecting release information into the build
+                // @see https://www.npmjs.com/package/@sentry/vite-plugin#option-release-inject
+                // Setting this option to true causes our build to fail: this plugin runs before the build is complete,
+                // and therefore our commonJS dependencies such as `kg-markdown-html-renderer` are not yet transpiled
+                release: {
+                    inject: false
+                }
+            })
         ],
         define: {
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
@@ -48,7 +70,10 @@ export default (function viteConfig() {
                 }
             },
             rollupOptions: {
-                external: ['react', 'react-dom'],
+                external: [
+                    'react',
+                    'react-dom'
+                ],
                 output: {
                     globals: {
                         react: 'React',
