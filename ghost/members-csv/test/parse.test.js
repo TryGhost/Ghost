@@ -1,5 +1,5 @@
 const path = require('path');
-const assert = require('assert');
+const assert = require('assert/strict');
 const {parse} = require('../index');
 const csvPath = path.join(__dirname, '/fixtures/');
 

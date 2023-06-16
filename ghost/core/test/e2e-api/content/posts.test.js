@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const cheerio = require('cheerio');
 const moment = require('moment');
 const testUtils = require('../../utils');

@@ -3,7 +3,7 @@ const sinon = require('sinon');
 // non-standard to use externalRequest here, but this is required for the overrides in the library, which we want to test for security reasons in combination with the package
 const externalRequest = require('../../core/core/server/lib/request-external.js');
 const dnsPromises = require('dns').promises;
-const assert = require('assert');
+const assert = require('assert/strict');
 const nock = require('nock');
 
 describe('MentionDiscoveryService', function () {

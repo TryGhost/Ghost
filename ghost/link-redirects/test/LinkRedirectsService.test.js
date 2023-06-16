@@ -1,5 +1,5 @@
 const {LinkRedirectsService} = require('../index');
-const assert = require('assert');
+const assert = require('assert/strict');
 const sinon = require('sinon');
 const crypto = require('crypto');
 
