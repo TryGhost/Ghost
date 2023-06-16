@@ -4,7 +4,7 @@ import React from 'react';
 export type ButtonColor = 'clear' | 'grey' | 'black' | 'green' | 'red' | 'white';
 export type ButtonSize = 'sm' | 'md';
 
-export interface IButton {
+export interface ButtonProps {
     size?: ButtonSize;
     label?: React.ReactNode;
     icon?: string;
@@ -18,7 +18,7 @@ export interface IButton {
     onClick?: () => void;
 }
 
-const Button: React.FC<IButton> = ({
+const Button: React.FC<ButtonProps> = ({
     size = 'md',
     label = '',
     icon = '',

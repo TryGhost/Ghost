@@ -54,7 +54,7 @@ const Toggle: React.FC<ToggleProps> = ({id, size, direction, label, hint, separa
                     </label>
                 }
             </div>
-            {(separator || error) && <Separator color={error ? 'red' : ''} />}
+            {(separator || error) && <Separator className={error ? 'border-red' : ''} />}
         </div>
     );
 };
