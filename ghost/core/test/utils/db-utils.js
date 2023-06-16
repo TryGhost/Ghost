@@ -161,7 +161,7 @@ const truncateAll = async () => {
     await db.knex.transaction(async (trx) => {
         try {
             await db.knex.raw('SET FOREIGN_KEY_CHECKS=0;').transacting(trx);
-            await Promise.each(tables, table => db.knex.raw('TRUNCATE ' + table + ';').transacting(trx));
+            await Promise.each(tables, table => db.knex.raw('DELETE FROM ' + table + ';').transacting(trx));
             await db.knex.raw('SET FOREIGN_KEY_CHECKS=1;').transacting(trx);
         } catch (err) {
             // CASE: table does not exist || DB does not exist
