@@ -636,7 +636,7 @@ function ProductCardPrice({product}) {
 }
 
 function FreeProductCard({products, handleChooseSignup, error}) {
-    const {site, action} = useContext(AppContext);
+    const {site, action, t} = useContext(AppContext);
     const {selectedProduct, setSelectedProduct} = useContext(ProductsContext);
 
     let cardClass = selectedProduct === 'free' ? 'gh-portal-product-card free checked' : 'gh-portal-product-card free';
@@ -707,7 +707,7 @@ function FreeProductCard({products, handleChooseSignup, error}) {
                                 onClick={(e) => {
                                     handleChooseSignup(e, 'free');
                                 }}>
-                                {((selectedProduct === 'free' && disabled) ? <LoaderIcon className='gh-portal-loadingicon' /> : 'Choose')}
+                                {((selectedProduct === 'free' && disabled) ? <LoaderIcon className='gh-portal-loadingicon' /> : {t('Choose')} )}
                             </button>
                             {error && <div className="gh-portal-error-message">{error}</div>}
                         </div>
@@ -719,6 +719,7 @@ function FreeProductCard({products, handleChooseSignup, error}) {
 }
 
 function ProductCardButton({selectedProduct, product, disabled, noOfProducts, trialDays}) {
+    const {t} = useContext(AppContext);
     if (selectedProduct === product.id && disabled) {
         return (
             <LoaderIcon className='gh-portal-loadingicon' />
@@ -729,7 +730,7 @@ function ProductCardButton({selectedProduct, product, disabled, noOfProducts, tr
         return ('Start ' + trialDays + '-day free trial');
     }
 
-    return (noOfProducts > 1 ? 'Choose' : 'Continue');
+    return (noOfProducts > 1 ? {t('Choose')} : {t('Continue')});
 }
 
 function ProductCard({product, products, selectedInterval, handleChooseSignup, error}) {
@@ -960,7 +961,7 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
 }
 
 export function ChangeProductSection({onPlanSelect, selectedPlan, products, type = null}) {
-    const {site, member} = useContext(AppContext);
+    const {site, member, t} = useContext(AppContext);
     const {portal_plans: portalPlans} = site;
     const activePrice = getMemberActivePrice({member});
     const activeMemberProduct = getProductFromPrice({site, priceId: activePrice.id});
@@ -1014,7 +1015,7 @@ export function ChangeProductSection({onPlanSelect, selectedPlan, products, type
                     disabled={!selectedPrice?.id || (activePrice.id === selectedPrice?.id)}
                     isPrimary={true}
                     brandColor={brandColor}
-                    label={'Continue'}
+                    label={t('Continue')}
                     style={{height: '40px', width: '100%', marginTop: '24px'}}
                 /> */}
             </section>
