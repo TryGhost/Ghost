@@ -6,7 +6,7 @@ export type ButtonSize = 'sm' | 'md';
 
 export interface IButton {
     size?: ButtonSize;
-    label?: string;
+    label?: React.ReactNode;
     icon?: string;
     iconColorClass?: string;
     key?: string;
