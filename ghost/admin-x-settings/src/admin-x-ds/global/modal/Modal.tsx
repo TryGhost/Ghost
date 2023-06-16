@@ -1,4 +1,4 @@
-import Button, {IButton} from '../Button';
+import Button, {ButtonProps} from '../Button';
 import ButtonGroup from '../ButtonGroup';
 import ConfirmationModal from './ConfirmationModal';
 import Heading from '../Heading';
@@ -66,7 +66,7 @@ const Modal: React.FC<ModalProps> = ({
 }) => {
     const modal = useModal();
 
-    let buttons: IButton[] = [];
+    let buttons: ButtonProps[] = [];
 
     const removeModal = () => {
         if (!dirty) {

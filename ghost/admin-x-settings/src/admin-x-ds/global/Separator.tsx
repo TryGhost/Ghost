@@ -1,11 +1,11 @@
 import React from 'react';
 
 interface SeparatorProps {
-    color?: string;
+    className?: string;
 }
 
-const Separator: React.FC<SeparatorProps> = ({color}) => {
-    return <hr className={`border-${color ? color : 'grey-300'}`} />;
+const Separator: React.FC<SeparatorProps> = ({className = 'border-grey-300'}) => {
+    return <hr className={className} />;
 };
 
 export default Separator;

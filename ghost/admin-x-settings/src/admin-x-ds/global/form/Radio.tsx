@@ -58,7 +58,7 @@ const Radio: React.FC<RadioProps> = ({id, title, options, onSelect, error, hint,
                 ))}
                 {hint && <Hint color={error ? 'red' : ''}>{hint}</Hint>}
             </div>
-            {(separator || error) && <Separator color={error ? 'red' : ''} />}
+            {(separator || error) && <Separator className={error ? 'border-red' : ''} />}
         </div>
     );
 };

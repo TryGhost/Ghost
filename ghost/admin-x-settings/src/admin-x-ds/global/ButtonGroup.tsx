@@ -1,10 +1,10 @@
 import Button from './Button';
 import React from 'react';
 
-import {IButton} from './Button';
+import {ButtonProps} from './Button';
 
 interface ButtonGroupProps {
-    buttons: Array<IButton>;
+    buttons: Array<ButtonProps>;
     link?: boolean;
     className?: string;
 }

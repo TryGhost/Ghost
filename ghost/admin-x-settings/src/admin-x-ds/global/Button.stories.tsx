@@ -61,7 +61,7 @@ export const LinkButton: Story = {
 
 export const Icon: Story = {
     args: {
-        icon: 'menu-horizontal',
+        icon: 'ellipsis',
         color: 'green',
         iconColorClass: 'text-white'
     }
@@ -70,7 +70,7 @@ export const Icon: Story = {
 export const IconSmall: Story = {
     args: {
         size: 'sm',
-        icon: 'menu-horizontal',
+        icon: 'ellipsis',
         color: 'green',
         iconColorClass: 'text-white'
     }
