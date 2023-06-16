@@ -120,14 +120,13 @@
   },
   "lerna": {
     "version": "0.0.0",
-    "npmClient": "yarn",
-    "useWorkspaces": true
+    "npmClient": "yarn"
   },
   "devDependencies": {
     "concurrently": "8.2.0",
     "eslint-plugin-ghost": "3.1.0",
     "husky": "8.0.3",
-    "lerna": "6.6.2",
+    "lerna": "7.0.2",
     "lint-staged": "13.1.2",
     "ts-node": "10.9.1"
   }
