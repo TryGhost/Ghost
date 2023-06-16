@@ -129,7 +129,8 @@ const expectedProperties = {
         'meta_description',
         'frontmatter',
         'tiers',
-        'count'
+        'count',
+        'post_revisions'
     ],
 
     user: _(schema.users)
