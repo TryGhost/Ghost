@@ -14,7 +14,9 @@ module.exports = createTransactionalMigration(
         }).first();
 
         if (!integration) {
-            throw new InternalServerError('Could not find Ghost Explore Integration');
+            throw new InternalServerError({
+                message: 'Could not find Ghost Explore Integration'
+            });
         }
 
         const role = await knex('roles').where({
@@ -22,7 +24,9 @@ module.exports = createTransactionalMigration(
         }).first();
 
         if (!role) {
-            throw new InternalServerError('Could not find Ghost Explore Integration Role');
+            throw new InternalServerError({
+                message: 'Could not find Ghost Explore Integration Role'
+            });
         }
 
         const existingKey = await knex('api_keys').where({

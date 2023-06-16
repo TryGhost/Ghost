@@ -12,7 +12,9 @@ module.exports = module.exports = createTransactionalMigration(
         }).first();
 
         if (!integration) {
-            throw new InternalServerError('Could not find "Self-Serve Migration Integration"');
+            throw new InternalServerError({
+                message: 'Could not find "Self-Serve Migration Integration"'
+            });
         }
 
         const existingKey = await knex('api_keys').where({

@@ -13,9 +13,7 @@ module.exports = {
         // @TODO: remove this rule once it's turned into "error" in the base plugin
         'no-shadow': 'error',
         'no-var': 'error',
-        'one-var': ['error', 'never'],
-        'ghost/ghost-custom/ghost-error-usage': [1],
-        'ghost/ghost-custom/no-native-error': [1]
+        'one-var': ['error', 'never']
     },
     overrides: [
         {
