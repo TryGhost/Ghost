@@ -587,7 +587,7 @@ function ProductCardTrialDays({trialDays, discount, selectedInterval}) {
 
 function ProductCardPrice({product}) {
     const {selectedInterval} = useContext(ProductsContext);
-    const {site} = useContext(AppContext);
+    const {site, t} = useContext(AppContext);
     const monthlyPrice = product.monthlyPrice;
     const yearlyPrice = product.yearlyPrice;
     const trialDays = product.trial_days;
@@ -608,7 +608,8 @@ function ProductCardPrice({product}) {
                         <div className="gh-portal-product-price">
                             <span className={'currency-sign' + (currencySymbol.length > 1 ? ' long' : '')}>{currencySymbol}</span>
                             <span className="amount" data-testid="product-amount">{formatNumber(getStripeAmount(activePrice.amount))}</span>
-                            <span className="billing-period">/{activePrice.interval}</span>
+                            <span className="billing-period">{activePrice.interval === 'month' ? t('/ month') : t('/ year')}</span>
+                            
                         </div>
                         <ProductCardTrialDays trialDays={trialDays} discount={yearlyDiscount} selectedInterval={selectedInterval} />
                     </div>
@@ -707,7 +708,7 @@ function FreeProductCard({products, handleChooseSignup, error}) {
                                 onClick={(e) => {
                                     handleChooseSignup(e, 'free');
                                 }}>
-                                {((selectedProduct === 'free' && disabled) ? <LoaderIcon className='gh-portal-loadingicon' /> : {t('Choose')} )}
+                                {((selectedProduct === 'free' && disabled) ? <LoaderIcon className='gh-portal-loadingicon' /> : t('Choose') )}
                             </button>
                             {error && <div className="gh-portal-error-message">{error}</div>}
                         </div>
@@ -727,15 +728,15 @@ function ProductCardButton({selectedProduct, product, disabled, noOfProducts, tr
     }
 
     if (trialDays > 0) {
-        return ('Start ' + trialDays + '-day free trial');
+        return ( t('Start {{amount}}-day free trial', {amount: trialDays}))
     }
-
-    return (noOfProducts > 1 ? {t('Choose')} : {t('Continue')});
+    
+    return (noOfProducts > 1 ?  t('Choose')  : t('Continue'));
 }
 
 function ProductCard({product, products, selectedInterval, handleChooseSignup, error}) {
     const {selectedProduct, setSelectedProduct} = useContext(ProductsContext);
-    const {action} = useContext(AppContext);
+    const {action, t} = useContext(AppContext);
     const trialDays = product.trial_days;
 
     const cardClass = selectedProduct === product.id ? 'gh-portal-product-card checked' : 'gh-portal-product-card';
@@ -751,7 +752,7 @@ function ProductCard({product, products, selectedInterval, handleChooseSignup, e
 
     let productDescription = product.description;
     if ((!product.benefits || !product.benefits.length) && !productDescription) {
-        productDescription = 'Full access';
+        productDescription = t('Full access');
     }
 
     return (
