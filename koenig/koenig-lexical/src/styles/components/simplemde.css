@@ -21,13 +21,13 @@
     }
 
     .editor-toolbar {
-        position: absolute;
-        right: 0;
+        position: sticky;
+        position: -webkit-sticky; /* Safari */
         bottom: 0;
-        left: 0;
         z-index: 2;
         display: flex;
         padding: 6px;
+        margin: auto -12px;
         border-top: 1px solid var(--grey-200);
         border-right: none;
         border-left: none;
