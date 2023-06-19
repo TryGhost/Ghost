@@ -145,7 +145,7 @@ test.describe('Email card', async () => {
                         <div class="pt-1 pb-7 font-sans text-xs font-semibold uppercase leading-8 tracking-tight text-grey
                         dark:text-grey-800">Free members</div>
                         <div
-                            class="koenig-lexical kg-inherit-styles w-full bg-transparent whitespace-normal font-serif text-xl text-grey-900 dark:text-grey-200 text-center">
+                            class="koenig-lexical kg-inherit-styles w-full bg-transparent whitespace-normal font-serif text-xl text-grey-900 dark:text-grey-200 text-center mx-auto [&amp;:has(.placeholder)]:w-fit [&amp;:has(.placeholder)]:text-left">
                             <div data-kg="editor">
                                 <div class="kg-prose" contenteditable="false" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none">
                                     <p dir="ltr"><span data-lexical-text="true">Hello</span></p>
@@ -293,7 +293,7 @@ test.describe('Email card', async () => {
                                 <p><br /></p>
                             </div>
                         </div>
-                        <div>Email only text... (optional)</div>
+                        <div><div>Email only text... (optional)</div></div>
                     </div>
                     <hr />
                 </div>

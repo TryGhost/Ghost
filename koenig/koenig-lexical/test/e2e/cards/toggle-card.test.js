@@ -107,7 +107,7 @@ test.describe('Toggle card', async () => {
                                             <p><br /></p>
                                         </div>
                                     </div>
-                                    <div>Toggle header</div>
+                                    <div><div>Toggle header</div></div>
                                 </div>
                             </div>
                             <div
@@ -127,7 +127,7 @@ test.describe('Toggle card', async () => {
                                         <p><br /></p>
                                     </div>
                                 </div>
-                                <div>Collapsible content</div>
+                                <div><div>Collapsible content</div></div>
                             </div>
                         </div>
                     </div>

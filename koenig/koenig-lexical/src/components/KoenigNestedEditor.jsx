@@ -3,9 +3,10 @@ import React from 'react';
 import {BASIC_NODES, BASIC_TRANSFORMERS, KoenigComposableEditor, KoenigNestedComposer, MINIMAL_NODES, MINIMAL_TRANSFORMERS, RestrictContentPlugin} from '../index.js';
 
 const Placeholder = ({text = 'Type here', className = ''}) => {
+    // Note: we use line-clamp-1, instead of truncate because truncate adds 'white-space: nowrap', which often breaks overflows of parents in some cards
     return (
-        <div className={`not-kg-prose pointer-events-none absolute top-0 left-0 min-w-full cursor-text ${className}`}>
-            {text}
+        <div className={`placeholder not-kg-prose pointer-events-none h-0 cursor-text overflow-visible`}>
+            <div className={`translate-y-[-100%] line-clamp-1 ${className}`}>{text}</div>
         </div>
     );
 };

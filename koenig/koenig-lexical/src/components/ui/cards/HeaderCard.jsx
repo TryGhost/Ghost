@@ -109,7 +109,7 @@ export function HeaderCard({isEditing,
                             initialEditorState={headerTextEditorInitialState}
                             nodes="minimal"
                             placeholderClassName={clsx(
-                                'w-full truncate whitespace-normal !text-center !font-bold !leading-[1.1] !tracking-tight opacity-50',
+                                '!text-center !font-bold !leading-[1.1] !tracking-tight opacity-50',
                                 (size === 'small') && 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl',
                                 (size === 'medium') && 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl',
                                 (size === 'large') && 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl',
@@ -118,10 +118,10 @@ export function HeaderCard({isEditing,
                             placeholderText={headerPlaceholder}
                             singleParagraph={true}
                             textClassName={clsx(
-                                'koenig-lexical-header-heading relative w-full whitespace-normal text-left font-bold [&:has(span)]:pl-0 [&:has(span)]:text-center [&:has(span)]:sm:pl-0 [&:has(span)]:md:pl-0 [&:has(span)]:lg:pl-0',
-                                (size === 'small') && 'koenig-lexical-header-small pl-[calc(50%_-_128px)] sm:pl-[calc(50%_-_154px)] md:pl-[calc(50%_-_205px)] lg:pl-[calc(50%_-_256px)]',
-                                (size === 'medium') && 'koenig-lexical-header-medium pl-[calc(50%_-_128px)] sm:pl-[calc(50%_-_154px)] md:pl-[calc(50%_-_205px)] lg:pl-[calc(50%_-_256px)] xl:pl-[calc(50%_-_306px)]',
-                                (size === 'large') && 'koenig-lexical-header-large pl-[calc(50%_-_154px)] sm:pl-[calc(50%_-_205px)] md:pl-[calc(50%_-_256px)] lg:pl-[calc(50%_-_306px)]',
+                                'koenig-lexical-header-heading relative w-full whitespace-normal text-center font-bold [&:has(.placeholder)]:w-fit [&:has(.placeholder)]:text-left',
+                                (size === 'small') && 'koenig-lexical-header-small',
+                                (size === 'medium') && 'koenig-lexical-header-medium',
+                                (size === 'large') && 'koenig-lexical-header-large',
                                 (HEADER_TEXT_COLORS[type])
                             )}
                         />
@@ -137,7 +137,7 @@ export function HeaderCard({isEditing,
                             initialEditorState={subheaderTextEditorInitialState}
                             nodes="minimal"
                             placeholderClassName={clsx(
-                                'w-full truncate whitespace-normal !text-center !font-medium !leading-snug !tracking-tight opacity-50',
+                                '!text-center !font-medium !leading-snug !tracking-tight opacity-50',
                                 (size === 'small') && 'text-lg sm:text-xl',
                                 (size === 'medium') && 'text-lg sm:text-xl md:text-2xl',
                                 (size === 'large') && 'text-xl md:text-2xl',
@@ -146,10 +146,10 @@ export function HeaderCard({isEditing,
                             placeholderText={subheaderPlaceholder}
                             singleParagraph={true}
                             textClassName={clsx(
-                                'koenig-lexical-header-subheading relative w-full whitespace-normal text-left [&:has(span)]:pl-0 [&:has(span)]:text-center [&:has(span)]:sm:pl-0 [&:has(span)]:md:pl-0 [&:has(span)]:lg:pl-0',
-                                (size === 'small') && 'koenig-lexical-header-small !mt-2 pl-[calc(50%_-_90px)] sm:pl-[calc(50%_-_100px)]',
-                                (size === 'medium') && 'koenig-lexical-header-medium !mt-3 pl-[calc(50%_-_90px)] sm:pl-[calc(50%_-_100px)] md:pl-[calc(50%_-_120px)]',
-                                (size === 'large') && 'koenig-lexical-header-large !mt-3 pl-[calc(50%_-_100px)] md:pl-[calc(50%_-_120px)]',
+                                'koenig-lexical-header-subheading relative w-full whitespace-normal text-center [&:has(.placeholder)]:w-fit [&:has(.placeholder)]:text-left',
+                                (size === 'small') && 'koenig-lexical-header-small !mt-2',
+                                (size === 'medium') && 'koenig-lexical-header-medium !mt-3',
+                                (size === 'large') && 'koenig-lexical-header-large !mt-3',
                                 (HEADER_TEXT_COLORS[type])
                             )}
                         />
