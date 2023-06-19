@@ -51,8 +51,8 @@ Router.map(function () {
     this.route('tag', {path: '/tags/:tag_slug'});
 
     this.route('collections');
-    this.route('collection.new', {path: '/collection/new'});
-    this.route('collection', {path: '/collection/:collection_slug'});
+    this.route('collection.new', {path: '/collections/new'});
+    this.route('collection', {path: '/collections/:collection_slug'});
 
     this.route('settings-x');
     this.route('settings');
