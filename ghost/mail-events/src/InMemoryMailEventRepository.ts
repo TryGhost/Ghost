@@ -1,12 +1,8 @@
+import {InMemoryRepository} from '@tryghost/in-memory-repository';
 import {MailEvent} from './MailEvent';
-import {MailEventRepository} from './MailEventRepository';
 
-export class InMemoryMailEventRepository implements MailEventRepository {
-    constructor(
-        readonly events: MailEvent[] = []
-    ) {}
-
-    async save(event: MailEvent): Promise<void> {
-        this.events.push(event);
+export class InMemoryMailEventRepository extends InMemoryRepository<string, MailEvent> {
+    protected toPrimitive(): object {
+        return {};
     }
 }

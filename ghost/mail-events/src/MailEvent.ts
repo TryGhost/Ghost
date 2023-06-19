@@ -4,6 +4,7 @@ export class MailEvent {
         readonly type: string,
         readonly messageId: string,
         readonly recipient: string,
-        readonly timestampMs: number
+        readonly timestampMs: number,
+        readonly deleted: boolean = false
     ) {}
 }
