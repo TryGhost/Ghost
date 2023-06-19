@@ -49,7 +49,12 @@ describe('Cards', function () {
 
         const expected =
 `<figure class="kg-card kg-image-card">
-  <img src="/content/images/2022/11/koenig-lexical.jpg" alt="" loading="lazy" />
+  <img
+    src="/content/images/2022/11/koenig-lexical.jpg"
+    class="kg-image"
+    alt=""
+    loading="lazy"
+  />
   <figcaption>This is a caption</figcaption>
 </figure>
 `;
