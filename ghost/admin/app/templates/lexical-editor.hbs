@@ -93,9 +93,7 @@
                 @registerAPI={{this.registerEditorAPI}}
             />
 
-            {{#if (feature 'lexicalEditor')}}
-                <FeedbackLexical::EditorDropdown @post={{this.post}} />
-            {{/if}}
+            <FeedbackLexical::EditorDropdown @post={{this.post}} />
 
             <div class="gh-editor-wordcount-container">
                 <div class="gh-editor-wordcount">
