@@ -65,7 +65,7 @@ function KoenigNestedEditorPlugin({
                     }
 
                     // move focus to the next editor if it exists (e.g. from header to content editor)
-                    if (focusNext) {
+                    if (focusNext && !event.shiftKey) {
                         event.preventDefault();
                         focusNext.focus(() => {
                             focusNext.getRootElement().focus({preventScroll: true});

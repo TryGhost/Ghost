@@ -50,7 +50,7 @@ export class HeaderNode extends BaseHeaderNode {
         if (this.__headerTextEditor) {
             this.__headerTextEditor.getEditorState().read(() => {
                 const html = $generateHtmlFromNodes(this.__headerTextEditor, null);
-                const cleanedHtml = cleanBasicHtml(html, {firstChildInnerContent: true});
+                const cleanedHtml = cleanBasicHtml(html, {firstChildInnerContent: true, allowBr: true});
                 json.header = cleanedHtml;
             });
         }
