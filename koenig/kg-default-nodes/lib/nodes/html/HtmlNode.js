@@ -56,11 +56,7 @@ export class HtmlNode extends KoenigDecoratorNode {
     }
 
     exportDOM(options = {}) {
-        const {element} = renderHtmlNodeToDOM(this, options);
-        return {
-            element,
-            type: 'inner'
-        };
+        return renderHtmlNodeToDOM(this, options);
     }
 
     getHtml() {

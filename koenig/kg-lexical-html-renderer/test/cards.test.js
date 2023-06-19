@@ -1,9 +1,9 @@
 const {JSDOM} = require('jsdom');
 const Prettier = require('prettier');
 const Renderer = require('../index');
-const {ImageNode, PaywallNode} = require('@tryghost/kg-default-nodes');
+const {ImageNode, PaywallNode, HtmlNode} = require('@tryghost/kg-default-nodes');
 
-const nodes = [ImageNode, PaywallNode];
+const nodes = [ImageNode, PaywallNode, HtmlNode];
 
 describe('Cards', function () {
     let lexicalState;
@@ -69,6 +69,44 @@ describe('Cards', function () {
 
         const expected =
 `<!--members-only-->
+`;
+        output.should.equal(expected);
+    });
+
+    it('renders HTML card with unclosed tags', function () {
+        lexicalState.root.children.push({
+            type: 'html',
+            html: '<div style="color: red">'
+        }, {
+            children: [
+                {
+                    detail: 0,
+                    format: 0,
+                    mode: 'normal',
+                    style: '',
+                    text: 'Testing',
+                    type: 'text',
+                    version: 1
+                }
+            ],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            type: 'paragraph',
+            version: 1
+        }, {
+            type: 'html',
+            html: '</div>'
+        });
+
+        const renderer = new Renderer({nodes});
+
+        const output = Prettier.format(renderer.render(JSON.stringify(lexicalState), options), {parser: 'html'});
+
+        const expected =
+`<div style="color: red">
+  <p>Testing</p>
+</div>
 `;
         output.should.equal(expected);
     });

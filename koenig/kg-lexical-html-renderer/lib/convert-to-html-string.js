@@ -29,7 +29,14 @@ function $convertToHtmlString(options = {}) {
 function exportTopLevelElementOrDecorator(node, options) {
     if ($isKoenigCard(node)) {
         const {element, type} = node.exportDOM(options);
-        return type === 'inner' ? element.innerHTML : element.outerHTML;
+        switch (type) {
+        case 'inner':
+            return element.innerHTML;
+        case 'value':
+            return element.value;
+        default:
+            return element.outerHTML;
+        }
     }
 
     for (const transformer of elementTransformers) {

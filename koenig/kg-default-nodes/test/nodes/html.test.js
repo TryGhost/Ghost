@@ -82,8 +82,8 @@ describe('HtmlNode', function () {
         it('creates a html card', editorTest(function () {
             const htmlNode = $createHtmlNode(dataset);
             const {element, type} = htmlNode.exportDOM(exportOptions);
-            type.should.equal('inner');
-            element.innerHTML.should.prettifyTo(html`
+            type.should.equal('value');
+            element.value.should.prettifyTo(html`
                 <p>Paragraph with:</p>
                 <ul>
                     <li>list</li>
@@ -92,11 +92,21 @@ describe('HtmlNode', function () {
             `);
         }));
 
-        it('renders an empty div with a missing src', editorTest(function () {
+        it('renders an empty div with missing html', editorTest(function () {
             const htmlNode = $createHtmlNode();
-            const {element} = htmlNode.exportDOM(exportOptions);
+            const {element, type} = htmlNode.exportDOM(exportOptions);
+            type.should.equal('inner');
 
             element.outerHTML.should.equal('<div></div>');
+        }));
+
+        it('renders unclosed tags', editorTest(function () {
+            const htmlNode = $createHtmlNode({html: '<div style="color:red">'});
+            const {element, type} = htmlNode.exportDOM(exportOptions);
+            type.should.equal('value');
+
+            // do not prettify, it will add a closing tag to the compared string causing a false pass
+            element.value.should.equal('<div style="color:red">');
         }));
     });
 

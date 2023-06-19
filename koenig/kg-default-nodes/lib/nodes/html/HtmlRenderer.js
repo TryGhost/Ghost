@@ -7,9 +7,12 @@ export function renderHtmlNodeToDOM(node, options = {}) {
 
     const html = node.getHtml() || '';
 
-    const div = document.createElement('div');
+    if (html) {
+        const textarea = document.createElement('textarea');
+        textarea.innerHTML = html;
 
-    div.innerHTML = html;
-
-    return {element: div};
+        return {element: textarea, type: 'value'};
+    } else {
+        return {element: document.createElement('div'), type: 'inner'};
+    }
 }
