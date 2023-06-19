@@ -134,11 +134,11 @@ Caddyfile
 /apps/sodo-search/umd
 
 # Signup Form and local environments
-/ghost/signup-form/umd
-/ghost/signup-form/.env*.local
-/ghost/signup-form/test-results/
-/ghost/signup-form/playwright-report/
-/ghost/signup-form/playwright/.cache/
+/apps/signup-form/umd
+/apps/signup-form/.env*.local
+/apps/signup-form/test-results/
+/apps/signup-form/playwright-report/
+/apps/signup-form/playwright/.cache/
 
 # Announcement-Bar
 /apps/announcement-bar/umd
