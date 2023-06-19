@@ -3,7 +3,7 @@ import Hint from '../Hint';
 import React, {useId} from 'react';
 import clsx from 'clsx';
 
-interface TextFieldProps {
+export type TextFieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
     inputRef?: React.RefObject<HTMLInputElement>;
     title?: string;
     hideTitle?: boolean;
@@ -18,6 +18,7 @@ interface TextFieldProps {
     className?: string;
     maxLength?: number;
     containerClassName?: string;
+    hintClassName?: string;
     unstyled?: boolean;
 }
 
@@ -36,6 +37,7 @@ const TextField: React.FC<TextFieldProps> = ({
     className = '',
     maxLength,
     containerClassName = '',
+    hintClassName = '',
     unstyled = false,
     ...props
 }) => {
@@ -61,17 +63,13 @@ const TextField: React.FC<TextFieldProps> = ({
         onChange={onChange}
         {...props} />;
 
-    if (title || hint) {
-        return (
-            <div className={`flex flex-col ${containerClassName}`}>
-                {title && <Heading className={hideTitle ? 'sr-only' : ''} grey={value ? true : false} htmlFor={id} useLabelTag={true}>{title}</Heading>}
-                {field}
-                {hint && <Hint color={error ? 'red' : ''}>{hint}</Hint>}
-            </div>
-        );
-    } else {
-        return field;
-    }
+    return (
+        <div className={`flex flex-col ${containerClassName}`}>
+            {title && <Heading className={hideTitle ? 'sr-only' : ''} grey={value ? true : false} htmlFor={id} useLabelTag={true}>{title}</Heading>}
+            {field}
+            {hint && <Hint className={hintClassName} color={error ? 'red' : ''}>{hint}</Hint>}
+        </div>
+    );
 };
 
 export default TextField;
