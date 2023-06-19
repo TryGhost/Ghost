@@ -24,6 +24,7 @@ export function renderImageNodeToDOM(node, options = {}) {
 
     const img = document.createElement('img');
     img.setAttribute('src', node.getSrc());
+    img.setAttribute('class', 'kg-image');
     img.setAttribute('alt', node.getAlt());
     img.setAttribute('loading', 'lazy');
 

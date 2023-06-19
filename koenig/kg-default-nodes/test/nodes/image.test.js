@@ -130,6 +130,7 @@ describe('ImageNode', function () {
                 <figure class="kg-card kg-image-card">
                     <img
                         src="/content/images/2022/11/koenig-lexical.jpg"
+                        class="kg-image"
                         alt="This is some alt text"
                         loading="lazy"
                         title="This is a title"
@@ -154,6 +155,7 @@ describe('ImageNode', function () {
                     <a href="https://example.com"
                         ><img
                         src="/content/images/2022/11/koenig-lexical.jpg"
+                        class="kg-image"
                         alt="This is some alt text"
                         loading="lazy"
                         title="This is a title"
@@ -178,7 +180,7 @@ describe('ImageNode', function () {
 
             element.outerHTML.should.prettifyTo(html`
                 <figure class="kg-card kg-image-card">
-                    <img src="/image.png" alt="" loading="lazy">
+                    <img src="/image.png" class="kg-image" alt="" loading="lazy">
                 </figure>
             `);
         }));
