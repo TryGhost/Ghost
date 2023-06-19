@@ -103,7 +103,7 @@ if (DASH_DASH_ARGS.includes('signup') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'signup-form',
         command: DASH_DASH_ARGS.includes('signup') ? 'yarn dev' : 'yarn preview',
-        cwd: path.resolve(__dirname, '../ghost/signup-form'),
+        cwd: path.resolve(__dirname, '../apps/signup-form'),
         prefixColor: 'magenta',
         env: {}
     });
