@@ -14,7 +14,16 @@ export function Button({color, dataTestId, href, size, width, rounded, value, pl
 
     return (
         <Tag
-            className={`not-kg-prose inline-block shrink-0 cursor-pointer text-center font-sans font-medium ${(width === 'regular') || 'w-full' } ${rounded && 'rounded'} ${value ? 'opacity-100' : 'opacity-50' } ${(color === 'white') ? 'bg-white text-black' : (color === 'grey') ? 'bg-grey-200 text-black' : (color === 'black') ? 'bg-black text-white' : 'bg-green text-white'} `}
+            className={clsx(
+                'not-kg-prose cursor-pointe inline-block shrink-0 text-center font-sans font-medium',
+                width === 'regular' || 'w-full',
+                rounded && 'rounded',
+                value ? 'opacity-100' : 'opacity-50',
+                color === 'white' && 'bg-white text-black',
+                color === 'grey' && 'bg-grey-200 text-black',
+                color === 'black' && 'bg-black text-white',
+                color === 'accent' && 'bg-accent text-white',
+                !['white', 'grey', 'black', 'accent'].includes(color) && 'bg-green text-white')}
             data-testid={`${dataTestId}`}
             disabled={disabled}
             {...props}

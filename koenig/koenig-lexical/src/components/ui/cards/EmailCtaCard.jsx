@@ -74,7 +74,7 @@ export function EmailCtaCard({
                 {/* Button */}
                 { (showButton && (isEditing || (buttonText && buttonUrl))) &&
                     <div className={`mt-6 ${alignment === 'left' ? 'text-left' : 'text-center'} ` }>
-                        <Button dataTestId="cta-button" placeholder="Add button text" value={buttonText}/>
+                        <Button color={'accent'} dataTestId="cta-button" placeholder="Add button text" value={buttonText}/>
                     </div>
                 }
 
