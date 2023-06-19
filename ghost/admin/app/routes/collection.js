@@ -27,7 +27,7 @@ export default class CollectionRoute extends AuthenticatedRoute {
     }
 
     serialize(collection) {
-        return {collection_slug: collection.get('collection')};
+        return {collection_slug: collection.get('slug')};
     }
 
     @action

@@ -14,6 +14,16 @@
                 </span>
             </GhFormGroup>
 
+            <GhFormGroup @errors={{@collection.errors}} @hasValidated={{@collection.hasValidated}} @property="slug" class="mr2 flex-auto">
+                <label for="collection-slug">Slug</label>
+                <input type="text" class="gh-input" id="collection-slug" name="slug" value={{@collection.slug}} {{on "input" (pick "target.value"
+                    (fn this.setCollectionProperty "slug" ))}} {{on "blur" (fn this.validateCollectionProperty "slug" )}}
+                    data-test-input="collection-slug" />
+                <span class="error">
+                    <GhErrorMessage @errors={{@collection.errors}} @property="slug" />
+                </span>
+            </GhFormGroup>
+
             <GhFormGroup class="no-margin" @errors={{@collection.errors}} @hasValidated={{@collection.hasValidated}}
                 @property="description">
                 <label for="collection-description">Description</label>
