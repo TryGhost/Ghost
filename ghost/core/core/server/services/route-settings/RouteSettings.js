@@ -1,4 +1,4 @@
-const Promise = require('bluebird');
+const Promise = require('bluebird'); //not here
 const fs = require('fs-extra');
 const crypto = require('crypto');
 const urlService = require('../url');

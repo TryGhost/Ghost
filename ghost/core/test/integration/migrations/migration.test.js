@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
 const _ = require('lodash');
-const Promise = require('bluebird');
+const Promise = require('bluebird'); //not here
 const Models = require('../../../core/server/models');
 
 describe('Database Migration (special functions)', function () {

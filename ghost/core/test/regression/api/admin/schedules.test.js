@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const should = require('should');
 const supertest = require('supertest');
-const Promise = require('bluebird');
+const Promise = require('bluebird'); //not here
 const sinon = require('sinon');
 const moment = require('moment-timezone');
 const SchedulingDefault = require('../../../../core/server/adapters/scheduling/scheduling-default');
