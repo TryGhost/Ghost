@@ -46,12 +46,32 @@ const useNavigationEditor = ({items, setItems}: {
         }
     }, [editableItems, newItem, isEditingNewItem, items, setItems]);
 
+    const urlRegex = new RegExp(/^(\/|#|[a-zA-Z0-9-]+:)/);
+
+    const validateItem = (item: EditableItem) => {
+        const errors: NavigationItemErrors = {};
+
+        if (!item.label || item.label.match(/^\s*$/)) {
+            errors.label = 'You must specify a label';
+        }
+
+        if (!item.url || item.url.match(/\s/) || (!validator.isURL(item.url, {require_protocol: true}) && !item.url.match(urlRegex))) {
+            errors.url = 'You must specify a valid URL or relative path';
+        }
+
+        return errors;
+    };
+
     const updateItem = (id: string, item: Partial<NavigationItem>) => {
         setEditableItems(editableItems.map(current => (current.id === id ? {...current, ...item} : current)));
     };
 
     const addItem = () => {
-        if (newItem.label && newItem.url) {
+        const errors = validateItem(newItem);
+
+        if (Object.values(errors).some(message => message)) {
+            setNewItem({...newItem, errors});
+        } else {
             setEditableItems(editableItems.concat({...newItem, id: editableItems.length.toString(), errors: {}}));
             setNewItem({label: '', url: '/', id: 'new', errors: {}});
         }
@@ -75,22 +95,6 @@ const useNavigationEditor = ({items, setItems}: {
         } else {
             setEditableItems(editableItems.map(current => (current.id === id ? {...current, errors: {...current.errors, [key]: undefined}} : current)));
         }
-    };
-
-    const urlRegex = new RegExp(/^(\/|#|[a-zA-Z0-9-]+:)/);
-
-    const validateItem = (item: EditableItem) => {
-        const errors: NavigationItemErrors = {};
-
-        if (!item.label || item.label.match(/^\s*$/)) {
-            errors.label = 'You must specify a label';
-        }
-
-        if (!item.url || item.url.match(/\s/) || (!validator.isURL(item.url, {require_protocol: true}) && !item.url.match(urlRegex))) {
-            errors.url = 'You must specify a valid URL or relative path';
-        }
-
-        return errors;
     };
 
     return {
