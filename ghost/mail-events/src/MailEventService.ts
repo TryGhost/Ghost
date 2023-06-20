@@ -34,8 +34,16 @@ interface Payload {
     mail_events: PayloadEvent[];
 }
 
+interface Labs {
+    isSet(key: string): boolean;
+}
+
+interface Config {
+    get(key: string): any;
+}
+
 const VALIDATION_MESSAGES = {
-    serviceNotConfigured: 'MailEventService is not configured',
+    signingKeyNotConfigured: 'payload signing key is not configured',
     payloadSignatureMissing: 'Payload is missing "signature"',
     payloadSignatureInvalid: '"signature" is invalid',
     payloadEventsMissing: 'Payload is missing "mail_events"',
@@ -44,23 +52,33 @@ const VALIDATION_MESSAGES = {
 };
 
 export class MailEventService {
+    static LABS_KEY = 'mailEvents';
+    static CONFIG_KEY_PAYLOAD_SIGNING_KEY = 'hostSettings:mailEventsPayloadSigningKey';
+
     constructor(
         private eventRepository: MailEventRepository,
-        private payloadSigningKey: string
+        private config: Config,
+        private labs: Labs
     ) {}
 
     async processPayload(payload: Payload) {
+        if (this.labs.isSet(MailEventService.LABS_KEY) === false) {
+            throw new errors.NotFoundError();
+        }
+
+        const payloadSigningKey = this.config.get(MailEventService.CONFIG_KEY_PAYLOAD_SIGNING_KEY);
+
         // Verify that the service is configured correctly - We expect a string
         // for the payload signing key but as a safeguard we check the type here
-        // to prevent any unexpected behaviour if anything else is passed in (i.e undefined)
-        if (typeof this.payloadSigningKey !== 'string') {
+        // to prevent any unexpected behaviour
+        if (typeof payloadSigningKey !== 'string') {
             throw new errors.InternalServerError({
-                message: tpl(VALIDATION_MESSAGES.serviceNotConfigured)
+                message: tpl(VALIDATION_MESSAGES.signingKeyNotConfigured)
             });
         }
 
         // Verify the payload
-        this.verifyPayload(payload);
+        this.verifyPayload(payload, payloadSigningKey);
 
         // Store known events
         const eventTypes = new Set<string>(Object.values(EventType) as string[]);
@@ -133,11 +151,11 @@ export class MailEventService {
         });
     }
 
-    private verifyPayload(payload: Payload) {
+    private verifyPayload(payload: Payload, payloadSigningKey: string) {
         const data = JSON.stringify(payload.mail_events);
 
         const signature = crypto
-            .createHmac('sha256', this.payloadSigningKey)
+            .createHmac('sha256', payloadSigningKey)
             .update(data)
             .digest('hex');
 

@@ -24,22 +24,46 @@ const PAYLOAD_SIGNING_KEY = 'abc123';
 
 describe('MailEventService', function () {
     let repository: sinon.SinonStubbedInstance<MailEventRepository>;
+    let config: sinon.SinonStubbedInstance<any>;
+    let labs: sinon.SinonStubbedInstance<any>;
     let service: MailEventService;
 
     beforeEach(function () {
         repository = sinon.createStubInstance(MailEventRepository);
-        service = new MailEventService(repository, PAYLOAD_SIGNING_KEY);
+        labs = {
+            isSet: sinon.stub()
+        };
+        config = {
+            get: sinon.stub()
+        };
+
+        config.get.withArgs(MailEventService.CONFIG_KEY_PAYLOAD_SIGNING_KEY).returns(PAYLOAD_SIGNING_KEY);
+        labs.isSet.withArgs(MailEventService.LABS_KEY).returns(true);
+
+        service = new MailEventService(repository, config, labs);
     });
 
     describe('processPayload', function () {
-        it('should reject if the service was not initialised with a valid payload signing key', async function () {
-            service = new MailEventService(repository, undefined as any);
+        it('should reject if labs flag is false', async function () {
+            labs.isSet.withArgs(MailEventService.LABS_KEY).returns(false);
+
+            await assert.rejects(
+                service.processPayload({} as any),
+                {
+                    name: 'NotFoundError',
+                    message: 'Resource could not be found.'
+                }
+            );
+        });
+
+        it('should reject if payload signing key is invalid', async function () {
+            config.get.withArgs(MailEventService.CONFIG_KEY_PAYLOAD_SIGNING_KEY).returns(undefined);
 
             await assert.rejects(
                 service.processPayload({} as any),
                 {
                     name: 'InternalServerError',
-                    message: 'MailEventService is not configured'
+                    message: 'payload signing key is not configured'
                 }
             );
         });

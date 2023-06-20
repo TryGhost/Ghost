@@ -1,5 +1,6 @@
 const assert = require('assert');
-const {agentProvider, matchers} = require('../../utils/e2e-framework');
+const {MailEventService} = require('@tryghost/mail-events');
+const {agentProvider, matchers, mockManager} = require('../../utils/e2e-framework');
 const configUtils = require('../../utils/configUtils');
 const mailEvents = require('../../../core/server/services/mail-events');
 const models = require('../../../core/server/models');
@@ -11,10 +12,12 @@ describe('Mail Events API', function () {
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
+
+        mockManager.mockLabsEnabled(MailEventService.LABS_KEY);
     });
 
     it('Can add a mail event', async function () {
-        configUtils.set('hostSettings:mailEventsPayloadSigningKey', 'foobarbaz');
+        configUtils.set(MailEventService.CONFIG_KEY_PAYLOAD_SIGNING_KEY, 'foobarbaz');
 
         // Re-initialise the mail events service with the new config values
         mailEvents.init();
