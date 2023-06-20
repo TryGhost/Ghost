@@ -1,4 +1,5 @@
 import {Collection} from './Collection';
+import {CollectionResourceChangeEvent} from './CollectionResourceChangeEvent';
 import {CollectionRepository} from './CollectionRepository';
 import tpl from '@tryghost/tpl';
 import {MethodNotAllowedError, NotFoundError} from '@tryghost/errors';
@@ -187,14 +188,25 @@ export class CollectionsService {
         }
     }
 
-    async updateAutomaticCollections() {
-        const collections = await this.collectionsRepository.getAll({
-            filter: 'type:automatic'
-        });
+    async updateCollections(event: CollectionResourceChangeEvent) {
+        if (event.name === 'post.deleted') {
+            // NOTE: 'delete' works the same for both manual and automatic collections
+            const collections = await this.collectionsRepository.getAll();
 
-        for (const collection of collections) {
-            await this.updateAutomaticCollectionItems(collection);
-            await this.collectionsRepository.save(collection);
+            for (const collection of collections) {
+                if (collection.includesPost(event.data.id)) {
+                    await collection.removePost(event.data.id);
+                }
+            }
+        } else {
+            const collections = await this.collectionsRepository.getAll({
+                filter: 'type:automatic'
+            });
+
+            for (const collection of collections) {
+                await this.updateAutomaticCollectionItems(collection);
+                await this.collectionsRepository.save(collection);
+            }
         }
     }
 

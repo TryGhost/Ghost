@@ -67,6 +67,10 @@ export class Collection {
         }
     }
 
+    includesPost(id: string) {
+        return this.posts.includes(id);
+    }
+
     removeAllPosts() {
         this._posts = [];
     }
