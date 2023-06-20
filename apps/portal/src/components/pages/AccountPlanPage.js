@@ -52,7 +52,7 @@ function getConfirmationPageTitle({confirmationType, t}) {
 
 const Header = ({onBack, showConfirmation, confirmationType}) => {
     const {member, t} = useContext(AppContext);
-    let title = isPaidMember({member}) ? 'Change plan' : 'Choose a plan';
+    let title = isPaidMember({member}) ? t('Change plan') : t('Choose a plan');
     if (showConfirmation) {
         title = getConfirmationPageTitle({confirmationType, t});
     }
