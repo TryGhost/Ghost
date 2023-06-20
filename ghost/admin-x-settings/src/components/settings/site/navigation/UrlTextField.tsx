@@ -20,6 +20,11 @@ const formatUrl = (value: string, baseUrl: string) => {
         return {save: url, display: url};
     }
 
+    // If it doesn't look like a URL, leave it as is rather than assuming it's a pathname etc
+    if (!url.match(/^[a-zA-Z0-9-]+:/) && !url.match(/^(\/|\?)/)) {
+        return {save: url, display: url};
+    }
+
     let parsedUrl: URL;
 
     try {
