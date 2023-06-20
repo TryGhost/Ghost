@@ -59,7 +59,7 @@ const uploadImageCheck = async ({path, filename, contentType, expectedFileName, 
     expectedFileName = expectedFileName || filename;
 
     assert.match(body.images[0].url, new RegExp(`${urlUtils.urlFor('home', true)}content/images/\\d+/\\d+/${expectedFileName}`));
-    assert.equal(body.images[0].ref, ref);
+    assert.equal(body.images[0].ref, ref === undefined ? null : ref);
 
     const relativePath = body.images[0].url.replace(urlUtils.urlFor('home', true), '/');
     const filePath = config.getContentPath('images') + relativePath.replace('/content/images/', '');

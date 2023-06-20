@@ -111,7 +111,8 @@ describe('Posts Content API', function () {
             } else {
                 const tag = post.tags
                     .map(t => t.slug)
-                    .filter(s => s === 'kitchen-sink');
+                    .filter(s => s === 'kitchen-sink')
+                    .pop();
                 assert.equal(tag, 'kitchen-sink', `Each post must either be featured or have the tag 'kitchen-sink'`);
             }
         });
