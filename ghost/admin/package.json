@@ -47,7 +47,7 @@
     "@tryghost/kg-clean-basic-html": "3.0.17",
     "@tryghost/kg-converters": "0.0.7",
     "@tryghost/kg-parser-plugins": "3.0.18",
-    "@tryghost/kg-simplemde": "1.11.2",
+    "@tryghost/kg-simplemde": "2.0.16",
     "@tryghost/limit-service": "1.2.6",
     "@tryghost/members-csv": "0.0.0",
     "@tryghost/mobiledoc-kit": "0.12.5-ghost.2",
