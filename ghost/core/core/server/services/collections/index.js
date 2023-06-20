@@ -2,6 +2,7 @@ const {
     CollectionsService,
     CollectionsRepositoryInMemory
 } = require('@tryghost/collections');
+const labs = require('../../../shared/labs');
 
 class CollectionsServiceWrapper {
     /** @type {CollectionsService} */
@@ -9,7 +10,6 @@ class CollectionsServiceWrapper {
 
     constructor() {
         const postsRepository = require('./PostsRepository').getInstance();
-        const events = require('../../lib/common/events');
         const collectionsRepositoryInMemory = new CollectionsRepositoryInMemory();
 
         const collectionsService = new CollectionsService({
@@ -17,6 +17,36 @@ class CollectionsServiceWrapper {
             postsRepository: postsRepository
         });
 
+        this.api = collectionsService;
+    }
+
+    async init() {
+        if (!labs.isSet('collections')) {
+            return;
+        }
+        const existingBuiltins = await this.api.getAll({filter: 'slug:featured'});
+
+        if (!existingBuiltins.data.length) {
+            await this.api.createCollection({
+                title: 'Index',
+                slug: 'index',
+                description: 'Collection with all posts',
+                type: 'automatic',
+                deletable: false,
+                filter: 'status:published'
+            });
+
+            await this.api.createCollection({
+                title: 'Featured Posts',
+                slug: 'featured',
+                description: 'Collection of featured posts',
+                type: 'automatic',
+                deletable: false,
+                filter: 'featured:true'
+            });
+        }
+
+        const events = require('../../lib/common/events');
         // @NOTE: these should be reworked to use the "Event" classes
         //        instead of Bookshelf model events
         const updateEvents = require('./update-events');
@@ -24,22 +54,8 @@ class CollectionsServiceWrapper {
         // @NOTE: naive update implementation to keep things simple for the first version
         for (const event of updateEvents) {
             events.on(event, () => {
-                collectionsService.updateAutomaticCollections();
+                this.api.updateAutomaticCollections();
             });
-        }
-
-        this.api = collectionsService;
-    }
-
-    async init() {
-        const existingBuiltins = await this.api.getAll({filter: 'slug:featured'});
-
-        if (!existingBuiltins.data.length) {
-            const builtInCollections = require('./built-in-collections');
-
-            for (const collection of builtInCollections) {
-                await this.api.createCollection(collection);
-            }
         }
     }
 }
