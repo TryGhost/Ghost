@@ -127,7 +127,7 @@ export default class LexicalEditorController extends Controller {
     fromAnalytics = false;
 
     // koenig related properties
-    wordcount = null;
+    wordCount = 0;
 
     /* private properties ----------------------------------------------------*/
 
@@ -305,8 +305,8 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
-    updateWordCount(counts) {
-        this.set('wordCount', counts);
+    updateWordCount(count) {
+        this.set('wordCount', count);
     }
 
     @action
@@ -392,7 +392,7 @@ export default class LexicalEditorController extends Controller {
         const existingSnippet = this.snippets.find(snippet => snippet.name.toLowerCase() === snippetNameLC);
 
         if (existingSnippet) {
-            await this.confirmUpdateSnippet(existingSnippet, {lexical: data.value});
+            await this.confirmUpdateSnippet(existingSnippet, {lexical: JSON.parse(data.value)});
         } else {
             await this.saveNewSnippet(data);
         }

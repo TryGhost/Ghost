@@ -1,9 +1,9 @@
-import ImageUpload from '../../../admin-x-ds/global/ImageUpload';
+import ImageUpload from '../../../admin-x-ds/global/form/ImageUpload';
 import React, {useContext} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextArea from '../../../admin-x-ds/global/TextArea';
-import TextField from '../../../admin-x-ds/global/TextField';
+import TextArea from '../../../admin-x-ds/global/form/TextArea';
+import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {FileService, ServicesContext} from '../../providers/ServiceProvider';
 import {ReactComponent as TwitterLogo} from '../../../admin-x-ds/assets/images/twitter-logo.svg';

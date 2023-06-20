@@ -126,28 +126,29 @@ Caddyfile
 /ghost/admin/dist
 
 # Portal
-!/ghost/portal/.env
-/ghost/portal/umd
+!/apps/portal/.env
+/apps/portal/umd
 
 # Sodo-Search
-/ghost/sodo-search/public/main.css
-/ghost/sodo-search/umd
+/apps/sodo-search/public/main.css
+/apps/sodo-search/umd
 
 # Signup Form and local environments
-/ghost/signup-form/umd
-/ghost/signup-form/.env*.local
-/ghost/signup-form/test-results/
-/ghost/signup-form/playwright-report/
-/ghost/signup-form/playwright/.cache/
+/apps/signup-form/umd
+/apps/signup-form/.env*.local
+/apps/signup-form/test-results/
+/apps/signup-form/playwright-report/
+/apps/signup-form/playwright/.cache/
 
 # Announcement-Bar
-/ghost/announcement-bar/umd
+/apps/announcement-bar/umd
 
 # Build files
+/apps/*/build
 /ghost/*/build
 
 # Typescript build artifacts
-/ghost/*/tsconfig.tsbuildinfo
+tsconfig.tsbuildinfo
 
 # Admin X
 /ghost/admin-x-settings/dist

@@ -13,6 +13,7 @@ const {
     anyObjectId,
     anyISODateTime,
     anyNumber,
+    anyUuid,
     anyString
 } = matchers;
 
@@ -20,6 +21,14 @@ const matchCollection = {
     id: anyObjectId,
     created_at: anyISODateTime,
     updated_at: anyISODateTime
+};
+
+const matchCollectionPost = {
+    id: anyObjectId,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime,
+    published_at: anyISODateTime,
+    uuid: anyUuid
 };
 
 /**
@@ -43,6 +52,7 @@ describe('Collections API', function () {
     let agent;
 
     before(async function () {
+        mockManager.mockLabsEnabled('collections');
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users', 'posts');
         await agent.loginAsOwner();
@@ -74,21 +84,58 @@ describe('Collections API', function () {
             });
     });
 
-    it('Can browse Collections', async function () {
-        await agent
-            .get('/collections/')
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                collections: [
-                    buildMatcher(11, {withSortOrder: true}),
-                    buildMatcher(2, {withSortOrder: true}),
-                    buildMatcher(0)
-                ]
-            });
+    describe('Browse', function () {
+        it('Can browse Collections', async function () {
+            await agent
+                .get('/collections/')
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [
+                        buildMatcher(11, {withSortOrder: true}),
+                        buildMatcher(2, {withSortOrder: true}),
+                        buildMatcher(0),
+                        buildMatcher(0)
+                    ]
+                });
+        });
+    });
+
+    describe('Browse Posts', function () {
+        it('Can browse Collections Posts', async function () {
+            const collections = await agent.get('/collections/');
+            const indexCollection = collections.body.collections.find(c => c.slug === 'index');
+
+            await agent
+                .get(`/collections/${indexCollection.id}/posts/`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collection_posts: Array(11).fill(matchCollectionPost)
+                });
+        });
+
+        it('Can browse Collections Posts using paging parameters', async function () {
+            const collections = await agent.get('/collections/');
+            const indexCollection = collections.body.collections.find(c => c.slug === 'index');
+
+            await agent
+                .get(`/collections/${indexCollection.id}/posts/?limit=2&page=2`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collection_posts: Array(2).fill(matchCollectionPost)
+                });
+        });
     });
 
     it('Can read a Collection', async function () {

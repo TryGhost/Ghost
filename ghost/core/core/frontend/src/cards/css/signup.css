@@ -69,6 +69,10 @@
     object-position: center;
 }
 
+.kg-background-size-contain .kg-signup-card-image {
+    object-fit: contain;
+}
+
 .kg-signup-card-image.kg-style-accent {
     background-color: var(--ghost-accent-color);
 }

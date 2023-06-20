@@ -7,6 +7,7 @@
   "author": "Ghost Foundation",
   "license": "MIT",
   "workspaces": [
+    "apps/*",
     "ghost/*"
   ],
   "monorepo": {
@@ -19,6 +20,7 @@
     "**/node_modules/**"
   ],
   "scripts": {
+    "archive": "yarn workspace ghost run archive",
     "build": "lerna run build",
     "dev:debug": "DEBUG_COLORS=true DEBUG=@tryghost*,ghost:* yarn dev",
     "dev:admin": "node .github/dev.js --admin",

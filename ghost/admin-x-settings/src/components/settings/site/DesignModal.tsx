@@ -1,18 +1,16 @@
 import BrandSettings, {BrandSettingValues} from './designAndBranding/BrandSettings';
-import ConfirmationModal from '../../../admin-x-ds/global/ConfirmationModal';
+import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useContext, useEffect, useState} from 'react';
-import StickyFooter from '../../../admin-x-ds/global/StickyFooter';
 import TabView, {Tab} from '../../../admin-x-ds/global/TabView';
 import ThemePreview from './designAndBranding/ThemePreview';
 import ThemeSettings from './designAndBranding/ThemeSettings';
 import useForm from '../../../hooks/useForm';
-import {CustomThemeSetting, Post, Setting, SettingValue, SiteData} from '../../../types/api';
-import {PreviewModalContent} from '../../../admin-x-ds/global/PreviewModal';
-import {SelectOption} from '../../../admin-x-ds/global/Select';
+import {CustomThemeSetting, Post, Setting, SettingValue} from '../../../types/api';
+import {PreviewModalContent} from '../../../admin-x-ds/global/modal/PreviewModal';
 import {ServicesContext} from '../../providers/ServiceProvider';
 import {SettingsContext} from '../../providers/SettingsProvider';
-import {getSettingValues} from '../../../utils/helpers';
+import {getHomepageUrl, getSettingValues} from '../../../utils/helpers';
 
 const Sidebar: React.FC<{
     brandSettings: BrandSettingValues
@@ -20,7 +18,13 @@ const Sidebar: React.FC<{
     themeSettingSections: Array<{id: string, title: string, settings: CustomThemeSetting[]}>
     updateThemeSetting: (updated: CustomThemeSetting) => void
     onTabChange: (id: string) => void
-}> = ({brandSettings,updateBrandSetting,themeSettingSections,updateThemeSetting,onTabChange}) => {
+}> = ({
+    brandSettings,
+    updateBrandSetting,
+    themeSettingSections,
+    updateThemeSetting,
+    onTabChange
+}) => {
     const tabs: Tab[] = [
         {
             id: 'brand',
@@ -39,22 +43,9 @@ const Sidebar: React.FC<{
             <div className='p-7'>
                 <TabView tabs={tabs} onTabChange={onTabChange} />
             </div>
-            <StickyFooter>
-                <button className='flex w-full cursor-pointer flex-col px-7' type='button' onClick={() => {}}>
-                    <strong>Change theme</strong>
-                    <span className='text-sm text-grey-600'>Casper</span>
-                </button>
-            </StickyFooter>
         </>
     );
 };
-
-function getHomepageUrl(siteData: SiteData): string {
-    const url = new URL(siteData.url);
-    const subdir = url.pathname.endsWith('/') ? url.pathname : `${url.pathname}/`;
-
-    return `${url.origin}${subdir}`;
-}
 
 const DesignModal: React.FC = () => {
     const modal = useModal();
@@ -63,7 +54,7 @@ const DesignModal: React.FC = () => {
     const {settings, siteData, saveSettings} = useContext(SettingsContext);
     const [themeSettings, setThemeSettings] = useState<Array<CustomThemeSetting>>([]);
     const [latestPost, setLatestPost] = useState<Post | null>(null);
-    const [selectedUrl, setSelectedUrl] = useState(getHomepageUrl(siteData!));
+    const [selectedPreviewTab, setSelectedPreviewTab] = useState('home');
 
     useEffect(() => {
         api.customThemeSettings.browse().then((response) => {
@@ -130,50 +121,68 @@ const DesignModal: React.FC = () => {
         title: id === 'site-wide' ? 'Site wide' : (id === 'homepage' ? 'Homepage' : 'Post')
     }));
 
-    const urlOptions: SelectOption[] = [
-        {value: getHomepageUrl(siteData!), label: 'Homepage'},
-        latestPost && {value: latestPost.url, label: 'Post'}
-    ].filter((option): option is SelectOption => Boolean(option));
+    let previewTabs: Tab[] = [];
+    if (latestPost) {
+        previewTabs = [
+            {id: 'homepage', title: 'Homepage'},
+            {id: 'post', title: 'Post'}
+        ];
+    }
 
-    const onSelectURL = (url: string) => {
-        setSelectedUrl(url);
+    const onSelectURL = (id: string) => {
+        if (previewTabs.length) {
+            setSelectedPreviewTab(id);
+        }
     };
 
     const onTabChange = (id: string) => {
         if (id === 'post' && latestPost) {
-            setSelectedUrl(latestPost.url);
+            setSelectedPreviewTab('post');
         } else {
-            setSelectedUrl(getHomepageUrl(siteData!));
+            setSelectedPreviewTab('home');
         }
     };
 
-    return <PreviewModalContent
-        buttonsDisabled={saveState === 'saving'}
-        cancelLabel='Close'
-        okLabel={saveState === 'saved' ? 'Saved' : (saveState === 'saving' ? 'Saving ...' : 'Save')}
-        preview={
-            <ThemePreview
-                settings={{
-                    description,
-                    accentColor,
-                    icon,
-                    logo,
-                    coverImage,
-                    themeSettings
-                }}
-                url={selectedUrl}
-            />
-        }
-        previewToolbarURLs={urlOptions}
-        selectedURL={selectedUrl}
-        sidebar={<Sidebar
+    let selectedTabURL = getHomepageUrl(siteData!);
+    switch (selectedPreviewTab) {
+    case 'homepage':
+        selectedTabURL = getHomepageUrl(siteData!);
+        break;
+    case 'post':
+        selectedTabURL = latestPost!.url;
+        break;
+    }
+
+    const previewContent =
+        <ThemePreview
+            settings={{
+                description,
+                accentColor,
+                icon,
+                logo,
+                coverImage,
+                themeSettings
+            }}
+            url={selectedTabURL}
+        />;
+    const sidebarContent =
+        <Sidebar
             brandSettings={{description, accentColor, icon, logo, coverImage}}
             themeSettingSections={themeSettingSections}
             updateBrandSetting={updateBrandSetting}
             updateThemeSetting={updateThemeSetting}
             onTabChange={onTabChange}
-        />}
+        />;
+
+    return <PreviewModalContent
+        buttonsDisabled={saveState === 'saving'}
+        defaultTab='homepage'
+        okLabel={saveState === 'saved' ? 'Saved' : (saveState === 'saving' ? 'Saving...' : 'Save and close')}
+        preview={previewContent}
+        previewToolbarTabs={previewTabs}
+        sidebar={sidebarContent}
         sidebarPadding={false}
+        size='full'
         testId='design-modal'
         title='Design'
         onCancel={() => {
@@ -200,7 +209,7 @@ const DesignModal: React.FC = () => {
         }}
         onOk={async () => {
             await handleSave();
-            // modal.remove();
+            modal.remove();
         }}
         onSelectURL={onSelectURL}
     />;

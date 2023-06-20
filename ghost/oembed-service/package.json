@@ -22,7 +22,7 @@
     "mocha": "10.2.0"
   },
   "dependencies": {
-    "@extractus/oembed-extractor": "3.1.9",
+    "@extractus/oembed-extractor": "3.1.10",
     "@tryghost/errors": "1.2.24",
     "@tryghost/logging": "2.4.4",
     "@tryghost/tpl": "0.1.24",
@@ -30,15 +30,15 @@
     "cheerio": "0.22.0",
     "iconv-lite": "0.6.3",
     "lodash": "4.17.21",
-    "metascraper": "5.34.2",
-    "metascraper-author": "5.34.2",
-    "metascraper-description": "5.34.2",
-    "metascraper-image": "5.34.2",
-    "metascraper-logo": "5.34.2",
-    "metascraper-logo-favicon": "5.34.2",
-    "metascraper-publisher": "5.34.2",
-    "metascraper-title": "5.34.2",
-    "metascraper-url": "5.34.2",
-    "tough-cookie": "4.1.2"
+    "metascraper": "5.34.7",
+    "metascraper-author": "5.34.7",
+    "metascraper-description": "5.34.7",
+    "metascraper-image": "5.34.7",
+    "metascraper-logo": "5.34.7",
+    "metascraper-logo-favicon": "5.34.7",
+    "metascraper-publisher": "5.34.7",
+    "metascraper-title": "5.34.7",
+    "metascraper-url": "5.34.7",
+    "tough-cookie": "4.1.3"
   }
 }

@@ -208,6 +208,13 @@ class SettingsBREADService {
                 key: 'stripe_connect_account_id',
                 value: stripeConnectData.account_id
             });
+
+            if (stripeConnectData.public_key.match(/pk_live/)) {
+                // Require the Stripe service here as it breaks existing tests otherwise
+                const stripeService = require('../stripe');
+                // This method currently only triggers a DomainEvent
+                await stripeService.connect();
+            }
         }
 
         // remove any email properties that are not allowed to be set without verification

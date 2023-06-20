@@ -1,7 +1,7 @@
 import ButtonGroup from '../global/ButtonGroup';
 import React from 'react';
 import SettingGroupHeader from './SettingGroupHeader';
-import {IButton} from '../global/Button';
+import {ButtonProps} from '../global/Button';
 import {SaveState} from '../../hooks/useForm';
 
 interface SettingGroupProps {
@@ -96,7 +96,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
         );
     }
 
-    let editButtons: IButton[] = [
+    let editButtons: ButtonProps[] = [
         {
             label: 'Cancel',
             key: 'cancel',

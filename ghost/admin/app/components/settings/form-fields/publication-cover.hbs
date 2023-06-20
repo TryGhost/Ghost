@@ -6,7 +6,6 @@
     >
     <div>
         <label class="gh-setting-title" for="publication-cover">Publication cover</label>
-        <div class="gh-setting-desc mb3">An optional large background image for your site</div>
         {{#each uploader.errors as |error|}}
             <div class="gh-setting-error" data-test-error="coverImage">{{or error.context error.message}}</div>
         {{/each}}
@@ -55,6 +54,7 @@
                 />
             </div>
         </div>
+        <div class="gh-setting-desc mb3">An optional large background image for your site</div>
     </div>
     </GhUploader>
 

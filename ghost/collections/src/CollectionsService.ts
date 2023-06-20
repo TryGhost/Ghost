@@ -1,12 +1,16 @@
 import {Collection} from './Collection';
 import {CollectionRepository} from './CollectionRepository';
 import tpl from '@tryghost/tpl';
-import {MethodNotAllowedError} from '@tryghost/errors';
+import {MethodNotAllowedError, NotFoundError} from '@tryghost/errors';
 
 const messages = {
     cannotDeleteBuiltInCollectionError: {
         message: 'Cannot delete builtin collection',
         context: 'The collection {id} is a builtin collection and cannot be deleted'
+    },
+    collectionNotFound: {
+        message: 'Collection not found',
+        context: 'Collection with id: {id} does not exist'
     }
 };
 
@@ -19,6 +23,14 @@ type CollectionPostDTO = {
     id: string;
     sort_order: number;
 };
+
+type CollectionPostListItemDTO = {
+    id: string;
+    slug: string;
+    title: string;
+    featured: boolean;
+    featured_image?: string;
+}
 
 type ManualCollection = {
     title: string;
@@ -61,8 +73,16 @@ type CollectionPostInputDTO = {
     published_at: Date;
 };
 
+type QueryOptions = {
+    filter?: string;
+    include?: string;
+    page?: number;
+    limit?: number;
+}
+
 interface PostsRepository {
-    getAll(options: {filter?: string}): Promise<any[]>;
+    getAll(options: QueryOptions): Promise<any[]>;
+    getBulk(ids: string[]): Promise<any[]>;
 }
 
 export class CollectionsService {
@@ -208,17 +228,57 @@ export class CollectionsService {
         return await this.collectionsRepository.getById(id);
     }
 
-    async getAll(options?: any): Promise<{data: Collection[], meta: any}> {
+    async getBySlug(slug: string): Promise<Collection | null> {
+        return await this.collectionsRepository.getBySlug(slug);
+    }
+
+    async getAll(options?: QueryOptions): Promise<{data: CollectionDTO[], meta: any}> {
         const collections = await this.collectionsRepository.getAll(options);
 
+        const collectionsDTOs: CollectionDTO[] = [];
+
+        for (const collection of collections) {
+            collectionsDTOs.push(this.toDTO(collection));
+        }
+
         return {
-            data: collections,
+            data: collectionsDTOs,
             meta: {
                 pagination: {
                     page: 1,
                     pages: 1,
                     limit: collections.length,
                     total: collections.length,
+                    prev: null,
+                    next: null
+                }
+            }
+        };
+    }
+
+    async getAllPosts(id: string, {limit = 15, page = 1}: QueryOptions): Promise<{data: CollectionPostListItemDTO[], meta: any}> {
+        const collection = await this.getById(id);
+
+        if (!collection) {
+            throw new NotFoundError({
+                message: tpl(messages.collectionNotFound.message),
+                context: tpl(messages.collectionNotFound.context, {id})
+            });
+        }
+
+        const startIdx = limit * (page - 1);
+        const endIdx = limit * page;
+        const postIds = collection.posts.slice(startIdx, endIdx);
+        const posts = await this.postsRepository.getBulk(postIds);
+
+        return {
+            data: posts,
+            meta: {
+                pagination: {
+                    page: page,
+                    pages: Math.ceil(collection.posts.length / limit),
+                    limit: limit,
+                    total: posts.length,
                     prev: null,
                     next: null
                 }

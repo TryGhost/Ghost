@@ -8,7 +8,6 @@
   "types": "./build/i18n.d.ts",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "build": "tsc",
     "test:unit:base": "NODE_ENV=testing c8 --include index.js --include lib --check-coverage --100  --reporter text --reporter cobertura mocha './test/**/*.test.js'",
     "test:unit": "yarn test:unit:base && yarn translate",
     "test": "yarn test:unit",
@@ -32,6 +31,6 @@
     "typescript": "5.1.3"
   },
   "dependencies": {
-    "i18next": "22.5.0"
+    "i18next": "23.0.1"
   }
 }

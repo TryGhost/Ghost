@@ -4,9 +4,9 @@ import React from 'react';
 export type ButtonColor = 'clear' | 'grey' | 'black' | 'green' | 'red' | 'white';
 export type ButtonSize = 'sm' | 'md';
 
-export interface IButton {
+export interface ButtonProps {
     size?: ButtonSize;
-    label?: string;
+    label?: React.ReactNode;
     icon?: string;
     iconColorClass?: string;
     key?: string;
@@ -18,7 +18,7 @@ export interface IButton {
     onClick?: () => void;
 }
 
-const Button: React.FC<IButton> = ({
+const Button: React.FC<ButtonProps> = ({
     size = 'md',
     label = '',
     icon = '',
@@ -58,7 +58,7 @@ const Button: React.FC<IButton> = ({
         styles += link ? ' text-white hover:text-white' : ' bg-white text-black';
         break;
     default:
-        styles += link ? ' text-black hover:text-grey-800' : ' bg-transparent text-black hover:text-grey-800';
+        styles += link ? ' text-black hover:text-grey-800' : ' text-black hover:bg-grey-200';
         break;
     }
 

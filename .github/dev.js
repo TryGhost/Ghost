@@ -67,6 +67,16 @@ if (DASH_DASH_ARGS.includes('in-memory-repository') || DASH_DASH_ARGS.includes('
     });
 }
 
+if (DASH_DASH_ARGS.includes('collections') || DASH_DASH_ARGS.includes('all')) {
+    commands.push({
+        name: 'collections',
+        command: 'yarn dev',
+        cwd: path.resolve(__dirname, '../ghost/collections'),
+        prefixColor: 'pink',
+        env: {}
+    });
+}
+
 if (DASH_DASH_ARGS.includes('admin-x') || DASH_DASH_ARGS.includes('adminx') || DASH_DASH_ARGS.includes('adminX') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'adminX',
@@ -82,7 +92,7 @@ if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'portal',
         command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../ghost/portal'),
+        cwd: path.resolve(__dirname, '../apps/portal'),
         prefixColor: 'magenta',
         env: {}
     });
@@ -93,7 +103,7 @@ if (DASH_DASH_ARGS.includes('signup') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'signup-form',
         command: DASH_DASH_ARGS.includes('signup') ? 'yarn dev' : 'yarn preview',
-        cwd: path.resolve(__dirname, '../ghost/signup-form'),
+        cwd: path.resolve(__dirname, '../apps/signup-form'),
         prefixColor: 'magenta',
         env: {}
     });
@@ -104,7 +114,7 @@ if (DASH_DASH_ARGS.includes('announcement-bar') || DASH_DASH_ARGS.includes('anno
     commands.push({
         name: 'announcement-bar',
         command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../ghost/announcement-bar'),
+        cwd: path.resolve(__dirname, '../apps/announcement-bar'),
         prefixColor: '#DC9D00',
         env: {}
     });
@@ -115,7 +125,7 @@ if (DASH_DASH_ARGS.includes('search') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'search',
         command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../ghost/sodo-search'),
+        cwd: path.resolve(__dirname, '../apps/sodo-search'),
         prefixColor: '#23de43',
         env: {}
     });

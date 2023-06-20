@@ -1,10 +1,11 @@
 import Heading from '../../../../admin-x-ds/global/Heading';
-import ImageUpload from '../../../../admin-x-ds/global/ImageUpload';
+import Hint from '../../../../admin-x-ds/global/Hint';
+import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
 import React, {useContext} from 'react';
-import Select from '../../../../admin-x-ds/global/Select';
+import Select from '../../../../admin-x-ds/global/form/Select';
 import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../../admin-x-ds/global/TextField';
-import Toggle from '../../../../admin-x-ds/global/Toggle';
+import TextField from '../../../../admin-x-ds/global/form/TextField';
+import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import {CustomThemeSetting} from '../../../../types/api';
 import {ServicesContext} from '../../../providers/ServiceProvider';
 import {humanizeSettingKey} from '../../../../utils/helpers';
@@ -24,6 +25,7 @@ const ThemeSetting: React.FC<{
     case 'text':
         return (
             <TextField
+                hint={setting.description}
                 title={humanizeSettingKey(setting.key)}
                 value={setting.value || ''}
                 onChange={event => setSetting(event.target.value)}
@@ -33,6 +35,7 @@ const ThemeSetting: React.FC<{
         return (
             <Toggle
                 direction="rtl"
+                hint={setting.description}
                 id={`theme-setting-${setting.key}`}
                 label={humanizeSettingKey(setting.key)}
                 onChange={event => setSetting(event.target.checked)}
@@ -42,6 +45,7 @@ const ThemeSetting: React.FC<{
         return (
             <Select
                 defaultSelectedOption={setting.value}
+                hint={setting.description}
                 options={setting.options.map(option => ({label: option, value: option}))}
                 title={humanizeSettingKey(setting.key)}
                 onSelect={value => setSetting(value)}
@@ -50,6 +54,7 @@ const ThemeSetting: React.FC<{
     case 'color':
         return (
             <TextField
+                hint={setting.description}
                 title={humanizeSettingKey(setting.key)}
                 type='color'
                 value={setting.value || ''}
@@ -66,6 +71,7 @@ const ThemeSetting: React.FC<{
                 onDelete={() => setSetting(null)}
                 onUpload={file => handleImageUpload(file)}
             >Upload image</ImageUpload>
+            {setting.description && <Hint>{setting.description}</Hint>}
         </>;
     }
 };
