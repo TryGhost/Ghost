@@ -6,23 +6,19 @@ import {task} from 'ember-concurrency';
 export default class RestoreRevisionModal extends Component {
     @service notifications;
 
-    get pageType() {
-        return this.args.data.post.isPost ? 'post' : 'page';
-    }
-
     get title() {
         return this.args.data.post.isPublished === true
-            ? `Restore version for published ${this.pageType}?`
+            ? `Restore version for published ${this.args.data.post.displayName}?`
             : `Restore this version?`;
     }
 
     get body() {
         return this.args.data.post.isPublished === true
             ? htmlSafe(`
-                Heads up! This ${this.pageType} has already been <strong>published</strong>, restoring a previous
-                version will automatically update the ${this.pageType} on your site.
+                Heads up! This ${this.args.data.post.displayName} has already been <strong>published</strong>, restoring a previous
+                version will automatically update the ${this.args.data.post.displayName} on your site.
             `)
-            : `Replace your existing draft with this version of the ${this.pageType}.`;
+            : `Replace your existing draft with this version of the ${this.args.data.post.displayName}.`;
     }
 
     @task
