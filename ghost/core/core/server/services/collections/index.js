@@ -1,6 +1,7 @@
 const {
     CollectionsService,
-    CollectionsRepositoryInMemory
+    CollectionsRepositoryInMemory,
+    CollectionResourceChangeEvent
 } = require('@tryghost/collections');
 const labs = require('../../../shared/labs');
 
@@ -24,6 +25,9 @@ class CollectionsServiceWrapper {
         if (!labs.isSet('collections')) {
             return;
         }
+
+        const events = require('../../lib/common/events');
+
         const existingBuiltins = await this.api.getAll({filter: 'slug:featured'});
 
         if (!existingBuiltins.data.length) {
@@ -46,16 +50,23 @@ class CollectionsServiceWrapper {
             });
         }
 
-        const events = require('../../lib/common/events');
-        // @NOTE: these should be reworked to use the "Event" classes
-        //        instead of Bookshelf model events
-        const updateEvents = require('./update-events');
+        const ghostModelUpdateEvents = require('./update-events');
 
-        // @NOTE: naive update implementation to keep things simple for the first version
-        for (const event of updateEvents) {
-            events.on(event, () => {
-                this.api.updateAutomaticCollections();
-            });
+        const collectionListener = (event, data) => {
+            const change = Object.assign({}, {
+                id: data.id,
+                resource: event.split('.')[0]
+            }, data._changed);
+            const collectionResourceChangeEvent = CollectionResourceChangeEvent.create(event, change);
+            // @NOTE: to avoid race conditions we need a queue here to make sure updates happen
+            //        one by one and not in parallel
+            this.api.updateCollections(collectionResourceChangeEvent);
+        };
+
+        for (const event of ghostModelUpdateEvents) {
+            if (!events.hasRegisteredListener(event, 'collectionListener')) {
+                events.on(event, data => collectionListener(event, data));
+            }
         }
     }
 }
