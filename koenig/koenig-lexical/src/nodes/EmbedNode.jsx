@@ -83,6 +83,7 @@ function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedType, meta
             // set the test data return values in fetchEmbed.js
             response = await cardConfig.fetchEmbed(href, {type});
             // we may end up with a bookmark return if the url is valid but doesn't return an embed
+            console.log(`repsonse,`,response)
             if (response.type === 'bookmark') {
                 editor.update(() => {
                     const node = $getNodeByKey(nodeKey);
@@ -104,7 +105,7 @@ function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedType, meta
         }
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setUrl(response.url);
+            node.setUrl(href);
             node.setMetadata(response);
             node.setEmbedType(response.type);
             node.setHtml(response.html);
