@@ -152,7 +152,7 @@
                         {{#if this.canViewPostHistory}}
                             <li class="nav-list-item">
                                 <button type="button" {{on "click" this.openPostHistory}} data-test-toggle="post-history">
-                                    <span>{{svg-jar "history" class="history"}} Post history</span>
+                                    <span>{{svg-jar "history" class="history"}} {{capitalize this.post.displayName}} history</span>
                                 </button>
                                 {{svg-jar "arrow-right" class="arrow-right"}}
                             </li>
