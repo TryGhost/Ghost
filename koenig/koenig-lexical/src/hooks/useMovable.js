@@ -135,9 +135,6 @@ export default function useMovable({adjustOnResize, adjustOnDrag} = {}) {
     }, [ref, cancelClick]);
 
     const drag = useCallback((e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
         let eventX, eventY;
 
         if (e.type === 'touchmove') {
@@ -175,15 +172,12 @@ export default function useMovable({adjustOnResize, adjustOnDrag} = {}) {
     }, [moveThreshold, setPosition, disableScroll, disableSelection, disablePointerEvents, adjustOnDrag]);
 
     const dragEnd = useCallback((e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
         active.current = false;
 
-        window.removeEventListener('touchend', dragEnd, {capture: true, passive: false});
-        window.removeEventListener('touchmove', drag, {capture: true, passive: false});
-        window.removeEventListener('mouseup', dragEnd, {capture: true, passive: false});
-        window.removeEventListener('mousemove', drag, {capture: true, passive: false});
+        window.removeEventListener('touchend', dragEnd, {capture: true, passive: true});
+        window.removeEventListener('touchmove', drag, {capture: true, passive: true});
+        window.removeEventListener('mouseup', dragEnd, {capture: true, passive: true});
+        window.removeEventListener('mousemove', drag, {capture: true, passive: true});
 
         // Removing this immediately results in the click event behind re-enabled in the same
         // event loop meaning that it doesn't have the desired effect when dragging out of the canvas.
@@ -202,10 +196,10 @@ export default function useMovable({adjustOnResize, adjustOnDrag} = {}) {
     }, [enableScroll, enableSelection, enablePointerEvents, drag, cancelClick]);
 
     const addActiveEventListeners = useCallback(() => {
-        window.addEventListener('touchend', dragEnd, {capture: true, passive: false});
-        window.addEventListener('touchmove', drag, {capture: true, passive: false});
-        window.addEventListener('mouseup', dragEnd, {capture: true, passive: false});
-        window.addEventListener('mousemove', drag, {capture: true, passive: false});
+        window.addEventListener('touchend', dragEnd, {capture: true, passive: true});
+        window.addEventListener('touchmove', drag, {capture: true, passive: true});
+        window.addEventListener('mouseup', dragEnd, {capture: true, passive: true});
+        window.addEventListener('mousemove', drag, {capture: true, passive: true});
     }, [dragEnd, drag]);
 
     const dragStart = useCallback((e) => {
@@ -245,10 +239,10 @@ export default function useMovable({adjustOnResize, adjustOnDrag} = {}) {
     }, [dragStart]);
 
     const removeActiveEventListeners = useCallback(() => {
-        window.removeEventListener('touchend', dragEnd, {capture: true, passive: false});
-        window.removeEventListener('touchmove', drag, {capture: true, passive: false});
-        window.removeEventListener('mouseup', dragEnd, {capture: true, passive: false});
-        window.removeEventListener('mousemove', drag, {capture: true, passive: false});
+        window.removeEventListener('touchend', dragEnd, {capture: true, passive: true});
+        window.removeEventListener('touchmove', drag, {capture: true, passive: true});
+        window.removeEventListener('mouseup', dragEnd, {capture: true, passive: true});
+        window.removeEventListener('mousemove', drag, {capture: true, passive: true});
 
         // Removing this immediately results in the click event behind re-enabled in the same
         // event loop meaning that it doesn't have the desired effect when dragging out of the canvas.
