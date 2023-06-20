@@ -15,7 +15,6 @@ export async function defineConfig(env) {
         plugins: [
             i18nextPlugin({
                 pathPattern: "ghost/i18n/locales/{language}/*.json",
-                variableReferencePattern: ["{{", "}}"],
                 ignore: ["context.json"]
             }),
             standardLintRules(),
