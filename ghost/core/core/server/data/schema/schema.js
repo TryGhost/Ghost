@@ -1022,7 +1022,7 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         email_sent_at: {type: 'dateTime', nullable: true}
     },
-    mail_events: {
+    temp_mail_events: {
         id: {type: 'string', maxlength: 100, nullable: false, primary: true},
         type: {type: 'string', maxlength: 50, nullable: false},
         message_id: {type: 'string', maxlength: 150, nullable: false},

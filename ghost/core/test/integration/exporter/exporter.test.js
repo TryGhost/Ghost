@@ -39,7 +39,6 @@ describe('Exporter', function () {
                 'jobs',
                 'labels',
                 'redirects',
-                'mail_events',
                 'members',
                 'members_cancel_events',
                 'members_email_change_events',
@@ -90,7 +89,8 @@ describe('Exporter', function () {
                 'tokens',
                 'users',
                 'webhooks',
-                'milestones'
+                'milestones',
+                'temp_mail_events'
             ];
 
             should.exist(exportData);
@@ -112,14 +112,14 @@ describe('Exporter', function () {
                 'email_recipient_failures',
                 'email_recipients',
                 'email_spam_complaint_events',
-                'mail_events',
                 'members_cancel_events',
                 'members_payment_events',
                 'members_login_events',
                 'members_email_change_events',
                 'members_status_events',
                 'members_paid_subscription_events',
-                'members_subscribe_events'
+                'members_subscribe_events',
+                'temp_mail_events'
             ];
 
             excludedTables.forEach((tableName) => {

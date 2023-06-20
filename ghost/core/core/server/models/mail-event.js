@@ -1,7 +1,7 @@
 const ghostBookshelf = require('./base');
 
 const MailEvent = ghostBookshelf.Model.extend({
-    tableName: 'mail_events',
+    tableName: 'temp_mail_events',
     defaults() {
         return {};
     }
