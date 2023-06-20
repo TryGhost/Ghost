@@ -73,6 +73,6 @@
         "vite": "4.3.9",
         "vite-plugin-commonjs": "0.7.1",
         "vite-plugin-svgr": "3.2.0",
-        "vitest": "0.31.4"
+        "vitest": "0.32.2"
     }
 }
