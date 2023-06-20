@@ -66,7 +66,7 @@ export default function useMovable({adjustOnResize, adjustOnDrag} = {}) {
     }, []);
 
     const setTranslate = useCallback((xPos, yPos) => {
-        ref.current.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
+        ref.current.style.transform = `translate(${xPos}px, ${yPos}px)`;
     }, [ref]);
 
     const setPosition = useCallback(({x, y}) => {
