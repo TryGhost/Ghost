@@ -1,23 +1,23 @@
 import React, {useCallback, useContext, useEffect, useId, useState} from 'react';
 
 interface GlobalDirtyState {
-    setGlobalDirtyState: (reason: string, dirty: boolean) => void;
+    setGlobalDirtyState: (id: string, dirty: boolean) => void;
 }
 
 const GlobalDirtyStateContext = React.createContext<GlobalDirtyState>({setGlobalDirtyState: () => {}});
 
 export const GlobalDirtyStateProvider = ({setDirty, children}: {setDirty?: (dirty: boolean) => void; children: React.ReactNode}) => {
-    // Allows each component to register itself as dirty, so when one is reset/saved the overall page dirty state persists
-    const [dirtyReasons, setDirtyReasons] = useState<string[]>([]);
+    // Allows each component to register itself as dirty with a unique ID, so when one is reset/saved the overall page dirty state persists
+    const [dirtyIds, setDirtyIds] = useState<string[]>([]);
 
-    const setGlobalDirtyState = useCallback((reason: string, dirty: boolean) => {
-        setDirtyReasons((current) => {
-            if (dirty && !current.includes(reason)) {
-                return [...current, reason];
+    const setGlobalDirtyState = useCallback((id: string, dirty: boolean) => {
+        setDirtyIds((current) => {
+            if (dirty && !current.includes(id)) {
+                return [...current, id];
             }
 
-            if (!dirty && current.includes(reason)) {
-                return current.filter(currentReason => currentReason !== reason);
+            if (!dirty && current.includes(id)) {
+                return current.filter(currentId => currentId !== id);
             }
 
             return current;
@@ -25,8 +25,8 @@ export const GlobalDirtyStateProvider = ({setDirty, children}: {setDirty?: (dirt
     }, []);
 
     useEffect(() => {
-        setDirty?.(dirtyReasons.length > 0);
-    }, [dirtyReasons, setDirty]);
+        setDirty?.(dirtyIds.length > 0);
+    }, [dirtyIds, setDirty]);
 
     return (
         <GlobalDirtyStateContext.Provider value={{setGlobalDirtyState}}>
