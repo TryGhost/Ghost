@@ -2,7 +2,7 @@ const debug = require('@tryghost/debug')('test:dbUtils');
 
 // Utility Packages
 const fs = require('fs-extra');
-const Promise = require('bluebird');
+const Promise = require('bluebird'); //not here
 const KnexMigrator = require('knex-migrator');
 const knexMigrator = new KnexMigrator();
 const DatabaseInfo = require('@tryghost/database-info');
