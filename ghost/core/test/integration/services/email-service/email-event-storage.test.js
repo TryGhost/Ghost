@@ -462,7 +462,7 @@ describe('EmailEventStorage', function () {
         // Message and code not changed
         assert.equal(permanentFailures.models[0].get('message'), 'Not delivering to previously bounced address');
         assert.equal(permanentFailures.models[0].get('code'), 605);
-        assert.equal(permanentFailures.models[0].get('enhanded_code'), undefined);
+        assert.equal(permanentFailures.models[0].get('enhanced_code'), null);
         assert.notEqual(permanentFailures.models[0].get('failed_at').toUTCString(), timestamp.toUTCString());
     });
 
