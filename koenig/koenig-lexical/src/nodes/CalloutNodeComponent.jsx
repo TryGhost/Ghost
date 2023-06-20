@@ -46,15 +46,18 @@ export function CalloutNodeComponent({nodeKey, textEditor, textEditorInitialStat
             const node = $getNodeByKey(nodeKey);
             setEmoji(event.native);
             node.setCalloutEmoji(event.native);
-            setEditing(true);
             toggleEmojiPicker();
+            setEditing(true);
         });
     };
 
     const toggleEmojiPicker = () => {
         if (!isEditing) {
             setEditing(true);
-            return;
+        }
+
+        if (showEmojiPicker) {
+            textEditor.focus();
         }
         setShowEmojiPicker(!showEmojiPicker);
     };
