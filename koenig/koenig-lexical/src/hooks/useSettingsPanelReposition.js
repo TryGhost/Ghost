@@ -8,6 +8,10 @@ const MIN_TOP_SPACING = 66; // 66 is publish menu and word count size
 const MIN_BOTTOM_SPACING = 20;
 const MIN_LEFT_SPACING = 20;
 
+function isMobile() {
+    return window.innerWidth < 768 && window.innerHeight > window.innerWidth;
+}
+
 function keepWithinSpacing(panelElem, {x, y, topSpacing, bottomSpacing, rightSpacing, leftSpacing, lastSpacing}) {
     if (!panelElem) {
         return {x, y};
@@ -65,7 +69,7 @@ function keepWithinSpacingOnDrag(panelElem, {x, y}) {
     const height = panelElem.offsetHeight;
 
     // Make sure at least 40px is still visible
-    const MINIMUM_VISIBLE = 40;
+    const MINIMUM_VISIBLE = isMobile() ? 100 : 40;
     const topSpacing = MINIMUM_VISIBLE - height;
     const bottomSpacing = MINIMUM_VISIBLE - height;
     const rightSpacing = MINIMUM_VISIBLE - width;
@@ -92,11 +96,21 @@ export default function useSettingsPanelReposition({positionToRef} = {}) {
         }
         const containerRect = cardElement.getBoundingClientRect();
 
+        if (isMobile()) {
+            // Mobile behaviour: position below card
+            const x = window.innerWidth / 2 - panelElem.offsetWidth / 2;
+            const y = containerRect.bottom + CARD_SPACING;
+            return keepWithinSpacingOnDrag(panelElem, {x, y});
+        }
+
+        // We correct the height of the container to the height of the container that is on screen, then the positioning is better
+        const visibleHeight = Math.min(window.innerHeight, containerRect.bottom) - containerRect.top;
+
         // position vertically centered
         // if we already have top set, leave it so that toggling additional settings doesn't cause the panel to jump (unless it would be offscreen)
-        const containerMiddle = containerRect.top + (containerRect.height / 2);
+        const containerMiddle = containerRect.top + (visibleHeight / 2);
 
-        const y = Math.max(containerMiddle - (panelHeight) / 2, MIN_TOP_SPACING);
+        const y = containerMiddle - (panelHeight) / 2;
 
         // position to right of panel
         const x = containerRect.right + CARD_SPACING;

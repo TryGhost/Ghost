@@ -232,7 +232,7 @@ function DemoComposer({editorType, isMultiplayer, setWordCount}) {
                         : null
                 }
                 <DarkModeToggle darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-                <div ref={containerRef} className="h-full overflow-auto" onClick={focusEditor}>
+                <div ref={containerRef} className="h-full overflow-auto overflow-x-hidden" onClick={focusEditor}>
                     <div className="mx-auto max-w-[740px] py-[15vmin] px-6 lg:px-0">
                         {showTitle
                             ? <TitleTextBox ref={titleRef} editorAPI={editorAPI} setTitle={setTitle} title={title} />
