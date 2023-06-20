@@ -1,5 +1,6 @@
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import useForm, {SaveState} from './useForm';
+import useGlobalDirtyState from './useGlobalDirtyState';
 import {Setting, SettingValue, SiteData} from '../types/api';
 import {SettingsContext} from '../components/providers/SettingsProvider';
 
@@ -35,6 +36,12 @@ const useSettingGroup = (): SettingGroupHook => {
             setEditing(false);
         }
     });
+
+    const {setGlobalDirtyState} = useGlobalDirtyState();
+
+    useEffect(() => {
+        setGlobalDirtyState(localSettings.some(setting => setting.dirty));
+    }, [localSettings, setGlobalDirtyState]);
 
     useEffect(() => {
         if (isEditing && focusRef.current) {
