@@ -25,6 +25,8 @@ describe('Exporter', function () {
                 'actions',
                 'api_keys',
                 'brute',
+                'collections',
+                'collections_posts',
                 'comments',
                 'comment_likes',
                 'comment_reports',
