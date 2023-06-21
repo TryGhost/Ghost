@@ -1,28 +1,14 @@
-import React, {useCallback, useContext, useState} from 'react';
-import AppContext from '../AppContext';
+import React, {useCallback, useState} from 'react';
 import IFrame from './IFrame';
+import styles from '../styles/iframe.css?inline';
 
 /**
  * Loads all the CSS styles inside an iFrame. Only shows the visible content as soon as the CSS file with the tailwind classes has loaded.
  */
 const TailwindFrame = ({children, onResize, style, title}) => {
-    const {stylesUrl} = useContext(AppContext);
-    const [cssLoaded, setCssLoaded] = useState(!stylesUrl);
-
-    const initialStyles = `
-        body, html {
-            overflow: hidden;
-        }
-    `;
-
-    const onLoadCSS = () => {
-        setCssLoaded(true);
-    };
-
     const head = (
         <>
-            {stylesUrl ? <link rel="stylesheet" href={stylesUrl} onLoad={onLoadCSS} /> : null}
-            <style dangerouslySetInnerHTML={{__html: initialStyles}} />
+            <style dangerouslySetInnerHTML={{__html: styles}} />
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
         </>
     );
@@ -30,7 +16,7 @@ const TailwindFrame = ({children, onResize, style, title}) => {
     // For now we're using <NewFrame> because using a functional component with portal caused some weird issues with modals
     return (
         <IFrame head={head} style={style} onResize={onResize} title={title}>
-            {cssLoaded && children}
+            {children}
         </IFrame>
     );
 };

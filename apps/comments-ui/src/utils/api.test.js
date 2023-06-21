@@ -13,7 +13,7 @@ test('should call counts endpoint', () => {
 
     expect(window.fetch).toHaveBeenCalledTimes(1);
     expect(window.fetch).toHaveBeenCalledWith(
-        'http://localhost/members/api/comments/counts/',
+        'http://localhost:3000/members/api/comments/counts/',
         expect.objectContaining({
             method: 'GET',
             headers: {'Content-Type': 'application/json'},
@@ -36,7 +36,7 @@ test('should call counts endpoint with postId query param', () => {
 
     expect(window.fetch).toHaveBeenCalledTimes(1);
     expect(window.fetch).toHaveBeenCalledWith(
-        'http://localhost/members/api/comments/counts/?ids=123',
+        'http://localhost:3000/members/api/comments/counts/?ids=123',
         expect.objectContaining({
             method: 'GET',
             headers: {'Content-Type': 'application/json'},

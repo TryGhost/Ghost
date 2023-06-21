@@ -14,6 +14,32 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
+  "scripts": {
+    "dev": "concurrently \"yarn preview -l silent\" \"yarn build:watch\"",
+    "build": "vite build",
+    "build:watch": "vite build --watch",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:ci": "yarn test --coverage",
+    "test:unit": "yarn test:ci",
+    "lint": "eslint src --ext .js --cache",
+    "preship": "yarn lint",
+    "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn version; fi",
+    "postship": "git push ${GHOST_UPSTREAM:-origin} --follow-tags && npm publish",
+    "prepublishOnly": "yarn build"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
   "dependencies": {
     "@headlessui/react": "1.6.6",
     "@sentry/react": "7.11.1",
@@ -30,65 +56,24 @@
     "react-dom": "17.0.2",
     "react-scripts": "4.0.3"
   },
-  "scripts": {
-    "start": "PORT=4000 BROWSER=none react-scripts start",
-    "start:combined": "PORT=4000 BROWSER=none node ./scripts/start-combined.js",
-    "start:dev": "NODE_OPTIONS=--openssl-legacy-provider PORT=4000 node ./scripts/start-mode.js",
-    "dev": "node ./scripts/dev-mode.js",
-    "build": "NODE_OPTIONS=--openssl-legacy-provider npm run build:combined",
-    "build:original": "react-scripts build",
-    "build:combined": "node ./scripts/build-combined.js",
-    "build:bundle": "webpack --config webpack.config.js",
-    "test:ui": "react-scripts test",
-    "test": "yarn test:ui --watchAll=false --coverage",
-    "eject": "react-scripts eject",
-    "lint": "eslint src --ext .js --cache",
-    "preship": "yarn lint",
-    "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn publish && git push ${GHOST_UPSTREAM:-upstream} main --follow-tags; fi",
-    "posttest": "yarn lint",
-    "analyze": "source-map-explorer 'umd/*.js'",
-    "prepublishOnly": "yarn build",
-    "tailwind": "npx tailwindcss -i ./src/index.css -o ./public/main.css --watch --minify",
-    "cypress:open": "cypress open",
-    "cypress": "cypress run"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
   "devDependencies": {
-    "@testing-library/jest-dom": "5.16.5",
-    "@testing-library/react": "12.1.5",
+    "@testing-library/jest-dom": "5.16.2",
+    "@testing-library/react": "12.1.2",
     "@testing-library/user-event": "14.4.3",
-    "autoprefixer": "10.4.8",
+    "@vitejs/plugin-react": "4.0.1",
+    "@vitest/coverage-v8": "0.32.2",
+    "autoprefixer": "10.4.14",
     "bson-objectid": "2.0.4",
-    "chalk": "4.1.2",
-    "chokidar": "3.5.3",
-    "copy-webpack-plugin": "6.4.1",
-    "cypress": "10.11.0",
+    "concurrently": "8.2.0",
     "eslint-config-react-app": "7.0.1",
-    "eslint-plugin-cypress": "2.12.1",
     "eslint-plugin-ghost": "2.12.0",
-    "eslint-plugin-tailwindcss": "3.6.0",
-    "minimist": "1.2.8",
-    "ora": "5.4.1",
+    "eslint-plugin-tailwindcss": "^3.6.0",
+    "minimist": "1.2.5",
     "postcss": "8.4.24",
-    "rewire": "6.0.0",
-    "serve-handler": "6.1.5",
-    "source-map-explorer": "2.5.3",
-    "tailwindcss": "3.3.2",
-    "webpack-cli": "3.3.12"
-  },
-  "resolutions": {
-    "//": "See https://github.com/facebook/create-react-app/issues/11773",
-    "react-error-overlay": "6.0.11"
+    "tailwindcss": "^3.1.4",
+    "vite": "4.3.9",
+    "vite-plugin-css-injected-by-js": "3.1.1",
+    "vite-plugin-svgr": "3.2.0",
+    "vitest": "0.32.2"
   }
 }

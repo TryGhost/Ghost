@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Disable scrolling inside iframe */
+body, html {
+    overflow: hidden;
+}
+
 :host {
     /* Reset all CSS properties */
     all: initial !important;
