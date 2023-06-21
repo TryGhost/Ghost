@@ -1,7 +1,7 @@
 const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
-const Promise = require('bluebird'); //not here
+const Promise = require('bluebird');
 const moment = require('moment');
 const testUtils = require('../../../../../utils');
 const models = require('../../../../../../core/server/models');

@@ -1,4 +1,4 @@
-const Promise = require('bluebird'); //not here
+const Promise = require('bluebird');
 const events = require('../../../lib/common/events');
 const localUtils = require('../utils');
 const PostScheduler = require('./PostScheduler');

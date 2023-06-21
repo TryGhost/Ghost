@@ -1,4 +1,4 @@
-const Promise = require('bluebird'); //not here
+const Promise = require('bluebird');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:roles');
 const canThis = require('../../../../../services/permissions').canThis;
 

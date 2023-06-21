@@ -1,5 +1,5 @@
 const should = require('should');
-const Promise = require('bluebird'); //not here
+const Promise = require('bluebird');
 const supertest = require('supertest');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');

@@ -1,5 +1,5 @@
 const sizeOf = require('image-size');
-const Promise = require('bluebird'); //not here 
+const Promise = require('bluebird');
 const _ = require('lodash');
 const path = require('path');
 const errors = require('@tryghost/errors');

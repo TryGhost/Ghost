@@ -1,4 +1,4 @@
-const Promise = require('bluebird'); //not here
+const Promise = require('bluebird');
 const _ = require('lodash');
 const uuid = require('uuid');
 const crypto = require('crypto');

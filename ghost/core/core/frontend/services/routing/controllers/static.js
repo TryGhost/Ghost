@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const Promise = require('bluebird'); //not here
+const Promise = require('bluebird');
 const debug = require('@tryghost/debug')('services:routing:controllers:static');
 const renderer = require('../../rendering');
 

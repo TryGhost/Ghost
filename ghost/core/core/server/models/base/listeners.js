@@ -3,7 +3,7 @@ const _ = require('lodash');
 const models = require('../../models');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const Promise = require('bluebird'); //not here
+const Promise = require('bluebird');
 
 // Listen to settings.timezone.edited and settings.notifications.edited to bind extra logic to settings, similar to the bridge and member service
 const events = require('../../lib/common/events');

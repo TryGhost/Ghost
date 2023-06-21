@@ -3,7 +3,7 @@
  * Dynamically build and execute queries on the API
  */
 const _ = require('lodash');
-const Promise = require('bluebird'); //not here
+const Promise = require('bluebird');
 
 // The default settings for a default post query
 const queryDefaults = {

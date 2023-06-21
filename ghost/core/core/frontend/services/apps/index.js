@@ -1,5 +1,5 @@
 const debug = require('@tryghost/debug')('services:apps');
-const Promise = require('bluebird'); //not here
+const Promise = require('bluebird');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');

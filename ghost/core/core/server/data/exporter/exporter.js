@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const Promise = require('bluebird'); //not here
+const Promise = require('bluebird');
 const db = require('../../data/db');
 const commands = require('../schema').commands;
 const ghostVersion = require('@tryghost/version');

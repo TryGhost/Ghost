@@ -1,4 +1,4 @@
-const Promise = require('bluebird'); //not here
+const Promise = require('bluebird');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const invites = require('../../services/invites');

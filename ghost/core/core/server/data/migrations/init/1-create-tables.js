@@ -1,4 +1,4 @@
-const Promise = require('bluebird'); //not here
+const Promise = require('bluebird');
 const commands = require('../../schema').commands;
 const schema = require('../../schema').tables;
 const logging = require('@tryghost/logging');

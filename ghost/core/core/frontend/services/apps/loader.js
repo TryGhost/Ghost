@@ -1,6 +1,6 @@
 const path = require('path');
 const _ = require('lodash');
-const Promise = require('bluebird'); //not here
+const Promise = require('bluebird');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const config = require('../../../shared/config');
