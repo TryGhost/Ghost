@@ -137,6 +137,10 @@ if (DASH_DASH_ARGS.includes('lexical')) {
     COMMAND_GHOST.env['editor__url'] = 'http://localhost:4173/koenig-lexical.umd.js';
 }
 
+if (DASH_DASH_ARGS.includes('comments')) {
+    COMMAND_GHOST.env['comments__url'] = 'http://localhost:7174/comments-ui.min.js';
+}
+
 async function handleStripe() {
     if (DASH_DASH_ARGS.includes('stripe') || DASH_DASH_ARGS.includes('all')) {
         if (DASH_DASH_ARGS.includes('offline')) {
