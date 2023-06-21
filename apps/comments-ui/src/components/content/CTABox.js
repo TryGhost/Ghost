@@ -30,7 +30,7 @@ const CTABox = ({isFirst, isPaid}) => {
             <p className="sm:max-w-screen-sm mb-[28px] w-full px-0 text-center font-sans text-[16px] leading-normal text-neutral-600 dark:text-[rgba(255,255,255,0.85)] sm:px-8">
                 Become a {isPaid && 'paid'} member of <span className="font-semibold">{publication}</span> to start commenting.
             </p>
-            <button onClick={handleSignUpClick} className="font-san mb-[12px] inline-block rounded py-[14px] px-5 font-medium leading-none text-white transition-all hover:opacity-90" style={buttonStyle}>
+            <button onClick={handleSignUpClick} className="font-san mb-[12px] inline-block rounded px-5 py-[14px] font-medium leading-none text-white transition-all hover:opacity-90" style={buttonStyle}>
                 {(isPaid && member) ? 'Upgrade now' : 'Sign up now'}
             </button>
             {!member && (<p className="text-center font-sans text-sm text-[rgba(0,0,0,0.4)] dark:text-[rgba(255,255,255,0.5)]">

@@ -91,7 +91,7 @@ export const Avatar = ({comment}) => {
                 (<div className={`flex items-center justify-center rounded-full bg-neutral-900 dark:bg-[rgba(255,255,255,0.7)] ${dimensionClasses}`}>
                     <AvatarIcon className="stroke-white dark:stroke-[rgba(0,0,0,0.6)]" />
                 </div>)}
-            {commentMember && <img className={`absolute top-0 left-0 rounded-full ${dimensionClasses}`} src={commentMember.avatar_image} alt="Avatar"/>}
+            {commentMember && <img className={`absolute left-0 top-0 rounded-full ${dimensionClasses}`} src={commentMember.avatar_image} alt="Avatar"/>}
         </>
     );
 
