@@ -37,7 +37,7 @@ let totalBoots = 0;
  */
 const exposeFixtures = async () => {
     const fixturePromises = {
-        roles: models.Role.findAll({columns: ['id']}),
+        roles: models.Role.findAll({columns: ['id', 'name']}),
         users: models.User.findAll({columns: ['id', 'email', 'slug']}),
         tags: models.Tag.findAll({columns: ['id']}),
         apiKeys: models.ApiKey.findAll({withRelated: 'integration'})
@@ -235,8 +235,8 @@ const startGhost = async (options) => {
     totalStartTime += totalTime;
     totalBoots += 1;
     const averageBootTime = Math.round(totalStartTime / totalBoots);
-    debug(`Started Ghost in ${totalTime / 1000}s`);
-    debug(`Accumulated start time across ${totalBoots} boots is ${totalStartTime / 1000}s (average = ${averageBootTime}ms)`);
+    debug(`[e2e-utils] Started Ghost in ${totalTime / 1000}s`);
+    debug(`[e2e-utils] Accumulated start time across ${totalBoots} boots is ${totalStartTime / 1000}s (average = ${averageBootTime}ms)`);
     return ghostServer;
 };
 

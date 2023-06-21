@@ -1,7 +1,7 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const sinon = require('sinon');
 
-const Users = require('../../../../../core/server/services/users');
+const Users = require('../../../../../core/server/services/Users');
 
 describe('Users service', function () {
     describe('resetAllPasswords', function () {

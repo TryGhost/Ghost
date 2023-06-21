@@ -1,8 +1,8 @@
 const errors = require('@tryghost/errors');
 const sinon = require('sinon');
-const assert = require('assert');
+const assert = require('assert/strict');
 const nock = require('nock');
-const MailgunClient = require('@tryghost/mailgun-client/lib/mailgun-client');
+const MailgunClient = require('@tryghost/mailgun-client');
 
 // Helper services
 const configUtils = require('./configUtils');

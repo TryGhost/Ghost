@@ -27,10 +27,6 @@ export default class MembersActivityController extends Controller {
 
         if (!this.member) {
             hiddenEvents.push(...EMAIL_EVENTS);
-        } else {
-            if (!this.feature.get('suppressionList')) {
-                hiddenEvents.push('email_sent_event');
-            }
         }
         hiddenEvents.push('aggregated_click_event');
 

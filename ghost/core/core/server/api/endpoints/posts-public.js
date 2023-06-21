@@ -1,6 +1,7 @@
 const models = require('../../models');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+const {mapQuery} = require('@tryghost/mongo-utils');
 const postsPublicService = require('../../services/posts-public');
 
 const allowedIncludes = ['tags', 'authors', 'tiers', 'sentiment'];
@@ -9,10 +10,24 @@ const messages = {
     postNotFound: 'Post not found.'
 };
 
+const rejectPrivateFieldsTransformer = input => mapQuery(input, function (value, key) {
+    const lowerCaseKey = key.toLowerCase();
+    if (lowerCaseKey.startsWith('authors.password') || lowerCaseKey.startsWith('authors.email')) {
+        return;
+    }
+
+    return {
+        [key]: value
+    };
+});
+
 module.exports = {
     docName: 'posts',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         cache: postsPublicService.api?.cache,
         options: [
             'include',
@@ -37,11 +52,18 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return models.Post.findPage(frame.options);
+            const options = {
+                ...frame.options,
+                mongoTransformer: rejectPrivateFieldsTransformer
+            };
+            return models.Post.findPage(options);
         }
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'fields',
@@ -66,7 +88,11 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return models.Post.findOne(frame.data, frame.options)
+            const options = {
+                ...frame.options,
+                mongoTransformer: rejectPrivateFieldsTransformer
+            };
+            return models.Post.findOne(frame.data, options)
                 .then((model) => {
                     if (!model) {
                         throw new errors.NotFoundError({

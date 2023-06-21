@@ -45,7 +45,7 @@
                             <button
                                 class="gh-btn gh-btn-red gh-btn-icon gh-links-list-item-update-button"
                                 type="button"
-                                {{on "mouseup" this.setLink}}
+                                {{on "mousedown" this.setLink}}
                                 data-test-button="cancel-webhook"
                             >
                                 <span>Retry</span>
@@ -54,7 +54,7 @@
                             <button
                                 class="gh-btn gh-btn-green gh-btn-icon gh-links-list-item-update-button"
                                 type="button"
-                                {{on "mouseup" this.setLink}}
+                                {{on "mousedown" this.setLink}}
                                 data-test-button="cancel-webhook"
                             >
                                 <span>Update</span>

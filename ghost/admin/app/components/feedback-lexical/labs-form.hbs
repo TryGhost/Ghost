@@ -1,0 +1,12 @@
+<FeedbackLexical::Textarea
+    @feedbackMessage={{this.feedbackMessage}}
+    @updateFeedbackMessage={{this.updateFeedbackMessage}}
+    @label="Thanks for trying our new editor"
+    @shouldFocus={{false}}
+    @placeholder="Thanks for trying our new editor! How’d it go? Have any issues?"
+/>
+
+<FeedbackLexical::SendButton
+    @onSuccess={{this.resetFeedbackMessage}}
+    @feedbackMessage={{this.feedbackMessage}}
+/>

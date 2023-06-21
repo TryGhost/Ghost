@@ -144,6 +144,25 @@ export default class GhPostSettingsMenu extends Component {
         return urlParts.join(' › ');
     }
 
+    get canViewPostHistory() {
+        // Can only view history for lexical posts
+        if (this.post.lexical === null) {
+            return false;
+        }
+
+        // Can view history for all unpublished/unsent posts
+        if (!this.post.isPublished && !this.post.isSent) {
+            return true;
+        }
+
+        // Cannot view history for published posts if there isn't a web version
+        if (this.post.emailOnly) {
+            return false;
+        }
+
+        return true;
+    }
+
     willDestroyElement() {
         super.willDestroyElement(...arguments);
 

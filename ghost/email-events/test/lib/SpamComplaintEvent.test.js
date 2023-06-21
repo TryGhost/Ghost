@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const ObjectID = require('bson-objectid').default;
 const SpamComplaintEvent = require('../../lib/SpamComplaintEvent');
 

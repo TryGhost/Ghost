@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs').promises;
 const os = require('os');
 
-const CardAssetService = require('../../../../core/frontend/services/card-assets/service');
+const CardAssetService = require('../../../../core/frontend/services/card-assets/CardAssetService');
 
 const themeDefaults = require('../../../../core/frontend/services/theme-engine/config/defaults.json');
 
@@ -157,8 +157,8 @@ describe('Card Asset Service', function () {
             });
 
             cardAssets.generateGlobs().should.eql({
-                'cards.min.css': 'css/(gallery).css',
-                'cards.min.js': 'js/(gallery).js'
+                'cards.min.css': 'css/@(gallery).css',
+                'cards.min.js': 'js/@(gallery).js'
             });
         });
 
@@ -171,8 +171,8 @@ describe('Card Asset Service', function () {
             });
 
             cardAssets.generateGlobs().should.eql({
-                'cards.min.css': 'css/(gallery).css',
-                'cards.min.js': 'js/(gallery).js'
+                'cards.min.css': 'css/@(gallery).css',
+                'cards.min.js': 'js/@(gallery).js'
             });
         });
     });

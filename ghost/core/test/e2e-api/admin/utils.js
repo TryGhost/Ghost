@@ -41,7 +41,9 @@ const expectedProperties = {
         'emailAnalytics',
         'tenor',
         'mailgunIsConfigured',
-        'editor'
+        'editor',
+        'adminX',
+        'signupForm'
     ],
 
     post: [
@@ -87,7 +89,8 @@ const expectedProperties = {
         'tiers',
         'newsletter',
         'count',
-        'post_revisions'
+        'post_revisions',
+        'reading_time'
     ],
 
     page: [
@@ -127,7 +130,8 @@ const expectedProperties = {
         'meta_description',
         'frontmatter',
         'tiers',
-        'count'
+        'count',
+        'post_revisions'
     ],
 
     user: _(schema.users)

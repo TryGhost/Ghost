@@ -3,7 +3,7 @@
         <LinkTo
             class="gh-post-activity-feed-pagination-link"
             @route="members"
-            @query={{hash filterParam=(concat "emails.post_id:" @post.id) }}
+            @query={{hash filterParam=(concat "emails.post_id:" @post.id) postAnalytics=@post.id }}
         >
             Sent
         </LinkTo>
@@ -13,7 +13,7 @@
         <LinkTo
             class="gh-post-activity-feed-pagination-link"
             @route="members"
-            @query={{hash filterParam=(concat "opened_emails.post_id:" @post.id) }}
+            @query={{hash filterParam=(concat "opened_emails.post_id:" @post.id) postAnalytics=@post.id }}
         >
             Opened
         </LinkTo>
@@ -23,7 +23,7 @@
         <LinkTo
             class="gh-post-activity-feed-pagination-link"
             @route="members"
-            @query={{hash filterParam=(concat "clicked_links.post_id:" @post.id) }}
+            @query={{hash filterParam=(concat "clicked_links.post_id:" @post.id) postAnalytics=@post.id }}
         >
             Clicked
         </LinkTo>
@@ -34,7 +34,7 @@
             <LinkTo
                 class="gh-post-activity-feed-pagination-link"
                 @route="members"
-                @query={{hash filterParam=link.filterParam}}
+                @query={{hash filterParam=link.filterParam postAnalytics=@post.id}}
             >
                 {{link.label}}
             </LinkTo>

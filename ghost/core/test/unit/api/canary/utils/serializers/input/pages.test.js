@@ -224,4 +224,26 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
             frame.data.pages[0].tags.should.eql([{name: 'name1'}, {name: 'name2'}]);
         });
     });
+
+    describe('copy', function () {
+        it('adds default formats if no formats are specified', function () {
+            const frame = {
+                options: {}
+            };
+
+            serializers.input.pages.copy({}, frame);
+
+            frame.options.formats.should.eql('mobiledoc');
+        });
+
+        it('adds default relations if no relations are specified', function () {
+            const frame = {
+                options: {}
+            };
+
+            serializers.input.pages.copy({}, frame);
+
+            frame.options.withRelated.should.eql(['tags', 'authors', 'authors.roles', 'tiers', 'count.signups', 'count.paid_conversions', 'post_revisions', 'post_revisions.author']);
+        });
+    });
 });

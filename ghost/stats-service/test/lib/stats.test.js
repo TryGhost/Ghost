@@ -1,6 +1,6 @@
-const StatsService = require('../../lib/stats');
+const StatsService = require('../../lib/StatsService');
 const knex = require('knex').default;
-const assert = require('assert');
+const assert = require('assert/strict');
 
 describe('StatsService', function () {
     it('Exposes a create factory', function () {

@@ -3,9 +3,9 @@ const sinon = require('sinon');
 const validate = require('../../../../../core/server/services/themes/validate');
 const list = require('../../../../../core/server/services/themes/list');
 const gscan = require('gscan');
-const assert = require('assert');
+const assert = require('assert/strict');
 const adapterManager = require('../../../../../core/server/services/adapter-manager');
-const InMemoryCache = require('../../../../../core/server/adapters/cache/Memory');
+const InMemoryCache = require('../../../../../core/server/adapters/cache/MemoryCache');
 const logging = require('@tryghost/logging');
 
 describe('Themes', function () {

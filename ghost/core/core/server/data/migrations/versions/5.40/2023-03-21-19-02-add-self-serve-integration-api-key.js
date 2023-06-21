@@ -14,7 +14,9 @@ module.exports = createTransactionalMigration(
         }).first();
 
         if (!integration) {
-            throw new InternalServerError('Could not find "Self-Serve Migration Integration"');
+            throw new InternalServerError({
+                message: 'Could not find "Self-Serve Migration Integration"'
+            });
         }
 
         const role = await knex('roles').where({
@@ -22,7 +24,9 @@ module.exports = createTransactionalMigration(
         }).first();
 
         if (!role) {
-            throw new InternalServerError('Could not find "Self-Serve Migration Integration" Role');
+            throw new InternalServerError({
+                message: 'Could not find "Self-Serve Migration Integration" Role'
+            });
         }
 
         const existingKey = await knex('api_keys').where({

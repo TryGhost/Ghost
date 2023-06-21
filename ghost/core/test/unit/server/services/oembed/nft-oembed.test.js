@@ -1,5 +1,5 @@
-const assert = require('assert');
-const NFTOembedProvider = require('../../../../../core/server/services/oembed/nft-oembed');
+const assert = require('assert/strict');
+const NFTOembedProvider = require('../../../../../core/server/services/oembed/NFTOEmbedProvider');
 
 describe('NFTOEmbedProvider', function () {
     it('Can support requests for OpenSea Ethereum NTFs', async function () {

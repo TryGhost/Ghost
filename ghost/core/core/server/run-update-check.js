@@ -1,4 +1,4 @@
-const {parentPort} = require('worker_threads');
+const {parentPort, workerData} = require('worker_threads');
 
 const postParentPortMessage = (message) => {
     if (parentPort) {
@@ -40,10 +40,15 @@ if (parentPort) {
 
     const settings = require('./services/settings/settings-service');
     await settings.init();
+
+    const tiers = require('./services/tiers');
+    await tiers.init();
     // Finished INIT
 
     await updateCheck({
-        rethrowErrors: true
+        rethrowErrors: true,
+        forceUpdate: workerData.forceUpdate,
+        updateCheckUrl: workerData.updateCheckUrl
     });
 
     postParentPortMessage(`Ran update check`);

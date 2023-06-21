@@ -1,0 +1,19 @@
+<div {{did-update this.onChangeHtml @html}} class={{if this.increaseWidth "gh-iframe-increase-width"}}>
+    <iframe
+        srcDoc="<!DOCTYPE html>"
+        class={{concat "gh-signup-form-iframe" (unless (eq this.visibleIframeIndex 0) " gh-iframe-hidden") " gh-style-" this.firstIframeStyle}}
+        frameborder="0"
+        allowtransparency="true"
+        title="Signup Form Preview 1"
+        {{on "load" (fn this.onLoad 0) }}
+    ></iframe>
+
+    <iframe
+        srcDoc="<!DOCTYPE html>"
+        class={{concat "gh-signup-form-iframe" (unless (eq this.visibleIframeIndex 1) " gh-iframe-hidden") " gh-style-" this.secondIframeStyle}}
+        frameborder="0"
+        allowtransparency="true"
+        title="Signup Form Preview 2"
+        {{on "load" (fn this.onLoad 1)}}
+    ></iframe>
+</div>

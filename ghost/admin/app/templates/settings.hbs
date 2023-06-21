@@ -77,7 +77,6 @@
                     <p>Customize emails and set email addresses</p>
                 </div>
             </LinkTo>
-            {{#if (feature 'sourceAttribution')}}
             <LinkTo class="gh-setting-group" @route="settings.analytics" data-test-nav="members-analytics">
                 <span class="green">{{svg-jar "chart"}}</span>
                 <div>
@@ -85,7 +84,6 @@
                     <p>Decide what data you collect</p>
                 </div>
             </LinkTo>
-            {{/if}}
         </div>
 
         <div class="gh-setting-header">Advanced</div>

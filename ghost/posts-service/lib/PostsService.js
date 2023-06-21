@@ -3,6 +3,7 @@ const {BadRequestError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const ObjectId = require('bson-objectid').default;
+const omit = require('lodash/omit');
 
 const messages = {
     invalidVisibilityFilter: 'Invalid visibility filter.',
@@ -10,20 +11,83 @@ const messages = {
     invalidTiers: 'Invalid tiers value.',
     invalidTags: 'Invalid tags value.',
     invalidEmailSegment: 'The email segment parameter doesn\'t contain a valid filter',
-    unsupportedBulkAction: 'Unsupported bulk action'
+    unsupportedBulkAction: 'Unsupported bulk action',
+    postNotFound: 'Post not found.',
+    collectionNotFound: 'Collection not found.'
 };
 
 class PostsService {
-    constructor({urlUtils, models, isSet, stats, emailService, postsExporter}) {
+    constructor({urlUtils, models, isSet, stats, emailService, postsExporter, collectionsService}) {
         this.urlUtils = urlUtils;
         this.models = models;
         this.isSet = isSet;
         this.stats = stats;
         this.emailService = emailService;
         this.postsExporter = postsExporter;
+        /** @type {import('@tryghost/collections').CollectionsService} */
+        this.collectionsService = collectionsService;
     }
 
-    async editPost(frame) {
+    /**
+     *
+     * @param {Object} options - frame options
+     * @returns {Promise<Object>}
+     */
+    async browsePosts(options) {
+        let posts;
+        if (this.isSet('collections') && options.collection) {
+            let collection = await this.collectionsService.getById(options.collection);
+
+            if (!collection) {
+                collection = await this.collectionsService.getBySlug(options.collection);
+            }
+
+            if (!collection) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.collectionNotFound)
+                });
+            }
+
+            const postIds = collection.posts;
+            options.filter = `id:[${postIds.join(',')}]+type:post`;
+            posts = await this.models.Post.findPage(options);
+        } else {
+            posts = await this.models.Post.findPage(options);
+        }
+
+        return posts;
+    }
+
+    async readPost(frame) {
+        const model = await this.models.Post.findOne(frame.data, frame.options);
+
+        if (!model) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.postNotFound)
+            });
+        }
+
+        const dto = model.toJSON(frame.options);
+
+        if (this.isSet('collections') && frame?.original?.query?.include?.includes('collections')) {
+            dto.collections = await this.collectionsService.getCollectionsForPost(model.id);
+        }
+
+        return dto;
+    }
+
+    /**
+     * @typedef {'published_updated' | 'scheduled_updated' | 'draft_updated' | 'unpublished'} EventString
+     */
+
+    /**
+     *
+     * @param {any} frame
+     * @param {object} [options]
+     * @param {(event: EventString, dto: any) => Promise<void> | void} [options.eventHandler] - Called before the editPost method resolves with an event string
+     * @returns
+     */
+    async editPost(frame, options) {
         // Make sure the newsletter is matching an active newsletter
         // Note that this option is simply ignored if the post isn't published or scheduled
         if (frame.options.newsletter && frame.options.email_segment) {
@@ -37,6 +101,49 @@ class PostsService {
                         context: err.message
                     }));
                 }
+            }
+        }
+
+        if (this.isSet('collections') && frame.data.posts[0].collections) {
+            const existingCollections = await this.collectionsService.getCollectionsForPost(frame.options.id);
+            for (const collection of frame.data.posts[0].collections) {
+                let collectionId = null;
+                if (typeof collection === 'string') {
+                    collectionId = collection;
+                }
+                if (typeof collection?.id === 'string') {
+                    collectionId = collection.id;
+                }
+                if (!collectionId) {
+                    continue;
+                }
+                const existingCollection = existingCollections.find(c => c.id === collectionId);
+                if (existingCollection) {
+                    continue;
+                }
+                const found = await this.collectionsService.getById(collectionId);
+                if (!found) {
+                    continue;
+                }
+                if (found.type !== 'manual') {
+                    continue;
+                }
+                await this.collectionsService.addPostToCollection(collectionId, {
+                    id: frame.options.id,
+                    featured: frame.data.posts[0].featured,
+                    published_at: frame.data.posts[0].published_at
+                });
+            }
+            for (const existingCollection of existingCollections) {
+                if (frame.data.posts[0].collections.find((item) => {
+                    if (typeof item === 'string') {
+                        return item === existingCollection.id;
+                    }
+                    return item.id === existingCollection.id;
+                })) {
+                    continue;
+                }
+                await this.collectionsService.removePostFromCollection(existingCollection.id, frame.options.id);
             }
         }
 
@@ -61,7 +168,40 @@ class PostsService {
             }
         }
 
-        return model;
+        const dto = model.toJSON(frame.options);
+
+        if (this.isSet('collections')) {
+            if (frame?.original?.query?.include?.includes('collections') || frame.data.posts[0].collections) {
+                dto.collections = await this.collectionsService.getCollectionsForPost(model.id);
+            }
+        }
+
+        if (typeof options?.eventHandler === 'function') {
+            await options.eventHandler(this.getChanges(model), dto);
+        }
+
+        return dto;
+    }
+    /**
+     * @param {any} model
+     * @returns {EventString}
+     */
+    getChanges(model) {
+        if (model.get('status') === 'published' && model.wasChanged()) {
+            return 'published_updated';
+        }
+
+        if (model.get('status') === 'draft' && model.previous('status') === 'published') {
+            return 'unpublished';
+        }
+
+        if (model.get('status') === 'draft' && model.previous('status') !== 'published') {
+            return 'draft_updated';
+        }
+
+        if (model.get('status') === 'scheduled' && model.wasChanged()) {
+            return 'scheduled_updated';
+        }
     }
 
     #mergeFilters(...filters) {
@@ -70,13 +210,13 @@ class PostsService {
 
     async bulkEdit(data, options) {
         if (data.action === 'unpublish') {
-            return await this.#updatePosts({status: 'draft'}, {filter: this.#mergeFilters('status:published', options.filter)});
+            return await this.#updatePosts({status: 'draft'}, {filter: this.#mergeFilters('status:published', options.filter), context: options.context, actionName: 'unpublished'});
         }
         if (data.action === 'feature') {
-            return await this.#updatePosts({featured: true}, {filter: options.filter});
+            return await this.#updatePosts({featured: true}, {filter: options.filter, context: options.context, actionName: 'featured'});
         }
         if (data.action === 'unfeature') {
-            return await this.#updatePosts({featured: false}, {filter: options.filter});
+            return await this.#updatePosts({featured: false}, {filter: options.filter, context: options.context, actionName: 'unfeatured'});
         }
         if (data.action === 'access') {
             if (!['public', 'members', 'paid', 'tiers'].includes(data.meta.visibility)) {
@@ -93,7 +233,7 @@ class PostsService {
                 }
                 tiers = data.meta.tiers;
             }
-            return await this.#updatePosts({visibility: data.meta.visibility, tiers}, {filter: options.filter});
+            return await this.#updatePosts({visibility: data.meta.visibility, tiers}, {filter: options.filter, context: options.context});
         }
         if (data.action === 'addTag') {
             if (!Array.isArray(data.meta.tags)) {
@@ -113,7 +253,7 @@ class PostsService {
                     });
                 }
             }
-            return await this.#bulkAddTags({tags: data.meta.tags}, {filter: options.filter});
+            return await this.#bulkAddTags({tags: data.meta.tags}, {filter: options.filter, context: options.context});
         }
         throw new errors.IncorrectUsageError({
             message: tpl(messages.unsupportedBulkAction)
@@ -125,6 +265,8 @@ class PostsService {
      * @param {string[]} data.tags - Array of tag ids to add to the post
      * @param {object} options
      * @param {string} options.filter - An NQL Filter
+     * @param {object} options.context
+     * @param {object} [options.transacting]
      */
     async #bulkAddTags(data, options) {
         if (!options.transacting) {
@@ -139,7 +281,7 @@ class PostsService {
         // Create tags that don't exist
         for (const tag of data.tags) {
             if (!tag.id) {
-                const createdTag = await this.models.Tag.add(tag, {transacting: options.transacting});
+                const createdTag = await this.models.Tag.add(tag, {transacting: options.transacting, context: options.context});
                 tag.id = createdTag.id;
             }
         }
@@ -162,6 +304,7 @@ class PostsService {
         }, []);
 
         await options.transacting('posts_tags').insert(postTags);
+        await this.models.Post.addActions('edited', postRows.map(p => p.id), options);
 
         return {
             successful: postRows.length,
@@ -236,7 +379,7 @@ class PostsService {
 
         // Posts and emails
         await this.models.Post.bulkDestroy(deleteEmailIds, 'emails', {transacting: options.transacting, throwErrors: true});
-        return await this.models.Post.bulkDestroy(deleteIds, 'posts', {transacting: options.transacting, throwErrors: true});
+        return await this.models.Post.bulkDestroy(deleteIds, 'posts', {...options, throwErrors: true});
     }
 
     async export(frame) {
@@ -268,8 +411,8 @@ class PostsService {
         }
 
         const result = await this.models.Post.bulkEdit(editIds, 'posts', {
+            ...options,
             data,
-            transacting: options.transacting,
             throwErrors: true
         });
 
@@ -361,6 +504,75 @@ class PostsService {
         }
 
         return cacheInvalidate;
+    }
+
+    async copyPost(frame) {
+        const existingPost = await this.models.Post.findOne({
+            id: frame.options.id,
+            status: 'all'
+        }, frame.options);
+
+        const newPostData = omit(
+            existingPost.attributes,
+            [
+                'id',
+                'uuid',
+                'slug',
+                'comment_id',
+                'created_at',
+                'created_by',
+                'updated_at',
+                'updated_by',
+                'published_at',
+                'published_by',
+                'canonical_url',
+                'count__clicks'
+            ]
+        );
+
+        newPostData.title = `${existingPost.attributes.title} (Copy)`;
+        newPostData.status = 'draft';
+        newPostData.authors = existingPost.related('authors')
+            .map(author => ({id: author.get('id')}));
+        newPostData.tags = existingPost.related('tags')
+            .map(tag => ({id: tag.get('id')}));
+
+        const existingPostMeta = existingPost.related('posts_meta');
+
+        if (existingPostMeta.isNew() === false) {
+            newPostData.posts_meta = omit(
+                existingPostMeta.attributes,
+                [
+                    'id',
+                    'post_id'
+                ]
+            );
+        }
+
+        const existingPostTiers = existingPost.related('tiers');
+
+        if (existingPostTiers.length > 0) {
+            newPostData.tiers = existingPostTiers.map(tier => ({id: tier.get('id')}));
+        }
+
+        return this.models.Post.add(newPostData, frame.options);
+    }
+
+    /**
+     * Generates a location url for a copied post based on the original url generated by the API framework
+     *
+     * @param {string} url
+     * @returns {string}
+     */
+    generateCopiedPostLocationFromUrl(url) {
+        const urlParts = url.split('/');
+        const pageId = urlParts[urlParts.length - 2];
+
+        return urlParts
+            .slice(0, -4)
+            .concat(pageId)
+            .concat('')
+            .join('/');
     }
 }
 

@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/ember';
 import ConfirmEditorLeaveModal from '../components/modals/editor/confirm-leave';
 import Controller, {inject as controller} from '@ember/controller';
 import DeletePostModal from '../components/modals/delete-post';
@@ -22,14 +23,18 @@ import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
 import {isHostLimitError, isServerUnreachableError, isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {isInvalidError} from 'ember-ajax/errors';
+import {mobiledocToLexical} from '@tryghost/kg-converters';
 import {inject as service} from '@ember/service';
 
 const DEFAULT_TITLE = '(Untitled)';
-
+// suffix that is applied to the title of a post when it has been duplicated
+const DUPLICATED_POST_TITLE_SUFFIX = '(Copy)';
 // time in ms to save after last content edit
 const AUTOSAVE_TIMEOUT = 3000;
 // time in ms to force a save if the user is continuously typing
 const TIMEDSAVE_TIMEOUT = 60000;
+// time in ms to force a save even if the post is already saved so we trigger a new revision on the server
+const REVISIONSAVE_TIMEOUT = 1000 * 60 * 10; // 10 minutes
 
 // this array will hold properties we need to watch for this.hasDirtyAttributes
 let watchedProps = [
@@ -122,7 +127,7 @@ export default class LexicalEditorController extends Controller {
     fromAnalytics = false;
 
     // koenig related properties
-    wordcount = null;
+    wordCount = 0;
 
     /* private properties ----------------------------------------------------*/
 
@@ -168,14 +173,15 @@ export default class LexicalEditorController extends Controller {
         return this.store.peekAll('snippet');
     }
 
-    @computed('_snippets.@each.{name,isNew}')
+    @computed('_snippets.@each.{name,isNew,mobiledoc,lexical}')
     get snippets() {
         const snippets = this._snippets
             .reject(snippet => snippet.get('isNew'))
             .sort((a, b) => a.name.localeCompare(b.name))
             .filter(item => item.lexical !== null);
+
         return snippets.map((item) => {
-            item.value = item.lexical;
+            item.value = JSON.stringify(item.lexical);
 
             return item;
         });
@@ -190,12 +196,13 @@ export default class LexicalEditorController extends Controller {
         return false;
     }
 
-    @computed('_autosaveTask.isRunning', '_timedSaveTask.isRunning')
+    @computed('_autosaveTask.isRunning', '_timedSaveTask.isRunning', '_revisionSaveTask.isRunning')
     get _autosaveRunning() {
         let autosave = this.get('_autosaveTask.isRunning');
         let timedsave = this.get('_timedSaveTask.isRunning');
+        let revisionsave = this.get('_revisionSaveTask.isRunning');
 
-        return autosave || timedsave;
+        return autosave || timedsave || revisionsave;
     }
 
     @computed('post.isDraft')
@@ -211,6 +218,8 @@ export default class LexicalEditorController extends Controller {
         this._autosaveTask.perform();
         // force save at 60 seconds
         this._timedSaveTask.perform();
+        // force save at 10 minutes to trigger revision
+        this._revisionSaveTask.perform();
     }
 
     @action
@@ -245,6 +254,7 @@ export default class LexicalEditorController extends Controller {
     cancelAutosave() {
         this._autosaveTask.cancelAll();
         this._timedSaveTask.cancelAll();
+        this._revisionSaveTask.cancelAll();
     }
 
     // called by the "are you sure?" modal
@@ -295,8 +305,8 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
-    updateWordCount(counts) {
-        this.set('wordCount', counts);
+    updateWordCount(count) {
+        this.set('wordCount', count);
     }
 
     @action
@@ -353,9 +363,10 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
-    saveSnippet(snippet) {
-        const snippetData = {name: snippet.name, lexical: snippet.value, mobiledoc: '{}'};
-        let snippetRecord = this.store.createRecord('snippet', snippetData);
+    saveNewSnippet(snippet) {
+        const snippetData = {name: snippet.name, lexical: JSON.parse(snippet.value), mobiledoc: {}};
+        const snippetRecord = this.store.createRecord('snippet', snippetData);
+
         return snippetRecord.save().then(() => {
             this.notifications.closeAlerts('snippet.save');
             this.notifications.showNotification(
@@ -381,9 +392,9 @@ export default class LexicalEditorController extends Controller {
         const existingSnippet = this.snippets.find(snippet => snippet.name.toLowerCase() === snippetNameLC);
 
         if (existingSnippet) {
-            await this.confirmUpdateSnippet(existingSnippet, {lexical: data.value, mobiledoc: '{}'});
+            await this.confirmUpdateSnippet(existingSnippet, {lexical: JSON.parse(data.value)});
         } else {
-            await this.saveSnippet(data);
+            await this.saveNewSnippet(data);
         }
     }
 
@@ -427,7 +438,7 @@ export default class LexicalEditorController extends Controller {
 
         this.cancelAutosave();
 
-        if (options.backgroundSave && !this.hasDirtyAttributes && !options.leavingEditor) {
+        if (options.backgroundSave && !this.hasDirtyAttributes && !options.leavingEditor && !options.saveRevision) {
             return;
         }
 
@@ -480,6 +491,9 @@ export default class LexicalEditorController extends Controller {
                 }
                 return true;
             }
+
+            // Even if we've just saved and nothing else has changed, we want to save in 10 minutes to force a revision
+            this._revisionSaveTask.perform();
 
             return post;
         } catch (error) {
@@ -717,9 +731,15 @@ export default class LexicalEditorController extends Controller {
         // this is necessary to force a save when the title is blank
         this.set('hasDirtyAttributes', true);
 
-        // generate a slug if a post is new and doesn't have a title yet or
-        // if the title is still '(Untitled)'
-        if ((post.get('isNew') && !currentTitle) || currentTitle === DEFAULT_TITLE) {
+        // generate slug if post
+        //  - is new and doesn't have a title yet
+        //  - still has the default title
+        //  - previously had a title that ended with the duplicated post title suffix
+        if (
+            (post.get('isNew') && !currentTitle) ||
+            (currentTitle === DEFAULT_TITLE) ||
+            currentTitle?.endsWith(DUPLICATED_POST_TITLE_SUFFIX)
+        ) {
             yield this.generateSlugTask.perform();
         }
 
@@ -755,10 +775,73 @@ export default class LexicalEditorController extends Controller {
         }
     }
 
-    // load supplementel data such as the members count in the background
+    // load supplemental data such as snippets and members count in the background
     @restartableTask
     *backgroundLoaderTask() {
         yield this.store.query('snippet', {limit: 'all'});
+        this.syncMobiledocSnippets();
+    }
+
+    @action
+    async syncMobiledocSnippets() {
+        const snippets = this.store.peekAll('snippet');
+
+        // very early in the beta we had a bug where lexical snippets were saved with double-encoded JSON
+        // we fix that here by re-saving any snippets that are still in that state
+        const snippetFixSaves = [];
+        snippets.forEach((snippet) => {
+            if (typeof snippet.lexical === 'string') {
+                try {
+                    snippet.lexical = JSON.parse(snippet.lexical);
+                    snippet.mobiledoc = {};
+                    snippetFixSaves.push(snippet.save());
+                } catch (e) {
+                    snippet.lexical = null;
+                    snippetFixSaves.push(snippet.save());
+
+                    console.error(e); // eslint-disable-line no-console
+
+                    if (this.config.sentry_dsn) {
+                        Sentry.captureException(e, {
+                            tags: {
+                                lexical: true
+                            }
+                        });
+                    }
+                }
+            }
+        });
+        await Promise.all(snippetFixSaves);
+
+        snippets.forEach((snippet) => {
+            if (!snippet.lexical || snippet.lexical.syncedAt && moment.utc(snippet.lexical.syncedAt).isBefore(snippet.updatedAtUTC)) {
+                const serializedLexical = mobiledocToLexical(JSON.stringify(snippet.mobiledoc));
+
+                // we get a full Lexical doc from the converter but Lexical only
+                // stores an array of nodes in it's copy/paste dataset that we use for snippets
+                const lexical = JSON.parse(serializedLexical);
+                let nodes = lexical.root.children;
+
+                // for a single-paragraph text selection Lexical only stores the
+                // text children in the nodes array
+                if (nodes.length === 1 && nodes[0].type === 'paragraph') {
+                    nodes = nodes[0].children;
+                }
+
+                const lexicalData = {
+                    namespace: 'KoenigEditor',
+                    nodes
+                };
+
+                // set syncedAt so we can check if mobiledoc has been updated in next sync
+                lexicalData.syncedAt = moment.utc().toISOString();
+
+                snippet.lexical = lexicalData;
+
+                // kick off a background save, we already have .lexical updated which is what we need
+                snippet.save();
+            }
+        });
     }
 
     /* Public methods --------------------------------------------------------*/
@@ -854,7 +937,7 @@ export default class LexicalEditorController extends Controller {
                 this.cancelAutosave();
                 this.autosaveTask.cancelAll();
             }
-            await this.autosaveTask.perform({leavingEditor: true});
+            await this.autosaveTask.perform({leavingEditor: true, backgroundSave: false});
             return transition.retry();
         }
 
@@ -967,6 +1050,21 @@ export default class LexicalEditorController extends Controller {
         }
     }).drop())
         _timedSaveTask;
+
+    // save at 10 minutes even if the post is already saved
+    @(task(function* () {
+        if (!this._canAutosave) {
+            return;
+        }
+
+        while (config.environment !== 'test' && true) {
+            yield timeout(REVISIONSAVE_TIMEOUT);
+            this.autosaveTask.perform({
+                saveRevision: this._canAutosave
+            });
+        }
+    }).drop())
+        _revisionSaveTask;
 
     /* Private methods -------------------------------------------------------*/
 

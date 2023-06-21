@@ -1,8 +1,8 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
 require('./utils');
-const UrlHistory = require('../lib/history');
-const AttributionBuilder = require('../lib/attribution');
+const UrlHistory = require('../lib/UrlHistory');
+const AttributionBuilder = require('../lib/AttributionBuilder');
 
 describe('AttributionBuilder', function () {
     let attributionBuilder;
@@ -158,6 +158,21 @@ describe('AttributionBuilder', function () {
         });
     });
 
+    it('Returns all null if only invalid ids', async function () {
+        const history = UrlHistory.create([
+            {id: 'invalid', type: 'post', time: now + 124},
+            {id: 'invalid', type: 'post', time: now + 124}
+        ]);
+        should(await attributionBuilder.getAttribution(history)).match({
+            type: null,
+            id: null,
+            url: null,
+            referrerSource: 'Ghost Explore',
+            referrerMedium: 'Ghost Network',
+            referrerUrl: 'https://ghost.org/explore'
+        });
+    });
+
     it('Returns null referrer attribution', async function () {
         attributionBuilder = new AttributionBuilder({
             urlTranslator,
@@ -176,18 +191,6 @@ describe('AttributionBuilder', function () {
             referrerSource: null,
             referrerMedium: null,
             referrerUrl: null
-        });
-    });
-
-    it('Returns all null if only invalid ids', async function () {
-        const history = UrlHistory.create([
-            {id: 'invalid', type: 'post', time: now + 124},
-            {id: 'invalid', type: 'post', time: now + 124}
-        ]);
-        should(await attributionBuilder.getAttribution(history)).match({
-            type: null,
-            id: null,
-            url: null
         });
     });
 

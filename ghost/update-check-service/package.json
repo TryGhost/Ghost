@@ -4,13 +4,15 @@
   "version": "0.0.0",
   "author": "Ghost Foundation",
   "license": "MIT",
-  "main": "./lib/update-check-service.js",
-  "exports": "./lib/update-check-service.js",
+  "main": "./lib/UpdateCheckService.js",
+  "exports": "./lib/UpdateCheckService.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
     "test:unit": "NODE_ENV=testing c8 --all --check-coverage --reporter text --reporter cobertura mocha './test/**/*.test.js'",
     "test": "yarn test:unit",
-    "lint": "eslint . --ext .js --cache"
+    "lint:code": "eslint *.js lib/ --ext .js --cache",
+    "lint": "yarn lint:code && yarn lint:test",
+    "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache"
   },
   "files": [
     "lib"

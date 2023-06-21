@@ -41,7 +41,7 @@
                     </div>
                 {{/each}}
             </div>
-                <GhFormGroup @errors={{this.errors}} @property="product-cadence">
+                <GhFormGroup class="{{if (eq this.expiryAt "custom") "gh-cp-membertier-duration"}}" @errors={{this.errors}} @property="product-cadence">
                     <label for="product-cadence" class="fw6 mt5">Duration</label>
                     <span class="gh-select">
                         <OneWaySelect
@@ -55,6 +55,13 @@
                         />
                         {{svg-jar "arrow-down-small"}}
                     </span>
+                    {{#if (eq this.expiryAt "custom")}}
+                        <GhDatePicker
+                            @minDate={{this.minCustomDate}}
+                            @value={{this.customExpiryDate}}
+                            @onChange={{this.updateCustomExpiryDate}}
+                        />
+                    {{/if}}
                     <GhErrorMessage @errors={{this.errors}} @property="product-cadence" />
                 </GhFormGroup>
         {{/if}}

@@ -1,7 +1,7 @@
 const url = require('url');
 const debug = require('@tryghost/debug')('http');
 
-const Frame = require('./frame');
+const Frame = require('./Frame');
 const headers = require('./headers');
 
 /**

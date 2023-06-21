@@ -1,4 +1,4 @@
-const SessionStore = require('../../../../../../core/server/services/auth/session/store');
+const SessionStore = require('../../../../../../core/server/services/auth/session/SessionStore');
 const models = require('../../../../../../core/server/models');
 const EventEmitter = require('events');
 const {Store} = require('express-session');

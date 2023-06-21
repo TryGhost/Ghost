@@ -20,7 +20,9 @@ module.exports = {
             'hostSettings',
             'tenor',
             'editor',
-            'pintura'
+            'pintura',
+            'adminX',
+            'signupForm'
         ];
 
         frame.response = {

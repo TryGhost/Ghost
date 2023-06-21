@@ -15,6 +15,9 @@ module.exports = {
     docName: 'invites',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'page',
@@ -36,6 +39,9 @@ module.exports = {
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include'
         ],
@@ -64,6 +70,9 @@ module.exports = {
     },
 
     destroy: {
+        headers: {
+            cacheInvalidate: false
+        },
         statusCode: 204,
         options: [
             'include',
@@ -82,6 +91,9 @@ module.exports = {
 
     add: {
         statusCode: 201,
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'email'
@@ -109,8 +121,8 @@ module.exports = {
                 invites: frame.data.invites,
                 options: frame.options,
                 user: {
-                    name: frame.user.get('name'),
-                    email: frame.user.get('email')
+                    name: frame.user?.get('name'),
+                    email: frame.user?.get('email')
                 }
             });
         }

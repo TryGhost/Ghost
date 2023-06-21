@@ -1,11 +1,25 @@
 const nock = require('nock');
-const assert = require('assert');
+const assert = require('assert/strict');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyISODateTime, anyErrorId} = matchers;
 
 const {tokens} = require('@tryghost/security');
 const models = require('../../../../core/server/models');
 const settingsCache = require('../../../../core/shared/settings-cache');
+
+async function waitForEmailSent(emailMockReceiver, number = 1) {
+    let sentEmailCount = 0;
+    while (sentEmailCount === 0) {
+        try {
+            emailMockReceiver.assertSentEmailCount(number);
+            sentEmailCount = number;
+        } catch (e) {
+            await new Promise((resolve) => {
+                setTimeout(resolve, 100);
+            });
+        }
+    }
+}
 
 describe('Authentication API', function () {
     let emailMockReceiver;
@@ -70,6 +84,8 @@ describe('Authentication API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
+
+            await waitForEmailSent(emailMockReceiver);
 
             // Test our side effects
             emailMockReceiver.matchHTMLSnapshot();
@@ -207,6 +223,8 @@ describe('Authentication API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
+
+            await waitForEmailSent(emailMockReceiver);
 
             // Test our side effects
             emailMockReceiver.matchHTMLSnapshot();

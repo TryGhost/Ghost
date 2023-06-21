@@ -7,7 +7,7 @@ const dbBackup = require('../../data/db/backup');
 const auth = require('../../services/auth');
 const apiMail = require('./index').mail;
 const apiSettings = require('./index').settings;
-const UsersService = require('../../services/users');
+const UsersService = require('../../services/Users');
 const userService = new UsersService({dbBackup, models, auth, apiMail, apiSettings});
 const ALLOWED_INCLUDES = ['count.posts', 'permissions', 'roles', 'roles.permissions'];
 const UNSAFE_ATTRS = ['status', 'roles'];
@@ -45,6 +45,9 @@ module.exports = {
     docName: 'users',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'filter',
@@ -68,6 +71,9 @@ module.exports = {
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'filter',
@@ -103,7 +109,9 @@ module.exports = {
     },
 
     edit: {
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'id',
             'include'
@@ -166,6 +174,9 @@ module.exports = {
     },
 
     changePassword: {
+        headers: {
+            cacheInvalidate: false
+        },
         validation: {
             docName: 'password',
             data: {
@@ -188,6 +199,9 @@ module.exports = {
     },
 
     transferOwnership: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions(frame) {
             return models.Role.findOne({name: 'Owner'})
                 .then((ownerRole) => {
@@ -200,6 +214,9 @@ module.exports = {
     },
 
     readToken: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'id'
         ],
@@ -218,6 +235,9 @@ module.exports = {
     },
 
     regenerateToken: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'id'
         ],

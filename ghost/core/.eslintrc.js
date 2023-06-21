@@ -76,6 +76,12 @@ module.exports = {
                 ]]
             }
         },
+        {
+            files: ['core/frontend/helpers/**', 'core/frontend/apps/*/lib/helpers/**'],
+            rules: {
+                'ghost/filenames/match-regex': ['off', '^[a-z0-9-.]$', null, true]
+            }
+        },
         /**
          * @TODO: enable these soon
          */

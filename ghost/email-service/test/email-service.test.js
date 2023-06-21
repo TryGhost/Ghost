@@ -1,5 +1,5 @@
-const EmailService = require('../lib/email-service');
-const assert = require('assert');
+const EmailService = require('../lib/EmailService');
+const assert = require('assert/strict');
 const sinon = require('sinon');
 const {createModel, createModelClass} = require('./utils');
 
@@ -154,12 +154,12 @@ describe('Email Service', function () {
 
             const email = await service.createEmail(post);
             sinon.assert.calledOnce(scheduleEmail);
-            assert.strictEqual(email.get('feedback_enabled'), true);
-            assert.strictEqual(email.get('newsletter_id'), post.get('newsletter').id);
-            assert.strictEqual(email.get('post_id'), post.id);
-            assert.strictEqual(email.get('status'), 'pending');
-            assert.strictEqual(email.get('source'), post.get('mobiledoc'));
-            assert.strictEqual(email.get('source_type'), 'mobiledoc');
+            assert.equal(email.get('feedback_enabled'), true);
+            assert.equal(email.get('newsletter_id'), post.get('newsletter').id);
+            assert.equal(email.get('post_id'), post.id);
+            assert.equal(email.get('status'), 'pending');
+            assert.equal(email.get('source'), post.get('mobiledoc'));
+            assert.equal(email.get('source_type'), 'mobiledoc');
             sinon.assert.calledOnce(scheduleRecurringJobs);
         });
 
@@ -190,12 +190,12 @@ describe('Email Service', function () {
 
             const email = await service.createEmail(post);
             sinon.assert.calledOnce(scheduleEmail);
-            assert.strictEqual(email.get('feedback_enabled'), true);
-            assert.strictEqual(email.get('newsletter_id'), post.get('newsletter').id);
-            assert.strictEqual(email.get('post_id'), post.id);
-            assert.strictEqual(email.get('status'), 'pending');
-            assert.strictEqual(email.get('source'), post.get('lexical'));
-            assert.strictEqual(email.get('source_type'), 'lexical');
+            assert.equal(email.get('feedback_enabled'), true);
+            assert.equal(email.get('newsletter_id'), post.get('newsletter').id);
+            assert.equal(email.get('post_id'), post.id);
+            assert.equal(email.get('status'), 'pending');
+            assert.equal(email.get('source'), post.get('lexical'));
+            assert.equal(email.get('source_type'), 'lexical');
         });
 
         it('Stores the error in the email model if scheduling fails', async function () {
@@ -212,8 +212,8 @@ describe('Email Service', function () {
             const email = await service.createEmail(post);
             sinon.assert.calledOnce(scheduleEmail);
 
-            assert.strictEqual(email.get('error'), 'Test error');
-            assert.strictEqual(email.get('status'), 'failed');
+            assert.equal(email.get('error'), 'Test error');
+            assert.equal(email.get('status'), 'failed');
         });
 
         it('Stores a default error in the email model if scheduling fails', async function () {
@@ -230,8 +230,8 @@ describe('Email Service', function () {
             const email = await service.createEmail(post);
             sinon.assert.calledOnce(scheduleEmail);
 
-            assert.strictEqual(email.get('error'), 'Something went wrong while scheduling the email');
-            assert.strictEqual(email.get('status'), 'failed');
+            assert.equal(email.get('error'), 'Something went wrong while scheduling the email');
+            assert.equal(email.get('status'), 'failed');
         });
 
         it('Checks limits before scheduling', async function () {
@@ -298,11 +298,11 @@ describe('Email Service', function () {
             });
             membersRepository.get.resolves(member);
             const exampleMember = await service.getExampleMember('example@example.com', 'status:free');
-            assert.strictEqual(exampleMember.id, member.id);
-            assert.strictEqual(exampleMember.name, member.get('name'));
-            assert.strictEqual(exampleMember.email, member.get('email'));
-            assert.strictEqual(exampleMember.uuid, member.get('uuid'));
-            assert.strictEqual(exampleMember.status, 'free');
+            assert.equal(exampleMember.id, member.id);
+            assert.equal(exampleMember.name, member.get('name'));
+            assert.equal(exampleMember.email, member.get('email'));
+            assert.equal(exampleMember.uuid, member.get('uuid'));
+            assert.equal(exampleMember.status, 'free');
             assert.deepEqual(exampleMember.subscriptions, []);
             assert.deepEqual(exampleMember.tiers, []);
         });
@@ -327,11 +327,11 @@ describe('Email Service', function () {
             });
             membersRepository.get.resolves(member);
             const exampleMember = await service.getExampleMember('example@example.com', 'status:-free');
-            assert.strictEqual(exampleMember.id, member.id);
-            assert.strictEqual(exampleMember.name, member.get('name'));
-            assert.strictEqual(exampleMember.email, member.get('email'));
-            assert.strictEqual(exampleMember.uuid, member.get('uuid'));
-            assert.strictEqual(exampleMember.status, 'paid');
+            assert.equal(exampleMember.id, member.id);
+            assert.equal(exampleMember.name, member.get('name'));
+            assert.equal(exampleMember.email, member.get('email'));
+            assert.equal(exampleMember.uuid, member.get('uuid'));
+            assert.equal(exampleMember.status, 'paid');
             assert.deepEqual(exampleMember.subscriptions, [
                 {
                     status: 'active',
@@ -358,11 +358,11 @@ describe('Email Service', function () {
             });
             membersRepository.get.resolves(member);
             const exampleMember = await service.getExampleMember('example@example.com', 'status:free');
-            assert.strictEqual(exampleMember.id, member.id);
-            assert.strictEqual(exampleMember.name, member.get('name'));
-            assert.strictEqual(exampleMember.email, member.get('email'));
-            assert.strictEqual(exampleMember.uuid, member.get('uuid'));
-            assert.strictEqual(exampleMember.status, 'free');
+            assert.equal(exampleMember.id, member.id);
+            assert.equal(exampleMember.name, member.get('name'));
+            assert.equal(exampleMember.email, member.get('email'));
+            assert.equal(exampleMember.uuid, member.get('uuid'));
+            assert.equal(exampleMember.status, 'free');
             assert.deepEqual(exampleMember.subscriptions, []);
             assert.deepEqual(exampleMember.tiers, []);
         });
@@ -370,8 +370,8 @@ describe('Email Service', function () {
         it('Returns a member without name if member does not exist', async function () {
             membersRepository.get.resolves(undefined);
             const exampleMember = await service.getExampleMember('example@example.com');
-            assert.strictEqual(exampleMember.name, '');
-            assert.strictEqual(exampleMember.email, 'example@example.com');
+            assert.equal(exampleMember.name, '');
+            assert.equal(exampleMember.email, 'example@example.com');
             assert.ok(exampleMember.id);
             assert.ok(exampleMember.uuid);
         });
@@ -410,9 +410,9 @@ describe('Email Service', function () {
             });
 
             const data = await service.previewEmail(post, post.get('newsletter'), null);
-            assert.strictEqual(data.html, 'Hello Jamie Larson, Jamie Larson');
-            assert.strictEqual(data.plaintext, 'Hello Jamie Larson');
-            assert.strictEqual(data.subject, 'Subject');
+            assert.equal(data.html, 'Hello Jamie Larson, Jamie Larson');
+            assert.equal(data.plaintext, 'Hello Jamie Larson');
+            assert.equal(data.subject, 'Subject');
         });
     });
 
@@ -428,8 +428,8 @@ describe('Email Service', function () {
             await service.sendTestEmail(post, post.get('newsletter'), null, ['example@example.com']);
             sinon.assert.calledOnce(sendingService.send);
             const members = sendingService.send.firstCall.args[0].members;
-            assert.strictEqual(members.length, 1);
-            assert.strictEqual(members[0].email, 'example@example.com');
+            assert.equal(members.length, 1);
+            assert.equal(members[0].email, 'example@example.com');
         });
     });
 });

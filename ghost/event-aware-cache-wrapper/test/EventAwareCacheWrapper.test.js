@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const InMemoryCache = require('@tryghost/adapter-cache-memory-ttl');
 
 const EventAwareCacheWrapper = require('../index');

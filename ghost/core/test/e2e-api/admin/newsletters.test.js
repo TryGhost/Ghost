@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const sinon = require('sinon');
 const {agentProvider, mockManager, fixtureManager, configUtils, dbUtils, matchers, regexes} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyLocationFor, anyNumber} = matchers;
@@ -726,9 +726,15 @@ describe('Newsletters API', function () {
 
         emailMockReceiver
             .assertSentEmailCount(1)
-            .matchHTMLSnapshot()
-            .matchPlaintextSnapshot()
-            .matchMetadataSnapshot();
+            .matchMetadataSnapshot()
+            .matchHTMLSnapshot([{
+                pattern: queryStringToken('verifyEmail'),
+                replacement: 'verifyEmail=REPLACED_TOKEN'
+            }])
+            .matchPlaintextSnapshot([{
+                pattern: queryStringToken('verifyEmail'),
+                replacement: 'verifyEmail=REPLACED_TOKEN'
+            }]);
     });
 
     it(`Can't edit multiple newsletters to existing name`, async function () {

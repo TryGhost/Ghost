@@ -9,7 +9,7 @@
     {{#if (and this.session.user.isContributor @post.isPublished)}}
         <a href={{@post.url}} class="permalink gh-list-data gh-post-list-title" target="_blank" rel="noopener noreferrer">
             <h3 class="gh-content-entry-title">
-                {{@post.title}} {{svg-jar "external" class="gh-post-list-external"}}
+                {{@post.title}}
             </h3>
             {{#unless @hideAuthor }}
                 <p class="gh-content-entry-meta">
@@ -51,9 +51,6 @@
                     {{svg-jar "star-fill" class="gh-featured-post"}}
                 {{/if}}
                 {{@post.title}}
-                {{#if @post.lexical}}
-                    <span class="gh-lexical-indicator">L</span>
-                {{/if}}
             </h3>
             {{#unless @hideAuthor }}
                 <p class="gh-content-entry-meta">
@@ -187,15 +184,23 @@
     {{!-- Button column --}}
     {{#if @post.hasAnalyticsPage }}
         <LinkTo @route="posts.analytics" @model={{@post.id}} class="permalink gh-list-data gh-post-list-button" title="">
-            <span class="gh-post-list-cta stats {{if this.isHovered "is-hovered"}}" title="Go to Analytics">
+            <span class="gh-post-list-cta stats {{if this.isHovered "is-hovered"}}" title="Go to Analytics" data-ignore-select>
                 {{svg-jar "stats" title="Go to Analytics"}}
             </span>
         </LinkTo>
     {{else}}
-        <LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data gh-post-list-button" title="">
-            <span class="gh-post-list-cta edit {{if this.isHovered "is-hovered"}}" title="Go to Editor">
-                {{svg-jar "pen" title="Go to Editor"}}
-            </span>
-        </LinkTo>
+        {{#if (and this.session.user.isContributor @post.isPublished)}}
+            <a href={{@post.url}} class="permalink gh-list-data gh-post-list-button" target="_blank" rel="noopener noreferrer">
+                <span class="gh-post-list-cta view {{if this.isHovered "is-hovered"}}" title="View post" data-ignore-select>
+                    {{svg-jar "arrow-top-right" title="View post"}}
+                </span>
+            </a>
+        {{else}}
+            <LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data gh-post-list-button" title="">
+                <span class="gh-post-list-cta edit {{if this.isHovered "is-hovered"}}" title="Go to Editor" data-ignore-select>
+                    {{svg-jar "pen" title="Go to Editor"}}
+                </span>
+            </LinkTo>
+        {{/if}}
     {{/if}}
 </li>

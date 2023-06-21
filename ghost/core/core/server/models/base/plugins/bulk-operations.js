@@ -60,7 +60,7 @@ async function editSingle(knex, table, id, options) {
     if (options.transacting) {
         k = k.transacting(options.transacting);
     }
-    await k.where('id', id).update(options.data);
+    await k.where(options.column ?? 'id', id).update(options.data);
 }
 
 async function editMultiple(knex, table, chunk, options) {
@@ -68,7 +68,7 @@ async function editMultiple(knex, table, chunk, options) {
     if (options.transacting) {
         k = k.transacting(options.transacting);
     }
-    await k.whereIn('id', chunk).update(options.data);
+    await k.whereIn(options.column ?? 'id', chunk).update(options.data);
 }
 
 async function delSingle(knex, table, id, options) {
@@ -112,23 +112,44 @@ module.exports = function (Bookshelf) {
             return insert(Bookshelf.knex, tableName, data, options);
         },
 
-        bulkEdit: async function bulkEdit(data, tableName, options = {}) {
+        /**
+         *
+         * @param {*} ids
+         * @param {*} tableName
+         * @param {object} options
+         * @param {object} [options.data] Data change you want to apply to the rows
+         * @param {string} [options.column] Update the rows where this column equals the ids (defaults to 'id')
+         * @returns
+         */
+        bulkEdit: async function bulkEdit(ids, tableName, options = {}) {
             tableName = tableName || this.prototype.tableName;
 
-            return await edit(Bookshelf.knex, tableName, data, options);
+            const result = await edit(Bookshelf.knex, tableName, ids, options);
+
+            if (result.successful > 0 && tableName === this.prototype.tableName) {
+                await this.addActions('edited', ids, options);
+            }
+
+            return result;
         },
 
         /**
          *
-         * @param {string[]} data List of ids to delete
+         * @param {string[]} ids List of ids to delete
          * @param {*} tableName
          * @param {Object} [options]
          * @param {string} [options.column] Delete the rows where this column equals the ids in `data` (defaults to 'id')
          * @returns
          */
-        bulkDestroy: async function bulkDestroy(data, tableName, options = {}) {
+        bulkDestroy: async function bulkDestroy(ids, tableName, options = {}) {
             tableName = tableName || this.prototype.tableName;
-            return await del(Bookshelf.knex, tableName, data, options);
+
+            if (tableName === this.prototype.tableName) {
+                // Needs to happen before, otherwise we cannot fetch the names of the deleted items
+                await this.addActions('deleted', ids, options);
+            }
+
+            return await del(Bookshelf.knex, tableName, ids, options);
         }
     });
 };

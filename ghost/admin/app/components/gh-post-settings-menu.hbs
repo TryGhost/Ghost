@@ -149,10 +149,10 @@
                                 </div>
                             </li>
                         {{/unless}}
-                        {{#if (and (feature 'postHistory') this.post.lexical)}}
+                        {{#if this.canViewPostHistory}}
                             <li class="nav-list-item">
                                 <button type="button" {{on "click" this.openPostHistory}} data-test-toggle="post-history">
-                                    <span>{{svg-jar "history" class="history"}} Post history</span>
+                                    <span>{{svg-jar "history" class="history"}} {{capitalize this.post.displayName}} history</span>
                                 </button>
                                 {{svg-jar "arrow-right" class="arrow-right"}}
                             </li>
@@ -446,18 +446,16 @@
         </div>
         {{/if}}
 
-        {{#if (feature 'postHistory')}}
-            {{#if this.showPostHistory}}
-                <GhFullscreenModal
-                    @modal="post-history"
-                    @model={{hash
-                        post=this.post
-                        editorAPI=this.editorAPI
-                        toggleSettingsMenu=this.toggleSettingsMenu
-                    }}
-                    @close={{this.closePostHistory}}
-                    @modifier="total-overlay post-history" />
-            {{/if}}
+        {{#if this.showPostHistory}}
+            <GhFullscreenModal
+                @modal="post-history"
+                @model={{hash
+                    post=this.post
+                    editorAPI=this.editorAPI
+                    toggleSettingsMenu=this.toggleSettingsMenu
+                }}
+                @close={{this.closePostHistory}}
+                @modifier="total-overlay post-history" />
         {{/if}}
     </div>
 </div>

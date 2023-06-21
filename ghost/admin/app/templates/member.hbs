@@ -13,7 +13,7 @@
 
                     {{#unless this.directlyFromAnalytics}}
                         {{svg-jar "arrow-right-small"}}
-                        <LinkTo @route="members" data-test-link="members-back">
+                        <LinkTo @route="members" data-test-link="members-back" @query={{hash postAnalytics=this.postAnalytics}}>
                             Members
                         </LinkTo>
                     {{/unless}}

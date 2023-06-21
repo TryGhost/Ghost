@@ -46,7 +46,7 @@
                         <div class="gh-dashboard-list-item">
                             <div class="gh-dashboard-list-item-sub">
                                 <GhMemberAvatar @member={{parsedEvent.member}} @containerClass="w6 h6 mr3 flex-shrink-0" />
-                                <LinkTo class="gh-dashboard-list-text" @route="member" @model="{{parsedEvent.memberId}}">{{parsedEvent.subject}}</LinkTo>
+                                <LinkTo class="gh-dashboard-list-text" @route="member" @model="{{parsedEvent.memberId}}" @query={{hash postAnalytics=@post.id}}>{{parsedEvent.subject}}</LinkTo>
                             </div>
                             <div class="gh-dashboard-list-item-sub">
                                 {{svg-jar parsedEvent.icon }}
@@ -84,23 +84,10 @@
                 {{/if}}
 
                 <div class="gh-post-activity-feed-footer">
-                    {{#if (feature "suppressionList")}}
-                        <Posts::PostActivityFeed::FooterLinks
-                            @eventType={{this.eventType}}
-                            @post={{@post}}
-                        />
-                    {{/if}}
-
-                    {{#if (and @linkQuery (not (feature "suppressionList")))}}
-                        <LinkTo
-                            class="gh-post-activity-feed-pagination-link"
-                            @route="members"
-                            @query={{@linkQuery}}
-                        >
-                            {{svg-jar "filter"}}
-                            View members
-                        </LinkTo>
-                    {{/if}}
+                    <Posts::PostActivityFeed::FooterLinks
+                        @eventType={{this.eventType}}
+                        @post={{@post}}
+                    />
 
                     <div class="gh-post-activity-feed-pagination">
                         {{#if (compute (fn this.isPaginationNotNeeded eventsFetcher))}}

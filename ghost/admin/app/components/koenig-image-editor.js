@@ -1,4 +1,5 @@
 import Component from '@glimmer/component';
+import trackEvent from '../utils/analytics';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
@@ -128,7 +129,15 @@ export default class KoenigImageEditor extends Component {
     }
 
     @action
-    async handleClick() {
+    async onUploadComplete(urlList) {
+        if (this.args.saveUrl) {
+            const url = urlList[0].url;
+            this.args.saveUrl(url);
+        }
+    }
+
+    @action
+    async handleClick(uploader) {
         if (this.isEditorEnabled && this.args.imageSrc) {
             // add a timestamp to the image src to bypass cache
             // avoids cors issues with cached images
@@ -136,10 +145,11 @@ export default class KoenigImageEditor extends Component {
             if (!imageUrl.searchParams.has('v')) {
                 imageUrl.searchParams.set('v', Date.now());
             }
-
+            trackEvent('Image Edit Button Clicked', {location: 'admin'});
             const imageSrc = imageUrl.href;
             const editor = window.pintura.openDefaultEditor({
                 src: imageSrc,
+                enableTransparencyGrid: true,
                 util: 'crop',
                 utils: [
                     'crop',
@@ -199,7 +209,17 @@ export default class KoenigImageEditor extends Component {
 
             editor.on('process', (result) => {
                 // save edited image
-                this.args.saveImage(result.dest);
+                try {
+                    if (this.args.saveImage) {
+                        this.args.saveImage(result.dest);
+                    }
+                    if (this.args.saveUrl) {
+                        uploader.setFiles([result.dest]);
+                    }
+                    trackEvent('Image Edit Saved', {location: 'admin'});
+                } catch (e) {
+                    // Failed to save edited image
+                }
             });
         }
     }

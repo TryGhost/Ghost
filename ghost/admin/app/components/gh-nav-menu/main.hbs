@@ -94,6 +94,9 @@
                     {{#if this.showTagsNavigation}}
                         <li><LinkTo @route="tags" @current-when="tags tag tag.new" data-test-nav="tags">{{svg-jar "tag"}}Tags</LinkTo></li>
                     {{/if}}
+                    {{#if (and (gh-user-can-admin this.session.user) (feature "collections"))}}
+                        <li><LinkTo @route="collections" @current-when="collections collection collection.new" data-test-nav="collections">{{svg-jar "collections-bookmark"}}Collections</LinkTo></li>
+                    {{/if}}
                     {{#if (gh-user-can-admin this.session.user)}}
                         <li class="relative">
                             {{#if (eq this.router.currentRouteName "members.index")}}
@@ -116,6 +119,11 @@
                                 <LinkTo @route="offers" @current-when="offers offer offer.new" @alt="Offers" data-test-nav="offers">{{svg-jar "percentage"}}Offers</LinkTo>
                             </li>
                         {{/if}}
+                    {{/if}}
+                    {{#if (and (gh-user-can-admin this.session.user) (feature "adminXSettings"))}}
+                            <li>
+                                <LinkTo @route="settings-x" @current-when={{this.isSettingsRoute}} data-test-nav="settings">{{svg-jar "settings"}} AdminX Settings</LinkTo>
+                            </li>
                     {{/if}}
                 </ul>
 
@@ -145,11 +153,6 @@
                             </li>
                         {{/each}}
                     </ul>
-                {{/if}}
-
-                {{#if this.showScriptExtension}}
-                    {{{this.config.clientExtensions.script.container}}}
-                    <script src="{{this.config.clientExtensions.script.src}}"></script>
                 {{/if}}
             </div>
         {{/unless}}

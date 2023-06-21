@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Disable scrolling inside iframe */
+body, html {
+    overflow: hidden;
+}

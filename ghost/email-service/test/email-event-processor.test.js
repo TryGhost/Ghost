@@ -1,5 +1,5 @@
-const assert = require('assert');
-const EmailEventProcessor = require('../lib/email-event-processor');
+const assert = require('assert/strict');
+const EmailEventProcessor = require('../lib/EmailEventProcessor');
 const {createDb} = require('./utils');
 const sinon = require('sinon');
 
@@ -58,7 +58,7 @@ describe('Email Event Processor', function () {
     describe('getRecipient', function () {
         it('Returns undefined if both providerId and emailId are missing', async function () {
             const recipient = await eventProcessor.getRecipient({});
-            assert.strictEqual(recipient, undefined);
+            assert.equal(recipient, undefined);
         });
 
         it('Uses emailId to query recipient', async function () {
@@ -82,13 +82,13 @@ describe('Email Event Processor', function () {
         it('Returns undefined if no email found for provider', async function () {
             sinon.stub(db, 'first').resolves(null);
             const recipient = await eventProcessor.getRecipient({providerId: 'provider-id', email: 'example@example.com'});
-            assert.strictEqual(recipient, undefined);
+            assert.equal(recipient, undefined);
         });
 
         it('Returns undefined if no recipient found for email', async function () {
             sinon.stub(db, 'first').resolves(null);
             const recipient = await eventProcessor.getRecipient({emailId: 'email-id', email: 'example@example.com'});
-            assert.strictEqual(recipient, undefined);
+            assert.equal(recipient, undefined);
         });
     });
 

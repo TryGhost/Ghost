@@ -25,7 +25,8 @@ import {isInvalidError} from 'ember-ajax/errors';
 import {inject as service} from '@ember/service';
 
 const DEFAULT_TITLE = '(Untitled)';
-
+// suffix that is applied to the title of a post when it has been duplicated
+const DUPLICATED_POST_TITLE_SUFFIX = '(Copy)';
 // time in ms to save after last content edit
 const AUTOSAVE_TIMEOUT = 3000;
 // time in ms to force a save if the user is continuously typing
@@ -172,8 +173,8 @@ export default class EditorController extends Controller {
     get snippets() {
         return this._snippets
             .reject(snippet => snippet.get('isNew'))
-            .sort((a, b) => a.name.localeCompare(b.name))
-            .filterBy('lexical', null);
+            .reject(snippet => ['{}', '"{}"'].includes(JSON.stringify(snippet.mobiledoc)))
+            .sort((a, b) => a.name.localeCompare(b.name));
     }
 
     @computed('session.user.{isAdmin,isEditor}')
@@ -685,9 +686,15 @@ export default class EditorController extends Controller {
         // this is necessary to force a save when the title is blank
         this.set('hasDirtyAttributes', true);
 
-        // generate a slug if a post is new and doesn't have a title yet or
-        // if the title is still '(Untitled)'
-        if ((post.get('isNew') && !currentTitle) || currentTitle === DEFAULT_TITLE) {
+        // generate slug if post
+        //  - is new and doesn't have a title yet
+        //  - still has the default title
+        //  - previously had a title that ended with the duplicated post title suffix
+        if (
+            (post.get('isNew') && !currentTitle) ||
+            (currentTitle === DEFAULT_TITLE) ||
+            currentTitle?.endsWith(DUPLICATED_POST_TITLE_SUFFIX)
+        ) {
             yield this.generateSlugTask.perform();
         }
 

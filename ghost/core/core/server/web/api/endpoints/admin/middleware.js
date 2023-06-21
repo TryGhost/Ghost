@@ -14,6 +14,10 @@ const notImplemented = function (req, res, next) {
         return next();
     }
 
+    if (req.query.god_mode && process.env.NODE_ENV === 'development') {
+        return next();
+    }
+
     // @NOTE: integrations & staff tokens have limited access to the API
     const allowlisted = {
         site: ['GET'],
@@ -25,6 +29,8 @@ const notImplemented = function (req, res, next) {
         tags: ['GET', 'PUT', 'DELETE', 'POST'],
         labels: ['GET', 'PUT', 'DELETE', 'POST'],
         users: ['GET'],
+        roles: ['GET'],
+        invites: ['POST'],
         themes: ['POST', 'PUT'],
         members: ['GET', 'PUT', 'DELETE', 'POST'],
         tiers: ['GET', 'PUT', 'POST'],

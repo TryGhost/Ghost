@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const nock = require('nock');
 const sinon = require('sinon');
 
@@ -150,7 +150,7 @@ describe('MailgunClient', function () {
             const mailgunClient = new MailgunClient({config, settings});
             const response = await mailgunClient.send({}, {}, []);
 
-            assert.strictEqual(response, null);
+            assert.equal(response, null);
         });
     });
 
@@ -406,7 +406,7 @@ describe('MailgunClient', function () {
             const mailgunClient = new MailgunClient({config, settings});
             const result = mailgunClient.normalizeEvent(event);
 
-            assert.deepStrictEqual(result, {
+            assert.deepEqual(result, {
                 type: 'testEvent',
                 severity: 'testSeverity',
                 recipientEmail: 'testRecipient',
@@ -468,7 +468,7 @@ describe('MailgunClient', function () {
             const mailgunClient = new MailgunClient({config, settings});
             const result = mailgunClient.normalizeEvent(event);
 
-            assert.deepStrictEqual(result, {
+            assert.deepEqual(result, {
                 type: 'failed',
                 severity: 'permanent',
                 recipientEmail: 'testRecipient',
@@ -540,7 +540,7 @@ describe('MailgunClient', function () {
             const mailgunClient = new MailgunClient({config, settings});
             const result = mailgunClient.normalizeEvent(event);
 
-            assert.deepStrictEqual(result, {
+            assert.deepEqual(result, {
                 type: 'failed',
                 severity: 'permanent',
                 recipientEmail: 'testRecipient',

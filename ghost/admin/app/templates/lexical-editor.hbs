@@ -75,7 +75,7 @@
                 @scrollContainerSelector=".gh-koenig-editor"
                 @scrollOffsetBottomSelector=".gh-mobile-nav-bar"
                 @onEditorCreated={{this.setKoenigEditor}}
-                @onWordCountChange={{this.updateWordCount}}
+                @updateWordCount={{this.updateWordCount}}
                 @featureImage={{this.post.featureImage}}
                 @featureImageAlt={{this.post.featureImageAlt}}
                 @featureImageCaption={{this.post.featureImageCaption}}
@@ -93,12 +93,14 @@
                 @registerAPI={{this.registerEditorAPI}}
             />
 
+            <FeedbackLexical::EditorDropdown @post={{this.post}} />
+
             <div class="gh-editor-wordcount-container">
                 <div class="gh-editor-wordcount">
-                    {{gh-pluralize this.wordCount.wordCount "word"}}
+                    {{gh-pluralize this.wordCount "word"}}
                 </div>
-                <a href="https://github.com/TryGhost/Koenig/tree/main/packages/koenig-lexical" target="_blank" rel="noopener noreferrer" class="gh-lexical-indicator">Lexical</a>
-                {{!-- <a href="https://ghost.org/help/using-the-editor/" class="flex" target="_blank" rel="noopener noreferrer">{{svg-jar "help"}}</a> --}}
+                {{!-- <a href="https://github.com/TryGhost/Koenig/tree/main/packages/koenig-lexical" target="_blank" rel="noopener noreferrer" class="gh-lexical-indicator">Lexical</a> --}}
+                <a href="https://ghost.org/help/using-the-editor/" class="flex" target="_blank" rel="noopener noreferrer">{{svg-jar "help"}}</a>
             </div>
 
         </GhEditor>
@@ -128,14 +130,12 @@
             @close={{this.toggleReAuthenticateModal}}
             @modifier="action wide" />
     {{/if}}
-    {{#if (feature 'postHistory')}}
-        {{#if this.showPostHistory}}
-            <GhFullscreenModal
-                @modal="post-history"
-                @model={{this.post}}
-                @close={{this.closePostHistory}}
-                @modifier="total-overlay post-history" />
-        {{/if}}
+    {{#if this.showPostHistory}}
+        <GhFullscreenModal
+            @modal="post-history"
+            @model={{this.post}}
+            @close={{this.closePostHistory}}
+            @modifier="total-overlay post-history" />
     {{/if}}
 {{/if}}
 

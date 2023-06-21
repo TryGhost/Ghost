@@ -3,6 +3,12 @@
         {{#if this.url}}
             <div class="gh-image-uploader -with-image">
                 <div><img src={{this.url}} alt="" role="presentation"></div>
+                {{#if (feature 'lexicalEditor')}}
+                    <KoenigImageEditor
+                        @imageSrc={{this.url}}
+                        @saveUrl={{this.fileUploaded}}
+                    />
+                {{/if}}
                 <button type="button" class="image-action image-delete" title="Delete" {{on "click" this.removeImage}}>
                     {{svg-jar "trash"}}
                     <span class="hidden">Delete</span>

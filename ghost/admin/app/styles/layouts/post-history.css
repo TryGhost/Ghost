@@ -29,6 +29,13 @@
     background: var(--whitegrey-l2);
 }
 
+.gh-post-history .user-list-item-figure {
+    width: 2.8rem;
+    height: 2.8rem;
+    margin: 0 8px 0 0;
+    border: 1px solid var(--whitegrey-d1);
+}
+
 .nav-list-item .gh-post-history-version-meta {
     margin-top: 4px;
     color: var(--midgrey);
@@ -53,12 +60,17 @@
 
 .nav-list-item .gh-post-history-version-tag.current {
     background: var(--lightgrey-l2);
-    color: var(--darkgrey);
+    color: var(--middarkgrey);
 }
 
 .nav-list-item .gh-post-history-version-tag.published {
-    background: var(--green-d1);
-    color: var(--white);
+    background: color-mod(var(--green) a(20%));
+    color: var(--green-d2);
+}
+
+.nav-list-item .gh-post-history-version-tag.unpublished {
+    background: color-mod(var(--pink) a(15%));
+    color: var(--pink-d1);
 }
 
 .nav-list-item .gh-post-history-version-restore {
@@ -72,7 +84,12 @@
 .nav-list-item .gh-post-history-version-restore span {
     color: var(--midgrey);
     font-size: 1.35rem;
-    font-weight: 500;
+    font-weight: 600;
+    transition: all .2s ease;
+}
+
+.nav-list-item .gh-post-history-version-restore:hover span {
+    color: var(--midgrey-d2);
 }
 
 .gh-post-history-footer {
@@ -156,52 +173,6 @@
     margin-left: auto;
     margin-right: auto;
     color: var(--black);
-}
-
-.gh-post-history .show-diff .gh-editor-feature-image img {
-    opacity: .5;
-}
-
-.gh-post-history .show-diff .gh-editor-feature-image del img {
-    opacity: 1;
-    border: 3px solid var(--white);
-    box-shadow: 0 0 0 2px var(--red);
-}
-
-.gh-post-history .show-diff .gh-editor-feature-image ins img {
-    opacity: 1;
-    border: 3px solid var(--white);
-    box-shadow: 0 0 0 2px var(--green);
-}
-
-.gh-post-history .show-diff .gh-editor-title {
-    opacity: .4;
-}
-
-.gh-post-history-main .show-diff .koenig-lexical h1,
-.gh-post-history-main .show-diff .koenig-lexical h2,
-.gh-post-history-main .show-diff .koenig-lexical h3,
-.gh-post-history-main .show-diff .koenig-lexical h4,
-.gh-post-history-main .show-diff .koenig-lexical h5,
-.gh-post-history-main .show-diff .koenig-lexical h6,
-.gh-post-history-main .show-diff .koenig-lexical p,
-.gh-post-history-main .show-diff .koenig-lexical blockquote,
-.gh-post-history-main .show-diff .koenig-lexical aside {
-    color: rgba(21, 23, 26, 0.4);
-}
-
-.gh-post-history-main .show-diff .koenig-lexical a:not(.gh-post-history-main .koenig-lexical del a):not(.gh-post-history-main .koenig-lexical ins a) {
-    opacity: .4;
-}
-
-.gh-post-history-main .koenig-lexical del {
-    color: var(--red-d1) !important;
-}
-
-.gh-post-history-main .koenig-lexical ins {
-    color: var(--black) !important;
-    text-decoration: none !important;
-    background-color: rgba(48, 207, 67, 0.15) !important;
 }
 
 .gh-post-history-hidden-lexical {

@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const assert = require('assert');
+const assert = require('assert/strict');
 
 // Stuff we are testing
 const DomainEvents = require('@tryghost/domain-events');
@@ -8,12 +8,12 @@ const {URLResourceUpdatedEvent} = require('@tryghost/dynamic-routing-events');
 
 const events = require('../../../../../core/server/lib/common/events');
 
-const SiteMapManager = require('../../../../../core/frontend/services/sitemap/manager');
-const PostGenerator = require('../../../../../core/frontend/services/sitemap/post-generator');
-const PageGenerator = require('../../../../../core/frontend/services/sitemap/page-generator');
-const TagGenerator = require('../../../../../core/frontend/services/sitemap/tag-generator');
-const UserGenerator = require('../../../../../core/frontend/services/sitemap/user-generator');
-const IndexGenerator = require('../../../../../core/frontend/services/sitemap/index-generator');
+const SiteMapManager = require('../../../../../core/frontend/services/sitemap/SiteMapManager');
+const PostGenerator = require('../../../../../core/frontend/services/sitemap/PostMapGenerator');
+const PageGenerator = require('../../../../../core/frontend/services/sitemap/PageMapGenerator');
+const TagGenerator = require('../../../../../core/frontend/services/sitemap/TagsMapGenerator');
+const UserGenerator = require('../../../../../core/frontend/services/sitemap/UserMapGenerator');
+const IndexGenerator = require('../../../../../core/frontend/services/sitemap/SiteMapIndexGenerator');
 
 describe('Unit: sitemap/manager', function () {
     let eventsToRemember;

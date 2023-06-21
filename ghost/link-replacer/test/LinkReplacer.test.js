@@ -1,5 +1,5 @@
-const assert = require('assert');
-const linkReplacer = require('../lib/LinkReplacer');
+const assert = require('assert/strict');
+const linkReplacer = require('../lib/link-replacer');
 const cheerio = require('cheerio');
 const sinon = require('sinon');
 
