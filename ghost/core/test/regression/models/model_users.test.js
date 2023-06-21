@@ -2,7 +2,6 @@ const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
-const Promise = require('bluebird');
 const _ = require('lodash');
 
 // Stuff we are testing

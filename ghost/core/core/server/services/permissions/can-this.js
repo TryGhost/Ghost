@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const Promise = require('bluebird'); //not here
 const models = require('../../models');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
