@@ -3,6 +3,7 @@ import {CollectionResourceChangeEvent} from './CollectionResourceChangeEvent';
 import {CollectionRepository} from './CollectionRepository';
 import tpl from '@tryghost/tpl';
 import {MethodNotAllowedError, NotFoundError} from '@tryghost/errors';
+import DomainEvents from '@tryghost/domain-events';
 
 const messages = {
     cannotDeleteBuiltInCollectionError: {
@@ -130,6 +131,15 @@ export class CollectionsService {
         }
 
         return mappedDTO;
+    }
+
+    /**
+     * @description Subscribes to Domain events to update collections when posts are added, updated or deleted
+     */
+    subscribeToEvents() {
+        DomainEvents.subscribe(CollectionResourceChangeEvent, async (event: CollectionResourceChangeEvent) => {
+            await this.updateCollections(event);
+        });
     }
 
     async createCollection(data: CollectionInputDTO): Promise<CollectionDTO> {
