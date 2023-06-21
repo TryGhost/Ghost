@@ -140,6 +140,7 @@ module.exports = {
             'formats',
             'source',
             'force_rerender',
+            'save_revision',
             // NOTE: only for internal context
             'forUpdate',
             'transacting'
