@@ -78,7 +78,7 @@
     "eslint-plugin-cypress": "2.12.1",
     "eslint-plugin-ghost": "2.12.0",
     "eslint-plugin-tailwindcss": "3.6.0",
-    "minimist": "1.2.5",
+    "minimist": "1.2.8",
     "ora": "5.4.1",
     "postcss": "8.4.24",
     "rewire": "6.0.0",
