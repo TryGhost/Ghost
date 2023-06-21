@@ -20,7 +20,6 @@ class BlogIcon {
      * Get dimensions for ico file from its real file storage path
      * Always returns {object} getIconDimensions
      * @param {string} path
-     * @returns {Promise} getIconDimensions
      * @description Takes a file path and returns ico width and height.
      */
     getIconDimensions(storagePath) {

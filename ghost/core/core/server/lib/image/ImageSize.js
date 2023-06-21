@@ -139,7 +139,6 @@ class ImageSize {
     /**
      * @description read image dimensions from URL
      * @param {string} imagePath as URL
-     * @returns {Promise} imageObject or error
      */
     getImageSizeFromUrl(imagePath) {
         if (this.storageUtils.isLocalImage(imagePath)) {
@@ -324,7 +323,7 @@ class ImageSize {
      * Get dimensions for a file from its real file storage path
      * Always returns {object} getImageDimensions
      * @param {string} imagePath
-     * @returns {Promise} getImageDimensions
+     * @returns {object} getImageDimensions
      * @description Takes a file path and returns width and height.
      */
     getImageSizeFromPath(imagePath) {
