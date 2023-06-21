@@ -502,7 +502,7 @@ export function SignupCard({alignment,
                     <MultiSelectDropdownSetting
                         availableItems={availableLabels}
                         dataTestId='labels-dropdown'
-                        description='These labels will be applied to members who sign up via this form.'
+                        description='Added to members created using this form'
                         items={labels}
                         label='Labels'
                         placeholder='Select'
