@@ -198,16 +198,20 @@ export class CollectionsService {
         }
     }
 
+    private async removePostFromAllCollections(postId: string) {
+        const collections = await this.collectionsRepository.getAll();
+
+        for (const collection of collections) {
+            if (collection.includesPost(postId)) {
+                await collection.removePost(postId);
+            }
+        }
+    }
+
     async updateCollections(event: CollectionResourceChangeEvent) {
         if (event.name === 'post.deleted') {
             // NOTE: 'delete' works the same for both manual and automatic collections
-            const collections = await this.collectionsRepository.getAll();
-
-            for (const collection of collections) {
-                if (collection.includesPost(event.data.id)) {
-                    await collection.removePost(event.data.id);
-                }
-            }
+            await this.removePostFromAllCollections(event.data.id);
         } else {
             const collections = await this.collectionsRepository.getAll({
                 filter: 'type:automatic'
