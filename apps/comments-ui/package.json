@@ -83,7 +83,7 @@
     "postcss": "8.4.24",
     "rewire": "6.0.0",
     "serve-handler": "6.1.5",
-    "source-map-explorer": "2.5.2",
+    "source-map-explorer": "2.5.3",
     "tailwindcss": "3.3.2",
     "webpack-cli": "3.3.12"
   },
