@@ -3,7 +3,7 @@
 require('./utils');
 const path = require('path');
 const should = require('should');
-const assert = require('assert');
+const assert = require('assert/strict');
 const {InternalServerError, NotFoundError} = require('@tryghost/errors');
 const {cacheControlValues} = require('@tryghost/http-cache-utils');
 const {

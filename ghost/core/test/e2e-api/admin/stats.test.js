@@ -1,7 +1,7 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
 const {mockStripe, stripeMocker} = require('../../utils/e2e-framework-mock-manager');
 const {anyContentVersion, anyEtag, anyISODate, anyObjectId} = matchers;
-const assert = require('assert');
+const assert = require('assert/strict');
 
 let agent;
 
@@ -104,7 +104,7 @@ describe('Stats API', function () {
                     etag: anyEtag
                 })
                 .expect(({body}) => {
-                    assert.deepStrictEqual(body, before, 'A free trial should not be counted as a paid subscriber');
+                    assert.deepEqual(body, before, 'A free trial should not be counted as a paid subscriber');
                 });
 
             // Activate the subscription
@@ -124,7 +124,7 @@ describe('Stats API', function () {
                     etag: anyEtag
                 })
                 .expect(({body}) => {
-                    assert.notDeepStrictEqual(body, before, 'The stats should change after a free trial is activated');
+                    assert.notDeepEqual(body, before, 'The stats should change after a free trial is activated');
                 });
         });
 
@@ -151,7 +151,7 @@ describe('Stats API', function () {
                     etag: anyEtag
                 })
                 .expect(({body}) => {
-                    assert.deepStrictEqual(body, before, 'An incomplete subscription should not be counted as a paid subscriber');
+                    assert.deepEqual(body, before, 'An incomplete subscription should not be counted as a paid subscriber');
                 });
 
             // Activate the subscription
@@ -170,7 +170,7 @@ describe('Stats API', function () {
                     etag: anyEtag
                 })
                 .expect(({body}) => {
-                    assert.notDeepStrictEqual(body, before, 'The stats should change after an incomplete subscription is activated');
+                    assert.notDeepEqual(body, before, 'The stats should change after an incomplete subscription is activated');
                 });
         });
     });

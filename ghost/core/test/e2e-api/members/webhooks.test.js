@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const assert = require('assert');
+const assert = require('assert/strict');
 const nock = require('nock');
 const should = require('should');
 const stripe = require('stripe');

@@ -1,5 +1,5 @@
 const {EmailRenderer} = require('../');
-const assert = require('assert');
+const assert = require('assert/strict');
 const cheerio = require('cheerio');
 const {createModel, createModelClass} = require('./utils');
 const linkReplacer = require('@tryghost/link-replacer');

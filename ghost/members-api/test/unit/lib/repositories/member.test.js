@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const sinon = require('sinon');
 const DomainEvents = require('@tryghost/domain-events');
 const MemberRepository = require('../../../../lib/repositories/MemberRepository');

@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const collectionsServiceWrapper = require('../../../../../core/server/services/collections');
 const {CollectionsService} = require('@tryghost/collections');
 

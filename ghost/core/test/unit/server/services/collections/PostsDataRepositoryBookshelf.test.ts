@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const assert = require('assert');
+const assert = require('assert/strict');
 const {PostsDataRepositoryBookshelf} = require('../../../../../core/server/services/collections/PostsDataRepositoryBookshelf');
 
 describe('PostsDataRepositoryBookshelf', function () {

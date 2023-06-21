@@ -15,7 +15,7 @@ module.exports = (url) => {
 
     let {version, api} = pathMatch(apiRouteMatcher)(urlToMatch);
 
-    if (version === [null]) {
+    if (version === undefined) {
         version = null;
     }
 

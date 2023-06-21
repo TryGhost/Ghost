@@ -3,7 +3,7 @@ const sinon = require('sinon');
 // non-standard to use externalRequest here, but this is required for the overrides in the library, which we want to test for security reasons in combination with the package
 const externalRequest = require('../../core/core/server/lib/request-external.js');
 const dnsPromises = require('dns').promises;
-const assert = require('assert');
+const assert = require('assert/strict');
 const nock = require('nock');
 
 describe('MentionDiscoveryService', function () {
@@ -71,7 +71,7 @@ describe('MentionDiscoveryService', function () {
             const endpoint = await service.getEndpoint(url);
 
             assert(endpoint instanceof URL);
-            assert.equal(endpoint, 'http://webmentions.endpoint.io/');
+            assert.equal(endpoint.href, 'http://webmentions.endpoint.io/');
         });
 
         it('Returns null with Links in the header that are not for webmentions', async function () {
@@ -92,7 +92,7 @@ describe('MentionDiscoveryService', function () {
             const endpoint = await service.getEndpoint(url);
 
             assert(endpoint instanceof URL);
-            assert.equal(endpoint, 'http://webmentions.endpoint.io/');
+            assert.equal(endpoint.href, 'http://webmentions.endpoint.io/');
         });
     });
 
@@ -105,7 +105,7 @@ describe('MentionDiscoveryService', function () {
             const endpoint = await service.getEndpoint(url);
 
             assert(endpoint instanceof URL);
-            assert.equal(endpoint, 'http://webmentions.endpoint.io/');
+            assert.equal(endpoint.href, 'http://webmentions.endpoint.io/');
         });
 
         it('Returns endpoint for valid html site with <a rel="webmention"> tag in body', async function () {
@@ -116,7 +116,7 @@ describe('MentionDiscoveryService', function () {
             const endpoint = await service.getEndpoint(url);
 
             assert(endpoint instanceof URL);
-            assert.equal(endpoint, 'http://valid.site.org/');
+            assert.equal(endpoint.href, 'http://valid.site.org/');
         });
 
         it('Returns first endpoint for valid html site with multiple <a> tags in body', async function () {

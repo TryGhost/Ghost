@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 
 const Resources = require('../../../../../core/server/services/url/Resources');
 

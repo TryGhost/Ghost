@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const sinon = require('sinon');
 const ResourceService = require('../../../../../core/server/services/mentions/ResourceService');
 const UrlUtils = require('@tryghost/url-utils');

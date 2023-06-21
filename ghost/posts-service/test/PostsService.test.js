@@ -1,5 +1,5 @@
 const {PostsService} = require('../index');
-const assert = require('assert');
+const assert = require('assert/strict');
 const sinon = require('sinon');
 
 describe('Posts Service', function () {

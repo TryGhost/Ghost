@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const fetch = require('node-fetch').default;
 const {agentProvider, mockManager, fixtureManager} = require('../utils/e2e-framework');
 const urlUtils = require('../../core/shared/url-utils');

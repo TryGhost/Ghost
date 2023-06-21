@@ -4,7 +4,7 @@ require('./utils');
 
 const Tier = require('@tryghost/tiers/lib/Tier');
 const ObjectID = require('bson-objectid').default;
-const assert = require('assert');
+const assert = require('assert/strict');
 const fs = require('fs-extra');
 const path = require('path');
 const sinon = require('sinon');
@@ -329,7 +329,7 @@ describe('Importer', function () {
             const importer = buildMockImporterInstance();
 
             const result = await importer.perform(`${csvPath}/special-cases.csv`);
-            
+
             // CASE: Member has created_at in the future
             // The member will not appear in the members list in admin
             // In this case, we should overwrite create_at to current timestamp

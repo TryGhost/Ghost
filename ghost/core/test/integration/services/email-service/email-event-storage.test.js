@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const {agentProvider, fixtureManager} = require('../../../utils/e2e-framework');
-const assert = require('assert');
+const assert = require('assert/strict');
 const MailgunClient = require('@tryghost/mailgun-client');
 const DomainEvents = require('@tryghost/domain-events');
 const emailAnalytics = require('../../../../core/server/services/email-analytics');
@@ -462,7 +462,7 @@ describe('EmailEventStorage', function () {
         // Message and code not changed
         assert.equal(permanentFailures.models[0].get('message'), 'Not delivering to previously bounced address');
         assert.equal(permanentFailures.models[0].get('code'), 605);
-        assert.equal(permanentFailures.models[0].get('enhanded_code'), null);
+        assert.equal(permanentFailures.models[0].get('enhanced_code'), null);
         assert.notEqual(permanentFailures.models[0].get('failed_at').toUTCString(), timestamp.toUTCString());
     });
 
@@ -997,7 +997,7 @@ describe('EmailEventStorage', function () {
         // Check not unsubscribed
         const {body: {events: eventsBefore}} = await agent.get(eventsURI);
         const existingSpamEvent = eventsBefore.find(event => event.type === 'email_complaint_event');
-        assert.equal(existingSpamEvent, null, 'This test requires a member that does not have a spam event');
+        assert.equal(existingSpamEvent, undefined, 'This test requires a member that does not have a spam event');
 
         events = [{
             event: 'complained',

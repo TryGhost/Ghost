@@ -3,7 +3,7 @@ require('./utils');
 const sinon = require('sinon');
 const moment = require('moment');
 const uuid = require('uuid');
-const assert = require('assert');
+const assert = require('assert/strict');
 
 const logging = require('@tryghost/logging');
 const UpdateCheckService = require('../lib/UpdateCheckService');

@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const supertest = require('supertest');

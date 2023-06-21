@@ -2,7 +2,7 @@
 // const testUtils = require('./utils');
 require('./utils');
 const {OutboundLinkTagger} = require('../');
-const assert = require('assert');
+const assert = require('assert/strict');
 
 describe('OutboundLinkTagger', function () {
     describe('Constructor', function () {

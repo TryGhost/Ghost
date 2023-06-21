@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const assert = require('assert');
+const assert = require('assert/strict');
 
 // Stuff we are testing
 const DomainEvents = require('@tryghost/domain-events');

@@ -1,6 +1,6 @@
 const {agentProvider, mockManager, fixtureManager, configUtils, resetRateLimits, dbUtils} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
-const assert = require('assert');
+const assert = require('assert/strict');
 require('should');
 const sinon = require('sinon');
 

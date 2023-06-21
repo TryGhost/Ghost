@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const cheerio = require('cheerio');
 const moment = require('moment');
 const testUtils = require('../../utils');
@@ -111,7 +111,8 @@ describe('Posts Content API', function () {
             } else {
                 const tag = post.tags
                     .map(t => t.slug)
-                    .filter(s => s === 'kitchen-sink');
+                    .filter(s => s === 'kitchen-sink')
+                    .pop();
                 assert.equal(tag, 'kitchen-sink', `Each post must either be featured or have the tag 'kitchen-sink'`);
             }
         });

@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const NFTOembedProvider = require('../../../../../core/server/services/oembed/NFTOEmbedProvider');
 
 describe('NFTOEmbedProvider', function () {

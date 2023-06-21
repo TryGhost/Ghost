@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const assert = require('assert');
+const assert = require('assert/strict');
 
 const mwVersionRewrites = require('../../../../../core/server/services/api-version-compatibility/mw-version-rewrites');
 const configUtils = require('../../../../utils/configUtils');

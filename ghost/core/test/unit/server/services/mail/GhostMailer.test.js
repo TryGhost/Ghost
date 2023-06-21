@@ -6,7 +6,7 @@ const settingsCache = require('../../../../../core/shared/settings-cache');
 const configUtils = require('../../../../utils/configUtils');
 const urlUtils = require('../../../../../core/shared/url-utils');
 let mailer;
-const assert = require('assert');
+const assert = require('assert/strict');
 
 // Mock SMTP config
 const SMTP = {

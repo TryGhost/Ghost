@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const {agentProvider, mockManager, fixtureManager, matchers, configUtils} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyLocationFor, anyISODateTime, anyErrorId, anyUuid, anyNumber, anyBoolean} = matchers;
 const should = require('should');

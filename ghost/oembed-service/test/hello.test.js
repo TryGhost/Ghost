@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 
 describe('Hello world', function () {
     it('Runs a test', function () {

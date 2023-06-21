@@ -1,5 +1,5 @@
 const {MentionSendingService} = require('../');
-const assert = require('assert');
+const assert = require('assert/strict');
 const nock = require('nock');
 // non-standard to use externalRequest here, but this is required for the overrides in the libary, which we want to test for security reasons in combination with the package
 const externalRequest = require('../../core/core/server/lib/request-external.js');
@@ -145,9 +145,9 @@ describe('MentionSendingService', function () {
             }));
             sinon.assert.calledOnce(stub);
             const firstCall = stub.getCall(0).args[0];
-            assert.strictEqual(firstCall.url.toString(), 'https://site.com/post/');
-            assert.strictEqual(firstCall.html, 'same');
-            assert.strictEqual(firstCall.previousHtml, null);
+            assert.equal(firstCall.url.toString(), 'https://site.com/post/');
+            assert.equal(firstCall.html, 'same');
+            assert.equal(firstCall.previousHtml, null);
         });
 
         it('Sends on html change', async function () {
@@ -167,9 +167,9 @@ describe('MentionSendingService', function () {
             }));
             sinon.assert.calledOnce(stub);
             const firstCall = stub.getCall(0).args[0];
-            assert.strictEqual(firstCall.url.toString(), 'https://site.com/post/');
-            assert.strictEqual(firstCall.html, 'updated');
-            assert.strictEqual(firstCall.previousHtml, 'same');
+            assert.equal(firstCall.url.toString(), 'https://site.com/post/');
+            assert.equal(firstCall.html, 'updated');
+            assert.equal(firstCall.previousHtml, 'same');
         });
 
         it('Catches and logs errors', async function () {
@@ -238,7 +238,7 @@ describe('MentionSendingService', function () {
                         </body>
                     </html>
             `});
-            assert.strictEqual(scope.isDone(), true);
+            assert.equal(scope.isDone(), true);
             assert.equal(counter, 3);
         });
 
@@ -274,7 +274,7 @@ describe('MentionSendingService', function () {
                         </body>
                     </html>
             `});
-            assert.strictEqual(scope.isDone(), true);
+            assert.equal(scope.isDone(), true);
             assert.equal(counter, 3);
             assert(errorLogStub.calledOnce);
         });
@@ -301,7 +301,7 @@ describe('MentionSendingService', function () {
             await service.sendAll({url: new URL('https://site.com'),
                 html: `<a href="https://example.com">Example</a>`,
                 previousHtml: `<a href="https://typo.com">Example</a>`});
-            assert.strictEqual(scope.isDone(), true);
+            assert.equal(scope.isDone(), true);
             assert.equal(counter, 2);
         });
 
@@ -331,7 +331,7 @@ describe('MentionSendingService', function () {
                     </body>
                 </html>
             `);
-            assert.deepStrictEqual(links, [
+            assert.deepEqual(links, [
                 new URL('https://example.com'),
                 new URL('https://example.org#fragment'),
                 new URL('http://example2.org')
@@ -343,7 +343,7 @@ describe('MentionSendingService', function () {
                 getSiteUrl: () => new URL('https://site.com')
             });
             const links = service.getLinks(`<a href="/">Example</a>`);
-            assert.deepStrictEqual(links, []);
+            assert.deepEqual(links, []);
         });
 
         it('Does not include non-http protocols', async function () {
@@ -351,7 +351,7 @@ describe('MentionSendingService', function () {
                 getSiteUrl: () => new URL('https://site.com')
             });
             const links = service.getLinks(`<a href="ftp://invalid.com">Example</a>`);
-            assert.deepStrictEqual(links, []);
+            assert.deepEqual(links, []);
         });
 
         it('Does not include invalid urls', async function () {
@@ -359,7 +359,7 @@ describe('MentionSendingService', function () {
                 getSiteUrl: () => new URL('https://site.com')
             });
             const links = service.getLinks(`<a href="()">Example</a>`);
-            assert.deepStrictEqual(links, []);
+            assert.deepEqual(links, []);
         });
 
         it('Does not include urls from site domain', async function () {
@@ -367,7 +367,7 @@ describe('MentionSendingService', function () {
                 getSiteUrl: () => new URL('https://site.com')
             });
             const links = service.getLinks(`<a href="http://site.com/test?123">Example</a>`);
-            assert.deepStrictEqual(links, []);
+            assert.deepEqual(links, []);
         });
 
         it('Ignores invalid site urls', async function () {
@@ -375,7 +375,7 @@ describe('MentionSendingService', function () {
                 getSiteUrl: () => new URL('invalid()')
             });
             const links = service.getLinks(`<a href="http://site.com/test?123">Example</a>`);
-            assert.deepStrictEqual(links, [
+            assert.deepEqual(links, [
                 new URL('http://site.com/test?123')
             ]);
         });

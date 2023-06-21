@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 
 describe('Segment Analytics Service', function () {
     let segmentService;

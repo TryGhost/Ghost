@@ -10,7 +10,7 @@ const models = require('../../../../core/server/models');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
 
 const {mockManager} = require('../../../utils/e2e-framework');
-const assert = require('assert');
+const assert = require('assert/strict');
 
 let request;
 

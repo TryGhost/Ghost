@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const ObjectID = require('bson-objectid');
 const InMemoryMilestoneRepository = require('../lib/InMemoryMilestoneRepository');
 const Milestone = require('../lib/Milestone');
