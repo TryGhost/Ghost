@@ -210,8 +210,8 @@ Settings = ghostBookshelf.Model.extend({
             data = [data];
         }
 
-            // Accept an array of models as input
-        const promises = data.map(function(item) {
+        // Accept an array of models as input
+        const promises = data.map(function (item) {
             if (item.toJSON) {
                 item = item.toJSON();
             }
