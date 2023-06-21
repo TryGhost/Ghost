@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const path = require('path');
 
 const glob = require('glob');

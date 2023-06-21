@@ -1,7 +1,7 @@
 const LinkClickTrackingService = require('../lib/LinkClickTrackingService');
 const sinon = require('sinon');
 const should = require('should');
-const assert = require('assert');
+const assert = require('assert/strict');
 const ObjectID = require('bson-objectid').default;
 const PostLink = require('../lib/PostLink');
 const {RedirectEvent} = require('@tryghost/link-redirects');
@@ -40,7 +40,7 @@ describe('LinkClickTrackingService', function () {
             assert.ok(getAll.calledOnceWithExactly({filter: 'post_id:1'}));
 
             // Check returned value
-            assert.deepStrictEqual(links, ['test']);
+            assert.deepEqual(links, ['test']);
         });
     });
 

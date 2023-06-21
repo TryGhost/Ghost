@@ -3,7 +3,7 @@ const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISOD
 const {queryStringToken} = regexes;
 const ObjectId = require('bson-objectid').default;
 
-const assert = require('assert');
+const assert = require('assert/strict');
 const nock = require('nock');
 const sinon = require('sinon');
 const should = require('should');
