@@ -8,12 +8,16 @@
     color: currentColor;
 }
 
-.kg-signup-card.kg-layout-split {
+.kg-signup-card.kg-style-accent {
+    background-color: var(--ghost-accent-color);
+}
+
+.kg-layout-split .kg-signup-card-content {
     display: grid;
     grid-template-columns: 1fr 1fr;
 }
 
-.kg-signup-card-container {
+.kg-signup-card-text {
     position: relative;
     display: flex;
     flex-direction: column;
@@ -26,29 +30,26 @@
     text-align: left;
 }
 
-.kg-width-wide .kg-signup-card-container {
+.kg-width-wide .kg-signup-card-text {
     padding: 6.4vmax;
 }
 
-.kg-width-full .kg-signup-card-container {
+.kg-width-full .kg-signup-card-text {
     padding: 9.6vmax 7.2vmax;
 }
 
-.kg-layout-split .kg-signup-card-container {
-    padding: 9.6vmax 4vmax;
+.kg-layout-split .kg-signup-card-text {
+    padding: 9.6vmax 0 9.6vmax 4vmax;
 }
 
-.kg-signup-card-container.align-center {
+.kg-signup-card-text.align-center {
     align-items: center;
     text-align: center;
 }
 
-.kg-signup-card-container.kg-style-accent {
-    background-color: var(--ghost-accent-color);
-}
-
-.kg-signup-card.kg-swapped .kg-signup-card-container {
+.kg-signup-card.kg-swapped .kg-signup-card-text {
     grid-row: 1;
+    padding-left: 0;
 }
 
 .kg-signup-card.kg-style-image h2.kg-signup-card-heading,
@@ -69,12 +70,10 @@
     object-position: center;
 }
 
-.kg-background-size-contain .kg-signup-card-image {
+.kg-content-wide .kg-signup-card-image {
+    height: 100%;
+    padding: 8rem 0;
     object-fit: contain;
-}
-
-.kg-signup-card-image.kg-style-accent {
-    background-color: var(--ghost-accent-color);
 }
 
 /* Heading */
@@ -87,10 +86,6 @@
     letter-spacing: -0.01em;
 }
 
-.kg-signup-card h2.kg-signup-card-heading strong {
-    font-weight: 800;
-}
-
 .kg-signup-card.kg-width-wide h2.kg-signup-card-heading {
     font-size: 5.6vmin;
 }
@@ -100,6 +95,10 @@
 }
 
 .kg-signup-card.kg-width-full.kg-layout-split h2.kg-signup-card-heading {
+    font-size: 6.4vmin;
+}
+
+.kg-signup-card.kg-width-full.kg-layout-split.kg-content-wide h2.kg-signup-card-heading {
     font-size: 6.4vmin;
 }
 
@@ -309,19 +308,19 @@
 /* Responsive styles */
 
 @media (max-width: 640px) {
-    .kg-signup-card.kg-layout-split {
+    .kg-layout-split .kg-signup-card-content {
         grid-template-columns: 1fr;
     }
 
-    .kg-width-wide .kg-signup-card-container {
+    .kg-width-wide .kg-signup-card-text {
         padding: 6.4vmax 4vmax;
     }
 
-    .kg-width-full .kg-signup-card-container {
+    .kg-width-full .kg-signup-card-text {
         padding: 9.6vmax 4vmax;
     }
 
-    .kg-signup-card-image {
+    .kg-signup-card-image:not(.kg-content-wide .kg-signup-card-image) {
         height: auto;
         min-height: unset;
         aspect-ratio: 1 / 1;
