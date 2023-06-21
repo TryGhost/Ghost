@@ -145,6 +145,7 @@ const Access: React.FC = () => {
             isEditing={isEditing}
             navid='access'
             saveState={saveState}
+            searchKeywords={['access', 'subscription', 'post']}
             testId='access'
             title='Access'
             onCancel={handleCancel}

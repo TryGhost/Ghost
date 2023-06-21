@@ -1,7 +1,7 @@
 const MailgunEmailProvider = require('../lib/MailgunEmailProvider');
 const sinon = require('sinon');
 const should = require('should');
-const assert = require('assert');
+const assert = require('assert/strict');
 
 describe('Mailgun Email Provider', function () {
     describe('send', function () {
@@ -239,7 +239,7 @@ describe('Mailgun Email Provider', function () {
                 mailgunClient,
                 errorHandler: () => {}
             });
-            assert.strictEqual(provider.getMaximumRecipients(), 1000);
+            assert.equal(provider.getMaximumRecipients(), 1000);
         });
     });
 });

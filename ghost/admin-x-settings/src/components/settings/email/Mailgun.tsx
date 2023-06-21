@@ -101,6 +101,7 @@ const MailGun: React.FC = () => {
             isEditing={isEditing}
             navid='mailgun'
             saveState={saveState}
+            searchKeywords={['mailgun', 'email']}
             testId='mailgun'
             title='Mailgun'
             onCancel={handleCancel}

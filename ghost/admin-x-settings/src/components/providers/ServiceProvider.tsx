@@ -9,6 +9,7 @@ interface ServicesContextProps {
     api: ReturnType<typeof setupGhostApi>;
     fileService: FileService|null;
     officialThemes: OfficialTheme[];
+    search: {filter: string, setFilter: (value: string) => void}
 }
 
 interface ServicesProviderProps {
@@ -20,7 +21,8 @@ interface ServicesProviderProps {
 const ServicesContext = createContext<ServicesContextProps>({
     api: setupGhostApi({ghostVersion: ''}),
     fileService: null,
-    officialThemes: []
+    officialThemes: [],
+    search: {filter: '', setFilter: () => {}}
 });
 
 const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion, officialThemes}) => {
@@ -32,11 +34,14 @@ const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersi
         }
     }), [apiService]);
 
+    const [filter, setFilter] = React.useState('');
+
     return (
         <ServicesContext.Provider value={{
             api: apiService,
             fileService,
-            officialThemes
+            officialThemes,
+            search: {filter, setFilter}
         }}>
             {children}
         </ServicesContext.Provider>
@@ -50,3 +55,5 @@ export const useServices = () => useContext(ServicesContext);
 export const useApi = () => useServices().api;
 
 export const useOfficialThemes = () => useServices().officialThemes;
+
+export const useSearch = () => useServices().search;

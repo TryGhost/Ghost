@@ -240,6 +240,7 @@ export default class AdminXSettings extends Component {
                         <AdminXApp
                             ghostVersion={config.APP.version}
                             officialThemes={officialThemes}
+                            setDirty={this.args.setDirty}
                         />
                     </Suspense>
                 </ErrorHandler>

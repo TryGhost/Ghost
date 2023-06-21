@@ -20,12 +20,12 @@
     "lib"
   ],
   "devDependencies": {
-    "@types/luxon": "2.4.0",
+    "@types/luxon": "3.3.0",
     "@types/mocha": "10.0.1",
     "@types/sinon": "10.0.15",
     "c8": "7.13.0",
     "knex": "2.4.2",
-    "luxon": "2.5.2",
+    "luxon": "3.3.0",
     "mocha": "10.2.0",
     "should": "13.2.3",
     "sinon": "15.0.3",

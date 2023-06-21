@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const {
     agentProvider,
     fixtureManager,
@@ -52,6 +52,7 @@ describe('Collections API', function () {
     let agent;
 
     before(async function () {
+        mockManager.mockLabsEnabled('collections');
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users', 'posts');
         await agent.loginAsOwner();
