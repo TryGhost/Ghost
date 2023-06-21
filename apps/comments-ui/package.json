@@ -80,7 +80,7 @@
     "eslint-plugin-tailwindcss": "3.6.0",
     "minimist": "1.2.5",
     "ora": "5.4.1",
-    "postcss": "8.4.14",
+    "postcss": "8.4.24",
     "rewire": "6.0.0",
     "serve-handler": "6.1.5",
     "source-map-explorer": "2.5.2",
