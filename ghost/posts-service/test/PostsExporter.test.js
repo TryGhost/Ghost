@@ -179,8 +179,7 @@ describe('PostsExporter', function () {
             post.status = 'draft';
             const posts = await exporter.export({});
 
-            // @TODO: why are these all nulls and not undefined?
-            // No feedback columns
+            // Feedback columns are empty, but present because of global settings (newsletter with feedback enabled)
             assert.equal(posts[0].feedback_more_like_this, null);
             assert.equal(posts[0].feedback_less_like_this, null);
 
