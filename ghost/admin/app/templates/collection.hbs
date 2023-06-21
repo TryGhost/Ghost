@@ -34,4 +34,15 @@
             </button>
         </div>
     {{/unless}}
+
+    {{#if this.collection.postIds}}
+    <div class="gh-main-section">
+        <h3>Collection has {{this.collection.postIds.length}} posts</h3>
+        <ol class="gh-list">
+            {{#each this.collection.postIds as |post|}}
+            <li class="gh-list-row"><a href="#/editor/post/{{post}}">{{post}}</a></li>
+            {{/each}}
+        </ol>
+    </div>
+    {{/if}}
 </section>

@@ -2,13 +2,13 @@ name: Signup Form Tests
 on:
   pull_request:
     paths:
-      - 'ghost/signup-form/**'
+      - 'apps/signup-form/**'
   push:
     branches:
       - main
       - 'v5.*'
     paths:
-      - 'ghost/signup-form/**'
+      - 'apps/signup-form/**'
 env:
   FORCE_COLOR: 1
 concurrency:
