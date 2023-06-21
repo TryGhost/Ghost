@@ -1,3 +1,4 @@
+const Promise = require('bluebird');
 const validator = require('@tryghost/validator');
 const debug = require('@tryghost/debug')('api:endpoints:utils:validators:input:invitation');
 const tpl = require('@tryghost/tpl');
