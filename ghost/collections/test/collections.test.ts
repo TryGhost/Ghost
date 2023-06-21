@@ -1,4 +1,6 @@
-import assert from 'assert';
+import assert from 'assert/strict';
+import sinon from 'sinon';
+import DomainEvents from '@tryghost/domain-events';
 import {
     CollectionsService,
     CollectionsRepositoryInMemory,
@@ -256,6 +258,24 @@ describe('CollectionsService', function () {
             const collection = await collectionsService.removePostFromCollection('i-do-not-exist', posts[0].id);
 
             assert.equal(collection, null, 'Collection should be null');
+        });
+    });
+
+    describe('subscribeToEvents', function () {
+        it('Subscribes to Domain Events', function () {
+            const updateCollectionsSpy = sinon.spy(collectionsService, 'updateCollections');
+            const collectionChangeEvent = CollectionResourceChangeEvent.create('post.added', {
+                id: 'test-id',
+                resource: 'post'
+            });
+
+            DomainEvents.dispatch(collectionChangeEvent);
+            assert.equal(updateCollectionsSpy.calledOnce, false, 'updateCollections should not be called yet');
+
+            collectionsService.subscribeToEvents();
+
+            DomainEvents.dispatch(collectionChangeEvent);
+            assert.equal(updateCollectionsSpy.calledOnce, true, 'updateCollections should be called');
         });
     });
 

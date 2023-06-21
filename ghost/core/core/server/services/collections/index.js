@@ -1,7 +1,6 @@
 const {
     CollectionsService,
-    CollectionsRepositoryInMemory,
-    CollectionResourceChangeEvent
+    CollectionsRepositoryInMemory
 } = require('@tryghost/collections');
 const labs = require('../../../shared/labs');
 
@@ -26,8 +25,7 @@ class CollectionsServiceWrapper {
             return;
         }
 
-        const events = require('../../lib/common/events');
-
+        const translateModelEventsToDomainEvents = require('./model-to-domain-events-bridge');
         const existingBuiltins = await this.api.getAll({filter: 'slug:featured'});
 
         if (!existingBuiltins.data.length) {
@@ -50,24 +48,8 @@ class CollectionsServiceWrapper {
             });
         }
 
-        const ghostModelUpdateEvents = require('./update-events');
-
-        const collectionListener = (event, data) => {
-            const change = Object.assign({}, {
-                id: data.id,
-                resource: event.split('.')[0]
-            }, data._changed);
-            const collectionResourceChangeEvent = CollectionResourceChangeEvent.create(event, change);
-            // @NOTE: to avoid race conditions we need a queue here to make sure updates happen
-            //        one by one and not in parallel
-            this.api.updateCollections(collectionResourceChangeEvent);
-        };
-
-        for (const event of ghostModelUpdateEvents) {
-            if (!events.hasRegisteredListener(event, 'collectionListener')) {
-                events.on(event, data => collectionListener(event, data));
-            }
-        }
+        this.api.subscribeToEvents();
+        translateModelEventsToDomainEvents();
     }
 }
 
