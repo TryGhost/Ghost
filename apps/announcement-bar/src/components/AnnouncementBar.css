@@ -42,6 +42,7 @@
     color: #fff;
     font-weight: 700;
     text-decoration: underline;
+    cursor: pointer;
 }
 
 .gh-announcement-bar.light a {
