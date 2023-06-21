@@ -153,7 +153,7 @@ const AddDetailsPopup = (props) => {
                             }}
                             maxLength="64"
                         />
-                        <div className="mt-6 mb-2 flex flex-row justify-between">
+                        <div className="mb-2 mt-6 flex flex-row justify-between">
                             <label htmlFor="comments-name" className="font-sans text-[1.3rem] font-semibold">Expertise</label>
                             <div className={`font-sans text-[1.3rem] text-neutral-400 ${(expertiseCharsLeft === 0) && 'text-red-500'}`}><b>{expertiseCharsLeft}</b> characters left</div>
                         </div>

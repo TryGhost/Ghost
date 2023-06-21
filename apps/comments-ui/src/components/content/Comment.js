@@ -150,7 +150,7 @@ function RepliesContainer({comment}) {
     }
 
     return (
-        <div className="mt-10 mb-4 sm:mb-0">
+        <div className="mb-4 mt-10 sm:mb-0">
             <Replies comment={comment} />
         </div>
     );

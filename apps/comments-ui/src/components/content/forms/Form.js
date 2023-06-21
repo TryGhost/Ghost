@@ -88,7 +88,7 @@ const FormEditor = ({submit, progress, setProgress, close, reduced, isOpen, edit
     }, [editor, close, submitForm]);
 
     return (
-        <div className={`relative w-full pl-[52px] transition-[padding] delay-100 duration-150 ${reduced && 'pl-0'} ${isOpen && 'pt-[64px] pl-[1px] sm:pl-[52px]'}`}>
+        <div className={`relative w-full pl-[52px] transition-[padding] delay-100 duration-150 ${reduced && 'pl-0'} ${isOpen && 'pl-[1px] pt-[64px] sm:pl-[52px]'}`}>
             <div
                 className={`w-full rounded-md border border-none border-slate-50 bg-[rgba(255,255,255,0.9)] px-3 py-4 font-sans text-[16.5px] leading-normal shadow-form transition-all delay-100 duration-150 hover:shadow-formxl focus:outline-0 dark:border-none dark:bg-[rgba(255,255,255,0.08)] dark:text-neutral-300 dark:shadow-transparent ${isOpen ? 'min-h-[144px] cursor-text pb-[68px] pt-2' : 'min-h-[48px] cursor-pointer overflow-hidden hover:border-slate-300'}
             `}>
@@ -97,12 +97,12 @@ const FormEditor = ({submit, progress, setProgress, close, reduced, isOpen, edit
                     editor={editor}
                 />
             </div>
-            <div className="absolute right-[9px] bottom-[9px] flex space-x-4 transition-[opacity] duration-150">
+            <div className="absolute bottom-[9px] right-[9px] flex space-x-4 transition-[opacity] duration-150">
                 {close &&
                     <button type="button" onClick={close} className="ml-2.5 font-sans text-sm font-medium text-neutral-500 outline-0 dark:text-neutral-400">Cancel</button>
                 }
                 <button
-                    className={`flex w-auto items-center justify-center sm:w-[128px] ${submitSize === 'medium' && 'sm:w-[100px]'} ${submitSize === 'small' && 'sm:w-[64px]'} h-[39px] rounded-[6px] border bg-neutral-900 py-2 px-3 text-center font-sans text-sm font-semibold text-white outline-0 transition-[opacity] duration-150 dark:bg-[rgba(255,255,255,0.9)] dark:text-neutral-800`}
+                    className={`flex w-auto items-center justify-center sm:w-[128px] ${submitSize === 'medium' && 'sm:w-[100px]'} ${submitSize === 'small' && 'sm:w-[64px]'} h-[39px] rounded-[6px] border bg-neutral-900 px-3 py-2 text-center font-sans text-sm font-semibold text-white outline-0 transition-[opacity] duration-150 dark:bg-[rgba(255,255,255,0.9)] dark:text-neutral-800`}
                     type="button"
                     data-testid="submit-form-button"
                     onClick={submitForm}
@@ -224,13 +224,13 @@ const Form = ({comment, submit, submitText, submitSize, close, editor, reduced, 
     }, [editor, memberName, progress]);
 
     return (
-        <form ref={formEl} data-testid="form" onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused} className={`-mx-3 -mt-[10px] mb-10 rounded-md px-3 pt-3 pb-2 transition duration-200 ${isOpen ? 'cursor-default' : 'cursor-pointer'} ${reduced && 'pl-1'}
+        <form ref={formEl} data-testid="form" onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused} className={`-mx-3 -mt-[10px] mb-10 rounded-md px-3 pb-2 pt-3 transition duration-200 ${isOpen ? 'cursor-default' : 'cursor-pointer'} ${reduced && 'pl-1'}
         `}>
             <div className="relative w-full">
                 <div className="pr-[1px] font-sans leading-normal dark:text-neutral-300">
                     <FormEditor close={close} reduced={reduced} isOpen={isOpen} editor={editor} submitText={submitText} submitSize={submitSize} submit={submit} setProgress={setProgress} progress={progress} />
                 </div>
-                <div className='absolute top-1 left-0 flex h-12 w-full items-center justify-start'>
+                <div className='absolute left-0 top-1 flex h-12 w-full items-center justify-start'>
                     <div className="mr-3 grow-0">
                         <Avatar comment={comment} className="pointer-events-none" />
                     </div>
