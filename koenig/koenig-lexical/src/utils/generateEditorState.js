@@ -1,4 +1,4 @@
-import {$createParagraphNode} from 'lexical';
+import {$createParagraphNode, $setSelection} from 'lexical';
 import {$generateNodesFromDOM} from '@lexical/html';
 import {$getRoot, $insertNodes} from 'lexical';
 
@@ -26,6 +26,14 @@ export default function generateEditorState({editor, initialHtml}) {
 
             // Insert them at a selection.
             $insertNodes(filteredNodes);
+
+            // $insertNodes is focusing an editor (https://github.com/facebook/lexical/issues/4546)
+            // This behaviour can break the ability to autofocus the editor because
+            // initial state filling can happen after the component is already mounted.
+            // Reset selection to make it easier to manage editor focus in components instead of editor state generation
+            if (filteredNodes.length) {
+                $setSelection(null);
+            }
         }, {discrete: true, tag: 'history-merge'});
     } else {
         // for empty initial values, create a paragraph because a completely empty
