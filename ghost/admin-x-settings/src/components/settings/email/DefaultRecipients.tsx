@@ -195,6 +195,7 @@ const DefaultRecipients: React.FC = () => {
             isEditing={isEditing}
             navid='default-recipients'
             saveState={saveState}
+            searchKeywords={['newsletter', 'recipients', 'email']}
             testId='default-recipients'
             title='Default recipients'
             onCancel={handleCancel}

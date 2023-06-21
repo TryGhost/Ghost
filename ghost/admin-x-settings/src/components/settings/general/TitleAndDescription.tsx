@@ -71,6 +71,7 @@ const TitleAndDescription: React.FC = () => {
             isEditing={isEditing}
             navid='title-and-description'
             saveState={saveState}
+            searchKeywords={['site title', 'site description']}
             testId='title-and-description'
             title='Title & description'
             onCancel={handleCancel}

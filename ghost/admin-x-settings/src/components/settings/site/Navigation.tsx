@@ -14,6 +14,7 @@ const Navigation: React.FC = () => {
             customButtons={<Button color='green' label='Customize' link onClick={openPreviewModal}/>}
             description="Set up primary and secondary menus"
             navid='navigation'
+            searchKeywords={['navigation', 'menus', 'primary', 'secondary', 'links']}
             testId='navigation'
             title="Navigation"
         />

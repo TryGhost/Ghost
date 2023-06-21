@@ -83,6 +83,7 @@ const LockSite: React.FC = () => {
             isEditing={isEditing}
             navid='locksite'
             saveState={saveState}
+            searchKeywords={['private', 'password', 'lock']}
             testId='locksite'
             title='Make site private'
             onCancel={handleCancel}

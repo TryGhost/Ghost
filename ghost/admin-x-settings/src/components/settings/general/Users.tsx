@@ -231,6 +231,7 @@ const Users: React.FC = () => {
         <SettingGroup
             customButtons={buttons}
             navid='users'
+            searchKeywords={['users', 'permissions', 'roles', 'staff']}
             title='Users and permissions'
         >
             <Owner updateUser={updateUser} user={ownerUser} />
