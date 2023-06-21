@@ -151,15 +151,17 @@ module.exports = {
 
                     return models.Post.findAll(queryOpts)
                         .then((response) => {
-                            return Promise.map(response.models, (post) => {
+                            const postDeletionPromises = response.map((post) => {
                                 return models.Post.destroy(Object.assign({id: post.id}, queryOpts));
-                            }, {concurrency: 100});
+                            });
+                            return Promise.all(postDeletionPromises);
                         })
                         .then(() => models.Tag.findAll(queryOpts))
                         .then((response) => {
-                            return Promise.map(response.models, (tag) => {
+                            const tagDeletionPromises = response.map((tag) => {
                                 return models.Tag.destroy(Object.assign({id: tag.id}, queryOpts));
-                            }, {concurrency: 100});
+                            });
+                            return Promise.all(tagDeletionPromises);
                         })
                         .catch((err) => {
                             throw new errors.InternalServerError({
