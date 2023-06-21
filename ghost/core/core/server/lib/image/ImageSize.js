@@ -3,6 +3,7 @@ const sizeOf = require('image-size');
 const probeSizeOf = require('probe-image-size');
 const url = require('url');
 const path = require('path');
+const Promise = require('bluebird'); //not here
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
@@ -139,6 +140,7 @@ class ImageSize {
     /**
      * @description read image dimensions from URL
      * @param {string} imagePath as URL
+     * @returns {Promise<Object>} imageObject or error
      */
     getImageSizeFromUrl(imagePath) {
         if (this.storageUtils.isLocalImage(imagePath)) {
@@ -323,7 +325,7 @@ class ImageSize {
      * Get dimensions for a file from its real file storage path
      * Always returns {object} getImageDimensions
      * @param {string} imagePath
-     * @returns {object} getImageDimensions
+     * @returns {Promise<Object>} getImageDimensions
      * @description Takes a file path and returns width and height.
      */
     getImageSizeFromPath(imagePath) {
