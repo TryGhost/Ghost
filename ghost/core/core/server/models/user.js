@@ -678,15 +678,15 @@ User = ghostBookshelf.Model.extend({
                 if (_.isString(roles[0]) && !ObjectId.isValid(roles[0])) {
                     const rolePromises = roles.map((roleName) => {
                         return ghostBookshelf.model('Role').findOne({
-                        name: roleName
-                      }, options);
+                            name: roleName
+                        }, options);
                     });
                     return Promise.all(rolePromises)
-                      .then((roleModels) => {
-                        roles = roleModels.map((roleModel) => {
-                          return roleModel.id;
+                        .then((roleModels) => {
+                            roles = roleModels.map((roleModel) => {
+                                return roleModel.id;
+                            });
                         });
-                      });
                 }
 
                 return Promise.resolve();
