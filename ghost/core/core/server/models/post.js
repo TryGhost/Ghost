@@ -2,7 +2,6 @@
 const _ = require('lodash');
 const uuid = require('uuid');
 const moment = require('moment');
-const Promise = require('bluebird');
 const {sequence} = require('@tryghost/promise');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
