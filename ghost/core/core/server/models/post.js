@@ -875,7 +875,11 @@ Post = ghostBookshelf.Model.extend({
                     revision_interval_ms: POST_REVISIONS_INTERVAL_MS
                 }
             });
-            const authorId = this.contextUser(options);
+            let authorId = this.contextUser(options);
+            const authorExists = await ghostBookshelf.model('User').findOne({id: authorId}, {transacting: options.transacting});
+            if (!authorExists) {
+                authorId = await ghostBookshelf.model('User').getOwnerUser().get('id');
+            }
             ops.push(async function updateRevisions() {
                 const revisionModels = await ghostBookshelf.model('PostRevision')
                     .findAll(Object.assign({
