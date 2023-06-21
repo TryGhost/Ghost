@@ -32,14 +32,14 @@ describe('MailEventService', function () {
         repository = sinon.createStubInstance(MailEventRepository);
         labs = {
             isSet: sinon.stub()
+                .withArgs(MailEventService.LABS_KEY)
+                .returns(true)
         };
         config = {
             get: sinon.stub()
+                .withArgs(MailEventService.CONFIG_KEY_PAYLOAD_SIGNING_KEY)
+                .returns(PAYLOAD_SIGNING_KEY)
         };
-
-        config.get.withArgs(MailEventService.CONFIG_KEY_PAYLOAD_SIGNING_KEY).returns(PAYLOAD_SIGNING_KEY);
-        labs.isSet.withArgs(MailEventService.LABS_KEY).returns(true);
-
         service = new MailEventService(repository, config, labs);
     });
 

@@ -2,7 +2,6 @@ const assert = require('assert');
 const {MailEventService} = require('@tryghost/mail-events');
 const {agentProvider, matchers, mockManager} = require('../../utils/e2e-framework');
 const configUtils = require('../../utils/configUtils');
-const mailEvents = require('../../../core/server/services/mail-events');
 const models = require('../../../core/server/models');
 
 const {anyContentVersion, anyEtag} = matchers;
@@ -18,9 +17,6 @@ describe('Mail Events API', function () {
 
     it('Can add a mail event', async function () {
         configUtils.set(MailEventService.CONFIG_KEY_PAYLOAD_SIGNING_KEY, 'foobarbaz');
-
-        // Re-initialise the mail events service with the new config values
-        mailEvents.init();
 
         const payload = {
             // The signature is based on the previous config value as well as the

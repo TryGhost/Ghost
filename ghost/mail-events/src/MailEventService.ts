@@ -52,11 +52,11 @@ const VALIDATION_MESSAGES = {
 };
 
 export class MailEventService {
-    static LABS_KEY = 'mailEvents';
-    static CONFIG_KEY_PAYLOAD_SIGNING_KEY = 'hostSettings:mailEventsPayloadSigningKey';
+    static readonly LABS_KEY = 'mailEvents';
+    static readonly CONFIG_KEY_PAYLOAD_SIGNING_KEY = 'hostSettings:mailEventsPayloadSigningKey';
 
     constructor(
-        private eventRepository: MailEventRepository,
+        private mailEventRepository: MailEventRepository,
         private config: Config,
         private labs: Labs
     ) {}
@@ -89,7 +89,7 @@ export class MailEventService {
             }
 
             try {
-                await this.eventRepository.save(
+                await this.mailEventRepository.save(
                     new MailEvent(
                         payloadEvent.id,
                         payloadEvent.event,
