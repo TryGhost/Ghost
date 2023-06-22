@@ -42,7 +42,6 @@
   },
   "dependencies": {
     "@headlessui/react": "1.6.6",
-    "@sentry/react": "7.11.1",
     "@tiptap/core": "2.0.0-beta.182",
     "@tiptap/extension-blockquote": "2.0.0-beta.29",
     "@tiptap/extension-document": "2.0.0-beta.17",

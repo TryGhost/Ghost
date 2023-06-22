@@ -4,14 +4,19 @@ import ReactDOM from 'react-dom';
 import {ROOT_DIV_ID} from './utils/constants';
 
 function addRootDiv() {
-    const scriptTag = document.querySelector('script[data-ghost-comments]');
+    let scriptTag = document.currentScript;
+
+    if (!scriptTag && import.meta.env.DEV) {
+        // In development mode, use any script tag (because in ESM mode, document.currentScript is not set)
+        scriptTag = document.querySelector('script[data-ghost-comments]');
+    }
 
     // We need to inject the comment box at the same place as the script tag
     if (scriptTag) {
         const elem = document.createElement('div');
         elem.id = ROOT_DIV_ID;
         scriptTag.parentElement.insertBefore(elem, scriptTag);
-    } else if (process.env.NODE_ENV === 'development') {
+    } else if (import.meta.env.DEV) {
         const elem = document.createElement('div');
         elem.id = ROOT_DIV_ID;
         document.body.appendChild(elem);
@@ -39,19 +44,16 @@ function getSiteData() {
     const apiKey = dataset.key;
     const apiUrl = dataset.api;
     const adminUrl = dataset.admin;
-    const sentryDsn = dataset.sentryDsn;
     const postId = dataset.postId;
     const colorScheme = dataset.colorScheme;
     const avatarSaturation = dataset.avatarSaturation;
     const accentColor = dataset.accentColor;
-    const appVersion = dataset.appVersion;
     const commentsEnabled = dataset.commentsEnabled;
-    const stylesUrl = dataset.styles;
     const title = dataset.title === 'null' ? null : dataset.title;
     const showCount = dataset.count === 'true';
     const publication = dataset.publication ?? ''; // TODO: replace with dynamic data from script
 
-    return {siteUrl, stylesUrl, apiKey, apiUrl, sentryDsn, postId, adminUrl, colorScheme, avatarSaturation, accentColor, appVersion, commentsEnabled, title, showCount, publication};
+    return {siteUrl, apiKey, apiUrl, postId, adminUrl, colorScheme, avatarSaturation, accentColor, commentsEnabled, title, showCount, publication};
 }
 
 function handleTokenUrl() {
