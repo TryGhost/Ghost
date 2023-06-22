@@ -22,15 +22,6 @@ function AuthFrame({adminUrl, onLoad}) {
     );
 }
 
-function SentryErrorBoundary({dsn, children}) {
-    // todo: add Sentry.ErrorBoundary wrapper if Sentry is enabled
-    return (
-        <>
-            {children}
-        </>
-    );
-}
-
 export default class App extends React.Component {
     constructor(props) {
         super(props);
@@ -165,8 +156,6 @@ export default class App extends React.Component {
         try {
             this.GhostApi = this.props.api || setupGhostApi({siteUrl, apiUrl, apiKey});
             const {member} = await this.GhostApi.init();
-
-            this.setupSentry();
             return {member};
         } catch (e) {
             if (hasMode(['dev', 'test'], {customSiteUrl})) {
@@ -261,11 +250,6 @@ export default class App extends React.Component {
         return api;
     }
 
-    /** Setup Sentry */
-    setupSentry() {
-        // Not implemented yet
-    }
-
     /**Get final App level context from App state*/
     getContextFromState() {
         const {action, popupNotification, customSiteUrl, member, comments, pagination, commentCount, postId, admin, popup, secundaryFormCount} = this.state;
@@ -285,8 +269,6 @@ export default class App extends React.Component {
             avatarSaturation: this.props.avatarSaturation,
             accentColor: this.props.accentColor,
             commentsEnabled: this.props.commentsEnabled,
-            appVersion: this.props.appVersion,
-            stylesUrl: this.props.stylesUrl,
             publication: this.props.publication,
             secundaryFormCount: secundaryFormCount,
             popup,
@@ -310,15 +292,13 @@ export default class App extends React.Component {
         const done = this.state.initStatus === 'success';
 
         return (
-            <SentryErrorBoundary dsn={this.props.sentryDsn}>
-                <AppContext.Provider value={this.getContextFromState()}>
-                    <CommentsFrame>
-                        <ContentBox done={done} />
-                    </CommentsFrame>
-                    <AuthFrame adminUrl={this.props.adminUrl} onLoad={this.initAdminAuth}/>
-                    <PopupBox />
-                </AppContext.Provider>
-            </SentryErrorBoundary>
+            <AppContext.Provider value={this.getContextFromState()}>
+                <CommentsFrame>
+                    <ContentBox done={done} />
+                </CommentsFrame>
+                <AuthFrame adminUrl={this.props.adminUrl} onLoad={this.initAdminAuth}/>
+                <PopupBox />
+            </AppContext.Provider>
         );
     }
 }
