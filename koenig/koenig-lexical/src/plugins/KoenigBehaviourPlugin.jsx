@@ -405,12 +405,12 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 KEY_ARROW_UP_COMMAND,
                 (event) => {
                     // stick to default behaviour if a selection is being made
-                    if (event.shiftKey) {
+                    if (event?.shiftKey) {
                         return false;
                     }
 
                     // if we're in a nested editor, we need to move selection back to the parent editor
-                    if (event._fromCaptionEditor) {
+                    if (event?._fromCaptionEditor) {
                         $selectCard(editor, selectedCardKey);
                     }
 
@@ -494,7 +494,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     }
 
                     // if we're in a nested editor, we need to move selection back to the parent editor
-                    if (event._fromCaptionEditor) {
+                    if (event?._fromCaptionEditor) {
                         $selectCard(editor, selectedCardKey);
                     }
 
