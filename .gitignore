@@ -127,6 +127,9 @@ Caddyfile
 
 # Comments-UI
 /apps/comments-ui/umd
+/apps/comments-ui/playwright-report
+/ghost/comments-ui/playwright/.cache/
+/ghost/comments-ui/test-results/
 
 # Portal
 !/apps/portal/.env

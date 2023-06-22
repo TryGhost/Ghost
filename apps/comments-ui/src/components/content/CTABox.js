@@ -23,7 +23,7 @@ const CTABox = ({isFirst, isPaid}) => {
     };
 
     return (
-        <section className={`flex flex-col items-center pt-[40px] ${member ? 'pb-[32px]' : 'pb-[48px]'} ${!isFirst && 'mt-4'} border-y border-[rgba(0,0,0,0.075)] dark:border-[rgba(255,255,255,0.1)] sm:px-8`}>
+        <section className={`flex flex-col items-center pt-[40px] ${member ? 'pb-[32px]' : 'pb-[48px]'} ${!isFirst && 'mt-4'} border-y border-[rgba(0,0,0,0.075)] dark:border-[rgba(255,255,255,0.1)] sm:px-8`} data-testid="cta-box">
             <h1 className={`mb-[8px] text-center font-sans text-[24px] tracking-tight  text-black dark:text-[rgba(255,255,255,0.85)] ${isFirst ? 'font-semibold' : 'font-bold'}`}>
                 {titleText}
             </h1>
