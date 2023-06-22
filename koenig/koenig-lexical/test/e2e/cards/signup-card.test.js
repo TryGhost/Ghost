@@ -501,7 +501,7 @@ test.describe('Signup card', async () => {
         // Click swap
         await page.click('[data-testid="signup-swapped"]');
         // Check the parent class name was updated
-        const swappedContainer = await page.locator('[data-testid="signup-card-container"]');
+        const swappedContainer = await page.locator('[data-testid="signup-card-content"]');
         await expect(swappedContainer).toHaveClass(/sm:flex-row-reverse/);
     });
 

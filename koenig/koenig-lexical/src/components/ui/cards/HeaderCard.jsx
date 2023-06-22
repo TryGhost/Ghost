@@ -120,8 +120,7 @@ export function HeaderCard({isEditing,
                             textClassName={clsx(
                                 'koenig-lexical-header-heading relative w-full whitespace-normal text-center font-bold [&:has(.placeholder)]:w-fit [&:has(.placeholder)]:text-left',
                                 (size === 'small') && 'koenig-lexical-header-small',
-                                (size === 'medium') && 'koenig-lexical-header-medium',
-                                (size === 'large') && 'koenig-lexical-header-large',
+                                ((size === 'medium') || (size === 'large')) && 'koenig-lexical-header-large',
                                 (HEADER_TEXT_COLORS[type])
                             )}
                         />

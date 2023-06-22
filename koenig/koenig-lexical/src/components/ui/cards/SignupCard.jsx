@@ -207,17 +207,14 @@ export function SignupCard({alignment,
 
     return (
         <>
-            <div className={clsx(
-                'flex w-full font-sans text-black transition-colors ease-in-out',
-                (layout === 'split' && isSwapped) && 'sm:flex-row-reverse'
-            )} data-testid={'signup-card-container'} style={wrapperStyle()}>
+            <div className='flex w-full font-sans text-black transition-colors ease-in-out' data-testid={'signup-card-container'} style={wrapperStyle()}>
                 <div className={clsx(
                     'flex w-full flex-col transition-colors ease-in-out sm:flex-row',
-                    (layout === 'split' && isSwapped) && 'sm:flex-row-reverse',
+                    (layout === 'split' && isSwapped) && 'flex-col-reverse sm:flex-row-reverse',
                     // This is needed to align the content with wide breakout width
-                    (layout === 'split' && (correctedBackgroundSize === 'contain')) && 'mx-auto w-[calc(740px+40rem)] xs:w-[calc(740px+8rem)] md:w-[calc(740px+12rem)] lg:w-[calc(740px+22rem)] xl:w-[calc(740px+40rem)]',
+                    (layout === 'full' || (layout === 'split' && (correctedBackgroundSize === 'contain'))) && 'mx-auto w-[calc(740px+4rem)] xs:w-[calc(740px+8rem)] md:w-[calc(740px+12rem)] lg:w-[calc(740px+22rem)] xl:w-[calc(740px+40rem)]',
                     (backgroundImageSrc && (layout === 'split') && (correctedBackgroundSize === 'contain')) && 'items-center',
-                )}>
+                )} data-testid={'signup-card-content'}>
                     {layout === 'split' && (
                         <MediaUploader
                             additionalActions={<>
@@ -225,9 +222,14 @@ export function SignupCard({alignment,
                             </>}
                             alt='Background image'
                             backgroundSize={backgroundSize}
-                            className={`sm:w-1/2 ${(correctedBackgroundSize === 'contain') && 'my-14'}`}
+                            className={clsx(
+                                'sm:w-1/2',
+                                (correctedBackgroundSize === 'contain') && 'sm:my-10 md:my-14',
+                                (!isSwapped && (correctedBackgroundSize === 'contain')) && 'mt-10 px-[calc(32px-(4rem/2))] xs:px-[calc(92px-(8rem/2))] sm:pr-0 sm:pl-[calc(92px-(12rem/2))] md:pl-[calc(92px-(12rem/2))] lg:pl-0',
+                                (isSwapped && (correctedBackgroundSize === 'contain')) && 'mb-10 px-[calc(32px-(4rem/2))] xs:px-[calc(92px-(8rem/2))] sm:pl-0 sm:pr-[calc(92px-(12rem/2))] md:pr-[calc(92px-(12rem/2))] lg:pr-0',
+                            )}
                             desc='Click to select an image'
-                            dragHandler={imageDragHandler}
+                            dragHandler={imageDragHandler}  
                             errors={fileUploader?.errors}
                             icon='image'
                             imgClassName={`${(correctedBackgroundSize === 'cover') && 'aspect-[3/2]'}`}
@@ -248,12 +250,12 @@ export function SignupCard({alignment,
                         className={clsx(
                             'mx-auto flex w-full flex-1 flex-col justify-center',
                             (alignment === 'center') && 'items-center',
-                            (layout === 'regular') && 'py-[8rem] px-[4rem] md:px-[6rem] lg:px-[8rem]',
-                            (layout === 'wide') && 'max-w-[740px] px-[4rem] py-[8rem] md:py-[10rem] md:px-[8rem] lg:px-0',
-                            (layout === 'full') && 'py-[8rem] px-[4rem] md:py-[12rem] md:px-[8rem] lg:p-[14rem] xl:p-[16rem]',
-                            (layout === 'split') && 'px-[4rem] py-[8rem] md:px-[6rem] md:py-[12rem] lg:px-[8rem] lg:py-[16rem]',
-                            (layout === 'split' && (correctedBackgroundSize === 'contain') && isSwapped) && 'pl-0 md:pl-0 lg:pl-0',
-                            (layout === 'split' && (correctedBackgroundSize === 'contain') !== isSwapped) && 'pr-0 md:pr-0 lg:pr-0'
+                            (layout === 'regular') && 'p-[4rem] sm:py-[6rem] md:py-[8rem] md:px-[6rem] lg:px-[8rem]',
+                            (layout === 'wide') && 'max-w-[740px] p-[4rem] sm:py-[6rem] md:py-[10rem] md:px-[8rem] lg:px-0',
+                            (layout === 'full') && 'py-[4rem] px-[calc(32px-(4rem/2))] xs:px-[calc(92px-(8rem/2))] sm:py-[6rem] md:py-[12rem] md:px-[calc(92px-(12rem/2))] lg:py-[14rem] lg:px-0 xl:py-[16rem]',
+                            (layout === 'split') && 'p-[4rem] sm:py-[6rem] md:px-[6rem] md:py-[12rem] lg:px-[8rem] lg:py-[16rem]',
+                            (!isSwapped && layout === 'split' && correctedBackgroundSize === 'contain') && 'px-[calc(32px-(4rem/2))] xs:px-[calc(92px-(8rem/2))] sm:px-[calc(92px-(12rem/2))] md:pr-[calc(92px-(12rem/2))] lg:pr-0',
+                            (isSwapped && layout === 'split' && correctedBackgroundSize === 'contain') && 'px-[calc(32px-(4rem/2))] xs:px-[calc(92px-(8rem/2))] sm:px-[calc(92px-(12rem/2))] md:pl-[calc(92px-(12rem/2))] lg:pl-0',
                         )}>
                         {/* Heading */}
                         {<KoenigNestedEditor
@@ -268,9 +270,8 @@ export function SignupCard({alignment,
                             placeholderClassName={clsx(
                                 '!font-bold !leading-[1.1] !tracking-tight !text-grey-700 opacity-50',
                                 (alignment === 'center') && 'text-center',
-                                (layout === 'regular') && 'text-3xl sm:text-4xl md:text-5xl',
-                                (layout === 'wide' || layout === 'split') && 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl',
-                                (layout === 'full') && 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl'
+                                (layout === 'regular' || 'wide' || 'split') && 'text-3xl sm:text-4xl md:text-5xl',
+                                (layout === 'full') && 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl'
                             )}
                             placeholderText={headerPlaceholder}
                             singleParagraph={true}
@@ -278,8 +279,7 @@ export function SignupCard({alignment,
                                 'koenig-lexical-header-heading relative w-full whitespace-normal font-bold caret-current',
                                 (!isEditing && isEditorEmpty(headerTextEditor)) ? 'hidden' : 'peer',
                                 (alignment === 'center') && 'text-center [&:has(.placeholder)]:w-fit [&:has(.placeholder)]:text-left',
-                                (layout === 'regular' || (layout === 'split' && correctedBackgroundSize === 'contain')) && 'koenig-lexical-header-xsmall',
-                                (layout === 'wide' || (layout === 'split' && correctedBackgroundSize === 'cover')) && 'koenig-lexical-header-small',
+                                (layout === 'regular' || 'wide' || 'split') && 'koenig-lexical-header-small',
                                 (layout === 'full') && 'koenig-lexical-header-large',
                             )}
                         />}
@@ -295,9 +295,9 @@ export function SignupCard({alignment,
                             placeholderClassName={clsx(
                                 '!font-medium !leading-snug !tracking-tight !text-grey-700 opacity-60',
                                 (alignment === 'center') && 'text-center',
-                                (layout === 'regular') && 'text-lg sm:text-xl',
-                                (layout === 'wide') && 'text-lg sm:text-xl md:text-2xl',
-                                (layout === 'full' || layout === 'split') && 'text-xl md:text-2xl',
+                                (layout === 'regular' || (layout === 'split' && correctedBackgroundSize === 'contain')) && 'text-lg sm:text-xl',
+                                (layout === 'wide' || (layout === 'split' && correctedBackgroundSize === 'cover')) && 'text-lg sm:text-xl md:text-2xl',
+                                layout === 'full' && 'text-xl md:text-2xl',
                                 layout === 'full' && 'xl:max-w-[880px]',
                             )}
                             placeholderText={subheaderPlaceholder}

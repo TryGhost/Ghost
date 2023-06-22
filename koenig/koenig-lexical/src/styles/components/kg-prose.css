@@ -859,7 +859,7 @@
     }
 }
 
-.koenig-lexical-header-heading.koenig-lexical-header-xsmall {
+.koenig-lexical-header-heading.koenig-lexical-header-small {
     .kg-prose {
         :where(
                     p,
@@ -873,34 +873,6 @@
     }
 }
 
-.koenig-lexical-header-heading.koenig-lexical-header-small {
-    .kg-prose {
-        :where(
-                    p,
-                    blockquote,
-                    aside,
-                    ul,
-                    ol
-                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            @apply text-3xl sm:text-4xl md:text-5xl lg:text-6xl;
-        }
-    }
-}
-
-.koenig-lexical-header-heading.koenig-lexical-header-medium {
-    .kg-prose {
-        :where(
-                    p,
-                    blockquote,
-                    aside,
-                    ul,
-                    ol
-                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            @apply text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl;
-        }
-    }
-}
-
 .koenig-lexical-header-heading.koenig-lexical-header-large {
     .kg-prose {
         :where(
@@ -910,7 +882,7 @@
                     ul,
                     ol
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            @apply text-4xl sm:text-5xl md:text-6xl lg:text-7xl;
+            @apply text-3xl sm:text-4xl md:text-5xl lg:text-6xl;
         }
     }
 }
