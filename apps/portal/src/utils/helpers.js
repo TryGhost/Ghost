@@ -410,8 +410,8 @@ export function getSiteProducts({site, pageQuery}) {
     return products;
 }
 
-export function hasFreeTrialTier({site}) {
-    const tiers = getSiteProducts({site});
+export function hasFreeTrialTier({site, pageQuery}) {
+    const tiers = getSiteProducts({site, pageQuery});
     return tiers.some((tier) => {
         return !!tier?.trial_days;
     });
