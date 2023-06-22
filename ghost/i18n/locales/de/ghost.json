@@ -1,7 +1,7 @@
 {
     "All the best!": "Alles Gute!",
-    "Complete signup for {{siteTitle}}!": "Vervollständige deine Registrierung für {{siteTitle}}!",
-    "Complete your sign up to {{siteTitle}}!": "Vervollständige deine Registrierung bei {{siteTitle}}!",
+    "Complete signup for {{siteTitle}}!": "Vervollständige deine Registrierung für {{siteTitle}}.",
+    "Complete your sign up to {{siteTitle}}!": "Vervollständige deine Registrierung bei {{siteTitle}}.",
     "Confirm email address": "Bestätigen deine E-Mail Adresse",
     "Confirm signup": "Bestätige deine Anmeldung",
     "Confirm your email address": "Bestätige deine E-Mail Adresse",
@@ -18,7 +18,7 @@
     "Sent to {{email}}": "Gesendet an {{email}}",
     "Sign in": "Einloggen",
     "Sign in to {{siteTitle}}": "Bei {{siteTitle}} Einloggen",
-    "Tap the link below to complete the signup process for {{siteTitle}}, and be automatically signed in:": "Bitte klicke auf den unten stehenden Link, um deine Registrierung bei {{siteTitle}} abzuschließen und automatisch eingeloggt zu werden:",
+    "Tap the link below to complete the signup process for {{siteTitle}}, and be automatically signed in:": "Bitte klicke auf den unten stehenden Link, um deine Registrierung bei {{siteTitle}} abzuschliessen und automatisch eingeloggt zu werden:",
     "Thank you for signing up to {{siteTitle}}!": "Danke für deine Registrierung bei {{siteTitle}}!",
     "Thank you for subscribing to {{siteTitle}}!": "Danke für dein Abonnement für {{siteTitle}}!",
     "Thank you for subscribing to {{siteTitle}}.": "Danke für dein Abonnement für {{siteTitle}}.",
@@ -30,5 +30,5 @@
     "You will not be signed up, and no account will be created for you.": "Du wirst nicht registriert und es wird kein Konto für dich angelegt.",
     "You will not be subscribed.": "Du wirst nicht angemeldet.",
     "You're one tap away from subscribing to {{siteTitle}} — please confirm your email address with this link:": "Du bist nur einen Klick von deinem Abonnement für {{siteTitle}} entfernt — bitte bestätige deine E-Mail-Adresse mit diesem Link:",
-    "You're one tap away from subscribing to {{siteTitle}}!": "Du bist nur einen Klick von deinem Abonnement für {{siteTitle}} entfernt!"
+    "You're one tap away from subscribing to {{siteTitle}}!": "Du bist nur einen Klick von deinem Abonnement für {{siteTitle}} entfernt."
 }
