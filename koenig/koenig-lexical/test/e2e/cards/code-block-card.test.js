@@ -77,7 +77,7 @@ test.describe('Code Block card', async () => {
                 </div>
             `, {ignoreCardContents: true});
         });
-        
+
         test('renders with ```lang + space', async function () {
             await focusEditor(page);
             await page.keyboard.type('```javascript ');
@@ -151,6 +151,54 @@ test.describe('Code Block card', async () => {
         await page.keyboard.type('My caption');
         await page.keyboard.press('Enter');
         await page.keyboard.press('Backspace');
+        await page.keyboard.press('Backspace');
+        await page.keyboard.press(`${ctrlOrCmd}+z`);
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="codeblock">
+                    <div>
+                        <pre><code>Here are some words</code></pre>
+                        <div><span>javascript</span></div>
+                    </div>
+                    <figcaption>
+                        <div>
+                            <div>
+                                <div data-kg="editor">
+                                    <div
+                                        contenteditable="true"
+                                        spellcheck="true"
+                                        data-lexical-editor="true"
+                                        role="textbox">
+                                        <p dir="ltr">
+                                            <span data-lexical-text="true">My caption</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </figcaption>
+                    <div data-kg-card-toolbar="button"></div>
+                </div>
+            </div>
+        `, {ignoreCardContents: false, ignoreCardToolbarContents: true});
+    });
+
+    test('can undo/redo content in code editor', async function () {
+        await focusEditor(page);
+        await page.keyboard.type('```javascript ');
+        await page.waitForSelector('[data-kg-card="codeblock"] .cm-editor');
+
+        // Types slower. Codemirror can be slow and needs some time to place the cursor after entering text.
+        await page.keyboard.type('Here are some words', {delay: 500});
+        await expect(page.getByText('Here are some words')).toBeVisible();
+        await page.keyboard.press('Backspace');
+        await expect(page.getByText('Here are some word')).toBeVisible();
+        await page.keyboard.press(`${ctrlOrCmd}+z`);
+        await expect(page.getByText('Here are some words')).toBeVisible();
+        await page.keyboard.press('Escape');
+        await page.click('[data-testid="codeblock-caption"]');
+        await page.keyboard.type('My caption');
         await page.keyboard.press('Backspace');
         await page.keyboard.press(`${ctrlOrCmd}+z`);
 

@@ -6,6 +6,9 @@ import UnsplashModal from '../../UnsplashModal';
 
 import ctrlOrCmd from '../../../../utils/ctrlOrCmd';
 import useMarkdownImageUploader from './useMarkdownImageUploader';
+import {COMMAND_PRIORITY_LOW, UNDO_COMMAND} from 'lexical';
+import {mergeRegister} from '@lexical/utils';
+import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext.js';
 
 export default function MarkdownEditor({
     markdown,
@@ -16,9 +19,10 @@ export default function MarkdownEditor({
     placeholder = ''
 }) {
     const editorRef = useRef(null);
-    const editor = useRef(null);
+    const markdownEditor = useRef(null);
     const [isHelpDialogOpen, setHelpDialogOpen] = useState(false);
     const [isUnsplashDialogOpen, setUnsplashDialogOpen] = useState(false);
+    const [editor] = useLexicalComposerContext();
     const {
         openImageUploadDialog,
         uploadImages,
@@ -28,7 +32,7 @@ export default function MarkdownEditor({
         errors: imageUploadErrors,
         isLoading,
         filesNumber
-    } = useMarkdownImageUploader(editor, imageUploader);
+    } = useMarkdownImageUploader(markdownEditor, imageUploader);
 
     const shortcuts = {
         openImageDialog: `${ctrlOrCmd}-Alt-I`,
@@ -36,9 +40,21 @@ export default function MarkdownEditor({
         openUnsplashDialog: `${ctrlOrCmd}-Alt-O`
     };
 
-    // init editor on component mount
+    React.useEffect(() => {
+        return mergeRegister(
+            editor.registerCommand(
+                UNDO_COMMAND, () => {
+                    // let the markdown editor handle undo command
+                    return true;
+                },
+                COMMAND_PRIORITY_LOW
+            )
+        );
+    }, [editor]);
+
+    // init markdown editor on component mount
     useLayoutEffect(() => {
-        editor.current = new SimpleMDE({
+        markdownEditor.current = new SimpleMDE({
             element: editorRef.current,
             autofocus,
             indentWithTabs: false,
@@ -93,7 +109,7 @@ export default function MarkdownEditor({
             ]
         });
 
-        const editorInstance = editor.current;
+        const editorInstance = markdownEditor.current;
 
         editorInstance.value(markdown ?? '');
 
@@ -101,7 +117,7 @@ export default function MarkdownEditor({
             // avoid a "modified x twice in a single render" error that occurs
             // when the underlying value is completely swapped out
             if (changeObj.origin !== 'setValue') {
-                updateMarkdown(editor.current.value());
+                updateMarkdown(markdownEditor.current.value());
             }
         });
 
@@ -121,12 +137,12 @@ export default function MarkdownEditor({
         addShortcuts();
 
         // spellchecker turned off by default
-        const codemirror = editor.current.codemirror;
+        const codemirror = markdownEditor.current.codemirror;
         codemirror.setOption('mode', 'gfm');
 
         // remove editor on unmount
         return () => {
-            editor.current.toTextArea();
+            markdownEditor.current.toTextArea();
         };
 
         // We only do this for init
@@ -134,7 +150,7 @@ export default function MarkdownEditor({
     }, []);
 
     function addShortcuts() {
-        const codemirror = editor.current.codemirror;
+        const codemirror = markdownEditor.current.codemirror;
 
         const keys = codemirror.getOption('extraKeys');
 
@@ -149,7 +165,7 @@ export default function MarkdownEditor({
     }
 
     function toggleSpellcheck() {
-        let codemirror = editor.current.codemirror;
+        let codemirror = markdownEditor.current.codemirror;
 
         if (codemirror.getOption('mode') === 'spell-checker') {
             codemirror.setOption('mode', 'gfm');
@@ -161,10 +177,10 @@ export default function MarkdownEditor({
     }
 
     function toggleButtonClass() {
-        let spellcheckButton = editor.current.toolbarElements.spellcheck;
+        let spellcheckButton = markdownEditor.current.toolbarElements.spellcheck;
 
         if (spellcheckButton) {
-            if (editor.current.codemirror.getOption('mode') === 'spell-checker') {
+            if (markdownEditor.current.codemirror.getOption('mode') === 'spell-checker') {
                 spellcheckButton.classList.add('active');
             } else {
                 spellcheckButton.classList.remove('active');
@@ -195,7 +211,7 @@ export default function MarkdownEditor({
     }
 
     function closeUnsplashDialog() {
-        editor.current.codemirror.focus();
+        markdownEditor.current.codemirror.focus();
         setUnsplashDialogOpen(false);
     }
 

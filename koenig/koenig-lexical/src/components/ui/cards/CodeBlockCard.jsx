@@ -2,19 +2,23 @@ import CodeMirror from '@uiw/react-codemirror';
 import KoenigComposerContext from '../../../context/KoenigComposerContext';
 import PropTypes from 'prop-types';
 import React from 'react';
+import {COMMAND_PRIORITY_LOW, UNDO_COMMAND} from 'lexical';
 import {CardCaptionEditor} from '../CardCaptionEditor';
 import {EditorView, keymap, lineNumbers} from '@codemirror/view';
 import {HighlightStyle, syntaxHighlighting} from '@codemirror/language';
 import {css} from '@codemirror/lang-css';
 import {html} from '@codemirror/lang-html';
 import {javascript} from '@codemirror/lang-javascript';
+import {mergeRegister} from '@lexical/utils';
 import {minimalSetup} from '@uiw/codemirror-extensions-basic-setup';
 import {standardKeymap} from '@codemirror/commands';
 import {tags as t} from '@lezer/highlight';
+import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext.js';
 
 export function CodeEditor({code, language, updateCode, updateLanguage}) {
     const [showLanguage, setShowLanguage] = React.useState(true);
     const {darkMode} = React.useContext(KoenigComposerContext);
+    const [editor] = useLexicalComposerContext();
 
     // show the language input when the mouse moves
     React.useEffect(() => {
@@ -28,6 +32,18 @@ export function CodeEditor({code, language, updateCode, updateLanguage}) {
             window.removeEventListener('mousemove', onMouseMove);
         };
     }, []);
+
+    React.useEffect(() => {
+        return mergeRegister(
+            editor.registerCommand(
+                UNDO_COMMAND, () => {
+                    // let the code editor handle undo command
+                    return true;
+                },
+                COMMAND_PRIORITY_LOW
+            )
+        );
+    }, [editor]);
 
     const onChange = React.useCallback((value) => {
         setShowLanguage(false); // hide language input whenever the user types in the editor
@@ -124,7 +140,7 @@ export function CodeEditor({code, language, updateCode, updateLanguage}) {
         '&.cm-editor .cm-cursor, &.cm-editor .cm-dropCursor': {
             borderLeft: '1.2px solid white'
         }
-        
+
     });
 
     const editorLightHighlightStyle = HighlightStyle.define([

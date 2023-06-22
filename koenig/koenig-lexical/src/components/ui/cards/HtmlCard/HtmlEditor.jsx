@@ -1,14 +1,31 @@
 import CodeMirror from '@uiw/react-codemirror';
 import React from 'react';
+import {COMMAND_PRIORITY_LOW, UNDO_COMMAND} from 'lexical';
 import {EditorView, keymap, lineNumbers} from '@codemirror/view';
 import {HighlightStyle, syntaxHighlighting} from '@codemirror/language';
 import {closeBrackets, closeBracketsKeymap} from '@codemirror/autocomplete';
 import {html as langHtml} from '@codemirror/lang-html';
+import {mergeRegister} from '@lexical/utils';
 import {minimalSetup} from '@uiw/codemirror-extensions-basic-setup';
 import {standardKeymap} from '@codemirror/commands';
 import {tags as t} from '@lezer/highlight';
+import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext.js';
 
 export default function HtmlEditor({darkMode, html, updateHtml}) {
+    const [editor] = useLexicalComposerContext();
+
+    React.useEffect(() => {
+        return mergeRegister(
+            editor.registerCommand(
+                UNDO_COMMAND, () => {
+                    // let the html editor handle undo command
+                    return true;
+                },
+                COMMAND_PRIORITY_LOW
+            )
+        );
+    }, [editor]);
+
     const onChange = React.useCallback((value) => {
         updateHtml(value);
     }, [updateHtml]);
@@ -99,7 +116,7 @@ export default function HtmlEditor({darkMode, html, updateHtml}) {
         '&.cm-editor .cm-cursor, &.cm-editor .cm-dropCursor': {
             borderLeft: '1.2px solid white'
         }
-        
+
     });
 
     const editorLightHighlightStyle = HighlightStyle.define([
@@ -133,7 +150,7 @@ export default function HtmlEditor({darkMode, html, updateHtml}) {
 
     const editorCSS = darkMode ? editorDarkCSS : editorLightCSS;
     const editorHighlightStyle = darkMode ? editorDarkHighlightStyle : editorLightHighlightStyle;
-    
+
     // Base extensions for the CodeMirror editor
     const extensions = [
         EditorView.lineWrapping, // wraps lines that exceed the viewport width

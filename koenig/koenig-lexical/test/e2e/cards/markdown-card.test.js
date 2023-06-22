@@ -697,4 +697,22 @@ test.describe('Markdown card', async () => {
         await page.keyboard.press('Enter');
         await expect(await page.locator('[data-kg-card="markdown"]')).toHaveCount(2);
     });
+
+    test('can undo/redo content in markdown editor', async function () {
+        await focusEditor(page);
+        // insert new card
+        await insertCard(page, {cardName: 'markdown'});
+
+        // fill card
+        await expect(await page.locator('[data-kg-card="markdown"]')).toBeVisible();
+        await page.click('[data-kg-card="markdown"]');
+        await page.keyboard.type('Here are some words');
+        await expect(page.getByText('Here are some words')).toBeVisible();
+        await page.keyboard.press('Backspace');
+        await expect(page.getByText('Here are some word')).toBeVisible();
+        await page.keyboard.press(`${ctrlOrCmd}+z`);
+        await expect(page.getByText('Here are some words')).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(page.getByText('Here are some words')).toBeVisible();
+    });
 });
