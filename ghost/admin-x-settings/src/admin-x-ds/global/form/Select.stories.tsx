@@ -1,7 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/react';
 
-import Select from './Select';
-import {SelectOption} from './Select';
+import Select, {SelectOption} from './Select';
 
 const meta = {
     title: 'Global / Simple select',
@@ -65,7 +64,7 @@ export const WithDefaultSelected: Story = {
     args: {
         title: 'Title',
         options: selectOptions,
-        defaultSelectedOption: 'option-3',
+        selectedOption: 'option-3',
         hint: 'Here\'s some hint'
     }
 };

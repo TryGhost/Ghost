@@ -57,12 +57,6 @@ const DesignModal: React.FC = () => {
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('home');
 
     useEffect(() => {
-        api.customThemeSettings.browse().then((response) => {
-            setThemeSettings(response.custom_theme_settings);
-        });
-    }, [api]);
-
-    useEffect(() => {
         api.latestPost.browse().then((response) => {
             setLatestPost(response.posts[0]);
         });
@@ -92,6 +86,13 @@ const DesignModal: React.FC = () => {
         }
     });
 
+    useEffect(() => {
+        api.customThemeSettings.browse().then((response) => {
+            setThemeSettings(response.custom_theme_settings);
+            updateForm(state => ({...state, themeSettings: response.custom_theme_settings}));
+        });
+    }, [api, updateForm]);
+
     const updateBrandSetting = (key: string, value: SettingValue) => {
         updateForm(state => ({...state, settings: state.settings.map(setting => (
             setting.key === key ? {...setting, value, dirty: true} : setting
@@ -99,14 +100,14 @@ const DesignModal: React.FC = () => {
     };
 
     const updateThemeSetting = (updated: CustomThemeSetting) => {
-        updateForm(state => ({...state, themeSettings: themeSettings.map(setting => (
+        updateForm(state => ({...state, themeSettings: state.themeSettings.map(setting => (
             setting.key === updated.key ? {...updated, dirty: true} : setting
         ))}));
     };
 
     const [description, accentColor, icon, logo, coverImage] = getSettingValues(formState.settings, ['description', 'accent_color', 'icon', 'logo', 'cover_image']) as string[];
 
-    const themeSettingGroups = themeSettings.reduce((groups, setting) => {
+    const themeSettingGroups = formState.themeSettings.reduce((groups, setting) => {
         const group = (setting.group === 'homepage' || setting.group === 'post') ? setting.group : 'site-wide';
 
         return {
@@ -161,7 +162,7 @@ const DesignModal: React.FC = () => {
                 icon,
                 logo,
                 coverImage,
-                themeSettings
+                themeSettings: formState.themeSettings
             }}
             url={selectedTabURL}
         />;

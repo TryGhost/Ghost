@@ -77,7 +77,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
         let toolbarLeft = (<></>);
         if (previewToolbarURLs) {
             toolbarLeft = (
-                <Select defaultSelectedOption={selectedURL} options={previewToolbarURLs!} onSelect={onSelectURL ? onSelectURL : () => {}} />
+                <Select options={previewToolbarURLs!} selectedOption={selectedURL} onSelect={onSelectURL ? onSelectURL : () => {}} />
             );
         } else if (previewToolbarTabs) {
             toolbarLeft = <TabView

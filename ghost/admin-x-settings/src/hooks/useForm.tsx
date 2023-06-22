@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 
 export type SaveState = 'unsaved' | 'saving' | 'saved' | 'error' | '';
 
@@ -37,14 +37,16 @@ const useForm = <State extends any>({initialState, onSave}: {
         setSaveState('saved');
     };
 
+    const updateForm = useCallback((updater: (state: State) => State) => {
+        setFormState(updater);
+        setSaveState('unsaved');
+    }, []);
+
     return {
         formState,
         saveState,
         handleSave,
-        updateForm(updater) {
-            setFormState(updater);
-            setSaveState('unsaved');
-        },
+        updateForm,
         reset() {
             setFormState(initialState);
             setSaveState('');

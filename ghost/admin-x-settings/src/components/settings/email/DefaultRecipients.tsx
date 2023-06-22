@@ -169,9 +169,9 @@ const DefaultRecipients: React.FC = () => {
     const form = (
         <SettingGroupContent columns={1}>
             <Select
-                defaultSelectedOption={selectedOption}
                 hint='Who should be able to subscribe to your site?'
                 options={RECIPIENT_FILTER_OPTIONS}
+                selectedOption={selectedOption}
                 title="Default Newsletter recipients"
                 onSelect={(value) => {
                     setDefaultRecipientValue(value);
