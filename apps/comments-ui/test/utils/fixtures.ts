@@ -5,11 +5,11 @@ export function buildMember(override: any = {}) {
     memberCounter += 1;
 
     return {
+        id: ObjectId().toString(),
         avatar_image: 'https://www.gravatar.com/avatar/7a68f69cc9c9e9b45d97ecad6f24184a?s=250&r=g&d=blank',
         expertise: 'Head of Testing',
-        id: ObjectId(),
         name: 'Test Member ' + memberCounter,
-        uuid: ObjectId(),
+        uuid: ObjectId().toString(),
         paid: override.status === 'paid',
         status: 'free',
         ...override
@@ -18,7 +18,7 @@ export function buildMember(override: any = {}) {
 
 export function buildComment(override: any = {}) {
     return {
-        id: ObjectId(),
+        id: ObjectId().toString(),
         html: '<p>Empty</p>',
         replies: [],
         count: {
@@ -36,7 +36,7 @@ export function buildComment(override: any = {}) {
 
 export function buildReply(override: any = {}) {
     return {
-        id: ObjectId(),
+        id: ObjectId().toString(),
         html: '<p>Empty</p>',
         count: {
             likes: 0

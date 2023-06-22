@@ -1,5 +1,5 @@
 import nql from '@tryghost/nql';
-import {buildComment, buildMember} from './fixtures';
+import {buildComment, buildMember, buildReply} from './fixtures';
 
 export class MockedApi {
     comments: any[];
@@ -25,6 +25,18 @@ export class MockedApi {
             post_id: this.postId
         });
         this.comments.push(fixture);
+    }
+
+    buildReply(overrides: any = {}) {
+        if (!overrides.created_at) {
+            overrides.created_at = this.#lastCommentDate.toISOString();
+            this.#lastCommentDate = new Date(this.#lastCommentDate.getTime() + 1);
+        }
+
+        return buildReply({
+            ...overrides,
+            post_id: this.postId
+        });
     }
 
     addComments(count, overrides = {}) {
@@ -72,12 +84,66 @@ export class MockedApi {
         const comments = filteredComments.slice(startIndex, endIndex);
 
         return {
-            comments,
+            comments: comments.map((comment) => {
+                return {
+                    ...comment,
+                    replies: comment.replies.slice(0, 3),
+                    count: {
+                        ...comment.count,
+                        replies: comment.replies.length
+                    }
+                };
+            }),
             meta: {
                 pagination: {
                     pages: Math.ceil(filteredComments.length / limit),
                     total: filteredComments.length,
                     page,
+                    limit
+                }
+            }
+        };
+    }
+
+    browseReplies({commentId, filter, limit = 5}: {commentId: string, filter?: string, limit?: number}) {
+        const comment = this.comments.find(c => c.id === commentId);
+        if (!comment) {
+            return {
+                error: 'Comment ' + commentId + ' not found'
+            };
+        }
+
+        let replies: any[] = comment.replies;
+
+        // Sort replies on created at + id
+        replies.sort((a, b) => {
+            const aDate = new Date(a.created_at).getTime();
+            const bDate = new Date(b.created_at).getTime();
+
+            if (aDate === bDate) {
+                return a.id > b.id ? 1 : -1;
+            }
+
+            return aDate > bDate ? 1 : -1;
+        });
+
+        // Parse NQL filter
+        if (filter) {
+            const parsed = nql(filter);
+            replies = replies.filter((reply) => {
+                return parsed.queryJSON(reply);
+            });
+        }
+
+        const limitedReplies = replies.slice(0, limit);
+
+        return {
+            comments: limitedReplies,
+            meta: {
+                pagination: {
+                    pages: Math.ceil(replies.length / limit),
+                    total: replies.length,
+                    page: 1,
                     limit
                 }
             }
@@ -105,13 +171,32 @@ export class MockedApi {
             const p = parseInt(url.searchParams.get('page') ?? '1');
             const limit = parseInt(url.searchParams.get('limit') ?? '5');
             const order = url.searchParams.get('order') ?? '';
+            const filter = url.searchParams.get('filter') ?? '';
 
             await route.fulfill({
                 status: 200,
                 body: JSON.stringify(this.browseComments({
                     page: p,
                     limit,
-                    order
+                    order,
+                    filter
+                }))
+            });
+        });
+
+        await page.route(`${path}/members/api/comments/*/replies/*`, async (route) => {
+            const url = new URL(route.request().url());
+
+            const limit = parseInt(url.searchParams.get('limit') ?? '5');
+            const commentId = url.pathname.split('/').reverse()[2];
+            const filter = url.searchParams.get('filter') ?? '';
+
+            await route.fulfill({
+                status: 200,
+                body: JSON.stringify(this.browseReplies({
+                    limit,
+                    filter,
+                    commentId
                 }))
             });
         });
