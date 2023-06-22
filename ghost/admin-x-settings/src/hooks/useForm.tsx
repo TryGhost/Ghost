@@ -6,7 +6,14 @@ export interface FormHook<State> {
     formState: State;
     saveState: SaveState;
     handleSave: () => Promise<void>;
+    /**
+     * Update the form state and mark the form as dirty. Should be used in input events
+     */
     updateForm: (updater: (state: State) => State) => void;
+    /**
+     * Update the form state without marking the form as dirty. Should be used for updating initial state after API responses
+     */
+    setFormState: (updater: (state: State) => State) => void;
     reset: () => void;
 }
 
@@ -47,6 +54,7 @@ const useForm = <State extends any>({initialState, onSave}: {
         saveState,
         handleSave,
         updateForm,
+        setFormState,
         reset() {
             setFormState(initialState);
             setSaveState('');

@@ -26,7 +26,7 @@ export const Default: Story = {
 export const DefaultSelected: Story = {
     args: {
         tabs: tabs,
-        defaultSelected: 'tab-2'
+        selectedTab: 'tab-2'
     }
 };
 
