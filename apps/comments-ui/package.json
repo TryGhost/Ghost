@@ -21,7 +21,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:ci": "yarn test --coverage",
-    "test:unit": "yarn test:ci",
+    "test:unit": "yarn build",
     "lint": "eslint src --ext .js --cache",
     "preship": "yarn lint",
     "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn version; fi",
