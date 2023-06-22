@@ -50,7 +50,7 @@ module.exports = async function comments(options) {
     }
 
     const frontendKey = await getFrontendKey();
-    const {scriptUrl, stylesUrl, appVersion} = getFrontendAppConfig('comments');
+    const {scriptUrl, stylesUrl} = getFrontendAppConfig('comments');
 
     const data = {
         'ghost-comments': urlUtils.getSiteUrl(),
@@ -61,11 +61,9 @@ module.exports = async function comments(options) {
         title: title,
         count: count,
         'post-id': this.id,
-        'sentry-dsn': '', /* todo: insert sentry dsn key here */
         'color-scheme': colorScheme,
         'avatar-saturation': avatarSaturation,
         'accent-color': accentColor,
-        'app-version': appVersion,
         'comments-enabled': commentsEnabled,
         publication: settingsCache.get('title')
     };
