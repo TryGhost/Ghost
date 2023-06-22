@@ -42,7 +42,7 @@
     padding: 9.6vmax 0 9.6vmax 4vmax;
 }
 
-.kg-signup-card-text.align-center {
+.kg-signup-card-text.kg-align-center {
     align-items: center;
     text-align: center;
 }
@@ -146,7 +146,7 @@
     width: 100%;
 }
 
-.align-center .kg-signup-card-form {
+.kg-align-center .kg-signup-card-form {
     justify-content: center;
 }
 
