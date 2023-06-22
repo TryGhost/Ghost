@@ -120,9 +120,9 @@ const Access: React.FC = () => {
             {defaultContentVisibility === 'tiers' && (
                 <MultiSelect
                     color='black'
-                    defaultValues={selectedTierOptions}
                     options={tierOptionGroups.filter(group => group.options.length > 0)}
                     title='Select tiers'
+                    values={selectedTierOptions}
                     clearBg
                     onChange={setSelectedTiers}
                 />

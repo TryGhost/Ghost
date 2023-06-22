@@ -61,11 +61,11 @@ const TextArea: React.FC<TextAreaProps> = ({
             <textarea
                 ref={inputRef}
                 className={styles}
-                defaultValue={value}
                 id={id}
                 maxLength={maxLength}
                 placeholder={placeholder}
                 rows={rows}
+                value={value}
                 onChange={onChange}
                 {...props}>
             </textarea>

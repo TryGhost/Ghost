@@ -62,7 +62,7 @@ export const WithDefaultValue: Story = {
         options: options,
         color: 'black',
         hint: 'I knew you\'d choose all',
-        defaultValues: [options[0]],
+        values: [options[0]],
         onChange: (selected: MultiValue<MultiSelectOption>) => {
             selected?.map(o => (
                 alert(`${o.label} (${o.value})`)
