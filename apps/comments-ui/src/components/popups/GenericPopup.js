@@ -1,7 +1,7 @@
-import React, {useContext, useEffect} from 'react';
-import {Transition} from '@headlessui/react';
-import {PopupFrame} from '../Frame';
 import AppContext from '../../AppContext';
+import React, {useContext, useEffect} from 'react';
+import {PopupFrame} from '../Frame';
+import {Transition} from '@headlessui/react';
 
 const GenericPopup = ({show, children, title, callback}) => {
     // The modal will cover the whole screen, so while it is hidden, we need to disable pointer events
@@ -28,7 +28,7 @@ const GenericPopup = ({show, children, title, callback}) => {
     });
 
     return (
-        <Transition show={show} appear={true}>
+        <Transition appear={true} show={show}>
             <PopupFrame title={title}>
                 <div>
                     <Transition.Child

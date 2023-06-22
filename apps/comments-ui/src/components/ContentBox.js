@@ -1,8 +1,8 @@
-import React, {useContext} from 'react';
 import AppContext from '../AppContext';
-import {ROOT_DIV_ID} from '../utils/constants';
 import Content from './content/Content';
 import Loading from './content/Loading';
+import React, {useContext} from 'react';
+import {ROOT_DIV_ID} from '../utils/constants';
 
 const ContentBox = ({done}) => {
     const luminance = (r, g, b) => {
@@ -47,7 +47,7 @@ const ContentBox = ({done}) => {
     };
 
     return (
-        <section className={'ghost-display ' + containerClass} style={style} data-testid="content-box">
+        <section className={'ghost-display ' + containerClass} data-testid="content-box" style={style}>
             {done ? <Content /> : <Loading />}
         </section>
     );

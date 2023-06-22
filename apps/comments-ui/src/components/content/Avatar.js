@@ -1,7 +1,7 @@
-import React, {useContext} from 'react';
 import AppContext from '../../AppContext';
-import {getInitials} from '../../utils/helpers';
+import React, {useContext} from 'react';
 import {ReactComponent as AvatarIcon} from '../../images/icons/avatar.svg';
+import {getInitials} from '../../utils/helpers';
 
 function getDimensionClasses() {
     return 'w-9 h-9 sm:w-[40px] sm:h-[40px]';
@@ -91,7 +91,7 @@ export const Avatar = ({comment}) => {
                 (<div className={`flex items-center justify-center rounded-full bg-neutral-900 dark:bg-[rgba(255,255,255,0.7)] ${dimensionClasses}`}>
                     <AvatarIcon className="stroke-white dark:stroke-[rgba(0,0,0,0.6)]" />
                 </div>)}
-            {commentMember && <img className={`absolute left-0 top-0 rounded-full ${dimensionClasses}`} src={commentMember.avatar_image} alt="Avatar"/>}
+            {commentMember && <img alt="Avatar" className={`absolute left-0 top-0 rounded-full ${dimensionClasses}`} src={commentMember.avatar_image}/>}
         </>
     );
 

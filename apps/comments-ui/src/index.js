@@ -1,6 +1,6 @@
+import App from './App';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './App';
 import {ROOT_DIV_ID} from './utils/constants';
 
 function addRootDiv() {
@@ -77,7 +77,7 @@ function init() {
 
         ReactDOM.render(
             <React.StrictMode>
-                {<App siteUrl={siteUrl} customSiteUrl={customSiteUrl} {...siteData} />}
+                {<App customSiteUrl={customSiteUrl} siteUrl={siteUrl} {...siteData} />}
             </React.StrictMode>,
             document.getElementById(ROOT_DIV_ID)
         );

@@ -51,7 +51,7 @@ export default class IFrame extends Component {
     render() {
         const {children, head, title = '', style = {}, onResize, ...rest} = this.props;
         return (
-            <iframe srcDoc={`<!DOCTYPE html>`} {...rest} ref={this.setNode} title={title} style={style} frameBorder="0">
+            <iframe srcDoc={`<!DOCTYPE html>`} {...rest} ref={this.setNode} frameBorder="0" style={style} title={title}>
                 {this.iframeHead && createPortal(head, this.iframeHead)}
                 {this.iframeRoot && createPortal(children, this.iframeRoot)}
             </iframe>

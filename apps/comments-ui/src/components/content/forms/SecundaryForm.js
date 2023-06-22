@@ -1,8 +1,8 @@
-import React, {useContext, useEffect} from 'react';
 import AppContext from '../../../AppContext';
+import Form from './Form';
+import React, {useContext, useEffect} from 'react';
 import {isMobile} from '../../../utils/helpers';
 import {useSecondUpdate} from '../../../utils/hooks';
-import Form from './Form';
 
 const SecundaryForm = ({editor, submit, close, closeIfNotChanged, submitText, submitSize}) => {
     const {dispatchAction, secundaryFormCount} = useContext(AppContext);
@@ -30,8 +30,8 @@ const SecundaryForm = ({editor, submit, close, closeIfNotChanged, submitText, su
     const reduced = isMobile();
 
     return (
-        <div className='-mt-[20px]'>
-            <Form editor={editor} submit={submit} close={close} submitText={submitText} submitSize={submitSize} reduced={reduced} isOpen={true} />
+        <div className='mt-[-20px]'>
+            <Form close={close} editor={editor} isOpen={true} reduced={reduced} submit={submit} submitSize={submitSize} submitText={submitText} />
         </div>
     );
 };

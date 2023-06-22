@@ -1,10 +1,10 @@
-import {useEditor} from '@tiptap/react';
-import {default as React, useCallback, useContext} from 'react';
 import AppContext from '../../../AppContext';
+import SecundaryForm from './SecundaryForm';
+import {default as React, useCallback, useContext} from 'react';
 import {getEditorConfig} from '../../../utils/editor';
 import {scrollToElement} from '../../../utils/helpers';
+import {useEditor} from '@tiptap/react';
 import {useRefCallback} from '../../../utils/hooks';
-import SecundaryForm from './SecundaryForm';
 
 const ReplyForm = ({parent, close}) => {
     const {postId, dispatchAction} = useContext(AppContext);

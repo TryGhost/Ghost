@@ -1,15 +1,15 @@
-import React, {useContext, useEffect} from 'react';
 import AppContext from '../../AppContext';
 import CTABox from './CTABox';
-import MainForm from './forms/MainForm';
 import Comment from './Comment';
-import Pagination from './Pagination';
 import ContentTitle from './ContentTitle';
+import MainForm from './forms/MainForm';
+import Pagination from './Pagination';
+import React, {useContext, useEffect} from 'react';
 import {ROOT_DIV_ID} from '../../utils/constants';
 
 const Content = () => {
     const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, secundaryFormCount} = useContext(AppContext);
-    const commentsElements = comments.slice().reverse().map(comment => <Comment comment={comment} key={comment.id} />);
+    const commentsElements = comments.slice().reverse().map(comment => <Comment key={comment.id} comment={comment} />);
 
     const paidOnly = commentsEnabled === 'paid';
     const isPaidMember = member && !!member.paid;
@@ -36,7 +36,7 @@ const Content = () => {
 
     return (
         <>
-            <ContentTitle title={title} showCount={showCount} count={commentCount}/>
+            <ContentTitle count={commentCount} showCount={showCount} title={title}/>
             <Pagination />
             <div className={!pagination ? 'mt-4' : ''} data-test="comment-elements">
                 {commentsElements}

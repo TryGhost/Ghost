@@ -1,8 +1,8 @@
-import {useEditor} from '@tiptap/react';
-import {default as React, useCallback, useContext, useEffect} from 'react';
 import AppContext from '../../../AppContext';
-import {getEditorConfig} from '../../../utils/editor';
 import SecundaryForm from './SecundaryForm';
+import {default as React, useCallback, useContext, useEffect} from 'react';
+import {getEditorConfig} from '../../../utils/editor';
+import {useEditor} from '@tiptap/react';
 
 const EditForm = ({comment, parent, close}) => {
     const {dispatchAction} = useContext(AppContext);
@@ -62,7 +62,7 @@ const EditForm = ({comment, parent, close}) => {
     }, [editor, close, comment.html]);
 
     return (
-        <SecundaryForm editor={editor} close={close} closeIfNotChanged={closeIfNotChanged} {...submitProps} />
+        <SecundaryForm close={close} closeIfNotChanged={closeIfNotChanged} editor={editor} {...submitProps} />
     );
 };
 
