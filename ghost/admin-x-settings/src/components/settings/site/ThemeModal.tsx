@@ -18,6 +18,7 @@ import {useThemes} from '../../../hooks/useThemes';
 
 interface ThemeToolbarProps {
     selectedTheme: OfficialTheme|null;
+    currentTab: string;
     setCurrentTab: (tab: string) => void;
     setSelectedTheme: (theme: OfficialTheme|null) => void;
     modal: NiceModalHandler<Record<string, unknown>>;
@@ -96,6 +97,7 @@ async function handleThemeUpload({
 }
 
 const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
+    currentTab,
     setCurrentTab,
     modal,
     themes,
@@ -105,6 +107,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     const left =
         <TabView
             border={false}
+            selectedTab={currentTab}
             tabs={[
                 {id: 'official', title: 'Official themes'},
                 {id: 'installed', title: 'Installed'}
@@ -228,6 +231,7 @@ const ChangeThemeModal = NiceModal.create(() => {
                             onInstall={onInstall} />
                     }
                     <ThemeToolbar
+                        currentTab={currentTab}
                         modal={modal}
                         previewMode={previewMode}
                         selectedTheme={selectedTheme}

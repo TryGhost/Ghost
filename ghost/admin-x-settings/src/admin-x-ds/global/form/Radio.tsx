@@ -1,6 +1,6 @@
 import Heading from '../Heading';
 import Hint from '../Hint';
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import Separator from '../Separator';
 
 export interface RadioOption {
@@ -12,27 +12,17 @@ export interface RadioOption {
 interface RadioProps {
     id: string;
     title?: string;
+    selectedOption?: string;
     options: RadioOption[];
     onSelect: (value: string) => void;
     error?:boolean;
     hint?: React.ReactNode;
-    defaultSelectedOption?: string;
     separator?: boolean;
 }
 
-const Radio: React.FC<RadioProps> = ({id, title, options, onSelect, error, hint, defaultSelectedOption, separator}) => {
-    const [selectedOption, setSelectedOption] = useState(defaultSelectedOption);
-
-    useEffect(() => {
-        if (defaultSelectedOption) {
-            setSelectedOption(defaultSelectedOption);
-        }
-    }, [defaultSelectedOption]);
-
+const Radio: React.FC<RadioProps> = ({id, title, options, onSelect, error, hint, selectedOption, separator}) => {
     const handleOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedValue = event.target.value;
-        setSelectedOption(selectedValue);
-        onSelect(selectedValue);
+        onSelect(event.target.value);
     };
 
     return (

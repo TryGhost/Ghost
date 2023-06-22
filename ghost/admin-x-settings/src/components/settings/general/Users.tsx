@@ -199,6 +199,8 @@ const Users: React.FC = () => {
         }} />
     );
 
+    const [selectedTab, setSelectedTab] = useState('users-admins');
+
     const tabs = [
         {
             id: 'users-admins',
@@ -235,7 +237,7 @@ const Users: React.FC = () => {
             title='Users and permissions'
         >
             <Owner updateUser={updateUser} user={ownerUser} />
-            <TabView tabs={tabs} />
+            <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
         </SettingGroup>
     );
 };

@@ -30,7 +30,7 @@ export interface PreviewModalProps {
 
     onCancel?: () => void;
     onOk?: () => void;
-    onSelectURL?: (url: string) => void;
+    onSelectURL: (url: string) => void;
     onSelectDesktopView?: () => void;
     onSelectMobileView?: () => void;
 }
@@ -48,7 +48,6 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     previewToolbarURLs,
     selectedURL,
     previewToolbarTabs,
-    defaultTab,
     buttonsDisabled,
     sidebarButtons,
     sidebarHeader,
@@ -77,12 +76,12 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
         let toolbarLeft = (<></>);
         if (previewToolbarURLs) {
             toolbarLeft = (
-                <Select defaultSelectedOption={selectedURL} options={previewToolbarURLs!} onSelect={onSelectURL ? onSelectURL : () => {}} />
+                <Select options={previewToolbarURLs!} selectedOption={selectedURL} onSelect={onSelectURL} />
             );
         } else if (previewToolbarTabs) {
             toolbarLeft = <TabView
                 border={false}
-                defaultSelected={defaultTab}
+                selectedTab={selectedURL}
                 tabs={previewToolbarTabs}
                 width='wide'
                 onTabChange={onSelectURL}
