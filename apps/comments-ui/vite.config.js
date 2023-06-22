@@ -1,10 +1,10 @@
-import {resolve} from 'path';
 import fs from 'fs/promises';
+import {resolve} from 'path';
 
-import {defineConfig} from 'vitest/config';
 import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
 import reactPlugin from '@vitejs/plugin-react';
 import svgrPlugin from 'vite-plugin-svgr';
+import {defineConfig} from 'vitest/config';
 
 import pkg from './package.json';
 
@@ -75,6 +75,7 @@ export default defineConfig((config) => {
             globals: true,
             environment: 'jsdom',
             setupFiles: './src/setupTests.js',
+            include: ['src/**/*.test.js'],
             testTimeout: 10000
         }
     };

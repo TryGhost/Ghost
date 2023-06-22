@@ -7,12 +7,12 @@ const Count = ({showCount, count}) => {
 
     if (count === 1) {
         return (
-            <div className="text-[1.6rem] text-[rgba(0,0,0,0.5)] dark:text-[rgba(255,255,255,0.5)]">1 comment</div>
+            <div className="text-[1.6rem] text-[rgba(0,0,0,0.5)] dark:text-[rgba(255,255,255,0.5)]" data-testid="count">1 comment</div>
         );
     }
 
     return (
-        <div className="text-[1.6rem] text-[rgba(0,0,0,0.5)] dark:text-[rgba(255,255,255,0.5)]">{formatNumber(count)} comments</div>
+        <div className="text-[1.6rem] text-[rgba(0,0,0,0.5)] dark:text-[rgba(255,255,255,0.5)]" data-testid="count">{formatNumber(count)} comments</div>
     );
 };
 
@@ -34,7 +34,7 @@ const ContentTitle = ({title, showCount, count}) => {
 
     return (
         <div className="mb-8 flex w-full items-baseline justify-between font-sans">
-            <h2 className="text-[2.8rem] font-bold tracking-tight dark:text-[rgba(255,255,255,0.85)]">
+            <h2 className="text-[2.8rem] font-bold tracking-tight dark:text-[rgba(255,255,255,0.85)]" data-testid="title">
                 <Title title={title}/>
             </h2>
             <Count count={count} showCount={showCount} />

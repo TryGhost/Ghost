@@ -32,6 +32,9 @@ jobs:
 
       - run: yarn --prefer-offline
 
+      - name: Install Playwright
+        run: npx playwright install --with-deps
+
       - run: yarn workspace @tryghost/comments-ui run test
 
       - name: Upload test results
