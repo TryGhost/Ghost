@@ -1,6 +1,6 @@
 import CardContext from '../context/CardContext.jsx';
 import React, {useCallback, useContext} from 'react';
-import {BLUR_COMMAND, COMMAND_PRIORITY_LOW, FOCUS_COMMAND, KEY_ENTER_COMMAND} from 'lexical';
+import {BLUR_COMMAND, COMMAND_PRIORITY_HIGH, COMMAND_PRIORITY_LOW, FOCUS_COMMAND, KEY_ARROW_DOWN_COMMAND, KEY_ARROW_UP_COMMAND, KEY_ENTER_COMMAND} from 'lexical';
 import {KoenigComposableEditor, KoenigNestedComposer, MINIMAL_NODES, MINIMAL_TRANSFORMERS, RestrictContentPlugin} from '../index.js';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -80,6 +80,26 @@ function CaptionPlugin({parentEditor}) {
                         return true;
                     },
                     COMMAND_PRIORITY_LOW
+                ),
+                editor.registerCommand(
+                    KEY_ARROW_DOWN_COMMAND,
+                    (event) => {
+                        // handle moving focus at the parent editor level (select next card)
+                        event._fromCaptionEditor = true;
+                        editor._parentEditor.dispatchCommand(KEY_ARROW_DOWN_COMMAND, event);
+                        return true;
+                    },
+                    COMMAND_PRIORITY_HIGH
+                ),
+                editor.registerCommand(
+                    KEY_ARROW_UP_COMMAND,
+                    (event) => {
+                        // handle moving focus at the parent editor level (select next card)
+                        event._fromCaptionEditor = true;
+                        editor._parentEditor.dispatchCommand(KEY_ARROW_UP_COMMAND, event);
+                        return true;
+                    },
+                    COMMAND_PRIORITY_HIGH
                 )
             );
         },

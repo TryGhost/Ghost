@@ -409,7 +409,12 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         return false;
                     }
 
-                    // avoid processing card behaviours when an inner element has focus
+                    // if we're in a nested editor, we need to move selection back to the parent editor
+                    if (event._fromCaptionEditor) {
+                        $selectCard(editor, selectedCardKey);
+                    }
+
+                    // avoid processing card behaviours when an inner element has focus (e.g. nested editors)
                     if (document.activeElement !== editor.getRootElement()) {
                         return true;
                     }
@@ -488,7 +493,12 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         return false;
                     }
 
-                    // avoid processing card behaviours when an inner element has focus
+                    // if we're in a nested editor, we need to move selection back to the parent editor
+                    if (event._fromCaptionEditor) {
+                        $selectCard(editor, selectedCardKey);
+                    }
+
+                    // avoid processing card behaviours when an inner element has focus (e.g. nested editors)
                     if (document.activeElement !== editor.getRootElement()) {
                         return true;
                     }
