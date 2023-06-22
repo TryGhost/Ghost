@@ -15,7 +15,7 @@ module.exports = (path, headerMapping, defaultLabels = []) => {
         const csvParserStream = papaparse.parse(papaparse.NODE_STREAM_INPUT, {
             header: true,
             transformHeader(_header) {
-                const cleanHeader = _header.replace(papaparse.BYTE_ORDER_MARK, '');
+                const cleanHeader = _header.replace(papaparse.BYTE_ORDER_MARK, ''); //Removing BOM characters for Unicode-based encodings
                 if (!headerMapping || !Reflect.has(headerMapping, cleanHeader)) {
                     return undefined;
                 }
