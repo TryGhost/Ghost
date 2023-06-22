@@ -18,8 +18,7 @@ module.exports = (path, headerMapping, defaultLabels = []) => {
                 const cleanHeader = _header.replace(papaparse.BYTE_ORDER_MARK, '');
                 if (!headerMapping || !Reflect.has(headerMapping, cleanHeader)) {
                     return undefined;
-                  }
-
+                }
                 return headerMapping[cleanHeader];
             },
             transform(value, header) {
