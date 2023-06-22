@@ -22162,7 +22162,18 @@ jsprim@^1.2.2:
     array-includes "^3.1.5"
     object.assign "^4.1.3"
 
-juice@8.1.0, juice@^8.0.0:
+juice@9.0.0:
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/juice/-/juice-9.0.0.tgz#8aed857a896f27f8063e6fba7ecdcd019b4e300c"
+  integrity sha512-s/IwgQ4caZq3bSnQZlKfdGUqJWy9WzTzB12WSPko9G8uK74H8BJEQvX7GLmFAQ6SLFgAppqC/TUYepKZZaV+JA==
+  dependencies:
+    cheerio "^1.0.0-rc.12"
+    commander "^6.1.0"
+    mensch "^0.3.4"
+    slick "^1.12.2"
+    web-resource-inliner "^6.0.1"
+
+juice@^8.0.0:
   version "8.1.0"
   resolved "https://registry.yarnpkg.com/juice/-/juice-8.1.0.tgz#4ea23362522fe06418229943237ee3751a4fca70"
   integrity sha512-FLzurJrx5Iv1e7CfBSZH68dC04EEvXvvVvPYB7Vx1WAuhCp1ZPIMtqxc+WTWxVkpTIC2Ach/GAv0rQbtGf6YMA==
