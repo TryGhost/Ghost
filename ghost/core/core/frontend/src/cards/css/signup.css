@@ -39,17 +39,24 @@
 }
 
 .kg-layout-split .kg-signup-card-text {
+    padding: 9.6vmax 4vmax;
+}
+
+.kg-layout-split.kg-content-wide .kg-signup-card-text {
     padding: 9.6vmax 0 9.6vmax 4vmax;
+}
+
+.kg-layout-split.kg-content-wide.kg-swapped .kg-signup-card-text {
+    padding: 9.6vmax 4vmax 9.6vmax 0;
+}
+
+.kg-swapped .kg-signup-card-text {
+    grid-row: 1;
 }
 
 .kg-signup-card-text.kg-align-center {
     align-items: center;
     text-align: center;
-}
-
-.kg-signup-card.kg-swapped .kg-signup-card-text {
-    grid-row: 1;
-    padding-left: 0;
 }
 
 .kg-signup-card.kg-style-image h2.kg-signup-card-heading,
