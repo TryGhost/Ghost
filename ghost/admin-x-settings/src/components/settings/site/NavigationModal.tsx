@@ -5,6 +5,7 @@ import TabView from '../../../admin-x-ds/global/TabView';
 import useNavigationEditor, {NavigationItem} from '../../../hooks/site/useNavigationEditor';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {getSettingValues} from '../../../utils/helpers';
+import {useState} from 'react';
 
 const NavigationModal = NiceModal.create(() => {
     const modal = useModal();
@@ -34,6 +35,8 @@ const NavigationModal = NiceModal.create(() => {
         setItems: items => updateSetting('secondary_navigation', JSON.stringify(items))
     });
 
+    const [selectedTab, setSelectedTab] = useState('primary-nav');
+
     return (
         <Modal
             buttonsDisabled={saveState === 'saving'}
@@ -51,6 +54,7 @@ const NavigationModal = NiceModal.create(() => {
         >
             <div className='-mb-8 mt-6'>
                 <TabView
+                    selectedTab={selectedTab}
                     tabs={[
                         {
                             id: 'primary-nav',
@@ -63,6 +67,7 @@ const NavigationModal = NiceModal.create(() => {
                             contents: <NavigationEditForm baseUrl={siteData!.url} navigation={secondaryNavigation} />
                         }
                     ]}
+                    onTabChange={setSelectedTab}
                 />
             </div>
         </Modal>

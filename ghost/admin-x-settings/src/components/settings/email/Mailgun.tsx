@@ -62,8 +62,8 @@ const MailGun: React.FC = () => {
         <SettingGroupContent>
             <div className='grid grid-cols-[120px_auto] gap-x-3 gap-y-6'>
                 <Select
-                    defaultSelectedOption={mailgunRegion}
                     options={MAILGUN_REGIONS}
+                    selectedOption={mailgunRegion}
                     title="Mailgun region"
                     onSelect={(value) => {
                         updateSetting('mailgun_base_url', value);

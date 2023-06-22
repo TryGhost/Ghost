@@ -13,7 +13,7 @@ export type MultiSelectOption = {
 
 interface MultiSelectProps {
     options: OptionsOrGroups<MultiSelectOption, GroupBase<MultiSelectOption>>;
-    defaultValues?: MultiSelectOption[];
+    values: MultiSelectOption[];
     title?: string;
     clearBg?: boolean;
     error?: boolean;
@@ -46,7 +46,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     color = 'grey',
     hint = '',
     options,
-    defaultValues,
+    values,
     onChange,
     ...props
 }) => {
@@ -69,7 +69,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
 
     return (
         <div className='flex flex-col'>
-            {title && <Heading grey={defaultValues ? true : false} useLabelTag={true}>{title}</Heading>}
+            {title && <Heading useLabelTag={true} grey>{title}</Heading>}
             <ReactSelect
                 classNames={{
                     menuList: () => 'z-50',
@@ -84,10 +84,10 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                 }}
                 closeMenuOnSelect={false}
                 components={{DropdownIndicator}}
-                defaultValue={defaultValues}
                 isClearable={false}
                 options={options}
                 placeholder={placeholder ? placeholder : ''}
+                value={values}
                 isMulti
                 unstyled
                 onChange={onChange}

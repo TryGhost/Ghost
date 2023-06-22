@@ -1,4 +1,4 @@
-import React, {useEffect, useId, useState} from 'react';
+import React, {useId} from 'react';
 
 import Heading from '../Heading';
 import Hint from '../Hint';
@@ -13,10 +13,10 @@ export interface SelectProps {
     title?: string;
     prompt?: string;
     options: SelectOption[];
+    selectedOption?: string
     onSelect: (value: string) => void;
     error?:boolean;
     hint?: React.ReactNode;
-    defaultSelectedOption?: string;
     clearBg?: boolean;
     containerClassName?: string;
     selectClassName?: string;
@@ -28,10 +28,10 @@ const Select: React.FC<SelectProps> = ({
     title,
     prompt,
     options,
+    selectedOption,
     onSelect,
     error,
     hint,
-    defaultSelectedOption,
     clearBg = true,
     containerClassName,
     selectClassName,
@@ -40,18 +40,8 @@ const Select: React.FC<SelectProps> = ({
 }) => {
     const id = useId();
 
-    const [selectedOption, setSelectedOption] = useState(defaultSelectedOption);
-
-    useEffect(() => {
-        if (defaultSelectedOption) {
-            setSelectedOption(defaultSelectedOption);
-        }
-    }, [defaultSelectedOption]);
-
     const handleOptionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        const selectedValue = event.target.value;
-        setSelectedOption(selectedValue);
-        onSelect(selectedValue);
+        onSelect(event.target.value);
     };
 
     let containerClasses = '';

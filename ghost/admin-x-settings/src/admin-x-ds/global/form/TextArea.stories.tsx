@@ -1,3 +1,4 @@
+import {useArgs} from '@storybook/preview-api';
 import type {Meta, StoryObj} from '@storybook/react';
 
 import TextArea from './TextArea';
@@ -31,6 +32,11 @@ export const ClearBackground: Story = {
 };
 
 export const WithValue: Story = {
+    render: function Component(args) {
+        const [, updateArgs] = useArgs();
+
+        return <TextArea {...args} onChange={e => updateArgs({value: e.target.value})} />;
+    },
     args: {
         placeholder: 'Enter description',
         value: 'Describe your product'

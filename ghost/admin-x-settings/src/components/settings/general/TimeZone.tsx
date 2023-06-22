@@ -72,9 +72,9 @@ const TimeZone: React.FC = () => {
     const inputFields = (
         <SettingGroupContent columns={1}>
             <Select
-                defaultSelectedOption={publicationTimezone}
                 hint={<Hint timezone={publicationTimezone} />}
                 options={timezoneOptions}
+                selectedOption={publicationTimezone}
                 title="Site timezone"
                 onSelect={handleTimezoneChange}
             />

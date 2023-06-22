@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import clsx from 'clsx';
 
 export type Tab = {
@@ -13,8 +13,8 @@ export type Tab = {
 
 interface TabViewProps {
     tabs: Tab[];
-    onTabChange?: (id: string) => void;
-    defaultSelected?: string;
+    onTabChange: (id: string) => void;
+    selectedTab?: string;
     border?:boolean;
     width?: 'narrow' | 'normal' | 'wide';
 }
@@ -22,15 +22,13 @@ interface TabViewProps {
 const TabView: React.FC<TabViewProps> = ({
     tabs,
     onTabChange,
-    defaultSelected,
+    selectedTab,
     border = true,
     width = 'normal'
 }) => {
-    if (tabs.length !== 0 && defaultSelected === undefined) {
-        defaultSelected = tabs[0].id;
+    if (tabs.length !== 0 && selectedTab === undefined) {
+        selectedTab = tabs[0].id;
     }
-
-    const [selectedTab, setSelectedTab] = useState(defaultSelected);
 
     if (tabs.length === 0) {
         return (<></>);
@@ -38,8 +36,7 @@ const TabView: React.FC<TabViewProps> = ({
 
     const handleTabChange = (e: React.MouseEvent<HTMLButtonElement>) => {
         const newTab = e.currentTarget.id;
-        setSelectedTab(newTab);
-        onTabChange?.(newTab);
+        onTabChange(newTab);
     };
 
     const containerClasses = clsx(

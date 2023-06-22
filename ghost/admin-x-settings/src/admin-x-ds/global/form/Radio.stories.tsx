@@ -1,7 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/react';
 
-import Radio from './Radio';
-import {RadioOption} from './Radio';
+import Radio, {RadioOption} from './Radio';
 
 const meta = {
     title: 'Global / Form / Radio',
@@ -44,7 +43,7 @@ export const WithTitleAndHint: Story = {
         title: 'Title',
         options: radioOptions,
         hint: 'Here\'s some hint',
-        defaultSelectedOption: 'option-1'
+        selectedOption: 'option-1'
     }
 };
 
@@ -52,7 +51,7 @@ export const OptionHints: Story = {
     args: {
         title: 'Title',
         options: radioOptionsWithHints,
-        defaultSelectedOption: 'option-1'
+        selectedOption: 'option-1'
     }
 };
 
@@ -60,7 +59,7 @@ export const WithSeparator: Story = {
     args: {
         title: 'Title',
         options: radioOptionsWithHints,
-        defaultSelectedOption: 'option-1',
+        selectedOption: 'option-1',
         separator: true
     }
 };

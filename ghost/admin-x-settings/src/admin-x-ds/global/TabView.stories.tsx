@@ -1,3 +1,4 @@
+import {useArgs} from '@storybook/preview-api';
 import type {Meta, StoryObj} from '@storybook/react';
 
 import TabView from './TabView';
@@ -5,6 +6,14 @@ import TabView from './TabView';
 const meta = {
     title: 'Global / Tab view',
     component: TabView,
+    render: function Component(args) {
+        const [, updateArgs] = useArgs();
+
+        return <TabView {...args} onTabChange={(tab) => {
+            updateArgs({selectedTab: tab});
+            args.onTabChange?.(tab);
+        }} />;
+    },
     tags: ['autodocs']
 } satisfies Meta<typeof TabView>;
 
@@ -19,14 +28,8 @@ const tabs = [
 
 export const Default: Story = {
     args: {
-        tabs: tabs
-    }
-};
-
-export const DefaultSelected: Story = {
-    args: {
         tabs: tabs,
-        defaultSelected: 'tab-2'
+        selectedTab: 'tab-2'
     }
 };
 

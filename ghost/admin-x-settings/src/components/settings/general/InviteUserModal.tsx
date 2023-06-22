@@ -140,9 +140,9 @@ const InviteUserModal = NiceModal.create(() => {
                 />
                 <div>
                     <Radio
-                        defaultSelectedOption={'contributor'}
                         id='role'
                         options={allowedRoleOptions}
+                        selectedOption={role}
                         separator={true}
                         title="Role"
                         onSelect={(value) => {

@@ -1,7 +1,7 @@
+import {useArgs} from '@storybook/preview-api';
 import type {Meta, StoryObj} from '@storybook/react';
 
-import Select from './Select';
-import {SelectOption} from './Select';
+import Select, {SelectOption} from './Select';
 
 const meta = {
     title: 'Global / Simple select',
@@ -61,11 +61,16 @@ export const WithHint: Story = {
     }
 };
 
-export const WithDefaultSelected: Story = {
+export const WithSelectedOption: Story = {
+    render: function Component(args) {
+        const [, updateArgs] = useArgs();
+
+        return <Select {...args} onSelect={value => updateArgs({selectedOption: value})} />;
+    },
     args: {
         title: 'Title',
         options: selectOptions,
-        defaultSelectedOption: 'option-3',
+        selectedOption: 'option-3',
         hint: 'Here\'s some hint'
     }
 };
