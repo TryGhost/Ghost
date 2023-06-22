@@ -35,7 +35,7 @@
 }
 
 .kg-width-full .kg-signup-card-text {
-    padding: 9.6vmax 7.2vmax;
+    padding: 9.6vmax 0;
 }
 
 .kg-layout-split .kg-signup-card-text {
@@ -322,9 +322,10 @@
     .kg-width-wide .kg-signup-card-text {
         padding: 6.4vmax 4vmax;
     }
-
-    .kg-width-full .kg-signup-card-text {
-        padding: 9.6vmax 4vmax;
+    
+    .kg-layout-split.kg-content-wide .kg-signup-card-text,
+    .kg-layout-split.kg-content-wide.kg-swapped .kg-signup-card-text {
+        padding: 9.6vmax 0;
     }
 
     .kg-signup-card.kg-width-full h3.kg-signup-card-subheading:not(.kg-layout-split h3.kg-signup-card-subheading) {
