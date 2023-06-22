@@ -1,6 +1,6 @@
 import CodeMirror from '@uiw/react-codemirror';
 import React from 'react';
-import {COMMAND_PRIORITY_LOW, UNDO_COMMAND} from 'lexical';
+import {COMMAND_PRIORITY_CRITICAL, COMMAND_PRIORITY_LOW, COPY_COMMAND, UNDO_COMMAND} from 'lexical';
 import {EditorView, keymap, lineNumbers} from '@codemirror/view';
 import {HighlightStyle, syntaxHighlighting} from '@codemirror/language';
 import {closeBrackets, closeBracketsKeymap} from '@codemirror/autocomplete';
@@ -22,6 +22,13 @@ export default function HtmlEditor({darkMode, html, updateHtml}) {
                     return true;
                 },
                 COMMAND_PRIORITY_LOW
+            ),
+            editor.registerCommand(
+                COPY_COMMAND, () => {
+                    // let the html editor handle copy command
+                    return true;
+                },
+                COMMAND_PRIORITY_CRITICAL // mobiledoc copy plugin uses HIGH and otherwise would intercept the copy
             )
         );
     }, [editor]);
