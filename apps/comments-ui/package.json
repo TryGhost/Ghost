@@ -75,5 +75,12 @@
     "vite-plugin-css-injected-by-js": "3.1.1",
     "vite-plugin-svgr": "3.2.0",
     "vitest": "0.32.2"
+  },
+  "resolutions": {
+    "@tiptap/extension-bubble-menu": "2.0.0-beta.61",
+    "@tiptap/extension-floating-menu": "2.0.0-beta.56",
+    "prosemirror-state": "1.4.1",
+    "prosemirror-model": "1.18.1",
+    "prosemirror-transform": "1.7.0"
   }
 }
