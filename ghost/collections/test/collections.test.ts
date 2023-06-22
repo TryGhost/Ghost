@@ -4,7 +4,8 @@ import DomainEvents from '@tryghost/domain-events';
 import {
     CollectionsService,
     CollectionsRepositoryInMemory,
-    CollectionResourceChangeEvent
+    CollectionResourceChangeEvent,
+    PostDeletedEvent
 } from '../src/index';
 import {PostsRepositoryInMemory} from './fixtures/PostsRepositoryInMemory';
 import {posts} from './fixtures/posts';
@@ -262,19 +263,21 @@ describe('CollectionsService', function () {
     });
 
     describe('subscribeToEvents', function () {
-        it('Subscribes to Domain Events', function () {
+        it('Subscribes to Domain Events', async function () {
             const updateCollectionsSpy = sinon.spy(collectionsService, 'updateCollections');
-            const collectionChangeEvent = CollectionResourceChangeEvent.create('post.added', {
-                id: 'test-id',
-                resource: 'post'
+            const collectionChangeEvent = CollectionResourceChangeEvent.create('tag.added', {
+                id: 'test-id'
             });
 
             DomainEvents.dispatch(collectionChangeEvent);
+            await DomainEvents.allSettled();
             assert.equal(updateCollectionsSpy.calledOnce, false, 'updateCollections should not be called yet');
 
             collectionsService.subscribeToEvents();
 
             DomainEvents.dispatch(collectionChangeEvent);
+            await DomainEvents.allSettled();
+
             assert.equal(updateCollectionsSpy.calledOnce, true, 'updateCollections should be called');
         });
     });
@@ -377,12 +380,13 @@ describe('CollectionsService', function () {
                 assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 2);
                 assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 2);
 
-                const updateCollectionEvent = CollectionResourceChangeEvent.create('post.deleted', {
-                    id: posts[0].id,
-                    resource: 'post'
+                collectionsService.subscribeToEvents();
+                const postDeletedEvent = PostDeletedEvent.create({
+                    id: posts[0].id
                 });
 
-                await collectionsService.updateCollections(updateCollectionEvent);
+                DomainEvents.dispatch(postDeletedEvent);
+                await DomainEvents.allSettled();
 
                 assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 2);
                 assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 1);
@@ -400,12 +404,13 @@ describe('CollectionsService', function () {
                 };
                 await postsRepository.save(newPost);
 
+                collectionsService.subscribeToEvents();
                 const updateCollectionEvent = CollectionResourceChangeEvent.create('post.published', {
-                    id: newPost.id,
-                    resource: 'post'
+                    id: newPost.id
                 });
 
-                await collectionsService.updateCollections(updateCollectionEvent);
+                DomainEvents.dispatch(updateCollectionEvent);
+                await DomainEvents.allSettled();
 
                 assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 3);
                 assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 2);
