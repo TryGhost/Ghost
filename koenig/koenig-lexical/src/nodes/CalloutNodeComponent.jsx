@@ -47,7 +47,6 @@ export function CalloutNodeComponent({nodeKey, textEditor, textEditorInitialStat
             setEmoji(event.native);
             node.setCalloutEmoji(event.native);
             toggleEmojiPicker();
-            setEditing(true);
         });
     };
 
