@@ -137,7 +137,15 @@ if (DASH_DASH_ARGS.includes('lexical')) {
     COMMAND_GHOST.env['editor__url'] = 'http://localhost:4173/koenig-lexical.umd.js';
 }
 
-if (DASH_DASH_ARGS.includes('comments')) {
+if (DASH_DASH_ARGS.includes('comments') || DASH_DASH_ARGS.includes('all')) {
+    commands.push({
+        name: 'comments',
+        command: 'yarn dev',
+        cwd: path.resolve(__dirname, '../apps/comments-ui'),
+        prefixColor: '#E55137',
+        env: {}
+    });
+
     COMMAND_GHOST.env['comments__url'] = 'http://localhost:7174/comments-ui.min.js';
 }
 

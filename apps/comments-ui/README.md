@@ -7,7 +7,6 @@ Comments widget that is embedded at the bottom of posts in Ghost.
 ### Pre-requisites
 
 - Run `yarn` in Ghost monorepo root
-- Run `yarn` in this directory
 
 ### Running via Ghost `yarn dev` in root folder
 
