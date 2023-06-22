@@ -90,7 +90,7 @@ export default class SourceAttributionChart extends Component {
     }
 
     get chartData() {
-        let borderColor = this.feature.nightShift ? '#101114' : '#fff';
+        let borderColor = this.feature.nightShift ? '#15171A' : '#fff';
 
         return {
             labels: this.allSources.map(source => source.source),
