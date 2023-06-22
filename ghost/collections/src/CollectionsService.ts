@@ -4,6 +4,8 @@ import {CollectionRepository} from './CollectionRepository';
 import tpl from '@tryghost/tpl';
 import {MethodNotAllowedError, NotFoundError} from '@tryghost/errors';
 import DomainEvents from '@tryghost/domain-events';
+import {PostDeletedEvent} from './events/PostDeletedEvent';
+import {PostAddedEvent} from './events/PostAddedEvent';
 
 const messages = {
     cannotDeleteBuiltInCollectionError: {
@@ -32,6 +34,7 @@ type CollectionPostListItemDTO = {
     title: string;
     featured: boolean;
     featured_image?: string;
+    published_at: Date
 }
 
 type ManualCollection = {
@@ -67,12 +70,6 @@ type CollectionDTO = {
     created_at: Date;
     updated_at: Date | null;
     posts: CollectionPostDTO[];
-};
-
-type CollectionPostInputDTO = {
-    id: string;
-    featured: boolean;
-    published_at: Date;
 };
 
 type QueryOptions = {
@@ -137,8 +134,18 @@ export class CollectionsService {
      * @description Subscribes to Domain events to update collections when posts are added, updated or deleted
      */
     subscribeToEvents() {
-        DomainEvents.subscribe(CollectionResourceChangeEvent, async (event: CollectionResourceChangeEvent) => {
-            await this.updateCollections(event);
+        // generic handler for all events that are not handled optimally yet
+        // this handler should go away once we have logic fo reach event
+        DomainEvents.subscribe(CollectionResourceChangeEvent, async () => {
+            await this.updateCollections();
+        });
+
+        DomainEvents.subscribe(PostDeletedEvent, async (event: PostDeletedEvent) => {
+            await this.removePostFromAllCollections(event.id);
+        });
+
+        DomainEvents.subscribe(PostAddedEvent, async (event: PostAddedEvent) => {
+            await this.addPostToMatchingCollections(event.data);
         });
     }
 
@@ -168,7 +175,7 @@ export class CollectionsService {
         return this.toDTO(collection);
     }
 
-    async addPostToCollection(collectionId: string, post: CollectionPostInputDTO): Promise<CollectionDTO | null> {
+    async addPostToCollection(collectionId: string, post: CollectionPostListItemDTO): Promise<CollectionDTO | null> {
         const collection = await this.collectionsRepository.getById(collectionId);
 
         if (!collection) {
@@ -208,19 +215,32 @@ export class CollectionsService {
         }
     }
 
-    async updateCollections(event: CollectionResourceChangeEvent) {
-        if (event.name === 'post.deleted') {
-            // NOTE: 'delete' works the same for both manual and automatic collections
-            await this.removePostFromAllCollections(event.data.id);
-        } else {
-            const collections = await this.collectionsRepository.getAll({
-                filter: 'type:automatic'
-            });
+    private async addPostToMatchingCollections(post: {id: string, featured: boolean, published_at: Date}) {
+        const collections = await this.collectionsRepository.getAll({
+            filter: 'type:automatic'
+        });
 
-            for (const collection of collections) {
-                await this.updateAutomaticCollectionItems(collection);
-                await this.collectionsRepository.save(collection);
-            }
+        for (const collection of collections) {
+            await collection.addPost(post);
+            // const added = await collection.addPost(post);
+            // if (added) {
+            await this.collectionsRepository.save(collection);
+            // }
+        }
+    }
+
+    /**
+     * @description Updates all automatic collections. Can be time intensive and is a temporary solution
+     * while all of the events are mapped out and handled optimally
+     */
+    async updateCollections() {
+        const collections = await this.collectionsRepository.getAll({
+            filter: 'type:automatic'
+        });
+
+        for (const collection of collections) {
+            await this.updateAutomaticCollectionItems(collection);
+            await this.collectionsRepository.save(collection);
         }
     }
 
