@@ -1,7 +1,7 @@
+import {useArgs} from '@storybook/preview-api';
 import type {Meta, StoryObj} from '@storybook/react';
 
-import MultiSelect, {MultiSelectOption} from './MultiSelect';
-import {MultiValue} from 'react-select';
+import MultiSelect from './MultiSelect';
 
 const meta = {
     title: 'Global / Form / Multiselect',
@@ -56,17 +56,17 @@ export const WithTitleAndHint: Story = {
     }
 };
 
-export const WithDefaultValue: Story = {
+export const WithValues: Story = {
+    render: function Component(args) {
+        const [, updateArgs] = useArgs();
+
+        return <MultiSelect {...args} onChange={values => updateArgs({values})} />;
+    },
     args: {
         title: 'Choose your players',
         options: options,
         color: 'black',
         hint: 'I knew you\'d choose all',
-        values: [options[0]],
-        onChange: (selected: MultiValue<MultiSelectOption>) => {
-            selected?.map(o => (
-                alert(`${o.label} (${o.value})`)
-            ));
-        }
+        values: [options[0]]
     }
 };
