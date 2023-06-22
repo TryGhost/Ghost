@@ -130,6 +130,22 @@ describe('Posts Service', function () {
             assert.equal(copiedPostData.slug, undefined);
         });
 
+        it('omits unnecessary data from a copied newsletter', async function () {
+            existingPostModel.attributes = {
+                id: POST_ID,
+                title: 'Test Post',
+                slug: 'test-post',
+                status: 'sent',
+                newsletter_id: 'abc123'
+            };
+
+            await makePostService().copyPost(frame);
+
+            const copiedPostData = postModelStub.add.getCall(0).args[0];
+
+            assert.equal(copiedPostData.newsletter_id, undefined);
+        });
+
         it('updates the title of the copied post', async function () {
             await makePostService().copyPost(frame);
 
@@ -217,7 +233,9 @@ describe('Posts Service', function () {
                 attributes: {
                     post_id: POST_ID,
                     meta_title: 'Test Post',
-                    meta_description: 'Test Post Description'
+                    meta_description: 'Test Post Description',
+                    email_only: 1,
+                    email_subject: 'Test Email Subject'
                 },
                 isNew: () => false
             };

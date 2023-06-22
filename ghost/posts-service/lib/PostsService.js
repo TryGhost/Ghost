@@ -526,7 +526,8 @@ class PostsService {
                 'published_at',
                 'published_by',
                 'canonical_url',
-                'count__clicks'
+                'count__clicks',
+                'newsletter_id'
             ]
         );
 
@@ -544,7 +545,9 @@ class PostsService {
                 existingPostMeta.attributes,
                 [
                     'id',
-                    'post_id'
+                    'post_id',
+                    'email_only',
+                    'email_subject'
                 ]
             );
         }
