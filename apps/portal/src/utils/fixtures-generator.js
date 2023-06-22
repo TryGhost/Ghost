@@ -189,7 +189,8 @@ export function getProductData({
     id = `product_${objectId()}`,
     monthlyPrice = getPriceData(),
     yearlyPrice = getPriceData({interval: 'year'}),
-    numOfBenefits = 2
+    numOfBenefits = 2,
+    trialDays = null
 }) {
     return {
         id: id,
@@ -198,7 +199,8 @@ export function getProductData({
         monthlyPrice: type === 'free' ? null : monthlyPrice,
         yearlyPrice: type === 'free' ? null : yearlyPrice,
         type: type,
-        benefits: getBenefits({numOfBenefits})
+        benefits: getBenefits({numOfBenefits}),
+        trial_days: trialDays
     };
 }
 

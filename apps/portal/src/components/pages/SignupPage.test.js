@@ -1,5 +1,6 @@
 import React from 'react';
 import SignupPage from './SignupPage';
+import {getFreeProduct, getProductData, getSiteData} from '../../utils/fixtures-generator';
 import {render, fireEvent} from '../../utils/test-utils';
 
 const setup = (overrides) => {
@@ -7,7 +8,8 @@ const setup = (overrides) => {
         <SignupPage />,
         {
             overrideContext: {
-                member: null
+                member: null,
+                ...overrides
             }
         }
     );
@@ -16,12 +18,14 @@ const setup = (overrides) => {
     const submitButton = utils.queryByRole('button', {name: 'Continue'});
     const chooseButton = utils.queryAllByRole('button', {name: 'Choose'});
     const signinButton = utils.queryByRole('button', {name: 'Sign in'});
+    const freeTrialMessage = utils.queryByText(/After a free trial ends/i);
     return {
         nameInput,
         emailInput,
         submitButton,
         chooseButton,
         signinButton,
+        freeTrialMessage,
         mockOnActionFn,
         ...utils
     };
@@ -58,5 +62,32 @@ describe('SignupPage', () => {
 
         fireEvent.click(signinButton);
         expect(mockOnActionFn).toHaveBeenCalledWith('switchPage', {page: 'signin'});
+    });
+
+    test('renders free trial message', () => {
+        const {freeTrialMessage} = setup({
+            site: getSiteData({
+                products: [
+                    getProductData({trialDays: 7}),
+                    getFreeProduct({})
+                ]
+            })
+        });
+
+        expect(freeTrialMessage).toBeInTheDocument();
+    });
+
+    test('does not render free trial message on free signup', () => {
+        const {freeTrialMessage} = setup({
+            site: getSiteData({
+                products: [
+                    getProductData({trialDays: 7}),
+                    getFreeProduct({})
+                ]
+            }),
+            pageQuery: 'free'
+        });
+
+        expect(freeTrialMessage).not.toBeInTheDocument();
     });
 });

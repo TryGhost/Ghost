@@ -606,8 +606,8 @@ class SignupPage extends React.Component {
     }
 
     renderFreeTrialMessage() {
-        const {site, t} = this.context;
-        if (hasFreeTrialTier({site}) && !isInviteOnlySite({site})) {
+        const {site, t, pageQuery} = this.context;
+        if (hasFreeTrialTier({site, pageQuery}) && !isInviteOnlySite({site})) {
             return (
                 <p className='gh-portal-free-trial-notification' data-testid="free-trial-notification-text">
                     {t('After a free trial ends, you will be charged the regular price for the tier you\'ve chosen. You can always cancel before then.')}
