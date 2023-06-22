@@ -1,5 +1,5 @@
-import React, {useContext} from 'react';
 import AppContext from '../../../AppContext';
+import React, {useContext} from 'react';
 
 const AuthorContextMenu = ({comment, close, toggleEdit}) => {
     const {dispatchAction} = useContext(AppContext);
@@ -11,10 +11,10 @@ const AuthorContextMenu = ({comment, close, toggleEdit}) => {
 
     return (
         <div className="flex flex-col">
-            <button type="button" className="mb-3 w-full text-left text-[14px]" onClick={toggleEdit} data-testid="edit">
+            <button className="mb-3 w-full text-left text-[14px]" data-testid="edit" type="button" onClick={toggleEdit}>
                 Edit
             </button>
-            <button type="button" className="w-full text-left text-[14px] text-red-600" onClick={deleteComment}>
+            <button className="w-full text-left text-[14px] text-red-600" type="button" onClick={deleteComment}>
                 Delete
             </button>
         </div>

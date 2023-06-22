@@ -1,5 +1,5 @@
-import React, {useContext} from 'react';
 import AppContext from '../../../AppContext';
+import React, {useContext} from 'react';
 
 const AdminContextMenu = ({comment, close}) => {
     const {dispatchAction} = useContext(AppContext);
@@ -20,11 +20,11 @@ const AdminContextMenu = ({comment, close}) => {
         <div className="flex flex-col">
             {
                 isHidden ? 
-                    <button type="button" className="w-full text-left text-[14px]" onClick={showComment}>
+                    <button className="w-full text-left text-[14px]" type="button" onClick={showComment}>
                         <span>Show </span><span className="hidden sm:inline">comment</span>
                     </button> 
                     : 
-                    <button type="button" className="w-full text-left text-[14px]" onClick={hideComment}>
+                    <button className="w-full text-left text-[14px]" type="button" onClick={hideComment}>
                         <span>Hide </span><span className="hidden sm:inline">comment</span>
                     </button>
             }

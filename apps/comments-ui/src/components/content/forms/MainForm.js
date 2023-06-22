@@ -1,9 +1,9 @@
-import {useEditor} from '@tiptap/react';
-import React, {useCallback, useContext, useEffect, useRef} from 'react';
 import AppContext from '../../../AppContext';
+import Form from './Form';
+import React, {useCallback, useContext, useEffect, useRef} from 'react';
 import {getEditorConfig} from '../../../utils/editor';
 import {scrollToElement} from '../../../utils/helpers';
-import Form from './Form';
+import {useEditor} from '@tiptap/react';
 
 const MainForm = ({commentsCount}) => {
     const {postId, dispatchAction} = useContext(AppContext);
@@ -33,7 +33,7 @@ const MainForm = ({commentsCount}) => {
         if (!editor) {
             return;
         }
-        
+
         // Add some basic keyboard shortcuts
         // ESC to blur the editor
         const keyDownListener = (event) => {
@@ -91,8 +91,8 @@ const MainForm = ({commentsCount}) => {
     const isOpen = editor?.isFocused ?? false;
 
     return (
-        <div className='-mt-[4px]' ref={formEl} data-testid="main-form">
-            <Form editor={editor} reduced={false} isOpen={isOpen} {...submitProps} />
+        <div ref={formEl} className='mt-[-4px]' data-testid="main-form">
+            <Form editor={editor} isOpen={isOpen} reduced={false} {...submitProps} />
         </div>
     );
 };

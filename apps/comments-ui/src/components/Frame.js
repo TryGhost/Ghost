@@ -1,5 +1,5 @@
-import React, {useCallback, useState} from 'react';
 import IFrame from './IFrame';
+import React, {useCallback, useState} from 'react';
 import styles from '../styles/iframe.css?inline';
 
 /**
@@ -9,13 +9,13 @@ const TailwindFrame = ({children, onResize, style, title}) => {
     const head = (
         <>
             <style dangerouslySetInnerHTML={{__html: styles}} />
-            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+            <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0" name="viewport" />
         </>
     );
 
     // For now we're using <NewFrame> because using a functional component with portal caused some weird issues with modals
     return (
-        <IFrame head={head} style={style} onResize={onResize} title={title}>
+        <IFrame head={head} style={style} title={title} onResize={onResize}>
             {children}
         </IFrame>
     );
@@ -36,7 +36,7 @@ const ResizableFrame = ({children, style, title}) => {
     }, []);
 
     return (
-        <TailwindFrame style={iframeStyle} onResize={onResize} title={title}>
+        <TailwindFrame style={iframeStyle} title={title} onResize={onResize}>
             {children}
         </TailwindFrame>
     );

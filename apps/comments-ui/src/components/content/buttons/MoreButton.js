@@ -1,6 +1,6 @@
-import React, {useContext, useState} from 'react';
-import CommentContextMenu from '../context-menus/CommentContextMenu';
 import AppContext from '../../../AppContext';
+import CommentContextMenu from '../context-menus/CommentContextMenu';
+import React, {useContext, useState} from 'react';
 import {ReactComponent as MoreIcon} from '../../../images/icons/more.svg';
 
 const MoreButton = ({comment, toggleEdit}) => {
@@ -27,8 +27,8 @@ const MoreButton = ({comment, toggleEdit}) => {
 
     return (
         <div className="relative" data-testid="more-button">
-            {show ? <button type="button" onClick={toggleContextMenu} className="outline-0"><MoreIcon className='duration-50 gh-comments-icon gh-comments-icon-more fill-[rgba(0,0,0,0.5)] outline-0 transition ease-linear hover:fill-[rgba(0,0,0,0.75)] dark:fill-[rgba(255,255,255,0.5)] dark:hover:fill-[rgba(255,255,255,0.25)]' /></button> : null}
-            {isContextMenuOpen ? <CommentContextMenu comment={comment} close={closeContextMenu} toggleEdit={toggleEdit} /> : null}
+            {show ? <button className="outline-0" type="button" onClick={toggleContextMenu}><MoreIcon className='duration-50 gh-comments-icon gh-comments-icon-more fill-[rgba(0,0,0,0.5)] outline-0 transition ease-linear hover:fill-[rgba(0,0,0,0.75)] dark:fill-[rgba(255,255,255,0.5)] dark:hover:fill-[rgba(255,255,255,0.25)]' /></button> : null}
+            {isContextMenuOpen ? <CommentContextMenu close={closeContextMenu} comment={comment} toggleEdit={toggleEdit} /> : null}
         </div>
     );
 };

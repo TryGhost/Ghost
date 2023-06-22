@@ -1,10 +1,10 @@
-import {Transition} from '@headlessui/react';
-import {EditorContent} from '@tiptap/react';
-import React, {useCallback, useContext, useEffect, useRef, useState} from 'react';
 import AppContext from '../../../AppContext';
-import {ReactComponent as EditIcon} from '../../../images/icons/edit.svg';
-import {ReactComponent as SpinnerIcon} from '../../../images/icons/spinner.svg';
+import React, {useCallback, useContext, useEffect, useRef, useState} from 'react';
 import {Avatar} from '../Avatar';
+import {ReactComponent as EditIcon} from '../../../images/icons/edit.svg';
+import {EditorContent} from '@tiptap/react';
+import {ReactComponent as SpinnerIcon} from '../../../images/icons/spinner.svg';
+import {Transition} from '@headlessui/react';
 import {usePopupOpen} from '../../../utils/hooks';
 
 const FormEditor = ({submit, progress, setProgress, close, reduced, isOpen, editor, submitText, submitSize}) => {
@@ -90,21 +90,21 @@ const FormEditor = ({submit, progress, setProgress, close, reduced, isOpen, edit
     return (
         <div className={`relative w-full pl-[52px] transition-[padding] delay-100 duration-150 ${reduced && 'pl-0'} ${isOpen && 'pl-[1px] pt-[64px] sm:pl-[52px]'}`}>
             <div
-                className={`w-full rounded-md border border-none border-slate-50 bg-[rgba(255,255,255,0.9)] px-3 py-4 font-sans text-[16.5px] leading-normal shadow-form transition-all delay-100 duration-150 hover:shadow-formxl focus:outline-0 dark:border-none dark:bg-[rgba(255,255,255,0.08)] dark:text-neutral-300 dark:shadow-transparent ${isOpen ? 'min-h-[144px] cursor-text pb-[68px] pt-2' : 'min-h-[48px] cursor-pointer overflow-hidden hover:border-slate-300'}
+                className={`shadow-form hover:shadow-formxl w-full rounded-md border border-none border-slate-50 bg-[rgba(255,255,255,0.9)] px-3 py-4 font-sans text-[16.5px] leading-normal transition-all delay-100 duration-150 focus:outline-0 dark:border-none dark:bg-[rgba(255,255,255,0.08)] dark:text-neutral-300 dark:shadow-transparent ${isOpen ? 'min-h-[144px] cursor-text pb-[68px] pt-2' : 'min-h-[48px] cursor-pointer overflow-hidden hover:border-slate-300'}
             `}>
                 <EditorContent
-                    onMouseDown={stopIfFocused} onTouchStart={stopIfFocused}
-                    editor={editor}
+                    editor={editor} onMouseDown={stopIfFocused}
+                    onTouchStart={stopIfFocused}
                 />
             </div>
             <div className="absolute bottom-[9px] right-[9px] flex space-x-4 transition-[opacity] duration-150">
                 {close &&
-                    <button type="button" onClick={close} className="ml-2.5 font-sans text-sm font-medium text-neutral-500 outline-0 dark:text-neutral-400">Cancel</button>
+                    <button className="ml-2.5 font-sans text-sm font-medium text-neutral-500 outline-0 dark:text-neutral-400" type="button" onClick={close}>Cancel</button>
                 }
                 <button
                     className={`flex w-auto items-center justify-center sm:w-[128px] ${submitSize === 'medium' && 'sm:w-[100px]'} ${submitSize === 'small' && 'sm:w-[64px]'} h-[39px] rounded-[6px] border bg-neutral-900 px-3 py-2 text-center font-sans text-sm font-semibold text-white outline-0 transition-[opacity] duration-150 dark:bg-[rgba(255,255,255,0.9)] dark:text-neutral-800`}
-                    type="button"
                     data-testid="submit-form-button"
+                    type="button"
                     onClick={submitForm}
                 >
                     <span>{buttonIcon}</span>
@@ -118,29 +118,29 @@ const FormEditor = ({submit, progress, setProgress, close, reduced, isOpen, edit
 const FormHeader = ({show, name, expertise, editName, editExpertise}) => {
     return (
         <Transition
-            show={show}
             enter="transition duration-500 delay-100 ease-in-out"
             enterFrom="opacity-0 -translate-x-2"
             enterTo="opacity-100 translate-x-0"
             leave="transition-none duration-0"
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
+            show={show}
         >
             <div
                 className="font-sans text-[17px] font-bold tracking-tight text-[rgb(23,23,23)] dark:text-[rgba(255,255,255,0.85)]"
-                onClick={editName}
                 data-testid="member-name"
+                onClick={editName}
             >
                 {name ? name : 'Anonymous'}
             </div>
             <div className="flex items-baseline justify-start">
                 <button
-                    type="button"
                     className={`group flex max-w-[80%] items-center justify-start whitespace-nowrap text-left font-sans text-[14px] tracking-tight text-[rgba(0,0,0,0.5)] transition duration-150 hover:text-[rgba(0,0,0,0.75)] dark:text-[rgba(255,255,255,0.5)] dark:hover:text-[rgba(255,255,255,0.4)] sm:max-w-[90%] ${!expertise && 'text-[rgba(0,0,0,0.3)] hover:text-[rgba(0,0,0,0.5)] dark:text-[rgba(255,255,255,0.3)]'}`}
+                    type="button"
                     onClick={editExpertise}
                 >
                     <span className="... overflow-hidden text-ellipsis">{expertise ? expertise : 'Add your expertise'}</span>
-                    {expertise && <EditIcon className="ml-1 h-[12px] w-[12px] -translate-x-[6px] stroke-[rgba(0,0,0,0.5)] opacity-0 transition-all duration-100 ease-out group-hover:translate-x-0 group-hover:stroke-[rgba(0,0,0,0.75)] group-hover:opacity-100 dark:stroke-[rgba(255,255,255,0.5)] dark:group-hover:stroke-[rgba(255,255,255,0.3)]" />}
+                    {expertise && <EditIcon className="ml-1 h-[12px] w-[12px] translate-x-[-6px] stroke-[rgba(0,0,0,0.5)] opacity-0 transition-all duration-100 ease-out group-hover:translate-x-0 group-hover:stroke-[rgba(0,0,0,0.75)] group-hover:opacity-100 dark:stroke-[rgba(255,255,255,0.5)] dark:group-hover:stroke-[rgba(255,255,255,0.3)]" />}
                 </button>
             </div>
         </Transition>
@@ -224,18 +224,17 @@ const Form = ({comment, submit, submitText, submitSize, close, editor, reduced, 
     }, [editor, memberName, progress]);
 
     return (
-        <form ref={formEl} data-testid="form" onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused} className={`-mx-3 -mt-[10px] mb-10 rounded-md px-3 pb-2 pt-3 transition duration-200 ${isOpen ? 'cursor-default' : 'cursor-pointer'} ${reduced && 'pl-1'}
-        `}>
+        <form ref={formEl} className={`-mx-3 mb-10 mt-[-10px] rounded-md px-3 pb-2 pt-3 transition duration-200 ${isOpen ? 'cursor-default' : 'cursor-pointer'} ${reduced && 'pl-1'}`} data-testid="form" onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused}>
             <div className="relative w-full">
                 <div className="pr-[1px] font-sans leading-normal dark:text-neutral-300">
-                    <FormEditor close={close} reduced={reduced} isOpen={isOpen} editor={editor} submitText={submitText} submitSize={submitSize} submit={submit} setProgress={setProgress} progress={progress} />
+                    <FormEditor close={close} editor={editor} isOpen={isOpen} progress={progress} reduced={reduced} setProgress={setProgress} submit={submit} submitSize={submitSize} submitText={submitText} />
                 </div>
                 <div className='absolute left-0 top-1 flex h-12 w-full items-center justify-start'>
                     <div className="mr-3 grow-0">
-                        <Avatar comment={comment} className="pointer-events-none" />
+                        <Avatar className="pointer-events-none" comment={comment} />
                     </div>
                     <div className="grow-1 w-full">
-                        <FormHeader show={isOpen} name={memberName} expertise={memberExpertise} editExpertise={editExpertise} editName={editName} />
+                        <FormHeader editExpertise={editExpertise} editName={editName} expertise={memberExpertise} name={memberName} show={isOpen} />
                     </div>
                 </div>
             </div>

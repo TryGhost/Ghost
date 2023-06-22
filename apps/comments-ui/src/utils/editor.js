@@ -1,10 +1,10 @@
-import Placeholder from '@tiptap/extension-placeholder';
-import Text from '@tiptap/extension-text';
+import Blockquote from '@tiptap/extension-blockquote';
+import Document from '@tiptap/extension-document';
+import HardBreak from '@tiptap/extension-hard-break';
 import Link from '@tiptap/extension-link';
 import Paragraph from '@tiptap/extension-paragraph';
-import Document from '@tiptap/extension-document';
-import Blockquote from '@tiptap/extension-blockquote';
-import HardBreak from '@tiptap/extension-hard-break';
+import Placeholder from '@tiptap/extension-placeholder';
+import Text from '@tiptap/extension-text';
 
 export function getEditorConfig({placeholder, autofocus = false, content = ''}) {
     return {

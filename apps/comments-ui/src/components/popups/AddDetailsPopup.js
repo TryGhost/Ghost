@@ -1,7 +1,7 @@
-import React, {useContext, useState, useRef, useEffect} from 'react';
-import {Transition} from '@headlessui/react';
-import CloseButton from './CloseButton';
 import AppContext from '../../AppContext';
+import CloseButton from './CloseButton';
+import React, {useContext, useEffect, useRef, useState} from 'react';
+import {Transition} from '@headlessui/react';
 import {isMobile} from '../../utils/helpers';
 
 const AddDetailsPopup = (props) => {
@@ -52,7 +52,7 @@ const AddDetailsPopup = (props) => {
                     inputExpertiseRef.current?.focus();
                 } else {
                     inputNameRef.current?.focus();
-                }  
+                }
             }, 200);
 
             return () => {
@@ -65,19 +65,19 @@ const AddDetailsPopup = (props) => {
         const renderEl = (profile) => {
             return (
                 <Transition
-                    appear
+                    key={profile.name}
                     enter={`transition duration-200 delay-[400ms] ease-out`}
                     enterFrom="opacity-0 translate-y-2"
                     enterTo="opacity-100 translate-y-0"
                     leave="transition duration-200 ease-in"
                     leaveFrom="opacity-100 translate-y-0"
                     leaveTo="opacity-0 translate-y-2"
-                    key={profile.name}
+                    appear
                 >
                     <div className="flex flex-row items-center justify-start gap-3 pr-4">
                         <div className="h-10 w-10 rounded-full border-2 border-white bg-cover bg-no-repeat" style={{backgroundImage: `url(${profile.avatar})`}} />
                         <div className="flex flex-col items-start justify-center">
-                            <div className="text-base font-sans font-semibold tracking-tight text-white">
+                            <div className="font-sans text-base font-semibold tracking-tight text-white">
                                 {profile.name}
                             </div>
                             <div className="font-sans text-[14px] tracking-tight text-neutral-400">
@@ -85,7 +85,7 @@ const AddDetailsPopup = (props) => {
                             </div>
                         </div>
                     </div>
-                </Transition> 
+                </Transition>
             );
         };
 
@@ -107,41 +107,42 @@ const AddDetailsPopup = (props) => {
     };
 
     return (
-        <div className="rounded-none relative h-screen w-screen overflow-hidden bg-white p-[28px] text-center shadow-modal sm:h-auto sm:w-[720px] sm:rounded-xl sm:p-0" onMouseDown={stopPropagation}>
+        <div className="shadow-modal relative h-screen w-screen overflow-hidden rounded-none bg-white p-[28px] text-center sm:h-auto sm:w-[720px] sm:rounded-xl sm:p-0" onMouseDown={stopPropagation}>
             <div className="flex">
                 {!isMobile() &&
                     <div className={`flex w-[40%] flex-col items-center justify-center bg-[#1C1C1C]`}>
-                        <div className="-mt-[1px] flex flex-col gap-9">
+                        <div className="mt-[-1px] flex flex-col gap-9">
                             {renderExampleProfiles()}
                         </div>
                     </div>
                 }
                 <div className={`${isMobile() ? 'w-full' : 'w-[60%]'} p-0 sm:p-8`}>
                     <h1 className="mb-1 text-center font-sans text-[24px] font-bold tracking-tight text-black sm:text-left">Complete your profile<span className="hidden sm:inline">.</span></h1>
-                    <p className="text-base pr-0 text-center font-sans leading-9 text-neutral-500 sm:pr-10 sm:text-left">Add context to your comment, share your name and expertise to foster a healthy discussion.</p>
+                    <p className="pr-0 text-center font-sans text-base leading-9 text-neutral-500 sm:pr-10 sm:text-left">Add context to your comment, share your name and expertise to foster a healthy discussion.</p>
                     <section className="mt-8 text-left">
                         <div className="mb-2 flex flex-row justify-between">
-                            <label htmlFor="comments-name" className="font-sans text-[1.3rem] font-semibold">Name</label>
+                            <label className="font-sans text-[1.3rem] font-semibold" htmlFor="comments-name">Name</label>
                             <Transition
-                                show={!!error.name}
                                 enter="transition duration-300 ease-out"
                                 enterFrom="opacity-0"
                                 enterTo="opacity-100"
                                 leave="transition duration-100 ease-out"
                                 leaveFrom="opacity-100"
                                 leaveTo="opacity-0"
+                                show={!!error.name}
                             >
                                 <div className="font-sans text-sm text-red-500">{error.name}</div>
                             </Transition>
                         </div>
                         <input
-                            id="comments-name"
-                            className={`flex h-[42px] w-full items-center rounded border border-neutral-200 px-3 font-sans text-[16px] outline-0 transition-[border-color] duration-200 focus:border-neutral-300 ${error.name && 'border-red-500 focus:border-red-500'}`}
-                            type="text"
-                            name="name"
                             ref={inputNameRef}
-                            value={name}
+                            className={`flex h-[42px] w-full items-center rounded border border-neutral-200 px-3 font-sans text-[16px] outline-0 transition-[border-color] duration-200 focus:border-neutral-300 ${error.name && 'border-red-500 focus:border-red-500'}`}
+                            id="comments-name"
+                            maxLength="64"
+                            name="name"
                             placeholder="Jamie Larson"
+                            type="text"
+                            value={name}
                             onChange={(e) => {
                                 setName(e.target.value);
                             }}
@@ -151,20 +152,20 @@ const AddDetailsPopup = (props) => {
                                     submit();
                                 }
                             }}
-                            maxLength="64"
                         />
                         <div className="mb-2 mt-6 flex flex-row justify-between">
-                            <label htmlFor="comments-name" className="font-sans text-[1.3rem] font-semibold">Expertise</label>
+                            <label className="font-sans text-[1.3rem] font-semibold" htmlFor="comments-name">Expertise</label>
                             <div className={`font-sans text-[1.3rem] text-neutral-400 ${(expertiseCharsLeft === 0) && 'text-red-500'}`}><b>{expertiseCharsLeft}</b> characters left</div>
                         </div>
                         <input
-                            id="comments-expertise"
-                            className={`flex h-[42px] w-full items-center rounded border border-neutral-200 px-3 font-sans text-[16px] outline-0 transition-[border-color] duration-200 focus:border-neutral-300 ${(expertiseCharsLeft === 0) && 'border-red-500 focus:border-red-500'}`}
-                            type="text"
-                            name="expertise"
                             ref={inputExpertiseRef}
-                            value={expertise}
+                            className={`flex h-[42px] w-full items-center rounded border border-neutral-200 px-3 font-sans text-[16px] outline-0 transition-[border-color] duration-200 focus:border-neutral-300 ${(expertiseCharsLeft === 0) && 'border-red-500 focus:border-red-500'}`}
+                            id="comments-expertise"
+                            maxLength={maxExpertiseChars}
+                            name="expertise"
                             placeholder="Head of Marketing at Acme, Inc"
+                            type="text"
+                            value={expertise}
                             onChange={(e) => {
                                 let expertiseText = e.target.value;
                                 setExpertiseCharsLeft(maxExpertiseChars - expertiseText.length);
@@ -176,12 +177,11 @@ const AddDetailsPopup = (props) => {
                                     submit();
                                 }
                             }}
-                            maxLength={maxExpertiseChars}
                         />
                         <button
-                            type="button"
                             className={`mt-10 flex h-[42px] w-full items-center justify-center rounded-md px-8 font-sans text-[15px] font-semibold text-white opacity-100 transition-opacity duration-200 ease-linear hover:opacity-90`}
                             style={{backgroundColor: accentColor ?? '#000000'}}
+                            type="button"
                             onClick={submit}
                         >
                             Save

@@ -1,8 +1,8 @@
-import React, {useContext, useEffect, useRef} from 'react';
-import AppContext from '../../../AppContext';
 import AdminContextMenu from './AdminContextMenu';
+import AppContext from '../../../AppContext';
 import AuthorContextMenu from './AuthorContextMenu';
 import NotAuthorContextMenu from './NotAuthorContextMenu';
+import React, {useContext, useEffect, useRef} from 'react';
 
 const CommentContextMenu = ({comment, close, toggleEdit}) => {
     const {member, admin} = useContext(AppContext);
@@ -54,17 +54,17 @@ const CommentContextMenu = ({comment, close, toggleEdit}) => {
     let contextMenu = null;
     if (comment.status === 'published') {
         if (isAuthor) {
-            contextMenu = <AuthorContextMenu comment={comment} close={close} toggleEdit={toggleEdit} />;
+            contextMenu = <AuthorContextMenu close={close} comment={comment} toggleEdit={toggleEdit} />;
         } else {
             if (isAdmin) {
-                contextMenu = <AdminContextMenu comment={comment} close={close}/>;
+                contextMenu = <AdminContextMenu close={close} comment={comment}/>;
             } else {
-                contextMenu = <NotAuthorContextMenu comment={comment} close={close}/>;
+                contextMenu = <NotAuthorContextMenu close={close} comment={comment}/>;
             }
         }
     } else {
         if (isAdmin) {
-            contextMenu = <AdminContextMenu comment={comment} close={close}/>;
+            contextMenu = <AdminContextMenu close={close} comment={comment}/>;
         } else {
             return null;
         }

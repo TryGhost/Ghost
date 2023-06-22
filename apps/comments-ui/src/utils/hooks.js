@@ -1,6 +1,6 @@
-import {useCallback, useEffect, useRef, useContext, useMemo} from 'react';
 import AppContext from '../AppContext';
 import {formatRelativeTime} from './helpers';
+import {useCallback, useContext, useEffect, useMemo, useRef} from 'react';
 
 /**
  * Execute a callback when a ref is set and unset.

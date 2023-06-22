@@ -1,12 +1,12 @@
-import {CommentsFrame} from './components/Frame';
-import React from 'react';
-import {isSyncAction, ActionHandler, SyncActionHandler} from './actions';
-import {createPopupNotification} from './utils/helpers';
 import AppContext from './AppContext';
-import {hasMode} from './utils/check-mode';
-import setupGhostApi from './utils/api';
 import ContentBox from './components/ContentBox';
 import PopupBox from './components/PopupBox';
+import React from 'react';
+import setupGhostApi from './utils/api';
+import {ActionHandler, SyncActionHandler, isSyncAction} from './actions';
+import {CommentsFrame} from './components/Frame';
+import {createPopupNotification} from './utils/helpers';
+import {hasMode} from './utils/check-mode';
 
 function AuthFrame({adminUrl, onLoad}) {
     if (!adminUrl) {

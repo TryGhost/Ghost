@@ -1,27 +1,27 @@
-import React, {useContext, useState} from 'react';
-import {Transition} from '@headlessui/react';
-import {BlankAvatar, Avatar} from './Avatar';
-import LikeButton from './buttons/LikeButton';
-import ReplyButton from './buttons/ReplyButton';
-import MoreButton from './buttons/MoreButton';
-import Replies from './Replies';
 import AppContext from '../../AppContext';
+import EditForm from './forms/EditForm';
+import LikeButton from './buttons/LikeButton';
+import MoreButton from './buttons/MoreButton';
+import React, {useContext, useState} from 'react';
+import Replies from './Replies';
+import ReplyButton from './buttons/ReplyButton';
+import ReplyForm from './forms/ReplyForm';
+import {Avatar, BlankAvatar} from './Avatar';
+import {Transition} from '@headlessui/react';
 import {formatExplicitTime, isCommentPublished} from '../../utils/helpers';
 import {useRelativeTime} from '../../utils/hooks';
-import ReplyForm from './forms/ReplyForm';
-import EditForm from './forms/EditForm';
 
 function AnimatedComment({comment, parent}) {
     return (
         <Transition
-            appear
-            show={true}
             enter="transition-opacity duration-300 ease-out"
             enterFrom="opacity-0"
             enterTo="opacity-100"
             leave="transition-opacity duration-100"
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
+            show={true}
+            appear
         >
             <EditableComment comment={comment} parent={parent} />
         </Transition>
@@ -41,7 +41,7 @@ function EditableComment({comment, parent}) {
 
     if (isInEditMode) {
         return (
-            <EditForm comment={comment} close={closeEditMode} parent={parent} />
+            <EditForm close={closeEditMode} comment={comment} parent={parent} />
         );
     } else {
         return (<Comment comment={comment} openEditMode={openEditMode} parent={parent} />);
@@ -52,7 +52,7 @@ function Comment({comment, parent, openEditMode}) {
     const isPublished = isCommentPublished(comment);
 
     if (isPublished) {
-        return (<PublishedComment comment={comment} parent={parent} openEditMode={openEditMode} />);
+        return (<PublishedComment comment={comment} openEditMode={openEditMode} parent={parent} />);
     }
     return (<UnpublishedComment comment={comment} openEditMode={openEditMode} />);
 }
@@ -77,13 +77,13 @@ function PublishedComment({comment, parent, openEditMode}) {
     const avatar = (<Avatar comment={comment} />);
 
     return (
-        <CommentLayout hasReplies={hasReplies} avatar={avatar}>
+        <CommentLayout avatar={avatar} hasReplies={hasReplies}>
             <CommentHeader comment={comment} />
             <CommentBody html={comment.html} />
-            <CommentMenu comment={comment} parent={parent} isInReplyMode={isInReplyMode} toggleReplyMode={toggleReplyMode} openEditMode={openEditMode} />
+            <CommentMenu comment={comment} isInReplyMode={isInReplyMode} openEditMode={openEditMode} parent={parent} toggleReplyMode={toggleReplyMode} />
 
             <RepliesContainer comment={comment} />
-            <ReplyFormBox comment={comment} isInReplyMode={isInReplyMode} closeReplyMode={closeReplyMode} />
+            <ReplyFormBox closeReplyMode={closeReplyMode} comment={comment} isInReplyMode={isInReplyMode} />
         </CommentLayout>
     );
 }
@@ -102,14 +102,14 @@ function UnpublishedComment({comment, openEditMode}) {
     const hasReplies = comment.replies && comment.replies.length > 0;
 
     return (
-        <CommentLayout hasReplies={hasReplies} avatar={avatar}>
-            <div className="-mt-[3px] mb-2 flex items-start">
+        <CommentLayout avatar={avatar} hasReplies={hasReplies}>
+            <div className="mb-2 mt-[-3px] flex items-start">
                 <div className="flex h-12 flex-row items-center gap-4 pb-[8px] pr-4">
                     <p className="mt-[4px] font-sans text-[16px] italic leading-normal text-[rgba(0,0,0,0.2)] dark:text-[rgba(255,255,255,0.35)]">{notPublishedMessage}</p>
                     <div className="mt-[4px]">
                         <MoreButton comment={comment} toggleEdit={openEditMode} />
                     </div>
-                </div> 
+                </div>
             </div>
             <RepliesContainer comment={comment} />
         </CommentLayout>
@@ -121,7 +121,7 @@ function UnpublishedComment({comment, openEditMode}) {
 function MemberExpertise({comment}) {
     const {member} = useContext(AppContext);
     const memberExpertise = member && comment.member && comment.member.uuid === member.uuid ? member.expertise : comment?.member?.expertise;
-    
+
     if (!memberExpertise) {
         return null;
     }
@@ -163,14 +163,14 @@ function ReplyFormBox({comment, isInReplyMode, closeReplyMode}) {
 
     return (
         <div className="my-10">
-            <ReplyForm parent={comment} close={closeReplyMode} />
+            <ReplyForm close={closeReplyMode} parent={comment} />
         </div>
     );
 }
 
 //
 // -- Published comment components --
-// 
+//
 
 // TODO: move name detection to helper
 function AuthorName({comment}) {
@@ -186,7 +186,7 @@ function CommentHeader({comment}) {
     const createdAtRelative = useRelativeTime(comment.created_at);
 
     return (
-        <div className="-mt-[3px] mb-2 flex items-start">
+        <div className="mb-2 mt-[-3px] flex items-start">
             <div>
                 <AuthorName comment={comment} />
                 <div className="flex items-baseline pr-4 font-sans text-[14px] tracking-tight text-[rgba(0,0,0,0.5)] dark:text-[rgba(255,255,255,0.5)]">
@@ -222,7 +222,7 @@ function CommentMenu({comment, toggleReplyMode, isInReplyMode, openEditMode, par
     return (
         <div className="flex items-center gap-5">
             {<LikeButton comment={comment} />}
-            {(canReply && <ReplyButton comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />)}
+            {(canReply && <ReplyButton comment={comment} isReplying={isInReplyMode} toggleReply={toggleReplyMode} />)}
             {<MoreButton comment={comment} toggleEdit={openEditMode} />}
         </div>
     );
@@ -230,7 +230,7 @@ function CommentMenu({comment, toggleReplyMode, isInReplyMode, openEditMode, par
 
 //
 // -- Layout --
-// 
+//
 
 function RepliesLine({hasReplies}) {
     if (!hasReplies) {

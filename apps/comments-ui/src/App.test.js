@@ -1,7 +1,7 @@
-import {render, within, waitFor, act, fireEvent} from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import App from './App';
+import userEvent from '@testing-library/user-event';
 import {ROOT_DIV_ID} from './utils/constants';
+import {act, fireEvent, render, waitFor, within} from '@testing-library/react';
 import {buildComment, buildMember} from './utils/test-utils';
 
 function renderApp({member = null, documentStyles = {}, props = {}} = {}) {
@@ -72,7 +72,7 @@ function renderApp({member = null, documentStyles = {}, props = {}} = {}) {
     };
     // In tests, we currently don't wait for the styles to have loaded. In the app we check if the styles url is set or not.
     const stylesUrl = '';
-    const {container} = render(<div style={documentStyles}><div id={ROOT_DIV_ID}><App api={api} adminUrl="https://admin.example/" stylesUrl={stylesUrl} {...props}/></div></div>);
+    const {container} = render(<div style={documentStyles}><div id={ROOT_DIV_ID}><App adminUrl="https://admin.example/" api={api} stylesUrl={stylesUrl} {...props}/></div></div>);
     const iframeElement = container.querySelector('iframe[title="comments-frame"]');
     expect(iframeElement).toBeInTheDocument();
     const iframeDocument = iframeElement.contentDocument;

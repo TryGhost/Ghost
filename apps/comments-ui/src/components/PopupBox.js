@@ -1,7 +1,7 @@
-import {useContext, useEffect, useState} from 'react';
 import AppContext from '../AppContext';
-import Pages from '../pages';
 import GenericPopup from './popups/GenericPopup';
+import Pages from '../pages';
+import {useContext, useEffect, useState} from 'react';
 
 export default function PopupBox() {    
     const {popup} = useContext(AppContext);
@@ -46,7 +46,7 @@ export default function PopupBox() {
 
     return (
         <>
-            <GenericPopup show={show} callback={popupProps.callback} title={type}>
+            <GenericPopup callback={popupProps.callback} show={show} title={type}>
                 <PageComponent {...popupProps}/>
             </GenericPopup>
         </>
