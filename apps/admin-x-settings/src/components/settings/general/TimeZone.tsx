@@ -87,7 +87,6 @@ const TimeZone: React.FC = () => {
             isEditing={isEditing}
             navid='timezone'
             saveState={saveState}
-            searchKeywords={['time', 'date', 'timezone', 'time zone']}
             testId='timezone'
             title='Site timezone'
             onCancel={handleCancel}

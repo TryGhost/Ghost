@@ -78,7 +78,6 @@ const Analytics: React.FC = () => {
             isEditing={isEditing}
             navid='analytics'
             saveState={saveState}
-            searchKeywords={['analytics', 'tracking', 'privacy']}
             testId='analytics'
             title='Analytics'
             onCancel={handleCancel}

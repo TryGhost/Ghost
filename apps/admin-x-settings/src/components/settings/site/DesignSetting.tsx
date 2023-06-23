@@ -14,7 +14,6 @@ const DesignSetting: React.FC = () => {
             customButtons={<Button color='green' label='Customize' link onClick={openPreviewModal}/>}
             description="Customize the look and feel of your site"
             navid='branding-and-design'
-            searchKeywords={['design', 'branding', 'logo', 'cover', 'colors', 'fonts', 'background']}
             testId='design'
             title="Branding and design"
         />

@@ -12,7 +12,6 @@ const Theme: React.FC = () => {
             }}/>}
             description="Change or upload themes"
             navid='theme'
-            searchKeywords={['themes', 'design', 'appearance', 'style']}
             testId='theme'
             title="Theme"
         />

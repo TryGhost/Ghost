@@ -104,7 +104,6 @@ const Twitter: React.FC = () => {
             isEditing={isEditing}
             navid='twitter'
             saveState={saveState}
-            searchKeywords={['twitter card', 'structured data', 'rich cards']}
             testId='twitter'
             title='Twitter card'
             onCancel={handleCancel}

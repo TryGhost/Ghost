@@ -59,7 +59,6 @@ const PublicationLanguage: React.FC = () => {
             isEditing={isEditing}
             navid='publication-language'
             saveState={saveState}
-            searchKeywords={['language', 'locale']}
             testId='publication-language'
             title="Publication Language"
             onCancel={handleCancel}

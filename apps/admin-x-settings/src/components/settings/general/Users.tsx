@@ -235,7 +235,6 @@ const Users: React.FC = () => {
         <SettingGroup
             customButtons={buttons}
             navid='users'
-            searchKeywords={['users', 'permissions', 'roles', 'staff']}
             testId='users'
             title='Users and permissions'
         >
