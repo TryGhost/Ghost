@@ -134,7 +134,18 @@ if (DASH_DASH_ARGS.includes('search') || DASH_DASH_ARGS.includes('all')) {
 }
 
 if (DASH_DASH_ARGS.includes('lexical')) {
-    COMMAND_GHOST.env['editor__url'] = 'http://localhost:4173/koenig-lexical.umd.js';
+    if (DASH_DASH_ARGS.includes('https')) {
+        // Safari needs HTTPS for it to work
+        // To make this work, you'll need a CADDY server running in front
+        // Note the port is different because of this extra layer. Use the following Caddyfile:
+        //    https://localhost:4174 {
+        //        reverse_proxy 127.0.0.1:4173
+        //    }
+
+        COMMAND_GHOST.env['editor__url'] = 'https://localhost:4174/koenig-lexical.umd.js';
+    } else {
+        COMMAND_GHOST.env['editor__url'] = 'http://localhost:4173/koenig-lexical.umd.js';
+    }
 }
 
 if (DASH_DASH_ARGS.includes('comments') || DASH_DASH_ARGS.includes('all')) {
