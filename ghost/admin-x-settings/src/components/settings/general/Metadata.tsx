@@ -104,6 +104,7 @@ const Metadata: React.FC = () => {
             isEditing={isEditing}
             navid='metadata'
             saveState={saveState}
+            searchKeywords={['meta', 'title', 'description', 'search', 'engine', 'google']}
             testId='metadata'
             title='Metadata'
             onCancel={handleCancel}

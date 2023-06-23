@@ -160,6 +160,7 @@ const SocialAccounts: React.FC = () => {
             isEditing={isEditing}
             navid='social-accounts'
             saveState={saveState}
+            searchKeywords={['social', 'accounts', 'facebook', 'twitter', 'structured data', 'rich cards']}
             testId='social-accounts'
             title='Social accounts'
             onCancel={handleCancel}

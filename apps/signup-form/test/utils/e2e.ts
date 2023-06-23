@@ -12,7 +12,7 @@ export async function initialize({page, path, apiStatus, embeddedOnUrl, ...optio
     await page.route(sitePath, async (route) => {
         await route.fulfill({
             status: 200,
-            body: '<html><body></body></html>'
+            body: '<html><head><meta charset="UTF-8" /></head><body></body></html>'
         });
     });
 

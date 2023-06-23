@@ -56,6 +56,7 @@ const Form: React.FC<FormProps> = ({isMinimal, loading, success, error, buttonCo
         onSubmit({email});
     };
 
+    // The complicated transitions are here so that we animate visibility: hidden (step-start/step-end), which is required for screen readers to know what is visible (they ignore opacity: 0)
     return (
         <>
             <form className={`relative flex w-full rounded-[.5rem] border bg-white p-[3px] text-grey-900 transition hover:border-grey-400 focus-visible:border-grey-500 ${error ? '!border-red-500' : 'border-grey-300'}`} onSubmit={submitHandler}>
@@ -75,9 +76,9 @@ const Form: React.FC<FormProps> = ({isMinimal, loading, success, error, buttonCo
                     style={{backgroundColor: buttonColor, color: buttonTextColor}}
                     type='submit'
                 >
-                    <span className={`col-start-1 row-start-1 whitespace-nowrap transition-opacity duration-200 ${loading || success ? 'opacity-0' : 'opacity-1'}`}>{t('Subscribe')}</span>
-                    {isMinimal && <span className={`col-start-1 row-start-1 whitespace-nowrap [transition:margin_300ms,opacity_200ms] ${loading || !success ? 'mx-[-40px] opacity-0' : 'opacity-1 mx-0'}`}>{t('Email sent')}</span>}
-                    <span className={`inset-0 col-start-1 row-start-1 flex items-center justify-center transition-opacity duration-200 ${loading ? 'opacity-1' : 'opacity-0'}`}><LoadingIcon /></span>
+                    <span className={`col-start-1 row-start-1 whitespace-nowrap ${loading || success ? '[opacity_200ms,visibility_200ms_step-end] invisible opacity-0' : 'opacity-1 [opacity_200ms,visibility_200ms_step-start] visible'}`}>{t('Subscribe')}</span>
+                    {isMinimal && <span className={`col-start-1 row-start-1 whitespace-nowrap ${loading || !success ? 'invisible mx-[-40px] opacity-0 [transition:margin_300ms,opacity_200ms,visibility_200ms_step-end]' : 'opacity-1 visible mx-0 [transition:margin_300ms,opacity_200ms,visibility_200ms_step-start]'}`}>{t('Email sent')}</span>}
+                    <span className={`inset-0 col-start-1 row-start-1 flex items-center justify-center transition-opacity duration-200 ${!loading ? '[opacity_200ms,visibility_200ms_step-end] invisible opacity-0' : 'opacity-1 [opacity_200ms,visibility_200ms_step-start] visible' }`}><LoadingIcon /></span>
                 </button>
             </form>
         </>

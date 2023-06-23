@@ -44,9 +44,9 @@ const ThemeSetting: React.FC<{
     case 'select':
         return (
             <Select
-                defaultSelectedOption={setting.value}
                 hint={setting.description}
                 options={setting.options.map(option => ({label: option, value: option}))}
+                selectedOption={setting.value}
                 title={humanizeSettingKey(setting.key)}
                 onSelect={value => setSetting(value)}
             />

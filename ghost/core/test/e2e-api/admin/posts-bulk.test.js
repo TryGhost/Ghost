@@ -1,6 +1,6 @@
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
-const assert = require('assert');
+const assert = require('assert/strict');
 
 describe('Posts Bulk API', function () {
     let agent;

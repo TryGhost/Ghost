@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 0 24 24">
+<svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 0 24 24" aria-busy="true" aria-live="polite">
     <g stroke-linecap="round" stroke-width="2" fill="currentColor" stroke="none" stroke-linejoin="round" class="nc-icon-wrapper">
         <g class="nc-loop-dots-4-24-icon-o">
             <circle cx="4" cy="12" r="3"></circle>
