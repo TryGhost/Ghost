@@ -122,6 +122,45 @@ describe('Collection', function () {
         });
     });
 
+    describe('edit', function () {
+        it('Can edit Collection values', async function () {
+            const collection = await Collection.create({
+                slug: 'test-collection',
+                title: 'Testing edits',
+                type: 'automatic',
+                filter: 'featured:true'
+            });
+
+            assert.equal(collection.title, 'Testing edits');
+
+            collection.edit({
+                title: 'Edited title',
+                slug: 'edited-slug'
+            });
+
+            assert.equal(collection.title, 'Edited title');
+            assert.equal(collection.slug, 'edited-slug');
+        });
+
+        it('Throws when the collection filter is empty', async function () {
+            const collection = await Collection.create({
+                title: 'Testing edits',
+                type: 'automatic',
+                filter: 'featured:true'
+            });
+
+            assert.rejects(async () => {
+                await collection.edit({
+                    filter: null
+                });
+            }, (err: any) => {
+                assert.equal(err.message, 'Invalid filter provided for automatic Collection', 'Error message should match');
+                assert.equal(err.context, 'Automatic type of collection should always have a filter value', 'Error message should match');
+                return true;
+            });
+        });
+    });
+
     it('Can add posts to different positions', async function () {
         const collection = await Collection.create({
             title: 'Testing adding posts'
