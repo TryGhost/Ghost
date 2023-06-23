@@ -140,35 +140,31 @@ module.exports = {
              *   - model layer can't trigger event e.g. `post.page` to trigger `post|page.unpublished`.
              *   - `onDestroyed` or `onDestroying` can contain custom logic
              */
-            function deleteContent() {
-                return models.Base.transaction(async transacting => {
+            async function deleteContent() {
+                return models.Base.transaction(async (transacting) => {
                     const queryOpts = {
                         columns: 'id',
                         context: {internal: true},
                         destroyAll: true,
                         transacting: transacting
                     };
-
-                    const postDeletionTasks = async () => {
-                        const response = await models.Post.findAll(queryOpts);
-                        return response.models.map(post => {
-                            return async () => {
+              
+                    const posts = await models.Post.findAll(queryOpts);
+                    const postDeletionTasks = posts.models.map((post) => {
+                        return async () => {
                             await models.Post.destroy(Object.assign({id: post.id}, queryOpts));
-                            };
-                        });
-                    };
-
-                    const tagDeletionTasks = async () => {
-                        const response = await models.Tag.findAll(queryOpts);
-                        return response.models.map(tag => {
-                            return async () => {
+                        };
+                    });
+              
+                    const tags = await models.Tag.findAll(queryOpts);
+                    const tagDeletionTasks = tags.models.map((tag) => {
+                        return async () => {
                             await models.Tag.destroy(Object.assign({id: tag.id}, queryOpts));
-                            };
-                        });
-                    };
-
-                    const tasks = [postDeletionTasks, tagDeletionTasks];
-
+                        };
+                    });
+              
+                    const tasks = [...postDeletionTasks, ...tagDeletionTasks];
+              
                     try {
                         await pool(tasks, 100);
                     } catch (err) {
@@ -178,7 +174,6 @@ module.exports = {
                     }
                 });
             }
-
 
             return dbBackup.backup().then(deleteContent);
         }
