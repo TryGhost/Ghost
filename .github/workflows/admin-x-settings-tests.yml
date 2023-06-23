@@ -2,13 +2,13 @@ name: AdminX Settings Tests
 on:
   pull_request:
     paths:
-      - 'ghost/admin-x-settings/**'
+      - 'apps/admin-x-settings/**'
   push:
     branches:
       - main
       - 'v5.*'
     paths:
-      - 'ghost/admin-x-settings/**'
+      - 'apps/admin-x-settings/**'
 env:
   FORCE_COLOR: 1
 concurrency:

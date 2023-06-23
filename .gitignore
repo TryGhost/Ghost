@@ -157,8 +157,8 @@ Caddyfile
 tsconfig.tsbuildinfo
 
 # Admin X
-/ghost/admin-x-settings/dist
-/ghost/admin-x-settings/dist-ssr
-/ghost/admin-x-settings/test-results/
-/ghost/admin-x-settings/playwright-report/
-/ghost/admin-x-settings/playwright/.cache/
+/apps/admin-x-settings/dist
+/apps/admin-x-settings/dist-ssr
+/apps/admin-x-settings/test-results/
+/apps/admin-x-settings/playwright-report/
+/apps/admin-x-settings/playwright/.cache/
