@@ -8,8 +8,8 @@
     "types": "build/index.d.ts",
     "scripts": {
         "dev": "tsc --watch --preserveWatchOutput --sourceMap",
-        "build": "tsc",
-        "prepare": "tsc",
+        "build": "esbuild --target=es2022 --outdir=build src/*.ts",
+        "prepare": "yarn build",
         "test:unit": "NODE_ENV=testing c8 --src src --all --check-coverage --100 --reporter text --reporter cobertura mocha -r ts-node/register './test/**/*.test.ts'",
         "test": "yarn test:types && yarn test:unit",
         "test:types": "tsc --noEmit",
@@ -22,6 +22,7 @@
     ],
     "devDependencies": {
         "c8": "7.13.0",
+        "esbuild": "^0.18.6",
         "mocha": "10.2.0",
         "sinon": "15.0.4",
         "ts-node": "10.9.1",
