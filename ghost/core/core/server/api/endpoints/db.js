@@ -140,38 +140,41 @@ module.exports = {
              *   - model layer can't trigger event e.g. `post.page` to trigger `post|page.unpublished`.
              *   - `onDestroyed` or `onDestroying` can contain custom logic
              */
-            async function deleteContent() {
-                return models.Base.transaction(async (transacting) => {
+            function deleteContent() {
+                return models.Base.transaction((transacting) => {
                     const queryOpts = {
                         columns: 'id',
                         context: {internal: true},
                         destroyAll: true,
                         transacting: transacting
                     };
-              
-                    const posts = await models.Post.findAll(queryOpts);
-                    const postDeletionTasks = posts.models.map((post) => {
-                        return async () => {
-                            await models.Post.destroy(Object.assign({id: post.id}, queryOpts));
-                        };
-                    });
-              
-                    const tags = await models.Tag.findAll(queryOpts);
-                    const tagDeletionTasks = tags.models.map((tag) => {
-                        return async () => {
-                            await models.Tag.destroy(Object.assign({id: tag.id}, queryOpts));
-                        };
-                    });
-              
-                    const tasks = [...postDeletionTasks, ...tagDeletionTasks];
-              
-                    try {
-                        await pool(tasks, 100);
-                    } catch (err) {
-                        throw new errors.InternalServerError({
-                            err: err
+
+                    return models.Post.findAll(queryOpts)
+                        .then(function (posts) {
+                            const postDeletionTasks = posts.models.map(function (post) {
+                                return function () {
+                                    return models.Post.destroy(Object.assign({id: post.id}, queryOpts));
+                                };
+                            });
+          
+                            return models.Tag.findAll(queryOpts)
+                                .then(function (tags) {
+                                    const tagDeletionTasks = tags.models.map(function (tag) {
+                                        return function () {
+                                            return models.Tag.destroy(Object.assign({id: tag.id}, queryOpts));
+                                        };
+                                    });
+          
+                                    const tasks = [...postDeletionTasks, ...tagDeletionTasks];
+          
+                                    return pool(tasks, 100)
+                                        .catch(function (err) {
+                                            throw new errors.InternalServerError({
+                                                err: err
+                                            });
+                                        });
+                                });
                         });
-                    }
                 });
             }
 
