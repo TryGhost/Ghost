@@ -2,7 +2,6 @@ const debug = require('@tryghost/debug')('test:dbUtils');
 
 // Utility Packages
 const fs = require('fs-extra');
-const Promise = require('bluebird');
 const KnexMigrator = require('knex-migrator');
 const knexMigrator = new KnexMigrator();
 const DatabaseInfo = require('@tryghost/database-info');
@@ -12,6 +11,7 @@ const config = require('../../core/shared/config');
 const db = require('../../core/server/data/db');
 const schema = require('../../core/server/data/schema').tables;
 const schemaTables = Object.keys(schema);
+const {sequence} = require('@tryghost/promise');
 
 // Other Test Utilities
 const urlServiceUtils = require('./url-service-utils');
@@ -139,7 +139,9 @@ const truncateAll = async () => {
                 await db.knex.raw('PRAGMA foreign_keys = OFF;');
             }
 
-            await Promise.each(tables, table => db.knex.raw('DELETE FROM ' + table + ';'));
+            await sequence(tables.map(table => () => { 
+                return db.knex.raw('DELETE FROM ' + table + ';');
+            }));
 
             if (foreignKeysEnabled.foreign_keys) {
                 await db.knex.raw('PRAGMA foreign_keys = ON;');
@@ -161,7 +163,7 @@ const truncateAll = async () => {
     await db.knex.transaction(async (trx) => {
         try {
             await db.knex.raw('SET FOREIGN_KEY_CHECKS=0;').transacting(trx);
-            await Promise.each(tables, table => db.knex.raw('DELETE FROM ' + table + ';').transacting(trx));
+            await sequence(tables.map(table => () => db.knex.raw('DELETE FROM ' + table + ';').transacting(trx)));
             await db.knex.raw('SET FOREIGN_KEY_CHECKS=1;').transacting(trx);
         } catch (err) {
             // CASE: table does not exist || DB does not exist
