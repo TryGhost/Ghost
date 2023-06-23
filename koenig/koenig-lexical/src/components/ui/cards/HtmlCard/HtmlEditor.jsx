@@ -11,7 +11,7 @@ import {standardKeymap} from '@codemirror/commands';
 import {tags as t} from '@lezer/highlight';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext.js';
 
-export default function HtmlEditor({darkMode, html, updateHtml}) {
+export default function HtmlEditor({darkMode, html, updateHtml, onBlur}) {
     const [editor] = useLexicalComposerContext();
 
     React.useEffect(() => {
@@ -178,6 +178,7 @@ export default function HtmlEditor({darkMode, html, updateHtml}) {
                 basicSetup={false} // basic setup includes unnecessary extensions
                 extensions={extensions}
                 value={html}
+                onBlur={onBlur}
                 onChange={onChange}
             />
         </div>

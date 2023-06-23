@@ -15,7 +15,7 @@ import {standardKeymap} from '@codemirror/commands';
 import {tags as t} from '@lezer/highlight';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext.js';
 
-export function CodeEditor({code, language, updateCode, updateLanguage}) {
+export function CodeEditor({code, language, updateCode, updateLanguage, onBlur}) {
     const [showLanguage, setShowLanguage] = React.useState(true);
     const {darkMode} = React.useContext(KoenigComposerContext);
     const [editor] = useLexicalComposerContext();
@@ -211,6 +211,7 @@ export function CodeEditor({code, language, updateCode, updateLanguage}) {
                 basicSetup={false} // basic setup includes unnecessary extensions
                 extensions={extensions}
                 value={code}
+                onBlur={onBlur}
                 onChange={onChange}
             />
             <input
@@ -244,7 +245,7 @@ export function CodeBlock({code, darkMode, language}) {
     );
 }
 
-export function CodeBlockCard({captionEditor, captionEditorInitialState, code, darkMode, isEditing, isSelected, language, updateCode, updateLanguage}) {
+export function CodeBlockCard({captionEditor, captionEditorInitialState, code, darkMode, isEditing, isSelected, language, updateCode, updateLanguage, onBlur}) {
     if (isEditing) {
         return (
             <CodeEditor
@@ -253,6 +254,7 @@ export function CodeBlockCard({captionEditor, captionEditorInitialState, code, d
                 language={language}
                 updateCode={updateCode}
                 updateLanguage={updateLanguage}
+                onBlur={onBlur}
             />
         );
     } else {
@@ -275,7 +277,8 @@ CodeEditor.propTypes = {
     code: PropTypes.string,
     language: PropTypes.string,
     updateCode: PropTypes.func,
-    updateLanguage: PropTypes.func
+    updateLanguage: PropTypes.func,
+    onBlur: PropTypes.func
 };
 
 CodeBlock.propTypes = {
@@ -293,5 +296,6 @@ CodeBlockCard.propTypes = {
     isEditing: PropTypes.bool,
     isSelected: PropTypes.bool,
     updateCode: PropTypes.func,
-    updateLanguage: PropTypes.func
+    updateLanguage: PropTypes.func,
+    onBlur: PropTypes.func
 };

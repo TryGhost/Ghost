@@ -3,7 +3,7 @@ import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import React from 'react';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
-import {EDIT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin.jsx';
+import {DESELECT_CARD_COMMAND, EDIT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin.jsx';
 import {HtmlCard} from '../components/ui/cards/HtmlCard';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
@@ -14,16 +14,26 @@ export function HtmlNodeComponent({nodeKey, html}) {
     const cardContext = React.useContext(CardContext);
     const {cardConfig, darkMode} = React.useContext(KoenigComposerContext);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
+
     const updateHtml = (value) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             node.html = value;
         });
     };
+
     const handleToolbarEdit = (event) => {
         event.preventDefault();
         event.stopPropagation();
         editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey, focusEditor: false});
+    };
+
+    const onBlur = (event) => {
+        // deselect if clicking outside the card
+        //  this check results in deferring to the Cmd+Enter handling in KoenigBehaviourPlugin when the cause of the blur
+        if (event?.relatedTarget?.className !== 'kg-prose') {
+            editor.dispatchCommand(DESELECT_CARD_COMMAND, {cardKey: nodeKey});
+        }
     };
 
     return (
@@ -35,6 +45,7 @@ export function HtmlNodeComponent({nodeKey, html}) {
                 nodeKey={nodeKey}
                 unsplashConf={cardConfig.unsplash}
                 updateHtml={updateHtml}
+                onBlur={onBlur}
             />
 
             <ActionToolbar
