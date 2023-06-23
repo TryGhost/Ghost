@@ -1,5 +1,6 @@
 import {ValidationError} from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
+import nql = require('@tryghost/nql');
 
 import ObjectID from 'bson-objectid';
 
@@ -81,11 +82,15 @@ export class Collection {
      * @param post {{id: string}} - The post to add to the collection
      * @param index {number} - The index to insert the post at, use negative numbers to count from the end.
      */
-    addPost(post: {id: string}, index: number = -0) {
-        // if (this.type === 'automatic') {
-        //     TODO: Test the post against the NQL filter stored in `this.filter`
-        //     This will need the `post` param to include more data.
-        // }
+    addPost(post: CollectionPost, index: number = -0) {
+        if (this.type === 'automatic') {
+            const filterNql = nql(this.filter);
+            const matchesFilter = filterNql.queryJSON(post);
+
+            if (!matchesFilter) {
+                return false;
+            }
+        }
 
         if (this.posts.includes(post.id)) {
             this._posts = this.posts.filter(id => id !== post.id);
@@ -96,6 +101,7 @@ export class Collection {
         }
 
         this.posts.splice(index, 0, post.id);
+        return true;
     }
 
     removePost(id: string) {
@@ -172,6 +178,7 @@ export class Collection {
         }
 
         if (data.type === 'automatic' && !data.filter) {
+            // @NOTE: add filter validation here
             throw new ValidationError({
                 message: tpl(messages.invalidFilterProvided.message),
                 context: tpl(messages.invalidFilterProvided.context)

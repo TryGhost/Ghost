@@ -5,7 +5,8 @@ import {
     CollectionsService,
     CollectionsRepositoryInMemory,
     CollectionResourceChangeEvent,
-    PostDeletedEvent
+    PostDeletedEvent,
+    PostAddedEvent
 } from '../src/index';
 import {PostsRepositoryInMemory} from './fixtures/PostsRepositoryInMemory';
 import {posts} from './fixtures/posts';
@@ -391,6 +392,25 @@ describe('CollectionsService', function () {
                 assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 2);
                 assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 1);
                 assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 1);
+            });
+
+            it('Updates only index collection when a non-featured post is added', async function () {
+                assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 2);
+                assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 2);
+                assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 2);
+
+                collectionsService.subscribeToEvents();
+                const postAddedEvent = PostAddedEvent.create({
+                    id: 'non-featured-post',
+                    featured: false
+                });
+
+                DomainEvents.dispatch(postAddedEvent);
+                await DomainEvents.allSettled();
+
+                assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 2);
+                assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 3);
+                assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 2);
             });
 
             it('Updates automatic collections only when post is published', async function () {

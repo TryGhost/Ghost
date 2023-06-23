@@ -163,7 +163,8 @@ describe('Collection', function () {
 
     it('Can add posts to different positions', async function () {
         const collection = await Collection.create({
-            title: 'Testing adding posts'
+            title: 'Testing adding posts',
+            type: 'manual'
         });
 
         assert(collection.posts.length === 0);
@@ -189,6 +190,32 @@ describe('Collection', function () {
         collection.addPost(posts[3], -1);
         assert(collection.posts.length as number === 4);
         assert(collection.posts[collection.posts.length - 2] === '3');
+    });
+
+    it('Adds a post to an automatic collection when it matches the filter', async function () {
+        const collection = await Collection.create({
+            title: 'Testing adding posts',
+            type: 'automatic',
+            filter: 'featured:true'
+        });
+
+        assert.equal(collection.posts.length, 0, 'Collection should have no posts');
+
+        const added = await collection.addPost({
+            id: '0',
+            featured: false
+        });
+
+        assert.equal(added, false);
+        assert.equal(collection.posts.length, 0, 'The non-featured post should not have been added');
+
+        const featuredAdded = await collection.addPost({
+            id: '1',
+            featured: true
+        });
+
+        assert.equal(featuredAdded, true);
+        assert.equal(collection.posts.length, 1, 'The featured post should have been added');
     });
 
     it('Removes a post by id', async function () {
