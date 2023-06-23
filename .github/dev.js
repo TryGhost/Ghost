@@ -81,7 +81,7 @@ if (DASH_DASH_ARGS.includes('admin-x') || DASH_DASH_ARGS.includes('adminx') || D
     commands.push({
         name: 'adminX',
         command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../ghost/admin-x-settings'),
+        cwd: path.resolve(__dirname, '../apps/admin-x-settings'),
         prefixColor: '#C35831',
         env: {}
     });
