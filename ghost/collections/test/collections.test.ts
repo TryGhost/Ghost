@@ -49,16 +49,33 @@ describe('CollectionsService', function () {
         const createdCollection = await collectionsService.getById(savedCollection.id);
 
         assert.ok(createdCollection, 'Collection should be saved');
-        assert.ok(savedCollection.id, 'Collection should have an id');
+        assert.ok(createdCollection.id, 'Collection should have an id');
         assert.equal(createdCollection.title, 'testing collections', 'Collection title should match');
 
         const allCollections = await collectionsService.getAll();
         assert.equal(allCollections.data.length, 1, 'There should be one collection');
 
-        await collectionsService.destroy(savedCollection.id);
+        await collectionsService.destroy(createdCollection.id);
         const deletedCollection = await collectionsService.getById(savedCollection.id);
 
         assert.equal(deletedCollection, null, 'Collection should be deleted');
+    });
+
+    it('Can retrieve a collection by slug', async function () {
+        const savedCollection = await collectionsService.createCollection({
+            title: 'slug test',
+            slug: 'get-me-by-slug',
+            type: 'manual',
+            filter: null
+        });
+
+        const retrievedCollection = await collectionsService.getBySlug('get-me-by-slug');
+        assert.ok(retrievedCollection, 'Collection should be saved');
+        assert.ok(retrievedCollection.slug, 'Collection should have a slug');
+        assert.equal(savedCollection.title, 'slug test', 'Collection title should match');
+
+        const nonExistingCollection = await collectionsService.getBySlug('i-do-not-exist');
+        assert.equal(nonExistingCollection, null, 'Collection should not exist');
     });
 
     it('Throws when built in collection is attempted to be deleted', async function () {
@@ -116,13 +133,6 @@ describe('CollectionsService', function () {
             assert.equal(postsPage1.data.length, 2, 'There should be 2 posts');
             assert.equal(postsPage1.data[0].id, posts[0].id, 'First post should be the correct one');
             assert.equal(postsPage1.data[1].id, posts[1].id, 'Second post should be the correct one');
-            assert.deepEqual(Object.keys(postsPage1.data[0]), [
-                'id',
-                'slug',
-                'title',
-                'featured',
-                'featured_image'
-            ], 'Posts should have only specific attributes');
 
             const postsPage2 = await collectionsService.getAllPosts(collection.id, {page: 2, limit: 2});
 

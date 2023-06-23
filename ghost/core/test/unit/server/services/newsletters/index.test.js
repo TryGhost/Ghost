@@ -1,5 +1,5 @@
 const models = require('../../../../../core/server/models');
-const assert = require('assert');
+const assert = require('assert/strict');
 
 describe('Newsletters Service', function () {
     let newslettersService;

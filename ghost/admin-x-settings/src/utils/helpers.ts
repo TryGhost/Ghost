@@ -1,4 +1,4 @@
-import {Setting, SettingValue, User} from '../types/api';
+import {Setting, SettingValue, SiteData, User} from '../types/api';
 
 export interface IGhostPaths {
     adminRoot: string;
@@ -68,8 +68,8 @@ export function humanizeSettingKey(key: string) {
         .replace(new RegExp(`\\b(${allCaps.join('|')})\\b`, 'ig'), match => match.toUpperCase());
 }
 
-export function getSettingValues(settings: Setting[] | null, keys: string[]): Array<SettingValue | undefined> {
-    return keys.map(key => settings?.find(setting => setting.key === key)?.value);
+export function getSettingValues<ValueType = SettingValue>(settings: Setting[] | null, keys: string[]): Array<ValueType | undefined> {
+    return keys.map(key => settings?.find(setting => setting.key === key)?.value) as ValueType[];
 }
 
 export function isOwnerUser(user: User) {
@@ -91,4 +91,11 @@ export function downloadFile(url: string) {
     }
 
     iframe.setAttribute('src', url);
+}
+
+export function getHomepageUrl(siteData: SiteData): string {
+    const url = new URL(siteData.url);
+    const subdir = url.pathname.endsWith('/') ? url.pathname : `${url.pathname}/`;
+
+    return `${url.origin}${subdir}`;
 }

@@ -1,4 +1,4 @@
-import React, {ChangeEvent} from 'react';
+import React, {ChangeEvent, useState} from 'react';
 
 export interface FileUploadProps {
     id: string;
@@ -12,21 +12,25 @@ export interface FileUploadProps {
     className?: string;
     onUpload: (file: File) => void;
     style?: {}
+    unstyled?: boolean;
 }
 
-const FileUpload: React.FC<FileUploadProps> = ({id, onUpload, children, style, ...props}) => {
+const FileUpload: React.FC<FileUploadProps> = ({id, onUpload, children, style, unstyled = false, ...props}) => {
+    const [fileKey, setFileKey] = useState<number>(Date.now());
+
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
         const selectedFile = event.target.files?.[0];
         if (selectedFile) {
             onUpload?.(selectedFile);
         }
+        setFileKey(Date.now());
     };
 
     return (
         <label htmlFor={id} style={style} {...props}>
-            <input id={id} type="file" hidden onChange={handleFileChange} />
+            <input key={fileKey} id={id} type="file" hidden onChange={handleFileChange} />
             {(typeof children === 'string') ?
-                <div className='inline-flex h-[34px] cursor-pointer items-center justify-center rounded px-4 text-sm font-semibold hover:bg-grey-100'>
+                <div className={!unstyled ? `inline-flex h-[34px] cursor-pointer items-center justify-center rounded px-4 text-sm font-semibold hover:bg-grey-100` : ''}>
                     {children}
                 </div>
                 :

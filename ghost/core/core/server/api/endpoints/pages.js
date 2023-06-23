@@ -2,7 +2,7 @@ const models = require('../../models');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const getPostServiceInstance = require('../../services/posts/posts-service');
-const ALLOWED_INCLUDES = ['tags', 'authors', 'authors.roles', 'tiers', 'count.signups', 'count.paid_conversions'];
+const ALLOWED_INCLUDES = ['tags', 'authors', 'authors.roles', 'tiers', 'count.signups', 'count.paid_conversions', 'post_revisions', 'post_revisions.author'];
 const UNSAFE_ATTRS = ['status', 'authors', 'visibility'];
 
 const messages = {
@@ -140,6 +140,7 @@ module.exports = {
             'formats',
             'source',
             'force_rerender',
+            'save_revision',
             // NOTE: only for internal context
             'forUpdate',
             'transacting'

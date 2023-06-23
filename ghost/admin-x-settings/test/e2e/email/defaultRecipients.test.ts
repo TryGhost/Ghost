@@ -3,7 +3,7 @@ import {mockApi, updatedSettingsResponse} from '../../utils/e2e';
 
 test.describe('Default recipient settings', async () => {
     test('Supports editing default recipients', async ({page}) => {
-        const lastApiRequest = await mockApi({page, responses: {
+        const lastApiRequests = await mockApi({page, responses: {
             settings: {
                 edit: updatedSettingsResponse([
                     {key: 'editor_default_email_recipients', value: 'filter'},
@@ -22,7 +22,7 @@ test.describe('Default recipient settings', async () => {
         await section.getByLabel('Default newsletter recipients').selectOption('All members');
         await section.getByRole('button', {name: 'Save'}).click();
 
-        expect(lastApiRequest.body).toEqual({
+        expect(lastApiRequests.settings.edit.body).toEqual({
             settings: [
                 {key: 'editor_default_email_recipients', value: 'filter'},
                 {key: 'editor_default_email_recipients_filter', value: 'status:free,status:-free'}
@@ -33,7 +33,7 @@ test.describe('Default recipient settings', async () => {
         await section.getByLabel('Default newsletter recipients').selectOption('Usually nobody');
         await section.getByRole('button', {name: 'Save'}).click();
 
-        expect(lastApiRequest.body).toEqual({
+        expect(lastApiRequests.settings.edit.body).toEqual({
             settings: [
                 {key: 'editor_default_email_recipients', value: 'filter'},
                 {key: 'editor_default_email_recipients_filter', value: null}
@@ -48,7 +48,7 @@ test.describe('Default recipient settings', async () => {
 
         await expect(section.getByText('Paid-members only')).toHaveCount(1);
 
-        expect(lastApiRequest.body).toEqual({
+        expect(lastApiRequests.settings.edit.body).toEqual({
             settings: [
                 {key: 'editor_default_email_recipients', value: 'filter'},
                 {key: 'editor_default_email_recipients_filter', value: 'status:-free'}

@@ -3,7 +3,7 @@ import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModa
 import Heading from '../../../admin-x-ds/global/Heading';
 import Icon from '../../../admin-x-ds/global/Icon';
 import ImageUpload from '../../../admin-x-ds/global/form/ImageUpload';
-import Menu from '../../../admin-x-ds/global/Menu';
+import Menu, {MenuItem} from '../../../admin-x-ds/global/Menu';
 import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import Radio from '../../../admin-x-ds/global/form/Radio';
@@ -16,7 +16,6 @@ import useRoles from '../../../hooks/useRoles';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
 import {FileService, ServicesContext} from '../../providers/ServiceProvider';
-import {MenuItem} from '../../../admin-x-ds/global/Menu';
 import {User} from '../../../types/api';
 import {isAdminUser, isOwnerUser} from '../../../utils/helpers';
 import {showToast} from '../../../admin-x-ds/global/Toast';
@@ -56,7 +55,6 @@ const RoleSelector: React.FC<UserDetailProps> = ({user, setUserData}) => {
 
     return (
         <Radio
-            defaultSelectedOption={user.roles[0].name.toLowerCase()}
             id='role'
             options={[
                 {
@@ -80,6 +78,7 @@ const RoleSelector: React.FC<UserDetailProps> = ({user, setUserData}) => {
                     value: 'administrator'
                 }
             ]}
+            selectedOption={user.roles[0].name.toLowerCase()}
             title="Role"
             onSelect={(value) => {
                 const role = roles?.find(r => r.name.toLowerCase() === value.toLowerCase());
@@ -401,7 +400,7 @@ interface UserDetailModalProps {
 
 const UserMenuTrigger = () => (
     <div className='flex h-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] px-3 opacity-80 hover:opacity-100'>
-        <Icon colorClass='text-white' name='menu-horizontal' size='sm' />
+        <Icon colorClass='text-white' name='ellipsis' size='md' />
     </div>
 );
 

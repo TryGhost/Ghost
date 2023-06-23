@@ -875,7 +875,11 @@ Post = ghostBookshelf.Model.extend({
                     revision_interval_ms: POST_REVISIONS_INTERVAL_MS
                 }
             });
-            const authorId = this.contextUser(options);
+            let authorId = this.contextUser(options);
+            const authorExists = await ghostBookshelf.model('User').findOne({id: authorId}, {transacting: options.transacting});
+            if (!authorExists) {
+                authorId = await ghostBookshelf.model('User').getOwnerUser().get('id');
+            }
             ops.push(async function updateRevisions() {
                 const revisionModels = await ghostBookshelf.model('PostRevision')
                     .findAll(Object.assign({
@@ -997,6 +1001,9 @@ Post = ghostBookshelf.Model.extend({
     /**
      * If the `formats` option is not used, we return `html` be default.
      * Otherwise we return what is requested e.g. `?formats=mobiledoc,plaintext`
+     *
+     * This method is only used by the raw-knex plugin.
+     * We have moved the logic into the serializers for the API.
      */
     formatsToJSON: function formatsToJSON(attrs, options) {
         const defaultFormats = ['html'];
@@ -1015,8 +1022,6 @@ Post = ghostBookshelf.Model.extend({
     toJSON: function toJSON(unfilteredOptions) {
         const options = Post.filterOptions(unfilteredOptions, 'toJSON');
         let attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
-
-        attrs = this.formatsToJSON(attrs, options);
 
         // CASE: never expose the mobiledoc revisions
         delete attrs.mobiledoc_revisions;

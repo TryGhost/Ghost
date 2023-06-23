@@ -89,8 +89,9 @@ function getSearchHelper(frontendKey) {
 
 function getAnnouncementBarHelper(data) {
     const preview = data?.site?._preview;
+    const isFilled = settingsCache.get('announcement_content') && settingsCache.get('announcement_visibility').length;
 
-    if (!settingsCache.get('announcement_content') && !preview) {
+    if (!isFilled && !preview) {
         return '';
     }
 

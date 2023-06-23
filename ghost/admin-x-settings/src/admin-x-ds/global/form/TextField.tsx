@@ -3,7 +3,7 @@ import Hint from '../Hint';
 import React, {useId} from 'react';
 import clsx from 'clsx';
 
-interface TextFieldProps {
+export type TextFieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
     inputRef?: React.RefObject<HTMLInputElement>;
     title?: string;
     hideTitle?: boolean;
@@ -17,6 +17,9 @@ interface TextFieldProps {
     onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
     className?: string;
     maxLength?: number;
+    containerClassName?: string;
+    hintClassName?: string;
+    unstyled?: boolean;
 }
 
 const TextField: React.FC<TextFieldProps> = ({
@@ -33,31 +36,38 @@ const TextField: React.FC<TextFieldProps> = ({
     onBlur,
     className = '',
     maxLength,
+    containerClassName = '',
+    hintClassName = '',
+    unstyled = false,
     ...props
 }) => {
     const id = useId();
 
+    const textFieldClasses = !unstyled && clsx(
+        'h-10 border-b py-2',
+        clearBg ? 'bg-transparent' : 'bg-grey-75 px-[10px]',
+        error ? `border-red` : `border-grey-500 hover:border-grey-700 focus:border-black`,
+        (title && !hideTitle && !clearBg) && `mt-2`,
+        className
+    );
+
+    const field = <input
+        ref={inputRef}
+        className={textFieldClasses || className}
+        id={id}
+        maxLength={maxLength}
+        placeholder={placeholder}
+        type={type}
+        value={value}
+        onBlur={onBlur}
+        onChange={onChange}
+        {...props} />;
+
     return (
-        <div className='flex flex-col'>
+        <div className={`flex flex-col ${containerClassName}`}>
             {title && <Heading className={hideTitle ? 'sr-only' : ''} grey={value ? true : false} htmlFor={id} useLabelTag={true}>{title}</Heading>}
-            <input
-                ref={inputRef}
-                className={clsx(
-                    'h-10 border-b py-2',
-                    clearBg ? 'bg-transparent' : 'bg-grey-75 px-[10px]',
-                    error ? `border-red` : `border-grey-500 hover:border-grey-700 focus:border-black`,
-                    (title && !hideTitle && !clearBg) && `mt-2`,
-                    className
-                )}
-                defaultValue={value}
-                id={id}
-                maxLength={maxLength}
-                placeholder={placeholder}
-                type={type}
-                onBlur={onBlur}
-                onChange={onChange}
-                {...props} />
-            {hint && <Hint color={error ? 'red' : ''}>{hint}</Hint>}
+            {field}
+            {hint && <Hint className={hintClassName} color={error ? 'red' : ''}>{hint}</Hint>}
         </div>
     );
 };

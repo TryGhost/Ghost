@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const {
     agentProvider,
     fixtureManager,
@@ -13,6 +13,7 @@ const {
     anyObjectId,
     anyISODateTime,
     anyNumber,
+    anyUuid,
     anyString
 } = matchers;
 
@@ -23,7 +24,11 @@ const matchCollection = {
 };
 
 const matchCollectionPost = {
-    id: anyObjectId
+    id: anyObjectId,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime,
+    published_at: anyISODateTime,
+    uuid: anyUuid
 };
 
 /**
@@ -47,6 +52,7 @@ describe('Collections API', function () {
     let agent;
 
     before(async function () {
+        mockManager.mockLabsEnabled('collections');
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users', 'posts');
         await agent.loginAsOwner();

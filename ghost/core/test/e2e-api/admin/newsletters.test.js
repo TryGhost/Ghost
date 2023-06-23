@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const sinon = require('sinon');
 const {agentProvider, mockManager, fixtureManager, configUtils, dbUtils, matchers, regexes} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyLocationFor, anyNumber} = matchers;

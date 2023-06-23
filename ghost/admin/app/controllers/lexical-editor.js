@@ -127,7 +127,7 @@ export default class LexicalEditorController extends Controller {
     fromAnalytics = false;
 
     // koenig related properties
-    wordcount = null;
+    wordCount = 0;
 
     /* private properties ----------------------------------------------------*/
 
@@ -305,8 +305,8 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
-    updateWordCount(counts) {
-        this.set('wordCount', counts);
+    updateWordCount(count) {
+        this.set('wordCount', count);
     }
 
     @action
@@ -1059,7 +1059,9 @@ export default class LexicalEditorController extends Controller {
 
         while (config.environment !== 'test' && true) {
             yield timeout(REVISIONSAVE_TIMEOUT);
-            this.autosaveTask.perform({saveRevision: true});
+            this.autosaveTask.perform({
+                saveRevision: this._canAutosave
+            });
         }
     }).drop())
         _revisionSaveTask;

@@ -32,6 +32,8 @@ const ThemePreview: React.FC<{
                     {label: 'Official themes', onClick: onBack},
                     {label: selectedTheme.name}
                 ]}
+                backIcon
+                onBack={onBack}
             />
         </div>;
 

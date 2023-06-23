@@ -112,16 +112,6 @@ export class CollectionsService {
         };
     }
 
-    private toCollectionPostListItemDTO(post: any): CollectionPostListItemDTO {
-        return {
-            id: post.id,
-            slug: post.slug,
-            title: post.title,
-            featured: post.featured,
-            featured_image: post.featureImage
-        };
-    }
-
     private fromDTO(data: any): any {
         const mappedDTO: {[index: string]:any} = {
             title: data.title,
@@ -238,6 +228,10 @@ export class CollectionsService {
         return await this.collectionsRepository.getById(id);
     }
 
+    async getBySlug(slug: string): Promise<Collection | null> {
+        return await this.collectionsRepository.getBySlug(slug);
+    }
+
     async getAll(options?: QueryOptions): Promise<{data: CollectionDTO[], meta: any}> {
         const collections = await this.collectionsRepository.getAll(options);
 
@@ -277,10 +271,8 @@ export class CollectionsService {
         const postIds = collection.posts.slice(startIdx, endIdx);
         const posts = await this.postsRepository.getBulk(postIds);
 
-        const postsDTOs = posts.map(this.toCollectionPostListItemDTO);
-
         return {
-            data: postsDTOs,
+            data: posts,
             meta: {
                 pagination: {
                     page: page,

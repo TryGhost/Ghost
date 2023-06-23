@@ -76,9 +76,11 @@ const UsersList: React.FC<UsersListProps> = ({users, updateUser}) => {
                         key={user.id}
                         action={<Button color='green' label='Edit' link={true} onClick={() => showDetailModal(user)}/>}
                         avatar={(<Avatar bgColor={generateAvatarColor((user.name ? user.name : user.email))} image={user.profile_image} label={getInitials(user.name)} labelColor='white' />)}
+                        className='min-h-[64px]'
                         detail={user.email}
                         hideActions={true}
                         id={`list-item-${user.id}`}
+                        separator={false}
                         title={title}
                         onClick={() => showDetailModal(user)} />
                 );
@@ -160,9 +162,11 @@ const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
                         key={user.id}
                         action={<UserInviteActions invite={user} />}
                         avatar={(<Avatar bgColor={generateAvatarColor((user.email))} image={''} label={''} labelColor='white' />)}
+                        className='min-h-[64px]'
                         detail={user.role}
                         hideActions={true}
                         id={`list-item-${user.id}`}
+                        separator={false}
                         title={user.email}
                         onClick={() => {
                             // do nothing
@@ -194,6 +198,8 @@ const Users: React.FC = () => {
             showInviteModal();
         }} />
     );
+
+    const [selectedTab, setSelectedTab] = useState('users-admins');
 
     const tabs = [
         {
@@ -227,10 +233,11 @@ const Users: React.FC = () => {
         <SettingGroup
             customButtons={buttons}
             navid='users'
+            searchKeywords={['users', 'permissions', 'roles', 'staff']}
             title='Users and permissions'
         >
             <Owner updateUser={updateUser} user={ownerUser} />
-            <TabView tabs={tabs} />
+            <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
         </SettingGroup>
     );
 };

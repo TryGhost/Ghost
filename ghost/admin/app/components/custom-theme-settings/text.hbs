@@ -3,7 +3,6 @@
         <label class="gh-setting-title gh-theme-setting-title" for={{this.inputId}}>
             {{humanize-setting-key @setting.key}}
         </label>
-
         <input
             type="text"
             class="gh-input"
@@ -13,5 +12,8 @@
             {{on "input" this.updateValue}}
             {{on "blur" this.triggerOnChange}}
         />
+        {{#if @setting.description}}
+            <div class="gh-setting-desc">{{truncate @setting.description 100}}</div>
+        {{/if}}
     </div>
 </div>
