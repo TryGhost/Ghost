@@ -1,3 +1,8 @@
+.kg-signup-card {
+    background-size: cover;
+    background-position: center center;
+}
+
 .kg-signup-card,
 .kg-signup-card * {
     box-sizing: border-box;
@@ -137,7 +142,7 @@
 
 .kg-signup-card.kg-width-full h3.kg-signup-card-subheading:not(.kg-layout-split h3.kg-signup-card-subheading) {
     max-width: 65vmax;
-    font-size: clamp(1.05em, 2vw, 2.8rem);
+    font-size: clamp(1.05em, 2vw, 2.6rem);
 }
 
 .kg-signup-card.kg-width-full.kg-layout-split h3.kg-signup-card-subheading {
