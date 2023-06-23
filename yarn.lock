@@ -22773,10 +22773,10 @@ liquid-fire@0.34.0:
     match-media "^0.2.0"
     velocity-animate "^1.5.2"
 
-liquid-wormhole@3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/liquid-wormhole/-/liquid-wormhole-3.0.0.tgz#21699d25f3b39ca4f11f9f5f8bfd28d01fb8af15"
-  integrity sha512-PhQkLcB9LofT02gl3pJdQaJAWPiy+9+o89X0CY7ZzOLsPjrKufqDXa7bM3+fbAcHpWceigRocwa4pl1MoUYIlA==
+liquid-wormhole@3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/liquid-wormhole/-/liquid-wormhole-3.0.1.tgz#db4d7820cd5722994febeb6761f3b0edbe520c7b"
+  integrity sha512-DBnUTuvekd1zC9xQMm7/IY1g6UmfhRYgZOVKhCwIMdeDsS82Bk7pz/Qhr/Bg4ulV3xSqzcET7LRa7D3BKztoMA==
   dependencies:
     "@ember/jquery" "^2.0.0"
     "@ember/render-modifiers" "^2.0.4"
@@ -22786,7 +22786,7 @@ liquid-wormhole@3.0.0:
     ember-cli-babel "^7.26.11"
     ember-cli-htmlbars "^6.1.0"
     ember-decorators "^6.1.1"
-    perf-primitives rwwagner90/perf-primitives#a6a26f11497ca27be3763a88a5f20744e424756b
+    perf-primitives "github:RobbieTheWagner/perf-primitives#a6a26f11497ca27be3763a88a5f20744e424756b"
 
 listr2@^5.0.5:
   version "5.0.8"
@@ -26418,9 +26418,10 @@ pend@~1.2.0:
   resolved "https://registry.yarnpkg.com/pend/-/pend-1.2.0.tgz#7a57eb550a6783f9115331fcf4663d5c8e007a50"
   integrity sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==
 
-perf-primitives@rwwagner90/perf-primitives#a6a26f11497ca27be3763a88a5f20744e424756b:
+"perf-primitives@github:RobbieTheWagner/perf-primitives#a6a26f11497ca27be3763a88a5f20744e424756b":
   version "0.0.6"
-  resolved "https://codeload.github.com/rwwagner90/perf-primitives/tar.gz/a6a26f11497ca27be3763a88a5f20744e424756b"
+  uid a6a26f11497ca27be3763a88a5f20744e424756b
+  resolved "https://codeload.github.com/RobbieTheWagner/perf-primitives/tar.gz/a6a26f11497ca27be3763a88a5f20744e424756b"
   dependencies:
     ember-cli-babel "^7.26.6"
 
