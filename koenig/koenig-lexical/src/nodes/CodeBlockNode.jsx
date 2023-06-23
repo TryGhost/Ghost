@@ -8,7 +8,6 @@ import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 
-// re-export here so we don't need to import from multiple places throughout the app
 export const INSERT_CODE_BLOCK_COMMAND = createCommand();
 
 export class CodeBlockNode extends BaseCodeBlockNode {

@@ -5,7 +5,6 @@ import {ReactComponent as DividerCardIcon} from '../assets/icons/kg-card-type-di
 import {HorizontalRuleCard} from '../components/ui/cards/HorizontalRuleCard';
 import {createCommand} from 'lexical';
 
-// re-export here so we don't need to import from multiple places throughout the app
 export const INSERT_HORIZONTAL_RULE_COMMAND = createCommand();
 
 export class HorizontalRuleNode extends BaseHorizontalRuleNode {

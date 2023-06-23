@@ -5,7 +5,6 @@ import {ReactComponent as ButtonCardIcon} from '../assets/icons/kg-card-type-but
 import {ButtonNodeComponent} from './ButtonNodeComponent';
 import {createCommand} from 'lexical';
 
-// re-export here so we don't need to import from multiple places throughout the app
 export const INSERT_BUTTON_COMMAND = createCommand();
 
 export class ButtonNode extends BaseButtonNode {

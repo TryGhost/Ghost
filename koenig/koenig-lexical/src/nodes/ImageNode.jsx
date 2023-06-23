@@ -11,7 +11,6 @@ import {ReactComponent as UnsplashIcon} from '../assets/icons/kg-card-type-unspl
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 
-// re-export here so we don't need to import from multiple places throughout the app
 export const INSERT_IMAGE_COMMAND = createCommand();
 
 export class ImageNode extends BaseImageNode {

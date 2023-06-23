@@ -9,7 +9,6 @@ import {CalloutNodeComponent} from './CalloutNodeComponent';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 
-// re-export here so we don't need to import from multiple places throughout the app
 export const INSERT_CALLOUT_COMMAND = createCommand();
 
 export class CalloutNode extends BaseCalloutNode {

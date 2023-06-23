@@ -6,7 +6,6 @@ import {ReactComponent as MarkdownIndicatorIcon} from '../assets/icons/kg-indica
 import {MarkdownNodeComponent} from './MarkdownNodeComponent';
 import {createCommand} from 'lexical';
 
-// re-export here so we don't need to import from multiple places throughout the app
 export const INSERT_MARKDOWN_COMMAND = createCommand();
 
 export class MarkdownNode extends BaseMarkdownNode {

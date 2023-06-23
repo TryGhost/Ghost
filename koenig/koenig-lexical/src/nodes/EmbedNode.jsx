@@ -14,7 +14,6 @@ import {ReactComponent as YouTubeIcon} from '../assets/icons/kg-card-type-youtub
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 
-// re-export here so we don't need to import from multiple places throughout the app
 export const INSERT_EMBED_COMMAND = createCommand();
 
 export class EmbedNode extends BaseEmbedNode {

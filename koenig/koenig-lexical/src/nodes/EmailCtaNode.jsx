@@ -10,7 +10,6 @@ import {ReactComponent as EmailIndicatorIcon} from '../assets/icons/kg-indicator
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 
-// re-export here so we don't need to import from multiple places throughout the app
 export const INSERT_EMAIL_CTA_COMMAND = createCommand();
 
 export class EmailCtaNode extends BaseEmailCtaNode {

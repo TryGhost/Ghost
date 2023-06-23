@@ -6,7 +6,6 @@ import {ReactComponent as HtmlIndicatorIcon} from '../assets/icons/kg-indicator-
 import {HtmlNodeComponent} from './HtmlNodeComponent';
 import {createCommand} from 'lexical';
 
-// re-export here so we don't need to import from multiple places throughout the app
 export const INSERT_HTML_COMMAND = createCommand();
 
 export class HtmlNode extends BaseHtmlNode {

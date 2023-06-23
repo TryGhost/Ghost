@@ -9,7 +9,6 @@ import {ToggleNodeComponent} from './ToggleNodeComponent';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 
-// re-export here so we don't need to import from multiple places throughout the app
 export const INSERT_TOGGLE_COMMAND = createCommand();
 
 export class ToggleNode extends BaseToggleNode {

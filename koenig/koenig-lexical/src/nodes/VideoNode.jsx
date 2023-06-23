@@ -8,7 +8,6 @@ import {VideoNodeComponent} from './VideoNodeComponent';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 
-// re-export here so we don't need to import from multiple places throughout the app
 export const INSERT_VIDEO_COMMAND = createCommand();
 
 export class VideoNode extends BaseVideoNode {

@@ -10,7 +10,6 @@ import {EmailNodeComponent} from './EmailNodeComponent';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 
-// re-export here so we don't need to import from multiple places throughout the app
 export const INSERT_EMAIL_COMMAND = createCommand();
 
 export class EmailNode extends BaseEmailNode {

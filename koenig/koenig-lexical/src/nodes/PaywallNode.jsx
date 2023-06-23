@@ -5,7 +5,6 @@ import {ReactComponent as DividerCardIcon} from '../assets/icons/kg-card-type-pr
 import {PaywallCard} from '../components/ui/cards/PaywallCard';
 import {createCommand} from 'lexical';
 
-// re-export here so we don't need to import from multiple places throughout the app
 export const INSERT_PAYWALL_COMMAND = createCommand();
 
 export class PaywallNode extends BasePaywallNode {

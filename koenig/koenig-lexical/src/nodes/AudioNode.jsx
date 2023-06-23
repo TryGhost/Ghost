@@ -5,7 +5,6 @@ import {AudioNodeComponent} from './AudioNodeComponent';
 import {AudioNode as BaseAudioNode} from '@tryghost/kg-default-nodes';
 import {createCommand} from 'lexical';
 
-// re-export here so we don't need to import from multiple places throughout the app
 export const INSERT_AUDIO_COMMAND = createCommand();
 
 export class AudioNode extends BaseAudioNode {
