@@ -2,12 +2,12 @@ import {DateTime} from 'luxon';
 import {toArray} from 'lodash';
 
 export default function render(node, document, options) {
-    const metadata = node.getMetadata();
+    const metadata = node.metadata;
 
     const figure = document.createElement('figure');
     figure.setAttribute('class', 'kg-card kg-embed-card');
 
-    let html = node.getHtml();  
+    let html = node.html;
 
     const tweetData = metadata && metadata.tweet_data;
     const container = document.createElement('div');
@@ -159,7 +159,7 @@ export default function render(node, document, options) {
     container.innerHTML = html.trim();
     figure.appendChild(container);
 
-    const caption = node.getCaption();
+    const caption = node.caption;
     if (caption) {
         const figcaption = document.createElement('figcaption');
         figcaption.innerHTML = caption;
