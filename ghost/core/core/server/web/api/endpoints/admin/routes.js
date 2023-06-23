@@ -17,6 +17,7 @@ module.exports = function apiRoutes() {
 
     // ## Public
     router.get('/site', mw.publicAdminApi, http(api.site.read));
+    router.post('/mail_events', mw.publicAdminApi, http(api.mailEvents.add));
 
     // ## Collections
     router.get('/collections', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.browse));

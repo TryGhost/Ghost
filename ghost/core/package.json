@@ -113,6 +113,7 @@
     "@tryghost/link-tracking": "0.0.0",
     "@tryghost/logging": "2.4.4",
     "@tryghost/magic-link": "0.0.0",
+    "@tryghost/mail-events": "0.0.0",
     "@tryghost/mailgun-client": "0.0.0",
     "@tryghost/member-attribution": "0.0.0",
     "@tryghost/member-events": "0.0.0",

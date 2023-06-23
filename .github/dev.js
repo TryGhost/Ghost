@@ -77,6 +77,16 @@ if (DASH_DASH_ARGS.includes('collections') || DASH_DASH_ARGS.includes('all')) {
     });
 }
 
+if (DASH_DASH_ARGS.includes('mail-events') || DASH_DASH_ARGS.includes('all')) {
+    commands.push({
+        name: 'collections',
+        command: 'yarn dev',
+        cwd: path.resolve(__dirname, '../ghost/mail-events'),
+        prefixColor: 'pink',
+        env: {}
+    });
+}
+
 if (DASH_DASH_ARGS.includes('admin-x') || DASH_DASH_ARGS.includes('adminx') || DASH_DASH_ARGS.includes('adminX') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'adminX',
