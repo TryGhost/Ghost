@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const {MailEventService} = require('@tryghost/mail-events');
 const {agentProvider, matchers, mockManager} = require('../../utils/e2e-framework');
 const configUtils = require('../../utils/configUtils');
