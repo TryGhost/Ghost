@@ -7065,10 +7065,10 @@
     lodash "^4.17.21"
     luxon "^3.0.0"
 
-"@tryghost/kg-default-nodes@0.1.0", "@tryghost/kg-default-nodes@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-nodes/-/kg-default-nodes-0.1.0.tgz#826ab44e6c802191a3dec770de55df6af5f411b4"
-  integrity sha512-pRUFUwUPw/SMMowHzr2O/P0VCwfqCWXDdINRFsRQBAwUuPxQoxFdzJB+ZCVxyUu95Q8+lgojwB3lydFLiJxKVA==
+"@tryghost/kg-default-nodes@0.1.1", "@tryghost/kg-default-nodes@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-nodes/-/kg-default-nodes-0.1.1.tgz#6a2db8c07a25e0c577a86fd06c04b3185e003a48"
+  integrity sha512-KI5hhgQ9sb1O4FTXlr0AncP0zbsQe5W3F85FvPW6/2QjTluerVW+BUgpHkTmMu+3HtJnZnfr2HILPZwxQ6xg9w==
   dependencies:
     "@tryghost/kg-clean-basic-html" "^3.0.19"
     "@tryghost/kg-markdown-html-renderer" "^6.0.8"
@@ -7078,10 +7078,10 @@
     lodash "^4.17.21"
     luxon "^3.3.0"
 
-"@tryghost/kg-lexical-html-renderer@0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-0.2.0.tgz#9818d60e361433f48070b2b7709982dc34226064"
-  integrity sha512-IlvUHwz0LuckNA1vHdVlWwCExon84R9NXgyhMhhGT5DEke7QEq30Bqrw5F2RZlntXR4OWGeOjXARINeZnvMcuw==
+"@tryghost/kg-lexical-html-renderer@0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-0.2.1.tgz#07de02490cc32abdc67fb80482fd7e34fc169876"
+  integrity sha512-sYBDqE6K9QQG+EWZqWFKRXAxJMi4mbVenE2KM+3LGEJmgnqNgf5B2PKQiDqwZGRCyqNRtgVkzUwtYb3G7M4QwA==
   dependencies:
     "@lexical/clipboard" "^0.11.0"
     "@lexical/code" "^0.11.0"
@@ -7089,7 +7089,7 @@
     "@lexical/link" "^0.11.0"
     "@lexical/list" "^0.11.0"
     "@lexical/rich-text" "^0.11.0"
-    "@tryghost/kg-default-nodes" "^0.1.0"
+    "@tryghost/kg-default-nodes" "^0.1.1"
     jsdom "^22.1.0"
     lexical "^0.11.0"
     prettier "^2.7.1"
@@ -26409,7 +26409,7 @@ pend@~1.2.0:
   resolved "https://registry.yarnpkg.com/pend/-/pend-1.2.0.tgz#7a57eb550a6783f9115331fcf4663d5c8e007a50"
   integrity sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==
 
-"perf-primitives@github:RobbieTheWagner/perf-primitives#a6a26f11497ca27be3763a88a5f20744e424756b":
+perf-primitives@RobbieTheWagner/perf-primitives#a6a26f11497ca27be3763a88a5f20744e424756b:
   version "0.0.6"
   resolved "https://codeload.github.com/RobbieTheWagner/perf-primitives/tar.gz/a6a26f11497ca27be3763a88a5f20744e424756b"
   dependencies:
