@@ -7065,10 +7065,10 @@
     lodash "^4.17.21"
     luxon "^3.0.0"
 
-"@tryghost/kg-default-nodes@0.0.66", "@tryghost/kg-default-nodes@^0.0.66":
-  version "0.0.66"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-nodes/-/kg-default-nodes-0.0.66.tgz#fb59cd7cd44a740ba65ebab784bb1b07410efe30"
-  integrity sha512-L8kLsvQRrgK5Ffwz90R7ZOpUqG/5yr9R6XOcj3iB0FlKY8vumj1kO7ZkhgH/G+9U1tJWWf8ewMfaRNf0OcnehQ==
+"@tryghost/kg-default-nodes@0.1.0", "@tryghost/kg-default-nodes@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-nodes/-/kg-default-nodes-0.1.0.tgz#826ab44e6c802191a3dec770de55df6af5f411b4"
+  integrity sha512-pRUFUwUPw/SMMowHzr2O/P0VCwfqCWXDdINRFsRQBAwUuPxQoxFdzJB+ZCVxyUu95Q8+lgojwB3lydFLiJxKVA==
   dependencies:
     "@tryghost/kg-clean-basic-html" "^3.0.19"
     "@tryghost/kg-markdown-html-renderer" "^6.0.8"
@@ -7078,10 +7078,10 @@
     lodash "^4.17.21"
     luxon "^3.3.0"
 
-"@tryghost/kg-lexical-html-renderer@0.1.66":
-  version "0.1.66"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-0.1.66.tgz#cf87b962fd74d30169ecd6522e9ec818d2ad3d8d"
-  integrity sha512-BXxdes1kMNQKTChTi9VW5YpgVKkoj9wJSMAaThTvEuTTyxbxphyL0753zGPhK+xfRjEnT7n+vqhdrAWZ32ncxA==
+"@tryghost/kg-lexical-html-renderer@0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-0.2.0.tgz#9818d60e361433f48070b2b7709982dc34226064"
+  integrity sha512-IlvUHwz0LuckNA1vHdVlWwCExon84R9NXgyhMhhGT5DEke7QEq30Bqrw5F2RZlntXR4OWGeOjXARINeZnvMcuw==
   dependencies:
     "@lexical/clipboard" "^0.11.0"
     "@lexical/code" "^0.11.0"
@@ -7089,7 +7089,7 @@
     "@lexical/link" "^0.11.0"
     "@lexical/list" "^0.11.0"
     "@lexical/rich-text" "^0.11.0"
-    "@tryghost/kg-default-nodes" "^0.0.66"
+    "@tryghost/kg-default-nodes" "^0.1.0"
     jsdom "^22.1.0"
     lexical "^0.11.0"
     prettier "^2.7.1"
@@ -22777,7 +22777,7 @@ liquid-wormhole@3.0.1:
     ember-cli-babel "^7.26.11"
     ember-cli-htmlbars "^6.1.0"
     ember-decorators "^6.1.1"
-    perf-primitives "github:RobbieTheWagner/perf-primitives#a6a26f11497ca27be3763a88a5f20744e424756b"
+    perf-primitives RobbieTheWagner/perf-primitives#a6a26f11497ca27be3763a88a5f20744e424756b
 
 listr2@^5.0.5:
   version "5.0.8"
@@ -26411,7 +26411,6 @@ pend@~1.2.0:
 
 "perf-primitives@github:RobbieTheWagner/perf-primitives#a6a26f11497ca27be3763a88a5f20744e424756b":
   version "0.0.6"
-  uid a6a26f11497ca27be3763a88a5f20744e424756b
   resolved "https://codeload.github.com/RobbieTheWagner/perf-primitives/tar.gz/a6a26f11497ca27be3763a88a5f20744e424756b"
   dependencies:
     ember-cli-babel "^7.26.6"
