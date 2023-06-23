@@ -151,15 +151,11 @@ module.exports = {
 
                     return models.Post.findAll(queryOpts)
                         .then((posts) => {
-                            return pool(posts.models.map((post) => 
-                                        () =>  models.Post.destroy(Object.assign({id: post.id}, queryOpts)))
-                                ,100);
+                            return pool(posts.models.map(post => () => models.Post.destroy(Object.assign({id: post.id}, queryOpts))),100);
                         })
                         .then(() => models.Tag.findAll(queryOpts))
                         .then((tags) => {
-                            return pool(tags.models.map((tag) => 
-                                        () => models.Tag.destroy(Object.assign({id: tag.id}, queryOpts)))
-                                ,100);
+                            return pool(tags.models.map(tag => () => models.Tag.destroy(Object.assign({id: tag.id}, queryOpts))),100);
                         })
                         .catch((err) => {
                             throw new errors.InternalServerError({
