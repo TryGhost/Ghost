@@ -71,7 +71,8 @@ describe('Posts Service', function () {
                     id: POST_ID,
                     title: 'Test Post',
                     slug: 'test-post',
-                    status: 'published'
+                    status: 'published',
+                    newsletter_id: 'abc123'
                 },
                 related: sinon.stub()
             };
@@ -128,22 +129,6 @@ describe('Posts Service', function () {
 
             assert.equal(copiedPostData.id, undefined);
             assert.equal(copiedPostData.slug, undefined);
-        });
-
-        it('omits unnecessary data from a copied newsletter', async function () {
-            existingPostModel.attributes = {
-                id: POST_ID,
-                title: 'Test Post',
-                slug: 'test-post',
-                status: 'sent',
-                newsletter_id: 'abc123'
-            };
-
-            await makePostService().copyPost(frame);
-
-            const copiedPostData = postModelStub.add.getCall(0).args[0];
-
-            assert.equal(copiedPostData.newsletter_id, undefined);
         });
 
         it('updates the title of the copied post', async function () {
