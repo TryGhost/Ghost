@@ -1,7 +1,7 @@
 import {expect, test} from '@playwright/test';
 import {mockApi} from '../../utils/e2e';
 
-test.describe('Theme settings', async () => {
+test.describe('Design settings', async () => {
     test('Editing brand settings', async ({page}) => {
         const lastApiRequests = await mockApi({page, responses: {
             previewHtml: {

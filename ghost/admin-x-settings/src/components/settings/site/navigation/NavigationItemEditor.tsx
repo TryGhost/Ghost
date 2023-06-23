@@ -21,7 +21,7 @@ export type NavigationItemEditorProps = React.HTMLAttributes<HTMLDivElement> & {
 
 const NavigationItemEditor = forwardRef<HTMLDivElement, NavigationItemEditorProps>(function NavigationItemEditor({baseUrl, item, updateItem, onDelete, clearError, dragHandleProps, labelPlaceholder, unstyled, containerClasses, dragHandleClasses, textFieldClasses, action, ...props}, ref) {
     return (
-        <div ref={ref} className={containerClasses} {...props}>
+        <div ref={ref} className={containerClasses} data-testid='navigation-item-editor' {...props}>
             <button className={dragHandleClasses} type='button' {...dragHandleProps}>
                 <Icon colorClass='text-grey-500' name='hamburger' size='sm' />
             </button>
@@ -33,8 +33,10 @@ const NavigationItemEditor = forwardRef<HTMLDivElement, NavigationItemEditorProp
                     hint={item.errors.label}
                     hintClassName="px-2"
                     placeholder={labelPlaceholder}
+                    title='Label'
                     unstyled={unstyled}
                     value={item.label}
+                    hideTitle
                     onChange={e => updateItem?.({label: e.target.value})}
                     onKeyDown={() => clearError?.('label')}
                 />
@@ -47,8 +49,10 @@ const NavigationItemEditor = forwardRef<HTMLDivElement, NavigationItemEditorProp
                     error={!!item.errors.url}
                     hint={item.errors.url}
                     hintClassName="px-2"
+                    title='URL'
                     unstyled={unstyled}
                     value={item.url}
+                    hideTitle
                     onChange={value => updateItem?.({url: value})}
                     onKeyDown={() => clearError?.('url')}
                 />
