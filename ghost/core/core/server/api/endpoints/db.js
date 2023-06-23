@@ -150,17 +150,17 @@ module.exports = {
                     };
 
                     return models.Post.findAll(queryOpts)
-                        .then(function (posts) {
-                            const postDeletionTasks = posts.models.map(function (post) {
-                                return function () {
+                        .then((posts) => {
+                            const postDeletionTasks = posts.models.map((post) => {
+                                return () => {
                                     return models.Post.destroy(Object.assign({id: post.id}, queryOpts));
                                 };
                             });
           
                             return models.Tag.findAll(queryOpts)
-                                .then(function (tags) {
-                                    const tagDeletionTasks = tags.models.map(function (tag) {
-                                        return function () {
+                                .then((tags) => {
+                                    const tagDeletionTasks = tags.models.map((tag) => {
+                                        return () => {
                                             return models.Tag.destroy(Object.assign({id: tag.id}, queryOpts));
                                         };
                                     });
@@ -168,7 +168,7 @@ module.exports = {
                                     const tasks = [...postDeletionTasks, ...tagDeletionTasks];
           
                                     return pool(tasks, 100)
-                                        .catch(function (err) {
+                                        .catch((err) => {
                                             throw new errors.InternalServerError({
                                                 err: err
                                             });
