@@ -151,29 +151,20 @@ module.exports = {
 
                     return models.Post.findAll(queryOpts)
                         .then((posts) => {
-                            const postDeletionTasks = posts.models.map((post) => {
-                                return () => {
-                                    return models.Post.destroy(Object.assign({id: post.id}, queryOpts));
-                                };
+                            return pool(posts.models.map((post) => 
+                                        () =>  models.Post.destroy(Object.assign({id: post.id}, queryOpts)))
+                                ,100);
+                        })
+                        .then(() => models.Tag.findAll(queryOpts))
+                        .then((tags) => {
+                            return pool(tags.models.map((tag) => 
+                                        () => models.Tag.destroy(Object.assign({id: tag.id}, queryOpts)))
+                                ,100);
+                        })
+                        .catch((err) => {
+                            throw new errors.InternalServerError({
+                                err: err
                             });
-          
-                            return models.Tag.findAll(queryOpts)
-                                .then((tags) => {
-                                    const tagDeletionTasks = tags.models.map((tag) => {
-                                        return () => {
-                                            return models.Tag.destroy(Object.assign({id: tag.id}, queryOpts));
-                                        };
-                                    });
-          
-                                    const tasks = [...postDeletionTasks, ...tagDeletionTasks];
-          
-                                    return pool(tasks, 100)
-                                        .catch((err) => {
-                                            throw new errors.InternalServerError({
-                                                err: err
-                                            });
-                                        });
-                                });
                         });
                 });
             }
