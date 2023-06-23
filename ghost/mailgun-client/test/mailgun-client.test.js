@@ -43,6 +43,21 @@ describe('MailgunClient', function () {
         sinon.restore();
     });
 
+    it('exports a number for configurable batch size', function () {
+        const configStub = sinon.stub(config, 'get');
+        configStub.withArgs('bulkEmail').returns({
+            mailgun: {
+                apiKey: 'apiKey',
+                domain: 'domain.com',
+                baseUrl: 'https://api.mailgun.net/v3'
+            },
+            batchSize: 1000
+        });
+
+        const mailgunClient = new MailgunClient({config, settings});
+        assert(typeof mailgunClient.getBatchSize() === 'number');
+    });
+
     it('can connect via config', function () {
         const configStub = sinon.stub(config, 'get');
         configStub.withArgs('bulkEmail').returns({
@@ -56,10 +71,6 @@ describe('MailgunClient', function () {
 
         const mailgunClient = new MailgunClient({config, settings});
         assert.equal(mailgunClient.isConfigured(), true);
-
-        it('exports a number for configurable batch size', function () {
-            assert(typeof mailgunClient.getBatchSize() === 'number');
-        });
     });
 
     it('can connect via settings', function () {

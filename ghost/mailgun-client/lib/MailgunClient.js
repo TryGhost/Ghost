@@ -8,6 +8,8 @@ module.exports = class MailgunClient {
     #config;
     #settings;
 
+    static DEFAULT_BATCH_SIZE = 1000;
+
     constructor({config, settings}) {
         this.#config = config;
         this.#settings = settings;
@@ -311,6 +313,6 @@ module.exports = class MailgunClient {
      * @returns {number}
      */ 
     getBatchSize() {
-        return this.#config.get('bulkEmail').get('batchSize');
+        return this.#config.get('bulkEmail')?.batchSize ?? this.DEFAULT_BATCH_SIZE;
     }
 };
