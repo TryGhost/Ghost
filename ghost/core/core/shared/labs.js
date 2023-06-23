@@ -37,9 +37,9 @@ const ALPHA_FEATURES = [
     'websockets',
     'stripeAutomaticTax',
     'emailCustomization',
-    'signupCard',
     'collections',
-    'adminXSettings'
+    'adminXSettings',
+    'mailEvents'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

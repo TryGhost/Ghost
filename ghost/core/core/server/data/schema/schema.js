@@ -1021,5 +1021,29 @@ module.exports = {
         currency: {type: 'string', maxlength: 24, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         email_sent_at: {type: 'dateTime', nullable: true}
+    },
+    temp_mail_events: {
+        id: {type: 'string', maxlength: 100, nullable: false, primary: true},
+        type: {type: 'string', maxlength: 50, nullable: false},
+        message_id: {type: 'string', maxlength: 150, nullable: false},
+        recipient: {type: 'string', maxlength: 191, nullable: false},
+        occurred_at: {type: 'dateTime', nullable: false}
+    },
+    collections: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        title: {type: 'string', maxlength: 191, nullable: false},
+        slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
+        description: {type: 'string', maxlength: 2000, nullable: true},
+        type: {type: 'string', maxlength: 50, nullable: false},
+        filter: {type: 'text', maxlength: 1000000000, nullable: true},
+        feature_image: {type: 'string', maxlength: 2000, nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true}
+    },
+    collections_posts: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        collection_id: {type: 'string', maxlength: 24, nullable: false, references: 'collections.id', cascadeDelete: true},
+        post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id', cascadeDelete: true},
+        sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
     }
 };

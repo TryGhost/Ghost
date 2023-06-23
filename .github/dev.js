@@ -77,11 +77,21 @@ if (DASH_DASH_ARGS.includes('collections') || DASH_DASH_ARGS.includes('all')) {
     });
 }
 
+if (DASH_DASH_ARGS.includes('mail-events') || DASH_DASH_ARGS.includes('all')) {
+    commands.push({
+        name: 'collections',
+        command: 'yarn dev',
+        cwd: path.resolve(__dirname, '../ghost/mail-events'),
+        prefixColor: 'pink',
+        env: {}
+    });
+}
+
 if (DASH_DASH_ARGS.includes('admin-x') || DASH_DASH_ARGS.includes('adminx') || DASH_DASH_ARGS.includes('adminX') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'adminX',
         command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../ghost/admin-x-settings'),
+        cwd: path.resolve(__dirname, '../apps/admin-x-settings'),
         prefixColor: '#C35831',
         env: {}
     });
@@ -134,7 +144,30 @@ if (DASH_DASH_ARGS.includes('search') || DASH_DASH_ARGS.includes('all')) {
 }
 
 if (DASH_DASH_ARGS.includes('lexical')) {
-    COMMAND_GHOST.env['editor__url'] = 'http://localhost:4173/koenig-lexical.umd.js';
+    if (DASH_DASH_ARGS.includes('https')) {
+        // Safari needs HTTPS for it to work
+        // To make this work, you'll need a CADDY server running in front
+        // Note the port is different because of this extra layer. Use the following Caddyfile:
+        //    https://localhost:4174 {
+        //        reverse_proxy 127.0.0.1:4173
+        //    }
+
+        COMMAND_GHOST.env['editor__url'] = 'https://localhost:4174/koenig-lexical.umd.js';
+    } else {
+        COMMAND_GHOST.env['editor__url'] = 'http://localhost:4173/koenig-lexical.umd.js';
+    }
+}
+
+if (DASH_DASH_ARGS.includes('comments') || DASH_DASH_ARGS.includes('all')) {
+    commands.push({
+        name: 'comments',
+        command: 'yarn dev',
+        cwd: path.resolve(__dirname, '../apps/comments-ui'),
+        prefixColor: '#E55137',
+        env: {}
+    });
+
+    COMMAND_GHOST.env['comments__url'] = 'http://localhost:7174/comments-ui.min.js';
 }
 
 async function handleStripe() {
