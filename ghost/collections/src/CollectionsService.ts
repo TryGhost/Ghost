@@ -251,6 +251,9 @@ export class CollectionsService {
             return null;
         }
 
+        const collectionData = this.fromDTO(data);
+        await collection.edit(collectionData);
+
         if (collection.type === 'manual' && data.posts) {
             for (const post of data.posts) {
                 collection.addPost(post);
@@ -260,10 +263,6 @@ export class CollectionsService {
         if ((collection.type === 'automatic' || data.type === 'automatic') && data.filter) {
             await this.updateAutomaticCollectionItems(collection, data.filter);
         }
-
-        const collectionData = this.fromDTO(data);
-
-        Object.assign(collection, collectionData);
 
         await this.collectionsRepository.save(collection);
 
