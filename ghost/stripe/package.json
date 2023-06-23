@@ -30,7 +30,7 @@
     "@tryghost/errors": "1.2.24",
     "@tryghost/logging": "2.4.4",
     "@tryghost/member-events": "0.0.0",
-    "leaky-bucket": "2.2.0",
+    "leaky-bucket": "4.1.4",
     "lodash": "4.17.21",
     "stripe": "8.222.0"
   }
