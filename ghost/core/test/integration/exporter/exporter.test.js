@@ -89,7 +89,8 @@ describe('Exporter', function () {
                 'tokens',
                 'users',
                 'webhooks',
-                'milestones'
+                'milestones',
+                'temp_mail_events'
             ];
 
             should.exist(exportData);
@@ -117,7 +118,8 @@ describe('Exporter', function () {
                 'members_email_change_events',
                 'members_status_events',
                 'members_paid_subscription_events',
-                'members_subscribe_events'
+                'members_subscribe_events',
+                'temp_mail_events'
             ];
 
             excludedTables.forEach((tableName) => {

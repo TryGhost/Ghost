@@ -139,5 +139,9 @@ module.exports = {
 
     get links() {
         return require('./links');
+    },
+
+    get mail_events() {
+        return require('./mail-events');
     }
 };
