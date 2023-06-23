@@ -110,9 +110,8 @@ export function HeaderCard({isEditing,
                             nodes="minimal"
                             placeholderClassName={clsx(
                                 '!text-center !font-bold !leading-[1.1] !tracking-tight opacity-50',
-                                (size === 'small') && 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl',
-                                (size === 'medium') && 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl',
-                                (size === 'large') && 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl',
+                                (size === 'small') && 'text-3xl sm:text-4xl md:text-5xl',
+                                (size === 'medium' || size === 'large') && 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl',
                                 (HEADER_TEXT_COLORS[type])
                             )}
                             placeholderText={headerPlaceholder}
@@ -138,8 +137,8 @@ export function HeaderCard({isEditing,
                             placeholderClassName={clsx(
                                 '!text-center !font-medium !leading-snug !tracking-tight opacity-50',
                                 (size === 'small') && 'text-lg sm:text-xl',
-                                (size === 'medium') && 'text-lg sm:text-xl md:text-2xl',
-                                (size === 'large') && 'text-xl md:text-2xl',
+                                (size === 'medium') && 'text-lg sm:text-xl md:text-[2.2rem]',
+                                (size === 'large') && 'text-lg sm:text-xl md:text-[2.2rem] lg:text-[2.6rem]',
                                 (HEADER_TEXT_COLORS[type])
                             )}
                             placeholderText={subheaderPlaceholder}
