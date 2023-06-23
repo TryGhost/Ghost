@@ -2,7 +2,6 @@ type PostData = {
     id: string;
     featured: boolean;
     published_at: Date;
-    timestamp: Date;
 };
 
 export class PostAddedEvent {
@@ -10,9 +9,9 @@ export class PostAddedEvent {
     data: PostData;
     timestamp: Date;
 
-    constructor(data: PostAddedEvent, timestamp: Date) {
+    constructor(data: PostData, timestamp: Date) {
         this.id = data.id;
-        this.data = data.data;
+        this.data = data;
         this.timestamp = timestamp;
     }
 

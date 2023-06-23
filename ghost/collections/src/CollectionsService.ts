@@ -200,7 +200,7 @@ export class CollectionsService {
             collection.removeAllPosts();
 
             for (const post of posts) {
-                collection.addPost(post);
+                await collection.addPost(post);
             }
         }
     }
@@ -222,10 +222,11 @@ export class CollectionsService {
 
         for (const collection of collections) {
             await collection.addPost(post);
-            // const added = await collection.addPost(post);
-            // if (added) {
-            await this.collectionsRepository.save(collection);
-            // }
+            const added = await collection.addPost(post);
+
+            if (added) {
+                await this.collectionsRepository.save(collection);
+            }
         }
     }
 
