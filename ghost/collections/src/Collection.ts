@@ -12,6 +12,12 @@ const messages = {
     }
 };
 
+type CollectionPost = {
+    id: string;
+    featured?: boolean;
+    published_at?: Date;
+}
+
 export class Collection {
     id: string;
     title: string;
@@ -38,6 +44,37 @@ export class Collection {
         if (this.deletable) {
             this._deleted = value;
         }
+    }
+
+    public edit(data: Partial<Collection>) {
+        if (this.type === 'automatic' && (data.filter === null || data.filter === '')) {
+            throw new ValidationError({
+                message: tpl(messages.invalidFilterProvided.message),
+                context: tpl(messages.invalidFilterProvided.context)
+            });
+        }
+
+        if (data.title !== undefined) {
+            this.title = data.title;
+        }
+
+        if (data.slug !== undefined) {
+            this.slug = data.slug;
+        }
+
+        if (data.description !== undefined) {
+            this.description = data.description;
+        }
+
+        if (data.filter !== undefined) {
+            this.filter = data.filter;
+        }
+
+        if (data.featureImage !== undefined) {
+            this.featureImage = data.featureImage;
+        }
+
+        return this;
     }
 
     /**
