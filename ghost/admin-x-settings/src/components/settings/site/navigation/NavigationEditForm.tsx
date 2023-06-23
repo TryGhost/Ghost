@@ -108,10 +108,11 @@ const NavigationEditForm: React.FC<{
         </DndContext>
 
         <NavigationItemEditor
-            action={<Button color='green' icon="add" iconColorClass='text-white' size='sm' onClick={navigation.addItem} />}
+            action={<Button color='green' data-testid="add-button" icon="add" iconColorClass='text-white' size='sm' onClick={navigation.addItem} />}
             baseUrl={baseUrl}
             clearError={key => navigation.clearError(navigation.newItem.id, key)}
             containerClasses="flex items-start gap-3 p-2"
+            data-testid="new-navigation-item"
             dragHandleClasses="ml-2 invisible"
             item={navigation.newItem}
             labelPlaceholder="New item label"

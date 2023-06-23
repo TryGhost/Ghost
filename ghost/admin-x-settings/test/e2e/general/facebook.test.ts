@@ -3,7 +3,7 @@ import {mockApi} from '../../utils/e2e';
 
 test.describe('Facebook settings', async () => {
     test('Supports editing the facebook card', async ({page}) => {
-        const lastApiRequest = await mockApi({page, responses: {
+        const lastApiRequests = await mockApi({page, responses: {
             images: {
                 upload: {images: [{url: 'http://example.com/image.png', ref: null}]}
             }
@@ -31,7 +31,7 @@ test.describe('Facebook settings', async () => {
 
         await expect(section.getByLabel('Facebook title')).toHaveCount(0);
 
-        expect(lastApiRequest.body).toEqual({
+        expect(lastApiRequests.settings.edit.body).toEqual({
             settings: [
                 {key: 'og_image', value: 'http://example.com/image.png'},
                 {key: 'og_title', value: 'Facetitle'},

@@ -3,7 +3,7 @@ import {mockApi, updatedSettingsResponse} from '../../utils/e2e';
 
 test.describe('Analytics settings', async () => {
     test('Supports toggling analytics settings', async ({page}) => {
-        const lastApiRequest = await mockApi({page, responses: {
+        const lastApiRequests = await mockApi({page, responses: {
             settings: {
                 edit: updatedSettingsResponse([
                     {key: 'members_track_sources', value: false},
@@ -30,7 +30,7 @@ test.describe('Analytics settings', async () => {
 
         await section.getByRole('button', {name: 'Save'}).click();
 
-        expect(lastApiRequest.body).toEqual({
+        expect(lastApiRequests.settings.edit.body).toEqual({
             settings: [
                 {key: 'members_track_sources', value: false},
                 {key: 'email_track_opens', value: false},

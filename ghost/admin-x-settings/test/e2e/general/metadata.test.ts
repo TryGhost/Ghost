@@ -3,7 +3,7 @@ import {mockApi, updatedSettingsResponse} from '../../utils/e2e';
 
 test.describe('Metadata settings', async () => {
     test('Supports editing metadata', async ({page}) => {
-        const lastApiRequest = await mockApi({page, responses: {
+        const lastApiRequests = await mockApi({page, responses: {
             settings: {
                 edit: updatedSettingsResponse([
                     {key: 'meta_title', value: 'Alternative title'},
@@ -31,7 +31,7 @@ test.describe('Metadata settings', async () => {
         await expect(section.getByText('Alternative title')).toHaveCount(1);
         await expect(section.getByText('Alternative description')).toHaveCount(1);
 
-        expect(lastApiRequest.body).toEqual({
+        expect(lastApiRequests.settings.edit.body).toEqual({
             settings: [
                 {key: 'meta_title', value: 'Alternative title'},
                 {key: 'meta_description', value: 'Alternative description'}

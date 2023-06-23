@@ -3,7 +3,7 @@ import {mockApi, updatedSettingsResponse} from '../../utils/e2e';
 
 test.describe('Publication language settings', async () => {
     test('Supports editing the locale', async ({page}) => {
-        const lastApiRequest = await mockApi({page, responses: {
+        const lastApiRequests = await mockApi({page, responses: {
             settings: {
                 edit: updatedSettingsResponse([
                     {key: 'locale', value: 'jp'}
@@ -27,7 +27,7 @@ test.describe('Publication language settings', async () => {
 
         await expect(section.getByText('jp')).toHaveCount(1);
 
-        expect(lastApiRequest.body).toEqual({
+        expect(lastApiRequests.settings.edit.body).toEqual({
             settings: [
                 {key: 'locale', value: 'jp'}
             ]

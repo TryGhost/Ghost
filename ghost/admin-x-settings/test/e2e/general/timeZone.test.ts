@@ -3,7 +3,7 @@ import {mockApi, updatedSettingsResponse} from '../../utils/e2e';
 
 test.describe('Time zone settings', async () => {
     test('Supports editing the time zone', async ({page}) => {
-        const lastApiRequest = await mockApi({page, responses: {
+        const lastApiRequests = await mockApi({page, responses: {
             settings: {
                 edit: updatedSettingsResponse([
                     {key: 'timezone', value: 'Asia/Tokyo'}
@@ -27,7 +27,7 @@ test.describe('Time zone settings', async () => {
 
         await expect(section.getByText('Asia/Tokyo')).toHaveCount(1);
 
-        expect(lastApiRequest.body).toEqual({
+        expect(lastApiRequests.settings.edit.body).toEqual({
             settings: [
                 {key: 'timezone', value: 'Asia/Tokyo'}
             ]

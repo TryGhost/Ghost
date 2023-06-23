@@ -1,10 +1,5 @@
-import {Page} from '@playwright/test';
+import {Page, Request} from '@playwright/test';
 import {readFileSync} from 'fs';
-
-type LastApiRequest = {
-    url: null | string
-    body: null | any
-};
 
 const responseFixtures = {
     settings: JSON.parse(readFileSync(`${__dirname}/responses/settings.json`).toString()),
@@ -27,85 +22,132 @@ interface Responses {
         browse?: any
         edit?: any
     }
-    previewHtml: {
+    previewHtml?: {
         homepage?: string
     }
 }
 
+interface RequestRecord {
+    url?: string
+    body?: any
+    headers?: {[key: string]: string}
+}
+
+type LastRequests = {
+    settings: {
+        browse: RequestRecord
+        edit: RequestRecord
+    }
+    site: {
+        browse: RequestRecord
+    }
+    images: {
+        upload: RequestRecord
+    }
+    custom_theme_settings: {
+        browse: RequestRecord
+        edit: RequestRecord
+    }
+    previewHtml: {
+        homepage: RequestRecord
+    }
+};
+
 export async function mockApi({page,responses}: {page: Page, responses?: Responses}) {
-    const lastApiRequest: LastApiRequest = {
-        url: null,
-        body: null
+    const lastApiRequests: LastRequests = {
+        settings: {browse: {}, edit: {}},
+        site: {browse: {}},
+        images: {upload: {}},
+        custom_theme_settings: {browse: {}, edit: {}},
+        previewHtml: {homepage: {}}
     };
 
     await mockApiResponse({
         page,
         path: /\/ghost\/api\/admin\/settings\//,
-        responses: {
-            GET: {body: responses?.settings?.browse ?? responseFixtures.settings},
-            PUT: {body: responses?.settings?.edit ?? responseFixtures.settings}
-        },
-        lastApiRequest
+        respondTo: {
+            GET: {
+                body: responses?.settings?.browse ?? responseFixtures.settings,
+                updateLastRequest: lastApiRequests.settings.browse
+            },
+            PUT: {
+                body: responses?.settings?.edit ?? responseFixtures.settings,
+                updateLastRequest: lastApiRequests.settings.edit
+            }
+        }
     });
 
     await mockApiResponse({
         page,
         path: /\/ghost\/api\/admin\/site\//,
-        responses: {
-            GET: {body: responses?.site?.browse ?? responseFixtures.site}
-        },
-        lastApiRequest
+        respondTo: {
+            GET: {
+                body: responses?.site?.browse ?? responseFixtures.site,
+                updateLastRequest: lastApiRequests.site.browse
+            }
+        }
     });
 
     await mockApiResponse({
         page,
         path: /\/ghost\/api\/admin\/images\/upload\/$/,
-        responses: {
-            POST: {body: responses?.images?.upload ?? {images: [{url: 'http://example.com/image.png', ref: null}]}}
-        },
-        lastApiRequest
+        respondTo: {
+            POST: {
+                body: responses?.images?.upload ?? {images: [{url: 'http://example.com/image.png', ref: null}]},
+                updateLastRequest: lastApiRequests.images.upload
+            }
+        }
     });
 
     await mockApiResponse({
         page,
         path: /\/ghost\/api\/admin\/custom_theme_settings\/$/,
-        responses: {
-            GET: {body: responses?.custom_theme_settings?.browse ?? responseFixtures.custom_theme_settings},
-            PUT: {body: responses?.custom_theme_settings?.edit ?? responseFixtures.custom_theme_settings}
-        },
-        lastApiRequest
-    });
-
-    await page.route(responseFixtures.site.site.url, async (route) => {
-        if (!route.request().headers()['x-ghost-preview']) {
-            return route.continue();
+        respondTo: {
+            GET: {
+                body: responses?.custom_theme_settings?.browse ?? responseFixtures.custom_theme_settings,
+                updateLastRequest: lastApiRequests.custom_theme_settings.browse
+            },
+            PUT: {
+                body: responses?.custom_theme_settings?.edit ?? responseFixtures.custom_theme_settings,
+                updateLastRequest: lastApiRequests.custom_theme_settings.edit
+            }
         }
-
-        await route.fulfill({
-            status: 200,
-            body: responses?.previewHtml?.homepage ?? '<html><head><style></style></head><body><div>test</div></body></html>'
-        });
     });
 
-    return lastApiRequest;
+    await mockApiResponse({
+        page,
+        path: responseFixtures.site.site.url,
+        respondTo: {
+            POST: {
+                condition: request => !!request.headers()['x-ghost-preview'],
+                body: responses?.previewHtml?.homepage ?? '<html><head><style></style></head><body><div>test</div></body></html>',
+                updateLastRequest: lastApiRequests.previewHtml.homepage
+            }
+        }
+    });
+
+    return lastApiRequests;
 }
 
-interface MockResponse {
+interface ResponseOptions {
+    condition?: (request: Request) => boolean
     body: any
     status?: number
+    updateLastRequest: RequestRecord
 }
 
-async function mockApiResponse({page, path, lastApiRequest, responses}: { page: Page; path: string | RegExp; lastApiRequest: LastApiRequest, responses: { [method: string]: MockResponse } }) {
+async function mockApiResponse({page, path, respondTo}: { page: Page; path: string | RegExp; respondTo: { [method: string]: ResponseOptions } }) {
     await page.route(path, async (route) => {
-        const response = responses[route.request().method()];
+        const response = respondTo[route.request().method()];
 
-        if (!response) {
+        if (!response || (response.condition && !response.condition(route.request()))) {
             return route.continue();
         }
 
         const requestBody = JSON.parse(route.request().postData() || 'null');
-        lastApiRequest.body = requestBody;
-        lastApiRequest.url = route.request().url();
+        response.updateLastRequest.body = requestBody;
+        response.updateLastRequest.url = route.request().url();
+        response.updateLastRequest.headers = route.request().headers();
 
         await route.fulfill({
             status: response.status || 200,

@@ -3,7 +3,7 @@ import {mockApi, updatedSettingsResponse} from '../../utils/e2e';
 
 test.describe('Social account settings', async () => {
     test('Supports editing social URLs', async ({page}) => {
-        const lastApiRequest = await mockApi({page, responses: {
+        const lastApiRequests = await mockApi({page, responses: {
             settings: {
                 edit: updatedSettingsResponse([
                     {key: 'facebook', value: 'fb'},
@@ -31,7 +31,7 @@ test.describe('Social account settings', async () => {
         await expect(section.getByText('https://www.facebook.com/fb')).toHaveCount(1);
         await expect(section.getByText('https://twitter.com/tw')).toHaveCount(1);
 
-        expect(lastApiRequest.body).toEqual({
+        expect(lastApiRequests.settings.edit.body).toEqual({
             settings: [
                 {key: 'facebook', value: 'fb'},
                 {key: 'twitter', value: '@tw'}

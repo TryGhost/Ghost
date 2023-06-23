@@ -3,7 +3,7 @@ import {mockApi, updatedSettingsResponse} from '../../utils/e2e';
 
 test.describe('Title and description settings', async () => {
     test('Supports editing the title and description', async ({page}) => {
-        const lastApiRequest = await mockApi({page, responses: {
+        const lastApiRequests = await mockApi({page, responses: {
             settings: {
                 edit: updatedSettingsResponse([
                     {key: 'title', value: 'New Site Title'},
@@ -31,7 +31,7 @@ test.describe('Title and description settings', async () => {
         await expect(section.getByText('New Site Title')).toHaveCount(1);
         await expect(section.getByText('New Site Description')).toHaveCount(1);
 
-        expect(lastApiRequest.body).toEqual({
+        expect(lastApiRequests.settings.edit.body).toEqual({
             settings: [
                 {key: 'title', value: 'New Site Title'},
                 {key: 'description', value: 'New Site Description'}
