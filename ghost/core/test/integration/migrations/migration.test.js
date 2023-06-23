@@ -2,7 +2,6 @@ const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
 const _ = require('lodash');
-const Promise = require('bluebird');
 const Models = require('../../../core/server/models');
 
 describe('Database Migration (special functions)', function () {
@@ -193,8 +192,8 @@ describe('Database Migration (special functions)', function () {
         describe('Populate', function () {
             beforeEach(testUtils.setup('default'));
 
-            it('should populate all fixtures correctly', function () {
-                const promises = [
+            it('should populate all fixtures correctly', async function () {
+                const [posts, tags, users, roles, permissions] = await Promise.all([
                     Models.Post.findAll({withRelated: ['tags']}),
                     Models.Tag.findAll(),
                     Models.User.findAll({
@@ -204,55 +203,46 @@ describe('Database Migration (special functions)', function () {
                     }),
                     Models.Role.findAll(),
                     Models.Permission.findAll({withRelated: ['roles']})
-                ];
+                ]);
+                // Post
+                should.exist(posts);
+                posts.length.should.eql(7);
+                posts.at(0).get('title').should.eql('Start here for a quick overview of everything you need to know');
+                posts.at(6).get('title').should.eql('Setting up apps and custom integrations');
 
-                return Promise.all(promises).then(function (result) {
-                    const posts = result[0];
-                    const tags = result[1];
-                    const users = result[2];
-                    const roles = result[3];
-                    const permissions = result[4];
+                // Tag
+                should.exist(tags);
+                tags.length.should.eql(1);
+                tags.at(0).get('name').should.eql('Getting Started');
 
-                    // Post
-                    should.exist(posts);
-                    posts.length.should.eql(7);
-                    posts.at(0).get('title').should.eql('Start here for a quick overview of everything you need to know');
-                    posts.at(6).get('title').should.eql('Setting up apps and custom integrations');
+                // Post Tag relation
+                posts.at(0).related('tags').length.should.eql(1);
+                posts.at(0).related('tags').at(0).get('name').should.eql('Getting Started');
 
-                    // Tag
-                    should.exist(tags);
-                    tags.length.should.eql(1);
-                    tags.at(0).get('name').should.eql('Getting Started');
+                // User (Owner)
+                should.exist(users);
+                users.length.should.eql(1);
+                users.at(0).get('name').should.eql('Ghost');
+                users.at(0).get('status').should.eql('inactive');
+                users.at(0).related('roles').length.should.eql(1);
+                users.at(0).related('roles').at(0).get('name').should.eql('Owner');
 
-                    // Post Tag relation
-                    posts.at(0).related('tags').length.should.eql(1);
-                    posts.at(0).related('tags').at(0).get('name').should.eql('Getting Started');
+                // Roles
+                should.exist(roles);
+                roles.length.should.eql(10);
+                roles.at(0).get('name').should.eql('Administrator');
+                roles.at(1).get('name').should.eql('Editor');
+                roles.at(2).get('name').should.eql('Author');
+                roles.at(3).get('name').should.eql('Contributor');
+                roles.at(4).get('name').should.eql('Owner');
+                roles.at(5).get('name').should.eql('Admin Integration');
+                roles.at(6).get('name').should.eql('Ghost Explore Integration');
+                roles.at(7).get('name').should.eql('Self-Serve Migration Integration');
+                roles.at(8).get('name').should.eql('DB Backup Integration');
+                roles.at(9).get('name').should.eql('Scheduler Integration');
 
-                    // User (Owner)
-                    should.exist(users);
-                    users.length.should.eql(1);
-                    users.at(0).get('name').should.eql('Ghost');
-                    users.at(0).get('status').should.eql('inactive');
-                    users.at(0).related('roles').length.should.eql(1);
-                    users.at(0).related('roles').at(0).get('name').should.eql('Owner');
-
-                    // Roles
-                    should.exist(roles);
-                    roles.length.should.eql(10);
-                    roles.at(0).get('name').should.eql('Administrator');
-                    roles.at(1).get('name').should.eql('Editor');
-                    roles.at(2).get('name').should.eql('Author');
-                    roles.at(3).get('name').should.eql('Contributor');
-                    roles.at(4).get('name').should.eql('Owner');
-                    roles.at(5).get('name').should.eql('Admin Integration');
-                    roles.at(6).get('name').should.eql('Ghost Explore Integration');
-                    roles.at(7).get('name').should.eql('Self-Serve Migration Integration');
-                    roles.at(8).get('name').should.eql('DB Backup Integration');
-                    roles.at(9).get('name').should.eql('Scheduler Integration');
-
-                    // Permissions
-                    permissions.toJSON().should.be.CompletePermissions();
-                });
+                // Permissions
+                permissions.toJSON().should.be.CompletePermissions();
             });
         });
     });
