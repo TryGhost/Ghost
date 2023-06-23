@@ -9,7 +9,11 @@ function cardTemplate(nodeData) {
     const buttonAccent = nodeData.buttonColor === 'accent' ? 'kg-style-accent' : '';
     const buttonStyle = nodeData.buttonColor !== 'accent' ? `background-color: ${nodeData.buttonColor};` : ``;
     const alignment = nodeData.alignment === 'center' ? 'kg-align-center' : '';
-    const backgroundImageStyle = (nodeData.layout === 'split' || !nodeData.backgroundImageSrc) ? (nodeData.backgroundColor !== 'accent' ? `background-color: ${nodeData.backgroundColor}` : '') : `background-color: #ffffff; background-image: url(${nodeData.backgroundImageSrc})`;
+    const backgroundImageStyle = nodeData.backgroundColor !== 'accent' && (!nodeData.backgroundImageSrc || nodeData.layout === 'split') ? `background-color: ${nodeData.backgroundColor}` : '';
+
+    const imgTemplate = nodeData.backgroundImageSrc ? `
+        <picture><img class="kg-signup-card-image" src="${nodeData.backgroundImageSrc}" alt="" /></picture>
+    ` : ``;
 
     const formTemplate = `
         <form class="kg-signup-card-form" data-members-form="signup">
@@ -30,8 +34,9 @@ function cardTemplate(nodeData) {
 
     return `
         <div class="${cardClasses} ${backgroundAccent}" data-lexical-signup-form style="${backgroundImageStyle}; display: none;">
+            ${nodeData.layout !== 'split' ? imgTemplate : ''}
             <div class="kg-signup-card-content">
-                ${nodeData.layout === 'split' ? `<img class="kg-signup-card-image" src="${nodeData.backgroundImageSrc}" alt="" />` : ''}
+                ${nodeData.layout === 'split' ? imgTemplate : ''}
                 <div class="kg-signup-card-text ${alignment}">
                     <h2 class="kg-signup-card-heading" style="color: ${nodeData.textColor};">${nodeData.header}</h2>
                     <h3 class="kg-signup-card-subheading" style="color: ${nodeData.textColor};">${nodeData.subheader}</h3>

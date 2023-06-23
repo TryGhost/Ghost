@@ -48,9 +48,7 @@ export class SignupParser {
                             const header = domNode.querySelector('h2')?.textContent || '';
                             const subheader = domNode.querySelector('h3')?.textContent || '';
                             const disclaimer = domNode.querySelector('p')?.textContent || '';
-                            const backgroundImageSrc = layout === 'split'
-                                ? domNode.querySelector('.kg-signup-card-image')?.getAttribute('src')
-                                : domNode.getAttribute('style')?.match(/url\((.+)\)/)?.[1] || '';
+                            const backgroundImageSrc = domNode.querySelector('.kg-signup-card-image')?.getAttribute('src');
                             const backgroundColor = domNode.style.backgroundColor || '';
                             const buttonColor = domNode.querySelector('.kg-signup-card-button')?.style.backgroundColor || '';
                             const buttonText = domNode.querySelector('.kg-signup-card-button-default')?.textContent?.trim() || 'Subscribe';

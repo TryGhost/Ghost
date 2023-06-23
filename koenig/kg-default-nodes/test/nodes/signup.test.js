@@ -208,11 +208,8 @@ describe('SignupNode', function () {
             const signupNode = $createSignupNode(dataset);
             const {element} = signupNode.exportDOM(exportOptions);
             element.outerHTML.should.prettifyTo(html`
-                <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form=""  style="
-                    background-color: #ffffff;
-                    background-image: url(https://example.com/image.jpg);
-                    display: none;
-                    ">
+                <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form=""  style="display: none;">
+                    <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""/></picture>
                     <div class="kg-signup-card-content">
                         <div class="kg-signup-card-text kg-align-center">
                             <h2 class="kg-signup-card-heading" style="color:#000000">Header</h2>
@@ -244,7 +241,8 @@ describe('SignupNode', function () {
             const signupNode = $createSignupNode(dataset);
             const {element} = signupNode.exportDOM(exportOptions);
             element.outerHTML.should.prettifyTo(html`
-                <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="background-color:#ffffff;background-image:url(https://example.com/image.jpg);display:none">
+                <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="display:none">
+                    <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""/></picture>
                     <div class="kg-signup-card-content">
                         <div class="kg-signup-card-text kg-align-center">
                             <form class="kg-signup-card-form" data-members-form="signup">
@@ -307,7 +305,7 @@ describe('SignupNode', function () {
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-layout-split kg-width-full" data-lexical-signup-form="" style="background-color: transparent; display:none">
                     <div class="kg-signup-card-content">
-                        <img class="kg-signup-card-image" src="https://example.com/image.jpg" alt="">
+                        <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""></picture>
                         <div class="kg-signup-card-text kg-align-center">
                             <h2 class="kg-signup-card-heading" style="color:#000000">Header</h2>
                             <h3 class="kg-signup-card-subheading" style="color:#000000">Subheader</h3>
@@ -340,7 +338,7 @@ describe('SignupNode', function () {
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-layout-split kg-width-full kg-swapped" data-lexical-signup-form="" style="background-color: transparent; display:none">
                     <div class="kg-signup-card-content">
-                        <img class="kg-signup-card-image" src="https://example.com/image.jpg" alt="">
+                        <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""></picture>
                         <div class="kg-signup-card-text kg-align-center">
                             <h2 class="kg-signup-card-heading" style="color:#000000">Header</h2>
                             <h3 class="kg-signup-card-subheading" style="color:#000000">Subheader</h3>
@@ -373,7 +371,7 @@ describe('SignupNode', function () {
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-signup-card kg-layout-split kg-width-full kg-content-wide" data-lexical-signup-form="" style="background-color: transparent; display:none">
                     <div class="kg-signup-card-content">
-                        <img class="kg-signup-card-image" src="https://example.com/image.jpg" alt="">
+                        <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""></picture>
                         <div class="kg-signup-card-text kg-align-center">
                             <h2 class="kg-signup-card-heading" style="color:#000000">Header</h2>
                             <h3 class="kg-signup-card-subheading" style="color:#000000">Subheader</h3>
