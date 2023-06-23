@@ -268,13 +268,14 @@ export function SignupCard({alignment,
                             initialEditorState={headerTextEditorInitialState}
                             nodes="minimal"
                             placeholderClassName={clsx(
-                                '!font-bold !leading-[1.1] !tracking-tight !text-grey-700 opacity-50',
+                                '!font-bold !leading-[1.1] !tracking-tight opacity-50',
                                 (alignment === 'center') && 'text-center',
                                 (layout === 'regular' || layout === 'wide' || layout === 'split') && 'text-3xl sm:text-4xl md:text-5xl',
                                 (layout === 'full') && 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl'
                             )}
                             placeholderText={headerPlaceholder}
                             singleParagraph={true}
+                            style={{color: matchingTextColor(backgroundColor)}}
                             textClassName={clsx(
                                 'koenig-lexical-header-heading relative w-full whitespace-normal font-bold caret-current',
                                 (!isEditing && isEditorEmpty(headerTextEditor)) ? 'hidden' : 'peer',
@@ -293,7 +294,7 @@ export function SignupCard({alignment,
                             initialEditorState={subheaderTextEditorInitialState}
                             nodes="minimal"
                             placeholderClassName={clsx(
-                                '!font-medium !leading-snug !tracking-tight !text-grey-700 opacity-60',
+                                '!font-medium !leading-snug !tracking-tight opacity-60',
                                 (alignment === 'center') && 'text-center',
                                 (layout === 'regular') && 'text-lg sm:text-xl',
                                 (layout === 'wide' || layout === 'split') && 'text-lg sm:text-xl md:text-[2.2rem]',
@@ -301,6 +302,7 @@ export function SignupCard({alignment,
                             )}
                             placeholderText={subheaderPlaceholder}
                             singleParagraph={true}
+                            style={{color: matchingTextColor(backgroundColor)}}
                             textClassName={clsx(
                                 'koenig-lexical-header-subheading relative w-full whitespace-normal caret-current',
                                 (!isEditing && isEditorEmpty(subheaderTextEditor)) ? 'hidden' : 'peer',
@@ -334,9 +336,10 @@ export function SignupCard({alignment,
                             initialEditor={disclaimerTextEditor}
                             initialEditorState={disclaimerTextEditorInitialState}
                             nodes="minimal"
-                            placeholderClassName={`opacity-80 !leading-snug !font-normal !text-[1.6rem] !tracking-tight !text-grey-700`}
+                            placeholderClassName={`opacity-80 !leading-snug !font-normal !text-[1.6rem] !tracking-tight`}
                             placeholderText={disclaimerPlaceholder}
                             singleParagraph={true}
+                            style={{color: matchingTextColor(backgroundColor)}}
                             textClassName={clsx(
                                 'koenig-lexical-header-subheading koenig-lexical-header-xsmall relative !mt-4 w-full whitespace-normal caret-current',
                                 (!isEditing && isEditorEmpty(disclaimerTextEditor)) && 'hidden',
