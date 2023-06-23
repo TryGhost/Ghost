@@ -72,9 +72,9 @@ const TimeZone: React.FC = () => {
     const inputFields = (
         <SettingGroupContent columns={1}>
             <Select
-                defaultSelectedOption={publicationTimezone}
                 hint={<Hint timezone={publicationTimezone} />}
                 options={timezoneOptions}
+                selectedOption={publicationTimezone}
                 title="Site timezone"
                 onSelect={handleTimezoneChange}
             />
@@ -87,6 +87,7 @@ const TimeZone: React.FC = () => {
             isEditing={isEditing}
             navid='timezone'
             saveState={saveState}
+            searchKeywords={['time', 'date', 'timezone', 'time zone']}
             testId='timezone'
             title='Site timezone'
             onCancel={handleCancel}

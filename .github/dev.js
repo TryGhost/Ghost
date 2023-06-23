@@ -92,7 +92,7 @@ if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'portal',
         command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../ghost/portal'),
+        cwd: path.resolve(__dirname, '../apps/portal'),
         prefixColor: 'magenta',
         env: {}
     });
@@ -103,7 +103,7 @@ if (DASH_DASH_ARGS.includes('signup') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'signup-form',
         command: DASH_DASH_ARGS.includes('signup') ? 'yarn dev' : 'yarn preview',
-        cwd: path.resolve(__dirname, '../ghost/signup-form'),
+        cwd: path.resolve(__dirname, '../apps/signup-form'),
         prefixColor: 'magenta',
         env: {}
     });
@@ -135,6 +135,18 @@ if (DASH_DASH_ARGS.includes('search') || DASH_DASH_ARGS.includes('all')) {
 
 if (DASH_DASH_ARGS.includes('lexical')) {
     COMMAND_GHOST.env['editor__url'] = 'http://localhost:4173/koenig-lexical.umd.js';
+}
+
+if (DASH_DASH_ARGS.includes('comments') || DASH_DASH_ARGS.includes('all')) {
+    commands.push({
+        name: 'comments',
+        command: 'yarn dev',
+        cwd: path.resolve(__dirname, '../apps/comments-ui'),
+        prefixColor: '#E55137',
+        env: {}
+    });
+
+    COMMAND_GHOST.env['comments__url'] = 'http://localhost:7174/comments-ui.min.js';
 }
 
 async function handleStripe() {

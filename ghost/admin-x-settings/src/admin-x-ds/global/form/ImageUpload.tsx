@@ -116,7 +116,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                     width: (unstyled ? '' : width),
                     height: (unstyled ? '' : height)
                 }
-            } onUpload={onUpload}>
+            } unstyled={unstyled} onUpload={onUpload}>
                 {children}
             </FileUpload>
         );

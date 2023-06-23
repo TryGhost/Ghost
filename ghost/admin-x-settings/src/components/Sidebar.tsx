@@ -1,8 +1,12 @@
 import React from 'react';
 import SettingNavItem from '../admin-x-ds/settings/SettingNavItem';
 import SettingNavSection from '../admin-x-ds/settings/SettingNavSection';
+import TextField from '../admin-x-ds/global/form/TextField';
+import {useSearch} from './providers/ServiceProvider';
 
 const Sidebar: React.FC = () => {
+    const {filter, setFilter} = useSearch();
+
     const handleSectionClick = (e: React.MouseEvent<HTMLButtonElement>) => {
         const element = document.getElementById(e.currentTarget.name);
         if (element) {
@@ -12,6 +16,8 @@ const Sidebar: React.FC = () => {
 
     return (
         <div className="hidden md:!visible md:!block md:h-[calc(100vh-5vmin-84px)] md:w-[300px] md:overflow-y-scroll md:pt-[32px]">
+            <TextField containerClassName="mb-10" placeholder="Search" value={filter} onChange={e => setFilter(e.target.value)} />
+
             <SettingNavSection title="General">
                 <SettingNavItem navid='title-and-description' title="Title and description" onClick={handleSectionClick} />
                 <SettingNavItem navid='timezone' title="Timezone" onClick={handleSectionClick} />

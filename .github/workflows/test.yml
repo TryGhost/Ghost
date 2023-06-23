@@ -128,10 +128,9 @@ jobs:
       - run: yarn --prefer-offline
 
       - name: Run Ghost and then kill it
-        working-directory: ghost/core
-        run: |
-          node index.js &
-          sleep 20 && { kill $! && wait $!; } 2>/dev/null
+        run: yarn workspace ghost run start
+        env:
+          GHOST_TESTS_KILL_SERVER_AFTER_BOOT: true
 
       - run: sqlite3 ${{ env.database__connection__filename }} "DELETE FROM migrations WHERE version LIKE '5.%';"
         if: matrix.env.DB == 'sqlite3'

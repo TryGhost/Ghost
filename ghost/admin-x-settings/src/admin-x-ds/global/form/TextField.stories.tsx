@@ -1,3 +1,4 @@
+import {useArgs} from '@storybook/preview-api';
 import type {Meta, StoryObj} from '@storybook/react';
 
 import TextField from './TextField';
@@ -31,6 +32,11 @@ export const ClearBackground: Story = {
 };
 
 export const WithValue: Story = {
+    render: function Component(args) {
+        const [, updateArgs] = useArgs();
+
+        return <TextField {...args} onChange={e => updateArgs({value: e.target.value})} />;
+    },
     args: {
         placeholder: 'Enter something',
         value: 'Value'

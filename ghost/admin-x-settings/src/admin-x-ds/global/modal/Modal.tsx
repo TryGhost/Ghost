@@ -1,11 +1,12 @@
-import Button, {IButton} from '../Button';
+import Button, {ButtonProps} from '../Button';
 import ButtonGroup from '../ButtonGroup';
 import ConfirmationModal from './ConfirmationModal';
 import Heading from '../Heading';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React from 'react';
+import React, {useEffect} from 'react';
 import StickyFooter from '../StickyFooter';
 import clsx from 'clsx';
+import useGlobalDirtyState from '../../../hooks/useGlobalDirtyState';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'bleed' | number;
 
@@ -65,8 +66,13 @@ const Modal: React.FC<ModalProps> = ({
     )
 }) => {
     const modal = useModal();
+    const {setGlobalDirtyState} = useGlobalDirtyState();
 
-    let buttons: IButton[] = [];
+    useEffect(() => {
+        setGlobalDirtyState(dirty);
+    }, [dirty, setGlobalDirtyState]);
+
+    let buttons: ButtonProps[] = [];
 
     const removeModal = () => {
         if (!dirty) {

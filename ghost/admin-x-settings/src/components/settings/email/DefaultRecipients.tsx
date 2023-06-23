@@ -145,7 +145,7 @@ const DefaultRecipients: React.FC = () => {
     ];
 
     const filters = defaultEmailRecipientsFilter?.split(',') || [];
-    const defaultSelectedSegments = segmentOptionGroups
+    const selectedSegments = segmentOptionGroups
         .flatMap(({options}) => options)
         .filter(({value}) => filters.includes(value));
 
@@ -169,9 +169,9 @@ const DefaultRecipients: React.FC = () => {
     const form = (
         <SettingGroupContent columns={1}>
             <Select
-                defaultSelectedOption={selectedOption}
                 hint='Who should be able to subscribe to your site?'
                 options={RECIPIENT_FILTER_OPTIONS}
+                selectedOption={selectedOption}
                 title="Default Newsletter recipients"
                 onSelect={(value) => {
                     setDefaultRecipientValue(value);
@@ -179,9 +179,9 @@ const DefaultRecipients: React.FC = () => {
             />
             {(selectedOption === 'segment') && (
                 <MultiSelect
-                    defaultValues={defaultSelectedSegments}
                     options={segmentOptionGroups.filter(group => group.options.length > 0)}
                     title='Select tiers'
+                    values={selectedSegments}
                     clearBg
                     onChange={setSelectedSegments}
                 />
@@ -195,6 +195,7 @@ const DefaultRecipients: React.FC = () => {
             isEditing={isEditing}
             navid='default-recipients'
             saveState={saveState}
+            searchKeywords={['newsletter', 'recipients', 'email']}
             testId='default-recipients'
             title='Default recipients'
             onCancel={handleCancel}
