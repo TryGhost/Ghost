@@ -349,17 +349,17 @@
         max-width: unset;
     }
 
-    .kg-signup-card-image:not(.kg-content-wide .kg-signup-card-image) {
+    .kg-signup-card-content .kg-signup-card-image:not(.kg-content-wide .kg-signup-card-content .kg-signup-card-image) {
         height: auto;
         min-height: unset;
         aspect-ratio: 1 / 1;
     }
 
-    .kg-content-wide .kg-signup-card-image {
+    .kg-content-wide .kg-signup-card-content .kg-signup-card-image {
         padding: 2.4rem 0 0;
     }
 
-    .kg-content-wide.kg-swapped .kg-signup-card-image {
+    .kg-content-wide.kg-swapped .kg-signup-card-content .kg-signup-card-image {
         padding: 0 0 2.4rem;
     }
 
