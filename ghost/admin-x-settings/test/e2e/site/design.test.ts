@@ -3,7 +3,7 @@ import {mockApi} from '../../utils/e2e';
 
 test.describe('Theme settings', async () => {
     test('Editing brand settings', async ({page}) => {
-        const lastApiRequest = await mockApi({page, responses: {
+        const lastApiRequests = await mockApi({page, responses: {
             previewHtml: {
                 homepage: '<html><head><style></style></head><body><div>homepage preview</div></body></html>'
             }
@@ -24,7 +24,7 @@ test.describe('Theme settings', async () => {
 
         await expect(modal).not.toBeVisible();
 
-        expect(lastApiRequest.body).toEqual({
+        expect(lastApiRequests.settings.edit.body).toEqual({
             settings: [
                 {key: 'description', value: 'new description'}
             ]
@@ -32,7 +32,7 @@ test.describe('Theme settings', async () => {
     });
 
     test('Editing custom theme settings', async ({page}) => {
-        const lastApiRequest = await mockApi({page});
+        const lastApiRequests = await mockApi({page});
 
         await page.goto('/');
 
@@ -49,7 +49,7 @@ test.describe('Theme settings', async () => {
 
         await expect(modal).not.toBeVisible();
 
-        expect(lastApiRequest.body).toMatchObject({
+        expect(lastApiRequests.custom_theme_settings.edit.body).toMatchObject({
             custom_theme_settings: [
                 {key: 'navigation_color'},
                 {key: 'navigation_background_image'},

@@ -3,7 +3,7 @@ import {mockApi, updatedSettingsResponse} from '../../utils/e2e';
 
 test.describe('Access settings', async () => {
     test('Supports editing access', async ({page}) => {
-        const lastApiRequest = await mockApi({page, responses: {
+        const lastApiRequests = await mockApi({page, responses: {
             settings: {
                 edit: updatedSettingsResponse([
                     {key: 'default_content_visibility', value: 'members'},
@@ -35,7 +35,7 @@ test.describe('Access settings', async () => {
         await expect(section.getByText('Members only')).toHaveCount(1);
         await expect(section.getByText('All members')).toHaveCount(1);
 
-        expect(lastApiRequest.body).toEqual({
+        expect(lastApiRequests.settings.edit.body).toEqual({
             settings: [
                 {key: 'default_content_visibility', value: 'members'},
                 {key: 'members_signup_access', value: 'invite'},

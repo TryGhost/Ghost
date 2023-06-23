@@ -3,7 +3,7 @@ import {mockApi} from '../../utils/e2e';
 
 test.describe('Twitter settings', async () => {
     test('Supports editing the twitter card', async ({page}) => {
-        const lastApiRequest = await mockApi({page, responses: {
+        const lastApiRequests = await mockApi({page, responses: {
             images: {
                 upload: {images: [{url: 'http://example.com/image.png', ref: null}]}
             }
@@ -31,7 +31,7 @@ test.describe('Twitter settings', async () => {
 
         await expect(section.getByLabel('Twitter title')).toHaveCount(0);
 
-        expect(lastApiRequest.body).toEqual({
+        expect(lastApiRequests.settings.edit.body).toEqual({
             settings: [
                 {key: 'twitter_image', value: 'http://example.com/image.png'},
                 {key: 'twitter_title', value: 'Twititle'},
