@@ -376,8 +376,8 @@ export function SignupCard({alignment,
                     {
                         layout === 'split' && (
                             <ToggleSetting
-                                checked={isSwapped}
                                 dataTestId='signup-swapped'
+                                isChecked={isSwapped}
                                 label='Flip Layout'
                                 onChange={toggleSwapped}
                             />
