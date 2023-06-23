@@ -1,6 +1,5 @@
 const should = require('should');
 const supertest = require('supertest');
-const Promise = require('bluebird');
 const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
 const db = require('../../../core/server/data/db');
