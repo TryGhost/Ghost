@@ -1,12 +1,13 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option';
+import {renderEmptyContainer} from '../../utils/render-empty-container';
 
-export function renderVideoNodeToDOM(node, options = {}) {
+export function renderVideoNode(node, options = {}) {
     addCreateDocumentOption(options);
 
     const document = options.createDocument();
 
-    if (!node.getSrc() || node.getSrc().trim() === '') {
-        return {element: document.createElement('span'), type: 'inner'};
+    if (!node.src || node.src.trim() === '') {
+        return renderEmptyContainer(document);
     }
 
     const cardClasses = getCardClasses(node).join(' ');
@@ -22,19 +23,19 @@ export function renderVideoNodeToDOM(node, options = {}) {
 }
 
 export function cardTemplate({node, cardClasses}) {
-    const width = node.getVideoWidth();
-    const height = node.getVideoHeight();
+    const width = node.width;
+    const height = node.height;
     const posterSpacerSrc = `https://img.spacergif.org/v1/${width}x${height}/0a/spacer.png`;
-    const autoplayAttr = node.getLoop() ? 'loop autoplay muted' : '';
-    const thumbnailSrc = node.getCustomThumbnailSrc() || node.getThumbnailSrc();
-    const hideControlsClass = node.getLoop() ? ' kg-video-hide' : '';
+    const autoplayAttr = node.loop ? 'loop autoplay muted' : '';
+    const thumbnailSrc = node.customThumbnailSrc || node.thumbnailSrc;
+    const hideControlsClass = node.loop ? ' kg-video-hide' : '';
 
     return (
         `
-        <figure class="${cardClasses}" data-kg-thumbnail=${node.getThumbnailSrc()} data-kg-custom-thumbnail=${node.getCustomThumbnailSrc()}>
+        <figure class="${cardClasses}" data-kg-thumbnail=${node.thumbnailSrc} data-kg-custom-thumbnail=${node.customThumbnailSrc}>
             <div class="kg-video-container">
                 <video
-                    src="${node.getSrc()}"
+                    src="${node.src}"
                     poster="${posterSpacerSrc}"
                     width="${width}"
                     height="${height}"
@@ -65,7 +66,7 @@ export function cardTemplate({node, cardClasses}) {
                         </button>
                         <span class="kg-video-current-time">0:00</span>
                         <div class="kg-video-time">
-                            /<span class="kg-video-duration">${node.getFormattedDuration()}</span>
+                            /<span class="kg-video-duration">${node.formattedDuration}</span>
                         </div>
                         <input type="range" class="kg-video-seek-slider" max="100" value="0">
                         <button class="kg-video-playback-rate">1&#215;</button>
@@ -83,16 +84,16 @@ export function cardTemplate({node, cardClasses}) {
                     </div>
                 </div>
             </div>
-            ${node.getCaption() ? `<figcaption>${node.getCaption()}</figcaption>` : ''}
+            ${node.caption ? `<figcaption>${node.caption}</figcaption>` : ''}
         </figure>
     `
     );
 }
 
 export function emailCardTemplate({node, options, cardClasses}) {
-    const thumbnailSrc = node.getCustomThumbnailSrc() || node.getThumbnailSrc();
+    const thumbnailSrc = node.customThumbnailSrc || node.thumbnailSrc;
     const emailTemplateMaxWidth = 600;
-    const aspectRatio = node.getVideoWidth() / node.getVideoHeight();
+    const aspectRatio = node.width / node.height;
     const emailSpacerWidth = Math.round(emailTemplateMaxWidth / 4);
     const emailSpacerHeight = Math.round(emailTemplateMaxWidth / aspectRatio);
     const posterSpacerSrc = `https://img.spacergif.org/v1/${emailSpacerWidth}x${emailSpacerHeight}/0a/spacer.png`;
@@ -136,7 +137,7 @@ export function emailCardTemplate({node, options, cardClasses}) {
             </v:group>
             <![endif]-->
 
-            ${node.getCaption() ? `<figcaption>${node.getCaption()}</figcaption>` : ''}
+            ${node.caption ? `<figcaption>${node.caption}</figcaption>` : ''}
         </figure>
         `
     );
@@ -145,10 +146,10 @@ export function emailCardTemplate({node, options, cardClasses}) {
 export function getCardClasses(node) {
     let cardClasses = ['kg-card kg-video-card'];
 
-    if (node.getCardWidth()) {
-        cardClasses.push(`kg-width-${node.getCardWidth()}`);
+    if (node.cardWidth) {
+        cardClasses.push(`kg-width-${node.cardWidth}`);
     }
-    if (node.getCaption()) {
+    if (node.caption) {
         cardClasses.push(`kg-card-hascaption`);
     }
 

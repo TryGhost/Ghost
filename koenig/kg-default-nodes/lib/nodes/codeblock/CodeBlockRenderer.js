@@ -1,31 +1,31 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option';
+import {renderEmptyContainer} from '../../utils/render-empty-container';
 
-export function renderCodeBlockNodeToDOM(node, options = {}) {
+export function renderCodeBlockNode(node, options = {}) {
     addCreateDocumentOption(options);
-
     const document = options.createDocument();
 
-    if (!node.getCode() || node.getCode().trim() === '') {
-        return {element: document.createElement('span'), type: 'inner'};
+    if (!node.code || node.code.trim() === '') {
+        return renderEmptyContainer(document);
     }
 
     const pre = document.createElement('pre');
     const code = document.createElement('code');
 
-    if (node.getLanguage()) {
-        code.setAttribute('class', `language-${node.getLanguage()}`);
+    if (node.language) {
+        code.setAttribute('class', `language-${node.language}`);
     }
 
-    code.appendChild(document.createTextNode(node.getCode()));
+    code.appendChild(document.createTextNode(node.code));
     pre.appendChild(code);
 
-    if (node.getCaption()) {
+    if (node.caption) {
         let figure = document.createElement('figure');
         figure.setAttribute('class', 'kg-card kg-code-card');
         figure.appendChild(pre);
 
         let figcaption = document.createElement('figcaption');
-        figcaption.appendChild(document.createTextNode(node.getCaption()));
+        figcaption.appendChild(document.createTextNode(node.caption));
         figure.appendChild(figcaption);
 
         return {element: figure};

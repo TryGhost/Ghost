@@ -1,14 +1,15 @@
 import React from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$generateHtmlFromNodes} from '@lexical/html';
-import {VideoNode as BaseVideoNode, INSERT_VIDEO_COMMAND} from '@tryghost/kg-default-nodes';
+import {VideoNode as BaseVideoNode} from '@tryghost/kg-default-nodes';
 import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
 import {ReactComponent as VideoCardIcon} from '../assets/icons/kg-card-type-video.svg';
 import {VideoNodeComponent} from './VideoNodeComponent';
+import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 
 // re-export here so we don't need to import from multiple places throughout the app
-export {INSERT_VIDEO_COMMAND} from '@tryghost/kg-default-nodes';
+export const INSERT_VIDEO_COMMAND = createCommand();
 
 export class VideoNode extends BaseVideoNode {
     // transient properties used to control node behaviour
@@ -86,17 +87,17 @@ export class VideoNode extends BaseVideoNode {
 
     decorate() {
         return (
-            <KoenigCardWrapper nodeKey={this.getKey()} width={this.getCardWidth()}>
+            <KoenigCardWrapper nodeKey={this.getKey()} width={this.cardWidth}>
                 <VideoNodeComponent
                     captionEditor={this.__captionEditor}
                     captionEditorInitialState={this.__captionEditorInitialState}
-                    cardWidth={this.getCardWidth()}
-                    customThumbnail={this.getCustomThumbnailSrc()}
+                    cardWidth={this.cardWidth}
+                    customThumbnail={this.customThumbnailSrc}
                     initialFile={this.__initialFile}
-                    isLoopChecked={this.getLoop()}
+                    isLoopChecked={this.loop}
                     nodeKey={this.getKey()}
-                    thumbnail={this.getThumbnailSrc()}
-                    totalDuration={this.getFormattedDuration()}
+                    thumbnail={this.thumbnailSrc}
+                    totalDuration={this.formattedDuration}
                     triggerFileDialog={this.__triggerFileDialog}
                 />
             </KoenigCardWrapper>

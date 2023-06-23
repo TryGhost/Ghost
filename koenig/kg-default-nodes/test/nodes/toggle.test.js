@@ -53,20 +53,20 @@ describe('ToggleNode', function () {
         it('has getters for all properties', editorTest(function () {
             const toggleNode = $createToggleNode(dataset);
 
-            toggleNode.getHeading().should.equal(dataset.heading);
-            toggleNode.getContent().should.equal(dataset.content);
+            toggleNode.heading.should.equal(dataset.heading);
+            toggleNode.content.should.equal(dataset.content);
         }));
 
         it('has setters for all properties', editorTest(function () {
             const toggleNode = $createToggleNode();
 
-            toggleNode.getHeading().should.equal('');
-            toggleNode.setHeading('Heading');
-            toggleNode.getHeading().should.equal('Heading');
+            toggleNode.heading.should.equal('');
+            toggleNode.heading = 'Heading';
+            toggleNode.heading.should.equal('Heading');
 
-            toggleNode.getContent().should.equal('');
-            toggleNode.setContent('Content');
-            toggleNode.getContent().should.equal('Content');
+            toggleNode.content.should.equal('');
+            toggleNode.content = 'Content';
+            toggleNode.content.should.equal('Content');
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
@@ -76,6 +76,39 @@ describe('ToggleNode', function () {
             toggleNodeDataset.should.deepEqual({
                 ...dataset
             });
+        }));
+    });
+
+    describe('getType', function () {
+        it('returns the correct node type', editorTest(function () {
+            ToggleNode.getType().should.equal('toggle');
+        }));
+    });
+
+    describe('clone', function () {
+        it('returns a copy of the current node', editorTest(function () {
+            const toggleNode = $createToggleNode(dataset);
+            const toggleNodeDataset = toggleNode.getDataset();
+            const clone = ToggleNode.clone(toggleNode);
+            const cloneDataset = clone.getDataset();
+
+            cloneDataset.should.deepEqual({...toggleNodeDataset});
+        }));
+    });
+
+    describe('urlTransformMap', function () {
+        it('contains the expected URL mapping', editorTest(function () {
+            ToggleNode.urlTransformMap.should.deepEqual({
+                heading: 'html',
+                content: 'html'
+            });
+        }));
+    });
+
+    describe('hasEditMode', function () {
+        it('returns true', editorTest(function () {
+            const toggleNode = $createToggleNode(dataset);
+            toggleNode.hasEditMode().should.be.true;
         }));
     });
 
@@ -116,8 +149,8 @@ describe('ToggleNode', function () {
                 try {
                     const [toggleNode] = $getRoot().getChildren();
 
-                    toggleNode.getHeading().should.equal(dataset.heading);
-                    toggleNode.getContent().should.equal(dataset.content);
+                    toggleNode.heading.should.equal(dataset.heading);
+                    toggleNode.content.should.equal(dataset.content);
 
                     done();
                 } catch (e) {
@@ -203,8 +236,8 @@ describe('ToggleNode', function () {
             `)).window.document;
             const nodes = $generateNodesFromDOM(editor, dom);
             nodes.length.should.equal(1);
-            nodes[0].getHeading().should.equal('Heading');
-            nodes[0].getContent().should.equal('Content');
+            nodes[0].heading.should.equal('Heading');
+            nodes[0].content.should.equal('Content');
         }));
     });
 
@@ -213,10 +246,10 @@ describe('ToggleNode', function () {
             const node = $createToggleNode();
             node.getTextContent().should.equal('');
 
-            node.setHeading('header');
+            node.heading = 'header';
             node.getTextContent().should.equal('header\n\n');
 
-            node.setContent('content');
+            node.content = 'content';
             node.getTextContent().should.equal('header\ncontent\n\n');
         }));
     });

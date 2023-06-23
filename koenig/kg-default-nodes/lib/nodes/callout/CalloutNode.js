@@ -1,38 +1,15 @@
-import {createCommand} from 'lexical';
-import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
-import {renderCalloutNodeToDOM} from './CalloutRenderer';
-import {CalloutParser} from './CalloutParser';
-import readTextContent from '../../utils/read-text-content';
+import {generateDecoratorNode} from '../../generate-decorator-node';
+import {renderCalloutNode} from './CalloutRenderer';
+import {parseCalloutNode} from './CalloutParser';
 
-export const INSERT_CALLOUT_COMMAND = createCommand();
-const NODE_TYPE = 'callout';
-
-export class CalloutNode extends KoenigDecoratorNode {
-    // payload properties
-    __calloutText;
-    __calloutEmoji;
-    __backgroundColor;
-
-    static getType() {
-        return NODE_TYPE;
-    }
-
-    static clone(node) {
-        return new this(
-            node.getDataset(),
-            node.__key
-        );
-    }
-
-    getDataset() {
-        const self = this.getLatest();
-        return {
-            calloutText: self.__calloutText,
-            calloutEmoji: self.__calloutEmoji,
-            backgroundColor: self.__backgroundColor
-        };
-    }
-
+export class CalloutNode extends generateDecoratorNode({nodeType: 'callout',
+    properties: [
+        {name: 'calloutText', default: '', wordCount: true},
+        {name: 'calloutEmoji', default: '💡'},
+        {name: 'backgroundColor', default: 'blue'}
+    ]}
+) {
+    /* override */
     constructor({calloutText, calloutEmoji, backgroundColor} = {}, key) {
         super(key);
         this.__calloutText = calloutText || '';
@@ -40,74 +17,12 @@ export class CalloutNode extends KoenigDecoratorNode {
         this.__backgroundColor = backgroundColor || 'blue';
     }
 
-    static importJSON(serializedNode) {
-        const {calloutText, backgroundColor, calloutEmoji} = serializedNode;
-        return new this({
-            calloutText,
-            calloutEmoji,
-            backgroundColor
-        });
-    }
-
-    exportJSON() {
-        const dataset = {
-            type: NODE_TYPE,
-            version: 1,
-            calloutText: this.getCalloutText(),
-            calloutEmoji: this.getCalloutEmoji(),
-            backgroundColor: this.getBackgroundColor()
-        };
-        return dataset;
-    }
-
     static importDOM() {
-        const parser = new CalloutParser(this);
-        return parser.DOMConversionMap;
+        return parseCalloutNode(this);
     }
 
     exportDOM(options = {}) {
-        const {element, type} = renderCalloutNodeToDOM(this, options);
-        return {element, type};
-    }
-
-    getCalloutText() {
-        const self = this.getLatest();
-        return self.__calloutText;
-    }
-
-    setCalloutText(text) {
-        const writeable = this.getWritable();
-        writeable.__calloutText = text;
-    }
-
-    getBackgroundColor() {
-        const self = this.getLatest();
-        return self.__backgroundColor;
-    }
-
-    setBackgroundColor(color) {
-        const writeable = this.getWritable();
-        writeable.__backgroundColor = color;
-    }
-
-    getCalloutEmoji() {
-        const self = this.getLatest();
-        return self.__calloutEmoji;
-    }
-
-    setCalloutEmoji(emoji) {
-        const writeable = this.getWritable();
-        writeable.__calloutEmoji = emoji;
-    }
-
-    hasEditMode() {
-        return true;
-    }
-
-    getTextContent() {
-        const self = this.getLatest();
-        const text = readTextContent(self, 'calloutText');
-        return text ? `${readTextContent(self, 'calloutText')}\n\n` : '';
+        return renderCalloutNode(this, options);
     }
 }
 

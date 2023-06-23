@@ -4,6 +4,7 @@ import {isLocalContentImage} from '../../utils/is-local-content-image';
 import {isUnsplashImage} from '../../utils/is-unsplash-image';
 import {resizeImage} from '../../utils/resize-image';
 import {setSrcsetAttribute} from '../../utils/srcset-attribute';
+import {renderEmptyContainer} from '../../utils/render-empty-container';
 
 const MAX_IMG_PER_ROW = 3;
 
@@ -34,14 +35,13 @@ function buildStructure(images) {
     return rows;
 }
 
-export function renderGalleryNodeToDOM(node, options = {}) {
+export function renderGalleryNode(node, options = {}) {
     addCreateDocumentOption(options);
-
     const document = options.createDocument();
 
-    const validImages = node.getImages().filter(isValidImage);
+    const validImages = node.images.filter(isValidImage);
     if (!validImages.length) {
-        return {element: document.createElement('span'), type: 'inner'};
+        return renderEmptyContainer(document);
     }
 
     const figure = document.createElement('figure');
@@ -146,9 +146,9 @@ export function renderGalleryNodeToDOM(node, options = {}) {
         container.appendChild(rowDiv);
     });
 
-    if (node.getCaption()) {
+    if (node.caption) {
         let figcaption = document.createElement('figcaption');
-        figcaption.innerHTML = node.getCaption();
+        figcaption.innerHTML = node.caption;
         figure.appendChild(figcaption);
         figure.setAttribute('class', `${figure.getAttribute('class')} kg-card-hascaption`);
     }

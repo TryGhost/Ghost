@@ -60,50 +60,50 @@ describe('BookmarkNode', function () {
         it('has getters for all properties', editorTest(function () {
             const bookmarkNode = $createBookmarkNode(dataset);
 
-            bookmarkNode.getUrl().should.equal(dataset.url);
-            bookmarkNode.getIconSrc().should.equal(dataset.metadata.icon);
-            bookmarkNode.getTitle().should.equal(dataset.metadata.title);
-            bookmarkNode.getDescription().should.equal(dataset.metadata.description);
-            bookmarkNode.getAuthor().should.equal(dataset.metadata.author);
-            bookmarkNode.getPublisher().should.equal(dataset.metadata.publisher);
-            bookmarkNode.getThumbnail().should.equal(dataset.metadata.thumbnail);
-            bookmarkNode.getCaption().should.equal(dataset.caption);
+            bookmarkNode.url.should.equal(dataset.url);
+            bookmarkNode.icon.should.equal(dataset.metadata.icon);
+            bookmarkNode.title.should.equal(dataset.metadata.title);
+            bookmarkNode.description.should.equal(dataset.metadata.description);
+            bookmarkNode.author.should.equal(dataset.metadata.author);
+            bookmarkNode.publisher.should.equal(dataset.metadata.publisher);
+            bookmarkNode.thumbnail.should.equal(dataset.metadata.thumbnail);
+            bookmarkNode.caption.should.equal(dataset.caption);
         }));
 
         it('has setters for all properties', editorTest(function () {
             const bookmarkNode = $createBookmarkNode();
 
-            bookmarkNode.getUrl().should.equal('');
-            bookmarkNode.setUrl('https://www.ghost.org/');
-            bookmarkNode.getUrl().should.equal('https://www.ghost.org/');
+            bookmarkNode.url.should.equal('');
+            bookmarkNode.url = 'https://www.ghost.org/';
+            bookmarkNode.url.should.equal('https://www.ghost.org/');
 
-            bookmarkNode.getIconSrc().should.equal('');
-            bookmarkNode.setIconSrc('https://www.ghost.org/favicon.ico');
-            bookmarkNode.getIconSrc().should.equal('https://www.ghost.org/favicon.ico');
+            bookmarkNode.icon.should.equal('');
+            bookmarkNode.icon = 'https://www.ghost.org/favicon.ico';
+            bookmarkNode.icon.should.equal('https://www.ghost.org/favicon.ico');
 
-            bookmarkNode.getTitle().should.equal('');
-            bookmarkNode.setTitle('Ghost: The Creator Economy Platform');
-            bookmarkNode.getTitle().should.equal('Ghost: The Creator Economy Platform');
+            bookmarkNode.title.should.equal('');
+            bookmarkNode.title = 'Ghost: The Creator Economy Platform';
+            bookmarkNode.title.should.equal('Ghost: The Creator Economy Platform');
 
-            bookmarkNode.getDescription().should.equal('');
-            bookmarkNode.setDescription('doing kewl stuff');
-            bookmarkNode.getDescription().should.equal('doing kewl stuff');
+            bookmarkNode.description.should.equal('');
+            bookmarkNode.description = 'doing kewl stuff';
+            bookmarkNode.description.should.equal('doing kewl stuff');
 
-            bookmarkNode.getAuthor().should.equal('');
-            bookmarkNode.setAuthor('ghost');
-            bookmarkNode.getAuthor().should.equal('ghost');
+            bookmarkNode.author.should.equal('');
+            bookmarkNode.author = 'ghost';
+            bookmarkNode.author.should.equal('ghost');
 
-            bookmarkNode.getPublisher().should.equal('');
-            bookmarkNode.setPublisher('Ghost - The Professional Publishing Platform');
-            bookmarkNode.getPublisher().should.equal('Ghost - The Professional Publishing Platform');
+            bookmarkNode.publisher.should.equal('');
+            bookmarkNode.publisher = 'Ghost - The Professional Publishing Platform';
+            bookmarkNode.publisher.should.equal('Ghost - The Professional Publishing Platform');
 
-            bookmarkNode.getThumbnail().should.equal('');
-            bookmarkNode.setThumbnail('https://ghost.org/images/meta/ghost.png');
-            bookmarkNode.getThumbnail().should.equal('https://ghost.org/images/meta/ghost.png');
+            bookmarkNode.thumbnail.should.equal('');
+            bookmarkNode.thumbnail = 'https://ghost.org/images/meta/ghost.png';
+            bookmarkNode.thumbnail.should.equal('https://ghost.org/images/meta/ghost.png');
 
-            bookmarkNode.getCaption().should.equal('');
-            bookmarkNode.setCaption('caption here');
-            bookmarkNode.getCaption().should.equal('caption here');
+            bookmarkNode.caption.should.equal('');
+            bookmarkNode.caption = 'caption here';
+            bookmarkNode.caption.should.equal('caption here');
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
@@ -114,12 +114,48 @@ describe('BookmarkNode', function () {
                 ...dataset
             });
         }));
+    });
 
-        it('has isEmpty() convenience method', editorTest(function () {
+    describe('getType', function () {
+        it('returns the correct node type', editorTest(function () {
+            BookmarkNode.getType().should.equal('bookmark');
+        }));
+    });
+
+    describe('clone', function () {
+        it('returns a copy of the current node', editorTest(function () {
+            const bookmarkNode = $createBookmarkNode(dataset);
+            const bookmarkNodeDataset = bookmarkNode.getDataset();
+            const clone = BookmarkNode.clone(bookmarkNode);
+            const cloneDataset = clone.getDataset();
+
+            cloneDataset.should.deepEqual({...bookmarkNodeDataset});
+        }));
+    });
+
+    describe('urlTransformMap', function () {
+        it('contains the expected URL mapping', editorTest(function () {
+            BookmarkNode.urlTransformMap.should.deepEqual({
+                url: 'url',
+                icon: 'url',
+                thumbnail: 'url'
+            });
+        }));
+    });
+
+    describe('hasEditMode', function () {
+        it('returns true', editorTest(function () {
+            const bookmarkNode = $createBookmarkNode(dataset);
+            bookmarkNode.hasEditMode().should.be.true;
+        }));
+    });
+
+    describe('isEmpty', function () {
+        it('returns true if url is empty', editorTest(function () {
             const bookmarkNode = $createBookmarkNode(dataset);
 
             bookmarkNode.isEmpty().should.be.false;
-            bookmarkNode.setUrl('');
+            bookmarkNode.url = '';
             bookmarkNode.isEmpty().should.be.true;
         }));
     });
@@ -220,14 +256,14 @@ describe('BookmarkNode', function () {
                 try {
                     const [bookmarkNode] = $getRoot().getChildren();
 
-                    bookmarkNode.getUrl().should.equal(dataset.url);
-                    bookmarkNode.getIconSrc().should.equal(dataset.metadata.icon);
-                    bookmarkNode.getTitle().should.equal(dataset.metadata.title);
-                    bookmarkNode.getDescription().should.equal(dataset.metadata.description);
-                    bookmarkNode.getAuthor().should.equal(dataset.metadata.author);
-                    bookmarkNode.getPublisher().should.equal(dataset.metadata.publisher);
-                    bookmarkNode.getThumbnail().should.equal(dataset.metadata.thumbnail);
-                    bookmarkNode.getCaption().should.equal(dataset.caption);
+                    bookmarkNode.url.should.equal(dataset.url);
+                    bookmarkNode.icon.should.equal(dataset.metadata.icon);
+                    bookmarkNode.title.should.equal(dataset.metadata.title);
+                    bookmarkNode.description.should.equal(dataset.metadata.description);
+                    bookmarkNode.author.should.equal(dataset.metadata.author);
+                    bookmarkNode.publisher.should.equal(dataset.metadata.publisher);
+                    bookmarkNode.thumbnail.should.equal(dataset.metadata.thumbnail);
+                    bookmarkNode.caption.should.equal(dataset.caption);
 
                     done();
                 } catch (e) {
@@ -235,22 +271,6 @@ describe('BookmarkNode', function () {
                 }
             });
         });
-    });
-
-    describe('hasEditMode', function () {
-        it('returns true', editorTest(function () {
-            const bookmarkNode = $createBookmarkNode(dataset);
-            bookmarkNode.hasEditMode().should.be.true;
-        }));
-    });
-
-    describe('clone', function () {
-        it('clones the node', editorTest(function () {
-            const bookmarkNode = $createBookmarkNode(dataset);
-            const clonedBookmarkNode = BookmarkNode.clone(bookmarkNode);
-            $isBookmarkNode(clonedBookmarkNode).should.be.true;
-            clonedBookmarkNode.getUrl().should.equal(dataset.url);
-        }));
     });
 
     describe('static properties', function () {
@@ -291,14 +311,14 @@ describe('BookmarkNode', function () {
             const nodes = $generateNodesFromDOM(editor, dom);
 
             nodes.length.should.equal(1);
-            nodes[0].getUrl().should.equal(dataset.url);
-            nodes[0].getIconSrc().should.equal(dataset.metadata.icon);
-            nodes[0].getTitle().should.equal(dataset.metadata.title);
-            nodes[0].getDescription().should.equal(dataset.metadata.description);
-            nodes[0].getAuthor().should.equal(dataset.metadata.author);
-            nodes[0].getPublisher().should.equal(dataset.metadata.publisher);
-            nodes[0].getThumbnail().should.equal(dataset.metadata.thumbnail);
-            nodes[0].getCaption().should.equal(dataset.caption);
+            nodes[0].url.should.equal(dataset.url);
+            nodes[0].icon.should.equal(dataset.metadata.icon);
+            nodes[0].title.should.equal(dataset.metadata.title);
+            nodes[0].description.should.equal(dataset.metadata.description);
+            nodes[0].author.should.equal(dataset.metadata.author);
+            nodes[0].publisher.should.equal(dataset.metadata.publisher);
+            nodes[0].thumbnail.should.equal(dataset.metadata.thumbnail);
+            nodes[0].caption.should.equal(dataset.caption);
         }));
 
         // mixtape embeds parse into bookmark cards
@@ -312,11 +332,11 @@ describe('BookmarkNode', function () {
                 const nodes = $generateNodesFromDOM(editor, dom);
 
                 nodes.length.should.equal(1);
-                nodes[0].getUrl().should.equal('https://slack.engineering/typescript-at-slack-a81307fa288d');
-                nodes[0].getTitle().should.equal('TypeScript at Slack');
-                nodes[0].getDescription().should.equal('Or, How I Learned to Stop Worrying &amp; Trust the Compiler');
-                nodes[0].getPublisher().should.equal('slack.engineering');
-                nodes[0].getThumbnail().should.equal('https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png');
+                nodes[0].url.should.equal('https://slack.engineering/typescript-at-slack-a81307fa288d');
+                nodes[0].title.should.equal('TypeScript at Slack');
+                nodes[0].description.should.equal('Or, How I Learned to Stop Worrying &amp; Trust the Compiler');
+                nodes[0].publisher.should.equal('slack.engineering');
+                nodes[0].thumbnail.should.equal('https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png');
             }));
 
             it('parses mixtape with missing title', editorTest(function () {
@@ -324,11 +344,11 @@ describe('BookmarkNode', function () {
                 const nodes = $generateNodesFromDOM(editor, dom);
 
                 nodes.length.should.equal(1);
-                nodes[0].getUrl().should.equal('https://slack.engineering/typescript-at-slack-a81307fa288d');
-                nodes[0].getTitle().should.equal('');
-                nodes[0].getDescription().should.equal('Or, How I Learned to Stop Worrying &amp; Trust the Compiler');
-                nodes[0].getPublisher().should.equal('slack.engineering');
-                nodes[0].getThumbnail().should.equal('https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png');
+                nodes[0].url.should.equal('https://slack.engineering/typescript-at-slack-a81307fa288d');
+                nodes[0].title.should.equal('');
+                nodes[0].description.should.equal('Or, How I Learned to Stop Worrying &amp; Trust the Compiler');
+                nodes[0].publisher.should.equal('slack.engineering');
+                nodes[0].thumbnail.should.equal('https://cdn-images-1.medium.com/fit/c/160/160/1*-h1bH8gB3I7gPh5AG1HmsQ.png');
             }));
         });
     });
@@ -338,10 +358,10 @@ describe('BookmarkNode', function () {
             const node = $createBookmarkNode();
             node.getTextContent().should.equal('');
 
-            node.setTitle('Test');
-            node.setDescription('Test description');
-            node.setUrl('https://example.com');
-            node.setCaption('Test <strong>caption</strong>');
+            node.title = 'Test';
+            node.description = 'Test description';
+            node.url = 'https://example.com';
+            node.caption = 'Test <strong>caption</strong>';
 
             node.getTextContent().should.equal('Test\nTest description\nhttps://example.com\nTest <strong>caption</strong>\n\n');
         }));

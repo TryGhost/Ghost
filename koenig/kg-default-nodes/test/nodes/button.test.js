@@ -50,25 +50,25 @@ describe('ButtonNode', function () {
         it('has getters for all properties', editorTest(function () {
             const buttonNode = $createButtonNode(dataset);
 
-            buttonNode.getButtonUrl().should.equal(dataset.buttonUrl);
-            buttonNode.getButtonText().should.equal(dataset.buttonText);
-            buttonNode.getAlignment().should.equal(dataset.alignment);
+            buttonNode.buttonUrl.should.equal(dataset.buttonUrl);
+            buttonNode.buttonText.should.equal(dataset.buttonText);
+            buttonNode.alignment.should.equal(dataset.alignment);
         }));
 
         it('has setters for all properties', editorTest(function () {
             const buttonNode = $createButtonNode();
 
-            buttonNode.getButtonUrl().should.equal('');
-            buttonNode.setButtonUrl('http://someblog.com/somepost');
-            buttonNode.getButtonUrl().should.equal('http://someblog.com/somepost');
+            buttonNode.buttonUrl.should.equal('');
+            buttonNode.buttonUrl = 'http://someblog.com/somepost';
+            buttonNode.buttonUrl.should.equal('http://someblog.com/somepost');
 
-            buttonNode.getButtonText().should.equal('');
-            buttonNode.setButtonText('button text');
-            buttonNode.getButtonText().should.equal('button text');
+            buttonNode.buttonText.should.equal('');
+            buttonNode.buttonText = 'button text';
+            buttonNode.buttonText.should.equal('button text');
 
-            buttonNode.getAlignment().should.equal('center');
-            buttonNode.setAlignment('left');
-            buttonNode.getAlignment().should.equal('left');
+            buttonNode.alignment.should.equal('center');
+            buttonNode.alignment = 'left';
+            buttonNode.alignment.should.equal('left');
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
@@ -78,6 +78,38 @@ describe('ButtonNode', function () {
             buttonNodeDataset.should.deepEqual({
                 ...dataset
             });
+        }));
+    });
+
+    describe('getType', function () {
+        it('returns the correct node type', editorTest(function () {
+            ButtonNode.getType().should.equal('button');
+        }));
+    });
+
+    describe('clone', function () {
+        it('returns a copy of the current node', editorTest(function () {
+            const buttonNode = $createButtonNode(dataset);
+            const buttonNodeDataset = buttonNode.getDataset();
+            const clone = ButtonNode.clone(buttonNode);
+            const cloneDataset = clone.getDataset();
+
+            cloneDataset.should.deepEqual({...buttonNodeDataset});
+        }));
+    });
+
+    describe('urlTransformMap', function () {
+        it('contains the expected URL mapping', editorTest(function () {
+            ButtonNode.urlTransformMap.should.deepEqual({
+                buttonUrl: 'url'
+            });
+        }));
+    });
+
+    describe('hasEditMode', function () {
+        it('returns true', editorTest(function () {
+            const buttonNode = $createButtonNode(dataset);
+            buttonNode.hasEditMode().should.be.true;
         }));
     });
 
@@ -149,9 +181,9 @@ describe('ButtonNode', function () {
                 try {
                     const [buttonNode] = $getRoot().getChildren();
 
-                    buttonNode.getButtonUrl().should.equal(dataset.buttonUrl);
-                    buttonNode.getButtonText().should.equal(dataset.buttonText);
-                    buttonNode.getAlignment().should.equal(dataset.alignment);
+                    buttonNode.buttonUrl.should.equal(dataset.buttonUrl);
+                    buttonNode.buttonText.should.equal(dataset.buttonText);
+                    buttonNode.alignment.should.equal(dataset.alignment);
 
                     done();
                 } catch (e) {
@@ -166,7 +198,7 @@ describe('ButtonNode', function () {
             const buttonNode = $createButtonNode(dataset);
             const clonedbuttonNode = ButtonNode.clone(buttonNode);
             $isButtonNode(clonedbuttonNode).should.be.true;
-            clonedbuttonNode.getButtonUrl().should.equal(dataset.buttonUrl);
+            clonedbuttonNode.buttonUrl.should.equal(dataset.buttonUrl);
         }));
     });
 
@@ -196,17 +228,17 @@ describe('ButtonNode', function () {
             `)).window.document;
             const nodes = $generateNodesFromDOM(editor, dom);
             nodes.length.should.equal(1);
-            nodes[0].getButtonUrl().should.equal('http://someblog.com/somepost');
-            nodes[0].getButtonText().should.equal('click me');
-            nodes[0].getAlignment().should.equal('center');
+            nodes[0].buttonUrl.should.equal('http://someblog.com/somepost');
+            nodes[0].buttonText.should.equal('click me');
+            nodes[0].alignment.should.equal('center');
         }));
     });
 
     describe('getTextContent', function () {
         it('returns contents', editorTest(function () {
             const node = $createButtonNode();
-            node.setButtonText('Testing');
-            node.setButtonUrl('http://someblog.com/somepost');
+            node.buttonText = 'Testing';
+            node.buttonUrl = 'http://someblog.com/somepost';
 
             // button nodes don't have text content
             node.getTextContent().should.equal('');

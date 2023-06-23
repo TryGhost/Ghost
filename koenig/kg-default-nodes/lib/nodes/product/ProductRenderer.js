@@ -1,12 +1,12 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option';
+import {renderEmptyContainer} from '../../utils/render-empty-container';
 
-export function renderProductNodeToDOM(node, options = {}) {
+export function renderProductNode(node, options = {}) {
     addCreateDocumentOption(options);
-
     const document = options.createDocument();
 
     if (node.isEmpty()) {
-        return {element: document.createElement('span'), type: 'inner'};
+        return renderEmptyContainer(document);
     }
 
     const templateData = {
@@ -17,7 +17,7 @@ export function renderProductNodeToDOM(node, options = {}) {
     const starActiveClasses = 'kg-product-card-rating-active';
     for (let i = 1; i <= 5; i++) {
         templateData['star' + i] = '';
-        if (node.getProductStarRating() >= i) {
+        if (node.productStarRating >= i) {
             templateData['star' + i] = starActiveClasses;
         }
     }

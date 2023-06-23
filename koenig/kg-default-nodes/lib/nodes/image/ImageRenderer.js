@@ -3,38 +3,39 @@ import {isLocalContentImage} from '../../utils/is-local-content-image';
 import {setSrcsetAttribute} from '../../utils/srcset-attribute';
 import {resizeImage} from '../../utils/resize-image';
 import {addCreateDocumentOption} from '../../utils/add-create-document-option';
+import {renderEmptyContainer} from '../../utils/render-empty-container';
 
-export function renderImageNodeToDOM(node, options = {}) {
+export function renderImageNode(node, options = {}) {
     addCreateDocumentOption(options);
 
     const document = options.createDocument();
 
-    if (!node.getSrc() || node.getSrc().trim() === '') {
-        return {element: document.createElement('span'), type: 'inner'};
+    if (!node.src || node.src.trim() === '') {
+        return renderEmptyContainer(document);
     }
 
     const figure = document.createElement('figure');
 
     let figureClasses = 'kg-card kg-image-card';
-    if (node.getCardWidth() !== 'regular') {
-        figureClasses += ` kg-width-${node.getCardWidth()}`;
+    if (node.cardWidth !== 'regular') {
+        figureClasses += ` kg-width-${node.cardWidth}`;
     }
 
     figure.setAttribute('class', figureClasses);
 
     const img = document.createElement('img');
-    img.setAttribute('src', node.getSrc());
+    img.setAttribute('src', node.src);
     img.setAttribute('class', 'kg-image');
-    img.setAttribute('alt', node.getAlt());
+    img.setAttribute('alt', node.alt);
     img.setAttribute('loading', 'lazy');
 
-    if (node.getTitle()) {
-        img.setAttribute('title', node.getTitle());
+    if (node.title) {
+        img.setAttribute('title', node.title);
     }
 
-    if (node.getImgWidth() && node.getImgHeight()) {
-        img.setAttribute('width', node.getImgWidth());
-        img.setAttribute('height', node.getImgHeight());
+    if (node.width && node.height) {
+        img.setAttribute('width', node.width);
+        img.setAttribute('height', node.height);
     }
 
     // images can be resized to max width, if that's the case output
@@ -44,14 +45,14 @@ export function renderImageNodeToDOM(node, options = {}) {
     const {defaultMaxWidth} = options.imageOptimization || {};
     if (
         defaultMaxWidth &&
-            node.getImgWidth() > defaultMaxWidth &&
-            isLocalContentImage(node.getSrc(), options.siteUrl) &&
+            node.width > defaultMaxWidth &&
+            isLocalContentImage(node.src, options.siteUrl) &&
             canTransformImage &&
-            canTransformImage(node.getSrc())
+            canTransformImage(node.src)
     ) {
         const imageDimensions = {
-            width: node.getImgWidth(),
-            height: node.getImgHeight()
+            width: node.width,
+            height: node.height
         };
         const {width, height} = resizeImage(imageDimensions, {width: defaultMaxWidth});
         img.setAttribute('width', width);
@@ -60,19 +61,19 @@ export function renderImageNodeToDOM(node, options = {}) {
 
     if (options.target !== 'email') {
         const imgAttributes = {
-            src: node.getSrc(),
-            width: node.getImgWidth(),
-            height: node.getImgHeight()
+            src: node.src,
+            width: node.width,
+            height: node.height
         };
         setSrcsetAttribute(img, imgAttributes, options);
 
-        if (img.getAttribute('srcset') && node.getImgWidth() && node.getImgWidth() >= 720) {
+        if (img.getAttribute('srcset') && node.width && node.width >= 720) {
             // standard size
-            if (!node.getCardWidth() || node.getCardWidth() === 'regular') {
+            if (!node.cardWidth || node.cardWidth === 'regular') {
                 img.setAttribute('sizes', '(min-width: 720px) 720px');
             }
 
-            if (node.getCardWidth() === 'wide' && node.getImgWidth() >= 1200) {
+            if (node.cardWidth === 'wide' && node.width >= 1200) {
                 img.setAttribute('sizes', '(min-width: 1200px) 1200px');
             }
         }
@@ -81,43 +82,43 @@ export function renderImageNodeToDOM(node, options = {}) {
     // Outlook is unable to properly resize images without a width/height
     // so we add that at the expected size in emails (600px) and use a higher
     // resolution image to keep images looking good on retina screens
-    if (options.target === 'email' && node.getImgWidth() && node.getImgHeight()) {
+    if (options.target === 'email' && node.width && node.height) {
         let imageDimensions = {
-            width: node.getImgWidth(),
-            height: node.getImgHeight()
+            width: node.width,
+            height: node.height
         };
-        if (node.getImgWidth() >= 600) {
+        if (node.width >= 600) {
             imageDimensions = resizeImage(imageDimensions, {width: 600});
         }
         img.setAttribute('width', imageDimensions.width);
         img.setAttribute('height', imageDimensions.height);
 
-        if (isLocalContentImage(node.getSrc(), options.siteUrl) && options.canTransformImage?.(node.getSrc())) {
+        if (isLocalContentImage(node.src, options.siteUrl) && options.canTransformImage?.(node.src)) {
             // find available image size next up from 2x600 so we can use it for the "retina" src
             const availableImageWidths = getAvailableImageWidths(node, options.imageOptimization.contentImageSizes);
             const srcWidth = availableImageWidths.find(width => width >= 1200);
 
-            if (!srcWidth || srcWidth === node.getImgWidth()) {
+            if (!srcWidth || srcWidth === node.width) {
                 // do nothing, width is smaller than retina or matches the original node src
             } else {
-                const [, imagesPath, filename] = node.getSrc().match(/(.*\/content\/images)\/(.*)/);
+                const [, imagesPath, filename] = node.src.match(/(.*\/content\/images)\/(.*)/);
                 img.setAttribute('src', `${imagesPath}/size/w${srcWidth}/${filename}`);
             }
         }
     }
 
-    if (node.getHref()) {
+    if (node.href) {
         const a = document.createElement('a');
-        a.setAttribute('href', node.getHref());
+        a.setAttribute('href', node.href);
         a.appendChild(img);
         figure.appendChild(a);
     } else {
         figure.appendChild(img);
     }
 
-    if (node.getCaption()) {
+    if (node.caption) {
         const caption = document.createElement('figcaption');
-        caption.innerHTML = node.getCaption();
+        caption.innerHTML = node.caption;
         figure.appendChild(caption);
     }
 

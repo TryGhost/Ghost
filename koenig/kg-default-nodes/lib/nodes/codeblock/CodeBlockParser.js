@@ -1,75 +1,67 @@
 import {readCaptionFromElement} from '../../utils/read-caption-from-element';
 
-export class CodeBlockParser {
-    constructor(NodeClass) {
-        this.NodeClass = NodeClass;
-    }
+export function parseCodeBlockNode(CodeBlockNode) {
+    return {
+        figure: () => ({
+            conversion(domNode) {
+                if (domNode.tagName === 'FIGURE') {
+                    const pre = domNode.querySelector('pre');
 
-    get DOMConversionMap() {
-        const self = this;
+                    // If this figure doesn't have a pre tag in it
+                    if (!pre) {
+                        return null;
+                    }
 
-        return {
-            figure: () => ({
-                conversion(domNode) {
-                    if (domNode.tagName === 'FIGURE') {
-                        const pre = domNode.querySelector('pre');
+                    let code = pre.querySelector('code');
+                    let figcaption = domNode.querySelector('figcaption');
 
-                        // If this figure doesn't have a pre tag in it
-                        if (!pre) {
-                            return null;
-                        }
+                    // if there's no caption the pre key should pick it up
+                    if (!code || !figcaption) {
+                        return null;
+                    }
 
-                        let code = pre.querySelector('code');
-                        let figcaption = domNode.querySelector('figcaption');
+                    let payload = {
+                        code: code.textContent,
+                        caption: readCaptionFromElement(domNode)
+                    };
 
-                        // if there's no caption the pre key should pick it up
-                        if (!code || !figcaption) {
-                            return null;
-                        }
+                    let preClass = pre.getAttribute('class') || '';
+                    let codeClass = code.getAttribute('class') || '';
+                    let langRegex = /lang(?:uage)?-(.*?)(?:\s|$)/i;
+                    let languageMatches = preClass.match(langRegex) || codeClass.match(langRegex);
+                    if (languageMatches) {
+                        payload.language = languageMatches[1].toLowerCase();
+                    }
 
-                        let payload = {
-                            code: code.textContent,
-                            caption: readCaptionFromElement(domNode)
-                        };
+                    const node = new CodeBlockNode(payload);
+                    return {node};
+                }
+                return null;
+            },
+            priority: 2 // falls back to pre if no caption
+        }),
+        pre: () => ({
+            conversion(domNode) {
+                if (domNode.tagName === 'PRE') {
+                    let [codeElement] = domNode.children;
 
-                        let preClass = pre.getAttribute('class') || '';
-                        let codeClass = code.getAttribute('class') || '';
+                    if (codeElement && codeElement.tagName === 'CODE') {
+                        let payload = {code: codeElement.textContent};
+                        let preClass = domNode.getAttribute('class') || '';
+                        let codeClass = codeElement.getAttribute('class') || '';
                         let langRegex = /lang(?:uage)?-(.*?)(?:\s|$)/i;
                         let languageMatches = preClass.match(langRegex) || codeClass.match(langRegex);
                         if (languageMatches) {
                             payload.language = languageMatches[1].toLowerCase();
                         }
-
-                        const node = new self.NodeClass(payload);
+                        const node = new CodeBlockNode(payload);
                         return {node};
                     }
-                    return null;
-                },
-                priority: 2 // falls back to pre if no caption
-            }),
-            pre: () => ({
-                conversion(domNode) {
-                    if (domNode.tagName === 'PRE') {
-                        let [codeElement] = domNode.children;
+                }
 
-                        if (codeElement && codeElement.tagName === 'CODE') {
-                            let payload = {code: codeElement.textContent};
-                            let preClass = domNode.getAttribute('class') || '';
-                            let codeClass = codeElement.getAttribute('class') || '';
-                            let langRegex = /lang(?:uage)?-(.*?)(?:\s|$)/i;
-                            let languageMatches = preClass.match(langRegex) || codeClass.match(langRegex);
-                            if (languageMatches) {
-                                payload.language = languageMatches[1].toLowerCase();
-                            }
-                            const node = new self.NodeClass(payload);
-                            return {node};
-                        }
-                    }
-
-                    return null;
-                },
-                priority: 1
-            })
-        };
-    }
+                return null;
+            },
+            priority: 1
+        })
+    };
 }

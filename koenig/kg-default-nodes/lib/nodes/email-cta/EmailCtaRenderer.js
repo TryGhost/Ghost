@@ -1,42 +1,35 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option';
 import {removeSpaces, wrapReplacementStrings} from '../../utils/replacement-strings';
 import {escapeHtml} from '../../utils/escape-html';
+import {renderEmptyContainer} from '../../utils/render-empty-container';
 
-export function renderEmailCtaNodeToDOM(node, options = {}) {
+export function renderEmailCtaNode(node, options = {}) {
     addCreateDocumentOption(options);
+
     const document = options.createDocument();
-
-    const html = node.getHtml();
-    const buttonText = node.getButtonText();
-    const buttonUrl = node.getButtonUrl();
-    const showButton = node.getShowButton();
-    const alignment = node.getAlignment();
-    const segment = node.getSegment();
-    const showDividers = node.getShowDividers();
-
+    const {html, buttonText, buttonUrl, showButton, alignment, segment, showDividers} = node;
     const hasButton = showButton && !!buttonText && !!buttonUrl;
 
     if ((!html && !hasButton) || options.target !== 'email') {
-        return {element: document.createElement('span'), type: 'inner'};
+        return renderEmptyContainer(document);
     }
 
-    const container = document.createElement('div');
+    const element = document.createElement('div');
 
     if (segment) {
-        container.setAttribute('data-gh-segment', segment);
+        element.setAttribute('data-gh-segment', segment);
     }
 
     if (alignment === 'center') {
-        container.setAttribute('class', 'align-center');
+        element.setAttribute('class', 'align-center');
     }
 
     if (showDividers) {
-        container.appendChild(document.createElement('hr'));
+        element.appendChild(document.createElement('hr'));
     }
 
     const cleanedHtml = wrapReplacementStrings(removeSpaces(html));
-
-    container.innerHTML = container.innerHTML + cleanedHtml;
+    element.innerHTML = element.innerHTML + cleanedHtml;
 
     if (hasButton) {
         const buttonTemplate = `
@@ -54,12 +47,12 @@ export function renderEmailCtaNodeToDOM(node, options = {}) {
         `;
 
         const cleanedButton = wrapReplacementStrings(removeSpaces(buttonTemplate));
-        container.innerHTML = container.innerHTML + cleanedButton;
+        element.innerHTML = element.innerHTML + cleanedButton;
     }
 
     if (showDividers) {
-        container.appendChild(document.createElement('hr'));
+        element.appendChild(document.createElement('hr'));
     }
 
-    return {element: container};
+    return {element};
 }

@@ -48,44 +48,37 @@ describe('HeaderNode', function () {
         $isHeaderNode(headerNode).should.be.true;
     }));
 
-    describe('hasEditMode', function () {
-        it('returns true', editorTest(function () {
-            const headerNode = $createHeaderNode(dataset);
-            headerNode.hasEditMode().should.be.true;
-        }));
-    });
-
     describe('data access', function () {
         it('has getters for all properties', editorTest(function () {
             const headerNode = $createHeaderNode(dataset);
-            headerNode.getSize().should.equal(dataset.size);
-            headerNode.getStyle().should.equal(dataset.style);
-            headerNode.getBackgroundImageSrc().should.equal(dataset.backgroundImageSrc);
-            headerNode.getHeader().should.equal(dataset.header);
-            headerNode.getSubheader().should.equal(dataset.subheader);
-            headerNode.getButtonEnabled().should.equal(dataset.buttonEnabled);
-            headerNode.getButtonText().should.equal(dataset.buttonText);
-            headerNode.getButtonUrl().should.equal(dataset.buttonUrl);
+            headerNode.size.should.equal(dataset.size);
+            headerNode.style.should.equal(dataset.style);
+            headerNode.backgroundImageSrc.should.equal(dataset.backgroundImageSrc);
+            headerNode.header.should.equal(dataset.header);
+            headerNode.subheader.should.equal(dataset.subheader);
+            headerNode.buttonEnabled.should.equal(dataset.buttonEnabled);
+            headerNode.buttonText.should.equal(dataset.buttonText);
+            headerNode.buttonUrl.should.equal(dataset.buttonUrl);
         }));
 
         it ('has setters for all properties', editorTest(function () {
             const node = $createHeaderNode(dataset);
-            node.setSize('large');
-            node.getSize().should.equal('large');
-            node.setStyle('light');
-            node.getStyle().should.equal('light');
-            node.setBackgroundImageSrc('https://example.com/image2.jpg');
-            node.getBackgroundImageSrc().should.equal('https://example.com/image2.jpg');
-            node.setHeader('This is the new header');
-            node.getHeader().should.equal('This is the new header');
-            node.setSubheader('This is the new subheader');
-            node.getSubheader().should.equal('This is the new subheader');
-            node.setButtonEnabled(false);
-            node.getButtonEnabled().should.equal(false);
-            node.setButtonText('This is the new button text');
-            node.getButtonText().should.equal('This is the new button text');
-            node.setButtonUrl('https://example.com/newurl');
-            node.getButtonUrl().should.equal('https://example.com/newurl');
+            node.size = 'large';
+            node.size.should.equal('large');
+            node.style = 'light';
+            node.style.should.equal('light');
+            node.backgroundImageSrc = 'https://example.com/image2.jpg';
+            node.backgroundImageSrc.should.equal('https://example.com/image2.jpg');
+            node.header = 'This is the new header';
+            node.header.should.equal('This is the new header');
+            node.subheader = 'This is the new subheader';
+            node.subheader.should.equal('This is the new subheader');
+            node.buttonEnabled = false;
+            node.buttonEnabled.should.equal(false);
+            node.buttonText = 'This is the new button text';
+            node.buttonText.should.equal('This is the new button text');
+            node.buttonUrl = 'https://example.com/newurl';
+            node.buttonUrl.should.equal('https://example.com/newurl');
         }));
 
         it('has getDataset() method', editorTest(function () {
@@ -95,7 +88,42 @@ describe('HeaderNode', function () {
         }));
     });
 
-    describe('exporting', function () {
+    describe('getType', function () {
+        it('returns the correct node type', editorTest(function () {
+            HeaderNode.getType().should.equal('header');
+        }));
+    });
+
+    describe('clone', function () {
+        it('returns a copy of the current node', editorTest(function () {
+            const headerNode = $createHeaderNode(dataset);
+            const headerNodeDataset = headerNode.getDataset();
+            const clone = HeaderNode.clone(headerNode);
+            const cloneDataset = clone.getDataset();
+
+            cloneDataset.should.deepEqual({...headerNodeDataset});
+        }));
+    });
+
+    describe('urlTransformMap', function () {
+        it('contains the expected URL mapping', editorTest(function () {
+            HeaderNode.urlTransformMap.should.deepEqual({
+                buttonUrl: 'url',
+                backgroundImageSrc: 'url',
+                header: 'html',
+                subheader: 'html'
+            });
+        }));
+    });
+
+    describe('hasEditMode', function () {
+        it('returns true', editorTest(function () {
+            const headerNode = $createHeaderNode(dataset);
+            headerNode.hasEditMode().should.be.true;
+        }));
+    });
+
+    describe('exportDOM', function () {
         it('can render to HTML', editorTest(function () {
             const headerNode = $createHeaderNode(dataset);
             const {element} = headerNode.exportDOM(exportOptions);
@@ -111,9 +139,9 @@ describe('HeaderNode', function () {
 
         it('renders nothing when header and subheader is undefined and the button is disabled', editorTest(function () {
             const node = $createHeaderNode(dataset);
-            node.setHeader(null);
-            node.setSubheader(null);
-            node.setButtonEnabled(false);
+            node.header = null;
+            node.subheader = null;
+            node.buttonEnabled = false;
             const {element} = node.exportDOM(exportOptions);
             element.should.be.null;
         }));
@@ -166,14 +194,14 @@ describe('HeaderNode', function () {
             const nodes = $generateNodesFromDOM(editor, dom);
             nodes.length.should.equal(1);
             const node = nodes[0];
-            node.getSize().should.equal('large');
-            node.getStyle().should.equal('image');
-            node.getBackgroundImageSrc().should.equal('https://example.com/image.jpg');
-            node.getHeader().should.equal('Header');
-            node.getSubheader().should.equal('Subheader');
-            node.getButtonEnabled().should.be.true;
-            node.getButtonUrl().should.equal('https://example.com');
-            node.getButtonText().should.equal('Button');
+            node.size.should.equal('large');
+            node.style.should.equal('image');
+            node.backgroundImageSrc.should.equal('https://example.com/image.jpg');
+            node.header.should.equal('Header');
+            node.subheader.should.equal('Subheader');
+            node.buttonEnabled.should.be.true;
+            node.buttonUrl.should.equal('https://example.com');
+            node.buttonText.should.equal('Button');
         }));
     });
 
@@ -182,10 +210,10 @@ describe('HeaderNode', function () {
             const node = $createHeaderNode();
             node.getTextContent().should.equal('');
 
-            node.setHeader('Test');
+            node.header = 'Test';
             node.getTextContent().should.equal('Test\n\n');
 
-            node.setSubheader('Subheader');
+            node.subheader = 'Subheader';
             node.getTextContent().should.equal('Test\nSubheader\n\n');
         }));
     });

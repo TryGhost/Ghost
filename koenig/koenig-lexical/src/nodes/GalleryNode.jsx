@@ -1,13 +1,14 @@
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$generateHtmlFromNodes} from '@lexical/html';
-import {GalleryNode as BaseGalleryNode, INSERT_GALLERY_COMMAND} from '@tryghost/kg-default-nodes';
+import {GalleryNode as BaseGalleryNode} from '@tryghost/kg-default-nodes';
 import {ReactComponent as GalleryCardIcon} from '../assets/icons/kg-card-type-gallery.svg';
 import {GalleryNodeComponent} from './GalleryNodeComponent';
 import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
+import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 
 // re-export here so we don't need to import from multiple places throughout the app
-export {INSERT_GALLERY_COMMAND} from '@tryghost/kg-default-nodes';
+export const INSERT_GALLERY_COMMAND = createCommand();
 
 export class GalleryNode extends BaseGalleryNode {
     __captionEditor;
@@ -50,10 +51,6 @@ export class GalleryNode extends BaseGalleryNode {
         dataset.captionEditorInitialState = self.__captionEditorInitialState;
 
         return dataset;
-    }
-
-    createDOM() {
-        return document.createElement('div');
     }
 
     exportJSON() {

@@ -1,47 +1,14 @@
-import {createCommand} from 'lexical';
-import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
-import {PaywallParser} from './PaywallParser';
-import {renderPaywallNodeToDOM} from './PaywallRenderer';
+import {generateDecoratorNode} from '../../generate-decorator-node';
+import {parsePaywallNode} from './PaywallParser';
+import {renderPaywallNode} from './PaywallRenderer';
 
-export const INSERT_PAYWALL_COMMAND = createCommand();
-const NODE_TYPE = 'paywall';
-
-export class PaywallNode extends KoenigDecoratorNode {
-    static getType() {
-        return NODE_TYPE;
-    }
-
-    static clone(node) {
-        return new this(
-            node.__key
-        );
-    }
-
-    constructor(key) {
-        super(key);
-    }
-
-    static importJSON() {
-        const node = new this();
-        return node;
-    }
-
-    exportJSON() {
-        const dataset = {
-            type: NODE_TYPE,
-            version: 1
-        };
-        return dataset;
-    }
-
+export class PaywallNode extends generateDecoratorNode({nodeType: 'paywall'}) {
     static importDOM() {
-        const parser = new PaywallParser(this);
-        return parser.DOMConversionMap;
+        return parsePaywallNode(this);
     }
 
     exportDOM(options = {}) {
-        const {element} = renderPaywallNodeToDOM(this, options);
-        return {element, type: 'inner'};
+        return renderPaywallNode(this, options);
     }
 }
 

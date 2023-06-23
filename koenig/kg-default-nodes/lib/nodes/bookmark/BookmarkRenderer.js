@@ -1,12 +1,13 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option';
+import {renderEmptyContainer} from '../../utils/render-empty-container';
 
-export function renderBookmarkNodeToDOM(node, options = {}) {
+export function renderBookmarkNode(node, options = {}) {
     addCreateDocumentOption(options);
 
     const document = options.createDocument();
 
-    if (!node.getUrl() || node.getUrl().trim() === '') {
-        return {element: document.createElement('span'), type: 'inner'};
+    if (!node.url || node.url.trim() === '') {
+        return renderEmptyContainer(document);
     }
 
     if (options.target === 'email') {
@@ -17,16 +18,16 @@ export function renderBookmarkNodeToDOM(node, options = {}) {
 }
 
 function emailTemplate(node, document) {
-    const title = node.getTitle();
-    const publisher = node.getPublisher();
-    const author = node.getAuthor();
-    const icon = node.getIconSrc();
-    const description = node.getDescription();
-    const url = node.getUrl();
-    const thumbnail = node.getThumbnail();
-    const caption = node.getCaption();
+    const title = node.title;
+    const publisher = node.publisher;
+    const author = node.author;
+    const icon = node.icon;
+    const description = node.description;
+    const url = node.url;
+    const thumbnail = node.thumbnail;
+    const caption = node.caption;
 
-    const div = document.createElement('div');
+    const element = document.createElement('div');
 
     const html = 
         `
@@ -98,23 +99,23 @@ function emailTemplate(node, document) {
             <div class="kg-bookmark-spacer--outlook" style="height: 1.5em;">&nbsp;</div>
         <![endif]-->`;
 
-    div.innerHTML = html;
-    return {element: div};
+    element.innerHTML = html;
+    return {element};
 }
 
 function frontendTemplate(node, document) {
-    const card = document.createElement('figure');
-    const caption = node.getCaption();
+    const element = document.createElement('figure');
+    const caption = node.caption;
     let cardClass = 'kg-card kg-bookmark-card';
     if (caption) {
         cardClass += ' kg-card-hascaption';
     }
-    card.setAttribute('class', cardClass);
+    element.setAttribute('class', cardClass);
 
     const container = document.createElement('a');
     container.setAttribute('class','kg-bookmark-container');
-    container.href = node.getUrl();
-    card.appendChild(container);
+    container.href = node.url;
+    element.appendChild(container);
 
     const content = document.createElement('div');
     content.setAttribute('class','kg-bookmark-content');
@@ -122,19 +123,19 @@ function frontendTemplate(node, document) {
 
     const title = document.createElement('div');
     title.setAttribute('class','kg-bookmark-title');
-    title.textContent = node.getTitle();
+    title.textContent = node.title;
     content.appendChild(title);
 
     const description = document.createElement('div');
     description.setAttribute('class','kg-bookmark-description');
-    description.textContent = node.getDescription();
+    description.textContent = node.description;
     content.appendChild(description);
 
     const metadata = document.createElement('div');
     metadata.setAttribute('class','kg-bookmark-metadata');
     content.appendChild(metadata);
 
-    metadata.icon = node.getIconSrc();
+    metadata.icon = node.icon;
     if (metadata.icon) {
         const icon = document.createElement('img');
         icon.setAttribute('class','kg-bookmark-icon');
@@ -143,7 +144,7 @@ function frontendTemplate(node, document) {
         metadata.appendChild(icon);
     }
 
-    metadata.author = node.getAuthor();
+    metadata.author = node.author;
     if (metadata.author) {
         const author = document.createElement('span');
         author.setAttribute('class','kg-bookmark-author');
@@ -151,7 +152,7 @@ function frontendTemplate(node, document) {
         metadata.appendChild(author);
     }
 
-    metadata.publisher = node.getPublisher();
+    metadata.publisher = node.publisher;
     if (metadata.publisher) {
         const publisher = document.createElement('span');
         publisher.setAttribute('class','kg-bookmark-publisher');
@@ -159,7 +160,7 @@ function frontendTemplate(node, document) {
         metadata.appendChild(publisher);
     }
 
-    metadata.thumbnail = node.getThumbnail();
+    metadata.thumbnail = node.thumbnail;
     if (metadata.thumbnail) {
         const thumbnailDiv = document.createElement('div');
         thumbnailDiv.setAttribute('class','kg-bookmark-thumbnail');
@@ -174,8 +175,8 @@ function frontendTemplate(node, document) {
     if (caption) {
         const figCaption = document.createElement('figcaption');
         figCaption.innerHTML = caption;
-        card.appendChild(figCaption);
+        element.appendChild(figCaption);
     }
 
-    return {element: card};
+    return {element};
 }

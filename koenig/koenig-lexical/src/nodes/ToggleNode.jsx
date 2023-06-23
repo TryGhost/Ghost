@@ -3,13 +3,14 @@ import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$canShowPlaceholderCurry} from '@lexical/text';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {BASIC_NODES, KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
-import {ToggleNode as BaseToggleNode, INSERT_TOGGLE_COMMAND} from '@tryghost/kg-default-nodes';
+import {ToggleNode as BaseToggleNode} from '@tryghost/kg-default-nodes';
 import {ReactComponent as ToggleCardIcon} from '../assets/icons/kg-card-type-toggle.svg';
 import {ToggleNodeComponent} from './ToggleNodeComponent';
+import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 
 // re-export here so we don't need to import from multiple places throughout the app
-export {INSERT_TOGGLE_COMMAND} from '@tryghost/kg-default-nodes';
+export const INSERT_TOGGLE_COMMAND = createCommand();
 
 export class ToggleNode extends BaseToggleNode {
     __headingEditor;
@@ -80,10 +81,6 @@ export class ToggleNode extends BaseToggleNode {
         }
 
         return json;
-    }
-
-    createDOM() {
-        return document.createElement('div');
     }
 
     decorate() {

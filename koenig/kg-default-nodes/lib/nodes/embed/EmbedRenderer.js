@@ -1,27 +1,28 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option';
+import {renderEmptyContainer} from '../../utils/render-empty-container';
 import twitterRenderer from './types/twitter';
 
-export function renderEmbedNodeToDOM(node, options = {}) {
+export function renderEmbedNode(node, options = {}) {
     addCreateDocumentOption(options);
 
     const document = options.createDocument();
-    const embedType = node.getEmbedType();
+    const embedType = node.embedType;
 
     if (embedType === 'twitter') {
         return twitterRenderer(node, document, options);
-    } 
+    }
 
     return renderTemplate(node, document, options);
 }
 
 function renderTemplate(node, document, options) {
     if (node.isEmpty()) {
-        return {element: document.createElement('span'), type: 'inner'};
+        return renderEmptyContainer(document);
     }
     const isEmail = options.target === 'email';
-    const metadata = node.getMetadata();
-    const url = node.getUrl();
-    const isVideoWithThumbnail = node.getEmbedType() === 'video' && metadata && metadata.thumbnail_url;
+    const metadata = node.metadata;
+    const url = node.url;
+    const isVideoWithThumbnail = node.embedType === 'video' && metadata && metadata.thumbnail_url;
     const figure = document.createElement('figure');
     figure.setAttribute('class', 'kg-card kg-embed-card');
 
@@ -57,10 +58,10 @@ function renderTemplate(node, document, options) {
         `;
         figure.innerHTML = html.trim();
     } else {
-        figure.innerHTML = node.getHtml();
+        figure.innerHTML = node.html;
     }
-    
-    const caption = node.getCaption();
+
+    const caption = node.caption;
     if (caption) {
         const figcaption = document.createElement('figcaption');
         figcaption.innerHTML = caption;

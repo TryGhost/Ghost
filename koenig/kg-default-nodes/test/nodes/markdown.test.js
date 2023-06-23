@@ -48,15 +48,15 @@ describe('MarkdownNode', function () {
         it('has getters for all properties', editorTest(function () {
             const markdownNode = $createMarkdownNode(dataset);
 
-            markdownNode.getMarkdown().should.equal('#HEADING\r\n- list\r\n- items');
+            markdownNode.markdown.should.equal('#HEADING\r\n- list\r\n- items');
         }));
 
         it('has setters for all properties', editorTest(function () {
             const markdownNode = $createMarkdownNode(dataset);
 
-            markdownNode.getMarkdown().should.equal('#HEADING\r\n- list\r\n- items');
-            markdownNode.setMarkdown('#HEADING 2\r\n- list\r\n- items');
-            markdownNode.getMarkdown().should.equal('#HEADING 2\r\n- list\r\n- items');
+            markdownNode.markdown.should.equal('#HEADING\r\n- list\r\n- items');
+            markdownNode.markdown = '#HEADING 2\r\n- list\r\n- items';
+            markdownNode.markdown.should.equal('#HEADING 2\r\n- list\r\n- items');
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
@@ -67,13 +67,47 @@ describe('MarkdownNode', function () {
                 ...dataset
             });
         }));
+    });
 
-        it('has isEmpty() convenience method', editorTest(function () {
+    describe('isEmpty()', function () {
+        it('returns true if markdown is empty', editorTest(function () {
             const markdownNode = $createMarkdownNode(dataset);
 
             markdownNode.isEmpty().should.be.false;
-            markdownNode.setMarkdown('');
+            markdownNode.markdown = '';
             markdownNode.isEmpty().should.be.true;
+        }));
+    });
+
+    describe('getType', function () {
+        it('returns the correct node type', editorTest(function () {
+            MarkdownNode.getType().should.equal('markdown');
+        }));
+    });
+
+    describe('clone', function () {
+        it('returns a copy of the current node', editorTest(function () {
+            const markdownNode = $createMarkdownNode(dataset);
+            const markdownNodeDataset = markdownNode.getDataset();
+            const clone = MarkdownNode.clone(markdownNode);
+            const cloneDataset = clone.getDataset();
+
+            cloneDataset.should.deepEqual({...markdownNodeDataset});
+        }));
+    });
+
+    describe('urlTransformMap', function () {
+        it('contains the expected URL mapping', editorTest(function () {
+            MarkdownNode.urlTransformMap.should.deepEqual({
+                markdown: 'markdown'
+            });
+        }));
+    });
+
+    describe('hasEditMode', function () {
+        it('returns true', editorTest(function () {
+            const markdownNode = $createMarkdownNode(dataset);
+            markdownNode.hasEditMode().should.be.true;
         }));
     });
 
@@ -135,7 +169,7 @@ describe('MarkdownNode', function () {
                 try {
                     const [markdownNode] = $getRoot().getChildren();
 
-                    markdownNode.getMarkdown().should.equal('#HEADING\r\n- list\r\n- items');
+                    markdownNode.markdown.should.equal('#HEADING\r\n- list\r\n- items');
 
                     done();
                 } catch (e) {
@@ -145,40 +179,12 @@ describe('MarkdownNode', function () {
         });
     });
 
-    describe('hasEditMode', function () {
-        it('returns true', editorTest(function () {
-            const markdownNode = $createMarkdownNode(dataset);
-            markdownNode.hasEditMode().should.be.true;
-        }));
-    });
-
-    describe('clone', function () {
-        it('clones the node', editorTest(function () {
-            const markdownNode = $createMarkdownNode(dataset);
-            const clonedMarkdownNode = MarkdownNode.clone(markdownNode);
-            $isMarkdownNode(clonedMarkdownNode).should.be.true;
-            clonedMarkdownNode.getMarkdown().should.equal('#HEADING\r\n- list\r\n- items');
-        }));
-    });
-
-    describe('static properties', function () {
-        it('getType', editorTest(function () {
-            MarkdownNode.getType().should.equal('markdown');
-        }));
-
-        it('urlTransformMap', editorTest(function () {
-            MarkdownNode.urlTransformMap.should.deepEqual({
-                markdown: 'markdown'
-            });
-        }));
-    });
-
     describe('getTextContent', function () {
         it('returns contents', editorTest(function () {
             const node = $createMarkdownNode();
             node.getTextContent().should.equal('');
 
-            node.setMarkdown('#HEADING\r\n- list\r\n- items');
+            node.markdown = '#HEADING\r\n- list\r\n- items';
 
             node.getTextContent().should.equal('#HEADING\r\n- list\r\n- items\n\n');
         }));

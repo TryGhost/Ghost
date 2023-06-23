@@ -23,10 +23,10 @@ export const fileUploadHandler = async (files, nodeKey, editor, upload) => {
     };
     await editor.update(() => {
         const node = $getNodeByKey(nodeKey);
-        node.setFileTitle(stripFileExtension(dataset.fileName)); // initially sets the title to the file name
-        node.setFileName(dataset.fileName);
-        node.setFileSize(dataset.fileSize);
-        node.setSrc(dataset.src);
+        node.fileTitle = stripFileExtension(dataset.fileName); // initially sets the title to the file name
+        node.fileName = dataset.fileName;
+        node.fileSize = dataset.fileSize;
+        node.src = dataset.src;
     });
 
     return;

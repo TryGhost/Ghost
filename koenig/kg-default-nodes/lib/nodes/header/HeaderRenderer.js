@@ -1,4 +1,5 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option';
+import {renderEmptyContainer} from '../../utils/render-empty-container';
 
 function slugify(str) {
     // Remove any non-word character with whitespace
@@ -13,29 +14,29 @@ function slugify(str) {
     return str;
 }
 
-export function renderHeaderNodeToDOM(node, options = {}) {
+export function renderHeaderNode(node, options = {}) {
     addCreateDocumentOption(options);
 
     const document = options.createDocument();
 
-    if (!node.getHeader() && !node.getSubheader() && (!node.getButtonEnabled() || (!node.getButtonUrl() || !node.getButtonText()))) {
-        return {element: document.createElement('span'), type: 'inner'};
+    if (!node.header && !node.subheader && (!node.buttonEnabled || (!node.buttonUrl || !node.buttonText))) {
+        return renderEmptyContainer(document);
     }
 
     const templateData = {
-        size: node.getSize(),
-        style: node.getStyle(),
-        buttonEnabled: node.getButtonEnabled() && Boolean(node.getButtonUrl()) && Boolean(node.getButtonText()),
-        buttonUrl: node.getButtonUrl(),
-        buttonText: node.getButtonText(),
-        header: node.getHeader(),
-        headerSlug: slugify(node.getHeader()),
-        subheader: node.getSubheader(),
-        subheaderSlug: slugify(node.getSubheader()),
-        hasHeader: !!node.getHeader(),
-        hasSubheader: !!node.getSubheader() && !!node.getSubheader().replace(/(<br>)+$/g).trim(),
-        backgroundImageStyle: node.getStyle() === 'image' ? `background-image: url(${node.getBackgroundImageSrc()})` : '',
-        backgroundImageSrc: node.getBackgroundImageSrc()
+        size: node.size,
+        style: node.style,
+        buttonEnabled: node.buttonEnabled && Boolean(node.buttonUrl) && Boolean(node.buttonText),
+        buttonUrl: node.buttonUrl,
+        buttonText: node.buttonText,
+        header: node.header,
+        headerSlug: slugify(node.header),
+        subheader: node.subheader,
+        subheaderSlug: slugify(node.subheader),
+        hasHeader: !!node.header,
+        hasSubheader: !!node.subheader && !!node.subheader.replace(/(<br>)+$/g).trim(),
+        backgroundImageStyle: node.style === 'image' ? `background-image: url(${node.backgroundImageSrc})` : '',
+        backgroundImageSrc: node.backgroundImageSrc
     };
 
     const div = document.createElement('div');

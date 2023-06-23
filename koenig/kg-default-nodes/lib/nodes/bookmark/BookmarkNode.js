@@ -1,41 +1,41 @@
-import {createCommand} from 'lexical';
-import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
-import {BookmarkParser} from './BookmarkParser';
-import {renderBookmarkNodeToDOM} from './BookmarkRenderer';
-import readTextContent from '../../utils/read-text-content';
+import {generateDecoratorNode} from '../../generate-decorator-node';
+import {parseBookmarkNode} from './BookmarkParser';
+import {renderBookmarkNode} from './BookmarkRenderer';
 
-export const INSERT_BOOKMARK_COMMAND = createCommand();
-
-export class BookmarkNode extends KoenigDecoratorNode {
-    // payload properties
-    __url;
-    __icon;
-    __title;
-    __description;
-    __author;
-    __publisher;
-    __thumbnail;
-    __caption;
-
-    static getType() {
-        return 'bookmark';
+export class BookmarkNode extends generateDecoratorNode({nodeType: 'bookmark',
+    properties: [
+        {name: 'title', default: '', wordCount: true},
+        {name: 'description', default: '', wordCount: true},
+        {name: 'url', default: '', urlType: 'url', wordCount: true},
+        {name: 'caption', default: '', wordCount: true},
+        {name: 'author', default: ''},
+        {name: 'publisher', default: ''},
+        {name: 'icon', default: '', urlType: 'url'},
+        {name: 'thumbnail', default: '', urlType: 'url'}
+    ]}
+) {
+    static importDOM() {
+        return parseBookmarkNode(this);
     }
 
-    static clone(node) {
-        return new this(
-            node.getDataset(),
-            node.__key
-        );
+    exportDOM(options = {}) {
+        return renderBookmarkNode(this, options);
     }
 
-    static get urlTransformMap() {
-        return {
-            url: 'url',
-            icon: 'url',
-            thumbnail: 'url'
-        };
+    /* override */
+    constructor({url, metadata, caption} = {}, key) {
+        super(key);
+        this.__url = url || '';
+        this.__icon = metadata?.icon || '';
+        this.__title = metadata?.title || '';
+        this.__description = metadata?.description || '';
+        this.__author = metadata?.author || '';
+        this.__publisher = metadata?.publisher || '';
+        this.__thumbnail = metadata?.thumbnail || '';
+        this.__caption = caption || '';
     }
 
+    /* @override */
     getDataset() {
         const self = this.getLatest();
         return {
@@ -49,22 +49,10 @@ export class BookmarkNode extends KoenigDecoratorNode {
                 thumbnail: self.__thumbnail
             },
             caption: self.__caption
-
         };
     }
 
-    constructor({url, metadata, caption} = {}, key) {
-        super(key);
-        this.__url = url || '';
-        this.__icon = metadata?.icon || '';
-        this.__title = metadata?.title || '';
-        this.__description = metadata?.description || '';
-        this.__author = metadata?.author || '';
-        this.__publisher = metadata?.publisher || '';
-        this.__thumbnail = metadata?.thumbnail || '';
-        this.__caption = caption || '';
-    }
-
+    /* @override */
     static importJSON(serializedNode) {
         const {url, metadata, caption} = serializedNode;
         const node = new this({
@@ -75,136 +63,27 @@ export class BookmarkNode extends KoenigDecoratorNode {
         return node;
     }
 
+    /* @override */
     exportJSON() {
         const dataset = {
             type: 'bookmark',
             version: 1,
-            url: this.getUrl(),
+            url: this.url,
             metadata: {
-                icon: this.getIconSrc(),
-                title: this.getTitle(),
-                description: this.getDescription(),
-                author: this.getAuthor(),
-                publisher: this.getPublisher(),
-                thumbnail: this.getThumbnail()
+                icon: this.icon,
+                title: this.title,
+                description: this.description,
+                author: this.author,
+                publisher: this.publisher,
+                thumbnail: this.thumbnail
             },
-            caption: this.getCaption()
+            caption: this.caption
         };
         return dataset;
     }
 
-    // parser used when pasting html >> node
-    static importDOM() {
-        const parser = new BookmarkParser(this);
-        return parser.DOMConversionMap;
-    }
-
-    // renderer used when copying node >> html
-    exportDOM(options = {}) {
-        const {element, type} = renderBookmarkNodeToDOM(this, options);
-        return {element, type};
-    }
-
-    getUrl() {
-        const self = this.getLatest();
-        return self.__url;
-    }
-
-    setUrl(url) {
-        const writable = this.getWritable();
-        return writable.__url = url;
-    }
-
-    // getIcon() is reserved for the card's icon in the editor
-    getIconSrc() {
-        const self = this.getLatest();
-        return self.__icon;
-    }
-
-    setIconSrc(icon) {
-        const writable = this.getWritable();
-        return writable.__icon = icon;
-    }
-
-    getTitle() {
-        const self = this.getLatest();
-        return self.__title;
-    }
-
-    setTitle(title) {
-        const writable = this.getWritable();
-        return writable.__title = title;
-    }
-
-    getDescription() {
-        const self = this.getLatest();
-        return self.__description;
-    }
-
-    setDescription(description) {
-        const writable = this.getWritable();
-        return writable.__description = description;
-    }
-
-    getAuthor() {
-        const self = this.getLatest();
-        return self.__author;
-    }
-
-    setAuthor(author) {
-        const writable = this.getWritable();
-        return writable.__author = author;
-    }
-
-    getPublisher() {
-        const self = this.getLatest();
-        return self.__publisher;
-    }
-
-    setPublisher(publisher) {
-        const writable = this.getWritable();
-        return writable.__publisher = publisher;
-    }
-
-    getThumbnail() {
-        const self = this.getLatest();
-        return self.__thumbnail;
-    }
-
-    setThumbnail(thumbnail) {
-        const writable = this.getWritable();
-        return writable.__thumbnail = thumbnail;
-    }
-
-    getCaption() {
-        const self = this.getLatest();
-        return self.__caption;
-    }
-
-    setCaption(caption) {
-        const writable = this.getWritable();
-        return writable.__caption = caption;
-    }
-
-    hasEditMode() {
-        return true;
-    }
-
     isEmpty() {
-        return !this.__url;
-    }
-
-    getTextContent() {
-        const self = this.getLatest();
-
-        const text = [
-            readTextContent(self, 'title'),
-            readTextContent(self, 'description'),
-            readTextContent(self, 'url'),
-            readTextContent(self, 'caption')
-        ].filter(Boolean).join('\n');
-
-        return text ? `${text}\n\n` : '';
+        return !this.url;
     }
 }
 

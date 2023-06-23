@@ -1,27 +1,13 @@
-import {createCommand} from 'lexical';
-import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
-import {GalleryParser} from './GalleryParser';
-import {renderGalleryNodeToDOM} from './GalleryRenderer';
-import readTextContent from '../../utils/read-text-content';
-
-export const INSERT_GALLERY_COMMAND = createCommand();
-
-export class GalleryNode extends KoenigDecoratorNode {
-    // payload properties
-    __images;
-    __caption;
-
-    static getType() {
-        return 'gallery';
-    }
-
-    static clone(node) {
-        return new this(
-            node.getDataset(),
-            node.__key
-        );
-    }
-
+import {generateDecoratorNode} from '../../generate-decorator-node';
+import {parseGalleryNode} from './GalleryParser';
+import {renderGalleryNode} from './GalleryRenderer';
+export class GalleryNode extends generateDecoratorNode({nodeType: 'gallery',
+    properties: [
+        {name: 'images', default: []},
+        {name: 'caption', default: '', wordCount: true}
+    ]}
+) {
+    /* override */
     static get urlTransformMap() {
         return {
             caption: 'html',
@@ -32,72 +18,16 @@ export class GalleryNode extends KoenigDecoratorNode {
         };
     }
 
-    getDataset() {
-        const self = this.getLatest();
-        return {
-            images: self.__images,
-            caption: self.__caption
-        };
-    }
-
-    constructor({images, caption} = {}, key) {
-        super(key);
-        this.__images = images || [];
-        this.__caption = caption || '';
-    }
-
-    static importJSON(serializedNode) {
-        const {images, caption} = serializedNode;
-        return new this({images, caption});
-    }
-
-    exportJSON() {
-        return {
-            type: 'gallery',
-            version: 1,
-            images: this.getImages(),
-            caption: this.getCaption()
-        };
-    }
-
     static importDOM() {
-        const parser = new GalleryParser(this);
-        return parser.DOMConversionMap;
+        return parseGalleryNode(this);
     }
 
     exportDOM(options = {}) {
-        const {element, type} = renderGalleryNodeToDOM(this, options);
-        return {element, type};
-    }
-
-    getImages() {
-        const self = this.getLatest();
-        return self.__images;
-    }
-
-    setImages(images) {
-        const writable = this.getWritable();
-        return writable.__images = images;
-    }
-
-    getCaption() {
-        const self = this.getLatest();
-        return self.__caption;
-    }
-
-    setCaption(caption) {
-        const writable = this.getWritable();
-        return writable.__caption = caption;
+        return renderGalleryNode(this, options);
     }
 
     hasEditMode() {
         return false;
-    }
-
-    getTextContent() {
-        const self = this.getLatest();
-        const text = readTextContent(self, 'caption');
-        return text ? `${text}\n\n` : '';
     }
 }
 

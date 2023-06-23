@@ -1,12 +1,12 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option';
+import {renderEmptyContainer} from '../../utils/render-empty-container';
 
-export function renderAudioNodeToDOM(node, options = {}) {
+export function renderAudioNode(node, options = {}) {
     addCreateDocumentOption(options);
-
     const document = options.createDocument();
 
-    if (!node.getSrc() || node.getSrc().trim() === '') {
-        return {element: document.createElement('span'), type: 'inner'};
+    if (!node.src || node.src.trim() === '') {
+        return renderEmptyContainer(document);
     }
 
     return frontendTemplate(node, document);
@@ -15,19 +15,19 @@ export function renderAudioNodeToDOM(node, options = {}) {
 function frontendTemplate(node, document) {
     let thumbnailCls = 'kg-audio-thumbnail';
     let emptyThumbnailCls = 'kg-audio-thumbnail placeholder';
-    if (!node.getThumbnailSrc()) {
+    if (!node.thumbnailSrc) {
         thumbnailCls += ' kg-audio-hide';
     } else {
         emptyThumbnailCls += ' kg-audio-hide';
     }
 
-    const cardDiv = document.createElement('div');
-    cardDiv.setAttribute('class', 'kg-card kg-audio-card');
+    const element = document.createElement('div');
+    element.setAttribute('class', 'kg-card kg-audio-card');
     const img = document.createElement('img');
-    img.src = node.getThumbnailSrc();
+    img.src = node.thumbnailSrc;
     img.alt = 'audio-thumbnail';
     img.setAttribute('class', thumbnailCls);
-    cardDiv.appendChild(img);
+    element.appendChild(img);
 
     const emptyThumbnailDiv = document.createElement('div');
     emptyThumbnailDiv.setAttribute('class', emptyThumbnailCls);
@@ -52,19 +52,19 @@ function frontendTemplate(node, document) {
     svg.appendChild(path3);
     emptyThumbnailDiv.appendChild(svg);
 
-    cardDiv.appendChild(emptyThumbnailDiv);
+    element.appendChild(emptyThumbnailDiv);
 
     const audioPlayerContainer = document.createElement('div');
     audioPlayerContainer.setAttribute('class', 'kg-audio-player-container');
 
     const audioElement = document.createElement('audio');
-    audioElement.setAttribute('src', node.getSrc());
+    audioElement.setAttribute('src', node.src);
     audioElement.setAttribute('preload', 'metadata');
     audioPlayerContainer.appendChild(audioElement);
 
     const audioTitle = document.createElement('div');
     audioTitle.setAttribute('class', 'kg-audio-title');
-    audioTitle.textContent = node.getTitle();
+    audioTitle.textContent = node.title;
     audioPlayerContainer.appendChild(audioTitle);
 
     const audioPlayer = document.createElement('div');
@@ -112,7 +112,7 @@ function frontendTemplate(node, document) {
     audioDurationTotal.textContent = '/';
     const audioDUrationNode = document.createElement('span');
     audioDUrationNode.setAttribute('class', 'kg-audio-duration');
-    audioDUrationNode.textContent = node.getDuration();
+    audioDUrationNode.textContent = node.duration;
     audioDurationTotal.appendChild(audioDUrationNode);
     audioPlayer.appendChild(audioDurationTotal);
 
@@ -156,7 +156,7 @@ function frontendTemplate(node, document) {
     audioPlayer.appendChild(volumeSlider);
 
     audioPlayerContainer.appendChild(audioPlayer);
-    cardDiv.appendChild(audioPlayerContainer);
+    element.appendChild(audioPlayerContainer);
 
-    return {element: cardDiv};
+    return {element};
 }

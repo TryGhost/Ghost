@@ -1,86 +1,22 @@
-import {createCommand} from 'lexical';
-import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
-import {renderHtmlNodeToDOM} from './HtmlRenderer';
-import {HtmlParser} from './HtmlParser';
-import readTextContent from '../../utils/read-text-content';
+import {generateDecoratorNode} from '../../generate-decorator-node';
+import {renderHtmlNode} from './HtmlRenderer';
+import {parseHtmlNode} from './HtmlParser';
 
-export const INSERT_HTML_COMMAND = createCommand();
-
-export class HtmlNode extends KoenigDecoratorNode {
-    // payload properties
-    __html;
-
-    static getType() {
-        return 'html';
-    }
-
-    static clone(node) {
-        return new this(node.getDataset(), node.__key);
-    }
-
-    static get urlTransformMap() {
-        return {
-            html: 'html'
-        };
-    }
-
-    getDataset() {
-        const self = this.getLatest();
-        return {
-            html: self.__html
-        };
-    }
-
-    static importJSON(serializedNode) {
-        const {html} = serializedNode;
-        const node = new this({html});
-        return node;
-    }
-
-    exportJSON() {
-        return {
-            type: 'html',
-            version: 1,
-            html: this.getHtml()
-        };
-    }
-
-    constructor({html} = {}, key) {
-        super(key);
-        this.__html = html;
-    }
-
+export class HtmlNode extends generateDecoratorNode({nodeType: 'html',
+    properties: [
+        {name: 'html', default: '', urlType: 'html', wordCount: true}
+    ]}
+) {
     static importDOM() {
-        const parser = new HtmlParser(this);
-        return parser.DOMConversionMap;
+        return parseHtmlNode(this);
     }
 
     exportDOM(options = {}) {
-        return renderHtmlNodeToDOM(this, options);
-    }
-
-    getHtml() {
-        const self = this.getLatest();
-        return self.__html;
-    }
-
-    setHtml(html) {
-        const writable = this.getWritable();
-        return writable.__html = html;
-    }
-
-    hasEditMode() {
-        return true;
+        return renderHtmlNode(this, options);
     }
 
     isEmpty() {
         return !this.__html;
-    }
-
-    getTextContent() {
-        const self = this.getLatest();
-        const text = readTextContent(self, 'html');
-        return text ? `${text}\n\n` : '';
     }
 }
 

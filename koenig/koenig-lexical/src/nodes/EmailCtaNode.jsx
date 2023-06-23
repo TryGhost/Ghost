@@ -3,14 +3,15 @@ import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$canShowPlaceholderCurry} from '@lexical/text';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {BASIC_NODES, KoenigCardWrapper} from '../index.js';
-import {EmailCtaNode as BaseEmailCtaNode, INSERT_EMAIL_CTA_COMMAND} from '@tryghost/kg-default-nodes';
+import {EmailCtaNode as BaseEmailCtaNode} from '@tryghost/kg-default-nodes';
 import {ReactComponent as EmailCtaCardIcon} from '../assets/icons/kg-card-type-email-cta.svg';
 import {EmailCtaNodeComponent} from './EmailCtaNodeComponent';
 import {ReactComponent as EmailIndicatorIcon} from '../assets/icons/kg-indicator-email.svg';
+import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 
 // re-export here so we don't need to import from multiple places throughout the app
-export {INSERT_EMAIL_CTA_COMMAND} from '@tryghost/kg-default-nodes';
+export const INSERT_EMAIL_CTA_COMMAND = createCommand();
 
 export class EmailCtaNode extends BaseEmailCtaNode {
     __htmlEditor;
@@ -68,29 +69,23 @@ export class EmailCtaNode extends BaseEmailCtaNode {
         return json;
     }
 
-    createDOM() {
-        const div = document.createElement('div');
-        return div;
-    }
-
     decorate() {
         return (
             <KoenigCardWrapper
                 IndicatorIcon={EmailIndicatorIcon}
                 nodeKey={this.getKey()}
-                width={this.__cardWidth}
                 wrapperStyle="wide"
             >
                 <EmailCtaNodeComponent
-                    alignment={this.getAlignment()}
-                    buttonText={this.getButtonText()}
-                    buttonUrl={this.getButtonUrl()}
+                    alignment={this.alignment}
+                    buttonText={this.buttonText}
+                    buttonUrl={this.buttonUrl}
                     htmlEditor={this.__htmlEditor}
                     htmlEditorInitialState={this.__htmlEditorInitialState}
                     nodeKey={this.getKey()}
                     segment={this.__segment}
-                    showButton={this.getShowButton()}
-                    showDividers={this.getShowDividers()}
+                    showButton={this.showButton}
+                    showDividers={this.showDividers}
                 />
             </KoenigCardWrapper>
         );
@@ -100,7 +95,7 @@ export class EmailCtaNode extends BaseEmailCtaNode {
     // rather than the data properties themselves
     isEmpty() {
         const isHtmlEmpty = this.__htmlEditor.getEditorState().read($canShowPlaceholderCurry(false));
-        return isHtmlEmpty && (!this.getShowButton() || (!this.getButtonText() && !this.getButtonUrl()));
+        return isHtmlEmpty && (!this.showButton || (!this.buttonText && !this.buttonUrl));
     }
 }
 

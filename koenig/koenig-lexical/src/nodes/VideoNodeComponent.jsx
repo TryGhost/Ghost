@@ -80,15 +80,15 @@ export function VideoNodeComponent({
         if (videoUrl) {
             editor.update(() => {
                 const node = $getNodeByKey(nodeKey);
-                node.setSrc(videoUrl);
-                node.setDuration(duration);
-                node.setFileName(file.name);
-                node.setVideoWidth(width);
-                node.setVideoHeight(height);
-                node.setMimeType(mimeType);
-                if (!node.getCustomThumbnailSrc()) {
-                    node.setThumbnailWidth(width);
-                    node.setThumbnailHeight(height);
+                node.src = videoUrl;
+                node.duration = duration;
+                node.fileName = file.name;
+                node.width = width;
+                node.height = height;
+                node.mimeType = mimeType;
+                if (!node.customThumbnailSrc) {
+                    node.thumbnailWidth = width;
+                    node.thumbnailHeight = height;
                 }
             });
         }
@@ -100,7 +100,7 @@ export function VideoNodeComponent({
         if (imageUrl) {
             editor.update(() => {
                 const node = $getNodeByKey(nodeKey);
-                node.setThumbnailSrc(imageUrl);
+                node.thumbnailSrc = imageUrl;
             });
         }
 
@@ -123,9 +123,9 @@ export function VideoNodeComponent({
         if (imageUrl) {
             editor.update(() => {
                 const node = $getNodeByKey(nodeKey);
-                node.setCustomThumbnailSrc(imageUrl);
-                node.setThumbnailWidth(width);
-                node.setThumbnailHeight(height);
+                node.customThumbnailSrc = imageUrl;
+                node.thumbnailWidth = width;
+                node.thumbnailHeight = height;
             });
         }
     };
@@ -145,23 +145,23 @@ export function VideoNodeComponent({
     const onRemoveCustomThumbnail = () => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setCustomThumbnailSrc('');
-            node.setThumbnailHeight(node.getVideoHeight());
-            node.setThumbnailWidth(node.getVideoWidth());
+            node.customThumbnailSrc = '';
+            node.thumbnailHeight = node.height;
+            node.thumbnailWidth = node.width;
         });
     };
 
     const onLoopChange = (event) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setLoop(event.target.checked);
+            node.loop = event.target.checked;
         });
     };
 
     const onCardWidthChange = (width) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setCardWidth(width);
+            node.cardWidth = width;
             cardContext.setCardWidth(width);
         });
     };

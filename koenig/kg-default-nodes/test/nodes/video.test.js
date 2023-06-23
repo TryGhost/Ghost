@@ -59,75 +59,75 @@ describe('VideoNode', function () {
         it('has getters for all properties', editorTest(function () {
             const videoNode = $createVideoNode(dataset);
 
-            videoNode.getSrc().should.equal(dataset.src);
-            videoNode.getCaption().should.equal(dataset.caption);
-            videoNode.getFileName().should.equal(dataset.fileName);
-            videoNode.getMimeType().should.equal(dataset.mimeType);
-            videoNode.getVideoWidth().should.equal(dataset.width);
-            videoNode.getVideoHeight().should.equal(dataset.height);
-            videoNode.getDuration().should.equal(dataset.duration);
-            videoNode.getThumbnailSrc().should.equal(dataset.thumbnailSrc);
-            videoNode.getCustomThumbnailSrc().should.equal(dataset.customThumbnailSrc);
-            videoNode.getThumbnailWidth().should.equal(dataset.thumbnailWidth);
-            videoNode.getThumbnailHeight().should.equal(dataset.thumbnailHeight);
-            videoNode.getCardWidth().should.equal('regular');
-            videoNode.getLoop().should.be.false;
+            videoNode.src.should.equal(dataset.src);
+            videoNode.caption.should.equal(dataset.caption);
+            videoNode.fileName.should.equal(dataset.fileName);
+            videoNode.mimeType.should.equal(dataset.mimeType);
+            videoNode.width.should.equal(dataset.width);
+            videoNode.height.should.equal(dataset.height);
+            videoNode.duration.should.equal(dataset.duration);
+            videoNode.thumbnailSrc.should.equal(dataset.thumbnailSrc);
+            videoNode.customThumbnailSrc.should.equal(dataset.customThumbnailSrc);
+            videoNode.thumbnailWidth.should.equal(dataset.thumbnailWidth);
+            videoNode.thumbnailHeight.should.equal(dataset.thumbnailHeight);
+            videoNode.cardWidth.should.equal('regular');
+            videoNode.loop.should.be.false;
         }));
 
         it('has setters for all properties', editorTest(function () {
             const videoNode = $createVideoNode();
 
-            videoNode.getSrc().should.equal('');
-            videoNode.setSrc('/content/images/2022/12/koenig-lexical.mp4');
-            videoNode.getSrc().should.equal('/content/images/2022/12/koenig-lexical.mp4');
+            videoNode.src.should.equal('');
+            videoNode.src = '/content/images/2022/12/koenig-lexical.mp4';
+            videoNode.src.should.equal('/content/images/2022/12/koenig-lexical.mp4');
 
-            videoNode.getCaption().should.equal('');
-            videoNode.setCaption('Caption');
-            videoNode.getCaption().should.equal('Caption');
+            videoNode.caption.should.equal('');
+            videoNode.caption = 'Caption';
+            videoNode.caption.should.equal('Caption');
 
-            videoNode.getFileName().should.equal('');
-            videoNode.setFileName('koenig-lexical.mp4');
-            videoNode.getFileName().should.equal('koenig-lexical.mp4');
+            videoNode.fileName.should.equal('');
+            videoNode.fileName = 'koenig-lexical.mp4';
+            videoNode.fileName.should.equal('koenig-lexical.mp4');
 
-            videoNode.getMimeType().should.equal('');
-            videoNode.setMimeType('video/mp4');
-            videoNode.getMimeType().should.equal('video/mp4');
+            videoNode.mimeType.should.equal('');
+            videoNode.mimeType = 'video/mp4';
+            videoNode.mimeType.should.equal('video/mp4');
 
-            should(videoNode.getVideoWidth()).equal(null);
-            videoNode.setVideoWidth(600);
-            videoNode.getVideoWidth().should.equal(600);
+            should(videoNode.width).equal(null);
+            videoNode.width = 600;
+            videoNode.width.should.equal(600);
 
-            should(videoNode.getVideoHeight()).equal(null);
-            videoNode.setVideoHeight(700);
-            videoNode.getVideoHeight().should.equal(700);
+            should(videoNode.height).equal(null);
+            videoNode.height = 700;
+            videoNode.height.should.equal(700);
 
-            videoNode.getDuration().should.equal(0);
-            videoNode.setDuration(70);
-            videoNode.getDuration().should.equal(70);
+            videoNode.duration.should.equal(0);
+            videoNode.duration = 70;
+            videoNode.duration.should.equal(70);
 
-            videoNode.getThumbnailSrc().should.equal('');
-            videoNode.setThumbnailSrc('/content/images/2022/12/koenig-lexical.png');
-            videoNode.getThumbnailSrc().should.equal('/content/images/2022/12/koenig-lexical.png');
+            videoNode.thumbnailSrc.should.equal('');
+            videoNode.thumbnailSrc = '/content/images/2022/12/koenig-lexical.png';
+            videoNode.thumbnailSrc.should.equal('/content/images/2022/12/koenig-lexical.png');
 
-            videoNode.getCustomThumbnailSrc().should.equal('');
-            videoNode.setCustomThumbnailSrc('/content/images/2022/12/koenig-lexical-custom.png');
-            videoNode.getCustomThumbnailSrc().should.equal('/content/images/2022/12/koenig-lexical-custom.png');
+            videoNode.customThumbnailSrc.should.equal('');
+            videoNode.customThumbnailSrc = '/content/images/2022/12/koenig-lexical-custom.png';
+            videoNode.customThumbnailSrc.should.equal('/content/images/2022/12/koenig-lexical-custom.png');
 
-            should(videoNode.getThumbnailWidth()).equal(null);
-            videoNode.setThumbnailWidth(100);
-            videoNode.getThumbnailWidth().should.equal(100);
+            should(videoNode.thumbnailWidth).equal(null);
+            videoNode.thumbnailWidth = 100;
+            videoNode.thumbnailWidth.should.equal(100);
 
-            should(videoNode.getThumbnailHeight()).equal(null);
-            videoNode.setThumbnailHeight(200);
-            videoNode.getThumbnailHeight().should.equal(200);
+            should(videoNode.thumbnailHeight).equal(null);
+            videoNode.thumbnailHeight = 200;
+            videoNode.thumbnailHeight.should.equal(200);
 
-            videoNode.getCardWidth().should.equal('regular');
-            videoNode.setCardWidth('wide');
-            videoNode.getCardWidth().should.equal('wide');
+            videoNode.cardWidth.should.equal('regular');
+            videoNode.cardWidth = 'wide';
+            videoNode.cardWidth.should.equal('wide');
 
-            videoNode.getLoop().should.be.false;
-            videoNode.setLoop(true);
-            videoNode.getLoop().should.be.true;
+            videoNode.loop.should.be.false;
+            videoNode.loop = true;
+            videoNode.loop.should.be.true;
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
@@ -144,17 +144,17 @@ describe('VideoNode', function () {
         it('can format duration', editorTest(function () {
             const videoNode = $createVideoNode(dataset);
 
-            videoNode.setDuration(60);
-            videoNode.getFormattedDuration().should.equal('1:00');
+            videoNode.duration = 60;
+            videoNode.formattedDuration.should.equal('1:00');
 
-            videoNode.setDuration(30);
-            videoNode.getFormattedDuration().should.equal('0:30');
+            videoNode.duration = 30;
+            videoNode.formattedDuration.should.equal('0:30');
 
-            videoNode.setDuration(0);
-            videoNode.getFormattedDuration().should.equal('0:00');
+            videoNode.duration = 0;
+            videoNode.formattedDuration.should.equal('0:00');
 
-            videoNode.setDuration(78);
-            videoNode.getFormattedDuration().should.equal('1:18');
+            videoNode.duration = 78;
+            videoNode.formattedDuration.should.equal('1:18');
         }));
     });
 
@@ -210,19 +210,19 @@ describe('VideoNode', function () {
                 try {
                     const [videoNode] = $getRoot().getChildren();
 
-                    videoNode.getSrc().should.equal(dataset.src);
-                    videoNode.getCaption().should.equal(dataset.caption);
-                    videoNode.getFileName().should.equal(dataset.fileName);
-                    videoNode.getMimeType().should.equal(dataset.mimeType);
-                    videoNode.getVideoWidth().should.equal(dataset.width);
-                    videoNode.getVideoHeight().should.equal(dataset.height);
-                    videoNode.getDuration().should.equal(dataset.duration);
-                    videoNode.getThumbnailSrc().should.equal(dataset.thumbnailSrc);
-                    videoNode.getCustomThumbnailSrc().should.equal(dataset.customThumbnailSrc);
-                    videoNode.getThumbnailWidth().should.equal(dataset.thumbnailWidth);
-                    videoNode.getThumbnailHeight().should.equal(dataset.thumbnailHeight);
-                    videoNode.getCardWidth().should.equal('wide');
-                    videoNode.getLoop().should.be.true;
+                    videoNode.src.should.equal(dataset.src);
+                    videoNode.caption.should.equal(dataset.caption);
+                    videoNode.fileName.should.equal(dataset.fileName);
+                    videoNode.mimeType.should.equal(dataset.mimeType);
+                    videoNode.width.should.equal(dataset.width);
+                    videoNode.height.should.equal(dataset.height);
+                    videoNode.duration.should.equal(dataset.duration);
+                    videoNode.thumbnailSrc.should.equal(dataset.thumbnailSrc);
+                    videoNode.customThumbnailSrc.should.equal(dataset.customThumbnailSrc);
+                    videoNode.thumbnailWidth.should.equal(dataset.thumbnailWidth);
+                    videoNode.thumbnailHeight.should.equal(dataset.thumbnailHeight);
+                    videoNode.cardWidth.should.equal('wide');
+                    videoNode.loop.should.be.true;
 
                     done();
                 } catch (e) {
@@ -387,15 +387,15 @@ describe('VideoNode', function () {
             `)).window.document;
             const nodes = $generateNodesFromDOM(editor, dom);
             nodes.length.should.equal(1);
-            nodes[0].getSrc().should.equal('/content/images/2022/11/koenig-lexical.mp4');
-            nodes[0].getVideoWidth().should.equal(200);
-            nodes[0].getVideoHeight().should.equal(100);
-            nodes[0].getThumbnailSrc().should.equal('/content/images/2022/11/koenig-lexical.jpg');
-            nodes[0].getCustomThumbnailSrc().should.equal('');
-            nodes[0].getDuration().should.equal(60);
-            nodes[0].getLoop().should.be.false;
-            nodes[0].getCaption().should.equal('Video caption');
-            nodes[0].getCardWidth().should.equal('regular');
+            nodes[0].src.should.equal('/content/images/2022/11/koenig-lexical.mp4');
+            nodes[0].width.should.equal(200);
+            nodes[0].height.should.equal(100);
+            nodes[0].thumbnailSrc.should.equal('/content/images/2022/11/koenig-lexical.jpg');
+            nodes[0].customThumbnailSrc.should.equal('');
+            nodes[0].duration.should.equal(60);
+            nodes[0].loop.should.be.false;
+            nodes[0].caption.should.equal('Video caption');
+            nodes[0].cardWidth.should.equal('regular');
         }));
 
         it('parses video card without caption', editorTest(function () {
@@ -404,7 +404,7 @@ describe('VideoNode', function () {
             `)).window.document;
             const nodes = $generateNodesFromDOM(editor, dom);
             nodes.length.should.equal(1);
-            nodes[0].getCaption().should.equal('');
+            nodes[0].caption.should.equal('');
         }));
 
         it('parses video card with custom thumbnail', editorTest(function () {
@@ -413,8 +413,8 @@ describe('VideoNode', function () {
             `)).window.document;
             const nodes = $generateNodesFromDOM(editor, dom);
             nodes.length.should.equal(1);
-            nodes[0].getThumbnailSrc().should.equal('');
-            nodes[0].getCustomThumbnailSrc().should.equal('/content/images/2022/11/koenig-lexical-custom.jpg');
+            nodes[0].thumbnailSrc.should.equal('');
+            nodes[0].customThumbnailSrc.should.equal('/content/images/2022/11/koenig-lexical-custom.jpg');
         }));
     });
 
@@ -423,7 +423,7 @@ describe('VideoNode', function () {
             const node = $createVideoNode();
             node.getTextContent().should.equal('');
 
-            node.setCaption('Test caption');
+            node.caption = 'Test caption';
             node.getTextContent().should.equal('Test caption\n\n');
         }));
     });

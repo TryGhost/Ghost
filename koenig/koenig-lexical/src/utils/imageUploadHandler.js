@@ -11,7 +11,7 @@ export const imageUploadHandler = async (files, nodeKey, editor, upload) => {
     if (previewUrl) {
         await editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setPreviewSrc(previewUrl);
+            node.previewSrc = previewUrl;
         });
     }
 
@@ -25,10 +25,10 @@ export const imageUploadHandler = async (files, nodeKey, editor, upload) => {
     // replace preview URL with real URL and set image metadata
     await editor.update(() => {
         const node = $getNodeByKey(nodeKey);
-        node.setImgWidth(width);
-        node.setImgHeight(height);
-        node.setSrc(imageSrc);
-        node.setPreviewSrc(null);
+        node.width = width;
+        node.height = height;
+        node.src = imageSrc;
+        node.previewSrc = null;
     });
 
     return;

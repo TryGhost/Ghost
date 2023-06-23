@@ -1,35 +1,27 @@
-export class ToggleParser {
-    constructor(NodeClass) {
-        this.NodeClass = NodeClass;
-    }
+export function parseToggleNode(ToggleNode) {
+    return {
+        div: () => ({
+            conversion(domNode) {
+                const isKgToggleCard = domNode.classList?.contains('kg-toggle-card');
+                if (domNode.tagName === 'DIV' && isKgToggleCard) {
+                    const headingNode = domNode.querySelector('.kg-toggle-heading-text');
+                    const heading = headingNode.textContent;
 
-    get DOMConversionMap() {
-        const self = this;
+                    const contentNode = domNode.querySelector('.kg-toggle-content');
+                    const content = contentNode.textContent;
 
-        return {
-            div: () => ({
-                conversion(domNode) {
-                    const isKgToggleCard = domNode.classList?.contains('kg-toggle-card');
-                    if (domNode.tagName === 'DIV' && isKgToggleCard) {
-                        const headingNode = domNode.querySelector('.kg-toggle-heading-text');
-                        const heading = headingNode.textContent;
+                    const payload = {
+                        heading,
+                        content
+                    };
 
-                        const contentNode = domNode.querySelector('.kg-toggle-content');
-                        const content = contentNode.textContent;
+                    const node = new ToggleNode(payload);
+                    return {node};
+                }
 
-                        const payload = {
-                            heading,
-                            content
-                        };
-
-                        const node = new self.NodeClass(payload);
-                        return {node};
-                    }
-
-                    return null;
-                },
-                priority: 1
-            })
-        };
-    }
+                return null;
+            },
+            priority: 1
+        })
+    };
 }

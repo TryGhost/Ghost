@@ -5,10 +5,12 @@ import React from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$canShowPlaceholderCurry} from '@lexical/text';
 import {$generateHtmlFromNodes} from '@lexical/html';
-import {HeaderNode as BaseHeaderNode, INSERT_HEADER_COMMAND} from '@tryghost/kg-default-nodes';
+import {HeaderNode as BaseHeaderNode} from '@tryghost/kg-default-nodes';
 import {ReactComponent as HeaderCardIcon} from '../assets/icons/kg-card-type-header.svg';
+import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
-export {INSERT_HEADER_COMMAND} from '@tryghost/kg-default-nodes';
+
+export const INSERT_HEADER_COMMAND = createCommand();
 
 export class HeaderNode extends BaseHeaderNode {
     __headerTextEditor;
@@ -66,10 +68,6 @@ export class HeaderNode extends BaseHeaderNode {
         return json;
     }
 
-    createDOM() {
-        return document.createElement('div');
-    }
-
     getDataset() {
         const dataset = super.getDataset();
 
@@ -84,19 +82,19 @@ export class HeaderNode extends BaseHeaderNode {
         return (
             <KoenigCardWrapper nodeKey={this.getKey()} width={'full'}>
                 <HeaderNodeComponent
-                    backgroundImageSrc={this.getBackgroundImageSrc()}
-                    button={this.getButtonEnabled()}
-                    buttonText={this.getButtonText()}
-                    buttonUrl={this.getButtonUrl()}
-                    header={this.getHeader()}
+                    backgroundImageSrc={this.backgroundImageSrc}
+                    button={this.buttonEnabled}
+                    buttonText={this.buttonText}
+                    buttonUrl={this.buttonUrl}
+                    header={this.header}
                     headerTextEditor={this.__headerTextEditor}
                     headerTextEditorInitialState={this.__headerTextEditorInitialState}
                     nodeKey={this.getKey()}
-                    size={this.getSize()}
-                    subheader={this.getSubheader()}
+                    size={this.size}
+                    subheader={this.subheader}
                     subheaderTextEditor={this.__subheaderTextEditor}
                     subheaderTextEditorInitialState={this.__subheaderTextEditorInitialState}
-                    type={this.getStyle()}
+                    type={this.style}
                 />
             </KoenigCardWrapper>
         );
@@ -107,7 +105,7 @@ export class HeaderNode extends BaseHeaderNode {
     isEmpty() {
         const isHtmlEmpty = this.__headerTextEditor.getEditorState().read($canShowPlaceholderCurry(false));
         const isSubHtmlEmpty = this.__subheaderTextEditor.getEditorState().read($canShowPlaceholderCurry(false));
-        return isHtmlEmpty && isSubHtmlEmpty && (!this.__buttonEnabled || (!this.__buttonText && !this.__buttonUrl)) && !this.__backgroundImageSrc;
+        return isHtmlEmpty && isSubHtmlEmpty && (!this.buttonEnabled || (!this.buttonText && !this.buttonUrl)) && !this.backgroundImageSrc;
     }
 }
 

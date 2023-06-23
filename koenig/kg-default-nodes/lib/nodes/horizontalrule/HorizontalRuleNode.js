@@ -1,54 +1,22 @@
-import {createCommand} from 'lexical';
-import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
-import {renderHorizontalRuleToDOM} from './HorizontalRuleRenderer';
-import {HorizontalRuleParser} from './HorizontalRuleParser';
+import {generateDecoratorNode} from '../../generate-decorator-node';
+import {renderHorizontalRuleNode} from './HorizontalRuleRenderer';
+import {parseHorizontalRuleNode} from './HorizontalRuleParser';
 
-export const INSERT_HORIZONTAL_RULE_COMMAND = createCommand();
-
-export class HorizontalRuleNode extends KoenigDecoratorNode {
-    static getType() {
-        return 'horizontalrule';
-    }
-
-    static clone(node) {
-        return new this(
-            node.__key
-        );
-    }
-
-    static get urlTransformMap() {
-        return {};
-    }
-
-    constructor(key) {
-        super(key);
-    }
-
-    static importJSON() {
-        const node = new this();
-        return node;
-    }
-
-    exportJSON() {
-        const dataset = {
-            type: 'horizontalrule',
-            version: 1
-        };
-        return dataset;
-    }
-
+export class HorizontalRuleNode extends generateDecoratorNode({nodeType: 'horizontalrule'}) {
     static importDOM() {
-        const parser = new HorizontalRuleParser(this);
-        return parser.DOMConversionMap;
+        return parseHorizontalRuleNode(this);
     }
 
     exportDOM(options = {}) {
-        const {element, type} = renderHorizontalRuleToDOM(this, options);
-        return {element, type};
+        return renderHorizontalRuleNode(this, options);
     }
 
     getTextContent() {
         return '---\n\n';
+    }
+
+    hasEditMode() {
+        return false;
     }
 }
 

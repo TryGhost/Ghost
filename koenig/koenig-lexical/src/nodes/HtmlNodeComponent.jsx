@@ -3,65 +3,53 @@ import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import React from 'react';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
-import {CodeBlockCard} from '../components/ui/cards/CodeBlockCard';
+import {EDIT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin.jsx';
+import {HtmlCard} from '../components/ui/cards/HtmlCard';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-export function CodeBlockNodeComponent({nodeKey, captionEditor, captionEditorInitialState, code, language}) {
+export function HtmlNodeComponent({nodeKey, html}) {
     const [editor] = useLexicalComposerContext();
-    const {isEditing, setEditing, isSelected} = React.useContext(CardContext);
+    const cardContext = React.useContext(CardContext);
     const {cardConfig, darkMode} = React.useContext(KoenigComposerContext);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
-
-    const updateCode = (value) => {
+    const updateHtml = (value) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.code = value;
+            node.html = value;
         });
     };
-
-    const updateLanguage = (value) => {
-        editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            node.language = value;
-        });
-    };
-
     const handleToolbarEdit = (event) => {
         event.preventDefault();
         event.stopPropagation();
-        setEditing(true);
+        editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey, focusEditor: false});
     };
 
     return (
         <>
-            <CodeBlockCard
-                captionEditor={captionEditor}
-                captionEditorInitialState={captionEditorInitialState}
-                code={code}
+            <HtmlCard
                 darkMode={darkMode}
-                handleToolbarEdit={handleToolbarEdit}
-                isEditing={isEditing}
-                isSelected={isSelected}
-                language={language}
+                html={html}
+                isEditing={cardContext.isEditing}
                 nodeKey={nodeKey}
-                updateCode={updateCode}
-                updateLanguage={updateLanguage}
+                unsplashConf={cardConfig.unsplash}
+                updateHtml={updateHtml}
             />
+
             <ActionToolbar
-                data-kg-card-toolbar="button"
+                data-kg-card-toolbar="html"
                 isVisible={showSnippetToolbar}
             >
                 <SnippetActionToolbar onClose={() => setShowSnippetToolbar(false)} />
             </ActionToolbar>
 
             <ActionToolbar
-                data-kg-card-toolbar="button"
-                isVisible={isSelected && !isEditing}
+                data-kg-card-toolbar="html"
+                isVisible={cardContext.isSelected && !cardContext.isEditing && !showSnippetToolbar}
             >
                 <ToolbarMenu>
-                    <ToolbarMenuItem dataTestId="edit-code-card" icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
+                    <ToolbarMenuItem icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
                     <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
                     <ToolbarMenuItem
                         dataTestId="create-snippet"

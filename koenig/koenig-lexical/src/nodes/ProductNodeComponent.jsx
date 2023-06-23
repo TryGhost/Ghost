@@ -54,9 +54,9 @@ export function ProductNodeComponent({
         if (imageUrl) {
             editor.update(() => {
                 const node = $getNodeByKey(nodeKey);
-                node.setProductImageSrc(imageUrl);
-                node.setProductImageHeight(height);
-                node.setProductImageWidth(width);
+                node.productImageSrc = imageUrl;
+                node.productImageHeight = height;
+                node.productImageWidth = width;
             });
         }
 
@@ -75,7 +75,7 @@ export function ProductNodeComponent({
     const onRemoveImage = () => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setProductImageSrc('');
+            node.productImageSrc = '';
         });
     };
 
@@ -86,35 +86,35 @@ export function ProductNodeComponent({
     const handleButtonToggle = (event) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setProductButtonEnabled(event.target.checked);
+            node.productButtonEnabled = event.target.checked;
         });
     };
 
     const handleButtonTextChange = (event) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setProductButton(event.target.value);
+            node.productButton = event.target.value;
         });
     };
 
     const handleButtonUrlChange = (val) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setProductUrl(val);
+            node.productUrl = val;
         });
     };
 
     const handleRatingToggle = (event) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setProductRatingEnabled(event.target.checked);
+            node.productRatingEnabled = event.target.checked;
         });
     };
 
     const handleRatingChange = (rating) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setProductStarRating(rating);
+            node.productStarRating = rating;
         });
     };
 

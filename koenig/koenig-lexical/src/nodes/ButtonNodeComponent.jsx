@@ -3,30 +3,16 @@ import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import React from 'react';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
-import {CodeBlockCard} from '../components/ui/cards/CodeBlockCard';
+import {ButtonCard} from '../components/ui/cards/ButtonCard';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-export function CodeBlockNodeComponent({nodeKey, captionEditor, captionEditorInitialState, code, language}) {
+export function ButtonNodeComponent({alignment, buttonText, buttonUrl, nodeKey}) {
     const [editor] = useLexicalComposerContext();
-    const {isEditing, setEditing, isSelected} = React.useContext(CardContext);
-    const {cardConfig, darkMode} = React.useContext(KoenigComposerContext);
+    const {isEditing, isSelected, setEditing} = React.useContext(CardContext);
+    const {cardConfig} = React.useContext(KoenigComposerContext);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
-
-    const updateCode = (value) => {
-        editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            node.code = value;
-        });
-    };
-
-    const updateLanguage = (value) => {
-        editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            node.language = value;
-        });
-    };
 
     const handleToolbarEdit = (event) => {
         event.preventDefault();
@@ -34,20 +20,38 @@ export function CodeBlockNodeComponent({nodeKey, captionEditor, captionEditorIni
         setEditing(true);
     };
 
+    const handleButtonTextChange = (event) => {
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.buttonText = event.target.value;
+        });
+    };
+
+    const handleButtonUrlChange = (val) => {
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.buttonUrl = val;
+        });
+    };
+
+    const handleAlignmentChange = (value) => {
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.alignment = value;
+        });
+    };
+
     return (
         <>
-            <CodeBlockCard
-                captionEditor={captionEditor}
-                captionEditorInitialState={captionEditorInitialState}
-                code={code}
-                darkMode={darkMode}
-                handleToolbarEdit={handleToolbarEdit}
+            <ButtonCard
+                alignment={alignment}
+                buttonPlaceholder={`Add button text`}
+                buttonText={buttonText}
+                buttonUrl={buttonUrl}
+                handleAlignmentChange={handleAlignmentChange}
+                handleButtonTextChange={handleButtonTextChange}
+                handleButtonUrlChange={handleButtonUrlChange}
                 isEditing={isEditing}
-                isSelected={isSelected}
-                language={language}
-                nodeKey={nodeKey}
-                updateCode={updateCode}
-                updateLanguage={updateLanguage}
             />
             <ActionToolbar
                 data-kg-card-toolbar="button"
@@ -61,7 +65,7 @@ export function CodeBlockNodeComponent({nodeKey, captionEditor, captionEditorIni
                 isVisible={isSelected && !isEditing}
             >
                 <ToolbarMenu>
-                    <ToolbarMenuItem dataTestId="edit-code-card" icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
+                    <ToolbarMenuItem dataTestId="edit-button-card" icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
                     <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
                     <ToolbarMenuItem
                         dataTestId="create-snippet"

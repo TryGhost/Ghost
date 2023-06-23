@@ -1,11 +1,12 @@
 import * as React from 'react';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
-import {HorizontalRuleNode as BaseHorizontalRuleNode, INSERT_HORIZONTAL_RULE_COMMAND} from '@tryghost/kg-default-nodes';
+import {HorizontalRuleNode as BaseHorizontalRuleNode} from '@tryghost/kg-default-nodes';
 import {ReactComponent as DividerCardIcon} from '../assets/icons/kg-card-type-divider.svg';
 import {HorizontalRuleCard} from '../components/ui/cards/HorizontalRuleCard';
+import {createCommand} from 'lexical';
 
 // re-export here so we don't need to import from multiple places throughout the app
-export {INSERT_HORIZONTAL_RULE_COMMAND} from '@tryghost/kg-default-nodes';
+export const INSERT_HORIZONTAL_RULE_COMMAND = createCommand();
 
 export class HorizontalRuleNode extends BaseHorizontalRuleNode {
     static kgMenu = {
@@ -19,11 +20,6 @@ export class HorizontalRuleNode extends BaseHorizontalRuleNode {
 
     getIcon() {
         return DividerCardIcon;
-    }
-
-    createDOM() {
-        const div = document.createElement('div');
-        return div;
     }
 
     decorate() {

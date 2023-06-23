@@ -54,45 +54,45 @@ describe('EmailCtaNode', function () {
         it('has getters for all properties', editorTest(function () {
             const emailNode = $createEmailCtaNode(dataset);
 
-            emailNode.getAlignment().should.equal(dataset.alignment);
-            emailNode.getButtonText().should.equal(dataset.buttonText);
-            emailNode.getButtonUrl().should.equal(dataset.buttonUrl);
-            emailNode.getHtml().should.equal(dataset.html);
-            emailNode.getSegment().should.equal(dataset.segment);
-            emailNode.getShowButton().should.equal(dataset.showButton);
-            emailNode.getShowDividers().should.equal(dataset.showDividers);
+            emailNode.alignment.should.equal(dataset.alignment);
+            emailNode.buttonText.should.equal(dataset.buttonText);
+            emailNode.buttonUrl.should.equal(dataset.buttonUrl);
+            emailNode.html.should.equal(dataset.html);
+            emailNode.segment.should.equal(dataset.segment);
+            emailNode.showButton.should.equal(dataset.showButton);
+            emailNode.showDividers.should.equal(dataset.showDividers);
         }));
 
         it('has setters for all properties', editorTest(function () {
             const emailNode = $createEmailCtaNode();
 
-            emailNode.getAlignment().should.equal('left');
-            emailNode.setAlignment('center');
-            emailNode.getAlignment().should.equal('center');
+            emailNode.alignment.should.equal('left');
+            emailNode.alignment = 'center';
+            emailNode.alignment.should.equal('center');
 
-            emailNode.getButtonText().should.equal('');
-            emailNode.setButtonText('Hello World');
-            emailNode.getButtonText().should.equal('Hello World');
+            emailNode.buttonText.should.equal('');
+            emailNode.buttonText = 'Hello World';
+            emailNode.buttonText.should.equal('Hello World');
 
-            emailNode.getButtonUrl().should.equal('');
-            emailNode.setButtonUrl('https://example.com');
-            emailNode.getButtonUrl().should.equal('https://example.com');
+            emailNode.buttonUrl.should.equal('');
+            emailNode.buttonUrl = 'https://example.com';
+            emailNode.buttonUrl.should.equal('https://example.com');
 
-            emailNode.getHtml().should.equal('');
-            emailNode.setHtml('<p>Hello World</p>');
-            emailNode.getHtml().should.equal('<p>Hello World</p>');
+            emailNode.html.should.equal('');
+            emailNode.html = '<p>Hello World</p>';
+            emailNode.html.should.equal('<p>Hello World</p>');
 
-            emailNode.getSegment().should.equal('status:free');
-            emailNode.setSegment('status:-free');
-            emailNode.getSegment().should.equal('status:-free');
+            emailNode.segment.should.equal('status:free');
+            emailNode.segment = 'status:-free';
+            emailNode.segment.should.equal('status:-free');
 
-            emailNode.getShowButton().should.equal(false);
-            emailNode.setShowButton(true);
-            emailNode.getShowButton().should.equal(true);
+            emailNode.showButton.should.equal(false);
+            emailNode.showButton = true;
+            emailNode.showButton.should.equal(true);
 
-            emailNode.getShowDividers().should.equal(true);
-            emailNode.setShowDividers(false);
-            emailNode.getShowDividers().should.equal(false);
+            emailNode.showDividers.should.equal(true);
+            emailNode.showDividers = false;
+            emailNode.showDividers.should.equal(false);
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
@@ -102,6 +102,39 @@ describe('EmailCtaNode', function () {
             emailNodeDataset.should.deepEqual({
                 ...dataset
             });
+        }));
+    });
+
+    describe('getType', function () {
+        it('returns the correct node type', editorTest(function () {
+            EmailCtaNode.getType().should.equal('email-cta');
+        }));
+    });
+
+    describe('clone', function () {
+        it('returns a copy of the current node', editorTest(function () {
+            const emailCtaNode = $createEmailCtaNode(dataset);
+            const emailCtaNodeDataset = emailCtaNode.getDataset();
+            const clone = EmailCtaNode.clone(emailCtaNode);
+            const cloneDataset = clone.getDataset();
+
+            cloneDataset.should.deepEqual({...emailCtaNodeDataset});
+        }));
+    });
+
+    describe('urlTransformMap', function () {
+        it('contains the expected URL mapping', editorTest(function () {
+            EmailCtaNode.urlTransformMap.should.deepEqual({
+                buttonUrl: 'url',
+                html: 'html'
+            });
+        }));
+    });
+
+    describe('hasEditMode', function () {
+        it('returns true', editorTest(function () {
+            const emailCtaNode = $createEmailCtaNode(dataset);
+            emailCtaNode.hasEditMode().should.be.true;
         }));
     });
 
@@ -147,13 +180,13 @@ describe('EmailCtaNode', function () {
                 try {
                     const [emailNode] = $getRoot().getChildren();
 
-                    emailNode.getAlignment().should.equal(dataset.alignment);
-                    emailNode.getButtonText().should.equal(dataset.buttonText);
-                    emailNode.getButtonUrl().should.equal(dataset.buttonUrl);
-                    emailNode.getHtml().should.equal(dataset.html);
-                    emailNode.getSegment().should.equal(dataset.segment);
-                    emailNode.getShowButton().should.equal(dataset.showButton);
-                    emailNode.getShowDividers().should.equal(dataset.showDividers);
+                    emailNode.alignment.should.equal(dataset.alignment);
+                    emailNode.buttonText.should.equal(dataset.buttonText);
+                    emailNode.buttonUrl.should.equal(dataset.buttonUrl);
+                    emailNode.html.should.equal(dataset.html);
+                    emailNode.segment.should.equal(dataset.segment);
+                    emailNode.showButton.should.equal(dataset.showButton);
+                    emailNode.showDividers.should.equal(dataset.showDividers);
                     done();
                 } catch (e) {
                     done(e);
@@ -457,7 +490,7 @@ describe('EmailCtaNode', function () {
     describe('getTextContent', function () {
         it('returns contents', editorTest(function () {
             const node = $createEmailCtaNode();
-            node.setHtml('Testing');
+            node.html = 'Testing';
 
             // email CTA nodes don't have text content
             node.getTextContent().should.equal('');

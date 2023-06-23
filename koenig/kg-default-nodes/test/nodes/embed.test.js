@@ -74,35 +74,35 @@ describe('EmbedNode', function () {
         it('has getters for all properties', editorTest(function () {
             const embedNode = $createEmbedNode(dataset);
 
-            embedNode.getUrl().should.equal(dataset.url);
-            embedNode.getEmbedType().should.equal(dataset.embedType);
-            embedNode.getHtml().should.equal(dataset.html);
-            embedNode.getMetadata().should.equal(dataset.metadata);
-            embedNode.getCaption().should.equal(dataset.caption);
+            embedNode.url.should.equal(dataset.url);
+            embedNode.embedType.should.equal(dataset.embedType);
+            embedNode.html.should.equal(dataset.html);
+            embedNode.metadata.should.equal(dataset.metadata);
+            embedNode.caption.should.equal(dataset.caption);
         }));
 
         it('has setters for all properties', editorTest(function () {
             const embedNode = $createEmbedNode();
 
-            embedNode.getUrl().should.equal('');
-            embedNode.setUrl('https://www.ghost.org/');
-            embedNode.getUrl().should.equal('https://www.ghost.org/');
+            embedNode.url.should.equal('');
+            embedNode.url = 'https://www.ghost.org/';
+            embedNode.url.should.equal('https://www.ghost.org/');
 
-            embedNode.getEmbedType().should.equal('');
-            embedNode.setEmbedType('https://www.ghost.org/favicon.ico');
-            embedNode.getEmbedType().should.equal('https://www.ghost.org/favicon.ico');
+            embedNode.embedType.should.equal('');
+            embedNode.embedType = 'https://www.ghost.org/favicon.ico';
+            embedNode.embedType.should.equal('https://www.ghost.org/favicon.ico');
 
-            embedNode.getHtml().should.equal('');
-            embedNode.setHtml('Ghost: The Creator Economy Platform');
-            embedNode.getHtml().should.equal('Ghost: The Creator Economy Platform');
+            embedNode.html.should.equal('');
+            embedNode.html = 'Ghost: The Creator Economy Platform';
+            embedNode.html.should.equal('Ghost: The Creator Economy Platform');
 
-            embedNode.getMetadata().should.deepEqual({});
-            embedNode.setMetadata({test: 'value'});
-            embedNode.getMetadata().should.deepEqual({test: 'value'});
+            embedNode.metadata.should.deepEqual({});
+            embedNode.metadata = {test: 'value'};
+            embedNode.metadata.should.deepEqual({test: 'value'});
 
-            embedNode.getCaption().should.equal('');
-            embedNode.setCaption('caption here');
-            embedNode.getCaption().should.equal('caption here');
+            embedNode.caption.should.equal('');
+            embedNode.caption = 'caption here';
+            embedNode.caption.should.equal('caption here');
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
@@ -113,15 +113,49 @@ describe('EmbedNode', function () {
                 ...dataset
             });
         }));
+    });
 
-        it('has isEmpty() convenience method', editorTest(function () {
+    describe('getType', function () {
+        it('returns the correct node type', editorTest(function () {
+            EmbedNode.getType().should.equal('embed');
+        }));
+    });
+
+    describe('clone', function () {
+        it('returns a copy of the current node', editorTest(function () {
+            const embedNode = $createEmbedNode(dataset);
+            const embedNodeDataset = embedNode.getDataset();
+            const clone = EmbedNode.clone(embedNode);
+            const cloneDataset = clone.getDataset();
+
+            cloneDataset.should.deepEqual({...embedNodeDataset});
+        }));
+    });
+
+    describe('urlTransformMap', function () {
+        it('contains the expected URL mapping', editorTest(function () {
+            EmbedNode.urlTransformMap.should.deepEqual({
+                url: 'url'
+            });
+        }));
+    });
+
+    describe('hasEditMode', function () {
+        it('returns true', editorTest(function () {
+            const embedNode = $createEmbedNode(dataset);
+            embedNode.hasEditMode().should.be.true;
+        }));
+    });
+
+    describe('isEmpty', function () {
+        it('returns true if url or html are empty', editorTest(function () {
             const embedNode = $createEmbedNode(dataset);
 
             embedNode.isEmpty().should.be.false;
-            embedNode.setUrl('');
+            embedNode.url = '';
             embedNode.isEmpty().should.be.true;
-            embedNode.setUrl(dataset.url);
-            embedNode.setHtml('');
+            embedNode.url = dataset.url;
+            embedNode.html = '';
             embedNode.isEmpty().should.be.true;
         }));
     });
@@ -358,11 +392,11 @@ describe('EmbedNode', function () {
                 try {
                     const [embedNode] = $getRoot().getChildren();
 
-                    embedNode.getUrl().should.equal(dataset.url);
-                    embedNode.getEmbedType().should.equal(dataset.embedType);
-                    embedNode.getHtml().should.equal(dataset.html);
-                    embedNode.getMetadata().should.deepEqual(dataset.metadata);
-                    embedNode.getCaption().should.equal(dataset.caption);
+                    embedNode.url.should.equal(dataset.url);
+                    embedNode.embedType.should.equal(dataset.embedType);
+                    embedNode.html.should.equal(dataset.html);
+                    embedNode.metadata.should.deepEqual(dataset.metadata);
+                    embedNode.caption.should.equal(dataset.caption);
 
                     done();
                 } catch (e) {
@@ -370,34 +404,6 @@ describe('EmbedNode', function () {
                 }
             });
         });
-    });
-
-    describe('hasEditMode', function () {
-        it('returns true', editorTest(function () {
-            const embedNode = $createEmbedNode(dataset);
-            embedNode.hasEditMode().should.be.true;
-        }));
-    });
-
-    describe('clone', function () {
-        it('clones the node', editorTest(function () {
-            const embedNode = $createEmbedNode(dataset);
-            const clonedEmbedNode = EmbedNode.clone(embedNode);
-            $isEmbedNode(clonedEmbedNode).should.be.true;
-            clonedEmbedNode.getUrl().should.equal(dataset.url);
-        }));
-    });
-
-    describe('static properties', function () {
-        it('getType', editorTest(function () {
-            EmbedNode.getType().should.equal('embed');
-        }));
-
-        it('urlTransformMap', editorTest(function () {
-            EmbedNode.urlTransformMap.should.deepEqual({
-                url: 'url'
-            });
-        }));
     });
 
     describe('importDOM', function () {
@@ -415,9 +421,9 @@ describe('EmbedNode', function () {
 
                 nodes.length.should.equal(1);
                 nodes[0].getType().should.equal('embed');
-                // nodes[0].getEmbedType().should.equal('embed');
-                nodes[0].getUrl().should.equal('https://www.youtube.com/embed/YTVID?feature=oembed');
-                nodes[0].getHtml().should.equal('<iframe width="480" height="270" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>');
+                // nodes[0].embedType.should.equal('embed');
+                nodes[0].url.should.equal('https://www.youtube.com/embed/YTVID?feature=oembed');
+                nodes[0].html.should.equal('<iframe width="480" height="270" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>');
             }));
 
             it('medium youtube iframe', editorTest(function () {
@@ -426,9 +432,9 @@ describe('EmbedNode', function () {
 
                 nodes.length.should.equal(1);
                 nodes[0].getType().should.equal('embed');
-                // nodes[0].getEmbedType().should.equal('embed');
-                nodes[0].getUrl().should.equal('https://www.youtube.com/embed/YTVID?feature=oembed');
-                nodes[0].getHtml().should.equal('<iframe src="https://www.youtube.com/embed/YTVID?feature=oembed" width="700" height="393" frameborder="0" scrolling="no"></iframe>');
+                // nodes[0].embedType.should.equal('embed');
+                nodes[0].url.should.equal('https://www.youtube.com/embed/YTVID?feature=oembed');
+                nodes[0].html.should.equal('<iframe src="https://www.youtube.com/embed/YTVID?feature=oembed" width="700" height="393" frameborder="0" scrolling="no"></iframe>');
             }));
 
             it('wordpress youtube iframe', editorTest(function () {
@@ -437,9 +443,9 @@ describe('EmbedNode', function () {
 
                 nodes.length.should.equal(1);
                 nodes[0].getType().should.equal('embed');
-                // nodes[0].getEmbedType().should.equal('embed');
-                nodes[0].getUrl().should.equal('https://www.youtube.com/embed/YTVID?version=3&rel=1&fs=1&autohide=2&showsearch=0&showinfo=1&iv_load_policy=1&wmode=transparent');
-                nodes[0].getHtml().should.equal('<iframe class="youtube-player" type="text/html" width="640" height="360" src="https://www.youtube.com/embed/YTVID?version=3&amp;rel=1&amp;fs=1&amp;autohide=2&amp;showsearch=0&amp;showinfo=1&amp;iv_load_policy=1&amp;wmode=transparent" allowfullscreen="true" style="border: 0"></iframe>');
+                // nodes[0].embedType.should.equal('embed');
+                nodes[0].url.should.equal('https://www.youtube.com/embed/YTVID?version=3&rel=1&fs=1&autohide=2&showsearch=0&showinfo=1&iv_load_policy=1&wmode=transparent');
+                nodes[0].html.should.equal('<iframe class="youtube-player" type="text/html" width="640" height="360" src="https://www.youtube.com/embed/YTVID?version=3&amp;rel=1&amp;fs=1&amp;autohide=2&amp;showsearch=0&amp;showinfo=1&amp;iv_load_policy=1&amp;wmode=transparent" allowfullscreen="true" style="border: 0"></iframe>');
             }));
 
             it('youtube iframe with caption', editorTest(function () {
@@ -448,10 +454,10 @@ describe('EmbedNode', function () {
 
                 nodes.length.should.equal(1);
                 nodes[0].getType().should.equal('embed');
-                // nodes[0].getEmbedType().should.equal('embed');
-                nodes[0].getUrl().should.equal('https://www.youtube.com/embed/YTVID?feature=oembed');
-                nodes[0].getHtml().should.equal('<iframe width="480" height="270" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>');
-                nodes[0].getCaption().should.equal('My Video');
+                // nodes[0].embedType.should.equal('embed');
+                nodes[0].url.should.equal('https://www.youtube.com/embed/YTVID?feature=oembed');
+                nodes[0].html.should.equal('<iframe width="480" height="270" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>');
+                nodes[0].caption.should.equal('My Video');
             }));
 
             it('ignore iframe with relative src', editorTest(function () {
@@ -471,8 +477,8 @@ describe('EmbedNode', function () {
                 const nodes = $generateNodesFromDOM(editor, dom);
 
                 nodes.length.should.equal(1);
-                nodes[0].getUrl().should.equal('https://www.youtube.com/embed/YTVID?feature=oembed');
-                nodes[0].getHtml().should.equal('<iframe width="640" height="360" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>');
+                nodes[0].url.should.equal('https://www.youtube.com/embed/YTVID?feature=oembed');
+                nodes[0].html.should.equal('<iframe width="640" height="360" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>');
             }));
 
             it('youtube iframe with double wrapper div + schemaless url', editorTest(function () {
@@ -480,8 +486,8 @@ describe('EmbedNode', function () {
                 const nodes = $generateNodesFromDOM(editor, dom);
 
                 nodes.length.should.equal(1);
-                nodes[0].getUrl().should.equal('https://www.youtube.com/embed/YTVID');
-                nodes[0].getHtml().should.prettifyTo('<iframe class="hs-responsive-embed-iframe hs-fullwidth-embed" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" xml="lang" src="https://www.youtube.com/embed/YTVID" width="560" height="315" allowfullscreen="" data-service="youtube"></iframe>');
+                nodes[0].url.should.equal('https://www.youtube.com/embed/YTVID');
+                nodes[0].html.should.prettifyTo('<iframe class="hs-responsive-embed-iframe hs-fullwidth-embed" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" xml="lang" src="https://www.youtube.com/embed/YTVID" width="560" height="315" allowfullscreen="" data-service="youtube"></iframe>');
             }));
         });
 
@@ -497,8 +503,8 @@ describe('EmbedNode', function () {
                 const nodes = $generateNodesFromDOM(editor, dom);
 
                 nodes.length.should.equal(1);
-                nodes[0].getUrl().should.equal('https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw');
-                nodes[0].getHtml().should.prettifyTo('<blockquote class="twitter-tweet"><p lang="en" dir="ltr">I see "blockchain engineer", I hear "fancy spreadsheet admin".</p>— I Am Devloper (@iamdevloper) <a href="https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw">May 28, 2019</a></blockquote><script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>');
+                nodes[0].url.should.equal('https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw');
+                nodes[0].html.should.prettifyTo('<blockquote class="twitter-tweet"><p lang="en" dir="ltr">I see "blockchain engineer", I hear "fancy spreadsheet admin".</p>— I Am Devloper (@iamdevloper) <a href="https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw">May 28, 2019</a></blockquote><script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>');
             }));
 
             it('twitter medium blockquote', editorTest(function () {
@@ -506,8 +512,8 @@ describe('EmbedNode', function () {
                 const nodes = $generateNodesFromDOM(editor, dom);
 
                 nodes.length.should.equal(1);
-                nodes[0].getUrl().should.equal('https://twitter.com/iamdevloper/status/1133348012439220226');
-                nodes[0].getHtml().should.prettifyTo('<blockquote class="twitter-tweet"><a href="https://twitter.com/iamdevloper/status/1133348012439220226"></a></blockquote><script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>');
+                nodes[0].url.should.equal('https://twitter.com/iamdevloper/status/1133348012439220226');
+                nodes[0].html.should.prettifyTo('<blockquote class="twitter-tweet"><a href="https://twitter.com/iamdevloper/status/1133348012439220226"></a></blockquote><script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>');
             }));
 
             it('twitter blockquote with caption', editorTest(function () {
@@ -515,9 +521,9 @@ describe('EmbedNode', function () {
                 const nodes = $generateNodesFromDOM(editor, dom);
 
                 nodes.length.should.equal(1);
-                nodes[0].getUrl().should.equal('https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw');
-                nodes[0].getHtml().should.prettifyTo('<blockquote class="twitter-tweet"><p lang="en" dir="ltr">I see "blockchain engineer", I hear "fancy spreadsheet admin".</p>— I Am Devloper (@iamdevloper) <a href="https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw">May 28, 2019</a></blockquote><script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>');
-                nodes[0].getCaption().should.equal('A Tweet');
+                nodes[0].url.should.equal('https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw');
+                nodes[0].html.should.prettifyTo('<blockquote class="twitter-tweet"><p lang="en" dir="ltr">I see "blockchain engineer", I hear "fancy spreadsheet admin".</p>— I Am Devloper (@iamdevloper) <a href="https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw">May 28, 2019</a></blockquote><script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>');
+                nodes[0].caption.should.equal('A Tweet');
             }));
 
             it('twitter blockquote with linked caption', editorTest(function () {
@@ -525,9 +531,9 @@ describe('EmbedNode', function () {
                 const nodes = $generateNodesFromDOM(editor, dom);
 
                 nodes.length.should.equal(1);
-                nodes[0].getUrl().should.equal('https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw');
-                nodes[0].getHtml().should.prettifyTo('<blockquote class="twitter-tweet"><p lang="en" dir="ltr">I see "blockchain engineer", I hear "fancy spreadsheet admin".</p>— I Am Devloper (@iamdevloper) <a href="https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw">May 28, 2019</a></blockquote><script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>');
-                nodes[0].getCaption().should.equal('<a href="https://twitter.com">A Tweet</a>');
+                nodes[0].url.should.equal('https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw');
+                nodes[0].html.should.prettifyTo('<blockquote class="twitter-tweet"><p lang="en" dir="ltr">I see "blockchain engineer", I hear "fancy spreadsheet admin".</p>— I Am Devloper (@iamdevloper) <a href="https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw">May 28, 2019</a></blockquote><script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>');
+                nodes[0].caption.should.equal('<a href="https://twitter.com">A Tweet</a>');
             }));
         });
     });
@@ -537,7 +543,7 @@ describe('EmbedNode', function () {
             const node = $createEmbedNode();
             node.getTextContent().should.equal('');
 
-            node.setCaption('Test caption');
+            node.caption = 'Test caption';
 
             node.getTextContent().should.equal('Test caption\n\n');
         }));

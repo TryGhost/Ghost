@@ -8,6 +8,7 @@ const {$getRoot} = require('lexical');
 const editorNodes = [CodeBlockNode];
 
 describe('CodeBlockNode', function () {
+    let dataset;
     let editor;
     let code;
     let language;
@@ -34,6 +35,12 @@ describe('CodeBlockNode', function () {
         code = '<script></script>';
         language = 'javascript';
         caption = 'A code block';
+
+        dataset = {
+            code,
+            language,
+            caption
+        };
 
         exportOptions = new Object({
             createDocument: () => {
@@ -74,9 +81,9 @@ describe('CodeBlockNode', function () {
             editorState.read(() => {
                 try {
                     const codeBlockNode = $getRoot().getChildren()[0];
-                    should(codeBlockNode.getCode()).equal(`<?php echo 'Hello World'; ?>`);
-                    should(codeBlockNode.getLanguage()).equal('php');
-                    should(codeBlockNode.getCaption()).equal('Your first PHP enabled page');
+                    should(codeBlockNode.code).equal(`<?php echo 'Hello World'; ?>`);
+                    should(codeBlockNode.language).equal('php');
+                    should(codeBlockNode.caption).equal('Your first PHP enabled page');
                     done();
                 } catch (e) {
                     done(e);
@@ -115,25 +122,25 @@ describe('CodeBlockNode', function () {
         it('has getters for all properties', editorTest(function () {
             const codeBlockNode = $createCodeBlockNode({language, code, caption});
 
-            codeBlockNode.getCode().should.equal('<script></script>');
-            codeBlockNode.getLanguage().should.equal('javascript');
-            codeBlockNode.getCaption().should.equal('A code block');
+            codeBlockNode.code.should.equal('<script></script>');
+            codeBlockNode.language.should.equal('javascript');
+            codeBlockNode.caption.should.equal('A code block');
         }));
 
         it('has setters for all properties', editorTest(function () {
             const codeBlockNode = $createCodeBlockNode({language: '', code: '', caption: ''});
 
-            codeBlockNode.getLanguage().should.equal('');
-            codeBlockNode.setLanguage('javascript');
-            codeBlockNode.getLanguage().should.equal('javascript');
+            codeBlockNode.language.should.equal('');
+            codeBlockNode.language = 'javascript';
+            codeBlockNode.language.should.equal('javascript');
 
-            codeBlockNode.getCode().should.equal('');
-            codeBlockNode.setCode('<script></script>');
-            codeBlockNode.getCode().should.equal('<script></script>');
+            codeBlockNode.code.should.equal('');
+            codeBlockNode.code = '<script></script>';
+            codeBlockNode.code.should.equal('<script></script>');
 
-            codeBlockNode.getCaption().should.equal('');
-            codeBlockNode.setCaption('A code block');
-            codeBlockNode.getCaption().should.equal('A code block');
+            codeBlockNode.caption.should.equal('');
+            codeBlockNode.caption = 'A code block';
+            codeBlockNode.caption.should.equal('A code block');
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
@@ -146,13 +153,47 @@ describe('CodeBlockNode', function () {
                 caption: 'A code block'
             });
         }));
+    });
 
-        it('has isEmpty() convenience method', editorTest(function () {
-            const codeBlockNode = $createCodeBlockNode({language, code, caption});
+    describe('isEmpty()', function () {
+        it('returns true if markdown is empty', editorTest(function () {
+            const codeBlockNode = $createCodeBlockNode(dataset);
 
             codeBlockNode.isEmpty().should.be.false;
-            codeBlockNode.setCode('');
+            codeBlockNode.markdown = '';
             codeBlockNode.isEmpty().should.be.true;
+        }));
+    });
+
+    describe('getType', function () {
+        it('returns the correct node type', editorTest(function () {
+            CodeBlockNode.getType().should.equal('codeblock');
+        }));
+    });
+
+    describe('clone', function () {
+        it('returns a copy of the current node', editorTest(function () {
+            const codeBlockNode = $createCodeBlockNode(dataset);
+            const codeBlockNodeDataset = codeBlockNode.getDataset();
+            const clone = CodeBlockNode.clone(codeBlockNode);
+            const cloneDataset = clone.getDataset();
+
+            cloneDataset.should.deepEqual({...codeBlockNodeDataset});
+        }));
+    });
+
+    describe('urlTransformMap', function () {
+        it('contains the expected URL mapping', editorTest(function () {
+            CodeBlockNode.urlTransformMap.should.deepEqual({
+                caption: 'html'
+            });
+        }));
+    });
+
+    describe('hasEditMode', function () {
+        it('returns true', editorTest(function () {
+            const codeBlockNode = $createCodeBlockNode(dataset);
+            codeBlockNode.hasEditMode().should.be.true;
         }));
     });
 
@@ -203,9 +244,9 @@ describe('CodeBlockNode', function () {
             const nodes = $generateNodesFromDOM(editor, dom);
 
             nodes.length.should.equal(1);
-            nodes[0].getCode().should.equal('Test code');
-            should(nodes[0].getLanguage()).be.undefined();
-            should(nodes[0].getCaption()).be.undefined();
+            nodes[0].code.should.equal('Test code');
+            nodes[0].language.should.equal('');
+            nodes[0].caption.should.equal('');
         }));
 
         it('parses PRE>CODE inside FIGURE with FIGCAPTION into code card', editorTest(function () {
@@ -215,9 +256,9 @@ describe('CodeBlockNode', function () {
             const nodes = $generateNodesFromDOM(editor, dom);
 
             nodes.length.should.equal(1);
-            nodes[0].getCode().should.equal('Test code');
-            nodes[0].getCaption().should.equal('Test caption');
-            should(nodes[0].getLanguage()).be.undefined();
+            nodes[0].code.should.equal('Test code');
+            nodes[0].caption.should.equal('Test caption');
+            nodes[0].language.should.equal('');
         }));
 
         it('extracts language from pre class name for FIGURE>PRE>CODE', editorTest(function () {
@@ -227,9 +268,9 @@ describe('CodeBlockNode', function () {
             const nodes = $generateNodesFromDOM(editor, dom);
 
             nodes.length.should.equal(1);
-            nodes[0].getCode().should.equal('Test code');
-            nodes[0].getCaption().should.equal('Test caption');
-            nodes[0].getLanguage().should.equal('js');
+            nodes[0].code.should.equal('Test code');
+            nodes[0].caption.should.equal('Test caption');
+            nodes[0].language.should.equal('js');
         }));
 
         it('extracts language from code class name for FIGURE>PRE>CODE', editorTest(function () {
@@ -239,9 +280,9 @@ describe('CodeBlockNode', function () {
             const nodes = $generateNodesFromDOM(editor, dom);
 
             nodes.length.should.equal(1);
-            nodes[0].getCode().should.equal('Test code');
-            nodes[0].getCaption().should.equal('Test caption');
-            nodes[0].getLanguage().should.equal('js');
+            nodes[0].code.should.equal('Test code');
+            nodes[0].caption.should.equal('Test caption');
+            nodes[0].language.should.equal('js');
         }));
 
         it('correctly skips if there is no pre tag', editorTest(function () {
@@ -260,9 +301,9 @@ describe('CodeBlockNode', function () {
             const nodes = $generateNodesFromDOM(editor, dom);
 
             nodes.length.should.equal(1);
-            nodes[0].getCode().should.equal('Test code');
-            should(nodes[0].getLanguage()).be.undefined();
-            should(nodes[0].getCaption()).be.undefined();
+            nodes[0].code.should.equal('Test code');
+            nodes[0].language.should.equal('');
+            nodes[0].caption.should.equal('');
         }));
 
         it('extracts language from pre class name for PRE>CODE', editorTest(function () {
@@ -272,9 +313,9 @@ describe('CodeBlockNode', function () {
             const nodes = $generateNodesFromDOM(editor, dom);
 
             nodes.length.should.equal(1);
-            nodes[0].getCode().should.equal('Test code');
-            nodes[0].getLanguage().should.equal('javascript');
-            should(nodes[0].getCaption()).be.undefined();
+            nodes[0].code.should.equal('Test code');
+            nodes[0].language.should.equal('javascript');
+            nodes[0].caption.should.equal('');
         }));
 
         it('extracts language from code class name for PRE>CODE', editorTest(function () {
@@ -284,9 +325,9 @@ describe('CodeBlockNode', function () {
             const nodes = $generateNodesFromDOM(editor, dom);
 
             nodes.length.should.equal(1);
-            nodes[0].getCode().should.equal('Test code');
-            nodes[0].getLanguage().should.equal('ruby');
-            should(nodes[0].getCaption()).be.undefined();
+            nodes[0].code.should.equal('Test code');
+            nodes[0].language.should.equal('ruby');
+            nodes[0].caption.should.equal('');
         }));
     });
 
@@ -295,8 +336,8 @@ describe('CodeBlockNode', function () {
             const node = $createCodeBlockNode();
             node.getTextContent().should.equal('');
 
-            node.setCode('<script>const test = true;</script>');
-            node.setCaption('Test caption');
+            node.code = '<script>const test = true;</script>';
+            node.caption = 'Test caption';
 
             node.getTextContent().should.equal('<script>const test = true;</script>\nTest caption\n\n');
         }));

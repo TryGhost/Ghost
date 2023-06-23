@@ -48,33 +48,31 @@ describe('FileNode', function () {
     it('can match node with FileNode', editorTest(function () {
         const node = $createFileNode(dataset);
         $isFileNode(node).should.be.true;
-        // const node = $createCalloutNode(dataset);
-        // $isCalloutNode(node).should.be.true;
     }));
 
     describe('data access', function (){
         it('has getters from all properties', editorTest(function () {
             const node = $createFileNode(dataset);
-            node.getSrc().should.equal(dataset.src);
-            node.getFileTitle().should.equal(dataset.fileTitle);
-            node.getFileSize().should.equal(dataset.fileSize);
-            node.getFileCaption().should.equal(dataset.fileCaption);
-            node.getFileName().should.equal(dataset.fileName);
+            node.src.should.equal(dataset.src);
+            node.fileTitle.should.equal(dataset.fileTitle);
+            node.fileSize.should.equal(dataset.fileSize);
+            node.fileCaption.should.equal(dataset.fileCaption);
+            node.fileName.should.equal(dataset.fileName);
         }));
 
         it('has setters for all properties', editorTest(function () {
             const node = $createFileNode(dataset);
-            node.setSrc('/content/files/2023/03/IMG_0196.jpeg');
-            node.getSrc().should.equal('/content/files/2023/03/IMG_0196.jpeg');
-            node.setFileTitle('new title');
-            node.getFileTitle().should.equal('new title');
-            node.setFileSize(123456);
-            node.getFileSize().should.equal(123456);
-            node.getFormattedFileSize().should.equal('121 KB');
-            node.setFileCaption('new description');
-            node.getFileCaption().should.equal('new description');
-            node.setFileName('IMG_0196.jpeg');
-            node.getFileName().should.equal('IMG_0196.jpeg');
+            node.src = '/content/files/2023/03/IMG_0196.jpeg';
+            node.src.should.equal('/content/files/2023/03/IMG_0196.jpeg');
+            node.fileTitle = 'new title';
+            node.fileTitle.should.equal('new title');
+            node.fileSize = 123456;
+            node.fileSize.should.equal(123456);
+            node.formattedFileSize.should.equal('121 KB');
+            node.fileCaption = 'new description';
+            node.fileCaption.should.equal('new description');
+            node.fileName = 'IMG_0196.jpeg';
+            node.fileName.should.equal('IMG_0196.jpeg');
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
@@ -84,7 +82,7 @@ describe('FileNode', function () {
         }));
     });
 
-    describe('exportDom', function () {
+    describe('exportDOM', function () {
         it('creates a file card', editorTest(function () {
             const fileNode = $createFileNode(dataset);
             const {element} = fileNode.exportDOM(exportOptions);
@@ -94,7 +92,39 @@ describe('FileNode', function () {
         }));
     });
 
-    describe('importDom', function () {
+    describe('getType', function () {
+        it('returns the correct node type', editorTest(function () {
+            FileNode.getType().should.equal('file');
+        }));
+    });
+
+    describe('clone', function () {
+        it('returns a copy of the current node', editorTest(function () {
+            const fileNode = $createFileNode(dataset);
+            const fileNodeDataset = fileNode.getDataset();
+            const clone = FileNode.clone(fileNode);
+            const cloneDataset = clone.getDataset();
+
+            cloneDataset.should.deepEqual({...fileNodeDataset});
+        }));
+    });
+
+    describe('urlTransformMap', function () {
+        it('contains the expected URL mapping', editorTest(function () {
+            FileNode.urlTransformMap.should.deepEqual({
+                src: 'url'
+            });
+        }));
+    });
+
+    describe('hasEditMode', function () {
+        it('returns true', editorTest(function () {
+            const fileNode = $createFileNode(dataset);
+            fileNode.hasEditMode().should.be.true;
+        }));
+    });
+
+    describe('importDOM', function () {
         it('parses a file card', editorTest(function () {
             const dom = (new JSDOM(`
                 <div class="kg-card kg-file-card">
@@ -131,11 +161,11 @@ describe('FileNode', function () {
             `)).window.document;
             const nodes = $generateNodesFromDOM(editor, dom);
             nodes.length.should.equal(1);
-            nodes[0].getSrc().should.equal('/content/files/2023/03/IMG_0196.jpeg');
-            nodes[0].getFileTitle().should.equal('Cool image to download');
-            nodes[0].getFileCaption().should.equal('This is a description');
-            nodes[0].getFileName().should.equal('IMG_0196.jpeg');
-            nodes[0].getFileSize().should.equal(123904); // ~121 KB
+            nodes[0].src.should.equal('/content/files/2023/03/IMG_0196.jpeg');
+            nodes[0].fileTitle.should.equal('Cool image to download');
+            nodes[0].fileCaption.should.equal('This is a description');
+            nodes[0].fileName.should.equal('IMG_0196.jpeg');
+            nodes[0].fileSize.should.equal(123904); // ~121 KB
         }));
     });
 
@@ -161,12 +191,12 @@ describe('FileNode', function () {
             editor.getEditorState().read(() => {
                 try {
                     const [fileNode] = $getRoot().getChildren();
-                    fileNode.getSrc().should.equal('/content/files/2023/03/IMG_0196.jpeg');
-                    fileNode.getFileTitle().should.equal('Cool image to download');
-                    fileNode.getFileCaption().should.equal('This is a description');
-                    fileNode.getFileName().should.equal('IMG_0196.jpeg');
-                    fileNode.getFileSize().should.equal(123456);
-                    fileNode.getFormattedFileSize().should.equal('121 KB'); // ~121 KB
+                    fileNode.src.should.equal('/content/files/2023/03/IMG_0196.jpeg');
+                    fileNode.fileTitle.should.equal('Cool image to download');
+                    fileNode.fileCaption.should.equal('This is a description');
+                    fileNode.fileName.should.equal('IMG_0196.jpeg');
+                    fileNode.fileSize.should.equal(123456);
+                    fileNode.formattedFileSize.should.equal('121 KB'); // ~121 KB
                     done();
                 } catch (e) {
                     done(e);
@@ -180,12 +210,12 @@ describe('FileNode', function () {
             const fileNode = $createFileNode(dataset);
             const clonedNode = FileNode.clone(fileNode);
             $isFileNode(clonedNode).should.be.true();
-            clonedNode.getSrc().should.equal('/content/files/2023/03/IMG_0196.jpeg');
-            clonedNode.getFileTitle().should.equal('Cool image to download');
-            clonedNode.getFileCaption().should.equal('This is a description');
-            clonedNode.getFileName().should.equal('IMG_0196.jpeg');
-            clonedNode.getFileSize().should.equal(123456);
-            clonedNode.getFormattedFileSize().should.equal('121 KB'); // ~121 KB
+            clonedNode.src.should.equal('/content/files/2023/03/IMG_0196.jpeg');
+            clonedNode.fileTitle.should.equal('Cool image to download');
+            clonedNode.fileCaption.should.equal('This is a description');
+            clonedNode.fileName.should.equal('IMG_0196.jpeg');
+            clonedNode.fileSize.should.equal(123456);
+            clonedNode.formattedFileSize.should.equal('121 KB'); // ~121 KB
         }));
     });
 
@@ -216,10 +246,10 @@ describe('FileNode', function () {
             const node = $createFileNode();
             node.getTextContent().should.equal('');
 
-            node.setFileTitle('Testing');
+            node.fileTitle = 'Testing';
             node.getTextContent().should.equal('Testing\n\n');
 
-            node.setFileCaption('Test caption');
+            node.fileCaption = 'Test caption';
             node.getTextContent().should.equal('Testing\nTest caption\n\n');
         }));
     });

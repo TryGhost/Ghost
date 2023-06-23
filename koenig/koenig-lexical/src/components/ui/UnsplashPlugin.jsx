@@ -22,11 +22,11 @@ const UnsplashPlugin = ({nodeKey, isModalOpen = true}) => {
     const insertImageToNode = async (image) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setSrc(image.src);
-            node.setImgHeight(image.height);
-            node.setImgWidth(image.width);
-            node.setCaption(image.caption);
-            node.setAlt(image.alt);
+            node.src = image.src;
+            node.height = image.height;
+            node.width = image.width;
+            node.caption = image.caption;
+            node.alt = image.alt;
             const nodeSelection = $createNodeSelection();
             nodeSelection.add(node.getKey());
             $setSelection(nodeSelection);

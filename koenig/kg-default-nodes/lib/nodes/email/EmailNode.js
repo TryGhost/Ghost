@@ -1,80 +1,13 @@
-import {createCommand} from 'lexical';
-import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
-import {renderEmailNodeToDOM} from './EmailRenderer';
+import {generateDecoratorNode} from '../../generate-decorator-node';
+import {renderEmailNode} from './EmailRenderer';
 
-export const INSERT_EMAIL_COMMAND = createCommand();
-const NODE_TYPE = 'email';
-
-export class EmailNode extends KoenigDecoratorNode {
-    // payload properties
-    __html;
-
-    static getType() {
-        return NODE_TYPE;
-    }
-
-    static clone(node) {
-        return new this(
-            node.getDataset(),
-            node.__key
-        );
-    }
-
-    static get urlTransformMap() {
-        return {
-            html: 'html'
-        };
-    }
-
-    getDataset() {
-        const self = this.getLatest();
-        return {
-            html: self.__html
-        };
-    }
-
-    constructor({html} = {}, key) {
-        super(key);
-        this.__html = html || '';
-    }
-
-    static importJSON(serializedNode) {
-        const {html} = serializedNode;
-        return new this({
-            html
-        });
-    }
-
-    exportJSON() {
-        const dataset = {
-            type: NODE_TYPE,
-            version: 1,
-            html: this.getHtml()
-        };
-        return dataset;
-    }
-
+export class EmailNode extends generateDecoratorNode({nodeType: 'email',
+    properties: [
+        {name: 'html', default: '', urlType: 'html'}
+    ]}
+) {
     exportDOM(options = {}) {
-        const {element} = renderEmailNodeToDOM(this, options);
-        return {element, type: 'inner'};
-    }
-
-    getHtml() {
-        const self = this.getLatest();
-        return self.__html;
-    }
-
-    setHtml(html) {
-        const writable = this.getWritable();
-        return writable.__html = html;
-    }
-
-    hasEditMode() {
-        return true;
-    }
-
-    isEmpty() {
-        return !this.__html;
+        return renderEmailNode(this, options);
     }
 }
 

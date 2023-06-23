@@ -8,7 +8,6 @@ class LexicalHTMLRenderer {
         const {ListItemNode, ListNode} = require('@lexical/list');
         const {HeadingNode, QuoteNode} = require('@lexical/rich-text');
         const {LinkNode} = require('@lexical/link');
-        const {HorizontalRuleNode} = require('./nodes/HorizontalRuleNode');
         const {$convertToHtmlString} = require('./convert-to-html-string');
 
         const defaultOptions = {
@@ -22,7 +21,6 @@ class LexicalHTMLRenderer {
             ListItemNode,
             QuoteNode,
             LinkNode,
-            HorizontalRuleNode,
             ...this.nodes
         ];
 

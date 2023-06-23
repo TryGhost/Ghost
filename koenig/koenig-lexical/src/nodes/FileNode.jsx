@@ -1,12 +1,12 @@
+import FileNodeComponent from './FileNodeComponent';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import React from 'react';
-
-import {FileNode as BaseFileNode, INSERT_FILE_COMMAND} from '@tryghost/kg-default-nodes';
-
-import FileNodeComponent from './FileNodeComponent';
+import {FileNode as BaseFileNode} from '@tryghost/kg-default-nodes';
 import {ReactComponent as FileCardIcon} from '../assets/icons/kg-card-type-file.svg';
+import {createCommand} from 'lexical';
+
 // re-export here so we don't need to import from multiple places throughout the app
-export {INSERT_FILE_COMMAND} from '@tryghost/kg-default-nodes';
+export const INSERT_FILE_COMMAND = createCommand();
 
 export class FileNode extends BaseFileNode {
     __triggerFileDialog = false;
@@ -40,9 +40,9 @@ export class FileNode extends BaseFileNode {
         return FileCardIcon;
     }
 
-    setTriggerFileDialog(shouldTrigger) {
+    set triggerFileDialog(shouldTrigger) {
         const writable = this.getWritable();
-        return writable.__triggerFileDialog = shouldTrigger;
+        writable.__triggerFileDialog = shouldTrigger;
     }
 
     decorate() {
@@ -51,12 +51,12 @@ export class FileNode extends BaseFileNode {
                 nodeKey={this.getKey()}
             >
                 <FileNodeComponent
-                    fileDesc={this.getFileCaption()}
+                    fileDesc={this.filecaption}
                     fileDescPlaceholder={'Enter a description'}
-                    fileName={this.getFileName()} 
-                    fileSize={this.getFormattedFileSize()}
-                    fileSrc = {this.getSrc()}
-                    fileTitle={this.getFileTitle()}
+                    fileName={this.fileName}
+                    fileSize={this.formattedFileSize}
+                    fileSrc={this.src}
+                    fileTitle={this.fileTitle}
                     fileTitlePlaceholder={'Enter a title'}
                     initialFile={this.__initialFile}
                     nodeKey={this.getKey()}

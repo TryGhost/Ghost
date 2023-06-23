@@ -1,114 +1,20 @@
-import {createCommand} from 'lexical';
-import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
-import {ButtonParser} from './ButtonParser';
-import {renderButtonNodeToDOM} from './ButtonRenderer';
+import {generateDecoratorNode} from '../../generate-decorator-node';
+import {parseButtonNode} from './ButtonParser';
+import {renderButtonNode} from './ButtonRenderer';
 
-export const INSERT_BUTTON_COMMAND = createCommand();
-
-export class ButtonNode extends KoenigDecoratorNode {
-    // payload properties
-    __buttonText;
-    __alignment;
-    __buttonUrl;
-
-    static getType() {
-        return 'button';
-    }
-
-    static clone(node) {
-        return new this(
-            node.getDataset(),
-            node.__key
-        );
-    }
-
-    static get urlTransformMap() {
-        return {
-            buttonUrl: 'url'
-        };
-    }
-
-    getDataset() {
-        const self = this.getLatest();
-        return {
-            buttonText: self.__buttonText,
-            alignment: self.__alignment,
-            buttonUrl: self.__buttonUrl
-        };
-    }
-
-    constructor({buttonText, alignment, buttonUrl} = {}, key) {
-        super(key);
-        this.__buttonText = buttonText || '';
-        this.__alignment = alignment || 'center';
-        this.__buttonUrl = buttonUrl || '';
-    }
-
-    static importJSON(serializedNode) {
-        const {alignment, buttonText, buttonUrl} = serializedNode;
-        const node = new this({
-            alignment,
-            buttonText,
-            buttonUrl
-        });
-        return node;
-    }
-
-    exportJSON() {
-        const dataset = {
-            type: 'button',
-            version: 1,
-            buttonText: this.getButtonText(),
-            alignment: this.getAlignment(),
-            buttonUrl: this.getButtonUrl()
-        };
-        return dataset;
-    }
-
-    // parser used when pasting html >> node
+export class ButtonNode extends generateDecoratorNode({nodeType: 'button',
+    properties: [
+        {name: 'buttonText', default: ''},
+        {name: 'alignment', default: 'center'},
+        {name: 'buttonUrl', default: '', urlType: 'url'}
+    ]}
+) {
     static importDOM() {
-        const parser = new ButtonParser(this);
-        return parser.DOMConversionMap;
+        return parseButtonNode(this);
     }
 
-    // renderer used when copying node >> html
     exportDOM(options = {}) {
-        const {element, type} = renderButtonNodeToDOM(this, options);
-        return {element, type};
-    }
-
-    getButtonText() {
-        const self = this.getLatest();
-        return self.__buttonText;
-    }
-
-    setButtonText(buttonText) {
-        const writable = this.getWritable();
-        return writable.__buttonText = buttonText;
-    }
-
-    getAlignment() {
-        const self = this.getLatest();
-        return self.__alignment;
-    }
-
-    setAlignment(alignment) {
-        const writable = this.getWritable();
-        return writable.__alignment = alignment;
-    }
-
-    getButtonUrl() {
-        const self = this.getLatest();
-        return self.__buttonUrl;
-    }
-
-    setButtonUrl(buttonUrl) {
-        const writable = this.getWritable();
-        return writable.__buttonUrl = buttonUrl;
-    }
-
-    hasEditMode() {
-        return true;
+        return renderButtonNode(this, options);
     }
 }
 

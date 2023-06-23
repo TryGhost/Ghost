@@ -1,20 +1,22 @@
 import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
-import React, {useCallback} from 'react';
+import React from 'react';
+import {$createBookmarkNode} from './BookmarkNode';
 import {$createLinkNode} from '@lexical/link';
 import {$createParagraphNode, $createTextNode, $getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
-import {BookmarkCard} from '../components/ui/cards/BookmarkCard';
+import {EmbedCard} from '../components/ui/cards/EmbedCard';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem} from '../components/ui/ToolbarMenu.jsx';
+import {useCallback} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-export function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, publisher, thumbnail, captionEditor, captionEditorInitialState, createdWithUrl}) {
+export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedType, metadata, captionEditor, captionEditorInitialState}) {
     const [editor] = useLexicalComposerContext();
 
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const {isSelected} = React.useContext(CardContext);
-    const [urlInputValue, setUrlInputValue] = React.useState(url);
+    const [urlInputValue, setUrlInputValue] = React.useState('');
     const [loading, setLoading] = React.useState(false);
     const [urlError, setUrlError] = React.useState(false);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
@@ -33,16 +35,23 @@ export function BookmarkNodeComponent({author, nodeKey, url, icon, title, descri
         setUrlError(false);
     };
 
-    const handlePasteAsLink = useCallback(() => {
+    const handlePasteAsLink = useCallback((href) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
+            if (!node) {
+                return;
+            }
             const paragraph = $createParagraphNode()
-                .append($createLinkNode(urlInputValue)
-                    .append($createTextNode(urlInputValue)));
+                .append($createLinkNode(href)
+                    .append($createTextNode(href)));
             node.replace(paragraph);
-            paragraph.selectEnd();
+
+            if (!paragraph.getNextSibling()) {
+                paragraph.insertAfter($createParagraphNode());
+            }
+            paragraph.selectNext();
         });
-    }, [editor, nodeKey, urlInputValue]);
+    }, [editor, nodeKey]);
 
     const handleClose = () => {
         editor.update(() => {
@@ -52,13 +61,28 @@ export function BookmarkNodeComponent({author, nodeKey, url, icon, title, descri
     };
 
     const fetchMetadata = async (href) => {
-        editor.getRootElement().focus({preventScroll: true}); // focus editor before causing the input element to dismount
         setLoading(true);
         let response;
+        const type = createdWithUrl ? '' : 'embed';
         try {
             // set the test data return values in fetchEmbed.js
-            response = await cardConfig.fetchEmbed(href, {type: 'bookmark'});
+            response = await cardConfig.fetchEmbed(href, {type});
+            // we may end up with a bookmark return if the url is valid but doesn't return an embed
+            if (response.type === 'bookmark') {
+                editor.update(() => {
+                    const node = $getNodeByKey(nodeKey);
+                    const bookmarkNode = $createBookmarkNode({url: response.url});
+                    node.replace(bookmarkNode);
+                });
+                return;
+            }
         } catch (e) {
+            if (createdWithUrl) {
+                setLoading(false);
+                handlePasteAsLink(href);
+
+                return;
+            }
             setLoading(false);
             setUrlError(true);
             return;
@@ -66,37 +90,11 @@ export function BookmarkNodeComponent({author, nodeKey, url, icon, title, descri
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             node.url = href;
-            node.author = response.metadata.author;
-            node.icon = response.metadata.icon;
-            node.title = response.metadata.title;
-            node.description = response.metadata.description;
-            node.publisher = response.metadata.publisher;
-            node.thumbnail = response.metadata.thumbnail;
-        });
-        setLoading(false);
-    };
+            node.metadata = response;
+            node.embedType = response.type;
+            node.html = response.html;
 
-    const fetchMetadataEffect = useCallback(async () => {
-        setLoading(true);
-        let response;
-        try {
-            // set the test data return values in fetchEmbed.js
-            response = await cardConfig.fetchEmbed(url, {type: 'bookmark'});
-        } catch (e) {
-            setLoading(false);
-            setUrlError(true);
-            return;
-        }
-        editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            node.url = response.url;
-            node.author = response.metadata.author;
-            node.icon = response.metadata.icon;
-            node.title = response.metadata.title;
-            node.description = response.metadata.description;
-            node.publisher = response.metadata.publisher;
-            node.thumbnail = response.metadata.thumbnail;
-
+            // select next node if card was pasted from link
             if (createdWithUrl) {
                 node.selectNext();
             }
@@ -104,18 +102,14 @@ export function BookmarkNodeComponent({author, nodeKey, url, icon, title, descri
         setLoading(false);
         // We only do this for init
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    };
 
-    // TODO: this needs to be a custom hook
-    // if we create the node with a url
-    //  fetch the metadata
-    //  if it fails, paste as a link
     React.useEffect(() => {
-        // only run this once
         if (createdWithUrl) {
+            // keep value in sync in case the user goes to retry to paste as link
             setUrlInputValue(url);
             try {
-                fetchMetadataEffect(url);
+                fetchMetadata(url);
             } catch {
                 handlePasteAsLink(url);
             }
@@ -126,37 +120,33 @@ export function BookmarkNodeComponent({author, nodeKey, url, icon, title, descri
 
     return (
         <>
-            <BookmarkCard
-                author={author}
+            <EmbedCard
                 captionEditor={captionEditor}
                 captionEditorInitialState={captionEditorInitialState}
-                description={description}
                 handleClose={handleClose}
                 handlePasteAsLink={handlePasteAsLink}
                 handleRetry={handleRetry}
                 handleUrlChange={handleUrlChange}
                 handleUrlSubmit={handleUrlSubmit}
-                icon={icon}
+                html={html}
                 isLoading={loading}
                 isSelected={isSelected}
-                publisher={publisher}
-                thumbnail={thumbnail}
-                title={title}
+                metadata={metadata}
                 url={url}
                 urlError={urlError}
                 urlInputValue={urlInputValue}
-                urlPlaceholder={`Paste URL to add bookmark content...`}
+                urlPlaceholder={`Paste URL to add embedded content...`}
             />
             <ActionToolbar
-                data-kg-card-toolbar="bookmark"
+                data-kg-card-toolbar="embed"
                 isVisible={showSnippetToolbar}
             >
                 <SnippetActionToolbar onClose={() => setShowSnippetToolbar(false)} />
             </ActionToolbar>
 
             <ActionToolbar
-                data-kg-card-toolbar="bookmark"
-                isVisible={title && isSelected && !showSnippetToolbar && cardConfig.createSnippet}
+                data-kg-card-toolbar="embed"
+                isVisible={html && isSelected && !showSnippetToolbar && cardConfig.createSnippet}
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem

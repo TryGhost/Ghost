@@ -45,14 +45,14 @@ function HeaderNodeComponent({
         // reset original src so it can be replaced with preview and upload progress
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setBackgroundImageSrc('');
+            node.backgroundImageSrc = '';
         });
 
         const {imageSrc} = await backgroundImageUploadHandler(files, imageUploader.upload);
 
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setBackgroundImageSrc(imageSrc);
+            node.backgroundImageSrc = imageSrc;
         });
     };
 
@@ -68,14 +68,14 @@ function HeaderNodeComponent({
         }
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setStyle(color);
+            node.style = color;
         });
     };
 
     const handleSizeSelector = (s) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setSize(s);
+            node.size = s;
         });
     };
 
@@ -84,28 +84,28 @@ function HeaderNodeComponent({
         setEditing(true); // kinda weird but this avoids the card from unselecting itself when toggling.
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setButtonEnabled(event.target.checked);
+            node.buttonEnabled = event.target.checked;
         });
     };
 
     const handleButtonText = (event) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setButtonText(event.target.value);
+            node.buttonText = event.target.value;
         });
     };
 
     const handleButtonUrl = (val) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setButtonUrl(val);
+            node.buttonUrl = val;
         });
     };
 
     const handleClearBackgroundImage = () => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setBackgroundImageSrc('');
+            node.backgroundImageSrc = '';
         });
     };
 

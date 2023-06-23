@@ -27,9 +27,9 @@ export function CalloutNodeComponent({nodeKey, textEditor, textEditorInitialStat
             const node = $getNodeByKey(nodeKey);
             setHasEmoji(event.target.checked);
             if (event.target.checked && emoji === '') {
-                node.setCalloutEmoji('💡');
+                node.calloutEmoji = '💡';
             } else {
-                node.setCalloutEmoji(event.target.checked ? emoji : '');
+                node.calloutEmoji = event.target.checked ? emoji : '';
             }
         });
     };
@@ -37,7 +37,7 @@ export function CalloutNodeComponent({nodeKey, textEditor, textEditorInitialStat
     const handleColorChange = (color) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setBackgroundColor(color);
+            node.backgroundColor = color;
         });
     };
 
@@ -45,7 +45,7 @@ export function CalloutNodeComponent({nodeKey, textEditor, textEditorInitialStat
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             setEmoji(event.native);
-            node.setCalloutEmoji(event.native);
+            node.calloutEmoji = event.native;
             toggleEmojiPicker();
         });
     };

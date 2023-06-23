@@ -1,14 +1,15 @@
 import React from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$generateHtmlFromNodes} from '@lexical/html';
-import {BookmarkNode as BaseBookmarkNode, INSERT_BOOKMARK_COMMAND} from '@tryghost/kg-default-nodes';
+import {BookmarkNode as BaseBookmarkNode} from '@tryghost/kg-default-nodes';
 import {ReactComponent as BookmarkCardIcon} from '../assets/icons/kg-card-type-bookmark.svg';
 import {BookmarkNodeComponent} from './BookmarkNodeComponent';
 import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
+import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 
 // re-export here so we don't need to import from multiple places throughout the app
-export {INSERT_BOOKMARK_COMMAND} from '@tryghost/kg-default-nodes';
+export const INSERT_BOOKMARK_COMMAND = createCommand();
 
 export class BookmarkNode extends BaseBookmarkNode {
     __captionEditor;
@@ -70,29 +71,21 @@ export class BookmarkNode extends BaseBookmarkNode {
         return json;
     }
 
-    createDOM() {
-        return document.createElement('div');
-    }
-
-    updateDOM() {
-        return false;
-    }
-
     decorate() {
         return (
             <KoenigCardWrapper nodeKey={this.getKey()}>
                 <BookmarkNodeComponent
-                    author={this.__author}
+                    author={this.author}
                     captionEditor={this.__captionEditor}
                     captionEditorInitialState={this.__captionEditorInitialState}
                     createdWithUrl={this.__createdWithUrl}
-                    description={this.__description}
-                    icon={this.__icon}
+                    description={this.description}
+                    icon={this.icon}
                     nodeKey={this.getKey()}
-                    publisher={this.__publisher}
-                    thumbnail={this.__thumbnail}
-                    title={this.__title}
-                    url={this.__url}
+                    publisher={this.publisher}
+                    thumbnail={this.thumbnail}
+                    title={this.title}
+                    url={this.url}
                 />
             </KoenigCardWrapper>
         );

@@ -27,16 +27,16 @@ describe('ProductNode', function () {
     };
 
     const checkGetters = (productNode, data) => {
-        productNode.getProductImageSrc().should.equal(data.productImageSrc);
-        productNode.getProductImageWidth().should.equal(data.productImageWidth);
-        productNode.getProductImageHeight().should.equal(data.productImageHeight);
-        productNode.getProductTitle().should.equal(data.productTitle);
-        productNode.getProductDescription().should.equal(data.productDescription);
-        productNode.getProductRatingEnabled().should.be.exactly(true);
-        productNode.getProductStarRating().should.equal(5);
-        productNode.getProductButtonEnabled().should.be.exactly(true);
-        productNode.getProductButton().should.equal(data.productButton);
-        productNode.getProductUrl().should.equal(data.productUrl);
+        productNode.productImageSrc.should.equal(data.productImageSrc);
+        productNode.productImageWidth.should.equal(data.productImageWidth);
+        productNode.productImageHeight.should.equal(data.productImageHeight);
+        productNode.productTitle.should.equal(data.productTitle);
+        productNode.productDescription.should.equal(data.productDescription);
+        productNode.productRatingEnabled.should.be.exactly(true);
+        productNode.productStarRating.should.equal(5);
+        productNode.productButtonEnabled.should.be.exactly(true);
+        productNode.productButton.should.equal(data.productButton);
+        productNode.productUrl.should.equal(data.productUrl);
     };
 
     beforeEach(function () {
@@ -76,41 +76,41 @@ describe('ProductNode', function () {
         it('has setters for all properties', editorTest(function () {
             const productNode = $createProductNode();
 
-            productNode.getProductImageSrc().should.equal('');
-            productNode.setProductImageSrc('/content/images/2022/11/koenig-lexical.jpg');
-            productNode.getProductImageSrc().should.equal('/content/images/2022/11/koenig-lexical.jpg');
+            productNode.productImageSrc.should.equal('');
+            productNode.productImageSrc = '/content/images/2022/11/koenig-lexical.jpg';
+            productNode.productImageSrc.should.equal('/content/images/2022/11/koenig-lexical.jpg');
 
-            should(productNode.getProductImageWidth()).equal(null);
-            productNode.setProductImageWidth(600);
-            productNode.getProductImageWidth().should.equal(600);
+            should(productNode.productImageWidth).equal(null);
+            productNode.productImageWidth = 600;
+            productNode.productImageWidth.should.equal(600);
 
-            should(productNode.getProductImageHeight()).equal(null);
-            productNode.setProductImageHeight(700);
-            productNode.getProductImageHeight().should.equal(700);
+            should(productNode.productImageHeight).equal(null);
+            productNode.productImageHeight = 700;
+            productNode.productImageHeight.should.equal(700);
 
-            productNode.getProductTitle().should.equal('');
-            productNode.setProductTitle('Title');
-            productNode.getProductTitle().should.equal('Title');
+            productNode.productTitle.should.equal('');
+            productNode.productTitle = 'Title';
+            productNode.productTitle.should.equal('Title');
 
-            productNode.getProductDescription().should.equal('');
-            productNode.setProductDescription('Description');
-            productNode.getProductDescription().should.equal('Description');
+            productNode.productDescription.should.equal('');
+            productNode.productDescription = 'Description';
+            productNode.productDescription.should.equal('Description');
 
-            productNode.getProductRatingEnabled().should.be.exactly(false);
-            productNode.setProductRatingEnabled(true);
-            productNode.getProductRatingEnabled().should.be.exactly(true);
+            productNode.productRatingEnabled.should.be.exactly(false);
+            productNode.productRatingEnabled = true;
+            productNode.productRatingEnabled.should.be.exactly(true);
 
-            productNode.getProductStarRating().should.equal(5);
-            productNode.setProductStarRating(3);
-            productNode.getProductStarRating().should.equal(3);
+            productNode.productStarRating.should.equal(5);
+            productNode.productStarRating = 3;
+            productNode.productStarRating.should.equal(3);
 
-            productNode.getProductButton().should.equal('');
-            productNode.setProductButton('Button text');
-            productNode.getProductButton().should.equal('Button text');
+            productNode.productButton.should.equal('');
+            productNode.productButton = 'Button text';
+            productNode.productButton.should.equal('Button text');
 
-            productNode.getProductUrl().should.equal('');
-            productNode.setProductUrl('https://google.com/');
-            productNode.getProductUrl().should.equal('https://google.com/');
+            productNode.productUrl.should.equal('');
+            productNode.productUrl = 'https://google.com/';
+            productNode.productUrl.should.equal('https://google.com/');
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
@@ -122,21 +122,56 @@ describe('ProductNode', function () {
                 productStarRating: 5
             });
         }));
+    });
 
-        it('has isEmpty() convenience method', editorTest(function () {
+    describe('clone', function () {
+        it('clones the node', editorTest(function () {
+            const productNode = $createProductNode(dataset);
+            const clonedProductNode = ProductNode.clone(productNode);
+            $isProductNode(clonedProductNode).should.be.exactly(true);
+            clonedProductNode.should.not.be.exactly(productNode);
+            checkGetters(productNode, dataset);
+        }));
+    });
+
+    describe('isEmpty()', function () {
+        it('returns true if required fields are missing', editorTest(function () {
             const productNode = $createProductNode(dataset);
 
             productNode.isEmpty().should.be.exactly(false);
-            productNode.setProductImageSrc('');
+            productNode.productImageSrc = '';
             productNode.isEmpty().should.be.exactly(false);
-            productNode.setProductButtonEnabled(false);
+            productNode.productButtonEnabled = false;
             productNode.isEmpty().should.be.exactly(false);
-            productNode.setProductTitle('');
+            productNode.productTitle = '';
             productNode.isEmpty().should.be.exactly(false);
-            productNode.setProductDescription('');
+            productNode.productDescription = '';
             productNode.isEmpty().should.be.exactly(false);
-            productNode.setProductRatingEnabled(false);
+            productNode.productRatingEnabled = false;
             productNode.isEmpty().should.be.exactly(true);
+        }));
+    });
+
+    describe('hasEditMode', function () {
+        it('returns true', editorTest(function () {
+            const productNode = $createProductNode(dataset);
+            productNode.hasEditMode().should.be.exactly(true);
+        }));
+    });
+
+    describe('getType', function () {
+        it('returns the correct node type', editorTest(function () {
+            ProductNode.getType().should.equal('product');
+        }));
+    });
+
+    describe('urlTransformMap', function () {
+        it('contains the expected URL mapping', editorTest(function () {
+            ProductNode.urlTransformMap.should.deepEqual({
+                productImageSrc: 'url',
+                productTitle: 'html',
+                productDescription: 'html'
+            });
         }));
     });
 
@@ -194,23 +229,6 @@ describe('ProductNode', function () {
                 }
             });
         });
-    });
-
-    describe('clone', function () {
-        it('clones the node', editorTest(function () {
-            const productNode = $createProductNode(dataset);
-            const clonedProductNode = ProductNode.clone(productNode);
-            $isProductNode(clonedProductNode).should.be.exactly(true);
-            clonedProductNode.should.not.be.exactly(productNode);
-            checkGetters(productNode, dataset);
-        }));
-    });
-
-    describe('hasEditMode', function () {
-        it('returns true', editorTest(function () {
-            const productNode = $createProductNode(dataset);
-            productNode.hasEditMode().should.be.exactly(true);
-        }));
     });
 
     describe('exportDOM', function () {
@@ -433,14 +451,14 @@ describe('ProductNode', function () {
             const productNode = nodes[0];
             $isProductNode(productNode).should.be.exactly(true);
 
-            productNode.getProductImageSrc().should.equal('https://example.com/images/ok.jpg');
-            productNode.getProductTitle().should.equal('Product title!');
-            productNode.getProductDescription().should.equal('This product is ok');
-            productNode.getProductRatingEnabled().should.be.exactly(true);
-            productNode.getProductStarRating().should.equal(3);
-            productNode.getProductButtonEnabled().should.be.exactly(true);
-            productNode.getProductButton().should.equal('Click me');
-            productNode.getProductUrl().should.equal('https://example.com/product/ok');
+            productNode.productImageSrc.should.equal('https://example.com/images/ok.jpg');
+            productNode.productTitle.should.equal('Product title!');
+            productNode.productDescription.should.equal('This product is ok');
+            productNode.productRatingEnabled.should.be.exactly(true);
+            productNode.productStarRating.should.equal(3);
+            productNode.productButtonEnabled.should.be.exactly(true);
+            productNode.productButton.should.equal('Click me');
+            productNode.productUrl.should.equal('https://example.com/product/ok');
         }));
 
         it('parses a product card with disabled star rating', editorTest(function () {
@@ -453,13 +471,13 @@ describe('ProductNode', function () {
             const productNode = nodes[0];
             $isProductNode(productNode).should.be.exactly(true);
 
-            productNode.getProductImageSrc().should.equal('https://example.com/images/ok.jpg');
-            productNode.getProductTitle().should.equal('Product title!');
-            productNode.getProductDescription().should.equal('This product is ok');
-            productNode.getProductRatingEnabled().should.be.exactly(false);
-            productNode.getProductButtonEnabled().should.be.exactly(true);
-            productNode.getProductButton().should.equal('Click me');
-            productNode.getProductUrl().should.equal('https://example.com/product/ok');
+            productNode.productImageSrc.should.equal('https://example.com/images/ok.jpg');
+            productNode.productTitle.should.equal('Product title!');
+            productNode.productDescription.should.equal('This product is ok');
+            productNode.productRatingEnabled.should.be.exactly(false);
+            productNode.productButtonEnabled.should.be.exactly(true);
+            productNode.productButton.should.equal('Click me');
+            productNode.productUrl.should.equal('https://example.com/product/ok');
         }));
 
         it('parses a product card with disabled button', editorTest(function () {
@@ -472,11 +490,11 @@ describe('ProductNode', function () {
             const productNode = nodes[0];
             $isProductNode(productNode).should.be.exactly(true);
 
-            productNode.getProductImageSrc().should.equal('https://example.com/images/ok.jpg');
-            productNode.getProductTitle().should.equal('Product title!');
-            productNode.getProductDescription().should.equal('This product is ok');
-            productNode.getProductRatingEnabled().should.be.exactly(false);
-            productNode.getProductButtonEnabled().should.be.exactly(false);
+            productNode.productImageSrc.should.equal('https://example.com/images/ok.jpg');
+            productNode.productTitle.should.equal('Product title!');
+            productNode.productDescription.should.equal('This product is ok');
+            productNode.productRatingEnabled.should.be.exactly(false);
+            productNode.productButtonEnabled.should.be.exactly(false);
         }));
 
         it('parses a product card with image width/height', editorTest(function () {
@@ -489,13 +507,13 @@ describe('ProductNode', function () {
             const productNode = nodes[0];
             $isProductNode(productNode).should.be.exactly(true);
 
-            productNode.getProductImageSrc().should.equal('https://example.com/images/ok.jpg');
-            productNode.getProductTitle().should.equal('Product title!');
-            productNode.getProductDescription().should.equal('This product is ok');
-            productNode.getProductRatingEnabled().should.be.exactly(false);
-            productNode.getProductButtonEnabled().should.be.exactly(false);
-            productNode.getProductImageWidth().should.equal('200');
-            productNode.getProductImageHeight().should.equal('100');
+            productNode.productImageSrc.should.equal('https://example.com/images/ok.jpg');
+            productNode.productTitle.should.equal('Product title!');
+            productNode.productDescription.should.equal('This product is ok');
+            productNode.productRatingEnabled.should.be.exactly(false);
+            productNode.productButtonEnabled.should.be.exactly(false);
+            productNode.productImageWidth.should.equal('200');
+            productNode.productImageHeight.should.equal('100');
         }));
 
         it('handles arbitrary whitespace in button content', editorTest(function () {
@@ -523,13 +541,13 @@ describe('ProductNode', function () {
             const productNode = nodes[0];
             $isProductNode(productNode).should.be.exactly(true);
 
-            productNode.getProductImageSrc().should.equal('https://example.com/images/ok.jpg');
-            productNode.getProductTitle().should.equal('Product title!');
-            productNode.getProductDescription().should.equal('This product is ok');
-            productNode.getProductRatingEnabled().should.be.exactly(false);
-            productNode.getProductButtonEnabled().should.be.exactly(true);
-            productNode.getProductButton().should.equal('Click me');
-            productNode.getProductUrl().should.equal('https://example.com/product/ok');
+            productNode.productImageSrc.should.equal('https://example.com/images/ok.jpg');
+            productNode.productTitle.should.equal('Product title!');
+            productNode.productDescription.should.equal('This product is ok');
+            productNode.productRatingEnabled.should.be.exactly(false);
+            productNode.productButtonEnabled.should.be.exactly(true);
+            productNode.productButton.should.equal('Click me');
+            productNode.productUrl.should.equal('https://example.com/product/ok');
         }));
 
         it('falls through if title, description, button and image are missing', editorTest(function () {
@@ -546,10 +564,10 @@ describe('ProductNode', function () {
             const node = $createProductNode();
             node.getTextContent().should.equal('');
 
-            node.setProductTitle('Product title!');
+            node.productTitle = 'Product title!';
             node.getTextContent().should.equal('Product title!\n\n');
 
-            node.setProductDescription('This product is ok');
+            node.productDescription = 'This product is ok';
             node.getTextContent().should.equal('Product title!\nThis product is ok\n\n');
         }));
     });

@@ -5,10 +5,11 @@ import {CodeBlockNode as BaseCodeBlockNode} from '@tryghost/kg-default-nodes';
 import {ReactComponent as CodeBlockIcon} from '../assets/icons/kg-card-type-gen-embed.svg';
 import {CodeBlockNodeComponent} from './CodeBlockNodeComponent';
 import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
+import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 
 // re-export here so we don't need to import from multiple places throughout the app
-export {INSERT_CODE_BLOCK_COMMAND} from '@tryghost/kg-default-nodes';
+export const INSERT_CODE_BLOCK_COMMAND = createCommand();
 
 export class CodeBlockNode extends BaseCodeBlockNode {
     // transient properties used to control node behaviour
@@ -68,12 +69,12 @@ export class CodeBlockNode extends BaseCodeBlockNode {
 
     decorate() {
         return (
-            <KoenigCardWrapper nodeKey={this.getKey()} width={this.__cardWidth} wrapperStyle="code-card">
+            <KoenigCardWrapper nodeKey={this.getKey()} wrapperStyle="code-card">
                 <CodeBlockNodeComponent
                     captionEditor={this.__captionEditor}
                     captionEditorInitialState={this.__captionEditorInitialState}
-                    code={this.__code}
-                    language={this.__language}
+                    code={this.code}
+                    language={this.language}
                     nodeKey={this.getKey()}
                 />
             </KoenigCardWrapper>

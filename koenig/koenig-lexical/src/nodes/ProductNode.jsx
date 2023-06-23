@@ -2,14 +2,15 @@ import React from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {BASIC_NODES, KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
-import {ProductNode as BaseProductNode, INSERT_PRODUCT_COMMAND} from '@tryghost/kg-default-nodes';
+import {ProductNode as BaseProductNode} from '@tryghost/kg-default-nodes';
 import {ReactComponent as ProductCardIcon} from '../assets/icons/kg-card-type-product.svg';
 import {ProductNodeComponent} from './ProductNodeComponent';
+import {createCommand} from 'lexical';
 import {isEditorEmpty} from '../utils/isEditorEmpty';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors.js';
 
 // re-export here, so we don't need to import from multiple places throughout the app
-export {INSERT_PRODUCT_COMMAND} from '@tryghost/kg-default-nodes';
+export const INSERT_PRODUCT_COMMAND = createCommand();
 export class ProductNode extends BaseProductNode {
     __productTitleEditor;
     __productTitleEditorInitialState;
@@ -85,19 +86,19 @@ export class ProductNode extends BaseProductNode {
         return (
             <KoenigCardWrapper nodeKey={this.getKey()}>
                 <ProductNodeComponent
-                    buttonText={this.getProductButton()}
-                    buttonUrl={this.getProductUrl()}
-                    description={this.getProductDescription()}
+                    buttonText={this.productButton}
+                    buttonUrl={this.productUrl}
+                    description={this.productDescription}
                     descriptionEditor={this.__productDescriptionEditor}
                     descriptionEditorInitialState={this.__productDescriptionEditorInitialState}
-                    imgHeight={this.getProductImageHeight()}
-                    imgSrc={this.getProductImageSrc()}
-                    imgWidth={this.getProductImageWidth()}
-                    isButtonEnabled={this.getProductButtonEnabled()}
-                    isRatingEnabled={this.getProductRatingEnabled()}
+                    imgHeight={this.productImageHeight}
+                    imgSrc={this.productImageSrc}
+                    imgWidth={this.productImageWidth}
+                    isButtonEnabled={this.productButtonEnabled}
+                    isRatingEnabled={this.productRatingEnabled}
                     nodeKey={this.getKey()}
-                    starRating={this.getProductStarRating()}
-                    title={this.getProductTitle()}
+                    starRating={this.productStarRating}
+                    title={this.productTitle}
                     titleEditor={this.__productTitleEditor}
                     titleEditorInitialState={this.__productTitleEditorInitialState}
                 />
@@ -110,9 +111,9 @@ export class ProductNode extends BaseProductNode {
     isEmpty() {
         const isTitleEmpty = isEditorEmpty(this.__productTitleEditor);
         const isDescriptionEmpty = isEditorEmpty(this.__productDescriptionEditor);
-        const isButtonFilled = this.getProductButtonEnabled() && this.getProductUrl() && this.getProductButton();
+        const isButtonFilled = this.productButtonEnabled && this.productUrl && this.productButton;
 
-        return isTitleEmpty && isDescriptionEmpty && !isButtonFilled && !this.getProductImageSrc() && !this.getProductRatingEnabled();
+        return isTitleEmpty && isDescriptionEmpty && !isButtonFilled && !this.productImageSrc && !this.productRatingEnabled;
     }
 }
 

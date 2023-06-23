@@ -49,29 +49,22 @@ describe('CalloutNode', function () {
         $isCalloutNode(node).should.be.true;
     }));
 
-    describe('hasEditMode', function () {
-        it('returns true', editorTest(function () {
-            const calloutNode = $createCalloutNode(dataset);
-            calloutNode.hasEditMode().should.be.true;
-        }));
-    });
-
     describe('data access', function (){
         it('has getters for all properties', editorTest(function () {
             const node = $createCalloutNode(dataset);
-            node.getCalloutText().should.equal(dataset.calloutText);
-            node.getCalloutEmoji().should.equal(dataset.calloutEmoji);
-            node.getBackgroundColor().should.equal(dataset.backgroundColor);
+            node.calloutText.should.equal(dataset.calloutText);
+            node.calloutEmoji.should.equal(dataset.calloutEmoji);
+            node.backgroundColor.should.equal(dataset.backgroundColor);
         }));
 
         it('has setters for all properties', editorTest(function () {
             const node = $createCalloutNode(dataset);
-            node.setCalloutText('new text');
-            node.getCalloutText().should.equal('new text');
-            node.setBackgroundColor('red');
-            node.getBackgroundColor().should.equal('red');
-            node.setCalloutEmoji('👍');
-            node.getCalloutEmoji().should.equal('👍');
+            node.calloutText = 'new text';
+            node.calloutText.should.equal('new text');
+            node.backgroundColor = 'red';
+            node.backgroundColor.should.equal('red');
+            node.calloutEmoji = '👍';
+            node.calloutEmoji.should.equal('👍');
         }));
 
         it('has getDataset() method', editorTest(function () {
@@ -81,7 +74,50 @@ describe('CalloutNode', function () {
         }));
     });
 
-    describe('exporting', function () {
+    describe('getType', function () {
+        it('returns the correct node type', editorTest(function () {
+            CalloutNode.getType().should.equal('callout');
+        }));
+    });
+
+    describe('clone', function () {
+        it('returns a copy of the current node', editorTest(function () {
+            const calloutNode = $createCalloutNode(dataset);
+            const calloutNodeDataset = calloutNode.getDataset();
+            const clone = CalloutNode.clone(calloutNode);
+            const cloneDataset = clone.getDataset();
+
+            cloneDataset.should.deepEqual({...calloutNodeDataset});
+        }));
+    });
+
+    describe('urlTransformMap', function () {
+        it('contains the expected URL mapping', editorTest(function () {
+            CalloutNode.urlTransformMap.should.deepEqual({});
+        }));
+    });
+
+    describe('hasEditMode', function () {
+        it('returns true', editorTest(function () {
+            const calloutNode = $createCalloutNode(dataset);
+            calloutNode.hasEditMode().should.be.true;
+        }));
+    });
+
+    describe('exportJSON', function () {
+        it('contains all data', editorTest(function () {
+            const calloutNode = $createCalloutNode(dataset);
+            const json = calloutNode.exportJSON();
+
+            json.should.deepEqual({
+                type: 'callout',
+                version: 1,
+                ...dataset
+            });
+        }));
+    });
+
+    describe('exportDOM', function () {
         it('can render to HTML', editorTest(function () {
             const node = $createCalloutNode(dataset);
             const {element} = node.exportDOM(exportOptions);
@@ -107,16 +143,6 @@ describe('CalloutNode', function () {
                 </div>
                 `);
         }));
-
-        it('can export JSON', editorTest(function () {
-            const node = $createCalloutNode(dataset);
-            const json = node.exportJSON();
-            json.should.deepEqual({
-                type: 'callout',
-                version: 1,
-                ...dataset
-            });
-        }));
     });
 
     describe('importDOM', function () {
@@ -129,9 +155,9 @@ describe('CalloutNode', function () {
                     `)).window.document;
             const nodes = $generateNodesFromDOM(editor, dom);
             nodes.length.should.equal(1);
-            nodes[0].getBackgroundColor().should.equal('red');
-            nodes[0].getCalloutText().should.equal('This is a callout');
-            nodes[0].getCalloutEmoji().should.equal('💡');
+            nodes[0].backgroundColor.should.equal('red');
+            nodes[0].calloutText.should.equal('This is a callout');
+            nodes[0].calloutEmoji.should.equal('💡');
         }));
 
         it('parses callout card with no emoji', editorTest(function () {
@@ -142,19 +168,9 @@ describe('CalloutNode', function () {
                     `)).window.document;
             const nodes = $generateNodesFromDOM(editor, dom);
             nodes.length.should.equal(1);
-            nodes[0].getBackgroundColor().should.equal('red');
-            nodes[0].getCalloutText().should.equal('This is a callout');
-            nodes[0].getCalloutEmoji().should.equal('');
-        }));
-    });
-
-    describe('static clone', function () {
-        it('can clone a node', editorTest(function () {
-            const node = $createCalloutNode(dataset);
-            const clone = CalloutNode.clone(node);
-            clone.getBackgroundColor().should.equal(node.getBackgroundColor());
-            clone.getCalloutText().should.equal(node.getCalloutText());
-            clone.getCalloutEmoji().should.equal(node.getCalloutEmoji());
+            nodes[0].backgroundColor.should.equal('red');
+            nodes[0].calloutText.should.equal('This is a callout');
+            nodes[0].calloutEmoji.should.equal('');
         }));
     });
 
@@ -180,9 +196,9 @@ describe('CalloutNode', function () {
             editor.getEditorState().read(() => {
                 try {
                     const [calloutNode] = $getRoot().getChildren();
-                    calloutNode.getCalloutText().should.equal(dataset.calloutText);
-                    calloutNode.getCalloutEmoji().should.equal(dataset.calloutEmoji);
-                    calloutNode.getBackgroundColor().should.equal(dataset.backgroundColor);
+                    calloutNode.calloutText.should.equal(dataset.calloutText);
+                    calloutNode.calloutEmoji.should.equal(dataset.calloutEmoji);
+                    calloutNode.backgroundColor.should.equal(dataset.backgroundColor);
                     done();
                 } catch (e) {
                     done(e);
@@ -196,7 +212,7 @@ describe('CalloutNode', function () {
             const node = $createCalloutNode();
             node.getTextContent().should.equal('');
 
-            node.setCalloutText('Test');
+            node.calloutText = 'Test';
 
             node.getTextContent().should.equal('Test\n\n');
         }));

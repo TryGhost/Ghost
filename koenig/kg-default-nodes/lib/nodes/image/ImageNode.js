@@ -1,196 +1,49 @@
-import {createCommand} from 'lexical';
-import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
-import {ImageParser} from './ImageParser';
-import {renderImageNodeToDOM} from './ImageRenderer';
-import readTextContent from '../../utils/read-text-content';
-
-export const INSERT_IMAGE_COMMAND = createCommand();
-export const UPLOAD_IMAGE_COMMAND = createCommand();
-
-export class ImageNode extends KoenigDecoratorNode {
-    // payload properties
-    __src;
-    __caption;
-    __title;
-    __alt;
-    __cardWidth;
-    __width;
-    __height;
-    __href;
-
-    static getType() {
-        return 'image';
-    }
-
-    static clone(node) {
-        return new this(
-            node.getDataset(),
-            node.__key
-        );
-    }
-
-    static get urlTransformMap() {
-        return {
-            src: 'url',
-            href: 'url',
-            caption: 'html'
-        };
-    }
-
-    getDataset() {
-        const self = this.getLatest();
-        return {
-            src: self.__src,
-            caption: self.__caption,
-            title: self.__title,
-            alt: self.__alt,
-            width: self.__width,
-            height: self.__height,
-            cardWidth: self.__cardWidth,
-            href: self.__href
-        };
-    }
-
-    constructor({src, caption, title, alt, cardWidth, width, height, href} = {}, key) {
-        super(key);
-        this.__src = src || '';
-        this.__title = title || '';
-        this.__caption = caption || '';
-        this.__alt = alt || '';
-        this.__width = width || null;
-        this.__height = height || null;
-        this.__cardWidth = cardWidth || 'regular';
-        this.__href = href || '';
-    }
-
-    static importJSON(serializedNode) {
-        const {src, caption, title, alt, width, height, cardWidth, href} = serializedNode;
-        const node = new this({
-            src,
-            caption,
-            title,
-            alt,
-            width,
-            height,
-            href,
-            cardWidth
-        });
-        return node;
-    }
-
+import {generateDecoratorNode} from '../../generate-decorator-node';
+import {parseImageNode} from './ImageParser';
+import {renderImageNode} from './ImageRenderer';
+export class ImageNode extends generateDecoratorNode({nodeType: 'image',
+    properties: [
+        {name: 'src', default: '', urlType: 'url'},
+        {name: 'caption', default: '', urlType: 'html', wordCount: true},
+        {name: 'title', default: ''},
+        {name: 'alt', default: ''},
+        {name: 'cardWidth', default: 'regular'},
+        {name: 'width', default: null},
+        {name: 'height', default: null},
+        {name: 'href', default: '', urlType: 'url'}
+    ]}
+) {
+    /* @override */
     exportJSON() {
         // checks if src is a data string
-        const src = this.getSrc();
+        const {src, width, height, title, alt, caption, cardWidth, href} = this;
         const isBlob = src.startsWith('data:');
+
         const dataset = {
             type: 'image',
             version: 1,
-            src: isBlob ? '<base64String>' : this.getSrc(),
-            width: this.getImgWidth(),
-            height: this.getImgHeight(),
-            title: this.getTitle(),
-            alt: this.getAlt(),
-            caption: this.getCaption(),
-            cardWidth: this.getCardWidth(),
-            href: this.getHref()
+            src: isBlob ? '<base64String>' : src,
+            width,
+            height,
+            title,
+            alt,
+            caption,
+            cardWidth,
+            href
         };
         return dataset;
     }
 
     static importDOM() {
-        const parser = new ImageParser(this);
-        return parser.DOMConversionMap;
+        return parseImageNode(this);
     }
 
     exportDOM(options = {}) {
-        const {element, type} = renderImageNodeToDOM(this, options);
-        return {element, type};
+        return renderImageNode(this, options);
     }
 
-    getSrc() {
-        const self = this.getLatest();
-        return self.__src;
-    }
-
-    setSrc(src) {
-        const writable = this.getWritable();
-        return writable.__src = src;
-    }
-
-    getTitle() {
-        const self = this.getLatest();
-        return self.__title;
-    }
-
-    setTitle(title) {
-        const writable = this.getWritable();
-        return writable.__title = title;
-    }
-
-    getHref() {
-        const self = this.getLatest();
-        return self.__href;
-    }
-
-    setHref(href) {
-        const writable = this.getWritable();
-        return writable.__href = href;
-    }
-
-    setCardWidth(cardWidth) {
-        const writable = this.getWritable();
-        return writable.__cardWidth = cardWidth;
-    }
-
-    getCardWidth() {
-        const self = this.getLatest();
-        return self.__cardWidth;
-    }
-
-    getImgWidth() {
-        const self = this.getLatest();
-        return self.__width;
-    }
-
-    setImgWidth(width) {
-        const writable = this.getWritable();
-        return writable.__width = width;
-    }
-
-    getImgHeight() {
-        const self = this.getLatest();
-        return self.__height;
-    }
-
-    setImgHeight(height) {
-        const writable = this.getWritable();
-        return writable.__height = height;
-    }
-
-    getCaption() {
-        const self = this.getLatest();
-        return self.__caption;
-    }
-
-    setCaption(caption) {
-        const writable = this.getWritable();
-        return writable.__caption = caption;
-    }
-
-    getAlt() {
-        const self = this.getLatest();
-        return self.__alt;
-    }
-
-    setAlt(alt) {
-        const writable = this.getWritable();
-        return writable.__alt = alt;
-    }
-
-    getTextContent() {
-        const self = this.getLatest();
-        const text = readTextContent(self, 'caption');
-        return text ? `${text}\n\n` : '';
+    hasEditMode() {
+        return false;
     }
 }
 

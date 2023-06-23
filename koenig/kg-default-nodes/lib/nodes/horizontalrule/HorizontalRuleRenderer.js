@@ -1,10 +1,9 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option';
 
-export function renderHorizontalRuleToDOM(_, options = {}) {
+export function renderHorizontalRuleNode(_, options = {}) {
     addCreateDocumentOption(options);
-
     const document = options.createDocument();
 
-    const hr = document.createElement('hr');
-    return {element: hr};
+    const element = document.createElement('hr');
+    return {element};
 }

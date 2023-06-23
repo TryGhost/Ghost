@@ -48,15 +48,15 @@ describe('EmailNode', function () {
         it('has getters for all properties', editorTest(function () {
             const emailNode = $createEmailNode(dataset);
 
-            emailNode.getHtml().should.equal(dataset.html);
+            emailNode.html.should.equal(dataset.html);
         }));
 
         it('has setters for all properties', editorTest(function () {
             const emailNode = $createEmailNode();
 
-            emailNode.getHtml().should.equal('');
-            emailNode.setHtml('<p>Hello World</p>');
-            emailNode.getHtml().should.equal('<p>Hello World</p>');
+            emailNode.html.should.equal('');
+            emailNode.html = '<p>Hello World</p>';
+            emailNode.html.should.equal('<p>Hello World</p>');
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
@@ -66,6 +66,38 @@ describe('EmailNode', function () {
             emailNodeDataset.should.deepEqual({
                 ...dataset
             });
+        }));
+    });
+
+    describe('getType', function () {
+        it('returns the correct node type', editorTest(function () {
+            EmailNode.getType().should.equal('email');
+        }));
+    });
+
+    describe('clone', function () {
+        it('returns a copy of the current node', editorTest(function () {
+            const emailNode = $createEmailNode(dataset);
+            const emailNodeDataset = emailNode.getDataset();
+            const clone = EmailNode.clone(emailNode);
+            const cloneDataset = clone.getDataset();
+
+            cloneDataset.should.deepEqual({...emailNodeDataset});
+        }));
+    });
+
+    describe('urlTransformMap', function () {
+        it('contains the expected URL mapping', editorTest(function () {
+            EmailNode.urlTransformMap.should.deepEqual({
+                html: 'html'
+            });
+        }));
+    });
+
+    describe('hasEditMode', function () {
+        it('returns true', editorTest(function () {
+            const emailNode = $createEmailNode(dataset);
+            emailNode.hasEditMode().should.be.true;
         }));
     });
 
@@ -105,7 +137,7 @@ describe('EmailNode', function () {
                 try {
                     const [emailNode] = $getRoot().getChildren();
 
-                    emailNode.getHtml().should.equal(dataset.html);
+                    emailNode.html.should.equal(dataset.html);
                     done();
                 } catch (e) {
                     done(e);
@@ -350,7 +382,7 @@ describe('EmailNode', function () {
     describe('getTextContent', function () {
         it('returns contents', editorTest(function () {
             const node = $createEmailNode();
-            node.setHtml('Testing');
+            node.html = 'Testing';
 
             // email nodes don't have text content
             node.getTextContent().should.equal('');

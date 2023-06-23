@@ -1,155 +1,26 @@
-import {createCommand} from 'lexical';
-import {KoenigDecoratorNode} from '../../KoenigDecoratorNode';
-import {EmbedParser} from './EmbedParser';
-import {renderEmbedNodeToDOM} from './EmbedRenderer';
-import readTextContent from '../../utils/read-text-content';
+import {generateDecoratorNode} from '../../generate-decorator-node';
+import {parseEmbedNode} from './EmbedParser';
+import {renderEmbedNode} from './EmbedRenderer';
 
-export const INSERT_EMBED_COMMAND = createCommand();
-
-export class EmbedNode extends KoenigDecoratorNode {
-    // payload properties
-    __url;
-    __embedType;
-    __html;
-    __metadata;
-    __caption;
-
-    static getType() {
-        return 'embed';
-    }
-
-    static clone(node) {
-        return new this(
-            node.getDataset(),
-            node.__key
-        );
-    }
-
-    static get urlTransformMap() {
-        return {
-            url: 'url'
-        };
-    }
-
-    getDataset() {
-        const self = this.getLatest();
-        return {
-            url: self.__url,
-            embedType: self.__embedType,
-            html: self.__html,
-            metadata: self.__metadata,
-            caption: self.__caption
-        };
-    }
-
-    constructor({url, embedType, html, metadata, caption} = {}, key) {
-        super(key);
-        this.__url = url || '';
-        this.__embedType = embedType || '';
-        this.__html = html || '';
-        this.__metadata = metadata || {};
-        this.__caption = caption || '';
-    }
-
-    static importJSON(serializedNode) {
-        const {url, embedType, html, metadata, caption} = serializedNode;
-        const node = new this({
-            url,
-            embedType,
-            html,
-            metadata,
-            caption
-        });
-        return node;
-    }
-
-    exportJSON() {
-        const dataset = {
-            type: 'embed',
-            version: 1,
-            url: this.getUrl(),
-            embedType: this.getEmbedType(),
-            html: this.getHtml(),
-            metadata: this.getMetadata(),
-            caption: this.getCaption()
-        };
-        return dataset;
-    }
-
-    // parser used when pasting html >> node
+export class EmbedNode extends generateDecoratorNode({nodeType: 'embed',
+    properties: [
+        {name: 'url', default: '', urlType: 'url'},
+        {name: 'embedType', default: ''},
+        {name: 'html', default: ''},
+        {name: 'metadata', default: {}},
+        {name: 'caption', default: '', wordCount: true}
+    ]}
+) {
     static importDOM() {
-        const parser = new EmbedParser(this);
-        return parser.DOMConversionMap;
+        return parseEmbedNode(this);
     }
 
-    // renderer used when copying node >> html
     exportDOM(options = {}) {
-        const {element, type} = renderEmbedNodeToDOM(this, options);
-        return {element, type};
-    }
-
-    getUrl() {
-        const self = this.getLatest();
-        return self.__url;
-    }
-
-    setUrl(url) {
-        const writable = this.getWritable();
-        return writable.__url = url;
-    }
-
-    getEmbedType() {
-        const self = this.getLatest();
-        return self.__embedType;
-    }
-
-    setEmbedType(type) {
-        const writable = this.getWritable();
-        return writable.__embedType = type;
-    }
-
-    getHtml() {
-        const self = this.getLatest();
-        return self.__html;
-    }
-
-    setHtml(html) {
-        const writable = this.getWritable();
-        return writable.__html = html;
-    }
-
-    getMetadata() {
-        const self = this.getLatest();
-        return self.__metadata;
-    }
-
-    setMetadata(metadata) {
-        const writable = this.getWritable();
-        return writable.__metadata = metadata;
-    }
-
-    getCaption() {
-        const self = this.getLatest();
-        return self.__caption;
-    }
-
-    setCaption(caption) {
-        const writable = this.getWritable();
-        return writable.__caption = caption;
-    }
-
-    hasEditMode() {
-        return true;
+        return renderEmbedNode(this, options);
     }
 
     isEmpty() {
         return !this.__url && !this.__html;
-    }
-
-    getTextContent() {
-        const self = this.getLatest();
-        const text = readTextContent(self, 'caption');
-        return text ? `${text}\n\n` : '';
     }
 }
 

@@ -3,13 +3,14 @@ import MINIMAL_NODES from './MinimalNodes';
 import React from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$generateHtmlFromNodes} from '@lexical/html';
-import {CalloutNode as BaseCalloutNode, INSERT_CALLOUT_COMMAND} from '@tryghost/kg-default-nodes';
+import {CalloutNode as BaseCalloutNode} from '@tryghost/kg-default-nodes';
 import {ReactComponent as CalloutCardIcon} from '../assets/icons/kg-card-type-callout.svg';
 import {CalloutNodeComponent} from './CalloutNodeComponent';
+import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 
 // re-export here so we don't need to import from multiple places throughout the app
-export {INSERT_CALLOUT_COMMAND} from '@tryghost/kg-default-nodes';
+export const INSERT_CALLOUT_COMMAND = createCommand();
 
 export class CalloutNode extends BaseCalloutNode {
     __calloutTextEditor;
@@ -56,10 +57,6 @@ export class CalloutNode extends BaseCalloutNode {
         return json;
     }
 
-    createDOM() {
-        return document.createElement('div');
-    }
-
     getDataset() {
         const dataset = super.getDataset();
 
@@ -71,16 +68,12 @@ export class CalloutNode extends BaseCalloutNode {
         return dataset;
     }
 
-    updateDOM() {
-        return false;
-    }
-
     decorate() {
         return (
             <KoenigCardWrapper nodeKey={this.getKey()}>
                 <CalloutNodeComponent
-                    backgroundColor={this.__backgroundColor}
-                    calloutEmoji={this.__calloutEmoji}
+                    backgroundColor={this.backgroundColor}
+                    calloutEmoji={this.calloutEmoji}
                     nodeKey={this.getKey()}
                     textEditor={this.__calloutTextEditor}
                     textEditorInitialState={this.__calloutTextEditorInitialState}

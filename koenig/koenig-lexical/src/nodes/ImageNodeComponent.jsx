@@ -69,7 +69,7 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
         // reset original src so it can be replaced with preview and upload progress
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setSrc('');
+            node.src = '';
         });
 
         return await imageUploadHandler(files, nodeKey, editor, imageUploader.upload);
@@ -78,14 +78,14 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
     const setHref = (newHref) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setHref(newHref);
+            node.href = newHref;
         });
     };
 
     const setAltText = (newAltText) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setAlt(newAltText);
+            node.alt = newAltText;
         });
     };
 
@@ -103,7 +103,7 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
             // clear the property on the node so we don't accidentally trigger anything with a re-render
             editor.update(() => {
                 const node = $getNodeByKey(nodeKey);
-                node.setTriggerFileDialog(false);
+                node.triggerFileDialog = false;
             });
         });
 
@@ -115,7 +115,7 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
     const handleImageCardResize = (newWidth) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setCardWidth(newWidth); // this is a property on the node, not the card
+            node.cardWidth = newWidth; // this is a property on the node, not the card
             setCardWidth(newWidth); // sets the state of the toolbar component
         });
     };

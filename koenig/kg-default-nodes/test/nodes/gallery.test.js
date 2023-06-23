@@ -123,26 +123,62 @@ describe('GalleryNode', function () {
         it('has getters for all properties', editorTest(function () {
             const galleryNode = $createGalleryNode(dataset);
 
-            galleryNode.getImages().should.deepEqual(dataset.images);
-            galleryNode.getCaption().should.equal(dataset.caption);
+            galleryNode.images.should.deepEqual(dataset.images);
+            galleryNode.caption.should.equal(dataset.caption);
         }));
 
         it('has setters for all properties', editorTest(function () {
             const galleryNode = $createGalleryNode();
 
-            galleryNode.getImages().should.deepEqual([]);
-            galleryNode.setImages([{src: 'image1.jpg'}]);
-            galleryNode.getImages().should.deepEqual([{src: 'image1.jpg'}]);
+            galleryNode.images.should.deepEqual([]);
+            galleryNode.images = [{src: 'image1.jpg'}];
+            galleryNode.images.should.deepEqual([{src: 'image1.jpg'}]);
 
-            galleryNode.getCaption().should.equal('');
-            galleryNode.setCaption('New caption');
-            galleryNode.getCaption().should.equal('New caption');
+            galleryNode.caption.should.equal('');
+            galleryNode.caption = 'New caption';
+            galleryNode.caption.should.equal('New caption');
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
             const galleryNode = $createGalleryNode(dataset);
 
             galleryNode.getDataset().should.deepEqual(dataset);
+        }));
+    });
+
+    describe('getType', function () {
+        it('returns the correct node type', editorTest(function () {
+            GalleryNode.getType().should.equal('gallery');
+        }));
+    });
+
+    describe('clone', function () {
+        it('returns a copy of the current node', editorTest(function () {
+            const galleryNode = $createGalleryNode(dataset);
+            const galleryNodeDataset = galleryNode.getDataset();
+            const clone = GalleryNode.clone(galleryNode);
+            const cloneDataset = clone.getDataset();
+
+            cloneDataset.should.deepEqual({...galleryNodeDataset});
+        }));
+    });
+
+    describe('urlTransformMap', function () {
+        it('contains the expected URL mapping', editorTest(function () {
+            GalleryNode.urlTransformMap.should.deepEqual({
+                caption: 'html',
+                images: {
+                    src: 'url',
+                    caption: 'html'
+                }
+            });
+        }));
+    });
+
+    describe('hasEditMode', function () {
+        it('returns false', editorTest(function () {
+            const galleryNode = $createGalleryNode(dataset);
+            galleryNode.hasEditMode().should.be.false;
         }));
     });
 
@@ -169,8 +205,8 @@ describe('GalleryNode', function () {
                 try {
                     const [galleryNode] = $getRoot(editor).getChildren();
 
-                    galleryNode.getImages().should.deepEqual(dataset.images);
-                    galleryNode.getCaption().should.equal(dataset.caption);
+                    galleryNode.images.should.deepEqual(dataset.images);
+                    galleryNode.caption.should.equal(dataset.caption);
 
                     done();
                 } catch (e) {
@@ -227,7 +263,7 @@ describe('GalleryNode', function () {
             const nodes = $generateNodesFromDOM(editor, dom);
             nodes.length.should.equal(1);
 
-            nodes[0].getImages().should.deepEqual([
+            nodes[0].images.should.deepEqual([
                 {
                     fileName: 'jklm4567.jpeg',
                     row: 0,
@@ -260,7 +296,7 @@ describe('GalleryNode', function () {
                 }
             ]);
 
-            nodes[0].getCaption().should.equal('My <em>exciting</em> caption');
+            nodes[0].caption.should.equal('My <em>exciting</em> caption');
         }));
 
         it('parses Medium gallery', editorTest(function () {
@@ -295,7 +331,7 @@ describe('GalleryNode', function () {
             const nodes = $generateNodesFromDOM(editor, dom);
             nodes.length.should.equal(1);
 
-            nodes[0].getImages().should.deepEqual([
+            nodes[0].images.should.deepEqual([
                 {
                     fileName: 'jklm4567.jpeg',
                     row: 0,
@@ -326,7 +362,7 @@ describe('GalleryNode', function () {
                 }
             ]);
 
-            nodes[0].getCaption().should.equal('');
+            nodes[0].caption.should.equal('');
         }));
 
         it('handles Medium galleries with multiple captions', editorTest(function () {
@@ -362,7 +398,7 @@ describe('GalleryNode', function () {
             const nodes = $generateNodesFromDOM(editor, dom);
             nodes.length.should.equal(1);
 
-            nodes[0].getCaption().should.equal('First Caption / End Caption');
+            nodes[0].caption.should.equal('First Caption / End Caption');
         }));
 
         describe('Squarespace galleries', function () {
@@ -404,7 +440,7 @@ describe('GalleryNode', function () {
 
                 nodes[0].getType().should.equal('gallery');
 
-                const images = nodes[0].getImages();
+                const images = nodes[0].images;
 
                 images.should.be.an.Array().with.lengthOf(3);
                 images.should.deepEqual([
@@ -419,7 +455,7 @@ describe('GalleryNode', function () {
                     }
                 ]);
 
-                nodes[0].getCaption().should.equal('');
+                nodes[0].caption.should.equal('');
             }));
 
             it('can handle multiple captions', editorTest(function () {
@@ -455,7 +491,7 @@ describe('GalleryNode', function () {
                 const nodes = $generateNodesFromDOM(editor, dom);
                 nodes.length.should.equal(1);
 
-                const images = nodes[0].getImages();
+                const images = nodes[0].images;
                 images.should.be.an.Array().with.lengthOf(3);
                 images.should.deepEqual([
                     {
@@ -469,7 +505,7 @@ describe('GalleryNode', function () {
                     }
                 ]);
 
-                nodes[0].getCaption().should.eql('Image caption 1 / Image caption 2');
+                nodes[0].caption.should.eql('Image caption 1 / Image caption 2');
             }));
 
             it('parses a slideshow gallery into gallery card', editorTest(function () {
@@ -499,7 +535,7 @@ describe('GalleryNode', function () {
                 const nodes = $generateNodesFromDOM(editor, dom);
                 nodes.length.should.equal(1);
 
-                const images = nodes[0].getImages();
+                const images = nodes[0].images;
                 images.should.be.an.Array().with.lengthOf(4);
                 images.should.deepEqual([
                     {
@@ -516,7 +552,7 @@ describe('GalleryNode', function () {
                     }
                 ]);
 
-                nodes[0].getCaption().should.equal('');
+                nodes[0].caption.should.equal('');
             }));
 
             it('parses a grid gallery into gallery card', editorTest(function () {
@@ -548,7 +584,7 @@ describe('GalleryNode', function () {
                 const nodes = $generateNodesFromDOM(editor, dom);
                 nodes.length.should.equal(1);
 
-                const images = nodes[0].getImages();
+                const images = nodes[0].images;
                 images.should.be.an.Array().with.lengthOf(2);
                 images.should.deepEqual([
                     {
@@ -559,7 +595,7 @@ describe('GalleryNode', function () {
                     }
                 ]);
 
-                nodes[0].getCaption().should.equal('');
+                nodes[0].caption.should.equal('');
             }));
 
             it('ignores summary item galleries', editorTest(function () {
@@ -1082,7 +1118,7 @@ describe('GalleryNode', function () {
             const node = $createGalleryNode();
             node.getTextContent().should.equal('');
 
-            node.setCaption('Test caption');
+            node.caption = 'Test caption';
             node.getTextContent().should.equal('Test caption\n\n');
         }));
     });
