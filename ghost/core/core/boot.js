@@ -326,6 +326,7 @@ async function initServices({config}) {
     const slackNotifications = require('./server/services/slack-notifications');
     const mediaInliner = require('./server/services/media-inliner');
     const collections = require('./server/services/collections');
+    const mailEvents = require('./server/services/mail-events');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -363,7 +364,8 @@ async function initServices({config}) {
         emailSuppressionList.init(),
         slackNotifications.init(),
         collections.init(),
-        mediaInliner.init()
+        mediaInliner.init(),
+        mailEvents.init()
     ]);
     debug('End: Services');
 
@@ -533,6 +535,14 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         // Step 7 - Init our background services, we don't wait for this to finish
         initBackgroundServices({config});
+
+        // Step 8 - Kill the process - what??
+        // During the migration tests, we want to boot ghost, run migrations, then shut down
+        // This is the easiest way to get Ghost to boot and then kill itself
+        if (process.env.GHOST_TESTS_KILL_SERVER_AFTER_BOOT === 'true') {
+            debug('Killing Ghost Server after boot');
+            process.exit(0);
+        }
 
         // We return the server purely for testing purposes
         if (server) {

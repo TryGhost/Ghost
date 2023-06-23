@@ -1,10 +1,10 @@
 const _ = require('lodash');
-const Promise = require('bluebird');
 const db = require('../../data/db');
 const commands = require('../schema').commands;
 const ghostVersion = require('@tryghost/version');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+const {sequence} = require('@tryghost/promise');
 
 const messages = {
     errorExportingData: 'Error exporting data'
@@ -36,9 +36,9 @@ const doExport = async function doExport(options) {
     try {
         const tables = await commands.getTables(options.transacting);
 
-        const tableData = await Promise.mapSeries(tables, function (tableName) {
+        const tableData = await sequence(tables.map(tableName => async () => {
             return exportTable(tableName, options);
-        });
+        }));
 
         const exportData = {
             meta: {
