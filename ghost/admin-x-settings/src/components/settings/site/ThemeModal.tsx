@@ -1,5 +1,6 @@
 import AdvancedThemeSettings from './theme/AdvancedThemeSettings';
 import Button from '../../../admin-x-ds/global/Button';
+import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
 import FileUpload from '../../../admin-x-ds/global/form/FileUpload';
 import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {NiceModalHandler, useModal} from '@ebay/nice-modal-react';
@@ -8,6 +9,7 @@ import PageHeader from '../../../admin-x-ds/global/layout/PageHeader';
 import React, {useState} from 'react';
 import TabView from '../../../admin-x-ds/global/TabView';
 import ThemePreview from './theme/ThemePreview';
+import {API} from '../../../utils/api';
 import {OfficialTheme} from '../../../models/themes';
 import {Theme} from '../../../types/api';
 import {showToast} from '../../../admin-x-ds/global/Toast';
@@ -16,11 +18,12 @@ import {useThemes} from '../../../hooks/useThemes';
 
 interface ThemeToolbarProps {
     selectedTheme: OfficialTheme|null;
+    currentTab: string;
     setCurrentTab: (tab: string) => void;
     setSelectedTheme: (theme: OfficialTheme|null) => void;
     modal: NiceModalHandler<Record<string, unknown>>;
     themes: Theme[];
-    setThemes: (themes: Theme[]) => void;
+    setThemes: React.Dispatch<React.SetStateAction<Theme[]>>;
     setPreviewMode: (mode: string) => void;
     previewMode: string;
 }
@@ -29,10 +32,72 @@ interface ThemeModalContentProps {
     onSelectTheme: (theme: OfficialTheme|null) => void;
     currentTab: string;
     themes: Theme[];
-    setThemes: (themes: Theme[]) => void;
+    setThemes: React.Dispatch<React.SetStateAction<Theme[]>>;
+}
+
+function addThemeToList(theme: Theme, themes: Theme[]): Theme[] {
+    const existingTheme = themes.find(t => t.name === theme.name);
+    if (existingTheme) {
+        return themes.map((t) => {
+            if (t.name === theme.name) {
+                return theme;
+            }
+            return t;
+        });
+    }
+    return [...themes, theme];
+}
+
+async function handleThemeUpload({
+    api,
+    file,
+    setThemes
+}: {
+    api: API;
+    file: File;
+    setThemes: React.Dispatch<React.SetStateAction<Theme[]>>
+}) {
+    const data = await api.themes.upload({file});
+    const uploadedTheme = data.themes[0];
+
+    setThemes((_themes: Theme[]) => {
+        return addThemeToList(uploadedTheme, _themes);
+    });
+    NiceModal.show(ConfirmationModal, {
+        title: 'Upload successful',
+        prompt: (
+            <>
+                <strong>{uploadedTheme.name}</strong> uploaded successfully.
+                Do you want to activate it now?
+            </>
+        ),
+        okLabel: 'Activate',
+        cancelLabel: 'Close',
+        okRunningLabel: 'Activating...',
+        okColor: 'black',
+        onOk: async (activateModal) => {
+            const resData = await api.themes.activate(uploadedTheme.name);
+            const updatedTheme = resData.themes[0];
+
+            setThemes((_themes) => {
+                const updatedThemes: Theme[] = _themes.map((t) => {
+                    if (t.name === updatedTheme.name) {
+                        return updatedTheme;
+                    }
+                    return {
+                        ...t,
+                        active: false
+                    };
+                });
+                return updatedThemes;
+            });
+            activateModal?.remove();
+        }
+    });
 }
 
 const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
+    currentTab,
     setCurrentTab,
     modal,
     themes,
@@ -42,6 +107,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     const left =
         <TabView
             border={false}
+            selectedTab={currentTab}
             tabs={[
                 {id: 'official', title: 'Official themes'},
                 {id: 'installed', title: 'Installed'}
@@ -53,12 +119,28 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     const right =
         <div className='flex items-center gap-3'>
             <FileUpload id='theme-uplaod' onUpload={async (file: File) => {
-                const data = await api.themes.upload({file});
-                const uploadedTheme = data.themes[0];
-                setThemes([...themes, uploadedTheme]);
-                showToast({
-                    message: `Theme uploaded - ${uploadedTheme.name}`
-                });
+                const themeFileName = file?.name.replace(/\.zip$/, '');
+                const existingThemeNames = themes.map(t => t.name);
+                if (existingThemeNames.includes(themeFileName)) {
+                    NiceModal.show(ConfirmationModal, {
+                        title: 'Overwrite theme',
+                        prompt: (
+                            <>
+                                The theme <strong>{themeFileName}</strong> already exists.
+                                Do you want to overwrite it ?
+                            </>
+                        ),
+                        okLabel: 'Overwrite',
+                        cancelLabel: 'Cancel',
+                        okRunningLabel: 'Overwriting...',
+                        okColor: 'red',
+                        onOk: async (_modal) => {
+                            handleThemeUpload({api, file, setThemes});
+                        }
+                    });
+                } else {
+                    handleThemeUpload({api, file, setThemes});
+                }
             }}>Upload theme</FileUpload>
             <Button
                 className='min-w-[75px]'
@@ -149,6 +231,7 @@ const ChangeThemeModal = NiceModal.create(() => {
                             onInstall={onInstall} />
                     }
                     <ThemeToolbar
+                        currentTab={currentTab}
                         modal={modal}
                         previewMode={previewMode}
                         selectedTheme={selectedTheme}

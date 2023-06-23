@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const SingleUseTokenProvider = require('../../../core/server/services/members/SingleUseTokenProvider');
@@ -248,7 +248,7 @@ describe('Settings API', function () {
                 })
                 .expect(({body}) => {
                     const emailVerificationRequired = body.settings.find(setting => setting.key === 'email_verification_required');
-                    assert.strictEqual(emailVerificationRequired.value, false);
+                    assert.equal(emailVerificationRequired.value, false);
                 });
             mockManager.assert.sentEmailCount(0);
         });
@@ -270,7 +270,7 @@ describe('Settings API', function () {
                 })
                 .expect(({body}) => {
                     const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');
-                    assert.strictEqual(membersSupportAddress.value, 'noreply');
+                    assert.equal(membersSupportAddress.value, 'noreply');
 
                     assert.deepEqual(body.meta, {
                         sent_email_verification: ['members_support_address']
@@ -306,7 +306,7 @@ describe('Settings API', function () {
                 })
                 .expect(({body}) => {
                     const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');
-                    assert.strictEqual(membersSupportAddress.value, 'support@example.com');
+                    assert.equal(membersSupportAddress.value, 'support@example.com');
 
                     assert.deepEqual(body.meta, {});
                 });
@@ -397,7 +397,7 @@ describe('Settings API', function () {
                 })
                 .expect(({body}) => {
                     const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');
-                    assert.strictEqual(membersSupportAddress.value, 'support@example.com');
+                    assert.equal(membersSupportAddress.value, 'support@example.com');
                 });
 
             mockManager.assert.sentEmailCount(0);

@@ -6,11 +6,11 @@ import TabView, {Tab} from '../../../admin-x-ds/global/TabView';
 import ThemePreview from './designAndBranding/ThemePreview';
 import ThemeSettings from './designAndBranding/ThemeSettings';
 import useForm from '../../../hooks/useForm';
-import {CustomThemeSetting, Post, Setting, SettingValue, SiteData} from '../../../types/api';
+import {CustomThemeSetting, Post, Setting, SettingValue} from '../../../types/api';
 import {PreviewModalContent} from '../../../admin-x-ds/global/modal/PreviewModal';
 import {ServicesContext} from '../../providers/ServiceProvider';
 import {SettingsContext} from '../../providers/SettingsProvider';
-import {getSettingValues} from '../../../utils/helpers';
+import {getHomepageUrl, getSettingValues} from '../../../utils/helpers';
 
 const Sidebar: React.FC<{
     brandSettings: BrandSettingValues
@@ -25,6 +25,8 @@ const Sidebar: React.FC<{
     updateThemeSetting,
     onTabChange
 }) => {
+    const [selectedTab, setSelectedTab] = useState('brand');
+
     const tabs: Tab[] = [
         {
             id: 'brand',
@@ -38,21 +40,19 @@ const Sidebar: React.FC<{
         }))
     ];
 
+    const handleTabChange = (id: string) => {
+        setSelectedTab(id);
+        onTabChange(id);
+    };
+
     return (
         <>
             <div className='p-7'>
-                <TabView tabs={tabs} onTabChange={onTabChange} />
+                <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={handleTabChange} />
             </div>
         </>
     );
 };
-
-function getHomepageUrl(siteData: SiteData): string {
-    const url = new URL(siteData.url);
-    const subdir = url.pathname.endsWith('/') ? url.pathname : `${url.pathname}/`;
-
-    return `${url.origin}${subdir}`;
-}
 
 const DesignModal: React.FC = () => {
     const modal = useModal();
@@ -61,13 +61,7 @@ const DesignModal: React.FC = () => {
     const {settings, siteData, saveSettings} = useContext(SettingsContext);
     const [themeSettings, setThemeSettings] = useState<Array<CustomThemeSetting>>([]);
     const [latestPost, setLatestPost] = useState<Post | null>(null);
-    const [selectedPreviewTab, setSelectedPreviewTab] = useState('home');
-
-    useEffect(() => {
-        api.customThemeSettings.browse().then((response) => {
-            setThemeSettings(response.custom_theme_settings);
-        });
-    }, [api]);
+    const [selectedPreviewTab, setSelectedPreviewTab] = useState('homepage');
 
     useEffect(() => {
         api.latestPost.browse().then((response) => {
@@ -79,7 +73,8 @@ const DesignModal: React.FC = () => {
         formState,
         saveState,
         handleSave,
-        updateForm
+        updateForm,
+        setFormState
     } = useForm({
         initialState: {
             settings: settings as Array<Setting & { dirty?: boolean }>,
@@ -99,6 +94,13 @@ const DesignModal: React.FC = () => {
         }
     });
 
+    useEffect(() => {
+        api.customThemeSettings.browse().then((response) => {
+            setThemeSettings(response.custom_theme_settings);
+            setFormState(state => ({...state, themeSettings: response.custom_theme_settings}));
+        });
+    }, [api, updateForm, setFormState]);
+
     const updateBrandSetting = (key: string, value: SettingValue) => {
         updateForm(state => ({...state, settings: state.settings.map(setting => (
             setting.key === key ? {...setting, value, dirty: true} : setting
@@ -106,14 +108,14 @@ const DesignModal: React.FC = () => {
     };
 
     const updateThemeSetting = (updated: CustomThemeSetting) => {
-        updateForm(state => ({...state, themeSettings: themeSettings.map(setting => (
+        updateForm(state => ({...state, themeSettings: state.themeSettings.map(setting => (
             setting.key === updated.key ? {...updated, dirty: true} : setting
         ))}));
     };
 
     const [description, accentColor, icon, logo, coverImage] = getSettingValues(formState.settings, ['description', 'accent_color', 'icon', 'logo', 'cover_image']) as string[];
 
-    const themeSettingGroups = themeSettings.reduce((groups, setting) => {
+    const themeSettingGroups = formState.themeSettings.reduce((groups, setting) => {
         const group = (setting.group === 'homepage' || setting.group === 'post') ? setting.group : 'site-wide';
 
         return {
@@ -146,7 +148,7 @@ const DesignModal: React.FC = () => {
         if (id === 'post' && latestPost) {
             setSelectedPreviewTab('post');
         } else {
-            setSelectedPreviewTab('home');
+            setSelectedPreviewTab('homepage');
         }
     };
 
@@ -168,7 +170,7 @@ const DesignModal: React.FC = () => {
                 icon,
                 logo,
                 coverImage,
-                themeSettings
+                themeSettings: formState.themeSettings
             }}
             url={selectedTabURL}
         />;
@@ -187,6 +189,7 @@ const DesignModal: React.FC = () => {
         okLabel={saveState === 'saved' ? 'Saved' : (saveState === 'saving' ? 'Saving...' : 'Save and close')}
         preview={previewContent}
         previewToolbarTabs={previewTabs}
+        selectedURL={selectedPreviewTab}
         sidebar={sidebarContent}
         sidebarPadding={false}
         size='full'

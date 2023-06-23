@@ -2,7 +2,6 @@ const debug = require('@tryghost/debug')('test:dbUtils');
 
 // Utility Packages
 const fs = require('fs-extra');
-const Promise = require('bluebird');
 const KnexMigrator = require('knex-migrator');
 const knexMigrator = new KnexMigrator();
 const DatabaseInfo = require('@tryghost/database-info');
@@ -164,9 +163,7 @@ const truncateAll = async () => {
     await db.knex.transaction(async (trx) => {
         try {
             await db.knex.raw('SET FOREIGN_KEY_CHECKS=0;').transacting(trx);
-            await sequence(tables.map(table => () => {
-                return db.knex.raw('TRUNCATE ' + table + ';').transacting(trx);
-            }));
+            await sequence(tables.map(table => () => db.knex.raw('DELETE FROM ' + table + ';').transacting(trx)));
             await db.knex.raw('SET FOREIGN_KEY_CHECKS=1;').transacting(trx);
         } catch (err) {
             // CASE: table does not exist || DB does not exist

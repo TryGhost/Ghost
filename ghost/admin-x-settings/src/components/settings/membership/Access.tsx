@@ -100,18 +100,18 @@ const Access: React.FC = () => {
     const form = (
         <SettingGroupContent columns={1}>
             <Select
-                defaultSelectedOption={membersSignupAccess}
                 hint='Who should be able to subscribe to your site?'
                 options={MEMBERS_SIGNUP_ACCESS_OPTIONS}
+                selectedOption={membersSignupAccess}
                 title="Subscription access"
                 onSelect={(value) => {
                     updateSetting('members_signup_access', value);
                 }}
             />
             <Select
-                defaultSelectedOption={defaultContentVisibility}
                 hint='When a new post is created, who should have access?'
                 options={DEFAULT_CONTENT_VISIBILITY_OPTIONS}
+                selectedOption={defaultContentVisibility}
                 title="Default post access"
                 onSelect={(value) => {
                     updateSetting('default_content_visibility', value);
@@ -120,17 +120,17 @@ const Access: React.FC = () => {
             {defaultContentVisibility === 'tiers' && (
                 <MultiSelect
                     color='black'
-                    defaultValues={selectedTierOptions}
                     options={tierOptionGroups.filter(group => group.options.length > 0)}
                     title='Select tiers'
+                    values={selectedTierOptions}
                     clearBg
                     onChange={setSelectedTiers}
                 />
             )}
             <Select
-                defaultSelectedOption={commentsEnabled}
                 hint='Who can comment on posts?'
                 options={COMMENTS_ENABLED_OPTIONS}
+                selectedOption={commentsEnabled}
                 title="Commenting"
                 onSelect={(value) => {
                     updateSetting('comments_enabled', value);
@@ -145,6 +145,7 @@ const Access: React.FC = () => {
             isEditing={isEditing}
             navid='access'
             saveState={saveState}
+            searchKeywords={['access', 'subscription', 'post']}
             testId='access'
             title='Access'
             onCancel={handleCancel}

@@ -1,10 +1,12 @@
-import Button, {IButton} from '../Button';
+import Button, {ButtonProps} from '../Button';
 import ButtonGroup from '../ButtonGroup';
+import ConfirmationModal from './ConfirmationModal';
 import Heading from '../Heading';
-import React from 'react';
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import React, {useEffect} from 'react';
 import StickyFooter from '../StickyFooter';
 import clsx from 'clsx';
-import {useModal} from '@ebay/nice-modal-react';
+import useGlobalDirtyState from '../../../hooks/useGlobalDirtyState';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'bleed' | number;
 
@@ -31,6 +33,9 @@ export interface ModalProps {
     backDropClick?: boolean;
     stickyFooter?: boolean;
     scrolling?: boolean;
+    dirty?: boolean;
+    closeConfrimationTitle?: string;
+    closeConfirmationPrompt?: React.ReactNode;
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -50,11 +55,42 @@ const Modal: React.FC<ModalProps> = ({
     backDrop = true,
     backDropClick = true,
     stickyFooter = false,
-    scrolling = true
+    scrolling = true,
+    dirty = false,
+    closeConfrimationTitle = 'Are you sure you want to leave this page?',
+    closeConfirmationPrompt = (
+        <>
+            <p>{`Hey there! It looks like you didn't save the changes you made.`}</p>
+            <p>Save before you go!</p>
+        </>
+    )
 }) => {
     const modal = useModal();
+    const {setGlobalDirtyState} = useGlobalDirtyState();
 
-    let buttons: IButton[] = [];
+    useEffect(() => {
+        setGlobalDirtyState(dirty);
+    }, [dirty, setGlobalDirtyState]);
+
+    let buttons: ButtonProps[] = [];
+
+    const removeModal = () => {
+        if (!dirty) {
+            modal.remove();
+        } else {
+            NiceModal.show(ConfirmationModal, {
+                title: closeConfrimationTitle,
+                prompt: closeConfirmationPrompt,
+                okLabel: 'Leave',
+                cancelLabel: 'Stay',
+                okColor: 'red',
+                onOk: (confirmationModal) => {
+                    modal.remove();
+                    confirmationModal?.remove();
+                }
+            });
+        }
+    };
 
     if (!footer) {
         if (cancelLabel) {
@@ -62,7 +98,7 @@ const Modal: React.FC<ModalProps> = ({
                 key: 'cancel-modal',
                 label: cancelLabel,
                 onClick: (onCancel ? onCancel : () => {
-                    modal.remove();
+                    removeModal();
                 }),
                 disabled: buttonsDisabled
             });
@@ -146,7 +182,7 @@ const Modal: React.FC<ModalProps> = ({
 
     const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
         if (e.target === e.currentTarget && backDropClick) {
-            modal.remove();
+            removeModal();
         }
     };
 

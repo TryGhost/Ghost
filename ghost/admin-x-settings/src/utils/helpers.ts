@@ -1,4 +1,4 @@
-import {Setting, SettingValue, User} from '../types/api';
+import {Setting, SettingValue, SiteData, User} from '../types/api';
 
 export interface IGhostPaths {
     adminRoot: string;
@@ -91,4 +91,11 @@ export function downloadFile(url: string) {
     }
 
     iframe.setAttribute('src', url);
+}
+
+export function getHomepageUrl(siteData: SiteData): string {
+    const url = new URL(siteData.url);
+    const subdir = url.pathname.endsWith('/') ? url.pathname : `${url.pathname}/`;
+
+    return `${url.origin}${subdir}`;
 }

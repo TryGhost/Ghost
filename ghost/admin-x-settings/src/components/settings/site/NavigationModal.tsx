@@ -1,10 +1,11 @@
-import Heading from '../../../admin-x-ds/global/Heading';
 import Modal from '../../../admin-x-ds/global/modal/Modal';
-import NavigationEditor from './navigation/NavigationEditor';
+import NavigationEditForm from './navigation/NavigationEditForm';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import TabView from '../../../admin-x-ds/global/TabView';
+import useNavigationEditor, {NavigationItem} from '../../../hooks/site/useNavigationEditor';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {NavigationItem} from './navigation/NavigationItemEditor';
 import {getSettingValues} from '../../../utils/helpers';
+import {useState} from 'react';
 
 const NavigationModal = NiceModal.create(() => {
     const modal = useModal();
@@ -17,27 +18,58 @@ const NavigationModal = NiceModal.create(() => {
         siteData
     } = useSettingGroup();
 
-    const [navigation, secondaryNavigation] = getSettingValues<string>(
+    const [navigationItems, secondaryNavigationItems] = getSettingValues<string>(
         localSettings,
         ['navigation', 'secondary_navigation']
     ).map(value => JSON.parse(value || '[]') as NavigationItem[]);
 
+    const navigation = useNavigationEditor({
+        items: navigationItems,
+        setItems: (items) => {
+            updateSetting('navigation', JSON.stringify(items));
+        }
+    });
+
+    const secondaryNavigation = useNavigationEditor({
+        items: secondaryNavigationItems,
+        setItems: items => updateSetting('secondary_navigation', JSON.stringify(items))
+    });
+
+    const [selectedTab, setSelectedTab] = useState('primary-nav');
+
     return (
         <Modal
             buttonsDisabled={saveState === 'saving'}
+            dirty={localSettings.some(setting => setting.dirty)}
             scrolling={true}
-            size='full'
+            size='lg'
+            stickyFooter={true}
             title='Navigation'
-            onCancel={() => modal.remove()}
             onOk={async () => {
-                await handleSave();
-                modal.remove();
+                if (navigation.validate() && secondaryNavigation.validate()) {
+                    await handleSave();
+                    modal.remove();
+                }
             }}
         >
-            <Heading className="mt-6" level={6}>Primary navigation</Heading>
-            <NavigationEditor baseUrl={siteData!.url} items={navigation} setItems={items => updateSetting('navigation', JSON.stringify(items))} />
-            <Heading level={6}>Secondary navigation</Heading>
-            <NavigationEditor baseUrl={siteData!.url} items={secondaryNavigation} setItems={items => updateSetting('secondary_navigation', JSON.stringify(items))} />
+            <div className='-mb-8 mt-6'>
+                <TabView
+                    selectedTab={selectedTab}
+                    tabs={[
+                        {
+                            id: 'primary-nav',
+                            title: 'Primary navigation',
+                            contents: <NavigationEditForm baseUrl={siteData!.url} navigation={navigation} />
+                        },
+                        {
+                            id: 'secondary-nav',
+                            title: 'Secondary navigation',
+                            contents: <NavigationEditForm baseUrl={siteData!.url} navigation={secondaryNavigation} />
+                        }
+                    ]}
+                    onTabChange={setSelectedTab}
+                />
+            </div>
         </Modal>
     );
 });

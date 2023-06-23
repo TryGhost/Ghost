@@ -20,7 +20,7 @@ export const Default: Story = {
             {label: 'Nice', onClick: () => {
                 alert('Nice');
             }},
-            {label: 'Turtlenect'}
+            {label: 'Turtleneck'}
         ]
     }
 };

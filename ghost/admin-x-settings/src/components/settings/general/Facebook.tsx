@@ -102,6 +102,7 @@ const Facebook: React.FC = () => {
             isEditing={isEditing}
             navid='facebook'
             saveState={saveState}
+            searchKeywords={['facebook card', 'structured data', 'rich cards']}
             testId='facebook'
             title='Facebook card'
             onCancel={handleCancel}
