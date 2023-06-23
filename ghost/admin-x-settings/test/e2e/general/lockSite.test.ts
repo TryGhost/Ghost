@@ -3,7 +3,7 @@ import {mockApi, updatedSettingsResponse} from '../../utils/e2e';
 
 test.describe('Site password settings', async () => {
     test('Supports locking and unlocking the site', async ({page}) => {
-        let lastApiRequest = await mockApi({page, responses: {
+        let lastApiRequests = await mockApi({page, responses: {
             settings: {
                 edit: updatedSettingsResponse([
                     {key: 'is_private', value: true},
@@ -31,7 +31,7 @@ test.describe('Site password settings', async () => {
 
         await expect(section.getByText('Your site is password protected')).toHaveCount(1);
 
-        expect(lastApiRequest.body).toEqual({
+        expect(lastApiRequests.settings.edit.body).toEqual({
             settings: [
                 {key: 'is_private', value: true},
                 {key: 'password', value: 'password'}
@@ -40,7 +40,7 @@ test.describe('Site password settings', async () => {
 
         // Remove the site password
 
-        lastApiRequest = await mockApi({page, responses: {
+        lastApiRequests = await mockApi({page, responses: {
             settings: {
                 edit: updatedSettingsResponse([
                     {key: 'is_private', value: false}
@@ -56,7 +56,7 @@ test.describe('Site password settings', async () => {
 
         await expect(section.getByText('Your site is not password protected')).toHaveCount(1);
 
-        expect(lastApiRequest.body).toEqual({
+        expect(lastApiRequests.settings.edit.body).toEqual({
             settings: [
                 {key: 'is_private', value: false}
             ]

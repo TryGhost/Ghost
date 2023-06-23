@@ -44,6 +44,7 @@ const NavigationModal = NiceModal.create(() => {
             scrolling={true}
             size='lg'
             stickyFooter={true}
+            testId='navigation-modal'
             title='Navigation'
             onOk={async () => {
                 if (navigation.validate() && secondaryNavigation.validate()) {

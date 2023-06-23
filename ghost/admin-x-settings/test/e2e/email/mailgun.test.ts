@@ -3,7 +3,7 @@ import {mockApi, updatedSettingsResponse} from '../../utils/e2e';
 
 test.describe('Mailgun settings', async () => {
     test('Supports setting up mailgun', async ({page}) => {
-        const lastApiRequest = await mockApi({page, responses: {
+        const lastApiRequests = await mockApi({page, responses: {
             settings: {
                 edit: updatedSettingsResponse([
                     {key: 'mailgun_domain', value: 'test.com'},
@@ -29,7 +29,7 @@ test.describe('Mailgun settings', async () => {
 
         await expect(section.getByText('Mailgun is set up')).toHaveCount(1);
 
-        expect(lastApiRequest.body).toEqual({
+        expect(lastApiRequests.settings.edit.body).toEqual({
             settings: [
                 {key: 'mailgun_domain', value: 'test.com'},
                 {key: 'mailgun_api_key', value: 'test'}
