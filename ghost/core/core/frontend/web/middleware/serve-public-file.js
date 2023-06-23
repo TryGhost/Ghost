@@ -46,8 +46,6 @@ function createPublicFileMiddleware(location, file, mime, maxAge) {
 
         // send image files directly and let express handle content-length, etag, etc
         if (mime.match(/^image/)) {
-            // In admin we need to read images and calculate the average color (blocked by CORS otherwise)
-            res.setHeader('Access-Control-Allow-Origin', '*');
             return res.sendFile(filePath, (err) => {
                 if (err && err.status === 404) {
                     // ensure we're triggering basic asset 404 and not a templated 404
