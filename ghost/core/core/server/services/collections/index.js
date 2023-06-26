@@ -11,10 +11,12 @@ class CollectionsServiceWrapper {
     constructor() {
         const postsRepository = require('./PostsRepository').getInstance();
         const collectionsRepositoryInMemory = new CollectionsRepositoryInMemory();
+        const DomainEvents = require('@tryghost/domain-events');
 
         const collectionsService = new CollectionsService({
             collectionsRepository: collectionsRepositoryInMemory,
-            postsRepository: postsRepository
+            postsRepository: postsRepository,
+            DomainEvents: DomainEvents
         });
 
         this.api = collectionsService;

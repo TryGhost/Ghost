@@ -39,7 +39,8 @@ describe('CollectionsService', function () {
 
         collectionsService = new CollectionsService({
             collectionsRepository,
-            postsRepository
+            postsRepository,
+            DomainEvents
         });
     });
 
