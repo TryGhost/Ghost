@@ -1,7 +1,7 @@
 import GenericPopup from './popups/GenericPopup';
-import Pages from '../pages';
+import {Pages} from '../pages';
 import {useAppContext} from '../AppContext';
-import {useContext, useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 
 export default function PopupBox() {
     const {popup} = useAppContext();

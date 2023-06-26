@@ -1,12 +1,16 @@
 import CloseButton from './CloseButton';
-import React, {useContext, useEffect, useRef, useState} from 'react';
 import {Transition} from '@headlessui/react';
 import {isMobile} from '../../utils/helpers';
 import {useAppContext} from '../../AppContext';
+import {useEffect, useRef, useState} from 'react';
 
-const AddDetailsPopup = (props) => {
-    const inputNameRef = useRef(null);
-    const inputExpertiseRef = useRef(null);
+type Props = {
+    callback: (succeeded: boolean) => void,
+    expertiseAutofocus?: boolean
+};
+const AddDetailsPopup = (props: Props) => {
+    const inputNameRef = useRef<HTMLInputElement>(null);
+    const inputExpertiseRef = useRef<HTMLInputElement>(null);
     const {dispatchAction, member, accentColor} = useAppContext();
 
     const [name, setName] = useState(member.name ?? '');
@@ -21,12 +25,12 @@ const AddDetailsPopup = (props) => {
 
     const [error, setError] = useState({name: '', expertise: ''});
 
-    const stopPropagation = (event) => {
+    const stopPropagation = (event: Event) => {
         event.stopPropagation();
     };
 
-    const close = (succeeded) => {
-        dispatchAction('closePopup');
+    const close = (succeeded: boolean) => {
+        dispatchAction('closePopup', {});
         props.callback(succeeded);
     };
 
@@ -38,7 +42,7 @@ const AddDetailsPopup = (props) => {
             });
             close(true);
         } else {
-            setError({name: 'Enter your name'});
+            setError({name: 'Enter your name', expertise: ''});
             setName('');
             inputNameRef.current?.focus();
         }
@@ -61,8 +65,8 @@ const AddDetailsPopup = (props) => {
         }
     }, [inputNameRef, inputExpertiseRef, props.expertiseAutofocus]);
 
-    const renderExampleProfiles = (index) => {
-        const renderEl = (profile) => {
+    const renderExampleProfiles = () => {
+        const renderEl = (profile: {name: string, avatar: string, expertise: string}) => {
             return (
                 <Transition
                     key={profile.name}
@@ -138,18 +142,19 @@ const AddDetailsPopup = (props) => {
                             ref={inputNameRef}
                             className={`flex h-[42px] w-full items-center rounded border border-neutral-200 px-3 font-sans text-[16px] outline-0 transition-[border-color] duration-200 focus:border-neutral-300 ${error.name && 'border-red-500 focus:border-red-500'}`}
                             id="comments-name"
-                            maxLength="64"
+                            maxLength={64}
                             name="name"
                             placeholder="Jamie Larson"
                             type="text"
                             value={name}
                             onChange={(e) => {
-                                setName(e.target.value);
+                                setName(e.currentTarget.value);
                             }}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
-                                    setName(e.target.value);
-                                    submit();
+                                    setName(e.currentTarget.value);
+                                    // eslint-disable-next-line no-console
+                                    submit().catch(console.error);
                                 }
                             }}
                         />
@@ -167,14 +172,15 @@ const AddDetailsPopup = (props) => {
                             type="text"
                             value={expertise}
                             onChange={(e) => {
-                                let expertiseText = e.target.value;
+                                let expertiseText = e.currentTarget.value;
                                 setExpertiseCharsLeft(maxExpertiseChars - expertiseText.length);
                                 setExpertise(expertiseText);
                             }}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
-                                    setExpertise(e.target.value);
-                                    submit();
+                                    setExpertise(e.currentTarget.value);
+                                    // eslint-disable-next-line no-console
+                                    submit().catch(console.error);
                                 }
                             }}
                         />
@@ -182,7 +188,10 @@ const AddDetailsPopup = (props) => {
                             className={`mt-10 flex h-[42px] w-full items-center justify-center rounded-md px-8 font-sans text-[15px] font-semibold text-white opacity-100 transition-opacity duration-200 ease-linear hover:opacity-90`}
                             style={{backgroundColor: accentColor ?? '#000000'}}
                             type="button"
-                            onClick={submit}
+                            onClick={() => {
+                                // eslint-disable-next-line no-console
+                                submit().catch(console.error);
+                            }}
                         >
                             Save
                         </button>

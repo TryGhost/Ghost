@@ -1,11 +1,20 @@
 import AddDetailsPopup from './components/popups/AddDetailsPopup';
+import React from 'react';
 import ReportPopup from './components/popups/ReportPopup';
 
 /** List of all available pages in Comments-UI, mapped to their UI component
  * Any new page added to comments-ui needs to be mapped here
 */
-const Pages = {
+export const Pages = {
     addDetailsPopup: AddDetailsPopup,
     reportPopup: ReportPopup
 };
-export default Pages;
+export type PageName = keyof typeof Pages;
+
+type PageTypes = {
+    [name in PageName]: {
+        type: name
+    } & React.ComponentProps<typeof Pages[name]>
+}
+
+export type Page = PageTypes[keyof PageTypes]

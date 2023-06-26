@@ -1,10 +1,7 @@
 // Ref: https://reactjs.org/docs/context.html
 import React, {useContext} from 'react';
-import {ActionType, Actions, DispatchAsyncActionMethodType, SyncActionType, SyncActions} from './actions';
-
-export type Popup = {
-    type: string,
-}
+import {ActionType, Actions, SyncActionType, SyncActions} from './actions';
+import {Page} from './pages';
 
 export type PopupNotification = {
     type: string,
@@ -50,10 +47,10 @@ export type AppContextType = {
     commentsEnabled: string | undefined,
     publication: string,
     secundaryFormCount: number,
-    popup: null | Popup,
+    popup: null | Page,
 
     // This part makes sure we can add automatic data and return types to the actions when using context.dispatchAction('actionName', data)
-    dispatchAction: <T extends ActionType | SyncActionType>(action: T, data: Parameters<(typeof Actions & typeof SyncActions)[T]>[0]['data']) => T extends ActionType ? Promise<void> : void
+    dispatchAction: <T extends ActionType | SyncActionType>(action: T, data: Parameters<(typeof Actions & typeof SyncActions)[T]>[0] extends {data: any} ? Parameters<(typeof Actions & typeof SyncActions)[T]>[0]['data'] : {}) => T extends ActionType ? Promise<void> : void
 }
 
 export const AppContext = React.createContext<AppContextType>({} as any);

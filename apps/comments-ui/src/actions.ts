@@ -329,7 +329,7 @@ function openPopup({data}: {data: Popup}) {
     };
 }
 
-function closePopup({data: never}) {
+function closePopup() {
     return {
         popup: null
     };
