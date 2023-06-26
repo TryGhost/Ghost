@@ -16,14 +16,23 @@ export type PopupNotification = {
     count: number
 }
 
+export type Comment = {
+
+}
+
 export type AppContextType = {
     action: string,
     popupNotification: PopupNotification | null,
     customSiteUrl: string | undefined,
     member: null | any,
     admin: null | any,
-    comments: null | any[],
-    pagination: {} | null,
+    comments: Comment[],
+    pagination: {
+        page: number,
+        limit: number,
+        pages: number,
+        total: number
+    } | null,
     commentCount: number,
     postId: string,
     title: string,

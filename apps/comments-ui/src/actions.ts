@@ -1,4 +1,7 @@
-async function loadMoreComments({state, api}) {
+import {AppContextType, Popup} from './AppContext';
+import {GhostApi} from './utils/api';
+
+async function loadMoreComments({state, api}: {state: AppContextType, api: GhostApi}): Promise<Partial<AppContextType>> {
     let page = 1;
     if (state.pagination && state.pagination.page) {
         page = state.pagination.page + 1;
@@ -12,7 +15,7 @@ async function loadMoreComments({state, api}) {
     };
 }
 
-async function loadMoreReplies({state, api, data: {comment, limit}}) {
+async function loadMoreReplies({state, api, data: {comment, limit}}: {state: AppContextType, api: GhostApi, data: {comment: any, limit: number}}): Promise<Partial<AppContextType>> {
     const data = await api.comments.replies({commentId: comment.id, afterReplyId: comment.replies[comment.replies.length - 1]?.id, limit});
 
     // Note: we store the comments from new to old, and show them in reverse order
@@ -29,7 +32,7 @@ async function loadMoreReplies({state, api, data: {comment, limit}}) {
     };
 }
 
-async function addComment({state, api, data: comment}) {
+async function addComment({state, api, data: comment}: {state: AppContextType, api: GhostApi, data: any}) {
     const data = await api.comments.add({comment});
     comment = data.comments[0];
 
@@ -39,7 +42,7 @@ async function addComment({state, api, data: comment}) {
     };
 }
 
-async function addReply({state, api, data: {reply, parent}}) {
+async function addReply({state, api, data: {reply, parent}}: {state: AppContextType, api: GhostApi, data: {reply: any, parent: any}}) {
     let comment = reply;
     comment.parent_id = parent.id;
 
@@ -69,7 +72,7 @@ async function addReply({state, api, data: {reply, parent}}) {
     };
 }
 
-async function hideComment({state, adminApi, data: comment}) {
+async function hideComment({state, adminApi, data: comment}: {state: AppContextType, adminApi: any, data: {id: string}}) {
     await adminApi.hideComment(comment.id);
 
     return {
@@ -102,7 +105,7 @@ async function hideComment({state, adminApi, data: comment}) {
     };
 }
 
-async function showComment({state, api, adminApi, data: comment}) {
+async function showComment({state, api, adminApi, data: comment}: {state: AppContextType, api: GhostApi, adminApi: any, data: {id: string}}) {
     await adminApi.showComment(comment.id);
 
     // We need to refetch the comment, to make sure we have an up to date HTML content
@@ -133,7 +136,7 @@ async function showComment({state, api, adminApi, data: comment}) {
     };
 }
 
-async function likeComment({state, api, data: comment}) {
+async function likeComment({state, api, data: comment}: {state: AppContextType, api: GhostApi, data: {id: string}}) {
     await api.comments.like({comment});
 
     return {
@@ -173,13 +176,13 @@ async function likeComment({state, api, data: comment}) {
     };
 }
 
-async function reportComment({state, api, data: comment}) {
+async function reportComment({state, api, data: comment}: {state: AppContextType, api: GhostApi, data: {id: string}}) {
     await api.comments.report({comment});
 
     return {};
 }
 
-async function unlikeComment({state, api, data: comment}) {
+async function unlikeComment({state, api, data: comment}: {state: AppContextType, api: GhostApi, data: {id: string}}) {
     await api.comments.unlike({comment});
 
     return {
@@ -218,7 +221,7 @@ async function unlikeComment({state, api, data: comment}) {
     };
 }
 
-async function deleteComment({state, api, data: comment}) {
+async function deleteComment({state, api, data: comment}: {state: AppContextType, api: GhostApi, data: {id: string}}) {
     await api.comments.edit({
         comment: {
             id: comment.id,
@@ -284,10 +287,10 @@ async function editComment({state, api, data: {comment, parent}}) {
     };
 }
 
-async function updateMember({data, state, api}) {
+async function updateMember({data, state, api}: {data: {name: string, expertise: string}, state: AppContextType, api: GhostApi}) {
     const {name, expertise} = data;
-    const patchData = {};
-    
+    const patchData: {name?: string, expertise?: string} = {};
+
     const originalName = state?.member?.name;
 
     if (name && originalName !== name) {
@@ -320,7 +323,7 @@ async function updateMember({data, state, api}) {
     return null;
 }
 
-function openPopup({data}) {
+function openPopup({data}: {data: Popup}) {
     return {
         popup: data
     };
@@ -332,13 +335,13 @@ function closePopup() {
     };
 }
 
-function increaseSecundaryFormCount({state}) {
+function increaseSecundaryFormCount({state}: {state: AppContextType}) {
     return {
         secundaryFormCount: state.secundaryFormCount + 1
     };
 }
 
-function decreaseSecundaryFormCount({state}) {
+function decreaseSecundaryFormCount({state}: {state: AppContextType}) {
     return {
         secundaryFormCount: state.secundaryFormCount - 1
     };
@@ -351,6 +354,8 @@ const SyncActions = {
     increaseSecundaryFormCount,
     decreaseSecundaryFormCount
 };
+
+type SyncActionType = keyof typeof SyncActions;
 
 const Actions = {
     // Put your actions here
@@ -368,12 +373,14 @@ const Actions = {
     updateMember
 };
 
-export function isSyncAction(action) {
-    return !!SyncActions[action];
+type ActionType = keyof typeof Actions;
+
+export function isSyncAction(action: string): action is SyncActionType {
+    return !!(SyncActions as any)[action];
 }
 
 /** Handle actions in the App, returns updated state */
-export async function ActionHandler({action, data, state, api, adminApi}) {
+export async function ActionHandler({action, data, state, api, adminApi}: {action: ActionType, data: any, state: AppContextType, api: GhostApi, adminApi: any}) {
     const handler = Actions[action];
     if (handler) {
         return await handler({data, state, api, adminApi}) || {};
@@ -382,11 +389,11 @@ export async function ActionHandler({action, data, state, api, adminApi}) {
 }
 
 /** Handle actions in the App, returns updated state */
-export function SyncActionHandler({action, data, state, api, adminApi}) {
+export function SyncActionHandler({action, data, state, api, adminApi}: {action: SyncActionType, data: any, state: AppContextType, api: GhostApi, adminApi: any}) {
     const handler = SyncActions[action];
     if (handler) {
         // Do not await here
-        return handler({data, state, api, adminApi}) || {};
+        return handler({data, state, api, adminApi} as any) || {};
     }
     return {};
 }
