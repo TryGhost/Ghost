@@ -150,8 +150,13 @@ const DefaultRecipients: React.FC = () => {
         .filter(({value}) => filters.includes(value));
 
     const setSelectedSegments = (selected: MultiValue<MultiSelectOption>) => {
-        const selectedGroups = selected?.map(({value}) => value).join(',');
-        updateSetting('editor_default_email_recipients_filter', selectedGroups);
+        if (selected.length) {
+            const selectedGroups = selected?.map(({value}) => value).join(',');
+            updateSetting('editor_default_email_recipients_filter', selectedGroups);
+        } else {
+            updateSetting('editor_default_email_recipients_filter', null);
+            setSelectedOption('none');
+        }
     };
 
     const values = (
