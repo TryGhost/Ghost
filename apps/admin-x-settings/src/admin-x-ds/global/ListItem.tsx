@@ -9,6 +9,7 @@ interface ListItemProps {
     hideActions?: boolean;
     avatar?: React.ReactNode;
     className?: string;
+    testId?: string;
 
     /**
      * Hidden for the last item in the list
@@ -19,7 +20,7 @@ interface ListItemProps {
     onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
-const ListItem: React.FC<ListItemProps> = ({id, title, detail, action, hideActions, avatar, className, separator, bgOnHover = true, onClick}) => {
+const ListItem: React.FC<ListItemProps> = ({id, title, detail, action, hideActions, avatar, className, testId, separator, bgOnHover = true, onClick}) => {
     const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
         onClick?.(e);
     };
@@ -33,7 +34,7 @@ const ListItem: React.FC<ListItemProps> = ({id, title, detail, action, hideActio
     );
 
     return (
-        <div className={listItemClasses}>
+        <div className={listItemClasses} data-testid={testId}>
             <div className={`flex grow items-center gap-3 ${onClick && 'cursor-pointer'}`} onClick={handleClick}>
                 {avatar && avatar}
                 <div className={`flex grow flex-col py-3 pr-6`} id={id}>

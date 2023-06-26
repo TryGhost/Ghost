@@ -328,7 +328,7 @@ const Password: React.FC<UserDetailProps> = ({user}) => {
                 inputRef={newPasswordRef}
                 title="New password"
                 type="password"
-                value=''
+                value={newPassword}
                 onChange={(e) => {
                     setNewPassword(e.target.value);
                 }}
@@ -339,7 +339,7 @@ const Password: React.FC<UserDetailProps> = ({user}) => {
                 inputRef={confirmNewPasswordRef}
                 title="Verify password"
                 type="password"
-                value=''
+                value={confirmNewPassword}
                 onChange={(e) => {
                     setConfirmNewPassword(e.target.value);
                 }}
@@ -399,9 +399,10 @@ interface UserDetailModalProps {
 }
 
 const UserMenuTrigger = () => (
-    <div className='flex h-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] px-3 opacity-80 hover:opacity-100'>
+    <button className='flex h-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] px-3 opacity-80 hover:opacity-100' type='button'>
         <Icon colorClass='text-white' name='ellipsis' size='md' />
-    </div>
+        <span className='sr-only'>Actions</span>
+    </button>
 );
 
 const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
@@ -486,7 +487,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
         NiceModal.show(ConfirmationModal, {
             title: 'Transfer Ownership',
             prompt: 'Are you sure you want to transfer the ownership of this blog? You will not be able to undo this action.',
-            okLabel: 'Yep — I\'m sure',
+            okLabel: 'Yep — I\'m sure',
             okColor: 'red',
             onOk: async (modal) => {
                 const res = await api.users.makeOwner(user.id);
@@ -597,6 +598,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
             okLabel={okLabel}
             size='lg'
             stickyFooter={true}
+            testId='user-detail-modal'
             onOk={async () => {
                 setSaveState('saving');
                 if (!validator.isEmail(userData.email)) {
