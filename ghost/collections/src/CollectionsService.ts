@@ -267,7 +267,7 @@ export class CollectionsService {
             }
         }
 
-        if ((collection.type === 'automatic' || data.type === 'automatic') && data.filter) {
+        if (collection.type === 'automatic' && data.filter) {
             await this.updateAutomaticCollectionItems(collection, data.filter);
         }
 
