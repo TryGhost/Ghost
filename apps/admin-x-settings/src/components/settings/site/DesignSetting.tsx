@@ -4,7 +4,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 
-const DesignSetting: React.FC = () => {
+const DesignSetting: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const openPreviewModal = () => {
         NiceModal.show(DesignModal);
     };
@@ -13,8 +13,8 @@ const DesignSetting: React.FC = () => {
         <SettingGroup
             customButtons={<Button color='green' label='Customize' link onClick={openPreviewModal}/>}
             description="Customize the look and feel of your site"
+            keywords={keywords}
             navid='branding-and-design'
-            searchKeywords={['design', 'branding', 'logo', 'cover', 'colors', 'fonts', 'background']}
             testId='design'
             title="Branding and design"
         />

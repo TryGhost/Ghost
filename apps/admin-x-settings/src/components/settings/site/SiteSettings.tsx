@@ -4,13 +4,19 @@ import React from 'react';
 import SettingSection from '../../../admin-x-ds/settings/SettingSection';
 import Theme from './Theme';
 
+const searchKeywords = {
+    theme: ['themes', 'design', 'appearance', 'style'],
+    design: ['design', 'branding', 'logo', 'cover', 'colors', 'fonts', 'background'],
+    navigation: ['navigation', 'menus', 'primary', 'secondary', 'links']
+};
+
 const SiteSettings: React.FC = () => {
     return (
         <>
-            <SettingSection title="Site">
-                <Theme />
-                <DesignSetting />
-                <Navigation />
+            <SettingSection keywords={Object.values(searchKeywords).flat()} title="Site">
+                <Theme keywords={searchKeywords.theme} />
+                <DesignSetting keywords={searchKeywords.design} />
+                <Navigation keywords={searchKeywords.navigation} />
             </SettingSection>
         </>
     );

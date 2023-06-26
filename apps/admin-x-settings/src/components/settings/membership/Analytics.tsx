@@ -6,7 +6,7 @@ import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {getSettingValues} from '../../../utils/helpers';
 
-const Analytics: React.FC = () => {
+const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
         localSettings,
         isEditing,
@@ -76,9 +76,9 @@ const Analytics: React.FC = () => {
             description='Decide what data you collect from your members'
             hideEditButton={true}
             isEditing={isEditing}
+            keywords={keywords}
             navid='analytics'
             saveState={saveState}
-            searchKeywords={['analytics', 'tracking', 'privacy']}
             testId='analytics'
             title='Analytics'
             onCancel={handleCancel}

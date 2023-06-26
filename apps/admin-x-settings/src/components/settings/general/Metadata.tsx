@@ -55,7 +55,7 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
     );
 };
 
-const Metadata: React.FC = () => {
+const Metadata: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
         localSettings,
         isEditing,
@@ -102,9 +102,9 @@ const Metadata: React.FC = () => {
         <SettingGroup
             description='Extra content for search engines'
             isEditing={isEditing}
+            keywords={keywords}
             navid='metadata'
             saveState={saveState}
-            searchKeywords={['meta', 'title', 'description', 'search', 'engine', 'google']}
             testId='metadata'
             title='Metadata'
             onCancel={handleCancel}

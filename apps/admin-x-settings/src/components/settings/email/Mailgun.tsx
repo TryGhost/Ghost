@@ -13,7 +13,7 @@ const MAILGUN_REGIONS = [
     {label: '🇪🇺 EU', value: 'https://api.eu.mailgun.net/v3'}
 ];
 
-const MailGun: React.FC = () => {
+const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
         localSettings,
         isEditing,
@@ -99,9 +99,9 @@ const MailGun: React.FC = () => {
         <SettingGroup
             description={groupDescription}
             isEditing={isEditing}
+            keywords={keywords}
             navid='mailgun'
             saveState={saveState}
-            searchKeywords={['mailgun', 'email']}
             testId='mailgun'
             title='Mailgun'
             onCancel={handleCancel}
