@@ -28,8 +28,7 @@ export class SignupNode extends BaseSignupNode {
         matches: ['signup', 'subscribe'],
         isHidden: ({config}) => {
             const isMembersEnabled = config?.membersEnabled;
-            const isSignupCardEnabled = config?.feature?.signupCard;
-            return !(isMembersEnabled && isSignupCardEnabled);
+            return !(isMembersEnabled);
         },
         insertParams: ({config}) => ({
             header: config?.siteTitle ? `Sign up for ${config.siteTitle}` : '',
