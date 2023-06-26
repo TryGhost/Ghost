@@ -4,12 +4,14 @@ import SettingGroupHeader from './SettingGroupHeader';
 import clsx from 'clsx';
 import {ButtonProps} from '../global/Button';
 import {SaveState} from '../../hooks/useForm';
+import {useSearch} from '../../components/providers/ServiceProvider';
 
 interface SettingGroupProps {
     navid?:string;
     testId?: string;
     title?: string;
     description?: React.ReactNode;
+    keywords?: string[];
     isEditing?: boolean;
     saveState?: SaveState;
     customHeader?: React.ReactNode;
@@ -37,6 +39,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     testId,
     title,
     description,
+    keywords = [],
     isEditing,
     saveState,
     customHeader,
@@ -50,6 +53,8 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     onSave,
     onCancel
 }) => {
+    const {checkVisible} = useSearch();
+
     const handleEdit = () => {
         onEditingChange?.(true);
     };
@@ -121,7 +126,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     }
 
     return (
-        <div className={clsx('relative flex flex-col gap-6 rounded', border && 'border p-5 md:p-7', styles)} data-testid={testId}>
+        <div className={clsx('relative flex flex-col gap-6 rounded', border && 'border p-5 md:p-7', !checkVisible(keywords) && 'hidden', styles)} data-testid={testId}>
             <div className='absolute top-[-60px]' id={navid && navid}></div>
             {customHeader ? customHeader :
                 <SettingGroupHeader description={description} title={title!}>

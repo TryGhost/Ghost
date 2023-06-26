@@ -4,7 +4,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 
-const Navigation: React.FC = () => {
+const Navigation: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const openPreviewModal = () => {
         NiceModal.show(NavigationModal);
     };
@@ -13,6 +13,7 @@ const Navigation: React.FC = () => {
         <SettingGroup
             customButtons={<Button color='green' label='Customize' link onClick={openPreviewModal}/>}
             description="Set up primary and secondary menus"
+            keywords={keywords}
             navid='navigation'
             testId='navigation'
             title="Navigation"

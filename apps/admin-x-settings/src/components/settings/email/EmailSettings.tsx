@@ -3,18 +3,17 @@ import MailGun from './Mailgun';
 import React from 'react';
 import SettingSection from '../../../admin-x-ds/settings/SettingSection';
 
+const searchKeywords = {
+    defaultRecipients: ['newsletter', 'default recipients', 'email'],
+    mailgun: ['mailgun', 'email']
+};
+
 const EmailSettings: React.FC = () => {
     return (
-        <SettingSection groups={[
-            {
-                element: <DefaultRecipients />,
-                searchKeywords: ['newsletter', 'default recipients', 'email']
-            },
-            {
-                element: <MailGun />,
-                searchKeywords: ['mailgun', 'email']
-            }
-        ]} title='Email newsletters' />
+        <SettingSection keywords={Object.values(searchKeywords).flat()} title='Email newsletters'>
+            <DefaultRecipients keywords={searchKeywords.defaultRecipients} />
+            <MailGun keywords={searchKeywords.mailgun} />
+        </SettingSection>
     );
 };
 

@@ -8,7 +8,7 @@ import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {getSettingValues} from '../../../utils/helpers';
 
-const LockSite: React.FC = () => {
+const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
         localSettings,
         isEditing,
@@ -81,6 +81,7 @@ const LockSite: React.FC = () => {
         <SettingGroup
             description='Enable protection with a simple shared password.'
             isEditing={isEditing}
+            keywords={keywords}
             navid='locksite'
             saveState={saveState}
             testId='locksite'

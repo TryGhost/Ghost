@@ -60,7 +60,7 @@ function getDefaultRecipientValue({
     return defaultEmailRecipients;
 }
 
-const DefaultRecipients: React.FC = () => {
+const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
         localSettings,
         isEditing,
@@ -193,6 +193,7 @@ const DefaultRecipients: React.FC = () => {
         <SettingGroup
             description='When you publish new content, who do you usually want to send it to?'
             isEditing={isEditing}
+            keywords={keywords}
             navid='default-recipients'
             saveState={saveState}
             testId='default-recipients'

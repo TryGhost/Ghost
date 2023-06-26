@@ -180,7 +180,7 @@ const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
     );
 };
 
-const Users: React.FC = () => {
+const Users: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
         ownerUser,
         adminUsers,
@@ -234,6 +234,7 @@ const Users: React.FC = () => {
     return (
         <SettingGroup
             customButtons={buttons}
+            keywords={keywords}
             navid='users'
             testId='users'
             title='Users and permissions'

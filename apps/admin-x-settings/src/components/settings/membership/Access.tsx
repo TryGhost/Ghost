@@ -28,7 +28,7 @@ const COMMENTS_ENABLED_OPTIONS = [
     {value: 'off', label: 'Nobody'}
 ];
 
-const Access: React.FC = () => {
+const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
         localSettings,
         isEditing,
@@ -143,6 +143,7 @@ const Access: React.FC = () => {
         <SettingGroup
             description='Set up default access options for subscription and posts'
             isEditing={isEditing}
+            keywords={keywords}
             navid='access'
             saveState={saveState}
             testId='access'

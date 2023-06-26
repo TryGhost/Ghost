@@ -9,7 +9,7 @@ import {FileService, ServicesContext} from '../../providers/ServiceProvider';
 import {ReactComponent as TwitterLogo} from '../../../admin-x-ds/assets/images/twitter-logo.svg';
 import {getSettingValues} from '../../../utils/helpers';
 
-const Twitter: React.FC = () => {
+const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
         localSettings,
         isEditing,
@@ -102,6 +102,7 @@ const Twitter: React.FC = () => {
         <SettingGroup
             description='Customize structured data of your site'
             isEditing={isEditing}
+            keywords={keywords}
             navid='twitter'
             saveState={saveState}
             testId='twitter'
