@@ -3261,7 +3261,6 @@ p.theme-validation-details {
     color: var(--darkgrey);
     white-space: nowrap;
     margin-top: 2px;
-    font-weight: 500;
 }
 
 .gh-history-description a {
