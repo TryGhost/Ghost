@@ -1,7 +1,7 @@
 import setupGhostApi from './api';
 
 test('should call counts endpoint', () => {
-    jest.spyOn(window, 'fetch');
+    vi.spyOn(window, 'fetch');
     window.fetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({success: true})
@@ -24,7 +24,7 @@ test('should call counts endpoint', () => {
 });
 
 test('should call counts endpoint with postId query param', () => {
-    jest.spyOn(window, 'fetch');
+    vi.spyOn(window, 'fetch');
     window.fetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({success: true})

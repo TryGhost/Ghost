@@ -80,7 +80,7 @@ function renderApp({member = null, documentStyles = {}, props = {}} = {}) {
 }
 
 beforeEach(() => {
-    window.scrollTo = jest.fn();
+    window.scrollTo = vi.fn();
     Range.prototype.getClientRects = function getClientRects() {
         return [
             {
@@ -98,7 +98,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
 });
 
 describe('Auth frame', () => {
@@ -148,7 +148,7 @@ describe('Dark mode', () => {
 describe('Comments', () => {
     it('renders comments', async () => {
         const {api, iframeDocument} = renderApp();
-        jest.spyOn(api.comments, 'browse').mockImplementation(() => {
+        vi.spyOn(api.comments, 'browse').mockImplementation(() => {
             return {
                 comments: [
                     buildComment({html: '<p>This is a comment body</p>'})
@@ -174,7 +174,7 @@ describe('Comments', () => {
         const limit = 5;
 
         const {api, iframeDocument} = renderApp();
-        jest.spyOn(api.comments, 'browse').mockImplementation(({page}) => {
+        vi.spyOn(api.comments, 'browse').mockImplementation(({page}) => {
             if (page === 2) {
                 return {
                     comments: new Array(1).fill({}).map(() => buildComment({html: '<p>This is a paginated comment</p>'})),
@@ -216,7 +216,7 @@ describe('Comments', () => {
         const limit = 5;
 
         const {api, iframeDocument} = renderApp();
-        jest.spyOn(api.comments, 'browse').mockImplementation(({page}) => {
+        vi.spyOn(api.comments, 'browse').mockImplementation(({page}) => {
             return {
                 comments: new Array(limit).fill({}).map(() => buildComment({html: '<p>This is a comment body</p>', member: null})),
                 meta: {
@@ -239,7 +239,7 @@ describe('Comments', () => {
         const limit = 5;
 
         const {api, iframeDocument} = renderApp();
-        jest.spyOn(api.comments, 'browse').mockImplementation(({page}) => {
+        vi.spyOn(api.comments, 'browse').mockImplementation(({page}) => {
             if (page === 2) {
                 throw new Error('Not requested');
             }
@@ -281,7 +281,7 @@ describe('Likes', () => {
             member
         });
 
-        jest.spyOn(api.comments, 'browse').mockImplementation(({page}) => {
+        vi.spyOn(api.comments, 'browse').mockImplementation(({page}) => {
             if (page === 2) {
                 throw new Error('Not requested');
             }
@@ -299,8 +299,8 @@ describe('Likes', () => {
             };
         });
 
-        const likeSpy = jest.spyOn(api.comments, 'like');
-        const unlikeSpy = jest.spyOn(api.comments, 'unlike');
+        const likeSpy = vi.spyOn(api.comments, 'like');
+        const unlikeSpy = vi.spyOn(api.comments, 'unlike');
 
         const comment = await within(iframeDocument).findByTestId('comment-component');
 
@@ -346,7 +346,7 @@ describe('Replies', () => {
             member
         });
 
-        jest.spyOn(api.comments, 'browse').mockImplementation(({page}) => {
+        vi.spyOn(api.comments, 'browse').mockImplementation(({page}) => {
             if (page === 2) {
                 throw new Error('Not requested');
             }
@@ -364,7 +364,7 @@ describe('Replies', () => {
             };
         });
 
-        const repliesSpy = jest.spyOn(api.comments, 'replies');
+        const repliesSpy = vi.spyOn(api.comments, 'replies');
 
         const comments = await within(iframeDocument).findAllByTestId('comment-component');
         expect(comments).toHaveLength(limit);
