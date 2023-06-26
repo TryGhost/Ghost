@@ -1,11 +1,21 @@
-import IFrame from './IFrame';
 import React, {useCallback, useState} from 'react';
 import styles from '../styles/iframe.css?inline';
+import IFrame from './IFrame';
+
+type FrameProps = {
+    children: React.ReactNode
+};
+
+type TailwindFrameProps = FrameProps & {
+    style: React.CSSProperties,
+    title: string,
+    onResize: (iframeRoot: HTMLElement) => void
+};
 
 /**
  * Loads all the CSS styles inside an iFrame. Only shows the visible content as soon as the CSS file with the tailwind classes has loaded.
  */
-const TailwindFrame = ({children, onResize, style, title}) => {
+const TailwindFrame: React.FC<TailwindFrameProps> = ({children, onResize, style, title}) => {
     const head = (
         <>
             <style dangerouslySetInnerHTML={{__html: styles}} />
@@ -21,10 +31,15 @@ const TailwindFrame = ({children, onResize, style, title}) => {
     );
 };
 
+type ResizableFrameProps = FrameProps & {
+    style: React.CSSProperties,
+    title: string
+};
+
 /**
  * This iframe has the same height as it contents and mimics a shadow DOM component
  */
-const ResizableFrame = ({children, style, title}) => {
+const ResizableFrame: React.FC<ResizableFrameProps> = ({children, style, title}) => {
     const [iframeStyle, setIframeStyle] = useState(style);
     const onResize = useCallback((iframeRoot) => {
         setIframeStyle((current) => {
@@ -42,7 +57,7 @@ const ResizableFrame = ({children, style, title}) => {
     );
 };
 
-export const CommentsFrame = ({children}) => {
+export const CommentsFrame: React.FC<FrameProps> = ({children}) => {
     const style = {
         width: '100%',
         height: '400px'
@@ -54,7 +69,11 @@ export const CommentsFrame = ({children}) => {
     );
 };
 
-export const PopupFrame = ({children, title}) => {
+type PopupFrameProps = FrameProps & {
+    title: string
+};
+
+export const PopupFrame: React.FC<PopupFrameProps> = ({children, title}) => {
     const style = {
         zIndex: '3999999',
         position: 'fixed',
