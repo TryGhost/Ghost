@@ -1,5 +1,7 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option';
 import {renderEmptyContainer} from '../../utils/render-empty-container';
+import {escapeHtml} from '../../utils/escape-html';
+import {bytesToSize} from '../../utils/size-byte-converter';
 
 export function renderFileNode(node, options = {}) {
     addCreateDocumentOption(options);
@@ -9,6 +11,60 @@ export function renderFileNode(node, options = {}) {
         return renderEmptyContainer(document);
     }
 
+    if (options.target === 'email') {
+        return emailTemplate(node, document, options);
+    } else {
+        return cardTemplate(node, document);
+    }
+}
+
+function emailTemplate(node, document, options) {
+    let iconCls;
+    if (!node.fileTitle && !node.fileCaption) {
+        iconCls = 'margin-top: 6px; height: 20px; width: 20px; max-width: 20px; padding-top: 4px; padding-bottom: 4px;';
+    } else {
+        iconCls = 'margin-top: 6px; height: 24px; width: 24px; max-width: 24px;';
+    }
+
+    const html = (`
+        <table cellspacing="0" cellpadding="4" border="0" class="kg-file-card" width="100%">
+            <tr>
+                <td>
+                    <table cellspacing="0" cellpadding="0" border="0" width="100%">
+                        <tr>
+                            <td valign="middle" style="vertical-align: middle;">
+                                ${node.fileTitle ? `
+                                <table cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td>
+                                    <a href="${escapeHtml(options.postUrl)}" class="kg-file-title">${escapeHtml(node.fileTitle)}</a>
+                                </td></tr></table>
+                                ` : ``}
+                                ${node.fileCaption ? `
+                                <table cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td>
+                                    <a href="${escapeHtml(options.postUrl)}" class="kg-file-description">${escapeHtml(node.fileCaption)}</a>
+                                </td></tr></table>
+                                ` : ``}
+                                <table cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td>
+                                    <a href="${escapeHtml(options.postUrl)}" class="kg-file-meta"><span class="kg-file-name">${escapeHtml(node.fileName)}</span> &bull; ${bytesToSize(node.fileSize)}</a>
+                                </td></tr></table>
+                            </td>
+                            <td width="80" valign="middle" class="kg-file-thumbnail">
+                                <a href="${escapeHtml(options.postUrl)}" style="position: absolute; display: block; top: 0; right: 0; bottom: 0; left: 0;"></a>
+                                <img src="https://static.ghost.org/v4.0.0/images/download-icon-darkmode.png" style="${escapeHtml(iconCls)}">
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    `);
+
+    const container = document.createElement('div');
+    container.innerHTML = html.trim();
+
+    return {element: container.firstElementChild};
+}
+
+function cardTemplate(node, document) {
     const card = document.createElement('div');
     card.setAttribute('class', 'kg-card kg-file-card');
 
