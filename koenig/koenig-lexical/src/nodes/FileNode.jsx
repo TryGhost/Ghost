@@ -50,7 +50,7 @@ export class FileNode extends BaseFileNode {
                 nodeKey={this.getKey()}
             >
                 <FileNodeComponent
-                    fileDesc={this.filecaption}
+                    fileDesc={this.fileCaption}
                     fileDescPlaceholder={'Enter a description'}
                     fileName={this.fileName}
                     fileSize={this.formattedFileSize}
