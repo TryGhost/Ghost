@@ -37,6 +37,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             okColor={okColor}
             okLabel={taskState === 'running' ? okRunningLabel : okLabel}
             size={540}
+            testId='confirmation-modal'
             title={title}
             onCancel={onCancel}
             onOk={async () => {

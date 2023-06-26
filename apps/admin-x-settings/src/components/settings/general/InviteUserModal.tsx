@@ -119,6 +119,7 @@ const InviteUserModal = NiceModal.create(() => {
             cancelLabel=''
             okLabel={okLabel}
             size={540}
+            testId='invite-user-modal'
             title='Invite a new staff user'
             onOk={handleSendInvitation}
         >

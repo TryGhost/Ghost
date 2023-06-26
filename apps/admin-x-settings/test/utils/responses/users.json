@@ -1,0 +1,199 @@
+{
+    "users": [
+        {
+            "id": "6498da2533daa20df683e906",
+            "name": "Contributor User",
+            "slug": "contributor",
+            "email": "contributor@test.com",
+            "profile_image": null,
+            "cover_image": null,
+            "bio": null,
+            "website": null,
+            "location": null,
+            "facebook": null,
+            "twitter": null,
+            "accessibility": null,
+            "status": "active",
+            "meta_title": null,
+            "meta_description": null,
+            "tour": null,
+            "last_seen": "2023-06-26T00:21:58.000Z",
+            "comment_notifications": true,
+            "free_member_signup_notification": true,
+            "paid_subscription_started_notification": true,
+            "paid_subscription_canceled_notification": false,
+            "mention_notifications": true,
+            "milestone_notifications": true,
+            "created_at": "2023-06-26T00:21:57.000Z",
+            "updated_at": "2023-06-26T00:21:58.000Z",
+            "roles": [
+                {
+                    "id": "645453f3d254799990dd0e19",
+                    "name": "Contributor",
+                    "description": "Contributors",
+                    "created_at": "2023-05-05T00:55:15.000Z",
+                    "updated_at": "2023-05-05T00:55:15.000Z"
+                }
+            ],
+            "url": "http://localhost:2368/404/"
+        },
+        {
+            "id": "6498da0233daa20df683e903",
+            "name": "Author User",
+            "slug": "author",
+            "email": "author@test.com",
+            "profile_image": null,
+            "cover_image": null,
+            "bio": null,
+            "website": null,
+            "location": null,
+            "facebook": null,
+            "twitter": null,
+            "accessibility": null,
+            "status": "active",
+            "meta_title": null,
+            "meta_description": null,
+            "tour": null,
+            "last_seen": "2023-06-26T00:21:22.000Z",
+            "comment_notifications": true,
+            "free_member_signup_notification": true,
+            "paid_subscription_started_notification": true,
+            "paid_subscription_canceled_notification": false,
+            "mention_notifications": true,
+            "milestone_notifications": true,
+            "created_at": "2023-06-26T00:21:22.000Z",
+            "updated_at": "2023-06-26T00:21:22.000Z",
+            "roles": [
+                {
+                    "id": "645453f3d254799990dd0e18",
+                    "name": "Author",
+                    "description": "Authors",
+                    "created_at": "2023-05-05T00:55:15.000Z",
+                    "updated_at": "2023-05-05T00:55:15.000Z"
+                }
+            ],
+            "url": "http://localhost:2368/404/"
+        },
+        {
+            "id": "6498d9e833daa20df683e900",
+            "name": "Administrator User",
+            "slug": "administrator",
+            "email": "administrator@test.com",
+            "profile_image": null,
+            "cover_image": null,
+            "bio": null,
+            "website": null,
+            "location": null,
+            "facebook": null,
+            "twitter": null,
+            "accessibility": null,
+            "status": "active",
+            "meta_title": null,
+            "meta_description": null,
+            "tour": null,
+            "last_seen": "2023-06-26T00:20:57.000Z",
+            "comment_notifications": true,
+            "free_member_signup_notification": true,
+            "paid_subscription_started_notification": true,
+            "paid_subscription_canceled_notification": false,
+            "mention_notifications": true,
+            "milestone_notifications": true,
+            "created_at": "2023-06-26T00:20:56.000Z",
+            "updated_at": "2023-06-26T00:20:57.000Z",
+            "roles": [
+                {
+                    "id": "645453f3d254799990dd0e16",
+                    "name": "Administrator",
+                    "description": "Administrators",
+                    "created_at": "2023-05-05T00:55:15.000Z",
+                    "updated_at": "2023-05-05T00:55:15.000Z"
+                }
+            ],
+            "url": "http://localhost:2368/404/"
+        },
+        {
+            "id": "1",
+            "name": "Owner User",
+            "slug": "owner",
+            "email": "owner@test.com",
+            "profile_image": null,
+            "cover_image": null,
+            "bio": null,
+            "website": null,
+            "location": null,
+            "facebook": null,
+            "twitter": null,
+            "accessibility": null,
+            "status": "active",
+            "meta_title": null,
+            "meta_description": null,
+            "tour": null,
+            "last_seen": "2023-06-25T23:34:33.000Z",
+            "comment_notifications": true,
+            "free_member_signup_notification": true,
+            "paid_subscription_started_notification": true,
+            "paid_subscription_canceled_notification": false,
+            "mention_notifications": true,
+            "milestone_notifications": true,
+            "created_at": "2023-05-05T00:55:15.000Z",
+            "updated_at": "2023-06-25T23:34:33.000Z",
+            "roles": [
+                {
+                    "id": "645453f3d254799990dd0e1a",
+                    "name": "Owner",
+                    "description": "Blog Owner",
+                    "created_at": "2023-05-05T00:55:15.000Z",
+                    "updated_at": "2023-05-05T00:55:15.000Z"
+                }
+            ],
+            "url": "http://localhost:2368/author/owner/"
+        },
+        {
+            "id": "6493dead1e89fd3bdee8529c",
+            "name": "Editor User",
+            "slug": "editor",
+            "email": "editor@test.com",
+            "profile_image": null,
+            "cover_image": null,
+            "bio": null,
+            "website": null,
+            "location": null,
+            "facebook": null,
+            "twitter": null,
+            "accessibility": null,
+            "status": "active",
+            "meta_title": null,
+            "meta_description": null,
+            "tour": null,
+            "last_seen": "2023-06-22T05:39:58.000Z",
+            "comment_notifications": true,
+            "free_member_signup_notification": true,
+            "paid_subscription_started_notification": true,
+            "paid_subscription_canceled_notification": false,
+            "mention_notifications": true,
+            "milestone_notifications": true,
+            "created_at": "2023-06-22T05:39:57.000Z",
+            "updated_at": "2023-06-22T05:39:58.000Z",
+            "roles": [
+                {
+                    "id": "645453f3d254799990dd0e17",
+                    "name": "Editor",
+                    "description": "Editors",
+                    "created_at": "2023-05-05T00:55:15.000Z",
+                    "updated_at": "2023-05-05T00:55:15.000Z"
+                }
+            ],
+            "url": "http://localhost:2368/404/"
+        }
+    ],
+    "meta": {
+        "pagination": {
+            "page": 1,
+            "limit": "all",
+            "pages": 1,
+            "total": 5,
+            "next": null,
+            "prev": null
+        }
+    }
+}

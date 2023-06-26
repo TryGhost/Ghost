@@ -36,7 +36,7 @@ export interface RolesResponseType {
 export interface UserInvite {
     created_at: string;
     email: string;
-    expires: string;
+    expires: number;
     id: string;
     role_id: string;
     role?: string;
@@ -80,7 +80,7 @@ export interface SiteResponseType {
 export interface ImagesResponseType {
     images: {
         url: string;
-        ref: string;
+        ref: string | null;
     }[];
 }
 
