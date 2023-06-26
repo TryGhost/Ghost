@@ -2,7 +2,8 @@ const DomainEvents = require('@tryghost/domain-events');
 const {
     CollectionResourceChangeEvent,
     PostDeletedEvent,
-    PostAddedEvent
+    PostAddedEvent,
+    PostEditedEvent
 } = require('@tryghost/collections');
 
 const domainEventDispatcher = (modelEventName, data) => {
@@ -18,7 +19,22 @@ const domainEventDispatcher = (modelEventName, data) => {
         event = PostAddedEvent.create({
             id: data.id,
             featured: data.featured,
+            status: data.attributes.status,
             published_at: data.published_at
+        });
+    } if (modelEventName === 'post.edited') {
+        event = PostEditedEvent.create({
+            id: data.id,
+            current: {
+                title: data.attributes.title,
+                status: data.attributes.status,
+                featured: data.attributes.featured,
+                published_at: data.attributes.published_at
+            },
+            // @NOTE: this will need to represent the previous state of the post
+            //        will be needed to optimize the query for the collection
+            previous: {
+            }
         });
     } else {
         event = CollectionResourceChangeEvent.create(modelEventName, change);

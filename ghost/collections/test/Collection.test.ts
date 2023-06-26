@@ -266,7 +266,8 @@ describe('Collection', function () {
         it('Can match a post with a filter', async function () {
             const collection = await Collection.create({
                 title: 'Testing filtering posts',
-                type: 'automatic'
+                type: 'automatic',
+                filter: 'featured:true'
             });
 
             const featuredPost = {

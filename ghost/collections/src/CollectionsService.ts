@@ -1,10 +1,12 @@
+import logging from '@tryghost/logging';
+import tpl from '@tryghost/tpl';
 import {Collection} from './Collection';
 import {CollectionResourceChangeEvent} from './CollectionResourceChangeEvent';
 import {CollectionRepository} from './CollectionRepository';
-import tpl from '@tryghost/tpl';
 import {MethodNotAllowedError, NotFoundError} from '@tryghost/errors';
 import {PostDeletedEvent} from './events/PostDeletedEvent';
 import {PostAddedEvent} from './events/PostAddedEvent';
+import {PostEditedEvent} from './events/PostEditedEvent';
 
 const messages = {
     cannotDeleteBuiltInCollectionError: {
@@ -153,6 +155,10 @@ export class CollectionsService {
         this.DomainEvents.subscribe(PostAddedEvent, async (event: PostAddedEvent) => {
             await this.addPostToMatchingCollections(event.data);
         });
+
+        this.DomainEvents.subscribe(PostEditedEvent, async (event: PostEditedEvent) => {
+            await this.updatePostInMatchingCollections(event.data);
+        });
     }
 
     async createCollection(data: CollectionInputDTO): Promise<CollectionDTO> {
@@ -228,7 +234,6 @@ export class CollectionsService {
         });
 
         for (const collection of collections) {
-            await collection.addPost(post);
             const added = await collection.addPost(post);
 
             if (added) {
@@ -249,6 +254,31 @@ export class CollectionsService {
         for (const collection of collections) {
             await this.updateAutomaticCollectionItems(collection);
             await this.collectionsRepository.save(collection);
+        }
+    }
+
+    async updatePostInMatchingCollections(postEdit: PostEditedEvent['data']) {
+        const collections = await this.collectionsRepository.getAll({
+            filter: 'type:automatic'
+        });
+
+        for (const collection of collections) {
+            if (collection.includesPost(postEdit.id) && !collection.postMatchesFilter(postEdit.current)) {
+                await collection.removePost(postEdit.id);
+                await this.collectionsRepository.save(collection);
+
+                logging.info(`[Collections] Post ${postEdit.id} was updated and removed from collection ${collection.id} with filter ${collection.filter}`);
+            } else if (!collection.includesPost(postEdit.id) && collection.postMatchesFilter(postEdit.current)) {
+                const added = await collection.addPost(postEdit.current);
+
+                if (added) {
+                    await this.collectionsRepository.save(collection);
+                }
+
+                logging.info(`[Collections] Post ${postEdit.id} was updated and added to collection ${collection.id} with filter ${collection.filter}`);
+            } else {
+                logging.info(`[Collections] Post ${postEdit.id} was updated but did not update any collections`);
+            }
         }
     }
 

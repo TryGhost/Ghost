@@ -6,7 +6,8 @@ import {
     CollectionsRepositoryInMemory,
     CollectionResourceChangeEvent,
     PostDeletedEvent,
-    PostAddedEvent
+    PostAddedEvent,
+    PostEditedEvent
 } from '../src/index';
 import {PostsRepositoryInMemory} from './fixtures/PostsRepositoryInMemory';
 import {posts} from './fixtures/posts';
@@ -411,6 +412,57 @@ describe('CollectionsService', function () {
                 });
 
                 DomainEvents.dispatch(updateCollectionEvent);
+                await DomainEvents.allSettled();
+
+                assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 3);
+                assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 2);
+                assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 2);
+            });
+
+            it('Moves post form featured to non featured collection when the featured attribute is changed', async function () {
+                collectionsService.subscribeToEvents();
+                const newFeaturedPost = {
+                    id: 'post-featured',
+                    title: 'Post Featured',
+                    slug: 'post-featured',
+                    featured: false,
+                    published_at: new Date('2023-03-16T07:19:07.447Z'),
+                    deleted: false
+                };
+                await postsRepository.save(newFeaturedPost);
+                const updateCollectionEvent = PostEditedEvent.create({
+                    id: newFeaturedPost.id,
+                    current: {
+                        id: newFeaturedPost.id,
+                        featured: false
+                    },
+                    previous: {
+                        id: newFeaturedPost.id,
+                        featured: true
+                    }
+                });
+
+                DomainEvents.dispatch(updateCollectionEvent);
+                await DomainEvents.allSettled();
+
+                assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 2);
+                assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 3);
+                assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 2);
+
+                // change featured back to true
+                const updateCollectionEventBackToFeatured = PostEditedEvent.create({
+                    id: newFeaturedPost.id,
+                    current: {
+                        id: newFeaturedPost.id,
+                        featured: true
+                    },
+                    previous: {
+                        id: newFeaturedPost.id,
+                        featured: false
+                    }
+                });
+
+                DomainEvents.dispatch(updateCollectionEventBackToFeatured);
                 await DomainEvents.allSettled();
 
                 assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 3);
