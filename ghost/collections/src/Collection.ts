@@ -78,14 +78,18 @@ export class Collection {
         return this;
     }
 
+    postMatchesFilter(post: CollectionPost) {
+        const filterNql = nql(this.filter);
+        return filterNql.queryJSON(post);
+    }
+
     /**
      * @param post {{id: string}} - The post to add to the collection
      * @param index {number} - The index to insert the post at, use negative numbers to count from the end.
      */
     addPost(post: CollectionPost, index: number = -0) {
         if (this.type === 'automatic') {
-            const filterNql = nql(this.filter);
-            const matchesFilter = filterNql.queryJSON(post);
+            const matchesFilter = this.postMatchesFilter(post);
 
             if (!matchesFilter) {
                 return false;
