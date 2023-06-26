@@ -6,7 +6,7 @@ import Paragraph from '@tiptap/extension-paragraph';
 import Placeholder from '@tiptap/extension-placeholder';
 import Text from '@tiptap/extension-text';
 
-export function getEditorConfig({placeholder, autofocus = false, content = ''}) {
+export function getEditorConfig({placeholder, autofocus = false, content = ''}: {placeholder: string; autofocus?: boolean; content?: string}) {
     return {
         extensions: [
             Document,

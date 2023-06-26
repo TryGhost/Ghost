@@ -2,7 +2,7 @@ import App from './App';
 import userEvent from '@testing-library/user-event';
 import {ROOT_DIV_ID} from './utils/constants';
 import {act, fireEvent, render, waitFor, within} from '@testing-library/react';
-import {buildComment, buildMember} from './utils/test-utils';
+import {buildComment, buildMember} from '../test/utils/fixtures';
 
 function renderApp({member = null, documentStyles = {}, props = {}} = {}) {
     const postId = 'my-post';

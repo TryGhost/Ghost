@@ -14,7 +14,7 @@ const modeFns = {
     test: isTestMode
 };
 
-export const hasMode = (modes = [], options = {}) => {
+export const hasMode = (modes: ('dev' | 'test')[] = [], options: {customSiteUrl?: string} = {}) => {
     return modes.some((mode) => {
         const modeFn = modeFns[mode];
         return !!(modeFn && modeFn(options));
