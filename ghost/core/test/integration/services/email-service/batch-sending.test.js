@@ -6,7 +6,6 @@ const sinon = require('sinon');
 const assert = require('assert/strict');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
 const _ = require('lodash');
-const {MailgunEmailProvider} = require('@tryghost/email-service');
 const escapeRegExp = require('lodash/escapeRegExp');
 const configUtils = require('../../../utils/configUtils');
 const {settingsCache} = require('../../../../core/server/services/settings-helpers');
@@ -259,7 +258,7 @@ describe('Batch sending tests', function () {
     let ghostServer;
 
     beforeEach(function () {
-        MailgunEmailProvider.BATCH_SIZE = 100;
+        configUtils.set('bulkEmail:batchSize', 100);
         stubbedSend = sinon.fake.resolves({
             id: 'stubbed-email-id'
         });
@@ -548,7 +547,7 @@ describe('Batch sending tests', function () {
     });
 
     it('Splits up in batches according to email provider batch size', async function () {
-        MailgunEmailProvider.BATCH_SIZE = 1;
+        configUtils.set('bulkEmail:batchSize', 1);
         await testEmailBatches({
             mobiledoc: mobileDocExample
         }, null, [
@@ -561,7 +560,7 @@ describe('Batch sending tests', function () {
     });
 
     it('Splits up in batches according to email provider batch size with paid and free segments', async function () {
-        MailgunEmailProvider.BATCH_SIZE = 1;
+        configUtils.set('bulkEmail:batchSize', 1);
         await testEmailBatches({
             mobiledoc: mobileDocWithPaidMemberOnly
         }, null, [
@@ -577,7 +576,7 @@ describe('Batch sending tests', function () {
     });
 
     it('One failed batch marks the email as failed and allows for a retry', async function () {
-        MailgunEmailProvider.BATCH_SIZE = 1;
+        configUtils.set('bulkEmail:batchSize', 1);
         let counter = 0;
         stubbedSend = async function () {
             counter += 1;
