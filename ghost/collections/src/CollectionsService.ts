@@ -212,6 +212,7 @@ export class CollectionsService {
     }
 
     private async removePostFromAllCollections(postId: string) {
+        // @NOTE: can be optimized by having a "getByPostId" method on the collections repository
         const collections = await this.collectionsRepository.getAll();
 
         for (const collection of collections) {
