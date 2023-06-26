@@ -686,10 +686,19 @@ test.describe('Image card', async () => {
                                 <div>
                                     <div data-kg="editor">
                                         <div contenteditable="true" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true" role="textbox">
-                                            <p><br /></p>
+                                        <p dir="ltr">
+                                        <span data-lexical-text="true">Photo by</span>
+                                        <a href="https://unsplash.com/@jamillatrach" dir="ltr">
+                                            <span data-lexical-text="true">Latrach Med Jamil</span>
+                                        </a>
+                                        <span data-lexical-text="true">on</span>
+                                        <a
+                                          href="https://unsplash.com/?utm_source=ghost&amp;utm_medium=referral&amp;utm_campaign=api-credit"
+                                          dir="ltr">
+                                          <span data-lexical-text="true">Unsplash</span>
+                                        </a>
                                         </div>
                                     </div>
-                                    <div>Type caption for image (optional)</div>
                                 </div>
                             </div>
                             <button name="alt-toggle-button" type="button">Alt</button>
