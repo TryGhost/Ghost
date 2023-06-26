@@ -59,7 +59,7 @@ function validateTwitterUrl(newUrl: string) {
     }
 }
 
-const SocialAccounts: React.FC = () => {
+const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
         localSettings,
         isEditing,
@@ -158,9 +158,9 @@ const SocialAccounts: React.FC = () => {
         <SettingGroup
             description='Link your social accounts for full structured data and rich card support'
             isEditing={isEditing}
+            keywords={keywords}
             navid='social-accounts'
             saveState={saveState}
-            searchKeywords={['social', 'accounts', 'facebook', 'twitter', 'structured data', 'rich cards']}
             testId='social-accounts'
             title='Social accounts'
             onCancel={handleCancel}

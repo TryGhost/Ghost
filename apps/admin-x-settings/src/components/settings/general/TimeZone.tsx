@@ -34,7 +34,7 @@ const Hint: React.FC<HintProps> = ({timezone}) => {
     );
 };
 
-const TimeZone: React.FC = () => {
+const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
         localSettings,
         isEditing,
@@ -85,9 +85,9 @@ const TimeZone: React.FC = () => {
         <SettingGroup
             description='Set the time and date of your publication, used for all published posts'
             isEditing={isEditing}
+            keywords={keywords}
             navid='timezone'
             saveState={saveState}
-            searchKeywords={['time', 'date', 'timezone', 'time zone']}
             testId='timezone'
             title='Site timezone'
             onCancel={handleCancel}

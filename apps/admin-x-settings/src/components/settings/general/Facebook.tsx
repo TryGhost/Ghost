@@ -9,7 +9,7 @@ import {ReactComponent as FacebookLogo} from '../../../admin-x-ds/assets/images/
 import {FileService, ServicesContext} from '../../providers/ServiceProvider';
 import {getSettingValues} from '../../../utils/helpers';
 
-const Facebook: React.FC = () => {
+const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
         localSettings,
         isEditing,
@@ -100,9 +100,9 @@ const Facebook: React.FC = () => {
         <SettingGroup
             description='Customize structured data of your site'
             isEditing={isEditing}
+            keywords={keywords}
             navid='facebook'
             saveState={saveState}
-            searchKeywords={['facebook card', 'structured data', 'rich cards']}
             testId='facebook'
             title='Facebook card'
             onCancel={handleCancel}

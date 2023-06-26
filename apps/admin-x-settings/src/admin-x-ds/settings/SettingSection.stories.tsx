@@ -17,7 +17,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
     args: {
         title: 'Section header',
-        children: 
+        children:
         <>
             <SettingGroup {...SettingGroupStories.SingleColumn.args} />
             <SettingGroup {...SettingGroupStories.Editing.args} />

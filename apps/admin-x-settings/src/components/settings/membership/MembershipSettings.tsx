@@ -3,11 +3,16 @@ import Analytics from './Analytics';
 import React from 'react';
 import SettingSection from '../../../admin-x-ds/settings/SettingSection';
 
+const searchKeywords = {
+    access: ['access', 'subscription', 'post'],
+    analytics: ['analytics', 'tracking', 'privacy']
+};
+
 const MembershipSettings: React.FC = () => {
     return (
-        <SettingSection title='Membership'>
-            <Access />
-            <Analytics />
+        <SettingSection keywords={Object.values(searchKeywords).flat()} title='Membership'>
+            <Access keywords={searchKeywords.access} />
+            <Analytics keywords={searchKeywords.analytics} />
         </SettingSection>
     );
 };

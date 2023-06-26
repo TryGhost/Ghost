@@ -5,7 +5,7 @@ import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {getSettingValues} from '../../../utils/helpers';
 
-const PublicationLanguage: React.FC = () => {
+const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
         localSettings,
         isEditing,
@@ -57,9 +57,9 @@ const PublicationLanguage: React.FC = () => {
         <SettingGroup
             description="Set the language/locale which is used on your site"
             isEditing={isEditing}
+            keywords={keywords}
             navid='publication-language'
             saveState={saveState}
-            searchKeywords={['language', 'locale']}
             testId='publication-language'
             title="Publication Language"
             onCancel={handleCancel}

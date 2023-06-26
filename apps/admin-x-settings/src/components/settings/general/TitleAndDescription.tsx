@@ -6,7 +6,7 @@ import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {getSettingValues} from '../../../utils/helpers';
 
-const TitleAndDescription: React.FC = () => {
+const TitleAndDescription: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
         localSettings,
         isEditing,
@@ -69,9 +69,9 @@ const TitleAndDescription: React.FC = () => {
         <SettingGroup
             description='The details used to identify your publication around the web'
             isEditing={isEditing}
+            keywords={keywords}
             navid='title-and-description'
             saveState={saveState}
-            searchKeywords={['site title', 'site description']}
             testId='title-and-description'
             title='Title & description'
             onCancel={handleCancel}
