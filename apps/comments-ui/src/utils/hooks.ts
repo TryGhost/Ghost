@@ -1,13 +1,13 @@
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {formatRelativeTime} from './helpers';
 import {useAppContext} from '../AppContext';
-import {useCallback, useEffect, useMemo, useRef} from 'react';
 
 /**
  * Execute a callback when a ref is set and unset.
  * Warning: make sure setup and clear are both functions that do not change on every rerender. So use useCallback if required on them.
  */
-export function useRefCallback(setup, clear) {
-    const ref = useRef(null);
+export function useRefCallback<T>(setup: (element: T) => void, clear: (element: T) => void) {
+    const ref = useRef<T | null>(null);
     const setRef = useCallback((node) => {
         if (ref.current && clear) {
             // Make sure to cleanup any events/references added to the last instance
@@ -31,7 +31,7 @@ export function useRefCallback(setup, clear) {
  * @param {Same} fn
  * @param {*} inputs
 */
-export function useSecondUpdate(fn, inputs) {
+export function useSecondUpdate(fn: () => void, inputs: React.DependencyList) {
     const didMountRef = useRef(0);
 
     useEffect(() => {
@@ -44,7 +44,7 @@ export function useSecondUpdate(fn, inputs) {
     }, inputs);
 }
 
-export function usePopupOpen(type) {
+export function usePopupOpen(type: string) {
     const {popup} = useAppContext();
     return popup?.type === type;
 }
@@ -52,7 +52,7 @@ export function usePopupOpen(type) {
 /**
  * Avoids a rerender of the relative time unless the date changed, and not the current timestamp changed
  */
-export function useRelativeTime(dateString) {
+export function useRelativeTime(dateString: string) {
     return useMemo(() => {
         return formatRelativeTime(dateString);
     }, [dateString]);

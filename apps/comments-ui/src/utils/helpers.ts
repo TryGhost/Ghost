@@ -1,4 +1,15 @@
-export const createPopupNotification = ({type, status, autoHide, duration = 2600, closeable, state, message, meta = {}}) => {
+import {Comment, PopupNotification} from '../AppContext';
+
+export const createPopupNotification = ({type, status, autoHide, duration = 2600, closeable, state, message, meta = {}}: {
+    type: string,
+    status: string,
+    autoHide: boolean,
+    duration?: number,
+    closeable: boolean,
+    state: any,
+    message: string,
+    meta?: any
+}): PopupNotification => {
     let count = 0;
     if (state && state.popupNotification) {
         count = (state.popupNotification.count || 0) + 1;
@@ -15,7 +26,7 @@ export const createPopupNotification = ({type, status, autoHide, duration = 2600
     };
 };
 
-export function formatNumber(number) {
+export function formatNumber(number: number): string {
     if (number !== 0 && !number) {
         return '';
     }
@@ -24,7 +35,7 @@ export function formatNumber(number) {
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
-export function formatRelativeTime(dateString) {
+export function formatRelativeTime(dateString: string): string {
     const date = new Date(dateString);
     const now = new Date();
 
@@ -82,7 +93,7 @@ export function formatRelativeTime(dateString) {
     return `${Math.floor(diff)} weeks ago`;
 }
 
-export function formatExplicitTime(dateString) {
+export function formatExplicitTime(dateString: string): string {
     const date = new Date(dateString);
 
     let day = date.toLocaleDateString('en-us', {day: '2-digit'}); // eg. 01
@@ -94,7 +105,7 @@ export function formatExplicitTime(dateString) {
     return `${day} ${month} ${year} ${hour}:${minute}`;
 }
 
-export function getInitials(name) {
+export function getInitials(name: string): string {
     if (!name) {
         return '';
     }
@@ -117,22 +128,22 @@ export function isMobile() {
     return (Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) < 480);
 }
 
-export function isCommentPublished(comment) {
+export function isCommentPublished(comment: Comment) {
     return comment.status === 'published';
 }
 
 /**
  * Returns the y scroll position (top) of the main window of a given element that is in one or multiple stacked iframes
  */
-export const getScrollToPosition = (element) => {
+export const getScrollToPosition = (element: HTMLElement) => {
     let yOffset = 0;
 
     // Because we are working in an iframe, we need to resolve the position inside this iframe to the position in the top window
     // Get the window of the element, not the window (which is the top window)
-    let currentWindow = element.ownerDocument.defaultView;
+    let currentWindow: Window | null = element.ownerDocument.defaultView;
 
     // Loop all iframe parents (if we have multiple)
-    while (currentWindow !== window) {
+    while (currentWindow && currentWindow !== window) {
         const currentParentWindow = currentWindow.parent;
         for (let idx = 0; idx < currentParentWindow.frames.length; idx++) {
             if (currentParentWindow.frames[idx] === currentWindow) {
@@ -155,7 +166,7 @@ export const getScrollToPosition = (element) => {
 /**
  * Scroll to an element that is in an iframe, only if it is outside the current viewport
  */
-export const scrollToElement = (element) => {
+export const scrollToElement = (element: HTMLElement) => {
     // Is the form already in view?
     const elementHeight = element.offsetHeight;
 
