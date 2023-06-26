@@ -1,26 +1,47 @@
+import {CustomThemeSettingsResponseType, ImagesResponseType, InvitesResponseType, RolesResponseType, SettingsResponseType, SiteResponseType, UsersResponseType} from '../../src/utils/api';
 import {Page, Request} from '@playwright/test';
 import {readFileSync} from 'fs';
 
-const responseFixtures = {
-    settings: JSON.parse(readFileSync(`${__dirname}/responses/settings.json`).toString()),
-    site: JSON.parse(readFileSync(`${__dirname}/responses/site.json`).toString()),
-    custom_theme_settings: JSON.parse(readFileSync(`${__dirname}/responses/custom_theme_settings.json`).toString())
+export const responseFixtures = {
+    settings: JSON.parse(readFileSync(`${__dirname}/responses/settings.json`).toString()) as SettingsResponseType,
+    users: JSON.parse(readFileSync(`${__dirname}/responses/users.json`).toString()) as UsersResponseType,
+    me: JSON.parse(readFileSync(`${__dirname}/responses/me.json`).toString()) as UsersResponseType,
+    roles: JSON.parse(readFileSync(`${__dirname}/responses/roles.json`).toString()) as RolesResponseType,
+    site: JSON.parse(readFileSync(`${__dirname}/responses/site.json`).toString()) as SiteResponseType,
+    invites: JSON.parse(readFileSync(`${__dirname}/responses/invites.json`).toString()) as InvitesResponseType,
+    custom_theme_settings: JSON.parse(readFileSync(`${__dirname}/responses/custom_theme_settings.json`).toString()) as CustomThemeSettingsResponseType
 };
 
 interface Responses {
     settings?: {
-        browse?: any
-        edit?: any
+        browse?: SettingsResponseType
+        edit?: SettingsResponseType
+    }
+    users?: {
+        browse?: UsersResponseType
+        currentUser?: UsersResponseType
+        edit?: UsersResponseType
+        delete?: UsersResponseType
+        updatePassword?: UsersResponseType
+        makeOwner?: UsersResponseType
+    }
+    roles?: {
+        browse?: RolesResponseType
+    }
+    invites?: {
+        browse?: InvitesResponseType
+        add?: InvitesResponseType
+        delete?: InvitesResponseType
     }
     site?: {
-        browse?: any
+        browse?: SiteResponseType
     }
     images?: {
-        upload?: any
+        upload?: ImagesResponseType
     }
     custom_theme_settings?: {
-        browse?: any
-        edit?: any
+        browse?: CustomThemeSettingsResponseType
+        edit?: CustomThemeSettingsResponseType
     }
     previewHtml?: {
         homepage?: string
@@ -37,6 +58,22 @@ type LastRequests = {
     settings: {
         browse: RequestRecord
         edit: RequestRecord
+    }
+    users: {
+        browse: RequestRecord
+        currentUser: RequestRecord
+        edit: RequestRecord
+        delete: RequestRecord
+        updatePassword: RequestRecord
+        makeOwner: RequestRecord
+    }
+    roles: {
+        browse: RequestRecord
+    }
+    invites: {
+        browse: RequestRecord
+        add: RequestRecord
+        delete: RequestRecord
     }
     site: {
         browse: RequestRecord
@@ -56,6 +93,9 @@ type LastRequests = {
 export async function mockApi({page,responses}: {page: Page, responses?: Responses}) {
     const lastApiRequests: LastRequests = {
         settings: {browse: {}, edit: {}},
+        users: {browse: {}, currentUser: {}, edit: {}, delete: {}, updatePassword: {}, makeOwner: {}},
+        roles: {browse: {}},
+        invites: {browse: {}, add: {}, delete: {}},
         site: {browse: {}},
         images: {upload: {}},
         custom_theme_settings: {browse: {}, edit: {}},
@@ -79,6 +119,76 @@ export async function mockApi({page,responses}: {page: Page, responses?: Respons
 
     await mockApiResponse({
         page,
+        path: /\/ghost\/api\/admin\/users\/\?/,
+        respondTo: {
+            GET: {
+                body: responses?.users?.browse ?? responseFixtures.users,
+                updateLastRequest: lastApiRequests.users.browse
+            }
+        }
+    });
+
+    await mockApiResponse({
+        page,
+        path: /\/ghost\/api\/admin\/users\/me\//,
+        respondTo: {
+            GET: {
+                body: responses?.users?.currentUser ?? responseFixtures.me,
+                updateLastRequest: lastApiRequests.users.currentUser
+            }
+        }
+    });
+
+    await mockApiResponse({
+        page,
+        path: /\/ghost\/api\/admin\/users\/(\d+|\w{24})\//,
+        respondTo: {
+            PUT: {
+                body: responses?.users?.edit ?? responseFixtures.users,
+                updateLastRequest: lastApiRequests.users.edit
+            },
+            DELETE: {
+                body: responses?.users?.delete ?? responseFixtures.users,
+                updateLastRequest: lastApiRequests.users.delete
+            }
+        }
+    });
+
+    await mockApiResponse({
+        page,
+        path: /\/ghost\/api\/admin\/users\/owner\//,
+        respondTo: {
+            PUT: {
+                body: responses?.users?.makeOwner ?? responseFixtures.users,
+                updateLastRequest: lastApiRequests.users.makeOwner
+            }
+        }
+    });
+
+    await mockApiResponse({
+        page,
+        path: /\/ghost\/api\/admin\/users\/password\//,
+        respondTo: {
+            PUT: {
+                body: responses?.users?.updatePassword ?? responseFixtures.users,
+                updateLastRequest: lastApiRequests.users.updatePassword
+            }
+        }
+    });
+
+    await mockApiResponse({
+        page,
+        path: /\/ghost\/api\/admin\/roles\/\?/,
+        respondTo: {
+            GET: {
+                body: responses?.roles?.browse ?? responseFixtures.roles,
+                updateLastRequest: lastApiRequests.roles.browse
+            }
+        }
+    });
+
+    await mockApiResponse({
+        page,
         path: /\/ghost\/api\/admin\/site\//,
         respondTo: {
             GET: {
@@ -95,6 +205,32 @@ export async function mockApi({page,responses}: {page: Page, responses?: Respons
             POST: {
                 body: responses?.images?.upload ?? {images: [{url: 'http://example.com/image.png', ref: null}]},
                 updateLastRequest: lastApiRequests.images.upload
+            }
+        }
+    });
+
+    await mockApiResponse({
+        page,
+        path: /\/ghost\/api\/admin\/invites\//,
+        respondTo: {
+            GET: {
+                body: responses?.invites?.browse ?? responseFixtures.invites,
+                updateLastRequest: lastApiRequests.invites.browse
+            },
+            POST: {
+                body: responses?.invites?.add ?? responseFixtures.invites,
+                updateLastRequest: lastApiRequests.invites.add
+            }
+        }
+    });
+
+    await mockApiResponse({
+        page,
+        path: /\/ghost\/api\/admin\/invites\/\w{24}\//,
+        respondTo: {
+            DELETE: {
+                body: responses?.invites?.delete ?? responseFixtures.invites,
+                updateLastRequest: lastApiRequests.invites.delete
             }
         }
     });
