@@ -3,7 +3,6 @@ import {CollectionResourceChangeEvent} from './CollectionResourceChangeEvent';
 import {CollectionRepository} from './CollectionRepository';
 import tpl from '@tryghost/tpl';
 import {MethodNotAllowedError, NotFoundError} from '@tryghost/errors';
-import DomainEvents from '@tryghost/domain-events';
 import {PostDeletedEvent} from './events/PostDeletedEvent';
 import {PostAddedEvent} from './events/PostAddedEvent';
 
@@ -21,6 +20,9 @@ const messages = {
 type CollectionsServiceDeps = {
     collectionsRepository: CollectionRepository;
     postsRepository: PostsRepository;
+    DomainEvents: {
+        subscribe: (event: any, handler: (e: any) => void) => void;
+    };
 };
 
 type CollectionPostDTO = {
@@ -87,10 +89,14 @@ interface PostsRepository {
 export class CollectionsService {
     private collectionsRepository: CollectionRepository;
     private postsRepository: PostsRepository;
+    private DomainEvents: {
+        subscribe: (event: any, handler: (e: any) => void) => void;
+    };
 
     constructor(deps: CollectionsServiceDeps) {
         this.collectionsRepository = deps.collectionsRepository;
         this.postsRepository = deps.postsRepository;
+        this.DomainEvents = deps.DomainEvents;
     }
 
     private toDTO(collection: Collection): CollectionDTO {
@@ -136,15 +142,15 @@ export class CollectionsService {
     subscribeToEvents() {
         // generic handler for all events that are not handled optimally yet
         // this handler should go away once we have logic fo reach event
-        DomainEvents.subscribe(CollectionResourceChangeEvent, async () => {
+        this.DomainEvents.subscribe(CollectionResourceChangeEvent, async () => {
             await this.updateCollections();
         });
 
-        DomainEvents.subscribe(PostDeletedEvent, async (event: PostDeletedEvent) => {
+        this.DomainEvents.subscribe(PostDeletedEvent, async (event: PostDeletedEvent) => {
             await this.removePostFromAllCollections(event.id);
         });
 
-        DomainEvents.subscribe(PostAddedEvent, async (event: PostAddedEvent) => {
+        this.DomainEvents.subscribe(PostAddedEvent, async (event: PostAddedEvent) => {
             await this.addPostToMatchingCollections(event.data);
         });
     }
