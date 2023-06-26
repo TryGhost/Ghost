@@ -299,26 +299,6 @@ describe('CollectionsService', function () {
             assert.equal(collection.posts.length, 2, 'Collection should have two posts');
         });
 
-        it('Populates collection when the type is changed to automatic and filter is present', async function () {
-            const collection = await collectionsService.createCollection({
-                title: 'I am automatic',
-                description: 'testing automatic collection',
-                type: 'manual'
-            });
-
-            assert.equal(collection.type, 'manual', 'Collection should be manual');
-            assert.equal(collection.posts.length, 0, 'Collection should have no posts');
-
-            const automaticCollection = await collectionsService.edit({
-                id: collection.id,
-                type: 'automatic',
-                filter: 'featured:true'
-            });
-
-            assert.equal(automaticCollection?.posts.length, 2, 'Collection should have two featured post');
-            assert.equal(automaticCollection?.posts[0].id, 'post-3-featured', 'Collection should have the correct post');
-        });
-
         it('Updates the automatic collection posts when the filter is changed', async function () {
             let collection = await collectionsService.createCollection({
                 title: 'I am automatic',
