@@ -1,15 +1,15 @@
-import AppContext from '../../../AppContext';
 import SecundaryForm from './SecundaryForm';
 import {default as React, useCallback, useContext, useEffect} from 'react';
 import {getEditorConfig} from '../../../utils/editor';
+import {useAppContext} from '../../../AppContext';
 import {useEditor} from '@tiptap/react';
 
 const EditForm = ({comment, parent, close}) => {
-    const {dispatchAction} = useContext(AppContext);
+    const {dispatchAction} = useAppContext();
 
     const config = {
         placeholder: 'Edit this comment',
-        // warning: we cannot use autofocus on the edit field, because that sets 
+        // warning: we cannot use autofocus on the edit field, because that sets
         // the cursor position at the beginning of the text field instead of the end
         autofocus: false,
         content: comment.html

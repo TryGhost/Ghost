@@ -1,11 +1,11 @@
-import AppContext from '../../AppContext';
-import React, {useContext, useEffect} from 'react';
 import {PopupFrame} from '../Frame';
 import {Transition} from '@headlessui/react';
+import {useAppContext} from '../../AppContext';
+import {useEffect} from 'react';
 
 const GenericPopup = ({show, children, title, callback}) => {
     // The modal will cover the whole screen, so while it is hidden, we need to disable pointer events
-    const {dispatchAction} = useContext(AppContext);
+    const {dispatchAction} = useAppContext();
 
     const close = (event) => {
         dispatchAction('closePopup');

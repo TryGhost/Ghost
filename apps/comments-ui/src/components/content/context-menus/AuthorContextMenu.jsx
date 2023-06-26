@@ -1,8 +1,8 @@
-import AppContext from '../../../AppContext';
 import React, {useContext} from 'react';
+import {useAppContext} from '../../../AppContext';
 
 const AuthorContextMenu = ({comment, close, toggleEdit}) => {
-    const {dispatchAction} = useContext(AppContext);
+    const {dispatchAction} = useAppContext();
 
     const deleteComment = (event) => {
         dispatchAction('deleteComment', comment);

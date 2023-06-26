@@ -3,34 +3,43 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {ROOT_DIV_ID} from './utils/constants';
 
-function addRootDiv() {
-    let scriptTag = document.currentScript;
+function getScriptTag(): HTMLElement {
+    let scriptTag = document.currentScript as HTMLElement | null;
 
     if (!scriptTag && import.meta.env.DEV) {
         // In development mode, use any script tag (because in ESM mode, document.currentScript is not set)
         scriptTag = document.querySelector('script[data-ghost-comments]');
     }
 
-    // We need to inject the comment box at the same place as the script tag
-    if (scriptTag) {
-        const elem = document.createElement('div');
-        elem.id = ROOT_DIV_ID;
-        scriptTag.parentElement.insertBefore(elem, scriptTag);
-    } else if (import.meta.env.DEV) {
-        const elem = document.createElement('div');
-        elem.id = ROOT_DIV_ID;
-        document.body.appendChild(elem);
-    } else {
-        // eslint-disable-next-line no-console
-        console.warn('[Comments] Comment box location was not found: could not load comments box.');
+    if (!scriptTag) {
+        throw new Error('[Comments-UI] Cannot find current script tag');
     }
+
+    return scriptTag;
 }
 
-function getSiteData() {
+/**
+ * Returns a div to mount the React application into, creating it if necessary
+ */
+function getRootDiv(scriptTag: HTMLElement) {
+    if (scriptTag.previousElementSibling && scriptTag.previousElementSibling.id === ROOT_DIV_ID) {
+        return scriptTag.previousElementSibling;
+    }
+
+    if (!scriptTag.parentElement) {
+        throw new Error('[Comments-UI] Script tag does not have a parent element');
+    }
+
+    const elem = document.createElement('div');
+    elem.id = ROOT_DIV_ID;
+    scriptTag.parentElement.insertBefore(elem, scriptTag);
+    return elem;
+}
+
+function getSiteData(scriptTag: HTMLElement) {
     /**
      * @type {HTMLElement}
      */
-    const scriptTag = document.querySelector('script[data-ghost-comments]');
     let dataset = scriptTag?.dataset;
 
     if (!scriptTag && process.env.NODE_ENV === 'development') {
@@ -64,24 +73,22 @@ function handleTokenUrl() {
     }
 }
 
-function setup({siteUrl}) {
-    addRootDiv();
-    handleTokenUrl();
-}
-
 function init() {
+    const scriptTag = getScriptTag();
+    const root = getRootDiv(scriptTag);
+
     // const customSiteUrl = getSiteUrl();
-    const {siteUrl: customSiteUrl, ...siteData} = getSiteData();
+    const {siteUrl: customSiteUrl, ...siteData} = getSiteData(scriptTag);
     const siteUrl = customSiteUrl || window.location.origin;
 
     try {
-        setup({siteUrl});
+        handleTokenUrl();
 
         ReactDOM.render(
             <React.StrictMode>
                 {<App customSiteUrl={customSiteUrl} siteUrl={siteUrl} {...siteData} />}
             </React.StrictMode>,
-            document.getElementById(ROOT_DIV_ID)
+            root
         );
     } catch (e) {
         // eslint-disable-next-line no-console

@@ -1,6 +1,6 @@
-import AppContext from '../AppContext';
 import {formatRelativeTime} from './helpers';
-import {useCallback, useContext, useEffect, useMemo, useRef} from 'react';
+import {useAppContext} from '../AppContext';
+import {useCallback, useEffect, useMemo, useRef} from 'react';
 
 /**
  * Execute a callback when a ref is set and unset.
@@ -13,13 +13,13 @@ export function useRefCallback(setup, clear) {
             // Make sure to cleanup any events/references added to the last instance
             clear(ref.current);
         }
-        
+
         if (node && setup) {
             // Check if a node is actually passed. Otherwise node would be null.
             // You can now do what you need to, addEventListeners, measure, etc.
             setup(node);
         }
-        
+
         // Save a reference to the node
         ref.current = node;
     }, [setup, clear]);
@@ -28,14 +28,14 @@ export function useRefCallback(setup, clear) {
 
 /**
  * Sames as useEffect, but ignores the first mounted call and the first update (so first 2 calls ignored)
- * @param {Same} fn 
- * @param {*} inputs 
+ * @param {Same} fn
+ * @param {*} inputs
 */
 export function useSecondUpdate(fn, inputs) {
     const didMountRef = useRef(0);
-  
+
     useEffect(() => {
-        if (didMountRef.current >= 2) { 
+        if (didMountRef.current >= 2) {
             return fn();
         }
         didMountRef.current += 1;
@@ -45,7 +45,7 @@ export function useSecondUpdate(fn, inputs) {
 }
 
 export function usePopupOpen(type) {
-    const {popup} = useContext(AppContext);
+    const {popup} = useAppContext();
     return popup?.type === type;
 }
 

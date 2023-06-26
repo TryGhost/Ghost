@@ -1,11 +1,11 @@
-import AppContext from '../../../AppContext';
 import Form from './Form';
 import React, {useContext, useEffect} from 'react';
 import {isMobile} from '../../../utils/helpers';
+import {useAppContext} from '../../../AppContext';
 import {useSecondUpdate} from '../../../utils/hooks';
 
 const SecundaryForm = ({editor, submit, close, closeIfNotChanged, submitText, submitSize}) => {
-    const {dispatchAction, secundaryFormCount} = useContext(AppContext);
+    const {dispatchAction, secundaryFormCount} = useAppContext();
 
     // Keep track of the amount of open forms
     useEffect(() => {

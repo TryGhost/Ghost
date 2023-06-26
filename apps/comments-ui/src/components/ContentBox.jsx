@@ -1,8 +1,8 @@
-import AppContext from '../AppContext';
 import Content from './content/Content';
 import Loading from './content/Loading';
 import React, {useContext} from 'react';
 import {ROOT_DIV_ID} from '../utils/constants';
+import {useAppContext} from '../AppContext';
 
 const ContentBox = ({done}) => {
     const luminance = (r, g, b) => {
@@ -20,7 +20,7 @@ const ContentBox = ({done}) => {
         var darkest = Math.min(lum1, lum2);
         return (brightest + 0.05) / (darkest + 0.05);
     };
-    const {accentColor, colorScheme} = useContext(AppContext);
+    const {accentColor, colorScheme} = useAppContext();
 
     const darkMode = () => {
         if (colorScheme === 'light') {

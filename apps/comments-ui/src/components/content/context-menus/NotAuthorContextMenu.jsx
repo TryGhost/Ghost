@@ -1,8 +1,8 @@
-import AppContext from '../../../AppContext';
-import React, {useContext} from 'react';
+import React from 'react';
+import {useAppContext} from '../../../AppContext';
 
 const NotAuthorContextMenu = ({comment, close}) => {
-    const {dispatchAction} = useContext(AppContext);
+    const {dispatchAction} = useAppContext();
 
     const openModal = () => {
         dispatchAction('openPopup', {

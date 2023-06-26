@@ -1,12 +1,12 @@
-import AppContext from '../../../AppContext';
-import Form from './Form';
-import React, {useCallback, useContext, useEffect, useRef} from 'react';
+import {useEditor} from '@tiptap/react';
+import {useCallback, useEffect, useRef} from 'react';
+import {useAppContext} from '../../../AppContext';
 import {getEditorConfig} from '../../../utils/editor';
 import {scrollToElement} from '../../../utils/helpers';
-import {useEditor} from '@tiptap/react';
+import Form from './Form';
 
 const MainForm = ({commentsCount}) => {
-    const {postId, dispatchAction} = useContext(AppContext);
+    const {postId, dispatchAction} = useAppContext();
 
     const config = {
         placeholder: (commentsCount === 0 ? 'Start the conversation' : 'Join the discussion'),

@@ -1,9 +1,9 @@
-import AppContext from '../../AppContext';
 import React, {useContext} from 'react';
 import {formatNumber} from '../../utils/helpers';
+import {useAppContext} from '../../AppContext';
 
 const Pagination = () => {
-    const {pagination, dispatchAction} = useContext(AppContext);
+    const {pagination, dispatchAction} = useAppContext();
 
     const loadMore = () => {
         dispatchAction('loadMoreComments');

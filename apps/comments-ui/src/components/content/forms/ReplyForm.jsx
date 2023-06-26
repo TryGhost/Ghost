@@ -1,13 +1,13 @@
-import AppContext from '../../../AppContext';
 import SecundaryForm from './SecundaryForm';
 import {default as React, useCallback, useContext} from 'react';
 import {getEditorConfig} from '../../../utils/editor';
 import {scrollToElement} from '../../../utils/helpers';
+import {useAppContext} from '../../../AppContext';
 import {useEditor} from '@tiptap/react';
 import {useRefCallback} from '../../../utils/hooks';
 
 const ReplyForm = ({parent, close}) => {
-    const {postId, dispatchAction} = useContext(AppContext);
+    const {postId, dispatchAction} = useAppContext();
     const [, setForm] = useRefCallback(scrollToElement);
 
     const config = {
@@ -18,7 +18,7 @@ const ReplyForm = ({parent, close}) => {
     const editor = useEditor({
         ...getEditorConfig(config)
     });
-    
+
     const submit = useCallback(async ({html}) => {
         // Send comment to server
         await dispatchAction('addReply', {

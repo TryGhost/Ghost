@@ -1,4 +1,3 @@
-import AppContext from '../../AppContext';
 import EditForm from './forms/EditForm';
 import LikeButton from './buttons/LikeButton';
 import MoreButton from './buttons/MoreButton';
@@ -9,6 +8,7 @@ import ReplyForm from './forms/ReplyForm';
 import {Avatar, BlankAvatar} from './Avatar';
 import {Transition} from '@headlessui/react';
 import {formatExplicitTime, isCommentPublished} from '../../utils/helpers';
+import {useAppContext} from '../../AppContext';
 import {useRelativeTime} from '../../utils/hooks';
 
 function AnimatedComment({comment, parent}) {
@@ -59,7 +59,7 @@ function Comment({comment, parent, openEditMode}) {
 
 function PublishedComment({comment, parent, openEditMode}) {
     const [isInReplyMode, setIsInReplyMode] = useState(false);
-    const {dispatchAction} = useContext(AppContext);
+    const {dispatchAction} = useAppContext();
 
     const toggleReplyMode = async () => {
         if (!isInReplyMode) {
@@ -89,7 +89,7 @@ function PublishedComment({comment, parent, openEditMode}) {
 }
 
 function UnpublishedComment({comment, openEditMode}) {
-    const {admin} = useContext(AppContext);
+    const {admin} = useAppContext();
 
     let notPublishedMessage;
     if (admin && comment.status === 'hidden') {
@@ -119,7 +119,7 @@ function UnpublishedComment({comment, openEditMode}) {
 // Helper components
 
 function MemberExpertise({comment}) {
-    const {member} = useContext(AppContext);
+    const {member} = useAppContext();
     const memberExpertise = member && comment.member && comment.member.uuid === member.uuid ? member.expertise : comment?.member?.expertise;
 
     if (!memberExpertise) {
@@ -213,7 +213,7 @@ function CommentBody({html}) {
 function CommentMenu({comment, toggleReplyMode, isInReplyMode, openEditMode, parent}) {
     // If this comment is from the current member, always override member
     // with the member from the context, so we update the expertise in existing comments when we change it
-    const {member, commentsEnabled} = useContext(AppContext);
+    const {member, commentsEnabled} = useAppContext();
 
     const paidOnly = commentsEnabled === 'paid';
     const isPaidMember = member && !!member.paid;

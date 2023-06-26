@@ -1,13 +1,13 @@
-import AppContext from '../../AppContext';
 import CloseButton from './CloseButton';
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import {Transition} from '@headlessui/react';
 import {isMobile} from '../../utils/helpers';
+import {useAppContext} from '../../AppContext';
 
 const AddDetailsPopup = (props) => {
     const inputNameRef = useRef(null);
     const inputExpertiseRef = useRef(null);
-    const {dispatchAction, member, accentColor} = useContext(AppContext);
+    const {dispatchAction, member, accentColor} = useAppContext();
 
     const [name, setName] = useState(member.name ?? '');
     const [expertise, setExpertise] = useState(member.expertise ?? '');

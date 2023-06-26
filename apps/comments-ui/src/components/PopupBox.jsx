@@ -1,10 +1,10 @@
-import AppContext from '../AppContext';
 import GenericPopup from './popups/GenericPopup';
 import Pages from '../pages';
+import {useAppContext} from '../AppContext';
 import {useContext, useEffect, useState} from 'react';
 
-export default function PopupBox() {    
-    const {popup} = useContext(AppContext);
+export default function PopupBox() {
+    const {popup} = useAppContext();
 
     // To make sure we can properly animate a popup that goes away, we keep a state of the last visible popup
     // This way, when the popup context is set to null, we still can show the popup while we transition it away

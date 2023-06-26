@@ -1,7 +1,7 @@
-import AppContext from '../../AppContext';
 import React, {useContext} from 'react';
 import {ReactComponent as AvatarIcon} from '../../images/icons/avatar.svg';
 import {getInitials} from '../../utils/helpers';
+import {useAppContext} from '../../AppContext';
 
 function getDimensionClasses() {
     return 'w-9 h-9 sm:w-[40px] sm:h-[40px]';
@@ -19,7 +19,7 @@ export const BlankAvatar = () => {
 };
 
 export const Avatar = ({comment}) => {
-    const {member, avatarSaturation} = useContext(AppContext);
+    const {member, avatarSaturation} = useAppContext();
     const dimensionClasses = getDimensionClasses();
 
     const memberName = member?.name ?? comment?.member?.name;
@@ -54,7 +54,7 @@ export const Avatar = ({comment}) => {
         const hash = getHashOfString(commentMember.name);
         const h = normalizeHash(hash, hRange[0], hRange[1]);
         const l = normalizeHash(hash, lRange[0], lRange[1]);
-        
+
         return [h, saturation, l];
     };
 
@@ -66,7 +66,7 @@ export const Avatar = ({comment}) => {
         if (comment && !comment.member) {
             return getInitials('Deleted member');
         }
-        
+
         let commentMember = (comment ? comment.member : member);
 
         if (!commentMember || !commentMember.name) {

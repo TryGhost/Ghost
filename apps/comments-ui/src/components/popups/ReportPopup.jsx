@@ -1,11 +1,11 @@
-import AppContext from '../../AppContext';
-import CloseButton from './CloseButton';
-import React, {useContext, useState} from 'react';
+import {useState} from 'react';
+import {useAppContext} from '../../AppContext';
 import {ReactComponent as SpinnerIcon} from '../../images/icons/spinner.svg';
 import {ReactComponent as SuccessIcon} from '../../images/icons/success.svg';
+import CloseButton from './CloseButton';
 
 const ReportPopup = (props) => {
-    const {dispatchAction} = useContext(AppContext);
+    const {dispatchAction} = useAppContext();
     const [progress, setProgress] = useState('default');
 
     let buttonColor = 'bg-red-600';

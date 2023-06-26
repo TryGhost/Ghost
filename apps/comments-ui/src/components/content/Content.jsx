@@ -1,4 +1,3 @@
-import AppContext from '../../AppContext';
 import CTABox from './CTABox';
 import Comment from './Comment';
 import ContentTitle from './ContentTitle';
@@ -6,9 +5,10 @@ import MainForm from './forms/MainForm';
 import Pagination from './Pagination';
 import React, {useContext, useEffect} from 'react';
 import {ROOT_DIV_ID} from '../../utils/constants';
+import {useAppContext} from '../../AppContext';
 
 const Content = () => {
-    const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, secundaryFormCount} = useContext(AppContext);
+    const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, secundaryFormCount} = useAppContext();
     const commentsElements = comments.slice().reverse().map(comment => <Comment key={comment.id} comment={comment} />);
 
     const paidOnly = commentsEnabled === 'paid';

@@ -1,10 +1,10 @@
-import AppContext from '../../../AppContext';
 import React, {useCallback, useContext, useEffect, useRef, useState} from 'react';
 import {Avatar} from '../Avatar';
 import {ReactComponent as EditIcon} from '../../../images/icons/edit.svg';
 import {EditorContent} from '@tiptap/react';
 import {ReactComponent as SpinnerIcon} from '../../../images/icons/spinner.svg';
 import {Transition} from '@headlessui/react';
+import {useAppContext} from '../../../AppContext';
 import {usePopupOpen} from '../../../utils/hooks';
 
 const FormEditor = ({submit, progress, setProgress, close, reduced, isOpen, editor, submitText, submitSize}) => {
@@ -148,7 +148,7 @@ const FormHeader = ({show, name, expertise, editName, editExpertise}) => {
 };
 
 const Form = ({comment, submit, submitText, submitSize, close, editor, reduced, isOpen}) => {
-    const {member, dispatchAction} = useContext(AppContext);
+    const {member, dispatchAction} = useAppContext();
     const isAskingDetails = usePopupOpen('addDetailsPopup');
     const [progress, setProgress] = useState('default');
     const formEl = useRef(null);

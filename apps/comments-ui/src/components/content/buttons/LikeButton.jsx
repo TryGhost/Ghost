@@ -1,9 +1,9 @@
-import AppContext from '../../../AppContext';
+import {useState} from 'react';
+import {useAppContext} from '../../../AppContext';
 import {ReactComponent as LikeIcon} from '../../../images/icons/like.svg';
-import {useContext, useState} from 'react';
 
 function LikeButton({comment}) {
-    const {dispatchAction, member, commentsEnabled} = useContext(AppContext);
+    const {dispatchAction, member, commentsEnabled} = useAppContext();
     const [animationClass, setAnimation] = useState('');
 
     const paidOnly = commentsEnabled === 'paid';

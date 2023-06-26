@@ -1,10 +1,10 @@
-import AppContext from '../../AppContext';
 import Comment from './Comment';
 import RepliesPagination from './RepliesPagination';
+import {useAppContext} from '../../AppContext';
 import {useContext} from 'react';
 
 const Replies = ({comment}) => {
-    const {dispatchAction} = useContext(AppContext);
+    const {dispatchAction} = useAppContext();
 
     const repliesLeft = comment.count.replies - comment.replies.length;
 

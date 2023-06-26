@@ -1,8 +1,8 @@
-import AppContext from '../../AppContext';
+import {useAppContext} from '../../AppContext';
 import {useContext} from 'react';
 
 const CTABox = ({isFirst, isPaid}) => {
-    const {accentColor, publication, member} = useContext(AppContext);
+    const {accentColor, publication, member} = useAppContext();
 
     const buttonStyle = {
         backgroundColor: accentColor

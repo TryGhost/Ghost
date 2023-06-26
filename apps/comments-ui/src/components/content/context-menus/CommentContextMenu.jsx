@@ -1,11 +1,11 @@
 import AdminContextMenu from './AdminContextMenu';
-import AppContext from '../../../AppContext';
 import AuthorContextMenu from './AuthorContextMenu';
 import NotAuthorContextMenu from './NotAuthorContextMenu';
 import React, {useContext, useEffect, useRef} from 'react';
+import {useAppContext} from '../../../AppContext';
 
 const CommentContextMenu = ({comment, close, toggleEdit}) => {
-    const {member, admin} = useContext(AppContext);
+    const {member, admin} = useAppContext();
     const isAuthor = member && comment.member?.uuid === member?.uuid;
     const isAdmin = !!admin;
     const element = useRef();

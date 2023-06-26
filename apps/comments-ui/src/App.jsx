@@ -1,9 +1,9 @@
-import AppContext from './AppContext';
 import ContentBox from './components/ContentBox';
 import PopupBox from './components/PopupBox';
 import React from 'react';
 import setupGhostApi from './utils/api';
 import {ActionHandler, SyncActionHandler, isSyncAction} from './actions';
+import {AppContext} from './AppContext';
 import {CommentsFrame} from './components/Frame';
 import {createPopupNotification} from './utils/helpers';
 import {hasMode} from './utils/check-mode';

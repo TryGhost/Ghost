@@ -1,13 +1,21 @@
-import React, {Component} from 'react';
+import {Component} from 'react';
 import {createPortal} from 'react-dom';
 
-export default class IFrame extends Component {
-    constructor() {
-        super();
+/**
+ * This is still a class component because it causes issues with the behaviour (DOM recreation and layout glitches) if we switch to a functional component. Feel free to refactor.
+ */
+export default class IFrame extends Component<any> {
+    node: any;
+    iframeHtml: any;
+    iframeHead: any;
+    iframeRoot: any;
+
+    constructor(props: {onResize?: (el: HTMLElement) => void, children: any}) {
+        super(props);
         this.setNode = this.setNode.bind(this);
         this.node = null;
     }
-    
+
     componentDidMount() {
         this.node.addEventListener('load', this.handleLoad);
     }
@@ -35,7 +43,7 @@ export default class IFrame extends Component {
             // because when we want to listen for keydown events, those are only send in the window of iframe that is focused
             // To get around this, we pass down the keydown events to the main window
             // No need to detach, because the iframe would get removed
-            this.node.contentWindow.addEventListener('keydown', (e) => {              
+            this.node.contentWindow.addEventListener('keydown', (e: KeyboardEvent | undefined) => {
                 // dispatch a new event
                 window.dispatchEvent(
                     new KeyboardEvent('keydown', e)
@@ -44,8 +52,8 @@ export default class IFrame extends Component {
         }
     }
 
-    setNode(node) {
-        this.node = node; 
+    setNode(node: any) {
+        this.node = node;
     }
 
     render() {
