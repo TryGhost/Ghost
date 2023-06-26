@@ -52,9 +52,9 @@ export class VideoNode extends BaseVideoNode {
         }
     }
 
-    setTriggerFileDialog(shouldTrigger) {
+    set triggerFileDialog(shouldTrigger) {
         const writable = this.getWritable();
-        return writable.__triggerFileDialog = shouldTrigger;
+        writable.__triggerFileDialog = shouldTrigger;
     }
 
     getDataset() {

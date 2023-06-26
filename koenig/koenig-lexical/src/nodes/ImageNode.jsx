@@ -111,9 +111,9 @@ export class ImageNode extends BaseImageNode {
         writable.__previewSrc = previewSrc;
     }
 
-    setTriggerFileDialog(shouldTrigger) {
+    set triggerFileDialog(shouldTrigger) {
         const writable = this.getWritable();
-        return writable.__triggerFileDialog = shouldTrigger;
+        writable.__triggerFileDialog = shouldTrigger;
     }
 
     createDOM() {

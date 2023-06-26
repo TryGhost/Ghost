@@ -186,7 +186,7 @@ export function VideoNodeComponent({
             // clear the property on the node so we don't accidentally trigger anything with a re-render
             editor.update(() => {
                 const node = $getNodeByKey(nodeKey);
-                node.setTriggerFileDialog(false);
+                node.triggerFileDialog = false;
             });
         });
 
