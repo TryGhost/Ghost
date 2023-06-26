@@ -225,8 +225,20 @@ describe('Mailgun Email Provider', function () {
     });
 
     describe('getMaximumRecipients', function () {
+        let mailgunClient;
+        let getBatchSizeStub;
+
         it('returns 1000', function () {
-            const provider = new MailgunEmailProvider({});
+            getBatchSizeStub = sinon.stub().returns(1000);
+
+            mailgunClient = {
+                getBatchSize: getBatchSizeStub
+            };
+            
+            const provider = new MailgunEmailProvider({
+                mailgunClient,
+                errorHandler: () => {}
+            });
             assert.equal(provider.getMaximumRecipients(), 1000);
         });
     });
