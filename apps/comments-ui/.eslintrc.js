@@ -5,9 +5,11 @@ module.exports = {
         'react-app',
         'plugin:ghost/browser'
     ],
+    parser: '@typescript-eslint/parser',
     plugins: [
         'ghost',
-        'tailwindcss'
+        'tailwindcss',
+        '@typescript-eslint'
     ],
     rules: {
         // sort multiple import lines into alphabetical groups
@@ -37,5 +39,19 @@ module.exports = {
         'tailwindcss/no-arbitrary-value': 'off',
         'tailwindcss/no-custom-classname': 'off',
         'tailwindcss/no-contradicting-classname': ['error', {config: 'tailwind.config.cjs'}]
-    }
+    },
+    overrides: [
+        {
+            files: ['*.ts', '*.tsx'], // Your TypeScript files extension
+
+            rules: {
+                '@typescript-eslint/no-floating-promises': 'error',
+                '@typescript-eslint/no-misused-promises': 'error'
+            },
+
+            parserOptions: {
+                project: ['./tsconfig.json'] // Specify it only for TypeScript files
+            }
+        }
+    ]
 };

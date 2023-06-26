@@ -1,4 +1,3 @@
-import React, {useContext} from 'react';
 import {useAppContext} from '../../../AppContext';
 
 const AuthorContextMenu = ({comment, close, toggleEdit}) => {

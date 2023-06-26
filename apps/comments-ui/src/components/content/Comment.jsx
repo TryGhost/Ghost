@@ -1,7 +1,6 @@
 import EditForm from './forms/EditForm';
 import LikeButton from './buttons/LikeButton';
 import MoreButton from './buttons/MoreButton';
-import React, {useContext, useState} from 'react';
 import Replies from './Replies';
 import ReplyButton from './buttons/ReplyButton';
 import ReplyForm from './forms/ReplyForm';
@@ -10,6 +9,7 @@ import {Transition} from '@headlessui/react';
 import {formatExplicitTime, isCommentPublished} from '../../utils/helpers';
 import {useAppContext} from '../../AppContext';
 import {useRelativeTime} from '../../utils/hooks';
+import {useState} from 'react';
 
 function AnimatedComment({comment, parent}) {
     return (

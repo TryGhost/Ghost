@@ -1,5 +1,6 @@
 // Ref: https://reactjs.org/docs/context.html
 import React, {useContext} from 'react';
+import {ActionType, Actions, DispatchAsyncActionMethodType, SyncActionType, SyncActions} from './actions';
 
 export type Popup = {
     type: string,
@@ -17,7 +18,13 @@ export type PopupNotification = {
 }
 
 export type Comment = {
-
+    id: string,
+    replies: Comment[],
+    status: string,
+    count: {
+        replies: number,
+        likes: number,
+    }
 }
 
 export type AppContextType = {
@@ -45,9 +52,8 @@ export type AppContextType = {
     secundaryFormCount: number,
     popup: null | Popup,
 
-    // Warning: make sure we pass a variable here (binded in constructor), because if we create a new function here, it will also change when anything in the state changes
-    // causing loops in useEffect hooks that depend on dispatchAction
-    dispatchAction: (action: string, data: any) => Promise<void>,
+    // This part makes sure we can add automatic data and return types to the actions when using context.dispatchAction('actionName', data)
+    dispatchAction: <T extends ActionType | SyncActionType>(action: T, data: Parameters<(typeof Actions & typeof SyncActions)[T]>[0]['data']) => T extends ActionType ? Promise<void> : void
 }
 
 export const AppContext = React.createContext<AppContextType>({} as any);

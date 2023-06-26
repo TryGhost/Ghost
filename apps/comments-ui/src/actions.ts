@@ -1,7 +1,7 @@
-import {AppContextType, Popup} from './AppContext';
+import {AppContextType, Comment, Popup} from './AppContext';
 import {GhostApi} from './utils/api';
 
-async function loadMoreComments({state, api}: {state: AppContextType, api: GhostApi}): Promise<Partial<AppContextType>> {
+async function loadMoreComments({state, api}: {state: AppContextType, api: GhostApi, data: never}): Promise<Partial<AppContextType>> {
     let page = 1;
     if (state.pagination && state.pagination.page) {
         page = state.pagination.page + 1;
@@ -15,7 +15,7 @@ async function loadMoreComments({state, api}: {state: AppContextType, api: Ghost
     };
 }
 
-async function loadMoreReplies({state, api, data: {comment, limit}}: {state: AppContextType, api: GhostApi, data: {comment: any, limit: number}}): Promise<Partial<AppContextType>> {
+async function loadMoreReplies({state, api, data: {comment, limit}}: {state: AppContextType, api: GhostApi, data: {comment: any, limit: number | 'all'}}): Promise<Partial<AppContextType>> {
     const data = await api.comments.replies({commentId: comment.id, afterReplyId: comment.replies[comment.replies.length - 1]?.id, limit});
 
     // Note: we store the comments from new to old, and show them in reverse order
@@ -32,7 +32,7 @@ async function loadMoreReplies({state, api, data: {comment, limit}}: {state: App
     };
 }
 
-async function addComment({state, api, data: comment}: {state: AppContextType, api: GhostApi, data: any}) {
+async function addComment({state, api, data: comment}: {state: AppContextType, api: GhostApi, data: Comment}) {
     const data = await api.comments.add({comment});
     comment = data.comments[0];
 
@@ -259,7 +259,7 @@ async function deleteComment({state, api, data: comment}: {state: AppContextType
     };
 }
 
-async function editComment({state, api, data: {comment, parent}}) {
+async function editComment({state, api, data: {comment, parent}}: {state: AppContextType, api: GhostApi, data: {comment: Comment, parent?: Comment}}) {
     const data = await api.comments.edit({
         comment
     });
@@ -329,35 +329,35 @@ function openPopup({data}: {data: Popup}) {
     };
 }
 
-function closePopup() {
+function closePopup({data: never}) {
     return {
         popup: null
     };
 }
 
-function increaseSecundaryFormCount({state}: {state: AppContextType}) {
+function increaseSecundaryFormCount({state}: {state: AppContextType, data: never}) {
     return {
         secundaryFormCount: state.secundaryFormCount + 1
     };
 }
 
-function decreaseSecundaryFormCount({state}: {state: AppContextType}) {
+function decreaseSecundaryFormCount({state}: {state: AppContextType, data: never}) {
     return {
         secundaryFormCount: state.secundaryFormCount - 1
     };
 }
 
 // Sync actions make use of setState((currentState) => newState), to avoid 'race' conditions
-const SyncActions = {
+export const SyncActions = {
     openPopup,
     closePopup,
     increaseSecundaryFormCount,
     decreaseSecundaryFormCount
 };
 
-type SyncActionType = keyof typeof SyncActions;
+export type SyncActionType = keyof typeof SyncActions;
 
-const Actions = {
+export const Actions = {
     // Put your actions here
     addComment,
     editComment,
@@ -373,7 +373,7 @@ const Actions = {
     updateMember
 };
 
-type ActionType = keyof typeof Actions;
+export type ActionType = keyof typeof Actions;
 
 export function isSyncAction(action: string): action is SyncActionType {
     return !!(SyncActions as any)[action];
@@ -383,7 +383,7 @@ export function isSyncAction(action: string): action is SyncActionType {
 export async function ActionHandler({action, data, state, api, adminApi}: {action: ActionType, data: any, state: AppContextType, api: GhostApi, adminApi: any}) {
     const handler = Actions[action];
     if (handler) {
-        return await handler({data, state, api, adminApi}) || {};
+        return await handler({data, state, api, adminApi} as any) || {};
     }
     return {};
 }

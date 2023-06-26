@@ -55,7 +55,7 @@ export class MockedApi {
         };
     }
 
-    browseComments({limit = 5, order, filter, page}: {limit?: number, order?: string, filter?: string, page: number}) {
+    browseComments({limit = 5, filter, page}: {limit?: number, filter?: string, page: number}) {
         // Sort comments on created at + id
         this.comments.sort((a, b) => {
             const aDate = new Date(a.created_at).getTime();

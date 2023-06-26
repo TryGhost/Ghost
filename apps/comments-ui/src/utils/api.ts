@@ -139,7 +139,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                     }
                 });
             },
-            async replies({commentId, afterReplyId, limit}: {commentId: string; afterReplyId: string; limit?: number}) {
+            async replies({commentId, afterReplyId, limit}: {commentId: string; afterReplyId: string; limit?: number | 'all'}) {
                 const filter = encodeURIComponent(`id:>${afterReplyId}`);
                 const order = encodeURIComponent('created_at ASC, id ASC');
 
@@ -178,7 +178,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                     }
                 });
             },
-            edit({comment}: {comment: Comment}) {
+            edit({comment}: {comment: Partial<Comment> & {id: string}}) {
                 const body = {
                     comments: [comment]
                 };
