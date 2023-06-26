@@ -17,19 +17,11 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
     args: {
         title: 'Section header',
-        groups: [
-            {
-                element: <SettingGroup {...SettingGroupStories.SingleColumn.args} />,
-                searchKeywords: []
-            },
-            {
-                element: <SettingGroup {...SettingGroupStories.Editing.args} />,
-                searchKeywords: []
-            },
-            {
-                element: <SettingGroup {...SettingGroupStories.Unsaved.args} />,
-                searchKeywords: []
-            }
-        ]
+        children:
+        <>
+            <SettingGroup {...SettingGroupStories.SingleColumn.args} />
+            <SettingGroup {...SettingGroupStories.Editing.args} />
+            <SettingGroup {...SettingGroupStories.Unsaved.args} />
+        </>
     }
 };
