@@ -261,4 +261,26 @@ describe('Collection', function () {
 
         assert.equal(collection.deleted, true);
     });
+
+    describe('postMatchesFilter', function () {
+        it('Can match a post with a filter', async function () {
+            const collection = await Collection.create({
+                title: 'Testing filtering posts',
+                type: 'automatic'
+            });
+
+            const featuredPost = {
+                id: '0',
+                featured: true
+            };
+
+            const nonFeaturedPost = {
+                id: '1',
+                featured: false
+            };
+
+            assert.ok(collection.postMatchesFilter(featuredPost), 'Post should match the filter');
+            assert.ok(!collection.postMatchesFilter(nonFeaturedPost), 'Post should not match the filter');
+        });
+    });
 });
