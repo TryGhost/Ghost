@@ -9,7 +9,13 @@ export interface SearchService {
 const useSearchService = () => {
     const [filter, setFilter] = useState('');
 
-    const checkVisible = (keywords: string[]) => keywords.some(keyword => keyword.toLowerCase().includes(filter.toLowerCase()));
+    const checkVisible = (keywords: string[]) => {
+        if (!keywords.length) {
+            return true;
+        }
+
+        return keywords.some(keyword => keyword.toLowerCase().includes(filter.toLowerCase()));
+    };
 
     return {
         filter,
