@@ -33163,10 +33163,10 @@ vite-node@0.32.2:
     picocolors "^1.0.0"
     vite "^3.0.0 || ^4.0.0"
 
-vite-plugin-commonjs@0.7.1:
-  version "0.7.1"
-  resolved "https://registry.yarnpkg.com/vite-plugin-commonjs/-/vite-plugin-commonjs-0.7.1.tgz#7e0d20264d355b733e46ed4ed0e7931a113b47e9"
-  integrity sha512-pRkI+pKW3NygFGTiLRejEntiJL0N+yC1wpnzne2bQ/bAqYwZWAzFU7XgU6EC8GE898ZAKfAZ6bhDP+uL+pM61Q==
+vite-plugin-commonjs@0.8.0:
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/vite-plugin-commonjs/-/vite-plugin-commonjs-0.8.0.tgz#b69556c4d6c5711ed86bc5d3c9588a72212911cb"
+  integrity sha512-55v9Gjp2MpZ0vaDLNRbztI9hiTXaw/aQ8QnqNhGz4lwH0nnYHGeEOjzRS3kTrRljB8m6GQUrgi59UWu6N9KjVQ==
   dependencies:
     acorn "^8.8.2"
     fast-glob "^3.2.12"
