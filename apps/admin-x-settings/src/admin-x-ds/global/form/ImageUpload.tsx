@@ -79,7 +79,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                 width: (unstyled ? '' : width),
                 height: (unstyled ? '' : height)
             }}>
-                <img alt='' className={imageClassName} src={imageURL} style={{
+                <img alt='' className={imageClassName} id={id} src={imageURL} style={{
                     width: (unstyled ? '' : width || '100%'),
                     height: (unstyled ? '' : height || 'auto')
                 }} />
