@@ -2,47 +2,47 @@
 import setupGhostApi from './api';
 
 test('should call counts endpoint', () => {
-    vi.spyOn(window, 'fetch');
-    window.fetch.mockResolvedValueOnce({
+    const spy = vi.spyOn(window, 'fetch');
+    spy.mockResolvedValueOnce({
         ok: true,
         json: async () => ({success: true})
-    });
+    } as any);
 
-    const api = setupGhostApi({});
+    const api = setupGhostApi({siteUrl: 'http://localhost:3000', apiUrl: '', apiKey: ''});
 
     api.comments.count({postId: null});
 
-    expect(window.fetch).toHaveBeenCalledTimes(1);
-    expect(window.fetch).toHaveBeenCalledWith(
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(
         'http://localhost:3000/members/api/comments/counts/',
         expect.objectContaining({
             method: 'GET',
             headers: {'Content-Type': 'application/json'},
             credentials: 'same-origin',
             body: undefined
-        }),
+        })
     );
 });
 
 test('should call counts endpoint with postId query param', () => {
-    vi.spyOn(window, 'fetch');
-    window.fetch.mockResolvedValueOnce({
+    const spy = vi.spyOn(window, 'fetch');
+    spy.mockResolvedValueOnce({
         ok: true,
         json: async () => ({success: true})
-    });
+    } as any);
 
-    const api = setupGhostApi({});
+    const api = setupGhostApi({siteUrl: 'http://localhost:3000', apiUrl: '', apiKey: ''});
 
     api.comments.count({postId: '123'});
 
-    expect(window.fetch).toHaveBeenCalledTimes(1);
-    expect(window.fetch).toHaveBeenCalledWith(
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(
         'http://localhost:3000/members/api/comments/counts/?ids=123',
         expect.objectContaining({
             method: 'GET',
             headers: {'Content-Type': 'application/json'},
             credentials: 'same-origin',
             body: undefined
-        }),
+        })
     );
 });

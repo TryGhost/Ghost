@@ -10,10 +10,10 @@ describe('formatNumber', function () {
     });
 
     it('handles undefined', function () {
-        expect(helpers.formatNumber()).toEqual('');
+        expect((helpers.formatNumber as any)()).toEqual('');
     });
 
     it('handles null', function () {
-        expect(helpers.formatNumber(null)).toEqual('');
+        expect((helpers.formatNumber as any)(null)).toEqual('');
     });
 });
