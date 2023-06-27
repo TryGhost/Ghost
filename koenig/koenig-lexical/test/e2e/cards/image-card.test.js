@@ -691,7 +691,7 @@ test.describe('Image card', async () => {
                                         <a href="https://unsplash.com/@jamillatrach" dir="ltr">
                                             <span data-lexical-text="true">Latrach Med Jamil</span>
                                         </a>
-                                        <span data-lexical-text="true">on</span>
+                                        <span data-lexical-text="true">/</span>
                                         <a
                                           href="https://unsplash.com/?utm_source=ghost&amp;utm_medium=referral&amp;utm_campaign=api-credit"
                                           dir="ltr">

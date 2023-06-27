@@ -55,7 +55,7 @@ function UnsplashImage({payload,
                         e.stopPropagation();
                         insertImage({
                             src: urls.regular.replace(/&w=1080/, '&w=2000'),
-                            caption: `<span>Photo by <a href="${user.links.html}">${user.name}</a> on <a href="https://unsplash.com/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit">Unsplash</a></span>`,
+                            caption: `<span>Photo by <a href="${user.links.html}">${user.name}</a> / <a href="https://unsplash.com/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit">Unsplash</a></span>`,
                             height: height,
                             width: width,
                             alt: alt,
