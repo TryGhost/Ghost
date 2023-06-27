@@ -6,7 +6,7 @@ import UnsplashModal from '../../UnsplashModal';
 
 import ctrlOrCmd from '../../../../utils/ctrlOrCmd';
 import useMarkdownImageUploader from './useMarkdownImageUploader';
-import {COMMAND_PRIORITY_CRITICAL, COMMAND_PRIORITY_LOW, COPY_COMMAND, UNDO_COMMAND} from 'lexical';
+import {COMMAND_PRIORITY_LOW, UNDO_COMMAND} from 'lexical';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext.js';
 
@@ -48,13 +48,6 @@ export default function MarkdownEditor({
                     return true;
                 },
                 COMMAND_PRIORITY_LOW
-            ),
-            editor.registerCommand(
-                COPY_COMMAND, () => {
-                    // let the markdown editor handle copy command
-                    return true;
-                },
-                COMMAND_PRIORITY_CRITICAL // mobiledoc copy plugin uses HIGH and otherwise would intercept the copy
             )
         );
     }, [editor]);
