@@ -5,13 +5,18 @@ import Replies from './Replies';
 import ReplyButton from './buttons/ReplyButton';
 import ReplyForm from './forms/ReplyForm';
 import {Avatar, BlankAvatar} from './Avatar';
+import {Comment, useAppContext} from '../../AppContext';
 import {Transition} from '@headlessui/react';
 import {formatExplicitTime, isCommentPublished} from '../../utils/helpers';
-import {useAppContext} from '../../AppContext';
 import {useRelativeTime} from '../../utils/hooks';
 import {useState} from 'react';
 
-function AnimatedComment({comment, parent}) {
+type AnimatedCommentProps = {
+    comment: Comment;
+    parent?: Comment;
+};
+
+const AnimatedComment: React.FC<AnimatedCommentProps> = ({comment, parent}) => {
     return (
         <Transition
             enter="transition-opacity duration-300 ease-out"
@@ -26,9 +31,10 @@ function AnimatedComment({comment, parent}) {
             <EditableComment comment={comment} parent={parent} />
         </Transition>
     );
-}
+};
 
-function EditableComment({comment, parent}) {
+type EditableCommentProps = AnimatedCommentProps;
+const EditableComment: React.FC<EditableCommentProps> = ({comment, parent}) => {
     const [isInEditMode, setIsInEditMode] = useState(false);
 
     const closeEditMode = () => {
@@ -44,20 +50,23 @@ function EditableComment({comment, parent}) {
             <EditForm close={closeEditMode} comment={comment} parent={parent} />
         );
     } else {
-        return (<Comment comment={comment} openEditMode={openEditMode} parent={parent} />);
+        return (<CommentComponent comment={comment} openEditMode={openEditMode} parent={parent} />);
     }
-}
+};
 
-function Comment({comment, parent, openEditMode}) {
+type CommentProps = AnimatedCommentProps & {
+    openEditMode: () => void;
+};
+const CommentComponent: React.FC<CommentProps> = ({comment, parent, openEditMode}) => {
     const isPublished = isCommentPublished(comment);
 
     if (isPublished) {
         return (<PublishedComment comment={comment} openEditMode={openEditMode} parent={parent} />);
     }
     return (<UnpublishedComment comment={comment} openEditMode={openEditMode} />);
-}
+};
 
-function PublishedComment({comment, parent, openEditMode}) {
+const PublishedComment: React.FC<CommentProps> = ({comment, parent, openEditMode}) => {
     const [isInReplyMode, setIsInReplyMode] = useState(false);
     const {dispatchAction} = useAppContext();
 
@@ -86,9 +95,13 @@ function PublishedComment({comment, parent, openEditMode}) {
             <ReplyFormBox closeReplyMode={closeReplyMode} comment={comment} isInReplyMode={isInReplyMode} />
         </CommentLayout>
     );
-}
+};
 
-function UnpublishedComment({comment, openEditMode}) {
+type UnpublishedCommentProps = {
+    comment: Comment;
+    openEditMode: () => void;
+}
+const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEditMode}) => {
     const {admin} = useAppContext();
 
     let notPublishedMessage;
@@ -114,11 +127,11 @@ function UnpublishedComment({comment, openEditMode}) {
             <RepliesContainer comment={comment} />
         </CommentLayout>
     );
-}
+};
 
 // Helper components
 
-function MemberExpertise({comment}) {
+const MemberExpertise: React.FC<{comment: Comment}> = ({comment}) => {
     const {member} = useAppContext();
     const memberExpertise = member && comment.member && comment.member.uuid === member.uuid ? member.expertise : comment?.member?.expertise;
 
@@ -129,9 +142,9 @@ function MemberExpertise({comment}) {
     return (
         <span>{memberExpertise}<span className="mx-[0.3em]">·</span></span>
     );
-}
+};
 
-function EditedInfo({comment}) {
+const EditedInfo: React.FC<{comment: Comment}> = ({comment}) => {
     if (!comment.edited_at) {
         return null;
     }
@@ -140,9 +153,9 @@ function EditedInfo({comment}) {
             <span className="mx-[0.3em]">·</span>Edited
         </span>
     );
-}
+};
 
-function RepliesContainer({comment}) {
+const RepliesContainer: React.FC<{comment: Comment}> = ({comment}) => {
     const hasReplies = comment.replies && comment.replies.length > 0;
 
     if (!hasReplies) {
@@ -154,9 +167,14 @@ function RepliesContainer({comment}) {
             <Replies comment={comment} />
         </div>
     );
-}
+};
 
-function ReplyFormBox({comment, isInReplyMode, closeReplyMode}) {
+type ReplyFormBoxProps = {
+    comment: Comment;
+    isInReplyMode: boolean;
+    closeReplyMode: () => void;
+};
+const ReplyFormBox: React.FC<ReplyFormBoxProps> = ({comment, isInReplyMode, closeReplyMode}) => {
     if (!isInReplyMode) {
         return null;
     }
@@ -166,23 +184,23 @@ function ReplyFormBox({comment, isInReplyMode, closeReplyMode}) {
             <ReplyForm close={closeReplyMode} parent={comment} />
         </div>
     );
-}
+};
 
 //
 // -- Published comment components --
 //
 
 // TODO: move name detection to helper
-function AuthorName({comment}) {
+const AuthorName: React.FC<{comment: Comment}> = ({comment}) => {
     const name = !comment.member ? 'Deleted member' : (comment.member.name ? comment.member.name : 'Anonymous');
     return (
         <h4 className="text-[rgb(23,23,23] font-sans text-[17px] font-bold tracking-tight dark:text-[rgba(255,255,255,0.85)]">
             {name}
         </h4>
     );
-}
+};
 
-function CommentHeader({comment}) {
+const CommentHeader: React.FC<{comment: Comment}> = ({comment}) => {
     const createdAtRelative = useRelativeTime(comment.created_at);
 
     return (
@@ -199,18 +217,25 @@ function CommentHeader({comment}) {
             </div>
         </div>
     );
-}
+};
 
-function CommentBody({html}) {
+const CommentBody: React.FC<{html: string}> = ({html}) => {
     const dangerouslySetInnerHTML = {__html: html};
     return (
         <div className="mt mb-2 flex flex-row items-center gap-4 pr-4">
             <p dangerouslySetInnerHTML={dangerouslySetInnerHTML} className="gh-comment-content font-sans text-[16px] leading-normal text-neutral-900 dark:text-[rgba(255,255,255,0.85)]" data-testid="comment-content"/>
         </div>
     );
-}
+};
 
-function CommentMenu({comment, toggleReplyMode, isInReplyMode, openEditMode, parent}) {
+type CommentMenuProps = {
+    comment: Comment;
+    toggleReplyMode: () => void;
+    isInReplyMode: boolean;
+    openEditMode: () => void;
+    parent?: Comment;
+};
+const CommentMenu: React.FC<CommentMenuProps> = ({comment, toggleReplyMode, isInReplyMode, openEditMode, parent}) => {
     // If this comment is from the current member, always override member
     // with the member from the context, so we update the expertise in existing comments when we change it
     const {member, commentsEnabled} = useAppContext();
@@ -222,25 +247,30 @@ function CommentMenu({comment, toggleReplyMode, isInReplyMode, openEditMode, par
     return (
         <div className="flex items-center gap-5">
             {<LikeButton comment={comment} />}
-            {(canReply && <ReplyButton comment={comment} isReplying={isInReplyMode} toggleReply={toggleReplyMode} />)}
+            {(canReply && <ReplyButton isReplying={isInReplyMode} toggleReply={toggleReplyMode} />)}
             {<MoreButton comment={comment} toggleEdit={openEditMode} />}
         </div>
     );
-}
+};
 
 //
 // -- Layout --
 //
 
-function RepliesLine({hasReplies}) {
+const RepliesLine: React.FC<{hasReplies: boolean}> = ({hasReplies}) => {
     if (!hasReplies) {
         return null;
     }
 
     return (<div className="mb-2 h-full w-[3px] grow rounded bg-gradient-to-b from-[rgba(0,0,0,0.05)] via-[rgba(0,0,0,0.05)] to-transparent dark:from-[rgba(255,255,255,0.08)] dark:via-[rgba(255,255,255,0.08)]" />);
-}
+};
 
-function CommentLayout({children, avatar, hasReplies}) {
+type CommentLayoutProps = {
+    children: React.ReactNode;
+    avatar: React.ReactNode;
+    hasReplies: boolean;
+}
+const CommentLayout: React.FC<CommentLayoutProps> = ({children, avatar, hasReplies}) => {
     return (
         <div className={`flex w-full flex-row ${hasReplies === true ? 'mb-0' : 'mb-10'}`} data-testid="comment-component">
             <div className="mr-3 flex flex-col items-center justify-start">
@@ -254,7 +284,7 @@ function CommentLayout({children, avatar, hasReplies}) {
             </div>
         </div>
     );
-}
+};
 
 //
 // -- Default --

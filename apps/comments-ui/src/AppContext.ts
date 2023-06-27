@@ -33,6 +33,8 @@ export type Comment = {
         likes: number,
     },
     member: Member,
+    edited_at: string,
+    created_at: string,
     html: string
 }
 
