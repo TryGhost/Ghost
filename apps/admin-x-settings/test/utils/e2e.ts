@@ -1,4 +1,4 @@
-import {CustomThemeSettingsResponseType, ImagesResponseType, InvitesResponseType, RolesResponseType, SettingsResponseType, SiteResponseType, UsersResponseType} from '../../src/utils/api';
+import {CustomThemeSettingsResponseType, ImagesResponseType, InvitesResponseType, RolesResponseType, SettingsResponseType, SiteResponseType, ThemesResponseType, UsersResponseType} from '../../src/utils/api';
 import {Page, Request} from '@playwright/test';
 import {readFileSync} from 'fs';
 
@@ -9,7 +9,8 @@ export const responseFixtures = {
     roles: JSON.parse(readFileSync(`${__dirname}/responses/roles.json`).toString()) as RolesResponseType,
     site: JSON.parse(readFileSync(`${__dirname}/responses/site.json`).toString()) as SiteResponseType,
     invites: JSON.parse(readFileSync(`${__dirname}/responses/invites.json`).toString()) as InvitesResponseType,
-    custom_theme_settings: JSON.parse(readFileSync(`${__dirname}/responses/custom_theme_settings.json`).toString()) as CustomThemeSettingsResponseType
+    custom_theme_settings: JSON.parse(readFileSync(`${__dirname}/responses/custom_theme_settings.json`).toString()) as CustomThemeSettingsResponseType,
+    themes: JSON.parse(readFileSync(`${__dirname}/responses/themes.json`).toString()) as ThemesResponseType
 };
 
 interface Responses {
@@ -42,6 +43,13 @@ interface Responses {
     custom_theme_settings?: {
         browse?: CustomThemeSettingsResponseType
         edit?: CustomThemeSettingsResponseType
+    }
+    themes?: {
+        browse?: ThemesResponseType
+        activate?: ThemesResponseType
+        delete?: ThemesResponseType
+        install?: ThemesResponseType
+        upload?: ThemesResponseType
     }
     previewHtml?: {
         homepage?: string
@@ -85,6 +93,13 @@ type LastRequests = {
         browse: RequestRecord
         edit: RequestRecord
     }
+    themes: {
+        browse: RequestRecord
+        activate: RequestRecord
+        delete: RequestRecord
+        install: RequestRecord
+        upload: RequestRecord
+    }
     previewHtml: {
         homepage: RequestRecord
     }
@@ -99,6 +114,7 @@ export async function mockApi({page,responses}: {page: Page, responses?: Respons
         site: {browse: {}},
         images: {upload: {}},
         custom_theme_settings: {browse: {}, edit: {}},
+        themes: {browse: {}, activate: {}, delete: {}, install: {}, upload: {}},
         previewHtml: {homepage: {}}
     };
 
@@ -231,6 +247,61 @@ export async function mockApi({page,responses}: {page: Page, responses?: Respons
             DELETE: {
                 body: responses?.invites?.delete ?? responseFixtures.invites,
                 updateLastRequest: lastApiRequests.invites.delete
+            }
+        }
+    });
+
+    await mockApiResponse({
+        page,
+        path: /\/ghost\/api\/admin\/themes\/$/,
+        respondTo: {
+            GET: {
+                body: responses?.themes?.browse ?? responseFixtures.themes,
+                updateLastRequest: lastApiRequests.themes.browse
+            }
+        }
+    });
+
+    await mockApiResponse({
+        page,
+        path: /\/ghost\/api\/admin\/themes\/(casper|edition|headline)\/$/,
+        respondTo: {
+            DELETE: {
+                body: responses?.themes?.delete ?? responseFixtures.themes,
+                updateLastRequest: lastApiRequests.themes.delete
+            }
+        }
+    });
+
+    await mockApiResponse({
+        page,
+        path: /\/ghost\/api\/admin\/themes\/\w+\/activate\/$/,
+        respondTo: {
+            PUT: {
+                body: responses?.themes?.activate ?? responseFixtures.themes,
+                updateLastRequest: lastApiRequests.themes.activate
+            }
+        }
+    });
+
+    await mockApiResponse({
+        page,
+        path: /\/ghost\/api\/admin\/themes\/install\//,
+        respondTo: {
+            POST: {
+                body: responses?.themes?.install ?? responseFixtures.themes,
+                updateLastRequest: lastApiRequests.themes.install
+            }
+        }
+    });
+
+    await mockApiResponse({
+        page,
+        path: /\/ghost\/api\/admin\/themes\/upload\/$/,
+        respondTo: {
+            POST: {
+                body: responses?.themes?.upload ?? responseFixtures.themes,
+                updateLastRequest: lastApiRequests.themes.upload
             }
         }
     });
