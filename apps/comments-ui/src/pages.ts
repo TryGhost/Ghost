@@ -13,7 +13,12 @@ export type PageName = keyof typeof Pages;
 
 type PageTypes = {
     [name in PageName]: {
-        type: name
+        type: name,
+        /**
+         * Called when closing the popup
+         * @param succeeded False if normal cancel/close buttons are used
+         */
+        callback?: (succeeded: boolean) => void,
     } & React.ComponentProps<typeof Pages[name]>
 }
 

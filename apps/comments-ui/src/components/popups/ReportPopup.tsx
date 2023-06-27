@@ -1,10 +1,11 @@
-import {useState} from 'react';
-import {useAppContext} from '../../AppContext';
+import CloseButton from './CloseButton';
 import {ReactComponent as SpinnerIcon} from '../../images/icons/spinner.svg';
 import {ReactComponent as SuccessIcon} from '../../images/icons/success.svg';
-import CloseButton from './CloseButton';
+import {useAppContext} from '../../AppContext';
+import {useState} from 'react';
+import {Comment} from '../../AppContext';
 
-const ReportPopup = (props) => {
+const ReportPopup = ({comment}: {comment: Comment}) => {
     const {dispatchAction} = useAppContext();
     const [progress, setProgress] = useState('default');
 
@@ -27,15 +28,15 @@ const ReportPopup = (props) => {
         buttonIcon = <SuccessIcon className="mr-2 h-[16px] w-[16px]" />;
     }
 
-    const stopPropagation = (event) => {
+    const stopPropagation = (event: React.MouseEvent) => {
         event.stopPropagation();
     };
 
-    const close = (event) => {
-        dispatchAction('closePopup');
+    const close = () => {
+        dispatchAction('closePopup', {});
     };
 
-    const submit = (event) => {
+    const submit = (event: React.MouseEvent) => {
         event.stopPropagation();
 
         setProgress('sending');
@@ -43,7 +44,7 @@ const ReportPopup = (props) => {
         // purposely faking the timing of the report being sent for user feedback purposes
         setTimeout(() => {
             setProgress('sent');
-            dispatchAction('reportComment', props.comment);
+            dispatchAction('reportComment', comment);
 
             setTimeout(() => {
                 close();
@@ -66,7 +67,7 @@ const ReportPopup = (props) => {
                 </button>
                 <button className="font-sans text-sm font-medium text-neutral-500 dark:text-neutral-400" type="button" onClick={close}>Cancel</button>
             </div>
-            <CloseButton close={() => close(false)} />
+            <CloseButton close={close} />
         </div>
     );
 };

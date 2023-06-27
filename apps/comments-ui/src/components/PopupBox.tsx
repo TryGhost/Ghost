@@ -3,7 +3,8 @@ import {Pages} from '../pages';
 import {useAppContext} from '../AppContext';
 import {useEffect, useState} from 'react';
 
-export default function PopupBox() {
+type Props = {};
+const PopupBox: React.FC<Props> = ({}) => {
     const {popup} = useAppContext();
 
     // To make sure we can properly animate a popup that goes away, we keep a state of the last visible popup
@@ -47,8 +48,10 @@ export default function PopupBox() {
     return (
         <>
             <GenericPopup callback={popupProps.callback} show={show} title={type}>
-                <PageComponent {...popupProps}/>
+                <PageComponent {...popupProps as any}/>
             </GenericPopup>
         </>
     );
 }
+
+export default PopupBox;

@@ -25,7 +25,7 @@ export default (function viteConfig() {
             'process.env.VITEST_SEGFAULT_RETRY': 3
         },
         preview: {
-            port: 7174
+            port: 7173
         },
         server: {
             port: 5368

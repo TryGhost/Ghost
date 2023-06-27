@@ -14,6 +14,13 @@ export type PopupNotification = {
     count: number
 }
 
+export type Member = {
+    id: string,
+    name: string,
+    avatar: string,
+    expertise: string
+}
+
 export type Comment = {
     id: string,
     replies: Comment[],
@@ -21,7 +28,8 @@ export type Comment = {
     count: {
         replies: number,
         likes: number,
-    }
+    },
+    member: Member
 }
 
 export type AppContextType = {
@@ -47,7 +55,7 @@ export type AppContextType = {
     commentsEnabled: string | undefined,
     publication: string,
     secundaryFormCount: number,
-    popup: null | Page,
+    popup: Page | null,
 
     // This part makes sure we can add automatic data and return types to the actions when using context.dispatchAction('actionName', data)
     dispatchAction: <T extends ActionType | SyncActionType>(action: T, data: Parameters<(typeof Actions & typeof SyncActions)[T]>[0] extends {data: any} ? Parameters<(typeof Actions & typeof SyncActions)[T]>[0]['data'] : {}) => T extends ActionType ? Promise<void> : void

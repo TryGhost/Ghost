@@ -15,7 +15,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "dev": "concurrently \"yarn preview -l silent\" \"yarn build:watch\"",
+    "dev": "concurrently \"yarn preview --host -l silent\" \"yarn build:watch\"",
     "dev:test": "vite build && vite preview --port 7175",
     "build": "vite build",
     "build:watch": "vite build --watch",

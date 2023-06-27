@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import setupGhostApi from './api';
 
 test('should call counts endpoint', () => {
