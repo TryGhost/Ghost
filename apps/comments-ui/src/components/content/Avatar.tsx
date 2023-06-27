@@ -1,6 +1,6 @@
 import {ReactComponent as AvatarIcon} from '../../images/icons/avatar.svg';
+import {Comment, useAppContext} from '../../AppContext';
 import {getInitials} from '../../utils/helpers';
-import {useAppContext} from '../../AppContext';
 
 function getDimensionClasses() {
     return 'w-9 h-9 sm:w-[40px] sm:h-[40px]';
@@ -17,13 +17,16 @@ export const BlankAvatar = () => {
     );
 };
 
-export const Avatar = ({comment}) => {
+type AvatarProps = {
+    comment?: Comment;
+};
+export const Avatar: React.FC<AvatarProps> = ({comment}) => {
     const {member, avatarSaturation} = useAppContext();
     const dimensionClasses = getDimensionClasses();
 
     const memberName = member?.name ?? comment?.member?.name;
 
-    const getHashOfString = (str) => {
+    const getHashOfString = (str: string) => {
         let hash = 0;
         for (let i = 0; i < str.length; i++) {
             hash = str.charCodeAt(i) + ((hash << 5) - hash);
@@ -32,18 +35,18 @@ export const Avatar = ({comment}) => {
         return hash;
     };
 
-    const normalizeHash = (hash, min, max) => {
+    const normalizeHash = (hash: number, min: number, max: number) => {
         return Math.floor((hash % (max - min)) + min);
     };
 
-    const generateHSL = () => {
+    const generateHSL = (): [number, number, number] => {
         let commentMember = (comment ? comment.member : member);
 
         if (!commentMember || !commentMember.name) {
             return [0,0,10];
         }
 
-        const saturation = isNaN(avatarSaturation) ? 50 : avatarSaturation;
+        const saturation = avatarSaturation === undefined || isNaN(avatarSaturation) ? 50 : avatarSaturation;
 
         const hRange = [0, 360];
         const lRangeTop = Math.round(saturation / (100 / 30)) + 30;
@@ -57,7 +60,7 @@ export const Avatar = ({comment}) => {
         return [h, saturation, l];
     };
 
-    const HSLtoString = (hsl) => {
+    const HSLtoString = (hsl: [number, number, number]) => {
         return `hsl(${hsl[0]}, ${hsl[1]}%, ${hsl[2]}%)`;
     };
 

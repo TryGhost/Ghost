@@ -55,7 +55,7 @@ function getSiteData(scriptTag: HTMLElement) {
     const adminUrl = dataset.admin;
     const postId = dataset.postId;
     const colorScheme = dataset.colorScheme;
-    const avatarSaturation = dataset.avatarSaturation;
+    const avatarSaturation = dataset.avatarSaturation ? parseInt(dataset.avatarSaturation) : undefined;
     const accentColor = dataset.accentColor;
     const commentsEnabled = dataset.commentsEnabled;
     const title = dataset.title === 'null' ? null : dataset.title;

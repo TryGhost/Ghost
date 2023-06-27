@@ -60,7 +60,7 @@ export type AppContextType = {
     title: string,
     showCount: boolean,
     colorScheme: string | undefined,
-    avatarSaturation: string | undefined,
+    avatarSaturation: number | undefined,
     accentColor: string | undefined,
     commentsEnabled: string | undefined,
     publication: string,
