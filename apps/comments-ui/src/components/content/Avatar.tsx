@@ -87,10 +87,10 @@ export const Avatar: React.FC<AvatarProps> = ({comment}) => {
     let avatarEl = (
         <>
             {memberName ?
-                (<div className={`flex items-center justify-center rounded-full ${dimensionClasses}`} style={avatarStyle}>
+                (<div className={`flex items-center justify-center rounded-full ${dimensionClasses}`} data-testid="avatar-background" style={avatarStyle}>
                     <p className="font-sans text-lg font-semibold text-white">{ commentGetInitials() }</p>
                 </div>) :
-                (<div className={`flex items-center justify-center rounded-full bg-neutral-900 dark:bg-[rgba(255,255,255,0.7)] ${dimensionClasses}`}>
+                (<div className={`flex items-center justify-center rounded-full bg-neutral-900 dark:bg-[rgba(255,255,255,0.7)] ${dimensionClasses}`} data-testid="avatar-background" >
                     <AvatarIcon className="stroke-white dark:stroke-[rgba(0,0,0,0.6)]" />
                 </div>)}
             {commentMember && <img alt="Avatar" className={`absolute left-0 top-0 rounded-full ${dimensionClasses}`} src={commentMember.avatar_image}/>}
