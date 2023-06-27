@@ -35,7 +35,7 @@ export function EmailCtaNodeComponent({
     const handleSegmentChange = (value) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setSegment(value);
+            node.segment = value;
         });
     };
 
