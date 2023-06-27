@@ -5,7 +5,16 @@ import {Page} from '@playwright/test';
 export const MOCKED_SITE_URL = 'https://localhost:1234';
 export {MockedApi};
 
-export async function initialize({mockedApi, page, ...options}: {
+function escapeHtml(unsafe: string) {
+    return unsafe
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+export async function initialize({mockedApi, page, bodyStyle, ...options}: {
     mockedApi: MockedApi,
     page: Page,
     path?: string;
@@ -20,13 +29,14 @@ export async function initialize({mockedApi, page, ...options}: {
     title?: string,
     count?: boolean,
     publication?: string,
-    postId?: string
+    postId?: string,
+    bodyStyle?: string,
 }) {
     const sitePath = MOCKED_SITE_URL;
     await page.route(sitePath, async (route) => {
         await route.fulfill({
             status: 200,
-            body: '<html><head><meta charset="UTF-8" /></head><body></body></html>'
+            body: `<html><head><meta charset="UTF-8" /></head><body ${bodyStyle ? 'style="' + escapeHtml(bodyStyle) + '"' : ''}></body></html>`
         });
     });
 
