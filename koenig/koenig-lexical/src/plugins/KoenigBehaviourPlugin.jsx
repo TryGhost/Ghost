@@ -362,11 +362,10 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         }
                     }
 
-                    // avoid processing card behaviours when an inner card element has focus
+                    // let the browser handle selection when in a card inner element (e.g. nested editor)
                     // NOTE: must come after ctrl/cmd+enter because that always toggles no matter the selection
-
                     if (!event._fromNested && document.activeElement !== editor.getRootElement()) {
-                        return false;
+                        return true;
                     }
 
                     // if a card is selected, insert a new paragraph after it
