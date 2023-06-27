@@ -215,5 +215,66 @@ test.describe('Options', async () => {
             expect(saturation).toBe(1);
         });
     });
+
+    test.describe('Accent color', () => {
+        test('Uses default accent color', async ({page}) => {
+            const mockedApi = new MockedApi({});
+            mockedApi.addComment();
+
+            const {frame} = await initialize({
+                mockedApi,
+                page,
+                publication: 'Publisher Weekly'
+            });
+
+            const signupButton = await frame.getByTestId('signup-button');
+
+            // Get computed background color
+            const color = await signupButton.evaluate((node) => {
+                const style = window.getComputedStyle(node);
+                return style.getPropertyValue('background-color');
+            });
+            expect(color).toBe('rgb(0, 0, 0)');
+
+            const signinButton = await frame.getByTestId('signin-button');
+
+            // Get computed text color
+            const textColor = await signinButton.evaluate((node) => {
+                const style = window.getComputedStyle(node);
+                return style.getPropertyValue('color');
+            });
+            expect(textColor).toBe('rgb(0, 0, 0)');
+        });
+
+        test('Uses accentColor option', async ({page}) => {
+            const mockedApi = new MockedApi({});
+            mockedApi.addComment();
+
+            const {frame} = await initialize({
+                mockedApi,
+                page,
+                publication: 'Publisher Weekly',
+                accentColor: 'rgb(255, 211, 100)'
+            });
+
+            const signupButton = await frame.getByTestId('signup-button');
+
+            // Get computed background color
+            const color = await signupButton.evaluate((node) => {
+                const style = window.getComputedStyle(node);
+                return style.getPropertyValue('background-color');
+            });
+            expect(color).toBe('rgb(255, 211, 100)');
+
+            const signinButton = await frame.getByTestId('signin-button');
+
+            // Get computed text color
+            const textColor = await signinButton.evaluate((node) => {
+                const style = window.getComputedStyle(node);
+                return style.getPropertyValue('color');
+            });
+            expect(textColor).toBe('rgb(255, 211, 100)');
+        });
+    });
 });
 

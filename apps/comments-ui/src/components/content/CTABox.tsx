@@ -33,12 +33,12 @@ const CTABox: React.FC<Props> = ({isFirst, isPaid}) => {
             <p className="mb-[28px] w-full px-0 text-center font-sans text-[16px] leading-normal text-neutral-600 dark:text-[rgba(255,255,255,0.85)] sm:max-w-screen-sm sm:px-8">
                 Become a {isPaid && 'paid'} member of <span className="font-semibold">{publication}</span> to start commenting.
             </p>
-            <button className="font-san mb-[12px] inline-block rounded px-5 py-[14px] font-medium leading-none text-white transition-all hover:opacity-90" style={buttonStyle} type="button" onClick={handleSignUpClick}>
+            <button className="font-san mb-[12px] inline-block rounded px-5 py-[14px] font-medium leading-none text-white transition-all hover:opacity-90" data-testid="signup-button" style={buttonStyle} type="button" onClick={handleSignUpClick}>
                 {(isPaid && member) ? 'Upgrade now' : 'Sign up now'}
             </button>
             {!member && (<p className="text-center font-sans text-sm text-[rgba(0,0,0,0.4)] dark:text-[rgba(255,255,255,0.5)]">
                 <span className='mr-1 inline-block text-[15px]'>Already a member?</span>
-                <button className="rounded-md text-sm font-semibold transition-all hover:opacity-90" style={linkStyle} type="button" onClick={handleSignInClick}>Sign in</button>
+                <button className="rounded-md text-sm font-semibold transition-all hover:opacity-90" data-testid="signin-button" style={linkStyle} type="button" onClick={handleSignInClick}>Sign in</button>
             </p>)}
         </section>
     );
