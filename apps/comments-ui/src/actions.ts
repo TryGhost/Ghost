@@ -1,7 +1,8 @@
-import {AddComment, AppContextType, Comment, Popup} from './AppContext';
+import {AddComment, AppContextType, Comment} from './AppContext';
 import {GhostApi} from './utils/api';
+import {Page} from './pages';
 
-async function loadMoreComments({state, api}: {state: AppContextType, api: GhostApi, data: never}): Promise<Partial<AppContextType>> {
+async function loadMoreComments({state, api}: {state: AppContextType, api: GhostApi}): Promise<Partial<AppContextType>> {
     let page = 1;
     if (state.pagination && state.pagination.page) {
         page = state.pagination.page + 1;
@@ -15,7 +16,7 @@ async function loadMoreComments({state, api}: {state: AppContextType, api: Ghost
     };
 }
 
-async function loadMoreReplies({state, api, data: {comment, limit}}: {state: AppContextType, api: GhostApi, data: {comment: any, limit: number | 'all'}}): Promise<Partial<AppContextType>> {
+async function loadMoreReplies({state, api, data: {comment, limit}}: {state: AppContextType, api: GhostApi, data: {comment: any, limit?: number | 'all'}}): Promise<Partial<AppContextType>> {
     const data = await api.comments.replies({commentId: comment.id, afterReplyId: comment.replies[comment.replies.length - 1]?.id, limit});
 
     // Note: we store the comments from new to old, and show them in reverse order
@@ -323,7 +324,7 @@ async function updateMember({data, state, api}: {data: {name: string, expertise:
     return null;
 }
 
-function openPopup({data}: {data: Popup}) {
+function openPopup({data}: {data: Page}) {
     return {
         popup: data
     };

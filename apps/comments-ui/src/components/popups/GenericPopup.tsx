@@ -3,19 +3,25 @@ import {Transition} from '@headlessui/react';
 import {useAppContext} from '../../AppContext';
 import {useEffect} from 'react';
 
-const GenericPopup = ({show, children, title, callback}) => {
+type Props = {
+    show: boolean;
+    title: string;
+    callback?: (result: boolean) => void;
+    children: React.ReactNode;
+};
+const GenericPopup: React.FC<Props> = ({show, children, title, callback}) => {
     // The modal will cover the whole screen, so while it is hidden, we need to disable pointer events
     const {dispatchAction} = useAppContext();
 
-    const close = (event) => {
-        dispatchAction('closePopup');
+    const close = () => {
+        dispatchAction('closePopup', {});
         if (callback) {
             callback(false);
         }
     };
 
     useEffect(() => {
-        const listener = (event) => {
+        const listener = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
                 close();
             }
@@ -23,7 +29,7 @@ const GenericPopup = ({show, children, title, callback}) => {
         window.addEventListener('keydown', listener, {passive: true});
 
         return () => {
-            window.removeEventListener('keydown', listener, {passive: true});
+            window.removeEventListener('keydown', listener, {passive: true} as any);
         };
     });
 

@@ -1,6 +1,10 @@
 import {formatNumber} from '../../utils/helpers';
 
-const Count = ({showCount, count}) => {
+type CountProps = {
+    showCount: boolean,
+    count: number
+};
+const Count: React.FC<CountProps> = ({showCount, count}) => {
     if (!showCount) {
         return null;
     }
@@ -16,17 +20,22 @@ const Count = ({showCount, count}) => {
     );
 };
 
-const Title = ({title}) => {
+const Title: React.FC<{title: string | null}> = ({title}) => {
     if (title === null) {
         return (
             <><span className="hidden sm:inline">Member </span><span className="capitalize sm:normal-case">discussion</span></>
         );
     }
 
-    return title;
+    return <>{title}</>;
 };
 
-const ContentTitle = ({title, showCount, count}) => {
+type ContentTitleProps = {
+    title: string | null,
+    showCount: boolean,
+    count: number
+};
+const ContentTitle: React.FC<ContentTitleProps> = ({title, showCount, count}) => {
     // We have to check for null for title because null means default, wheras empty string means empty
     if (!title && !showCount && title !== null) {
         return null;

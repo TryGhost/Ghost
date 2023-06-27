@@ -1,6 +1,10 @@
 import {useAppContext} from '../../AppContext';
 
-const CTABox = ({isFirst, isPaid}) => {
+type Props = {
+    isFirst: boolean,
+    isPaid: boolean
+};
+const CTABox: React.FC<Props> = ({isFirst, isPaid}) => {
     const {accentColor, publication, member} = useAppContext();
 
     const buttonStyle = {

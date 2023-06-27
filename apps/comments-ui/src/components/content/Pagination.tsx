@@ -5,7 +5,7 @@ const Pagination = () => {
     const {pagination, dispatchAction} = useAppContext();
 
     const loadMore = () => {
-        dispatchAction('loadMoreComments');
+        dispatchAction('loadMoreComments', {});
     };
 
     if (!pagination) {

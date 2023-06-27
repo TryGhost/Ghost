@@ -1,4 +1,3 @@
-import React from 'react';
 import {ReactComponent as SpinnerIcon} from '../../images/icons/spinner.svg';
 
 function Loading() {

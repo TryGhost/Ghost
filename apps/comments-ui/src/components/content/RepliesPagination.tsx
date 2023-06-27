@@ -1,7 +1,11 @@
 import React from 'react';
 import {formatNumber} from '../../utils/helpers';
 
-const RepliesPagination = ({loadMore, count}) => {
+type Props = {
+    loadMore: () => void;
+    count: number;
+};
+const RepliesPagination: React.FC<Props> = ({loadMore, count}) => {
     return (
         <div className="flex w-full items-center justify-start">
             <button className="text-md group mb-10 ml-[48px] flex w-auto items-center px-0 pb-2 pt-0 text-left font-sans font-semibold text-neutral-700 dark:text-white sm:mb-12 " data-testid="reply-pagination-button" type="button" onClick={loadMore}>

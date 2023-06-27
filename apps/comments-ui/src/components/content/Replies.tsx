@@ -1,8 +1,11 @@
-import Comment from './Comment';
+import CommentComponent from './Comment';
 import RepliesPagination from './RepliesPagination';
-import {useAppContext} from '../../AppContext';
+import {Comment, useAppContext} from '../../AppContext';
 
-const Replies = ({comment}) => {
+type Props = {
+    comment: Comment
+};
+const Replies: React.FC<Props> = ({comment}) => {
     const {dispatchAction} = useAppContext();
 
     const repliesLeft = comment.count.replies - comment.replies.length;
@@ -13,7 +16,7 @@ const Replies = ({comment}) => {
 
     return (
         <div>
-            {comment.replies.map((reply => <Comment key={reply.id} comment={reply} isReply={true} parent={comment} />))}
+            {comment.replies.map((reply => <CommentComponent key={reply.id} comment={reply} parent={comment} />))}
             {repliesLeft > 0 && <RepliesPagination count={repliesLeft} loadMore={loadMore}/>}
         </div>
     );
