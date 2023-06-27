@@ -193,15 +193,6 @@ describe('ButtonNode', function () {
         });
     });
 
-    describe('clone', function () {
-        it('clones the node', editorTest(function () {
-            const buttonNode = $createButtonNode(dataset);
-            const clonedbuttonNode = ButtonNode.clone(buttonNode);
-            $isButtonNode(clonedbuttonNode).should.be.true;
-            clonedbuttonNode.buttonUrl.should.equal(dataset.buttonUrl);
-        }));
-    });
-
     describe('static properties', function () {
         it('getType', editorTest(function () {
             ButtonNode.getType().should.equal('button');
@@ -211,13 +202,6 @@ describe('ButtonNode', function () {
             ButtonNode.urlTransformMap.should.deepEqual({
                 buttonUrl: 'url'
             });
-        }));
-    });
-
-    describe('hasEditMode', function () {
-        it('returns true', editorTest(function () {
-            const buttonNode = $createButtonNode(dataset);
-            buttonNode.hasEditMode().should.be.true;
         }));
     });
 

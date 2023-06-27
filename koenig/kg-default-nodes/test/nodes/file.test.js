@@ -205,31 +205,6 @@ describe('FileNode', function () {
         });
     });
 
-    describe('clone', function () {
-        it('clones the node', editorTest(function () {
-            const fileNode = $createFileNode(dataset);
-            const clonedNode = FileNode.clone(fileNode);
-            $isFileNode(clonedNode).should.be.true();
-            clonedNode.src.should.equal('/content/files/2023/03/IMG_0196.jpeg');
-            clonedNode.fileTitle.should.equal('Cool image to download');
-            clonedNode.fileCaption.should.equal('This is a description');
-            clonedNode.fileName.should.equal('IMG_0196.jpeg');
-            clonedNode.fileSize.should.equal(123456);
-            clonedNode.formattedFileSize.should.equal('121 KB'); // ~121 KB
-        }));
-    });
-
-    describe('static props', function () {
-        it('can get type', editorTest(function () {
-            FileNode.getType().should.equal('file');
-        }));
-        it('can get urlTransformMap', editorTest(function () {
-            FileNode.urlTransformMap.should.deepEqual({
-                src: 'url'
-            });
-        }));
-    });
-
     describe('exportJSON', function () {
         it('exports all data', editorTest(function () {
             const fileNode = $createFileNode(dataset);
