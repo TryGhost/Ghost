@@ -10,12 +10,13 @@ interface DesktopChromeHeaderProps {
     toolbarClasses?: string;
 }
 
-const DesktopChromeHeader: React.FC<DesktopChromeHeaderProps> = ({
+const DesktopChromeHeader: React.FC<DesktopChromeHeaderProps & React.HTMLAttributes<HTMLDivElement>> = ({
     size = 'md',
     toolbarLeft = '',
     toolbarCenter = '',
     toolbarRight = '',
-    toolbarClasses = ''
+    toolbarClasses = '',
+    ...props
 }) => {
     let containerSize;
 
@@ -50,7 +51,7 @@ const DesktopChromeHeader: React.FC<DesktopChromeHeaderProps> = ({
     );
 
     return (
-        <header className={`relative flex items-center justify-center bg-grey-50 ${containerSize} ${toolbarClasses}`}>
+        <header className={`relative flex items-center justify-center bg-grey-50 ${containerSize} ${toolbarClasses}`} {...props}>
             {toolbarLeft ?
                 <div className='absolute left-5 flex h-full items-center'>
                     {toolbarLeft}

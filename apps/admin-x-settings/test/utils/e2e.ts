@@ -1,4 +1,4 @@
-import {CustomThemeSettingsResponseType, ImagesResponseType, InvitesResponseType, RolesResponseType, SettingsResponseType, SiteResponseType, ThemesResponseType, UsersResponseType} from '../../src/utils/api';
+import {CustomThemeSettingsResponseType, ImagesResponseType, InvitesResponseType, PostsResponseType, RolesResponseType, SettingsResponseType, SiteResponseType, ThemesResponseType, UsersResponseType} from '../../src/utils/api';
 import {Page, Request} from '@playwright/test';
 import {readFileSync} from 'fs';
 
@@ -9,7 +9,7 @@ export const responseFixtures = {
     roles: JSON.parse(readFileSync(`${__dirname}/responses/roles.json`).toString()) as RolesResponseType,
     site: JSON.parse(readFileSync(`${__dirname}/responses/site.json`).toString()) as SiteResponseType,
     invites: JSON.parse(readFileSync(`${__dirname}/responses/invites.json`).toString()) as InvitesResponseType,
-    custom_theme_settings: JSON.parse(readFileSync(`${__dirname}/responses/custom_theme_settings.json`).toString()) as CustomThemeSettingsResponseType,
+    customThemeSettings: JSON.parse(readFileSync(`${__dirname}/responses/custom_theme_settings.json`).toString()) as CustomThemeSettingsResponseType,
     themes: JSON.parse(readFileSync(`${__dirname}/responses/themes.json`).toString()) as ThemesResponseType
 };
 
@@ -40,10 +40,13 @@ interface Responses {
     images?: {
         upload?: ImagesResponseType
     }
-    custom_theme_settings?: {
+    customThemeSettings?: {
         browse?: CustomThemeSettingsResponseType
         edit?: CustomThemeSettingsResponseType
     }
+    latestPost?: {
+        browse?: PostsResponseType
+    },
     themes?: {
         browse?: ThemesResponseType
         activate?: ThemesResponseType
@@ -53,6 +56,7 @@ interface Responses {
     }
     previewHtml?: {
         homepage?: string
+        post?: string
     }
 }
 
@@ -89,9 +93,12 @@ type LastRequests = {
     images: {
         upload: RequestRecord
     }
-    custom_theme_settings: {
+    customThemeSettings: {
         browse: RequestRecord
         edit: RequestRecord
+    }
+    latestPost: {
+        browse: RequestRecord
     }
     themes: {
         browse: RequestRecord
@@ -102,6 +109,7 @@ type LastRequests = {
     }
     previewHtml: {
         homepage: RequestRecord
+        post: RequestRecord
     }
 };
 
@@ -113,9 +121,10 @@ export async function mockApi({page,responses}: {page: Page, responses?: Respons
         invites: {browse: {}, add: {}, delete: {}},
         site: {browse: {}},
         images: {upload: {}},
-        custom_theme_settings: {browse: {}, edit: {}},
+        customThemeSettings: {browse: {}, edit: {}},
+        latestPost: {browse: {}},
         themes: {browse: {}, activate: {}, delete: {}, install: {}, upload: {}},
-        previewHtml: {homepage: {}}
+        previewHtml: {homepage: {}, post: {}}
     };
 
     await mockApiResponse({
@@ -311,12 +320,23 @@ export async function mockApi({page,responses}: {page: Page, responses?: Respons
         path: /\/ghost\/api\/admin\/custom_theme_settings\/$/,
         respondTo: {
             GET: {
-                body: responses?.custom_theme_settings?.browse ?? responseFixtures.custom_theme_settings,
-                updateLastRequest: lastApiRequests.custom_theme_settings.browse
+                body: responses?.customThemeSettings?.browse ?? responseFixtures.customThemeSettings,
+                updateLastRequest: lastApiRequests.customThemeSettings.browse
             },
             PUT: {
-                body: responses?.custom_theme_settings?.edit ?? responseFixtures.custom_theme_settings,
-                updateLastRequest: lastApiRequests.custom_theme_settings.edit
+                body: responses?.customThemeSettings?.edit ?? responseFixtures.customThemeSettings,
+                updateLastRequest: lastApiRequests.customThemeSettings.edit
+            }
+        }
+    });
+
+    await mockApiResponse({
+        page,
+        path: /\/ghost\/api\/admin\/posts\/\?filter=/,
+        respondTo: {
+            GET: {
+                body: responses?.latestPost?.browse ?? {posts: [{id: '1', url: `${responseFixtures.site.site.url}/test-post/`}]},
+                updateLastRequest: lastApiRequests.latestPost.browse
             }
         }
     });
@@ -327,8 +347,20 @@ export async function mockApi({page,responses}: {page: Page, responses?: Respons
         respondTo: {
             POST: {
                 condition: request => !!request.headers()['x-ghost-preview'],
-                body: responses?.previewHtml?.homepage ?? '<html><head><style></style></head><body><div>test</div></body></html>',
+                body: responses?.previewHtml?.homepage ?? '<html><head><style></style></head><body><div>homepage</div></body></html>',
                 updateLastRequest: lastApiRequests.previewHtml.homepage
+            }
+        }
+    });
+
+    await mockApiResponse({
+        page,
+        path: `${responseFixtures.site.site.url}/test-post/`,
+        respondTo: {
+            POST: {
+                condition: request => !!request.headers()['x-ghost-preview'],
+                body: responses?.previewHtml?.post ?? '<html><head><style></style></head><body><div>post</div></body></html>',
+                updateLastRequest: lastApiRequests.previewHtml.post
             }
         }
     });
