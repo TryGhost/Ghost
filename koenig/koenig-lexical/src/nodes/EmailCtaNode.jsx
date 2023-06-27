@@ -22,7 +22,8 @@ export class EmailCtaNode extends BaseEmailCtaNode {
         Icon: EmailCtaCardIcon,
         insertCommand: INSERT_EMAIL_CTA_COMMAND,
         matches: ['email', 'cta', 'email-cta'],
-        priority: 8
+        priority: 8,
+        postType: 'post'
     };
 
     getIcon() {

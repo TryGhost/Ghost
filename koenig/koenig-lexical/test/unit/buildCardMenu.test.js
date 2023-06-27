@@ -409,5 +409,72 @@ describe('buildCardMenu', function () {
             const cardMenu = buildCardMenu([], {query: 'sniptr', config: {snippets}});
             expect(cardMenu.menu).deep.equal(new Map());
         });
+
+        it('can filter based on the post type', async function () {
+            const config = {post: {displayName: 'post'}}; 
+            const nodes = [
+                ['one', {kgMenu: {
+                    label: 'One',
+                    desc: 'Card test one',
+                    Icon,
+                    insertCommand: 'insert_card_one',
+                    postType: 'page'
+                }}],
+                ['two', {kgMenu: {
+                    label: 'Two',
+                    desc: 'Card test two',
+                    Icon,
+                    insertCommand: 'insert_card_two'
+                }}]];
+            const cardMenu = buildCardMenu(nodes, {config});
+            expect(cardMenu.menu).deep.equal(new Map([
+                ['Primary', [
+                    {
+                        label: 'Two',
+                        desc: 'Card test two',
+                        Icon,
+                        insertCommand: 'insert_card_two',
+                        nodeType: 'two'
+                    }
+                ]]
+            ]));
+        });
+
+        it('does not filter on post type if missing in config', async function () {
+            const nodes = [
+                ['one', {kgMenu: {
+                    label: 'One',
+                    desc: 'Card test one',
+                    Icon,
+                    insertCommand: 'insert_card_one',
+                    postType: 'page'
+                }}],
+                ['two', {kgMenu: {
+                    label: 'Two',
+                    desc: 'Card test two',
+                    Icon,
+                    insertCommand: 'insert_card_two'
+                }}]];
+            const cardMenu = buildCardMenu(nodes);
+            expect(cardMenu.menu).deep.equal(new Map([
+                ['Primary', [
+                    {
+                        label: 'One',
+                        desc: 'Card test one',
+                        Icon,
+                        insertCommand: 'insert_card_one',
+                        nodeType: 'one',
+                        postType: 'page'
+                    },
+                    {
+                        label: 'Two',
+                        desc: 'Card test two',
+                        Icon,
+                        insertCommand: 'insert_card_two',
+                        nodeType: 'two'
+                    }
+                ]]
+            ]));
+        });
     });
 });
