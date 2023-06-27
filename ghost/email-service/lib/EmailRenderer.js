@@ -8,6 +8,7 @@ const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@trygh
 const {DateTime} = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const tpl = require('@tryghost/tpl');
+const cheerio = require('cheerio');
 
 const messages = {
     subscriptionStatus: {
@@ -218,7 +219,6 @@ class EmailRenderer {
             return allowedSegments;
         }
 
-        const cheerio = require('cheerio');
         const $ = cheerio.load(html);
 
         let allSegments = $('[data-gh-segment]')
@@ -278,6 +278,16 @@ class EmailRenderer {
 
                 // Remove the members-only content
                 html = html.slice(0, membersOnlyIndex);
+
+                const $ = cheerio.load(html);
+
+                $('[data-gh-segment]').get().forEach((node) => {
+                    if (node.attribs['data-gh-segment'] !== 'status:free') {
+                        $(node).remove();
+                    }
+                });
+
+                html = $.html();
             }
         }
 
@@ -326,7 +336,6 @@ class EmailRenderer {
         html = juice(html, {inlinePseudoElements: true, removeStyleTags: true});
 
         // happens after inlining of CSS so we can change element types without worrying about styling
-        const cheerio = require('cheerio');
         const $ = cheerio.load(html);
 
         // force all links to open in new tab
@@ -715,13 +724,18 @@ class EmailRenderer {
      * @param {object} postModel
      * @returns
      */
-    #getEmailPreheader(postModel) {
+    #getEmailPreheader(postModel, addPaywall, html) {
         let plaintext = postModel.get('plaintext');
         let customExcerpt = postModel.get('custom_excerpt');
         if (customExcerpt) {
             return customExcerpt;
         } else {
             if (plaintext) {
+                // If paywall is enabled, we need to get the plaintext from the html
+                // as the plaintext field on the model may contain paywalled content
+                if (addPaywall) {
+                    plaintext = htmlToPlaintext.email(html);
+                }
                 return plaintext.substring(0, 500);
             } else {
                 return `${postModel.get('title')} – `;
@@ -931,7 +945,7 @@ class EmailRenderer {
                         image: this.#settingsCache.get('icon')
                     }, true) : null
             },
-            preheader: this.#getEmailPreheader(post),
+            preheader: this.#getEmailPreheader(post, addPaywall, html),
             html,
 
             post: {

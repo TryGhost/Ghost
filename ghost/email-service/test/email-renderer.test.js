@@ -1057,6 +1057,40 @@ describe('Email renderer', function () {
             should($('.preheader').text()).eql('Custom excerpt');
         });
 
+        it('does not include member-only content in preheader', async function () {
+            renderedPost = '<div> Lexical Test </div> <div data-gh-segment="status:-free"> members only section</div> some text for both <!--members-only--> finishing part only for members';
+            let post = {
+                related: sinon.stub(),
+                get: (key) => {
+                    if (key === 'lexical') {
+                        return '{}';
+                    }
+
+                    if (key === 'visibility') {
+                        return 'paid';
+                    }
+
+                    if (key === 'plaintext') {
+                        return 'foobarbaz';
+                    }
+                },
+                getLazyRelation: sinon.stub()
+            };
+            let newsletter = {
+                get: sinon.stub()
+            };
+
+            let response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                'status:free',
+                {}
+            );
+
+            const $ = cheerio.load(response.html);
+            should($('.preheader').text()).eql('Lexical Test some text for both');
+        });
+
         it('only includes first author if more than 2', async function () {
             const post = createModel({...basePost, authors: [
                 createModel({
