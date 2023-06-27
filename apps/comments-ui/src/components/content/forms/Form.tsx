@@ -1,11 +1,12 @@
-import {Transition} from '@headlessui/react';
-import {Editor, EditorContent} from '@tiptap/react';
-import {useCallback, useEffect, useRef, useState} from 'react';
+import React from 'react';
+import {Avatar} from '../Avatar';
 import {Comment, useAppContext} from '../../../AppContext';
 import {ReactComponent as EditIcon} from '../../../images/icons/edit.svg';
+import {Editor, EditorContent} from '@tiptap/react';
 import {ReactComponent as SpinnerIcon} from '../../../images/icons/spinner.svg';
+import {Transition} from '@headlessui/react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {usePopupOpen} from '../../../utils/hooks';
-import {Avatar} from '../Avatar';
 
 type Progress = 'default' | 'sending' | 'sent' | 'error'
 type SubmitSize = 'small' | 'medium' | 'large';
@@ -17,8 +18,8 @@ type FormEditorProps = {
     reduced?: boolean;
     isOpen: boolean;
     editor: Editor | null;
-    submitText: string | null;
-    submitSize?: SubmitSize;
+    submitText: JSX.Element | null;
+    submitSize: SubmitSize;
 };
 const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, close, reduced, isOpen, editor, submitText, submitSize}) => {
     let buttonIcon = null;
@@ -128,7 +129,6 @@ const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, c
     );
 };
 
-
 type FormHeaderProps = {
     show: boolean;
     name: string | null;
@@ -170,9 +170,9 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, editName,
 };
 
 type FormProps = {
-    comment: Comment | null;
+    comment?: Comment;
     submit: (data: {html: string}) => Promise<void>;
-    submitText: string;
+    submitText: JSX.Element;
     submitSize: SubmitSize;
     close?: () => void;
     editor: Editor | null;
@@ -266,7 +266,7 @@ const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, clo
                     <FormEditor close={close} editor={editor} isOpen={isOpen} progress={progress} reduced={reduced} setProgress={setProgress} submit={submit} submitSize={submitSize} submitText={submitText} />
                 </div>
                 <div className='absolute left-0 top-1 flex h-12 w-full items-center justify-start'>
-                    <div className="mr-3 grow-0 pointer-events-none">
+                    <div className="pointer-events-none mr-3 grow-0">
                         <Avatar comment={comment} />
                     </div>
                     <div className="grow-1 w-full">

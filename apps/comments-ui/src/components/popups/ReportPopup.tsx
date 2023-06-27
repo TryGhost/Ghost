@@ -1,9 +1,9 @@
 import CloseButton from './CloseButton';
+import {Comment} from '../../AppContext';
 import {ReactComponent as SpinnerIcon} from '../../images/icons/spinner.svg';
 import {ReactComponent as SuccessIcon} from '../../images/icons/success.svg';
 import {useAppContext} from '../../AppContext';
 import {useState} from 'react';
-import {Comment} from '../../AppContext';
 
 const ReportPopup = ({comment}: {comment: Comment}) => {
     const {dispatchAction} = useAppContext();

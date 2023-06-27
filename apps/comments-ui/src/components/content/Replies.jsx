@@ -1,7 +1,6 @@
 import Comment from './Comment';
 import RepliesPagination from './RepliesPagination';
 import {useAppContext} from '../../AppContext';
-import {useContext} from 'react';
 
 const Replies = ({comment}) => {
     const {dispatchAction} = useAppContext();

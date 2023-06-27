@@ -1,4 +1,4 @@
-import {Comment} from '../AppContext';
+import {AddComment, Comment} from '../AppContext';
 
 function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {siteUrl: string, apiUrl: string, apiKey: string}) {
     const apiPath = 'members/api';
@@ -158,7 +158,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                     throw new Error('Failed to fetch replies');
                 }
             },
-            add({comment}: {comment: Comment}) {
+            add({comment}: {comment: AddComment}) {
                 const body = {
                     comments: [comment]
                 };

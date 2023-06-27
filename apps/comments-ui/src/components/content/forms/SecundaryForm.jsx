@@ -1,7 +1,7 @@
 import Form from './Form';
-import React, {useContext, useEffect} from 'react';
 import {isMobile} from '../../../utils/helpers';
 import {useAppContext} from '../../../AppContext';
+import {useEffect} from 'react';
 import {useSecondUpdate} from '../../../utils/hooks';
 
 const SecundaryForm = ({editor, submit, close, closeIfNotChanged, submitText, submitSize}) => {

@@ -1,7 +1,7 @@
 import CommentContextMenu from '../context-menus/CommentContextMenu';
-import React, {useContext, useState} from 'react';
 import {ReactComponent as MoreIcon} from '../../../images/icons/more.svg';
 import {useAppContext} from '../../../AppContext';
+import {useState} from 'react';
 
 const MoreButton = ({comment, toggleEdit}) => {
     const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);

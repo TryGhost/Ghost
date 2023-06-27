@@ -1,6 +1,6 @@
 import SecundaryForm from './SecundaryForm';
-import {getEditorConfig} from '../../../utils/editor';
 import {Comment, useAppContext} from '../../../AppContext';
+import {getEditorConfig} from '../../../utils/editor';
 import {useCallback, useEffect} from 'react';
 import {useEditor} from '@tiptap/react';
 

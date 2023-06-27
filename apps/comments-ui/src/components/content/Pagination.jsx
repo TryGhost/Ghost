@@ -1,4 +1,3 @@
-import React, {useContext} from 'react';
 import {formatNumber} from '../../utils/helpers';
 import {useAppContext} from '../../AppContext';
 

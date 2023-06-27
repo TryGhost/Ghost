@@ -1,4 +1,4 @@
-import {AppContextType, Comment, Popup} from './AppContext';
+import {AddComment, AppContextType, Comment, Popup} from './AppContext';
 import {GhostApi} from './utils/api';
 
 async function loadMoreComments({state, api}: {state: AppContextType, api: GhostApi, data: never}): Promise<Partial<AppContextType>> {
@@ -32,7 +32,7 @@ async function loadMoreReplies({state, api, data: {comment, limit}}: {state: App
     };
 }
 
-async function addComment({state, api, data: comment}: {state: AppContextType, api: GhostApi, data: Comment}) {
+async function addComment({state, api, data: comment}: {state: AppContextType, api: GhostApi, data: AddComment}) {
     const data = await api.comments.add({comment});
     comment = data.comments[0];
 

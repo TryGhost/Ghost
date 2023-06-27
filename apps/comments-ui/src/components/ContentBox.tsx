@@ -1,5 +1,6 @@
 import Content from './content/Content';
 import Loading from './content/Loading';
+import React from 'react';
 import {ROOT_DIV_ID} from '../utils/constants';
 import {useAppContext} from '../AppContext';
 

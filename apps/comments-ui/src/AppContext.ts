@@ -23,6 +23,7 @@ export type Member = {
 
 export type Comment = {
     id: string,
+    post_id: string,
     replies: Comment[],
     status: string,
     count: {
@@ -30,6 +31,12 @@ export type Comment = {
         likes: number,
     },
     member: Member,
+    html: string
+}
+
+export type AddComment = {
+    post_id: string,
+    status: string,
     html: string
 }
 

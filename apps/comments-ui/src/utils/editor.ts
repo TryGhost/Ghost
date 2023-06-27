@@ -1,4 +1,3 @@
-import {EditorOptions} from '@tiptap/core';
 import Blockquote from '@tiptap/extension-blockquote';
 import Document from '@tiptap/extension-document';
 import HardBreak from '@tiptap/extension-hard-break';
@@ -6,6 +5,7 @@ import Link from '@tiptap/extension-link';
 import Paragraph from '@tiptap/extension-paragraph';
 import Placeholder from '@tiptap/extension-placeholder';
 import Text from '@tiptap/extension-text';
+import {EditorOptions} from '@tiptap/core';
 
 export function getEditorConfig({placeholder, autofocus = false, content = ''}: {placeholder: string; autofocus?: boolean; content?: string}): Partial<EditorOptions> {
     return {

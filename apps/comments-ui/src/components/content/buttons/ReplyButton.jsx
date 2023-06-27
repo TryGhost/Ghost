@@ -1,4 +1,3 @@
-import React, {useContext} from 'react';
 import {ReactComponent as ReplyIcon} from '../../../images/icons/reply.svg';
 import {useAppContext} from '../../../AppContext';
 

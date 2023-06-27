@@ -4,7 +4,7 @@ import {useAppContext} from '../AppContext';
 import {useEffect, useState} from 'react';
 
 type Props = {};
-const PopupBox: React.FC<Props> = ({}) => {
+const PopupBox: React.FC<Props> = () => {
     const {popup} = useAppContext();
 
     // To make sure we can properly animate a popup that goes away, we keep a state of the last visible popup
@@ -52,6 +52,6 @@ const PopupBox: React.FC<Props> = ({}) => {
             </GenericPopup>
         </>
     );
-}
+};
 
 export default PopupBox;

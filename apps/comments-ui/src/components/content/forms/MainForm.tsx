@@ -1,11 +1,14 @@
-import {useEditor} from '@tiptap/react';
-import {useCallback, useEffect, useRef} from 'react';
-import {useAppContext} from '../../../AppContext';
+import Form from './Form';
+import React, {useCallback, useEffect, useRef} from 'react';
 import {getEditorConfig} from '../../../utils/editor';
 import {scrollToElement} from '../../../utils/helpers';
-import Form from './Form';
+import {useAppContext} from '../../../AppContext';
+import {useEditor} from '@tiptap/react';
 
-const MainForm = ({commentsCount}) => {
+type Props = {
+    commentsCount: number
+};
+const MainForm: React.FC<Props> = ({commentsCount}) => {
     const {postId, dispatchAction} = useAppContext();
 
     const config = {
@@ -36,7 +39,7 @@ const MainForm = ({commentsCount}) => {
 
         // Add some basic keyboard shortcuts
         // ESC to blur the editor
-        const keyDownListener = (event) => {
+        const keyDownListener = (event: KeyboardEvent) => {
             if (!editor) {
                 return;
             }
@@ -47,15 +50,15 @@ const MainForm = ({commentsCount}) => {
                 return;
             }
 
-            let focusedElement = document.activeElement;
+            let focusedElement = document.activeElement as HTMLElement | null;
             while (focusedElement && focusedElement.tagName === 'IFRAME') {
-                if (!focusedElement.contentDocument) {
+                if (!(focusedElement as HTMLIFrameElement).contentDocument) {
                     // CORS issue
                     // disable the C shortcut when we have a focused external iframe
                     break;
                 }
 
-                focusedElement = focusedElement.contentDocument.activeElement;
+                focusedElement = ((focusedElement as HTMLIFrameElement).contentDocument?.activeElement ?? null) as HTMLElement | null;
             }
             const hasInputFocused = focusedElement && (focusedElement.tagName === 'INPUT' || focusedElement.tagName === 'TEXTAREA' || focusedElement.tagName === 'IFRAME' || focusedElement.contentEditable === 'true');
 
@@ -74,7 +77,7 @@ const MainForm = ({commentsCount}) => {
         window.addEventListener('keydown', keyDownListener, {passive: true});
 
         return () => {
-            window.removeEventListener('keydown', keyDownListener, {passive: true});
+            window.removeEventListener('keydown', keyDownListener, {passive: true} as any);
         };
     }, [editor]);
 

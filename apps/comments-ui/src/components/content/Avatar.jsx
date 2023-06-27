@@ -1,4 +1,3 @@
-import React, {useContext} from 'react';
 import {ReactComponent as AvatarIcon} from '../../images/icons/avatar.svg';
 import {getInitials} from '../../utils/helpers';
 import {useAppContext} from '../../AppContext';

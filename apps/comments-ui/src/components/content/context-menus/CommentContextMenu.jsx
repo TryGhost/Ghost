@@ -1,8 +1,8 @@
 import AdminContextMenu from './AdminContextMenu';
 import AuthorContextMenu from './AuthorContextMenu';
 import NotAuthorContextMenu from './NotAuthorContextMenu';
-import React, {useContext, useEffect, useRef} from 'react';
 import {useAppContext} from '../../../AppContext';
+import {useEffect, useRef} from 'react';
 
 const CommentContextMenu = ({comment, close, toggleEdit}) => {
     const {member, admin} = useAppContext();

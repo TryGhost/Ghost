@@ -3,9 +3,9 @@ import Comment from './Comment';
 import ContentTitle from './ContentTitle';
 import MainForm from './forms/MainForm';
 import Pagination from './Pagination';
-import React, {useContext, useEffect} from 'react';
 import {ROOT_DIV_ID} from '../../utils/constants';
 import {useAppContext} from '../../AppContext';
+import {useEffect} from 'react';
 
 const Content = () => {
     const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, secundaryFormCount} = useAppContext();

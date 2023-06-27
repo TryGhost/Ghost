@@ -1,8 +1,8 @@
 import SecundaryForm from './SecundaryForm';
-import {default as React, useCallback, useContext} from 'react';
 import {getEditorConfig} from '../../../utils/editor';
 import {scrollToElement} from '../../../utils/helpers';
 import {useAppContext} from '../../../AppContext';
+import {useCallback} from 'react';
 import {useEditor} from '@tiptap/react';
 import {useRefCallback} from '../../../utils/hooks';
 
