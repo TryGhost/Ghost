@@ -259,7 +259,7 @@ async function deleteComment({state, api, data: comment}: {state: AppContextType
     };
 }
 
-async function editComment({state, api, data: {comment, parent}}: {state: AppContextType, api: GhostApi, data: {comment: Comment, parent?: Comment}}) {
+async function editComment({state, api, data: {comment, parent}}: {state: AppContextType, api: GhostApi, data: {comment: Partial<Comment> & {id: string}, parent?: Comment}}) {
     const data = await api.comments.edit({
         comment
     });

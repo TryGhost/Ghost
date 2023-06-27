@@ -29,7 +29,8 @@ export type Comment = {
         replies: number,
         likes: number,
     },
-    member: Member
+    member: Member,
+    html: string
 }
 
 export type AppContextType = {

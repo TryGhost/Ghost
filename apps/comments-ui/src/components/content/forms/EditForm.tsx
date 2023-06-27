@@ -1,10 +1,16 @@
 import SecundaryForm from './SecundaryForm';
-import {default as React, useCallback, useContext, useEffect} from 'react';
 import {getEditorConfig} from '../../../utils/editor';
-import {useAppContext} from '../../../AppContext';
+import {Comment, useAppContext} from '../../../AppContext';
+import {useCallback, useEffect} from 'react';
 import {useEditor} from '@tiptap/react';
 
-const EditForm = ({comment, parent, close}) => {
+type Props = {
+    comment: Comment;
+    parent?: Comment;
+    close: () => void;
+};
+
+const EditForm: React.FC<Props> = ({comment, parent, close}) => {
     const {dispatchAction} = useAppContext();
 
     const config = {
