@@ -33090,10 +33090,10 @@ vite-plugin-commonjs@0.8.0:
     fast-glob "^3.2.12"
     vite-plugin-dynamic-import "^1.4.0"
 
-vite-plugin-css-injected-by-js@3.1.1:
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/vite-plugin-css-injected-by-js/-/vite-plugin-css-injected-by-js-3.1.1.tgz#8324412636cf6fdada1a86f595aa2e78458e5ddb"
-  integrity sha512-mwrFvEEy0TuH8Ul0cb2HgjmNboQ/JnEFy+kHCWqAJph3ikMOiIuyYVdx0JO4nEIWJyzSnc4TTdmoTulsikvJEg==
+vite-plugin-css-injected-by-js@3.1.2:
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/vite-plugin-css-injected-by-js/-/vite-plugin-css-injected-by-js-3.1.2.tgz#0f5b69ee98e09f5271b277289c1968f1ebbb1cae"
+  integrity sha512-hv/DKA1Yn7Dcqh51nSDiqXJORzXxky4I1CjzsSbJtap0lgCk8qVzkoyEIgWMu+XXjEzv1tyIsLHYwobHTLLh/w==
 
 vite-plugin-dynamic-import@^1.4.0:
   version "1.4.0"
