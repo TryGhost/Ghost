@@ -26,6 +26,7 @@ const domainEventDispatcher = (modelEventName, data) => {
         event = PostEditedEvent.create({
             id: data.id,
             current: {
+                id: data.id,
                 title: data.attributes.title,
                 status: data.attributes.status,
                 featured: data.attributes.featured,
