@@ -1,18 +1,27 @@
-import Form from './Form';
+import Form, {SubmitSize} from './Form';
+import {Editor} from '@tiptap/react';
 import {isMobile} from '../../../utils/helpers';
 import {useAppContext} from '../../../AppContext';
 import {useEffect} from 'react';
 import {useSecondUpdate} from '../../../utils/hooks';
 
-const SecundaryForm = ({editor, submit, close, closeIfNotChanged, submitText, submitSize}) => {
+type Props = {
+    editor: Editor;
+    submit: (data: {html: string}) => Promise<void>;
+    close: () => void;
+    closeIfNotChanged: () => void;
+    submitText: JSX.Element;
+    submitSize: SubmitSize
+};
+const SecundaryForm: React.FC<Props> = ({editor, submit, close, closeIfNotChanged, submitText, submitSize}) => {
     const {dispatchAction, secundaryFormCount} = useAppContext();
 
     // Keep track of the amount of open forms
     useEffect(() => {
-        dispatchAction('increaseSecundaryFormCount');
+        dispatchAction('increaseSecundaryFormCount', {});
 
         return () => {
-            dispatchAction('decreaseSecundaryFormCount');
+            dispatchAction('decreaseSecundaryFormCount', {});
         };
     }, [dispatchAction]);
 

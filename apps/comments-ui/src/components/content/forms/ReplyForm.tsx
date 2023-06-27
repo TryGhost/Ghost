@@ -1,14 +1,18 @@
 import SecundaryForm from './SecundaryForm';
+import {Comment, useAppContext} from '../../../AppContext';
 import {getEditorConfig} from '../../../utils/editor';
 import {scrollToElement} from '../../../utils/helpers';
-import {useAppContext} from '../../../AppContext';
 import {useCallback} from 'react';
 import {useEditor} from '@tiptap/react';
 import {useRefCallback} from '../../../utils/hooks';
 
-const ReplyForm = ({parent, close}) => {
+type Props = {
+    parent: Comment;
+    close: () => void;
+}
+const ReplyForm: React.FC<Props> = ({parent, close}) => {
     const {postId, dispatchAction} = useAppContext();
-    const [, setForm] = useRefCallback(scrollToElement);
+    const [, setForm] = useRefCallback<HTMLDivElement>(scrollToElement);
 
     const config = {
         placeholder: 'Reply to comment',

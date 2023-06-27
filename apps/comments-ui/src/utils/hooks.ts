@@ -6,7 +6,7 @@ import {useAppContext} from '../AppContext';
  * Execute a callback when a ref is set and unset.
  * Warning: make sure setup and clear are both functions that do not change on every rerender. So use useCallback if required on them.
  */
-export function useRefCallback<T>(setup: (element: T) => void, clear: (element: T) => void) {
+export function useRefCallback<T>(setup: (element: T) => void, clear?: (element: T) => void) {
     const ref = useRef<T | null>(null);
     const setRef = useCallback((node) => {
         if (ref.current && clear) {

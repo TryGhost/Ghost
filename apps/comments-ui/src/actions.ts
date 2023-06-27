@@ -335,13 +335,13 @@ function closePopup() {
     };
 }
 
-function increaseSecundaryFormCount({state}: {state: AppContextType, data: never}) {
+function increaseSecundaryFormCount({state}: {state: AppContextType}) {
     return {
         secundaryFormCount: state.secundaryFormCount + 1
     };
 }
 
-function decreaseSecundaryFormCount({state}: {state: AppContextType, data: never}) {
+function decreaseSecundaryFormCount({state}: {state: AppContextType}) {
     return {
         secundaryFormCount: state.secundaryFormCount - 1
     };
