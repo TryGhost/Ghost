@@ -88,7 +88,10 @@ module.exports = function (Bookshelf) {
             // CASE: get JSON of previous attrs
             if (options.previous) {
                 const clonedModel = _.cloneDeep(this);
-                clonedModel.attributes = this._previousAttributes;
+                clonedModel.attributes = _.omitBy(
+                    this._previousAttributes,
+                    (value, key) => key.startsWith('_pivot_')
+                );
 
                 if (this.relationships) {
                     this.relationships.forEach((relation) => {
