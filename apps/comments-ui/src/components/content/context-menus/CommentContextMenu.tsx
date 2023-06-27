@@ -1,14 +1,19 @@
 import AdminContextMenu from './AdminContextMenu';
 import AuthorContextMenu from './AuthorContextMenu';
 import NotAuthorContextMenu from './NotAuthorContextMenu';
-import {useAppContext} from '../../../AppContext';
+import {Comment, useAppContext} from '../../../AppContext';
 import {useEffect, useRef} from 'react';
 
-const CommentContextMenu = ({comment, close, toggleEdit}) => {
+type Props = {
+    comment: Comment;
+    close: () => void;
+    toggleEdit: () => void;
+};
+const CommentContextMenu: React.FC<Props> = ({comment, close, toggleEdit}) => {
     const {member, admin} = useAppContext();
     const isAuthor = member && comment.member?.uuid === member?.uuid;
     const isAdmin = !!admin;
-    const element = useRef();
+    const element = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const listener = () => {
@@ -24,15 +29,15 @@ const CommentContextMenu = ({comment, close, toggleEdit}) => {
         }
 
         return () => {
-            window.removeEventListener('click', listener, {passive: true});
+            window.removeEventListener('click', listener, {passive: true} as any);
             if (el && el !== window) {
-                el.removeEventListener('click', listener, {passive: true});
+                el.removeEventListener('click', listener, {passive: true} as any);
             }
         };
     }, [close]);
 
     useEffect(() => {
-        const listener = (event) => {
+        const listener = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
                 close();
             }
@@ -42,12 +47,12 @@ const CommentContextMenu = ({comment, close, toggleEdit}) => {
         window.addEventListener('keydown', listener, {passive: true});
 
         return () => {
-            window.removeEventListener('keydown', listener, {passive: true});
+            window.removeEventListener('keydown', listener, {passive: true} as any);
         };
     }, [close]);
 
     // Prevent closing the context menu when clicking inside of it
-    const stopPropagation = (event) => {
+    const stopPropagation = (event: React.SyntheticEvent) => {
         event.stopPropagation();
     };
 

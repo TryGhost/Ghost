@@ -1,9 +1,14 @@
 import CommentContextMenu from '../context-menus/CommentContextMenu';
+import {Comment, useAppContext} from '../../../AppContext';
 import {ReactComponent as MoreIcon} from '../../../images/icons/more.svg';
-import {useAppContext} from '../../../AppContext';
 import {useState} from 'react';
 
-const MoreButton = ({comment, toggleEdit}) => {
+type Props = {
+    comment: Comment;
+    toggleEdit: () => void;
+};
+
+const MoreButton: React.FC<Props> = ({comment, toggleEdit}) => {
     const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
     const {member, admin} = useAppContext();
 

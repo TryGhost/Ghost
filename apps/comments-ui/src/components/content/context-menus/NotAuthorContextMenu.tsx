@@ -1,7 +1,11 @@
 import React from 'react';
 import {useAppContext} from '../../../AppContext';
 
-const NotAuthorContextMenu = ({comment, close}) => {
+type Props = {
+    comment: Comment;
+    close: () => void;
+};
+const NotAuthorContextMenu: React.FC<Props> = ({comment, close}) => {
     const {dispatchAction} = useAppContext();
 
     const openModal = () => {

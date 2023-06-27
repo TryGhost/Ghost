@@ -16,6 +16,7 @@ export type PopupNotification = {
 
 export type Member = {
     id: string,
+    uuid: string,
     name: string,
     avatar: string,
     expertise: string
@@ -26,6 +27,7 @@ export type Comment = {
     post_id: string,
     replies: Comment[],
     status: string,
+    liked: boolean,
     count: {
         replies: number,
         likes: number,

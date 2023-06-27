@@ -1,8 +1,11 @@
+import {Comment, useAppContext} from '../../../AppContext';
 import {ReactComponent as LikeIcon} from '../../../images/icons/like.svg';
-import {useAppContext} from '../../../AppContext';
 import {useState} from 'react';
 
-function LikeButton({comment}) {
+type Props = {
+    comment: Comment;
+};
+const LikeButton: React.FC<Props> = ({comment}) => {
     const {dispatchAction, member, commentsEnabled} = useAppContext();
     const [animationClass, setAnimation] = useState('');
 
@@ -40,6 +43,6 @@ function LikeButton({comment}) {
             {comment.count.likes}
         </CustomTag>
     );
-}
+};
 
 export default LikeButton;

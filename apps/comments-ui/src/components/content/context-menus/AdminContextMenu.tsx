@@ -1,6 +1,10 @@
-import {useAppContext} from '../../../AppContext';
+import {Comment, useAppContext} from '../../../AppContext';
 
-const AdminContextMenu = ({comment, close}) => {
+type Props = {
+    comment: Comment;
+    close: () => void;
+};
+const AdminContextMenu: React.FC<Props> = ({comment, close}) => {
     const {dispatchAction} = useAppContext();
 
     const hideComment = () => {
