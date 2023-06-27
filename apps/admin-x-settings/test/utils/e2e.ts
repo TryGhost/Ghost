@@ -1,4 +1,4 @@
-import {CustomThemeSettingsResponseType, ImagesResponseType, InvitesResponseType, PostsResponseType, RolesResponseType, SettingsResponseType, SiteResponseType, ThemesResponseType, UsersResponseType} from '../../src/utils/api';
+import {CustomThemeSettingsResponseType, ImagesResponseType, InvitesResponseType, LabelsResponseType, OffersResponseType, PostsResponseType, RolesResponseType, SettingsResponseType, SiteResponseType, ThemesResponseType, TiersResponseType, UsersResponseType} from '../../src/utils/api';
 import {Page, Request} from '@playwright/test';
 import {readFileSync} from 'fs';
 
@@ -10,6 +10,9 @@ export const responseFixtures = {
     site: JSON.parse(readFileSync(`${__dirname}/responses/site.json`).toString()) as SiteResponseType,
     invites: JSON.parse(readFileSync(`${__dirname}/responses/invites.json`).toString()) as InvitesResponseType,
     customThemeSettings: JSON.parse(readFileSync(`${__dirname}/responses/custom_theme_settings.json`).toString()) as CustomThemeSettingsResponseType,
+    tiers: JSON.parse(readFileSync(`${__dirname}/responses/tiers.json`).toString()) as TiersResponseType,
+    labels: JSON.parse(readFileSync(`${__dirname}/responses/labels.json`).toString()) as LabelsResponseType,
+    offers: JSON.parse(readFileSync(`${__dirname}/responses/offers.json`).toString()) as OffersResponseType,
     themes: JSON.parse(readFileSync(`${__dirname}/responses/themes.json`).toString()) as ThemesResponseType
 };
 
@@ -46,7 +49,16 @@ interface Responses {
     }
     latestPost?: {
         browse?: PostsResponseType
-    },
+    }
+    tiers?: {
+        browse?: TiersResponseType
+    }
+    labels?: {
+        browse?: LabelsResponseType
+    }
+    offers?: {
+        browse?: OffersResponseType
+    }
     themes?: {
         browse?: ThemesResponseType
         activate?: ThemesResponseType
@@ -100,6 +112,15 @@ type LastRequests = {
     latestPost: {
         browse: RequestRecord
     }
+    tiers: {
+        browse: RequestRecord
+    }
+    labels: {
+        browse: RequestRecord
+    }
+    offers: {
+        browse: RequestRecord
+    }
     themes: {
         browse: RequestRecord
         activate: RequestRecord
@@ -123,6 +144,9 @@ export async function mockApi({page,responses}: {page: Page, responses?: Respons
         images: {upload: {}},
         customThemeSettings: {browse: {}, edit: {}},
         latestPost: {browse: {}},
+        tiers: {browse: {}},
+        labels: {browse: {}},
+        offers: {browse: {}},
         themes: {browse: {}, activate: {}, delete: {}, install: {}, upload: {}},
         previewHtml: {homepage: {}, post: {}}
     };
@@ -337,6 +361,39 @@ export async function mockApi({page,responses}: {page: Page, responses?: Respons
             GET: {
                 body: responses?.latestPost?.browse ?? {posts: [{id: '1', url: `${responseFixtures.site.site.url}/test-post/`}]},
                 updateLastRequest: lastApiRequests.latestPost.browse
+            }
+        }
+    });
+
+    await mockApiResponse({
+        page,
+        path: /\/ghost\/api\/admin\/tiers\/\?filter=/,
+        respondTo: {
+            GET: {
+                body: responses?.tiers?.browse ?? responseFixtures.tiers,
+                updateLastRequest: lastApiRequests.tiers.browse
+            }
+        }
+    });
+
+    await mockApiResponse({
+        page,
+        path: /\/ghost\/api\/admin\/labels\/\?limit=all$/,
+        respondTo: {
+            GET: {
+                body: responses?.labels?.browse ?? responseFixtures.labels,
+                updateLastRequest: lastApiRequests.labels.browse
+            }
+        }
+    });
+
+    await mockApiResponse({
+        page,
+        path: /\/ghost\/api\/admin\/offers\/\?limit=all$/,
+        respondTo: {
+            GET: {
+                body: responses?.offers?.browse ?? responseFixtures.offers,
+                updateLastRequest: lastApiRequests.offers.browse
             }
         }
     });

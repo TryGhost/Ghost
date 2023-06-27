@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {mockApi, updatedSettingsResponse} from '../../utils/e2e';
+import {mockApi, responseFixtures, updatedSettingsResponse} from '../../utils/e2e';
 
 test.describe('Access settings', async () => {
     test('Supports editing access', async ({page}) => {
@@ -40,6 +40,40 @@ test.describe('Access settings', async () => {
                 {key: 'default_content_visibility', value: 'members'},
                 {key: 'members_signup_access', value: 'invite'},
                 {key: 'comments_enabled', value: 'all'}
+            ]
+        });
+    });
+
+    test('Supports selecting specific tiers', async ({page}) => {
+        const lastApiRequests = await mockApi({page, responses: {
+            settings: {
+                edit: updatedSettingsResponse([
+                    {key: 'default_content_visibility', value: 'tiers'},
+                    {key: 'default_content_visibility_tiers', value: JSON.stringify(responseFixtures.tiers.tiers.map(tier => tier.id))}
+                ])
+            }
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('access');
+
+        await section.getByRole('button', {name: 'Edit'}).click();
+
+        await section.getByLabel('Default post access').selectOption({label: 'Specific tiers'});
+        await section.getByLabel('Select tiers').click();
+
+        await section.locator('[data-testid="multiselect-option"]', {hasText: 'Basic Supporter'}).click();
+        await section.locator('[data-testid="multiselect-option"]', {hasText: 'Ultimate Starlight Diamond Supporter'}).click();
+
+        await section.getByRole('button', {name: 'Save'}).click();
+
+        await expect(section.getByText('Specific tiers')).toHaveCount(1);
+
+        expect(lastApiRequests.settings.edit.body).toEqual({
+            settings: [
+                {key: 'default_content_visibility', value: 'tiers'},
+                {key: 'default_content_visibility_tiers', value: JSON.stringify(responseFixtures.tiers.tiers.map(tier => tier.id))}
             ]
         });
     });
