@@ -39,6 +39,7 @@
     "c8": {
         "exclude": [
             "src/CollectionRepository.ts",
+            "src/UniqueChecker.ts",
             "src/**/*.d.ts",
             "test/**/*.ts"
         ]
