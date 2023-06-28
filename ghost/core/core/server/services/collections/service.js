@@ -16,7 +16,12 @@ class CollectionsServiceWrapper {
         const collectionsService = new CollectionsService({
             collectionsRepository: collectionsRepositoryInMemory,
             postsRepository: postsRepository,
-            DomainEvents: DomainEvents
+            DomainEvents: DomainEvents,
+            slugService: {
+                async generate(input) {
+                    return input.toLowerCase().trim().replace(/^[^a-z0-9A-Z_]+/, '').replace(/[^a-z0-9A-Z_]+$/, '').replace(/[^a-z0-9A-Z_]+/g, '-');
+                }
+            }
         });
 
         this.api = collectionsService;
