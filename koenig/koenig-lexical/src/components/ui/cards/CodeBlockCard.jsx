@@ -2,7 +2,7 @@ import CodeMirror from '@uiw/react-codemirror';
 import KoenigComposerContext from '../../../context/KoenigComposerContext';
 import PropTypes from 'prop-types';
 import React from 'react';
-import {COMMAND_PRIORITY_LOW, UNDO_COMMAND} from 'lexical';
+import {COMMAND_PRIORITY_CRITICAL, COMMAND_PRIORITY_LOW, COPY_COMMAND, UNDO_COMMAND} from 'lexical';
 import {CardCaptionEditor} from '../CardCaptionEditor';
 import {EditorView, keymap, lineNumbers} from '@codemirror/view';
 import {HighlightStyle, syntaxHighlighting} from '@codemirror/language';
@@ -41,6 +41,13 @@ export function CodeEditor({code, language, updateCode, updateLanguage, onBlur})
                     return true;
                 },
                 COMMAND_PRIORITY_LOW
+            ),
+            editor.registerCommand(
+                COPY_COMMAND, () => {
+                    // let the code editor handle the copy command
+                    return true;
+                },
+                COMMAND_PRIORITY_CRITICAL // critical to supersede the mobiledoc copy plugin
             )
         );
     }, [editor]);

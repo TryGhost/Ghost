@@ -18,7 +18,7 @@ async function copyToClipboardWithMobiledoc(editor, event) {
     }
     // avoid processing card behaviours when an inner element has focus (e.g. nested editors)
     if (document.activeElement !== editor.getRootElement()) {
-        return true;
+        return;
     }
     await copyToClipboard(editor, event);
     // On copy/paste Lexical only stores an array of nodes but our converters expect
