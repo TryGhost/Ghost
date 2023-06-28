@@ -1,3 +1,4 @@
+const {PIVOT_PREFIX} = require('bookshelf/lib/constants');
 const _ = require('lodash');
 
 /**
@@ -88,9 +89,11 @@ module.exports = function (Bookshelf) {
             // CASE: get JSON of previous attrs
             if (options.previous) {
                 const clonedModel = _.cloneDeep(this);
+                // Manually remove pivot fields from cloned model as they are not
+                // removed from _previousAttributes via `omitPivot` option
                 clonedModel.attributes = _.omitBy(
                     this._previousAttributes,
-                    (value, key) => key.startsWith('_pivot_')
+                    (value, key) => key.startsWith(PIVOT_PREFIX)
                 );
 
                 if (this.relationships) {
