@@ -24,7 +24,7 @@ const defaultTheme = {
         italic: 'italic',
         overflowed: undefined,
         hashtag: undefined,
-        underline: undefined,
+        underline: 'underline',
         strikethrough: 'line-through',
         underlinestrikethrough: undefined,
         code: undefined
