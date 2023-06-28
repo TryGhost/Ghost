@@ -28,7 +28,8 @@
             ],
             "program": "${workspaceFolder}/.github/dev.js",
             "args": [
-                "--all --offline"
+                "--all",
+                "--offline"
             ],
             "autoAttachChildProcesses": true,
             "outputCapture": "std",
