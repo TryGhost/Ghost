@@ -138,3 +138,16 @@ export type Theme = {
     };
     templates?: string[];
 }
+
+export type ThemeProblem<Level extends string = 'error' | 'warning'> = {
+    code: string
+    details: string
+    failures: Array<{
+        ref: string
+        message?: string
+        rule?: string
+    }>
+    fatal: boolean
+    level: Level
+    rule: string
+}
