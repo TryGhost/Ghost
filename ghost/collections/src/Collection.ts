@@ -1,3 +1,4 @@
+import {UniqueChecker} from './UniqueChecker';
 import {ValidationError} from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import nql = require('@tryghost/nql');
@@ -11,7 +12,8 @@ const messages = {
         message: 'Invalid filter provided for automatic Collection',
         context: 'Automatic type of collection should always have a filter value'
     },
-    noTitleProvided: 'Title must be provided'
+    noTitleProvided: 'Title must be provided',
+    slugMustBeUnique: 'Slug must be unique'
 };
 
 type CollectionPost = {
@@ -23,7 +25,23 @@ type CollectionPost = {
 export class Collection {
     id: string;
     title: string;
-    slug: string;
+    private _slug: string;
+    get slug() {
+        return this._slug;
+    }
+
+    async setSlug(slug: string, uniqueChecker: UniqueChecker) {
+        if (slug === this.slug) {
+            return;
+        }
+        if (await uniqueChecker.isUniqueSlug(slug)) {
+            this._slug = slug;
+        } else {
+            throw new ValidationError({
+                message: tpl(messages.slugMustBeUnique)
+            });
+        }
+    }
     description: string;
     type: 'manual' | 'automatic';
     filter: string | null;
@@ -48,7 +66,7 @@ export class Collection {
         }
     }
 
-    public edit(data: Partial<Collection>) {
+    public async edit(data: Partial<Collection>, uniqueChecker: UniqueChecker) {
         if (this.type === 'automatic' && (data.filter === null || data.filter === '')) {
             throw new ValidationError({
                 message: tpl(messages.invalidFilterProvided.message),
@@ -61,7 +79,7 @@ export class Collection {
         }
 
         if (data.slug !== undefined) {
-            this.slug = data.slug;
+            await this.setSlug(data.slug, uniqueChecker);
         }
 
         if (data.description !== undefined) {
@@ -126,7 +144,7 @@ export class Collection {
     private constructor(data: any) {
         this.id = data.id;
         this.title = data.title;
-        this.slug = data.slug;
+        this._slug = data.slug;
         this.description = data.description;
         this.type = data.type;
         this.filter = data.filter;
