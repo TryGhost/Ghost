@@ -32,7 +32,7 @@ export class Collection {
     deletable: boolean;
     _deleted: boolean = false;
 
-    _posts: string[];
+    private _posts: string[];
     get posts() {
         return this._posts;
     }
