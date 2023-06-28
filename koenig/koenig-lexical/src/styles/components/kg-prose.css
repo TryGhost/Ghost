@@ -420,6 +420,18 @@
         }
 
         :where(
+            ul ul li
+        ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            list-style-type: circle;
+        }
+
+        :where(
+            ul ul ul li
+        ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            list-style-type: square;
+        }
+
+        :where(
             ol li
         ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
             display: list-item;
@@ -433,6 +445,18 @@
             ol li:first-child
         ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
             margin: 0 0 0 2.2rem;
+        }
+
+        :where(
+            ol ol li
+        ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            list-style-type: lower-alpha;
+        }
+
+        :where(
+            ol ol ol li
+        ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            list-style-type: lower-roman;
         }
 
         :where(
