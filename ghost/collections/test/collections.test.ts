@@ -41,7 +41,12 @@ describe('CollectionsService', function () {
         collectionsService = new CollectionsService({
             collectionsRepository,
             postsRepository,
-            DomainEvents
+            DomainEvents,
+            slugService: {
+                async generate(input) {
+                    return input.replace(/\s+/g, '-').toLowerCase();
+                }
+            }
         });
     });
 
@@ -199,10 +204,12 @@ describe('CollectionsService', function () {
                 id: savedCollection.id,
                 title: 'Edited title',
                 description: 'Edited description',
-                feature_image: '/assets/images/edited.jpg'
+                feature_image: '/assets/images/edited.jpg',
+                slug: 'changed'
             });
 
             assert.equal(editedCollection?.title, 'Edited title', 'Collection title should be edited');
+            assert.equal(editedCollection?.slug, 'changed', 'Collection slug should be edited');
             assert.equal(editedCollection?.description, 'Edited description', 'Collection description should be edited');
             assert.equal(editedCollection?.feature_image, '/assets/images/edited.jpg', 'Collection feature_image should be edited');
             assert.equal(editedCollection?.type, 'manual', 'Collection type should not be edited');
