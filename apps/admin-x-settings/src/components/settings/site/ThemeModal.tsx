@@ -2,6 +2,9 @@ import AdvancedThemeSettings from './theme/AdvancedThemeSettings';
 import Button from '../../../admin-x-ds/global/Button';
 import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
 import FileUpload from '../../../admin-x-ds/global/form/FileUpload';
+import Heading from '../../../admin-x-ds/global/Heading';
+import List from '../../../admin-x-ds/global/List';
+import ListItem from '../../../admin-x-ds/global/ListItem';
 import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {NiceModalHandler, useModal} from '@ebay/nice-modal-react';
 import OfficialThemes from './theme/OfficialThemes';
@@ -11,7 +14,7 @@ import TabView from '../../../admin-x-ds/global/TabView';
 import ThemePreview from './theme/ThemePreview';
 import {API} from '../../../utils/api';
 import {OfficialTheme} from '../../../models/themes';
-import {Theme} from '../../../types/api';
+import {Theme, ThemeProblem} from '../../../types/api';
 import {showToast} from '../../../admin-x-ds/global/Toast';
 import {useApi} from '../../providers/ServiceProvider';
 import {useThemes} from '../../../hooks/useThemes';
@@ -48,6 +51,31 @@ function addThemeToList(theme: Theme, themes: Theme[]): Theme[] {
     return [...themes, theme];
 }
 
+const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
+    const [isExpanded, setExpanded] = useState(false);
+
+    return <ListItem
+        action={<Button color="green" label={isExpanded ? 'Collapse' : 'Expand'} link onClick={() => setExpanded(!isExpanded)} />}
+        detail={
+            isExpanded ?
+                <>
+                    <div dangerouslySetInnerHTML={{__html: problem.details}} />
+                    <Heading level={6}>Affected files:</Heading>
+                    <ul>
+                        {problem.failures.map(failure => <li><code>{failure.ref}</code>{failure.message ? `: ${failure.message}` : ''}</li>)}
+                    </ul>
+                </> :
+                null
+        }
+        title={<>
+            <strong>{problem.level === 'error' ? 'Error: ' : 'Warning: '}</strong>
+            <span dangerouslySetInnerHTML={{__html: problem.rule}} />
+        </>}
+        hideActions
+        separator
+    />;
+};
+
 async function handleThemeUpload({
     api,
     file,
@@ -63,15 +91,32 @@ async function handleThemeUpload({
     setThemes((_themes: Theme[]) => {
         return addThemeToList(uploadedTheme, _themes);
     });
+
+    let title = 'Upload successful';
+    let prompt = <>
+        <strong>{uploadedTheme.name}</strong> uploaded successfully.
+        Do you want to activate it now?
+    </>;
+
+    if (uploadedTheme.errors?.length || uploadedTheme.warnings?.length) {
+        const hasErrors = uploadedTheme.errors?.length;
+
+        title = `Upload successful with ${hasErrors ? 'errors' : 'warnings'}`;
+        prompt = <>
+            The theme <strong>"{uploadedTheme.name}"</strong> was installed successfully but we detected some {hasErrors ? 'errors' : 'warnings'}.
+            You are still able to activate and use the theme but it is recommended to fix these {hasErrors ? 'errors' : 'warnings'} before you do so.
+
+            <List>
+                {uploadedTheme.errors?.map(error => <ThemeProblemView problem={error} />)}
+                {uploadedTheme.warnings?.map(warning => <ThemeProblemView problem={warning} />)}
+            </List>
+        </>;
+    }
+
     NiceModal.show(ConfirmationModal, {
-        title: 'Upload successful',
-        prompt: (
-            <>
-                <strong>{uploadedTheme.name}</strong> uploaded successfully.
-                Do you want to activate it now?
-            </>
-        ),
-        okLabel: 'Activate',
+        title,
+        prompt,
+        okLabel: `Activate${uploadedTheme.errors?.length ? ' with errors' : ''}`,
         cancelLabel: 'Close',
         okRunningLabel: 'Activating...',
         okColor: 'black',

@@ -2,7 +2,7 @@ import React from 'react';
 import clsx from 'clsx';
 
 interface ListItemProps {
-    id: string;
+    id?: string;
     title?: React.ReactNode;
     detail?: React.ReactNode;
     action?: React.ReactNode;
