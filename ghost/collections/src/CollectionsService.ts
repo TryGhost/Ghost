@@ -7,6 +7,7 @@ import {MethodNotAllowedError, NotFoundError} from '@tryghost/errors';
 import {PostDeletedEvent} from './events/PostDeletedEvent';
 import {PostAddedEvent} from './events/PostAddedEvent';
 import {PostEditedEvent} from './events/PostEditedEvent';
+import {RepositoryUniqueChecker} from './RepositoryUniqueChecker';
 
 const messages = {
     cannotDeleteBuiltInCollectionError: {
@@ -94,11 +95,13 @@ export class CollectionsService {
     private DomainEvents: {
         subscribe: (event: any, handler: (e: any) => void) => void;
     };
+    private uniqueChecker: RepositoryUniqueChecker;
 
     constructor(deps: CollectionsServiceDeps) {
         this.collectionsRepository = deps.collectionsRepository;
         this.postsRepository = deps.postsRepository;
         this.DomainEvents = deps.DomainEvents;
+        this.uniqueChecker = new RepositoryUniqueChecker(this.collectionsRepository);
     }
 
     private toDTO(collection: Collection): CollectionDTO {
@@ -290,7 +293,7 @@ export class CollectionsService {
         }
 
         const collectionData = this.fromDTO(data);
-        await collection.edit(collectionData);
+        await collection.edit(collectionData, this.uniqueChecker);
 
         if (collection.type === 'manual' && data.posts) {
             for (const post of data.posts) {
