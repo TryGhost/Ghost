@@ -105,7 +105,8 @@ const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, c
         <div className={`relative w-full pl-[52px] transition-[padding] delay-100 duration-150 ${reduced && 'pl-0'} ${isOpen && 'pl-[1px] pt-[64px] sm:pl-[52px]'}`}>
             <div
                 className={`shadow-form hover:shadow-formxl w-full rounded-md border border-none border-slate-50 bg-[rgba(255,255,255,0.9)] px-3 py-4 font-sans text-[16.5px] leading-normal transition-all delay-100 duration-150 focus:outline-0 dark:border-none dark:bg-[rgba(255,255,255,0.08)] dark:text-neutral-300 dark:shadow-transparent ${isOpen ? 'min-h-[144px] cursor-text pb-[68px] pt-2' : 'min-h-[48px] cursor-pointer overflow-hidden hover:border-slate-300'}
-            `}>
+            `}
+                data-testid="form-editor">
                 <EditorContent
                     editor={editor} onMouseDown={stopIfFocused}
                     onTouchStart={stopIfFocused}

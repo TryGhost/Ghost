@@ -29,7 +29,8 @@ export function getEditorConfig({placeholder, autofocus = false, content = ''}: 
         autofocus,
         editorProps: {
             attributes: {
-                class: `gh-comment-content focus:outline-0`
+                class: `gh-comment-content focus:outline-0`,
+                'data-testid': 'editor'
             }
         },
         parseOptions: {

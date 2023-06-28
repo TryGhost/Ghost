@@ -1,6 +1,6 @@
 import {E2E_PORT} from '../../playwright.config';
+import {Locator, Page} from '@playwright/test';
 import {MockedApi} from './MockedApi';
-import {Page} from '@playwright/test';
 
 export const MOCKED_SITE_URL = 'https://localhost:1234';
 export {MockedApi};
@@ -69,4 +69,53 @@ export async function initialize({mockedApi, page, bodyStyle, ...options}: {
     return {
         frame: page.frameLocator('iframe')
     };
+}
+
+/**
+ * Select text range by RegExp.
+ */
+export async function selectText(locator: Locator, pattern: string | RegExp): Promise<void> {
+    await locator.evaluate(
+        (element, {pattern: p}) => {
+            let textNode = element.childNodes[0];
+
+            while (textNode.nodeType !== Node.TEXT_NODE && textNode.childNodes.length) {
+                textNode = textNode.childNodes[0];
+            }
+            const match = textNode.textContent?.match(new RegExp(p));
+            if (match) {
+                const range = document.createRange();
+                range.setStart(textNode, match.index!);
+                range.setEnd(textNode, match.index! + match[0].length);
+                const selection = document.getSelection();
+                selection?.removeAllRanges();
+                selection?.addRange(range);
+            }
+        },
+        {pattern}
+    );
+}
+
+export async function getHeight(locator: Locator) {
+    return await locator.evaluate((node) => {
+        return node.clientHeight;
+    });
+}
+
+export async function setClipboard(page, text) {
+    const modifier = getModifierKey();
+    await page.setContent(`<div contenteditable>${text}</div>`);
+    await page.focus('div');
+    await page.keyboard.press(`${modifier}+KeyA`);
+    await page.keyboard.press(`${modifier}+KeyC`);
+}
+
+export function getModifierKey() {
+    const os = require('os');
+    let platform = os.platform();
+    if (platform === 'darwin') {
+        return 'Meta';
+    } else {
+        return 'Control';
+    }
 }
