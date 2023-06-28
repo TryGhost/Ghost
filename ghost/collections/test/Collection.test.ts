@@ -286,10 +286,10 @@ describe('Collection', function () {
         assert.equal(collection.posts.length, 0);
     });
 
-    it('Cannot set non deletable collection to deleted', async function () {
+    it('Cannot set index collection to deleted', async function () {
         const collection = await Collection.create({
             title: 'Testing adding posts',
-            deletable: false
+            slug: 'index'
         });
 
         assert.equal(collection.deleted, false);
@@ -299,10 +299,23 @@ describe('Collection', function () {
         assert.equal(collection.deleted, false);
     });
 
-    it('Can set deletable collection to deleted', async function () {
+    it('Cannot set featured collection to deleted', async function () {
         const collection = await Collection.create({
             title: 'Testing adding posts',
-            deletable: true
+            slug: 'featured'
+        });
+
+        assert.equal(collection.deleted, false);
+
+        collection.deleted = true;
+
+        assert.equal(collection.deleted, false);
+    });
+
+    it('Can set other collection to deleted', async function () {
+        const collection = await Collection.create({
+            title: 'Testing adding posts',
+            slug: 'non-internal-slug'
         });
 
         assert.equal(collection.deleted, false);
