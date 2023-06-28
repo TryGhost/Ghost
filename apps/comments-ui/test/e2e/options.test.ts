@@ -13,7 +13,7 @@ function rgbToHsl(r: number, g: number, b: number) {
         h = s = 0; // achromatic
     } else {
         var d = max - min;
-        s = Math.round(l > 0.5 ? d / (2 - max - min) : d / (max + min) * 100) / 100;
+        s = Math.round(l > 0.5 ? d / (2 - max - min) : d / (max + min) * 10) / 10;
 
         switch (max) {
         case r: h = (g - b) / d + (g < b ? 6 : 0); break;
