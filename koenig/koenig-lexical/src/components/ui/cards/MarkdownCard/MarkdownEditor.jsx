@@ -6,9 +6,7 @@ import UnsplashModal from '../../UnsplashModal';
 
 import ctrlOrCmd from '../../../../utils/ctrlOrCmd';
 import useMarkdownImageUploader from './useMarkdownImageUploader';
-import {COMMAND_PRIORITY_CRITICAL, COMMAND_PRIORITY_LOW, COPY_COMMAND, UNDO_COMMAND} from 'lexical';
-import {mergeRegister} from '@lexical/utils';
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext.js';
+import {CodeMirrorPlugin} from '../../../../plugins/CodeMirrorPlugin';
 
 export default function MarkdownEditor({
     markdown,
@@ -22,7 +20,6 @@ export default function MarkdownEditor({
     const markdownEditor = useRef(null);
     const [isHelpDialogOpen, setHelpDialogOpen] = useState(false);
     const [isUnsplashDialogOpen, setUnsplashDialogOpen] = useState(false);
-    const [editor] = useLexicalComposerContext();
     const {
         openImageUploadDialog,
         uploadImages,
@@ -39,25 +36,6 @@ export default function MarkdownEditor({
         toggleSpellcheck: `${ctrlOrCmd}-Alt-S`,
         openUnsplashDialog: `${ctrlOrCmd}-Alt-O`
     };
-
-    React.useEffect(() => {
-        return mergeRegister(
-            editor.registerCommand(
-                UNDO_COMMAND, () => {
-                    // let the markdown editor handle undo command
-                    return true;
-                },
-                COMMAND_PRIORITY_LOW
-            ),
-            editor.registerCommand(
-                COPY_COMMAND, () => {
-                    // let the markdown editor handle copy
-                    return true;
-                },
-                COMMAND_PRIORITY_CRITICAL // needs to be critical to override the mobiledoc copy plugin
-            )
-        );
-    }, [editor]);
 
     // init markdown editor on component mount
     useLayoutEffect(() => {
@@ -229,6 +207,7 @@ export default function MarkdownEditor({
 
     return (
         <div className="not-kg-prose">
+            <CodeMirrorPlugin />
             <textarea ref={editorRef}></textarea>
 
             <MarkdownHelpDialog

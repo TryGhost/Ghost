@@ -1,38 +1,15 @@
 import CodeMirror from '@uiw/react-codemirror';
 import React from 'react';
-import {COMMAND_PRIORITY_CRITICAL, COMMAND_PRIORITY_LOW, COPY_COMMAND, UNDO_COMMAND} from 'lexical';
+import {CodeMirrorPlugin} from '../../../../plugins/CodeMirrorPlugin';
 import {EditorView, keymap, lineNumbers} from '@codemirror/view';
 import {HighlightStyle, syntaxHighlighting} from '@codemirror/language';
 import {closeBrackets, closeBracketsKeymap} from '@codemirror/autocomplete';
 import {html as langHtml} from '@codemirror/lang-html';
-import {mergeRegister} from '@lexical/utils';
 import {minimalSetup} from '@uiw/codemirror-extensions-basic-setup';
 import {standardKeymap} from '@codemirror/commands';
 import {tags as t} from '@lezer/highlight';
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext.js';
 
 export default function HtmlEditor({darkMode, html, updateHtml, onBlur}) {
-    const [editor] = useLexicalComposerContext();
-
-    React.useEffect(() => {
-        return mergeRegister(
-            editor.registerCommand(
-                UNDO_COMMAND, () => {
-                    // let the html editor handle undo command
-                    return true;
-                },
-                COMMAND_PRIORITY_LOW
-            ),
-            editor.registerCommand(
-                COPY_COMMAND, () => {
-                    // let the html editor handle the copy command
-                    return true;
-                },
-                COMMAND_PRIORITY_CRITICAL // critical to supersede the mobiledoc copy plugin
-            )
-        );
-    }, [editor]);
-
     const onChange = React.useCallback((value) => {
         updateHtml(value);
     }, [updateHtml]);
@@ -173,6 +150,7 @@ export default function HtmlEditor({darkMode, html, updateHtml, onBlur}) {
 
     return (
         <div className="not-kg-prose min-h-[170px]">
+            <CodeMirrorPlugin />
             <CodeMirror
                 autoFocus={true} // autofocus the editor whenever it is rendered
                 basicSetup={false} // basic setup includes unnecessary extensions
