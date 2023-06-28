@@ -10,7 +10,8 @@ const messages = {
     invalidFilterProvided: {
         message: 'Invalid filter provided for automatic Collection',
         context: 'Automatic type of collection should always have a filter value'
-    }
+    },
+    noTitleProvided: 'Title must be provided'
 };
 
 type CollectionPost = {
@@ -186,6 +187,12 @@ export class Collection {
             throw new ValidationError({
                 message: tpl(messages.invalidFilterProvided.message),
                 context: tpl(messages.invalidFilterProvided.context)
+            });
+        }
+
+        if (!data.title) {
+            throw new ValidationError({
+                message: tpl(messages.noTitleProvided)
             });
         }
 

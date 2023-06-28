@@ -18,6 +18,12 @@ describe('Collection', function () {
         assert.ok((collection.deleted === false), 'deleted should be false');
     });
 
+    it('Cannot create a collection without a title', async function () {
+        assert.rejects(async () => {
+            await Collection.create({});
+        });
+    });
+
     it('Can serialize Collection to JSON', async function () {
         const collection = await Collection.create({
             title: 'Serialize me',
@@ -60,7 +66,8 @@ describe('Collection', function () {
     it('Can create a Collection with predefined ID', async function () {
         const id = new ObjectID();
         const savedCollection = await Collection.create({
-            id: id.toHexString()
+            id: id.toHexString(),
+            title: 'Blah'
         });
 
         assert.equal(savedCollection.id, id.toHexString(), 'Collection should have same id');
@@ -69,7 +76,8 @@ describe('Collection', function () {
     it('Can create a Collection with predefined ObjectID instance', async function () {
         const id = new ObjectID();
         const savedCollection = await Collection.create({
-            id: id
+            id: id,
+            title: 'Bleh'
         });
 
         assert.equal(savedCollection.id, id.toHexString(), 'Collection should have same id');
@@ -80,7 +88,8 @@ describe('Collection', function () {
         const updatedAt = new Date();
         const savedCollection = await Collection.create({
             created_at: createdAt,
-            updated_at: updatedAt
+            updated_at: updatedAt,
+            title: 'Bluh'
         });
 
         assert.equal(savedCollection.createdAt, createdAt, 'Collection should have same created_at');
@@ -101,7 +110,8 @@ describe('Collection', function () {
     it('Throws an error when trying to create a Collection with invalid created_at date', async function () {
         await assert.rejects(async () => {
             await Collection.create({
-                created_at: 'invalid date'
+                created_at: 'invalid date',
+                title: 'Blih'
             });
         }, (err: any) => {
             assert.equal(err.message, 'Invalid date provided for created_at', 'Error message should match');
