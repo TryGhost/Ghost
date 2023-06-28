@@ -100,8 +100,6 @@ Object {
       "name": "Test Member2",
       "newsletters": Array [
         Object {
-          "_pivot_member_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "_pivot_newsletter_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "background_color": "light",
           "body_font_category": "sans_serif",
           "border_color": null,
