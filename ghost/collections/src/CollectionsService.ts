@@ -196,7 +196,7 @@ export class CollectionsService {
 
         collection.addPost(post);
 
-        this.collectionsRepository.save(collection);
+        await this.collectionsRepository.save(collection);
 
         return this.toDTO(collection);
     }
