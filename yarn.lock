@@ -2495,12 +2495,12 @@
     resolve "^1.20.0"
     semver "^7.3.2"
 
-"@embroider/macros@1.11.1", "@embroider/macros@^0.50.0 || ^1.0.0", "@embroider/macros@^1.0.0", "@embroider/macros@^1.10.0", "@embroider/macros@^1.2.0", "@embroider/macros@^1.8.0", "@embroider/macros@^1.8.3", "@embroider/macros@^1.9.0":
-  version "1.11.1"
-  resolved "https://registry.yarnpkg.com/@embroider/macros/-/macros-1.11.1.tgz#62eeb5bb7907ad01bdf750510c7f46c0192b6605"
-  integrity sha512-yg4Pl5Sw26lKrrtLwk2UEgYkKkztq+Hatn67QYL5A3I3T4IE/bRA3o6xvIslrJNnhyER7jCc2pwusxt3O4HubA==
+"@embroider/macros@1.12.0", "@embroider/macros@^0.50.0 || ^1.0.0", "@embroider/macros@^1.0.0", "@embroider/macros@^1.10.0", "@embroider/macros@^1.2.0", "@embroider/macros@^1.8.0", "@embroider/macros@^1.8.3", "@embroider/macros@^1.9.0":
+  version "1.12.0"
+  resolved "https://registry.yarnpkg.com/@embroider/macros/-/macros-1.12.0.tgz#da77bca39b3dfd4fa9c3100975586b60feb64dd9"
+  integrity sha512-Ja4AnLy/peU7pYY1uHUJxSXT1DLMC2RR18g4udUIlGm1b0LAjvdssWn0yFBgNmBWvkyQvGmz+UA9LUMaw68lCg==
   dependencies:
-    "@embroider/shared-internals" "2.1.0"
+    "@embroider/shared-internals" "2.2.0"
     assert-never "^1.2.1"
     babel-import-util "^1.1.0"
     ember-cli-babel "^7.26.6"
@@ -2535,10 +2535,10 @@
     semver "^7.3.5"
     typescript-memoize "^1.0.1"
 
-"@embroider/shared-internals@2.1.0", "@embroider/shared-internals@^2.0.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@embroider/shared-internals/-/shared-internals-2.1.0.tgz#4da79fe8b26e4b94819b8313c51b5b24a68c617b"
-  integrity sha512-9hKbMxW7wDWt1BqdpnLZ5W6ETrmAg9HnfBwf1IDkT+8he5nOdTD0PNtruMjm7V0Tb9p9hI7O+UXSa8ZnX1BQXg==
+"@embroider/shared-internals@2.2.0", "@embroider/shared-internals@^2.0.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@embroider/shared-internals/-/shared-internals-2.2.0.tgz#7c4f5cf8f7289b36ffbfc04f6b4c71876713c869"
+  integrity sha512-bQQJezPsgyDWmYllFg5UY88zP6dGWIOpA+hIxXXnN09IG+TyyIfG1YAgMOITnQzoDQuRTCvXvaydYef3nx7cvw==
   dependencies:
     babel-import-util "^1.1.0"
     ember-rfc176-data "^0.3.17"
