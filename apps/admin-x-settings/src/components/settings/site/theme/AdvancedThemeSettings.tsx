@@ -171,6 +171,7 @@ const ThemeList:React.FC<ThemeSettingProps> = ({
                         detail={detail}
                         id={`theme-${theme.name}`}
                         separator={false}
+                        testId='theme-list-item'
                         title={label}
                     />
                 );

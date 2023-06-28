@@ -33,7 +33,7 @@ const Menu: React.FC<MenuProps> = ({trigger, triggerButtonProps, items, position
     };
 
     if (!trigger) {
-        trigger = <Button icon='ellipsis' {...triggerButtonProps} />;
+        trigger = <Button icon='ellipsis' label='Menu' hideLabel {...triggerButtonProps} />;
     }
 
     const menuClasses = clsx(
@@ -45,7 +45,7 @@ const Menu: React.FC<MenuProps> = ({trigger, triggerButtonProps, items, position
 
     return (
         <div className={`relative inline-block ${className}`}>
-            <div className={`fixed inset-0 z-40 ${menuOpen ? 'block' : 'hidden'}`} onClick={handleBackdropClick}></div>
+            <div className={`fixed inset-0 z-40 ${menuOpen ? 'block' : 'hidden'}`} data-testid="menu-overlay" onClick={handleBackdropClick}></div>
             {/* Menu Trigger */}
             <div className='relative z-30' onClick={toggleMenu}>
                 {trigger}

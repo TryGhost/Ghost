@@ -16,7 +16,7 @@ const Sidebar: React.FC = () => {
 
     return (
         <div className="hidden md:!visible md:!block md:h-[calc(100vh-5vmin-84px)] md:w-[300px] md:overflow-y-scroll md:pt-[32px]">
-            <TextField containerClassName="mb-10" placeholder="Search" value={filter} onChange={e => setFilter(e.target.value)} />
+            <TextField containerClassName="mb-10" placeholder="Search" title="Search" value={filter} hideTitle onChange={e => setFilter(e.target.value)} />
 
             <SettingNavSection title="General">
                 <SettingNavItem navid='title-and-description' title="Title and description" onClick={handleSectionClick} />

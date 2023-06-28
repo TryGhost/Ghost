@@ -47,7 +47,7 @@ const Sidebar: React.FC<{
 
     return (
         <>
-            <div className='p-7'>
+            <div className='p-7' data-testid="design-setting-tabs">
                 <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={handleTabChange} />
             </div>
         </>

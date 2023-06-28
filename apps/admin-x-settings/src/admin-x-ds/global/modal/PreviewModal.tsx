@@ -66,7 +66,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
 
     if (view === 'mobile') {
         preview = (
-            <MobileChrome>
+            <MobileChrome data-testid="preview-mobile">
                 {preview}
             </MobileChrome>
         );
@@ -94,6 +94,8 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                 buttons={[
                     {
                         icon: 'laptop',
+                        label: 'Desktop',
+                        hideLabel: true,
                         link: true,
                         size: 'sm',
                         iconColorClass: (view === 'desktop' ? 'text-black' : unSelectedIconColorClass),
@@ -103,6 +105,8 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                     },
                     {
                         icon: 'mobile',
+                        label: 'Mobile',
+                        hideLabel: true,
                         link: true,
                         size: 'sm',
                         iconColorClass: (view === 'mobile' ? 'text-black' : unSelectedIconColorClass),
@@ -117,6 +121,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
         preview = (
             <>
                 <DesktopChromeHeader
+                    data-testid="design-toolbar"
                     size='lg'
                     toolbarCenter={<></>}
                     toolbarLeft={toolbarLeft}

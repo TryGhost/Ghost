@@ -7,6 +7,7 @@ export type ButtonSize = 'sm' | 'md';
 export interface ButtonProps {
     size?: ButtonSize;
     label?: React.ReactNode;
+    hideLabel?: boolean;
     icon?: string;
     iconColorClass?: string;
     key?: string;
@@ -21,6 +22,7 @@ export interface ButtonProps {
 const Button: React.FC<ButtonProps> = ({
     size = 'md',
     label = '',
+    hideLabel = false,
     icon = '',
     iconColorClass = 'text-black',
     color = 'clear',
@@ -75,7 +77,7 @@ const Button: React.FC<ButtonProps> = ({
             {...props}
         >
             {icon && <Icon colorClass={iconColorClass} name={icon} size={size === 'sm' ? 'sm' : 'md'} />}
-            {label}
+            {(label && hideLabel) ? <span className="sr-only">{label}</span> : label}
         </button>
     );
 };

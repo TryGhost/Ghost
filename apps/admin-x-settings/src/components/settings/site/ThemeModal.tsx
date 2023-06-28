@@ -214,6 +214,7 @@ const ChangeThemeModal = NiceModal.create(() => {
             noPadding={true}
             scrolling={currentTab === 'official' ? false : true}
             size='full'
+            testId='theme-modal'
             title=''
         >
             <div className='flex h-full justify-between'>
