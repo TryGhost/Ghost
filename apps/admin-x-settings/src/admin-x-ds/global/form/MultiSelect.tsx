@@ -1,7 +1,7 @@
 import Heading from '../Heading';
 import Hint from '../Hint';
-import React from 'react';
-import {GroupBase, MultiValue, OptionsOrGroups, default as ReactSelect, components} from 'react-select';
+import React, {useId, useMemo} from 'react';
+import {DropdownIndicatorProps, GroupBase, MultiValue, OptionProps, OptionsOrGroups, default as ReactSelect, components} from 'react-select';
 
 export type MultiSelectColor = 'grey' | 'black' | 'green' | 'pink';
 
@@ -38,6 +38,18 @@ const multiValueColor = (color?: MultiSelectColor) => {
     }
 };
 
+const DropdownIndicator: React.FC<DropdownIndicatorProps<MultiSelectOption, true> & {clearBg: boolean}> = ({clearBg, ...props}) => (
+    <components.DropdownIndicator {...props}>
+        <div className={`absolute top-[14px] block h-2 w-2 rotate-45 border-[1px] border-l-0 border-t-0 border-grey-900 content-[''] ${clearBg ? 'right-0' : 'right-4'} `}></div>
+    </components.DropdownIndicator>
+);
+
+const Option: React.FC<OptionProps<MultiSelectOption, true>> = ({children, ...optionProps}) => (
+    <components.Option {...optionProps}>
+        <span data-testid="multiselect-option">{children}</span>
+    </components.Option>
+);
+
 const MultiSelect: React.FC<MultiSelectProps> = ({
     title = '',
     clearBg = false,
@@ -50,6 +62,8 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     onChange,
     ...props
 }) => {
+    const id = useId();
+
     const customClasses = {
         control: `w-full cursor-pointer appearance-none min-h-[40px] border-b ${!clearBg && 'bg-grey-75 px-[10px]'} py-2 outline-none ${error ? 'border-red' : 'border-grey-500 hover:border-grey-700'} ${(title && !clearBg) && 'mt-2'}`,
         valueContainer: 'gap-1',
@@ -61,15 +75,13 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
         groupHeading: 'py-[6px] px-3 text-2xs font-semibold uppercase tracking-wide text-grey-700'
     };
 
-    const DropdownIndicator: React.FC<any> = ddiProps => (
-        <components.DropdownIndicator {...ddiProps}>
-            <div className={`absolute top-[14px] block h-2 w-2 rotate-45 border-[1px] border-l-0 border-t-0 border-grey-900 content-[''] ${clearBg ? 'right-0' : 'right-4'} `}></div>
-        </components.DropdownIndicator>
-    );
+    const dropdownIndicatorComponent = useMemo(() => {
+        return (ddiProps: DropdownIndicatorProps<MultiSelectOption, true>) => <DropdownIndicator {...ddiProps} clearBg={clearBg} />;
+    }, [clearBg]);
 
     return (
         <div className='flex flex-col'>
-            {title && <Heading useLabelTag={true} grey>{title}</Heading>}
+            {title && <Heading htmlFor={id} grey useLabelTag>{title}</Heading>}
             <ReactSelect
                 classNames={{
                     menuList: () => 'z-50',
@@ -83,7 +95,8 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                     groupHeading: () => customClasses.groupHeading
                 }}
                 closeMenuOnSelect={false}
-                components={{DropdownIndicator}}
+                components={{DropdownIndicator: dropdownIndicatorComponent, Option}}
+                inputId={id}
                 isClearable={false}
                 options={options}
                 placeholder={placeholder ? placeholder : ''}
