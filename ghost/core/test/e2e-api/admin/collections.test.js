@@ -307,7 +307,7 @@ describe('Collections API', function () {
     describe('Automatic Collection Filtering', function () {
         it('Creates an automatic Collection with a featured filter', async function () {
             const collection = {
-                title: 'Test Collection',
+                title: 'Test Featured Collection',
                 description: 'Test Collection Description',
                 type: 'automatic',
                 filter: 'featured:true'

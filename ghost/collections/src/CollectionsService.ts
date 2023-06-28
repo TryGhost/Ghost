@@ -20,9 +20,14 @@ const messages = {
     }
 };
 
+interface SlugService {
+    generate(desired: string): Promise<string>;
+}
+
 type CollectionsServiceDeps = {
     collectionsRepository: CollectionRepository;
     postsRepository: PostsRepository;
+    slugService: SlugService;
     DomainEvents: {
         subscribe: (event: any, handler: (e: any) => void) => void;
     };
@@ -96,12 +101,14 @@ export class CollectionsService {
         subscribe: (event: any, handler: (e: any) => void) => void;
     };
     private uniqueChecker: RepositoryUniqueChecker;
+    private slugService: SlugService;
 
     constructor(deps: CollectionsServiceDeps) {
         this.collectionsRepository = deps.collectionsRepository;
         this.postsRepository = deps.postsRepository;
         this.DomainEvents = deps.DomainEvents;
         this.uniqueChecker = new RepositoryUniqueChecker(this.collectionsRepository);
+        this.slugService = deps.slugService;
     }
 
     private toDTO(collection: Collection): CollectionDTO {
@@ -165,9 +172,10 @@ export class CollectionsService {
     }
 
     async createCollection(data: CollectionInputDTO): Promise<CollectionDTO> {
+        const slug = await this.slugService.generate(data.slug || data.title);
         const collection = await Collection.create({
             title: data.title,
-            slug: data.slug,
+            slug: slug,
             description: data.description,
             type: data.type,
             filter: data.filter,
