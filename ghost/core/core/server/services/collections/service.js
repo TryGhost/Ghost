@@ -32,7 +32,6 @@ class CollectionsServiceWrapper {
             return;
         }
 
-        const translateModelEventsToDomainEvents = require('./model-to-domain-events-bridge');
         const existingBuiltins = await this.api.getAll({filter: 'slug:featured'});
 
         if (!existingBuiltins.data.length) {
@@ -56,7 +55,7 @@ class CollectionsServiceWrapper {
         }
 
         this.api.subscribeToEvents();
-        translateModelEventsToDomainEvents();
+        require('./intercept-events')();
     }
 }
 
