@@ -378,6 +378,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         return true;
                     }
 
+                    // code card shortcut
                     if (!isNested) {
                         const selection = $getSelection();
                         const currentNode = selection.getNodes()[0];
@@ -950,6 +951,27 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                             event.preventDefault();
                             cursorDidExitAtTop();
                             return true;
+                        }
+                    }
+
+                    // code card shortcut
+                    if (!isNested) {
+                        const selection = $getSelection();
+                        const currentNode = selection.getNodes()[0];
+                        if ($isTextNode(currentNode)) {
+                            const textContent = currentNode.getTextContent();
+                            if (textContent.match(/^```(\w{1,10})?/)) {
+                                event.preventDefault();
+                                const language = textContent.replace(/^```/,'');
+                                const replacementNode = currentNode.getTopLevelElement().insertAfter($createCodeBlockNode({language, _openInEditMode: true}));
+                                currentNode.getTopLevelElement().remove();
+
+                                // select node when replacing so it immediately renders in editing mode
+                                const replacementSelection = $createNodeSelection();
+                                replacementSelection.add(replacementNode.getKey());
+                                $setSelection(replacementSelection);
+                                return true;
+                            }
                         }
                     }
                 },

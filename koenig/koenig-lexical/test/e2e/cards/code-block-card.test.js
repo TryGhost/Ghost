@@ -117,6 +117,32 @@ test.describe('Code Block card', async () => {
         });
     });
 
+    test('renders with ``` + tab', async function () {
+        await focusEditor(page);
+        await page.keyboard.type('```');
+        await page.keyboard.press('Tab');
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="codeblock">
+                </div>
+            </div>
+        `, {ignoreCardContents: true});
+    });
+
+    test('renders with ```lang + tab', async function () {
+        await focusEditor(page);
+        await page.keyboard.type('```javascript');
+        await page.keyboard.press('Tab');
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="codeblock">
+                </div>
+            </div>
+        `, {ignoreCardContents: true});
+    });
+
     test('it hides the language input when typing in the code editor and shows it when the mouse moves', async function () {
         await focusEditor(page);
         await page.keyboard.type('```javascript ');
