@@ -1,9 +1,9 @@
-const {fixtureManager, mockManager} = require('../../../utils/e2e-framework');
+const {fixtureManager, mockManager} = require('./e2e-framework');
 const moment = require('moment');
 const ObjectId = require('bson-objectid').default;
-const models = require('../../../../core/server/models');
+const models = require('../../core/server/models');
 const sinon = require('sinon');
-const jobManager = require('../../../../core/server/services/jobs/job-service');
+const jobManager = require('../../core/server/services/jobs/job-service');
 const escapeRegExp = require('lodash/escapeRegExp');
 const should = require('should');
 const assert = require('assert/strict');
@@ -59,13 +59,21 @@ async function createPublishedPostEmail(agent, settings = {}, email_recipient_fi
 let lastEmailModel;
 
 /**
- *
- * @returns {Promise<{html: string, plaintext: string, emailModel: any, recipientData: any}>}
+ * @typedef {{html: string, plaintext: string, emailModel: any, recipientData: any}} SendEmail
+ */
+
+/**
+ * Try sending an email, and assert that it succeeded
+ * @returns {Promise<SendEmail>}
  */
 async function sendEmail(agent, settings, email_recipient_filter) {
     // Prepare a post and email model
     const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
     const emailModel = await createPublishedPostEmail(agent, settings, email_recipient_filter);
+
+    assert.ok(emailModel.get('subject'));
+    assert.ok(emailModel.get('from'));
+    assert.equal(emailModel.get('source_type'), settings && settings.lexical ? 'lexical' : 'mobiledoc');
 
     // Await sending job
     await completedPromise;
@@ -79,6 +87,31 @@ async function sendEmail(agent, settings, email_recipient_filter) {
     return {emailModel, ...(await getLastEmail())};
 }
 
+/**
+ * Try sending an email, and assert that it failed
+ * @returns {Promise<{emailModel: any}>}
+ */
+async function sendFailedEmail(agent, settings, email_recipient_filter) {
+    // Prepare a post and email model
+    const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
+    const emailModel = await createPublishedPostEmail(agent, settings, email_recipient_filter);
+
+    assert.ok(emailModel.get('subject'));
+    assert.ok(emailModel.get('from'));
+    assert.equal(emailModel.get('source_type'), settings && settings.lexical ? 'lexical' : 'mobiledoc');
+
+    // Await sending job
+    await completedPromise;
+
+    await emailModel.refresh();
+    assert.equal(emailModel.get('status'), 'failed');
+
+    lastEmailModel = emailModel;
+
+    // Get the email that was sent
+    return {emailModel};
+}
+
 async function retryEmail(agent, emailId) {
     await agent.put(`emails/${emailId}/retry`)
         .expectStatus(200);
@@ -86,6 +119,7 @@ async function retryEmail(agent, emailId) {
 
 /**
  * Returns the last email that was sent via the stub, with all recipient variables replaced
+ * @returns {Promise<SendEmail>}
  */
 async function getLastEmail() {
     const mailgunCreateMessageStub = mockManager.getMailgunCreateMessageStub();
@@ -112,18 +146,20 @@ async function getLastEmail() {
     };
 }
 
-function testCleanedSnapshot(html, ignoreReplacements) {
+function testCleanedSnapshot({html, plaintext}, ignoreReplacements) {
     for (const {match, replacement} of ignoreReplacements) {
         if (match instanceof RegExp) {
             html = html.replace(match, replacement);
+            plaintext = plaintext.replace(match, replacement);
         } else {
             html = html.replace(new RegExp(escapeRegExp(match), 'g'), replacement);
+            plaintext = plaintext.replace(new RegExp(escapeRegExp(match), 'g'), replacement);
         }
     }
-    should({html}).matchSnapshot();
+    should({html, plaintext}).matchSnapshot();
 }
 
-async function lastEmailMatchSnapshot() {
+async function matchEmailSnapshot() {
     const lastEmail = await getLastEmail();
     const defaultNewsletter = await lastEmail.emailModel.getLazyRelation('newsletter');
     const linkRegexp = /http:\/\/127\.0\.0\.1:2369\/r\/\w+/g;
@@ -170,14 +206,13 @@ async function lastEmailMatchSnapshot() {
         });
     }
 
-    testCleanedSnapshot(lastEmail.html, ignoreReplacements);
-    testCleanedSnapshot(lastEmail.plaintext, ignoreReplacements);
+    testCleanedSnapshot(lastEmail, ignoreReplacements);
 }
 
 module.exports = {
     getDefaultNewsletter,
-    createPublishedPostEmail,
     sendEmail,
+    sendFailedEmail,
     retryEmail,
-    lastEmailMatchSnapshot
+    matchEmailSnapshot
 };
