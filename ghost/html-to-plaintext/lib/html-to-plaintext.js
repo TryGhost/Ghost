@@ -60,7 +60,9 @@ const loadConverters = () => {
     const emailSettings = mergeSettings({
         selectors: [
             // equiv hideLinkHrefIfSameAsText: true
-            {selector: 'a', options: {hideLinkHrefIfSameAsText: true}}
+            {selector: 'a', options: {hideLinkHrefIfSameAsText: true}},
+            // Don't include html .preheader in email
+            {selector: '.preheader', format: 'skip'}
         ]
     });
 

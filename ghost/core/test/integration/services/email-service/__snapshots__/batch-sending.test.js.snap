@@ -501,7 +501,7 @@ table.body figcaption a {
 exports[`Batch sending tests HTML-content Does not HTML escape feature_image_caption 2 1`] = `
 Object {
   "html": "
-A random test post –
+
 
 
 
@@ -1122,7 +1122,7 @@ table.body figcaption a {
 exports[`Batch sending tests Newsletter settings Hides comments button for email only posts 2 1`] = `
 Object {
   "html": "
-Hello world
+
 
 
 
@@ -1737,7 +1737,7 @@ table.body figcaption a {
 exports[`Batch sending tests Newsletter settings Hides comments button if comments disabled 2 1`] = `
 Object {
   "html": "
-Hello world
+
 
 
 
@@ -2352,7 +2352,7 @@ table.body figcaption a {
 exports[`Batch sending tests Newsletter settings Hides comments button if disabled in newsletter 2 1`] = `
 Object {
   "html": "
-Hello world
+
 
 
 
@@ -2943,7 +2943,7 @@ table.body figcaption a {
 exports[`Batch sending tests Newsletter settings Hides post title section if show_post_title_section is false 2 1`] = `
 Object {
   "html": "
-Hello world
+
 
 
 
@@ -3530,7 +3530,7 @@ table.body figcaption a {
 exports[`Batch sending tests Newsletter settings Hides post title section if show_post_title_section is false 4 1`] = `
 Object {
   "html": "
-Hello world
+
 
 
 
@@ -5261,7 +5261,7 @@ table.body figcaption a {
 exports[`Batch sending tests Newsletter settings Shows 3 comment buttons for published posts with feedback enabled 2 1`] = `
 Object {
   "html": "
-Hello world
+
 
 
 
@@ -5958,7 +5958,7 @@ table.body figcaption a {
 exports[`Batch sending tests Newsletter settings Shows 3 comment buttons for published posts without feedback enabled 2 1`] = `
 Object {
   "html": "
-Hello world
+
 
 
 
@@ -6664,7 +6664,7 @@ table.body figcaption a {
 exports[`Batch sending tests Newsletter settings Shows 3 latest posts 2 1`] = `
 Object {
   "html": "
-Hello world
+
 
 
 
@@ -8550,7 +8550,7 @@ table.body figcaption a {
 exports[`Batch sending tests Newsletter settings Shows subscription details box for canceled paid member 2 1`] = `
 Object {
   "html": "
-Hello world
+
 
 
 
@@ -9220,7 +9220,7 @@ table.body figcaption a {
 exports[`Batch sending tests Newsletter settings Shows subscription details box for comped members 2 1`] = `
 Object {
   "html": "
-Hello world
+
 
 
 
@@ -9890,7 +9890,7 @@ table.body figcaption a {
 exports[`Batch sending tests Newsletter settings Shows subscription details box for free members 2 1`] = `
 Object {
   "html": "
-Hello world
+
 
 
 
@@ -10560,7 +10560,7 @@ table.body figcaption a {
 exports[`Batch sending tests Newsletter settings Shows subscription details box for paid member 2 1`] = `
 Object {
   "html": "
-Hello world
+
 
 
 
@@ -11230,7 +11230,7 @@ table.body figcaption a {
 exports[`Batch sending tests Newsletter settings Shows subscription details box for trialing member 2 1`] = `
 Object {
   "html": "
-Hello world
+
 
 
 
@@ -12516,7 +12516,7 @@ table.body figcaption a {
 exports[`Batch sending tests Replacements Does replace with and without fallback in both plaintext and html for member with name 2 1`] = `
 Object {
   "html": "
-Hello {first_name},
+
 
 
 
@@ -13133,7 +13133,7 @@ table.body figcaption a {
 exports[`Batch sending tests Replacements Does replace with and without fallback in both plaintext and html for member without name 2 1`] = `
 Object {
   "html": "
-Hello {first_name},
+
 
 
 
