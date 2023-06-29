@@ -139,6 +139,11 @@ export type Theme = {
     templates?: string[];
 }
 
+export type InstalledTheme = Theme & {
+    errors?: ThemeProblem<'error'>[];
+    warnings?: ThemeProblem<'warning'>[];
+}
+
 export type ThemeProblem<Level extends string = 'error' | 'warning'> = {
     code: string
     details: string
