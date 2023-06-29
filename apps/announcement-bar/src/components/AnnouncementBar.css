@@ -1,3 +1,8 @@
+.gh-announcement-bar,
+.gh-announcement-bar * {
+    box-sizing: border-box !important;
+}
+
 .gh-announcement-bar {
     position: relative;
     z-index: 90;
