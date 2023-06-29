@@ -25,7 +25,7 @@ export function renderCodeBlockNode(node, options = {}) {
         figure.appendChild(pre);
 
         let figcaption = document.createElement('figcaption');
-        figcaption.appendChild(document.createTextNode(node.caption));
+        figcaption.innerHTML = node.caption;
         figure.appendChild(figcaption);
 
         return {element: figure};
