@@ -1,3 +1,4 @@
+import Icon from '../admin-x-ds/global/Icon';
 import React from 'react';
 import SettingNavItem from '../admin-x-ds/settings/SettingNavItem';
 import SettingNavSection from '../admin-x-ds/settings/SettingNavSection';
@@ -15,8 +16,11 @@ const Sidebar: React.FC = () => {
     };
 
     return (
-        <div className="hidden md:!visible md:!block md:h-[calc(100vh-5vmin-84px)] md:w-[300px] md:overflow-y-scroll md:pt-[32px]">
-            <TextField containerClassName="mb-10" placeholder="Search" title="Search" value={filter} hideTitle onChange={e => setFilter(e.target.value)} />
+        <div className="hidden md:!visible md:!block md:h-[calc(100vh-5vmin-84px)] md:w-[240px] md:overflow-y-scroll md:pt-[32px]">
+            <div className='relative mb-10'>
+                <Icon className='absolute top-2' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
+                <TextField autoComplete="off" className='border-b border-grey-500 px-3 py-1.5 pl-[24px] text-sm' placeholder="Search" title="Search" value={filter} hideTitle unstyled onChange={e => setFilter(e.target.value)} />
+            </div>
 
             <SettingNavSection title="General">
                 <SettingNavItem navid='title-and-description' title="Title and description" onClick={handleSectionClick} />
