@@ -77,17 +77,17 @@ describe('Can send cards via email', function () {
     it('Paragraphs', async function () {
         const data = await sendEmail(agent, {
             lexical: createLexicalJson([
-                createParagraphCard('Hello world.')
+                createParagraphCard('This is a paragraph test.')
             ])
         });
 
         // Remove the preheader span from the email using cheerio
         splitPreheader(data);
 
-        // Check our html and plaintexct contain the paragraph
-        assert.ok(data.html.includes('Hello world.'));
-        assert.ok(data.plaintext.includes('Hello world.'));
-        assert.ok(data.preheader.includes('Hello world.'));
+        // Check only contains once in every part
+        assert.equal(data.html.match(/This is a paragraph test\./g).length, 1);
+        assert.equal(data.plaintext.match(/This is a paragraph test\./g).length, 1);
+        assert.equal(data.preheader.match(/This is a paragraph test\./g).length, 1);
     });
 
     it('Signup Card', async function () {

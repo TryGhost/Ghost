@@ -1483,6 +1483,11 @@ describe('Email renderer', function () {
                     if (key === 'feedback_enabled') {
                         return true;
                     }
+
+                    if (key === 'show_post_title_section') {
+                        return true;
+                    }
+
                     return false;
                 }
             };
@@ -1498,7 +1503,10 @@ describe('Email renderer', function () {
             response.plaintext.should.containEql('Test Post');
             response.plaintext.should.containEql('Unsubscribe [%%{unsubscribe_url}%%]');
             response.plaintext.should.containEql('http://example.com');
-            response.html.should.containEql('Test Post');
+
+            // Check contains the post name twice
+            assert.equal(response.html.match(/Test Post/g).length, 3, 'Should contain the post name 3 times: in the title element, the preheader and in the post title section');
+
             response.html.should.containEql('Unsubscribe');
             response.html.should.containEql('http://example.com');
             response.replacements.length.should.eql(2);
