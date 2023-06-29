@@ -16,7 +16,7 @@ export interface ConfirmationModalProps {
     customFooter?: boolean | React.ReactNode;
 }
 
-const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
+export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
     title = 'Are you sure?',
     prompt,
     cancelLabel = 'Cancel',
@@ -53,4 +53,4 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     );
 };
 
-export default NiceModal.create(ConfirmationModal);
+export default NiceModal.create(ConfirmationModalContent);

@@ -2,19 +2,17 @@ import AdvancedThemeSettings from './theme/AdvancedThemeSettings';
 import Button from '../../../admin-x-ds/global/Button';
 import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
 import FileUpload from '../../../admin-x-ds/global/form/FileUpload';
-import Heading from '../../../admin-x-ds/global/Heading';
-import List from '../../../admin-x-ds/global/List';
-import ListItem from '../../../admin-x-ds/global/ListItem';
 import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {NiceModalHandler, useModal} from '@ebay/nice-modal-react';
 import OfficialThemes from './theme/OfficialThemes';
 import PageHeader from '../../../admin-x-ds/global/layout/PageHeader';
 import React, {useState} from 'react';
 import TabView from '../../../admin-x-ds/global/TabView';
+import ThemeInstalledModal from './ThemeInstalledModal';
 import ThemePreview from './theme/ThemePreview';
 import {API} from '../../../utils/api';
 import {OfficialTheme} from '../../../models/themes';
-import {Theme, ThemeProblem} from '../../../types/api';
+import {Theme} from '../../../types/api';
 import {showToast} from '../../../admin-x-ds/global/Toast';
 import {useApi} from '../../providers/ServiceProvider';
 import {useThemes} from '../../../hooks/useThemes';
@@ -51,31 +49,6 @@ function addThemeToList(theme: Theme, themes: Theme[]): Theme[] {
     return [...themes, theme];
 }
 
-const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
-    const [isExpanded, setExpanded] = useState(false);
-
-    return <ListItem
-        action={<Button color="green" label={isExpanded ? 'Collapse' : 'Expand'} link onClick={() => setExpanded(!isExpanded)} />}
-        detail={
-            isExpanded ?
-                <>
-                    <div dangerouslySetInnerHTML={{__html: problem.details}} />
-                    <Heading level={6}>Affected files:</Heading>
-                    <ul>
-                        {problem.failures.map(failure => <li><code>{failure.ref}</code>{failure.message ? `: ${failure.message}` : ''}</li>)}
-                    </ul>
-                </> :
-                null
-        }
-        title={<>
-            <strong>{problem.level === 'error' ? 'Error: ' : 'Warning: '}</strong>
-            <span dangerouslySetInnerHTML={{__html: problem.rule}} />
-        </>}
-        hideActions
-        separator
-    />;
-};
-
 async function handleThemeUpload({
     api,
     file,
@@ -105,39 +78,14 @@ async function handleThemeUpload({
         prompt = <>
             The theme <strong>"{uploadedTheme.name}"</strong> was installed successfully but we detected some {hasErrors ? 'errors' : 'warnings'}.
             You are still able to activate and use the theme but it is recommended to fix these {hasErrors ? 'errors' : 'warnings'} before you do so.
-
-            <List>
-                {uploadedTheme.errors?.map(error => <ThemeProblemView problem={error} />)}
-                {uploadedTheme.warnings?.map(warning => <ThemeProblemView problem={warning} />)}
-            </List>
         </>;
     }
 
-    NiceModal.show(ConfirmationModal, {
+    NiceModal.show(ThemeInstalledModal, {
         title,
         prompt,
-        okLabel: `Activate${uploadedTheme.errors?.length ? ' with errors' : ''}`,
-        cancelLabel: 'Close',
-        okRunningLabel: 'Activating...',
-        okColor: 'black',
-        onOk: async (activateModal) => {
-            const resData = await api.themes.activate(uploadedTheme.name);
-            const updatedTheme = resData.themes[0];
-
-            setThemes((_themes) => {
-                const updatedThemes: Theme[] = _themes.map((t) => {
-                    if (t.name === updatedTheme.name) {
-                        return updatedTheme;
-                    }
-                    return {
-                        ...t,
-                        active: false
-                    };
-                });
-                return updatedThemes;
-            });
-            activateModal?.remove();
-        }
+        installedTheme: uploadedTheme,
+        setThemes
     });
 }
 
@@ -179,11 +127,14 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                         cancelLabel: 'Cancel',
                         okRunningLabel: 'Overwriting...',
                         okColor: 'red',
-                        onOk: async (_modal) => {
+                        onOk: async (confirmModal) => {
+                            confirmModal?.remove();
+                            setCurrentTab('installed');
                             handleThemeUpload({api, file, setThemes});
                         }
                     });
                 } else {
+                    setCurrentTab('installed');
                     handleThemeUpload({api, file, setThemes});
                 }
             }}>Upload theme</FileUpload>
