@@ -90,9 +90,11 @@ export function renderSignupCardToDOM(dataset, options = {}) {
         swapped: dataset.__swapped
     };
 
-    const htmlString = options.target === 'email'
-        ? ''
-        : cardTemplate(node);
+    if (options.target === 'email') {
+        return {element: document.createElement('div')}; // Return an empty element since we don't want to render the card in email
+    }
+
+    const htmlString = cardTemplate(node);
 
     const element = document.createElement('div');
     element.innerHTML = htmlString?.trim();

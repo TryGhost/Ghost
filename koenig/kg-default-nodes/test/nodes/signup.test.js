@@ -394,6 +394,13 @@ describe('SignupNode', function () {
                 </div>
             `);
         }));
+
+        it('returns empty element if target is email', editorTest(function () {
+            exportOptions.target = 'email';
+            const signupNode = $createSignupNode(dataset);
+            const {element} = signupNode.exportDOM(exportOptions);
+            element.outerHTML.should.equal('<div></div>');
+        }));
     });
     describe('importDOM', function () {
         it('parses a signup card', editorTest(function () {
