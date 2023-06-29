@@ -53,7 +53,9 @@ const loadConverters = () => {
             // Don't output hrs
             {selector: 'hr', format: 'skip'},
             // Don't output > in blockquotes
-            {selector: 'blockquote', format: 'block'}
+            {selector: 'blockquote', format: 'block'},
+            // Don't include signup cards in excerpts
+            {selector: '.kg-signup-card', format: 'skip'}
         ]
     });
 
