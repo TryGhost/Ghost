@@ -2,7 +2,7 @@ const {agentProvider, fixtureManager, mockManager} = require('../../../utils/e2e
 const models = require('../../../../core/server/models');
 const assert = require('assert/strict');
 const configUtils = require('../../../utils/configUtils');
-const {sendEmail} = require('./utils');
+const {sendEmail, matchEmailSnapshot} = require('../../../utils/batch-email-utils');
 const cheerio = require('cheerio');
 
 /**
@@ -95,6 +95,8 @@ describe('Can send cards via email', function () {
         assert.equal(data.html.match(/This is a paragraph test\./g).length, 1);
         assert.equal(data.plaintext.match(/This is a paragraph test\./g).length, 1);
         assert.equal(data.preheader.match(/This is a paragraph test\./g).length, 1);
+
+        await matchEmailSnapshot();
     });
 
     it('Signup Card', async function () {
@@ -133,5 +135,7 @@ describe('Can send cards via email', function () {
         assert.ok(data.html.includes('This is a paragraph'));
         assert.ok(data.plaintext.includes('This is a paragraph'));
         assert.ok(data.preheader.includes('This is a paragraph'));
+
+        await matchEmailSnapshot();
     });
 });
