@@ -11,7 +11,7 @@ const {settingsCache} = require('../../../../core/server/services/settings-helpe
 const DomainEvents = require('@tryghost/domain-events');
 const emailService = require('../../../../core/server/services/email-service');
 const {mockSetting, stripeMocker} = require('../../../utils/e2e-framework-mock-manager');
-const {sendEmail, createPublishedPostEmail, lastEmailMatchSnapshot, getDefaultNewsletter, retryEmail} = require('./utils');
+const {sendEmail, sendFailedEmail, matchEmailSnapshot, getDefaultNewsletter, retryEmail} = require('../../../utils/batch-email-utils');
 
 const mobileDocExample = '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"Hello world"]]]],"ghostVersion":"4.0"}';
 const mobileDocWithPaywall = '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["paywall",{}]],"sections":[[1,"p",[[0,[],0,"Free content"]]],[10,0],[1,"p",[[0,[],0,"Members content"]]]]}';
@@ -45,18 +45,11 @@ function sortBatches(a, b) {
  * @param {{recipients: number, segment: string | null}[]} expectedBatches
  */
 async function testEmailBatches(settings, email_recipient_filter, expectedBatches) {
-    const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
-    const emailModel = await createPublishedPostEmail(agent, settings, email_recipient_filter);
+    const {emailModel} = await sendEmail(agent, settings, email_recipient_filter);
 
     assert.equal(emailModel.get('source_type'), 'mobiledoc');
     assert(emailModel.get('subject'));
     assert(emailModel.get('from'));
-
-    // Await sending job
-    await completedPromise;
-
-    await emailModel.refresh();
-    assert(emailModel.get('status'), 'submitted');
     const expectedTotal = expectedBatches.reduce((acc, batch) => acc + batch.recipients, 0);
     assert.equal(emailModel.get('email_count'), expectedTotal, 'This email should have an email_count of ' + expectedTotal + ' recipients');
 
@@ -141,17 +134,11 @@ describe('Batch sending tests', function () {
 
     it('Can send a scheduled post email', async function () {
         // Prepare a post and email model
-        const emailModel = await createPublishedPostEmail(agent);
+        const {emailModel} = await sendEmail(agent);
 
         assert.equal(emailModel.get('source_type'), 'mobiledoc');
         assert(emailModel.get('subject'));
         assert(emailModel.get('from'));
-
-        // Await sending job
-        await jobManager.allSettled();
-
-        await emailModel.refresh();
-        assert.equal(emailModel.get('status'), 'submitted');
         assert.equal(emailModel.get('email_count'), 4);
 
         // Did we create batches?
@@ -185,11 +172,7 @@ describe('Batch sending tests', function () {
     it('Protects the email job from being run multiple times at the same time', async function () {
         this.retries(1);
         // Prepare a post and email model
-        const emailModel = await createPublishedPostEmail(agent);
-
-        assert.equal(emailModel.get('source_type'), 'mobiledoc');
-        assert(emailModel.get('subject'));
-        assert(emailModel.get('from'));
+        const {emailModel} = await sendEmail(agent);
 
         // Retry sending a couple of times
         const promises = [];
@@ -230,18 +213,12 @@ describe('Batch sending tests', function () {
             return r;
         });
 
-        // Prepare a post and email model
-        const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
-        const emailModel = await createPublishedPostEmail(agent);
+        const {emailModel} = await sendEmail(agent);
 
-        // Await sending job
-        await completedPromise;
         assert(addStub.calledOnce);
         assert.ok(laterMember);
         addStub.restore();
 
-        await emailModel.refresh();
-        assert.equal(emailModel.get('status'), 'submitted');
         assert.equal(emailModel.get('email_count'), 4);
 
         // Did we create batches?
@@ -258,10 +235,7 @@ describe('Batch sending tests', function () {
         }
 
         // Create a new email and see if it is included now
-        const completedPromise2 = jobManager.awaitCompletion('batch-sending-service-job');
-        const emailModel2 = await createPublishedPostEmail(agent);
-        await completedPromise2;
-        await emailModel2.refresh();
+        const {emailModel: emailModel2} = await sendEmail(agent);
         assert.equal(emailModel2.get('email_count'), 5);
         const emailRecipients2 = await models.EmailRecipient.findAll({filter: `email_id:${emailModel2.id}`});
         assert.equal(emailRecipients2.models.length, emailRecipients.models.length + 1);
@@ -432,17 +406,7 @@ describe('Batch sending tests', function () {
         };
 
         // Prepare a post and email model
-        const emailModel = await createPublishedPostEmail(agent);
-
-        assert.equal(emailModel.get('source_type'), 'mobiledoc');
-        assert(emailModel.get('subject'));
-        assert(emailModel.get('from'));
-
-        // Await sending job
-        await jobManager.allSettled();
-
-        await emailModel.refresh();
-        assert.equal(emailModel.get('status'), 'failed');
+        const {emailModel} = await sendFailedEmail(agent);
         assert.equal(emailModel.get('email_count'), 5);
 
         // Did we create batches?
@@ -709,7 +673,7 @@ describe('Batch sending tests', function () {
             assert.match(plaintext, /Hey there, Hey ,/);
             assert.match(plaintext, /\[http:\/\/127.0.0.1:2369\/unsubscribe\/\?uuid=[a-z0-9-]+&newsletter=[a-z0-9-]+\]/, 'Unsubscribe link not found in plaintext');
 
-            await lastEmailMatchSnapshot();
+            await matchEmailSnapshot();
         });
 
         it('Does replace with and without fallback in both plaintext and html for member with name', async function () {
@@ -742,7 +706,7 @@ describe('Batch sending tests', function () {
             assert.match(plaintext, /Hey Simon, Hey Simon,/);
             assert.match(plaintext, /\[http:\/\/127.0.0.1:2369\/unsubscribe\/\?uuid=[a-z0-9-]+&newsletter=[a-z0-9-]+\]/, 'Unsubscribe link not found in plaintext');
 
-            await lastEmailMatchSnapshot();
+            await matchEmailSnapshot();
         });
     });
 
@@ -758,7 +722,7 @@ describe('Batch sending tests', function () {
             // Check plaintext version dropped the bold tag
             assert.match(plaintext, /Testing feature image caption/);
 
-            await lastEmailMatchSnapshot();
+            await matchEmailSnapshot();
         });
     });
 
@@ -776,7 +740,7 @@ describe('Batch sending tests', function () {
             const withoutTitleTag = html.replace(/<title>.*<\/title>/, '');
             assert.doesNotMatch(withoutTitleTag, /This is a test post title/);
             assert.doesNotMatch(plaintext, /This is a test post title/);
-            await lastEmailMatchSnapshot();
+            await matchEmailSnapshot();
 
             // undo
             await models.Newsletter.edit({show_post_title_section: true}, {id: defaultNewsletter.id});
@@ -790,7 +754,7 @@ describe('Batch sending tests', function () {
             const withoutTitleTag2 = html2.replace(/<title>.*<\/title>/, '');
             assert.match(withoutTitleTag2, /This is a test post title/);
             assert.match(plaintext2, /This is a test post title/);
-            await lastEmailMatchSnapshot();
+            await matchEmailSnapshot();
         });
 
         it('Shows 3 comment buttons for published posts without feedback enabled', async function () {
@@ -808,7 +772,7 @@ describe('Batch sending tests', function () {
 
             // Currently the link is not present in plaintext version (because no text)
             assert.equal(html.match(/#ghost-comments/g).length, 3, 'Every email should have 3 buttons to comments');
-            await lastEmailMatchSnapshot();
+            await matchEmailSnapshot();
         });
 
         it('Shows 3 comment buttons for published posts with feedback enabled', async function () {
@@ -826,7 +790,7 @@ describe('Batch sending tests', function () {
 
             // Currently the link is not present in plaintext version (because no text)
             assert.equal(html.match(/#ghost-comments/g).length, 3, 'Every email should have 3 buttons to comments');
-            await lastEmailMatchSnapshot();
+            await matchEmailSnapshot();
 
             // undo
             await models.Newsletter.edit({feedback_enabled: false}, {id: defaultNewsletter.id});
@@ -847,7 +811,7 @@ describe('Batch sending tests', function () {
 
             // Check does not contain post title section
             assert.doesNotMatch(html, /#ghost-comments/);
-            await lastEmailMatchSnapshot();
+            await matchEmailSnapshot();
         });
 
         it('Hides comments button if comments disabled', async function () {
@@ -863,7 +827,7 @@ describe('Batch sending tests', function () {
             });
 
             assert.doesNotMatch(html, /#ghost-comments/);
-            await lastEmailMatchSnapshot();
+            await matchEmailSnapshot();
         });
 
         it('Hides comments button if disabled in newsletter', async function () {
@@ -879,7 +843,7 @@ describe('Batch sending tests', function () {
             });
 
             assert.doesNotMatch(html, /#ghost-comments/);
-            await lastEmailMatchSnapshot();
+            await matchEmailSnapshot();
 
             // undo
             await models.Newsletter.edit({show_comment_cta: true}, {id: defaultNewsletter.id});
@@ -912,7 +876,7 @@ describe('Batch sending tests', function () {
             // Check text matches
             assert.match(plaintext, /You are receiving this because you are a free subscriber to Ghost\./);
 
-            await lastEmailMatchSnapshot();
+            await matchEmailSnapshot();
 
             // undo
             await models.Newsletter.edit({show_subscription_details: false}, {id: defaultNewsletter.id});
@@ -945,7 +909,7 @@ describe('Batch sending tests', function () {
             // Check text matches
             assert.match(plaintext, /You are receiving this because you are a complimentary subscriber to Ghost\./);
 
-            await lastEmailMatchSnapshot();
+            await matchEmailSnapshot();
 
             // undo
             await models.Newsletter.edit({show_subscription_details: false}, {id: defaultNewsletter.id});
@@ -986,7 +950,7 @@ describe('Batch sending tests', function () {
             // Check text matches
             assert.match(plaintext, /You are receiving this because you are a trialing subscriber to Ghost\. Your free trial ends on \d+ \w+ \d+, at which time you will be charged the regular price\. You can always cancel before then\./);
 
-            await lastEmailMatchSnapshot();
+            await matchEmailSnapshot();
 
             // undo
             await models.Newsletter.edit({show_subscription_details: false}, {id: defaultNewsletter.id});
@@ -1027,7 +991,7 @@ describe('Batch sending tests', function () {
             // Check text matches
             assert.match(plaintext, /You are receiving this because you are a paid subscriber to Ghost\. Your subscription will renew on \d+ \w+ \d+\./);
 
-            await lastEmailMatchSnapshot();
+            await matchEmailSnapshot();
 
             // undo
             await models.Newsletter.edit({show_subscription_details: false}, {id: defaultNewsletter.id});
@@ -1069,7 +1033,7 @@ describe('Batch sending tests', function () {
             // Check text matches
             assert.match(plaintext, /You are receiving this because you are a paid subscriber to Ghost\. Your subscription has been canceled and will expire on \d+ \w+ \d+\. You can resume your subscription via your account settings\./);
 
-            await lastEmailMatchSnapshot();
+            await matchEmailSnapshot();
 
             // undo
             await models.Newsletter.edit({show_subscription_details: false}, {id: defaultNewsletter.id});
@@ -1090,7 +1054,7 @@ describe('Batch sending tests', function () {
             // Check count of title
             assert.equal(html.match(/This is the main post title/g).length, 2, 'Should only contain the title two times'); // otherwise post is in last 3 posts
 
-            await lastEmailMatchSnapshot();
+            await matchEmailSnapshot();
 
             // undo
             await models.Newsletter.edit({show_latest_posts: false}, {id: defaultNewsletter.id});
