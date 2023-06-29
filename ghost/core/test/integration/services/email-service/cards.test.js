@@ -5,10 +5,17 @@ const configUtils = require('../../../utils/configUtils');
 const {sendEmail} = require('./utils');
 const cheerio = require('cheerio');
 
+/**
+ * Remove the preheader span from the email html and put it in a separate field called preheader
+ * @template {{html: string}} T
+ * @param {T} data
+ * @returns {asserts data is T & {preheader: string}}
+ */
 function splitPreheader(data) {
     // Remove the preheader span from the email using cheerio
     const $ = cheerio.load(data.html);
     const preheader = $('.preheader');
+    // @ts-ignore
     data.preheader = preheader.html();
     preheader.remove();
     data.html = $.html();
@@ -120,10 +127,8 @@ describe('Can send cards via email', function () {
 
         // Check the plaintext does contain the paragraph, but doesn't contain the signup card
         assert.ok(!data.html.includes('Sign up for Koenig Lexical'));
-
-        // This is a bug! The plaintext and preheader should not contain the signup card
-        //assert.ok(!data.plaintext.includes('Sign up for Koenig Lexical'));
-        //assert.ok(!data.preheader.includes('Sign up for Koenig Lexical'));
+        assert.ok(!data.plaintext.includes('Sign up for Koenig Lexical'));
+        assert.ok(!data.preheader.includes('Sign up for Koenig Lexical'));
 
         assert.ok(data.html.includes('This is a paragraph'));
         assert.ok(data.plaintext.includes('This is a paragraph'));

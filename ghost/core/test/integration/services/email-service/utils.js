@@ -58,6 +58,10 @@ async function createPublishedPostEmail(agent, settings = {}, email_recipient_fi
 }
 let lastEmailModel;
 
+/**
+ *
+ * @returns {Promise<{html: string, plaintext: string, emailModel: any, recipientData: any}>}
+ */
 async function sendEmail(agent, settings, email_recipient_filter) {
     // Prepare a post and email model
     const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
