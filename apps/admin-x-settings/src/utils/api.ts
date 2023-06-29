@@ -1,4 +1,4 @@
-import {CustomThemeSetting, Label, Offer, Post, Setting, SiteData, Theme, ThemeProblem, Tier, User, UserRole} from '../types/api';
+import {CustomThemeSetting, InstalledTheme, Label, Offer, Post, Setting, SiteData, Theme, Tier, User, UserRole} from '../types/api';
 import {getGhostPaths} from './helpers';
 
 interface Meta {
@@ -94,8 +94,8 @@ export interface ThemesResponseType {
     themes: Theme[];
 }
 
-export interface ThemesUploadResponseType {
-    themes: Array<Theme & { errors?: ThemeProblem<'error'>[], warnings?: ThemeProblem<'warning'>[] }>;
+export interface ThemesInstallResponseType {
+    themes: InstalledTheme[];
 }
 
 interface RequestOptions {
@@ -172,8 +172,8 @@ export interface API {
         browse: () => Promise<ThemesResponseType>;
         activate: (themeName: string) => Promise<ThemesResponseType>;
         delete: (themeName: string) => Promise<void>;
-        install: (repo: string) => Promise<ThemesResponseType>;
-        upload: ({file}: {file: File}) => Promise<ThemesUploadResponseType>;
+        install: (repo: string) => Promise<ThemesInstallResponseType>;
+        upload: ({file}: {file: File}) => Promise<ThemesInstallResponseType>;
     };
 }
 
@@ -437,7 +437,7 @@ function setupGhostApi({ghostVersion}: GhostApiOptions): API {
                     body: formData,
                     headers: {}
                 });
-                const data: ThemesUploadResponseType = await response.json();
+                const data: ThemesInstallResponseType = await response.json();
                 return data;
             }
         }
