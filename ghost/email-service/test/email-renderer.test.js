@@ -855,7 +855,7 @@ describe('Email renderer', function () {
     });
 
     describe('renderBody', function () {
-        let renderedPost = '<p>Lexical Test</p><img class="is-light-background" src="test-dark" /><img class="is-dark-background" src="test-light" />';
+        let renderedPost;
         let postUrl = 'http://example.com';
         let customSettings = {};
         let emailRenderer;
@@ -864,6 +864,7 @@ describe('Email renderer', function () {
         let labsEnabled;
 
         beforeEach(function () {
+            renderedPost = '<p>Lexical Test</p><img class="is-light-background" src="test-dark" /><img class="is-dark-background" src="test-light" />';
             labsEnabled = true;
             basePost = {
                 lexical: '{}',
@@ -1055,6 +1056,74 @@ describe('Email renderer', function () {
 
             const $ = cheerio.load(response.html);
             should($('.preheader').text()).eql('Custom excerpt');
+        });
+
+        it('does not include members-only content in preheader for non-members', async function () {
+            renderedPost = '<div> Lexical Test </div> some text for both <!--members-only--> finishing part only for members';
+            let post = {
+                related: sinon.stub(),
+                get: (key) => {
+                    if (key === 'lexical') {
+                        return '{}';
+                    }
+
+                    if (key === 'visibility') {
+                        return 'paid';
+                    }
+
+                    if (key === 'plaintext') {
+                        return 'foobarbaz';
+                    }
+                },
+                getLazyRelation: sinon.stub()
+            };
+            let newsletter = {
+                get: sinon.stub()
+            };
+
+            let response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                'status:free',
+                {}
+            );
+
+            const $ = cheerio.load(response.html);
+            should($('.preheader').text()).eql('Lexical Test some text for both');
+        });
+
+        it('does not include paid segmented content in preheader for non-paying members', async function () {
+            renderedPost = '<div> Lexical Test </div> <div data-gh-segment="status:-free"> members only section</div> some text for both';
+            let post = {
+                related: sinon.stub(),
+                get: (key) => {
+                    if (key === 'lexical') {
+                        return '{}';
+                    }
+
+                    if (key === 'visibility') {
+                        return 'public';
+                    }
+
+                    if (key === 'plaintext') {
+                        return 'foobarbaz';
+                    }
+                },
+                getLazyRelation: sinon.stub()
+            };
+            let newsletter = {
+                get: sinon.stub()
+            };
+
+            let response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                'status:free',
+                {}
+            );
+
+            const $ = cheerio.load(response.html);
+            should($('.preheader').text()).eql('Lexical Test some text for both');
         });
 
         it('only includes first author if more than 2', async function () {

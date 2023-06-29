@@ -8,6 +8,7 @@ const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@trygh
 const {DateTime} = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const tpl = require('@tryghost/tpl');
+const cheerio = require('cheerio');
 
 const messages = {
     subscriptionStatus: {
@@ -218,7 +219,6 @@ class EmailRenderer {
             return allowedSegments;
         }
 
-        const cheerio = require('cheerio');
         const $ = cheerio.load(html);
 
         let allSegments = $('[data-gh-segment]')
@@ -281,11 +281,30 @@ class EmailRenderer {
             }
         }
 
+        let $ = cheerio.load(html);
+
+        // Remove parts of the HTML not applicable to the current segment - We do this
+        // before rendering the template as the preheader for the email may be generated
+        // using the HTML and we don't want to include content that should not be
+        // visible depending on the segment
+        $('[data-gh-segment]').get().forEach((node) => {
+            // TODO: replace with NQL interpretation
+            if (node.attribs['data-gh-segment'] !== segment) {
+                $(node).remove();
+            } else {
+                // Getting rid of the attribute for a cleaner html output
+                $(node).removeAttr('data-gh-segment');
+            }
+        });
+
+        html = $.html();
+
         const templateData = await this.getTemplateData({
             post,
             newsletter,
             html,
-            addPaywall
+            addPaywall,
+            segment
         });
         html = await this.renderTemplate(templateData);
 
@@ -326,25 +345,13 @@ class EmailRenderer {
         html = juice(html, {inlinePseudoElements: true, removeStyleTags: true});
 
         // happens after inlining of CSS so we can change element types without worrying about styling
-        const cheerio = require('cheerio');
-        const $ = cheerio.load(html);
+        $ = cheerio.load(html);
 
         // force all links to open in new tab
         $('a').attr('target', '_blank');
 
         // convert figure and figcaption to div so that Outlook applies margins
         $('figure, figcaption').each((i, elem) => !!(elem.tagName = 'div'));
-
-        // Remove/hide parts of the email based on segment data attributes
-        $('[data-gh-segment]').get().forEach((node) => {
-            // TODO: replace with NQL interpretation
-            if (node.attribs['data-gh-segment'] !== segment) {
-                $(node).remove();
-            } else {
-                // Getting rid of the attribute for a cleaner html output
-                $(node).removeAttr('data-gh-segment');
-            }
-        });
 
         // Remove duplicate black/white images (CSS based solution not working in Outlook)
         if (templateData.backgroundIsDark) {
@@ -715,13 +722,19 @@ class EmailRenderer {
      * @param {object} postModel
      * @returns
      */
-    #getEmailPreheader(postModel) {
+    #getEmailPreheader(postModel, segment, html) {
         let plaintext = postModel.get('plaintext');
         let customExcerpt = postModel.get('custom_excerpt');
         if (customExcerpt) {
             return customExcerpt;
         } else {
             if (plaintext) {
+                // The plaintext field on the model may contain paid only content
+                // so we use the provided HTML to generate the plaintext as this
+                // should have already had the paid content removed
+                if (segment === 'status:free') {
+                    plaintext = htmlToPlaintext.email(html);
+                }
                 return plaintext.substring(0, 500);
             } else {
                 return `${postModel.get('title')} – `;
@@ -821,7 +834,7 @@ class EmailRenderer {
     /**
      * @private
      */
-    async getTemplateData({post, newsletter, html, addPaywall}) {
+    async getTemplateData({post, newsletter, html, addPaywall, segment}) {
         let accentColor = this.#settingsCache.get('accent_color') || '#15212A';
         let adjustedAccentColor;
         let adjustedAccentContrastColor;
@@ -931,7 +944,7 @@ class EmailRenderer {
                         image: this.#settingsCache.get('icon')
                     }, true) : null
             },
-            preheader: this.#getEmailPreheader(post),
+            preheader: this.#getEmailPreheader(post, segment, html),
             html,
 
             post: {
