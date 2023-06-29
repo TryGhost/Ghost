@@ -6,13 +6,12 @@ const sinon = require('sinon');
 const assert = require('assert/strict');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
 const _ = require('lodash');
-const escapeRegExp = require('lodash/escapeRegExp');
 const configUtils = require('../../../utils/configUtils');
 const {settingsCache} = require('../../../../core/server/services/settings-helpers');
 const DomainEvents = require('@tryghost/domain-events');
 const emailService = require('../../../../core/server/services/email-service');
-const should = require('should');
 const {mockSetting, stripeMocker} = require('../../../utils/e2e-framework-mock-manager');
+const {sendEmail, createPublishedPostEmail, lastEmailMatchSnapshot, getDefaultNewsletter, retryEmail} = require('./utils');
 
 const mobileDocExample = '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"Hello world"]]]],"ghostVersion":"4.0"}';
 const mobileDocWithPaywall = '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["paywall",{}]],"sections":[[1,"p",[[0,[],0,"Free content"]]],[10,0],[1,"p",[[0,[],0,"Members content"]]]]}';
@@ -25,7 +24,6 @@ const mobileDocWithReplacements = '{"version":"0.3.1","atoms":[],"cards":[["emai
 let agent;
 let stubbedSend;
 let frontendAgent;
-let lastEmailModel;
 
 function sortBatches(a, b) {
     const aId = a.get('provider_id');
@@ -39,165 +37,6 @@ function sortBatches(a, b) {
     return aId.localeCompare(bId);
 }
 
-async function getDefaultNewsletter() {
-    const newsletterSlug = fixtureManager.get('newsletters', 0).slug;
-    return await models.Newsletter.findOne({slug: newsletterSlug});
-}
-
-let postCounter = 0;
-
-async function createPublishedPostEmail(settings = {}, email_recipient_filter) {
-    const post = {
-        title: 'A random test post',
-        status: 'draft',
-        feature_image_alt: 'Testing sending',
-        feature_image_caption: 'Testing <b>feature image caption</b>',
-        created_at: moment().subtract(2, 'days').toISOString(),
-        updated_at: moment().subtract(2, 'days').toISOString(),
-        created_by: ObjectId().toHexString(),
-        updated_by: ObjectId().toHexString(),
-        ...settings
-    };
-
-    const res = await agent.post('posts/')
-        .body({posts: [post]})
-        .expectStatus(201);
-
-    const id = res.body.posts[0].id;
-
-    // Make sure all posts are published in the samre order, with minimum 1s difference (to have consistent ordering when including latests posts)
-    postCounter += 1;
-
-    const updatedPost = {
-        status: 'published',
-        updated_at: res.body.posts[0].updated_at,
-        // Fixed publish date to make sure snapshots are consistent
-        published_at: moment(new Date(2050, 0, 1, 12, 0, postCounter)).toISOString()
-    };
-
-    const newsletterSlug = fixtureManager.get('newsletters', 0).slug;
-    await agent.put(`posts/${id}/?newsletter=${newsletterSlug}${email_recipient_filter ? `&email_segment=${email_recipient_filter}` : ''}`)
-        .body({posts: [updatedPost]})
-        .expectStatus(200);
-
-    const emailModel = await models.Email.findOne({
-        post_id: id
-    });
-    assert(!!emailModel);
-
-    return emailModel;
-}
-
-async function sendEmail(settings, email_recipient_filter) {
-    // Prepare a post and email model
-    const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
-    const emailModel = await createPublishedPostEmail(settings, email_recipient_filter);
-
-    // Await sending job
-    await completedPromise;
-
-    await emailModel.refresh();
-    assert.equal(emailModel.get('status'), 'submitted');
-
-    lastEmailModel = emailModel;
-
-    // Get the email that was sent
-    return {emailModel, ...(await getLastEmail())};
-}
-
-async function retryEmail(emailId) {
-    await agent.put(`emails/${emailId}/retry`)
-        .expectStatus(200);
-}
-
-/**
- * Returns the last email that was sent via the stub, with all recipient variables replaced
- */
-async function getLastEmail() {
-    // Get the email body
-    sinon.assert.called(stubbedSend);
-    const messageData = stubbedSend.lastArg;
-    let html = messageData.html;
-    let plaintext = messageData.text;
-    const recipientVariables = JSON.parse(messageData['recipient-variables']);
-    const recipientData = recipientVariables[Object.keys(recipientVariables)[0]];
-
-    for (const [key, value] of Object.entries(recipientData)) {
-        html = html.replace(new RegExp(`%recipient.${key}%`, 'g'), value);
-        plaintext = plaintext.replace(new RegExp(`%recipient.${key}%`, 'g'), value);
-    }
-
-    return {
-        emailModel: lastEmailModel,
-        ...messageData,
-        html,
-        plaintext,
-        recipientData
-    };
-}
-
-function testCleanedSnapshot(html, ignoreReplacements) {
-    for (const {match, replacement} of ignoreReplacements) {
-        if (match instanceof RegExp) {
-            html = html.replace(match, replacement);
-        } else {
-            html = html.replace(new RegExp(escapeRegExp(match), 'g'), replacement);
-        }
-    }
-    should({html}).matchSnapshot();
-}
-
-async function lastEmailMatchSnapshot() {
-    const lastEmail = await getLastEmail();
-    const defaultNewsletter = await lastEmail.emailModel.getLazyRelation('newsletter');
-    const linkRegexp = /http:\/\/127\.0\.0\.1:2369\/r\/\w+/g;
-
-    const ignoreReplacements = [
-        {
-            match: /\d{1,2}\s\w+\s\d{4}/g,
-            replacement: 'date'
-        },
-        {
-            match: defaultNewsletter.get('uuid'),
-            replacement: 'requested-newsletter-uuid'
-        },
-        {
-            match: lastEmail.emailModel.get('post_id'),
-            replacement: 'post-id'
-        },
-        {
-            match: (await lastEmail.emailModel.getLazyRelation('post')).get('uuid'),
-            replacement: 'post-uuid'
-        },
-        {
-            match: linkRegexp,
-            replacement: 'http://127.0.0.1:2369/r/xxxxxx'
-        },
-        {
-            match: linkRegexp,
-            replacement: 'http://127.0.0.1:2369/r/xxxxxx'
-        }
-    ];
-
-    if (lastEmail.recipientData.uuid) {
-        ignoreReplacements.push({
-            match: lastEmail.recipientData.uuid,
-            replacement: 'member-uuid'
-        });
-    } else {
-        // Sometimes uuid is not used if link tracking is disabled
-        // Need to replace unsubscribe url instead (uuid is missing but it is inside the usubscribe url, causing snapshot updates)
-        // Need to use unshift to make replacement work before newsletter uuid
-        ignoreReplacements.unshift({
-            match: lastEmail.recipientData.unsubscribe_url,
-            replacement: 'unsubscribe_url'
-        });
-    }
-
-    testCleanedSnapshot(lastEmail.html, ignoreReplacements);
-    testCleanedSnapshot(lastEmail.plaintext, ignoreReplacements);
-}
-
 /**
  * Test amount of batches and segmenting for a given email
  *
@@ -207,7 +46,7 @@ async function lastEmailMatchSnapshot() {
  */
 async function testEmailBatches(settings, email_recipient_filter, expectedBatches) {
     const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
-    const emailModel = await createPublishedPostEmail(settings, email_recipient_filter);
+    const emailModel = await createPublishedPostEmail(agent, settings, email_recipient_filter);
 
     assert.equal(emailModel.get('source_type'), 'mobiledoc');
     assert(emailModel.get('subject'));
@@ -302,7 +141,7 @@ describe('Batch sending tests', function () {
 
     it('Can send a scheduled post email', async function () {
         // Prepare a post and email model
-        const emailModel = await createPublishedPostEmail();
+        const emailModel = await createPublishedPostEmail(agent);
 
         assert.equal(emailModel.get('source_type'), 'mobiledoc');
         assert(emailModel.get('subject'));
@@ -346,7 +185,7 @@ describe('Batch sending tests', function () {
     it('Protects the email job from being run multiple times at the same time', async function () {
         this.retries(1);
         // Prepare a post and email model
-        const emailModel = await createPublishedPostEmail();
+        const emailModel = await createPublishedPostEmail(agent);
 
         assert.equal(emailModel.get('source_type'), 'mobiledoc');
         assert(emailModel.get('subject'));
@@ -393,7 +232,7 @@ describe('Batch sending tests', function () {
 
         // Prepare a post and email model
         const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
-        const emailModel = await createPublishedPostEmail();
+        const emailModel = await createPublishedPostEmail(agent);
 
         // Await sending job
         await completedPromise;
@@ -420,7 +259,7 @@ describe('Batch sending tests', function () {
 
         // Create a new email and see if it is included now
         const completedPromise2 = jobManager.awaitCompletion('batch-sending-service-job');
-        const emailModel2 = await createPublishedPostEmail();
+        const emailModel2 = await createPublishedPostEmail(agent);
         await completedPromise2;
         await emailModel2.refresh();
         assert.equal(emailModel2.get('email_count'), 5);
@@ -593,7 +432,7 @@ describe('Batch sending tests', function () {
         };
 
         // Prepare a post and email model
-        const emailModel = await createPublishedPostEmail();
+        const emailModel = await createPublishedPostEmail(agent);
 
         assert.equal(emailModel.get('source_type'), 'mobiledoc');
         assert(emailModel.get('subject'));
@@ -655,7 +494,7 @@ describe('Batch sending tests', function () {
         let memberIds = emailRecipients.map(recipient => recipient.get('member_id'));
         assert.equal(memberIds.length, _.uniq(memberIds).length);
 
-        await retryEmail(emailModel.id);
+        await retryEmail(agent, emailModel.id);
         await jobManager.allSettled();
 
         await emailModel.refresh();
@@ -756,7 +595,7 @@ describe('Batch sending tests', function () {
 
     describe('Analytics', function () {
         it('Adds link tracking to all links in a post', async function () {
-            const {emailModel, html, plaintext, recipientData} = await sendEmail();
+            const {emailModel, html, plaintext, recipientData} = await sendEmail(agent);
             const memberUuid = recipientData.uuid;
             const member = await models.Member.findOne({uuid: memberUuid});
 
@@ -806,7 +645,7 @@ describe('Batch sending tests', function () {
         it('Does not add outbound refs if disabled', async function () {
             mockManager.mockSetting('outbound_link_tagging', false);
 
-            const {emailModel, html} = await sendEmail();
+            const {emailModel, html} = await sendEmail(agent);
             assert.match(html, /\m=/);
             const links = await linkRedirectRepository.getAll({filter: 'post_id:' + emailModel.get('post_id')});
 
@@ -821,7 +660,7 @@ describe('Batch sending tests', function () {
             mockManager.mockLabsDisabled('outboundLinkTagging');
             mockManager.mockSetting('outbound_link_tagging', false);
 
-            const {emailModel, html} = await sendEmail();
+            const {emailModel, html} = await sendEmail(agent);
             assert.match(html, /\m=/);
             const links = await linkRedirectRepository.getAll({filter: 'post_id:' + emailModel.get('post_id')});
 
@@ -834,7 +673,7 @@ describe('Batch sending tests', function () {
         it('Does not add link tracking if disabled', async function () {
             mockManager.mockSetting('email_track_clicks', false);
 
-            const {emailModel, html} = await sendEmail();
+            const {emailModel, html} = await sendEmail(agent);
             assert.doesNotMatch(html, /\m=/);
             const links = await linkRedirectRepository.getAll({filter: 'post_id:' + emailModel.get('post_id')});
             assert.equal(links.length, 0);
@@ -852,7 +691,7 @@ describe('Batch sending tests', function () {
                 }]
             });
 
-            const {html, plaintext} = await sendEmail({
+            const {html, plaintext} = await sendEmail(agent, {
                 mobiledoc: mobileDocWithReplacements
             }, 'label:replacements-tests');
 
@@ -885,7 +724,7 @@ describe('Batch sending tests', function () {
                 }]
             });
 
-            const {html, plaintext} = await sendEmail({
+            const {html, plaintext} = await sendEmail(agent, {
                 mobiledoc: mobileDocWithReplacements
             }, 'label:replacements-tests-2');
 
@@ -909,7 +748,7 @@ describe('Batch sending tests', function () {
 
     describe('HTML-content', function () {
         it('Does not HTML escape feature_image_caption', async function () {
-            const {html, plaintext} = await sendEmail({
+            const {html, plaintext} = await sendEmail(agent, {
                 feature_image: 'https://example.com/image.jpg',
                 feature_image_caption: 'Testing <b>feature image caption</b>'
             });
@@ -928,7 +767,7 @@ describe('Batch sending tests', function () {
             const defaultNewsletter = await getDefaultNewsletter();
             await models.Newsletter.edit({show_post_title_section: false}, {id: defaultNewsletter.id});
 
-            const {html, plaintext} = await sendEmail({
+            const {html, plaintext} = await sendEmail(agent, {
                 title: 'This is a test post title',
                 mobiledoc: mobileDocExample
             });
@@ -943,7 +782,7 @@ describe('Batch sending tests', function () {
             await models.Newsletter.edit({show_post_title_section: true}, {id: defaultNewsletter.id});
 
             // Check does contain post title section
-            const {html: html2, plaintext: plaintext2} = await sendEmail({
+            const {html: html2, plaintext: plaintext2} = await sendEmail(agent, {
                 title: 'This is a test post title',
                 mobiledoc: mobileDocExample
             });
@@ -962,7 +801,7 @@ describe('Batch sending tests', function () {
             assert(defaultNewsletter.get('show_comment_cta'), 'show_comment_cta should be true for this test');
             assert(!defaultNewsletter.get('feedback_enabled'), 'feedback_enabled should be off for this test');
 
-            const {html} = await sendEmail({
+            const {html} = await sendEmail(agent, {
                 title: 'This is a test post title',
                 mobiledoc: mobileDocExample
             });
@@ -980,7 +819,7 @@ describe('Batch sending tests', function () {
             assert(defaultNewsletter.get('show_comment_cta'), 'show_comment_cta should be true for this test');
             await models.Newsletter.edit({feedback_enabled: true}, {id: defaultNewsletter.id});
 
-            const {html} = await sendEmail({
+            const {html} = await sendEmail(agent, {
                 title: 'This is a test post title',
                 mobiledoc: mobileDocExample
             });
@@ -1000,7 +839,7 @@ describe('Batch sending tests', function () {
             const defaultNewsletter = await getDefaultNewsletter();
             assert(defaultNewsletter.get('show_comment_cta'), 'show_comment_cta should be true for this test');
 
-            const {html} = await sendEmail({
+            const {html} = await sendEmail(agent, {
                 title: 'This is a test post title',
                 mobiledoc: mobileDocExample,
                 email_only: true
@@ -1018,7 +857,7 @@ describe('Batch sending tests', function () {
             const defaultNewsletter = await getDefaultNewsletter();
             assert(defaultNewsletter.get('show_comment_cta'), 'show_comment_cta should be true for this test');
 
-            const {html} = await sendEmail({
+            const {html} = await sendEmail(agent, {
                 title: 'This is a test post title',
                 mobiledoc: mobileDocExample
             });
@@ -1034,7 +873,7 @@ describe('Batch sending tests', function () {
             const defaultNewsletter = await getDefaultNewsletter();
             await models.Newsletter.edit({show_comment_cta: false}, {id: defaultNewsletter.id});
 
-            const {html} = await sendEmail({
+            const {html} = await sendEmail(agent, {
                 title: 'This is a test post title',
                 mobiledoc: mobileDocExample
             });
@@ -1062,7 +901,7 @@ describe('Batch sending tests', function () {
             const defaultNewsletter = await getDefaultNewsletter();
             await models.Newsletter.edit({show_subscription_details: true}, {id: defaultNewsletter.id});
 
-            const {html, plaintext} = await sendEmail({
+            const {html, plaintext} = await sendEmail(agent, {
                 title: 'This is a test post title',
                 mobiledoc: mobileDocExample
             }, 'label:subscription-box-tests');
@@ -1095,7 +934,7 @@ describe('Batch sending tests', function () {
             const defaultNewsletter = await getDefaultNewsletter();
             await models.Newsletter.edit({show_subscription_details: true}, {id: defaultNewsletter.id});
 
-            const {html, plaintext} = await sendEmail({
+            const {html, plaintext} = await sendEmail(agent, {
                 title: 'This is a test post title',
                 mobiledoc: mobileDocExample
             }, 'label:subscription-box-comped-tests');
@@ -1136,7 +975,7 @@ describe('Batch sending tests', function () {
             const defaultNewsletter = await getDefaultNewsletter();
             await models.Newsletter.edit({show_subscription_details: true}, {id: defaultNewsletter.id});
 
-            const {html, plaintext} = await sendEmail({
+            const {html, plaintext} = await sendEmail(agent, {
                 title: 'This is a test post title',
                 mobiledoc: mobileDocExample
             }, 'label:subscription-box-trialing-tests');
@@ -1177,7 +1016,7 @@ describe('Batch sending tests', function () {
             const defaultNewsletter = await getDefaultNewsletter();
             await models.Newsletter.edit({show_subscription_details: true}, {id: defaultNewsletter.id});
 
-            const {html, plaintext} = await sendEmail({
+            const {html, plaintext} = await sendEmail(agent, {
                 title: 'This is a test post title',
                 mobiledoc: mobileDocExample
             }, 'label:subscription-box-paid-tests');
@@ -1219,7 +1058,7 @@ describe('Batch sending tests', function () {
             const defaultNewsletter = await getDefaultNewsletter();
             await models.Newsletter.edit({show_subscription_details: true}, {id: defaultNewsletter.id});
 
-            const {html, plaintext} = await sendEmail({
+            const {html, plaintext} = await sendEmail(agent, {
                 title: 'This is a test post title',
                 mobiledoc: mobileDocExample
             }, 'label:subscription-box-canceled-tests');
@@ -1240,7 +1079,7 @@ describe('Batch sending tests', function () {
             const defaultNewsletter = await getDefaultNewsletter();
             await models.Newsletter.edit({show_latest_posts: true}, {id: defaultNewsletter.id});
 
-            const {html} = await sendEmail({
+            const {html} = await sendEmail(agent, {
                 title: 'This is the main post title',
                 mobiledoc: mobileDocExample
             });

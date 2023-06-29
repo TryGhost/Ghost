@@ -112,12 +112,17 @@ const mockMail = (response = 'Mail is disabled') => {
     return mockMailReceiver;
 };
 
+/**
+ * A reference to the send method when MailGun is mocked (required for some tests)
+ */
+let mailgunCreateMessageStub;
+
 const mockMailgun = (customStubbedSend) => {
     mockSetting('mailgun_api_key', 'test');
     mockSetting('mailgun_domain', 'example.com');
     mockSetting('mailgun_base_url', 'test');
 
-    const stubbedSend = customStubbedSend ?? sinon.fake.resolves({
+    mailgunCreateMessageStub = customStubbedSend ? sinon.stub().callsFake(customStubbedSend) : sinon.fake.resolves({
         id: `<${new Date().getTime()}.${0}.5817@samples.mailgun.org>`
     });
 
@@ -126,7 +131,7 @@ const mockMailgun = (customStubbedSend) => {
         // @ts-ignore
         messages: {
             create: async function () {
-                return await stubbedSend.call(this, ...arguments);
+                return await mailgunCreateMessageStub.call(this, ...arguments);
             }
         }
     });
@@ -300,5 +305,6 @@ module.exports = {
         sentEmailCount,
         sentEmail,
         emittedEvent
-    }
+    },
+    getMailgunCreateMessageStub: () => mailgunCreateMessageStub
 };
