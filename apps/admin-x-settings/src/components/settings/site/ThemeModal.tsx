@@ -68,8 +68,14 @@ async function handleThemeUpload({
     let title = 'Upload successful';
     let prompt = <>
         <strong>{uploadedTheme.name}</strong> uploaded successfully.
-        Do you want to activate it now?
     </>;
+
+    if (!uploadedTheme.active) {
+        prompt = <>
+            {prompt}
+            Do you want to activate it now?
+        </>;
+    }
 
     if (uploadedTheme.errors?.length || uploadedTheme.warnings?.length) {
         const hasErrors = uploadedTheme.errors?.length;
@@ -77,8 +83,14 @@ async function handleThemeUpload({
         title = `Upload successful with ${hasErrors ? 'errors' : 'warnings'}`;
         prompt = <>
             The theme <strong>"{uploadedTheme.name}"</strong> was installed successfully but we detected some {hasErrors ? 'errors' : 'warnings'}.
-            You are still able to activate and use the theme but it is recommended to fix these {hasErrors ? 'errors' : 'warnings'} before you do so.
         </>;
+
+        if (!uploadedTheme.active) {
+            prompt = <>
+                {prompt}
+                You are still able to activate and use the theme but it is recommended to fix these {hasErrors ? 'errors' : 'warnings'} before you do so.
+            </>;
+        }
     }
 
     NiceModal.show(ThemeInstalledModal, {

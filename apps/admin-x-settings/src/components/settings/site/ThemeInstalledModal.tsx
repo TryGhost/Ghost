@@ -59,10 +59,16 @@ const ThemeInstalledModal: React.FC<{
         </div>;
     }
 
+    let okLabel = `Activate${installedTheme.errors?.length ? ' with errors' : ''}`;
+
+    if (installedTheme.active) {
+        okLabel = 'OK';
+    }
+
     return <ConfirmationModalContent
         cancelLabel='Close'
         okColor='black'
-        okLabel={`Activate${installedTheme.errors?.length ? ' with errors' : ''}`}
+        okLabel={okLabel}
         okRunningLabel='Activating...'
         prompt={<>
             {prompt}
@@ -71,21 +77,23 @@ const ThemeInstalledModal: React.FC<{
         </>}
         title={title}
         onOk={async (activateModal) => {
-            const resData = await api.themes.activate(installedTheme.name);
-            const updatedTheme = resData.themes[0];
+            if (!installedTheme.active) {
+                const resData = await api.themes.activate(installedTheme.name);
+                const updatedTheme = resData.themes[0];
 
-            setThemes((_themes) => {
-                const updatedThemes: Theme[] = _themes.map((t) => {
-                    if (t.name === updatedTheme.name) {
-                        return updatedTheme;
-                    }
-                    return {
-                        ...t,
-                        active: false
-                    };
+                setThemes((_themes) => {
+                    const updatedThemes: Theme[] = _themes.map((t) => {
+                        if (t.name === updatedTheme.name) {
+                            return updatedTheme;
+                        }
+                        return {
+                            ...t,
+                            active: false
+                        };
+                    });
+                    return updatedThemes;
                 });
-                return updatedThemes;
-            });
+            }
             activateModal?.remove();
         }}
     />;
