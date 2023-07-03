@@ -1,8 +1,9 @@
 import Icon from './Icon';
 import React from 'react';
+import clsx from 'clsx';
 import {ToastOptions, toast} from 'react-hot-toast';
 
-export type ToastType = 'neutral' | 'success' | 'error';
+export type ToastType = 'neutral' | 'success' | 'error' | 'pageError';
 
 export interface ShowToastProps {
     message?: React.ReactNode;
@@ -26,27 +27,22 @@ const Toast: React.FC<ToastProps> = ({
     children,
     props
 }) => {
-    let classNames = `flex w-[300px] items-start justify-between rounded py-3 px-4 text-sm font-medium text-white gap-6 z-[90] `;
-
-    if (t.visible) {
-        classNames += ' animate-toaster-in';
-    } else {
-        classNames += ' animate-toaster-out';
-    }
-
     switch (props?.type) {
     case 'success':
-        classNames += ' bg-black';
         props.icon = props.icon || 'check-circle';
         break;
     case 'error':
-        classNames += ' bg-red';
         props.icon = props.icon || 'warning';
         break;
-    default:
-        classNames += ' bg-black';
-        break;
     }
+
+    const classNames = clsx(
+        'z-[90] flex items-start justify-between gap-6 rounded px-4 py-3 text-sm font-medium text-white',
+        (props?.type === 'success' || props?.type === 'neutral') && 'w-[300px] bg-black',
+        props?.type === 'error' && 'w-[300px] bg-red',
+        props?.options?.position === 'top-center' && 'w-full max-w-[520px] bg-red',
+        t.visible ? (props?.options?.position === 'top-center' ? 'animate-toaster-top-in' : 'animate-toaster-in') : 'animate-toaster-out'
+    );
 
     return (
         <div className={classNames} data-testid='toast'>
@@ -81,10 +77,17 @@ export const showToast = ({
         options.position = 'bottom-left';
     }
 
+    if (type === 'pageError') {
+        type = 'error';
+        options.position = 'top-center';
+        options.duration = Infinity;
+    }
+
     toast.custom(t => (
         <Toast props={{
             type: type,
-            icon: icon
+            icon: icon,
+            options: options
         }} t={t}>
             {message}
         </Toast>
