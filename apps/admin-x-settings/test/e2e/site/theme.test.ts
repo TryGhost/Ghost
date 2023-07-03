@@ -12,6 +12,14 @@ test.describe('Theme settings', async () => {
                         active: false,
                         templates: []
                     }]
+                },
+                activate: {
+                    themes: [{
+                        name: 'headline',
+                        package: {},
+                        active: true,
+                        templates: []
+                    }]
                 }
             }
         }});
@@ -28,21 +36,9 @@ test.describe('Theme settings', async () => {
 
         await modal.getByRole('button', {name: /Casper/}).click();
 
-        await expect(modal.getByRole('button', {name: 'Installed'})).toBeVisible();
-        await expect(modal.getByRole('button', {name: 'Installed'})).toBeDisabled();
+        await expect(modal.getByRole('button', {name: 'Update Casper'})).toBeVisible();
 
         await expect(page.locator('iframe[title="Theme preview"]')).toHaveAttribute('src', 'https://demo.ghost.io/');
-
-        await modal.getByRole('button', {name: 'Official themes'}).click();
-
-        // The "edition" theme is activated in fixtures
-
-        await modal.getByRole('button', {name: /Edition/}).click();
-
-        await expect(modal.getByRole('button', {name: 'Activated'})).toBeVisible();
-        await expect(modal.getByRole('button', {name: 'Activated'})).toBeDisabled();
-
-        await expect(page.locator('iframe[title="Theme preview"]')).toHaveAttribute('src', 'https://edition.ghost.io/');
 
         await modal.getByRole('button', {name: 'Official themes'}).click();
 
@@ -52,9 +48,11 @@ test.describe('Theme settings', async () => {
 
         await modal.getByRole('button', {name: 'Install Headline'}).click();
 
-        await expect(modal.getByRole('button', {name: 'Installed'})).toBeVisible();
-        await expect(modal.getByRole('button', {name: 'Installed'})).toBeDisabled();
-        await expect(page.getByTestId('toast')).toHaveText(/Theme installed - headline/);
+        await expect(page.getByTestId('confirmation-modal')).toHaveText(/successfully installed/);
+
+        await page.getByRole('button', {name: 'Activate'}).click();
+
+        await expect(page.getByTestId('toast')).toHaveText(/headline is now your active theme/);
 
         expect(lastApiRequests.themes.install.url).toMatch(/\?source=github&ref=TryGhost%2FHeadline/);
     });
