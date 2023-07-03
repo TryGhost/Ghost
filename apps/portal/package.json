@@ -72,7 +72,7 @@
     "@vitest/coverage-v8": "0.32.2",
     "@vitest/ui": "0.29.8",
     "concurrently": "8.2.0",
-    "cross-fetch": "3.1.8",
+    "cross-fetch": "4.0.0",
     "eslint": "8.37.0",
     "eslint-config-react-app": "7.0.1",
     "eslint-plugin-i18next": "^6.0.1",
