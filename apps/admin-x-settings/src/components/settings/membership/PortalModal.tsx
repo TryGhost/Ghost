@@ -56,6 +56,7 @@ const PortalModal: React.FC = () => {
     ];
 
     return <PreviewModalContent
+        deviceSelector={selectedPreviewTab !== 'links'}
         preview={preview}
         previewToolbarTabs={previewTabs}
         selectedURL={selectedPreviewTab}
