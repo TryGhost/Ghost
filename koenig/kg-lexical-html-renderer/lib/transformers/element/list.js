@@ -8,6 +8,15 @@ const exportList = function (node, options, exportChildren) {
     const tag = node.getTag();
     const start = node.getStart();
 
+    // track an open <li> outside of the child loop, we do this so we can nest lists
+    // inside <li> elements that already have their contents rendered, e.g.:
+    // <li>one
+    //   <ol>
+    //     <li>one.two</li>
+    //   </ol>
+    // </li>
+    let liOpen = false;
+
     const exportListContent = (listNode) => {
         const output = [];
         const children = listNode.getChildren();
@@ -20,10 +29,24 @@ const exportList = function (node, options, exportChildren) {
             const listChildren = child.getChildren();
 
             if ($isListNode(listChildren[0])) {
-                output.push(`<li>${exportList(listChildren[0], options, exportChildren)}</li>`);
+                output.push(exportList(listChildren[0], options, exportChildren));
+                if (liOpen) {
+                    output.push('</li>');
+                    liOpen = false;
+                }
             } else {
-                output.push(`<li>${exportChildren(child, options)}</li>`);
+                if (liOpen) {
+                    output.push('</li>');
+                    liOpen = false;
+                }
+                output.push(`<li>${exportChildren(child, options)}`);
+                liOpen = true;
             }
+        }
+
+        if (liOpen) {
+            output.push('</li>');
+            liOpen = false;
         }
 
         return output.join('');
