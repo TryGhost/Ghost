@@ -1,0 +1,107 @@
+import { Meta } from '@storybook/blocks';
+import SBLocalError from './assets/local-error-example.png';
+import SBPageError from './assets/page-error-example.png';
+import SBGlobalError from './assets/global-error-example.png';
+
+<Meta title="Error handling" />
+
+<style>
+  {`
+    .sb-doc {
+      max-width: 720px;
+      width: 100%;
+      font-family: Inter, sans-serif !important;
+      margin: 0 auto;
+    }
+
+    .sb-highlight {
+        background: #E4D2FF;
+        border-radius: 7px;
+        padding: 12px 24px;
+        margin: 0 0 24px;
+    }
+
+    .sb-wide {
+      max-width: 1340px;
+      width: 100%;
+      margin: 0 auto;
+    }
+  `}
+</style>
+
+<div className="sb-doc">
+
+# Error handling in AdminX
+
+The three most common errors in Ghost Admin should fall into one of the following categories:
+
+1. **Local errors** &mdash; errors related typically to input fields in forms
+2. **Contextual errors** &mdash; errors which are related to a screen, page or a modal and the tasks the user is doing at that specific context.
+3. **System errors** &mdash; global errors which are relevant no matter what the actual screen is or the user's actual task
+
+## Local errors
+
+Local errors are typically related to form validation and appear most commonly close to a form element. An example of a local error is when the user doesn't fill a mandatory input field and an error message appears near the field.
+
+Example of a local error:
+
+<img src={SBLocalError} />
+<br /><br />
+
+Frontend form validation usually happens without an API roundtrip, ideally after the user explicitly sends the form by pressing the submit button:
+
+1. User fills the form
+2. Clicks Submit
+3. The system does (typically frontend) form validation and shows the field errors.
+
+All the form fields in AdminX have a built in capability to show local errors via the `error` prop set to `true` and using the `hint` prop to set the error message. Example: [Textfield](/story/global-form-textfield--error)
+
+## Page errors
+
+Page errors are related to the actual page, modal or the task but unlike local errors, they always appear on the top of the page. An important property of page errors is that they _disappear_ if the user navigates away from the page.
+
+A common example of page errors is a summary of form validation errors or an API error or a summary of errors on submitting a form.
+
+A typical example when page errors would be used:
+
+1. User fills a form
+2. Clicks Submit — frontend validation is complete, no errors found &rarr; API call
+3. There's an API error
+4. We show a page error with the appropriate error message
+
+
+</div>
+
+<div className="sb-wide">
+<img src={SBPageError} />
+<br /><br />
+</div>
+
+<div className="sb-doc">
+
+Another example is a summary of validation errors:
+
+[TBD: screenshot]
+
+Use the [Toast / Page error](/story/global-toast--page-error) component to display page errors.
+
+## System errors
+
+System errors are always visible until explicitly dismissed no matter where the user navigates. Unlike local or page errors, they are not connected to a specific context but to the overall behavior or status of the system.
+
+For example:
+</div>
+
+<div className="sb-wide">
+<img src={SBGlobalError} />
+<br /><br /><br />
+</div>
+
+
+<div className="sb-doc">
+## Do's and dont's [WIP]
+
+- Show errors on submitting a form. It can either happen when the user clicks the [Submit] button, or sometimes hitting `Enter` on an input field. **Don't validate** on focus out and especially **don't validate prematurely**, ie. while the user is still typing (e.g. `onKeyUp`)
+- Use a summary **page error** in most of the cases if there's one or more validation errors in the form.
+
+</div>

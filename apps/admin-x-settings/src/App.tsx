@@ -31,15 +31,15 @@ function App({ghostVersion, officialThemes, setDirty}: AppProps) {
                             <div className="mx-auto flex max-w-[1080px] flex-col px-[5vmin] py-[12vmin] md:flex-row md:items-start md:gap-x-10 md:py-[8vmin]">
 
                                 {/* Sidebar */}
-                                <div className="relative min-w-[240px] grow-0 md:fixed md:top-[8vmin] md:basis-[240px]">
+                                <div className="relative min-w-[260px] grow-0 md:fixed md:top-[8vmin] md:basis-[260px]">
                                     <div className='h-[84px]'>
                                         <Heading>Settings</Heading>
                                     </div>
-                                    <div className="relative mt-[-32px] w-[240px] overflow-x-hidden after:absolute after:inset-x-0 after:top-0 after:block after:h-[40px] after:bg-gradient-to-b after:from-white after:to-transparent after:content-['']">
+                                    <div className="relative mt-[-32px] w-[260px] overflow-x-hidden after:absolute after:inset-x-0 after:top-0 after:block after:h-[40px] after:bg-gradient-to-b after:from-white after:to-transparent after:content-['']">
                                         <Sidebar />
                                     </div>
                                 </div>
-                                <div className="flex-auto pt-[3vmin] md:ml-[280px] md:pt-[84px]">
+                                <div className="flex-auto pt-[3vmin] md:ml-[300px] md:pt-[55px]">
                                     <Settings />
                                 </div>
                             </div>

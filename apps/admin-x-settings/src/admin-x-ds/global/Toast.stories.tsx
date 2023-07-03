@@ -38,6 +38,13 @@ export const Error: Story = {
     }
 };
 
+export const PageError: Story = {
+    args: {
+        message: 'This is a page error which should not be automatically dismissed.',
+        type: 'pageError'
+    }
+};
+
 export const Icon: Story = {
     args: {
         message: 'Custom icon in a toast',
