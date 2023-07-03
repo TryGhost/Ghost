@@ -1188,3 +1188,49 @@ figure {
 .gh-announcement-editor div {
     width: 100%;
 }
+
+/* Labs
+/* ---------------------------------------------------------- */
+
+.gh-editor-title-container.page-improvements {
+    position: relative;
+    max-width: 740px;
+    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+    border: none;
+    background: transparent;
+}
+
+.gh-editor .page-improvements .gh-editor-title {
+    display: block;
+    width: 100%;
+    max-width: unset;
+    min-height: auto;
+    margin: 0 0 1.2rem;
+    border: none;
+    background: transparent;
+    color: var(--black);
+    font-size: 4.8rem;
+    letter-spacing: -0.017em;
+    line-height: 1.1em;
+    font-weight: 700;
+    overflow: hidden;
+    box-shadow: none;
+}
+
+.gh-editor-hidden-indicator {
+    position: absolute;
+    top: -1px;
+    height: 2.4rem;
+    margin-left: -6rem;
+    color: var(--midgrey-l2);
+}
+
+.gh-editor-title-container .gh-editor-hidden-indicator {
+    top: 1.8rem;
+}
+
+.gh-editor-hidden-indicator svg {
+    height: 2.4rem;
+}
