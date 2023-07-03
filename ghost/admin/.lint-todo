@@ -569,3 +569,6 @@ add|ember-template-lint|no-action|34|16|34|16|5b7ad6ecbae8b6379d42a3c7f343485cf7
 add|ember-template-lint|require-valid-alt-text|3|44|3|44|a7f0566c430150bae4153e0dfb489a218bdeb8a4|1688342400000|1698714000000|1703898000000|lib/koenig-editor/addon/components/koenig-card-embed/nft.hbs
 add|ember-template-lint|require-valid-alt-text|8|20|8|20|9d0c591086dc9139ff38a7b385c3367a83438786|1688342400000|1698714000000|1703898000000|lib/koenig-editor/addon/components/koenig-card-embed/nft.hbs
 add|ember-template-lint|require-input-label|10|12|10|12|8c3c0ea315ff4da828363989a45fa11256a78796|1688342400000|1698714000000|1703898000000|lib/koenig-editor/addon/components/koenig-card-image/selector-tenor.hbs
+remove|ember-template-lint|no-invalid-interactive|3|4|3|4|1fcf990141becf2a97482e17ba7205413916e11d|1688342400000|1698714000000|1703898000000|app/components/gh-editor-feature-image.hbs
+remove|ember-template-lint|require-input-label|61|20|61|20|213bf91395d670b2af5fc667fca46d3d20238465|1688342400000|1698714000000|1703898000000|app/components/gh-editor-feature-image.hbs
+remove|ember-template-lint|require-valid-alt-text|47|16|47|16|079fc89fa5c7c47f6b0b219820cdda3819c44e26|1688342400000|1698714000000|1703898000000|app/components/gh-editor-feature-image.hbs

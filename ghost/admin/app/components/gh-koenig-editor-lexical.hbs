@@ -15,10 +15,12 @@
             @caption={{@featureImageCaption}}
             @updateCaption={{@setFeatureImageCaption}}
             @forceButtonDisplay={{or (not @title) (eq @title "(Untitled)") this.titleIsHovered this.titleIsFocused}}
+            @isPage={{@cardOptions.post.isPage}}
+            @isLexical={{true}}
         />
 
         <div class="gh-editor-title-container {{if (feature "pageImprovements") "page-improvements"}}">
-            {{#if (and (feature 'pageImprovements') (feature 'lexicalEditor'))}}
+            {{#if (and @cardOptions.post.isPage (feature 'pageImprovements'))}}
                 <span class="gh-editor-hidden-indicator" data-tooltip="Feature image and post title are hidden">
                     {{svg-jar "eye-closed"}}
                 </span>
