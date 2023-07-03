@@ -35,40 +35,43 @@ import SBGlobalError from './assets/global-error-example.png';
 
 The three most common errors in Ghost Admin should fall into one of the following categories:
 
-1. **Local errors** &mdash; errors related typically to input fields in forms
+1. **Inline errors** &mdash; errors related typically to input fields in forms
 2. **Contextual errors** &mdash; errors which are related to a screen, page or a modal and the tasks the user is doing at that specific context.
 3. **System errors** &mdash; global errors which are relevant no matter what the actual screen is or the user's actual task
 
-## Local errors
+## Inline errors
 
-Local errors are typically related to form validation and appear most commonly close to a form element. An example of a local error is when the user doesn't fill a mandatory input field and an error message appears near the field.
+Inline errors are typically related to form validation and appear most commonly close to a form element. An example of an inline error is when the user doesn't fill a mandatory input field and an error message appears near the field.
 
-Example of a local error:
+Example of a inline error:
 
 <img src={SBLocalError} />
 <br /><br />
 
-Frontend form validation usually happens without an API roundtrip, ideally after the user explicitly sends the form by pressing the submit button:
+Frontend form validation usually happens without an API roundtrip, ideally right after the user finishes editing a field (`onFocusOut`):
 
 1. User fills the form
-2. Clicks Submit
-3. The system does (typically frontend) form validation and shows the field errors.
+2. Clicks on the next form field (focus is out of the current input field)
+3. The system does form field validation and — in case of an error — shows the related inline field error
 
-All the form fields in AdminX have a built in capability to show local errors via the `error` prop set to `true` and using the `hint` prop to set the error message. Example: [Textfield](/story/global-form-textfield--error)
+All the form fields in AdminX have a built in capability to show inline errors via the `error` prop set to `true` and using the `hint` prop to set the error message. Example: [Textfield](/story/global-form-textfield--error)
+
+Ideally, all validation should be inline: that is, as soon as the user has finished filling in a field, an indicator should appear nearby if the field contains an error. This type of error message is easily noticeable; moreover, fixing the error immediately after the field has been completed requires the least interaction cost for users: they don’t need to locate it or navigate to the field, nor do they have to switch context from a new field to return to an old field they thought they had completed successfully.
+
+Of course, there will be situations where inline validation won’t be possible and data entered by the user will need to be sent to a server for verification. ([ref](https://www.nngroup.com/articles/errors-forms-design-guidelines/))
 
 ## Page errors
 
-Page errors are related to the actual page, modal or the task but unlike local errors, they always appear on the top of the page. An important property of page errors is that they _disappear_ if the user navigates away from the page.
+Page errors are related to the actual page, modal or the task but unlike inline errors, they always appear on the top of the page. An important property of page errors is that they _disappear_ if the user navigates away from the page.
 
 A common example of page errors is a summary of form validation errors or an API error or a summary of errors on submitting a form.
 
 A typical example when page errors would be used:
 
-1. User fills a form
-2. Clicks Submit — frontend validation is complete, no errors found &rarr; API call
+1. User fills a form. All inline form field validation is passed without an error
+2. Clicks Submit &rarr; API call
 3. There's an API error
-4. We show a page error with the appropriate error message
-
+4. A page error is shown with the appropriate error message
 
 </div>
 
@@ -78,16 +81,9 @@ A typical example when page errors would be used:
 </div>
 
 <div className="sb-doc">
-
-Another example is a summary of validation errors:
-
-[TBD: screenshot]
-
-Use the [Toast / Page error](/story/global-toast--page-error) component to display page errors.
-
 ## System errors
 
-System errors are always visible until explicitly dismissed no matter where the user navigates. Unlike local or page errors, they are not connected to a specific context but to the overall behavior or status of the system.
+System errors are always visible until explicitly dismissed no matter where the user navigates. Unlike inline or page errors, they are not connected to a specific context but to the overall behavior or status of the system.
 
 For example:
 </div>
@@ -99,9 +95,11 @@ For example:
 
 
 <div className="sb-doc">
-## Do's and dont's [WIP]
+## Best practices
 
-- Show errors on submitting a form. It can either happen when the user clicks the [Submit] button, or sometimes hitting `Enter` on an input field. **Don't validate** on focus out and especially **don't validate prematurely**, ie. while the user is still typing (e.g. `onKeyUp`)
-- Use a summary **page error** in most of the cases if there's one or more validation errors in the form.
+- Optimise for inline error messages and instead page level errors. With inline validation, the error message is naturally shown next to the field causing the error.
+- Use modals sparingly. They are disruptive and the error message is presented in a window that needs to be dismissed in order to fix the error, so any complex instructions will have to be stored in users’ working memory, thus increasing their cognitive load.
+- Don't validate fields prematurely, ie. show the error messages only when the user finished interacting with the given field.
+- Don’t use summary errors as the only indication of an error. If you show a validation summary page error make sure that all fields with errors are also indicated with an appropriate inline error message.
 
 </div>
