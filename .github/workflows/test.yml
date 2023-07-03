@@ -448,6 +448,17 @@ jobs:
         with:
           flags: unit-tests
 
+  check:
+    name: Allow Pull Request auto-merge
+    if: always() && github.event_name == 'pull_request'
+    needs: [lint, ghost-cli, admin-tests, migrations, unit-tests, database-tests, regression-tests]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Decide whether the needed jobs succeeded or failed
+      uses: re-actors/alls-green@release/v1
+      with:
+        jobs: ${{ toJSON(needs) }}
+
   canary:
     needs: [lint, ghost-cli, admin-tests, migrations, unit-tests, database-tests, regression-tests]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
