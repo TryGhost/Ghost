@@ -17,24 +17,32 @@
             @forceButtonDisplay={{or (not @title) (eq @title "(Untitled)") this.titleIsHovered this.titleIsFocused}}
         />
 
-        <GhTextarea
-            @class="gh-editor-title"
-            @placeholder={{@titlePlaceholder}}
-            @shouldFocus={{or @titleAutofocus false}}
-            @tabindex="1"
-            @autoExpand=".gh-koenig-editor"
-            @value={{readonly this.title}}
-            @input={{this.updateTitle}}
-            @focus-out={{optional @onTitleBlur}}
-            @keyDown={{this.onTitleKeydown}}
-            @didCreateTextarea={{this.registerTitleElement}}
-            {{on "focus" (fn (mut this.titleIsFocused) true)}}
-            {{on "blur" (fn (mut this.titleIsFocused) false)}}
-            {{on "mouseover" (fn (mut this.titleIsHovered) true)}}
-            {{on "mouseleave" (fn (mut this.titleIsHovered) false)}}
-            {{on "paste" this.cleanPastedTitle}}
-            data-test-editor-title-input={{true}}
-        />
+        <div class="gh-editor-title-container {{if (feature "pageImprovements") "page-improvements"}}">
+            {{#if (and (feature 'pageImprovements') (feature 'lexicalEditor'))}}
+                <span class="gh-editor-hidden-indicator" data-tooltip="Feature image and post title are hidden">
+                    {{svg-jar "eye-closed"}}
+                </span>
+            {{/if}}
+
+            <GhTextarea
+                @class="gh-editor-title"
+                @placeholder={{@titlePlaceholder}}
+                @shouldFocus={{or @titleAutofocus false}}
+                @tabindex="1"
+                @autoExpand=".gh-koenig-editor"
+                @value={{readonly this.title}}
+                @input={{this.updateTitle}}
+                @focus-out={{optional @onTitleBlur}}
+                @keyDown={{this.onTitleKeydown}}
+                @didCreateTextarea={{this.registerTitleElement}}
+                {{on "focus" (fn (mut this.titleIsFocused) true)}}
+                {{on "blur" (fn (mut this.titleIsFocused) false)}}
+                {{on "mouseover" (fn (mut this.titleIsHovered) true)}}
+                {{on "mouseleave" (fn (mut this.titleIsHovered) false)}}
+                {{on "paste" this.cleanPastedTitle}}
+                data-test-editor-title-input={{true}}
+            />
+        </div>
 
         <KoenigLexicalEditor
             @lexical={{@body}}

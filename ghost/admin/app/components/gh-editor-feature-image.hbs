@@ -34,9 +34,15 @@
             {{/each}}
         {{else if @image}}
             {{!-- image is present --}}
-            <span class="gh-editor-feature-image-indicator" data-tooltip="A feature image is publicly visible to anyone">
-                {{svg-jar "feature-image"}}
-            </span>
+            {{#if (and (feature 'pageImprovements') (feature 'lexicalEditor'))}}
+                <span class="gh-editor-hidden-indicator" data-tooltip="Feature image and post title are hidden">
+                    {{svg-jar "eye-closed"}}
+                </span>
+            {{else}}
+                <span class="gh-editor-feature-image-indicator" data-tooltip="A feature image is publicly visible to anyone">
+                    {{svg-jar "feature-image"}}
+                </span>
+            {{/if}}
             <div class="gh-editor-feature-image">
                 <img src={{@image}}>
                 <div class="gh-editor-feature-image-overlay"></div>
