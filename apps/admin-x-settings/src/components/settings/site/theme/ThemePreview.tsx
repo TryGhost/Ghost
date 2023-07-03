@@ -1,21 +1,26 @@
 import Breadcrumbs from '../../../../admin-x-ds/global/Breadcrumbs';
 import Button from '../../../../admin-x-ds/global/Button';
 import ButtonGroup from '../../../../admin-x-ds/global/ButtonGroup';
+import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import MobileChrome from '../../../../admin-x-ds/global/chrome/MobileChrome';
+import NiceModal from '@ebay/nice-modal-react';
 import PageHeader from '../../../../admin-x-ds/global/layout/PageHeader';
 import React, {useState} from 'react';
 import {OfficialTheme} from '../../../../models/themes';
+import {Theme} from '../../../../types/api';
 
 const ThemePreview: React.FC<{
     selectedTheme?: OfficialTheme;
     onBack: () => void;
-    themeInstalled?: boolean;
+    isInstalling?: boolean;
+    installedTheme?: Theme;
     installButtonLabel?: string;
-    onInstall?: () => void;
+    onInstall?: () => void | Promise<void>;
 }> = ({
     selectedTheme,
     onBack,
-    themeInstalled,
+    isInstalling,
+    installedTheme,
     installButtonLabel,
     onInstall
 }) => {
@@ -24,6 +29,29 @@ const ThemePreview: React.FC<{
     if (!selectedTheme) {
         return null;
     }
+
+    const handleInstall = () => {
+        if (installedTheme) {
+            NiceModal.show(ConfirmationModal, {
+                title: 'Overwrite theme',
+                prompt: (
+                    <>
+                        This will overwrite your existing version of {selectedTheme.name}{installedTheme?.active ? ', which is your active theme' : ''}. All custom changes will be lost.
+                    </>
+                ),
+                okLabel: 'Overwrite',
+                okRunningLabel: 'Installing...',
+                cancelLabel: 'Cancel',
+                okColor: 'red',
+                onOk: async (confirmModal) => {
+                    await onInstall?.();
+                    confirmModal?.remove();
+                }
+            });
+        } else {
+            onInstall?.();
+        }
+    };
 
     const left =
         <div className='flex items-center gap-2'>
@@ -63,9 +91,9 @@ const ThemePreview: React.FC<{
             />
             <Button
                 color='green'
-                disabled={themeInstalled}
-                label={installButtonLabel}
-                onClick={onInstall}
+                disabled={isInstalling}
+                label={isInstalling ? 'Installing...' : installButtonLabel}
+                onClick={handleInstall}
             />
         </div>;
 

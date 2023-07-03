@@ -1,12 +1,13 @@
-import Button from '../../../admin-x-ds/global/Button';
-import Heading from '../../../admin-x-ds/global/Heading';
-import List from '../../../admin-x-ds/global/List';
-import ListItem from '../../../admin-x-ds/global/ListItem';
+import Button from '../../../../admin-x-ds/global/Button';
+import Heading from '../../../../admin-x-ds/global/Heading';
+import List from '../../../../admin-x-ds/global/List';
+import ListItem from '../../../../admin-x-ds/global/ListItem';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {ReactNode, useState} from 'react';
-import {ConfirmationModalContent} from '../../../admin-x-ds/global/modal/ConfirmationModal';
-import {InstalledTheme, Theme, ThemeProblem} from '../../../types/api';
-import {useApi} from '../../providers/ServiceProvider';
+import {ConfirmationModalContent} from '../../../../admin-x-ds/global/modal/ConfirmationModal';
+import {InstalledTheme, Theme, ThemeProblem} from '../../../../types/api';
+import {showToast} from '../../../../admin-x-ds/global/Toast';
+import {useApi} from '../../../providers/ServiceProvider';
 
 const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
     const [isExpanded, setExpanded] = useState(false);
@@ -72,6 +73,7 @@ const ThemeInstalledModal: React.FC<{
         okRunningLabel='Activating...'
         prompt={<>
             {prompt}
+
             {errorPrompt}
             {warningPrompt}
         </>}
@@ -92,6 +94,11 @@ const ThemeInstalledModal: React.FC<{
                         };
                     });
                     return updatedThemes;
+                });
+
+                showToast({
+                    type: 'success',
+                    message: `${updatedTheme.name} is now your active theme.`
                 });
             }
             activateModal?.remove();
