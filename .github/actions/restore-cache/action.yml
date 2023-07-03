@@ -1,0 +1,18 @@
+name: "Restore dependency cache"
+description: "Restore the dependency cache."
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check dependency cache
+      id: dep-cache
+      uses: actions/cache/restore@v3
+      with:
+        path: ${{ env.CACHED_DEPENDENCY_PATHS }}
+        key: ${{ env.DEPENDENCY_CACHE_KEY }}
+
+    - name: Check if caches are restored
+      uses: actions/github-script@v6
+      if: steps.dep-cache.outputs.cache-hit != 'true'
+      with:
+        script: core.setFailed('Dependency cache could not be restored - please re-run ALL jobs.')
