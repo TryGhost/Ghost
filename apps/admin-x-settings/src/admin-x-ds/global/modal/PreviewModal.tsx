@@ -20,6 +20,9 @@ export interface PreviewModalProps {
     okColor?: string;
     buttonsDisabled?: boolean
     previewToolbar?: boolean;
+    leftToolbar?: boolean;
+    rightToolbar?: boolean;
+    deviceSelector?: boolean;
     previewToolbarURLs?: SelectOption[];
     selectedURL?: string;
     previewToolbarTabs?: Tab[];
@@ -30,7 +33,7 @@ export interface PreviewModalProps {
 
     onCancel?: () => void;
     onOk?: () => void;
-    onSelectURL: (url: string) => void;
+    onSelectURL?: (url: string) => void;
     onSelectDesktopView?: () => void;
     onSelectMobileView?: () => void;
 }
@@ -45,6 +48,9 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     okLabel = 'OK',
     okColor = 'black',
     previewToolbar = true,
+    leftToolbar = true,
+    rightToolbar = true,
+    deviceSelector = true,
     previewToolbarURLs,
     selectedURL,
     previewToolbarTabs,
@@ -64,7 +70,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
 
     const [view, setView] = useState('desktop');
 
-    if (view === 'mobile') {
+    if (view === 'mobile' && deviceSelector) {
         preview = (
             <MobileChrome data-testid="preview-mobile">
                 {preview}
@@ -76,7 +82,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
         let toolbarLeft = (<></>);
         if (previewToolbarURLs) {
             toolbarLeft = (
-                <Select options={previewToolbarURLs!} selectedOption={selectedURL} onSelect={onSelectURL} />
+                <Select options={previewToolbarURLs!} selectedOption={selectedURL} onSelect={onSelectURL!} />
             );
         } else if (previewToolbarTabs) {
             toolbarLeft = <TabView
@@ -84,12 +90,12 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                 selectedTab={selectedURL}
                 tabs={previewToolbarTabs}
                 width='wide'
-                onTabChange={onSelectURL}
+                onTabChange={onSelectURL!}
             />;
         }
 
         const unSelectedIconColorClass = 'text-grey-500';
-        const toolbarRight = (
+        const toolbarRight = deviceSelector && (
             <ButtonGroup
                 buttons={[
                     {
@@ -124,8 +130,8 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                     data-testid="design-toolbar"
                     size='lg'
                     toolbarCenter={<></>}
-                    toolbarLeft={toolbarLeft}
-                    toolbarRight={toolbarRight}
+                    toolbarLeft={leftToolbar && toolbarLeft}
+                    toolbarRight={rightToolbar && toolbarRight}
                 />
                 <div className='flex h-full grow items-center justify-center bg-grey-50 text-sm text-grey-400'>
                     {preview}
