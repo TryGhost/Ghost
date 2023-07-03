@@ -8,15 +8,132 @@ on:
       - 3.x
       - 2.x
       - 'renovate/*'
+
 env:
   FORCE_COLOR: 1
+  HEAD_COMMIT: ${{ github.sha }}
+  CACHED_DEPENDENCY_PATHS: |
+    ${{ github.workspace }}/node_modules
+    ${{ github.workspace }}/apps/*/node_modules
+    ${{ github.workspace }}/ghost/*/node_modules
+    ${{ github.workspace }}/ghost/*/build
+    ~/.cache/ms-playwright/
+
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
+
 jobs:
-  lint:
+  job_get_metadata:
+    name: Metadata
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
+    permissions:
+      pull-requests: read
+    steps:
+      - name: Checkout current commit
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ env.HEAD_COMMIT }}
+          fetch-depth: 2
+
+      - name: Get metadata
+        id: get_metadata
+        run: |
+          COMMIT_SHA=$(git rev-parse --short ${{ github.event.pull_request.head.sha || github.event.head_commit.id || env.HEAD_COMMIT }})
+          echo "COMMIT_SHA=$COMMIT_SHA" >> $GITHUB_ENV
+          echo "COMMIT_MESSAGE=$(git log -n 1 --pretty=format:%s $COMMIT_SHA)" >> $GITHUB_ENV
+
+      - name: Determine changed packages
+        uses: dorny/paths-filter@v2.11.1
+        id: changed
+        with:
+          filters: |
+            shared: &shared
+              - '.github/**'
+              - 'package.json'
+              - 'yarn.lock'
+            core:
+              - *shared
+              - 'ghost/**'
+            admin:
+              - *shared
+              - 'ghost/admin/**'
+            admin-x-settings:
+              - *shared
+              - 'apps/admin-x-settings/**'
+            announcement-bar:
+              - *shared
+              - 'apps/announcement-bar/**'
+            comments-ui:
+              - *shared
+              - 'apps/comments-ui/**'
+            portal:
+              - *shared
+              - 'apps/portal/**'
+            signup-form:
+              - *shared
+              - 'apps/signup-form/**'
+            sodo-search:
+              - *shared
+              - 'apps/sodo-search/**'
+            migrations:
+              - *shared
+              - 'ghost/core/core/server/data/migrations/**'
+            any-code:
+              - '!**/*.md'
+    outputs:
+      changed_admin: ${{ steps.changed.outputs.admin }}
+      changed_core: ${{ steps.changed.outputs.core }}
+      changed_admin_x_settings: ${{ steps.changed.outputs.admin-x-settings }}
+      changed_announcement_bar: ${{ steps.changed.outputs.announcement-bar }}
+      changed_comments_ui: ${{ steps.changed.outputs.comments-ui }}
+      changed_portal: ${{ steps.changed.outputs.portal }}
+      changed_signup_form: ${{ steps.changed.outputs.signup-form }}
+      changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
+      changed_migrations: ${{ steps.changed.outputs.migrations }}
+      changed_any_code: ${{ steps.changed.outputs.any-code }}
+      commit_label: '${{ env.COMMIT_SHA }}: ${{ env.COMMIT_MESSAGE }}'
+      is_git_sync: ${{ github.head_ref == 'main' || github.ref == 'refs/heads/main' }}
+
+  job_install_deps:
+    name: Install Dependencies
+    needs: job_get_metadata
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: 'Check out current commit (${{ needs.job_get_metadata.outputs.commit_label }})'
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ env.HEAD_COMMIT }}
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: '18.12.1'
+          cache: yarn
+
+      - name: Compute dependency cache key
+        id: compute_lockfile_hash
+        run: echo "hash=${{ hashFiles('yarn.lock') }}" >> "$GITHUB_OUTPUT"
+
+      - name: Check dependency cache
+        uses: actions/cache@v3
+        id: cache_dependencies
+        with:
+          path: ${{ env.CACHED_DEPENDENCY_PATHS }}
+          key: ${{ steps.compute_lockfile_hash.outputs.hash }}
+
+      - name: Install dependencies
+        if: steps.cache_dependencies.outputs.cache-hit != 'true'
+        run: yarn install --prefer-offline
+    outputs:
+      dependency_cache_key: ${{ steps.compute_lockfile_hash.outputs.hash }}
+
+  job_lint:
+    runs-on: ubuntu-latest
+    needs: [job_get_metadata, job_install_deps]
+    if: needs.job_get_metadata.outputs.changed_any_code && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
     name: Lint
     steps:
       - uses: actions/checkout@v3
@@ -25,15 +142,19 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: '18.12.1'
-          cache: yarn
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
 
       - uses: actions/cache@v3
         with:
           path: ghost/**/.eslintcache
           key: eslint-cache
 
-      - run: yarn --prefer-offline
       - run: yarn lint
+
       - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
@@ -41,9 +162,10 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  admin-tests:
+  job_admin-tests:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
+    needs: [job_get_metadata, job_install_deps]
+    if: needs.job_get_metadata.outputs.changed_admin == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
     name: Admin - Chrome
     env:
       MOZ_HEADLESS: 1
@@ -56,7 +178,11 @@ jobs:
         with:
           node-version: "18.12.1"
 
-      - run: yarn --prefer-offline
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
+
       - run: yarn workspace ghost-admin run test
         env:
           BROWSER: Chrome
@@ -76,9 +202,10 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  migrations:
+  job_migrations:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
+    needs: [job_get_metadata, job_install_deps]
+    if: needs.job_get_metadata.outputs.changed_migrations == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
     strategy:
       matrix:
         env:
@@ -99,7 +226,6 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: '18.12.1'
-          cache: yarn
 
       - name: Shutdown MySQL
         run: sudo service mysql stop
@@ -125,7 +251,10 @@ jobs:
           echo "database__connection__password=root" >> $GITHUB_ENV
           echo "database__connection__database=ghost_testing" >> $GITHUB_ENV
 
-      - run: yarn --prefer-offline
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
 
       - name: Run Ghost and then kill it
         run: yarn workspace ghost run start
@@ -139,9 +268,10 @@ jobs:
 
       - run: yarn knex-migrator migrate --force
 
-  unit-tests:
+  job_unit-tests:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
+    needs: [job_get_metadata, job_install_deps]
+    if: needs.job_get_metadata.outputs.changed_core == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
     strategy:
       matrix:
         node: [ '16.13.0', '18.12.1' ]
@@ -153,9 +283,12 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: ${{ matrix.node }}
-          cache: yarn
 
-      - run: yarn --prefer-offline
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
+
       - run: yarn test:unit
 
       - uses: actions/upload-artifact@v3
@@ -171,9 +304,10 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  database-tests:
+  job_database-tests:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
+    needs: [job_get_metadata, job_install_deps]
+    if: needs.job_get_metadata.outputs.changed_core == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
     strategy:
       matrix:
         node: [ '16.13.0', '18.12.1' ]
@@ -196,7 +330,6 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: ${{ matrix.node }}
-          cache: yarn
 
       - name: Shutdown MySQL
         run: sudo service mysql stop
@@ -210,8 +343,10 @@ jobs:
           mysql database: 'ghost_testing'
           mysql root password: 'root'
 
-      - name: Install dependencies
-        run: yarn --prefer-offline
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
 
       - name: Record start time
         run: date +%s > ${{ runner.temp }}/startTime # Get start time for test suite
@@ -290,9 +425,10 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  regression-tests:
+  job_regression-tests:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
+    needs: [job_get_metadata, job_install_deps]
+    if: needs.job_get_metadata.outputs.changed_core == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
     strategy:
       matrix:
         include:
@@ -315,7 +451,6 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: ${{ matrix.node }}
-          cache: yarn
 
       - name: Shutdown MySQL
         run: sudo service mysql stop
@@ -329,8 +464,10 @@ jobs:
           mysql database: 'ghost_testing'
           mysql root password: 'root'
 
-      - name: Install dependencies
-        run: yarn --prefer-offline
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
 
       - name: Set env vars (SQLite)
         if: contains(matrix.env.DB, 'sqlite')
@@ -351,9 +488,169 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  ghost-cli:
+  job_admin_x_settings:
+    runs-on: ubuntu-latest
+    needs: [job_get_metadata, job_install_deps]
+    if: needs.job_get_metadata.outputs.changed_admin_x_settings == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
+    name: Admin-X Settings tests
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: "18.12.1"
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v3
+        name: Check if Playwright browser is cached
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-Playwright-${{steps.playwright-version.outputs.version}}
+      - name: Install Playwright browser if not cached
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps
+      - name: Install OS dependencies of Playwright if cache hit
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps
+
+      - run: yarn workspace @tryghost/admin-x-settings run test:e2e
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 30
+
+      - uses: tryghost/actions/actions/slack-build@main
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  job_comments_ui:
+    runs-on: ubuntu-latest
+    needs: [job_get_metadata, job_install_deps]
+    if: needs.job_get_metadata.outputs.changed_comments_ui == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
+    name: Comments-UI tests
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: "18.12.1"
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v3
+        name: Check if Playwright browser is cached
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-Playwright-${{steps.playwright-version.outputs.version}}
+      - name: Install Playwright browser if not cached
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps
+      - name: Install OS dependencies of Playwright if cache hit
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps
+
+      - run: yarn workspace @tryghost/comments-ui run test
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 30
+
+      - uses: tryghost/actions/actions/slack-build@main
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  job_signup_form:
+    runs-on: ubuntu-latest
+    needs: [job_get_metadata, job_install_deps]
+    if: needs.job_get_metadata.outputs.changed_signup_form == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
+    name: Signup-form tests
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: "18.12.1"
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v3
+        name: Check if Playwright browser is cached
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-Playwright-${{steps.playwright-version.outputs.version}}
+      - name: Install Playwright browser if not cached
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps
+      - name: Install OS dependencies of Playwright if cache hit
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps
+
+      - run: yarn workspace @tryghost/signup-form run test:e2e
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 30
+
+      - uses: tryghost/actions/actions/slack-build@main
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  job_ghost-cli:
     name: Ghost-CLI
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
+    needs: [job_get_metadata, job_install_deps]
+    if: needs.job_get_metadata.outputs.changed_core == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -365,12 +662,14 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: '16.13.0'
-          cache: yarn
 
       - name: Install Ghost-CLI
         run: npm install -g ghost-cli@latest
 
-      - run: yarn --prefer-offline
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
 
       - run: npm --no-git-tag-version version minor # We need to artificially bump the minor version to get migrations to run
         working-directory: ghost/core
@@ -410,9 +709,13 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  coverage:
+  job_coverage:
     name: Coverage
-    needs: [unit-tests, admin-tests, database-tests]
+    needs: [
+      job_admin-tests,
+      job_database-tests,
+      job_unit-tests
+    ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -448,19 +751,41 @@ jobs:
         with:
           flags: unit-tests
 
-  check:
-    name: Allow Pull Request auto-merge
-    if: always() && github.event_name == 'pull_request'
-    needs: [lint, ghost-cli, admin-tests, migrations, unit-tests, database-tests, regression-tests]
+  job_required_tests:
+    name: All required tests passed or skipped
+    needs:
+      [
+        job_install_deps,
+        job_lint,
+        job_ghost-cli,
+        job_admin-tests,
+        job_migrations,
+        job_unit-tests,
+        job_database-tests,
+        job_regression-tests,
+        job_admin_x_settings,
+        job_comments_ui,
+        job_signup_form,
+      ]
+    if: always() 
     runs-on: ubuntu-latest
     steps:
-    - name: Decide whether the needed jobs succeeded or failed
-      uses: re-actors/alls-green@release/v1
-      with:
-        jobs: ${{ toJSON(needs) }}
+      - name: Check for failures
+        if: contains(needs.*.result, 'failure')
+        run: |
+          echo "One of the dependent jobs have failed. You may need to re-run it." && exit 1
 
   canary:
-    needs: [lint, ghost-cli, admin-tests, migrations, unit-tests, database-tests, regression-tests]
+    needs: 
+      [
+        job_lint,
+        job_ghost-cli,
+        job_admin-tests,
+        job_migrations,
+        job_unit-tests,
+        job_database-tests,
+        job_regression-tests
+      ]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     name: Canary
     secrets: inherit
