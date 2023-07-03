@@ -12,8 +12,6 @@ import {ModelToDomainEventInterceptor} from '../src';
 
 class EventRegistry extends events.EventEmitter {
     hasRegisteredListener(eventName: string, listenerName: string) {
-        // console.log(this.listeners(eventName));
-        // console.log('checking for: ', listenerName);
         return !!(this.listeners(eventName).find(listener => (listener.name === listenerName)));
     }
 }
