@@ -1,12 +1,13 @@
-import Button from '../../../admin-x-ds/global/Button';
-import Heading from '../../../admin-x-ds/global/Heading';
-import List from '../../../admin-x-ds/global/List';
-import ListItem from '../../../admin-x-ds/global/ListItem';
+import Button from '../../../../admin-x-ds/global/Button';
+import Heading from '../../../../admin-x-ds/global/Heading';
+import List from '../../../../admin-x-ds/global/List';
+import ListItem from '../../../../admin-x-ds/global/ListItem';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {ReactNode, useState} from 'react';
-import {ConfirmationModalContent} from '../../../admin-x-ds/global/modal/ConfirmationModal';
-import {InstalledTheme, Theme, ThemeProblem} from '../../../types/api';
-import {useApi} from '../../providers/ServiceProvider';
+import {ConfirmationModalContent} from '../../../../admin-x-ds/global/modal/ConfirmationModal';
+import {InstalledTheme, Theme, ThemeProblem} from '../../../../types/api';
+import {showToast} from '../../../../admin-x-ds/global/Toast';
+import {useApi} from '../../../providers/ServiceProvider';
 
 const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
     const [isExpanded, setExpanded] = useState(false);
@@ -59,33 +60,47 @@ const ThemeInstalledModal: React.FC<{
         </div>;
     }
 
+    let okLabel = `Activate${installedTheme.errors?.length ? ' with errors' : ''}`;
+
+    if (installedTheme.active) {
+        okLabel = 'OK';
+    }
+
     return <ConfirmationModalContent
         cancelLabel='Close'
         okColor='black'
-        okLabel={`Activate${installedTheme.errors?.length ? ' with errors' : ''}`}
+        okLabel={okLabel}
         okRunningLabel='Activating...'
         prompt={<>
             {prompt}
+
             {errorPrompt}
             {warningPrompt}
         </>}
         title={title}
         onOk={async (activateModal) => {
-            const resData = await api.themes.activate(installedTheme.name);
-            const updatedTheme = resData.themes[0];
+            if (!installedTheme.active) {
+                const resData = await api.themes.activate(installedTheme.name);
+                const updatedTheme = resData.themes[0];
 
-            setThemes((_themes) => {
-                const updatedThemes: Theme[] = _themes.map((t) => {
-                    if (t.name === updatedTheme.name) {
-                        return updatedTheme;
-                    }
-                    return {
-                        ...t,
-                        active: false
-                    };
+                setThemes((_themes) => {
+                    const updatedThemes: Theme[] = _themes.map((t) => {
+                        if (t.name === updatedTheme.name) {
+                            return updatedTheme;
+                        }
+                        return {
+                            ...t,
+                            active: false
+                        };
+                    });
+                    return updatedThemes;
                 });
-                return updatedThemes;
-            });
+
+                showToast({
+                    type: 'success',
+                    message: `${updatedTheme.name} is now your active theme.`
+                });
+            }
             activateModal?.remove();
         }}
     />;
