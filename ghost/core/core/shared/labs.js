@@ -39,6 +39,7 @@ const ALPHA_FEATURES = [
     'emailCustomization',
     'collections',
     'adminXSettings',
+    'pageImprovements',
     'mailEvents'
 ];
 
