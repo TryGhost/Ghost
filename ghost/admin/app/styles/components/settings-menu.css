@@ -45,7 +45,7 @@
 
 .settings-menu-container {
     z-index: 999;
-    height: 100vh;
+    height: 100dvh;
     min-width: 420px;
     overflow-x: visible;
     overflow-y: auto;
@@ -76,6 +76,13 @@
     }
 }
 
+@media (max-width: 500px) {
+    .settings-menu-container {
+        width: 100vw;
+        min-width: 100vw;
+    }
+}
+
 .settings-menu-container .settings-menu-pane {
     position: absolute;
     top: 0;
@@ -99,7 +106,14 @@
     top: auto;
     right: auto;
     bottom: auto;
-    height: 100vh;
+    height: 100dvh;
+}
+
+@media (max-width: 500px) {
+    .settings-menu-container .settings-menu-pane {
+        width: 100vw;
+        min-width: 100vw;
+    }
 }
 
 /* Header
