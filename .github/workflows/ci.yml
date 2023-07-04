@@ -27,6 +27,7 @@ jobs:
   job_get_metadata:
     name: Metadata
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     permissions:
       pull-requests: read
     steps:
@@ -99,6 +100,7 @@ jobs:
   job_install_deps:
     name: Install Dependencies
     needs: job_get_metadata
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -770,7 +772,7 @@ jobs:
         job_comments_ui,
         job_signup_form,
       ]
-    if: always() 
+    if: always() && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
     runs-on: ubuntu-latest
     steps:
       - name: Check for failures
