@@ -36,7 +36,6 @@ const ThemeSetting: React.FC<{
             <Toggle
                 direction="rtl"
                 hint={setting.description}
-                id={`theme-setting-${setting.key}`}
                 label={humanizeSettingKey(setting.key)}
                 onChange={event => setSetting(event.target.checked)}
             />

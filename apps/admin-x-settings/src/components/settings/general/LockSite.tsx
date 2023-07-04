@@ -60,7 +60,6 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 checked={passwordEnabled}
                 direction='rtl'
                 hint='All search engine optimization and social features will be disabled.'
-                id='enable-password-protection'
                 label='Enable password protection'
                 onChange={handleToggleChange}
             />

@@ -4,10 +4,12 @@ import Heading from '../Heading';
 import MobileChrome from '../chrome/MobileChrome';
 import Modal, {ModalSize} from './Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import Select, {SelectOption} from '../form/Select';
 import TabView, {Tab} from '../TabView';
+import useGlobalDirtyState from '../../../hooks/useGlobalDirtyState';
 import {ButtonProps} from '../Button';
+import {confirmIfDirty} from '../../../utils/modals';
 
 export interface PreviewModalProps {
     testId?: string;
@@ -15,6 +17,7 @@ export interface PreviewModalProps {
     size?: ModalSize;
     sidebar?: boolean | React.ReactNode;
     preview?: React.ReactNode;
+    dirty?: boolean
     cancelLabel?: string;
     okLabel?: string;
     okColor?: string;
@@ -44,6 +47,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     size = 'full',
     sidebar = '',
     preview,
+    dirty = false,
     cancelLabel = 'Cancel',
     okLabel = 'OK',
     okColor = 'black',
@@ -66,7 +70,11 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     onSelectMobileView
 }) => {
     const modal = useModal();
-    let buttons: ButtonProps[] = [];
+    const {setGlobalDirtyState} = useGlobalDirtyState();
+
+    useEffect(() => {
+        setGlobalDirtyState(dirty);
+    }, [dirty, setGlobalDirtyState]);
 
     const [view, setView] = useState('desktop');
 
@@ -140,12 +148,14 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
         );
     }
 
+    let buttons: ButtonProps[] = [];
+
     if (!sidebarButtons) {
         buttons.push({
             key: 'cancel-modal',
             label: cancelLabel,
             onClick: (onCancel ? onCancel : () => {
-                modal.remove();
+                confirmIfDirty(dirty, () => modal.remove());
             }),
             disabled: buttonsDisabled
         });

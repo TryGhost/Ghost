@@ -99,3 +99,11 @@ export function getHomepageUrl(siteData: SiteData): string {
 
     return `${url.origin}${subdir}`;
 }
+
+export function getEmailDomain(siteData: SiteData): string {
+    const domain = new URL(siteData.url).hostname || '';
+    if (domain.startsWith('www.')) {
+        return domain.replace(/^(www)\.(?=[^/]*\..{2,5})/, '');
+    }
+    return domain;
+}

@@ -198,7 +198,6 @@ const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user, setUserData}
                 checked={user.comment_notifications}
                 direction='rtl'
                 hint='Every time a member comments on one of your posts'
-                id='comments'
                 label='Comments'
                 onChange={(e) => {
                     setUserData?.({...user, comment_notifications: e.target.checked});
@@ -208,7 +207,6 @@ const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user, setUserData}
                 checked={user.free_member_signup_notification}
                 direction='rtl'
                 hint='Every time a new free member signs up'
-                id='new-signups'
                 label='New signups'
                 onChange={(e) => {
                     setUserData?.({...user, free_member_signup_notification: e.target.checked});
@@ -218,7 +216,6 @@ const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user, setUserData}
                 checked={user.paid_subscription_started_notification}
                 direction='rtl'
                 hint='Every time a member starts a new paid subscription'
-                id='new-paid-members'
                 label='New paid members'
                 onChange={(e) => {
                     setUserData?.({...user, paid_subscription_started_notification: e.target.checked});
@@ -228,7 +225,6 @@ const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user, setUserData}
                 checked={user.paid_subscription_canceled_notification}
                 direction='rtl'
                 hint='Every time a member cancels their paid subscription'
-                id='paid-member-cancellations'
                 label='Paid member cancellations'
                 onChange={(e) => {
                     setUserData?.({...user, paid_subscription_canceled_notification: e.target.checked});
@@ -238,7 +234,6 @@ const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user, setUserData}
                 checked={user.milestone_notifications}
                 direction='rtl'
                 hint='Occasional summaries of your audience & revenue growth'
-                id='milestones'
                 label='Milestones'
                 onChange={(e) => {
                     setUserData?.({...user, milestone_notifications: e.target.checked});
