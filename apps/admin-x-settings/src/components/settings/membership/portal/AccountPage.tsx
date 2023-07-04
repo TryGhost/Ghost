@@ -1,3 +1,4 @@
+import Form from '../../../../admin-x-ds/global/form/Form';
 import React, {FocusEventHandler, useContext, useState} from 'react';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import {Setting, SettingValue} from '../../../../types/api';
@@ -33,9 +34,9 @@ const AccountPage: React.FC<{
         setValue(parseEmailAddress(settingValue));
     };
 
-    return <>
+    return <Form marginTop>
         <TextField title='Support email address' value={value} onBlur={updateSupportAddress} onChange={e => setValue(e.target.value)} />
-    </>;
+    </Form>;
 };
 
 export default AccountPage;
