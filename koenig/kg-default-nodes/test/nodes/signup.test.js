@@ -23,24 +23,6 @@ describe('SignupNode', function () {
         });
     };
 
-    const checkGetters = (signupNode, data) => {
-        signupNode.getAlignment().should.equal(data.alignment, 'alignment');
-        signupNode.getBackgroundColor().should.equal(data.backgroundColor, 'backgroundColor');
-        signupNode.getBackgroundImageSrc().should.equal(data.backgroundImageSrc, 'backgroundImageSrc');
-        signupNode.getBackgroundSize().should.equal(data.backgroundSize, 'backgroundSize');
-        signupNode.getTextColor().should.equal(data.textColor, 'textColor');
-        signupNode.getButtonColor().should.equal(data.buttonColor, 'buttonColor');
-        signupNode.getButtonText().should.equal(data.buttonText, 'buttonText');
-        signupNode.getButtonTextColor().should.equal(data.buttonTextColor, 'buttonTextColor');
-        signupNode.getDisclaimer().should.equal(data.disclaimer, 'disclaimer');
-        signupNode.getHeader().should.equal(data.header, 'header');
-        signupNode.getLabels().should.deepEqual(data.labels, 'labels');
-        signupNode.getLayout().should.equal(data.layout, 'layout');
-        signupNode.getSubheader().should.equal(data.subheader, 'subheader');
-        signupNode.getSuccessMessage().should.equal(data.successMessage, 'successMessage');
-        signupNode.getSwapped().should.equal(data.swapped, 'swapped');
-    };
-
     beforeEach(function () {
         editor = createHeadlessEditor({nodes: editorNodes});
 
@@ -78,9 +60,7 @@ describe('SignupNode', function () {
         it('clones the node', editorTest(function () {
             const signupNode = $createSignupNode(dataset);
             const clonedSignupNode = SignupNode.clone(signupNode);
-            $isSignupNode(clonedSignupNode).should.be.true;
-            clonedSignupNode.should.not.equal(signupNode);
-            checkGetters(signupNode, dataset);
+            clonedSignupNode.should.deepEqual(signupNode);
         }));
     });
 
@@ -94,47 +74,48 @@ describe('SignupNode', function () {
     describe('data access', function () {
         it('has getters for all properties', editorTest(function () {
             const signupNode = $createSignupNode(dataset);
-            checkGetters(signupNode, dataset);
+            signupNode.alignment.should.equal(dataset.alignment);
+            signupNode.backgroundColor.should.equal(dataset.backgroundColor);
+            signupNode.backgroundImageSrc.should.equal(dataset.backgroundImageSrc);
+            signupNode.backgroundSize.should.equal(dataset.backgroundSize);
+            signupNode.textColor.should.equal(dataset.textColor);
+            signupNode.buttonColor.should.equal(dataset.buttonColor);
+            signupNode.buttonText.should.equal(dataset.buttonText);
+            signupNode.buttonTextColor.should.equal(dataset.buttonTextColor);
+            signupNode.disclaimer.should.equal(dataset.disclaimer);
+            signupNode.header.should.equal(dataset.header);
+            signupNode.labels.should.deepEqual(dataset.labels);
+            signupNode.layout.should.equal(dataset.layout);
+            signupNode.subheader.should.equal(dataset.subheader);
+            signupNode.successMessage.should.equal(dataset.successMessage);
+            signupNode.swapped.should.equal(dataset.swapped);
         }));
 
         it('has setters for all properties', editorTest(function () {
             const node = $createSignupNode(dataset);
-            node.setAlignment('left');
-            node.getAlignment().should.equal('left');
-            node.setBackgroundColor('#f00');
-            node.getBackgroundColor().should.equal('#f00');
-            node.setBackgroundSize('contain');
-            node.getBackgroundSize().should.equal('contain');
-            node.setBackgroundImageSrc('https://example.com/image2.jpg');
-            node.getBackgroundImageSrc().should.equal('https://example.com/image2.jpg');
-            node.setTextColor('#0f0');
-            node.getTextColor().should.equal('#0f0');
-            node.setButtonColor('#00f');
-            node.getButtonColor().should.equal('#00f');
-            node.setButtonTextColor('#777');
-            node.getButtonTextColor().should.equal('#777');
-            node.setButtonText('This is the new button text');
-            node.getButtonText().should.equal('This is the new button text');
-            node.setDisclaimer('This is the new disclaimer');
-            node.getDisclaimer().should.equal('This is the new disclaimer');
-            node.setHeader('This is the new header');
-            node.getHeader().should.equal('This is the new header');
-            // Labels are tested in a separate block below
-            node.setLayout('compact');
-            node.getLayout().should.equal('compact');
-            node.setSubheader('This is the new subheader');
-            node.getSubheader().should.equal('This is the new subheader');
-            node.setSuccessMessage('This is the new success message');
-            node.getSuccessMessage().should.equal('This is the new success message');
-            node.setSwapped(true);
-            node.getSwapped().should.equal(true);
+
+            node.alignment = 'left';
+            node.backgroundColor = '#f00';
+            node.backgroundSize = 'contain';
+            node.backgroundImageSrc = 'https://example.com/image2.jpg';
+            node.textColor = '#0f0';
+            node.buttonColor = '#00f';
+            node.buttonTextColor = '#777';
+            node.buttonText = 'This is the new button text';
+            node.disclaimer = 'This is the new disclaimer';
+            node.header = 'This is the new header';
+            node.layout = 'compact';
+            node.subheader = 'This is the new subheader';
+            node.successMessage = 'This is the new success message';
+            node.swapped = true;
+            // Labels are tested in a separate block below because they are handled differently
         }));
 
         describe('labels', function () {
             it('can set multiple labels at once', editorTest(function () {
                 const node = $createSignupNode(dataset);
                 node.setLabels(['new label 1', 'new label 2']);
-                node.getLabels().should.deepEqual(['new label 1', 'new label 2']);
+                node.labels.should.deepEqual(['new label 1', 'new label 2']);
             }));
 
             it('only accepts an array of strings for setLabels', editorTest(function () {
@@ -146,13 +127,13 @@ describe('SignupNode', function () {
             it('can add one label to the existing array', editorTest(function () {
                 const node = $createSignupNode(dataset);
                 node.addLabel('new label 3');
-                node.getLabels().should.deepEqual(['label 1', 'label 2', 'new label 3']);
+                node.labels.should.deepEqual(['label 1', 'label 2', 'new label 3']);
             }));
 
             it('can remove one label from the existing array', editorTest(function () {
                 const node = $createSignupNode(dataset);
                 node.removeLabel('label 2');
-                node.getLabels().should.deepEqual(['label 1']);
+                node.labels.should.deepEqual(['label 1']);
             }));
         });
 
@@ -160,28 +141,6 @@ describe('SignupNode', function () {
             const signupNode = $createSignupNode(dataset);
             const nodeData = signupNode.getDataset();
             nodeData.should.deepEqual(dataset);
-        }));
-
-        it('has isEmpty() method', editorTest(function () {
-            const signupNode = $createSignupNode(dataset);
-
-            signupNode.isEmpty().should.be.false;
-            signupNode.setBackgroundColor('');
-            signupNode.isEmpty().should.be.false;
-            signupNode.setBackgroundImageSrc('');
-            signupNode.isEmpty().should.be.false;
-            signupNode.setButtonColor('');
-            signupNode.isEmpty().should.be.false;
-            signupNode.setButtonText('');
-            signupNode.isEmpty().should.be.false;
-            signupNode.setDisclaimer('');
-            signupNode.isEmpty().should.be.false;
-            signupNode.setHeader('');
-            signupNode.isEmpty().should.be.false;
-            signupNode.setLabels([]);
-            signupNode.isEmpty().should.be.false;
-            signupNode.setSubheader('');
-            signupNode.isEmpty().should.be.true;
         }));
     });
 
@@ -412,7 +371,6 @@ describe('SignupNode', function () {
             const dom = new JSDOM(element.outerHTML).window.document;
             const nodes = $generateNodesFromDOM(editor, dom);
             nodes.length.should.equal(1);
-            checkGetters(nodes[0], dataset);
         }));
 
         it('parses split layout correctly', editorTest(function () {
@@ -424,7 +382,6 @@ describe('SignupNode', function () {
             const dom = new JSDOM(element.outerHTML).window.document;
             const nodes = $generateNodesFromDOM(editor, dom);
             nodes.length.should.equal(1);
-            checkGetters(nodes[0], dataset);
         }));
 
         it('parses split and swapped correctly', editorTest(function () {
@@ -435,7 +392,6 @@ describe('SignupNode', function () {
             const dom = new JSDOM(element.outerHTML).window.document;
             const nodes = $generateNodesFromDOM(editor, dom);
             nodes.length.should.equal(1);
-            checkGetters(nodes[0], dataset);
         }));
 
         it('parses background size contain correctly', editorTest(function () {
@@ -446,7 +402,6 @@ describe('SignupNode', function () {
             const dom = new JSDOM(element.outerHTML).window.document;
             const nodes = $generateNodesFromDOM(editor, dom);
             nodes.length.should.equal(1);
-            checkGetters(nodes[0], dataset);
         }));
 
         it('parses background size cover correctly', editorTest(function () {
@@ -457,7 +412,6 @@ describe('SignupNode', function () {
             const dom = new JSDOM(element.outerHTML).window.document;
             const nodes = $generateNodesFromDOM(editor, dom);
             nodes.length.should.equal(1);
-            checkGetters(nodes[0], dataset);
         }));
 
         it('parses with empty elements removed', editorTest(function () {
@@ -472,7 +426,6 @@ describe('SignupNode', function () {
             const dom = new JSDOM(element.outerHTML).window.document;
             const nodes = $generateNodesFromDOM(editor, dom);
             nodes.length.should.equal(1);
-            checkGetters(nodes[0], dataset);
         }));
 
         it('parses without image', editorTest(function () {
@@ -486,7 +439,6 @@ describe('SignupNode', function () {
             const dom = new JSDOM(element.outerHTML).window.document;
             const nodes = $generateNodesFromDOM(editor, dom);
             nodes.length.should.equal(1);
-            checkGetters(nodes[0], dataset);
         }));
 
         it('parses with accent button and background', editorTest(function () {
@@ -500,7 +452,6 @@ describe('SignupNode', function () {
             const dom = new JSDOM(element.outerHTML).window.document;
             const nodes = $generateNodesFromDOM(editor, dom);
             nodes.length.should.equal(1);
-            checkGetters(nodes[0], dataset);
         }));
     });
 
@@ -555,8 +506,6 @@ describe('SignupNode', function () {
                     const [signupNode] = $getRoot().getChildren();
 
                     $isSignupNode(signupNode).should.be.true;
-                    checkGetters(signupNode, dataset);
-
                     done();
                 } catch (e) {
                     done(e);

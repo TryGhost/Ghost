@@ -70,14 +70,14 @@ function SignupNodeComponent({
     const handleAlignment = (a) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setAlignment(a);
+            node.alignment = a;
         });
     };
 
     const handleBackgroundSize = (a) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setBackgroundSize(a);
+            node.backgroundSize = a;
         });
     };
 
@@ -93,14 +93,14 @@ function SignupNodeComponent({
         // reset original src so it can be replaced with preview and upload progress
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setBackgroundImageSrc('');
+            node.backgroundImageSrc = '';
         });
 
         const {imageSrc} = await backgroundImageUploadHandler(files, imageUploader.upload);
 
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setBackgroundImageSrc(imageSrc);
+            node.backgroundImageSrc = imageSrc;
         });
 
         setLastBackgroundImage(imageSrc);
@@ -115,14 +115,14 @@ function SignupNodeComponent({
     const handleLayout = (l) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setLayout(l);
+            node.layout = l;
         });
     };
 
     const handleButtonText = (event) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setButtonText(event.target.value);
+            node.buttonText = event.target.value;
         });
     };
 
@@ -130,7 +130,7 @@ function SignupNodeComponent({
         if (!event.target.value) {
             editor.update(() => {
                 const node = $getNodeByKey(nodeKey);
-                node.setButtonText('Subscribe');
+                node.buttonText = 'Subscribe';
             });
         }
     };
@@ -138,7 +138,7 @@ function SignupNodeComponent({
     const handleClearBackgroundImage = () => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setBackgroundImageSrc('');
+            node.backgroundImageSrc = '';
         });
     };
 
@@ -148,7 +148,7 @@ function SignupNodeComponent({
         if (lastBackgroundImage) {
             editor.update(() => {
                 const node = $getNodeByKey(nodeKey);
-                node.setBackgroundImageSrc(lastBackgroundImage);
+                node.backgroundImageSrc = lastBackgroundImage;
             });
         } else {
             openFileSelection({fileInputRef});
@@ -163,8 +163,8 @@ function SignupNodeComponent({
     const handleBackgroundColor = (color, matchingTextColor) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setBackgroundColor(color);
-            node.setTextColor(matchingTextColor);
+            node.backgroundColor = color;
+            node.textColor = matchingTextColor;
 
             if (layout !== 'split') {
                 handleHideBackgroundImage();
@@ -175,15 +175,15 @@ function SignupNodeComponent({
     const handleTextColor = (color) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setTextColor(color);
+            node.textColor = color;
         });
     };
 
     const handleButtonColor = (color, matchingTextColor) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setButtonColor(color);
-            node.setButtonTextColor(matchingTextColor);
+            node.buttonColor = color;
+            node.buttonTextColor = matchingTextColor;
         });
     };
 
@@ -197,7 +197,7 @@ function SignupNodeComponent({
     const handleSwapLayout = () => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.setSwapped(!isSwapped);
+            node.swapped = !isSwapped;
         });
     };
 

@@ -5,12 +5,12 @@ import SignupNodeComponent from './SignupNodeComponent';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$canShowPlaceholderCurry} from '@lexical/text';
 import {$generateHtmlFromNodes} from '@lexical/html';
-import {SignupNode as BaseSignupNode, INSERT_SIGNUP_COMMAND} from '@tryghost/kg-default-nodes';
+import {SignupNode as BaseSignupNode} from '@tryghost/kg-default-nodes';
+import {ReactComponent as SignupCardIcon} from '../assets/icons/kg-card-type-signup.svg';
+import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 
-import {ReactComponent as SignupCardIcon} from '../assets/icons/kg-card-type-signup.svg';
-
-export {INSERT_SIGNUP_COMMAND} from '@tryghost/kg-default-nodes';
+export const {INSERT_SIGNUP_COMMAND} = createCommand();
 
 export class SignupNode extends BaseSignupNode {
     __disclaimerTextEditor;
@@ -110,7 +110,7 @@ export class SignupNode extends BaseSignupNode {
     }
 
     getCardWidth() {
-        const layout = this.getLayout();
+        const layout = this.layout;
 
         return layout === 'split' ? 'full' : layout;
     }
@@ -119,27 +119,27 @@ export class SignupNode extends BaseSignupNode {
         return (
             <KoenigCardWrapper nodeKey={this.getKey()} width={this.getCardWidth()}>
                 <SignupNodeComponent
-                    alignment={this.getAlignment()}
-                    backgroundColor={this.getBackgroundColor()}
-                    backgroundImageSrc={this.getBackgroundImageSrc()}
-                    backgroundSize={this.getBackgroundSize()}
-                    buttonColor={this.getButtonColor()}
-                    buttonText={this.getButtonText()}
-                    buttonTextColor={this.getButtonTextColor()}
-                    disclaimer={this.getDisclaimer()}
+                    alignment={this.alignment}
+                    backgroundColor={this.backgroundColor}
+                    backgroundImageSrc={this.backgroundImageSrc}
+                    backgroundSize={this.backgroundSize}
+                    buttonColor={this.buttonColor}
+                    buttonText={this.buttonText}
+                    buttonTextColor={this.buttonTextColor}
+                    disclaimer={this.disclaimer}
                     disclaimerTextEditor={this.__disclaimerTextEditor}
                     disclaimerTextEditorInitialState={this.__disclaimerTextEditorInitialState}
-                    header={this.getHeader()}
+                    header={this.header}
                     headerTextEditor={this.__headerTextEditor}
                     headerTextEditorInitialState={this.__headerTextEditorInitialState}
-                    isSwapped={this.getSwapped()}
-                    labels={this.getLabels()}
-                    layout={this.getLayout()}
+                    isSwapped={this.swapped}
+                    labels={this.labels}
+                    layout={this.layout}
                     nodeKey={this.getKey()}
-                    subheader={this.getSubheader()}
+                    subheader={this.subheader}
                     subheaderTextEditor={this.__subheaderTextEditor}
                     subheaderTextEditorInitialState={this.__subheaderTextEditorInitialState}
-                    textColor={this.getTextColor()}
+                    textColor={this.textColor}
                 />
             </KoenigCardWrapper>
         );
