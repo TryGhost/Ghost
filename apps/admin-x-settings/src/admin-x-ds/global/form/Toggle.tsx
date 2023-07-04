@@ -1,11 +1,10 @@
-import React from 'react';
+import React, {useId} from 'react';
 import Separator from '../Separator';
 
 type ToggleSizes = 'sm' | 'md' | 'lg';
 type ToggleDirections = 'ltr' | 'rtl';
 
 interface ToggleProps {
-    id: string;
     color?: string;
     checked?: boolean;
     disabled?: boolean;
@@ -18,7 +17,9 @@ interface ToggleProps {
     onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const Toggle: React.FC<ToggleProps> = ({id, size, direction, label, hint, separator, error, checked, onChange}) => {
+const Toggle: React.FC<ToggleProps> = ({size, direction, label, hint, separator, error, checked, onChange}) => {
+    const id = useId();
+
     let sizeStyles = '';
     let labelStyles = '';
     switch (size) {
