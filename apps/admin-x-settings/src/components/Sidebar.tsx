@@ -3,16 +3,15 @@ import React from 'react';
 import SettingNavItem from '../admin-x-ds/settings/SettingNavItem';
 import SettingNavSection from '../admin-x-ds/settings/SettingNavSection';
 import TextField from '../admin-x-ds/global/form/TextField';
+import useRouting from '../hooks/useRouting';
 import {useSearch} from './providers/ServiceProvider';
 
 const Sidebar: React.FC = () => {
     const {filter, setFilter} = useSearch();
+    const {updateRoute} = useRouting();
 
     const handleSectionClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-        const element = document.getElementById(e.currentTarget.name);
-        if (element) {
-            element.scrollIntoView({behavior: 'smooth'});
-        }
+        updateRoute(e.currentTarget.name);
     };
 
     return (

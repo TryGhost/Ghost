@@ -5,6 +5,7 @@ import TabView, {Tab} from '../../../admin-x-ds/global/TabView';
 import ThemePreview from './designAndBranding/ThemePreview';
 import ThemeSettings from './designAndBranding/ThemeSettings';
 import useForm from '../../../hooks/useForm';
+import useRouting from '../../../hooks/useRouting';
 import {CustomThemeSetting, Post, Setting, SettingValue} from '../../../types/api';
 import {PreviewModalContent} from '../../../admin-x-ds/global/modal/PreviewModal';
 import {ServicesContext} from '../../providers/ServiceProvider';
@@ -61,6 +62,7 @@ const DesignModal: React.FC = () => {
     const [themeSettings, setThemeSettings] = useState<Array<CustomThemeSetting>>([]);
     const [latestPost, setLatestPost] = useState<Post | null>(null);
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('homepage');
+    const {updateRoute} = useRouting();
 
     useEffect(() => {
         api.latestPost.browse().then((response) => {
@@ -183,6 +185,9 @@ const DesignModal: React.FC = () => {
         />;
 
     return <PreviewModalContent
+        afterClose={() => {
+            updateRoute('branding-and-design');
+        }}
         buttonsDisabled={saveState === 'saving'}
         defaultTab='homepage'
         dirty={saveState === 'unsaved'}
@@ -198,6 +203,7 @@ const DesignModal: React.FC = () => {
         onOk={async () => {
             await handleSave();
             modal.remove();
+            updateRoute('branding-and-design');
         }}
         onSelectURL={onSelectURL}
     />;

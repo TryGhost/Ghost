@@ -1,6 +1,5 @@
 import Avatar from '../../../admin-x-ds/global/Avatar';
 import Button from '../../../admin-x-ds/global/Button';
-import InviteUserModal from './InviteUserModal';
 import List from '../../../admin-x-ds/global/List';
 import ListItem from '../../../admin-x-ds/global/ListItem';
 import NiceModal from '@ebay/nice-modal-react';
@@ -9,6 +8,7 @@ import React, {useContext, useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
 import UserDetailModal from './UserDetailModal';
+import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import {ServicesContext} from '../../providers/ServiceProvider';
 import {User} from '../../../types/api';
@@ -190,9 +190,9 @@ const Users: React.FC<{ keywords: string[] }> = ({keywords}) => {
         invites,
         updateUser
     } = useStaffUsers();
-
+    const {updateRoute} = useRouting();
     const showInviteModal = () => {
-        NiceModal.show(InviteUserModal);
+        updateRoute('users/invite');
     };
 
     const buttons = (

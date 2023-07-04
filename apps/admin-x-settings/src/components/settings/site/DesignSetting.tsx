@@ -1,12 +1,12 @@
 import Button from '../../../admin-x-ds/global/Button';
-import DesignModal from './DesignModal';
-import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
+import useRouting from '../../../hooks/useRouting';
 
 const DesignSetting: React.FC<{ keywords: string[] }> = ({keywords}) => {
+    const {updateRoute} = useRouting();
     const openPreviewModal = () => {
-        NiceModal.show(DesignModal);
+        updateRoute('branding-and-design/edit');
     };
 
     return (
