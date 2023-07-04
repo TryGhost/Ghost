@@ -5,7 +5,7 @@ import React from 'react';
 
 interface CheckboxGroupProps {
     title?: string;
-    checkboxes: CheckboxProps[];
+    checkboxes?: CheckboxProps[];
     hint?: string;
     error?: boolean;
 }
@@ -19,7 +19,7 @@ const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
     return (
         <div>
             {title && <Heading level={6}>{title}</Heading>}
-            <div className='mt-1 flex flex-col gap-1'>
+            <div className='mt-2 flex flex-col gap-1'>
                 {checkboxes?.map(({key, ...props}) => (
                     <Checkbox key={key} {...props} />
                 ))}
