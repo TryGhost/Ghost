@@ -1,7 +1,8 @@
-import Checkbox from '../../../../admin-x-ds/global/form/Checkbox';
-import Heading from '../../../../admin-x-ds/global/Heading';
+import CheckboxGroup from '../../../../admin-x-ds/global/form/CheckboxGroup';
+import Form from '../../../../admin-x-ds/global/form/Form';
 import React, {useContext} from 'react';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
+import {CheckboxProps} from '../../../../admin-x-ds/global/form/Checkbox';
 import {Setting, SettingValue, Tier} from '../../../../types/api';
 import {SettingsContext} from '../../../providers/SettingsProvider';
 import {checkStripeEnabled, getSettingValues} from '../../../../utils/helpers';
@@ -34,42 +35,79 @@ const SignupOptions: React.FC<{
 
     const isStripeEnabled = checkStripeEnabled(localSettings, config!);
 
-    return <>
+    let tiersCheckboxes: CheckboxProps[] = [
+        {
+            checked: (portalPlans.includes('free')),
+            disabled: isDisabled,
+            label: 'Free',
+            value: 'free',
+            onChange: () => {
+                togglePlan('free');
+            }
+        }
+    ];
+
+    if (isStripeEnabled) {
+        localTiers.forEach((tier) => {
+            tiersCheckboxes.push({
+                checked: (tier.visibility === 'public'),
+                label: tier.name,
+                value: tier.id,
+                onChange: (checked => updateTier({...tier, visibility: checked ? 'public' : 'none'}))
+            });
+        });
+    }
+
+    return <Form marginTop>
         <Toggle
             checked={Boolean(portalName)}
             disabled={isDisabled}
             label='Display name in signup form'
+            labelStyle='heading'
             onChange={e => updateSetting('portal_name', e.target.checked)}
         />
 
-        <Heading level={6} grey>Tiers available at signup</Heading>
-        <Checkbox checked={portalPlans.includes('free')} disabled={isDisabled} label='Free' value='free' onChange={() => togglePlan('free')} />
-
-        {isStripeEnabled && localTiers.map(tier => (
-            <Checkbox
-                checked={tier.visibility === 'public'}
-                label={tier.name}
-                value={tier.id}
-                onChange={checked => updateTier({...tier, visibility: checked ? 'public' : 'none'})}
-            />
-        ))}
+        <CheckboxGroup
+            checkboxes={tiersCheckboxes}
+            title='Tiers available at startup'
+        />
 
         {isStripeEnabled && localTiers.some(tier => tier.visibility === 'public') && (
-            <>
-                <Heading level={6} grey>Prices available at signup</Heading>
-                <Checkbox checked={portalPlans.includes('monthly')} disabled={isDisabled} label='Monthly' value='monthly' onChange={() => togglePlan('monthly')} />
-                <Checkbox checked={portalPlans.includes('yearly')} disabled={isDisabled} label='Yearly' value='yearly' onChange={() => togglePlan('yearly')} />
-            </>
+            <CheckboxGroup
+                checkboxes={[
+                    {
+                        checked: portalPlans.includes('monthly'),
+                        disabled: isDisabled,
+                        label: 'Monthly',
+                        value: 'monthly',
+                        onChange: () => {
+                            togglePlan('monthly');
+                        }
+                    },
+                    {
+                        checked: portalPlans.includes('yearly'),
+                        disabled: isDisabled,
+                        label: 'Yearly',
+                        value: 'yearly',
+                        onChange: () => {
+                            togglePlan('yearly');
+                        }
+                    }
+                ]}
+                title='Prices available at signup'
+            />
         )}
 
-        <div>TODO: Display notice at signup (Koenig)</div>
+        <div className='red text-sm'>TODO: Display notice at signup (Koenig)</div>
+
         <Toggle
             checked={Boolean(portalSignupCheckboxRequired)}
             disabled={isDisabled}
             label='Require agreement'
+            labelStyle='heading'
             onChange={e => updateSetting('portal_signup_checkbox_required', e.target.checked)}
         />
-    </>;
+    </Form>;
 };
 
 export default SignupOptions;
