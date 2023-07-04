@@ -783,17 +783,19 @@ describe('Batch sending tests', function () {
             assert(defaultNewsletter.get('show_comment_cta'), 'show_comment_cta should be true for this test');
             await models.Newsletter.edit({feedback_enabled: true}, {id: defaultNewsletter.id});
 
-            const {html} = await sendEmail(agent, {
-                title: 'This is a test post title',
-                mobiledoc: mobileDocExample
-            });
+            try {
+                const {html} = await sendEmail(agent, {
+                    title: 'This is a test post title',
+                    mobiledoc: mobileDocExample
+                });
 
-            // Currently the link is not present in plaintext version (because no text)
-            assert.equal(html.match(/#ghost-comments/g).length, 3, 'Every email should have 3 buttons to comments');
-            await matchEmailSnapshot();
-
-            // undo
-            await models.Newsletter.edit({feedback_enabled: false}, {id: defaultNewsletter.id});
+                // Currently the link is not present in plaintext version (because no text)
+                assert.equal(html.match(/#ghost-comments/g).length, 3, 'Every email should have 3 buttons to comments');
+                await matchEmailSnapshot();
+            } finally {
+                // undo
+                await models.Newsletter.edit({feedback_enabled: false}, {id: defaultNewsletter.id});
+            }
         });
 
         it('Hides comments button for email only posts', async function () {

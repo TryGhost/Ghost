@@ -4080,7 +4080,7 @@ table.body figcaption a {
 
                                 <tr>
                                     <td dir=\\"ltr\\" width=\\"100%\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; background-color: #ffffff; text-align: center; padding: 32px 0 24px; border-bottom: 1px solid #e5eff5; border-bottom: 1px solid rgba(0, 0, 0, 0.12);\\" align=\\"center\\" bgcolor=\\"#ffffff\\" valign=\\"top\\">
-                                        <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: auto; max-width: 600px;\\">
+                                        <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: auto; max-width: 600px;\\" width=\\"auto\\">
                                             <tr>
                                                     <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"color: #000000; display: inline-block; vertical-align: top; font-family: inherit; font-size: 14px; text-align: center; padding: 0 4px 4px; cursor: pointer;\\" nowrap>
                                                         <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-4/#/feedback/post-id/1/?uuid=member-uuid\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
@@ -4790,7 +4790,7 @@ table.body figcaption a {
 
                                 <tr>
                                     <td dir=\\"ltr\\" width=\\"100%\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; background-color: #ffffff; text-align: center; padding: 32px 0 24px; border-bottom: 1px solid #e5eff5; border-bottom: 1px solid rgba(0, 0, 0, 0.12);\\" align=\\"center\\" bgcolor=\\"#ffffff\\" valign=\\"top\\">
-                                        <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: auto; max-width: 600px;\\">
+                                        <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: auto; max-width: 600px;\\" width=\\"auto\\">
                                             <tr>
                                                     <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"color: #000000; display: inline-block; vertical-align: top; font-family: inherit; font-size: 14px; text-align: center; padding: 0 4px 4px; cursor: pointer;\\" nowrap>
                                                         <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-3/#ghost-comments\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
