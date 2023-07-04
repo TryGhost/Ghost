@@ -28,7 +28,7 @@ function App({ghostVersion, officialThemes, setDirty}: AppProps) {
                             </div>
 
                             {/* Main container */}
-                            <div className="mx-auto flex max-w-[1080px] flex-col px-[5vmin] py-[12vmin] md:flex-row md:items-start md:gap-x-10 md:py-[8vmin]">
+                            <div className="mx-auto max-w-[1080px] flex-col px-[5vmin] py-[12vmin] md:flex-row md:items-start md:gap-x-10 md:py-[8vmin]">
 
                                 {/* Sidebar */}
                                 <div className="relative min-w-[260px] grow-0 md:fixed md:top-[8vmin] md:basis-[260px]">
