@@ -3,7 +3,7 @@ import Hint from '../Hint';
 import React, {useEffect, useId, useState} from 'react';
 import Separator from '../Separator';
 
-interface CheckboxProps {
+export interface CheckboxProps {
     title?: string;
     label: string;
     value: string;
@@ -11,6 +11,7 @@ interface CheckboxProps {
     disabled?: boolean;
     error?: boolean;
     hint?: React.ReactNode;
+    key?: string;
     checked?: boolean;
     separator?: boolean;
 }
