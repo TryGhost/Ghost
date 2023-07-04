@@ -31,7 +31,7 @@
   "devDependencies": {
     "@babel/eslint-parser": "7.22.5",
     "@babel/plugin-proposal-class-properties": "7.18.6",
-    "@babel/plugin-proposal-decorators": "7.22.5",
+    "@babel/plugin-proposal-decorators": "7.22.6",
     "@ember/jquery": "2.0.0",
     "@ember/optional-features": "2.0.0",
     "@ember/render-modifiers": "2.1.0",
