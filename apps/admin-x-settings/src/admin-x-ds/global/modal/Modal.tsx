@@ -28,6 +28,7 @@ export interface ModalProps {
     noPadding?: boolean;
     onOk?: () => void;
     onCancel?: () => void;
+    afterClose?: () => void;
     children?: React.ReactNode;
     backDrop?: boolean;
     backDropClick?: boolean;
@@ -49,6 +50,7 @@ const Modal: React.FC<ModalProps> = ({
     onOk,
     okColor = 'black',
     onCancel,
+    afterClose,
     children,
     backDrop = true,
     backDropClick = true,
@@ -66,7 +68,10 @@ const Modal: React.FC<ModalProps> = ({
     let buttons: ButtonProps[] = [];
 
     const removeModal = () => {
-        confirmIfDirty(dirty, () => modal.remove());
+        confirmIfDirty(dirty, () => {
+            modal.remove();
+            afterClose?.();
+        });
     };
 
     if (!footer) {

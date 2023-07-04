@@ -36,6 +36,7 @@ export interface PreviewModalProps {
 
     onCancel?: () => void;
     onOk?: () => void;
+    afterClose?: () => void;
     onSelectURL?: (url: string) => void;
     onSelectDesktopView?: () => void;
     onSelectMobileView?: () => void;
@@ -65,6 +66,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
 
     onCancel,
     onOk,
+    afterClose,
     onSelectURL,
     onSelectDesktopView,
     onSelectMobileView
@@ -155,7 +157,10 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             key: 'cancel-modal',
             label: cancelLabel,
             onClick: (onCancel ? onCancel : () => {
-                confirmIfDirty(dirty, () => modal.remove());
+                confirmIfDirty(dirty, () => {
+                    modal.remove();
+                    afterClose?.();
+                });
             }),
             disabled: buttonsDisabled
         });
@@ -172,6 +177,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
 
     return (
         <Modal
+            afterClose={afterClose}
             footer={false}
             noPadding={true}
             size={size}
