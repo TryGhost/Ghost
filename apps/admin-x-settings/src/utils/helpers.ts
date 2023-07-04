@@ -1,4 +1,4 @@
-import {Setting, SettingValue, SiteData, User} from '../types/api';
+import {Config, Setting, SettingValue, SiteData, User} from '../types/api';
 
 export interface IGhostPaths {
     adminRoot: string;
@@ -106,4 +106,17 @@ export function getEmailDomain(siteData: SiteData): string {
         return domain.replace(/^(www)\.(?=[^/]*\..{2,5})/, '');
     }
     return domain;
+}
+
+export function checkStripeEnabled(settings: Setting[], config: Config) {
+    const hasSetting = (key: string) => settings.some(setting => setting.key === key && setting.value);
+
+    const hasDirectKeys = hasSetting('stripe_secret_key') && hasSetting('stripe_publishable_key');
+    const hasConnectKeys = hasSetting('stripe_connect_secret_key') && hasSetting('stripe_connect_publishable_key');
+
+    if (config.stripeDirect) {
+        return hasDirectKeys;
+    }
+
+    return hasConnectKeys || hasDirectKeys;
 }

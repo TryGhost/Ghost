@@ -1,4 +1,4 @@
-import {CustomThemeSetting, InstalledTheme, Label, Offer, Post, Setting, SiteData, Theme, Tier, User, UserRole} from '../types/api';
+import {Config, CustomThemeSetting, InstalledTheme, Label, Offer, Post, Setting, SiteData, Theme, Tier, User, UserRole} from '../types/api';
 import {getGhostPaths} from './helpers';
 
 interface Meta {
@@ -15,6 +15,10 @@ interface Meta {
 export interface SettingsResponseType {
     meta: Meta;
     settings: Setting[];
+}
+
+export interface ConfigResponseType {
+    config: Config;
 }
 
 export interface UsersResponseType {
@@ -124,6 +128,9 @@ export interface API {
         browse: () => Promise<SettingsResponseType>;
         edit: (newSettings: Setting[]) => Promise<SettingsResponseType>;
     };
+    config: {
+        browse: () => Promise<ConfigResponseType>;
+    };
     users: {
         browse: () => Promise<UsersResponseType>;
         currentUser: () => Promise<User>;
@@ -161,6 +168,7 @@ export interface API {
     };
     tiers: {
         browse: () => Promise<TiersResponseType>
+        edit: (newTier: Tier) => Promise<TiersResponseType>
     };
     labels: {
         browse: () => Promise<LabelsResponseType>
@@ -227,6 +235,13 @@ function setupGhostApi({ghostVersion}: GhostApiOptions): API {
                 });
 
                 const data: SettingsResponseType = await response.json();
+                return data;
+            }
+        },
+        config: {
+            browse: async () => {
+                const response = await fetcher(`/config/`, {});
+                const data: ConfigResponseType = await response.json();
                 return data;
             }
         },
@@ -384,6 +399,14 @@ function setupGhostApi({ghostVersion}: GhostApiOptions): API {
             browse: async () => {
                 const filter = encodeURIComponent('type:paid+active:true');
                 const response = await fetcher(`/tiers/?filter=${filter}&limit=all`);
+                const data: TiersResponseType = await response.json();
+                return data;
+            },
+            edit: async (tier) => {
+                const response = await fetcher(`/tiers/${tier.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({tiers: [tier]})
+                });
                 const data: TiersResponseType = await response.json();
                 return data;
             }

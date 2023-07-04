@@ -19,8 +19,7 @@ type Story = StoryObj<typeof Checkbox>;
 
 export const Default: Story = {
     args: {
-        label: 'Checkbox 1',
-        id: 'my-radio-button'
+        label: 'Checkbox 1'
     }
 };
 
