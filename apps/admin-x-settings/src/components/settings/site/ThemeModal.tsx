@@ -10,6 +10,7 @@ import React, {useState} from 'react';
 import TabView from '../../../admin-x-ds/global/TabView';
 import ThemeInstalledModal from './theme/ThemeInstalledModal';
 import ThemePreview from './theme/ThemePreview';
+import useRouting from '../../../hooks/useRouting';
 import {API} from '../../../utils/api';
 import {OfficialTheme} from '../../../models/themes';
 import {Theme} from '../../../types/api';
@@ -107,6 +108,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     themes,
     setThemes
 }) => {
+    const {updateRoute} = useRouting();
     const api = useApi();
     const left =
         <TabView
@@ -154,6 +156,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                 color='black'
                 label='OK'
                 onClick = {() => {
+                    updateRoute('theme');
                     modal.remove();
                 }} />
         </div>;
@@ -188,6 +191,7 @@ const ChangeThemeModal = NiceModal.create(() => {
     const [selectedTheme, setSelectedTheme] = useState<OfficialTheme|null>(null);
     const [previewMode, setPreviewMode] = useState('desktop');
     const [isInstalling, setInstalling] = useState(false);
+    const {updateRoute} = useRouting();
 
     const modal = useModal();
     const {themes, setThemes} = useThemes();
@@ -251,6 +255,9 @@ const ChangeThemeModal = NiceModal.create(() => {
 
     return (
         <Modal
+            afterClose={() => {
+                updateRoute('theme');
+            }}
             cancelLabel=''
             footer={false}
             noPadding={true}

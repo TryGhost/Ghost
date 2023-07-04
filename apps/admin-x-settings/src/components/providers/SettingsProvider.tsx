@@ -8,6 +8,7 @@ interface SettingsContextProps {
     saveSettings: (updatedSettings: Setting[]) => Promise<Setting[]>;
     siteData: SiteData | null;
     config: Config | null;
+    settingsLoaded: boolean;
 }
 
 interface SettingsProviderProps {
@@ -18,6 +19,7 @@ const SettingsContext = createContext<SettingsContextProps>({
     settings: null,
     siteData: null,
     config: null,
+    settingsLoaded: false,
     saveSettings: async () => []
 });
 
@@ -84,6 +86,7 @@ const SettingsProvider: React.FC<SettingsProviderProps> = ({children}) => {
     const [settings, setSettings] = useState<Setting[] | null> (null);
     const [siteData, setSiteData] = useState<SiteData | null> (null);
     const [config, setConfig] = useState<Config | null> (null);
+    const [settingsLoaded, setSettingsLoaded] = useState<boolean> (false);
 
     useEffect(() => {
         const fetchSettings = async (): Promise<void> => {
@@ -98,6 +101,7 @@ const SettingsProvider: React.FC<SettingsProviderProps> = ({children}) => {
                 setSettings(serialiseSettingsData(settingsData.settings));
                 setSiteData(siteDataResponse.site);
                 setConfig(configData.config);
+                setSettingsLoaded(true);
             } catch (error) {
                 // Log error in settings API
             }
@@ -127,7 +131,7 @@ const SettingsProvider: React.FC<SettingsProviderProps> = ({children}) => {
     // Provide the settings and the saveSettings function to the children components
     return (
         <SettingsContext.Provider value={{
-            settings, saveSettings, siteData, config
+            settings, saveSettings, siteData, config, settingsLoaded
         }}>
             {children}
         </SettingsContext.Provider>
@@ -135,4 +139,3 @@ const SettingsProvider: React.FC<SettingsProviderProps> = ({children}) => {
 };
 
 export {SettingsContext, SettingsProvider};
-
