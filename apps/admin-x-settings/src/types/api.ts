@@ -5,6 +5,10 @@ export type Setting = {
     value: SettingValue;
 }
 
+export type Config = {
+    [key: string]: any;
+}
+
 export type User = {
     id: string;
     name: string;

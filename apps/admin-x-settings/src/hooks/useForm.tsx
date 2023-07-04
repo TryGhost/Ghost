@@ -1,5 +1,9 @@
 import {useCallback, useEffect, useState} from 'react';
 
+export type Dirtyable<Data> = Data & {
+    dirty?: boolean;
+}
+
 export type SaveState = 'unsaved' | 'saving' | 'saved' | 'error' | '';
 
 export interface FormHook<State> {
