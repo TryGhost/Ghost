@@ -142,6 +142,8 @@ jobs:
     name: Lint
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 100
       - uses: actions/setup-node@v3
         env:
           FORCE_COLOR: 0
@@ -158,7 +160,7 @@ jobs:
           path: ghost/**/.eslintcache
           key: eslint-cache
 
-      - run: yarn lint
+      - run: yarn lint --since ${{ github.event.pull_request.base.sha || github.event.before }}
 
       - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
