@@ -40,6 +40,13 @@ export const WithLabel: Story = {
     }
 };
 
+export const HeadingStyleLabel: Story = {
+    args: {
+        label: 'Heading style label',
+        labelStyle: 'heading'
+    }
+};
+
 export const WithLabelAndHint: Story = {
     args: {
         label: 'Check me',

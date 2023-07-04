@@ -39,7 +39,7 @@ function App({ghostVersion, officialThemes, setDirty}: AppProps) {
                                         <Sidebar />
                                     </div>
                                 </div>
-                                <div className="flex-auto pt-[3vmin] md:ml-[300px] md:pt-[55px]">
+                                <div className="flex-auto pt-[3vmin] md:ml-[300px] md:pt-[85px]">
                                     <Settings />
                                 </div>
                             </div>

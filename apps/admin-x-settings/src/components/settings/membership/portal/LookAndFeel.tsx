@@ -1,3 +1,4 @@
+import Form from '../../../../admin-x-ds/global/form/Form';
 import React from 'react';
 import Select from '../../../../admin-x-ds/global/form/Select';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
@@ -11,10 +12,11 @@ const LookAndFeel: React.FC<{
 }> = ({localSettings, updateSetting}) => {
     const [portalButton, portalButtonStyle, portalButtonSignupText] = getSettingValues(localSettings, ['portal_button', 'portal_button_style', 'portal_button_signup_text']);
 
-    return <>
+    return <Form marginTop>
         <Toggle
             checked={Boolean(portalButton)}
             label='Show portal button'
+            labelStyle='heading'
             onChange={e => updateSetting('portal_button', e.target.checked)}
         />
         <Select
@@ -27,7 +29,7 @@ const LookAndFeel: React.FC<{
             title='Portal button style'
             onSelect={option => updateSetting('portal_button_style', option)}
         />
-        {portalButtonStyle?.toString()?.includes('icon') && <div>TODO: icon picker</div>}
+        {portalButtonStyle?.toString()?.includes('icon') && <div className='red text-sm'>TODO: icon picker</div>}
         {portalButtonStyle?.toString()?.includes('text') &&
             <TextField
                 title='Signup button text'
@@ -35,7 +37,7 @@ const LookAndFeel: React.FC<{
                 onChange={e => updateSetting('portal_button_signup_text', e.target.value)}
             />
         }
-    </>;
+    </Form>;
 };
 
 export default LookAndFeel;

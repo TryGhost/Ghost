@@ -37,6 +37,8 @@ type HeadingLabelProps = {
     level?: never,
     grey?: boolean } & HeadingBaseProps & React.LabelHTMLAttributes<HTMLLabelElement>
 
+export const Heading6Styles = 'text-2xs font-semibold uppercase tracking-wide';
+
 const Heading: React.FC<Heading1to5Props | Heading6Props | HeadingLabelProps> = ({
     level,
     children,
@@ -52,7 +54,7 @@ const Heading: React.FC<Heading1to5Props | Heading6Props | HeadingLabelProps> = 
     }
 
     const newElement = `${useLabelTag ? 'label' : `h${level}`}`;
-    styles += (level === 6 || useLabelTag) ? (` block text-2xs font-semibold uppercase tracking-wide ${(grey && 'text-grey-700')}`) : ' ';
+    styles += (level === 6 || useLabelTag) ? (` block text-2xs ${Heading6Styles} ${(grey && 'text-grey-700')}`) : ' ';
 
     const Element = React.createElement(newElement, {className: styles + ' ' + className, key: 'heading-elem', ...props}, children);
 
