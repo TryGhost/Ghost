@@ -1,6 +1,9 @@
 import BrandSettings, {BrandSettingValues} from './designAndBranding/BrandSettings';
+import Button from '../../../admin-x-ds/global/Button';
+import ChangeThemeModal from './ThemeModal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useContext, useEffect, useState} from 'react';
+import StickyFooter from '../../../admin-x-ds/global/StickyFooter';
 import TabView, {Tab} from '../../../admin-x-ds/global/TabView';
 import ThemePreview from './designAndBranding/ThemePreview';
 import ThemeSettings from './designAndBranding/ThemeSettings';
@@ -46,11 +49,19 @@ const Sidebar: React.FC<{
     };
 
     return (
-        <>
+        <div className='flex h-full flex-col justify-between'>
             <div className='p-7' data-testid="design-setting-tabs">
                 <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={handleTabChange} />
             </div>
-        </>
+            <StickyFooter height={74}>
+                <div className='px-7'>
+                    <Button label='Change theme' link onClick={() => {
+                        NiceModal.show(ChangeThemeModal);
+                    }
+                    } />
+                </div>
+            </StickyFooter>
+        </div>
     );
 };
 
@@ -197,7 +208,7 @@ const DesignModal: React.FC = () => {
         selectedURL={selectedPreviewTab}
         sidebar={sidebarContent}
         sidebarPadding={false}
-        size='full'
+        size='bleed'
         testId='design-modal'
         title='Design'
         onOk={async () => {

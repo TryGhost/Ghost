@@ -33,6 +33,7 @@ export interface PreviewModalProps {
     sidebarButtons?: React.ReactNode;
     sidebarHeader?: React.ReactNode;
     sidebarPadding?: boolean;
+    sidebarContentClasses?: string;
 
     onCancel?: () => void;
     onOk?: () => void;
@@ -63,6 +64,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     sidebarButtons,
     sidebarHeader,
     sidebarPadding = true,
+    sidebarContentClasses,
 
     onCancel,
     onOk,
@@ -189,14 +191,14 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                     {preview}
                 </div>
                 {sidebar &&
-                    <div className='flex h-full basis-[400px] flex-col border-l border-grey-100'>
+                    <div className='relative flex h-full basis-[400px] flex-col border-l border-grey-100'>
                         {sidebarHeader ? sidebarHeader : (
                             <div className='flex max-h-[74px] items-start justify-between gap-3 px-7 py-5'>
                                 <Heading className='mt-1' level={4}>{title}</Heading>
                                 {sidebarButtons ? sidebarButtons : <ButtonGroup buttons={buttons} /> }
                             </div>
                         )}
-                        <div className={`grow ${sidebarPadding && 'p-7 pt-0'} flex flex-col justify-between overflow-y-auto`}>
+                        <div className={`${!sidebarHeader ? 'absolute inset-x-0 bottom-0 top-[74px] grow' : ''} ${sidebarPadding && 'p-7 pt-0'} flex flex-col justify-between overflow-y-auto ${sidebarContentClasses}`}>
                             {sidebar}
                         </div>
                     </div>

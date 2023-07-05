@@ -154,7 +154,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
             <Button
                 className='min-w-[75px]'
                 color='black'
-                label='OK'
+                label='Close'
                 onClick = {() => {
                     updateRoute('theme');
                     modal.remove();
