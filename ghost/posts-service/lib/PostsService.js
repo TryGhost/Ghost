@@ -556,7 +556,8 @@ class PostsService {
                     'meta_description',
                     'frontmatter',
                     'feature_image_alt',
-                    'feature_image_caption'
+                    'feature_image_caption',
+                    'hide_title_and_feature_image'
                 ]
             );
         }

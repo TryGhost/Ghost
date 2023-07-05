@@ -78,9 +78,6 @@ jobs:
             sodo-search:
               - *shared
               - 'apps/sodo-search/**'
-            migrations:
-              - *shared
-              - 'ghost/core/core/server/data/migrations/**'
             any-code:
               - '!**/*.md'
     outputs:
@@ -92,7 +89,6 @@ jobs:
       changed_portal: ${{ steps.changed.outputs.portal }}
       changed_signup_form: ${{ steps.changed.outputs.signup-form }}
       changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
-      changed_migrations: ${{ steps.changed.outputs.migrations }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       commit_label: '${{ env.COMMIT_SHA }}: ${{ env.COMMIT_MESSAGE }}'
       is_git_sync: ${{ github.head_ref == 'main' || github.ref == 'refs/heads/main' }}
@@ -209,82 +205,18 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  job_migrations:
-    runs-on: ubuntu-latest
-    needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_migrations == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
-    strategy:
-      matrix:
-        env:
-          - DB: sqlite3
-            DB_CLIENT: sqlite3
-          - DB: mysql8
-            DB_CLIENT: mysql
-    env:
-      database__client: ${{ matrix.env.DB_CLIENT }}
-    name: Migrations checks (${{ matrix.env.DB }})
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          submodules: true
-      - uses: actions/setup-node@v3
-        env:
-          FORCE_COLOR: 0
-        with:
-          node-version: '18.12.1'
-
-      - name: Shutdown MySQL
-        run: sudo service mysql stop
-        if: matrix.env.DB == 'mysql8'
-
-      - uses: daniellockyer/mysql-action@main
-        if: matrix.env.DB == 'mysql8'
-        with:
-          authentication plugin: 'caching_sha2_password'
-          mysql version: '8.0'
-          mysql database: 'ghost_testing'
-          mysql root password: 'root'
-
-      - name: Set env vars (SQLite)
-        if: contains(matrix.env.DB, 'sqlite')
-        run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> $GITHUB_ENV
-
-      - name: Set env vars (MySQL)
-        if: contains(matrix.env.DB, 'mysql')
-        run: |
-          echo "database__connection__host=127.0.0.1" >> $GITHUB_ENV
-          echo "database__connection__user=root" >> $GITHUB_ENV
-          echo "database__connection__password=root" >> $GITHUB_ENV
-          echo "database__connection__database=ghost_testing" >> $GITHUB_ENV
-
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
-
-      - name: Run Ghost and then kill it
-        run: yarn workspace ghost run start
-        env:
-          GHOST_TESTS_KILL_SERVER_AFTER_BOOT: true
-
-      - run: sqlite3 ${{ env.database__connection__filename }} "DELETE FROM migrations WHERE version LIKE '5.%';"
-        if: matrix.env.DB == 'sqlite3'
-      - run: mysql -h127.0.0.1 -uroot -proot ghost_testing -e "DELETE FROM migrations WHERE version LIKE '5.%';"
-        if: matrix.env.DB == 'mysql8'
-
-      - run: yarn knex-migrator migrate --force
-
   job_unit-tests:
     runs-on: ubuntu-latest
     needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_core == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
+    if: needs.job_get_metadata.outputs.changed_any_code == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
     strategy:
       matrix:
         node: [ '16.13.0', '18.12.1' ]
     name: Unit tests (Node ${{ matrix.node }})
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 100
       - uses: actions/setup-node@v3
         env:
           FORCE_COLOR: 0
@@ -296,7 +228,7 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
 
-      - run: yarn test:unit
+      - run: yarn test:unit --include-dependents --since ${{ github.event.pull_request.base.sha || github.event.before }}
 
       - uses: actions/upload-artifact@v3
         if: startsWith(matrix.node, '18')
@@ -766,7 +698,6 @@ jobs:
         job_lint,
         job_ghost-cli,
         job_admin-tests,
-        job_migrations,
         job_unit-tests,
         job_database-tests,
         job_regression-tests,
@@ -788,7 +719,6 @@ jobs:
         job_lint,
         job_ghost-cli,
         job_admin-tests,
-        job_migrations,
         job_unit-tests,
         job_database-tests,
         job_regression-tests
