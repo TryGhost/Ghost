@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/announcement-bar",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -21,7 +21,7 @@
     "@testing-library/react": "12.1.5",
     "@testing-library/user-event": "14.4.3",
     "@tryghost/content-api": "1.11.7",
-    "flexsearch": "0.7.21",
+    "flexsearch": "0.7.31",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "react-scripts": "5.0.1"
@@ -85,7 +85,7 @@
     "postcss": "8.4.24",
     "rewire": "6.0.0",
     "serve-handler": "6.1.5",
-    "webpack-cli": "3.3.12"
+    "webpack-cli": "5.1.4"
   },
   "resolutions": {
     "//": "See https://github.com/facebook/create-react-app/issues/11773",

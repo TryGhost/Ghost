@@ -28,7 +28,7 @@
     "c8": "7.13.0",
     "i18next-parser": "8.0.0",
     "mocha": "10.2.0",
-    "typescript": "5.1.3"
+    "typescript": "5.1.6"
   },
   "dependencies": {
     "i18next": "23.0.1"

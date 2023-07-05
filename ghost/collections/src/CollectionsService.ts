@@ -1,7 +1,13 @@
-import {Collection} from './Collection';
-import {CollectionRepository} from './CollectionRepository';
+import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
+import {Collection} from './Collection';
+import {CollectionResourceChangeEvent} from './CollectionResourceChangeEvent';
+import {CollectionRepository} from './CollectionRepository';
 import {MethodNotAllowedError, NotFoundError} from '@tryghost/errors';
+import {PostDeletedEvent} from './events/PostDeletedEvent';
+import {PostAddedEvent} from './events/PostAddedEvent';
+import {PostEditedEvent} from './events/PostEditedEvent';
+import {RepositoryUniqueChecker} from './RepositoryUniqueChecker';
 
 const messages = {
     cannotDeleteBuiltInCollectionError: {
@@ -14,9 +20,17 @@ const messages = {
     }
 };
 
+interface SlugService {
+    generate(desired: string): Promise<string>;
+}
+
 type CollectionsServiceDeps = {
     collectionsRepository: CollectionRepository;
     postsRepository: PostsRepository;
+    slugService: SlugService;
+    DomainEvents: {
+        subscribe: (event: any, handler: (e: any) => void) => void;
+    };
 };
 
 type CollectionPostDTO = {
@@ -30,6 +44,7 @@ type CollectionPostListItemDTO = {
     title: string;
     featured: boolean;
     featured_image?: string;
+    published_at: Date
 }
 
 type ManualCollection = {
@@ -67,12 +82,6 @@ type CollectionDTO = {
     posts: CollectionPostDTO[];
 };
 
-type CollectionPostInputDTO = {
-    id: string;
-    featured: boolean;
-    published_at: Date;
-};
-
 type QueryOptions = {
     filter?: string;
     include?: string;
@@ -88,10 +97,18 @@ interface PostsRepository {
 export class CollectionsService {
     private collectionsRepository: CollectionRepository;
     private postsRepository: PostsRepository;
+    private DomainEvents: {
+        subscribe: (event: any, handler: (e: any) => void) => void;
+    };
+    private uniqueChecker: RepositoryUniqueChecker;
+    private slugService: SlugService;
 
     constructor(deps: CollectionsServiceDeps) {
         this.collectionsRepository = deps.collectionsRepository;
         this.postsRepository = deps.postsRepository;
+        this.DomainEvents = deps.DomainEvents;
+        this.uniqueChecker = new RepositoryUniqueChecker(this.collectionsRepository);
+        this.slugService = deps.slugService;
     }
 
     private toDTO(collection: Collection): CollectionDTO {
@@ -131,10 +148,34 @@ export class CollectionsService {
         return mappedDTO;
     }
 
+    /**
+     * @description Subscribes to Domain events to update collections when posts are added, updated or deleted
+     */
+    subscribeToEvents() {
+        // generic handler for all events that are not handled optimally yet
+        // this handler should go away once we have logic fo reach event
+        this.DomainEvents.subscribe(CollectionResourceChangeEvent, async () => {
+            await this.updateCollections();
+        });
+
+        this.DomainEvents.subscribe(PostDeletedEvent, async (event: PostDeletedEvent) => {
+            await this.removePostFromAllCollections(event.id);
+        });
+
+        this.DomainEvents.subscribe(PostAddedEvent, async (event: PostAddedEvent) => {
+            await this.addPostToMatchingCollections(event.data);
+        });
+
+        this.DomainEvents.subscribe(PostEditedEvent, async (event: PostEditedEvent) => {
+            await this.updatePostInMatchingCollections(event.data);
+        });
+    }
+
     async createCollection(data: CollectionInputDTO): Promise<CollectionDTO> {
+        const slug = await this.slugService.generate(data.slug || data.title);
         const collection = await Collection.create({
             title: data.title,
-            slug: data.slug,
+            slug: slug,
             description: data.description,
             type: data.type,
             filter: data.filter,
@@ -157,7 +198,7 @@ export class CollectionsService {
         return this.toDTO(collection);
     }
 
-    async addPostToCollection(collectionId: string, post: CollectionPostInputDTO): Promise<CollectionDTO | null> {
+    async addPostToCollection(collectionId: string, post: CollectionPostListItemDTO): Promise<CollectionDTO | null> {
         const collection = await this.collectionsRepository.getById(collectionId);
 
         if (!collection) {
@@ -166,7 +207,7 @@ export class CollectionsService {
 
         collection.addPost(post);
 
-        this.collectionsRepository.save(collection);
+        await this.collectionsRepository.save(collection);
 
         return this.toDTO(collection);
     }
@@ -182,12 +223,41 @@ export class CollectionsService {
             collection.removeAllPosts();
 
             for (const post of posts) {
-                collection.addPost(post);
+                await collection.addPost(post);
             }
         }
     }
 
-    async updateAutomaticCollections() {
+    private async removePostFromAllCollections(postId: string) {
+        // @NOTE: can be optimized by having a "getByPostId" method on the collections repository
+        const collections = await this.collectionsRepository.getAll();
+
+        for (const collection of collections) {
+            if (collection.includesPost(postId)) {
+                await collection.removePost(postId);
+            }
+        }
+    }
+
+    private async addPostToMatchingCollections(post: {id: string, featured: boolean, published_at: Date}) {
+        const collections = await this.collectionsRepository.getAll({
+            filter: 'type:automatic'
+        });
+
+        for (const collection of collections) {
+            const added = await collection.addPost(post);
+
+            if (added) {
+                await this.collectionsRepository.save(collection);
+            }
+        }
+    }
+
+    /**
+     * @description Updates all automatic collections. Can be time intensive and is a temporary solution
+     * while all of the events are mapped out and handled optimally
+     */
+    async updateCollections() {
         const collections = await this.collectionsRepository.getAll({
             filter: 'type:automatic'
         });
@@ -198,6 +268,31 @@ export class CollectionsService {
         }
     }
 
+    async updatePostInMatchingCollections(postEdit: PostEditedEvent['data']) {
+        const collections = await this.collectionsRepository.getAll({
+            filter: 'type:automatic'
+        });
+
+        for (const collection of collections) {
+            if (collection.includesPost(postEdit.id) && !collection.postMatchesFilter(postEdit.current)) {
+                await collection.removePost(postEdit.id);
+                await this.collectionsRepository.save(collection);
+
+                logging.info(`[Collections] Post ${postEdit.id} was updated and removed from collection ${collection.id} with filter ${collection.filter}`);
+            } else if (!collection.includesPost(postEdit.id) && collection.postMatchesFilter(postEdit.current)) {
+                const added = await collection.addPost(postEdit.current);
+
+                if (added) {
+                    await this.collectionsRepository.save(collection);
+                }
+
+                logging.info(`[Collections] Post ${postEdit.id} was updated and added to collection ${collection.id} with filter ${collection.filter}`);
+            } else {
+                logging.info(`[Collections] Post ${postEdit.id} was updated but did not update any collections`);
+            }
+        }
+    }
+
     async edit(data: any): Promise<CollectionDTO | null> {
         const collection = await this.collectionsRepository.getById(data.id);
 
@@ -205,19 +300,18 @@ export class CollectionsService {
             return null;
         }
 
+        const collectionData = this.fromDTO(data);
+        await collection.edit(collectionData, this.uniqueChecker);
+
         if (collection.type === 'manual' && data.posts) {
             for (const post of data.posts) {
                 collection.addPost(post);
             }
         }
 
-        if ((collection.type === 'automatic' || data.type === 'automatic') && data.filter) {
+        if (collection.type === 'automatic' && data.filter) {
             await this.updateAutomaticCollectionItems(collection, data.filter);
         }
-
-        const collectionData = this.fromDTO(data);
-
-        Object.assign(collection, collectionData);
 
         await this.collectionsRepository.save(collection);
 

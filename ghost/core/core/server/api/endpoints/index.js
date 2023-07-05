@@ -201,6 +201,10 @@ module.exports = {
         return apiFramework.pipeline(require('./links'), localUtils);
     },
 
+    get mailEvents() {
+        return apiFramework.pipeline(require('./mail-events'), localUtils);
+    },
+
     /**
      * Content API Controllers
      *
