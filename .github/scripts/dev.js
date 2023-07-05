@@ -11,8 +11,8 @@ if (nodeVersion < 18) {
     process.exit(1);
 }
 
-const config = require('../ghost/core/core/shared/config/loader').loadNconf({
-    customConfigPath: path.join(__dirname, '../ghost/core')
+const config = require('../../ghost/core/core/shared/config/loader').loadNconf({
+    customConfigPath: path.join(__dirname, '../../ghost/core')
 });
 
 const liveReloadBaseUrl = config.getSubdir() || '/ghost/';
@@ -26,7 +26,7 @@ const COMMAND_GHOST = {
     name: 'ghost',
     // Note: if this isn't working for you, please use Node 18 and above
     command: 'node --watch index.js',
-    cwd: path.resolve(__dirname, '../ghost/core'),
+    cwd: path.resolve(__dirname, '../../ghost/core'),
     prefixColor: 'blue',
     env: {}
 };
@@ -34,7 +34,7 @@ const COMMAND_GHOST = {
 const COMMAND_ADMIN = {
     name: 'admin',
     command: `yarn start --live-reload-base-url=${liveReloadBaseUrl} --live-reload-port=4201`,
-    cwd: path.resolve(__dirname, '../ghost/admin'),
+    cwd: path.resolve(__dirname, '../../ghost/admin'),
     prefixColor: 'green',
     env: {}
 };
@@ -51,7 +51,7 @@ if (DASH_DASH_ARGS.includes('revisions') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'post-revisions',
         command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../ghost/post-revisions'),
+        cwd: path.resolve(__dirname, '../../ghost/post-revisions'),
         prefixColor: 'green',
         env: {}
     });
@@ -61,7 +61,7 @@ if (DASH_DASH_ARGS.includes('in-memory-repository') || DASH_DASH_ARGS.includes('
     commands.push({
         name: 'in-memory-repository',
         command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../ghost/in-memory-repository'),
+        cwd: path.resolve(__dirname, '../../ghost/in-memory-repository'),
         prefixColor: 'pink',
         env: {}
     });
@@ -71,7 +71,7 @@ if (DASH_DASH_ARGS.includes('collections') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'collections',
         command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../ghost/collections'),
+        cwd: path.resolve(__dirname, '../../ghost/collections'),
         prefixColor: 'pink',
         env: {}
     });
@@ -81,7 +81,7 @@ if (DASH_DASH_ARGS.includes('mail-events') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'collections',
         command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../ghost/mail-events'),
+        cwd: path.resolve(__dirname, '../../ghost/mail-events'),
         prefixColor: 'pink',
         env: {}
     });
@@ -91,7 +91,7 @@ if (DASH_DASH_ARGS.includes('admin-x') || DASH_DASH_ARGS.includes('adminx') || D
     commands.push({
         name: 'adminX',
         command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../apps/admin-x-settings'),
+        cwd: path.resolve(__dirname, '../../apps/admin-x-settings'),
         prefixColor: '#C35831',
         env: {}
     });
@@ -102,7 +102,7 @@ if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'portal',
         command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../apps/portal'),
+        cwd: path.resolve(__dirname, '../../apps/portal'),
         prefixColor: 'magenta',
         env: {}
     });
@@ -113,7 +113,7 @@ if (DASH_DASH_ARGS.includes('signup') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'signup-form',
         command: DASH_DASH_ARGS.includes('signup') ? 'yarn dev' : 'yarn preview',
-        cwd: path.resolve(__dirname, '../apps/signup-form'),
+        cwd: path.resolve(__dirname, '../../apps/signup-form'),
         prefixColor: 'magenta',
         env: {}
     });
@@ -124,7 +124,7 @@ if (DASH_DASH_ARGS.includes('announcement-bar') || DASH_DASH_ARGS.includes('anno
     commands.push({
         name: 'announcement-bar',
         command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../apps/announcement-bar'),
+        cwd: path.resolve(__dirname, '../../apps/announcement-bar'),
         prefixColor: '#DC9D00',
         env: {}
     });
@@ -135,7 +135,7 @@ if (DASH_DASH_ARGS.includes('search') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'search',
         command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../apps/sodo-search'),
+        cwd: path.resolve(__dirname, '../../apps/sodo-search'),
         prefixColor: '#23de43',
         env: {}
     });
@@ -174,7 +174,7 @@ if (DASH_DASH_ARGS.includes('comments') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'comments',
         command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../apps/comments-ui'),
+        cwd: path.resolve(__dirname, '../../apps/comments-ui'),
         prefixColor: '#E55137',
         env: {}
     });
