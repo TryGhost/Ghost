@@ -278,13 +278,15 @@ jobs:
   job_unit-tests:
     runs-on: ubuntu-latest
     needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_core == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
+    if: needs.job_get_metadata.outputs.changed_any_code == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
     strategy:
       matrix:
         node: [ '16.13.0', '18.12.1' ]
     name: Unit tests (Node ${{ matrix.node }})
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 100
       - uses: actions/setup-node@v3
         env:
           FORCE_COLOR: 0
@@ -296,7 +298,7 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
 
-      - run: yarn test:unit
+      - run: yarn test:unit --include-dependents --since ${{ github.event.pull_request.base.sha || github.event.before }}
 
       - uses: actions/upload-artifact@v3
         if: startsWith(matrix.node, '18')
