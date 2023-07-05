@@ -29,7 +29,7 @@ module.exports = async (model, frame, options = {}) => {
     if (typeof model.toJSON === 'function') {
         jsonModel = model.toJSON(frame.options);
     } else {
-        // This is to satisy the interface which extraAttrs needs
+        // This is to satisfy the interface which extraAttrs needs
         model = {
             id: jsonModel.id,
             get(attr) {
@@ -105,7 +105,7 @@ module.exports = async (model, frame, options = {}) => {
         // NOTE: the default of `email_only` is `false` which is why we default to `false` instead of `null`
         //       The undefined value is possible because `posts_meta` table is lazily created only one of the
         //       values is assigned.
-        const defaultValue = (attr === 'email_only') ? false : null;
+        const defaultValue = (attr === 'email_only' || attr === 'hide_title_and_feature_image') ? false : null;
         jsonModel[attr] = _.get(jsonModel.posts_meta, attr) || defaultValue;
     });
     delete jsonModel.posts_meta;

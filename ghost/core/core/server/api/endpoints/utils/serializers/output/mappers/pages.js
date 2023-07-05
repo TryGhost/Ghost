@@ -8,8 +8,5 @@ module.exports = async (model, frame, options) => {
     delete jsonModel.email_only;
     delete jsonModel.newsletter_id;
 
-    // TODO: remove this once full API support is in place
-    delete jsonModel.hide_title_and_feature_image;
-
     return jsonModel;
 };
