@@ -112,7 +112,7 @@ if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {
         // To make this work, you'll need a CADDY server running in front
         // Note the port is different because of this extra layer. Use the following Caddyfile:
         //    https://localhost:4176 {
-        //        reverse_proxy http://127.0.0.1:4175
+        //        reverse_proxy http://localhost:4175
         //    }
 
         COMMAND_GHOST.env['portal__url'] = 'https://localhost:4176/portal.min.js';
