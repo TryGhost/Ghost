@@ -1,6 +1,6 @@
 import FileUpload from './FileUpload';
 import Icon from '../Icon';
-import React from 'react';
+import React, {MouseEventHandler} from 'react';
 import clsx from 'clsx';
 
 type ImageFit = 'cover' | 'contain' | 'fill' | 'scale-down' | 'none';
@@ -25,6 +25,7 @@ interface ImageUploadProps {
     unstyled?: boolean;
     onUpload: (file: File) => void;
     onDelete: () => void;
+    onImageClick?: MouseEventHandler<HTMLImageElement>;
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -42,7 +43,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     imageBWCheckedBg = false,
     unstyled = false,
     onUpload,
-    onDelete
+    onDelete,
+    onImageClick
 }) => {
     if (!unstyled) {
         imageContainerClassName = clsx(
@@ -82,7 +84,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                 <img alt='' className={imageClassName} id={id} src={imageURL} style={{
                     width: (unstyled ? '' : width || '100%'),
                     height: (unstyled ? '' : height || 'auto')
-                }} />
+                }} onClick={onImageClick} />
                 <button className={deleteButtonClassName} type='button' onClick={onDelete}>
                     {deleteButtonContent}
                 </button>
