@@ -202,7 +202,7 @@ const DesignModal: React.FC = () => {
         buttonsDisabled={saveState === 'saving'}
         defaultTab='homepage'
         dirty={saveState === 'unsaved'}
-        okLabel={saveState === 'saved' ? 'Saved' : (saveState === 'saving' ? 'Saving...' : 'Save and close')}
+        okLabel={saveState === 'saved' ? 'Saved' : (saveState === 'saving' ? 'Saving...' : 'Save & close')}
         preview={previewContent}
         previewToolbarTabs={previewTabs}
         selectedURL={selectedPreviewTab}
