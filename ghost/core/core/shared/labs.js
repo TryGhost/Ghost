@@ -40,6 +40,7 @@ const ALPHA_FEATURES = [
     'collections',
     'adminXSettings',
     'pageImprovements',
+    'flatUrls',
     'mailEvents'
 ];
 
