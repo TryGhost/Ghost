@@ -36,7 +36,7 @@
             {{/each}}
         {{else if @image}}
             {{!-- image is present --}}
-            {{#if (and @isPage @isLexical (feature 'pageImprovements'))}}
+            {{#if @isHidden}}
                 <span class="gh-editor-hidden-indicator" data-tooltip="Feature image and post title are hidden">
                     {{svg-jar "eye-closed"}}
                 </span>
