@@ -45,7 +45,8 @@ const ThemeInstalledModal: React.FC<{
     prompt: ReactNode
     installedTheme: InstalledTheme;
     setThemes: (callback: (themes: Theme[]) => Theme[]) => void;
-}> = ({title, prompt, installedTheme, setThemes}) => {
+    onActivate?: () => void;
+}> = ({title, prompt, installedTheme, setThemes, onActivate}) => {
     const api = useApi();
 
     let errorPrompt = null;
@@ -107,6 +108,7 @@ const ThemeInstalledModal: React.FC<{
                     message: `${updatedTheme.name} is now your active theme.`
                 });
             }
+            onActivate?.();
             activateModal?.remove();
         }}
     />;

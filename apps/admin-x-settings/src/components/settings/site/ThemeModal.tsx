@@ -53,11 +53,13 @@ function addThemeToList(theme: Theme, themes: Theme[]): Theme[] {
 async function handleThemeUpload({
     api,
     file,
-    setThemes
+    setThemes,
+    onActivate
 }: {
     api: API;
     file: File;
-    setThemes: React.Dispatch<React.SetStateAction<Theme[]>>
+    setThemes: React.Dispatch<React.SetStateAction<Theme[]>>;
+    onActivate?: () => void
 }) {
     const data = await api.themes.upload({file});
     const uploadedTheme = data.themes[0];
@@ -98,7 +100,8 @@ async function handleThemeUpload({
         title,
         prompt,
         installedTheme: uploadedTheme,
-        setThemes
+        setThemes,
+        onActivate: onActivate
     });
 }
 
@@ -157,16 +160,14 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                             okRunningLabel: 'Overwriting...',
                             okColor: 'red',
                             onOk: async (confirmModal) => {
-                                await handleThemeUpload({api, file, setThemes});
+                                await handleThemeUpload({api, file, setThemes, onActivate: onClose});
                                 setCurrentTab('installed');
-                                // updateRoute('branding-and-design/edit');
                                 confirmModal?.remove();
-                                // modal.remove();
                             }
                         });
                     } else {
                         setCurrentTab('installed');
-                        handleThemeUpload({api, file, setThemes});
+                        handleThemeUpload({api, file, setThemes, onActivate: onClose});
                     }
                 }}>
                     <Button color='black' label='Upload theme' tag='div' />
@@ -264,7 +265,11 @@ const ChangeThemeModal = NiceModal.create(() => {
                 title,
                 prompt,
                 installedTheme: newlyInstalledTheme,
-                setThemes
+                setThemes,
+                onActivate: () => {
+                    updateRoute('design/edit');
+                    modal.remove();
+                }
             });
         };
     }
