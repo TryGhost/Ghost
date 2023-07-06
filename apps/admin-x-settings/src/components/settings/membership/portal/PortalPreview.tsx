@@ -1,4 +1,5 @@
 import PortalFrame from './PortalFrame';
+import PortalLinks from './PortalLinks';
 import React from 'react';
 import {Setting, Tier} from '../../../../types/api';
 
@@ -24,7 +25,7 @@ const PortalPreview: React.FC<PortalPreviewProps> = ({
         );
         break;
     case 'links':
-        tabContents = <>Links</>;
+        tabContents = <PortalLinks />;
         break;
     default:
         tabContents = (

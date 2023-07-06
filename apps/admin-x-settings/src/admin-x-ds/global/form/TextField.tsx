@@ -20,6 +20,7 @@ export type TextFieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
     containerClassName?: string;
     hintClassName?: string;
     unstyled?: boolean;
+    disabled?: boolean;
 }
 
 const TextField: React.FC<TextFieldProps> = ({
@@ -39,6 +40,7 @@ const TextField: React.FC<TextFieldProps> = ({
     containerClassName = '',
     hintClassName = '',
     unstyled = false,
+    disabled,
     ...props
 }) => {
     const id = useId();
@@ -46,14 +48,16 @@ const TextField: React.FC<TextFieldProps> = ({
     const textFieldClasses = !unstyled && clsx(
         'h-10 border-b py-2',
         clearBg ? 'bg-transparent' : 'bg-grey-75 px-[10px]',
-        error ? `border-red` : `border-grey-500 hover:border-grey-700 focus:border-black`,
+        error ? `border-red` : `${disabled ? 'border-grey-300' : 'border-grey-500 hover:border-grey-700 focus:border-black'}`,
         (title && !hideTitle && !clearBg) && `mt-2`,
+        (disabled ? 'text-grey-700' : ''),
         className
     );
 
     const field = <input
         ref={inputRef}
         className={textFieldClasses || className}
+        disabled={disabled}
         id={id}
         maxLength={maxLength}
         placeholder={placeholder}

@@ -27,6 +27,7 @@ export interface PreviewModalProps {
     rightToolbar?: boolean;
     deviceSelector?: boolean;
     previewToolbarURLs?: SelectOption[];
+    previewBgColor?: 'grey' | 'white';
     selectedURL?: string;
     previewToolbarTabs?: Tab[];
     defaultTab?: string;
@@ -58,6 +59,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     rightToolbar = true,
     deviceSelector = true,
     previewToolbarURLs,
+    previewBgColor = 'grey',
     selectedURL,
     previewToolbarTabs,
     buttonsDisabled,
@@ -137,7 +139,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
         );
 
         preview = (
-            <>
+            <div className={`min-h-100 min-w-100 flex grow flex-col ${previewBgColor === 'grey' ? 'bg-grey-50' : 'bg-white'}`}>
                 <DesktopChromeHeader
                     data-testid="design-toolbar"
                     size='lg'
@@ -145,10 +147,10 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                     toolbarLeft={leftToolbar && toolbarLeft}
                     toolbarRight={rightToolbar && toolbarRight}
                 />
-                <div className='flex h-full grow items-center justify-center bg-grey-50 text-sm text-grey-400'>
+                <div className='flex h-full grow items-center justify-center text-sm text-grey-400'>
                     {preview}
                 </div>
-            </>
+            </div>
         );
     }
 

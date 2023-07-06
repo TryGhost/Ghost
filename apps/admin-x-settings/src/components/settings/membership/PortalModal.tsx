@@ -149,6 +149,7 @@ const PortalModal: React.FC = () => {
         dirty={saveState === 'unsaved'}
         okLabel='Save & close'
         preview={preview}
+        previewBgColor={selectedPreviewTab === 'links' ? 'white' : 'grey'}
         previewToolbarTabs={previewTabs}
         selectedURL={selectedPreviewTab}
         sidebar={sidebar}
