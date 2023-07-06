@@ -9,14 +9,14 @@ test.describe('Search', async () => {
 
         const searchBar = page.getByLabel('Search');
 
-        await searchBar.fill('theme');
+        await searchBar.fill('design');
 
-        await expect(page.getByTestId('theme')).toBeVisible();
+        await expect(page.getByTestId('design')).toBeVisible();
         await expect(page.getByTestId('title-and-description')).not.toBeVisible();
 
         await searchBar.fill('title');
 
-        await expect(page.getByTestId('theme')).not.toBeVisible();
+        await expect(page.getByTestId('design')).not.toBeVisible();
         await expect(page.getByTestId('title-and-description')).toBeVisible();
     });
 });

@@ -11,17 +11,19 @@ import {Theme} from '../../../../types/api';
 
 const ThemePreview: React.FC<{
     selectedTheme?: OfficialTheme;
-    onBack: () => void;
     isInstalling?: boolean;
     installedTheme?: Theme;
     installButtonLabel?: string;
+    onBack: () => void;
+    onClose: () => void;
     onInstall?: () => void | Promise<void>;
 }> = ({
     selectedTheme,
-    onBack,
     isInstalling,
     installedTheme,
     installButtonLabel,
+    onBack,
+    onClose,
     onInstall
 }) => {
     const [previewMode, setPreviewMode] = useState('desktop');
@@ -57,7 +59,8 @@ const ThemePreview: React.FC<{
         <div className='flex items-center gap-2'>
             <Breadcrumbs
                 items={[
-                    {label: 'Official themes', onClick: onBack},
+                    {label: 'Design', onClick: onClose},
+                    {label: 'Change theme', onClick: onBack},
                     {label: selectedTheme.name}
                 ]}
                 backIcon

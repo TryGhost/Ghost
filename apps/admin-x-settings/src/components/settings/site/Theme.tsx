@@ -8,7 +8,7 @@ const Theme: React.FC<{ keywords: string[] }> = ({keywords}) => {
     return (
         <SettingGroup
             customButtons={<Button color='green' label='Manage themes' link onClick={() => {
-                updateRoute('themes/manage');
+                updateRoute('design/edit/themes');
             }}/>}
             description="Change or upload themes"
             keywords={keywords}

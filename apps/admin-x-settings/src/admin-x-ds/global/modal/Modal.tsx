@@ -133,7 +133,7 @@ const Modal: React.FC<ModalProps> = ({
 
     case 'full':
         modalClasses += ' h-full ';
-        backdropClasses += ' p-[2vmin]';
+        backdropClasses += ' p-[3vmin]';
         padding = 'p-10';
         break;
 
@@ -206,7 +206,7 @@ const Modal: React.FC<ModalProps> = ({
         <div className={backdropClasses} id='modal-backdrop' onClick={handleBackdropClick}>
             <div className={clsx(
                 'pointer-events-none fixed inset-0 z-0',
-                backDrop && 'bg-[rgba(98,109,121,0.15)] backdrop-blur-[3px]'
+                backDrop && 'bg-[rgba(98,109,121,0.2)] backdrop-blur-[3px]'
             )}></div>
             <section className={modalClasses} data-testid={testId} style={modalStyles}>
                 <div className={contentClasses}>
