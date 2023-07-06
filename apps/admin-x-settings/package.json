@@ -90,6 +90,6 @@
     "typescript": "5.1.6",
     "vite": "4.3.9",
     "vite-plugin-svgr": "3.2.0",
-    "vitest": "0.32.4"
+    "vitest": "0.33.0"
   }
 }
