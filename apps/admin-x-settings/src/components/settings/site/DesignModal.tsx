@@ -23,13 +23,15 @@ const Sidebar: React.FC<{
     updateBrandSetting: (key: string, value: SettingValue) => void
     updateThemeSetting: (updated: CustomThemeSetting) => void
     onTabChange: (id: string) => void
+    handleSave: () => Promise<void>
 }> = ({
     brandSettings,
     themeSettingSections,
     modal,
     updateBrandSetting,
     updateThemeSetting,
-    onTabChange
+    onTabChange,
+    handleSave
 }) => {
     const {updateRoute} = useRouting();
     const [selectedTab, setSelectedTab] = useState('brand');
@@ -59,8 +61,8 @@ const Sidebar: React.FC<{
             </div>
             <StickyFooter height={74}>
                 <div className='w-full px-7'>
-                    <button className='group flex w-full items-center justify-between text-sm font-medium opacity-80 transition-all hover:opacity-100' type='button' onClick={() => {
-                        // NiceModal.show(ChangeThemeModal);
+                    <button className='group flex w-full items-center justify-between text-sm font-medium opacity-80 transition-all hover:opacity-100' type='button' onClick={async () => {
+                        await handleSave();
                         modal.remove();
                         updateRoute('design/edit/themes');
                     }}>
@@ -197,6 +199,7 @@ const DesignModal: React.FC = () => {
     const sidebarContent =
         <Sidebar
             brandSettings={{description, accentColor, icon, logo, coverImage}}
+            handleSave={handleSave}
             modal={modal}
             themeSettingSections={themeSettingSections}
             updateBrandSetting={updateBrandSetting}
@@ -206,7 +209,7 @@ const DesignModal: React.FC = () => {
 
     return <PreviewModalContent
         afterClose={() => {
-            updateRoute('');
+            updateRoute('design');
         }}
         buttonsDisabled={saveState === 'saving'}
         defaultTab='homepage'

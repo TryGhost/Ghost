@@ -128,7 +128,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         />;
 
     const right =
-        <div className='flex items-center gap-12'>
+        <div className='flex items-center gap-14'>
             <TabView
                 border={false}
                 selectedTab={currentTab}
@@ -139,37 +139,42 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                 onTabChange={(id: string) => {
                     setCurrentTab(id);
                 }} />
-            <FileUpload id='theme-uplaod' onUpload={async (file: File) => {
-                const themeFileName = file?.name.replace(/\.zip$/, '');
-                const existingThemeNames = themes.map(t => t.name);
-                if (existingThemeNames.includes(themeFileName)) {
-                    NiceModal.show(ConfirmationModal, {
-                        title: 'Overwrite theme',
-                        prompt: (
-                            <>
-                                The theme <strong>{themeFileName}</strong> already exists.
-                                Do you want to overwrite it?
-                            </>
-                        ),
-                        okLabel: 'Overwrite',
-                        cancelLabel: 'Cancel',
-                        okRunningLabel: 'Overwriting...',
-                        okColor: 'red',
-                        onOk: async (confirmModal) => {
-                            await handleThemeUpload({api, file, setThemes});
-                            setCurrentTab('installed');
-                            // updateRoute('branding-and-design/edit');
-                            confirmModal?.remove();
-                            // modal.remove();
-                        }
-                    });
-                } else {
-                    setCurrentTab('installed');
-                    handleThemeUpload({api, file, setThemes});
-                }
-            }}>
-                <Button color='black' label='Upload theme' tag='div' />
-            </FileUpload>
+            <div className='flex items-center gap-3'>
+                <FileUpload id='theme-uplaod' onUpload={async (file: File) => {
+                    const themeFileName = file?.name.replace(/\.zip$/, '');
+                    const existingThemeNames = themes.map(t => t.name);
+                    if (existingThemeNames.includes(themeFileName)) {
+                        NiceModal.show(ConfirmationModal, {
+                            title: 'Overwrite theme',
+                            prompt: (
+                                <>
+                                    The theme <strong>{themeFileName}</strong> already exists.
+                                    Do you want to overwrite it?
+                                </>
+                            ),
+                            okLabel: 'Overwrite',
+                            cancelLabel: 'Cancel',
+                            okRunningLabel: 'Overwriting...',
+                            okColor: 'red',
+                            onOk: async (confirmModal) => {
+                                await handleThemeUpload({api, file, setThemes});
+                                setCurrentTab('installed');
+                                // updateRoute('branding-and-design/edit');
+                                confirmModal?.remove();
+                                // modal.remove();
+                            }
+                        });
+                    } else {
+                        setCurrentTab('installed');
+                        handleThemeUpload({api, file, setThemes});
+                    }
+                }}>
+                    <Button color='black' label='Upload theme' tag='div' />
+                </FileUpload>
+                {/* <Button color='black' label='Save & Close' onClick={() => {
+                    modal.remove();
+                }} /> */}
+            </div>
         </div>;
 
     return <PageHeader containerClassName='bg-white' left={left} right={right} />;
