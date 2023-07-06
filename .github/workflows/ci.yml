@@ -191,7 +191,8 @@ jobs:
           BROWSER: Chrome
 
       # Merge coverage reports and upload
-      - run: yarn ember coverage-merge
+      - name: Merge Admin test coverage
+        run: yarn ember coverage-merge
         working-directory: ghost/admin
       - uses: actions/upload-artifact@v3
         with:
@@ -660,35 +661,39 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Restore Admin coverage
+        if: contains(needs.job_admin-tests.result, 'success')
         uses: actions/download-artifact@v3
         with:
           name: admin-coverage
+
+      - name: Move coverage
+        if: contains(needs.job_admin-tests.result, 'success')
+        run: |
+          rsync -av --remove-source-files admin/* ghost/admin
+
+      - name: Upload Admin test coverage
+        uses: codecov/codecov-action@v3
+        with:
+          flags: admin-tests
+          move_coverage_to_trash: true
+
       - name: Restore E2E coverage
+        if: contains(needs.job_database-tests.result, 'success')
         uses: actions/download-artifact@v3
         with:
           name: e2e-coverage
 
       - name: Move coverage
+        if: contains(needs.job_database-tests.result, 'success')
         run: |
-          rsync -av --remove-source-files admin/* ghost/admin
           rsync -av --remove-source-files core/* ghost/core
 
       - name: Upload E2E test coverage
+        if: contains(needs.job_database-tests.result, 'success')
         uses: codecov/codecov-action@v3
         with:
           flags: e2e-tests
           move_coverage_to_trash: true
-
-      - name: Restore Unit test coverage
-        uses: actions/download-artifact@v3
-        with:
-          name: unit-coverage
-          path: coverage
-      - run: rsync -av --remove-source-files coverage/* ghost/
-      - name: Upload unit test coverage
-        uses: codecov/codecov-action@v3
-        with:
-          flags: unit-tests
 
   job_required_tests:
     name: All required tests passed or skipped

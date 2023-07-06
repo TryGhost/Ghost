@@ -5,16 +5,16 @@ coverage:
     patch: false
     project:
       default: false
+      admin-tests:
+        flags:
+        - admin-tests
+        threshold: 0.2%
       e2e-tests:
         flags:
         - e2e-tests
         threshold: 0.2%
-      unit-tests:
-        flags:
-        - unit-tests
-        threshold: 0.2%
 flags:
-  e2e-tests:
+  admin-tests:
     carryforward: true
-  unit-tests:
+  e2e-tests:
     carryforward: true
