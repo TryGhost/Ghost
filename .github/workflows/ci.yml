@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - arch
       - 'v5.*'
       - 3.x
       - 2.x
@@ -91,6 +92,7 @@ jobs:
       changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       commit_label: '${{ env.COMMIT_SHA }}: ${{ env.COMMIT_MESSAGE }}'
+      is_canary_branch: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/arch') }}
       is_git_sync: ${{ github.head_ref == 'main' || github.ref == 'refs/heads/main' }}
 
   job_install_deps:
@@ -721,6 +723,7 @@ jobs:
   canary:
     needs: 
       [
+        job_get_metadata,
         job_lint,
         job_ghost-cli,
         job_admin-tests,
@@ -728,7 +731,7 @@ jobs:
         job_database-tests,
         job_regression-tests
       ]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: needs.job_get_metadata.outputs.is_canary_branch == 'true'
     name: Canary
     secrets: inherit
     uses: tryghost/actions/.github/workflows/canary.yml@main
