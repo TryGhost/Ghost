@@ -6,6 +6,8 @@ import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import {Setting, SettingValue} from '../../../../types/api';
 import {getSettingValues} from '../../../../utils/helpers';
 
+import Heading from '../../../../admin-x-ds/global/Heading';
+import Icon from '../../../../admin-x-ds/global/Icon';
 import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
 import clsx from 'clsx';
 import {ReactComponent as PortalIcon1} from '../../../../assets/icons/portal-icon-1.svg';
@@ -80,21 +82,32 @@ const LookAndFeel: React.FC<{
             onSelect={option => updateSetting('portal_button_style', option)}
         />
         {portalButtonStyle?.toString()?.includes('icon') &&
-            <div className='flex gap-2 border border-green p-4'>
-                {defaultButtonIcons.map(icon => (
-                    <button className={clsx('border p-4', currentIcon === icon.value ? 'border-green' : 'border-transparent')} type="button" onClick={() => updateSetting('portal_button_icon', icon.value)}>
-                        <icon.Component className="h-6 w-6 text-green" />
-                    </button>
-                ))}
-                <div className={clsx('w-10 border', currentIcon === uploadedIcon ? 'border-green' : 'border-transparent')}>
-                    <ImageUpload
-                        id='test'
-                        imageClassName='cursor-pointer'
-                        imageURL={uploadedIcon}
-                        onDelete={handleImageDelete}
-                        onImageClick={() => uploadedIcon && updateSetting('portal_button_icon', uploadedIcon)}
-                        onUpload={handleImageUpload}
-                    />
+            <div className='flex flex-col gap-2'>
+                <Heading level={6} grey>Icon</Heading>
+                <div className='flex justify-between'>
+
+                    {defaultButtonIcons.map(icon => (
+                        <button className={clsx('border p-3', currentIcon === icon.value ? 'border-green' : 'border-transparent')} type="button" onClick={() => updateSetting('portal_button_icon', icon.value)}>
+                            <icon.Component className={`h-5 w-5 ${currentIcon === icon.value ? 'text-green' : 'text-black opacity-70 transition-all hover:opacity-100'}`} />
+                        </button>
+                    ))}
+                    <div className={clsx('relative w-[46px] border', currentIcon === uploadedIcon ? 'border-green' : 'border-transparent')}>
+                        <ImageUpload
+                            deleteButtonClassName='invisible absolute -right-2 -top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible'
+                            deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
+                            height='46px'
+                            id='test'
+                            imageClassName='cursor-pointer'
+                            imageURL={uploadedIcon}
+                            width='46px'
+                            deleteButtonUnstyled
+                            onDelete={handleImageDelete}
+                            onImageClick={() => uploadedIcon && updateSetting('portal_button_icon', uploadedIcon)}
+                            onUpload={handleImageUpload}
+                        >
+                            <Icon name='upload' size='md' />
+                        </ImageUpload>
+                    </div>
                 </div>
             </div>
         }
