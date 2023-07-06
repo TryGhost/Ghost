@@ -81,7 +81,8 @@ module.exports = {
             inter: 'Inter',
             sans: 'Inter, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif',
             serif: 'Georgia, serif',
-            mono: 'Consolas, Liberation Mono, Menlo, Courier, monospace'
+            mono: 'Consolas, Liberation Mono, Menlo, Courier, monospace',
+            inherit: 'inherit'
         },
         boxShadow: {
             DEFAULT: '0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08)',
@@ -227,7 +228,8 @@ module.exports = {
                 '6xl': ['6rem', '1'],
                 '7xl': ['7.2rem', '1'],
                 '8xl': ['9.6rem', '1'],
-                '9xl': ['12.8rem', '1']
+                '9xl': ['12.8rem', '1'],
+                inherit: 'inherit'
             },
             lineHeight: {
                 base: '1.5em',
