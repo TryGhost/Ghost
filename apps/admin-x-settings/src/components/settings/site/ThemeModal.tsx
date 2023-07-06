@@ -109,20 +109,22 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     themes,
     setThemes
 }) => {
-    // const {updateRoute} = useRouting();
+    const {updateRoute} = useRouting();
     const api = useApi();
+
+    const onClose = () => {
+        updateRoute('design/edit');
+        modal.remove();
+    };
+
     const left =
         <Breadcrumbs
             items={[
-                {label: 'Design', onClick: () => {
-                    modal.remove();
-                }},
+                {label: 'Design', onClick: onClose},
                 {label: 'Change theme'}
             ]}
             backIcon
-            onBack={() => {
-                modal.remove();
-            }}
+            onBack={onClose}
         />;
 
     const right =
@@ -156,7 +158,9 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                         onOk: async (confirmModal) => {
                             await handleThemeUpload({api, file, setThemes});
                             setCurrentTab('installed');
+                            // updateRoute('branding-and-design/edit');
                             confirmModal?.remove();
+                            // modal.remove();
                         }
                     });
                 } else {
@@ -263,7 +267,7 @@ const ChangeThemeModal = NiceModal.create(() => {
     return (
         <Modal
             afterClose={() => {
-                updateRoute('theme');
+                updateRoute('design/edit');
             }}
             cancelLabel=''
             footer={false}
@@ -285,6 +289,7 @@ const ChangeThemeModal = NiceModal.create(() => {
                                 setSelectedTheme(null);
                             }}
                             onClose={() => {
+                                updateRoute('design/edit');
                                 modal.remove();
                             }}
                             onInstall={onInstall} />

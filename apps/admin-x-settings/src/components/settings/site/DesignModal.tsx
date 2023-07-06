@@ -1,8 +1,8 @@
 import BrandSettings, {BrandSettingValues} from './designAndBranding/BrandSettings';
 // import Button from '../../../admin-x-ds/global/Button';
-import ChangeThemeModal from './ThemeModal';
+// import ChangeThemeModal from './ThemeModal';
 import Icon from '../../../admin-x-ds/global/Icon';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import NiceModal, {NiceModalHandler, useModal} from '@ebay/nice-modal-react';
 import React, {useContext, useEffect, useState} from 'react';
 import StickyFooter from '../../../admin-x-ds/global/StickyFooter';
 import TabView, {Tab} from '../../../admin-x-ds/global/TabView';
@@ -18,17 +18,20 @@ import {getHomepageUrl, getSettingValues} from '../../../utils/helpers';
 
 const Sidebar: React.FC<{
     brandSettings: BrandSettingValues
-    updateBrandSetting: (key: string, value: SettingValue) => void
     themeSettingSections: Array<{id: string, title: string, settings: CustomThemeSetting[]}>
+    modal: NiceModalHandler<Record<string, unknown>>;
+    updateBrandSetting: (key: string, value: SettingValue) => void
     updateThemeSetting: (updated: CustomThemeSetting) => void
     onTabChange: (id: string) => void
 }> = ({
     brandSettings,
-    updateBrandSetting,
     themeSettingSections,
+    modal,
+    updateBrandSetting,
     updateThemeSetting,
     onTabChange
 }) => {
+    const {updateRoute} = useRouting();
     const [selectedTab, setSelectedTab] = useState('brand');
 
     const tabs: Tab[] = [
@@ -57,7 +60,9 @@ const Sidebar: React.FC<{
             <StickyFooter height={74}>
                 <div className='w-full px-7'>
                     <button className='group flex w-full items-center justify-between text-sm font-medium opacity-80 transition-all hover:opacity-100' type='button' onClick={() => {
-                        NiceModal.show(ChangeThemeModal);
+                        // NiceModal.show(ChangeThemeModal);
+                        modal.remove();
+                        updateRoute('design/edit/themes');
                     }}>
                         Change theme
                         <Icon className='mr-2 transition-all group-hover:translate-x-2' name='chevron-right' size='sm' />
@@ -192,6 +197,7 @@ const DesignModal: React.FC = () => {
     const sidebarContent =
         <Sidebar
             brandSettings={{description, accentColor, icon, logo, coverImage}}
+            modal={modal}
             themeSettingSections={themeSettingSections}
             updateBrandSetting={updateBrandSetting}
             updateThemeSetting={updateThemeSetting}
@@ -200,7 +206,7 @@ const DesignModal: React.FC = () => {
 
     return <PreviewModalContent
         afterClose={() => {
-            updateRoute('branding-and-design');
+            updateRoute('');
         }}
         buttonsDisabled={saveState === 'saving'}
         defaultTab='homepage'
@@ -217,7 +223,7 @@ const DesignModal: React.FC = () => {
         onOk={async () => {
             await handleSave();
             modal.remove();
-            updateRoute('branding-and-design');
+            updateRoute('design');
         }}
         onSelectURL={onSelectURL}
     />;

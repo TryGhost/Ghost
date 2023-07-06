@@ -41,9 +41,9 @@ function handleNavigation() {
     const pathName = getHashPath(hash);
 
     if (pathName) {
-        if (pathName === 'themes/manage') {
+        if (pathName === 'design/edit/themes') {
             NiceModal.show(ChangeThemeModal);
-        } else if (pathName === 'branding-and-design/edit') {
+        } else if (pathName === 'design/edit') {
             NiceModal.show(DesignModal);
         } else if (pathName === 'navigation/edit') {
             NiceModal.show(NavigationModal);

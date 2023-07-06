@@ -35,7 +35,7 @@ const Sidebar: React.FC = () => {
 
             <SettingNavSection title="Site">
                 {/* <SettingNavItem navid='theme' title="Theme" onClick={handleSectionClick} /> */}
-                <SettingNavItem navid='branding-and-design' title="Branding and design" onClick={handleSectionClick} />
+                <SettingNavItem navid='design' title="Branding and design" onClick={handleSectionClick} />
                 <SettingNavItem navid='navigation' title="Navigation" onClick={handleSectionClick} />
             </SettingNavSection>
 

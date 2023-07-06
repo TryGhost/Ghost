@@ -11,19 +11,19 @@ import {Theme} from '../../../../types/api';
 
 const ThemePreview: React.FC<{
     selectedTheme?: OfficialTheme;
-    onBack: () => void;
-    onClose: () => void;
     isInstalling?: boolean;
     installedTheme?: Theme;
     installButtonLabel?: string;
+    onBack: () => void;
+    onClose: () => void;
     onInstall?: () => void | Promise<void>;
 }> = ({
     selectedTheme,
-    onBack,
-    onClose,
     isInstalling,
     installedTheme,
     installButtonLabel,
+    onBack,
+    onClose,
     onInstall
 }) => {
     const [previewMode, setPreviewMode] = useState('desktop');
