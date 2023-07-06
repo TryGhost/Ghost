@@ -71,7 +71,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                     <ImageUpload
                         deleteButtonClassName='!top-1 !right-1'
                         height='80px'
-                        id='logo'
+                        id='site-logo'
                         imageBWCheckedBg={true}
                         imageFit='contain'
                         imageURL={values.logo || ''}
@@ -84,7 +84,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                     </ImageUpload>
                 </div>
                 <div>
-                    <Heading className='mb-2' level={6}>Publication cover</Heading>
+                    <Heading className='mb-2' grey={(values.coverImage ? true : false)} level={6}>Publication cover</Heading>
                     <ImageUpload
                         deleteButtonClassName='!top-1 !right-1'
                         height='180px'
