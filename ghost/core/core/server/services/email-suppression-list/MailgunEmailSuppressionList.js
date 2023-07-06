@@ -1,4 +1,4 @@
-const {AbstractEmailSuppressionList, EmailSuppressionData, EmailSuppressedEvent} = require('@tryghost/email-suppression-list');
+const {AbstractEmailSuppressionList, EmailSuppressionData} = require('@tryghost/email-suppression-list');
 const {SpamComplaintEvent, EmailBouncedEvent} = require('@tryghost/email-events');
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
@@ -113,11 +113,6 @@ class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
                     reason: reason,
                     created_at: event.timestamp
                 });
-                DomainEvents.dispatch(EmailSuppressedEvent.create({
-                    emailAddress: event.email,
-                    emailId: event.emailId,
-                    reason: reason
-                }, event.timestamp));
             } catch (err) {
                 if (err.code !== 'ER_DUP_ENTRY') {
                     logging.error(err);
