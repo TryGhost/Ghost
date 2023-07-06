@@ -1,11 +1,17 @@
+import PortalFrame from './PortalFrame';
 import React from 'react';
+import {Setting, Tier} from '../../../../types/api';
 
 interface PortalPreviewProps {
     selectedTab: string;
+    localSettings: Setting[];
+    localTiers: Tier[];
 }
 
 const PortalPreview: React.FC<PortalPreviewProps> = ({
-    selectedTab = 'signup'
+    selectedTab = 'signup',
+    localSettings,
+    localTiers
 }) => {
     let tabContents = <></>;
 
@@ -17,7 +23,11 @@ const PortalPreview: React.FC<PortalPreviewProps> = ({
         tabContents = <>Links</>;
         break;
     default:
-        tabContents = <>Signup preview</>;
+        tabContents = (
+            <>
+                <PortalFrame settings={localSettings} tiers={localTiers} />
+            </>
+        );
         break;
     }
 

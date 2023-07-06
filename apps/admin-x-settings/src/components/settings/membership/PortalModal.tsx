@@ -90,7 +90,10 @@ const PortalModal: React.FC = () => {
     };
 
     const sidebar = <Sidebar localSettings={formState.settings} localTiers={formState.tiers} updateSetting={updateSetting} updateTier={updateTier} />;
-    const preview = <PortalPreview selectedTab={selectedPreviewTab} />;
+    const preview = <PortalPreview
+        localSettings={formState.settings} localTiers={formState.tiers}
+        selectedTab={selectedPreviewTab}
+    />;
 
     let previewTabs: Tab[] = [
         {id: 'signup', title: 'Signup'},
