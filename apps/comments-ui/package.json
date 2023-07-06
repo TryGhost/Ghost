@@ -77,7 +77,7 @@
     "postcss": "8.4.24",
     "tailwindcss": "3.3.2",
     "vite": "4.3.9",
-    "vite-plugin-css-injected-by-js": "3.1.2",
+    "vite-plugin-css-injected-by-js": "3.2.0",
     "vite-plugin-svgr": "3.2.0",
     "vitest": "0.32.4"
   },
