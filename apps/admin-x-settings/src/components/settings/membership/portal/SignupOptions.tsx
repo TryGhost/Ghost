@@ -112,6 +112,7 @@ const SignupOptions: React.FC<{
             config={config as { editor: any }}
             hint={<>Recommended: <strong>115</strong> characters. You've used <strong className="text-green">{signupTermsLength}</strong></>}
             nodes='MINIMAL_NODES'
+            placeholder={`By signing up, I agree to receive emails from ...`}
             title='Display notice at signup'
             value={portalSignupTermsHtml?.toString()}
             onChange={html => updateSetting('portal_signup_terms_html', html)}

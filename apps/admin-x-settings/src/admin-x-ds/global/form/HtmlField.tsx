@@ -28,7 +28,6 @@ const HtmlField: React.FC<HtmlFieldProps> = ({
     title,
     hideTitle,
     error,
-    placeholder,
     hint,
     value,
     clearBg = true,
