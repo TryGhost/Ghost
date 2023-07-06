@@ -1,6 +1,7 @@
 import BrandSettings, {BrandSettingValues} from './designAndBranding/BrandSettings';
-import Button from '../../../admin-x-ds/global/Button';
+// import Button from '../../../admin-x-ds/global/Button';
 import ChangeThemeModal from './ThemeModal';
+import Icon from '../../../admin-x-ds/global/Icon';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useContext, useEffect, useState} from 'react';
 import StickyFooter from '../../../admin-x-ds/global/StickyFooter';
@@ -54,11 +55,13 @@ const Sidebar: React.FC<{
                 <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={handleTabChange} />
             </div>
             <StickyFooter height={74}>
-                <div className='px-7'>
-                    <Button label='Change theme' link onClick={() => {
+                <div className='w-full px-7'>
+                    <button className='group flex w-full items-center justify-between text-sm font-medium opacity-80 transition-all hover:opacity-100' type='button' onClick={() => {
                         NiceModal.show(ChangeThemeModal);
-                    }
-                    } />
+                    }}>
+                        Change theme
+                        <Icon className='mr-2 transition-all group-hover:translate-x-2' name='chevron-right' size='sm' />
+                    </button>
                 </div>
             </StickyFooter>
         </div>
@@ -208,7 +211,7 @@ const DesignModal: React.FC = () => {
         selectedURL={selectedPreviewTab}
         sidebar={sidebarContent}
         sidebarPadding={false}
-        size='bleed'
+        size='full'
         testId='design-modal'
         title='Design'
         onOk={async () => {

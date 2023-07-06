@@ -16,6 +16,7 @@ export interface ButtonProps {
     link?: boolean;
     disabled?: boolean;
     className?: string;
+    tag?: string;
     onClick?: () => void;
 }
 
@@ -29,8 +30,9 @@ const Button: React.FC<ButtonProps> = ({
     fullWidth,
     link,
     disabled,
-    onClick,
     className = '',
+    tag = 'button',
+    onClick,
     ...props
 }) => {
     if (!color) {
@@ -68,18 +70,30 @@ const Button: React.FC<ButtonProps> = ({
     styles += (disabled) ? ' opacity-40' : ' cursor-pointer';
     styles += ` ${className}`;
 
-    return (
-        <button
-            className={styles}
-            disabled={disabled}
-            type="button"
-            onClick={onClick}
-            {...props}
-        >
-            {icon && <Icon colorClass={iconColorClass} name={icon} size={size === 'sm' ? 'sm' : 'md'} />}
-            {(label && hideLabel) ? <span className="sr-only">{label}</span> : label}
-        </button>
-    );
+    const buttonChildren = <>
+        {icon && <Icon colorClass={iconColorClass} name={icon} size={size === 'sm' ? 'sm' : 'md'} />}
+        {(label && hideLabel) ? <span className="sr-only">{label}</span> : label}
+    </>;
+    const buttonElement = React.createElement(tag, {className: styles,
+        disabled: disabled,
+        type: 'button',
+        onClick: onClick,
+        ...props}, buttonChildren);
+
+    return buttonElement;
+
+    // return (
+    //     <button
+    //         className={styles}
+    //         disabled={disabled}
+    //         type="button"
+    //         onClick={onClick}
+    //         {...props}
+    //     >
+    //         {icon && <Icon colorClass={iconColorClass} name={icon} size={size === 'sm' ? 'sm' : 'md'} />}
+    //         {(label && hideLabel) ? <span className="sr-only">{label}</span> : label}
+    //     </button>
+    // );
 };
 
 export default Button;

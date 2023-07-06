@@ -12,6 +12,7 @@ import {Theme} from '../../../../types/api';
 const ThemePreview: React.FC<{
     selectedTheme?: OfficialTheme;
     onBack: () => void;
+    onClose: () => void;
     isInstalling?: boolean;
     installedTheme?: Theme;
     installButtonLabel?: string;
@@ -19,6 +20,7 @@ const ThemePreview: React.FC<{
 }> = ({
     selectedTheme,
     onBack,
+    onClose,
     isInstalling,
     installedTheme,
     installButtonLabel,
@@ -57,7 +59,8 @@ const ThemePreview: React.FC<{
         <div className='flex items-center gap-2'>
             <Breadcrumbs
                 items={[
-                    {label: 'Official themes', onClick: onBack},
+                    {label: 'Design', onClick: onClose},
+                    {label: 'Change theme', onClick: onBack},
                     {label: selectedTheme.name}
                 ]}
                 backIcon

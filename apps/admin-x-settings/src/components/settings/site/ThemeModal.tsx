@@ -1,4 +1,5 @@
 import AdvancedThemeSettings from './theme/AdvancedThemeSettings';
+import Breadcrumbs from '../../../admin-x-ds/global/Breadcrumbs';
 import Button from '../../../admin-x-ds/global/Button';
 import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
 import FileUpload from '../../../admin-x-ds/global/form/FileUpload';
@@ -108,22 +109,34 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     themes,
     setThemes
 }) => {
-    const {updateRoute} = useRouting();
+    // const {updateRoute} = useRouting();
     const api = useApi();
     const left =
-        <TabView
-            border={false}
-            selectedTab={currentTab}
-            tabs={[
-                {id: 'official', title: 'Official themes'},
-                {id: 'installed', title: 'Installed'}
+        <Breadcrumbs
+            items={[
+                {label: 'Design', onClick: () => {
+                    modal.remove();
+                }},
+                {label: 'Change theme'}
             ]}
-            onTabChange={(id: string) => {
-                setCurrentTab(id);
-            }} />;
+            backIcon
+            onBack={() => {
+                modal.remove();
+            }}
+        />;
 
     const right =
-        <div className='flex items-center gap-3'>
+        <div className='flex items-center gap-12'>
+            <TabView
+                border={false}
+                selectedTab={currentTab}
+                tabs={[
+                    {id: 'official', title: 'Official themes'},
+                    {id: 'installed', title: 'Installed'}
+                ]}
+                onTabChange={(id: string) => {
+                    setCurrentTab(id);
+                }} />
             <FileUpload id='theme-uplaod' onUpload={async (file: File) => {
                 const themeFileName = file?.name.replace(/\.zip$/, '');
                 const existingThemeNames = themes.map(t => t.name);
@@ -150,15 +163,9 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                     setCurrentTab('installed');
                     handleThemeUpload({api, file, setThemes});
                 }
-            }}>Upload theme</FileUpload>
-            <Button
-                className='min-w-[75px]'
-                color='black'
-                label='Close'
-                onClick = {() => {
-                    updateRoute('theme');
-                    modal.remove();
-                }} />
+            }}>
+                <Button color='black' label='Upload theme' tag='div' />
+            </FileUpload>
         </div>;
 
     return <PageHeader containerClassName='bg-white' left={left} right={right} />;
@@ -276,6 +283,9 @@ const ChangeThemeModal = NiceModal.create(() => {
                             selectedTheme={selectedTheme}
                             onBack={() => {
                                 setSelectedTheme(null);
+                            }}
+                            onClose={() => {
+                                modal.remove();
                             }}
                             onInstall={onInstall} />
                     }
