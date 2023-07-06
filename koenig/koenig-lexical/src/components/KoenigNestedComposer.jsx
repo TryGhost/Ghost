@@ -24,7 +24,7 @@ const KoenigNestedComposer = ({initialEditor, initialEditorState, initialNodes, 
                     shouldBootstrap={true}
                 />
             ) : null }
-            {onWordCountChangeRef.current ? (
+            {onWordCountChangeRef?.current ? (
                 <WordCountPlugin onChange={onWordCountChangeRef.current} />
             ) : null}
             {children}
