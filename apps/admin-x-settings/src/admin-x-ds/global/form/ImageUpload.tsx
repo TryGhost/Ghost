@@ -18,6 +18,7 @@ interface ImageUploadProps {
     fileUploadClassName?: string;
     deleteButtonClassName?: string;
     deleteButtonContent?: React.ReactNode;
+    deleteButtonUnstyled?: boolean;
 
     /**
      * Removes all the classnames from all elements so you can set a completely custom styling
@@ -40,6 +41,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     fileUploadClassName,
     deleteButtonClassName,
     deleteButtonContent,
+    deleteButtonUnstyled = false,
     imageBWCheckedBg = false,
     unstyled = false,
     onUpload,
@@ -67,10 +69,12 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
         );
 
-        deleteButtonClassName = clsx(
-            'invisible absolute right-4 top-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible',
-            deleteButtonClassName
-        );
+        if (!deleteButtonUnstyled) {
+            deleteButtonClassName = clsx(
+                'invisible absolute right-4 top-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible',
+                deleteButtonClassName
+            );
+        }
     }
 
     deleteButtonContent = deleteButtonContent || <Icon colorClass='text-white' name='trash' size='sm' />;
