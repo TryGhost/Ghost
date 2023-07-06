@@ -1,11 +1,11 @@
 import BrandSettings, {BrandSettingValues} from './designAndBranding/BrandSettings';
-import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useContext, useEffect, useState} from 'react';
 import TabView, {Tab} from '../../../admin-x-ds/global/TabView';
 import ThemePreview from './designAndBranding/ThemePreview';
 import ThemeSettings from './designAndBranding/ThemeSettings';
 import useForm from '../../../hooks/useForm';
+import useRouting from '../../../hooks/useRouting';
 import {CustomThemeSetting, Post, Setting, SettingValue} from '../../../types/api';
 import {PreviewModalContent} from '../../../admin-x-ds/global/modal/PreviewModal';
 import {ServicesContext} from '../../providers/ServiceProvider';
@@ -62,6 +62,7 @@ const DesignModal: React.FC = () => {
     const [themeSettings, setThemeSettings] = useState<Array<CustomThemeSetting>>([]);
     const [latestPost, setLatestPost] = useState<Post | null>(null);
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('homepage');
+    const {updateRoute} = useRouting();
 
     useEffect(() => {
         api.latestPost.browse().then((response) => {
@@ -184,8 +185,12 @@ const DesignModal: React.FC = () => {
         />;
 
     return <PreviewModalContent
+        afterClose={() => {
+            updateRoute('branding-and-design');
+        }}
         buttonsDisabled={saveState === 'saving'}
         defaultTab='homepage'
+        dirty={saveState === 'unsaved'}
         okLabel={saveState === 'saved' ? 'Saved' : (saveState === 'saving' ? 'Saving...' : 'Save and close')}
         preview={previewContent}
         previewToolbarTabs={previewTabs}
@@ -195,31 +200,10 @@ const DesignModal: React.FC = () => {
         size='full'
         testId='design-modal'
         title='Design'
-        onCancel={() => {
-            if (saveState === 'unsaved') {
-                NiceModal.show(ConfirmationModal, {
-                    title: 'Are you sure you want to leave this page?',
-                    prompt: (
-                        <>
-                            <p>Hey there! It looks like you didn&lsquo;t save the changes you made.</p>
-                            <p>Save before you go!</p>
-                        </>
-                    ),
-                    okLabel: 'Leave',
-                    okColor: 'red',
-                    onOk: (confirmModal) => {
-                        confirmModal?.remove();
-                        modal.remove();
-                    },
-                    cancelLabel: 'Stay'
-                });
-            } else {
-                modal.remove();
-            }
-        }}
         onOk={async () => {
             await handleSave();
             modal.remove();
+            updateRoute('branding-and-design');
         }}
         onSelectURL={onSelectURL}
     />;

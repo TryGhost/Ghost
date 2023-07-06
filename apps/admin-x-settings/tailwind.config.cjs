@@ -81,7 +81,8 @@ module.exports = {
             inter: 'Inter',
             sans: 'Inter, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif',
             serif: 'Georgia, serif',
-            mono: 'Consolas, Liberation Mono, Menlo, Courier, monospace'
+            mono: 'Consolas, Liberation Mono, Menlo, Courier, monospace',
+            inherit: 'inherit'
         },
         boxShadow: {
             DEFAULT: '0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08)',
@@ -111,6 +112,23 @@ module.exports = {
                         transform: 'translateX(0px)'
                     }
                 },
+                toasterTopIn: {
+                    '0.00%': {
+                        opacity: '0',
+                        transform: 'translateY(-82px)'
+                    },
+                    '26.52%': {
+                        opacity: '0.5',
+                        transform: 'translateY(5.90px)'
+                    },
+                    '63.26%': {
+                        opacity: '1',
+                        transform: 'translateY(-1.77px)'
+                    },
+                    '100.00%': {
+                        transform: 'translateY(0px)'
+                    }
+                },
                 toasterOut: {
                     '0%': {
                         opacity: '1'
@@ -122,7 +140,8 @@ module.exports = {
             },
             animation: {
                 'toaster-in': 'toasterIn 0.8s cubic-bezier(0.445, 0.050, 0.550, 0.950)',
-                'toaster-out': 'toasterOut 0.4s 0s 1 ease forwards'
+                'toaster-out': 'toasterOut 0.4s 0s 1 ease forwards',
+                'toaster-top-in': 'toasterTopIn 0.8s cubic-bezier(0.445, 0.050, 0.550, 0.950)'
             },
             spacing: {
                 px: '1px',
@@ -209,7 +228,8 @@ module.exports = {
                 '6xl': ['6rem', '1'],
                 '7xl': ['7.2rem', '1'],
                 '8xl': ['9.6rem', '1'],
-                '9xl': ['12.8rem', '1']
+                '9xl': ['12.8rem', '1'],
+                inherit: 'inherit'
             },
             lineHeight: {
                 base: '1.5em',

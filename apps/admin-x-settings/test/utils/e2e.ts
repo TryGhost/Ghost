@@ -1,9 +1,10 @@
-import {CustomThemeSettingsResponseType, ImagesResponseType, InvitesResponseType, LabelsResponseType, OffersResponseType, PostsResponseType, RolesResponseType, SettingsResponseType, SiteResponseType, ThemesResponseType, TiersResponseType, UsersResponseType} from '../../src/utils/api';
+import {ConfigResponseType, CustomThemeSettingsResponseType, ImagesResponseType, InvitesResponseType, LabelsResponseType, OffersResponseType, PostsResponseType, RolesResponseType, SettingsResponseType, SiteResponseType, ThemesResponseType, TiersResponseType, UsersResponseType} from '../../src/utils/api';
 import {Page, Request} from '@playwright/test';
 import {readFileSync} from 'fs';
 
 export const responseFixtures = {
     settings: JSON.parse(readFileSync(`${__dirname}/responses/settings.json`).toString()) as SettingsResponseType,
+    config: JSON.parse(readFileSync(`${__dirname}/responses/config.json`).toString()) as ConfigResponseType,
     users: JSON.parse(readFileSync(`${__dirname}/responses/users.json`).toString()) as UsersResponseType,
     me: JSON.parse(readFileSync(`${__dirname}/responses/me.json`).toString()) as UsersResponseType,
     roles: JSON.parse(readFileSync(`${__dirname}/responses/roles.json`).toString()) as RolesResponseType,
@@ -20,6 +21,9 @@ interface Responses {
     settings?: {
         browse?: SettingsResponseType
         edit?: SettingsResponseType
+    }
+    config?: {
+        browse?: ConfigResponseType
     }
     users?: {
         browse?: UsersResponseType
@@ -83,6 +87,9 @@ type LastRequests = {
         browse: RequestRecord
         edit: RequestRecord
     }
+    config: {
+        browse: RequestRecord
+    }
     users: {
         browse: RequestRecord
         currentUser: RequestRecord
@@ -137,6 +144,7 @@ type LastRequests = {
 export async function mockApi({page,responses}: {page: Page, responses?: Responses}) {
     const lastApiRequests: LastRequests = {
         settings: {browse: {}, edit: {}},
+        config: {browse: {}},
         users: {browse: {}, currentUser: {}, edit: {}, delete: {}, updatePassword: {}, makeOwner: {}},
         roles: {browse: {}},
         invites: {browse: {}, add: {}, delete: {}},
@@ -162,6 +170,17 @@ export async function mockApi({page,responses}: {page: Page, responses?: Respons
             PUT: {
                 body: responses?.settings?.edit ?? responseFixtures.settings,
                 updateLastRequest: lastApiRequests.settings.edit
+            }
+        }
+    });
+
+    await mockApiResponse({
+        page,
+        path: /\/ghost\/api\/admin\/config\//,
+        respondTo: {
+            GET: {
+                body: responses?.config?.browse ?? responseFixtures.config,
+                updateLastRequest: lastApiRequests.config.browse
             }
         }
     });

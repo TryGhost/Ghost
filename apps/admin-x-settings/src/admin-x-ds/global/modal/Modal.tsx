@@ -1,12 +1,12 @@
 import Button, {ButtonProps} from '../Button';
 import ButtonGroup from '../ButtonGroup';
-import ConfirmationModal from './ConfirmationModal';
 import Heading from '../Heading';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect} from 'react';
 import StickyFooter from '../StickyFooter';
 import clsx from 'clsx';
 import useGlobalDirtyState from '../../../hooks/useGlobalDirtyState';
+import {confirmIfDirty} from '../../../utils/modals';
+import {useModal} from '@ebay/nice-modal-react';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'bleed' | number;
 
@@ -28,14 +28,13 @@ export interface ModalProps {
     noPadding?: boolean;
     onOk?: () => void;
     onCancel?: () => void;
+    afterClose?: () => void;
     children?: React.ReactNode;
     backDrop?: boolean;
     backDropClick?: boolean;
     stickyFooter?: boolean;
     scrolling?: boolean;
     dirty?: boolean;
-    closeConfrimationTitle?: string;
-    closeConfirmationPrompt?: React.ReactNode;
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -51,19 +50,13 @@ const Modal: React.FC<ModalProps> = ({
     onOk,
     okColor = 'black',
     onCancel,
+    afterClose,
     children,
     backDrop = true,
     backDropClick = true,
     stickyFooter = false,
     scrolling = true,
-    dirty = false,
-    closeConfrimationTitle = 'Are you sure you want to leave this page?',
-    closeConfirmationPrompt = (
-        <>
-            <p>{`Hey there! It looks like you didn't save the changes you made.`}</p>
-            <p>Save before you go!</p>
-        </>
-    )
+    dirty = false
 }) => {
     const modal = useModal();
     const {setGlobalDirtyState} = useGlobalDirtyState();
@@ -75,21 +68,10 @@ const Modal: React.FC<ModalProps> = ({
     let buttons: ButtonProps[] = [];
 
     const removeModal = () => {
-        if (!dirty) {
+        confirmIfDirty(dirty, () => {
             modal.remove();
-        } else {
-            NiceModal.show(ConfirmationModal, {
-                title: closeConfrimationTitle,
-                prompt: closeConfirmationPrompt,
-                okLabel: 'Leave',
-                cancelLabel: 'Stay',
-                okColor: 'red',
-                onOk: (confirmationModal) => {
-                    modal.remove();
-                    confirmationModal?.remove();
-                }
-            });
-        }
+            afterClose?.();
+        });
     };
 
     if (!footer) {

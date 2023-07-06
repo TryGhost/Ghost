@@ -1,12 +1,14 @@
 import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
+import {Config, Setting, SiteData} from '../../types/api';
 import {ServicesContext} from './ServiceProvider';
-import {Setting, SiteData} from '../../types/api';
 
 // Define the Settings Context
 interface SettingsContextProps {
     settings: Setting[] | null;
     saveSettings: (updatedSettings: Setting[]) => Promise<Setting[]>;
     siteData: SiteData | null;
+    config: Config | null;
+    settingsLoaded: boolean;
 }
 
 interface SettingsProviderProps {
@@ -16,6 +18,8 @@ interface SettingsProviderProps {
 const SettingsContext = createContext<SettingsContextProps>({
     settings: null,
     siteData: null,
+    config: null,
+    settingsLoaded: false,
     saveSettings: async () => []
 });
 
@@ -79,18 +83,25 @@ function deserializeSettings(settings: Setting[]): Setting[] {
 // Create a Settings Provider component
 const SettingsProvider: React.FC<SettingsProviderProps> = ({children}) => {
     const {api} = useContext(ServicesContext);
-    const [settings, setSettings] = useState <Setting[] | null> (null);
-    const [siteData, setSiteData] = useState <SiteData | null> (null);
+    const [settings, setSettings] = useState<Setting[] | null> (null);
+    const [siteData, setSiteData] = useState<SiteData | null> (null);
+    const [config, setConfig] = useState<Config | null> (null);
+    const [settingsLoaded, setSettingsLoaded] = useState<boolean> (false);
 
     useEffect(() => {
         const fetchSettings = async (): Promise<void> => {
             try {
                 // Make an API call to fetch the settings
-                const data = await api.settings.browse();
-                const siteDataRes = await api.site.browse();
+                const [settingsData, siteDataResponse, configData] = await Promise.all([
+                    api.settings.browse(),
+                    api.site.browse(),
+                    api.config.browse()
+                ]);
 
-                setSettings(serialiseSettingsData(data.settings));
-                setSiteData(siteDataRes.site);
+                setSettings(serialiseSettingsData(settingsData.settings));
+                setSiteData(siteDataResponse.site);
+                setConfig(configData.config);
+                setSettingsLoaded(true);
             } catch (error) {
                 // Log error in settings API
             }
@@ -120,7 +131,7 @@ const SettingsProvider: React.FC<SettingsProviderProps> = ({children}) => {
     // Provide the settings and the saveSettings function to the children components
     return (
         <SettingsContext.Provider value={{
-            settings, saveSettings, siteData
+            settings, saveSettings, siteData, config, settingsLoaded
         }}>
             {children}
         </SettingsContext.Provider>
@@ -128,4 +139,3 @@ const SettingsProvider: React.FC<SettingsProviderProps> = ({children}) => {
 };
 
 export {SettingsContext, SettingsProvider};
-

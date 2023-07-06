@@ -1,12 +1,12 @@
 import Button from '../../../admin-x-ds/global/Button';
-import NavigationModal from './NavigationModal';
-import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
+import useRouting from '../../../hooks/useRouting';
 
 const Navigation: React.FC<{ keywords: string[] }> = ({keywords}) => {
+    const {updateRoute} = useRouting();
     const openPreviewModal = () => {
-        NiceModal.show(NavigationModal);
+        updateRoute('navigation/edit');
     };
 
     return (

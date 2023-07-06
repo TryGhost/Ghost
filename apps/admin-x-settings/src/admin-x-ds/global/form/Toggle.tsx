@@ -1,24 +1,37 @@
-import React from 'react';
+import React, {useId} from 'react';
 import Separator from '../Separator';
+import {Heading6Styles} from '../Heading';
 
 type ToggleSizes = 'sm' | 'md' | 'lg';
 type ToggleDirections = 'ltr' | 'rtl';
 
 interface ToggleProps {
-    id: string;
     color?: string;
     checked?: boolean;
     disabled?: boolean;
     error?: boolean;
     size?: ToggleSizes;
     label?: React.ReactNode;
+    labelStyle?: 'heading' | 'value';
     separator?: boolean;
     direction?: ToggleDirections;
     hint?: React.ReactNode;
     onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const Toggle: React.FC<ToggleProps> = ({id, size, direction, label, hint, separator, error, checked, onChange}) => {
+const Toggle: React.FC<ToggleProps> = ({
+    size,
+    direction,
+    label,
+    labelStyle = 'value',
+    hint,
+    separator,
+    error,
+    checked,
+    onChange
+}) => {
+    const id = useId();
+
     let sizeStyles = '';
     let labelStyles = '';
     switch (size) {
@@ -38,6 +51,10 @@ const Toggle: React.FC<ToggleProps> = ({id, size, direction, label, hint, separa
         break;
     }
 
+    if (labelStyle === 'heading') {
+        direction = 'rtl';
+    }
+
     return (
         <div>
             <div className={`group flex items-start gap-2 ${direction === 'rtl' && 'justify-between'} ${separator && 'pb-2'}`}>
@@ -49,7 +66,12 @@ const Toggle: React.FC<ToggleProps> = ({id, size, direction, label, hint, separa
                     onChange={onChange} />
                 {label &&
                     <label className={`flex flex-col hover:cursor-pointer ${direction === 'rtl' && 'order-1'} ${labelStyles}`} htmlFor={id}>
-                        <span>{label}</span>
+                        {
+                            labelStyle === 'heading' ?
+                                <span className={`${Heading6Styles} mt-1`}>{label}</span>
+                                :
+                                <span>{label}</span>
+                        }
                         {hint && <span className={`text-xs ${error ? 'text-red' : 'text-grey-700'}`}>{hint}</span>}
                     </label>
                 }

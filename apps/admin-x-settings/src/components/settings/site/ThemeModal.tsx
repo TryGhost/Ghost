@@ -8,12 +8,12 @@ import OfficialThemes from './theme/OfficialThemes';
 import PageHeader from '../../../admin-x-ds/global/layout/PageHeader';
 import React, {useState} from 'react';
 import TabView from '../../../admin-x-ds/global/TabView';
-import ThemeInstalledModal from './ThemeInstalledModal';
+import ThemeInstalledModal from './theme/ThemeInstalledModal';
 import ThemePreview from './theme/ThemePreview';
+import useRouting from '../../../hooks/useRouting';
 import {API} from '../../../utils/api';
 import {OfficialTheme} from '../../../models/themes';
 import {Theme} from '../../../types/api';
-import {showToast} from '../../../admin-x-ds/global/Toast';
 import {useApi} from '../../providers/ServiceProvider';
 import {useThemes} from '../../../hooks/useThemes';
 
@@ -68,8 +68,14 @@ async function handleThemeUpload({
     let title = 'Upload successful';
     let prompt = <>
         <strong>{uploadedTheme.name}</strong> uploaded successfully.
-        Do you want to activate it now?
     </>;
+
+    if (!uploadedTheme.active) {
+        prompt = <>
+            {prompt}{' '}
+            Do you want to activate it now?
+        </>;
+    }
 
     if (uploadedTheme.errors?.length || uploadedTheme.warnings?.length) {
         const hasErrors = uploadedTheme.errors?.length;
@@ -77,8 +83,14 @@ async function handleThemeUpload({
         title = `Upload successful with ${hasErrors ? 'errors' : 'warnings'}`;
         prompt = <>
             The theme <strong>"{uploadedTheme.name}"</strong> was installed successfully but we detected some {hasErrors ? 'errors' : 'warnings'}.
-            You are still able to activate and use the theme but it is recommended to fix these {hasErrors ? 'errors' : 'warnings'} before you do so.
         </>;
+
+        if (!uploadedTheme.active) {
+            prompt = <>
+                {prompt}
+                You are still able to activate and use the theme but it is recommended to fix these {hasErrors ? 'errors' : 'warnings'} before you do so.
+            </>;
+        }
     }
 
     NiceModal.show(ThemeInstalledModal, {
@@ -96,6 +108,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     themes,
     setThemes
 }) => {
+    const {updateRoute} = useRouting();
     const api = useApi();
     const left =
         <TabView
@@ -120,7 +133,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                         prompt: (
                             <>
                                 The theme <strong>{themeFileName}</strong> already exists.
-                                Do you want to overwrite it ?
+                                Do you want to overwrite it?
                             </>
                         ),
                         okLabel: 'Overwrite',
@@ -128,9 +141,9 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                         okRunningLabel: 'Overwriting...',
                         okColor: 'red',
                         onOk: async (confirmModal) => {
-                            confirmModal?.remove();
+                            await handleThemeUpload({api, file, setThemes});
                             setCurrentTab('installed');
-                            handleThemeUpload({api, file, setThemes});
+                            confirmModal?.remove();
                         }
                     });
                 } else {
@@ -143,6 +156,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                 color='black'
                 label='OK'
                 onClick = {() => {
+                    updateRoute('theme');
                     modal.remove();
                 }} />
         </div>;
@@ -176,6 +190,8 @@ const ChangeThemeModal = NiceModal.create(() => {
     const [currentTab, setCurrentTab] = useState('official');
     const [selectedTheme, setSelectedTheme] = useState<OfficialTheme|null>(null);
     const [previewMode, setPreviewMode] = useState('desktop');
+    const [isInstalling, setInstalling] = useState(false);
+    const {updateRoute} = useRouting();
 
     const modal = useModal();
     const {themes, setThemes} = useThemes();
@@ -190,21 +206,58 @@ const ChangeThemeModal = NiceModal.create(() => {
     if (selectedTheme) {
         installedTheme = themes.find(theme => theme.name.toLowerCase() === selectedTheme!.name.toLowerCase());
         onInstall = async () => {
+            setInstalling(true);
             const data = await api.themes.install(selectedTheme.ref);
+            setInstalling(false);
+
             const newlyInstalledTheme = data.themes[0];
             setThemes([
                 ...themes.map(theme => ({...theme, active: false})),
                 newlyInstalledTheme
             ]);
-            showToast({
-                message: `Theme installed - ${newlyInstalledTheme.name}`
+
+            let title = 'Success';
+            let prompt = <>
+                <strong>{newlyInstalledTheme.name}</strong> has been successfully installed.
+            </>;
+
+            if (!newlyInstalledTheme.active) {
+                prompt = <>
+                    {prompt}{' '}
+                    Do you want to activate it now?
+                </>;
+            }
+
+            if (newlyInstalledTheme.errors?.length || newlyInstalledTheme.warnings?.length) {
+                const hasErrors = newlyInstalledTheme.errors?.length;
+
+                title = `Installed with ${hasErrors ? 'errors' : 'warnings'}`;
+                prompt = <>
+                    The theme <strong>"{newlyInstalledTheme.name}"</strong> was installed successfully but we detected some {hasErrors ? 'errors' : 'warnings'}.
+                </>;
+
+                if (!newlyInstalledTheme.active) {
+                    prompt = <>
+                        {prompt}
+                        You are still able to activate and use the theme but it is recommended to contact the theme developer fix these {hasErrors ? 'errors' : 'warnings'} before you do so.
+                    </>;
+                }
+            }
+
+            NiceModal.show(ThemeInstalledModal, {
+                title,
+                prompt,
+                installedTheme: newlyInstalledTheme,
+                setThemes
             });
-            setCurrentTab('installed');
         };
     }
 
     return (
         <Modal
+            afterClose={() => {
+                updateRoute('theme');
+            }}
             cancelLabel=''
             footer={false}
             noPadding={true}
@@ -217,11 +270,10 @@ const ChangeThemeModal = NiceModal.create(() => {
                 <div className='grow'>
                     {selectedTheme &&
                         <ThemePreview
-                            installButtonLabel={
-                                installedTheme?.active ? 'Activated' : (installedTheme ? 'Installed' : `Install ${selectedTheme?.name}`)
-                            }
+                            installButtonLabel={installedTheme ? `Update ${selectedTheme?.name}` : `Install ${selectedTheme?.name}`}
+                            installedTheme={installedTheme}
+                            isInstalling={isInstalling}
                             selectedTheme={selectedTheme}
-                            themeInstalled={Boolean(installedTheme)}
                             onBack={() => {
                                 setSelectedTheme(null);
                             }}
