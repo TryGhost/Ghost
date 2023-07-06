@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" height="32" width="32" viewBox="0 0 32 32" class={{if @closed "eye-closed"}} ...attributes>
+    <title>eye open close</title>
+    <g stroke-linecap="round" stroke-width="2" fill="none" stroke="#212121" stroke-linejoin="round"
+        class="nc-icon-wrapper">
+        <g class="js-nc-int-icon nc-int-eye-open-close">
+            <circle cx="16" cy="16" r="5" stroke="none" fill="#212121"></circle>
+            <path d="M2,16s6,8,14,8,14-8,14-8" data-cap="none" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M2,16S8,8,16,8s14,8,14,8" data-cap="none" stroke-linecap="round" stroke-linejoin="round"></path>
+            <line data-cap="butt" opacity="0" x1="12.768" x2="11.563" y1="8.427" y2="4.583"></line>
+            <line data-cap="butt" opacity="0" x1="19.232" x2="20.437" y1="8.427" y2="4.583"></line>
+            <line data-cap="butt" opacity="0" x1="6.563" x2="4.141" y1="11.563" y2="8.482"></line>
+            <line data-cap="butt" opacity="0" x1="25.437" x2="27.859" y1="11.563" y2="8.482"></line>
+        </g>
+        <style data-cap="butt">
+            .nc-int-eye-open-close {
+                --transition-duration: .3s;
+                perspective: 100px
+            }
+
+            .nc-int-eye-open-close :nth-child(1) {
+                transform-origin: 16px 22px;
+                transition: transform var(--transition-duration) cubic-bezier(.65, .05, .36, 1)
+            }
+
+            .nc-int-eye-open-close :nth-child(3) {
+                transform-origin: 50% 50%;
+                transition: transform var(--transition-duration) cubic-bezier(.65, .05, .36, 1)
+            }
+
+            .nc-int-eye-open-close :nth-child(4),
+            .nc-int-eye-open-close :nth-child(5),
+            .nc-int-eye-open-close :nth-child(6),
+            .nc-int-eye-open-close :nth-child(7) {
+                transform-origin: 50% 50%;
+                transition: transform var(--transition-duration) cubic-bezier(.65, .05, .36, 1), opacity 0s calc(var(--transition-duration)/2)
+            }
+
+            .eye-closed .nc-int-eye-open-close :nth-child(1) {
+                transform: scale(0)
+            }
+
+            .eye-closed .nc-int-eye-open-close :nth-child(3),
+            .eye-closed .nc-int-eye-open-close :nth-child(4),
+            .eye-closed .nc-int-eye-open-close :nth-child(5),
+            .eye-closed .nc-int-eye-open-close :nth-child(6),
+            .eye-closed .nc-int-eye-open-close :nth-child(7) {
+                transform: rotateX(180deg);
+                opacity: 1
+            }
+        </style>
+    </g>
+</svg>
