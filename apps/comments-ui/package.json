@@ -63,7 +63,7 @@
     "@testing-library/user-event": "14.4.3",
     "@typescript-eslint/eslint-plugin": "5.57.1",
     "@typescript-eslint/parser": "5.57.1",
-    "@vitejs/plugin-react": "4.0.1",
+    "@vitejs/plugin-react": "4.0.2",
     "@vitest/coverage-v8": "0.32.2",
     "autoprefixer": "10.4.14",
     "bson-objectid": "2.0.4",
