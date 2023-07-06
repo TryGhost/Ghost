@@ -105,7 +105,7 @@ const ThemeInstalledModal: React.FC<{
 
                 showToast({
                     type: 'success',
-                    message: `${updatedTheme.name} is now your active theme.`
+                    message: <div><span className='capitalize'>{updatedTheme.name}</span> is now your active theme.</div>
                 });
             }
             onActivate?.();

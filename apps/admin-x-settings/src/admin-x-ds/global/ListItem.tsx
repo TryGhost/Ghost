@@ -29,7 +29,7 @@ const ListItem: React.FC<ListItemProps> = ({id, title, detail, action, hideActio
     const listItemClasses = clsx(
         'group flex items-center justify-between',
         bgOnHover && 'hover:bg-gradient-to-r hover:from-white hover:to-grey-50',
-        separator ? 'border-b border-grey-100 last-of-type:border-none hover:border-grey-200' : 'border-b border-transparent hover:border-grey-200',
+        separator ? 'border-y border-grey-100 last-of-type:border-t hover:border-grey-200' : 'border-y border-transparent hover:border-grey-200 first-of-type:hover:border-t-transparent',
         className
     );
 
