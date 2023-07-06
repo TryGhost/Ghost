@@ -68,7 +68,7 @@
     "@testing-library/jest-dom": "5.16.5",
     "@testing-library/react": "12.1.5",
     "@tryghost/i18n": "0.0.0",
-    "@vitejs/plugin-react": "4.0.1",
+    "@vitejs/plugin-react": "4.0.2",
     "@vitest/coverage-v8": "0.32.2",
     "@vitest/ui": "0.29.8",
     "concurrently": "8.2.0",
