@@ -39,7 +39,7 @@ const HtmlField: React.FC<HtmlFieldProps> = ({
     ...props
 }) => {
     const textFieldClasses = unstyled ? '' : clsx(
-        'h-10 border-b py-2',
+        'min-h-10 border-b py-2',
         clearBg ? 'bg-transparent' : 'bg-grey-75 px-[10px]',
         error ? `border-red` : `border-grey-500 hover:border-grey-700 focus:border-black`,
         (title && !hideTitle && !clearBg) && `mt-2`,
