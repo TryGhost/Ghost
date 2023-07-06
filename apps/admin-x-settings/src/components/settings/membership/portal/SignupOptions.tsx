@@ -1,6 +1,7 @@
 import CheckboxGroup from '../../../../admin-x-ds/global/form/CheckboxGroup';
 import Form from '../../../../admin-x-ds/global/form/Form';
-import React, {useContext} from 'react';
+import HtmlField from '../../../../admin-x-ds/global/form/HtmlField';
+import React, {useContext, useMemo} from 'react';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import {CheckboxProps} from '../../../../admin-x-ds/global/form/Checkbox';
 import {Setting, SettingValue, Tier} from '../../../../types/api';
@@ -15,8 +16,16 @@ const SignupOptions: React.FC<{
 }> = ({localSettings, updateSetting, localTiers, updateTier}) => {
     const {config} = useContext(SettingsContext);
 
-    const [membersSignupAccess, portalName, portalSignupCheckboxRequired, portalPlansJson] = getSettingValues(localSettings, ['members_signup_access', 'portal_name', 'portal_signup_checkbox_required', 'portal_plans']);
+    const [membersSignupAccess, portalName, portalSignupTermsHtml, portalSignupCheckboxRequired, portalPlansJson] = getSettingValues(
+        localSettings, ['members_signup_access', 'portal_name', 'portal_signup_terms_html', 'portal_signup_checkbox_required', 'portal_plans']
+    );
     const portalPlans = JSON.parse(portalPlansJson?.toString() || '[]') as string[];
+
+    const signupTermsLength = useMemo(() => {
+        const div = document.createElement('div');
+        div.innerHTML = portalSignupTermsHtml?.toString() || '';
+        return div.innerText.length;
+    }, [portalSignupTermsHtml]);
 
     const togglePlan = (plan: string) => {
         const index = portalPlans.indexOf(plan);
@@ -98,7 +107,15 @@ const SignupOptions: React.FC<{
             />
         )}
 
-        <div className='red text-sm'>TODO: Display notice at signup (Koenig)</div>
+        {/* TODO: validate length according to hint */}
+        <HtmlField
+            config={config as { editor: any }}
+            hint={<>Recommended: <strong>115</strong> characters. You've used <strong className="text-green">{signupTermsLength}</strong></>}
+            nodes='MINIMAL_NODES'
+            title='Display notice at signup'
+            value={portalSignupTermsHtml?.toString()}
+            onChange={html => updateSetting('portal_signup_terms_html', html)}
+        />
 
         <Toggle
             checked={Boolean(portalSignupCheckboxRequired)}
