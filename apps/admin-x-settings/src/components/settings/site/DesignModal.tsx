@@ -61,7 +61,7 @@ const Sidebar: React.FC<{
             </div>
             <StickyFooter height={74}>
                 <div className='w-full px-7'>
-                    <button className='group flex w-full items-center justify-between text-sm font-medium opacity-80 transition-all hover:opacity-100' type='button' onClick={async () => {
+                    <button className='group flex w-full items-center justify-between text-sm font-medium opacity-80 transition-all hover:opacity-100' data-testid='change-theme' type='button' onClick={async () => {
                         await handleSave();
                         modal.remove();
                         updateRoute('design/edit/themes');

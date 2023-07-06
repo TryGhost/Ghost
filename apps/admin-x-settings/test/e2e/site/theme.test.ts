@@ -26,13 +26,17 @@ test.describe('Theme settings', async () => {
 
         await page.goto('/');
 
-        const section = page.getByTestId('theme');
+        const designSection = page.getByTestId('design');
 
-        await section.getByRole('button', {name: 'Manage themes'}).click();
+        await designSection.getByRole('button', {name: 'Customize'}).click();
+
+        const designModal = page.getByTestId('design-modal');
+
+        await designModal.getByTestId('change-theme').click();
 
         const modal = page.getByTestId('theme-modal');
 
-        // The default theme is always considered "installed"
+        // // The default theme is always considered "installed"
 
         await modal.getByRole('button', {name: /Casper/}).click();
 
@@ -40,7 +44,7 @@ test.describe('Theme settings', async () => {
 
         await expect(page.locator('iframe[title="Theme preview"]')).toHaveAttribute('src', 'https://demo.ghost.io/');
 
-        await modal.getByRole('button', {name: 'Official themes'}).click();
+        await modal.getByRole('button', {name: 'Change theme'}).click();
 
         // Try installing another theme
 
@@ -71,9 +75,13 @@ test.describe('Theme settings', async () => {
 
         await page.goto('/');
 
-        const section = page.getByTestId('theme');
+        const designSection = page.getByTestId('design');
 
-        await section.getByRole('button', {name: 'Manage themes'}).click();
+        await designSection.getByRole('button', {name: 'Customize'}).click();
+
+        const designModal = page.getByTestId('design-modal');
+
+        await designModal.getByTestId('change-theme').click();
 
         const modal = page.getByTestId('theme-modal');
 

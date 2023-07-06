@@ -81,19 +81,6 @@ const Button: React.FC<ButtonProps> = ({
         ...props}, buttonChildren);
 
     return buttonElement;
-
-    // return (
-    //     <button
-    //         className={styles}
-    //         disabled={disabled}
-    //         type="button"
-    //         onClick={onClick}
-    //         {...props}
-    //     >
-    //         {icon && <Icon colorClass={iconColorClass} name={icon} size={size === 'sm' ? 'sm' : 'md'} />}
-    //         {(label && hideLabel) ? <span className="sr-only">{label}</span> : label}
-    //     </button>
-    // );
 };
 
 export default Button;
