@@ -3,6 +3,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import Radio from '../../../admin-x-ds/global/form/Radio';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import useRoles from '../../../hooks/useRoles';
+import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
 import {ServicesContext} from '../../providers/ServiceProvider';
@@ -15,6 +16,7 @@ const InviteUserModal = NiceModal.create(() => {
     const {api} = useContext(ServicesContext);
     const {roles, assignableRoles, getRoleId} = useRoles();
     const {invites, setInvites} = useStaffUsers();
+    const {updateRoute} = useRouting();
 
     const focusRef = useRef<HTMLInputElement>(null);
     const [email, setEmail] = useState<string>('');
@@ -116,6 +118,9 @@ const InviteUserModal = NiceModal.create(() => {
 
     return (
         <Modal
+            afterClose={() => {
+                updateRoute('users');
+            }}
             cancelLabel=''
             okLabel={okLabel}
             size={540}

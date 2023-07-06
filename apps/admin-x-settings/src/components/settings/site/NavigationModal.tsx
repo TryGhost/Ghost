@@ -3,13 +3,14 @@ import NavigationEditForm from './navigation/NavigationEditForm';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import TabView from '../../../admin-x-ds/global/TabView';
 import useNavigationEditor, {NavigationItem} from '../../../hooks/site/useNavigationEditor';
+import useRouting from '../../../hooks/useRouting';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {getSettingValues} from '../../../utils/helpers';
 import {useState} from 'react';
 
 const NavigationModal = NiceModal.create(() => {
     const modal = useModal();
-
+    const {updateRoute} = useRouting();
     const {
         localSettings,
         updateSetting,
@@ -39,6 +40,9 @@ const NavigationModal = NiceModal.create(() => {
 
     return (
         <Modal
+            afterClose={() => {
+                updateRoute('navigation');
+            }}
             buttonsDisabled={saveState === 'saving'}
             dirty={localSettings.some(setting => setting.dirty)}
             scrolling={true}
@@ -50,6 +54,7 @@ const NavigationModal = NiceModal.create(() => {
                 if (navigation.validate() && secondaryNavigation.validate()) {
                     await handleSave();
                     modal.remove();
+                    updateRoute('navigation');
                 }
             }}
         >
