@@ -5,9 +5,9 @@ import React from 'react';
 import SettingSection from '../../../admin-x-ds/settings/SettingSection';
 
 const searchKeywords = {
-    portal: ['portal', 'signup', 'sign up', 'sign in', 'login', 'account'],
-    access: ['access', 'subscription', 'post'],
-    analytics: ['analytics', 'tracking', 'privacy']
+    portal: ['portal', 'signup', 'sign up', 'signin', 'sign in', 'login', 'account', 'membership'],
+    access: ['access', 'subscription', 'post', 'membership'],
+    analytics: ['analytics', 'tracking', 'privacy', 'membership']
 };
 
 const MembershipSettings: React.FC = () => {

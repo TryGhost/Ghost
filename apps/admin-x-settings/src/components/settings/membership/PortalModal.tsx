@@ -7,6 +7,7 @@ import React, {useContext, useState} from 'react';
 import SignupOptions from './portal/SignupOptions';
 import TabView, {Tab} from '../../../admin-x-ds/global/TabView';
 import useForm, {Dirtyable} from '../../../hooks/useForm';
+import useRouting from '../../../hooks/useRouting';
 import {PreviewModalContent} from '../../../admin-x-ds/global/modal/PreviewModal';
 import {Setting, SettingValue, Tier} from '../../../types/api';
 import {SettingsContext} from '../../providers/SettingsProvider';
@@ -61,6 +62,7 @@ const Sidebar: React.FC<{
 
 const PortalModal: React.FC = () => {
     const modal = useModal();
+    const {updateRoute} = useRouting();
 
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('signup');
 
@@ -152,6 +154,9 @@ const PortalModal: React.FC = () => {
     }
 
     return <PreviewModalContent
+        afterClose={() => {
+            updateRoute('portal');
+        }}
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
         okLabel={okLabel}
@@ -165,6 +170,7 @@ const PortalModal: React.FC = () => {
         onOk={async () => {
             if (!Object.values(errors).filter(Boolean).length) {
                 await handleSave();
+                updateRoute('portal');
                 modal.remove();
             }
         }}
