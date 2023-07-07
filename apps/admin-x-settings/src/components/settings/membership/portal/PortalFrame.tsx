@@ -66,7 +66,7 @@ function getPortalPreviewUrl({settings, tiers, siteData, selectedTab}: {
         settingsParam.append('buttonStyle', encodeURIComponent(portalButtonStyle));
     }
 
-    settingsParam.append('disableBackground', 'true');
+    settingsParam.append('disableBackground', 'false');
 
     return `${baseUrl}${portalBase}?${settingsParam.toString()}`;
 }
