@@ -152,7 +152,7 @@ const PortalModal: React.FC = () => {
     }
 
     return <PreviewModalContent
-        deviceSelector={selectedPreviewTab !== 'links'}
+        deviceSelector={false}
         dirty={saveState === 'unsaved'}
         okLabel={okLabel}
         preview={preview}
