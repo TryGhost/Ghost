@@ -1,11 +1,12 @@
 import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
 import {Config, Setting, SiteData} from '../../types/api';
 import {ServicesContext} from './ServiceProvider';
+import {SettingsResponseType} from '../../utils/api';
 
 // Define the Settings Context
 interface SettingsContextProps {
     settings: Setting[] | null;
-    saveSettings: (updatedSettings: Setting[]) => Promise<Setting[]>;
+    saveSettings: (updatedSettings: Setting[]) => Promise<SettingsResponseType>;
     siteData: SiteData | null;
     config: Config | null;
     settingsLoaded: boolean;
@@ -20,7 +21,7 @@ const SettingsContext = createContext<SettingsContextProps>({
     siteData: null,
     config: null,
     settingsLoaded: false,
-    saveSettings: async () => []
+    saveSettings: async () => ({settings: []})
 });
 
 function serialiseSettingsData(settings: Setting[]): Setting[] {
@@ -121,10 +122,13 @@ const SettingsProvider: React.FC<SettingsProviderProps> = ({children}) => {
 
             setSettings(newSettings);
 
-            return newSettings;
+            return {
+                settings: newSettings,
+                meta: data.meta
+            };
         } catch (error) {
             // Log error in settings API
-            return [];
+            return {settings: []};
         }
     }, [api]);
 
@@ -139,3 +143,4 @@ const SettingsProvider: React.FC<SettingsProviderProps> = ({children}) => {
 };
 
 export {SettingsContext, SettingsProvider};
+

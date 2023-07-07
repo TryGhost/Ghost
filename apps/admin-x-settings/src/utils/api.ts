@@ -1,7 +1,7 @@
 import {Config, CustomThemeSetting, InstalledTheme, Label, Offer, Post, Setting, SiteData, Theme, Tier, User, UserRole} from '../types/api';
 import {getGhostPaths} from './helpers';
 
-interface Meta {
+export interface Meta {
     pagination: {
         page: number;
         limit: number;
@@ -12,8 +12,10 @@ interface Meta {
     }
 }
 
+export type SettingsResponseMeta = Meta & { sent_email_verification?: boolean }
+
 export interface SettingsResponseType {
-    meta: Meta;
+    meta?: SettingsResponseMeta;
     settings: Setting[];
 }
 
