@@ -126,7 +126,7 @@
           "format": "uri-reference",
           "maxLength": 2000
         },
-        "hide_title_and_feature_image": {
+        "show_title_and_feature_image": {
           "type": "boolean"
         },
         "authors": {
