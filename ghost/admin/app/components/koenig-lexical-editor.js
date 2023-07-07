@@ -277,7 +277,9 @@ export default class KoenigLexicalEditor extends Component {
             fetchAutocompleteLinks,
             fetchLabels,
             feature: {
-                signupCard: true
+                signupCard: true,
+                collectionsCard: this.feature.get('collectionsCard'),
+                collections: this.feature.get('collections')
             },
             membersEnabled: this.settings.get('membersSignupAccess') === 'all',
             siteTitle: this.settings.title,

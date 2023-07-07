@@ -1300,6 +1300,7 @@ export default class KoenigEditor extends Component {
     }
 
     deselectCard(card) {
+        console.log(`deselecting card`);
         card.set('isEditing', false);
         card.set('isSelected', false);
         this.selectedCard = null;
