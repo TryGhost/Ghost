@@ -110,7 +110,7 @@ const DesignModal: React.FC = () => {
             }
 
             if (formState.settings.some(setting => setting.dirty)) {
-                const newSettings = await saveSettings(formState.settings.filter(setting => setting.dirty));
+                const {settings: newSettings} = await saveSettings(formState.settings.filter(setting => setting.dirty));
                 updateForm(state => ({...state, settings: newSettings}));
             }
         }
