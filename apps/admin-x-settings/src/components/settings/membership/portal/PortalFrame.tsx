@@ -1,4 +1,4 @@
-import React, {useRef} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {Setting, SiteData, Tier} from '../../../../types/api';
 import {getSettingValue} from '../../../../utils/helpers';
@@ -12,9 +12,13 @@ type PortalFrameProps = {
 function getPortalPreviewUrl({settings, tiers, siteData, selectedTab}: {
     settings: Setting[],
     tiers: Tier[],
-    siteData: SiteData,
+    siteData: SiteData|null,
     selectedTab: string
 }) {
+    if (!siteData?.url) {
+        return null;
+    }
+
     let portalTiers = tiers.filter((t) => {
         return t.visibility === 'public' && t.type === 'paid';
     }).map(t => t.id);
@@ -77,9 +81,8 @@ const PortalFrame: React.FC<PortalFrameProps> = ({settings, tiers, selectedTab})
     } = useSettingGroup();
 
     const iframeRef = useRef<HTMLIFrameElement>(null);
-    if (!siteData?.url) {
-        return null;
-    }
+    const [portalReady, setPortalReady] = useState(false);
+
     let href = getPortalPreviewUrl({
         settings,
         tiers,
@@ -87,10 +90,34 @@ const PortalFrame: React.FC<PortalFrameProps> = ({settings, tiers, selectedTab})
         selectedTab
     });
 
+    useEffect(() => {
+        const messageListener = (event: any) => {
+            if (!href) {
+                return;
+            }
+            const srcURL = new URL(href);
+            const originURL = new URL(event.origin);
+
+            if (originURL.origin === srcURL.origin) {
+                if (event.data === 'portal-ready' || event.data.type === 'portal-ready') {
+                    setPortalReady(true);
+                }
+            }
+        };
+
+        window.addEventListener('message', messageListener, true);
+        return () => window.removeEventListener('message', messageListener, true);
+    }, [href]);
+
+    if (!href) {
+        return null;
+    }
+
     return (
         <>
             <iframe
                 ref={iframeRef}
+                className={!portalReady ? 'hidden' : ''}
                 data-testid="portal-preview"
                 height="100%"
                 src={href}
