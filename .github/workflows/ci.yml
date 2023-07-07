@@ -724,12 +724,7 @@ jobs:
     needs: 
       [
         job_get_metadata,
-        job_lint,
-        job_ghost-cli,
-        job_admin-tests,
-        job_unit-tests,
-        job_database-tests,
-        job_regression-tests
+        job_required_tests
       ]
     if: needs.job_get_metadata.outputs.is_canary_branch == 'true'
     name: Canary
