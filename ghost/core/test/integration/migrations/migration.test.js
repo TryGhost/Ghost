@@ -31,6 +31,7 @@ describe('Migrations', function () {
 
     describe('Database initialization + rollback', function () {
         beforeEach(async function () {
+            await knexMigrator.reset({force: true});
             await knexMigrator.init();
         });
     
