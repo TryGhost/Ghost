@@ -2,11 +2,12 @@ import Button from '../../../../admin-x-ds/global/Button';
 import List from '../../../../admin-x-ds/global/List';
 import ListItem from '../../../../admin-x-ds/global/ListItem';
 import ModalPage from '../../../../admin-x-ds/global/modal/ModalPage';
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import Select from '../../../../admin-x-ds/global/form/Select';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import {SettingsContext} from '../../../providers/SettingsProvider';
 import {getHomepageUrl} from '../../../../utils/helpers';
+import {useTiers} from '../../../providers/ServiceProvider';
 
 interface PortalLinksPrefs {
 
@@ -41,11 +42,26 @@ const PortalLink: React.FC<PortalLinkPrefs> = ({name, value}) => {
 
 const PortalLinks: React.FC<PortalLinksPrefs> = () => {
     const [isDataAttributes, setIsDataAttributes] = useState(false);
+    const [selectedTier, setSelectedTier] = useState('');
     const {siteData} = useContext(SettingsContext);
+    const {data: tiers} = useTiers();
 
     const toggleIsDataAttributes = () => {
         setIsDataAttributes(!isDataAttributes);
     };
+
+    useEffect(() => {
+        if (tiers?.length) {
+            setSelectedTier(tiers[0].id);
+        }
+    }, [tiers]);
+
+    const tierOptions = tiers?.map((tier) => {
+        return {
+            label: tier.name,
+            value: tier.id
+        };
+    });
 
     const homePageURL = getHomepageUrl(siteData!);
 
@@ -54,9 +70,9 @@ const PortalLinks: React.FC<PortalLinksPrefs> = () => {
             <p className='-mt-6 mb-16'>Use these {isDataAttributes ? 'data attributes' : 'links'} in your theme to show pages of Portal.</p>
 
             <List actions={<Button color='green' label={isDataAttributes ? 'Links' : 'Data attributes'} link onClick={toggleIsDataAttributes}/>} title='Generic'>
-                <PortalLink name='Default' value={isDataAttributes ? 'data-portal' : `${homePageURL}/#/portal`} />
-                <PortalLink name='Sign in' value={isDataAttributes ? 'data-portal="signin"' : `${homePageURL}/#/portal/signin`} />
-                <PortalLink name='Sign up' value={isDataAttributes ? 'data-portal="signup"' : `${homePageURL}/#/portal/signup`} />
+                <PortalLink name='Default' value={isDataAttributes ? 'data-portal' : `${homePageURL}#/portal`} />
+                <PortalLink name='Sign in' value={isDataAttributes ? 'data-portal="signin"' : `${homePageURL}#/portal/signin`} />
+                <PortalLink name='Sign up' value={isDataAttributes ? 'data-portal="signup"' : `${homePageURL}#/portal/signup`} />
             </List>
 
             <List className='mt-14' title='Tiers'>
@@ -68,32 +84,24 @@ const PortalLinks: React.FC<PortalLinksPrefs> = () => {
                         <span className='inline-block w-[200px] shrink-0 font-bold'>Tier</span>
                         <Select
                             containerClassName='max-w-[400px]'
-                            options={[
-                                {
-                                    label: 'Tier one',
-                                    value: 'tier-one'
-                                },
-                                {
-                                    label: 'Tier two',
-                                    value: 'tier-two'
-                                }
-                            ]}
-                            onSelect={() => {
-
+                            options={tierOptions}
+                            selectedOption={selectedTier}
+                            onSelect={(value) => {
+                                setSelectedTier(value);
                             }}
                         />
                     </div>
                 </ListItem>
-                <PortalLink name='Signup / Monthly' value={isDataAttributes ? 'data-portal="signup/abc123/monthly"' : `${homePageURL}/#/portal/signup/abc123/monthly`} />
-                <PortalLink name='Signup / Yearly' value={isDataAttributes ? 'data-portal="signup/abc123/yearly"' : `${homePageURL}/#/portal/signup/abc123/yearly`} />
-                <PortalLink name='Signup / Free' value={isDataAttributes ? 'data-portal="signup/free"' : `${homePageURL}/#/portal/signup/free`} />
+                <PortalLink name='Signup / Monthly' value={isDataAttributes ? `data-portal="signup/${selectedTier}/monthly"` : `${homePageURL}#/portal/signup/${selectedTier}/monthly`} />
+                <PortalLink name='Signup / Yearly' value={isDataAttributes ? `data-portal="signup/${selectedTier}/yearly"` : `${homePageURL}#/portal/signup/${selectedTier}/yearly`} />
+                <PortalLink name='Signup / Free' value={isDataAttributes ? 'data-portal="signup/free"' : `${homePageURL}#/portal/signup/free`} />
             </List>
 
             <List className='mt-14' title='Account'>
-                <PortalLink name='Account' value={isDataAttributes ? 'data-portal="account"' : `${homePageURL}/#/portal/account`} />
-                <PortalLink name='Account / Plans' value={isDataAttributes ? 'data-portal="account/plans"' : `${homePageURL}/#/portal/account/plans`} />
-                <PortalLink name='Account / Profile' value={isDataAttributes ? 'data-portal="account/profile"' : `${homePageURL}/#/portal/account/profile`} />
-                <PortalLink name='Account / Newsletters' value={isDataAttributes ? 'data-portal="account/newsletters"' : `${homePageURL}/#/portal/account/newsletters`} />
+                <PortalLink name='Account' value={isDataAttributes ? 'data-portal="account"' : `${homePageURL}#/portal/account`} />
+                <PortalLink name='Account / Plans' value={isDataAttributes ? 'data-portal="account/plans"' : `${homePageURL}#/portal/account/plans`} />
+                <PortalLink name='Account / Profile' value={isDataAttributes ? 'data-portal="account/profile"' : `${homePageURL}#/portal/account/profile`} />
+                <PortalLink name='Account / Newsletters' value={isDataAttributes ? 'data-portal="account/newsletters"' : `${homePageURL}#/portal/account/newsletters`} />
             </List>
         </ModalPage>
 
