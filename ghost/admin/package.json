@@ -151,7 +151,7 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "reframe.js": "4.0.1",
-    "semver": "7.5.3",
+    "semver": "7.5.4",
     "testem": "3.10.1",
     "tracked-built-ins": "3.1.1",
     "util": "0.12.5",
