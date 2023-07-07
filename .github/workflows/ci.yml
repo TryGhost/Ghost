@@ -13,6 +13,7 @@ on:
 env:
   FORCE_COLOR: 1
   HEAD_COMMIT: ${{ github.sha }}
+  BASE_COMMIT: ${{ github.event.pull_request.base.sha || github.event.before }}
   CACHED_DEPENDENCY_PATHS: |
     ${{ github.workspace }}/node_modules
     ${{ github.workspace }}/apps/*/node_modules
@@ -44,6 +45,11 @@ jobs:
           COMMIT_SHA=$(git rev-parse --short ${{ github.event.pull_request.head.sha || github.event.head_commit.id || env.HEAD_COMMIT }})
           echo "COMMIT_SHA=$COMMIT_SHA" >> $GITHUB_ENV
           echo "COMMIT_MESSAGE=$(git log -n 1 --pretty=format:%s $COMMIT_SHA)" >> $GITHUB_ENV
+
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo '$GITHUB_CONTEXT'
 
       - name: Determine changed packages
         uses: AurorNZ/paths-filter@v3.0.1
@@ -98,7 +104,6 @@ jobs:
   job_install_deps:
     name: Install Dependencies
     needs: job_get_metadata
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -136,7 +141,7 @@ jobs:
   job_lint:
     runs-on: ubuntu-latest
     needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_any_code == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
+    if: needs.job_get_metadata.outputs.changed_any_code == 'true'
     name: Lint
     steps:
       - uses: actions/checkout@v3
@@ -158,7 +163,7 @@ jobs:
           path: ghost/**/.eslintcache
           key: eslint-cache
 
-      - run: yarn lint --since ${{ github.event.pull_request.base.sha || github.event.before }}
+      - run: yarn lint --since ${{ env.BASE_COMMIT }}
 
       - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -170,7 +175,7 @@ jobs:
   job_admin-tests:
     runs-on: ubuntu-latest
     needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_admin == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
+    if: needs.job_get_metadata.outputs.changed_admin == 'true'
     name: Admin tests - Chrome
     env:
       MOZ_HEADLESS: 1
@@ -211,7 +216,7 @@ jobs:
   job_unit-tests:
     runs-on: ubuntu-latest
     needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_any_code == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
+    if: needs.job_get_metadata.outputs.changed_any_code == 'true'
     strategy:
       matrix:
         node: [ '16.13.0', '18.12.1' ]
@@ -231,7 +236,7 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
 
-      - run: yarn test:unit --include-dependents --since ${{ github.event.pull_request.base.sha || github.event.before }}
+      - run: yarn test:unit --include-dependents --since ${{ env.BASE_COMMIT }}
 
       - uses: actions/upload-artifact@v3
         if: startsWith(matrix.node, '18')
@@ -249,7 +254,7 @@ jobs:
   job_database-tests:
     runs-on: ubuntu-latest
     needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_core == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
+    if: needs.job_get_metadata.outputs.changed_core == 'true'
     strategy:
       matrix:
         node: [ '16.13.0', '18.12.1' ]
@@ -370,7 +375,7 @@ jobs:
   job_regression-tests:
     runs-on: ubuntu-latest
     needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_core == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
+    if: needs.job_get_metadata.outputs.changed_core == 'true'
     strategy:
       matrix:
         include:
@@ -433,7 +438,7 @@ jobs:
   job_admin_x_settings:
     runs-on: ubuntu-latest
     needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_admin_x_settings == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
+    if: needs.job_get_metadata.outputs.changed_admin_x_settings == 'true'
     name: Admin-X Settings tests
     env:
       CI: true
@@ -486,7 +491,7 @@ jobs:
   job_comments_ui:
     runs-on: ubuntu-latest
     needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_comments_ui == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
+    if: needs.job_get_metadata.outputs.changed_comments_ui == 'true'
     name: Comments-UI tests
     env:
       CI: true
@@ -539,7 +544,7 @@ jobs:
   job_signup_form:
     runs-on: ubuntu-latest
     needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_signup_form == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
+    if: needs.job_get_metadata.outputs.changed_signup_form == 'true'
     name: Signup-form tests
     env:
       CI: true
@@ -592,7 +597,7 @@ jobs:
   job_ghost-cli:
     name: Ghost-CLI tests
     needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_core == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
+    if: needs.job_get_metadata.outputs.changed_core == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -712,7 +717,7 @@ jobs:
         job_comments_ui,
         job_signup_form,
       ]
-    if: always() && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Check for failures
