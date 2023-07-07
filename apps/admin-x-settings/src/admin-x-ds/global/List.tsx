@@ -16,27 +16,42 @@ interface ListProps {
     title?: React.ReactNode;
     titleSeparator?: boolean;
     children?: React.ReactNode;
+    actions?: React.ReactNode;
     hint?: React.ReactNode;
     hintSeparator?: boolean;
     borderTop?: boolean;
+    className?: string;
 }
 
-const List: React.FC<ListProps> = ({title, titleSeparator, children, hint, hintSeparator, borderTop, pageTitle}) => {
+const List: React.FC<ListProps> = ({title, titleSeparator, children, actions, hint, hintSeparator, borderTop, pageTitle, className}) => {
     titleSeparator = (titleSeparator === undefined) ? true : titleSeparator;
     hintSeparator = (hintSeparator === undefined) ? true : hintSeparator;
 
     const listClasses = clsx(
         (borderTop || pageTitle) && 'border-t border-grey-300',
-        pageTitle && 'mt-14'
+        pageTitle && 'mt-14',
+        className
     );
+
+    let heading;
+
+    if (title) {
+        const headingTitle = <Heading grey={true} level={6}>{title}</Heading>;
+        heading = actions ? (
+            <div className='flex items-end justify-between gap-2'>
+                {headingTitle}
+                {actions}
+            </div>
+        ) : headingTitle;
+    }
 
     return (
         <>
             {pageTitle && <Heading>{pageTitle}</Heading>}
             <section className={listClasses}>
                 {(!pageTitle && title) &&
-                    <div className='flex flex-col gap-1'>
-                        <Heading grey={true} level={6}>{title}</Heading>
+                    <div className='flex flex-col items-stretch gap-1'>
+                        {heading}
                         {titleSeparator && <Separator />}
                     </div>
                 }

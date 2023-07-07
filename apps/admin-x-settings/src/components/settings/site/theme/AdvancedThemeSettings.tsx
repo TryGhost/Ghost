@@ -3,6 +3,7 @@ import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationM
 import List from '../../../../admin-x-ds/global/List';
 import ListItem from '../../../../admin-x-ds/global/ListItem';
 import Menu from '../../../../admin-x-ds/global/Menu';
+import ModalPage from '../../../../admin-x-ds/global/modal/ModalPage';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import {Theme} from '../../../../types/api';
@@ -196,12 +197,12 @@ const AdvancedThemeSettings: React.FC<ThemeSettingProps> = ({
     setThemes
 }) => {
     return (
-        <div className='p-[8vmin] pt-5'>
+        <ModalPage>
             <ThemeList
                 setThemes={setThemes}
                 themes={themes}
             />
-        </div>
+        </ModalPage>
     );
 };
 

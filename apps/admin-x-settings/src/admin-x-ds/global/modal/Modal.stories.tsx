@@ -2,6 +2,7 @@ import type {Meta, StoryObj} from '@storybook/react';
 
 import Modal from './Modal';
 import ModalContainer from './ModalContainer';
+import ModalPage from './ModalPage';
 import NiceModal from '@ebay/nice-modal-react';
 
 const meta = {
@@ -75,7 +76,7 @@ export const ExtraLarge: Story = {
     }
 };
 
-export const full: Story = {
+export const Full: Story = {
     args: {
         size: 'full',
         onOk: () => {
@@ -94,6 +95,19 @@ export const Bleed: Story = {
         },
         title: 'Full bleed modal',
         children: modalContent
+    }
+};
+
+export const CompletePage: Story = {
+    args: {
+        size: 'full',
+        footer: <></>,
+        noPadding: true,
+        children: <>
+            <ModalPage heading='Hey there full page'>
+                <p>This is a full page in a modal</p>
+            </ModalPage>
+        </>
     }
 };
 

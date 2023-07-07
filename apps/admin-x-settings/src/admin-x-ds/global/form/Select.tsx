@@ -96,10 +96,10 @@ const Select: React.FC<SelectProps> = ({
     );
 
     return (
-        unstyled ? select :
+        unstyled ? select : (title || hint ? (
             <div>
                 {select}
-            </div>
+            </div>) : select)
     );
 };
 
