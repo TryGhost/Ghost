@@ -79,7 +79,6 @@ const PortalLinks: React.FC = () => {
                     <div className='flex w-full items-center gap-5 py-2 pr-6'>
                         <span className='inline-block w-[240px] shrink-0 font-bold'>Tier</span>
                         <Select
-                            containerClassName='max-w-[400px]'
                             options={tierOptions}
                             selectedOption={selectedTier}
                             onSelect={(value) => {
