@@ -132,7 +132,7 @@ const expectedProperties = {
         'tiers',
         'count',
         'post_revisions',
-        'hide_title_and_feature_image'
+        'show_title_and_feature_image'
     ],
 
     user: _(schema.users)
