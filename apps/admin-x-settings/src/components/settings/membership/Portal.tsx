@@ -1,12 +1,12 @@
 import Button from '../../../admin-x-ds/global/Button';
-import NiceModal from '@ebay/nice-modal-react';
-import PortalModal from './PortalModal';
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
+import useRouting from '../../../hooks/useRouting';
 
 const Portal: React.FC<{ keywords: string[] }> = ({keywords}) => {
+    const {updateRoute} = useRouting();
     const openPreviewModal = () => {
-        NiceModal.show(PortalModal);
+        updateRoute('portal/edit');
     };
 
     return (

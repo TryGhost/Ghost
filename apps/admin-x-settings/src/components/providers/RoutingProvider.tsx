@@ -3,6 +3,7 @@ import DesignModal from '../settings/site/DesignModal';
 import InviteUserModal from '../settings/general/InviteUserModal';
 import NavigationModal from '../settings/site/NavigationModal';
 import NiceModal from '@ebay/nice-modal-react';
+import PortalModal from '../settings/membership/PortalModal';
 import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
 import {SettingsContext} from './SettingsProvider';
 
@@ -49,6 +50,8 @@ function handleNavigation() {
             NiceModal.show(NavigationModal);
         } else if (pathName === 'users/invite') {
             NiceModal.show(InviteUserModal);
+        } else if (pathName === 'portal/edit') {
+            NiceModal.show(PortalModal);
         }
         const element = document.getElementById(pathName);
         if (element) {
