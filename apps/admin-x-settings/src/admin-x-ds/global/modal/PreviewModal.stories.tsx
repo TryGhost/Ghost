@@ -38,13 +38,13 @@ export const Default: Story = {
     args: {
         title: 'Preview modal',
         preview: (
-            <div className='flex h-full items-center justify-center text-sm text-grey-500'>
-                Preview area
+            <div className='flex h-[150%] items-center justify-center text-sm text-grey-500'>
+                Scrollable preview area
             </div>
         ),
         sidebar: (
             <div className='flex h-full items-center justify-center text-sm text-grey-500'>
-                Sidebar area
+                Scrollable sidebar area
             </div>
         ),
         previewToolbarTabs: previewURLs,
@@ -56,17 +56,7 @@ export const Default: Story = {
 
 export const NoPreviewToolbar: Story = {
     args: {
-        title: 'Preview modal',
-        preview: (
-            <div className='flex h-full items-center justify-center text-sm text-grey-500'>
-                Preview area
-            </div>
-        ),
-        sidebar: (
-            <div className='flex h-full items-center justify-center text-sm text-grey-500'>
-                Sidebar area
-            </div>
-        ),
+        ...Default.args,
         previewToolbar: false
     }
 };

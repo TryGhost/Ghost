@@ -139,14 +139,14 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
         );
 
         preview = (
-            <div className={`min-h-100 min-w-100 flex grow flex-col ${previewBgColor === 'grey' ? 'bg-grey-50' : 'bg-white'}`}>
-                <DesktopChromeHeader
+            <div className={`min-w-100 absolute inset-y-0 left-0 right-[400px] flex grow flex-col overflow-y-scroll ${previewBgColor === 'grey' ? 'bg-grey-50' : 'bg-white'}`}>
+                {previewToolbar && <DesktopChromeHeader
                     data-testid="design-toolbar"
                     size='lg'
                     toolbarCenter={<></>}
                     toolbarLeft={leftToolbar && toolbarLeft}
                     toolbarRight={rightToolbar && toolbarRight}
-                />
+                />}
                 <div className='flex h-full grow items-center justify-center text-sm text-grey-400'>
                     {preview}
                 </div>
@@ -200,7 +200,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                                 {sidebarButtons ? sidebarButtons : <ButtonGroup buttons={buttons} /> }
                             </div>
                         )}
-                        <div className={`${!sidebarHeader ? 'absolute inset-x-0 bottom-0 top-[74px] grow' : ''} ${sidebarPadding && 'p-7 pt-0'} flex flex-col justify-between overflow-y-auto ${sidebarContentClasses}`}>
+                        <div className={`${!sidebarHeader ? 'absolute inset-x-0 bottom-0 top-[74px] grow' : ''} ${sidebarPadding && 'p-7 pt-0'} flex flex-col justify-between overflow-y-auto ${sidebarContentClasses && sidebarContentClasses}`}>
                             {sidebar}
                         </div>
                     </div>
