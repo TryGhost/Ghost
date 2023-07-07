@@ -67,13 +67,17 @@ const TextField: React.FC<TextFieldProps> = ({
         onChange={onChange}
         {...props} />;
 
-    return (
-        <div className={`flex flex-col ${containerClassName}`}>
-            {title && <Heading className={hideTitle ? 'sr-only' : ''} grey={value ? true : false} htmlFor={id} useLabelTag={true}>{title}</Heading>}
-            {field}
-            {hint && <Hint className={hintClassName} color={error ? 'red' : ''}>{hint}</Hint>}
-        </div>
-    );
+    if (title || hint) {
+        return (
+            <div className={`flex flex-col ${containerClassName}`}>
+                {title && <Heading className={hideTitle ? 'sr-only' : ''} grey={value ? true : false} htmlFor={id} useLabelTag={true}>{title}</Heading>}
+                {field}
+                {hint && <Hint className={hintClassName} color={error ? 'red' : ''}>{hint}</Hint>}
+            </div>
+        );
+    } else {
+        return field;
+    }
 };
 
 export default TextField;
