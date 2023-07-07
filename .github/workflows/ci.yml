@@ -98,7 +98,6 @@ jobs:
   job_install_deps:
     name: Install Dependencies
     needs: job_get_metadata
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -136,7 +135,7 @@ jobs:
   job_lint:
     runs-on: ubuntu-latest
     needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_any_code == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
+    if: needs.job_get_metadata.outputs.changed_any_code == 'true'
     name: Lint
     steps:
       - uses: actions/checkout@v3
@@ -170,7 +169,7 @@ jobs:
   job_admin-tests:
     runs-on: ubuntu-latest
     needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_admin == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
+    if: needs.job_get_metadata.outputs.changed_admin == 'true'
     name: Admin tests - Chrome
     env:
       MOZ_HEADLESS: 1
@@ -211,7 +210,7 @@ jobs:
   job_unit-tests:
     runs-on: ubuntu-latest
     needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_any_code == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
+    if: needs.job_get_metadata.outputs.changed_any_code == 'true'
     strategy:
       matrix:
         node: [ '16.13.0', '18.12.1' ]
@@ -249,7 +248,7 @@ jobs:
   job_database-tests:
     runs-on: ubuntu-latest
     needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_core == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
+    if: needs.job_get_metadata.outputs.changed_core == 'true'
     strategy:
       matrix:
         node: [ '16.13.0', '18.12.1' ]
@@ -370,7 +369,7 @@ jobs:
   job_regression-tests:
     runs-on: ubuntu-latest
     needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_core == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
+    if: needs.job_get_metadata.outputs.changed_core == 'true'
     strategy:
       matrix:
         include:
@@ -433,7 +432,7 @@ jobs:
   job_admin_x_settings:
     runs-on: ubuntu-latest
     needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_admin_x_settings == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
+    if: needs.job_get_metadata.outputs.changed_admin_x_settings == 'true'
     name: Admin-X Settings tests
     env:
       CI: true
@@ -486,7 +485,7 @@ jobs:
   job_comments_ui:
     runs-on: ubuntu-latest
     needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_comments_ui == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
+    if: needs.job_get_metadata.outputs.changed_comments_ui == 'true'
     name: Comments-UI tests
     env:
       CI: true
@@ -539,7 +538,7 @@ jobs:
   job_signup_form:
     runs-on: ubuntu-latest
     needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_signup_form == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
+    if: needs.job_get_metadata.outputs.changed_signup_form == 'true'
     name: Signup-form tests
     env:
       CI: true
@@ -592,7 +591,7 @@ jobs:
   job_ghost-cli:
     name: Ghost-CLI tests
     needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_core == 'true' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
+    if: needs.job_get_metadata.outputs.changed_core == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
