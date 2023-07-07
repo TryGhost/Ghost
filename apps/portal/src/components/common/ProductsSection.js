@@ -1,7 +1,7 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
-import {getCurrencySymbol, getPriceString, getStripeAmount, getMemberActivePrice, getProductFromPrice, getFreeTierTitle, getFreeTierDescription, getFreeProduct, getFreeProductBenefits, formatNumber, isCookiesDisabled, hasOnlyFreeProduct, isMemberActivePrice, hasFreeTrialTier} from '../../utils/helpers';
+import {getCurrencySymbol, getPriceString, getStripeAmount, getMemberActivePrice, getProductFromPrice, getFreeTierTitle, getFreeTierDescription, getFreeProduct, getFreeProductBenefits, getSupportAddress, formatNumber, isCookiesDisabled, hasOnlyFreeProduct, isMemberActivePrice, hasFreeTrialTier, isComplimentaryMember} from '../../utils/helpers';
 import AppContext from '../../AppContext';
 import calculateDiscount from '../../utils/discount';
 import Interpolate from '@doist/react-interpolate';
@@ -49,7 +49,8 @@ export const ProductsSectionStyles = ({site}) => {
         .gh-portal-products-pricetoggle .gh-portal-btn {
             border: 0;
             height: 100% !important;
-            width: 50%;
+            width: 50%;import { is } from '../../../../../ghost/admin/tests/acceptance/members/filter-test';
+
             border-radius: 999px;
             color: var(--grey7);
             background: transparent;
@@ -913,7 +914,7 @@ function getActiveInterval({portalPlans, selectedInterval = 'year'}) {
 }
 
 function ProductsSection({onPlanSelect, products, type = null, handleChooseSignup, errors}) {
-    const {site} = useContext(AppContext);
+    const {site, member, t} = useContext(AppContext);
     const {portal_plans: portalPlans} = site;
     const defaultInterval = getActiveInterval({portalPlans});
 
@@ -923,6 +924,8 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
 
     const selectedPrice = getSelectedPrice({products, selectedInterval, selectedProduct});
     const activeInterval = getActiveInterval({portalPlans, selectedInterval});
+
+    const isComplimentary = isComplimentaryMember({member});
 
     useEffect(() => {
         setSelectedProduct(defaultProductId);
@@ -937,7 +940,16 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
     }
 
     if (products.length === 0) {
-        return null;
+        if (isComplimentary) {
+            const supportAddress = getSupportAddress({site});
+            return (
+                <p>
+                    {t('Please contact {{supportAddress}} to adjust your complimentary subscription.', {supportAddress})}
+                </p>
+            );
+        } else {
+            return null;
+        }
     }
 
     let className = 'gh-portal-products';
@@ -1091,7 +1103,7 @@ function ChangeProductCard({product, onPlanSelect}) {
 
 function ChangeProductCards({products, onPlanSelect}) {
     return products.map((product) => {
-        if (product.id === 'free') {
+        if (!product || product.id === 'free') {
             return null;
         }
         return (
