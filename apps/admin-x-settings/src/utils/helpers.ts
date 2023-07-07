@@ -108,6 +108,11 @@ export function getEmailDomain(siteData: SiteData): string {
     return domain;
 }
 
+export function fullEmailAddress(value: 'noreply' | string, siteData: SiteData) {
+    const emailDomain = getEmailDomain(siteData);
+    return value === 'noreply' ? `noreply@${emailDomain}` : value;
+}
+
 export function checkStripeEnabled(settings: Setting[], config: Config) {
     const hasSetting = (key: string) => settings.some(setting => setting.key === key && setting.value);
 

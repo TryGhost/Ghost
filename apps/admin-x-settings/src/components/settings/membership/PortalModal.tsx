@@ -1,4 +1,5 @@
 import AccountPage from './portal/AccountPage';
+import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
 import LookAndFeel from './portal/LookAndFeel';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import PortalPreview from './portal/PortalPreview';
@@ -9,6 +10,7 @@ import useForm, {Dirtyable} from '../../../hooks/useForm';
 import {PreviewModalContent} from '../../../admin-x-ds/global/modal/PreviewModal';
 import {Setting, SettingValue, Tier} from '../../../types/api';
 import {SettingsContext} from '../../providers/SettingsProvider';
+import {fullEmailAddress} from '../../../utils/helpers';
 import {useTiers} from '../../providers/ServiceProvider';
 
 const Sidebar: React.FC<{
@@ -52,7 +54,7 @@ const PortalModal: React.FC = () => {
     const modal = useModal();
 
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('signup');
-    const {settings, saveSettings} = useContext(SettingsContext);
+    const {settings, saveSettings, siteData} = useContext(SettingsContext);
     const {data: tiers, update: updateTiers} = useTiers();
 
     const {formState, saveState, handleSave, updateForm} = useForm({
@@ -63,7 +65,23 @@ const PortalModal: React.FC = () => {
 
         onSave: async () => {
             await updateTiers(formState.tiers.filter(tier => tier.dirty));
-            await saveSettings(formState.settings.filter(setting => setting.dirty));
+            const {meta, settings: currentSettings} = await saveSettings(formState.settings.filter(setting => setting.dirty));
+
+            if (meta?.sent_email_verification) {
+                const newEmail = formState.settings.find(setting => setting.key === 'members_support_address')?.value;
+                const currentEmail = currentSettings.find(setting => setting.key === 'members_support_address')?.value;
+
+                NiceModal.show(ConfirmationModal, {
+                    title: 'Confirm email address',
+                    prompt: <>
+                        We've sent a confirmation email to <strong>{newEmail}</strong>.
+                        Until verified, your support address will remain {fullEmailAddress(currentEmail?.toString() || 'noreply', siteData!)}.
+                    </>,
+                    okLabel: 'Close',
+                    cancelLabel: '',
+                    onOk: confirmModal => confirmModal?.remove()
+                });
+            }
         }
     });
 
