@@ -237,7 +237,7 @@ class PostsImporter extends BaseImporter {
             // CASE 1: you are importing old editor posts
             // CASE 2: you are importing Koenig Beta posts
             // CASE 3: you are importing Koenig 2.0 posts
-            if (model.mobiledoc) {
+            if (model.mobiledoc && !model.lexical) {
                 let mobiledoc;
 
                 try {
@@ -272,7 +272,7 @@ class PostsImporter extends BaseImporter {
 
                 model.mobiledoc = JSON.stringify(mobiledoc);
                 model.html = mobiledocLib.mobiledocHtmlRenderer.render(JSON.parse(model.mobiledoc));
-            } else if (model.html) {
+            } else if (model.html && !model.lexical) {
                 model.mobiledoc = JSON.stringify(mobiledocLib.htmlToMobiledocConverter(model.html));
                 model.html = mobiledocLib.mobiledocHtmlRenderer.render(JSON.parse(model.mobiledoc));
             }
