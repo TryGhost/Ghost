@@ -21,7 +21,7 @@ const matchPageShallowIncludes = {
     updated_at: anyISODateTime,
     published_at: anyISODateTime,
     post_revisions: anyArray,
-    hide_title_and_feature_image: anyBoolean
+    show_title_and_feature_image: anyBoolean
 };
 
 describe('Pages API', function () {
@@ -38,7 +38,7 @@ describe('Pages API', function () {
     });
 
     describe('Update', function () {
-        it('Can modify hide_title_and_feature_image property', async function () {
+        it('Can modify show_title_and_feature_image property', async function () {
             const page = {
                 title: 'Test Page',
                 status: 'draft'
@@ -60,7 +60,7 @@ describe('Pages API', function () {
                 .body({
                     pages: [{
                         id: pageResponse.id,
-                        hide_title_and_feature_image: true,
+                        show_title_and_feature_image: false, // default is true
                         updated_at: pageResponse.updated_at // satisfy collision detection
                     }]
                 })
@@ -68,7 +68,7 @@ describe('Pages API', function () {
                 .matchBodySnapshot({
                     pages: [Object.assign({}, matchPageShallowIncludes, {
                         published_at: null,
-                        hide_title_and_feature_image: true
+                        show_title_and_feature_image: false
                     })]
                 })
                 .matchHeaderSnapshot({
