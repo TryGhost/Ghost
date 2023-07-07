@@ -1,7 +1,7 @@
 import CheckboxGroup from '../../../../admin-x-ds/global/form/CheckboxGroup';
 import Form from '../../../../admin-x-ds/global/form/Form';
 import HtmlField from '../../../../admin-x-ds/global/form/HtmlField';
-import React, {useContext, useMemo} from 'react';
+import React, {useContext, useEffect, useMemo} from 'react';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import {CheckboxProps} from '../../../../admin-x-ds/global/form/Checkbox';
 import {Setting, SettingValue, Tier} from '../../../../types/api';
@@ -13,7 +13,9 @@ const SignupOptions: React.FC<{
     updateSetting: (key: string, setting: SettingValue) => void
     localTiers: Tier[]
     updateTier: (tier: Tier) => void
-}> = ({localSettings, updateSetting, localTiers, updateTier}) => {
+    errors: Record<string, string | undefined>
+    setError: (key: string, error: string | undefined) => void
+}> = ({localSettings, updateSetting, localTiers, updateTier, errors, setError}) => {
     const {config} = useContext(SettingsContext);
 
     const [membersSignupAccess, portalName, portalSignupTermsHtml, portalSignupCheckboxRequired, portalPlansJson] = getSettingValues(
@@ -21,11 +23,20 @@ const SignupOptions: React.FC<{
     );
     const portalPlans = JSON.parse(portalPlansJson?.toString() || '[]') as string[];
 
+    const signupTermsMaxLength = 115;
     const signupTermsLength = useMemo(() => {
         const div = document.createElement('div');
         div.innerHTML = portalSignupTermsHtml?.toString() || '';
         return div.innerText.length;
     }, [portalSignupTermsHtml]);
+
+    useEffect(() => {
+        if (signupTermsLength > signupTermsMaxLength) {
+            setError('portal_signup_terms_html', 'Signup notice is too long');
+        } else {
+            setError('portal_signup_terms_html', undefined);
+        }
+    }, [signupTermsLength, setError]);
 
     const togglePlan = (plan: string) => {
         const index = portalPlans.indexOf(plan);
@@ -107,11 +118,12 @@ const SignupOptions: React.FC<{
             />
         )}
 
-        {/* TODO: validate length according to hint */}
         <HtmlField
             config={config as { editor: any }}
-            hint={<>Recommended: <strong>115</strong> characters. You've used <strong className="text-green">{signupTermsLength}</strong></>}
+            error={Boolean(errors.portal_signup_terms_html)}
+            hint={errors.portal_signup_terms_html || <>Recommended: <strong>115</strong> characters. You've used <strong className="text-green">{signupTermsLength}</strong></>}
             nodes='MINIMAL_NODES'
+            placeholder={`By signing up, I agree to receive emails from ...`}
             title='Display notice at signup'
             value={portalSignupTermsHtml?.toString()}
             onChange={html => updateSetting('portal_signup_terms_html', html)}

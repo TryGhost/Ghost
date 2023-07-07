@@ -16,14 +16,23 @@ const Sidebar: React.FC<{
     updateSetting: (key: string, setting: SettingValue) => void
     localTiers: Tier[]
     updateTier: (tier: Tier) => void
-}> = ({localSettings, updateSetting, localTiers, updateTier}) => {
+    errors: Record<string, string | undefined>
+    setError: (key: string, error: string | undefined) => void
+}> = ({localSettings, updateSetting, localTiers, updateTier, errors, setError}) => {
     const [selectedTab, setSelectedTab] = useState('signupOptions');
 
     const tabs: Tab[] = [
         {
             id: 'signupOptions',
             title: 'Signup options',
-            contents: <SignupOptions localSettings={localSettings} localTiers={localTiers} updateSetting={updateSetting} updateTier={updateTier} />
+            contents: <SignupOptions
+                errors={errors}
+                localSettings={localSettings}
+                localTiers={localTiers}
+                setError={setError}
+                updateSetting={updateSetting}
+                updateTier={updateTier}
+            />
         },
         {
             id: 'lookAndFeel',
@@ -67,12 +76,21 @@ const PortalModal: React.FC = () => {
         }
     });
 
+    const [errors, setErrors] = useState<Record<string, string | undefined>>({});
+
     const updateSetting = (key: string, value: SettingValue) => {
         updateForm(state => ({
             ...state,
             settings: state.settings.map(setting => (
                 setting.key === key ? {...setting, value, dirty: true} : setting
             ))
+        }));
+    };
+
+    const setError = (key: string, error: string | undefined) => {
+        setErrors(state => ({
+            ...state,
+            [key]: error
         }));
     };
 
@@ -89,7 +107,14 @@ const PortalModal: React.FC = () => {
         setSelectedPreviewTab(id);
     };
 
-    const sidebar = <Sidebar localSettings={formState.settings} localTiers={formState.tiers} updateSetting={updateSetting} updateTier={updateTier} />;
+    const sidebar = <Sidebar
+        errors={errors}
+        localSettings={formState.settings}
+        localTiers={formState.tiers}
+        setError={setError}
+        updateSetting={updateSetting}
+        updateTier={updateTier}
+    />;
     const preview = <PortalPreview
         localSettings={formState.settings} localTiers={formState.tiers}
         selectedTab={selectedPreviewTab}
@@ -112,8 +137,10 @@ const PortalModal: React.FC = () => {
         testId='portal-modal'
         title='Portal'
         onOk={async () => {
-            await handleSave();
-            modal.remove();
+            if (!Object.values(errors).filter(Boolean).length) {
+                await handleSave();
+                modal.remove();
+            }
         }}
         onSelectURL={onSelectURL}
     />;
