@@ -127,7 +127,7 @@ const post = (attrs, frame) => {
     }
 
     if (attrs.type !== 'page') {
-        delete attrs.hide_title_and_feature_image;
+        delete attrs.show_title_and_feature_image;
     }
 
     delete attrs.locale;

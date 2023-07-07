@@ -154,15 +154,15 @@
                                 <div class="for-switch x-small">
                                     <label class="switch">
                                         <span>
-                                            <Icons::EyeOpenClose class="feature" @closed={{this.post.hideTitleAndFeatureImage}} />
-                                            Hide title and feature image
+                                            <Icons::EyeOpenClose class="feature" @closed={{not this.post.showTitleAndFeatureImage}} />
+                                            Show title and feature image
                                         </span>
                                         <div class="gh-toggle-featured">
                                             <input
                                                 type="checkbox"
-                                                checked={{this.post.hideTitleAndFeatureImage}}
+                                                checked={{this.post.showTitleAndFeatureImage}}
                                                 class="gh-input post-settings-featured"
-                                                {{on "change" this.toggleHideTitleAndFeatureImage}}
+                                                {{on "change" this.toggleShowTitleAndFeatureImage}}
                                                 data-test-checkbox="hide-title-and-feature-image"
                                             >
                                             <span class="input-toggle-component"></span>

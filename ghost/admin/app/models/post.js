@@ -131,7 +131,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     featureImage: attr('string'),
     featureImageAlt: attr('string'),
     featureImageCaption: attr('string'),
-    hideTitleAndFeatureImage: attr('boolean', {defaultValue: false}),
+    showTitleAndFeatureImage: attr('boolean', {defaultValue: true}),
 
     authors: hasMany('user', {embedded: 'always', async: false}),
     createdBy: belongsTo('user', {async: true}),

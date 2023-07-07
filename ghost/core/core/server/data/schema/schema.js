@@ -91,6 +91,7 @@ module.exports = {
         custom_template: {type: 'string', maxlength: 100, nullable: true},
         canonical_url: {type: 'text', maxlength: 2000, nullable: true},
         newsletter_id: {type: 'string', maxlength: 24, nullable: true, references: 'newsletters.id'},
+        show_title_and_feature_image: {type: 'boolean', nullable: false, defaultTo: true},
         '@@UNIQUE_CONSTRAINTS@@': [
             ['slug', 'type']
         ]
@@ -110,8 +111,7 @@ module.exports = {
         frontmatter: {type: 'text', maxlength: 65535, nullable: true},
         feature_image_alt: {type: 'string', maxlength: 191, nullable: true, validations: {isLength: {max: 125}}},
         feature_image_caption: {type: 'text', maxlength: 65535, nullable: true},
-        email_only: {type: 'boolean', nullable: false, defaultTo: false},
-        hide_title_and_feature_image: {type: 'boolean', nullable: false, defaultTo: false}
+        email_only: {type: 'boolean', nullable: false, defaultTo: false}
     },
     // NOTE: this is the staff table
     users: {
