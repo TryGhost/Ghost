@@ -17,7 +17,11 @@ const PortalPreview: React.FC<PortalPreviewProps> = ({
 
     switch (selectedTab) {
     case 'account':
-        tabContents = <>Account preview</>;
+        tabContents = (
+            <>
+                <PortalFrame selectedTab={selectedTab} settings={localSettings} tiers={localTiers} />
+            </>
+        );
         break;
     case 'links':
         tabContents = <>Links</>;
@@ -25,7 +29,7 @@ const PortalPreview: React.FC<PortalPreviewProps> = ({
     default:
         tabContents = (
             <>
-                <PortalFrame settings={localSettings} tiers={localTiers} />
+                <PortalFrame selectedTab={selectedTab} settings={localSettings} tiers={localTiers} />
             </>
         );
         break;
