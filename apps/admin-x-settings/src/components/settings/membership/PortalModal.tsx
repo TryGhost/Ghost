@@ -63,6 +63,7 @@ const PortalModal: React.FC = () => {
     const modal = useModal();
 
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('signup');
+
     const {settings, saveSettings, siteData} = useContext(SettingsContext);
     const {data: tiers, update: updateTiers} = useTiers();
 
@@ -143,11 +144,17 @@ const PortalModal: React.FC = () => {
         {id: 'account', title: 'Account page'},
         {id: 'links', title: 'Links'}
     ];
+    let okLabel = 'Save & close';
+    if (saveState === 'saving') {
+        okLabel = 'Saving...';
+    } else if (saveState === 'saved') {
+        okLabel = 'Saved';
+    }
 
     return <PreviewModalContent
         deviceSelector={selectedPreviewTab !== 'links'}
         dirty={saveState === 'unsaved'}
-        okLabel='Save & close'
+        okLabel={okLabel}
         preview={preview}
         previewBgColor={selectedPreviewTab === 'links' ? 'white' : 'grey'}
         previewToolbarTabs={previewTabs}
