@@ -6,12 +6,14 @@ import {getSettingValue} from '../../../../utils/helpers';
 type PortalFrameProps = {
     settings: Setting[];
     tiers: Tier[];
+    selectedTab: string;
 }
 
-function getPortalPreviewUrl({settings, tiers, siteData}: {
+function getPortalPreviewUrl({settings, tiers, siteData, selectedTab}: {
     settings: Setting[],
     tiers: Tier[],
-    siteData: SiteData
+    siteData: SiteData,
+    selectedTab: string
 }) {
     let portalTiers = tiers.filter((t) => {
         return t.visibility === 'public' && t.type === 'paid';
@@ -35,13 +37,17 @@ function getPortalPreviewUrl({settings, tiers, siteData}: {
     const portalButtonStyle = getSettingValue(settings, 'portal_button_style') as string;
     const signupCheckboxRequired = getSettingValue(settings, 'portal_signup_checkbox_required') as boolean;
     const portalSignupTermsHtml = getSettingValue(settings, 'portal_signup_terms_html') as string || '';
+    let page = 'signup';
+    if (selectedTab === 'account') {
+        page = 'accountHome';
+    }
 
     settingsParam.append('button', `${portalButton}`);
     settingsParam.append('name', `${portalName}`);
     settingsParam.append('isFree', `${isFreeChecked}`);
     settingsParam.append('isMonthly', `${isMonthlyChecked}`);
     settingsParam.append('isYearly', `${isYearlyChecked}`);
-    settingsParam.append('page', 'signup');
+    settingsParam.append('page', page);
     settingsParam.append('buttonIcon', encodeURIComponent(buttonIcon));
     settingsParam.append('signupButtonText', encodeURIComponent(signupButtonText));
     settingsParam.append('membersSignupAccess', 'true');
@@ -65,7 +71,7 @@ function getPortalPreviewUrl({settings, tiers, siteData}: {
     return `${baseUrl}${portalBase}?${settingsParam.toString()}`;
 }
 
-const PortalFrame: React.FC<PortalFrameProps> = ({settings, tiers}) => {
+const PortalFrame: React.FC<PortalFrameProps> = ({settings, tiers, selectedTab}) => {
     const {
         siteData
     } = useSettingGroup();
@@ -77,7 +83,8 @@ const PortalFrame: React.FC<PortalFrameProps> = ({settings, tiers}) => {
     let href = getPortalPreviewUrl({
         settings,
         tiers,
-        siteData
+        siteData,
+        selectedTab
     });
 
     return (
