@@ -91,7 +91,7 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
         // ensure we're still showing errors in development
         console.error(error); // eslint-disable-line
 
-        // TODO: Sentry integration?
+        // Pass down Sentry from Ember?
         // if (this.config.sentry_dsn) {
         //     Sentry.captureException(error, {
         //         tags: {lexical: true},
@@ -111,6 +111,12 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
         }
     }), [editor]);
 
+    const transformers = {
+        DEFAULT_NODES: koenig.DEFAULT_TRANSFORMERS,
+        BASIC_NODES: koenig.BASIC_TRANSFORMERS,
+        MINIMAL_NODES: koenig.MINIMAL_TRANSFORMERS
+    };
+
     return (
         <koenig.KoenigComposer
             nodes={koenig[nodes || 'DEFAULT_NODES']}
@@ -120,8 +126,7 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
                 className='koenig-lexical koenig-lexical-editor-input'
                 darkMode={false}
                 isSnippetsEnabled={false}
-                // TODO: set based on nodes or remove if there's another way to get the minimal editor
-                markdownTransformers={[]}
+                markdownTransformers={transformers[nodes || 'DEFAULT_NODES']}
                 placeholderClassName='koenig-lexical-editor-input-placeholder'
                 placeholderText={placeholder}
                 singleParagraph={true}
@@ -146,7 +151,7 @@ const HtmlEditor: React.FC<HtmlEditorProps & {
         editorVersion: config.editor.version
     }), [config.editor.url, config.editor.version]);
 
-    return <div className={className || 'h-[200px] w-full'}>
+    return <div className={className || 'w-full'}>
         <div className="koenig-react-editor w-full [&_*]:!font-inherit [&_*]:!text-inherit">
             <ErrorHandler>
                 <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
