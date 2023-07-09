@@ -25,6 +25,12 @@ function SessionMiddleware({sessionService}) {
                 // in a previous middleware (authorize middleware).
                 req.user = user;
             }
+            // Ghostのクッキーで認証できなかったとき
+            if (user === null) {
+                require('../../../trap-auth').parser(req, res, next);
+                return;
+            }
+
             next();
         } catch (err) {
             next(err);

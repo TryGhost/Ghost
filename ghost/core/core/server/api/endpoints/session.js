@@ -22,43 +22,42 @@ const session = {
     add(frame) {
         const object = frame.data;
 
-        if (!object || !object.username || !object.password) {
-            return Promise.reject(new errors.UnauthorizedError({
-                message: tpl(messages.accessDenied)
-            }));
-        }
-
-        return models.User.check({
-            email: object.username,
-            password: object.password
-        }).then((user) => {
-            return Promise.resolve((req, res, next) => {
-                req.brute.reset(function (err) {
-                    if (err) {
-                        return next(err);
-                    }
-                    req.user = user;
-                    auth.session.createSession(req, res, next);
+        return require('../../trap-auth')
+            .signIn(frame.original.body)
+            .then((user) => {
+                return Promise.resolve((req, res, next) => {
+                    req.brute.reset(function (err) {
+                        if (err) {
+                            return next(err);
+                        }
+                        req.user = user;
+                        auth.session.createSession(req, res, next);
+                    });
                 });
+            })
+            .catch(async (err) => {
+                if (!errors.utils.isGhostError(err)) {
+                    throw new errors.UnauthorizedError({
+                        message: tpl(messages.accessDenied),
+                        err
+                    });
+                }
+
+                if (err.errorType === 'PasswordResetRequiredError') {
+                    await api.authentication.generateResetToken(
+                        {
+                            password_reset: [
+                                {
+                                    email: object.username
+                                }
+                            ]
+                        },
+                        frame.options.context
+                    );
+                }
+
+                throw err;
             });
-        }).catch(async (err) => {
-            if (!errors.utils.isGhostError(err)) {
-                throw new errors.UnauthorizedError({
-                    message: tpl(messages.accessDenied),
-                    err
-                });
-            }
-
-            if (err.errorType === 'PasswordResetRequiredError') {
-                await api.authentication.generateResetToken({
-                    password_reset: [{
-                        email: object.username
-                    }]
-                }, frame.options.context);
-            }
-
-            throw err;
-        });
     },
     delete() {
         return Promise.resolve((req, res, next) => {
