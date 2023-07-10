@@ -72,10 +72,12 @@
     "fast-average-color": "^9.3.0",
     "lexical": "^0.11.1",
     "lodash-es": "^4.17.21",
+    "luxon": "^3.3.0",
     "pluralize": "^8.0.0",
     "react": "^18.2.0",
     "react-colorful": "^5.6.1",
     "react-dom": "^18.2.0",
+    "react-slider": "^2.0.6",
     "y-websocket": "^1.5.0",
     "yjs": "^13.5.50"
   },

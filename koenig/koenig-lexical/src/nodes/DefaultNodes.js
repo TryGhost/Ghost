@@ -4,6 +4,7 @@ import {BookmarkNode} from './BookmarkNode';
 import {ButtonNode} from './ButtonNode';
 import {CalloutNode} from './CalloutNode';
 import {CodeBlockNode} from './CodeBlockNode';
+import {CollectionNode} from './CollectionNode';
 import {EmailCtaNode} from './EmailCtaNode';
 import {EmailNode} from './EmailNode';
 import {EmbedNode} from './EmbedNode';
@@ -49,7 +50,8 @@ const DEFAULT_NODES = [
     EmailCtaNode,
     EmbedNode,
     GalleryNode,
-    SignupNode
+    SignupNode,
+    CollectionNode
 ];
 
 export default DEFAULT_NODES;

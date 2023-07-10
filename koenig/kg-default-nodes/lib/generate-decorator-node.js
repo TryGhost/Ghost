@@ -37,7 +37,7 @@ function validateArguments(nodeType, properties) {
  * @param {DecoratorNodeProperty[]} properties - An array of properties for the generated class
  * @returns {Object} - The generated class.
  */
-export function generateDecoratorNode({nodeType, properties = []}) {
+export function generateDecoratorNode({nodeType, properties = [], version = 1}) {
     validateArguments(nodeType, properties);
 
     // Adds a `privateName` field to the properties for convenience (e.g. `__name`):
@@ -133,7 +133,7 @@ export function generateDecoratorNode({nodeType, properties = []}) {
         exportJSON() {
             const dataset = {
                 type: nodeType,
-                version: 1,
+                version: version,
                 ...properties.reduce((obj, prop) => {
                     obj[prop.name] = this[prop.name];
                     return obj;

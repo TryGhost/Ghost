@@ -38,7 +38,7 @@ export function IconButton({dataTestId, onClick, label, name, selectedName, Icon
                 onClick={handleClick}
                 onMouseDown={handleMousedown}
             >
-                {Icon ? <Icon className="fill-black dark:fill-white" /> : label}
+                {Icon ? <Icon className="h-4 w-4 fill-black dark:fill-white" /> : label}
             </button>
         </li>
     );
