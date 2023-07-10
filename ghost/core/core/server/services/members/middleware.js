@@ -104,12 +104,7 @@ const getMemberData = async function (req, res) {
 const deleteSuppression = async function (req, res) {
     try {
         const member = await membersService.ssr.getMemberDataFromSession(req, res);
-        const options = {
-            id: member.id,
-            withRelated: ['newsletters']
-        };
         await emailSuppressionList.removeEmail(member.email);
-        await membersService.api.members.update({subscribed: true}, options);
 
         res.writeHead(204);
         res.end();

@@ -1,7 +1,7 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyUuid, anyISODateTime} = matchers;
 const models = require('../../../core/server/models');
-require('should');
+const should = require('should');
 
 let membersAgent;
 
@@ -31,10 +31,6 @@ const memberMatcherUnserialised = (newslettersCount) => {
         )
     };
 };
-
-async function getDefaultNewsletters() {
-    return (await models.Newsletter.findAll({filter: 'status:active+subscribe_on_signup:true+visibility:members'})).models;
-}
 
 describe('Comments API', function () {
     before(async function () {
@@ -202,23 +198,11 @@ describe('Comments API', function () {
             member.get('enable_comment_notifications').should.eql(true);
         });
 
-        it('can remove member from suppression list and resubscribe to default newsletters', async function () {
-            const newsletters = await getDefaultNewsletters();
-
-            // unsubscribe member from all newsletters
-            await membersAgent
-                .put(`/api/member/`)
-                .body({
-                    newsletters: []
-                })
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    etag: anyEtag
-                })
-                .matchBodySnapshot(memberMatcher(0))
-                .expect(({body}) => {
-                    body.newsletters.should.eql([]);
-                });
+        it('can remove member from suppression list', async function () {
+            await models.Suppression.add({
+                email: member.get('email'),
+                reason: 'bounce'
+            });
 
             // remove email from suppression list
             await membersAgent
@@ -226,19 +210,9 @@ describe('Comments API', function () {
                 .expectStatus(204)
                 .expectEmptyBody();
 
-            // check that member re-subscribed to default newsletters after removing from suppression list
-            await membersAgent
-                .get(`/api/member/`)
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    etag: anyEtag
-                })
-                .matchBodySnapshot(memberMatcher(2))
-                .expect(({body}) => {
-                    // body should contain default newsletters
-                    body.newsletters[0].id.should.eql(newsletters[0].get('id'));
-                    body.newsletters[1].id.should.eql(newsletters[1].get('id'));
-                });
+            const suppression = await models.Suppression.findOne({email: member.get('email')});
+
+            should(suppression).be.null();
         });
     });
 });
