@@ -338,6 +338,20 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Header Card v2</h4>
+                            <p class="gh-expandable-description">
+                                A new enhanced version of the header card
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="headerUpgrade" />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         {{/if}}
