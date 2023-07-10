@@ -1,7 +1,7 @@
-import Modal from '../../../admin-x-ds/global/modal/Modal';
+import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
-import useRouting from '../../../hooks/useRouting';
+import useRouting from '../../../../hooks/useRouting';
 
 interface TierDetailModalProps {
 
@@ -15,8 +15,14 @@ const TierDetailModal: React.FC<TierDetailModalProps> = () => {
         }}
         okLabel='Save & close'
         size='lg'
-        title='Tier'
-    />;
+        title='Tier'>
+        <div>
+            Form
+        </div>
+        <div>
+            Preview
+        </div>
+    </Modal>;
 };
 
 export default NiceModal.create(TierDetailModal);

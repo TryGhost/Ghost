@@ -3,9 +3,9 @@ import DesignModal from '../settings/site/DesignModal';
 import InviteUserModal from '../settings/general/InviteUserModal';
 import NavigationModal from '../settings/site/NavigationModal';
 import NiceModal from '@ebay/nice-modal-react';
-import PortalModal from '../settings/membership/PortalModal';
+import PortalModal from '../settings/membership/portal/PortalModal';
 import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
-import TierDetailModal from '../settings/membership/TierDetailModal';
+import TierDetailModal from '../settings/membership/tiers/TierDetailModal';
 import {SettingsContext} from './SettingsProvider';
 
 type RoutingContextProps = {

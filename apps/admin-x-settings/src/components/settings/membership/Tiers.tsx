@@ -2,6 +2,7 @@ import Button from '../../../admin-x-ds/global/Button';
 import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
+import TiersList from './tiers/TiersList';
 import useRouting from '../../../hooks/useRouting';
 
 const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
@@ -21,12 +22,12 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
         {
             id: 'active-tiers',
             title: 'Active',
-            contents: (<>Active tiers</>)
+            contents: (<TiersList tab='active-tiers' />)
         },
         {
             id: 'archived-tiers',
             title: 'Archived',
-            contents: (<>Archived tiers</>)
+            contents: (<TiersList tab='archive-tiers' />)
         }
     ];
 
