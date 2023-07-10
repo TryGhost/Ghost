@@ -26,7 +26,7 @@
             {{/if}}
 
             <GhTextarea
-                @class="gh-editor-title {{if (and @cardOptions.post.hideTitleAndFeatureImage (feature 'pageImprovements') (not this.titleIsFocused)) "faded"}}"
+                @class="gh-editor-title {{if (and (not @cardOptions.post.showTitleAndFeatureImage) (feature 'pageImprovements') (not this.titleIsFocused)) "faded"}}"
                 @placeholder={{@titlePlaceholder}}
                 @shouldFocus={{or @titleAutofocus false}}
                 @tabindex="1"
