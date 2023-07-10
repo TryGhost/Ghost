@@ -6,19 +6,19 @@ module.exports = createTransactionalMigration(
     async function up(knex) {
         logging.info('Creating built in collections');
 
-        const existingIndexCollection = await knex('collections')
+        const existingLatestCollection = await knex('collections')
             .where({
-                slug: 'index'
+                slug: 'latest'
             })
             .first();
 
-        if (existingIndexCollection) {
-            logging.warn('Index collection already exists, skipping');
+        if (existingLatestCollection) {
+            logging.warn('Latest collection already exists, skipping');
         } else {
             await knex('collections').insert({
                 id: (new ObjectID()).toHexString(),
-                name: 'Index',
-                slug: 'index',
+                title: 'Latest',
+                slug: 'latest',
                 description: 'Collection with all posts',
                 type: 'automatic',
                 filter: '',
@@ -33,11 +33,11 @@ module.exports = createTransactionalMigration(
             .first();
 
         if (existingFeaturedCollection) {
-            logging.warn('Index collection already exists, skipping');
+            logging.warn('Featured collection already exists, skipping');
         } else {
             await knex('collections').insert({
                 id: (new ObjectID()).toHexString(),
-                name: 'Featured',
+                title: 'Featured',
                 slug: 'featured',
                 description: 'Collection of featured posts',
                 type: 'automatic',
@@ -50,7 +50,7 @@ module.exports = createTransactionalMigration(
         logging.info('Deleting built in collections');
 
         await knex('collections').where({
-            slug: 'index'
+            slug: 'latest'
         }).del();
 
         await knex('collections').where({
