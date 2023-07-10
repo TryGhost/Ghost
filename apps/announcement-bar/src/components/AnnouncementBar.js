@@ -33,7 +33,7 @@ export function AnnouncementBar({settings = {}}) {
     return (
         <div className={className}>
             <div className="gh-announcement-bar-content" dangerouslySetInnerHTML={{__html: settings.announcement}}></div>
-            <button onClick={handleButtonClick}>
+            <button aria-label="close" onClick={handleButtonClick}>
                 <CloseIcon />
             </button>
         </div>
