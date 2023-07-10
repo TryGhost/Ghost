@@ -23,7 +23,7 @@ const TiersList: React.FC<TiersListProps> = ({
             <ListItem
                 action={action}
                 detail='Yet another tier'
-                title='Tier one'
+                title='Dummy tier one'
                 hideActions
                 onClick={() => {
                     NiceModal.show(TierDetailModal);
@@ -32,7 +32,7 @@ const TiersList: React.FC<TiersListProps> = ({
             <ListItem
                 action={action}
                 detail='Yet another tier again'
-                title='Tier two'
+                title='Dummy tier two'
                 hideActions
                 onClick={() => {
                     NiceModal.show(TierDetailModal);

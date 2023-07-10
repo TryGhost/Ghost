@@ -34,6 +34,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     return (
         <SettingGroup
             customButtons={buttons}
+            description='Set prices and paid member sign up settings'
             keywords={keywords}
             navid='tiers'
             testId='tiers'
