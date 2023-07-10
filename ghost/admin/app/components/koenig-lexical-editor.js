@@ -278,6 +278,8 @@ export default class KoenigLexicalEditor extends Component {
             fetchLabels,
             feature: {
                 signupCard: true,
+                collectionsCard: this.feature.get('collectionsCard'),
+                collections: this.feature.get('collections'),
                 headerV2: this.feature.get('headerUpgrade')
             },
             membersEnabled: this.settings.get('membersSignupAccess') === 'all',
