@@ -26,17 +26,17 @@
     "lint": "yarn lint:js && yarn lint:hbs"
   },
   "engines": {
-    "node": "^16.13.0 || ^18.12.1"
+    "node": "^16.14.0 || ^18.12.1"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "7.22.5",
+    "@babel/eslint-parser": "7.22.7",
     "@babel/plugin-proposal-class-properties": "7.18.6",
-    "@babel/plugin-proposal-decorators": "7.22.5",
+    "@babel/plugin-proposal-decorators": "7.22.7",
     "@ember/jquery": "2.0.0",
     "@ember/optional-features": "2.0.0",
     "@ember/render-modifiers": "2.1.0",
     "@ember/test-helpers": "2.9.4",
-    "@embroider/macros": "1.11.1",
+    "@embroider/macros": "1.12.2",
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "3.0.0",
     "@joeattardi/emoji-button": "4.6.4",
