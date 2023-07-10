@@ -13,6 +13,8 @@ on:
 env:
   FORCE_COLOR: 1
   HEAD_COMMIT: ${{ github.sha }}
+  BASE_COMMIT: ${{ github.event.pull_request.base.sha || github.event.before }}
+  GITHUB_CONTEXT: ${{ toJson(github) }}
   CACHED_DEPENDENCY_PATHS: |
     ${{ github.workspace }}/node_modules
     ${{ github.workspace }}/apps/*/node_modules
@@ -44,6 +46,7 @@ jobs:
           COMMIT_SHA=$(git rev-parse --short ${{ github.event.pull_request.head.sha || github.event.head_commit.id || env.HEAD_COMMIT }})
           echo "COMMIT_SHA=$COMMIT_SHA" >> $GITHUB_ENV
           echo "COMMIT_MESSAGE=$(git log -n 1 --pretty=format:%s $COMMIT_SHA)" >> $GITHUB_ENV
+          echo "COMMON_COMMIT=$(git merge-base HEAD ${{ env.BASE_COMMIT }})" >> $GITHUB_ENV
 
       - name: Determine changed packages
         uses: AurorNZ/paths-filter@v3.0.1
@@ -157,7 +160,7 @@ jobs:
           path: ghost/**/.eslintcache
           key: eslint-cache
 
-      - run: yarn lint --since ${{ github.event.pull_request.base.sha || github.event.before }}
+      - run: yarn lint --since ${{ env.COMMON_COMMIT }}
 
       - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -230,7 +233,7 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
 
-      - run: yarn test:unit --include-dependents --since ${{ github.event.pull_request.base.sha || github.event.before }}
+      - run: yarn test:unit --include-dependents --since ${{ env.COMMON_COMMIT }}
 
       - uses: actions/upload-artifact@v3
         if: startsWith(matrix.node, '18')
