@@ -39,6 +39,7 @@
 .nav-list-item span {
     display: flex;
     align-items: center;
+    color: var(--black);
     font-size: 1.4rem;
     line-height: 1.375;
     font-weight: 600;
