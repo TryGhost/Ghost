@@ -18,8 +18,9 @@ env:
     ${{ github.workspace }}/node_modules
     ${{ github.workspace }}/apps/*/node_modules
     ${{ github.workspace }}/ghost/*/node_modules
-    ${{ github.workspace }}/ghost/*/build
     ~/.cache/ms-playwright/
+  CACHED_BUILD_PATHS: |
+    ${{ github.workspace }}/ghost/*/build
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
@@ -131,6 +132,13 @@ jobs:
           path: ${{ env.CACHED_DEPENDENCY_PATHS }}
           key: ${{ steps.compute_lockfile_hash.outputs.hash }}
 
+      - name: Check build cache
+        uses: actions/cache@v3
+        id: cache_built_packages
+        with:
+          path: ${{ env.CACHED_BUILD_PATHS }}
+          key: ${{ env.HEAD_COMMIT }}
+
       - name: Set up Node
         uses: actions/setup-node@v3
         if: steps.cache_dependencies.outputs.cache-hit != 'true'
@@ -143,6 +151,10 @@ jobs:
       - name: Install dependencies
         if: steps.cache_dependencies.outputs.cache-hit != 'true'
         run: yarn install --prefer-offline --frozen-lockfile
+
+      - name: Build packages
+        if: steps.cache_built_packages.outputs.cache-hit != 'true'
+        run: yarn prepare
     outputs:
       dependency_cache_key: ${{ steps.compute_lockfile_hash.outputs.hash }}
 
