@@ -37,7 +37,7 @@
         {{else if @image}}
             {{!-- image is present --}}
             {{#if @isHidden}}
-                <span class="gh-editor-hidden-indicator" data-tooltip="Feature image and post title are hidden">
+                <span class="gh-editor-hidden-indicator" data-tooltip="Feature image is hidden on page">
                     {{svg-jar "eye-closed"}}
                 </span>
             {{else}}
@@ -46,7 +46,7 @@
                 </span>
             {{/if}}
             <div class="gh-editor-feature-image">
-                <img src={{@image}} alt={{@alt}} role={{if @alt "img" "presentation"}}>
+                <img src={{@image}} alt={{@alt}} role={{if @alt "img" "presentation"}} class="{{if @isHidden "faded"}}">
                 <div class="gh-editor-feature-image-overlay"></div>
                 {{#if (feature 'lexicalEditor')}}
                     <KoenigImageEditor
@@ -63,7 +63,7 @@
                     <input
                         type="text"
                         placeholder="Add alt text to the feature image"
-                        class="gh-editor-feature-image-alttext"
+                        class="gh-editor-feature-image-alttext {{if @isHidden "faded"}}"
                         name="alt"
                         value={{@alt}}
                         {{autofocus}}
@@ -74,7 +74,7 @@
                     <KoenigBasicHtmlInput
                         @html={{@caption}}
                         @placeholder={{if this.captionInputFocused "" "Add a caption to the feature image"}}
-                        @class="gh-editor-feature-image-caption"
+                        @class="gh-editor-feature-image-caption {{if (and @isHidden (not this.captionInputFocused)) "faded"}}"
                         @name="caption"
                         @onChange={{@updateCaption}}
                         @onFocus={{fn (mut this.captionInputFocused) true}}
