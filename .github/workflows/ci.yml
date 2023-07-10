@@ -39,25 +39,19 @@ jobs:
           ref: ${{ env.HEAD_COMMIT }}
           fetch-depth: 2
 
-      - name: Get metadata
-        id: get_metadata
+      - name: Get metadata (push)
+        if: github.event_name == 'push'
         run: |
-          # get base commit for pushes
-          if [ "${{ github.event_name }}" = "push" ]; then
-            if [ -n "${{ github.event.before }}" ]; then
-              if [ "${{ github.event.forced }}" = 'true' ]; then
-                NUMBER_OF_COMMITS=$(printf "%s\n" < '${{ env.GITHUB_CONTEXT }}' | jq '.event.commits | length')
-                echo "BASE_COMMIT=$(git rev-parse HEAD~$NUMBER_OF_COMMITS)" >> $GITHUB_ENV
-              else
-                # only set the base commit if it wasn't a force push (we can't get the base commit in that case)
-                echo "BASE_COMMIT=${{ github.event.before }}" >> $GITHUB_ENV
-              fi
-            fi
-          else
-            # get base commit for PRs
-            BASE_COMMIT=$(curl --location --request GET 'https://api.github.com/repos/TryGhost/Ghost/pulls/${{ github.event.pull_request.number }}' --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' | jq .base.sha | tr -d '"')
-            echo "BASE_COMMIT=$BASE_COMMIT" >> $GITHUB_ENV
-          fi
+          NUMBER_OF_COMMITS=$(jq '.event.commits | length' < '${{ env.GITHUB_CONTEXT }}')
+          echo "There are $NUMBER_OF_COMMITS commits in this push."
+          echo "BASE_COMMIT=$(git rev-parse HEAD~$NUMBER_OF_COMMITS)" >> $GITHUB_ENV
+
+      - name: Get metadata (pull_request)
+        if: github.event_name == 'pull_request'
+        run: |
+          BASE_COMMIT=$(curl --location --request GET 'https://api.github.com/repos/TryGhost/Ghost/pulls/${{ github.event.pull_request.number }}' --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' | jq -r .base.sha)
+          echo "Setting BASE_COMMIT to $BASE_COMMIT"
+          echo "BASE_COMMIT=$BASE_COMMIT" >> $GITHUB_ENV
 
       - name: Determine changed packages
         uses: AurorNZ/paths-filter@v3.0.1
