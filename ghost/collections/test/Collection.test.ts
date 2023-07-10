@@ -209,6 +209,23 @@ describe('Collection', function () {
                 return true;
             });
         });
+
+        it('Does not throw when collection filter is empty for automatic "index" collection', async function (){
+            const collection = await Collection.create({
+                title: 'Index',
+                slug: 'index',
+                type: 'automatic',
+                filter: ''
+            });
+
+            const editedCollection = await collection.edit({
+                title: 'Edited index',
+                filter: ''
+            }, uniqueChecker);
+
+            assert.equal(editedCollection.title, 'Edited index');
+            assert.equal(editedCollection.filter, '');
+        });
     });
 
     it('Can add posts to different positions', async function () {

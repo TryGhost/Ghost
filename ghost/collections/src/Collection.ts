@@ -69,7 +69,7 @@ export class Collection {
     }
 
     public async edit(data: Partial<Collection>, uniqueChecker: UniqueChecker) {
-        if (this.type === 'automatic' && (data.filter === null || data.filter === '')) {
+        if (this.type === 'automatic' && this.slug !== 'index' && (data.filter === null || data.filter === '')) {
             throw new ValidationError({
                 message: tpl(messages.invalidFilterProvided.message),
                 context: tpl(messages.invalidFilterProvided.context)
@@ -201,7 +201,7 @@ export class Collection {
             });
         }
 
-        if (data.type === 'automatic' && !data.filter) {
+        if (data.type === 'automatic' && (data.slug !== 'index') && !data.filter) {
             // @NOTE: add filter validation here
             throw new ValidationError({
                 message: tpl(messages.invalidFilterProvided.message),
