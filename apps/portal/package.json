@@ -79,7 +79,7 @@
     "jsdom": "22.1.0",
     "react": "17.0.2",
     "react-dom": "17.0.2",
-    "vite": "4.3.9",
+    "vite": "4.4.2",
     "vite-plugin-css-injected-by-js": "3.2.0",
     "vite-plugin-svgr": "3.2.0",
     "vitest": "0.33.0"
