@@ -7040,12 +7040,12 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-4.0.8.tgz#3799e256ce67f926ad5045a63c2c241b1b6ede5a"
   integrity sha512-mQNs5gw63U26HPsOtlZ8U3jmUHTRMWXECTjIaP1QKWGFcsbAZqNHIGDCbJSqskCqwsrdi8PibZckfYLKozYCCw==
 
-"@tryghost/kg-clean-basic-html@3.0.19", "@tryghost/kg-clean-basic-html@^3.0.17":
+"@tryghost/kg-clean-basic-html@3.0.19":
   version "3.0.19"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-3.0.19.tgz#52c18089acfc56ac8a20f0048f5fb99c47c6b4b4"
   integrity sha512-6mheKCHAD7TLvFl3BEOZpMenc5lv/+/k6rq49OCYBJISWIbW8SkyqG3Yqgu1BB4cSyMFsprGr7yuOTIHSJPREw==
 
-"@tryghost/kg-clean-basic-html@^3.0.20":
+"@tryghost/kg-clean-basic-html@^3.0.17", "@tryghost/kg-clean-basic-html@^3.0.20":
   version "3.0.20"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-3.0.20.tgz#dffc432648eb67604f2f019ae6da62648e26883d"
   integrity sha512-JEZuLqgNIL6CNdPf5CGBRf27Qzc/GpNRmYyf449XxtzK6sb9XOrsuNczY6dpjiJxkMSA/1Wtq7gkQmBX1xfdJg==
