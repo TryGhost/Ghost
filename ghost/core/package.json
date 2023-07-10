@@ -57,7 +57,7 @@
     "prepack": "lerna run build && monobundle"
   },
   "engines": {
-    "node": "^16.13.0 || ^18.12.1",
+    "node": "^16.14.0 || ^18.12.1",
     "cli": "^1.17.0"
   },
   "dependencies": {
