@@ -1,18 +1,18 @@
-import AccountPage from './portal/AccountPage';
-import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
-import LookAndFeel from './portal/LookAndFeel';
+import AccountPage from './AccountPage';
+import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
+import LookAndFeel from './LookAndFeel';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import PortalPreview from './portal/PortalPreview';
+import PortalPreview from './PortalPreview';
 import React, {useContext, useState} from 'react';
-import SignupOptions from './portal/SignupOptions';
-import TabView, {Tab} from '../../../admin-x-ds/global/TabView';
-import useForm, {Dirtyable} from '../../../hooks/useForm';
-import useRouting from '../../../hooks/useRouting';
-import {PreviewModalContent} from '../../../admin-x-ds/global/modal/PreviewModal';
-import {Setting, SettingValue, Tier} from '../../../types/api';
-import {SettingsContext} from '../../providers/SettingsProvider';
-import {fullEmailAddress} from '../../../utils/helpers';
-import {useTiers} from '../../providers/ServiceProvider';
+import SignupOptions from './SignupOptions';
+import TabView, {Tab} from '../../../../admin-x-ds/global/TabView';
+import useForm, {Dirtyable} from '../../../../hooks/useForm';
+import useRouting from '../../../../hooks/useRouting';
+import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
+import {Setting, SettingValue, Tier} from '../../../../types/api';
+import {SettingsContext} from '../../../providers/SettingsProvider';
+import {fullEmailAddress} from '../../../../utils/helpers';
+import {useTiers} from '../../../providers/ServiceProvider';
 
 const Sidebar: React.FC<{
     localSettings: Setting[]
