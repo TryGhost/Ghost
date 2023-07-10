@@ -1,6 +1,8 @@
 name: CI
 on:
   pull_request:
+    branches-ignore:
+      - 'renovate/*'
   push:
     branches:
       - main
