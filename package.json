@@ -47,7 +47,7 @@
     "moment-timezone": "0.5.23",
     "prosemirror-state": "1.4.1",
     "prosemirror-model": "1.18.1",
-    "prosemirror-transform": "1.7.0"
+    "prosemirror-transform": "1.7.3"
   },
   "renovate": {
     "extends": [
