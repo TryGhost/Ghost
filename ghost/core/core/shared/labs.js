@@ -42,6 +42,7 @@ const ALPHA_FEATURES = [
     'pageImprovements',
     'flatUrls',
     'mailEvents',
+    'collectionsCard',
     'headerUpgrade'
 ];
 

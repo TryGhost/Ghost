@@ -76,6 +76,7 @@ export default class FeatureService extends Service {
     @feature('pageImprovements') pageImprovements;
     @feature('flatUrls') flatUrls;
     @feature('mailEvents') mailEvents;
+    @feature('collectionsCard') collectionsCard;
     @feature('headerUpgrade') headerUpgrade;
 
     _user = null;
