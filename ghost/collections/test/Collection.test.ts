@@ -210,20 +210,20 @@ describe('Collection', function () {
             });
         });
 
-        it('Does not throw when collection filter is empty for automatic "index" collection', async function (){
+        it('Does not throw when collection filter is empty for automatic "latest" collection', async function (){
             const collection = await Collection.create({
-                title: 'Index',
-                slug: 'index',
+                title: 'Latest',
+                slug: 'latest',
                 type: 'automatic',
                 filter: ''
             });
 
             const editedCollection = await collection.edit({
-                title: 'Edited index',
+                title: 'Edited latest',
                 filter: ''
             }, uniqueChecker);
 
-            assert.equal(editedCollection.title, 'Edited index');
+            assert.equal(editedCollection.title, 'Edited latest');
             assert.equal(editedCollection.filter, '');
         });
     });
@@ -303,10 +303,10 @@ describe('Collection', function () {
         assert.equal(collection.posts.length, 0);
     });
 
-    it('Cannot set index collection to deleted', async function () {
+    it('Cannot set "latest" collection to deleted', async function () {
         const collection = await Collection.create({
             title: 'Testing adding posts',
-            slug: 'index'
+            slug: 'latest'
         });
 
         assert.equal(collection.deleted, false);

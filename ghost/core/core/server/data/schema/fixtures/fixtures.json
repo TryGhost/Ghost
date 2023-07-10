@@ -4,8 +4,8 @@
             "name": "Collection",
             "entries": [
                 {
-                    "title":            "Index",
-                    "slug":             "index",
+                    "title":            "Latest",
+                    "slug":             "latest",
                     "description":      "Collection with all posts",
                     "type":             "automatic",
                     "filter":           ""

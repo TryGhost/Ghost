@@ -49,7 +49,7 @@ export class Collection {
     createdAt: Date;
     updatedAt: Date;
     get deletable() {
-        return this.slug !== 'index' && this.slug !== 'featured';
+        return this.slug !== 'latest' && this.slug !== 'featured';
     }
     private _deleted: boolean = false;
 
@@ -69,7 +69,7 @@ export class Collection {
     }
 
     public async edit(data: Partial<Collection>, uniqueChecker: UniqueChecker) {
-        if (this.type === 'automatic' && this.slug !== 'index' && (data.filter === null || data.filter === '')) {
+        if (this.type === 'automatic' && this.slug !== 'latest' && (data.filter === null || data.filter === '')) {
             throw new ValidationError({
                 message: tpl(messages.invalidFilterProvided.message),
                 context: tpl(messages.invalidFilterProvided.context)
@@ -201,7 +201,7 @@ export class Collection {
             });
         }
 
-        if (data.type === 'automatic' && (data.slug !== 'index') && !data.filter) {
+        if (data.type === 'automatic' && (data.slug !== 'latest') && !data.filter) {
             // @NOTE: add filter validation here
             throw new ValidationError({
                 message: tpl(messages.invalidFilterProvided.message),
