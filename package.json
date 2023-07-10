@@ -133,7 +133,7 @@
     "eslint-plugin-ghost": "3.2.0",
     "husky": "8.0.3",
     "lerna": "6.6.2",
-    "lint-staged": "13.1.2",
+    "lint-staged": "13.2.3",
     "ts-node": "10.9.1"
   }
 }
