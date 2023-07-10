@@ -86,6 +86,6 @@
     "@tiptap/extension-floating-menu": "2.0.0-beta.56",
     "prosemirror-state": "1.4.3",
     "prosemirror-model": "1.18.1",
-    "prosemirror-transform": "1.7.0"
+    "prosemirror-transform": "1.7.3"
   }
 }
