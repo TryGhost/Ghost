@@ -43,7 +43,7 @@ jobs:
       - name: Get metadata (push)
         if: github.event_name == 'push'
         run: |
-          NUMBER_OF_COMMITS=$(echo '${{ env.GITHUB_CONTEXT }}' | jq '.event.commits | length')
+          NUMBER_OF_COMMITS=$(printf "%s\n" '${{ toJson(github.event.commits.*.id) }}' | jq length)
           echo "There are $NUMBER_OF_COMMITS commits in this push."
           echo "BASE_COMMIT=$(git rev-parse HEAD~$NUMBER_OF_COMMITS)" >> $GITHUB_ENV
 
