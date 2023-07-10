@@ -13,7 +13,6 @@ on:
 env:
   FORCE_COLOR: 1
   HEAD_COMMIT: ${{ github.sha }}
-  BASE_COMMIT: ${{ github.event.pull_request.base.sha || github.event.before }}
   GITHUB_CONTEXT: ${{ toJson(github) }}
   CACHED_DEPENDENCY_PATHS: |
     ${{ github.workspace }}/node_modules
@@ -43,11 +42,19 @@ jobs:
       - name: Get metadata
         id: get_metadata
         run: |
-          COMMIT_SHA=$(git rev-parse --short ${{ github.event.pull_request.head.sha || github.event.head_commit.id || env.HEAD_COMMIT }})
-          echo "COMMIT_SHA=$COMMIT_SHA" >> $GITHUB_ENV
-          echo "COMMIT_MESSAGE=$(git log -n 1 --pretty=format:%s $COMMIT_SHA)" >> $GITHUB_ENV
-          echo "COMMON_COMMIT=$(git merge-base HEAD ${{ env.BASE_COMMIT }})" >> $GITHUB_ENV
-
+          # get base commit for pushes
+          if [ "${{ github.event.event_name }}" = "push" ]; then
+            if [ -n "${{ github.event.before }}" ]; then
+              # only set the base commit if it wasn't a force push (we can't get the base commit in that case)
+              if [ "${{ github.event.forced }}" != 'true' ]; then
+                echo "BASE_COMMIT=${{ github.event.before }}" >> $GITHUB_ENV
+              fi
+            fi
+          else
+            # get base commit for PRs
+            BASE_COMMIT=$(curl --location --request GET 'https://api.github.com/repos/TryGhost/Ghost/pulls/${{ github.event.pull_request.number }}' --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' | jq .base.sha | tr -d '"')
+            echo "BASE_COMMIT=$BASE_COMMIT" >> $GITHUB_ENV
+          fi
       - name: Determine changed packages
         uses: AurorNZ/paths-filter@v3.0.1
         id: changed
@@ -94,7 +101,7 @@ jobs:
       changed_signup_form: ${{ steps.changed.outputs.signup-form }}
       changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
-      commit_label: '${{ env.COMMIT_SHA }}: ${{ env.COMMIT_MESSAGE }}'
+      base_commit: ${{ env.BASE_COMMIT }}
       is_canary_branch: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/arch') }}
       is_git_sync: ${{ github.head_ref == 'main' || github.ref == 'refs/heads/main' }}
 
@@ -104,7 +111,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: 'Check out current commit (${{ needs.job_get_metadata.outputs.commit_label }})'
+      - name: 'Checkout current commit'
         uses: actions/checkout@v3
         with:
           ref: ${{ env.HEAD_COMMIT }}
@@ -160,7 +167,7 @@ jobs:
           path: ghost/**/.eslintcache
           key: eslint-cache
 
-      - run: yarn lint --since ${{ env.COMMON_COMMIT }}
+      - run: yarn lint --since ${{ needs.job_get_metadata.outputs.BASE_COMMIT }}
 
       - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -233,7 +240,7 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
 
-      - run: yarn test:unit --include-dependents --since ${{ env.COMMON_COMMIT }}
+      - run: yarn test:unit --include-dependents --since ${{ needs.job_get_metadata.outputs.BASE_COMMIT }}
 
       - uses: actions/upload-artifact@v3
         if: startsWith(matrix.node, '18')
@@ -703,6 +710,7 @@ jobs:
     name: All required tests passed or skipped
     needs:
       [
+        job_get_metadata,
         job_install_deps,
         job_lint,
         job_ghost-cli,
