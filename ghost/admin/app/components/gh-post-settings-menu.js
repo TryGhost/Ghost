@@ -212,8 +212,8 @@ export default class GhPostSettingsMenu extends Component {
     }
 
     @action
-    toggleHideTitleAndFeatureImage(event) {
-        this.post.hideTitleAndFeatureImage = event.target.checked;
+    toggleShowTitleAndFeatureImage(event) {
+        this.post.showTitleAndFeatureImage = event.target.checked;
 
         // If this is a new post.  Don't save the post.  Defer the save
         // to the user pressing the save button

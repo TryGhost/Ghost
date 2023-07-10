@@ -85,7 +85,7 @@
     "minimist": "1.2.8",
     "nock": "13.3.0",
     "ora": "5.4.1",
-    "postcss": "8.4.24",
+    "postcss": "8.4.25",
     "rewire": "6.0.0",
     "serve-handler": "6.1.5",
     "tailwindcss": "3.3.2",

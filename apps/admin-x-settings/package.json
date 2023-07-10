@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/admin-x-settings",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -69,7 +69,7 @@
     "@types/validator": "^13.7.17",
     "@typescript-eslint/eslint-plugin": "5.57.1",
     "@typescript-eslint/parser": "5.57.1",
-    "@vitejs/plugin-react": "4.0.1",
+    "@vitejs/plugin-react": "4.0.2",
     "autoprefixer": "10.4.14",
     "concurrently": "8.2.0",
     "eslint": "8.38.0",
@@ -78,7 +78,7 @@
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.3.4",
     "eslint-plugin-tailwindcss": "3.11.0",
-    "postcss": "8.4.24",
+    "postcss": "8.4.25",
     "postcss-import": "^15.1.0",
     "prop-types": "15.8.1",
     "react-hot-toast": "^2.4.1",
