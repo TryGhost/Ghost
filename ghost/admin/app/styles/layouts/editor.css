@@ -524,6 +524,10 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     opacity: 1;
 }
 
+.gh-editor-feature-image .faded {
+    opacity: .5;
+}
+
 .gh-editor-feature-image .image-action {
     display: flex;
     align-items: center;
@@ -641,6 +645,11 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     margin: 0;
 }
 
+.gh-editor-feature-image-alttext.faded:not(:focus),
+.gh-editor-feature-image-caption.faded p {
+    opacity: .5;
+}
+
 .gh-editor-title {
     display: block;
     width: 100%;
@@ -659,6 +668,10 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 .gh-editor-title:focus {
     box-shadow: none !important;
     border: none !important;
+}
+
+.gh-editor-title.faded {
+    opacity: .5;
 }
 
 .gh-editor-back-button {
