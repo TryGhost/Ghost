@@ -1,5 +1,6 @@
 import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
+import ObjectID from 'bson-objectid';
 import {Collection} from './Collection';
 import {CollectionResourceChangeEvent} from './CollectionResourceChangeEvent';
 import {CollectionRepository} from './CollectionRepository';
@@ -350,8 +351,19 @@ export class CollectionsService {
         };
     }
 
+    /**
+     * @param id {string | ObjectID} - collection id or slug
+     * @param pagingOpts {QueryOptions}
+     * @returns
+     */
     async getAllPosts(id: string, {limit = 15, page = 1}: QueryOptions): Promise<{data: CollectionPostListItemDTO[], meta: any}> {
-        const collection = await this.getById(id);
+        let collection;
+
+        if (ObjectID.isValid(id)) {
+            collection = await this.getById(id);
+        } else {
+            collection = await this.getBySlug(id);
+        }
 
         if (!collection) {
             throw new NotFoundError({

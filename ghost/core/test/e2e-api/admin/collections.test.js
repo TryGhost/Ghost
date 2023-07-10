@@ -137,6 +137,19 @@ describe('Collections API', function () {
                     collection_posts: Array(2).fill(matchCollectionPost)
                 });
         });
+
+        it('Can browse Collections Posts using collection slug', async function () {
+            await agent
+                .get(`/collections/index/posts/`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collection_posts: Array(11).fill(matchCollectionPost)
+                });
+        });
     });
 
     it('Can read a Collection', async function () {
