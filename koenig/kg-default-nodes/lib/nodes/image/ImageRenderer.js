@@ -20,6 +20,9 @@ export function renderImageNode(node, options = {}) {
     if (node.cardWidth !== 'regular') {
         figureClasses += ` kg-width-${node.cardWidth}`;
     }
+    if (node.caption) {
+        figureClasses += ' kg-card-hascaption';
+    }
 
     figure.setAttribute('class', figureClasses);
 

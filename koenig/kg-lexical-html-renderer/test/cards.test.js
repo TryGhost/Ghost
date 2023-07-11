@@ -48,7 +48,7 @@ describe('Cards', function () {
         const output = Prettier.format((new Renderer({nodes})).render(JSON.stringify(lexicalState), options), {parser: 'html'});
 
         const expected =
-`<figure class="kg-card kg-image-card">
+`<figure class="kg-card kg-image-card kg-card-hascaption">
   <img
     src="/content/images/2022/11/koenig-lexical.jpg"
     class="kg-image"
