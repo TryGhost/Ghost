@@ -55,10 +55,21 @@ jobs:
     - name: Run migrations
       working-directory: ghost/core
       run: yarn setup
-
-    - name: Install Playwright
-      working-directory: ghost/core
+    - name: Get Playwright version
+      id: playwright-version
+      run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
+    - uses: actions/cache@v3
+      name: Check if Playwright browser is cached
+      id: playwright-cache
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-Playwright-${{steps.playwright-version.outputs.version}}
+    - name: Install Playwright browser if not cached
+      if: steps.playwright-cache.outputs.cache-hit != 'true'
       run: npx playwright install --with-deps
+    - name: Install OS dependencies of Playwright if cache hit
+      if: steps.playwright-cache.outputs.cache-hit == 'true'
+      run: npx playwright install-deps
 
     - name: Build Admin
       if: env.ENVIRONMENT == 'browser-tests-local'

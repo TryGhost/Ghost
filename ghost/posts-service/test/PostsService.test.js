@@ -71,7 +71,8 @@ describe('Posts Service', function () {
                     id: POST_ID,
                     title: 'Test Post',
                     slug: 'test-post',
-                    status: 'published'
+                    status: 'published',
+                    newsletter_id: 'abc123'
                 },
                 related: sinon.stub()
             };
@@ -217,7 +218,9 @@ describe('Posts Service', function () {
                 attributes: {
                     post_id: POST_ID,
                     meta_title: 'Test Post',
-                    meta_description: 'Test Post Description'
+                    meta_description: 'Test Post Description',
+                    email_only: 1,
+                    email_subject: 'Test Email Subject'
                 },
                 isNew: () => false
             };

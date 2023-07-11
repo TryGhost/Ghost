@@ -19,7 +19,7 @@
   ],
   "devDependencies": {
     "mocha": "10.2.0",
-    "sinon": "15.0.3"
+    "sinon": "15.2.0"
   },
   "dependencies": {
     "@tryghost/email-analytics-service": "0.0.0",

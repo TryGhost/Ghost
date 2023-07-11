@@ -23,9 +23,9 @@
     "archive": "yarn workspace ghost run archive",
     "build": "lerna run build",
     "dev:debug": "DEBUG_COLORS=true DEBUG=@tryghost*,ghost:* yarn dev",
-    "dev:admin": "node .github/dev.js --admin",
-    "dev:ghost": "node .github/dev.js --ghost",
-    "dev": "node .github/dev.js",
+    "dev:admin": "node .github/scripts/dev.js --admin",
+    "dev:ghost": "node .github/scripts/dev.js --ghost",
+    "dev": "node .github/scripts/dev.js",
     "fix": "yarn cache clean && rm -rf node_modules && yarn",
     "knex-migrator": "yarn workspace ghost run knex-migrator",
     "setup": "yarn && yarn workspace ghost run setup && git submodule update --init",
@@ -39,10 +39,15 @@
   },
   "resolutions": {
     "@elastic/elasticsearch": "8.5.0",
+    "@tiptap/extension-bubble-menu": "2.0.0-beta.61",
+    "@tiptap/extension-floating-menu": "2.0.0-beta.56",
     "@tryghost/errors": "1.2.24",
     "@tryghost/logging": "2.4.4",
     "moment": "2.24.0",
-    "moment-timezone": "0.5.23"
+    "moment-timezone": "0.5.23",
+    "prosemirror-state": "1.4.3",
+    "prosemirror-model": "1.19.2",
+    "prosemirror-transform": "1.7.3"
   },
   "renovate": {
     "extends": [
@@ -120,15 +125,14 @@
   },
   "lerna": {
     "version": "0.0.0",
-    "npmClient": "yarn",
-    "useWorkspaces": true
+    "npmClient": "yarn"
   },
   "devDependencies": {
     "concurrently": "8.2.0",
     "eslint-plugin-ghost": "3.2.0",
     "husky": "8.0.3",
-    "lerna": "6.6.2",
-    "lint-staged": "13.1.2",
+    "lerna": "7.1.1",
+    "lint-staged": "13.2.3",
     "ts-node": "10.9.1"
   }
 }

@@ -149,6 +149,28 @@
                                 </div>
                             </li>
                         {{/unless}}
+                        {{#if (and this.post.isPage this.post.lexical (feature 'pageImprovements'))}}
+                            <li class="nav-list-item">
+                                <div class="for-switch x-small">
+                                    <label class="switch">
+                                        <span>
+                                            <Icons::EyeOpenClose class="feature" @closed={{not this.post.showTitleAndFeatureImage}} />
+                                            Show title and feature image
+                                        </span>
+                                        <div class="gh-toggle-featured">
+                                            <input
+                                                type="checkbox"
+                                                checked={{this.post.showTitleAndFeatureImage}}
+                                                class="gh-input post-settings-featured"
+                                                {{on "change" this.toggleShowTitleAndFeatureImage}}
+                                                data-test-checkbox="hide-title-and-feature-image"
+                                            >
+                                            <span class="input-toggle-component"></span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </li>
+                        {{/if}}
                         {{#if this.canViewPostHistory}}
                             <li class="nav-list-item">
                                 <button type="button" {{on "click" this.openPostHistory}} data-test-toggle="post-history">
