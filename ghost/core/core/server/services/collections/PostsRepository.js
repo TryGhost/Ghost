@@ -31,6 +31,7 @@ class PostsRepository {
         const response = await this.browsePostsAPI({
             options: {
                 filter: `(${filter})+type:post`,
+                status: 'all',
                 limit: 'all'
             }
         });
@@ -44,7 +45,8 @@ class PostsRepository {
     async getBulk(ids) {
         const response = await this.browsePostsAPI({
             options: {
-                filter: `id:[${ids.join(',')}]+type:post`
+                filter: `id:[${ids.join(',')}]+type:post`,
+                status: 'all'
             }
         });
 

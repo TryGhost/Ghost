@@ -15,6 +15,7 @@ const {
     anyISODateTimeWithTZ,
     anyNumber,
     anyUuid,
+    anyLocalURL,
     anyString
 } = matchers;
 
@@ -26,6 +27,7 @@ const matchCollection = {
 
 const matchCollectionPost = {
     id: anyObjectId,
+    url: anyLocalURL,
     created_at: anyISODateTimeWithTZ,
     updated_at: anyISODateTimeWithTZ,
     published_at: anyISODateTimeWithTZ,
@@ -96,9 +98,8 @@ describe('Collections API', function () {
                 })
                 .matchBodySnapshot({
                     collections: [
-                        buildMatcher(11, {withSortOrder: true}),
+                        buildMatcher(13, {withSortOrder: true}),
                         buildMatcher(2, {withSortOrder: true}),
-                        buildMatcher(0),
                         buildMatcher(0)
                     ]
                 });
@@ -108,23 +109,23 @@ describe('Collections API', function () {
     describe('Browse Posts', function () {
         it('Can browse Collections Posts', async function () {
             const collections = await agent.get('/collections/');
-            const indexCollection = collections.body.collections.find(c => c.slug === 'index');
+            const latestCollection = collections.body.collections.find(c => c.slug === 'latest');
 
             await agent
-                .get(`/collections/${indexCollection.id}/posts/`)
+                .get(`/collections/${latestCollection.id}/posts/`)
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    collection_posts: Array(11).fill(matchCollectionPost)
+                    collection_posts: Array(13).fill(matchCollectionPost)
                 });
         });
 
         it('Can browse Collections Posts using paging parameters', async function () {
             const collections = await agent.get('/collections/');
-            const indexCollection = collections.body.collections.find(c => c.slug === 'index');
+            const indexCollection = collections.body.collections.find(c => c.slug === 'latest');
 
             await agent
                 .get(`/collections/${indexCollection.id}/posts/?limit=2&page=2`)
@@ -140,14 +141,14 @@ describe('Collections API', function () {
 
         it('Can browse Collections Posts using collection slug', async function () {
             await agent
-                .get(`/collections/index/posts/`)
+                .get(`/collections/latest/posts/`)
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    collection_posts: Array(11).fill(matchCollectionPost)
+                    collection_posts: Array(13).fill(matchCollectionPost)
                 });
         });
     });
@@ -186,6 +187,10 @@ describe('Collections API', function () {
             });
 
         assert.equal(readResponse.body.collections[0].title, 'Test Collection to Read');
+
+        await agent
+            .delete(`/collections/${collectionId}/`)
+            .expectStatus(204);
     });
 
     describe('Edit', function () {
@@ -363,7 +368,7 @@ describe('Collections API', function () {
                     location: anyLocationFor('collections')
                 })
                 .matchBodySnapshot({
-                    collections: [buildMatcher(7)]
+                    collections: [buildMatcher(9)]
                 });
         });
     });

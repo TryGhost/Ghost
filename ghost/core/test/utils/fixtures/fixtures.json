@@ -1125,6 +1125,28 @@
         },
         {
             "from": {
+                "model": "Collection",
+                "match": "slug",
+                "relation": "posts"
+            },
+            "to": {
+                "model": "Post",
+                "match": "slug"
+            },
+            "entries": {
+                "latest": {
+                    "integrations": "integrations",
+                    "grow": "grow",
+                    "sell": "sell",
+                    "portal": "portal",
+                    "write": "write",
+                    "design": "design",
+                    "welcome": "welcome"
+                }
+            }
+        },
+        {
+            "from": {
                 "model": "User",
                 "match": "id",
                 "relation": "roles"
