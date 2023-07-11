@@ -5,7 +5,7 @@ interface TierDetailPreviewProps {}
 
 const TierDetailPreview: React.FC<TierDetailPreviewProps> = () => {
     return (
-        <div>
+        <div className="-mt-[6px]">
             <div className="flex items-baseline justify-between">
                 <h4 className="z-10 pb-3 text-2xs font-semibold uppercase tracking-wide text-grey-700">Tier preview</h4>
                 <div>
