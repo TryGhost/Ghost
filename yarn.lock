@@ -10335,11 +10335,6 @@ balanced-match@^2.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-2.0.0.tgz#dc70f920d78db8b858535795867bf48f820633d9"
   integrity sha512-1ugUSr8BHXRnK23KfuYS+gVMC3LB8QGH9W1iGtDPsNWoQbgtXSExkBu2aDR4epiGWZOjZsj6lDl/N/AqqTC3UA==
 
-base-64@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/base-64/-/base-64-0.1.0.tgz#780a99c84e7d600260361511c4877613bf24f6bb"
-  integrity sha512-Y5gU45svrR5tI2Vt/X9GPd3L0HNIKzGu202EjxrXMpuc2V2CiKgemAbUUsqYmZJvPtCXoUKjNZwBJzsNScUbXA==
-
 base-64@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/base-64/-/base-64-1.0.0.tgz#09d0f2084e32a3fd08c2475b973788eee6ae8f4a"
@@ -10899,7 +10894,7 @@ broccoli-funnel@^1.0.1:
     symlink-or-copy "^1.0.0"
     walk-sync "^0.3.1"
 
-"broccoli-funnel@^1.2.0 || ^2.0.0", broccoli-funnel@^2.0.0, broccoli-funnel@^2.0.1, broccoli-funnel@^2.0.2:
+broccoli-funnel@^2.0.0, broccoli-funnel@^2.0.1, broccoli-funnel@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/broccoli-funnel/-/broccoli-funnel-2.0.2.tgz#0edf629569bc10bd02cc525f74b9a38e71366a75"
   integrity sha512-/vDTqtv7ipjEZQOVqO4vGDVAOZyuYzQ/EgGoyewfOgh1M7IQAToBKZI0oAQPgMBeFPPlIbfMuAngk+ohPBuaHQ==
@@ -15716,15 +15711,11 @@ ember-router-generator@^2.0.0:
     "@babel/traverse" "^7.4.5"
     recast "^0.18.1"
 
-ember-simple-auth@4.2.2:
-  version "4.2.2"
-  resolved "https://registry.yarnpkg.com/ember-simple-auth/-/ember-simple-auth-4.2.2.tgz#5c1de1bb13a75e519e512fb82cba7cc1e277b07c"
-  integrity sha512-D7W6OREUvf5OzeB0ePptSNBilccchRYukH4f7mkbL6WT+z6VEqRRAIaQuBZdFM6lrcSFGmzctINLZJwsIpI3wg==
+ember-simple-auth@5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/ember-simple-auth/-/ember-simple-auth-5.0.0.tgz#7623cd204a183fd56e973e6f0dc67f4f65bc0ae3"
+  integrity sha512-wGf2jTvOKo11jNmWYBIZhgMx32kvAJEMNJNCpbdx0Ak6X+4uzO8l203C5kDH0idZej/2dHgYkcVaEzl2HCVFwA==
   dependencies:
-    base-64 "^0.1.0"
-    broccoli-file-creator "^2.1.1"
-    broccoli-funnel "^1.2.0 || ^2.0.0"
-    broccoli-merge-trees "^4.0.0"
     ember-cli-babel "^7.20.5"
     ember-cli-is-package-missing "^1.0.0"
     ember-cookies "^0.5.0"
