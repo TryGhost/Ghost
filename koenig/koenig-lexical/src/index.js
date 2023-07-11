@@ -10,6 +10,7 @@ import KoenigNestedComposer from './components/KoenigNestedComposer';
 import AudioPlugin from './plugins/AudioPlugin';
 import CalloutPlugin from './plugins/CalloutPlugin';
 import CardMenuPlugin from './plugins/CardMenuPlugin';
+import CollectionPlugin from './plugins/CollectionPlugin';
 import DragDropPastePlugin from './plugins/DragDropPastePlugin';
 import DragDropReorderPlugin from './plugins/DragDropReorderPlugin';
 import ExternalControlPlugin from './plugins/ExternalControlPlugin';
@@ -85,6 +86,7 @@ export {
     TogglePlugin,
     VideoPlugin,
     WordCountPlugin,
+    CollectionPlugin,
 
     AllDefaultPlugins,
 

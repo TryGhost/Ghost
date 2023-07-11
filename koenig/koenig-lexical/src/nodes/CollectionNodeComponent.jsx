@@ -8,7 +8,16 @@ import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-export function CollectionNodeComponent({collection, columns, layout, nodeKey, postCount}) {
+export function CollectionNodeComponent({
+    collection,
+    columns,
+    layout,
+    nodeKey,
+    postCount,
+    header,
+    headerTextEditor,
+    headerTextEditorInitialState
+}) {
     const [editor] = useLexicalComposerContext();
     const [isLoading, setIsLoading] = React.useState(false);
     const {isEditing, isSelected, setEditing} = React.useContext(CardContext);
@@ -22,6 +31,10 @@ export function CollectionNodeComponent({collection, columns, layout, nodeKey, p
             fetchCollectionPosts(collection?.slug);
         }
     }, []);
+
+    React.useEffect(() => {
+        headerTextEditor.setEditable(isEditing);
+    }, [isEditing, headerTextEditor]);
 
     const fetchCollectionPosts = async (collectionSlug) => {
         setIsLoading(true);
@@ -74,6 +87,8 @@ export function CollectionNodeComponent({collection, columns, layout, nodeKey, p
                 handleColumnChange={handleColumnChange}
                 handleLayoutChange={handleLayoutChange}
                 handlePostCountChange={handlePostCountChange}
+                headerTextEditor={headerTextEditor}
+                headerTextEditorInitialState={headerTextEditorInitialState}
                 isEditing={isEditing}
                 isLoading={isLoading}
                 layout={layout}

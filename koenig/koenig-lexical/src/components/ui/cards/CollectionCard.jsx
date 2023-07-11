@@ -1,4 +1,5 @@
 import KoenigComposerContext from '../../../context/KoenigComposerContext';
+import KoenigNestedEditor from '../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
 import React from 'react';
 import clsx from 'clsx';
@@ -6,6 +7,7 @@ import {ButtonGroupSetting, DropdownSetting, SettingsPanel, SliderSetting} from 
 import {DateTime} from 'luxon';
 import {ReactComponent as GridLayoutIcon} from '../../../assets/icons/kg-layout-grid.svg';
 import {ReactComponent as ListLayoutIcon} from '../../../assets/icons/kg-layout-list.svg';
+import {isEditorEmpty} from '../../../utils/isEditorEmpty';
 
 export function CollectionPost({
     post,
@@ -70,7 +72,9 @@ export function CollectionCard({
     handleLayoutChange,
     handlePostCountChange,
     isEditing,
-    isLoading
+    isLoading,
+    headerTextEditor,
+    headerTextEditorInitialState
 }) {
     const {cardConfig} = React.useContext(KoenigComposerContext);
 
@@ -99,6 +103,19 @@ export function CollectionCard({
 
     return (
         <>
+            {(isEditing || !isEditorEmpty(headerTextEditor)) && (
+                <KoenigNestedEditor 
+                    autoFocus={true}
+                    hasSettingsPanel={true}
+                    initialEditor={headerTextEditor}
+                    initialState={headerTextEditorInitialState}
+                    nodes="minimal"
+                    placeholderClassName={'!font-sans !text-[2.2rem] !font-bold !leading-snug !tracking-tight text-black dark:text-grey-50 opacity-40'}
+                    placeholderText="Collection Header"
+                    singleParagraph={true}
+                    textClassName={'koenig-lexical-toggle-heading whitespace-normal text-black dark:text-grey-50 opacity-100 p-2'}
+                />)
+            }
             <div className={clsx(
                 'w-full gap-x-4 gap-y-6',
                 layout === 'list' && 'flex flex-col',
@@ -162,7 +179,9 @@ CollectionCard.propTypes = {
     handlePostCountChange: PropTypes.func,
     handleRowChange: PropTypes.func,
     isEditing: PropTypes.bool,
-    isLoading: PropTypes.bool
+    isLoading: PropTypes.bool,
+    headerTextEditor: PropTypes.object,
+    headerTextEditorInitialState: PropTypes.object
 };
 
 Collection.propTypes = {

@@ -7,7 +7,8 @@ export class CollectionNode extends generateDecoratorNode({nodeType: 'collection
         {name: 'collection', default: {slug: 'index'}}, // start with empty object; might want to just store the slug
         {name: 'postCount', default: 3},
         {name: 'layout', default: 'grid'},
-        {name: 'columns', default: 3}
+        {name: 'columns', default: 3},
+        {name: 'header', default: '', wordCount: true}
     ]}
     // do we want a limit option so we don't have to 'get' and calculate it?
     // {name: 'limit', default: '3'}
