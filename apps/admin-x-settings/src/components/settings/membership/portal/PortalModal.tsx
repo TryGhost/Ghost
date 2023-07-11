@@ -11,7 +11,7 @@ import useRouting from '../../../../hooks/useRouting';
 import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
 import {Setting, SettingValue, Tier} from '../../../../types/api';
 import {SettingsContext} from '../../../providers/SettingsProvider';
-import {fullEmailAddress} from '../../../../utils/helpers';
+import {fullEmailAddress, getPaidActiveTiers} from '../../../../utils/helpers';
 import {useTiers} from '../../../providers/ServiceProvider';
 
 const Sidebar: React.FC<{
@@ -67,7 +67,8 @@ const PortalModal: React.FC = () => {
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('signup');
 
     const {settings, saveSettings, siteData} = useContext(SettingsContext);
-    const {data: tiers, update: updateTiers} = useTiers();
+    const {data: allTiers, update: updateTiers} = useTiers();
+    const tiers = getPaidActiveTiers(allTiers);
 
     const {formState, saveState, handleSave, updateForm} = useForm({
         initialState: {
