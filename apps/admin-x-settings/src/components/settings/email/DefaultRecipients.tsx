@@ -7,7 +7,7 @@ import useSettingGroup from '../../../hooks/useSettingGroup';
 import {GroupBase, MultiValue} from 'react-select';
 import {Label, Offer, Tier} from '../../../types/api';
 import {ServicesContext} from '../../providers/ServiceProvider';
-import {getOptionLabel, getSettingValues} from '../../../utils/helpers';
+import {getOptionLabel, getPaidActiveTiers, getSettingValues} from '../../../utils/helpers';
 
 type RefipientValueArgs = {
     defaultEmailRecipients: string;
@@ -87,7 +87,7 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     useEffect(() => {
         api.tiers.browse().then((response) => {
-            setTiers(response.tiers);
+            setTiers(getPaidActiveTiers(response.tiers));
         });
 
         api.labels.browse().then((response) => {

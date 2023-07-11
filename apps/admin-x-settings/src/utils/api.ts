@@ -399,8 +399,7 @@ function setupGhostApi({ghostVersion}: GhostApiOptions): API {
         },
         tiers: {
             browse: async () => {
-                const filter = encodeURIComponent('type:paid+active:true');
-                const response = await fetcher(`/tiers/?filter=${filter}&limit=all`);
+                const response = await fetcher(`/tiers/?limit=all`);
                 const data: TiersResponseType = await response.json();
                 return data;
             },

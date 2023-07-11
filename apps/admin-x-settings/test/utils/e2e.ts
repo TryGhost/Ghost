@@ -386,7 +386,7 @@ export async function mockApi({page,responses}: {page: Page, responses?: Respons
 
     await mockApiResponse({
         page,
-        path: /\/ghost\/api\/admin\/tiers\/\?filter=/,
+        path: /\/ghost\/api\/admin\/tiers\//,
         respondTo: {
             GET: {
                 body: responses?.tiers?.browse ?? responseFixtures.tiers,

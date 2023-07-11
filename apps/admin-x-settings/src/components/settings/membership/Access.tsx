@@ -7,7 +7,7 @@ import useSettingGroup from '../../../hooks/useSettingGroup';
 import {GroupBase, MultiValue} from 'react-select';
 import {ServicesContext} from '../../providers/ServiceProvider';
 import {Tier} from '../../../types/api';
-import {getOptionLabel, getSettingValues} from '../../../utils/helpers';
+import {getOptionLabel, getPaidActiveTiers, getSettingValues} from '../../../utils/helpers';
 
 const MEMBERS_SIGNUP_ACCESS_OPTIONS = [
     {value: 'all', label: 'Anyone can sign up'},
@@ -52,7 +52,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     useEffect(() => {
         api.tiers.browse().then((response) => {
-            setTiers(response.tiers);
+            setTiers(getPaidActiveTiers(response.tiers));
         });
     }, [api]);
 

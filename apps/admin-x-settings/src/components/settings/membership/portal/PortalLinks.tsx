@@ -6,7 +6,7 @@ import React, {useContext, useEffect, useState} from 'react';
 import Select from '../../../../admin-x-ds/global/form/Select';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import {SettingsContext} from '../../../providers/SettingsProvider';
-import {getHomepageUrl} from '../../../../utils/helpers';
+import {getHomepageUrl, getPaidActiveTiers} from '../../../../utils/helpers';
 import {useTiers} from '../../../providers/ServiceProvider';
 
 interface PortalLinkPrefs {
@@ -40,7 +40,8 @@ const PortalLinks: React.FC = () => {
     const [isDataAttributes, setIsDataAttributes] = useState(false);
     const [selectedTier, setSelectedTier] = useState('');
     const {siteData} = useContext(SettingsContext);
-    const {data: tiers} = useTiers();
+    const {data: allTiers} = useTiers();
+    const tiers = getPaidActiveTiers(allTiers);
 
     const toggleIsDataAttributes = () => {
         setIsDataAttributes(!isDataAttributes);
