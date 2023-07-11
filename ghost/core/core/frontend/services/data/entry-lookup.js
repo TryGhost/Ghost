@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const Promise = require('bluebird');
 const url = require('url');
 const debug = require('@tryghost/debug')('services:data:entry-lookup');
 const routeMatch = require('path-match')();
