@@ -37,7 +37,7 @@ type HeadingLabelProps = {
     level?: never,
     grey?: boolean } & HeadingBaseProps & React.LabelHTMLAttributes<HTMLLabelElement>
 
-export const Heading6Styles = 'text-2xs font-semibold uppercase tracking-wide';
+export const Heading6Styles = 'text-2xs font-semibold uppercase tracking-wider';
 
 const Heading: React.FC<Heading1to5Props | Heading6Props | HeadingLabelProps> = ({
     level,

@@ -211,7 +211,7 @@ const Modal: React.FC<ModalProps> = ({
             <section className={modalClasses} data-testid={testId} style={modalStyles}>
                 <div className={contentClasses}>
                     <div className='h-full'>
-                        {title && <Heading level={4}>{title}</Heading>}
+                        {title && <Heading level={3}>{title}</Heading>}
                         {children}
                     </div>
                 </div>
