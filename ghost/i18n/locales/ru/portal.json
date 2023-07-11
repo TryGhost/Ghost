@@ -72,7 +72,7 @@
     "In the event a permanent failure is received when attempting to send a newsletter, emails will be disabled on the account.": "В случае получения постоянной ошибки при попытке отправить рассылку, отправка писем на аккаунт будет отключена.",
     "In your email client add {{senderEmail}} to your contacts list. This signals to your mail provider that emails sent from this address should be trusted.": "В своем почтовом клиенте добавьте {{senderEmail}} в список контактов. Это сигнализирует вашему почтовому провайдеру, что письма, отправленные с этого адреса, являются надежными.",
     "Less like this": "Меньше такого",
-    "Make sure emails aren't accidentally ending up in the Spam or Promotions folders of your inbox. If they are, click on "Mark as not spam" and/or "Move to inbox".": "Убедитесь, что письма случайно не попадают в папки «Спам» или «Акции» вашего почтового ящика. Если они там, нажмите «Не спам» и/или «Переместить во входящие».",
+    "Make sure emails aren't accidentally ending up in the Spam or Promotions folders of your inbox. If they are, click on \"Mark as not spam\" and/or \"Move to inbox\".": "Убедитесь, что письма случайно не попадают в папки \"Спам\" или \"Акции\" вашего почтового ящика. Если они там, нажмите \"Не спам\" и/или \"Переместить во входящие\".",
     "Manage": "Управлять",
     "Monthly": "Ежемесячно",
     "More like this": "Больше такого",
