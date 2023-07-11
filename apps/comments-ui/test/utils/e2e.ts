@@ -1,11 +1,20 @@
 import {E2E_PORT} from '../../playwright.config';
+import {Locator, Page} from '@playwright/test';
 import {MockedApi} from './MockedApi';
-import {Page} from '@playwright/test';
 
 export const MOCKED_SITE_URL = 'https://localhost:1234';
 export {MockedApi};
 
-export async function initialize({mockedApi, page, ...options}: {
+function escapeHtml(unsafe: string) {
+    return unsafe
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+export async function initialize({mockedApi, page, bodyStyle, ...options}: {
     mockedApi: MockedApi,
     page: Page,
     path?: string;
@@ -20,13 +29,14 @@ export async function initialize({mockedApi, page, ...options}: {
     title?: string,
     count?: boolean,
     publication?: string,
-    postId?: string
+    postId?: string,
+    bodyStyle?: string,
 }) {
     const sitePath = MOCKED_SITE_URL;
     await page.route(sitePath, async (route) => {
         await route.fulfill({
             status: 200,
-            body: '<html><head><meta charset="UTF-8" /></head><body></body></html>'
+            body: `<html><head><meta charset="UTF-8" /></head><body ${bodyStyle ? 'style="' + escapeHtml(bodyStyle) + '"' : ''}></body></html>`
         });
     });
 
@@ -59,4 +69,53 @@ export async function initialize({mockedApi, page, ...options}: {
     return {
         frame: page.frameLocator('iframe')
     };
+}
+
+/**
+ * Select text range by RegExp.
+ */
+export async function selectText(locator: Locator, pattern: string | RegExp): Promise<void> {
+    await locator.evaluate(
+        (element, {pattern: p}) => {
+            let textNode = element.childNodes[0];
+
+            while (textNode.nodeType !== Node.TEXT_NODE && textNode.childNodes.length) {
+                textNode = textNode.childNodes[0];
+            }
+            const match = textNode.textContent?.match(new RegExp(p));
+            if (match) {
+                const range = document.createRange();
+                range.setStart(textNode, match.index!);
+                range.setEnd(textNode, match.index! + match[0].length);
+                const selection = document.getSelection();
+                selection?.removeAllRanges();
+                selection?.addRange(range);
+            }
+        },
+        {pattern}
+    );
+}
+
+export async function getHeight(locator: Locator) {
+    return await locator.evaluate((node) => {
+        return node.clientHeight;
+    });
+}
+
+export async function setClipboard(page, text) {
+    const modifier = getModifierKey();
+    await page.setContent(`<div contenteditable>${text}</div>`);
+    await page.focus('div');
+    await page.keyboard.press(`${modifier}+KeyA`);
+    await page.keyboard.press(`${modifier}+KeyC`);
+}
+
+export function getModifierKey() {
+    const os = require('os');
+    let platform = os.platform();
+    if (platform === 'darwin') {
+        return 'Meta';
+    } else {
+        return 'Control';
+    }
 }

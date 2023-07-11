@@ -1,3 +1,7 @@
+.kg-signup-card {
+    position: relative;
+}
+
 .kg-signup-card,
 .kg-signup-card * {
     box-sizing: border-box;
@@ -35,19 +39,19 @@
 }
 
 .kg-width-full .kg-signup-card-text {
-    padding: 9.6vmax 0;
+    padding: 12vmax 0;
 }
 
 .kg-layout-split .kg-signup-card-text {
-    padding: 9.6vmax 4vmax;
+    padding: 12vmax 4vmax;
 }
 
 .kg-layout-split.kg-content-wide .kg-signup-card-text {
-    padding: 9.6vmax 0 9.6vmax 4vmax;
+    padding: 10vmax 0 10vmax 4vmax;
 }
 
 .kg-layout-split.kg-content-wide.kg-swapped .kg-signup-card-text {
-    padding: 9.6vmax 4vmax 9.6vmax 0;
+    padding: 10vmax 4vmax 10vmax 0;
 }
 
 .kg-swapped .kg-signup-card-text {
@@ -65,10 +69,23 @@
     z-index: 999;
 }
 
+/* Background image */
+
+.kg-signup-card > picture > .kg-signup-card-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    background-color: #FFFFFF;
+    pointer-events: none;
+}
 
 /* Split layout image */
 
-.kg-signup-card-image {
+.kg-signup-card-content .kg-signup-card-image {
     /* this will force the image to follow the signup card height */
     height: 0;
     min-height: 100%;
@@ -77,7 +94,7 @@
     object-position: center;
 }
 
-.kg-content-wide .kg-signup-card-image {
+.kg-content-wide .kg-signup-card-content .kg-signup-card-image {
     height: 100%;
     padding: 8rem 0;
     object-fit: contain;
@@ -137,7 +154,7 @@
 
 .kg-signup-card.kg-width-full h3.kg-signup-card-subheading:not(.kg-layout-split h3.kg-signup-card-subheading) {
     max-width: 65vmax;
-    font-size: clamp(1.05em, 2vw, 2.8rem);
+    font-size: clamp(1.05em, 2vw, 2.6rem);
 }
 
 .kg-signup-card.kg-width-full.kg-layout-split h3.kg-signup-card-subheading {
@@ -322,7 +339,7 @@
     .kg-width-wide .kg-signup-card-text {
         padding: 6.4vmax 4vmax;
     }
-    
+
     .kg-layout-split.kg-content-wide .kg-signup-card-text,
     .kg-layout-split.kg-content-wide.kg-swapped .kg-signup-card-text {
         padding: 9.6vmax 0;
@@ -332,17 +349,17 @@
         max-width: unset;
     }
 
-    .kg-signup-card-image:not(.kg-content-wide .kg-signup-card-image) {
+    .kg-signup-card-content .kg-signup-card-image:not(.kg-content-wide .kg-signup-card-content .kg-signup-card-image) {
         height: auto;
         min-height: unset;
         aspect-ratio: 1 / 1;
     }
 
-    .kg-content-wide .kg-signup-card-image {
+    .kg-content-wide .kg-signup-card-content .kg-signup-card-image {
         padding: 2.4rem 0 0;
     }
 
-    .kg-content-wide.kg-swapped .kg-signup-card-image {
+    .kg-content-wide.kg-swapped .kg-signup-card-content .kg-signup-card-image {
         padding: 0 0 2.4rem;
     }
 
