@@ -202,7 +202,7 @@ const membersAuthEnumeration = () => {
                 attachResetToRequest: true,
                 failCallback(req, res, next, nextValidRequestDate) {
                     return next(new errors.TooManyRequestsError({
-                        message: `Too many different sign-in attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
+                        message: `Too many different sign-in attempts, try again in ${moment(nextValidRequestDate).fromNow(true)}`,
                         context: tpl(messages.tooManySigninAttempts.context),
                         help: tpl(messages.tooManySigninAttempts.context)
                     }));
