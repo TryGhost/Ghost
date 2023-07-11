@@ -1,6 +1,5 @@
 const moment = require('moment-timezone');
 const semver = require('semver');
-const Promise = require('bluebird');
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const ghostVersion = require('@tryghost/version');
