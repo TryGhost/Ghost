@@ -1,4 +1,4 @@
-import {Config, Setting, SettingValue, SiteData, User} from '../types/api';
+import {Config, Setting, SettingValue, SiteData, Tier, User} from '../types/api';
 
 export interface IGhostPaths {
     adminRoot: string;
@@ -124,4 +124,22 @@ export function checkStripeEnabled(settings: Setting[], config: Config) {
     }
 
     return hasConnectKeys || hasDirectKeys;
+}
+
+export function getPaidActiveTiers(tiers: Tier[]) {
+    return tiers.filter((tier) => {
+        return tier.type === 'paid' && tier.active;
+    });
+}
+
+export function getActiveTiers(tiers: Tier[]) {
+    return tiers.filter((tier) => {
+        return tier.active;
+    });
+}
+
+export function getArchivedTiers(tiers: Tier[]) {
+    return tiers.filter((tier) => {
+        return !tier.active;
+    });
 }
