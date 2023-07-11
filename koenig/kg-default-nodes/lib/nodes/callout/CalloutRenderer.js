@@ -1,9 +1,9 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option';
+import {cleanDOM} from '../../utils/clean-dom';
 
 export function renderCalloutNode(node, options = {}) {
     addCreateDocumentOption(options);
     const document = options.createDocument();
-
     const element = document.createElement('div');
     element.classList.add('kg-card', 'kg-callout-card', `kg-callout-card-${node.backgroundColor}`);
 
@@ -16,7 +16,14 @@ export function renderCalloutNode(node, options = {}) {
 
     const textElement = document.createElement('div');
     textElement.classList.add('kg-callout-text');
-    textElement.innerHTML = node.calloutText;
+
+    const temporaryContainer = document.createElement('div');
+    temporaryContainer.innerHTML = node.calloutText;
+
+    const allowedTags = ['A', 'STRONG', 'EM', 'B', 'I', 'BR'];
+    cleanDOM(temporaryContainer, allowedTags);
+
+    textElement.innerHTML = temporaryContainer.innerHTML;
     element.appendChild(textElement);
 
     return {element};

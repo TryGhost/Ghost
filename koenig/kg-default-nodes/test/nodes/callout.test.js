@@ -31,7 +31,7 @@ describe('CalloutNode', function () {
             nodes: editorNodes
         });
         dataset = {
-            calloutText: 'This is a callout',
+            calloutText: '<p dir="ltr"><b><strong>Hello!</strong></b><span> Check </span><i><em class="italic">this</em></i> <a href="https://ghost.org" rel="noopener"><span>out</span></a><span>.</span></p>',
             calloutEmoji: '💡',
             backgroundColor: 'blue'
         };
@@ -124,14 +124,18 @@ describe('CalloutNode', function () {
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-callout-card kg-callout-card-blue">
                     <div class="kg-callout-emoji">💡</div>
-                    <div class="kg-callout-text">This is a callout</div>
+                    <div class="kg-callout-text">
+                        <b><strong>Hello!</strong></b
+                        >Check<i><em class="italic">this</em></i
+                        ><a href="https://ghost.org" rel="noopener">out</a>.
+                    </div>
                 </div>
                 `);
         }));
 
         it('can render to HTML with no emoji', editorTest(function () {
             const dataset2 = {
-                calloutText: 'This is a callout',
+                calloutText: '<p dir="ltr"><b><strong>Hello!</strong></b><span> Check </span><i><em class="italic">this</em></i> <a href="https://ghost.org" rel="noopener"><span>out</span></a><span>.</span></p>',
                 calloutEmoji: '',
                 backgroundColor: 'blue'
             };
@@ -139,7 +143,11 @@ describe('CalloutNode', function () {
             const {element} = node.exportDOM(exportOptions);
             element.outerHTML.should.prettifyTo(html`
                 <div class="kg-card kg-callout-card kg-callout-card-blue">
-                    <div class="kg-callout-text">This is a callout</div>
+                    <div class="kg-callout-text">
+                        <b><strong>Hello!</strong></b
+                        >Check<i><em class="italic">this</em></i
+                        ><a href="https://ghost.org" rel="noopener">out</a>.
+                    </div>
                 </div>
                 `);
         }));
