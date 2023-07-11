@@ -18,11 +18,11 @@
     "lib"
   ],
   "devDependencies": {
-    "c8": "7.13.0",
+    "c8": "7.14.0",
     "mocha": "10.2.0"
   },
   "dependencies": {
-    "@extractus/oembed-extractor": "3.1.10",
+    "@extractus/oembed-extractor": "3.2.1",
     "@tryghost/errors": "1.2.24",
     "@tryghost/logging": "2.4.4",
     "@tryghost/tpl": "0.1.24",
@@ -30,7 +30,7 @@
     "cheerio": "0.22.0",
     "iconv-lite": "0.6.3",
     "lodash": "4.17.21",
-    "metascraper": "5.34.7",
+    "metascraper": "5.34.8",
     "metascraper-author": "5.34.7",
     "metascraper-description": "5.34.7",
     "metascraper-image": "5.34.7",

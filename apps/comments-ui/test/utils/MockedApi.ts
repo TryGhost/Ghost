@@ -55,7 +55,7 @@ export class MockedApi {
         };
     }
 
-    browseComments({limit = 5, order, filter, page}: {limit?: number, order?: string, filter?: string, page: number}) {
+    browseComments({limit = 5, filter, page}: {limit?: number, filter?: string, page: number}) {
         // Sort comments on created at + id
         this.comments.sort((a, b) => {
             const aDate = new Date(a.created_at).getTime();
@@ -166,6 +166,24 @@ export class MockedApi {
         });
 
         await page.route(`${path}/members/api/comments/*`, async (route) => {
+            if (route.request().method() === 'POST') {
+                const payload = JSON.parse(route.request().postData());
+
+                this.#lastCommentDate = new Date();
+                this.addComment({
+                    ...payload.comments[0],
+                    member: this.member
+                });
+                return await route.fulfill({
+                    status: 200,
+                    body: JSON.stringify({
+                        comments: [
+                            this.comments[this.comments.length - 1]
+                        ]
+                    })
+                });
+            }
+
             const url = new URL(route.request().url());
 
             const p = parseInt(url.searchParams.get('page') ?? '1');

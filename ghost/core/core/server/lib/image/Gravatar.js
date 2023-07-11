@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const crypto = require('crypto');
 const tpl = require('@tryghost/tpl');
 

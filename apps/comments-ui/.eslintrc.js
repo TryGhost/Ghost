@@ -36,6 +36,9 @@ module.exports = {
         'tailwindcss/migration-from-tailwind-2': ['warn', {config: 'tailwind.config.cjs'}],
         'tailwindcss/no-arbitrary-value': 'off',
         'tailwindcss/no-custom-classname': 'off',
-        'tailwindcss/no-contradicting-classname': ['error', {config: 'tailwind.config.cjs'}]
+        'tailwindcss/no-contradicting-classname': ['error', {config: 'tailwind.config.cjs'}],
+
+        // This rule doesn't work correctly with TypeScript, and TypeScript has its own better version
+        'no-undef': 'off'
     }
 };

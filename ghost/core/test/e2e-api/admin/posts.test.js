@@ -88,6 +88,7 @@ describe('Posts API', function () {
     let agent;
 
     before(async function () {
+        mockManager.mockLabsEnabled('collections', true);
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts');
         await agent.loginAsOwner();

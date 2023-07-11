@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const _ = require('lodash');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');

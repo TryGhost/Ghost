@@ -1,0 +1,32 @@
+{
+    "users": [
+        {
+            "id": "1",
+            "name": "Owner User",
+            "slug": "owner",
+            "email": "owner@test.com",
+            "profile_image": null,
+            "cover_image": null,
+            "bio": null,
+            "website": null,
+            "location": null,
+            "facebook": null,
+            "twitter": null,
+            "accessibility": null,
+            "status": "active",
+            "meta_title": null,
+            "meta_description": null,
+            "tour": null,
+            "last_seen": "2023-06-25T23:34:33.000Z",
+            "comment_notifications": true,
+            "free_member_signup_notification": true,
+            "paid_subscription_started_notification": true,
+            "paid_subscription_canceled_notification": false,
+            "mention_notifications": true,
+            "milestone_notifications": true,
+            "created_at": "2023-05-05T00:55:15.000Z",
+            "updated_at": "2023-06-25T23:34:33.000Z",
+            "url": "http://localhost:2368/author/owner/"
+        }
+    ]
+}
