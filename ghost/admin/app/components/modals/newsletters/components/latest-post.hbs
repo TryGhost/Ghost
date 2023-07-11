@@ -1,0 +1,14 @@
+<div class="gh-members-emailpreview-latest-post">
+    {{#if (feature 'emailCustomization')}}
+        <div>
+            <h4 style={{html-safe (concat "color: " @textColor)}}>{{@postTitle}}</h4>
+            <p style={{html-safe (concat "color: " @secondaryTextColor " !important")}}>{{@postExcerpt}}</p>
+        </div>
+    {{else}}
+        <div>
+            <h4>{{@postTitle}}</h4>
+            <p>{{@postExcerpt}}</p>
+        </div>
+    {{/if}}
+    <div class="gh-members-emailpreview-latest-post-image" style={{html-safe (concat "background-image: url(" @imgPath ")")}}></div>
+</div>

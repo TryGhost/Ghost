@@ -1,16 +1,19 @@
 const should = require('should');
 const sinon = require('sinon');
-const _ = require('lodash');
 const validate = require('../../../../../core/server/services/themes/validate');
 const list = require('../../../../../core/server/services/themes/list');
 const gscan = require('gscan');
-const assert = require('assert');
+const assert = require('assert/strict');
 const adapterManager = require('../../../../../core/server/services/adapter-manager');
+const InMemoryCache = require('../../../../../core/server/adapters/cache/MemoryCache');
+const logging = require('@tryghost/logging');
 
 describe('Themes', function () {
     let checkZipStub;
     let checkStub;
     let formatStub;
+    let adapterStub;
+    let loggingStub;
 
     beforeEach(function () {
         checkZipStub = sinon.stub(gscan, 'checkZip');
@@ -28,6 +31,15 @@ describe('Themes', function () {
             version: '1.0.0',
             path: '/path/to/theme'
         };
+
+        beforeEach(function () {
+            adapterStub = sinon.stub(adapterManager, 'getAdapter').returns(new InMemoryCache());
+            validate.init();
+        });
+
+        afterEach(function () {
+            adapterStub.restore();
+        });
 
         it('[success] validates a valid zipped theme', function () {
             checkZipStub.resolves({});
@@ -150,7 +162,7 @@ describe('Themes', function () {
             validate.init();
         });
 
-        it('Does an innitial check if not cached yet', async function () {
+        it('Does an initial check if not cached yet', async function () {
             checkStub.resolves({});
             formatStub.returns({results: {error: [{hello: 'world'}]}});
 
@@ -172,10 +184,12 @@ describe('Themes', function () {
         });
 
         it('Silently fails when cache adapter throws', async function () {
+            loggingStub = sinon.stub(logging, 'error');
             sinon.stub(adapterManager, 'getAdapter').returns({
                 get: () => {
                     throw new Error('test');
-                }
+                },
+                set: () => {}
             });
             validate.init();
 
@@ -185,6 +199,8 @@ describe('Themes', function () {
             const checkedTheme = await validate.getThemeErrors(testTheme.name);
             sinon.assert.calledOnce(checkStub);
             sinon.assert.calledOnce(formatStub);
+            // Two calls to logging.error occur in the check function
+            sinon.assert.calledTwice(loggingStub);
             assert.deepEqual(checkedTheme, {errors: [{hello: 'world'}], warnings: []});
         });
     });

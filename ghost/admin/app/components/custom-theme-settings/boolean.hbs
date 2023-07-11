@@ -1,7 +1,7 @@
 <div class="gh-stack-item {{if (eq @index 0) "gh-setting-first" "gh-setting"}}">
     <div class="flex-grow-1">
         <div class="flex justify-between items-center relative">
-            <span class="gh-setting-title" for={{this.checkboxId}}>
+            <span class="gh-setting-title mb0" for={{this.checkboxId}}>
                 {{humanize-setting-key @setting.key}}
             </span>
             <div class="for-switch x-small">
@@ -11,5 +11,8 @@
                 </label>
             </div>
         </div>
+        {{#if @setting.description}}
+            <div class="gh-setting-desc" style="margin-top: 1px">{{truncate @setting.description 100}}</div>
+        {{/if}}
     </div>
 </div>

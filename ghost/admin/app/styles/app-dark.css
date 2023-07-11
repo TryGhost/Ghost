@@ -66,6 +66,7 @@
 @import "layouts/preview-email.css";
 @import "layouts/portal-settings.css";
 @import "layouts/billing.css";
+@import "layouts/post-history.css";
 @import "layouts/post-preview.css";
 @import "layouts/dashboard.css";
 @import "layouts/tiers.css";
@@ -75,7 +76,7 @@
 :root {
     /* Primary colours */
     --black: #fafafb;
-    --white: #101114;
+    --white: #15171A;
     --lime: #B5FF18;
 
     --darkgrey: #E3E6E8;
@@ -86,8 +87,8 @@
     --whitegrey: #17191C;
     --blue: color-mod(#3eb0ef l(+5%) s(+5%));
 
-    --main-bg-color: #101114;
-    --dark-main-bg-color: #101114;
+    --main-bg-color: #15171A;
+    --dark-main-bg-color: #15171A;
     --hairline-color-1: #22252A;
     --hairline-color-2: #5E6874;
 
@@ -276,7 +277,7 @@ input:focus,
     background: var(--whitegrey-l2);
 }
 
-.gh-btn-group .gh-btn:first-of-type {
+.gh-btn-group:not(.kg-settings-headerstyle-btn-group) .gh-btn:first-of-type {
     border-right: none !important;
 }
 
@@ -808,6 +809,10 @@ input:focus,
 
 .gh-settings-main-grid .gh-setting-group span {
     background: color-mod(var(--dark-main-bg-color) l(+2%));
+}
+
+.gh-referral-toast-close:hover {
+    color: #fff;
 }
 
 .nightshift-toggle {
@@ -1420,13 +1425,15 @@ kbd {
 /* Post Analytics */
 
 .feature-audienceFeedback .gh-post-analytics-box.gh-post-analytics-newsletter-clicks,
-.feature-audienceFeedback .gh-post-analytics-box.gh-post-analytics-source-attribution {
-    background: #101114;
+.feature-audienceFeedback .gh-post-analytics-box.gh-post-analytics-source-attribution,
+.gh-post-analytics-box.gh-post-analytics-mentions
+ {
+    background: var(--white);
     border-color: #26282b;
 }
 
 .gh-tabs-analytics {
-    background: #101114;
+    background: var(--white);
     border-color: #26282b;
 }
 
@@ -1436,7 +1443,7 @@ kbd {
 
 .gh-tabs-analytics .tab-panel-selected,
 .gh-tabs-analytics .tab-selected {
-    background: #101114;
+    background: var(--white);
     border-color: transparent;
 }
 
@@ -1452,7 +1459,8 @@ kbd {
 
 .gh-post-activity-feed .gh-dashboard-list-item + .gh-dashboard-list-item,
 .feature-audienceFeedback .gh-links-list-item,
-.gh-post-activity-feed-footer {
+.gh-post-activity-feed-footer,
+.gh-tabs-analytics.no-tabs .tab-selected {
     border-color: #17191c;
 }
 
@@ -1477,4 +1485,63 @@ kbd {
 .gh-portal-settings-actions .gh-btn-primary:hover {
     background: var(--green) !important;
     color: #fff;
+}
+
+/* Mentions */
+.gh-mention-container {
+    background-color: var(--whitegrey);
+    border: 1px solid var(--whitegrey);
+}
+
+.gh-mention-your-post-link {
+    color: var(--black);
+}
+
+.gh-mention-card {
+    border-color: var(--hairline-color-1);
+}
+
+.gh-mention-publisher {
+    color: var(--middarkgrey);
+}
+
+.gh-mentions-explainer {
+    background: var(--whitegrey);
+}
+
+.gh-mention-your-link.has-multiple-links {
+    border-bottom: 1px dashed var(--midlightgrey);
+}
+
+.gh-mention-header .popover {
+    background-color: #1c1e21;
+    color: var(--darkgrey);
+}
+
+.gh-dashboard-mentions-container {
+    background: #1c1e21;
+}
+
+.gh-dashboard-mentions-header {
+    border-color: #2b2d31;
+}
+
+.gh-dashboard-mention:hover {
+    background: var(--whitegrey-d1);
+}
+
+/* Feedback form */
+.gh-editor-feedback-dropdown {
+    background: var(--whitegrey-l1);
+}
+
+/* Update banner */
+.gh-update-banner {
+    background: var(--main-color-content-greybg);
+}
+
+/* Staff */
+.gh-roles-container .popover {
+    background: var(--dark-main-bg-color);
+    box-shadow: 0 0 1px rgba(0,0,0,.65), 0 8px 28px rgba(0,0,0,.72);
 }

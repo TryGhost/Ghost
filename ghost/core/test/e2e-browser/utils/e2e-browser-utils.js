@@ -1,5 +1,8 @@
 const DataGenerator = require('../../utils/fixtures/data-generator');
+const {expect, test} = require('@playwright/test');
 const ObjectID = require('bson-objectid').default;
+const {promisify} = require('util');
+const {exec} = require('child_process');
 
 /**
  * Tier
@@ -68,6 +71,23 @@ const setupGhost = async (page) => {
     }
 };
 
+const disconnectStripe = async (page) => {
+    await deleteAllMembers(page);
+    await page.locator('.gh-nav a[href="#/settings/"]').click();
+    await page.locator('.gh-setting-group').filter({hasText: 'Membership'}).click();
+    if (await page.isVisible('.gh-btn-stripe-status.connected')) {
+        // Disconnect if already connected
+        await page.locator('.gh-btn-stripe-status.connected').click();
+        await page.locator('.modal-content .gh-btn-stripe-disconnect').first().click();
+        await page
+            .locator('.modal-content')
+            .filter({hasText: 'Are you sure you want to disconnect?'})
+            .first()
+            .getByRole('button', {name: 'Disconnect'})
+            .click();
+    }
+};
+
 const setupStripe = async (page, stripConnectIntegrationToken) => {
     await deleteAllMembers(page);
     await page.locator('.gh-nav a[href="#/settings/"]').click();
@@ -87,7 +107,9 @@ const setupStripe = async (page, stripConnectIntegrationToken) => {
     }
     await page.getByPlaceholder('Paste your secure key here').first().fill(stripConnectIntegrationToken);
     await page.getByRole('button', {name: 'Save Stripe settings'}).click();
-    await page.getByRole('button', {name: 'OK'}).click();
+    // We need to wait for the saving to succeed
+    await expect(page.locator('[data-test-button="stripe-disconnect"]')).toBeVisible();
+    await page.locator('[data-test-button="close-stripe-connect"]').click();
 };
 
 // Setup Mailgun with fake data, for Ghost Admin to allow bulk sending
@@ -100,6 +122,17 @@ const setupMailgun = async (page) => {
     await page.locator('[data-test-mailgun-api-key-input]').fill('Not an API key');
     await page.locator('[data-test-button="save-members-settings"]').click();
     await page.waitForSelector('[data-test-button="save-members-settings"] [data-test-task-button-state="success"]');
+};
+
+/**
+ * Enable experimental labs features
+ * @param {import('@playwright/test').Page} page
+ */
+const enableLabs = async (page) => {
+    await page.locator('.gh-nav a[href="#/settings/"]').click();
+    await page.locator('.gh-setting-group').filter({hasText: 'Labs'}).click();
+    const alphaList = page.locator('.gh-main-section').filter({hasText: 'Alpha Features'});
+    await alphaList.locator('label[for="labs-webmentions"]').click();
 };
 
 /**
@@ -132,13 +165,14 @@ const deleteAllMembers = async (page) => {
  */
 const archiveAllTiers = async (page) => {
     // Navigate to the member settings
-    await page.locator('.gh-nav a[href="#/settings/"]').click();
-    await page.locator('.gh-setting-group').filter({hasText: 'Membership'}).click();
+    await page.locator('[data-test-nav="settings"]').click();
+    await page.locator('[data-test-nav="members-membership"]').click();
+
+    // Tiers request can take time, so waiting until there is no connections before interacting with them
+    await page.waitForLoadState('networkidle');
 
     // Expand the premium tier list
-    await page.locator('[data-test-toggle-pub-info]').click({
-        delay: 500 // TODO: Figure out how to prevent this from opening with an empty list without using delay
-    });
+    await page.locator('[data-test-toggle-pub-info]').click();
 
     // Archive if already exists
     while (await page.locator('.gh-tier-card').first().isVisible()) {
@@ -179,13 +213,14 @@ const impersonateMember = async (page) => {
  */
 const createTier = async (page, {name, monthlyPrice, yearlyPrice, trialDays}, enableInPortal = true) => {
     // Navigate to the member settings
-    await page.locator('.gh-nav a[href="#/settings/"]').click();
-    await page.locator('.gh-setting-group').filter({hasText: 'Membership'}).click();
+    await page.locator('[data-test-nav="settings"]').click();
+    await page.locator('[data-test-nav="members-membership"]').click();
+
+    // Tiers request can take time, so waiting until there is no connections before interacting with them
+    await page.waitForLoadState('networkidle');
 
     // Expand the premium tier list
-    await page.locator('[data-test-toggle-pub-info]').click({
-        delay: 500 // TODO: Figure out how to prevent this from opening with an empty list without using delay
-    });
+    await page.locator('[data-test-toggle-pub-info]').click();
 
     // Archive if already exists
     while (await page.locator('.gh-tier-card').filter({hasText: name}).first().isVisible()) {
@@ -195,7 +230,9 @@ const createTier = async (page, {name, monthlyPrice, yearlyPrice, trialDays}, en
         await page.locator('.modal-content').getByRole('button', {name: 'Archive'}).click();
         await page.locator('.modal-content').waitFor({state: 'detached', timeout: 1000});
     }
-
+    if (!await page.locator('.gh-btn-add-tier').isVisible()) {
+        await page.locator('[data-test-toggle-pub-info]').click();
+    }
     // Add the tier
     await page.locator('.gh-btn-add-tier').click();
     const modal = page.locator('.modal-content');
@@ -210,9 +247,7 @@ const createTier = async (page, {name, monthlyPrice, yearlyPrice, trialDays}, en
     await page.waitForSelector('.modal-content input#name', {state: 'detached'});
 
     // Close the premium tier list
-    await page.locator('[data-test-toggle-pub-info]').click({
-        delay: 500 // TODO: Figure out if we need this delay
-    });
+    await page.locator('[data-test-toggle-pub-info]').click();
 
     // Enable the tier in portal
     if (enableInPortal) {
@@ -332,6 +367,8 @@ const completeStripeSubscription = async (page) => {
     await fillInputIfExists(page, '#billingLocality', 'Testville');
 
     await page.getByTestId('hosted-payment-submit-button').click();
+
+    await page.waitForLoadState('networkidle');
 };
 
 /**
@@ -401,9 +438,73 @@ const createPostDraft = async (page, {title = 'Hello world', body = 'This is my 
     await page.keyboard.type(body);
 };
 
+/**
+ * Go to Membership setting page
+ * @param {import('@playwright/test').Page} page
+ */
+const goToMembershipPage = async (page) => {
+    return await test.step('Open Membership settings', async () => {
+        await page.goto('/ghost');
+        await page.locator('[data-test-nav="settings"]').click();
+        await page.locator('[data-test-nav="members-membership"]').click();
+        // Tiers request can take time, so waiting until there is no connections before interacting with UI
+        await page.waitForLoadState('networkidle');
+    });
+};
+
+/**
+ * Get tier card from membership page
+ * @param {import('@playwright/test').Page} page
+ * @param {Object} options
+ * @param {String} [options.id]
+ */
+const getTierCardById = async (page, {id}) => {
+    return await test.step('Expand the premium tier list and find the tier', async () => {
+        await page.locator('[data-test-toggle-pub-info]').click();
+        await page.waitForSelector(`[data-test-tier-card="${id}"]`);
+
+        return page.locator(`[data-test-tier-card="${id}"]`);
+    });
+};
+
+const generateStripeIntegrationToken = async () => {
+    const inquirer = require('inquirer');
+    const {knex} = require('../../../core/server/data/db');
+
+    const stripeDatabaseKeys = {
+        publishableKey: 'stripe_connect_publishable_key',
+        secretKey: 'stripe_connect_secret_key',
+        liveMode: 'stripe_connect_livemode'
+    };
+    const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY ?? (await knex('settings').select('value').where('key', stripeDatabaseKeys.publishableKey).first())?.value
+        ?? (await inquirer.prompt([{
+            message: 'Stripe publishable key (starts "pk_test_")',
+            type: 'password',
+            name: 'value'
+        }])).value;
+    const secretKey = process.env.STRIPE_SECRET_KEY ?? (await knex('settings').select('value').where('key', stripeDatabaseKeys.secretKey).first())?.value
+        ?? (await inquirer.prompt([{
+            message: 'Stripe secret key (starts "sk_test_")',
+            type: 'password',
+            name: 'value'
+        }])).value;
+
+    const accountId = process.env.STRIPE_ACCOUNT_ID ?? JSON.parse((await promisify(exec)('stripe get account')).stdout).id;
+
+    return Buffer.from(JSON.stringify({
+        a: secretKey,
+        p: publishableKey,
+        l: false,
+        i: accountId
+    })).toString('base64');
+};
+
 module.exports = {
     setupGhost,
     setupStripe,
+    disconnectStripe,
+    enableLabs,
+    generateStripeIntegrationToken,
     setupMailgun,
     deleteAllMembers,
     createTier,
@@ -412,5 +513,7 @@ module.exports = {
     createMember,
     createPostDraft,
     completeStripeSubscription,
-    impersonateMember
+    impersonateMember,
+    goToMembershipPage,
+    getTierCardById
 };

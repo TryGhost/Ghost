@@ -77,6 +77,10 @@
                     "description": "Internal Integration for the Ghost Explore directory"
                 },
                 {
+                    "name": "Self-Serve Migration Integration",
+                    "description": "Internal Integration for the Self-Serve migration tool"
+                },
+                {
                     "name": "DB Backup Integration",
                     "description": "Internal DB Backup Client"
                 },
@@ -633,6 +637,36 @@
                     "name": "Edit links",
                     "action_type": "edit",
                     "object_type": "link"
+                },
+                {
+                    "name": "Browse mentions",
+                    "action_type": "browse",
+                    "object_type": "mention"
+                },
+                {
+                    "name": "Browse collections",
+                    "action_type": "browse",
+                    "object_type": "collection"
+                },
+                {
+                    "name": "Read collections",
+                    "action_type": "read",
+                    "object_type": "collection"
+                },
+                {
+                    "name": "Edit collections",
+                    "action_type": "edit",
+                    "object_type": "collection"
+                },
+                {
+                    "name": "Add collections",
+                    "action_type": "add",
+                    "object_type": "collection"
+                },
+                {
+                    "name": "Delete collections",
+                    "action_type": "destroy",
+                    "object_type": "collection"
                 }
             ]
         },
@@ -646,6 +680,8 @@
                     "free_member_signup_notification": true,
                     "paid_subscription_started_notificaton": true,
                     "paid_subscription_canceled_notification": false,
+                    "mention_notifications": true,
+                    "milestone_notifications": true,
                     "status": "inactive",
                     "roles": []
                 },
@@ -660,6 +696,8 @@
                     "free_member_signup_notification": true,
                     "paid_subscription_started_notification": true,
                     "paid_subscription_canceled_notification": false,
+                    "mention_notifications": true,
+                    "milestone_notifications": true,
                     "location": "The Internet",
                     "website": "https://ghost.org",
                     "bio": "You can delete this user to remove all the welcome posts",
@@ -873,6 +911,18 @@
                     "api_keys": [{"type": "admin", "role": "Ghost Explore Integration"}]
                 },
                 {
+                    "slug": "self-serve-migration",
+                    "name": "Self-Serve Migration Integration",
+                    "description": "Core Self-Serve Migration integration",
+                    "type": "core",
+                    "api_keys": [
+                        {
+                            "type": "admin",
+                            "role": "Self-Serve Migration Integration"
+                        }
+                    ]
+                },
+                {
                     "slug": "ghost-backup",
                     "name": "Ghost Backup",
                     "description": "Internal DB Backup integration",
@@ -939,7 +989,9 @@
                     "newsletter": "all",
                     "explore": "read",
                     "comment": "all",
-                    "link": "all"
+                    "link": "all",
+                    "mention": "browse",
+                    "collection": "all"
                 },
                 "DB Backup Integration": {
                     "db": "all"
@@ -949,6 +1001,11 @@
                 },
                 "Ghost Explore Integration": {
                     "explore": "read"
+                },
+                "Self-Serve Migration Integration": {
+                    "db": "importContent",
+                    "member": "add",
+                    "tag": "read"
                 },
                 "Admin Integration": {
                     "mail": "all",
@@ -974,7 +1031,9 @@
                     "newsletter": ["browse", "read", "add", "edit"],
                     "explore": "read",
                     "comment": "all",
-                    "link": "all"
+                    "link": "all",
+                    "mention": "browse",
+                    "collection": "all"
                 },
                 "Editor": {
                     "notification": "all",
@@ -991,7 +1050,8 @@
                     "snippet": "all",
                     "label": ["browse", "read"],
                     "product": ["browse", "read"],
-                    "newsletter": ["browse", "read"]
+                    "newsletter": ["browse", "read"],
+                    "collection": "all"
                 },
                 "Author": {
                     "post": ["browse", "read", "add"],
@@ -1006,7 +1066,8 @@
                     "snippet": ["browse", "read"],
                     "label": ["browse", "read"],
                     "product": ["browse", "read"],
-                    "newsletter": ["browse", "read"]
+                    "newsletter": ["browse", "read"],
+                    "collection": ["browse", "read", "add"]
                 },
                 "Contributor": {
                     "post": ["browse", "read", "add"],
@@ -1018,7 +1079,8 @@
                     "theme": ["browse"],
                     "email_preview": "read",
                     "email": "read",
-                    "snippet": ["browse", "read"]
+                    "snippet": ["browse", "read"],
+                    "collection": ["browse", "read"]
                 }
             }
         },

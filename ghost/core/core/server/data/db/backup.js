@@ -3,7 +3,6 @@
 const fs = require('fs-extra');
 
 const path = require('path');
-const Promise = require('bluebird');
 const config = require('../../../shared/config');
 const logging = require('@tryghost/logging');
 const urlUtils = require('../../../shared/url-utils');
@@ -32,7 +31,7 @@ const readBackup = async (filename) => {
     const exists = await fs.pathExists(backupPath);
 
     if (exists) {
-        const backupFile = await fs.readFile(backupPath);
+        const backupFile = await fs.readFile(backupPath, 'utf8');
         return JSON.parse(backupFile);
     } else {
         return null;
@@ -40,23 +39,24 @@ const readBackup = async (filename) => {
 };
 
 /**
- * ## Backup
- * does an export, and stores this in a local file
- * @returns {Promise<*>}
+ * Does an export, and stores this in a local file
+ *
+ * @param {Object} options
+ * @returns {Promise<String>}
  */
 const backup = async function backup(options = {}) {
     logging.info('Creating database backup');
 
-    const props = {
-        data: exporter.doExport(options),
-        filename: exporter.fileName(options)
-    };
+    const filename = await exporter.fileName(options);
+    const data = await exporter.doExport(options);
 
-    const exportResult = await Promise.props(props);
-    const filename = await writeExportFile(exportResult);
+    const filePath = await writeExportFile({
+        data,
+        filename
+    });
 
-    logging.info('Database backup written to: ' + filename);
-    return filename;
+    logging.info(`Database backup written to ${filePath}`);
+    return filePath;
 };
 
 module.exports = {

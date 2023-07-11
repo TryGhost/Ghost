@@ -2,6 +2,7 @@ import ModalComponent from 'ghost-admin/components/modal-base';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {GENERIC_ERROR_MESSAGE} from 'ghost-admin/services/notifications';
 import {computed} from '@ember/object';
+import {getErrorCode} from '../services/ajax';
 import {inject} from 'ghost-admin/decorators/inject';
 import {
     isRequestEntityTooLargeError,
@@ -90,7 +91,9 @@ export default ModalComponent.extend({
             this.notifications.showAPIError(error);
         }
 
-        if (isUnsupportedMediaTypeError(error)) {
+        if (getErrorCode(error) === 'INVALID_ZIP_FILE_NAME_ENCODING') {
+            message = 'The uploaded zip could not be read due to a long or invalid file name. Please remove any special characters from the file name, or alternatively try another archiving tool if using MacOS Archive Utility.';
+        } else if (isUnsupportedMediaTypeError(error)) {
             message = 'The file type you uploaded is not supported.';
         } else if (isRequestEntityTooLargeError(error)) {
             message = 'The file you uploaded was larger than the maximum file size your server allows.';

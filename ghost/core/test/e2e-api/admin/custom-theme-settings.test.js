@@ -4,6 +4,8 @@ const testUtils = require('../../utils');
 const localUtils = require('./utils');
 
 const config = require('../../../core/shared/config');
+const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 
 describe('Custom Theme Settings API', function () {
     let request;
@@ -36,6 +38,10 @@ describe('Custom Theme Settings API', function () {
                 }
             }
         });
+    });
+
+    afterEach(function () {
+        sinon.restore();
     });
 
     describe('Browse', function () {
@@ -176,6 +182,7 @@ describe('Custom Theme Settings API', function () {
                 value: 'Not gonna work'
             }];
 
+            const loggingStub = sinon.stub(logging, 'error');
             const res = await request
                 .put(localUtils.API.getApiQuery(`custom_theme_settings/`))
                 .set('Origin', config.get('url'))
@@ -189,6 +196,7 @@ describe('Custom Theme Settings API', function () {
             const jsonResponse = res.body;
             should.exist(jsonResponse);
             should.exist(jsonResponse.errors);
+            sinon.assert.calledOnce(loggingStub);
         });
 
         it('errors for invalid select value', async function () {
@@ -197,6 +205,7 @@ describe('Custom Theme Settings API', function () {
                 value: 'Not gonna work'
             }];
 
+            const loggingStub = sinon.stub(logging, 'error');
             const res = await request
                 .put(localUtils.API.getApiQuery(`custom_theme_settings/`))
                 .set('Origin', config.get('url'))
@@ -210,6 +219,7 @@ describe('Custom Theme Settings API', function () {
             const jsonResponse = res.body;
             should.exist(jsonResponse);
             should.exist(jsonResponse.errors);
+            sinon.assert.calledOnce(loggingStub);
         });
     });
 });

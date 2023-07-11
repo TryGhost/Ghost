@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {stringMatching} = matchers;
+const {anyContentVersion, stringMatching} = matchers;
 
 describe('Members Stripe Connect API', function () {
     let agent;
@@ -16,6 +16,7 @@ describe('Members Stripe Connect API', function () {
             .expectStatus(302)
             .expectEmptyBody()
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 location: stringMatching(/^https:\/\/connect\.stripe\.com\/oauth\/authorize\?response_type=code&scope=read_write&client_id=/),
                 'set-cookie': [
                     stringMatching(/^ghost-admin-api-session=/)

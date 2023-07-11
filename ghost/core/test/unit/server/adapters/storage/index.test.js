@@ -15,13 +15,13 @@ describe('storage: index_spec', function () {
         }
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         if (scope.adapter) {
             fs.unlinkSync(scope.adapter);
             scope.adapter = null;
         }
 
-        configUtils.restore();
+        await configUtils.restore();
     });
 
     it('default image storage is local file storage', function () {

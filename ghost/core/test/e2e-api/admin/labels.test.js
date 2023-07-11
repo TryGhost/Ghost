@@ -1,5 +1,7 @@
+const logging = require('@tryghost/logging');
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyObjectId, anyISODateTime, anyErrorId, anyEtag, anyLocationFor} = matchers;
+const {anyContentVersion, anyObjectId, anyISODateTime, anyErrorId, anyEtag, anyLocationFor} = matchers;
+const sinon = require('sinon');
 
 const matchLabel = {
     id: anyObjectId,
@@ -16,12 +18,17 @@ describe('Labels API', function () {
         await agent.loginAsOwner();
     });
 
+    afterEach(function () {
+        sinon.restore();
+    });
+
     it('Can browse with no labels', async function () {
         await agent
             .get('labels')
             .expectStatus(200)
             .matchBodySnapshot()
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -37,12 +44,14 @@ describe('Labels API', function () {
                 labels: [matchLabel]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('labels')
             });
     });
 
     it('Errors when adding label with the same name', async function () {
+        const loggingStub = sinon.stub(logging, 'error');
         await agent
             .post('labels')
             .body({labels: [{
@@ -56,8 +65,10 @@ describe('Labels API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
+        sinon.assert.calledOnce(loggingStub);
     });
 
     it('Can browse with member count', async function () {
@@ -68,6 +79,7 @@ describe('Labels API', function () {
                 labels: [matchLabel]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -80,6 +92,7 @@ describe('Labels API', function () {
                 labels: [matchLabel]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -93,6 +106,7 @@ describe('Labels API', function () {
                 labels: [matchLabel]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -105,6 +119,7 @@ describe('Labels API', function () {
                 labels: [matchLabel]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -115,6 +130,7 @@ describe('Labels API', function () {
             .expectStatus(204)
             .expectEmptyBody()
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -129,6 +145,7 @@ describe('Labels API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });

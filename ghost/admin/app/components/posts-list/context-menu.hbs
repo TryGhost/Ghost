@@ -1,0 +1,51 @@
+<ul class="gh-posts-context-menu dropdown-menu dropdown-triangle-top-left">
+
+    {{#if this.canUnpublishSelection}}
+        <li>
+            <button class="mr2" type="button" {{on "click" this.unpublishPosts}}>
+                <span>{{svg-jar "undo"}}Unpublish</span>
+            </button>
+        </li>
+    {{/if}}
+    {{#if this.canFeatureSelection}}
+        {{#if this.shouldFeatureSelection }}
+            <li>
+                <button class="mr2" type="button" {{on "click" this.featurePosts}}>
+                    <span>{{svg-jar "star" class="mb1 star"}}Feature</span>
+                </button>
+            </li>
+        {{else}}
+                <li>
+                <button class="mr2" type="button" {{on "click" this.unfeaturePosts}}>
+                    <span>{{svg-jar "star" class="mb1"}}Unfeature</span>
+                </button>
+            </li>
+        {{/if}}
+    {{/if}}
+    <li>
+        <button class="mr2" type="button" {{on "click" this.addTagToPosts}}>
+            <span>{{svg-jar "tag"}}Add a tag</span>
+        </button>
+    </li>
+    {{#if this.membersUtils.isMembersEnabled}}
+        <li>
+            <button class="mr2" type="button" {{on "click" this.editPostsAccess}}>
+                <span>{{svg-jar "lock"}}Change access</span>
+            </button>
+        </li>
+    {{/if}}
+    {{#if this.session.user.isAdmin}}
+        {{#if this.canCopySelection}}
+        <li>
+            <button class="mr2" type="button" {{on "click" this.copyPosts}}>
+                <span>{{svg-jar "duplicate"}}Duplicate</span>
+            </button>
+        </li>
+        {{/if}}
+        <li>
+            <button class="mr2" type="button" {{on "click" this.deletePosts}}>
+                <span class="red">{{svg-jar "trash"}}Delete</span>
+            </button>
+        </li>
+    {{/if}}
+</ul>

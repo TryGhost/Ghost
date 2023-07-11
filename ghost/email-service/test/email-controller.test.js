@@ -1,5 +1,5 @@
-const assert = require('assert');
-const EmailController = require('../lib/email-controller');
+const assert = require('assert/strict');
+const EmailController = require('../lib/EmailController');
 const {createModel, createModelClass} = require('./utils');
 
 describe('Email Controller', function () {
@@ -159,7 +159,8 @@ describe('Email Controller', function () {
                         findOne: {
                             title: 'Post title'
                         }
-                    })
+                    }),
+                    Newsletter: createModelClass()
                 }
             });
             const result = await controller.previewEmail({
@@ -189,7 +190,8 @@ describe('Email Controller', function () {
                         findOne: {
                             title: 'Post title'
                         }
-                    })
+                    }),
+                    Newsletter: createModelClass()
                 }
             });
             await assert.rejects(controller.sendTestEmail({
@@ -214,7 +216,8 @@ describe('Email Controller', function () {
                         findOne: {
                             title: 'Post title'
                         }
-                    })
+                    }),
+                    Newsletter: createModelClass()
                 }
             });
             const result = await controller.sendTestEmail({
@@ -225,7 +228,7 @@ describe('Email Controller', function () {
                     emails: ['example@example.com']
                 }
             });
-            assert.strictEqual(result, undefined);
+            assert.equal(result, undefined);
         });
     });
 
@@ -268,7 +271,7 @@ describe('Email Controller', function () {
                     id: '123'
                 }
             });
-            assert.strictEqual(result.get('status'), 'failed');
+            assert.equal(result.get('status'), 'failed');
         });
     });
 });

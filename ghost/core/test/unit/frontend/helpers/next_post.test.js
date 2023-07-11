@@ -1,10 +1,10 @@
 const errors = require('@tryghost/errors');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 const markdownToMobiledoc = require('../../../utils/fixtures/data-generator').markdownToMobiledoc;
 const next_post = require('../../../../core/frontend/helpers/prev_post');
 const api = require('../../../../core/frontend/services/proxy').api;
 const should = require('should');
+const logging = require('@tryghost/logging');
 
 describe('{{next_post}} helper', function () {
     let locals;
@@ -357,6 +357,7 @@ describe('{{next_post}} helper', function () {
             const fn = sinon.spy();
             const inverse = sinon.spy();
             const optionsData = {name: 'next_post', data: locals, fn: fn, inverse: inverse};
+            const loggingStub = sinon.stub(logging, 'error');
 
             await next_post
                 .call({
@@ -371,6 +372,7 @@ describe('{{next_post}} helper', function () {
 
             fn.called.should.be.false();
             inverse.calledOnce.should.be.true();
+            loggingStub.calledOnce.should.be.true();
 
             inverse.firstCall.args[1].should.be.an.Object().and.have.property('data');
             inverse.firstCall.args[1].data.should.be.an.Object().and.have.property('error');
@@ -398,7 +400,7 @@ describe('{{next_post}} helper', function () {
 
         beforeEach(function () {
             member = {uuid: 'test'};
-            browsePostsStub = sinon.stub().callsFake(function (options) {
+            browsePostsStub = sinon.stub().callsFake(function () {
                 return Promise.resolve({
                     posts: [{slug: '/next/', title: 'post 3'}]
                 });

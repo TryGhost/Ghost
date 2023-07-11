@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const configUtils = require('../../../../utils/configUtils');
-const SettingsHelpers = require('../../../../../core/server/services/settings-helpers/settings-helpers');
+const SettingsHelpers = require('../../../../../core/server/services/settings-helpers/SettingsHelpers');
 
 function createSettingsMock({setDirect, setConnect}) {
     const getStub = sinon.stub();
@@ -40,8 +40,8 @@ describe('Settings Helpers - getActiveStripeKeys', function () {
         });
     });
 
-    afterEach(function () {
-        configUtils.restore();
+    afterEach(async function () {
+        await configUtils.restore();
     });
 
     it('Uses direct keys when stripeDirect is true, regardles of which keys exist', function () {

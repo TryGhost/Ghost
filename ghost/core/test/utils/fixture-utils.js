@@ -65,7 +65,6 @@ const fixtures = {
 
     insertMultiAuthorPosts: function insertMultiAuthorPosts() {
         let i;
-        let j;
         let k = 0;
         let posts = [];
 
@@ -460,6 +459,12 @@ const fixtures = {
         }));
     },
 
+    insertMentions: function insertMentions() {
+        return Promise.all(DataGenerator.forKnex.mentions.map((mention) => {
+            return models.Mention.add(mention, context.internal);
+        }));
+    },
+
     insertEmails: function insertEmails() {
         return Promise.all(DataGenerator.forKnex.emails.map((email) => {
             return models.Email.add(email, context.internal);
@@ -472,6 +477,14 @@ const fixtures = {
         });
 
         return models.Product.add(archivedProduct, context.internal);
+    },
+
+    insertHiddenTiers: function insertArchivedTiers() {
+        let hiddenTier = DataGenerator.forKnex.createProduct({
+            visibility: 'none'
+        });
+
+        return models.Product.add(hiddenTier, context.internal);
     },
 
     insertProducts: async function insertProducts() {
@@ -636,7 +649,7 @@ const fixtures = {
                 memberIds: DataGenerator.forKnex.members.map(member => member.id)
             };
 
-            return emailAnalyticsService.aggregateStats(toAggregate);
+            return emailAnalyticsService.service.aggregateStats(toAggregate);
         });
     },
 
@@ -812,6 +825,9 @@ const toDoList = {
     'tiers:archived': function insertArchivedTiers() {
         return fixtures.insertArchivedTiers();
     },
+    'tiers:hidden': function insertHiddenTiers() {
+        return fixtures.insertHiddenTiers();
+    },
     comments: function insertComments() {
         return fixtures.insertComments();
     },
@@ -826,6 +842,9 @@ const toDoList = {
     },
     links: function insertLinks() {
         return fixtures.insertLinks();
+    },
+    mentions: function insertMentions() {
+        return fixtures.insertMentions();
     }
 };
 
@@ -881,6 +900,10 @@ const getFixtureOps = (toDos) => {
 
             fixtureOps.push(toDoList[toDo]);
         }
+    });
+
+    fixtureOps.push(() => {
+        return require('../../core/server/services/tiers').repository?.init();
     });
 
     return fixtureOps;

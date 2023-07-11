@@ -9,7 +9,6 @@ const cheerio = require('cheerio');
 
 const testUtils = require('../utils');
 const config = require('../../core/shared/config');
-const bridge = require('../../core/bridge');
 
 describe('Frontend Routing: Email Routes', function () {
     let request;

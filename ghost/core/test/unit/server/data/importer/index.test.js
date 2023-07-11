@@ -16,22 +16,21 @@ let ImageHandler = rewire('../../../../../core/server/data/importer/handlers/ima
 const MarkdownHandler = require('../../../../../core/server/data/importer/handlers/markdown');
 const RevueHandler = require('../../../../../core/server/data/importer/handlers/revue');
 const DataImporter = require('../../../../../core/server/data/importer/importers/data');
-const ImageImporter = require('../../../../../core/server/data/importer/importers/image');
 const RevueImporter = require('@tryghost/importer-revue');
-const storage = require('../../../../../core/server/adapters/storage');
 const configUtils = require('../../../../utils/configUtils');
+const logging = require('@tryghost/logging');
 
 describe('Importer', function () {
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
         ImageHandler = rewire('../../../../../core/server/data/importer/handlers/image');
-        configUtils.restore();
+        await configUtils.restore();
     });
 
     describe('ImportManager', function () {
         it('has the correct interface', function () {
-            ImportManager.handlers.should.be.instanceof(Array).and.have.lengthOf(4);
-            ImportManager.importers.should.be.instanceof(Array).and.have.lengthOf(3);
+            ImportManager.handlers.should.be.instanceof(Array).and.have.lengthOf(6);
+            ImportManager.importers.should.be.instanceof(Array).and.have.lengthOf(5);
             ImportManager.loadFile.should.be.instanceof(Function);
             ImportManager.preProcess.should.be.instanceof(Function);
             ImportManager.doImport.should.be.instanceof(Function);
@@ -39,17 +38,37 @@ describe('Importer', function () {
         });
 
         it('gets the correct extensions', function () {
-            ImportManager.getExtensions().should.be.instanceof(Array).and.have.lengthOf(13);
+            ImportManager.getExtensions().should.be.instanceof(Array).and.have.lengthOf(32);
             ImportManager.getExtensions().should.containEql('.csv');
             ImportManager.getExtensions().should.containEql('.json');
             ImportManager.getExtensions().should.containEql('.zip');
             ImportManager.getExtensions().should.containEql('.jpg');
             ImportManager.getExtensions().should.containEql('.md');
             ImportManager.getExtensions().should.containEql('.webp');
+            ImportManager.getExtensions().should.containEql('.mp4');
+            ImportManager.getExtensions().should.containEql('.ogv');
+            ImportManager.getExtensions().should.containEql('.mp3');
+            ImportManager.getExtensions().should.containEql('.wav');
+            ImportManager.getExtensions().should.containEql('.ogg');
+            ImportManager.getExtensions().should.containEql('.m4a');
+
+            ImportManager.getExtensions().should.containEql('.pdf');
+            ImportManager.getExtensions().should.containEql('.json');
+            ImportManager.getExtensions().should.containEql('.jsonld');
+            ImportManager.getExtensions().should.containEql('.odp');
+            ImportManager.getExtensions().should.containEql('.ods');
+            ImportManager.getExtensions().should.containEql('.odt');
+            ImportManager.getExtensions().should.containEql('.ppt');
+            ImportManager.getExtensions().should.containEql('.pptx');
+            ImportManager.getExtensions().should.containEql('.rtf');
+            ImportManager.getExtensions().should.containEql('.txt');
+            ImportManager.getExtensions().should.containEql('.xls');
+            ImportManager.getExtensions().should.containEql('.xlsx');
+            ImportManager.getExtensions().should.containEql('.xml');
         });
 
         it('gets the correct types', function () {
-            ImportManager.getContentTypes().should.be.instanceof(Array).and.have.lengthOf(12);
+            ImportManager.getContentTypes().should.be.instanceof(Array).and.have.lengthOf(35);
             ImportManager.getContentTypes().should.containEql('image/jpeg');
             ImportManager.getContentTypes().should.containEql('image/png');
             ImportManager.getContentTypes().should.containEql('image/gif');
@@ -57,6 +76,33 @@ describe('Importer', function () {
             ImportManager.getContentTypes().should.containEql('image/x-icon');
             ImportManager.getContentTypes().should.containEql('image/vnd.microsoft.icon');
             ImportManager.getContentTypes().should.containEql('image/webp');
+
+            ImportManager.getContentTypes().should.containEql('video/mp4');
+            ImportManager.getContentTypes().should.containEql('video/webm');
+            ImportManager.getContentTypes().should.containEql('video/ogg');
+            ImportManager.getContentTypes().should.containEql('audio/mp4');
+            ImportManager.getContentTypes().should.containEql('audio/mpeg');
+            ImportManager.getContentTypes().should.containEql('audio/vnd.wav');
+            ImportManager.getContentTypes().should.containEql('audio/wave');
+            ImportManager.getContentTypes().should.containEql('audio/wav');
+            ImportManager.getContentTypes().should.containEql('audio/x-wav');
+            ImportManager.getContentTypes().should.containEql('audio/ogg');
+            ImportManager.getContentTypes().should.containEql('audio/x-m4a');
+
+            ImportManager.getContentTypes().should.containEql('application/pdf');
+            ImportManager.getContentTypes().should.containEql('application/json');
+            ImportManager.getContentTypes().should.containEql('application/ld+json');
+            ImportManager.getContentTypes().should.containEql('application/vnd.oasis.opendocument.presentation');
+            ImportManager.getContentTypes().should.containEql('application/vnd.oasis.opendocument.spreadsheet');
+            ImportManager.getContentTypes().should.containEql('application/vnd.oasis.opendocument.text');
+            ImportManager.getContentTypes().should.containEql('application/vnd.ms-powerpoint');
+            ImportManager.getContentTypes().should.containEql('application/vnd.openxmlformats-officedocument.presentationml.presentation');
+            ImportManager.getContentTypes().should.containEql('application/rtf');
+            ImportManager.getContentTypes().should.containEql('text/plain');
+            ImportManager.getContentTypes().should.containEql('application/vnd.ms-excel');
+            ImportManager.getContentTypes().should.containEql('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            ImportManager.getContentTypes().should.containEql('application/xml');
+            ImportManager.getContentTypes().should.containEql('application/atom+xml');
 
             ImportManager.getContentTypes().should.containEql('application/octet-stream');
             ImportManager.getContentTypes().should.containEql('application/json');
@@ -68,36 +114,38 @@ describe('Importer', function () {
         });
 
         it('gets the correct directories', function () {
-            ImportManager.getDirectories().should.be.instanceof(Array).and.have.lengthOf(2);
+            ImportManager.getDirectories().should.be.instanceof(Array).and.have.lengthOf(4);
             ImportManager.getDirectories().should.containEql('images');
             ImportManager.getDirectories().should.containEql('content');
+            ImportManager.getDirectories().should.containEql('media');
+            ImportManager.getDirectories().should.containEql('files');
         });
 
         it('globs extensions correctly', function () {
             ImportManager.getGlobPattern(ImportManager.getExtensions())
-                .should.equal('+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.csv|.json|.md|.markdown|.zip)');
+                .should.equal('+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.mp4|.webm|.ogv|.mp3|.wav|.ogg|.m4a|.pdf|.json|.jsonld|.odp|.ods|.odt|.ppt|.pptx|.rtf|.txt|.xls|.xlsx|.xml|.csv|.md|.markdown|.zip)');
             ImportManager.getGlobPattern(ImportManager.getDirectories())
-                .should.equal('+(images|content)');
+                .should.equal('+(images|content|media|files)');
             ImportManager.getGlobPattern(JSONHandler.extensions)
                 .should.equal('+(.json)');
             ImportManager.getGlobPattern(ImageHandler.extensions)
                 .should.equal('+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp)');
             ImportManager.getExtensionGlob(ImportManager.getExtensions())
-                .should.equal('*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.csv|.json|.md|.markdown|.zip)');
+                .should.equal('*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.mp4|.webm|.ogv|.mp3|.wav|.ogg|.m4a|.pdf|.json|.jsonld|.odp|.ods|.odt|.ppt|.pptx|.rtf|.txt|.xls|.xlsx|.xml|.csv|.md|.markdown|.zip)');
             ImportManager.getDirectoryGlob(ImportManager.getDirectories())
-                .should.equal('+(images|content)');
+                .should.equal('+(images|content|media|files)');
             ImportManager.getExtensionGlob(ImportManager.getExtensions(), 0)
-                .should.equal('*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.csv|.json|.md|.markdown|.zip)');
+                .should.equal('*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.mp4|.webm|.ogv|.mp3|.wav|.ogg|.m4a|.pdf|.json|.jsonld|.odp|.ods|.odt|.ppt|.pptx|.rtf|.txt|.xls|.xlsx|.xml|.csv|.md|.markdown|.zip)');
             ImportManager.getDirectoryGlob(ImportManager.getDirectories(), 0)
-                .should.equal('+(images|content)');
+                .should.equal('+(images|content|media|files)');
             ImportManager.getExtensionGlob(ImportManager.getExtensions(), 1)
-                .should.equal('{*/*,*}+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.csv|.json|.md|.markdown|.zip)');
+                .should.equal('{*/*,*}+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.mp4|.webm|.ogv|.mp3|.wav|.ogg|.m4a|.pdf|.json|.jsonld|.odp|.ods|.odt|.ppt|.pptx|.rtf|.txt|.xls|.xlsx|.xml|.csv|.md|.markdown|.zip)');
             ImportManager.getDirectoryGlob(ImportManager.getDirectories(), 1)
-                .should.equal('{*/,}+(images|content)');
+                .should.equal('{*/,}+(images|content|media|files)');
             ImportManager.getExtensionGlob(ImportManager.getExtensions(), 2)
-                .should.equal('**/*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.csv|.json|.md|.markdown|.zip)');
+                .should.equal('**/*+(.jpg|.jpeg|.gif|.png|.svg|.svgz|.ico|.webp|.mp4|.webm|.ogv|.mp3|.wav|.ogg|.m4a|.pdf|.json|.jsonld|.odp|.ods|.odt|.ppt|.pptx|.rtf|.txt|.xls|.xlsx|.xml|.csv|.md|.markdown|.zip)');
             ImportManager.getDirectoryGlob(ImportManager.getDirectories(), 2)
-                .should.equal('**/+(images|content)');
+                .should.equal('**/+(images|content|media|files)');
         });
 
         it('cleans up', async function () {
@@ -119,12 +167,14 @@ describe('Importer', function () {
         });
 
         it('silently ignores clean up errors', async function () {
+            const loggingStub = sinon.stub(logging, 'error');
             const file = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
             ImportManager.fileToDelete = file;
             const removeStub = sinon.stub(fs, 'remove').withArgs(file).returns(Promise.reject(new Error('Unknown file')));
 
             await ImportManager.cleanUp();
             removeStub.calledOnce.should.be.true();
+            loggingStub.calledOnce.should.be.true();
             should(ImportManager.fileToDelete).be.null();
         });
 
@@ -178,7 +228,7 @@ describe('Importer', function () {
                     extractSpy.calledOnce.should.be.true();
                     validSpy.calledOnce.should.be.true();
                     baseDirSpy.calledOnce.should.be.true();
-                    getFileSpy.callCount.should.eql(4);
+                    getFileSpy.callCount.should.eql(6);
                     jsonSpy.calledOnce.should.be.true();
                     imageSpy.called.should.be.false();
                     mdSpy.called.should.be.false();
@@ -211,6 +261,30 @@ describe('Importer', function () {
 
                 it('accepts a zip with an image directory', function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-image-dir');
+
+                    ImportManager.isValidZip(testDir).should.be.ok();
+                });
+
+                it('accepts a zip with a content directory', function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-content-dir');
+
+                    ImportManager.isValidZip(testDir).should.be.ok();
+                });
+
+                it('accepts a zip with a content/images directory', function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-content-images-subdir');
+
+                    ImportManager.isValidZip(testDir).should.be.ok();
+                });
+
+                it('accepts a zip with a media directory', function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-media-dir');
+
+                    ImportManager.isValidZip(testDir).should.be.ok();
+                });
+
+                it('accepts a zip with a files directory', function () {
+                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-files-dir');
 
                     ImportManager.isValidZip(testDir).should.be.ok();
                 });
@@ -338,7 +412,7 @@ describe('Importer', function () {
                     return ImportManager
                         // Deliberately pass something that can't be extracted just to check this method signature is working
                         .extractZip('test/utils/fixtures/import/zips/zip-with-base-dir')
-                        .then((res) => {
+                        .then(() => {
                             throw new Error('should have failed');
                         })
                         .catch((err) => {
@@ -353,13 +427,18 @@ describe('Importer', function () {
         describe('preProcess', function () {
             // preProcess can modify the data prior to importing
             it('calls the DataImporter preProcess method', function (done) {
-                const input = {data: {}, images: []};
+                const input = {
+                    data: {},
+                    images: [],
+                    media: [],
+                    files: []
+                };
 
                 // pass a copy so that input doesn't get modified
                 const inputCopy = _.cloneDeep(input);
 
                 const dataSpy = sinon.spy(DataImporter, 'preProcess');
-                const imageSpy = sinon.spy(ImageImporter, 'preProcess');
+                const imageSpy = sinon.spy(ImportManager.importers[0], 'preProcess');
                 const revueSpy = sinon.spy(RevueImporter, 'preProcess');
 
                 ImportManager.preProcess(inputCopy).then(function (output) {
@@ -374,6 +453,8 @@ describe('Importer', function () {
                     output.should.not.equal(input);
                     output.should.have.property('preProcessedByData', true);
                     output.should.have.property('preProcessedByImage', true);
+                    output.should.have.property('preProcessedByMedia', true);
+                    output.should.have.property('preProcessedByFiles', true);
                     done();
                 }).catch(done);
             });
@@ -393,7 +474,7 @@ describe('Importer', function () {
                     return Promise.resolve(i);
                 });
 
-                const imageSpy = sinon.stub(ImageImporter, 'doImport').callsFake(function (i) {
+                const imageSpy = sinon.stub(ImportManager.importers[0], 'doImport').callsFake(function (i) {
                     return Promise.resolve(i);
                 });
 
@@ -485,163 +566,6 @@ describe('Importer', function () {
                 done(new Error('Didn\'t error for bad db api wrapper'));
             }).catch(function (response) {
                 response.errorType.should.equal('BadRequestError');
-                done();
-            }).catch(done);
-        });
-    });
-
-    describe('ImageHandler', function () {
-        const store = storage.getStorage('images');
-
-        it('has the correct interface', function () {
-            ImageHandler.type.should.eql('images');
-            ImageHandler.extensions.should.be.instanceof(Array).and.have.lengthOf(8);
-            ImageHandler.extensions.should.containEql('.jpg');
-            ImageHandler.extensions.should.containEql('.jpeg');
-            ImageHandler.extensions.should.containEql('.gif');
-            ImageHandler.extensions.should.containEql('.png');
-            ImageHandler.extensions.should.containEql('.svg');
-            ImageHandler.extensions.should.containEql('.svgz');
-            ImageHandler.extensions.should.containEql('.ico');
-            ImageHandler.extensions.should.containEql('.webp');
-            ImageHandler.contentTypes.should.be.instanceof(Array).and.have.lengthOf(7);
-            ImageHandler.contentTypes.should.containEql('image/jpeg');
-            ImageHandler.contentTypes.should.containEql('image/png');
-            ImageHandler.contentTypes.should.containEql('image/gif');
-            ImageHandler.contentTypes.should.containEql('image/svg+xml');
-            ImageHandler.contentTypes.should.containEql('image/x-icon');
-            ImageHandler.contentTypes.should.containEql('image/vnd.microsoft.icon');
-            ImageHandler.contentTypes.should.containEql('image/webp');
-            ImageHandler.loadFile.should.be.instanceof(Function);
-        });
-
-        it('can load a single file', function (done) {
-            const filename = 'test-image.jpeg';
-
-            const file = [{
-                path: '/my/test/' + filename,
-                name: filename
-            }];
-
-            const storeSpy = sinon.spy(store, 'getUniqueFileName');
-            const storageSpy = sinon.spy(storage, 'getStorage');
-
-            ImageHandler.loadFile(_.clone(file)).then(function () {
-                storageSpy.calledOnce.should.be.true();
-                storeSpy.calledOnce.should.be.true();
-                storeSpy.firstCall.args[0].originalPath.should.equal('test-image.jpeg');
-                storeSpy.firstCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
-                storeSpy.firstCall.args[0].newPath.should.eql('/content/images/test-image.jpeg');
-
-                done();
-            }).catch(done);
-        });
-
-        it('can load a single file, maintaining structure', function (done) {
-            const filename = 'photos/my-cat.jpeg';
-
-            const file = [{
-                path: '/my/test/' + filename,
-                name: filename
-            }];
-
-            const storeSpy = sinon.spy(store, 'getUniqueFileName');
-            const storageSpy = sinon.spy(storage, 'getStorage');
-
-            ImageHandler.loadFile(_.clone(file)).then(function () {
-                storageSpy.calledOnce.should.be.true();
-                storeSpy.calledOnce.should.be.true();
-                storeSpy.firstCall.args[0].originalPath.should.equal('photos/my-cat.jpeg');
-                storeSpy.firstCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images(\/|\\)photos$/);
-                storeSpy.firstCall.args[0].newPath.should.eql('/content/images/photos/my-cat.jpeg');
-
-                done();
-            }).catch(done);
-        });
-
-        it('can load a single file, removing ghost dirs', function (done) {
-            const filename = 'content/images/my-cat.jpeg';
-
-            const file = [{
-                path: '/my/test/content/images/' + filename,
-                name: filename
-            }];
-
-            const storeSpy = sinon.spy(store, 'getUniqueFileName');
-            const storageSpy = sinon.spy(storage, 'getStorage');
-
-            ImageHandler.loadFile(_.clone(file)).then(function () {
-                storageSpy.calledOnce.should.be.true();
-                storeSpy.calledOnce.should.be.true();
-                storeSpy.firstCall.args[0].originalPath.should.equal('content/images/my-cat.jpeg');
-                storeSpy.firstCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
-                storeSpy.firstCall.args[0].newPath.should.eql('/content/images/my-cat.jpeg');
-
-                done();
-            }).catch(done);
-        });
-
-        it('can load a file (subdirectory)', function (done) {
-            configUtils.set({url: 'http://localhost:65535/subdir'});
-
-            const filename = 'test-image.jpeg';
-
-            const file = [{
-                path: '/my/test/' + filename,
-                name: filename
-            }];
-
-            const storeSpy = sinon.spy(store, 'getUniqueFileName');
-            const storageSpy = sinon.spy(storage, 'getStorage');
-
-            ImageHandler.loadFile(_.clone(file)).then(function () {
-                storageSpy.calledOnce.should.be.true();
-                storeSpy.calledOnce.should.be.true();
-                storeSpy.firstCall.args[0].originalPath.should.equal('test-image.jpeg');
-                storeSpy.firstCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
-                storeSpy.firstCall.args[0].newPath.should.eql('/subdir/content/images/test-image.jpeg');
-
-                done();
-            }).catch(done);
-        });
-
-        it('can load multiple files', function (done) {
-            const files = [{
-                path: '/my/test/testing.png',
-                name: 'testing.png'
-            },
-            {
-                path: '/my/test/photo/kitten.jpg',
-                name: 'photo/kitten.jpg'
-            },
-            {
-                path: '/my/test/content/images/animated/bunny.gif',
-                name: 'content/images/animated/bunny.gif'
-            },
-            {
-                path: '/my/test/images/puppy.jpg',
-                name: 'images/puppy.jpg'
-            }];
-
-            const storeSpy = sinon.spy(store, 'getUniqueFileName');
-            const storageSpy = sinon.spy(storage, 'getStorage');
-
-            ImageHandler.loadFile(_.clone(files)).then(function () {
-                storageSpy.calledOnce.should.be.true();
-                storeSpy.callCount.should.eql(4);
-                storeSpy.firstCall.args[0].originalPath.should.equal('testing.png');
-                storeSpy.firstCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
-                storeSpy.firstCall.args[0].newPath.should.eql('/content/images/testing.png');
-                storeSpy.secondCall.args[0].originalPath.should.equal('photo/kitten.jpg');
-                storeSpy.secondCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images(\/|\\)photo$/);
-                storeSpy.secondCall.args[0].newPath.should.eql('/content/images/photo/kitten.jpg');
-                storeSpy.thirdCall.args[0].originalPath.should.equal('content/images/animated/bunny.gif');
-                storeSpy.thirdCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images(\/|\\)animated$/);
-                storeSpy.thirdCall.args[0].newPath.should.eql('/content/images/animated/bunny.gif');
-                storeSpy.lastCall.args[0].originalPath.should.equal('images/puppy.jpg');
-                storeSpy.lastCall.args[0].targetDir.should.match(/(\/|\\)content(\/|\\)images$/);
-                storeSpy.lastCall.args[0].newPath.should.eql('/content/images/puppy.jpg');
-
                 done();
             }).catch(done);
         });
@@ -814,60 +738,6 @@ describe('Importer', function () {
             inputData.data.data.posts[0].should.eql(outputData.data.data.posts[0]);
             inputData.data.data.tags[0].should.eql(outputData.data.data.tags[0]);
             inputData.data.data.users[0].should.eql(outputData.data.data.users[0]);
-        });
-    });
-
-    describe('ImageImporter', function () {
-        it('has the correct interface', function () {
-            ImageImporter.type.should.eql('images');
-            ImageImporter.preProcess.should.be.instanceof(Function);
-            ImageImporter.doImport.should.be.instanceof(Function);
-        });
-
-        it('does preprocess posts, users and tags correctly', function () {
-            let inputData = require('../../../../utils/fixtures/import/import-data-1.json');
-            let outputData = ImageImporter.preProcess(_.cloneDeep(inputData));
-
-            inputData = inputData.data.data;
-            outputData = outputData.data.data;
-
-            inputData.posts[0].markdown.should.not.containEql('/content/images/my-image.png');
-            inputData.posts[0].html.should.not.containEql('/content/images/my-image.png');
-            outputData.posts[0].markdown.should.containEql('/content/images/my-image.png');
-            outputData.posts[0].html.should.containEql('/content/images/my-image.png');
-
-            inputData.posts[0].markdown.should.not.containEql('/content/images/photos/cat.jpg');
-            inputData.posts[0].html.should.not.containEql('/content/images/photos/cat.jpg');
-            outputData.posts[0].markdown.should.containEql('/content/images/photos/cat.jpg');
-            outputData.posts[0].html.should.containEql('/content/images/photos/cat.jpg');
-
-            inputData.posts[0].feature_image.should.eql('/images/my-image.png');
-            outputData.posts[0].feature_image.should.eql('/content/images/my-image.png');
-
-            inputData.tags[0].feature_image.should.eql('/images/my-image.png');
-            outputData.tags[0].feature_image.should.eql('/content/images/my-image.png');
-
-            inputData.users[0].profile_image.should.eql('/images/my-image.png');
-            inputData.users[0].cover_image.should.eql('/images/photos/cat.jpg');
-            outputData.users[0].profile_image.should.eql('/content/images/my-image.png');
-            outputData.users[0].cover_image.should.eql('/content/images/photos/cat.jpg');
-        });
-
-        it('does import the images correctly', function () {
-            const inputData = require('../../../../utils/fixtures/import/import-data-1.json');
-
-            const storageApi = {
-                save: sinon.stub().returns(Promise.resolve())
-            };
-
-            const storageSpy = sinon.stub(storage, 'getStorage').callsFake(function () {
-                return storageApi;
-            });
-
-            ImageImporter.doImport(inputData.images).then(function () {
-                storageSpy.calledOnce.should.be.true();
-                storageApi.save.calledTwice.should.be.true();
-            });
         });
     });
 });

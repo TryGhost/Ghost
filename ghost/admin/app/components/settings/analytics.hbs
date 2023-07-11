@@ -57,7 +57,7 @@
                 <div>
                     <h4 class="gh-expandable-title">Member sources</h4>
                     <p class="gh-expandable-description">
-                        Track which sources and posts are driving the most member growth
+                        Track the traffic sources and posts that drive the most member growth
                     </p>
                 </div>
                 <div class="for-switch">
@@ -72,6 +72,45 @@
                         <span class="input-toggle-component"></span>
                     </label>
                 </div>
+            </div>
+        </div>
+        <div class="gh-expandable-block">
+            <div class="gh-expandable-header">
+                <div>
+                    <h4 class="gh-expandable-title">Outbound link tagging</h4>
+                    <p class="gh-expandable-description">
+                        Make it easier for other sites to track the traffic you send them in their analytics
+                    </p>
+                </div>
+                <div class="for-switch">
+                    <label class="switch" for="outbound-link-tagging" data-test-label="outbound-link-tagging">
+                        <input
+                            id="outbound-link-tagging"
+                            type="checkbox"
+                            checked={{this.settings.outboundLinkTagging}}
+                            data-test-checkbox="outbound-link-tagging"
+                            {{on "change" this.toggleOutboundLinkTagging}}
+                        >
+                        <span class="input-toggle-component"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div class="gh-main-section">
+    <h4 class="gh-main-section-header small bn">Posts</h4>
+    <section class="gh-expandable">
+        <div class="gh-expandable-block">
+            <div class="gh-expandable-header">
+                <div>
+                    <h4 class="gh-expandable-title">Export post analytics</h4>
+                    <p class="gh-expandable-description">
+                        Download a CSV file of your last 1000 posts data for easy analysis in one place
+                    </p>
+                </div>
+                <GhTaskButton @buttonText="Export" @successText="Exported" @task={{this.exportPostsTask}} @class="gh-btn gh-btn-icon"/>
             </div>
         </div>
     </section>

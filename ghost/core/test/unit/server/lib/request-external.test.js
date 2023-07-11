@@ -15,8 +15,8 @@ describe('External Request', function () {
             });
         });
 
-        afterEach(function () {
-            configUtils.restore();
+        afterEach(async function () {
+            await configUtils.restore();
             sinon.restore();
             nock.cleanAll();
         });
@@ -174,13 +174,13 @@ describe('External Request', function () {
 
     describe('general behavior', function () {
         beforeEach(function () {
-            sinon.stub(dnsPromises, 'lookup').callsFake(function (host) {
+            sinon.stub(dnsPromises, 'lookup').callsFake(function () {
                 return Promise.resolve({address: '123.123.123.123'});
             });
         });
 
-        afterEach(function () {
-            configUtils.restore();
+        afterEach(async function () {
+            await configUtils.restore();
             sinon.restore();
             nock.cleanAll();
         });
@@ -263,7 +263,7 @@ describe('External Request', function () {
                 throw new Error('Request should have rejected with invalid url message');
             }, (err) => {
                 should.exist(err);
-                err.message.should.be.equal('URL empty or invalid.');
+                err.code.should.be.equal('ERR_INVALID_URL');
             });
         });
 
@@ -279,7 +279,8 @@ describe('External Request', function () {
                 throw new Error('Request should have rejected with invalid url message');
             }, (err) => {
                 should.exist(err);
-                err.message.should.be.equal('URL empty or invalid.');
+                // got v11+ throws an error instead of the external requests lib
+                err.message.should.be.equal('No URL protocol specified');
             });
         });
 
@@ -300,7 +301,7 @@ describe('External Request', function () {
             }, (err) => {
                 requestMock.isDone().should.be.true();
                 should.exist(err);
-                err.statusMessage.should.be.equal('Not Found');
+                err.response.statusMessage.should.be.equal('Not Found');
             });
         });
 
@@ -322,9 +323,7 @@ describe('External Request', function () {
             }, (err) => {
                 requestMock.isDone().should.be.true();
                 should.exist(err);
-                err.statusMessage.should.be.equal('Internal Server Error');
-                err.body.should.match(/something awful happened/);
-                err.body.should.match(/AWFUL_ERROR/);
+                err.response.statusMessage.should.be.equal(`Internal Server Error`);
             });
         });
     });

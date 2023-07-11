@@ -1,0 +1,175 @@
+<section class="gh-canvas">
+    <GhCanvasHeader class="gh-canvas-header sticky">
+        <div class="flex flex-column">
+            <div class="gh-canvas-breadcrumb">
+                <LinkTo @route="settings">
+                    Settings
+                </LinkTo>
+                {{svg-jar "arrow-right-small"}}
+                <LinkTo @route="settings.integrations" data-test-link="integrations-back">
+                    Integrations
+                </LinkTo>
+                {{svg-jar "arrow-right-small"}} Pintura
+            </div>
+        </div>
+        <section class="view-actions">
+            <GhTaskButton @task={{this.saveTask}} @class="gh-btn gh-btn-primary gh-btn-icon" data-test-save-button={{true}} />
+        </section>
+    </GhCanvasHeader>
+
+    <section class="view-container">
+        <section class="gh-main-section app-grid">
+            <div class="gh-main-section-block app-detail-heading app-grid">
+                <div class="app-cell">
+                    <img class="app-icon" src="assets/img/pintura.png" alt="Pintura icon"/>
+                </div>
+                <div class="app-cell">
+                    <h3>Pintura</h3>
+                    <p>Advanced image editing</p>
+                </div>
+            </div>
+        </section>
+        {{#unless this.config.pintura}}
+        <div class="gh-main-section">
+            <div class="gh-pintura-banner gh-main-section-content grey">
+                <div class="gh-pintura-banner-content">
+                    <strong>Add advanced image editing to Ghost, with Pintura</strong>
+                    <p>Pintura is a powerful JavaScript image editor that allows you to crop, rotate, annotate and modify images directly inside Ghost.</p>
+                    <p>Try a demo, purchase a license, and download the required CSS/JS files from pqina.nl/pintura/ to activate this feature.</p>
+                    <button type="button" class="gh-btn gh-btn-primary"><span>Find out more →</span></button>
+                </div>
+                <img class="gh-pintura-banner-image" src="assets/img/pintura-screenshot.png" alt="Pintura banner">
+            </div>
+        </div>
+        {{/unless}}
+
+
+        <div class="gh-main-section">
+        <h4 class="gh-main-section-header small bn">Pintura configuration</h4>
+        <section class="gh-main-section-block">
+            <div class="gh-main-section-content grey">
+                <div>
+                    <div class="gh-setting-first {{unless this.showUploadSettings "gh-setting-last"}}">
+                        <div class="gh-setting-content">
+                            <div class="gh-setting-title">Enable Pintura</div>
+                            <div class="gh-setting-desc mb0">Enable <a href="https://pqina.nl/pintura/?ref=ghost.org" target="_blank" rel="noopener noreferrer">Pintura</a> for editing your images in Ghost</div>
+                        </div>
+                        <div class="gh-setting-action">
+                            <div class="for-checkbox">
+                                <label for="pintura" class="checkbox">
+                                    <input
+                                        type="checkbox"
+                                        checked={{this.settings.pintura}}
+                                        id="pintura"
+                                        name="pintura"
+                                        {{on "click" this.update}}
+                                        {{!-- onclick={{action "update" value="target.checked"}} --}}
+                                        data-test-pintura-checkbox
+                                    >
+                                    <span class="input-toggle-component"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    {{#unless this.config.pintura}}
+                        {{#liquid-if this.settings.pintura class=""}}
+                        <div class="gh-setting-last gh-setting-firstpromoter-liquid">
+                            <GhUploader
+                                @extensions={{this.jsExtension}}
+                                @uploadUrl="/files/upload/"
+                                @resourceName="files"
+                                @onComplete={{fn this.fileUploadCompleted 'js'}}
+                                as |uploader|
+                            >
+                                <div class="gh-expandable-header">
+                                    <div>
+                                        <h4 class="gh-expandable-title">Upload Pintura script</h4>
+                                        <p class="gh-expandable-description">Upload the <code>pintura-umd.js</code> file from the Pintura package</p>
+                                    </div>
+                                    <div class="gh-setting-action flex flex-column items-end">
+                                        {{#if uploader.isUploading}}
+                                            {{uploader.progressBar}}
+                                        {{else}}
+                                            <button
+                                                type="button"
+                                                class="gh-btn gh-btn-icon {{if this.jsSuccess "gh-btn-green"}} {{if this.jsFailure "gh-btn-red"}}"
+                                                onclick={{this.triggerFileDialog}}
+                                                data-test-button="upload-pintura-js"
+                                            >
+                                                <span>
+                                                    {{#if this.jsSuccess}}
+                                                        {{svg-jar "check-circle"}} Uploaded
+                                                    {{else if this.jsFailure}}
+                                                        {{svg-jar "retry"}} Upload Failed
+                                                    {{else}}
+                                                        Upload
+                                                    {{/if}}
+                                                </span>
+                                            </button>
+                                        {{/if}}
+
+                                        {{#each uploader.errors as |error|}}
+                                            <div class="gh-setting-error" data-test-error="pintura">{{or error.context error.message}}</div>
+                                        {{/each}}
+
+                                        <div style="display:none">
+                                            <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.jsAccept}} data-test-file-input="pintura" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </GhUploader>
+                        </div>
+                        <div class="gh-setting-last gh-setting-firstpromoter-liquid">
+                            <GhUploader
+                                @extensions={{this.cssExtension}}
+                                @uploadUrl="/files/upload/"
+                                @resourceName="files"
+                                @onComplete={{fn this.fileUploadCompleted 'css'}}
+                                as |uploader|
+                            >
+                                <div class="gh-expandable-header">
+                                    <div>
+                                        <h4 class="gh-expandable-title">Upload Pintura styles</h4>
+                                        <p class="gh-expandable-description">Upload the <code>pintura.css</code> file from the Pintura package</p>
+                                    </div>
+                                    <div class="gh-setting-action flex flex-column items-end">
+                                        {{#if uploader.isUploading}}
+                                            {{uploader.progressBar}}
+                                        {{else}}
+                                            <button
+                                                type="button"
+                                                class="gh-btn gh-btn-icon {{if this.cssSuccess "gh-btn-green"}} {{if this.cssFailure "gh-btn-red"}}"
+                                                onclick={{this.triggerFileDialog}}
+                                                data-test-button="upload-pintura-css"
+                                            >
+                                                <span>
+                                                    {{#if this.cssSuccess}}
+                                                        {{svg-jar "check-circle"}} Uploaded
+                                                    {{else if this.cssFailure}}
+                                                        {{svg-jar "retry"}} Upload Failed
+                                                    {{else}}
+                                                        Upload
+                                                    {{/if}}
+                                                </span>
+                                            </button>
+                                        {{/if}}
+
+                                        {{#each uploader.errors as |error|}}
+                                            <div class="gh-setting-error" data-test-error="routes">{{or error.context error.message}}</div>
+                                        {{/each}}
+
+                                        <div style="display:none">
+                                            <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.cssAccept}} data-test-file-input="pintura" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </GhUploader>
+                        </div>
+                        {{/liquid-if}}
+                    {{/unless}}
+                </div>
+            </div>
+        </section>
+        </div>
+    </section>
+</section>

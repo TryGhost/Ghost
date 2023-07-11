@@ -1,150 +1,45 @@
-const nql = require('@tryghost/nql');
-const {BadRequestError} = require('@tryghost/errors');
-const tpl = require('@tryghost/tpl');
-
-const messages = {
-    invalidVisibilityFilter: 'Invalid visibility filter.',
-    invalidEmailSegment: 'The email segment parameter doesn\'t contain a valid filter'
-};
-
-class PostsService {
-    constructor({mega, urlUtils, models, isSet, stats, emailService}) {
-        this.mega = mega;
-        this.urlUtils = urlUtils;
-        this.models = models;
-        this.isSet = isSet;
-        this.stats = stats;
-        this.emailService = emailService;
-    }
-
-    async editPost(frame) {
-        // Make sure the newsletter is matching an active newsletter
-        // Note that this option is simply ignored if the post isn't published or scheduled
-        if (frame.options.newsletter && frame.options.email_segment) {
-            if (frame.options.email_segment !== 'all') {
-                // check filter is valid
-                try {
-                    await this.models.Member.findPage({filter: frame.options.email_segment, limit: 1});
-                } catch (err) {
-                    return Promise.reject(new BadRequestError({
-                        message: tpl(messages.invalidEmailSegment),
-                        context: err.message
-                    }));
-                }
-            }
-        }
-
-        const model = await this.models.Post.edit(frame.data.posts[0], frame.options);
-
-        /**Handle newsletter email */
-        if (model.get('newsletter_id')) {
-            const sendEmail = model.wasChanged() && this.shouldSendEmail(model.get('status'), model.previous('status'));
-
-            if (sendEmail) {
-                let postEmail = model.relations.email;
-                let email;
-
-                if (!postEmail) {
-                    if (this.isSet('emailStability')) {
-                        email = await this.emailService.createEmail(model);
-                    } else {
-                        email = await this.mega.addEmail(model, frame.options);
-                    }
-                } else if (postEmail && postEmail.get('status') === 'failed') {
-                    if (this.isSet('emailStability')) {
-                        email = await this.emailService.retryEmail(postEmail);
-                    } else {
-                        email = await this.mega.retryFailedEmail(postEmail);
-                    }
-                }
-                if (email) {
-                    model.set('email', email);
-                }
-            }
-        }
-
-        return model;
-    }
-
-    async getProductsFromVisibilityFilter(visibilityFilter) {
-        try {
-            const allProducts = await this.models.Product.findAll();
-            const visibilityFilterJson = nql(visibilityFilter).toJSON();
-            const productsData = (visibilityFilterJson.product ? [visibilityFilterJson] : visibilityFilterJson.$or) || [];
-            const tiers = productsData
-                .map((data) => {
-                    return allProducts.find((p) => {
-                        return p.get('slug') === data.product;
-                    });
-                }).filter(p => !!p).map((d) => {
-                    return d.toJSON();
-                });
-            return tiers;
-        } catch (err) {
-            return Promise.reject(new BadRequestError({
-                message: tpl(messages.invalidVisibilityFilter),
-                context: err.message
-            }));
-        }
-    }
-
-    /**
-     * Calculates if the email should be tried to be sent out
-     * @private
-     * @param {String} currentStatus current status from the post model
-     * @param {String} previousStatus previous status from the post model
-     * @returns {Boolean}
-     */
-    shouldSendEmail(currentStatus, previousStatus) {
-        return (['published', 'sent'].includes(currentStatus))
-            && (!['published', 'sent'].includes(previousStatus));
-    }
-
-    handleCacheInvalidation(model) {
-        let cacheInvalidate;
-
-        if (
-            model.get('status') === 'published' && model.wasChanged() ||
-            model.get('status') === 'draft' && model.previous('status') === 'published'
-        ) {
-            cacheInvalidate = true;
-        } else if (
-            model.get('status') === 'draft' && model.previous('status') !== 'published' ||
-            model.get('status') === 'scheduled' && model.wasChanged()
-        ) {
-            cacheInvalidate = {
-                value: this.urlUtils.urlFor({
-                    relativeUrl: this.urlUtils.urlJoin('/p', model.get('uuid'), '/')
-                })
-            };
-        } else {
-            cacheInvalidate = false;
-        }
-
-        return cacheInvalidate;
-    }
-}
+const {PostsService, PostsExporter} = require('@tryghost/posts-service');
+const url = require('../../../server/api/endpoints/utils/serializers/output/utils/url');
 
 /**
- * @returns {PostsService} instance of the PostsService
+ * @returns {InstanceType<PostsService>} instance of the PostsService
  */
 const getPostServiceInstance = () => {
     const urlUtils = require('../../../shared/url-utils');
-    const {mega} = require('../mega');
     const labs = require('../../../shared/labs');
     const models = require('../../models');
-    const PostStats = require('./stats/post-stats');
+    const PostStats = require('./stats/PostStats');
     const emailService = require('../email-service');
+    const settingsCache = require('../../../shared/settings-cache');
+    const settingsHelpers = require('../settings-helpers');
+    const collectionsService = require('../collections');
 
     const postStats = new PostStats();
 
+    const postsExporter = new PostsExporter({
+        models: {
+            Post: models.Post,
+            Newsletter: models.Newsletter,
+            Label: models.Label,
+            Product: models.Product
+        },
+        getPostUrl(post) {
+            const jsonModel = post.toJSON();
+            url.forPost(post.id, jsonModel, {options: {}});
+            return jsonModel.url;
+        },
+        settingsCache,
+        settingsHelpers
+    });
+
     return new PostsService({
-        mega: mega,
         urlUtils: urlUtils,
         models: models,
         isSet: flag => labs.isSet(flag), // don't use bind, that breaks test subbing of labs
         stats: postStats,
-        emailService: emailService.service
+        emailService: emailService.service,
+        postsExporter,
+        collectionsService: collectionsService.api
     });
 };
 

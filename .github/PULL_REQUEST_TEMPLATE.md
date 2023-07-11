@@ -8,5 +8,7 @@ Please include a description of your change & check your PR against this list, t
 
 We appreciate your contribution!
 
-Also, if you'd be interested in writing code like this for us more regularly, we're hiring:
-https://careers.ghost.org
+---
+
+<!-- Leave the line below if you'd like GitHub Copilot to generate a summary from your commit -->
+copilot:summary

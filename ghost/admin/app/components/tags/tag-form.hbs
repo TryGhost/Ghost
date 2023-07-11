@@ -1,5 +1,8 @@
 <div class="gh-main-section">
-    <h4 class="gh-main-section-header small bn">Basic settings</h4>
+    <div class="flex justify-between items-center">
+        <h4 class="gh-main-section-header small bn">Basic settings</h4>
+        <a href={{this.tagURL}} target="_blank" rel="noopener noreferrer" class="gh-view-tag-link">View tag {{svg-jar "external"}}</a>
+    </div>
     <section class="gh-main-section-block">
         <div class="gh-main-section-content grey columns-2">
             <div>
@@ -173,7 +176,7 @@
                                 </div>
                                 <div class="gh-seo-preview-link">{{this.seoURL}}</div>
                                 <div class="gh-seo-preview-title">{{this.seoTitle}}</div>
-                                <div class="gh-seo-preview-desc">{{this.seoDescription}}</div>
+                                <div class="gh-seo-preview-desc">{{#if this.seoDescription}}{{truncate this.seoDescription 149}}{{else}}Search engines will automatically show a custom preview of content related to the search term here if no custom meta description is set.{{/if}}</div>
                             </div>
                         </div>
                     </div>

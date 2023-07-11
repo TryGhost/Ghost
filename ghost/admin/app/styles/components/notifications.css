@@ -319,3 +319,22 @@
     border-bottom: #e9ebb6 1px solid;
     background: #fdffb6;
 }
+
+
+/* Update banner
+/* ---------------------------------------------------------- */
+
+.gh-update-banner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 12px;
+    background: var(--black);
+    color: #fff;
+    font-size: 1.45rem;
+}
+
+.gh-update-banner a {
+    font-weight: 700;
+    color: var(--green-l2);
+}

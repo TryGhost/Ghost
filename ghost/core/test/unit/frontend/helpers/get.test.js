@@ -1,9 +1,8 @@
 const should = require('should');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 const {SafeString} = require('../../../../core/frontend/services/handlebars');
 const configUtils = require('../../../utils/configUtils');
-const logging = require('@tryghost/logging');
+const loggingLib = require('@tryghost/logging');
 
 // Stuff we are testing
 const get = require('../../../../core/frontend/helpers/get');
@@ -15,6 +14,7 @@ describe('{{#get}} helper', function () {
     let fn;
     let inverse;
     let locals = {};
+    let logging;
 
     before(function () {
         models.init();
@@ -25,6 +25,13 @@ describe('{{#get}} helper', function () {
         inverse = sinon.spy();
 
         locals = {root: {}, globalProp: {foo: 'bar'}};
+
+        // We're testing how the browse stub is called, not the response.
+        // Each get call errors since the posts resource is not populated.
+        logging = {
+            error: sinon.stub(loggingLib, 'error'),
+            warn: sinon.stub(loggingLib, 'warn')
+        };
     });
 
     afterEach(function () {
@@ -32,13 +39,12 @@ describe('{{#get}} helper', function () {
     });
 
     describe('context preparation', function () {
-        let browsePostsStub;
         const meta = {pagination: {}};
 
         beforeEach(function () {
             locals = {root: {_locals: {}}};
 
-            browsePostsStub = sinon.stub(api, 'postsPublic').get(() => {
+            sinon.stub(api, 'postsPublic').get(() => {
                 return {
                     browse: sinon.stub().resolves({posts: [{feature_image_caption: '<a href="#">A link</a>'}], meta: meta})
                 };
@@ -62,13 +68,12 @@ describe('{{#get}} helper', function () {
     });
 
     describe('authors', function () {
-        let browseAuthorsStub;
         const meta = {pagination: {}};
 
         beforeEach(function () {
             locals = {root: {_locals: {}}};
 
-            browseAuthorsStub = sinon.stub(api, 'authorsPublic').get(() => {
+            sinon.stub(api, 'authorsPublic').get(() => {
                 return {
                     browse: sinon.stub().resolves({authors: [], meta: meta})
                 };
@@ -324,9 +329,6 @@ describe('{{#get}} helper', function () {
 
     describe('optimization', function () {
         beforeEach(function () {
-            sinon.spy(logging, 'error');
-            sinon.spy(logging, 'warn');
-
             sinon.stub(api, 'postsPublic').get(() => {
                 return {
                     browse: () => {
@@ -339,8 +341,8 @@ describe('{{#get}} helper', function () {
                 };
             });
         });
-        afterEach(function () {
-            configUtils.restore();
+        afterEach(async function () {
+            await configUtils.restore();
         });
 
         it('should log a warning if it hits the notify threshold', async function () {

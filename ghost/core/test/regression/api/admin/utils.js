@@ -66,7 +66,9 @@ const expectedProperties = {
         'email_only',
         'tiers',
         'newsletter',
-        'count'
+        'count',
+        'post_revisions',
+        'reading_time'
     ],
     user: [
         'id',

@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const {unparse} = require('../index');
 
 describe('unparse', function () {
@@ -13,14 +13,14 @@ describe('unparse', function () {
 
         assert.ok(result);
 
-        const expected = `id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers\r\n,email@example.com,Sam Memberino,Early supporter,,,,,,,`;
+        const expected = `id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers\r\n,email@example.com,Sam Memberino,Early supporter,false,,,,,,`;
         assert.equal(result, expected);
     });
 
     it('maps the subscribed property to subscribed_to_emails', function () {
         const json = [{
             email: 'do-not-email-me@email.com',
-            subscribed: false
+            subscribed_to_emails: false
         }];
 
         const columns = [

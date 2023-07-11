@@ -1,10 +1,10 @@
 const errors = require('@tryghost/errors');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 const markdownToMobiledoc = require('../../../utils/fixtures/data-generator').markdownToMobiledoc;
 const prev_post = require('../../../../core/frontend/helpers/prev_post');
 const api = require('../../../../core/frontend/services/proxy').api;
 const should = require('should');
+const logging = require('@tryghost/logging');
 
 describe('{{prev_post}} helper', function () {
     let browsePostsStub;
@@ -352,7 +352,7 @@ describe('{{prev_post}} helper', function () {
 
     describe('general error handling', function () {
         beforeEach(function () {
-            browsePostsStub = sinon.stub().callsFake(function (options) {
+            browsePostsStub = sinon.stub().callsFake(function () {
                 return Promise.reject(new errors.NotFoundError({message: 'Something wasn\'t found'}));
             });
         });
@@ -361,6 +361,7 @@ describe('{{prev_post}} helper', function () {
             const fn = sinon.spy();
             const inverse = sinon.spy();
             const optionsData = {name: 'prev_post', data: locals, fn: fn, inverse: inverse};
+            const loggingStub = sinon.stub(logging, 'error');
 
             await prev_post
                 .call({
@@ -375,6 +376,7 @@ describe('{{prev_post}} helper', function () {
 
             fn.called.should.be.false();
             inverse.calledOnce.should.be.true();
+            loggingStub.calledOnce.should.be.true();
 
             inverse.firstCall.args[1].should.be.an.Object().and.have.property('data');
             inverse.firstCall.args[1].data.should.be.an.Object().and.have.property('error');
@@ -402,7 +404,7 @@ describe('{{prev_post}} helper', function () {
 
         beforeEach(function () {
             member = {uuid: 'test'};
-            browsePostsStub = sinon.stub().callsFake(function (options) {
+            browsePostsStub = sinon.stub().callsFake(function () {
                 return Promise.resolve({
                     posts: [{slug: '/next/', title: 'post 3'}]
                 });

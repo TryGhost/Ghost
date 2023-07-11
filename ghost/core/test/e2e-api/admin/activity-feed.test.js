@@ -1,9 +1,10 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyErrorId, anyObjectId, anyContentLength, anyUuid, anyISODate, anyString, anyObject, anyNumber} = matchers;
-const models = require('../../../core/server/models');
+const {anyEtag, anyErrorId, anyObjectId, anyContentLength, anyContentVersion, anyUuid, anyISODate, anyString, anyObject, anyNumber} = matchers;
 
-const assert = require('assert');
+const assert = require('assert/strict');
 const moment = require('moment');
+const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 
 let agent;
 
@@ -16,6 +17,7 @@ async function testPagination(skippedTypes, postId, totalExpected, limit) {
         .expectStatus(200)
         .matchHeaderSnapshot({
             etag: anyEtag,
+            'content-version': anyContentVersion,
             'content-length': anyContentLength // Depending on random conditions (ID generation) the order of events can change
         })
         .matchBodySnapshot({
@@ -51,6 +53,7 @@ async function testPagination(skippedTypes, postId, totalExpected, limit) {
             .expectStatus(200)
             .matchHeaderSnapshot({
                 etag: anyEtag,
+                'content-version': anyContentVersion,
                 'content-length': anyContentLength // Depending on random conditions (ID generation) the order of events can change
             })
             .matchBodySnapshot({
@@ -86,12 +89,12 @@ describe('Activity Feed API', function () {
     });
 
     beforeEach(function () {
-        mockManager.mockStripe();
         mockManager.mockMail();
     });
 
     afterEach(function () {
         mockManager.restore();
+        sinon.restore();
     });
 
     describe('Filter splitting', function () {
@@ -101,7 +104,8 @@ describe('Activity Feed API', function () {
                 .get(`/members/events?filter=type:comment_event,type:click_event`)
                 .expectStatus(200)
                 .matchHeaderSnapshot({
-                    etag: anyEtag
+                    etag: anyEtag,
+                    'content-version': anyContentVersion
                 })
                 .matchBodySnapshot({
                     events: new Array(10).fill({
@@ -116,11 +120,13 @@ describe('Activity Feed API', function () {
 
         it('Cannot combine type filter with OR filter', async function () {
             // This query is not allowed because we need to split the filter in two AND filters
+            const loggingStub = sinon.stub(logging, 'error');
             await agent
                 .get(`/members/events?filter=type:comment_event,data.post_id:123`)
                 .expectStatus(400)
                 .matchHeaderSnapshot({
-                    etag: anyEtag
+                    etag: anyEtag,
+                    'content-version': anyContentVersion
                 })
                 .matchBodySnapshot({
                     errors: [
@@ -129,14 +135,17 @@ describe('Activity Feed API', function () {
                         }
                     ]
                 });
+            sinon.assert.calledOnce(loggingStub);
         });
 
         it('Can only combine type and other filters at the root level', async function () {
+            const loggingStub = sinon.stub(logging, 'error');
             await agent
                 .get(`/members/events?filter=${encodeURIComponent('(type:comment_event+data.post_id:123)+data.post_id:123')}`)
                 .expectStatus(400)
                 .matchHeaderSnapshot({
-                    etag: anyEtag
+                    etag: anyEtag,
+                    'content-version': anyContentVersion
                 })
                 .matchBodySnapshot({
                     errors: [
@@ -145,6 +154,7 @@ describe('Activity Feed API', function () {
                         }
                     ]
                 });
+            sinon.assert.calledOnce(loggingStub);
         });
 
         it('Can use OR as long as it is not combined with type', async function () {
@@ -227,7 +237,8 @@ describe('Activity Feed API', function () {
             .get(`/members/events?filter=type:comment_event`)
             .expectStatus(200)
             .matchHeaderSnapshot({
-                etag: anyEtag
+                etag: anyEtag,
+                'content-version': anyContentVersion
             })
             .matchBodySnapshot({
                 events: new Array(2).fill({
@@ -247,7 +258,8 @@ describe('Activity Feed API', function () {
             .get(`/members/events?filter=type:click_event`)
             .expectStatus(200)
             .matchHeaderSnapshot({
-                etag: anyEtag
+                etag: anyEtag,
+                'content-version': anyContentVersion
             })
             .matchBodySnapshot({
                 events: new Array(8).fill({
@@ -279,7 +291,8 @@ describe('Activity Feed API', function () {
             .get(`/members/events?filter=type:feedback_event`)
             .expectStatus(200)
             .matchHeaderSnapshot({
-                etag: anyEtag
+                etag: anyEtag,
+                'content-version': anyContentVersion
             })
             .matchBodySnapshot({
                 events: new Array(8).fill({
@@ -312,7 +325,8 @@ describe('Activity Feed API', function () {
             .get(`/members/events?filter=type:signup_event`)
             .expectStatus(200)
             .matchHeaderSnapshot({
-                etag: anyEtag
+                etag: anyEtag,
+                'content-version': anyContentVersion
             })
             .matchBodySnapshot({
                 events: new Array(8).fill({
@@ -332,7 +346,8 @@ describe('Activity Feed API', function () {
             .get(`/members/events?filter=type:email_sent_event`)
             .expectStatus(200)
             .matchHeaderSnapshot({
-                etag: anyEtag
+                etag: anyEtag,
+                'content-version': anyContentVersion
             })
             .matchBodySnapshot({
                 events: new Array(4).fill({
@@ -352,7 +367,8 @@ describe('Activity Feed API', function () {
             .get(`/members/events?filter=type:email_delivered_event`)
             .expectStatus(200)
             .matchHeaderSnapshot({
-                etag: anyEtag
+                etag: anyEtag,
+                'content-version': anyContentVersion
             })
             .matchBodySnapshot({
                 events: new Array(1).fill({
@@ -372,7 +388,8 @@ describe('Activity Feed API', function () {
             .get(`/members/events?filter=type:email_opened_event`)
             .expectStatus(200)
             .matchHeaderSnapshot({
-                etag: anyEtag
+                etag: anyEtag,
+                'content-version': anyContentVersion
             })
             .matchBodySnapshot({
                 events: new Array(1).fill({
@@ -393,7 +410,8 @@ describe('Activity Feed API', function () {
             .get(`/members/events?filter=data.post_id:${postId}&limit=20`)
             .expectStatus(200)
             .matchHeaderSnapshot({
-                etag: anyEtag
+                etag: anyEtag,
+                'content-version': anyContentVersion
             })
             .matchBodySnapshot({
                 events: new Array(15).fill({
@@ -427,6 +445,7 @@ describe('Activity Feed API', function () {
             .expectStatus(200)
             .matchHeaderSnapshot({
                 etag: anyEtag,
+                'content-version': anyContentVersion,
                 'content-length': anyContentLength // Depending on random conditions (ID generation) the order of events can change
             })
             .matchBodySnapshot({

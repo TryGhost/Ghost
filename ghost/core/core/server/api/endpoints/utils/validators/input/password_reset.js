@@ -1,4 +1,4 @@
-const Promise = require('bluebird');
+/* eslint-disable ghost/filenames/match-regex */
 const validator = require('@tryghost/validator');
 const debug = require('@tryghost/debug')('api:endpoints:utils:validators:input:passwordreset');
 const tpl = require('@tryghost/tpl');

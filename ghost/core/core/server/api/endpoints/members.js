@@ -33,6 +33,9 @@ module.exports = {
     docName: 'members',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'limit',
             'fields',
@@ -62,7 +65,9 @@ module.exports = {
         options: [
             'include'
         ],
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         data: [
             'id',
             'email'
@@ -90,7 +95,9 @@ module.exports = {
 
     add: {
         statusCode: 201,
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'send_email',
             'email_type'
@@ -115,7 +122,9 @@ module.exports = {
 
     edit: {
         statusCode: 200,
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'id'
         ],
@@ -136,7 +145,9 @@ module.exports = {
 
     editSubscription: {
         statusCode: 200,
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'id',
             'subscription_id'
@@ -196,7 +207,9 @@ module.exports = {
 
     createSubscription: {
         statusCode: 200,
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'id'
         ],
@@ -238,7 +251,9 @@ module.exports = {
 
     destroy: {
         statusCode: 204,
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'id',
             'cancel'
@@ -262,7 +277,9 @@ module.exports = {
 
     bulkDestroy: {
         statusCode: 200,
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'all',
             'filter',
@@ -290,7 +307,9 @@ module.exports = {
 
     bulkEdit: {
         statusCode: 200,
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'all',
             'filter',
@@ -329,7 +348,8 @@ module.exports = {
                     const datetime = (new Date()).toJSON().substring(0, 10);
                     return `members.${datetime}.csv`;
                 }
-            }
+            },
+            cacheInvalidate: false
         },
         response: {
             format: 'plain'
@@ -346,6 +366,9 @@ module.exports = {
     },
 
     importCSV: {
+        headers: {
+            cacheInvalidate: false
+        },
         statusCode(result) {
             if (result && result.meta && result.meta.stats && result.meta.stats.imported !== null) {
                 return 201;
@@ -367,6 +390,13 @@ module.exports = {
             const pathToCSV = frame.file.path;
             const headerMapping = frame.data.mapping;
 
+            let email;
+            if (frame.user) {
+                email = frame.user.get('email');
+            } else {
+                email = await models.User.getOwnerUser().get('email');
+            }
+
             return membersService.processImport({
                 pathToCSV,
                 headerMapping,
@@ -374,13 +404,16 @@ module.exports = {
                 importLabel,
                 LabelModel: models.Label,
                 user: {
-                    email: frame.user.get('email')
+                    email: email
                 }
             });
         }
     },
 
     memberStats: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: {
             method: 'browse'
         },
@@ -403,6 +436,9 @@ module.exports = {
     },
 
     mrrStats: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: {
             method: 'browse'
         },
@@ -427,6 +463,9 @@ module.exports = {
     },
 
     activityFeed: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'limit',
             'filter'

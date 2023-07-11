@@ -23,9 +23,11 @@ export default class Analytics extends Component {
     @service membersUtils;
     @service utils;
     @service feature;
+    @service store;
 
     @tracked sources = null;
     @tracked links = null;
+    @tracked mentions = null;
     @tracked sortColumn = 'signups';
     @tracked showSuccess;
     @tracked updateLinkId;
@@ -131,6 +133,12 @@ export default class Analytics extends Component {
             this.fetchLinks();
         } else {
             this.links = [];
+        }
+
+        if (this.showMentions) {
+            this.fetchMentions();
+        } else {
+            this.mentions = [];
         }
     }
 
@@ -269,15 +277,32 @@ export default class Analytics extends Component {
         this.updateLinkData(result.links);
     }
 
+    async fetchMentions() {
+        if (this._fetchMentions.isRunning) {
+            return this._fetchMentions.last;
+        }
+        return this._fetchMentions.perform();
+    }
+
+    @task
+    *_fetchMentions() {
+        const filter = `resource_id:${this.post.id}+resource_type:post`;
+        this.mentions = yield this.store.query('mention', {limit: 5, order: 'created_at desc', filter});
+    }
+
     get showLinks() {
         return this.post.showEmailClickAnalytics;
     }
 
     get showSources() {
-        return this.feature.get('sourceAttribution') && this.post.showAttributionAnalytics;
+        return this.post.showAttributionAnalytics;
+    }
+
+    get showMentions() {
+        return this.feature.get('webmentions');
     }
 
     get isLoaded() {
-        return this.links !== null && this.souces !== null;
+        return this.links !== null && this.souces !== null && this.mentions !== null;
     }
 }

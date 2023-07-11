@@ -32,6 +32,9 @@ class Urls {
     /**
      * @description Add a url to the system.
      * @param {Object} options
+     * @param {import('./Resource')} options.resource - instance of the Resource class
+     * @param {string} options.generatorId
+     * @param {string} options.url
      */
     add(options) {
         const url = options.url;
@@ -41,10 +44,18 @@ class Urls {
         debug('cache', url);
 
         if (this.urls[resource.data.id]) {
-            logging.error(new errors.InternalServerError({
+            const error = new errors.InternalServerError({
                 message: 'This should not happen.',
                 code: 'URLSERVICE_RESOURCE_DUPLICATE'
-            }));
+            });
+            if (process.env.NODE_ENV.startsWith('test')) {
+                logging.warn({
+                    message: 'Duplicate URL',
+                    err: error
+                });
+            } else {
+                logging.error(error);
+            }
 
             this.removeResourceId(resource.data.id);
         }

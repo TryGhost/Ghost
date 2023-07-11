@@ -19,6 +19,8 @@ const addNewsletter = async (page) => {
 
 test.describe('Portal', () => {
     test.describe('Member actions', () => {
+        test.describe.configure({retries: 1});
+        
         test('can log out', async ({page}) => {
             // create a new free member
             await createMember(page, {
@@ -28,10 +30,11 @@ test.describe('Portal', () => {
             });
 
             // impersonate the member on frontend
-            impersonateMember(page);
+            await impersonateMember(page);
 
-            const portalTriggerButton = page.frameLocator('#ghost-portal-root iframe.gh-portal-triggerbtn-iframe').locator('div').nth(1);
-            const portalFrame = page.frameLocator('#ghost-portal-root div iframe');
+            // open portal
+            const portalTriggerButton = page.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            const portalFrame = page.frameLocator('[data-testid="portal-popup-frame"]');
 
             // sign out
             await portalTriggerButton.click();
@@ -53,22 +56,24 @@ test.describe('Portal', () => {
             const memberUrl = page.url();
 
             // impersonate the member on frontend
-            impersonateMember(page);
+            await impersonateMember(page);
 
-            const portalTriggerButton = await page.locator('#gh-head').getByRole('link', {name: 'Account'});
-            const portalFrame = page.frameLocator('#ghost-portal-root div iframe');
+            const portalTriggerButton = page.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            const portalFrame = page.frameLocator('[data-testid="portal-popup-frame"]');
 
-            // open portal and turn off newsletter
+            // open portal
             await portalTriggerButton.click();
 
-            // todo: replace on data attr
-            expect(await portalFrame.locator('#default-newsletter-toggle').isChecked()).toBeTruthy();
-            await portalFrame.locator('.gh-portal-for-switch .switch').click();
-            expect(await portalFrame.locator('#default-newsletter-toggle').isChecked()).not.toBeTruthy();
+            // turn off default newsletter subscription
+            const defaultNewsletterToggle = portalFrame.locator('[data-testid="default-newsletter-toggle"]');
+            await expect(await defaultNewsletterToggle.isChecked()).toBeTruthy();
+            await defaultNewsletterToggle.click();
+            await expect(await defaultNewsletterToggle.isChecked()).not.toBeTruthy();
 
             // check that member's newsletters was updated in Admin
+            await page.waitForLoadState('networkidle');
             await page.goto(memberUrl);
-            expect(await page.locator('[data-test-member-settings-switch] input[type=checkbox]').first().isChecked()).not.toBeTruthy();
+            await expect(await page.locator('[data-test-member-settings-switch] input[type=checkbox]').first().isChecked()).not.toBeTruthy();
         });
 
         test('can unsubscribe from all newsletters from account settings', async ({page}) => {
@@ -81,52 +86,56 @@ test.describe('Portal', () => {
             // get the url of the current member on admin
             const memberUrl = page.url();
 
+            // add one more newsletter to have multiple
             await addNewsletter(page);
 
             // impersonate the member on frontend
             await page.goto(memberUrl);
-            impersonateMember(page);
+            await impersonateMember(page);
 
-            const portalTriggerButton = await page.locator('#gh-head').getByRole('link', {name: 'Account'});
-            const portalFrame = page.frameLocator('#ghost-portal-root div iframe');
+            const portalTriggerButton = page.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            const portalFrame = page.frameLocator('[data-testid="portal-popup-frame"]');
 
             // open portal
             await portalTriggerButton.click();
             await portalFrame.locator('[data-test-button="manage-newsletters"]').click();
 
-            // check amount of newsletters
-
-            // todo: replace on data attr
-            const newsletters = await portalFrame.locator('.gh-portal-list-toggle-wrapper');
+            // check amount of newsletterss
+            const newsletters = await portalFrame.locator('[data-test-toggle-wrapper="true"]');
             const count = await newsletters.count();
-            expect(count).toEqual(2);
+            await expect(count).toEqual(2);
 
             // all newsletters should be activated
             for (let i = 0; i < count; i++) {
-                expect(await newsletters.nth(i).locator('input[type="checkbox"]').isChecked()).toBeTruthy();
+                await expect(await newsletters.nth(i).locator('input[type="checkbox"]').isChecked()).toBeTruthy();
             }
 
             // unsubscribe from all emails
-            // todo: replace on data attr
-            await portalFrame.getByRole('button', {name: 'Unsubscribe from all emails'}).click();
+            await portalFrame.locator('[data-test-button="unsubscribe-from-all-emails"]').click();
+
+            // todo: replace class locator on data-attr locator
+            await expect(await portalFrame.locator('.gh-portal-popupnotification.success')).toBeVisible();
+            await expect(await portalFrame.locator('.gh-portal-popupnotification.success')).toBeHidden();
 
             // all newsletters should be disabled
             for (let i = 0; i < count; i++) {
-                expect(await newsletters.nth(i).locator('input[type="checkbox"]').isChecked()).not.toBeTruthy();
+                await expect(await newsletters.nth(i).locator('input[type="checkbox"]').isChecked()).not.toBeTruthy();
             }
 
             // check that member's newsletters was updated in Admin
+            await page.waitForLoadState('networkidle');
             await page.goto(memberUrl);
 
             // check amount of newsletters in member's profile in Admin
             await page.waitForSelector('[data-test-member-settings-switch]');
             const membersNewsletters = await page.locator('[data-test-member-settings-switch]');
             const newslettersCount = await membersNewsletters.count();
-            expect(newslettersCount).toEqual(2);
+            await expect(newslettersCount).toEqual(2);
 
             // all newsletters should be disabled
             for (let i = 0; i < newslettersCount; i++) {
-                expect(await membersNewsletters.nth(i).locator('input[type="checkbox"]').isChecked()).not.toBeTruthy();
+                const isNewsletterChecked = await membersNewsletters.nth(i).locator('input[type="checkbox"]').isChecked();
+                await expect(isNewsletterChecked).not.toBeTruthy();
             }
         });
     });

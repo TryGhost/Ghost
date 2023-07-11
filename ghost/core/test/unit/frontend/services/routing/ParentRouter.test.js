@@ -25,9 +25,9 @@ describe('UNIT - services/routing/ParentRouter', function () {
         res.locals = {};
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
-        configUtils.restore();
+        await configUtils.restore();
     });
 
     describe('fn: _getSiteRouter', function () {

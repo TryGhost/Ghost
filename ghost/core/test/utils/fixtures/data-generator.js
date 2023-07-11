@@ -65,6 +65,7 @@ DataGenerator.Content = {
             title: 'Not so short, bit complex',
             slug: 'not-so-short-bit-complex',
             mobiledoc: DataGenerator.markdownToMobiledoc('<p><nav><ul><li><a href=\"#nowhere\" title=\"Anchor URL\">Lorem</a></li><li><a href=\"__GHOST_URL__/about#nowhere\" title=\"Relative URL\">Aliquam</a></li><li><a href=\"//somewhere.com/link#nowhere\" title=\"Protocol Relative URL\">Tortor</a></li><li><a href=\"http://somewhere.com/link#nowhere\" title=\"Absolute URL\">Morbi</a></li><li><a href=\"#nowhere\" title=\"Praesent dapibus, neque id cursus faucibus\">Praesent</a></li><li><a href=\"#nowhere\" title=\"Pellentesque fermentum dolor\">Pellentesque</a></li></ul></nav><p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.</p><table><thead><tr><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead><tbody><tr><td>a</td><td>b</td><td>c</td><td>d</td></tr><tr><td>e</td><td>f</td><td>g</td><td>h</td></tr><tr><td>i</td><td>j</td><td>k</td><td>l</td></tr></tbody></table><dl><dt>Definition list</dt><dd>Consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</dd><dt>Lorem ipsum dolor sit amet</dt><dd>Consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</dd></dl><ul><li>Morbi in sem quis dui placerat ornare. Pellentesque odio nisi, euismod in, pharetra a, ultricies in, diam. Sed arcu. Cras consequat.</li><li>Praesent dapibus, neque id cursus faucibus, tortor neque egestas augue, eu vulputate magna eros eu erat. Aliquam erat volutpat. Nam dui mi, tincidunt quis, accumsan porttitor, facilisis luctus, metus.</li><li>Phasellus ultrices nulla quis nibh. Quisque a lectus. Donec consectetuer ligula vulputate sem tristique cursus. Nam nulla quam, gravida non, commodo a, sodales sit amet, nisi.</li><li>Pellentesque fermentum dolor. Aliquam quam lectus, facilisis auctor, ultrices ut, elementum vulputate, nunc.</li></ul></p>'),
+            published_at: new Date('2015-01-04'),
             featured: true
         },
         {
@@ -890,6 +891,42 @@ DataGenerator.Content = {
             created_at: null,
             updated_at: null
         }
+    ],
+
+    // TODO: build mentions for testing browse endpoint
+    mentions: [
+        // source: webmention.source,
+        // target: webmention.target,
+        // timestamp: new Date(),
+        // payload: webmention.payload,
+        // resourceId: resourceInfo.type === 'post' ? resourceInfo.id : null,
+        // sourceTitle: metadata.title,
+        // sourceSiteTitle: metadata.siteTitle,
+        // sourceAuthor: metadata.author,
+        // sourceExcerpt: metadata.excerpt,
+        // sourceFavicon: metadata.favicon,
+        // sourceFeaturedImage: metadata.image
+        {
+            id: ObjectId().toHexString(),
+            source: 'https://source.com',
+            target: 'https://target.com',
+            sourceTitle: 'Title!',
+            sourceExcerpt: 'Excerpt!'
+        },
+        {
+            id: ObjectId().toHexString(),
+            source: 'https://anothersource.com',
+            target: 'https://anothertarget.com',
+            sourceTitle: 'Another Title!',
+            sourceExcerpt: 'Another Excerpt!'
+        },
+        {
+            id: ObjectId().toHexString(),
+            source: 'https://src.com',
+            target: 'https://target.com',
+            sourceTitle: 'Title goes here',
+            sourceExcerpt: 'Excerpt goes here'
+        }
     ]
 };
 
@@ -1200,6 +1237,9 @@ DataGenerator.forKnex = (function () {
             slug: 'gold',
             active: true,
             type: 'paid',
+            currency: 'usd',
+            monthly_price: 500,
+            yearly_price: 5000,
             visibility: 'public',
             benefits: [],
             created_by: DataGenerator.Content.users[0].id,
@@ -1337,6 +1377,13 @@ DataGenerator.forKnex = (function () {
         return _.defaults(newObj, {
             created_at: new Date(),
             updated_at: new Date()
+        });
+    }
+
+    function createMention(overrides) {
+        const newObj = _.cloneDeep(overrides);
+        return _.defaults(newObj, {
+            created_at: new Date()
         });
     }
 
@@ -1626,7 +1673,7 @@ DataGenerator.forKnex = (function () {
         createEmailRecipient(DataGenerator.Content.email_recipients[5])
     ];
 
-    const email_recipient_failures = email_recipients.flatMap((recipient, index) => {
+    const email_recipient_failures = email_recipients.flatMap((recipient) => {
         if (recipient.failed_at === null) {
             if (recipient.delivered_at === null) {
                 return [{
@@ -1849,6 +1896,12 @@ DataGenerator.forKnex = (function () {
         createLink(DataGenerator.Content.links[2])
     ];
 
+    const mentions = [
+        createMention(DataGenerator.Content.mentions[0]),
+        createMention(DataGenerator.Content.mentions[1]),
+        createMention(DataGenerator.Content.mentions[2])
+    ];
+
     return {
         createPost,
         createGenericPost,
@@ -1880,6 +1933,7 @@ DataGenerator.forKnex = (function () {
         createNewsletter,
         createOffer,
         createComment,
+        createMention,
 
         invites,
         posts,
@@ -1912,6 +1966,7 @@ DataGenerator.forKnex = (function () {
         comments,
         redirects,
         links,
+        mentions,
 
         members_paid_subscription_events,
         members_created_events,

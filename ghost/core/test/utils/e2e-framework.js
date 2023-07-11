@@ -13,6 +13,7 @@
 //
 // The output state checker is responsible for checking the response from the app after performing a request.
 const _ = require('lodash');
+const debug = require('@tryghost/debug')('test');
 const {sequence} = require('@tryghost/promise');
 const {any, stringMatching} = require('@tryghost/express-test').snapshot;
 const {AsymmetricMatcher} = require('expect');
@@ -26,6 +27,8 @@ const redirectsUtils = require('./redirects');
 const configUtils = require('./configUtils');
 const urlServiceUtils = require('./url-service-utils');
 const mockManager = require('./e2e-framework-mock-manager');
+const mentionsJobsService = require('../../core/server/services/mentions-jobs');
+const jobsService = require('../../core/server/services/jobs');
 
 const boot = require('../../core/boot');
 const {AdminAPITestAgent, ContentAPITestAgent, GhostAPITestAgent, MembersAPITestAgent} = require('./agents');
@@ -34,6 +37,16 @@ const db = require('./db-utils');
 // Services that need resetting
 const settingsService = require('../../core/server/services/settings/settings-service');
 const supertest = require('supertest');
+const {stopGhost} = require('./e2e-utils');
+const adapterManager = require('../../core/server/services/adapter-manager');
+const DomainEvents = require('@tryghost/domain-events');
+
+// Require additional assertions which help us keep our tests small and clear
+require('./assertions');
+
+let totalResetTime = 0;
+let totalStartTime = 0;
+let totalBoots = 0;
 
 /**
  * @param {Object} [options={}]
@@ -43,6 +56,10 @@ const supertest = require('supertest');
  * @returns {Promise<Express.Application>} ghost
  */
 const startGhost = async (options = {}) => {
+    await mentionsJobsService.allSettled();
+    await jobsService.allSettled();
+    await DomainEvents.allSettled();
+
     /**
      * We never use the root content folder for testing!
      * We use a tmp folder.
@@ -53,6 +70,12 @@ const startGhost = async (options = {}) => {
     // NOTE: need to pass this config to the server instance
     configUtils.set('paths:contentPath', contentFolder);
 
+    // Adapter cache has to be cleared to avoid reusing cached adapter instances between restarts
+    adapterManager.clearCache();
+
+    // Reset the URL service so we clear out all the listeners
+    urlServiceUtils.resetGenerators();
+
     const defaults = {
         backend: true,
         frontend: false,
@@ -60,15 +83,28 @@ const startGhost = async (options = {}) => {
     };
 
     // Ensure the state of all data, including DB and caches
+    const resetDataNow = Date.now();
     await resetData();
+    totalResetTime += Date.now() - resetDataNow;
 
     const bootOptions = Object.assign({}, defaults, options);
 
+    const bootNow = Date.now();
     const ghostServer = await boot(bootOptions);
+    const bootTime = Date.now() - bootNow;
+    totalStartTime += bootTime;
+    totalBoots += 1;
 
     if (bootOptions.frontend) {
         await urlServiceUtils.isFinished();
     }
+
+    // Disable network in tests at the start
+    mockManager.disableNetwork();
+
+    debug(`[e2e-framework] Started Ghost in ${bootTime / 1000}s`);
+    debug(`[e2e-framework] Accumulated start time across ${totalBoots} boots is ${totalStartTime / 1000}s (average = ${Math.round(totalStartTime / totalBoots)}ms)`);
+    debug(`[e2e-framework] Accumulated reset time across ${totalBoots} boots is ${totalResetTime / 1000}s (average = ${Math.round(totalResetTime / totalBoots)}ms)`);
 
     return ghostServer;
 };
@@ -232,6 +268,31 @@ const getMembersAPIAgent = async () => {
 };
 
 /**
+ * Creates a MembersAPITestAgent which is a drop-in substitution for supertest
+ * It is automatically hooked up to the Members API so you can make requests to e.g.
+ * agent.get('/webhooks/stripe/') without having to worry about URL paths
+ *
+ * @returns {Promise<InstanceType<GhostAPITestAgent>>} agent
+ */
+const getWebmentionsAPIAgent = async () => {
+    const bootOptions = {
+        frontend: true
+    };
+    try {
+        const app = await startGhost(bootOptions);
+        const originURL = configUtils.config.get('url');
+
+        return new GhostAPITestAgent(app, {
+            apiURL: '/webmentions/',
+            originURL
+        });
+    } catch (error) {
+        error.message = `Unable to create test agent. ${error.message}`;
+        throw error;
+    }
+};
+
+/**
  * Creates a GhostAPITestAgent, which is a drop-in substitution for supertest
  * It is automatically hooked up to the Ghost API so you can make requests to e.g.
  * agent.get('/well-known/jwks.json') without having to worry about URL paths
@@ -293,6 +354,7 @@ const getAgentsForMembers = async () => {
 };
 
 /**
+ * WARNING: when using this, you should stop the returned ghostServer after the tests.
  * @NOTE: for now method returns a supertest agent for Frontend instead of test agent with snapshot support.
  *        frontendAgent should be returning an instance of TestAgent (related: https://github.com/TryGhost/Toolbox/issues/471)
  *  @returns {Promise<{adminAgent: InstanceType<AdminAPITestAgent>, membersAgent: InstanceType<MembersAPITestAgent>, frontendAgent: InstanceType<supertest.SuperAgentTest>, contentAPIAgent: InstanceType<ContentAPITestAgent>, ghostServer: Express.Application}>} agents
@@ -309,6 +371,11 @@ const getAgentsWithFrontend = async () => {
         server: true
     };
     try {
+        // Possible that we still have a running Ghost server from a previous old E2E test
+        // Those tests never stopped the server in the tests manually
+        await stopGhost();
+
+        // Start a new Ghost server with real HTTP listener
         ghostServer = await startGhost(bootOptions);
         const app = ghostServer.rootApp;
 
@@ -380,6 +447,7 @@ module.exports = {
     agentProvider: {
         getAdminAPIAgent,
         getMembersAPIAgent,
+        getWebmentionsAPIAgent,
         getContentAPIAgent,
         getAgentsForMembers,
         getGhostAPIAgent,
@@ -400,6 +468,10 @@ module.exports = {
         getPathForFixture: (fixturePath) => {
             return path.join(__dirname, 'fixtures', fixturePath);
         }
+    },
+    regexes: {
+        anyMajorMinorVersion: /v\d+\.\d+/gi,
+        queryStringToken: paramName => new RegExp(`${paramName}=(\\w|-)+`, 'g')
     },
     matchers: {
         anyBoolean: any(Boolean),
@@ -433,6 +505,5 @@ module.exports = {
     configUtils: require('./configUtils'),
     dbUtils: require('./db-utils'),
     urlUtils: require('./urlUtils'),
-    sleep: require('./sleep'),
     resetRateLimits
 };

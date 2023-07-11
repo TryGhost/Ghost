@@ -43,6 +43,7 @@
 @import "components/stacks.css";
 @import "components/browser-preview.css";
 @import "components/filter-builder.css";
+@import "components/pintura.css";
 
 
 /* Layouts
@@ -58,6 +59,7 @@
 @import "layouts/whatsnew.css";
 @import "layouts/tags.css";
 @import "layouts/members.css";
+@import "layouts/posts.css";
 @import "layouts/member-activity.css";
 @import "layouts/error.css";
 @import "layouts/apps.css";
@@ -66,11 +68,14 @@
 @import "layouts/preview-email.css";
 @import "layouts/portal-settings.css";
 @import "layouts/billing.css";
+@import "layouts/post-history.css";
 @import "layouts/post-preview.css";
 @import "layouts/dashboard.css";
 @import "layouts/tiers.css";
 @import "layouts/offers.css";
 @import "layouts/explore.css";
+@import "layouts/mentions.css";
+@import "layouts/migrate.css";
 
 
 /* ---------------------------✈️----------------------------- */

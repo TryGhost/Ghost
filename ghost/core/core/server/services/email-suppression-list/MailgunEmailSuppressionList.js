@@ -2,6 +2,7 @@ const {AbstractEmailSuppressionList, EmailSuppressionData, EmailSuppressedEvent}
 const {SpamComplaintEvent, EmailBouncedEvent} = require('@tryghost/email-events');
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
+const models = require('../../models');
 
 /**
  * @typedef {object} IMailgunAPIClient
@@ -73,7 +74,7 @@ class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
 
         try {
             const collection = await this.Suppression.findAll({
-                filter: `email:[${emails.join(',')}]`
+                filter: `email:[${emails.map(email => `'${email}'`).join(',')}]`
             });
 
             return emails.map((email) => {
@@ -95,13 +96,14 @@ class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
     }
 
     async init() {
+        this.Suppression = models.Suppression;
         const handleEvent = reason => async (event) => {
             try {
                 if (reason === 'bounce') {
                     if (!Number.isInteger(event.error?.code)) {
                         return;
                     }
-                    if (event.error.code < 500 || event.error.code > 599 && event.error.code !== 605) {
+                    if (event.error.code !== 607 && event.error.code !== 605) {
                         return;
                     }
                 }

@@ -1,0 +1,10 @@
+.gh-post-actions-menu {
+    top: calc(100% + 6px);
+    left: auto;
+    right: 10px;
+}
+
+.gh-post-actions-menu.fade-out {
+    animation-duration: .001s;
+    pointer-events: none;
+}

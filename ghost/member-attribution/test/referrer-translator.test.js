@@ -1,7 +1,7 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
 require('./utils');
-const ReferrerTranslator = require('../lib/referrer-translator');
+const ReferrerTranslator = require('../lib/ReferrerTranslator');
 
 describe('ReferrerTranslator', function () {
     describe('Constructor', function () {

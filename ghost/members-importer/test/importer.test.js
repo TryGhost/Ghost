@@ -4,7 +4,7 @@ require('./utils');
 
 const Tier = require('@tryghost/tiers/lib/Tier');
 const ObjectID = require('bson-objectid').default;
-const assert = require('assert');
+const assert = require('assert/strict');
 const fs = require('fs-extra');
 const path = require('path');
 const sinon = require('sinon');
@@ -323,6 +323,109 @@ describe('Importer', function () {
             assert.equal(result.total, 2);
             assert.equal(result.imported, 2);
             assert.equal(result.errors.length, 0);
+        });
+
+        it ('handles various special cases', async function () {
+            const importer = buildMockImporterInstance();
+
+            const result = await importer.perform(`${csvPath}/special-cases.csv`);
+
+            // CASE: Member has created_at in the future
+            // The member will not appear in the members list in admin
+            // In this case, we should overwrite create_at to current timestamp
+            // Refs: https://github.com/TryGhost/Team/issues/2793
+            assert.equal(membersRepositoryStub.create.args[0][0].email, 'timetraveler@example.com');
+            assert.equal(membersRepositoryStub.create.args[0][0].subscribed, true);
+            assert.notDeepEqual(membersRepositoryStub.create.args[0][0].created_at, '9999-10-18T06:34:08.000Z');
+            assert.equal(membersRepositoryStub.create.args[0][0].created_at <= new Date(), true);
+
+            assert.equal(result.total, 1);
+            assert.equal(result.imported, 1);
+            assert.equal(result.errors.length, 0);
+        });
+
+        it ('respects existing member newsletter subscription preferences', async function () {
+            const importer = buildMockImporterInstance();
+
+            const newsletters = [
+                {id: 'newsletter_1'},
+                {id: 'newsletter_2'}
+            ];
+
+            const newslettersCollection = {
+                length: newsletters.length,
+                toJSON: sinon.stub().returns(newsletters)
+            };
+
+            const member = {
+                related: sinon.stub()
+            };
+
+            member.related.withArgs('labels').returns(null);
+            member.related.withArgs('newsletters').returns(newslettersCollection);
+
+            membersRepositoryStub.get = sinon.stub();
+
+            membersRepositoryStub.get
+                .withArgs({email: 'jbloggs@example.com'})
+                .resolves(member);
+
+            await importer.perform(`${csvPath}/subscribed-to-emails-header.csv`, defaultAllowedFields);
+
+            assert.deepEqual(membersRepositoryStub.update.args[0][0].newsletters, newsletters);
+        });
+
+        it ('does not add subscriptions for existing member when they do not have any subscriptions', async function () {
+            const importer = buildMockImporterInstance();
+
+            const member = {
+                related: sinon.stub()
+            };
+
+            member.related.withArgs('labels').returns(null);
+            member.related.withArgs('newsletters').returns({length: 0});
+
+            membersRepositoryStub.get = sinon.stub();
+
+            membersRepositoryStub.get
+                .withArgs({email: 'jbloggs@example.com'})
+                .resolves(member);
+
+            await importer.perform(`${csvPath}/subscribed-to-emails-header.csv`, defaultAllowedFields);
+
+            assert.deepEqual(membersRepositoryStub.update.args[0][0].subscribed, false);
+        });
+
+        it ('removes existing member newsletter subscriptions when set to not be subscribed', async function () {
+            const importer = buildMockImporterInstance();
+
+            const newsletters = [
+                {id: 'newsletter_1'},
+                {id: 'newsletter_2'}
+            ];
+
+            const newslettersCollection = {
+                length: newsletters.length,
+                toJSON: sinon.stub().returns(newsletters)
+            };
+
+            const member = {
+                related: sinon.stub()
+            };
+
+            member.related.withArgs('labels').returns(null);
+            member.related.withArgs('newsletters').returns(newslettersCollection);
+
+            membersRepositoryStub.get = sinon.stub();
+
+            membersRepositoryStub.get
+                .withArgs({email: 'test@example.com'})
+                .resolves(member);
+
+            await importer.perform(`${csvPath}/subscribed-to-emails-header.csv`, defaultAllowedFields);
+
+            assert.equal(membersRepositoryStub.update.args[0][0].subscribed, false);
+            assert.equal(membersRepositoryStub.update.args[0][0].newsletters, undefined);
         });
     });
 });

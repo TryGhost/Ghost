@@ -14,9 +14,9 @@ describe('UNIT - services/routing/RSSRouter', function () {
             sinon.stub(urlUtils, 'urlJoin');
         });
 
-        afterEach(function () {
+        afterEach(async function () {
             sinon.restore();
-            configUtils.restore();
+            await configUtils.restore();
         });
 
         it('default', function () {

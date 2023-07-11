@@ -1,0 +1,10 @@
+{{#if this.showReferralInvite}}
+<div class="gh-referral-toast">
+    <button class="gh-referral-toast-close" type="button" {{on "click" this.dismissReferralInvite}}>&#xd7;</button>
+    <a href="https://referrals.ghost.org/?ref=admin" target="_blank" rel="noopener noreferrer">
+        <strong>You qualify for our invite-only referral program.</strong>
+        <p class="gh-footer-toast-p">Refer people to Ghost and earn a <strong>30% share</strong> of the subscription revenue, every single month.</p>
+        <div class="gh-btn gh-btn-black gh-referral-toast-button" type="button"><span>Find out more &rarr;</span></div>
+    </a>
+</div>
+{{/if}}

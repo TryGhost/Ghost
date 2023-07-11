@@ -3,9 +3,10 @@ require('./utils');
 const sinon = require('sinon');
 const moment = require('moment');
 const uuid = require('uuid');
+const assert = require('assert/strict');
 
 const logging = require('@tryghost/logging');
-const UpdateCheckService = require('../lib/update-check-service');
+const UpdateCheckService = require('../lib/UpdateCheckService');
 
 describe('Update Check', function () {
     const internal = {context: {internal: true}};
@@ -371,7 +372,8 @@ describe('Update Check', function () {
                     settings: {
                         edit: settingsStub
                     }
-                }
+                },
+                config: {}
             });
 
             updateCheckService.updateCheckError({});
@@ -380,6 +382,31 @@ describe('Update Check', function () {
             logging.error.called.should.be.true();
             logging.error.args[0][0].context.should.equal('Checking for updates failed, your site will continue to function.');
             logging.error.args[0][0].help.should.equal('If you get this error repeatedly, please seek help from https://ghost.org/docs/');
+        });
+
+        it('logs and rethrows an error when error with rethrow configuration', function () {
+            const updateCheckService = new UpdateCheckService({
+                api: {
+                    settings: {
+                        edit: settingsStub
+                    }
+                },
+                config: {
+                    rethrowErrors: true
+                }
+            });
+
+            try {
+                updateCheckService.updateCheckError({});
+                assert.fail('should have thrown');
+            } catch (e) {
+                settingsStub.called.should.be.true();
+                logging.error.called.should.be.true();
+                logging.error.args[0][0].context.should.equal('Checking for updates failed, your site will continue to function.');
+                logging.error.args[0][0].help.should.equal('If you get this error repeatedly, please seek help from https://ghost.org/docs/');
+
+                e.context.should.equal('Checking for updates failed, your site will continue to function.');
+            }
         });
     });
 });

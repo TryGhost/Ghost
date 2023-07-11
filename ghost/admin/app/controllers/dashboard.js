@@ -2,6 +2,7 @@ import Controller from '@ember/controller';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
+import {tracked} from '@glimmer/tracking';
 
 // Options 30 and 90 need an extra day to be able to distribute ticks/gridlines evenly
 const DAYS_OPTIONS = [{
@@ -18,8 +19,66 @@ const DAYS_OPTIONS = [{
 export default class DashboardController extends Controller {
     @service dashboardStats;
     @service membersUtils;
+    @service store;
+    @service mentionUtils;
+    @service feature;
+
+    @tracked mentions = [];
+    @tracked hasNewMentions = false;
 
     daysOptions = DAYS_OPTIONS;
+
+    @action
+    async loadMentions() {
+        if (!this.feature.get('webmentions')) {
+            return;
+        }
+        this.mentions = await this.store.query('mention', {unique: true, limit: 5, order: 'created_at desc'});
+        this.hasNewMentions = this.checkHasNewMentions();
+
+        // Load grouped mentions
+        await this.mentionUtils.loadGroupedMentions(this.mentions);
+    }
+
+    checkHasNewMentions() {
+        if (!this.mentions) {
+            return false;
+        }
+        const firstMention = this.mentions.firstObject;
+        if (!firstMention) {
+            return false;
+        }
+
+        try {
+            const lastId = localStorage.getItem('lastMentionRead');
+            return firstMention.id !== lastId;
+        } catch (e) {
+            // localstorage disabled or not supported
+        }
+        return true;
+    }
+
+    @action
+    markMentionsRead() {
+        try {
+            if (this.mentions) {
+                const firstMention = this.mentions.firstObject;
+                if (firstMention) {
+                    localStorage.setItem('lastMentionRead', firstMention.id);
+                }
+            }
+        } catch (e) {
+            // localstorage disabled or not supported
+        }
+
+        // The opening of the popup breaks if we change hasNewMentions inside the handling (propably due to a rerender, so we need to delay it)
+        if (this.hasNewMentions) {
+            setTimeout(() => {
+                this.hasNewMentions = false;
+            }, 20);
+        }
+        return true;
+    }
 
     @task
     *loadSiteStatusTask() {

@@ -1,5 +1,4 @@
 const path = require('path');
-const querystring = require('querystring');
 const should = require('should');
 const supertest = require('supertest');
 const testUtils = require('../../../utils');
@@ -11,7 +10,7 @@ const models = require('../../../../core/server/models');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
 
 const {mockManager} = require('../../../utils/e2e-framework');
-const assert = require('assert');
+const assert = require('assert/strict');
 
 let request;
 

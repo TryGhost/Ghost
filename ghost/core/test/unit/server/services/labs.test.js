@@ -16,9 +16,9 @@ function expectedLabsObject(obj) {
 }
 
 describe('Labs Service', function () {
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
-        configUtils.restore();
+        await configUtils.restore();
     });
 
     it('can getAll, even if empty with enabled members', function () {

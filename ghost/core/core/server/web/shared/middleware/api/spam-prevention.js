@@ -20,7 +20,8 @@ const messages = {
         error: 'Only {rateSigninAttempts} tries per IP address every {rateSigninPeriod} seconds.',
         context: 'Too many login attempts.'
     },
-    tooManyAttempts: 'Too many attempts.'
+    tooManyAttempts: 'Too many attempts.',
+    webmentionsBlock: 'Too many mention attempts'
 };
 let spamPrivateBlock = spam.private_block || {};
 let spamGlobalBlock = spam.global_block || {};
@@ -29,12 +30,14 @@ let spamUserReset = spam.user_reset || {};
 let spamUserLogin = spam.user_login || {};
 let spamMemberLogin = spam.member_login || {};
 let spamContentApiKey = spam.content_api_key || {};
+let spamWebmentionsBlock = spam.webmentions_block || {};
 
 let store;
 let memoryStore;
 let privateBlogInstance;
 let globalResetInstance;
 let globalBlockInstance;
+let webmentionsBlockInstance;
 let userLoginInstance;
 let membersAuthInstance;
 let membersAuthEnumerationInstance;
@@ -123,6 +126,32 @@ const globalReset = () => {
     return globalResetInstance;
 };
 
+const webmentionsBlock = () => {
+    const ExpressBrute = require('express-brute');
+    const BruteKnex = require('brute-knex');
+    const db = require('../../../../data/db');
+
+    store = store || new BruteKnex({
+        tablename: 'brute',
+        createTable: false,
+        knex: db.knex
+    });
+
+    webmentionsBlockInstance = webmentionsBlockInstance || new ExpressBrute(store,
+        extend({
+            attachResetToRequest: false,
+            failCallback(req, res, next) {
+                return next(new errors.TooManyRequestsError({
+                    message: messages.webmentionsBlock
+                }));
+            },
+            handleStoreError: handleStoreError
+        }, pick(spamWebmentionsBlock, spamConfigKeys))
+    );
+
+    return webmentionsBlockInstance;
+};
+
 const membersAuth = () => {
     const ExpressBrute = require('express-brute');
     const BruteKnex = require('brute-knex');
@@ -173,7 +202,7 @@ const membersAuthEnumeration = () => {
                 attachResetToRequest: true,
                 failCallback(req, res, next, nextValidRequestDate) {
                     return next(new errors.TooManyRequestsError({
-                        message: `Too many different sign-in attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
+                        message: `Too many different sign-in attempts, try again in ${moment(nextValidRequestDate).fromNow(true)}`,
                         context: tpl(messages.tooManySigninAttempts.context),
                         help: tpl(messages.tooManySigninAttempts.context)
                     }));
@@ -206,7 +235,7 @@ const userLogin = () => {
             attachResetToRequest: true,
             failCallback(req, res, next, nextValidRequestDate) {
                 return next(new errors.TooManyRequestsError({
-                    message: `Too many sign-in attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
+                    message: `Too many login attempts. Please wait ${moment(nextValidRequestDate).fromNow(true)} before trying again, or reset your password.`,
                     context: tpl(messages.tooManySigninAttempts.context),
                     help: tpl(messages.tooManySigninAttempts.context)
                 }));
@@ -319,6 +348,7 @@ module.exports = {
     userReset: userReset,
     privateBlog: privateBlog,
     contentApiKey: contentApiKey,
+    webmentionsBlock: webmentionsBlock,
     reset: () => {
         store = undefined;
         memoryStore = undefined;

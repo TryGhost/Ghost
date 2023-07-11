@@ -1,6 +1,5 @@
 const errors = require('@tryghost/errors');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 const models = require('../../../../core/server/models');
 const settingsCache = require('../../../../core/shared/settings-cache');
 

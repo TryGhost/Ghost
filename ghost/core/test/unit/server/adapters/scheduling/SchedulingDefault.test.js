@@ -3,7 +3,8 @@ const sinon = require('sinon');
 const moment = require('moment');
 const _ = require('lodash');
 const nock = require('nock');
-const SchedulingDefault = require('../../../../../core/server/adapters/scheduling/SchedulingDefault');
+const SchedulingDefault = require('../../../../../core/server/adapters/scheduling/scheduling-default');
+const logging = require('@tryghost/logging');
 
 describe('Scheduling Default Adapter', function () {
     const scope = {};
@@ -159,7 +160,7 @@ describe('Scheduling Default Adapter', function () {
             setTimeout(function () {
                 scope.adapter._execute.callCount.should.be.greaterThan(1);
                 done();
-            }, 30);
+            }, 200);
         });
 
         it('execute', function (done) {
@@ -315,6 +316,8 @@ describe('Scheduling Default Adapter', function () {
             it('pingUrl, but blog returns 503', function (done) {
                 scope.adapter.retryTimeoutInMs = 50;
 
+                const loggingStub = sinon.stub(logging, 'error');
+
                 const ping = nock('http://localhost:1111')
                     .put('/ping').reply(503)
                     .put('/ping').reply(503)
@@ -330,6 +333,7 @@ describe('Scheduling Default Adapter', function () {
 
                 (function retry() {
                     if (ping.isDone()) {
+                        sinon.assert.calledTwice(loggingStub);
                         return done();
                     }
 

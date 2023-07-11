@@ -4,7 +4,6 @@ const serveStatic = require('../../../shared/express').static;
 
 const fs = require('fs-extra');
 const path = require('path');
-const Promise = require('bluebird');
 const moment = require('moment');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
@@ -83,8 +82,18 @@ class LocalStorageBase extends StorageBase {
     urlToPath(url) {
         let filePath;
 
-        if (url.match(this.staticFileUrl)) {
+        const prefix = urlUtils.urlJoin('/',
+            urlUtils.getSubdir(),
+            this.staticFileURLPrefix
+        );
+
+        if (url.startsWith(this.staticFileUrl)) {
+            // CASE: full path that includes the site url
             filePath = url.replace(this.staticFileUrl, '');
+            filePath = path.join(this.storagePath, filePath);
+        } else if (url.startsWith(prefix)) {
+            // CASE: The result of the save method doesn't include the site url. So we need to handle this case.
+            filePath = url.replace(prefix, '');
             filePath = path.join(this.storagePath, filePath);
         } else {
             throw new errors.IncorrectUsageError({

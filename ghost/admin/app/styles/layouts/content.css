@@ -153,6 +153,68 @@
     position: relative;
 }
 
+/* START Temporary styles to move post list to use flex instead of tables */
+.gh-posts-list-item-group .gh-list-row {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    margin: 0;
+}
+
+.gh-posts-list-item-group .gh-list-row .gh-list-data {
+    display: block;
+    min-width: 0;
+}
+
+.gh-posts-list-item-group .gh-list-row .gh-list-data:first-child {
+    flex-grow: 1;
+}
+
+.posts-list[data-ctrl] {
+    cursor: default !important; /* Hide pointer */
+}
+
+.posts-list[data-ctrl] .gh-posts-list-item-group * {
+    cursor: default !important; /* Hide pointer */
+    pointer-events: none;
+}
+
+.posts-list[data-ctrl] .gh-posts-list-item-group * [data-ignore-select]{
+    pointer-events: all;
+    cursor: pointer !important;
+}
+
+.posts-list .gh-posts-list-item-group:hover {
+    background: linear-gradient(315deg, var(--whitegrey-l2) 60%, var(--white) 100%);
+}
+
+.posts-list[data-ctrl] .gh-posts-list-item-group:hover {
+    background: linear-gradient(300deg, var(--whitegrey-l1) 75%, var(--white) 100%);
+}
+
+.gh-posts-list-item-group[data-selected] {
+    background: linear-gradient(300deg, var(--whitegrey-l1) 75%, var(--white) 100%) !important;
+    user-select: none;
+}
+
+.gh-posts-list-item-group .gh-posts-list-item:hover .gh-list-data {
+    background: transparent !important;
+}
+
+.gh-posts-list-item-group .gh-list-data {
+    border-top: 0 !important;
+}
+
+.gh-posts-list-item-group {
+    border-top: 1px solid var(--whitegrey);
+}
+
+.gh-posts-list-item-group[data-selected]:not(:first-of-type),
+.gh-posts-list-item-group[data-selected] + .gh-posts-list-item-group:hover {
+    border-top: 1px solid var(--white) !important;
+}
+/* END Temporary styles to move post list to use flex instead of tables */
+
 .gh-posts-list-item {
     position: relative;
 }
@@ -206,6 +268,13 @@
     margin: 2px 8px 0;
     padding: 0 8px;
     font-size: 1.2rem;
+}
+
+.gh-post-list-title .gh-featured-post {
+    width: 11px;
+    height: 11px;
+    margin: -2px 6px 0 0;
+    color: var(--black);
 }
 
 .gh-post-list-external {
@@ -706,7 +775,8 @@
 }
 
 .feature-audienceFeedback .gh-post-analytics-box.gh-post-analytics-newsletter-clicks,
-.feature-audienceFeedback .gh-post-analytics-box.gh-post-analytics-source-attribution {
+.feature-audienceFeedback .gh-post-analytics-box.gh-post-analytics-source-attribution,
+.gh-post-analytics-box.gh-post-analytics-mentions {
     flex: 1;
     border: 1px solid #ebeef0;
     padding: 28px 24px 24px;
@@ -753,7 +823,7 @@
     gap: 24px;
 }
 
-.gh-newsletter-clicks-header {
+.gh-newsletter-clicks-header, .gh-mentions-header {
     align-items: center;
     font-size: 1.55rem;
     font-weight: 700;
@@ -1245,7 +1315,7 @@
     background: none;
 }
 
-@media (max-width: 1000px) {
+@media (max-width: 1000px), (min-width: 1360px) and (max-width: 1440px) {
     .gh-links-info .gh-links-info-short {
         display: inline;
     }
@@ -1516,6 +1586,10 @@
     border: 1px solid #ECEEF0;
 }
 
+.gh-tabs-analytics.no-tabs {
+    padding: 28px 24px;
+}
+
 .gh-tabs-analytics .tab {
     display: flex;
     flex-direction: column;
@@ -1535,12 +1609,24 @@
     border-radius: 5px 5px 0 0;
 }
 
+.gh-tabs-analytics.no-tabs .tab-selected {
+    padding: 0 0 20px;
+    border: 0;
+    border-bottom: 1px solid #eceef0;
+    box-shadow: none;
+}
+
 .gh-tabs-analytics .tab-list {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
     padding: 8px 8px 0px;
     background: linear-gradient(360deg, #F7F8F9 -6.38%, rgba(247, 248, 249, 0) 159.57%);
     box-shadow: inset 0 -1px 0 #eceef0;
+}
+
+.gh-tabs-analytics.no-tabs .tab-list {
+    padding: 0;
+    background: transparent;
 }
 
 .gh-tabs-analytics .tab-panel {
@@ -1557,6 +1643,10 @@
     min-height: 121px;
 }
 
+.gh-tabs-analytics.no-tabs .tab-panel-selected {
+    padding: 0;
+}
+
 .gh-tabs-analytics .tab-list h3 {
     display: flex;
     flex-direction: row;
@@ -1570,6 +1660,13 @@
     letter-spacing: -0.05em;
     color: var(--black);
     white-space: nowrap;
+}
+
+.gh-tabs-analytics.no-tabs .tab-list h3 {
+    margin-bottom: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
 }
 
 .gh-tabs-analytics .tab-list h3 svg {
@@ -1593,6 +1690,10 @@
     text-transform: uppercase;
     padding: 0;
     margin: 0;
+}
+
+.gh-tabs-analytics.no-tabs .tab-list p {
+    display: none;
 }
 
 .gh-tabs-analytics .tab-list p svg {
@@ -1892,4 +1993,83 @@
     .gh-feedback-events-feed {
         padding: 0 0 24px;
     }
+}
+
+.gh-post-analytics-split {
+    display: grid;
+    grid-column-gap: 24px;
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 1360px) {
+    .gh-post-analytics-split.gh-post-analytics-with-mentions {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.gh-post-analytics-mentions {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.gh-post-analytics-mentions.is-full-width {
+    display: none;
+}
+
+.gh-post-analytics-mentions-header {
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1em;
+    margin: 0 0 8px;
+    padding: 0;
+    color: var(--darkgrey);
+    white-space: nowrap;
+    letter-spacing: -.3px;
+}
+
+.gh-post-analytics-mentions-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    margin-top: 6px;
+}
+
+.gh-post-analytics-mention {
+    display: grid;
+    grid-template-columns: 20px auto;
+    grid-template-rows: 20px auto;
+    grid-column-gap: 8px;
+    padding: 4px 0;
+    flex-direction: column;
+    padding: 6px 0;
+}
+
+.gh-post-analytics-mention-title {
+    color: var(--darkgrey);
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.3;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.gh-post-analytics-mention-timestamp {
+    color: var(--midlightgrey);
+    font-size: 1.3rem;
+    font-weight: 500;
+    padding-left: 28px;
+    white-space: nowrap;
+}
+
+.gh-post-analytics-mentions .gh-dashboard-list-footer {
+    margin-top: auto;
+    padding: 17px 0 0;
+}
+
+.gh-post-analytics-mentions .gh-dashboard-list-footer a {
+    font-size: 1.3rem;
 }

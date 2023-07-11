@@ -1,5 +1,5 @@
 <h4 class="gh-main-section-header small bn">Newsletters</h4>
-<div class="gh-main-section-content grey {{if (and (feature "suppressionList") (not this.suppressionData.suppressed)) 'gh-member-newsletter-section'}}">
+<div class="gh-main-section-content grey {{unless this.suppressionData.suppressed 'gh-member-newsletter-section'}}">
     {{#unless this.suppressionData.suppressed}}
         <div class="gh-member-newsletters">
             {{#each this.newsletters as |newsletter|}}
@@ -7,7 +7,7 @@
                     <div>
                         <h4 class="gh-member-newsletter-title">{{newsletter.name}}</h4>
                     </div>
-                    <div class="for-switch {{if (and (feature "suppressionList") this.suppressionData.suppressed) 'disabled'}}">
+                    <div class="for-switch {{if this.suppressionData.suppressed 'disabled'}}">
                         <label class="switch" for={{newsletter.forId}}>
                             <Input
                                 @checked={{newsletter.subscribed}}
@@ -25,7 +25,7 @@
         </div>
     {{/unless}}
 
-    {{#if (and (feature "suppressionList") this.suppressionData.suppressed)}}
+    {{#if this.suppressionData.suppressed}}
         <div class="gh-members-no-data gh-member-newsletter-no-data">
             {{#if (eq this.suppressionData.reason 'fail')}}
                 {{svg-jar "suppression-notice-bounced" class="gh-member-newsletter-icon"}}
@@ -49,9 +49,7 @@
                 <a class="midgrey" href="https://ghost.org/help/disabled-emails" target="_blank" rel="noopener noreferrer">Learn more</a>
             </p>
         </div>
-    {{/if}}
-
-    {{#if (and (feature "suppressionList") (not this.suppressionData.suppressed))}}
+    {{else}}
         <div class="gh-member-newsletter-footer midgrey">
             If disabled, member will <em>not</em> receive newsletter emails
         </div>

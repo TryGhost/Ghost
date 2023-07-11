@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyLocationFor, anyObjectId, anyISODateTime, anyErrorId} = matchers;
+const {anyContentVersion, anyEtag, anyLocationFor, anyObjectId, anyISODateTime, anyErrorId} = matchers;
 
 const matchSnippet = {
     id: anyObjectId,
@@ -30,6 +30,7 @@ describe('Snippets API', function () {
                 snippets: [matchSnippet]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('snippets')
             });
@@ -43,6 +44,7 @@ describe('Snippets API', function () {
                 snippets: new Array(2).fill(matchSnippet)
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -55,6 +57,20 @@ describe('Snippets API', function () {
                 snippets: [matchSnippet]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
+
+    it('Can read lexical', async function () {
+        await agent
+            .get(`snippets/${fixtureManager.get('snippets', 0).id}/?formats=lexical`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                snippets: [matchSnippet]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -78,6 +94,7 @@ describe('Snippets API', function () {
                 snippets: [matchSnippet]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('snippets')
             });
@@ -92,6 +109,7 @@ describe('Snippets API', function () {
                 snippets: [matchSnippet]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -110,6 +128,7 @@ describe('Snippets API', function () {
                 snippets: [matchSnippet]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('snippets')
             });
@@ -121,6 +140,7 @@ describe('Snippets API', function () {
             .expectStatus(204)
             .expectEmptyBody()
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
 
@@ -133,6 +153,7 @@ describe('Snippets API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -147,6 +168,82 @@ describe('Snippets API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
+
+    it('Can add lexical', async function () {
+        const snippet = {
+            name: 'test lexical',
+            lexical: JSON.stringify({node: 'text'}),
+            mobiledoc: '{}'
+        };
+
+        await agent
+            .post('snippets/?formats=lexical')
+            .body({snippets: [snippet]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                snippets: [matchSnippet]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag,
+                location: anyLocationFor('snippets')
+            });
+    });
+
+    it('Can browse lexical', async function () {
+        await agent
+            .get('snippets?formats=lexical&filter=lexical:-null')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                snippets: new Array(1).fill(matchSnippet)
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
+
+    it('Can edit lexical', async function () {
+        const snippetToChange = {
+            name: 'change me',
+            mobiledoc: '{}',
+            lexical: '{}'
+        };
+
+        const snippetChanged = {
+            name: 'changed lexical',
+            mobiledoc: '{}',
+            lexical: JSON.stringify({node: 'text'})
+        };
+
+        const {body} = await agent
+            .post(`snippets/?formats=lexical`)
+            .body({snippets: [snippetToChange]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                snippets: [matchSnippet]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag,
+                location: anyLocationFor('snippets')
+            });
+
+        const newsnippet = body.snippets[0];
+
+        await agent
+            .put(`snippets/${newsnippet.id}/?formats=lexical`)
+            .body({snippets: [snippetChanged]})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                snippets: [matchSnippet]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });

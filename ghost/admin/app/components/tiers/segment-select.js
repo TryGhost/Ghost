@@ -43,7 +43,7 @@ export default class TiersSegmentSelect extends Component {
     get selectedOptions() {
         const tierList = (this.args.tiers || []).map((tier) => {
             return this.tiers.find((p) => {
-                return p.id === tier.id || p.slug === tier.slug;
+                return p.id === tier.id || p.id === tier.id;
             });
         }).filter(d => !!d);
         const tierIdList = tierList.map(d => d.id);

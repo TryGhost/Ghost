@@ -1,6 +1,5 @@
 const should = require('should');
 const sinon = require('sinon');
-const _ = require('lodash');
 const cheerio = require('cheerio');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
@@ -43,8 +42,8 @@ describe('Frontend behavior tests', function () {
             sinon.restore();
         });
 
-        after(function () {
-            configUtils.restore();
+        after(async function () {
+            await configUtils.restore();
             urlUtils.restore();
             sinon.restore();
         });
@@ -292,9 +291,9 @@ describe('Frontend behavior tests', function () {
             urlUtils.stubUrlUtilsFromConfig();
         });
 
-        after(function () {
+        after(async function () {
             urlUtils.restore();
-            configUtils.restore();
+            await configUtils.restore();
         });
 
         describe('protocol', function () {
@@ -398,8 +397,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
             });
 
@@ -475,8 +474,6 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        const $ = cheerio.load(response.body);
-
                         response.statusCode.should.eql(200);
                         response.template.should.eql('something');
                     });
@@ -505,8 +502,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
             });
 
@@ -558,8 +555,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
             });
 
@@ -650,8 +647,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
             });
 
@@ -726,8 +723,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
             });
 
@@ -873,8 +870,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
             });
 
@@ -978,8 +975,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
                 sinon.restore();
             });
@@ -1036,8 +1033,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
             });
 
@@ -1087,8 +1084,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
                 sinon.restore();
             });
@@ -1262,8 +1259,8 @@ describe('Frontend behavior tests', function () {
                 localUtils.overrideGhostConfig(configUtils);
             });
 
-            afterEach(function () {
-                configUtils.restore();
+            afterEach(async function () {
+                await configUtils.restore();
                 urlUtils.restore();
             });
 
@@ -1331,8 +1328,6 @@ describe('Frontend behavior tests', function () {
 
                 return localUtils.mockExpress.invoke(app, req)
                     .then(function (response) {
-                        const $ = cheerio.load(response.body);
-
                         response.statusCode.should.eql(200);
                         response.template.should.eql('channel3');
                     });
@@ -1495,8 +1490,8 @@ describe('Frontend behavior tests', function () {
             localUtils.overrideGhostConfig(configUtils);
         });
 
-        afterEach(function () {
-            configUtils.restore();
+        afterEach(async function () {
+            await configUtils.restore();
             urlUtils.restore();
         });
 

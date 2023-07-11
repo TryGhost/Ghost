@@ -37,6 +37,7 @@ const BACKUP_TABLES = [
     'members_created_events',
     'members_subscription_created_events',
     'members_newsletters',
+    'mentions',
     'comments',
     'comment_likes',
     'comment_reports',
@@ -45,7 +46,10 @@ const BACKUP_TABLES = [
     'members_click_events',
     'members_feedback',
     'suppressions',
-    'email_spam_complaint_events'
+    'email_spam_complaint_events',
+    'milestones',
+    'collections',
+    'collections_posts'
 ];
 
 // NOTE: exposing only tables which are going to be included in a "default" export file

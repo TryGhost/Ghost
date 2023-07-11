@@ -345,6 +345,18 @@
         "portal_button_signup_text": {
             "defaultValue": "Subscribe",
             "type": "string"
+        },
+        "portal_signup_terms_html": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "portal_signup_checkbox_required": {
+            "defaultValue": "false",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         }
     },
     "email": {
@@ -479,6 +491,16 @@
                     "paid"
                 ]]
             }
+        }
+    },
+    "analytics": {
+        "outbound_link_tagging": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         }
     }
 }

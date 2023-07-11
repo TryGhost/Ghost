@@ -11,15 +11,19 @@ const debug = require('@tryghost/debug')('import-manager');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const ImageHandler = require('./handlers/image');
+const ImporterContentFileHandler = require('@tryghost/importer-handler-content-files');
 const RevueHandler = require('./handlers/revue');
 const JSONHandler = require('./handlers/json');
 const MarkdownHandler = require('./handlers/markdown');
-const ImageImporter = require('./importers/image');
+const ContentFileImporter = require('./importers/ContentFileImporter');
 const RevueImporter = require('@tryghost/importer-revue');
 const DataImporter = require('./importers/data');
 const urlUtils = require('../../../shared/url-utils');
 const {GhostMailer} = require('../../services/mail');
 const jobManager = require('../../services/jobs');
+const mediaStorage = require('../../adapters/storage').getStorage('media');
+const imageStorage = require('../../adapters/storage').getStorage('images');
+const fileStorage = require('../../adapters/storage').getStorage('files');
 
 const emailTemplate = require('./email-template');
 const ghostMailer = new GhostMailer();
@@ -32,7 +36,10 @@ const messages = {
     noContentToImport: 'Zip did not include any content to import.',
     invalidZipStructure: 'Invalid zip file structure.',
     invalidZipFileBaseDirectory: 'Invalid zip file: base directory read failed',
-    zipContainsMultipleDataFormats: 'Zip file contains multiple data formats. Please split up and import separately.'
+    zipContainsMultipleDataFormats: 'Zip file contains multiple data formats. Please split up and import separately.',
+    invalidZipFileNameEncoding: 'The uploaded zip could not be read',
+    invalidZipFileNameEncodingContext: 'The filename was too long or contained invalid characters',
+    invalidZipFileNameEncodingHelp: 'Remove any special characters from the file name, or alternatively try another archiving tool if using MacOS Archive Utility'
 };
 
 // Glob levels
@@ -48,15 +55,57 @@ let defaults = {
 
 class ImportManager {
     constructor() {
+        const mediaHandler = new ImporterContentFileHandler({
+            type: 'media',
+            // @NOTE: making the second parameter strict folder "content/media" brakes the glob pattern
+            //        in the importer, so we need to keep it as general "content" unless
+            //        it becomes a strict requirement
+            directories: ['media', 'content'],
+            ignoreRootFolderFiles: true,
+            extensions: config.get('uploads').media.extensions,
+            contentTypes: config.get('uploads').media.contentTypes,
+            contentPath: config.getContentPath('media'),
+            urlUtils: urlUtils,
+            storage: mediaStorage
+        });
+
+        const filesHandler = new ImporterContentFileHandler({
+            type: 'files',
+            // @NOTE: making the second parameter strict folder "content/files" brakes the glob pattern
+            //        in the importer, so we need to keep it as general "content" unless
+            //        it becomes a strict requirement
+            directories: ['files', 'content'],
+            ignoreRootFolderFiles: true,
+            extensions: config.get('uploads').files.extensions,
+            contentTypes: config.get('uploads').files.contentTypes,
+            contentPath: config.getContentPath('files'),
+            urlUtils: urlUtils,
+            storage: fileStorage
+        });
+
+        const imageImporter = new ContentFileImporter({
+            type: 'images',
+            store: imageStorage
+        });
+        const mediaImporter = new ContentFileImporter({
+            type: 'media',
+            store: mediaStorage
+        });
+
+        const contentFilesImporter = new ContentFileImporter({
+            type: 'files',
+            store: fileStorage
+        });
+
         /**
          * @type {Importer[]} importers
          */
-        this.importers = [ImageImporter, RevueImporter, DataImporter];
+        this.importers = [imageImporter, mediaImporter, contentFilesImporter, RevueImporter, DataImporter];
 
         /**
          * @type {Handler[]}
          */
-        this.handlers = [ImageHandler, RevueHandler, JSONHandler, MarkdownHandler];
+        this.handlers = [ImageHandler, mediaHandler, filesHandler, RevueHandler, JSONHandler, MarkdownHandler];
 
         // Keep track of file to cleanup at the end
         /**
@@ -170,13 +219,26 @@ class ImportManager {
      * @param {string} filePath
      * @returns {Promise<string>} full path to the extracted folder
      */
-    extractZip(filePath) {
+    async extractZip(filePath) {
         const tmpDir = path.join(os.tmpdir(), uuid.v4());
         this.fileToDelete = tmpDir;
 
-        return extract(filePath, tmpDir).then(function () {
-            return tmpDir;
-        });
+        try {
+            await extract(filePath, tmpDir);
+        } catch (err) {
+            if (err.message.startsWith('ENAMETOOLONG:')) {
+                // The file was probably zipped with MacOS zip utility. Which doesn't correctly set UTF-8 encoding flag.
+                // This causes ENAMETOOLONG error on Linux, because the resulting filename length is too long when decoded using the default string encoder.
+                throw new errors.UnsupportedMediaTypeError({
+                    message: tpl(messages.invalidZipFileNameEncoding),
+                    context: tpl(messages.invalidZipFileNameEncodingContext),
+                    help: tpl(messages.invalidZipFileNameEncodingHelp),
+                    code: 'INVALID_ZIP_FILE_NAME_ENCODING'
+                });
+            }
+            throw err;
+        }
+        return tmpDir;
     }
 
     /**
@@ -278,7 +340,15 @@ class ImportManager {
      */
     async processFile(file, ext) {
         const fileHandlers = _.filter(this.handlers, function (handler) {
-            return _.includes(handler.extensions, ext);
+            let match = _.includes(handler.extensions, ext);
+
+            // CASE: content file handlers should ignore files in the root directory
+            if (match && handler.directories && handler.directories.length) {
+                const dir = path.dirname(file.path)?.split('/')[1];
+                match = _.includes(handler.directories, dir);
+            }
+
+            return match;
         });
 
         const importData = {};

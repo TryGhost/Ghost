@@ -1,0 +1,65 @@
+@import './preflight.css';
+
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Defaults */
+@layer base {
+    @font-face {
+        font-family: "Inter";
+        src: url("./src/admin-x-ds/assets/fonts/Inter.ttf") format("truetype-variations");
+        font-weight: 100 900;
+    }
+
+    body {
+        @apply font-sans text-black text-base leading-normal;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        @apply font-bold tracking-tight leading-tighter;
+    }
+
+    h1 {
+        @apply text-5xl leading-supertight;
+    }
+
+    h2 {
+        @apply text-3xl;
+    }
+
+    h3 {
+        @apply text-2xl;
+    }
+
+    h4 {
+        @apply text-xl;
+    }
+
+    h5 {
+        @apply text-lg leading-tight;
+    }
+
+    h6 {
+        @apply text-md leading-normal;
+    }
+}
+
+:root {
+    font-size: 62.5%;
+    line-height: 1.5;
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+}
+
+html, body, #root {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    letter-spacing: unset;
+}

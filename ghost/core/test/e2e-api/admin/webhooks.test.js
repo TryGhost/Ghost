@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyErrorId, anyObjectId, anyISODate, stringMatching, anyContentLength} = matchers;
+const {anyContentVersion, anyEtag, anyErrorId, anyObjectId, anyISODate, stringMatching, anyContentLength} = matchers;
 
 const webhookMatcher = {
     id: anyObjectId,
@@ -36,6 +36,7 @@ describe('Webhooks API', function () {
             .matchHeaderSnapshot({
                 // Note: No location header as there is no read method for webhooks
                 etag: anyEtag,
+                'content-version': anyContentVersion,
                 'content-length': anyContentLength
 
             })
@@ -52,6 +53,7 @@ describe('Webhooks API', function () {
             .body({webhooks: [webhookData]})
             .expectStatus(422)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -73,6 +75,7 @@ describe('Webhooks API', function () {
             }]})
             .expectStatus(422)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -95,6 +98,7 @@ describe('Webhooks API', function () {
             .expectStatus(200)
             .matchHeaderSnapshot({
                 etag: anyEtag,
+                'content-version': anyContentVersion,
                 'content-length': anyContentLength
             })
             .matchBodySnapshot({
@@ -119,6 +123,7 @@ describe('Webhooks API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -129,6 +134,7 @@ describe('Webhooks API', function () {
             .expectStatus(204)
             .expectEmptyBody()
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -143,6 +149,7 @@ describe('Webhooks API', function () {
                 }]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });

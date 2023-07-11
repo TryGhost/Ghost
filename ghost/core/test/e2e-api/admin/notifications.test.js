@@ -1,6 +1,6 @@
 const should = require('should');
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyObjectId, anyEtag, anyLocationFor} = matchers;
+const {anyContentVersion, anyObjectId, anyEtag, anyLocationFor} = matchers;
 
 const matchNotification = {
     id: anyObjectId
@@ -31,6 +31,7 @@ describe('Notifications API', function () {
             .expectStatus(201)
             .matchBodySnapshot()
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             });
     });
@@ -53,6 +54,7 @@ describe('Notifications API', function () {
                 notifications: [matchNotification]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('notifications')
             });
@@ -68,10 +70,11 @@ describe('Notifications API', function () {
 
         const notification = jsonResponse.notifications[0];
 
-        const res2 = await agent
+        await agent
             .delete(`notifications/${notification.id}/`)
             .matchBodySnapshot()
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .expectStatus(204);
@@ -82,6 +85,7 @@ describe('Notifications API', function () {
                 notifications: [matchNotification]
             })
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .expectStatus(200);

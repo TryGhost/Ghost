@@ -26,6 +26,7 @@
 .kg-product-card-image {
     grid-column: 1 / 3;
     justify-self: center;
+    height: auto;
 }
 
 .kg-product-card-title-container {

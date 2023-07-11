@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const Promise = require('bluebird');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
@@ -15,24 +14,35 @@ const messages = {
 
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
 const GA_FEATURES = [
-    'sourceAttribution',
-    'memberAttribution',
     'audienceFeedback',
-    'themeErrorsNotification'
+    'themeErrorsNotification',
+    'outboundLinkTagging',
+    'announcementBar',
+    'signupForm'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
 //       input for the "labs" setting value
 const BETA_FEATURES = [
-    'activitypub'
+    'i18n',
+    'activitypub',
+    'webmentions',
+    'lexicalEditor'
 ];
 
 const ALPHA_FEATURES = [
     'urlCache',
-    'beforeAfterCard',
-    'lexicalEditor',
-    'suppressionList',
-    'emailStability'
+    'lexicalMultiplayer',
+    'websockets',
+    'stripeAutomaticTax',
+    'emailCustomization',
+    'collections',
+    'adminXSettings',
+    'pageImprovements',
+    'flatUrls',
+    'mailEvents',
+    'collectionsCard',
+    'headerUpgrade'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
@@ -98,7 +108,11 @@ module.exports.enabledHelper = function enabledHelper(options, callback) {
     errDetails.help = tpl(options.errorHelp || messages.errorHelp, {url: options.helpUrl});
 
     // eslint-disable-next-line no-restricted-syntax
-    logging.error(new errors.DisabledFeatureError(errDetails));
+    logging.error(new errors.DisabledFeatureError({
+        message: errDetails.message,
+        context: errDetails.context,
+        help: errDetails.help
+    }));
 
     const {SafeString} = require('express-hbs');
     errString = new SafeString(`<script>console.error("${_.values(errDetails).join(' ')}");</script>`);

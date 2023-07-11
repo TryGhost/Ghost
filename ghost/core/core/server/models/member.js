@@ -37,6 +37,9 @@ const Member = ghostBookshelf.Model.extend({
             key: 'tiers',
             replacement: 'products.slug'
         }, {
+            key: 'tier_id',
+            replacement: 'products.id'
+        },{
             key: 'newsletters',
             replacement: 'newsletters.slug'
         }, {
@@ -51,6 +54,9 @@ const Member = ghostBookshelf.Model.extend({
             // Currently we cannot expand on values such as null or a string in mongo-knex
             // But the line below is essentially the same as: `email_recipients.opened_at:-null`
             expansion: 'email_recipients.opened_at:>=0'
+        }, {
+            key: 'offer_redemptions',
+            replacement: 'offer_redemptions.offer_id'
         }];
     },
 
@@ -119,6 +125,11 @@ const Member = ghostBookshelf.Model.extend({
                 tableNameAs: 'feedback',
                 type: 'oneToOne',
                 joinFrom: 'member_id'
+            },
+            offer_redemptions: {
+                tableName: 'offer_redemptions',
+                type: 'oneToOne',
+                joinFrom: 'member_id'
             }
         };
     },
@@ -144,7 +155,8 @@ const Member = ghostBookshelf.Model.extend({
         newsletters: 'newsletters',
         labels: 'labels',
         stripeCustomers: 'members_stripe_customers',
-        email_recipients: 'email_recipients'
+        email_recipients: 'email_recipients',
+        offers: 'offers'
     },
 
     productEvents() {
@@ -210,8 +222,8 @@ const Member = ghostBookshelf.Model.extend({
 
     async updateTierExpiry(products = [], options = {}) {
         for (const product of products) {
-            if (product?.expiry_at) {
-                const expiry = new Date(product.expiry_at);
+            if (product?.id) {
+                const expiry = product.expiry_at ? new Date(product.expiry_at) : null;
                 const queryOptions = _.extend({}, options, {
                     query: {where: {product_id: product.id}}
                 });

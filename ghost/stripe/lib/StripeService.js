@@ -1,7 +1,9 @@
 const WebhookManager = require('./WebhookManager');
 const StripeAPI = require('./StripeAPI');
-const StripeMigrations = require('./Migrations');
+const StripeMigrations = require('./StripeMigrations');
 const WebhookController = require('./WebhookController');
+const DomainEvents = require('@tryghost/domain-events');
+const {StripeLiveEnabledEvent, StripeLiveDisabledEvent} = require('./events');
 
 module.exports = class StripeService {
     constructor({
@@ -50,6 +52,7 @@ module.exports = class StripeService {
     }
 
     async connect() {
+        DomainEvents.dispatch(StripeLiveEnabledEvent.create({message: 'Stripe Live Mode Enabled'}));
     }
 
     async disconnect() {
@@ -66,6 +69,8 @@ module.exports = class StripeService {
         await this.webhookManager.stop();
 
         this.api.configure(null);
+
+        DomainEvents.dispatch(StripeLiveDisabledEvent.create({message: 'Stripe Live Mode Disabled'}));
     }
 
     async configure(config) {
@@ -73,6 +78,9 @@ module.exports = class StripeService {
             secretKey: config.secretKey,
             publicKey: config.publicKey,
             enablePromoCodes: config.enablePromoCodes,
+            get enableAutomaticTax() {
+                return config.enableAutomaticTax;
+            },
             checkoutSessionSuccessUrl: config.checkoutSessionSuccessUrl,
             checkoutSessionCancelUrl: config.checkoutSessionCancelUrl,
             checkoutSetupSessionSuccessUrl: config.checkoutSetupSessionSuccessUrl,

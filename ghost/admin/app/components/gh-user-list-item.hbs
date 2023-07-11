@@ -1,5 +1,5 @@
-<div class="apps-grid-cell tooltip-centered" data-tooltip="{{ if this.user.isLocked 'Requires password reset to log in'}}">
-    <LinkTo @route="settings.staff.user" @model={{this.user.slug}} data-test-user-id={{this.user.id}}>
+<div class="apps-grid-cell tooltip-centered {{if (and this.user.isAdmin this.session.user.isEditor) 'user-list-item-no-interaction'}}" data-tooltip="{{ if this.user.isLocked 'Requires password reset to log in'}}">
+    <LinkTo @route="settings.staff.user" @model={{this.user.slug}} @disabled={{and this.user.isAdmin this.session.user.isEditor}} data-test-user-id={{this.user.id}}>
     <article class="apps-card-app">
         <div class="apps-card-left">
             <span class="user-list-item-figure" style={{background-image-style this.user.profileImageUrl}}>

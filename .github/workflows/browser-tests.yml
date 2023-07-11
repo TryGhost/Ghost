@@ -21,6 +21,8 @@ on:
         description: 'Owner password (override)'
         required: false
         type: string
+concurrency:
+  group: ${{ github.workflow }}
 jobs:
   test:
     timeout-minutes: 60
@@ -29,9 +31,6 @@ jobs:
     environment: ${{ github.event.inputs.environment || 'browser-tests-local' }}
     env:
       ENVIRONMENT: ${{ github.event.inputs.environment || 'browser-tests-local' }}
-    defaults:
-      run:
-        working-directory: ghost/core
     steps:
     - uses: actions/checkout@v3
       with:
@@ -39,7 +38,7 @@ jobs:
         submodules: true
     - uses: actions/setup-node@v3
       with:
-        node-version: '16.x'
+        node-version: '18.x'
         cache: yarn
 
     - name: Install Stripe-CLI
@@ -54,18 +53,32 @@ jobs:
       run: yarn
 
     - name: Run migrations
+      working-directory: ghost/core
       run: yarn setup
-
-    - name: Install Playwright
+    - name: Get Playwright version
+      id: playwright-version
+      run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
+    - uses: actions/cache@v3
+      name: Check if Playwright browser is cached
+      id: playwright-cache
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-Playwright-${{steps.playwright-version.outputs.version}}
+    - name: Install Playwright browser if not cached
+      if: steps.playwright-cache.outputs.cache-hit != 'true'
       run: npx playwright install --with-deps
+    - name: Install OS dependencies of Playwright if cache hit
+      if: steps.playwright-cache.outputs.cache-hit == 'true'
+      run: npx playwright install-deps
 
     - name: Build Admin
       if: env.ENVIRONMENT == 'browser-tests-local'
       working-directory: ghost/admin
-      run: yarn build --silent
+      run: yarn build:dev
 
     - name: Run Playwright tests on a remote site
       if: env.ENVIRONMENT == 'browser-tests-staging'
+      working-directory: ghost/core
       run: yarn test:browser
       env:
         TEST_URL: ${{ github.event.inputs.site_url || secrets.TEST_URL }}
@@ -74,11 +87,19 @@ jobs:
 
     - name: Run Playwright tests locally
       if: env.ENVIRONMENT == 'browser-tests-local'
+      working-directory: ghost/core
       run: yarn test:browser
       env:
         STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
         STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
         STRIPE_ACCOUNT_ID: ${{ secrets.STRIPE_ACCOUNT_ID }}
+
+    - uses: tryghost/actions/actions/slack-build@main
+      if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+      with:
+        status: ${{ job.status }}
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
     - uses: actions/upload-artifact@v3
       if: always()

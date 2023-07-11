@@ -6,10 +6,13 @@
     >
         <div class="{{if @setting.value "" "flex flex-grow-1 items-center justify-between"}}">
             <div class="gh-setting-content">
-                <div class="gh-setting-title {{if @setting.value "gh-theme-setting-title"}}">{{humanize-setting-key @setting.key}}</div>
+                <div class="gh-setting-title mb0 {{if @setting.value "gh-theme-setting-title"}}">{{humanize-setting-key @setting.key}}</div>
                 {{#each uploader.errors as |error|}}
                     <div class="gh-setting-error" data-test-error="icon">{{or error.context error.message}}</div>
                 {{/each}}
+                {{#if @setting.description}}
+                    <div class="gh-setting-desc" style="margin-top: 8px">{{truncate @setting.description 100}}</div>
+                {{/if}}
             </div>
             <div class="gh-setting-action gh-uploadbutton-container flex flex-column items-stretch">
                 {{#if uploader.isUploading}}

@@ -21,8 +21,8 @@ describe('{{asset}} helper', function () {
         });
     });
 
-    after(function () {
-        configUtils.restore();
+    after(async function () {
+        await configUtils.restore();
         sinon.restore();
     });
 
@@ -92,8 +92,8 @@ describe('{{asset}} helper', function () {
             configUtils.set({'admin:url': 'http://localhost'});
         });
 
-        after(function () {
-            configUtils.restore();
+        after(async function () {
+            await configUtils.restore();
         });
 
         it('handles favicon correctly', function () {

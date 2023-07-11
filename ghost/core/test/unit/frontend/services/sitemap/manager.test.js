@@ -1,15 +1,19 @@
 const should = require('should');
 const sinon = require('sinon');
+const assert = require('assert/strict');
 
 // Stuff we are testing
+const DomainEvents = require('@tryghost/domain-events');
+const {URLResourceUpdatedEvent} = require('@tryghost/dynamic-routing-events');
+
 const events = require('../../../../../core/server/lib/common/events');
 
-const SiteMapManager = require('../../../../../core/frontend/services/sitemap/manager');
-const PostGenerator = require('../../../../../core/frontend/services/sitemap/post-generator');
-const PageGenerator = require('../../../../../core/frontend/services/sitemap/page-generator');
-const TagGenerator = require('../../../../../core/frontend/services/sitemap/tag-generator');
-const UserGenerator = require('../../../../../core/frontend/services/sitemap/user-generator');
-const IndexGenerator = require('../../../../../core/frontend/services/sitemap/index-generator');
+const SiteMapManager = require('../../../../../core/frontend/services/sitemap/SiteMapManager');
+const PostGenerator = require('../../../../../core/frontend/services/sitemap/PostMapGenerator');
+const PageGenerator = require('../../../../../core/frontend/services/sitemap/PageMapGenerator');
+const TagGenerator = require('../../../../../core/frontend/services/sitemap/TagsMapGenerator');
+const UserGenerator = require('../../../../../core/frontend/services/sitemap/UserMapGenerator');
+const IndexGenerator = require('../../../../../core/frontend/services/sitemap/SiteMapIndexGenerator');
 
 describe('Unit: sitemap/manager', function () {
     let eventsToRemember;
@@ -19,9 +23,7 @@ describe('Unit: sitemap/manager', function () {
         let pages;
         let tags;
         let authors;
-        let index;
 
-        index = new IndexGenerator();
         posts = new PostGenerator();
         pages = new PageGenerator();
         tags = new TagGenerator();
@@ -30,9 +32,11 @@ describe('Unit: sitemap/manager', function () {
         return new SiteMapManager({posts: posts, pages: pages, tags: tags, authors: authors});
     };
 
-    beforeEach(function () {
+    before(function () {
         eventsToRemember = {};
 
+        // @NOTE: the pattern of faking event call is not great, we should be
+        //        ideally tasting on real events instead of faking them
         sinon.stub(events, 'on').callsFake(function (eventName, callback) {
             eventsToRemember[eventName] = callback;
         });
@@ -43,25 +47,15 @@ describe('Unit: sitemap/manager', function () {
         sinon.stub(IndexGenerator.prototype, 'getXml');
     });
 
-    afterEach(function () {
+    after(function () {
         sinon.restore();
     });
 
     describe('SiteMapManager', function () {
         let manager;
-        let fake;
 
-        beforeEach(function () {
+        before(function () {
             manager = makeStubManager();
-            fake = sinon.stub();
-        });
-
-        it('create SiteMapManager with defaults', function () {
-            const siteMapManager = new SiteMapManager();
-            should.exist(siteMapManager.posts);
-            should.exist(siteMapManager.pages);
-            should.exist(siteMapManager.users);
-            should.exist(siteMapManager.tags);
         });
 
         it('can create a SiteMapManager instance', function () {
@@ -106,6 +100,17 @@ describe('Unit: sitemap/manager', function () {
                 });
 
                 PostGenerator.prototype.removeUrl.calledOnce.should.be.true();
+            });
+
+            it('Listens to URLResourceUpdatedEvent event', async function () {
+                sinon.stub(PostGenerator.prototype, 'updateURL').resolves(true);
+                DomainEvents.dispatch(URLResourceUpdatedEvent.create({
+                    id: 'post_id',
+                    resourceType: 'posts'
+                }));
+                await DomainEvents.allSettled();
+
+                assert.ok(PostGenerator.prototype.updateURL.calledOnce);
             });
         });
 

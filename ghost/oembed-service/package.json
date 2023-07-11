@@ -18,27 +18,27 @@
     "lib"
   ],
   "devDependencies": {
-    "c8": "7.12.0",
+    "c8": "7.14.0",
     "mocha": "10.2.0"
   },
   "dependencies": {
-    "@tryghost/errors": "1.2.20",
-    "@tryghost/logging": "2.3.6",
-    "@tryghost/tpl": "0.1.21",
+    "@extractus/oembed-extractor": "3.2.1",
+    "@tryghost/errors": "1.2.24",
+    "@tryghost/logging": "2.4.4",
+    "@tryghost/tpl": "0.1.24",
     "charset": "1.0.1",
     "cheerio": "0.22.0",
     "iconv-lite": "0.6.3",
     "lodash": "4.17.21",
-    "metascraper": "5.33.3",
-    "metascraper-author": "5.33.3",
-    "metascraper-description": "5.33.3",
-    "metascraper-image": "5.33.3",
-    "metascraper-logo": "5.33.3",
-    "metascraper-logo-favicon": "5.33.3",
-    "metascraper-publisher": "5.33.3",
-    "metascraper-title": "5.33.3",
-    "metascraper-url": "5.33.3",
-    "oembed-parser": "1.4.9",
-    "tough-cookie": "4.1.2"
+    "metascraper": "5.34.8",
+    "metascraper-author": "5.34.7",
+    "metascraper-description": "5.34.7",
+    "metascraper-image": "5.34.7",
+    "metascraper-logo": "5.34.7",
+    "metascraper-logo-favicon": "5.34.7",
+    "metascraper-publisher": "5.34.7",
+    "metascraper-title": "5.34.7",
+    "metascraper-url": "5.34.7",
+    "tough-cookie": "4.1.3"
   }
 }

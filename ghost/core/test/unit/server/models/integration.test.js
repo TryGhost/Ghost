@@ -1,8 +1,6 @@
 const should = require('should');
-const url = require('url');
 const sinon = require('sinon');
 const models = require('../../../../core/server/models');
-const testUtils = require('../../../utils');
 const {knex} = require('../../../../core/server/data/db');
 
 describe('Unit: models/integration', function () {
@@ -16,11 +14,10 @@ describe('Unit: models/integration', function () {
 
     describe('permittedOptions', function () {
         let basePermittedOptionsReturnVal;
-        let basePermittedOptionsStub;
 
         beforeEach(function () {
             basePermittedOptionsReturnVal = ['super', 'doopa'];
-            basePermittedOptionsStub = sinon.stub(models.Base.Model, 'permittedOptions')
+            sinon.stub(models.Base.Model, 'permittedOptions')
                 .returns(basePermittedOptionsReturnVal);
         });
 

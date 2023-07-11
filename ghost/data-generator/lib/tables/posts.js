@@ -5,16 +5,22 @@ const TableImporter = require('./base');
 const dateToDatabaseString = require('../utils/database-date');
 
 class PostsImporter extends TableImporter {
+    static table = 'posts';
+
     constructor(knex, {newsletters}) {
-        super('posts', knex);
+        super(PostsImporter.table, knex);
         this.newsletters = newsletters;
     }
 
+    setImportOptions({type = 'post'}) {
+        this.type = type;
+    }
+
     async addNewsletters({posts}) {
-        for (const {id} of posts) {
+        for (const {id, visibility} of posts) {
             await this.knex('posts').update({
-                newsletter_id: luck(10) ? this.newsletters[0].id : this.newsletters[1].id
-            }).where({id});
+                newsletter_id: luck(90) ? (visibility === 'paid' ? this.newsletters[0].id : this.newsletters[1].id) : null
+            }).where({id, type: 'post', status: 'published'});
         }
     }
 
@@ -26,19 +32,36 @@ class PostsImporter extends TableImporter {
         })).split('\n');
         const twoYearsAgo = new Date();
         twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
-        const twoWeeksAgo = new Date();
-        twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-        const timestamp = faker.date.between(twoYearsAgo, twoWeeksAgo);
+        const twoWeeksFromNow = new Date();
+        twoWeeksFromNow.setDate(twoWeeksFromNow.getDate() + 14);
+        const timestamp = faker.date.between(twoYearsAgo, twoWeeksFromNow);
+        const currentTime = new Date();
+
+        let status = 'published';
+        if (timestamp > currentTime) {
+            status = 'scheduled';
+        }
+        if (luck(5)) {
+            status = 'draft';
+        }
+        if (this.type === 'page') {
+            status = 'published';
+        }
+
+        const visibility = luck(85) ? 'paid' : luck(10) ? 'members' : 'public';
+
         return {
             id: faker.database.mongodbObjectId(),
             created_at: dateToDatabaseString(timestamp),
-            created_by: 'unused',
+            created_by: '1',
             updated_at: dateToDatabaseString(timestamp),
-            published_at: dateToDatabaseString(faker.date.soon(5, timestamp)),
+            published_at: status === 'published' ? dateToDatabaseString(faker.date.soon(5, timestamp)) : null,
             uuid: faker.datatype.uuid(),
             title: title,
+            type: this.type,
             slug: `${slugify(title)}-${faker.random.numeric(3)}`,
-            status: 'published',
+            status,
+            visibility,
             mobiledoc: JSON.stringify({
                 version: '0.3.1',
                 atoms: [],
@@ -59,7 +82,7 @@ class PostsImporter extends TableImporter {
             }),
             html: content.map(paragraph => `<p>${paragraph}</p>`).join(''),
             email_recipient_filter: 'all',
-            newsletter_id: luck(10) ? this.newsletters[0].id : this.newsletters[1].id
+            newsletter_id: this.type === 'post' && status === 'published' && luck(90) ? (visibility === 'paid' ? this.newsletters[0].id : this.newsletters[1].id) : null
         };
     }
 }

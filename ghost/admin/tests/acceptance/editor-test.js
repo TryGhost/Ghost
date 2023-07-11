@@ -632,5 +632,115 @@ describe('Acceptance: Editor', function () {
 
             // no expects, will throw with an error and fail when it hits the bug
         });
+
+        // https://github.com/TryGhost/Team/issues/2702
+        it('removes unknown cards instead of crashing', async function () {
+            let post = this.server.create('post', {authors: [author], status: 'published', title: 'Title', mobiledoc: JSON.stringify({
+                version: '0.3.1',
+                atoms: [],
+                cards: [
+                    [
+                        'asdfadsfasdfasdfadsf',
+                        {
+                            cardWidth: 'wide',
+                            startingPosition: 50,
+                            caption: 'Salmon On The Grill: BEFORE / AFTER'
+                        }
+                    ]
+                ],
+                markups: [],
+                sections: [
+                    [
+                        1,
+                        'p',
+                        [
+                            [
+                                0,
+                                [],
+                                0,
+                                'Paragraph 1'
+                            ]
+                        ]
+                    ],
+                    [
+                        10,
+                        0
+                    ]
+                ],
+                ghostVersion: '4.0'
+            })});
+
+            await visit(`/editor/post/${post.id}`);
+
+            expect(currentURL(), 'currentURL').to.equal(`/editor/post/${post.id}`);
+
+            // Make an edit and save
+            await fillIn('[data-test-editor-title-input]', 'Title 2');
+            await click('[data-test-button="publish-save"]');
+
+            // Check that the unknown card has been removed
+            expect(
+                this.server.db.posts.find(post.id).mobiledoc,
+                'removed unknown card from mobiledoc'
+            ).to.deep.equal(JSON.stringify({version: '0.3.1',
+                atoms: [],
+                cards: [],
+                markups: [],
+                sections: [
+                    [
+                        1,
+                        'p',
+                        [
+                            [
+                                0,
+                                [],
+                                0,
+                                'Paragraph 1'
+                            ]
+                        ]
+                    ]
+                ],
+                ghostVersion: '4.0'}));
+        });
+
+        it('renders a breadcrumb back to the post list', async function () {
+            let post = this.server.create('post', {authors: [author]});
+
+            await visit(`/editor/post/${post.id}`);
+
+            expect(
+                find('[data-test-breadcrumb]').textContent.trim(),
+                'breadcrumb text'
+            ).to.contain('Posts');
+
+            expect(
+                find('[data-test-breadcrumb]').getAttribute('href'),
+                'breadcrumb link'
+            ).to.equal('/ghost/posts');
+        });
+
+        it('renders a breadcrumb back to the analytics list if that\'s where we came from ', async function () {
+            let post = this.server.create('post', {
+                authors: [author],
+                status: 'published',
+                title: 'Published Post'
+            });
+
+            // visit the analytics page for the post
+            await visit(`/posts/analytics/${post.id}`);
+            // now visit the editor for the same post
+            await visit(`/editor/post/${post.id}`);
+
+            // Breadcrumbs should point back to Analytics page
+            expect(
+                find('[data-test-breadcrumb]').textContent.trim(),
+                'breadcrumb text'
+            ).to.contain('Analytics');
+
+            expect(
+                find('[data-test-breadcrumb]').getAttribute('href'),
+                'breadcrumb link'
+            ).to.equal(`/ghost/posts/analytics/${post.id}`);
+        });
     });
 });

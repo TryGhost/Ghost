@@ -39,7 +39,7 @@
         </div>
     </GhCanvasHeader>
     <div class="view-container">
-        {{#let (history-event-fetcher filter=(history-event-filter excludedEvents=this.fullExcludedEvents excludedResources=this.fullExcludedResources user=this.user) pageSize=50) as |eventsFetcher|}}
+        {{#let (history-event-fetcher filter=(history-event-filter excludedEvents=this.fullExcludedEvents excludedResources=this.fullExcludedResources user=this.user) pageSize=200) as |eventsFetcher|}}
             {{#if eventsFetcher.data}}
             <div class="gh-list-scrolling">
                 <Settings::History::Table @events={{eventsFetcher.data}} />

@@ -27,7 +27,7 @@ describe('site.* events', function () {
             url: webhookURL
         });
 
-        const res = await adminAPIAgent
+        await adminAPIAgent
             .post('posts/')
             .body({
                 posts: [{

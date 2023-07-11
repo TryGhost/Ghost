@@ -1,11 +1,12 @@
+const dns = require('dns');
 const should = require('should');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 const mail = require('../../../../../core/server/services/mail');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const configUtils = require('../../../../utils/configUtils');
 const urlUtils = require('../../../../../core/shared/url-utils');
 let mailer;
+const assert = require('assert/strict');
 
 // Mock SMTP config
 const SMTP = {
@@ -40,9 +41,9 @@ const mailDataIncomplete = {
 const sandbox = sinon.createSandbox();
 
 describe('Mail: Ghostmailer', function () {
-    afterEach(function () {
+    afterEach(async function () {
         mailer = null;
-        configUtils.restore();
+        await configUtils.restore();
         sandbox.restore();
     });
 
@@ -115,43 +116,28 @@ describe('Mail: Ghostmailer', function () {
             configUtils.set({mail: {}});
 
             mailer = new mail.GhostMailer();
+
+            sinon.stub(dns, 'resolveMx').yields(null, []);
         });
 
         afterEach(function () {
             mailer = null;
+            sinon.restore();
         });
 
-        it('return correct failure message for domain doesn\'t exist', function (done) {
+        it('return correct failure message for domain doesn\'t exist', async function () {
             mailer.transport.transporter.name.should.eql('SMTP (direct)');
-
-            mailer.send(mailDataNoDomain).then(function () {
-                done(new Error('Error message not shown.'));
-            }, function (error) {
-                error.message.should.startWith('Failed to send email.');
-                done();
-            }).catch(done);
+            await assert.rejects(mailer.send(mailDataNoDomain), /Failed to send email/);
         });
 
-        it('return correct failure message for no mail server at this address', function (done) {
+        it('return correct failure message for no mail server at this address', async function () {
             mailer.transport.transporter.name.should.eql('SMTP (direct)');
-
-            mailer.send(mailDataNoServer).then(function () {
-                done(new Error('Error message not shown.'));
-            }, function (error) {
-                error.message.should.startWith('Failed to send email.');
-                done();
-            }).catch(done);
+            await assert.rejects(mailer.send(mailDataNoServer), /Failed to send email/);
         });
 
-        it('return correct failure message for incomplete data', function (done) {
+        it('return correct failure message for incomplete data', async function () {
             mailer.transport.transporter.name.should.eql('SMTP (direct)');
-
-            mailer.send(mailDataIncomplete).then(function () {
-                done(new Error('Error message not shown.'));
-            }, function (error) {
-                error.message.should.eql('Incomplete message data.');
-                done();
-            }).catch(done);
+            await assert.rejects(mailer.send(mailDataIncomplete), /Incomplete message data/);
         });
     });
 

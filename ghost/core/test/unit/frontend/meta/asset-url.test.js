@@ -1,5 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
+const {SafeString} = require('../../../../core/frontend/services/handlebars');
 const imageLib = require('../../../../core/server/lib/image');
 const settingsCache = require('../../../../core/shared/settings-cache');
 const configUtils = require('../../../utils/configUtils');
@@ -8,8 +9,8 @@ const config = configUtils.config;
 const getAssetUrl = require('../../../../core/frontend/meta/asset-url');
 
 describe('getAssetUrl', function () {
-    afterEach(function () {
-        configUtils.restore();
+    afterEach(async function () {
+        await configUtils.restore();
         sinon.restore();
     });
 
@@ -36,6 +37,11 @@ describe('getAssetUrl', function () {
     it('should return hash before #', function () {
         const testUrl = getAssetUrl('myfile.svg#arrow-up');
         testUrl.should.equal(`/assets/myfile.svg?v=${config.get('assetHash')}#arrow-up`);
+    });
+
+    it('should handle Handlebars’ SafeString', function () {
+        const testUrl = getAssetUrl(new SafeString('myfile.js'));
+        testUrl.should.equal('/assets/myfile.js?v=' + config.get('assetHash'));
     });
 
     describe('favicon', function () {
@@ -93,8 +99,8 @@ describe('getAssetUrl', function () {
             configUtils.set({url: 'http://localhost:65535/blog'});
         });
 
-        afterEach(function () {
-            configUtils.restore();
+        afterEach(async function () {
+            await configUtils.restore();
         });
 
         it('should return asset url with just context', function () {

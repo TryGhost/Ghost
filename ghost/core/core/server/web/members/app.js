@@ -14,6 +14,7 @@ const {http} = require('@tryghost/api-framework');
 const api = require('../../api').endpoints;
 
 const commentRouter = require('../comments');
+const announcementRouter = require('../announcement');
 
 module.exports = function setupMembersApp() {
     debug('Members App setup start');
@@ -46,7 +47,7 @@ module.exports = function setupMembersApp() {
     membersApp.post('/api/member/email', bodyParser.json({limit: '50mb'}), (req, res) => membersService.api.middleware.updateEmailAddress(req, res));
 
     // Remove email from suppression list
-    membersApp.delete('/api/member/suppression', labs.enabledMiddleware('suppressionList'), middleware.deleteSuppression);
+    membersApp.delete('/api/member/suppression', middleware.deleteSuppression);
 
     // Manage session
     membersApp.get('/api/session', middleware.getIdentityToken);
@@ -77,6 +78,14 @@ module.exports = function setupMembersApp() {
         middleware.loadMemberSession,
         middleware.authMemberByUuid,
         http(api.feedbackMembers.add)
+    );
+
+    // Announcement
+    membersApp.use(
+        '/api/announcement',
+        labs.enabledMiddleware('announcementBar'),
+        middleware.loadMemberSession,
+        announcementRouter()
     );
 
     // API error handling

@@ -632,4 +632,59 @@ describe('page.* events', function () {
                 }
             });
     });
+    it('page.unscheduled event is triggered', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/page-unscheduled/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'page.unscheduled',
+            url: webhookURL
+        });
+
+        const res = await adminAPIAgent
+            .post('pages/')
+            .body({
+                pages: [
+                    {
+                        title: 'testing page.unscheduled webhook',
+                        status: 'scheduled',
+                        published_at: moment().add(6, 'hours').toISOString()
+                    }
+                ]
+            })
+            .expectStatus(201);
+
+        const id = res.body.pages[0].id;
+        const previouslyScheduledPage = res.body.pages[0];
+        previouslyScheduledPage.status = 'draft';
+        previouslyScheduledPage.published_at = null;
+
+        await adminAPIAgent
+            .put('pages/' + id)
+            .body({
+                pages: [previouslyScheduledPage]
+            })
+            .expectStatus(200);
+
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({
+                page: {
+                    current: buildPageSnapshotWithTiers({
+                        published: false,
+                        tiersCount: 2,
+                        roles: true
+                    }),
+                    previous: {
+                        ...buildPreviousPageSnapshotWithTiers(2),
+                        published_at: anyISODateTime
+                    }
+                }
+            });
+    });
 });

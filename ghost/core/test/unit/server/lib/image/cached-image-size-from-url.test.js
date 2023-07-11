@@ -1,8 +1,9 @@
 const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
-const CachedImageSizeFromUrl = require('../../../../../core/server/lib/image/cached-image-size-from-url');
-const InMemoryCache = require('../../../../../core/server/adapters/cache/Memory');
+const CachedImageSizeFromUrl = require('../../../../../core/server/lib/image/CachedImageSizeFromUrl');
+const InMemoryCache = require('../../../../../core/server/adapters/cache/MemoryCache');
+const logging = require('@tryghost/logging');
 
 describe('lib/image: image size cache', function () {
     let sizeOfStub;
@@ -70,6 +71,7 @@ describe('lib/image: image size cache', function () {
             cache: cacheStore
         });
 
+        const loggingStub = sinon.stub(logging, 'error');
         await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
 
         cacheStore.get(url).should.not.be.undefined;
@@ -77,6 +79,7 @@ describe('lib/image: image size cache', function () {
         should.equal(image.url, 'http://mysite.com/content/image/mypostcoverimage.jpg');
         should.not.exist(image.width);
         should.not.exist(image.height);
+        sinon.assert.calledOnce(loggingStub);
     });
 
     it('can handle NotFoundError error', async function () {

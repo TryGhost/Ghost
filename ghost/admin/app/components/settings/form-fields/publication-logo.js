@@ -20,6 +20,11 @@ export default class PublicationLogoFormField extends Component {
     }
 
     @action
+    saveImage(setFiles, imageFile) {
+        setFiles([imageFile]);
+    }
+
+    @action
     update(value) {
         this.settings.logo = value;
         this.args.didUpdate('logo', value);

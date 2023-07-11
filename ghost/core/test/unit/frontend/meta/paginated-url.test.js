@@ -128,8 +128,8 @@ describe('getPaginatedUrl', function () {
             configUtils.set({url: 'http://localhost:65535/blog'});
         });
 
-        after(function () {
-            configUtils.restore();
+        after(async function () {
+            await configUtils.restore();
         });
 
         it('should calculate correct urls for index', function () {

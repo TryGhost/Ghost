@@ -4,10 +4,12 @@ const {faker} = require('@faker-js/faker');
 const {slugify} = require('@tryghost/string');
 
 class NewslettersImporter extends TableImporter {
+    static table = 'newsletters';
+
     constructor(knex) {
-        super('newsletters', knex);
+        super(NewslettersImporter.table, knex);
         this.sortOrder = 0;
-        this.names = ['Occasional freebie', 'Regular premium'];
+        this.names = ['Regular premium', 'Occasional freebie'];
     }
 
     generate() {
@@ -21,7 +23,7 @@ class NewslettersImporter extends TableImporter {
             uuid: faker.datatype.uuid(),
             name: name,
             slug: `${slugify(name)}-${faker.random.numeric(3)}`,
-            sender_reply_to: 'hello@example.com',
+            sender_reply_to: 'newsletter',
             status: 'active',
             subscribe_on_signup: faker.datatype.boolean(),
             sort_order: sortOrder,

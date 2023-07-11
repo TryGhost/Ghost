@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const sinon = require('sinon');
 const RevueImporter = require('../index');
 
@@ -162,9 +162,12 @@ describe('Revue Importer', function () {
             });
 
             it('can get date for draft post', function () {
+                const clock = sinon.useFakeTimers(); // required because assertion could be 1ms off
                 const result = JSONToHTML.getPostDate({});
+                const expected = new Date().toISOString();
+                clock.restore();
 
-                assert.equal(result, new Date().toISOString());
+                assert.equal(result, expected);
             });
         });
 

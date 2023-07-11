@@ -99,6 +99,7 @@ export default class PublishManagement extends Component {
                 publishOptions: this.publishOptions,
                 hasDirtyAttributes: this.args.hasUnsavedChanges,
                 saveTask: this.saveTask,
+                savePostTask: this.args.savePostTask,
                 togglePreviewPublish: this.togglePreviewPublish,
                 currentTab: this.previewTab,
                 changeTab: this.changePreviewTab,
@@ -165,7 +166,7 @@ export default class PublishManagement extends Component {
 
     @task
     *publishTask({taskName = 'saveTask'} = {}) {
-        const willEmail = this.publishOptions.willEmail;
+        const willEmailImmediately = this.publishOptions.willEmailImmediately;
 
         // clean up blank editor cards
         // apply cloned mobiledoc
@@ -181,7 +182,7 @@ export default class PublishManagement extends Component {
         yield this.args.afterPublish(result);
 
         // if emailed, wait until it has been submitted so we can show a failure message if needed
-        if (willEmail && this.publishOptions.post.email) {
+        if (willEmailImmediately && this.publishOptions.post.email) {
             yield this.confirmEmailTask.perform();
         }
 
@@ -214,6 +215,11 @@ export default class PublishManagement extends Component {
                 pollTimeout += CONFIRM_EMAIL_POLL_LENGTH;
 
                 yield post.reload();
+
+                if (!post.isSent && !post.isPublished) {
+                    // A post that is not published doesn't try to send or retry an email
+                    break;
+                }
 
                 if (post.email.status === 'submitted') {
                     break;

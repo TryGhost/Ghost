@@ -1,0 +1,16 @@
+<div class="gh-feedback-lexical-published">
+    <h4 class="gh-feedback-lexical-published-title">This post was published using the new Ghost editor (beta).</h4>
+    {{!-- <p>Editor beta feedback</p> --}}
+    <FeedbackLexical::Textarea
+        @feedbackMessage={{this.feedbackMessage}}
+        @updateFeedbackMessage={{this.updateFeedbackMessage}}
+        @shouldFocus={{false}}
+        @label="Editor beta feedback"
+        @placeholder="How’d it go? Did you have any issues?"
+    />
+    <FeedbackLexical::SendButton
+        @feedbackMessage={{this.feedbackMessage}}
+        @post={{@post}}
+        @onSuccess={{this.resetFeedbackMessage}}
+    />
+</div>

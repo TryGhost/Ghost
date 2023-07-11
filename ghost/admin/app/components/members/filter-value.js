@@ -11,11 +11,23 @@ export default class MembersFilterValue extends Component {
     }
 
     get tierFilterValue() {
-        if (this.args.filter?.type === 'tier') {
-            const tiers = this.args.filter?.value || [];
+        if (this.args.filter?.type === 'tier_id') {
+            const tiers = Array.isArray(this.args.filter?.value) ? this.args.filter?.value : [];
             return tiers.map((tier) => {
                 return {
-                    slug: tier
+                    id: tier
+                };
+            });
+        }
+        return [];
+    }
+
+    get offersFilterValue() {
+        if (this.args.filter?.type === 'offer_redemptions') {
+            const offers = Array.isArray(this.args.filter?.value) ? this.args.filter?.value : [];
+            return offers.map((offer) => {
+                return {
+                    id: offer
                 };
             });
         }
@@ -50,7 +62,12 @@ export default class MembersFilterValue extends Component {
 
     @action
     setTiersFilterValue(filter, tiers) {
-        this.args.setFilterValue(filter, tiers.map(tier => tier.slug));
+        this.args.setFilterValue(filter, tiers.map(tier => tier.id));
+    }
+
+    @action
+    setOffersFilterValue(filter, offers) {
+        this.args.setFilterValue(filter, offers.map(offer => offer.id));
     }
 
     get isResourceFilter() {

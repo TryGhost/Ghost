@@ -18,21 +18,22 @@ const slackURL = 'https://hooks.slack.com/services/a-b-c-d';
 
 describe('Slack', function () {
     let eventStub;
+    let loggingStub;
 
     beforeEach(function () {
         eventStub = sinon.stub(events, 'on');
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
-        configUtils.restore();
+        await configUtils.restore();
     });
 
     it('listen() should initialise event correctly', function () {
         slack.listen();
         eventStub.calledTwice.should.be.true();
-        eventStub.firstCall.calledWith('post.published', slack.__get__('listener')).should.be.true();
-        eventStub.secondCall.calledWith('slack.test', slack.__get__('testPing')).should.be.true();
+        eventStub.firstCall.calledWith('post.published', slack.__get__('slackListener')).should.be.true();
+        eventStub.secondCall.calledWith('slack.test', slack.__get__('slackTestPing')).should.be.true();
     });
 
     it('listener() calls ping() with toJSONified model', function () {
@@ -46,7 +47,7 @@ describe('Slack', function () {
 
         const pingStub = sinon.stub();
         const resetSlack = slack.__set__('ping', pingStub);
-        const listener = slack.__get__('listener');
+        const listener = slack.__get__('slackListener');
 
         listener(testModel);
 
@@ -68,7 +69,7 @@ describe('Slack', function () {
 
         const pingStub = sinon.stub();
         const resetSlack = slack.__set__('ping', pingStub);
-        const listener = slack.__get__('listener');
+        const listener = slack.__get__('slackListener');
 
         listener(testModel, {importing: true});
 
@@ -81,7 +82,7 @@ describe('Slack', function () {
     it('testPing() calls ping() with default message', function () {
         const pingStub = sinon.stub();
         const resetSlack = slack.__set__('ping', pingStub);
-        const testPing = slack.__get__('testPing');
+        const testPing = slack.__get__('slackTestPing');
 
         testPing();
 
@@ -102,7 +103,6 @@ describe('Slack', function () {
             sinon.stub(urlService, 'getUrlByResourceId');
 
             settingsCacheStub = sinon.stub(settingsCache, 'get');
-            sinon.spy(logging, 'error');
 
             makeRequestStub = sinon.stub();
             slackReset = slack.__set__('request', makeRequestStub);
@@ -173,6 +173,7 @@ describe('Slack', function () {
         });
 
         it('makes a request and errors', function (done) {
+            loggingStub = sinon.stub(logging, 'error');
             makeRequestStub.rejects();
             settingsCacheStub.withArgs('slack_url').returns(slackURL);
 
@@ -180,7 +181,7 @@ describe('Slack', function () {
             ping({});
 
             (function retry() {
-                if (logging.error.calledOnce) {
+                if (loggingStub.calledOnce) {
                     makeRequestStub.calledOnce.should.be.true();
                     return done();
                 }

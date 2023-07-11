@@ -150,7 +150,7 @@ module.exports = function (defaults) {
         },
         nodeAssets: {
             codemirror: codemirrorAssets(),
-            simplemde: simplemdeAssets()
+            '@tryghost/kg-simplemde': simplemdeAssets()
         },
         postcssOptions: {
             compile: {
@@ -248,7 +248,7 @@ module.exports = function (defaults) {
     // our overrides work correctly
     app.import('node_modules/codemirror/lib/codemirror.css');
     app.import('node_modules/codemirror/theme/xq-light.css');
-    app.import('node_modules/simplemde/dist/simplemde.min.css');
+    app.import('node_modules/@tryghost/kg-simplemde/dist/simplemde.min.css');
 
     // 'dem Scripts
     app.import('node_modules/google-caja-bower/html-css-sanitizer-bundle.js');
@@ -261,7 +261,7 @@ module.exports = function (defaults) {
     // that tests don't break when running via http://localhost:4200/tests
     if (app.env === 'development') {
         app.import('vendor/codemirror/lib/codemirror.js', {type: 'test'});
-        app.import('vendor/simplemde/debug/simplemde.js', {type: 'test'});
+        app.import('vendor/@tryghost/kg-simplemde/debug/simplemde.js', {type: 'test'});
     }
 
     return app.toTree();

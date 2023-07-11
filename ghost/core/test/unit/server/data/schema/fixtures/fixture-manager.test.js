@@ -1,6 +1,5 @@
 const should = require('should');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 
 const models = require('../../../../../../core/server/models');
 const baseUtils = require('../../../../../../core/server/models/base/utils');
@@ -10,14 +9,7 @@ const fixtures = require('../../../../../utils/fixtures/fixtures.json');
 const fixtureManager = new FixtureManager(fixtures);
 
 describe('Migration Fixture Utils', function () {
-    let loggerStub;
-
     beforeEach(function () {
-        loggerStub = {
-            info: sinon.stub(),
-            warn: sinon.stub()
-        };
-
         models.init();
     });
 
@@ -199,7 +191,7 @@ describe('Migration Fixture Utils', function () {
             const rolesAllStub = sinon.stub(models.Role, 'findAll').returns(Promise.resolve(dataMethodStub));
 
             fixtureManager.addFixturesForRelation(fixtures.relations[0]).then(function (result) {
-                const FIXTURE_COUNT = 96;
+                const FIXTURE_COUNT = 106;
                 should.exist(result);
                 result.should.be.an.Object();
                 result.should.have.property('expected', FIXTURE_COUNT);
@@ -209,7 +201,7 @@ describe('Migration Fixture Utils', function () {
                 permsAllStub.calledOnce.should.be.true();
                 rolesAllStub.calledOnce.should.be.true();
                 dataMethodStub.filter.callCount.should.eql(FIXTURE_COUNT);
-                dataMethodStub.find.callCount.should.eql(8);
+                dataMethodStub.find.callCount.should.eql(9);
                 baseUtilAttachStub.callCount.should.eql(FIXTURE_COUNT);
 
                 fromItem.related.callCount.should.eql(FIXTURE_COUNT);

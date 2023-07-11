@@ -29,7 +29,7 @@ export default class GhSimplemde extends TextArea {
     onEditorDestroy() {}
 
     // default SimpleMDE options, see docs for available config:
-    // https://github.com/sparksuite/simplemde-markdown-editor#configuration
+    // https://github.com/TryGhost/Koenig/tree/main/packages/kg-simplemde#configuration
     @computed
     get defaultOptions() {
         return {

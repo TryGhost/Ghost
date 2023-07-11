@@ -1,7 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
-const Promise = require('bluebird');
 const _ = require('lodash');
 const models = require('../../../../../core/server/models');
 const actionsMap = require('../../../../../core/server/services/permissions/actions-map-cache');
@@ -9,8 +8,6 @@ const permissions = require('../../../../../core/server/services/permissions');
 
 describe('Permissions', function () {
     let fakePermissions = [];
-    let findPostSpy;
-    let findTagSpy;
 
     before(function () {
         models.init();
@@ -21,11 +18,11 @@ describe('Permissions', function () {
             return Promise.resolve(models.Permissions.forge(fakePermissions));
         });
 
-        findPostSpy = sinon.stub(models.Post, 'findOne').callsFake(function () {
+        sinon.stub(models.Post, 'findOne').callsFake(function () {
             return Promise.resolve(models.Post.forge(testUtils.DataGenerator.Content.posts[0]));
         });
 
-        findTagSpy = sinon.stub(models.Tag, 'findOne').callsFake(function () {
+        sinon.stub(models.Tag, 'findOne').callsFake(function () {
             return Promise.resolve({});
         });
     });

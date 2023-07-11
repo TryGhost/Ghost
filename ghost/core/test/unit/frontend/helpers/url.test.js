@@ -1,12 +1,12 @@
 const should = require('should');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 const testUtils = require('../../../utils');
 
 const configUtils = require('../../../utils/configUtils');
 const markdownToMobiledoc = require('../../../utils/fixtures/data-generator').markdownToMobiledoc;
 const url = require('../../../../core/frontend/helpers/url');
 const urlService = require('../../../../core/server/services/url');
+const logging = require('@tryghost/logging');
 const api = require('../../../../core/server/api').endpoints;
 
 describe('{{url}} helper', function () {
@@ -31,8 +31,8 @@ describe('{{url}} helper', function () {
             configUtils.set({url: 'http://localhost:65535/'});
         });
 
-        after(function () {
-            configUtils.restore();
+        after(async function () {
+            await configUtils.restore();
         });
 
         it('should return the slug with a prefix slash if the context is a post', function () {
@@ -220,10 +220,12 @@ describe('{{url}} helper', function () {
             rendered.string.should.equal('/?foo=space%20bar');
         });
 
-        it('should an empty string when we can\'t parse a string', function () {
+        it('should return an empty string when we can\'t parse a string', function () {
+            const loggingStub = sinon.stub(logging, 'error');
             rendered = url.call({url: '/?foo=space%%bar', label: 'Baz', slug: 'baz', current: true});
             should.exist(rendered);
             rendered.string.should.equal('');
+            sinon.assert.calledOnce(loggingStub);
         });
 
         it('should not encode square brackets (as in valid IPV6 addresses)', function () {
@@ -240,8 +242,8 @@ describe('{{url}} helper', function () {
             configUtils.set({url: 'http://localhost:65535/blog'});
         });
 
-        after(function () {
-            configUtils.restore();
+        after(async function () {
+            await configUtils.restore();
         });
 
         it('external urls should be retained in a nav context with subdir', function () {

@@ -21,7 +21,7 @@ describe('getRssUrl', function () {
     });
 
     it('forwards absolute flags', function () {
-        const rssUrl = getRssUrl({}, true);
+        getRssUrl({}, true);
 
         routing.registry.getRssUrl.calledWith({absolute: true}).should.be.true();
     });

@@ -10,8 +10,8 @@ describe('UNIT - services/routing/StaticRoutesRouter', function () {
     let next;
     let routerCreatedSpy;
 
-    afterEach(function () {
-        configUtils.restore();
+    afterEach(async function () {
+        await configUtils.restore();
     });
 
     beforeEach(function () {

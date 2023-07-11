@@ -30,6 +30,7 @@ Router.map(function () {
 
     this.route('posts');
     this.route('posts.analytics', {path: '/posts/analytics/:post_id'});
+    this.route('posts.mentions', {path: '/posts/analytics/:post_id/mentions'});
     this.route('posts.debug', {path: '/posts/analytics/:post_id/debug'});
 
     this.route('pages');
@@ -39,7 +40,7 @@ Router.map(function () {
         this.route('edit', {path: ':type/:post_id'});
     });
 
-    this.route('lexical-editor', function () {
+    this.route('lexical-editor', {path: 'editor-beta'}, function () {
         this.route('new', {path: ':type'});
         this.route('edit', {path: ':type/:post_id'});
     });
@@ -49,12 +50,22 @@ Router.map(function () {
     this.route('tag.new', {path: '/tags/new'});
     this.route('tag', {path: '/tags/:tag_slug'});
 
+    this.route('collections');
+    this.route('collection.new', {path: '/collections/new'});
+    this.route('collection', {path: '/collections/:collection_slug'});
+    this.route('settings-x', function () {
+        this.route('settings-x', {path: '/*sub'});
+    });
     this.route('settings');
     this.route('settings.general', {path: '/settings/general'});
     this.route('settings.membership', {path: '/settings/members'});
     this.route('settings.code-injection', {path: '/settings/code-injection'});
     this.route('settings.history', {path: '/settings/history'});
     this.route('settings.analytics', {path: '/settings/analytics'});
+    this.route('settings.announcement-bar', {path: '/settings/announcement-bar'}, function () {});
+
+    // testing websockets
+    this.route('websockets');
 
     // redirect from old /settings/members-email to /settings/newsletters
     this.route('settings.members-email', {path: '/settings/members-email'});
@@ -99,6 +110,7 @@ Router.map(function () {
     this.route('settings.integrations.slack', {path: '/settings/integrations/slack'});
     this.route('settings.integrations.amp', {path: '/settings/integrations/amp'});
     this.route('settings.integrations.firstpromoter', {path: '/settings/integrations/firstpromoter'});
+    this.route('settings.integrations.pintura', {path: '/settings/integrations/pintura'});
     this.route('settings.integrations.unsplash', {path: '/settings/integrations/unsplash'});
     this.route('settings.integrations.zapier', {path: '/settings/integrations/zapier'});
 
@@ -107,6 +119,8 @@ Router.map(function () {
         this.route('import');
     });
     // this.route('settings.labs.import', {path: '/settings/labs/import'});
+
+    this.route('migrate');
 
     this.route('members', function () {
         this.route('import');
@@ -123,6 +137,8 @@ Router.map(function () {
     this.route('error404', {path: '/*path'});
 
     this.route('designsandbox');
+
+    this.route('mentions');
 });
 
 export default Router;

@@ -88,7 +88,7 @@ export default class extends Component {
             }
 
             if (!sub.id && sub.tier?.expiry_at) {
-                data.compExpiry = moment(sub.tier.expiry_at).format('D MMM YYYY');
+                data.compExpiry = moment(sub.tier.expiry_at).utc().format('D MMM YYYY');
             }
             return data;
         });
@@ -116,18 +116,9 @@ export default class extends Component {
         return null;
     }
 
-    get canShowSingleNewsletter() {
-        return (
-            this.newslettersList?.length === 1
-            && this.settings.editorDefaultEmailRecipients !== 'disabled'
-            && !this.feature.get('suppressionList')
-        );
-    }
-
     get canShowMultipleNewsletters() {
         return (
-            (this.newslettersList?.length > 1 || this.feature.get('suppressionList'))
-            && this.settings.editorDefaultEmailRecipients !== 'disabled'
+            this.settings.editorDefaultEmailRecipients !== 'disabled'
         );
     }
 

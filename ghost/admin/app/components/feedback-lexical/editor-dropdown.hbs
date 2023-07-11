@@ -1,0 +1,48 @@
+<GhBasicDropdown
+    @verticalPosition="above"
+    @onClose={{this.onClose}}
+    @horizontalPosition="left" as |dd|
+>
+    <dd.Trigger
+        class="gh-editor-feedback-trigger gh-btn gh-btn-editor green"
+        data-test-button="lexical-editor-feedback"
+    >
+        <span class="gh-editor-feedback" data-trigger="true"> {{!-- data-trigger attr used for dropdown closing --}}
+            Beta feedback
+        </span>
+    </dd.Trigger>
+
+    <dd.Content class="gh-editor-feedback-dropdown-container">
+        <div {{css-transition "anim-fade-in-scale"}}>
+            <div class="gh-editor-feedback-dropdown" data-test-modal="lexical-feedback">
+                <header class="gh-editor-feedback-dropdown-header">
+                    <h3>Ghost editor (beta)</h3>
+                </header>
+
+                <div class="">
+                    <FeedbackLexical::Textarea
+                        @feedbackMessage={{this.feedbackMessage}}
+                        @updateFeedbackMessage={{this.updateFeedbackMessage}}
+                        @shouldFocus={{true}}
+                        @placeholder="You’re using the new Ghost editor. Have any issues? Feedback? Let us know!"
+                    />
+                </div>
+
+                <div class="gh-editor-feedback-dropdown-footer">
+                    <FeedbackLexical::SendButton
+                        @onSuccess={{fn this.onSent dd}}
+                        @feedbackMessage={{this.feedbackMessage}}
+                        @post={{@post}}
+                    />
+                    <button
+                        class="gh-btn"
+                        type="button"
+                        {{on "click" (fn this.onCancel dd)}}
+                    >
+                        <span>Cancel</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </dd.Content>
+</GhBasicDropdown>

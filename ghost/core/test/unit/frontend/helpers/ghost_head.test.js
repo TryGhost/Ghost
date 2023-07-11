@@ -362,9 +362,9 @@ describe('{{ghost_head}} helper', function () {
         makeFixtures();
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
-        configUtils.restore();
+        await configUtils.restore();
     });
 
     describe('without Code Injection', function () {
@@ -494,6 +494,7 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
+            renderObject.post.should.eql(postBk);
         });
 
         it('returns structured data on post page with custom excerpt for description and meta description', async function () {

@@ -24,7 +24,7 @@ function defaultRelations(frame) {
         return false;
     }
 
-    frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'tiers', 'count.signups', 'count.paid_conversions'];
+    frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'tiers', 'count.signups', 'count.paid_conversions', 'post_revisions', 'post_revisions.author'];
 }
 
 function setDefaultOrder(frame) {
@@ -186,6 +186,21 @@ module.exports = {
             id: frame.options.id,
             type: 'page'
         };
+
+        defaultFormat(frame);
+        defaultRelations(frame);
+    },
+
+    bulkEdit(apiConfig, frame) {
+        forcePageFilter(frame);
+    },
+
+    bulkDestroy(apiConfig, frame) {
+        forcePageFilter(frame);
+    },
+
+    copy(apiConfig, frame) {
+        debug('copy');
 
         defaultFormat(frame);
         defaultRelations(frame);

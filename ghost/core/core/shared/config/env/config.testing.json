@@ -12,7 +12,7 @@
         "port": 2369
     },
     "logging": {
-        "level": "fatal"
+        "level": "error"
     },
     "spam": {
         "user_login": {
@@ -43,6 +43,12 @@
             "maxWait": 3600000,
             "lifetime": 3600,
             "freeRetries":99
+        },
+        "webmentions_block": {
+            "minWait": 100000,
+            "maxWait": 100000,
+            "lifetime": 3600,
+            "freeRetries": 3
         }
     },
     "privacy": {

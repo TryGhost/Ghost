@@ -82,6 +82,23 @@
     opacity: 0;
 }
 
+.user-list-item-no-interaction a.disabled {
+    cursor: default;
+}
+
+
+.user-list-item-no-interaction .gh-badge {
+    margin-right: 28px;
+}
+
+.user-list-item-no-interaction.apps-grid-cell:hover {
+    background: transparent !important;
+}
+
+.user-list-item-no-interaction .gh-user-arrow-icon {
+    display: none;
+}
+
 .gh-team .apps-configured {
     justify-content: flex-end;
 }
@@ -142,6 +159,11 @@
 
 .gh-badge.locked {
     background: none;
+    color: var(--midgrey);
+}
+
+.gh-badge.locked svg path {
+    fill: none;
 }
 
 /* User invitation modal

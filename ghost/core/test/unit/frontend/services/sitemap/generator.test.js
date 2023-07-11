@@ -2,13 +2,15 @@ const should = require('should');
 const sinon = require('sinon');
 const ObjectId = require('bson-objectid').default;
 const _ = require('lodash');
+const moment = require('moment');
+const assert = require('assert/strict');
 const testUtils = require('../../../../utils');
 const urlUtils = require('../../../../../core/shared/url-utils');
-const IndexGenerator = require('../../../../../core/frontend/services/sitemap/index-generator');
-const PostGenerator = require('../../../../../core/frontend/services/sitemap/post-generator');
-const PageGenerator = require('../../../../../core/frontend/services/sitemap/page-generator');
-const TagGenerator = require('../../../../../core/frontend/services/sitemap/tag-generator');
-const UserGenerator = require('../../../../../core/frontend/services/sitemap/user-generator');
+const IndexGenerator = require('../../../../../core/frontend/services/sitemap/SiteMapIndexGenerator');
+const PostGenerator = require('../../../../../core/frontend/services/sitemap/PostMapGenerator');
+const PageGenerator = require('../../../../../core/frontend/services/sitemap/PageMapGenerator');
+const TagGenerator = require('../../../../../core/frontend/services/sitemap/TagsMapGenerator');
+const UserGenerator = require('../../../../../core/frontend/services/sitemap/UserMapGenerator');
 
 should.Assertion.add('ValidUrlNode', function (options) {
     // Check urlNode looks correct
@@ -97,7 +99,7 @@ describe('Generators', function () {
                 generator.types.pages.addUrl('http://my-ghost-blog.com/home/', {id: 'identifier1', staticRoute: true});
                 generator.types.tags.addUrl('http://my-ghost-blog.com/home/', {id: 'identifier1', staticRoute: true});
                 generator.types.authors.addUrl('http://my-ghost-blog.com/home/', {id: 'identifier1', staticRoute: true});
-    
+
                 const xml = generator.getXml();
 
                 xml.should.match(/sitemap-tags.xml/);
@@ -108,7 +110,7 @@ describe('Generators', function () {
 
             it('does not create entries for pages with no content', function () {
                 generator.types.tags.addUrl('http://my-ghost-blog.com/episode-1/', {id: 'identifier1', staticRoute: true});
-    
+
                 const xml = generator.getXml();
 
                 xml.should.match(/sitemap-tags.xml/);
@@ -148,6 +150,44 @@ describe('Generators', function () {
                 }));
 
                 urlNode.should.be.a.ValidUrlNode({withImage: true});
+            });
+        });
+
+        describe('fn: hasCanonicalUrl', function () {
+            it('can check for canonical url', function () {
+                const isCanonical = generator.hasCanonicalUrl(testUtils.DataGenerator.forKnex.createPost({
+                    page: false,
+                    slug: 'some-cool-page',
+                    canonical_url: 'https://myblog.com/test/'
+                }
+                ));
+                isCanonical.should.eql(true);
+            });
+            it('returns false if no canonical url', function () {
+                const isCanonical = generator.hasCanonicalUrl(testUtils.DataGenerator.forKnex.createPost({
+                    page: false,
+                    slug: 'some-cool-page',
+                    canonical_url: null
+                }
+                ));
+                isCanonical.should.eql(false);
+            });
+        });
+
+        describe('fn: addUrl', function () {
+            it('does not include posts containing canonical_url', function () {
+                generator.addUrl('https://myblog.com/test2/', testUtils.DataGenerator.forKnex.createPost({
+                    page: false,
+                    slug: 'test2',
+                    canonical_url: null
+                }));
+                generator.addUrl('https://myblog.com/test/', testUtils.DataGenerator.forKnex.createPost({
+                    page: false,
+                    slug: 'test',
+                    canonical_url: 'https://external.com/test/'
+                }));
+                const xml = generator.getXml();
+                xml.should.not.match(/https:\/\/external.com\/test\//);
             });
         });
 
@@ -244,6 +284,34 @@ describe('Generators', function () {
             });
         });
 
+        describe('fn: updateURL', function () {
+            it('updates existing url', function () {
+                const postDatumToUpdate = testUtils.DataGenerator.forKnex.createPost({
+                    updated_at: (Date.UTC(2014, 11, 22, 12) - 360000) + 100
+                });
+
+                generator.addUrl('http://my-ghost-blog.com/url/100/', postDatumToUpdate);
+
+                assert.equal(generator.nodeLookup[postDatumToUpdate.id].url[0].loc, 'http://my-ghost-blog.com/url/100/');
+
+                const postWithUpdatedDatum = Object.assign({}, {
+                    updated_at: (Date.UTC(2023, 11, 22, 12) - 360000)
+                }, postDatumToUpdate);
+                const updatedISOString = moment(postWithUpdatedDatum.updated_at).toISOString();
+                generator.updateURL(postWithUpdatedDatum);
+
+                assert.equal(generator.nodeLookup[postDatumToUpdate.id].url[0].loc, 'http://my-ghost-blog.com/url/100/');
+                assert.equal(generator.nodeLookup[postDatumToUpdate.id].url[1].lastmod, updatedISOString);
+            });
+
+            it('does not thrown when trying to update a non-existing url', function () {
+                const postDatumToUpdate = testUtils.DataGenerator.forKnex.createPost();
+                generator.updateURL(postDatumToUpdate);
+
+                assert.equal(generator.nodeLookup[postDatumToUpdate.id], undefined);
+            });
+        });
+
         describe('fn: removeUrl', function () {
             let post;
 
@@ -288,6 +356,20 @@ describe('Generators', function () {
 
                 // <loc> should exist exactly one time
                 generator.siteMapContent.get(1).match(/<loc>/g).length.should.eql(3);
+            });
+            it('does not include pages containing canonical_url', function () {
+                generator.addUrl('https://myblog.com/test2/', testUtils.DataGenerator.forKnex.createPost({
+                    page: true,
+                    slug: 'test2',
+                    canonical_url: null
+                }));
+                generator.addUrl('https://myblog.com/test/', testUtils.DataGenerator.forKnex.createPost({
+                    page: true,
+                    slug: 'test',
+                    canonical_url: 'https://external.com/test/'
+                }));
+                const xml = generator.getXml();
+                xml.should.not.match(/https:\/\/external.com\/test\//);
             });
         });
     });

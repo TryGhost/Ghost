@@ -1,7 +1,9 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyLocationFor, anyErrorId} = matchers;
+const {anyContentVersion, anyEtag, anyObjectId, anyLocationFor, anyErrorId} = matchers;
 const should = require('should');
 const models = require('../../../core/server/models');
+const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 
 let agent;
 
@@ -25,11 +27,16 @@ describe('Offers API', function () {
         defaultTier = await getPaidProduct();
     });
 
+    this.afterEach(function () {
+        sinon.restore();
+    });
+
     it('Has no initial offers', async function () {
         await agent
             .get(`offers/`)
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot();
@@ -60,6 +67,7 @@ describe('Offers API', function () {
             .body({offers: [newOffer]})
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('offers')
             })
@@ -92,6 +100,7 @@ describe('Offers API', function () {
             .body({offers: [newOffer]})
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('offers')
             })
@@ -123,6 +132,7 @@ describe('Offers API', function () {
             .body({offers: [newOffer]})
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('offers')
             })
@@ -158,6 +168,7 @@ describe('Offers API', function () {
             .body({offers: [newOffer]})
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('offers')
             })
@@ -190,6 +201,7 @@ describe('Offers API', function () {
             .body({offers: [newOffer]})
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('offers')
             })
@@ -205,6 +217,8 @@ describe('Offers API', function () {
     });
 
     it('Cannot create offer with same code', async function () {
+        sinon.stub(logging, 'error');
+
         const newOffer = {
             name: 'Fourth of July',
             code: '4th',
@@ -223,6 +237,7 @@ describe('Offers API', function () {
             .body({offers: [newOffer]})
             .expectStatus(400)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -233,6 +248,8 @@ describe('Offers API', function () {
     });
 
     it('Cannot create offer with same slugified code', async function () {
+        sinon.stub(logging, 'error');
+
         const newOffer = {
             name: 'Another Black Friday Sale',
             code: 'black friday',
@@ -251,6 +268,7 @@ describe('Offers API', function () {
             .body({offers: [newOffer]})
             .expectStatus(400)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -261,6 +279,8 @@ describe('Offers API', function () {
     });
 
     it('Cannot create offer with same name', async function () {
+        sinon.stub(logging, 'error');
+
         const newOffer = {
             name: 'Fourth of July Sales',
             code: 'july4',
@@ -279,6 +299,7 @@ describe('Offers API', function () {
             .body({offers: [newOffer]})
             .expectStatus(400)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -293,6 +314,7 @@ describe('Offers API', function () {
             .get(`offers/`)
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -310,6 +332,7 @@ describe('Offers API', function () {
             .get(`offers/${savedOffer.id}/`)
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -327,6 +350,7 @@ describe('Offers API', function () {
             .get(`offers/${trialOffer.id}/`)
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -355,6 +379,7 @@ describe('Offers API', function () {
             .body({offers: [updatedOffer]})
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -372,6 +397,8 @@ describe('Offers API', function () {
     });
 
     it('Cannot update offer code to one that exists', async function () {
+        sinon.stub(logging, 'error');
+
         // We can change all fields except discount related fields
         let updatedOffer = {
             code: '4th'
@@ -382,6 +409,7 @@ describe('Offers API', function () {
             .body({offers: [updatedOffer]})
             .expectStatus(400)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -392,6 +420,8 @@ describe('Offers API', function () {
     });
 
     it('Cannot update offer code to one that exists after it is slugified', async function () {
+        sinon.stub(logging, 'error');
+
         // We can change all fields except discount related fields
         let updatedOffer = {
             code: 'Summer sale'
@@ -402,6 +432,7 @@ describe('Offers API', function () {
             .body({offers: [updatedOffer]})
             .expectStatus(400)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -412,6 +443,8 @@ describe('Offers API', function () {
     });
 
     it('Cannot update offer name to one that exists', async function () {
+        sinon.stub(logging, 'error');
+
         // We can change all fields except discount related fields
         let updatedOffer = {
             name: 'Easter Sales'
@@ -422,6 +455,7 @@ describe('Offers API', function () {
             .body({offers: [updatedOffer]})
             .expectStatus(400)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -442,6 +476,7 @@ describe('Offers API', function () {
             .body({offers: [updatedOffer]})
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -463,6 +498,7 @@ describe('Offers API', function () {
             .get(`offers/?filter=${filter}`)
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -481,6 +517,7 @@ describe('Offers API', function () {
             .get(`offers/?filter=${filter}`)
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -504,6 +541,7 @@ describe('Offers API', function () {
             .body({offers: [updatedOffer]})
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -531,6 +569,7 @@ describe('Offers API', function () {
             .body({offers: [updatedOffer]})
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -561,6 +600,7 @@ describe('Offers API', function () {
             .body({offers: [updatedOffer]})
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({

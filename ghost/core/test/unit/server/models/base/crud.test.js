@@ -105,7 +105,7 @@ describe('Models: crud', function () {
             });
         });
 
-        it('Sets the `lock` option to "forUpdate" when the `forUpdate` and `transacting` options are passed', function () {
+        it('Sets the `lock` option to "forUpdate" when the `forUpdate` and `transacting` options are passed', async function () {
             const data = {
                 id: 670
             };
@@ -123,11 +123,9 @@ describe('Models: crud', function () {
             const fetchStub = sinon.stub(model, 'fetch')
                 .resolves(fetchedModel);
 
-            const findOneReturnValue = models.Base.Model.findOne(data, unfilteredOptions);
+            await models.Base.Model.findOne(data, unfilteredOptions);
 
-            return findOneReturnValue.then((result) => {
-                should.equal(fetchStub.args[0][0].lock, 'forUpdate');
-            });
+            should.equal(fetchStub.args[0][0].lock, 'forUpdate');
         });
     });
 
@@ -198,10 +196,8 @@ describe('Models: crud', function () {
                 importing: true
             };
             const model = models.Base.Model.forge({});
-            const forgeStub = sinon.stub(models.Base.Model, 'forge')
-                .returns(model);
-            const fetchStub = sinon.stub(model, 'fetch')
-                .resolves();
+            sinon.stub(models.Base.Model, 'forge').returns(model);
+            sinon.stub(model, 'fetch').resolves();
 
             return models.Base.Model.findOne(data, unfilteredOptions).then(() => {
                 should.equal(model.hasTimestamps, true);
@@ -216,13 +212,11 @@ describe('Models: crud', function () {
                 id: 'something real special'
             };
             const model = models.Base.Model.forge({});
-            const filterOptionsSpy = sinon.spy(models.Base.Model, 'filterOptions');
-            const filterDataSpy = sinon.spy(models.Base.Model, 'filterData');
-            const forgeStub = sinon.stub(models.Base.Model, 'forge')
-                .returns(model);
-            const fetchStub = sinon.stub(model, 'fetch')
-                .resolves();
-            const saveSpy = sinon.stub(model, 'save');
+            sinon.spy(models.Base.Model, 'filterOptions');
+            sinon.spy(models.Base.Model, 'filterData');
+            sinon.stub(models.Base.Model, 'forge').returns(model);
+            sinon.stub(model, 'fetch').resolves();
+            sinon.stub(model, 'save');
 
             return models.Base.Model.edit(data, unfilteredOptions).then(() => {
                 throw new Error('That should not happen');
@@ -273,10 +267,8 @@ describe('Models: crud', function () {
                 importing: true
             };
             const model = models.Base.Model.forge({});
-            const forgeStub = sinon.stub(models.Base.Model, 'forge')
-                .returns(model);
-            const saveStub = sinon.stub(model, 'save')
-                .resolves();
+            sinon.stub(models.Base.Model, 'forge').returns(model);
+            sinon.stub(model, 'save').resolves();
 
             return models.Base.Model.add(data, unfilteredOptions).then(() => {
                 should.equal(model.hasTimestamps, false);

@@ -1,11 +1,11 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const cheerio = require('cheerio');
 const moment = require('moment');
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
 
-const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyArray, anyEtag, anyUuid, anyISODateTimeWithTZ} = matchers;
+const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
+const {anyArray, anyContentVersion, anyEtag, anyUuid, anyISODateTimeWithTZ} = matchers;
 
 const postMatcher = {
     published_at: anyISODateTimeWithTZ,
@@ -14,7 +14,7 @@ const postMatcher = {
     uuid: anyUuid
 };
 
-const postMatcheShallowIncludes = Object.assign(
+const postMatcherShallowIncludes = Object.assign(
     {},
     postMatcher, {
         tags: anyArray,
@@ -40,6 +40,7 @@ describe('Posts Content API', function () {
         const res = await agent.get('posts/')
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -85,6 +86,7 @@ describe('Posts Content API', function () {
         const res = await agent.get('posts/?filter=tag:kitchen-sink,featured:true&include=tags')
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -109,7 +111,8 @@ describe('Posts Content API', function () {
             } else {
                 const tag = post.tags
                     .map(t => t.slug)
-                    .filter(s => s === 'kitchen-sink');
+                    .filter(s => s === 'kitchen-sink')
+                    .pop();
                 assert.equal(tag, 'kitchen-sink', `Each post must either be featured or have the tag 'kitchen-sink'`);
             }
         });
@@ -120,6 +123,7 @@ describe('Posts Content API', function () {
             .get('posts/?filter=authors:[joe-bloggs,pat,ghost,slimer-mcectoplasm]&include=authors')
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -150,6 +154,7 @@ describe('Posts Content API', function () {
             .get('posts/?&fields=url')
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot();
@@ -160,11 +165,12 @@ describe('Posts Content API', function () {
             .get('posts/?include=tags,authors')
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
                 posts: new Array(11)
-                    .fill(postMatcheShallowIncludes)
+                    .fill(postMatcherShallowIncludes)
             });
     });
 
@@ -174,6 +180,7 @@ describe('Posts Content API', function () {
             .header('Origin', 'https://example.com')
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -193,6 +200,7 @@ describe('Posts Content API', function () {
             .get('posts/?limit=1')
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -207,6 +215,7 @@ describe('Posts Content API', function () {
             .get(`posts/?limit=1&filter=${createFilter(publishedAt, `<`)}`)
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -223,6 +232,7 @@ describe('Posts Content API', function () {
             .get(`posts/?limit=1&filter=${createFilter(publishedAt2, `>`)}`)
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -239,6 +249,7 @@ describe('Posts Content API', function () {
             .get(`posts/${fixtureManager.get('posts', 0).id}/`)
             .expectStatus(200)
             .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
                 etag: anyEtag
             })
             .matchBodySnapshot({
@@ -331,5 +342,26 @@ describe('Posts Content API', function () {
             .get(`posts/?fields=plaintext`)
             .expectStatus(200)
             .matchBodySnapshot();
+    });
+
+    it('Adds ?ref tags', async function () {
+        const post = await models.Post.add({
+            title: 'title',
+            status: 'published',
+            slug: 'add-ref-tags',
+            mobiledoc: JSON.stringify({version: '0.3.1',atoms: [],cards: [['html',{html: '<a href="https://example.com">Link</a><a href="invalid">Test</a>'}]],markups: [],sections: [[10,0],[1,'p',[]]],ghostVersion: '4.0'})
+        }, {context: {internal: true}});
+
+        let response = await agent
+            .get(`posts/${post.id}/`)
+            .expectStatus(200);
+        assert(response.body.posts[0].html.includes('<a href="https://example.com/?ref=127.0.0.1">Link</a><a href="invalid">Test</a>'), 'Html not expected (should contain ?ref): ' + response.body.posts[0].html);
+
+        // Disable outbound link tracking
+        mockManager.mockSetting('outbound_link_tagging', false);
+        response = await agent
+            .get(`posts/${post.id}/`)
+            .expectStatus(200);
+        assert(response.body.posts[0].html.includes('<a href="https://example.com">Link</a><a href="invalid">Test</a>'), 'Html not expected: ' + response.body.posts[0].html);
     });
 });

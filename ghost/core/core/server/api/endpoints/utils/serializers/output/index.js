@@ -21,6 +21,10 @@ module.exports = {
         return require('./authentication');
     },
 
+    get collections() {
+        return require('./collections');
+    },
+
     get db() {
         return require('./db');
     },
@@ -135,5 +139,9 @@ module.exports = {
 
     get links() {
         return require('./links');
+    },
+
+    get mail_events() {
+        return require('./mail-events');
     }
 };

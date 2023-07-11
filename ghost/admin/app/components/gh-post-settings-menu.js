@@ -7,6 +7,7 @@ import {alias, or} from '@ember/object/computed';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tagName} from '@ember-decorators/component';
+import {tracked} from '@glimmer/tracking';
 
 @classic
 @tagName('')
@@ -22,6 +23,8 @@ export default class GhPostSettingsMenu extends Component {
     @service ui;
 
     @inject config;
+
+    @tracked showPostHistory = false;
 
     post = null;
     isViewingSubview = false;
@@ -62,7 +65,7 @@ export default class GhPostSettingsMenu extends Component {
     @boundOneWay('post.uuid')
         uuidValue;
 
-    @or('metaDescriptionScratch', 'customExcerptScratch', 'post.excerpt')
+    @or('metaDescriptionScratch', 'customExcerptScratch')
         seoDescription;
 
     @or(
@@ -114,13 +117,6 @@ export default class GhPostSettingsMenu extends Component {
     )
         showVisibilityInput;
 
-    @or(
-        'session.user.isOwnerOnly',
-        'session.user.isAdminOnly',
-        'session.user.isEditor'
-    )
-        showEmailNewsletter;
-
     @computed('metaTitleScratch', 'post.titleScratch')
     get seoTitle() {
         return this.metaTitleScratch || this.post.titleScratch || '(Untitled)';
@@ -146,6 +142,25 @@ export default class GhPostSettingsMenu extends Component {
         }
 
         return urlParts.join(' › ');
+    }
+
+    get canViewPostHistory() {
+        // Can only view history for lexical posts
+        if (this.post.lexical === null) {
+            return false;
+        }
+
+        // Can view history for all unpublished/unsent posts
+        if (!this.post.isPublished && !this.post.isSent) {
+            return true;
+        }
+
+        // Cannot view history for published posts if there isn't a web version
+        if (this.post.emailOnly) {
+            return false;
+        }
+
+        return true;
     }
 
     willDestroyElement() {
@@ -182,11 +197,11 @@ export default class GhPostSettingsMenu extends Component {
 
     @action
     toggleFeatured() {
-        this.toggleProperty('post.featured');
+        this.post.featured = !this.post.featured;
 
         // If this is a new post.  Don't save the post.  Defer the save
         // to the user pressing the save button
-        if (this.get('post.isNew')) {
+        if (this.post.isNew) {
             return;
         }
 
@@ -194,6 +209,32 @@ export default class GhPostSettingsMenu extends Component {
             this.showError(error);
             this.post.rollbackAttributes();
         });
+    }
+
+    @action
+    toggleShowTitleAndFeatureImage(event) {
+        this.post.showTitleAndFeatureImage = event.target.checked;
+
+        // If this is a new post.  Don't save the post.  Defer the save
+        // to the user pressing the save button
+        if (this.post.isNew) {
+            return;
+        }
+
+        this.savePostTask.perform().catch((error) => {
+            this.showError(error);
+            this.post.rollbackAttributes();
+        });
+    }
+
+    @action
+    openPostHistory() {
+        this.showPostHistory = true;
+    }
+
+    @action
+    closePostHistory() {
+        this.showPostHistory = false;
     }
 
     /**

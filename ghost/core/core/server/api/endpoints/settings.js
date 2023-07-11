@@ -25,6 +25,9 @@ module.exports = {
     docName: 'settings',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: ['group'],
         permissions: true,
         query(frame) {
@@ -33,6 +36,9 @@ module.exports = {
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: ['key'],
         validation: {
             options: {
@@ -63,7 +69,7 @@ module.exports = {
         ],
         async query(frame) {
             await settingsBREADService.verifyKeyUpdate(frame.data.token);
-            
+
             // We need to return all settings here, because we have calculated settings that might change
             const browse = await settingsBREADService.browse(frame.options.context);
 
@@ -73,6 +79,9 @@ module.exports = {
 
     disconnectStripeConnectIntegration: {
         statusCode: 204,
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: {
             method: 'edit'
         },
@@ -158,7 +167,8 @@ module.exports = {
             disposition: {
                 type: 'yaml',
                 value: 'routes.yaml'
-            }
+            },
+            cacheInvalidate: false
         },
         response: {
             format: 'plain'

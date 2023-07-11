@@ -1,0 +1,20 @@
+codecov:
+  require_ci_to_pass: true
+coverage:
+  status:
+    patch: false
+    project:
+      default: false
+      admin-tests:
+        flags:
+        - admin-tests
+        threshold: 0.2%
+      e2e-tests:
+        flags:
+        - e2e-tests
+        threshold: 0.2%
+flags:
+  admin-tests:
+    carryforward: true
+  e2e-tests:
+    carryforward: true

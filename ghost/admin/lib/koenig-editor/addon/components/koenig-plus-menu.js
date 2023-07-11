@@ -1,8 +1,6 @@
 import Component from '@ember/component';
 import classic from 'ember-classic-decorator';
 import mobiledocParsers from 'mobiledoc-kit/parsers/mobiledoc';
-import snippetIcon from '../utils/snippet-icon';
-import {CARD_MENU} from '../options/cards';
 import {action, computed} from '@ember/object';
 import {attributeBindings, classNames} from '@ember-decorators/component';
 import {htmlSafe} from '@ember/template';
@@ -36,42 +34,6 @@ export default class KoenigPlusMenu extends Component {
     @computed('top')
     get style() {
         return htmlSafe(`top: ${this.top}px`);
-    }
-
-    @computed('snippets.[]')
-    get itemSections() {
-        let {snippets} = this;
-        let itemSections = [...CARD_MENU];
-
-        // TODO: move or create util, duplicated with koenig-slash-menu
-        if (snippets?.length) {
-            let snippetsSection = {
-                title: 'Snippets',
-                items: [],
-                rowLength: 1
-            };
-
-            snippets.forEach((snippet) => {
-                let snippetItem = {
-                    label: snippet.name,
-                    icon: snippetIcon(snippet),
-                    type: 'snippet',
-                    matches: [snippet.name.toLowerCase()]
-                };
-                if (this.deleteSnippet) {
-                    snippetItem.deleteClicked = (event) => {
-                        event.preventDefault();
-                        event.stopImmediatePropagation();
-                        this.deleteSnippet(snippet);
-                    };
-                }
-                snippetsSection.items.push(snippetItem);
-            });
-
-            itemSections.push(snippetsSection);
-        }
-
-        return itemSections;
     }
 
     init() {

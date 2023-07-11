@@ -1,14 +1,10 @@
 const should = require('should');
 const sinon = require('sinon');
-const ghostVersion = require('@tryghost/version');
 
 const urlUtils = require('../../../../../core/shared/url-utils');
 const membersService = require('../../../../../core/server/services/members');
-const newslettersService = require('../../../../../core/server/services/newsletters');
 const membersMiddleware = require('../../../../../core/server/services/members/middleware');
-const settingsCache = require('../../../../../core/shared/settings-cache');
 const models = require('../../../../../core/server/models');
-const config = require('../../../../../core/shared/config');
 
 describe('Members Service Middleware', function () {
     describe('createSessionFromMagicLink', function () {
@@ -150,7 +146,7 @@ describe('Members Service Middleware', function () {
 
         it('redirects member to referrer param path on signup if it is on the site', async function () {
             req.url = '/members?token=test&action=signin&r=https%3A%2F%2Fsite.com%2Fblah%2Fmy-post%2F';
-            req.query = {token: 'test', action: 'signin', r: 'https://site.com/blah/my-post/'};
+            req.query = {token: 'test', action: 'signin', r: 'https://site.com/blah/my-post/#comment-123'};
 
             // Fake token handling failure
             membersService.ssr.exchangeTokenForSession.resolves({});
@@ -161,7 +157,7 @@ describe('Members Service Middleware', function () {
             // Check behavior
             next.calledOnce.should.be.false();
             res.redirect.calledOnce.should.be.true();
-            res.redirect.firstCall.args[0].should.eql('/blah/my-post/?success=true&action=signin');
+            res.redirect.firstCall.args[0].should.eql('https://site.com/blah/my-post/?success=true&action=signin#comment-123');
         });
 
         it('does not redirect to referrer param if it is external', async function () {

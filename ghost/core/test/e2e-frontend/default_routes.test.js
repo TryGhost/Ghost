@@ -170,7 +170,7 @@ describe('Default Frontend routing', function () {
             });
 
             after(async function () {
-                configUtils.restore();
+                await configUtils.restore();
 
                 await testUtils.startGhost({forceStart: true});
                 request = supertest.agent(configUtils.config.get('url'));

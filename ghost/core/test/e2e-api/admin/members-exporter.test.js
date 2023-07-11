@@ -1,5 +1,5 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyString, anyContentLength} = matchers;
+const {anyContentVersion, anyEtag, anyString, anyContentLength} = matchers;
 
 const uuid = require('uuid');
 const should = require('should');
@@ -31,8 +31,8 @@ function basicAsserts(member, row) {
 }
 
 /**
- * 
- * @param {(row: any) => void} asserts 
+ *
+ * @param {(row: any) => void} asserts
  */
 async function testOutput(member, asserts, filters = []) {
     // Add default filters that always should match
@@ -47,6 +47,7 @@ async function testOutput(member, asserts, filters = []) {
             .expectEmptyBody()
             .matchHeaderSnapshot({
                 etag: anyEtag,
+                'content-version': anyContentVersion,
                 'content-length': anyContentLength,
                 'content-disposition': anyString
             });
@@ -98,7 +99,6 @@ describe('Members API — exportCSV', function () {
     });
 
     beforeEach(function () {
-        mockManager.mockStripe();
         mockManager.mockMail();
     });
 
@@ -212,7 +212,7 @@ describe('Members API — exportCSV', function () {
         });
 
         // NOTE: we need to create a subscription here because of the way the customer id is currently fetched
-        const subscription = await models.StripeCustomerSubscription.add({
+        await models.StripeCustomerSubscription.add({
             subscription_id: 'sub_123',
             customer_id: customer.get('customer_id'),
             stripe_price_id: 'price_123',

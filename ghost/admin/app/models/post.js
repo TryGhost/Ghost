@@ -131,6 +131,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     featureImage: attr('string'),
     featureImageAlt: attr('string'),
     featureImageCaption: attr('string'),
+    showTitleAndFeatureImage: attr('boolean', {defaultValue: true}),
 
     authors: hasMany('user', {embedded: 'always', async: false}),
     createdBy: belongsTo('user', {async: true}),
@@ -138,6 +139,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     newsletter: belongsTo('newsletter', {embedded: 'always', async: false}),
     publishedBy: belongsTo('user', {async: true}),
     tags: hasMany('tag', {embedded: 'always', async: false}),
+    postRevisions: hasMany('post_revisions', {embedded: 'always', async: false}),
 
     primaryAuthor: reads('authors.firstObject'),
     primaryTag: reads('tags.firstObject'),

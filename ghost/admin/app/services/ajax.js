@@ -2,6 +2,8 @@ import AjaxService from 'ember-ajax/services/ajax';
 import classic from 'ember-classic-decorator';
 import config from 'ghost-admin/config/environment';
 import moment from 'moment-timezone';
+import semverCoerce from 'semver/functions/coerce';
+import semverLt from 'semver/functions/lt';
 import {AjaxError, isAjaxError, isForbiddenError} from 'ember-ajax/errors';
 import {captureMessage} from '@sentry/ember';
 import {get} from '@ember/object';
@@ -101,6 +103,17 @@ export function isUnsupportedMediaTypeError(errorOrStatus) {
     }
 }
 
+/**
+ * Returns the code (from the payload) from an error object.
+ * @returns {string|null} error code
+ */
+export function getErrorCode(errorOrStatus) {
+    if (isAjaxError(errorOrStatus) && errorOrStatus.payload && errorOrStatus.payload.errors && Array.isArray(errorOrStatus.payload.errors) && errorOrStatus.payload.errors.length > 0) {
+        return errorOrStatus.payload.errors[0].code || null;
+    }
+    return null;
+}
+
 /* Maintenance error */
 
 export class MaintenanceError extends AjaxError {
@@ -183,6 +196,7 @@ export function isAcceptedResponse(errorOrStatus) {
 @classic
 class ajaxService extends AjaxService {
     @service session;
+    @service upgradeStatus;
 
     @inject config;
 
@@ -285,6 +299,15 @@ class ajaxService extends AjaxService {
     }
 
     handleResponse(status, headers, payload, request) {
+        if (headers['content-version']) {
+            const contentVersion = semverCoerce(headers['content-version']);
+            const appVersion = semverCoerce(config.APP.version);
+
+            if (semverLt(appVersion, contentVersion)) {
+                this.upgradeStatus.refreshRequired = true;
+            }
+        }
+
         if (this.isVersionMismatchError(status, headers, payload)) {
             return new VersionMismatchError(payload);
         } else if (this.isServerUnreachableError(status, headers, payload)) {

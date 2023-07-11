@@ -1,7 +1,7 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const sinon = require('sinon');
 
-const MembersConfigProvider = require('../../../../../core/server/services/members/config');
+const MembersConfigProvider = require('../../../../../core/server/services/members/MembersConfigProvider');
 
 const urlUtils = require('../../../../utils/urlUtils');
 const configUtils = require('../../../../utils/configUtils');
@@ -59,8 +59,8 @@ describe('Members - config', function () {
         });
     });
 
-    afterEach(function () {
-        configUtils.restore();
+    afterEach(async function () {
+        await configUtils.restore();
         urlUtils.restore();
         sinon.restore();
     });

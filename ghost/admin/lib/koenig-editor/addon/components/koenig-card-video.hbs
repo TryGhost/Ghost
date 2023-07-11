@@ -54,12 +54,6 @@
 
             {{#if (or uploader.errors uploader.isUploading (not @payload.src))}}
                 <div class="relative miw-100 flex items-center justify-center {{unless @payload.src "kg-media-placeholder ba b--whitegrey bg-whitegrey-l2" "absolute absolute--fill bg-white-50"}}">
-                    {{#if uploader.errors}}
-                    <span class="kg-upload-error">
-                            {{get uploader.errors "0.message"}}
-                        </span>
-                    {{/if}}
-
                     {{#if this.isDraggedOver}}
                         <span class="db center sans-serif fw7 f7 middarkgrey">
                             Drop it like it's hot 🔥
@@ -70,6 +64,11 @@
                         <button class="flex flex-column items-center center sans-serif fw4 f7 middarkgrey pa16 pt14 pb14 kg-image-button" type="button" {{on "click" this.triggerVideoFileDialog}}>
                             {{svg-jar "film-camera" class="kg-placeholder-video"}}
                             <span class="mt4 kg-upload-placeholder-text">Click to select a video</span>
+                            {{#if uploader.errors}}
+                                <span class="kg-upload-error">
+                                    {{get uploader.errors "0.message"}}
+                                </span>
+                            {{/if}}
                         </button>
                     {{/if}}
                 </div>

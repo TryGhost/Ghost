@@ -1,18 +1,15 @@
 const should = require('should');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 const moment = require('moment-timezone');
 const rewire = require('rewire');
 const _ = require('lodash');
 const events = require('../../../../core/server/lib/common/events');
 const models = require('../../../../core/server/models');
 const testUtils = require('../../../utils');
-const {sequence} = require('@tryghost/promise');
 
 describe('Models: listeners', function () {
     const eventsToRemember = {};
     const now = moment();
-    let listeners;
 
     const scope = {
         posts: [],
@@ -30,7 +27,7 @@ describe('Models: listeners', function () {
             eventsToRemember[eventName] = callback;
         });
 
-        listeners = rewire('../../../../core/server/models/base/listeners');
+        rewire('../../../../core/server/models/base/listeners');
     });
 
     afterEach(function () {

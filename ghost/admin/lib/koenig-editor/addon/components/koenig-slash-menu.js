@@ -1,7 +1,5 @@
 import Component from '@glimmer/component';
 import mobiledocParsers from 'mobiledoc-kit/parsers/mobiledoc';
-import snippetIcon from '../utils/snippet-icon';
-import {CARD_MENU} from '../options/cards';
 import {action} from '@ember/object';
 import {isArray} from '@ember/array';
 import {isEmpty} from '@ember/utils';
@@ -82,40 +80,12 @@ export default class KoenigSlashMenuComponent extends Component {
 
     @action
     updateItemSections() {
-        let {snippets} = this.args;
-        let itemSections = [...CARD_MENU];
-
-        if (snippets?.length) {
-            let snippetsSection = {
-                title: 'Snippets',
-                items: [],
-                rowLength: 1
-            };
-
-            snippets.forEach((snippet) => {
-                let snippetItem = {
-                    label: snippet.name,
-                    icon: snippetIcon(snippet),
-                    type: 'snippet',
-                    matches: query => snippet.name.toLowerCase().indexOf(query) > -1
-                };
-                if (this.args.deleteSnippet) {
-                    snippetItem.deleteClicked = (event) => {
-                        event.preventDefault();
-                        event.stopImmediatePropagation();
-                        this.args.deleteSnippet(snippet);
-                    };
-                }
-                snippetsSection.items.push(snippetItem);
-            });
-
-            itemSections.push(snippetsSection);
-        }
+        let itemSections = [...this.args.menuItems];
 
         let itemMatcher = createItemMatcher(this.query);
 
         let matchedItems = itemSections.map((section) => {
-            // show icons where there's a match of the begining of one of the
+            // show icons where there's a match of the beginning of one of the
             // "item.matches" strings
             let matches = section.items.filter(itemMatcher);
             if (matches.length > 0) {

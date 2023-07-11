@@ -41,7 +41,7 @@
         </div>
     </GhCanvasHeader>
 
-    <Tabs::Tabs class="gh-tabs-analytics" @forceRender={{true}} as |tabs|>
+    <Tabs::Tabs class="gh-tabs-analytics {{if (eq this.post.hasBeenEmailed null) "no-tabs"}}" @forceRender={{true}} as |tabs|>
         {{#if this.post.hasBeenEmailed}}
             <tabs.tab>
                 <h3>{{svg-jar "analytics-tab-sent-large"}}{{format-number this.post.email.emailCount}}</h3>
@@ -104,7 +104,14 @@
 
         {{#if this.post.showAttributionAnalytics }}
             <tabs.tab>
-                <h3>{{svg-jar "analytics-tab-conversions-large"}}{{format-number this.post.count.conversions}}</h3>
+                <h3>
+                    {{svg-jar "analytics-tab-conversions-large"}}
+                    {{#if this.post.hasBeenEmailed}}
+                        {{format-number this.post.count.conversions}}
+                    {{else}}
+                        Conversions
+                    {{/if}}
+                </h3>
                 <p>{{svg-jar "analytics-tab-conversions"}}<span class="analytics-tab-label">{{gh-pluralize this.post.count.conversions "Conversions" without-count=true}}</span></p>
             </tabs.tab>
 
@@ -115,17 +122,45 @@
     </Tabs::Tabs>
 
     {{#if this.isLoaded }}
-        {{#if this.showLinks }}
-            {{#if (is-empty this.links) }}
-            {{!-- Empty state --}}
-            {{else}}
-                <Posts::LinksTable
-                    @links={{this.links}}
-                    @updateLink={{this.updateLink}}
-                    @showSuccess={{this.showSuccess}}
-                />
+        <div class="gh-post-analytics-split {{if this.showMentions "gh-post-analytics-with-mentions"}}">
+            {{#if this.showLinks }}
+                {{#if (is-empty this.links) }}
+                {{!-- Empty state --}}
+                {{else}}
+                    <Posts::LinksTable
+                        @links={{this.links}}
+                        @updateLink={{this.updateLink}}
+                        @showSuccess={{this.showSuccess}}
+                    />
+                {{/if}}
             {{/if}}
-        {{/if}}
+
+            {{#if this.showMentions }}
+                <div class="gh-post-analytics-box gh-post-analytics-mentions {{unless this.showLinks "is-full-width"}}">
+                    <h3 class="gh-post-analytics-mentions-header">Mentions</h3>
+                    <div class="gh-post-analytics-mentions-list">
+                        {{#if this.mentions}}
+                            {{#each this.mentions as |mention|}}
+                                <a href="{{mention.source}}" class="gh-post-analytics-mention" rel="noreferrer noopener" target="_blank">
+                                    <img src="{{mention.sourceFavicon}}" alt="{{mention.sourceSiteTitle}}" class="w5 h5 mr2 flex-shrink-0" />
+                                    <span class="gh-post-analytics-mention-title">{{if mention.sourceTitle mention.sourceTitle mention.source}}</span>
+                                    <span class="gh-post-analytics-mention-timestamp">{{moment-from-now mention.timestamp}}</span>
+                                </a>
+                            {{/each}}
+                        {{else}}
+                            <div>
+                                <p>No mentions yet.</p>
+                            </div>
+                        {{/if}}
+                    </div>
+                    {{#if this.mentions}}
+                        <div class="gh-dashboard-list-footer">
+                            <LinkTo @route="posts.mentions" @model={{this.post.id}}>View all mentions &rarr;</LinkTo>
+                        </div>
+                    {{/if}}
+                </div>
+            {{/if}}
+        </div>
 
         <div class="gh-post-analytics-box resources">
             <a href="https://ghost.org/help/post-analytics/" target="_blank" class="gh-post-analytics-resource" rel="noopener noreferrer">

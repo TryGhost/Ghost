@@ -29,9 +29,9 @@ describe('Serve Favicon', function () {
         originalStoragePath = storage.getStorage().storagePath;
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
-        configUtils.restore();
+        await configUtils.restore();
         localSettingsCache = {};
         storage.getStorage().storagePath = originalStoragePath;
     });

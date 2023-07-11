@@ -1,5 +1,5 @@
 {{#let (parse-member-event @event @hasMultipleNewsletters) as |event|}}
-    <tr>  
+    <tr>
         {{#unless @hideMemberColumn}}
             <div class="gh-list-data">
                 <LinkTo @route="members-activity" @query={{hash member=event.member.id}}>
@@ -19,12 +19,15 @@
             <div class="gh-members-activity-container">
                 <div class="gh-members-activity-icon">{{svg-jar event.icon}}</div>
                 <div class="gh-members-activity-event">
-                    <span class="gh-members-activity-description {{if (feature "memberAttribution") 'feature-memberAttribution'}}">
+                    <span class="gh-members-activity-description feature-memberAttribution">
                         <span class="gh-members-activity-event-text">{{capitalize-first-letter event.action}}</span>
                         {{#if event.info}}
                             <span class="highlight">({{event.info}})</span>
                         {{/if}}
-                        {{#if event.url}}
+                        {{#if event.route}}
+                            <span class="gh-members-activity-event-join">{{event.join}}</span>
+                            <LinkTo class="gh-members-activity-object-link" @route={{event.route.name}} @model={{event.route.model}}>{{event.object}}</LinkTo>
+                        {{else if event.url}}
                             <span class="gh-members-activity-event-join">{{event.join}}</span>
                             <a class="ghost-members-activity-object-link" href="{{event.url}}" target="_blank" rel="noopener noreferrer">{{event.object}}</a>
                         {{else if event.email}}
@@ -33,7 +36,7 @@
                         {{/if}}
                     </span>
                     {{#if event.description}}
-                        <div class="ghost-members-activity-event-description {{if (feature "memberAttribution") 'feature-memberAttribution'}}">
+                        <div class="ghost-members-activity-event-description feature-memberAttribution">
                             <div class="ghost-members-activity-event-url" {{on "mouseenter" this.enterLinkURL}} {{on "mouseleave" this.leaveLinkURL}}>
                                 <span>{{event.description}}</span>
                             </div>

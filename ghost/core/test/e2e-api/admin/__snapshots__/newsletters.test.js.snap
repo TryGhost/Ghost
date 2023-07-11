@@ -7,7 +7,9 @@ Object {
   },
   "newsletters": Array [
     Object {
+      "background_color": "light",
       "body_font_category": "serif",
+      "border_color": null,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
       "feedback_enabled": false,
@@ -19,15 +21,20 @@ Object {
       "sender_name": "Test",
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "new-newsletter-with-existing-members-subscribed",
       "sort_order": 8,
       "status": "active",
       "subscribe_on_signup": true,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -41,8 +48,9 @@ exports[`Newsletters API Can add a newsletter - and subscribe existing members 2
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "770",
+  "content-length": "951",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/newsletters\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -60,7 +68,9 @@ Object {
   },
   "newsletters": Array [
     Object {
+      "background_color": "light",
       "body_font_category": "serif",
+      "border_color": null,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
       "feedback_enabled": false,
@@ -72,15 +82,20 @@ Object {
       "sender_name": "Test",
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "my-test-newsletter-with-custom-sender_email",
       "sort_order": 7,
       "status": "active",
       "subscribe_on_signup": true,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -94,14 +109,210 @@ exports[`Newsletters API Can add a newsletter - with custom sender_email 2: [hea
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "779",
+  "content-length": "960",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/newsletters\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-cache-invalidate": "/*",
   "x-powered-by": "Express",
 }
+`;
+
+exports[`Newsletters API Can add a newsletter - with custom sender_email 3: [metadata 1] 1`] = `
+Object {
+  "forceTextContent": true,
+  "from": "noreply@example.com",
+  "subject": "Verify email address",
+  "to": "test@example.com",
+}
+`;
+
+exports[`Newsletters API Can add a newsletter - with custom sender_email 4: [html 1] 1`] = `
+"
+<!doctype html>
+<html>
+  <head>
+    <meta name=\\"viewport\\" content=\\"width=device-width\\">
+    <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+    <title>Confirm your email address</title>
+    <style>
+    /* -------------------------------------
+        RESPONSIVE AND MOBILE FRIENDLY STYLES
+    ------------------------------------- */
+    @media only screen and (max-width: 620px) {
+      table[class=body] h1 {
+        font-size: 28px !important;
+        margin-bottom: 10px !important;
+      }
+      table[class=body] p,
+            table[class=body] ul,
+            table[class=body] ol,
+            table[class=body] td,
+            table[class=body] span,
+            table[class=body] a {
+        font-size: 16px !important;
+      }
+      table[class=body] .wrapper,
+            table[class=body] .article {
+        padding: 10px !important;
+      }
+      table[class=body] .content {
+        padding: 0 !important;
+      }
+      table[class=body] .container {
+        padding: 0 !important;
+        width: 100% !important;
+      }
+      table[class=body] .main {
+        border-left-width: 0 !important;
+        border-radius: 0 !important;
+        border-right-width: 0 !important;
+      }
+      table[class=body] .btn table {
+        width: 100% !important;
+      }
+      table[class=body] .btn a {
+        width: 100% !important;
+      }
+      table[class=body] .img-responsive {
+        height: auto !important;
+        max-width: 100% !important;
+        width: auto !important;
+      }
+    }
+    /* -------------------------------------
+        PRESERVE THESE STYLES IN THE HEAD
+    ------------------------------------- */
+    @media all {
+      .ExternalClass {
+        width: 100%;
+      }
+      .ExternalClass,
+            .ExternalClass p,
+            .ExternalClass span,
+            .ExternalClass font,
+            .ExternalClass td,
+            .ExternalClass div {
+        line-height: 100%;
+      }
+      .recipient-link a {
+        color: inherit !important;
+        font-family: inherit !important;
+        font-size: inherit !important;
+        font-weight: inherit !important;
+        line-height: inherit !important;
+        text-decoration: none !important;
+      }
+      #MessageViewBody a {
+        color: inherit;
+        text-decoration: none;
+        font-size: inherit;
+        font-family: inherit;
+        font-weight: inherit;
+        line-height: inherit;
+      }
+    }
+    hr {
+      border-width: 0;
+      height: 0;
+      margin-top: 34px;
+      margin-bottom: 34px;
+      border-bottom-width: 1px;
+      border-bottom-color: #EEF5F8;
+    }
+    </style>
+  </head>
+  <body style=\\"background-color: #F4F8FB; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.4; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;\\">
+    <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background-color: #F4F8FB;\\">
+      <tr>
+        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">&nbsp;</td>
+        <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; display: block; Margin: 0 auto; max-width: 600px; padding: 10px; width: 600px;\\">
+          <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; Margin: 0 auto; max-width: 600px; padding: 30px 20px;\\">
+
+            <!-- START CENTERED WHITE CONTAINER -->
+            <table class=\\"main\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #ffffff; border-radius: 8px;\\">
+
+              <!-- START MAIN CONTENT AREA -->
+              <tr>
+                <td class=\\"wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; box-sizing: border-box; padding: 40px 50px;\\">
+                  <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                    <tr>
+                      <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">
+                        <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 20px; color: #15212A; font-weight: bold; line-height: 25px; margin: 0; margin-bottom: 15px;\\">Hey there,</p>
+                        <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 32px;\\">Please confirm your email address with this link:</p>
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"btn btn-primary\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; box-sizing: border-box;\\">
+                          <tbody>
+                            <tr>
+                              <td align=\\"left\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; padding-bottom: 35px;\\">
+                                <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;\\">
+                                  <tbody>
+                                    <tr>
+                                      <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; background-color: #15212A; border-radius: 5px; text-align: center;\\"> <a href=\\"http://127.0.0.1:2369/ghost/#/settings/newsletters/?verifyEmail=REPLACED_TOKEN\\" target=\\"_blank\\" style=\\"display: inline-block; color: #ffffff; background-color: #15212A; border: solid 1px #15212A; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 16px; font-weight: normal; margin: 0; padding: 9px 22px 10px; border-color: #15212A;\\" data-test-verify-link>Confirm email address</a> </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                        <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 25px;\\">For your security, the link will expire in 24 hours time.</p>
+                        <hr/>
+                        <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 5px;\\">You can also copy & paste this URL into your browser:</p>
+                        <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; line-height: 21px; margin-top: 0; color: #738A94;\\">http://127.0.0.1:2369/ghost/#/settings/newsletters/?verifyEmail=REPLACED_TOKEN</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+            <!-- END MAIN CONTENT AREA -->
+            </table>
+
+            <!-- START FOOTER -->
+            <div class=\\"footer\\" style=\\"clear: both; Margin-top: 10px; text-align: center; width: 100%;\\">
+              <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                <tr>
+                  <td class=\\"content-block\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; vertical-align: top; padding-bottom: 5px; padding-top: 15px; font-size: 13px; line-height: 21px; color: #738A94; text-align: center;\\">
+                    If you did not make this request, you can simply delete this message.<br/>This email address will not be used.
+                  </td>
+                </tr>
+                <tr>
+                  <td class=\\"content-block\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; vertical-align: top; padding-bottom: 10px; padding-top: 10px; font-size: 13px; color: #738A94; text-align: center;\\">
+                    <span class=\\"recipient-link\\" style=\\"color: #738A94; font-size: 13px; text-align: center;\\">Sent to <a href=\\"mailto:test@example.com\\" style=\\"text-decoration: underline; color: #738A94; font-size: 13px; text-align: center;\\">test@example.com</a></span>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <!-- END FOOTER -->
+
+          <!-- END CENTERED WHITE CONTAINER -->
+          </div>
+        </td>
+        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">&nbsp;</td>
+      </tr>
+    </table>
+  </body>
+</html>
+"
+`;
+
+exports[`Newsletters API Can add a newsletter - with custom sender_email 5: [text 1] 1`] = `
+"
+                Hey there,
+
+                Please confirm your email address with this link:
+
+                http://127.0.0.1:2369/ghost/#/settings/newsletters/?verifyEmail=REPLACED_TOKEN
+
+                For your security, the link will expire in 24 hours time.
+
+                ---
+
+                Sent to test@example.com
+                If you did not make this request, you can simply delete this message. This email address will not be used.
+                "
 `;
 
 exports[`Newsletters API Can add a newsletter - with custom sender_email and subscribe existing members 1: [body] 1`] = `
@@ -114,7 +325,9 @@ Object {
   },
   "newsletters": Array [
     Object {
+      "background_color": "light",
       "body_font_category": "serif",
+      "border_color": null,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
       "feedback_enabled": false,
@@ -126,15 +339,20 @@ Object {
       "sender_name": "Test",
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "my-test-newsletter-with-custom-sender_email-and-subscribe-existing",
       "sort_order": 10,
       "status": "active",
       "subscribe_on_signup": true,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -148,8 +366,9 @@ exports[`Newsletters API Can add a newsletter - with custom sender_email and sub
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "852",
+  "content-length": "1033",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/newsletters\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -158,11 +377,394 @@ Object {
 }
 `;
 
+exports[`Newsletters API Can add a newsletter - with custom sender_email and subscribe existing members 3: [html 1] 1`] = `
+"
+<!doctype html>
+<html>
+  <head>
+    <meta name=\\"viewport\\" content=\\"width=device-width\\">
+    <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+    <title>Confirm your email address</title>
+    <style>
+    /* -------------------------------------
+        RESPONSIVE AND MOBILE FRIENDLY STYLES
+    ------------------------------------- */
+    @media only screen and (max-width: 620px) {
+      table[class=body] h1 {
+        font-size: 28px !important;
+        margin-bottom: 10px !important;
+      }
+      table[class=body] p,
+            table[class=body] ul,
+            table[class=body] ol,
+            table[class=body] td,
+            table[class=body] span,
+            table[class=body] a {
+        font-size: 16px !important;
+      }
+      table[class=body] .wrapper,
+            table[class=body] .article {
+        padding: 10px !important;
+      }
+      table[class=body] .content {
+        padding: 0 !important;
+      }
+      table[class=body] .container {
+        padding: 0 !important;
+        width: 100% !important;
+      }
+      table[class=body] .main {
+        border-left-width: 0 !important;
+        border-radius: 0 !important;
+        border-right-width: 0 !important;
+      }
+      table[class=body] .btn table {
+        width: 100% !important;
+      }
+      table[class=body] .btn a {
+        width: 100% !important;
+      }
+      table[class=body] .img-responsive {
+        height: auto !important;
+        max-width: 100% !important;
+        width: auto !important;
+      }
+    }
+    /* -------------------------------------
+        PRESERVE THESE STYLES IN THE HEAD
+    ------------------------------------- */
+    @media all {
+      .ExternalClass {
+        width: 100%;
+      }
+      .ExternalClass,
+            .ExternalClass p,
+            .ExternalClass span,
+            .ExternalClass font,
+            .ExternalClass td,
+            .ExternalClass div {
+        line-height: 100%;
+      }
+      .recipient-link a {
+        color: inherit !important;
+        font-family: inherit !important;
+        font-size: inherit !important;
+        font-weight: inherit !important;
+        line-height: inherit !important;
+        text-decoration: none !important;
+      }
+      #MessageViewBody a {
+        color: inherit;
+        text-decoration: none;
+        font-size: inherit;
+        font-family: inherit;
+        font-weight: inherit;
+        line-height: inherit;
+      }
+    }
+    hr {
+      border-width: 0;
+      height: 0;
+      margin-top: 34px;
+      margin-bottom: 34px;
+      border-bottom-width: 1px;
+      border-bottom-color: #EEF5F8;
+    }
+    </style>
+  </head>
+  <body style=\\"background-color: #F4F8FB; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.4; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;\\">
+    <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background-color: #F4F8FB;\\">
+      <tr>
+        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">&nbsp;</td>
+        <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; display: block; Margin: 0 auto; max-width: 600px; padding: 10px; width: 600px;\\">
+          <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; Margin: 0 auto; max-width: 600px; padding: 30px 20px;\\">
+
+            <!-- START CENTERED WHITE CONTAINER -->
+            <table class=\\"main\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #ffffff; border-radius: 8px;\\">
+
+              <!-- START MAIN CONTENT AREA -->
+              <tr>
+                <td class=\\"wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; box-sizing: border-box; padding: 40px 50px;\\">
+                  <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                    <tr>
+                      <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">
+                        <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 20px; color: #15212A; font-weight: bold; line-height: 25px; margin: 0; margin-bottom: 15px;\\">Hey there,</p>
+                        <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 32px;\\">Please confirm your email address with this link:</p>
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"btn btn-primary\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; box-sizing: border-box;\\">
+                          <tbody>
+                            <tr>
+                              <td align=\\"left\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; padding-bottom: 35px;\\">
+                                <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;\\">
+                                  <tbody>
+                                    <tr>
+                                      <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; background-color: #15212A; border-radius: 5px; text-align: center;\\"> <a href=\\"http://127.0.0.1:2369/ghost/#/settings/newsletters/?verifyEmail=REPLACED_TOKEN\\" target=\\"_blank\\" style=\\"display: inline-block; color: #ffffff; background-color: #15212A; border: solid 1px #15212A; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 16px; font-weight: normal; margin: 0; padding: 9px 22px 10px; border-color: #15212A;\\" data-test-verify-link>Confirm email address</a> </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                        <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 25px;\\">For your security, the link will expire in 24 hours time.</p>
+                        <hr/>
+                        <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 5px;\\">You can also copy & paste this URL into your browser:</p>
+                        <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; line-height: 21px; margin-top: 0; color: #738A94;\\">http://127.0.0.1:2369/ghost/#/settings/newsletters/?verifyEmail=REPLACED_TOKEN</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+            <!-- END MAIN CONTENT AREA -->
+            </table>
+
+            <!-- START FOOTER -->
+            <div class=\\"footer\\" style=\\"clear: both; Margin-top: 10px; text-align: center; width: 100%;\\">
+              <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                <tr>
+                  <td class=\\"content-block\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; vertical-align: top; padding-bottom: 5px; padding-top: 15px; font-size: 13px; line-height: 21px; color: #738A94; text-align: center;\\">
+                    If you did not make this request, you can simply delete this message.<br/>This email address will not be used.
+                  </td>
+                </tr>
+                <tr>
+                  <td class=\\"content-block\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; vertical-align: top; padding-bottom: 10px; padding-top: 10px; font-size: 13px; color: #738A94; text-align: center;\\">
+                    <span class=\\"recipient-link\\" style=\\"color: #738A94; font-size: 13px; text-align: center;\\">Sent to <a href=\\"mailto:test@example.com\\" style=\\"text-decoration: underline; color: #738A94; font-size: 13px; text-align: center;\\">test@example.com</a></span>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <!-- END FOOTER -->
+
+          <!-- END CENTERED WHITE CONTAINER -->
+          </div>
+        </td>
+        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">&nbsp;</td>
+      </tr>
+    </table>
+  </body>
+</html>
+"
+`;
+
+exports[`Newsletters API Can add a newsletter - with custom sender_email and subscribe existing members 3: [metadata 1] 1`] = `
+Object {
+  "forceTextContent": true,
+  "from": "noreply@example.com",
+  "subject": "Verify email address",
+  "to": "test@example.com",
+}
+`;
+
+exports[`Newsletters API Can add a newsletter - with custom sender_email and subscribe existing members 4: [html 1] 1`] = `
+"
+<!doctype html>
+<html>
+  <head>
+    <meta name=\\"viewport\\" content=\\"width=device-width\\">
+    <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+    <title>Confirm your email address</title>
+    <style>
+    /* -------------------------------------
+        RESPONSIVE AND MOBILE FRIENDLY STYLES
+    ------------------------------------- */
+    @media only screen and (max-width: 620px) {
+      table[class=body] h1 {
+        font-size: 28px !important;
+        margin-bottom: 10px !important;
+      }
+      table[class=body] p,
+            table[class=body] ul,
+            table[class=body] ol,
+            table[class=body] td,
+            table[class=body] span,
+            table[class=body] a {
+        font-size: 16px !important;
+      }
+      table[class=body] .wrapper,
+            table[class=body] .article {
+        padding: 10px !important;
+      }
+      table[class=body] .content {
+        padding: 0 !important;
+      }
+      table[class=body] .container {
+        padding: 0 !important;
+        width: 100% !important;
+      }
+      table[class=body] .main {
+        border-left-width: 0 !important;
+        border-radius: 0 !important;
+        border-right-width: 0 !important;
+      }
+      table[class=body] .btn table {
+        width: 100% !important;
+      }
+      table[class=body] .btn a {
+        width: 100% !important;
+      }
+      table[class=body] .img-responsive {
+        height: auto !important;
+        max-width: 100% !important;
+        width: auto !important;
+      }
+    }
+    /* -------------------------------------
+        PRESERVE THESE STYLES IN THE HEAD
+    ------------------------------------- */
+    @media all {
+      .ExternalClass {
+        width: 100%;
+      }
+      .ExternalClass,
+            .ExternalClass p,
+            .ExternalClass span,
+            .ExternalClass font,
+            .ExternalClass td,
+            .ExternalClass div {
+        line-height: 100%;
+      }
+      .recipient-link a {
+        color: inherit !important;
+        font-family: inherit !important;
+        font-size: inherit !important;
+        font-weight: inherit !important;
+        line-height: inherit !important;
+        text-decoration: none !important;
+      }
+      #MessageViewBody a {
+        color: inherit;
+        text-decoration: none;
+        font-size: inherit;
+        font-family: inherit;
+        font-weight: inherit;
+        line-height: inherit;
+      }
+    }
+    hr {
+      border-width: 0;
+      height: 0;
+      margin-top: 34px;
+      margin-bottom: 34px;
+      border-bottom-width: 1px;
+      border-bottom-color: #EEF5F8;
+    }
+    </style>
+  </head>
+  <body style=\\"background-color: #F4F8FB; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.4; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;\\">
+    <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background-color: #F4F8FB;\\">
+      <tr>
+        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">&nbsp;</td>
+        <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; display: block; Margin: 0 auto; max-width: 600px; padding: 10px; width: 600px;\\">
+          <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; Margin: 0 auto; max-width: 600px; padding: 30px 20px;\\">
+
+            <!-- START CENTERED WHITE CONTAINER -->
+            <table class=\\"main\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #ffffff; border-radius: 8px;\\">
+
+              <!-- START MAIN CONTENT AREA -->
+              <tr>
+                <td class=\\"wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; box-sizing: border-box; padding: 40px 50px;\\">
+                  <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                    <tr>
+                      <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">
+                        <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 20px; color: #15212A; font-weight: bold; line-height: 25px; margin: 0; margin-bottom: 15px;\\">Hey there,</p>
+                        <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 32px;\\">Please confirm your email address with this link:</p>
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"btn btn-primary\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; box-sizing: border-box;\\">
+                          <tbody>
+                            <tr>
+                              <td align=\\"left\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; padding-bottom: 35px;\\">
+                                <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;\\">
+                                  <tbody>
+                                    <tr>
+                                      <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; background-color: #15212A; border-radius: 5px; text-align: center;\\"> <a href=\\"http://127.0.0.1:2369/ghost/#/settings/newsletters/?verifyEmail=REPLACED_TOKEN\\" target=\\"_blank\\" style=\\"display: inline-block; color: #ffffff; background-color: #15212A; border: solid 1px #15212A; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 16px; font-weight: normal; margin: 0; padding: 9px 22px 10px; border-color: #15212A;\\" data-test-verify-link>Confirm email address</a> </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                        <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 25px;\\">For your security, the link will expire in 24 hours time.</p>
+                        <hr/>
+                        <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 5px;\\">You can also copy & paste this URL into your browser:</p>
+                        <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; line-height: 21px; margin-top: 0; color: #738A94;\\">http://127.0.0.1:2369/ghost/#/settings/newsletters/?verifyEmail=REPLACED_TOKEN</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+            <!-- END MAIN CONTENT AREA -->
+            </table>
+
+            <!-- START FOOTER -->
+            <div class=\\"footer\\" style=\\"clear: both; Margin-top: 10px; text-align: center; width: 100%;\\">
+              <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                <tr>
+                  <td class=\\"content-block\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; vertical-align: top; padding-bottom: 5px; padding-top: 15px; font-size: 13px; line-height: 21px; color: #738A94; text-align: center;\\">
+                    If you did not make this request, you can simply delete this message.<br/>This email address will not be used.
+                  </td>
+                </tr>
+                <tr>
+                  <td class=\\"content-block\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; vertical-align: top; padding-bottom: 10px; padding-top: 10px; font-size: 13px; color: #738A94; text-align: center;\\">
+                    <span class=\\"recipient-link\\" style=\\"color: #738A94; font-size: 13px; text-align: center;\\">Sent to <a href=\\"mailto:test@example.com\\" style=\\"text-decoration: underline; color: #738A94; font-size: 13px; text-align: center;\\">test@example.com</a></span>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <!-- END FOOTER -->
+
+          <!-- END CENTERED WHITE CONTAINER -->
+          </div>
+        </td>
+        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">&nbsp;</td>
+      </tr>
+    </table>
+  </body>
+</html>
+"
+`;
+
+exports[`Newsletters API Can add a newsletter - with custom sender_email and subscribe existing members 4: [text 1] 1`] = `
+"
+                Hey there,
+
+                Please confirm your email address with this link:
+
+                http://127.0.0.1:2369/ghost/#/settings/newsletters/?verifyEmail=REPLACED_TOKEN
+
+                For your security, the link will expire in 24 hours time.
+
+                ---
+
+                Sent to test@example.com
+                If you did not make this request, you can simply delete this message. This email address will not be used.
+                "
+`;
+
+exports[`Newsletters API Can add a newsletter - with custom sender_email and subscribe existing members 5: [text 1] 1`] = `
+"
+                Hey there,
+
+                Please confirm your email address with this link:
+
+                http://127.0.0.1:2369/ghost/#/settings/newsletters/?verifyEmail=REPLACED_TOKEN
+
+                For your security, the link will expire in 24 hours time.
+
+                ---
+
+                Sent to test@example.com
+                If you did not make this request, you can simply delete this message. This email address will not be used.
+                "
+`;
+
 exports[`Newsletters API Can add a newsletter 1: [body] 1`] = `
 Object {
   "newsletters": Array [
     Object {
+      "background_color": "light",
       "body_font_category": "serif",
+      "border_color": null,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
       "feedback_enabled": false,
@@ -174,15 +776,20 @@ Object {
       "sender_name": "Test",
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "my-test-newsletter",
       "sort_order": 3,
       "status": "active",
       "subscribe_on_signup": true,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -196,8 +803,9 @@ exports[`Newsletters API Can add a newsletter 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "735",
+  "content-length": "916",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/newsletters\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -210,7 +818,9 @@ exports[`Newsletters API Can add multiple newsletters 1: [body] 1`] = `
 Object {
   "newsletters": Array [
     Object {
+      "background_color": "light",
       "body_font_category": "sans_serif",
+      "border_color": null,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
       "feedback_enabled": false,
@@ -222,15 +832,20 @@ Object {
       "sender_name": null,
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "my-first-test-newsletter",
       "sort_order": 5,
       "status": "active",
       "subscribe_on_signup": true,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "sans_serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -244,8 +859,9 @@ exports[`Newsletters API Can add multiple newsletters 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "697",
+  "content-length": "878",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/newsletters\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -258,7 +874,9 @@ exports[`Newsletters API Can add multiple newsletters 3: [body] 1`] = `
 Object {
   "newsletters": Array [
     Object {
+      "background_color": "light",
       "body_font_category": "sans_serif",
+      "border_color": null,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
       "feedback_enabled": false,
@@ -270,15 +888,20 @@ Object {
       "sender_name": null,
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "my-second-test-newsletter",
       "sort_order": 6,
       "status": "active",
       "subscribe_on_signup": true,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "sans_serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -292,8 +915,9 @@ exports[`Newsletters API Can add multiple newsletters 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "699",
+  "content-length": "880",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/newsletters\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -316,7 +940,9 @@ Object {
   },
   "newsletters": Array [
     Object {
+      "background_color": "light",
       "body_font_category": "sans_serif",
+      "border_color": null,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
       "feedback_enabled": false,
@@ -328,22 +954,29 @@ Object {
       "sender_name": null,
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "default-newsletter",
       "sort_order": 0,
       "status": "active",
       "subscribe_on_signup": true,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "sans_serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       "visibility": "members",
     },
     Object {
+      "background_color": "light",
       "body_font_category": "serif",
+      "border_color": null,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
       "feedback_enabled": false,
@@ -355,22 +988,29 @@ Object {
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "daily-newsletter",
       "sort_order": 1,
       "status": "active",
       "subscribe_on_signup": false,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       "visibility": "members",
     },
     Object {
+      "background_color": "light",
       "body_font_category": "serif",
+      "border_color": null,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
       "feedback_enabled": false,
@@ -382,22 +1022,29 @@ Object {
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "weekly-newsletter",
       "sort_order": 2,
       "status": "active",
       "subscribe_on_signup": true,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       "visibility": "members",
     },
     Object {
+      "background_color": "light",
       "body_font_category": "serif",
+      "border_color": null,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
       "feedback_enabled": false,
@@ -409,15 +1056,20 @@ Object {
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "old-newsletter",
       "sort_order": 2,
       "status": "archived",
       "subscribe_on_signup": true,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -431,8 +1083,9 @@ exports[`Newsletters API Can browse newsletters 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2943",
+  "content-length": "3667",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
@@ -448,7 +1101,9 @@ Object {
   },
   "newsletters": Array [
     Object {
+      "background_color": "light",
       "body_font_category": "serif",
+      "border_color": null,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
       "feedback_enabled": false,
@@ -460,15 +1115,20 @@ Object {
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "daily-newsletter",
       "sort_order": 1,
       "status": "active",
       "subscribe_on_signup": false,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -482,8 +1142,9 @@ exports[`Newsletters API Can edit a newsletters and update the sender_email when
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "800",
+  "content-length": "981",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-cache-invalidate": "/*",
@@ -491,11 +1152,208 @@ Object {
 }
 `;
 
+exports[`Newsletters API Can edit a newsletters and update the sender_email when already set 3: [metadata 1] 1`] = `
+Object {
+  "forceTextContent": true,
+  "from": "noreply@example.com",
+  "subject": "Verify email address",
+  "to": "updated@example.com",
+}
+`;
+
+exports[`Newsletters API Can edit a newsletters and update the sender_email when already set 4: [html 1] 1`] = `
+"
+<!doctype html>
+<html>
+  <head>
+    <meta name=\\"viewport\\" content=\\"width=device-width\\">
+    <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+    <title>Confirm your email address</title>
+    <style>
+    /* -------------------------------------
+        RESPONSIVE AND MOBILE FRIENDLY STYLES
+    ------------------------------------- */
+    @media only screen and (max-width: 620px) {
+      table[class=body] h1 {
+        font-size: 28px !important;
+        margin-bottom: 10px !important;
+      }
+      table[class=body] p,
+            table[class=body] ul,
+            table[class=body] ol,
+            table[class=body] td,
+            table[class=body] span,
+            table[class=body] a {
+        font-size: 16px !important;
+      }
+      table[class=body] .wrapper,
+            table[class=body] .article {
+        padding: 10px !important;
+      }
+      table[class=body] .content {
+        padding: 0 !important;
+      }
+      table[class=body] .container {
+        padding: 0 !important;
+        width: 100% !important;
+      }
+      table[class=body] .main {
+        border-left-width: 0 !important;
+        border-radius: 0 !important;
+        border-right-width: 0 !important;
+      }
+      table[class=body] .btn table {
+        width: 100% !important;
+      }
+      table[class=body] .btn a {
+        width: 100% !important;
+      }
+      table[class=body] .img-responsive {
+        height: auto !important;
+        max-width: 100% !important;
+        width: auto !important;
+      }
+    }
+    /* -------------------------------------
+        PRESERVE THESE STYLES IN THE HEAD
+    ------------------------------------- */
+    @media all {
+      .ExternalClass {
+        width: 100%;
+      }
+      .ExternalClass,
+            .ExternalClass p,
+            .ExternalClass span,
+            .ExternalClass font,
+            .ExternalClass td,
+            .ExternalClass div {
+        line-height: 100%;
+      }
+      .recipient-link a {
+        color: inherit !important;
+        font-family: inherit !important;
+        font-size: inherit !important;
+        font-weight: inherit !important;
+        line-height: inherit !important;
+        text-decoration: none !important;
+      }
+      #MessageViewBody a {
+        color: inherit;
+        text-decoration: none;
+        font-size: inherit;
+        font-family: inherit;
+        font-weight: inherit;
+        line-height: inherit;
+      }
+    }
+    hr {
+      border-width: 0;
+      height: 0;
+      margin-top: 34px;
+      margin-bottom: 34px;
+      border-bottom-width: 1px;
+      border-bottom-color: #EEF5F8;
+    }
+    </style>
+  </head>
+  <body style=\\"background-color: #F4F8FB; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.4; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;\\">
+    <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background-color: #F4F8FB;\\">
+      <tr>
+        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">&nbsp;</td>
+        <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; display: block; Margin: 0 auto; max-width: 600px; padding: 10px; width: 600px;\\">
+          <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; Margin: 0 auto; max-width: 600px; padding: 30px 20px;\\">
+
+            <!-- START CENTERED WHITE CONTAINER -->
+            <table class=\\"main\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #ffffff; border-radius: 8px;\\">
+
+              <!-- START MAIN CONTENT AREA -->
+              <tr>
+                <td class=\\"wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; box-sizing: border-box; padding: 40px 50px;\\">
+                  <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                    <tr>
+                      <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">
+                        <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 20px; color: #15212A; font-weight: bold; line-height: 25px; margin: 0; margin-bottom: 15px;\\">Hey there,</p>
+                        <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 32px;\\">Please confirm your email address with this link:</p>
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"btn btn-primary\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; box-sizing: border-box;\\">
+                          <tbody>
+                            <tr>
+                              <td align=\\"left\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; padding-bottom: 35px;\\">
+                                <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;\\">
+                                  <tbody>
+                                    <tr>
+                                      <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; background-color: #15212A; border-radius: 5px; text-align: center;\\"> <a href=\\"http://127.0.0.1:2369/ghost/#/settings/newsletters/?verifyEmail=REPLACED_TOKEN\\" target=\\"_blank\\" style=\\"display: inline-block; color: #ffffff; background-color: #15212A; border: solid 1px #15212A; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 16px; font-weight: normal; margin: 0; padding: 9px 22px 10px; border-color: #15212A;\\" data-test-verify-link>Confirm email address</a> </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                        <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 25px;\\">For your security, the link will expire in 24 hours time.</p>
+                        <hr/>
+                        <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 5px;\\">You can also copy & paste this URL into your browser:</p>
+                        <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; line-height: 21px; margin-top: 0; color: #738A94;\\">http://127.0.0.1:2369/ghost/#/settings/newsletters/?verifyEmail=REPLACED_TOKEN</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+            <!-- END MAIN CONTENT AREA -->
+            </table>
+
+            <!-- START FOOTER -->
+            <div class=\\"footer\\" style=\\"clear: both; Margin-top: 10px; text-align: center; width: 100%;\\">
+              <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                <tr>
+                  <td class=\\"content-block\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; vertical-align: top; padding-bottom: 5px; padding-top: 15px; font-size: 13px; line-height: 21px; color: #738A94; text-align: center;\\">
+                    If you did not make this request, you can simply delete this message.<br/>This email address will not be used.
+                  </td>
+                </tr>
+                <tr>
+                  <td class=\\"content-block\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; vertical-align: top; padding-bottom: 10px; padding-top: 10px; font-size: 13px; color: #738A94; text-align: center;\\">
+                    <span class=\\"recipient-link\\" style=\\"color: #738A94; font-size: 13px; text-align: center;\\">Sent to <a href=\\"mailto:updated@example.com\\" style=\\"text-decoration: underline; color: #738A94; font-size: 13px; text-align: center;\\">updated@example.com</a></span>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <!-- END FOOTER -->
+
+          <!-- END CENTERED WHITE CONTAINER -->
+          </div>
+        </td>
+        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">&nbsp;</td>
+      </tr>
+    </table>
+  </body>
+</html>
+"
+`;
+
+exports[`Newsletters API Can edit a newsletters and update the sender_email when already set 5: [text 1] 1`] = `
+"
+                Hey there,
+
+                Please confirm your email address with this link:
+
+                http://127.0.0.1:2369/ghost/#/settings/newsletters/?verifyEmail=REPLACED_TOKEN
+
+                For your security, the link will expire in 24 hours time.
+
+                ---
+
+                Sent to updated@example.com
+                If you did not make this request, you can simply delete this message. This email address will not be used.
+                "
+`;
+
 exports[`Newsletters API Can edit newsletters 1: [body] 1`] = `
 Object {
   "newsletters": Array [
     Object {
+      "background_color": "light",
       "body_font_category": "serif",
+      "border_color": null,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
       "feedback_enabled": false,
@@ -507,15 +1365,20 @@ Object {
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "daily-newsletter",
       "sort_order": 1,
       "status": "active",
       "subscribe_on_signup": false,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -529,8 +1392,9 @@ exports[`Newsletters API Can edit newsletters 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "748",
+  "content-length": "929",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-cache-invalidate": "/*",
@@ -542,7 +1406,9 @@ exports[`Newsletters API Can include members & posts counts when adding a newsle
 Object {
   "newsletters": Array [
     Object {
+      "background_color": "light",
       "body_font_category": "serif",
+      "border_color": null,
       "count": Object {
         "members": 0,
         "posts": 0,
@@ -558,15 +1424,20 @@ Object {
       "sender_name": "Test",
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "my-test-newsletter-2",
       "sort_order": 4,
       "status": "active",
       "subscribe_on_signup": true,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -580,8 +1451,9 @@ exports[`Newsletters API Can include members & posts counts when adding a newsle
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "713",
+  "content-length": "894",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/newsletters\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -604,7 +1476,9 @@ Object {
   },
   "newsletters": Array [
     Object {
+      "background_color": "light",
       "body_font_category": "sans_serif",
+      "border_color": null,
       "count": Object {
         "members": 0,
         "posts": 0,
@@ -620,22 +1494,29 @@ Object {
       "sender_name": null,
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "default-newsletter",
       "sort_order": 0,
       "status": "active",
       "subscribe_on_signup": true,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "sans_serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       "visibility": "members",
     },
     Object {
+      "background_color": "light",
       "body_font_category": "serif",
+      "border_color": null,
       "count": Object {
         "members": 4,
         "posts": 0,
@@ -651,22 +1532,29 @@ Object {
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "daily-newsletter",
       "sort_order": 1,
       "status": "active",
       "subscribe_on_signup": false,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       "visibility": "members",
     },
     Object {
+      "background_color": "light",
       "body_font_category": "serif",
+      "border_color": null,
       "count": Object {
         "members": 3,
         "posts": 0,
@@ -682,22 +1570,29 @@ Object {
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "weekly-newsletter",
       "sort_order": 2,
       "status": "active",
       "subscribe_on_signup": true,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       "visibility": "members",
     },
     Object {
+      "background_color": "light",
       "body_font_category": "serif",
+      "border_color": null,
       "count": Object {
         "members": 2,
         "posts": 0,
@@ -713,15 +1608,20 @@ Object {
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "old-newsletter",
       "sort_order": 2,
       "status": "archived",
       "subscribe_on_signup": true,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -735,8 +1635,9 @@ exports[`Newsletters API Can include members & posts counts when browsing newsle
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3071",
+  "content-length": "3795",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
@@ -747,7 +1648,9 @@ exports[`Newsletters API Can include members & posts counts when editing newslet
 Object {
   "newsletters": Array [
     Object {
+      "background_color": "light",
       "body_font_category": "serif",
+      "border_color": null,
       "count": Object {
         "members": 4,
         "posts": 0,
@@ -763,15 +1666,20 @@ Object {
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "daily-newsletter",
       "sort_order": 1,
       "status": "active",
       "subscribe_on_signup": false,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -785,8 +1693,9 @@ exports[`Newsletters API Can include members & posts counts when editing newslet
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "782",
+  "content-length": "963",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-cache-invalidate": "/*",
@@ -798,7 +1707,9 @@ exports[`Newsletters API Can include members & posts counts when reading a newsl
 Object {
   "newsletters": Array [
     Object {
+      "background_color": "light",
       "body_font_category": "serif",
+      "border_color": null,
       "count": Object {
         "members": 4,
         "posts": 0,
@@ -814,15 +1725,20 @@ Object {
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "daily-newsletter",
       "sort_order": 1,
       "status": "active",
       "subscribe_on_signup": false,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -836,8 +1752,9 @@ exports[`Newsletters API Can include members & posts counts when reading a newsl
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "773",
+  "content-length": "954",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
@@ -848,7 +1765,9 @@ exports[`Newsletters API Can read a newsletter 1: [body] 1`] = `
 Object {
   "newsletters": Array [
     Object {
+      "background_color": "light",
       "body_font_category": "serif",
+      "border_color": null,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
       "feedback_enabled": false,
@@ -860,15 +1779,20 @@ Object {
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "daily-newsletter",
       "sort_order": 1,
       "status": "active",
       "subscribe_on_signup": false,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -882,8 +1806,9 @@ exports[`Newsletters API Can read a newsletter 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "741",
+  "content-length": "922",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
@@ -894,7 +1819,9 @@ exports[`Newsletters API Can verify property updates 1: [body] 1`] = `
 Object {
   "newsletters": Array [
     Object {
+      "background_color": "light",
       "body_font_category": "serif",
+      "border_color": null,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
       "feedback_enabled": false,
@@ -906,15 +1833,256 @@ Object {
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "daily-newsletter",
       "sort_order": 1,
       "status": "active",
       "subscribe_on_signup": false,
       "title_alignment": "center",
+      "title_color": null,
+      "title_font_category": "serif",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "members",
+    },
+  ],
+}
+`;
+
+exports[`Newsletters API Can verify property updates 1: [metadata 1] 1`] = `
+Object {
+  "forceTextContent": true,
+  "from": "noreply@example.com",
+  "subject": "Verify email address",
+  "to": "verify@example.com",
+}
+`;
+
+exports[`Newsletters API Can verify property updates 2: [html 1] 1`] = `
+"
+<!doctype html>
+<html>
+  <head>
+    <meta name=\\"viewport\\" content=\\"width=device-width\\">
+    <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+    <title>Confirm your email address</title>
+    <style>
+    /* -------------------------------------
+        RESPONSIVE AND MOBILE FRIENDLY STYLES
+    ------------------------------------- */
+    @media only screen and (max-width: 620px) {
+      table[class=body] h1 {
+        font-size: 28px !important;
+        margin-bottom: 10px !important;
+      }
+      table[class=body] p,
+            table[class=body] ul,
+            table[class=body] ol,
+            table[class=body] td,
+            table[class=body] span,
+            table[class=body] a {
+        font-size: 16px !important;
+      }
+      table[class=body] .wrapper,
+            table[class=body] .article {
+        padding: 10px !important;
+      }
+      table[class=body] .content {
+        padding: 0 !important;
+      }
+      table[class=body] .container {
+        padding: 0 !important;
+        width: 100% !important;
+      }
+      table[class=body] .main {
+        border-left-width: 0 !important;
+        border-radius: 0 !important;
+        border-right-width: 0 !important;
+      }
+      table[class=body] .btn table {
+        width: 100% !important;
+      }
+      table[class=body] .btn a {
+        width: 100% !important;
+      }
+      table[class=body] .img-responsive {
+        height: auto !important;
+        max-width: 100% !important;
+        width: auto !important;
+      }
+    }
+    /* -------------------------------------
+        PRESERVE THESE STYLES IN THE HEAD
+    ------------------------------------- */
+    @media all {
+      .ExternalClass {
+        width: 100%;
+      }
+      .ExternalClass,
+            .ExternalClass p,
+            .ExternalClass span,
+            .ExternalClass font,
+            .ExternalClass td,
+            .ExternalClass div {
+        line-height: 100%;
+      }
+      .recipient-link a {
+        color: inherit !important;
+        font-family: inherit !important;
+        font-size: inherit !important;
+        font-weight: inherit !important;
+        line-height: inherit !important;
+        text-decoration: none !important;
+      }
+      #MessageViewBody a {
+        color: inherit;
+        text-decoration: none;
+        font-size: inherit;
+        font-family: inherit;
+        font-weight: inherit;
+        line-height: inherit;
+      }
+    }
+    hr {
+      border-width: 0;
+      height: 0;
+      margin-top: 34px;
+      margin-bottom: 34px;
+      border-bottom-width: 1px;
+      border-bottom-color: #EEF5F8;
+    }
+    </style>
+  </head>
+  <body style=\\"background-color: #F4F8FB; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.4; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;\\">
+    <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background-color: #F4F8FB;\\">
+      <tr>
+        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">&nbsp;</td>
+        <td class=\\"container\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; display: block; Margin: 0 auto; max-width: 600px; padding: 10px; width: 600px;\\">
+          <div class=\\"content\\" style=\\"box-sizing: border-box; display: block; Margin: 0 auto; max-width: 600px; padding: 30px 20px;\\">
+
+            <!-- START CENTERED WHITE CONTAINER -->
+            <table class=\\"main\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #ffffff; border-radius: 8px;\\">
+
+              <!-- START MAIN CONTENT AREA -->
+              <tr>
+                <td class=\\"wrapper\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; box-sizing: border-box; padding: 40px 50px;\\">
+                  <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                    <tr>
+                      <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">
+                        <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 20px; color: #15212A; font-weight: bold; line-height: 25px; margin: 0; margin-bottom: 15px;\\">Hey there,</p>
+                        <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 32px;\\">Please confirm your email address with this link:</p>
+                        <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"btn btn-primary\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; box-sizing: border-box;\\">
+                          <tbody>
+                            <tr>
+                              <td align=\\"left\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; padding-bottom: 35px;\\">
+                                <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;\\">
+                                  <tbody>
+                                    <tr>
+                                      <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; background-color: #15212A; border-radius: 5px; text-align: center;\\"> <a href=\\"http://127.0.0.1:2369/ghost/#/settings/newsletters/?verifyEmail=REPLACED_TOKEN\\" target=\\"_blank\\" style=\\"display: inline-block; color: #ffffff; background-color: #15212A; border: solid 1px #15212A; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 16px; font-weight: normal; margin: 0; padding: 9px 22px 10px; border-color: #15212A;\\" data-test-verify-link>Confirm email address</a> </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                        <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 25px;\\">For your security, the link will expire in 24 hours time.</p>
+                        <hr/>
+                        <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 5px;\\">You can also copy & paste this URL into your browser:</p>
+                        <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; line-height: 21px; margin-top: 0; color: #738A94;\\">http://127.0.0.1:2369/ghost/#/settings/newsletters/?verifyEmail=REPLACED_TOKEN</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+            <!-- END MAIN CONTENT AREA -->
+            </table>
+
+            <!-- START FOOTER -->
+            <div class=\\"footer\\" style=\\"clear: both; Margin-top: 10px; text-align: center; width: 100%;\\">
+              <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
+                <tr>
+                  <td class=\\"content-block\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; vertical-align: top; padding-bottom: 5px; padding-top: 15px; font-size: 13px; line-height: 21px; color: #738A94; text-align: center;\\">
+                    If you did not make this request, you can simply delete this message.<br/>This email address will not be used.
+                  </td>
+                </tr>
+                <tr>
+                  <td class=\\"content-block\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; vertical-align: top; padding-bottom: 10px; padding-top: 10px; font-size: 13px; color: #738A94; text-align: center;\\">
+                    <span class=\\"recipient-link\\" style=\\"color: #738A94; font-size: 13px; text-align: center;\\">Sent to <a href=\\"mailto:verify@example.com\\" style=\\"text-decoration: underline; color: #738A94; font-size: 13px; text-align: center;\\">verify@example.com</a></span>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <!-- END FOOTER -->
+
+          <!-- END CENTERED WHITE CONTAINER -->
+          </div>
+        </td>
+        <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">&nbsp;</td>
+      </tr>
+    </table>
+  </body>
+</html>
+"
+`;
+
+exports[`Newsletters API Can verify property updates 3: [text 1] 1`] = `
+"
+                Hey there,
+
+                Please confirm your email address with this link:
+
+                http://127.0.0.1:2369/ghost/#/settings/newsletters/?verifyEmail=REPLACED_TOKEN
+
+                For your security, the link will expire in 24 hours time.
+
+                ---
+
+                Sent to verify@example.com
+                If you did not make this request, you can simply delete this message. This email address will not be used.
+                "
+`;
+
+exports[`Newsletters API Can verify property updates 4: [body] 1`] = `
+Object {
+  "newsletters": Array [
+    Object {
+      "background_color": "light",
+      "body_font_category": "serif",
+      "border_color": null,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feedback_enabled": false,
+      "footer_content": null,
+      "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Updated newsletter name",
+      "sender_email": "verify@example.com",
+      "sender_name": "Jamie",
+      "sender_reply_to": "newsletter",
+      "show_badge": true,
+      "show_comment_cta": true,
+      "show_feature_image": true,
+      "show_header_icon": true,
+      "show_header_name": true,
+      "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
+      "slug": "daily-newsletter",
+      "sort_order": 1,
+      "status": "active",
+      "subscribe_on_signup": false,
+      "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -928,7 +2096,9 @@ exports[`Newsletters API Can't add multiple newsletters with same name 1: [body]
 Object {
   "newsletters": Array [
     Object {
+      "background_color": "light",
       "body_font_category": "sans_serif",
+      "border_color": null,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
       "feedback_enabled": false,
@@ -940,15 +2110,20 @@ Object {
       "sender_name": null,
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "duplicate-newsletter",
       "sort_order": Any<Number>,
       "status": "active",
       "subscribe_on_signup": true,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "sans_serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -962,8 +2137,9 @@ exports[`Newsletters API Can't add multiple newsletters with same name 2: [heade
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "689",
+  "content-length": "870",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/newsletters\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -996,6 +2172,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "275",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
@@ -1026,6 +2203,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "275",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
@@ -1039,7 +2217,9 @@ Object {
   },
   "newsletters": Array [
     Object {
+      "background_color": "light",
       "body_font_category": "sans_serif",
+      "border_color": null,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
       "feedback_enabled": false,
@@ -1051,15 +2231,20 @@ Object {
       "sender_name": null,
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "naughty-newsletter",
       "sort_order": 3,
       "status": "active",
       "subscribe_on_signup": true,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "sans_serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -1073,8 +2258,9 @@ exports[`Newsletters API Host Settings: newsletter limits Max limit Adding a new
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "720",
+  "content-length": "901",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/newsletters\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -1090,7 +2276,9 @@ Object {
   },
   "newsletters": Array [
     Object {
+      "background_color": "light",
       "body_font_category": "sans_serif",
+      "border_color": null,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
       "feedback_enabled": false,
@@ -1102,15 +2290,20 @@ Object {
       "sender_name": null,
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "archived-newsletter",
       "sort_order": 3,
       "status": "archived",
       "subscribe_on_signup": true,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "sans_serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -1124,8 +2317,9 @@ exports[`Newsletters API Host Settings: newsletter limits Max limit Adding an ar
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "724",
+  "content-length": "905",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/newsletters\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -1182,7 +2376,9 @@ exports[`Newsletters API Host Settings: newsletter limits Max limit Archiving a 
 Object {
   "newsletters": Array [
     Object {
+      "background_color": "light",
       "body_font_category": "sans_serif",
+      "border_color": null,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
       "feedback_enabled": false,
@@ -1194,15 +2390,20 @@ Object {
       "sender_name": null,
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "default-newsletter",
       "sort_order": 0,
       "status": "archived",
       "subscribe_on_signup": true,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "sans_serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -1216,8 +2417,9 @@ exports[`Newsletters API Host Settings: newsletter limits Max limit Archiving a 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "687",
+  "content-length": "868",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-cache-invalidate": "/*",
@@ -1229,7 +2431,9 @@ exports[`Newsletters API Host Settings: newsletter limits Max limit Editing an a
 Object {
   "newsletters": Array [
     Object {
+      "background_color": "light",
       "body_font_category": "serif",
+      "border_color": null,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
       "feedback_enabled": false,
@@ -1241,15 +2445,20 @@ Object {
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "old-newsletter",
       "sort_order": 2,
       "status": "archived",
       "subscribe_on_signup": true,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -1263,8 +2472,9 @@ exports[`Newsletters API Host Settings: newsletter limits Max limit Editing an a
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "754",
+  "content-length": "935",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-cache-invalidate": "/*",
@@ -1276,7 +2486,9 @@ exports[`Newsletters API Host Settings: newsletter limits Max limit Editing an a
 Object {
   "newsletters": Array [
     Object {
+      "background_color": "light",
       "body_font_category": "serif",
+      "border_color": null,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
       "feedback_enabled": false,
@@ -1288,15 +2500,20 @@ Object {
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
+      "show_comment_cta": true,
       "show_feature_image": true,
       "show_header_icon": true,
       "show_header_name": true,
       "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
       "slug": "old-newsletter",
       "sort_order": 2,
       "status": "archived",
       "subscribe_on_signup": true,
       "title_alignment": "center",
+      "title_color": null,
       "title_font_category": "serif",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
@@ -1310,8 +2527,9 @@ exports[`Newsletters API Host Settings: newsletter limits Max limit Editing an a
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "756",
+  "content-length": "937",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-cache-invalidate": "/*",

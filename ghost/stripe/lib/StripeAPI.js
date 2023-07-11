@@ -20,6 +20,7 @@ const STRIPE_API_VERSION = '2020-08-27';
  * @prop {string} secretKey
  * @prop {string} publicKey
  * @prop {boolean} enablePromoCodes
+ * @prop {boolean} enableAutomaticTax
  * @prop {string} checkoutSessionSuccessUrl
  * @prop {string} checkoutSessionCancelUrl
  * @prop {string} checkoutSetupSessionSuccessUrl
@@ -395,6 +396,9 @@ module.exports = class StripeAPI {
             cancel_url: options.cancelUrl || this._config.checkoutSessionCancelUrl,
             // @ts-ignore - we need to update to latest stripe library to correctly use newer features
             allow_promotion_codes: discounts ? undefined : this._config.enablePromoCodes,
+            automatic_tax: {
+                enabled: this._config.enableAutomaticTax
+            },
             metadata,
             discounts,
             /*

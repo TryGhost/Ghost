@@ -91,7 +91,7 @@ export default class InstallThemeModal extends Component {
                 this.installedTheme = this.store.peekRecord('theme', result.themes[0].name);
 
                 this.validationWarnings = this.installedTheme.warnings || [];
-                this.validationErrors = this.installedTheme.errors || [];
+                this.validationErrors = this.installedTheme.gscanErrors || [];
                 this.fatalValidationErrors = [];
 
                 // activate but prevent additional error modal from showing

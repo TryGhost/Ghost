@@ -15,13 +15,10 @@ describe('Unit - services/routing/controllers/entry', function () {
     let entryLookUpStub;
     let renderStub;
     let post;
-    let page;
 
     beforeEach(function () {
         post = testUtils.DataGenerator.forKnex.createPost();
         post.url = '/does-exist/';
-
-        page = testUtils.DataGenerator.forKnex.createPost({page: 1});
 
         entryLookUpStub = sinon.stub();
         renderStub = sinon.stub();
@@ -139,13 +136,13 @@ describe('Unit - services/routing/controllers/entry', function () {
                     entry: post
                 });
 
-            urlUtils.redirectToAdmin.callsFake(function (statusCode, _res, editorUrl) {
-                configUtils.restore();
+            urlUtils.redirectToAdmin.callsFake(async function () {
+                await configUtils.restore();
                 done(new Error('redirectToAdmin was called'));
             });
 
-            controllers.entry(req, res, (err) => {
-                configUtils.restore();
+            controllers.entry(req, res, async (err) => {
+                await configUtils.restore();
                 urlUtils.redirectToAdmin.called.should.eql(false);
                 should.not.exist(err);
                 done(err);

@@ -197,6 +197,14 @@ Object {
       "value": "Subscribe",
     },
     Object {
+      "key": "portal_signup_terms_html",
+      "value": null,
+    },
+    Object {
+      "key": "portal_signup_checkbox_required",
+      "value": false,
+    },
+    Object {
       "key": "mailgun_domain",
       "value": null,
     },
@@ -265,6 +273,38 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "announcement_content",
+      "value": null,
+    },
+    Object {
+      "key": "announcement_visibility",
+      "value": "[]",
+    },
+    Object {
+      "key": "announcement_background",
+      "value": "dark",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "pintura",
+      "value": true,
+    },
+    Object {
+      "key": "pintura_js_url",
+      "value": null,
+    },
+    Object {
+      "key": "pintura_css_url",
+      "value": null,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -290,6 +330,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
@@ -318,6 +359,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "91",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
@@ -341,6 +383,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "51",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
@@ -544,6 +587,14 @@ Object {
       "value": "Subscribe",
     },
     Object {
+      "key": "portal_signup_terms_html",
+      "value": null,
+    },
+    Object {
+      "key": "portal_signup_checkbox_required",
+      "value": false,
+    },
+    Object {
       "key": "mailgun_domain",
       "value": null,
     },
@@ -612,6 +663,38 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "announcement_content",
+      "value": "<p>Great news coming soon!</p>",
+    },
+    Object {
+      "key": "announcement_visibility",
+      "value": "[\\"visitors\\",\\"free_members\\"]",
+    },
+    Object {
+      "key": "announcement_background",
+      "value": "dark",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "pintura",
+      "value": true,
+    },
+    Object {
+      "key": "pintura_js_url",
+      "value": null,
+    },
+    Object {
+      "key": "pintura_css_url",
+      "value": null,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -635,8 +718,9 @@ exports[`Settings API Edit Can edit a setting 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3497",
+  "content-length": "4012",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-cache-invalidate": "/*",
@@ -841,6 +925,14 @@ Object {
       "value": "Subscribe",
     },
     Object {
+      "key": "portal_signup_terms_html",
+      "value": null,
+    },
+    Object {
+      "key": "portal_signup_checkbox_required",
+      "value": false,
+    },
+    Object {
       "key": "mailgun_domain",
       "value": null,
     },
@@ -909,6 +1001,38 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "announcement_content",
+      "value": "<p>Great news coming soon!</p>",
+    },
+    Object {
+      "key": "announcement_visibility",
+      "value": "[\\"visitors\\",\\"free_members\\"]",
+    },
+    Object {
+      "key": "announcement_background",
+      "value": "dark",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "pintura",
+      "value": true,
+    },
+    Object {
+      "key": "pintura_js_url",
+      "value": null,
+    },
+    Object {
+      "key": "pintura_css_url",
+      "value": null,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -934,6 +1058,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
@@ -1137,6 +1262,14 @@ Object {
       "value": "Subscribe",
     },
     Object {
+      "key": "portal_signup_terms_html",
+      "value": null,
+    },
+    Object {
+      "key": "portal_signup_checkbox_required",
+      "value": false,
+    },
+    Object {
       "key": "mailgun_domain",
       "value": null,
     },
@@ -1205,6 +1338,38 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "announcement_content",
+      "value": "<p>Great news coming soon!</p>",
+    },
+    Object {
+      "key": "announcement_visibility",
+      "value": "[\\"visitors\\",\\"free_members\\"]",
+    },
+    Object {
+      "key": "announcement_background",
+      "value": "dark",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "pintura",
+      "value": true,
+    },
+    Object {
+      "key": "pintura_js_url",
+      "value": null,
+    },
+    Object {
+      "key": "pintura_css_url",
+      "value": null,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -1230,6 +1395,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-cache-invalidate": "/*",
@@ -1438,6 +1604,14 @@ Object {
       "value": "Subscribe",
     },
     Object {
+      "key": "portal_signup_terms_html",
+      "value": null,
+    },
+    Object {
+      "key": "portal_signup_checkbox_required",
+      "value": false,
+    },
+    Object {
       "key": "mailgun_domain",
       "value": null,
     },
@@ -1506,6 +1680,38 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "announcement_content",
+      "value": "<p>Great news coming soon!</p>",
+    },
+    Object {
+      "key": "announcement_visibility",
+      "value": "[\\"visitors\\",\\"free_members\\"]",
+    },
+    Object {
+      "key": "announcement_background",
+      "value": "dark",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "pintura",
+      "value": true,
+    },
+    Object {
+      "key": "pintura_js_url",
+      "value": null,
+    },
+    Object {
+      "key": "pintura_css_url",
+      "value": null,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -1531,6 +1737,100 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API Edit fails to edit setting with unsupported announcement_background value 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Please enter a valid announcement background value",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot edit setting.",
+      "property": "announcement_background",
+      "type": "ValidationError",
+    },
+  ],
+}
+`;
+
+exports[`Settings API Edit fails to edit setting with unsupported announcement_background value 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "295",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API Edit fails to edit setting with unsupported announcement_visibility value 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Please enter a valid announcement visibility value",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot edit setting.",
+      "property": "announcement_visibility",
+      "type": "ValidationError",
+    },
+  ],
+}
+`;
+
+exports[`Settings API Edit fails to edit setting with unsupported announcement_visibility value 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "295",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API Edit fails to edit setting with unsupported value 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Please enter a valid announcement visibility value",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot edit setting.",
+      "property": "announcement_visibility",
+      "type": "ValidationError",
+    },
+  ],
+}
+`;
+
+exports[`Settings API Edit fails to edit setting with unsupported value 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "295",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
@@ -1734,6 +2034,14 @@ Object {
       "value": "Subscribe",
     },
     Object {
+      "key": "portal_signup_terms_html",
+      "value": null,
+    },
+    Object {
+      "key": "portal_signup_checkbox_required",
+      "value": false,
+    },
+    Object {
       "key": "mailgun_domain",
       "value": null,
     },
@@ -1802,6 +2110,38 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "announcement_content",
+      "value": "<p>Great news coming soon!</p>",
+    },
+    Object {
+      "key": "announcement_visibility",
+      "value": "[\\"visitors\\",\\"free_members\\"]",
+    },
+    Object {
+      "key": "announcement_background",
+      "value": "dark",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "pintura",
+      "value": true,
+    },
+    Object {
+      "key": "pintura_js_url",
+      "value": null,
+    },
+    Object {
+      "key": "pintura_css_url",
+      "value": null,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -1827,6 +2167,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-cache-invalidate": "/*",
@@ -1880,6 +2221,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "281",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
@@ -1890,6 +2232,7 @@ exports[`Settings API stripe connect can do disconnectStripeConnectIntegration 1
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
@@ -2093,6 +2436,14 @@ Object {
       "value": "Subscribe",
     },
     Object {
+      "key": "portal_signup_terms_html",
+      "value": null,
+    },
+    Object {
+      "key": "portal_signup_checkbox_required",
+      "value": false,
+    },
+    Object {
       "key": "mailgun_domain",
       "value": null,
     },
@@ -2161,6 +2512,38 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "announcement_content",
+      "value": "<p>Great news coming soon!</p>",
+    },
+    Object {
+      "key": "announcement_visibility",
+      "value": "[\\"visitors\\",\\"free_members\\"]",
+    },
+    Object {
+      "key": "announcement_background",
+      "value": "dark",
+    },
+    Object {
+      "key": "comments_enabled",
+      "value": "off",
+    },
+    Object {
+      "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "pintura",
+      "value": true,
+    },
+    Object {
+      "key": "pintura_js_url",
+      "value": null,
+    },
+    Object {
+      "key": "pintura_css_url",
+      "value": null,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -2186,6 +2569,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-cache-invalidate": "/*",
@@ -2217,6 +2601,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "241",
   "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",

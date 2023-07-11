@@ -38,8 +38,10 @@ module.exports = function (Bookshelf) {
                 return baseOptions.concat('shallow', 'columns', 'previous');
             case 'destroy':
                 return baseOptions.concat(extraOptions, ['id', 'destroyBy', 'require']);
+            case 'add':
+                return baseOptions.concat(extraOptions, ['autoRefresh']);
             case 'edit':
-                return baseOptions.concat(extraOptions, ['id', 'require']);
+                return baseOptions.concat(extraOptions, ['id', 'require', 'autoRefresh']);
             case 'findOne':
                 return baseOptions.concat(extraOptions, ['columns', 'require', 'mongoTransformer']);
             case 'findAll':

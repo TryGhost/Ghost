@@ -9,7 +9,7 @@
     border: var(--input-border);
 }
 
-.ember-power-select-trigger:not(.gh-setting-dropdown):not(.ember-power-select-multiple-trigger) svg {
+.ember-power-select-trigger:not(.gh-setting-dropdown):not(.ember-power-select-multiple-trigger):not(.gh-preview-newsletter-trigger) svg {
     height: 4px;
     width: 6.11px;
     margin-left: 2px;
@@ -38,7 +38,7 @@
 
 .ember-power-select-dropdown {
     position: absolute;
-    z-index: 9999;
+    z-index: 10001;
     box-sizing: border-box;
     margin: 0;
     border: var(--input-border);
@@ -218,7 +218,7 @@
 
 .ember-power-select-multiple-option {
     margin: 2px!important;
-    padding: 1px 6px 2px;
+    padding: 1px 0 2px 6px;
     border-radius: 3px;
     font-size: 0.93em;
     font-weight: 500;
@@ -245,8 +245,9 @@
 .ember-power-select-multiple-remove-btn {
     flex: 1;
     display: flex;
-    width: 20px;
+    width: 22px;
     height: 100%;
+    margin-top: 1px;
     line-height: 0;
     padding: 0;
     justify-content: center;
@@ -331,7 +332,7 @@
     color: var(--accent-color);
     background: none;
 }
-  
+
 .tag-token:not(.tag-token--internal)::after {
     position: absolute;
     top: -1px;

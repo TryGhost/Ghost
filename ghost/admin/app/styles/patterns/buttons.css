@@ -253,10 +253,6 @@ fieldset[disabled] .gh-btn {
     margin-right: 0.6em;
 }
 
-.gh-btn-white svg {
-    fill: var(--darkgrey);
-}
-
 .gh-btn-icon svg.gh-spinner {
     left: 5px;
 }
@@ -368,12 +364,17 @@ svg.gh-btn-icon-right {
     margin-right: 10px;
 }
 
-.gh-btn-action-icon svg path {
+.gh-btn-action-icon svg path,
+.gh-btn-action-icon svg circle {
     stroke: currentColor;
 }
 
 .gh-btn-label-green {
     color: var(--green);
+}
+
+.gh-btn-fullwidth {
+    width: 100%;
 }
 
 

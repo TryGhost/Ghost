@@ -1,4 +1,6 @@
 /**
+ * Fired when a subscription is created. This can also happen when inactive subscriptions are created (incomplete, canceled...).
+ *
  * @typedef {object} SubscriptionCreatedEventData
  * @prop {string} source
  * @prop {string} memberId
@@ -6,7 +8,7 @@
  * @prop {string} tierId
  * @prop {string} subscriptionId
  * @prop {string} offerId
- * @prop {import('@tryghost/member-attribution/lib/attribution').Attribution} [attribution]
+ * @prop {import('@tryghost/member-attribution/lib/Attribution').Attribution} [attribution]
  */
 
 module.exports = class SubscriptionCreatedEvent {

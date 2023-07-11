@@ -1,8 +1,6 @@
-const errors = require('@tryghost/errors');
 const _ = require('lodash');
 const should = require('should');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 const validators = require('../../../../../../../core/server/api/endpoints/utils/validators');
 
 describe('Unit: endpoints/utils/validators/input/webhooks', function () {
@@ -130,7 +128,7 @@ describe('Unit: endpoints/utils/validators/input/webhooks', function () {
                     }
                 };
 
-                let result = validators.input.webhooks.add(apiConfig, frame);
+                validators.input.webhooks.add(apiConfig, frame);
 
                 frame.data.webhooks[0].name.should.equal('pass');
                 frame.data.webhooks[0].target_url.should.equal('https://example.com/target/1');

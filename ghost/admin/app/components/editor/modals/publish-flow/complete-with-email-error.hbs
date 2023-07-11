@@ -11,8 +11,10 @@
 
     <p class="gh-publish-confirmation">
         {{this.emailErrorMessage}}
+        {{#unless this.config.mailgunIsConfigured}}
         <br><br>
-        Please verify your email settings if the error persists.
+        If the error persists, please verify your email settings.
+        {{/unless}}
     </p>
 
     {{#if this.retryErrorMessage}}
