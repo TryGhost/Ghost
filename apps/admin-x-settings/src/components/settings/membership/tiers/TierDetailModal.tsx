@@ -62,7 +62,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = () => {
                 </Form>
 
                 <Form title='Benefits'>
-                    shizzle
+                    TBD
                 </Form>
             </div>
             <div className='sticky top-[77px] shrink-0 basis-[380px]'>
