@@ -199,7 +199,7 @@
     "jsonwebtoken": "8.5.1",
     "juice": "9.1.0",
     "keypair": "1.0.4",
-    "knex": "2.4.2",
+    "knex": "2.5.0",
     "knex-migrator": "5.1.5",
     "lib0": "0.2.78",
     "lodash": "4.17.21",
