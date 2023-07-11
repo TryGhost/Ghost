@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const ghostBookshelf = require('./base');
 const ghostVersion = require('@tryghost/version');
 let Webhook;

@@ -1,6 +1,5 @@
 const _ = require('lodash');
 const ghostBookshelf = require('./base');
-const Promise = require('bluebird');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 

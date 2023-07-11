@@ -1,5 +1,4 @@
 const sizeOf = require('image-size');
-const Promise = require('bluebird');
 const _ = require('lodash');
 const path = require('path');
 const errors = require('@tryghost/errors');
@@ -40,12 +39,12 @@ class BlogIcon {
                     }).height;
                 }
 
-                return resolve({
+                resolve({
                     width: dimensions.width,
                     height: dimensions.height
                 });
             } catch (err) {
-                return reject(new errors.ValidationError({
+                reject(new errors.ValidationError({
                     message: tpl(messages.error, {
                         file: storagePath,
                         error: err.message

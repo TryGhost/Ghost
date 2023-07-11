@@ -14,10 +14,14 @@ module.exports = {
         } else {
             return Promise.all(
                 roles.map(async (role) => {
-                    const permissionResult = await canThis(frame.options.context).assign.role(role)
-                        .return(role)
-                        .catch(() => {});
-                    return permissionResult && (permissionResult.name !== 'Owner');   
+                    let permissionResult;
+                    try {
+                        await canThis(frame.options.context).assign.role(role);
+                        permissionResult = role;
+                    } catch (err) {
+                        permissionResult = {};
+                    }
+                    return permissionResult && permissionResult.name && (permissionResult.name !== 'Owner');   
                 }))
                 .then(results => roles.filter((_v, index) => results[index]))   
                 .then((filteredRoles) => {
