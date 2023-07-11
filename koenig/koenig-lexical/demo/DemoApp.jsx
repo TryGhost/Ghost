@@ -21,6 +21,7 @@ import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
 import {fetchEmbed} from './utils/fetchEmbed';
 import {fileTypes, useFileUpload} from './utils/useFileUpload';
 import {tenorConfig} from './utils/tenorConfig';
+import {useCollections} from './utils/useCollections';
 import {useLocation, useSearchParams} from 'react-router-dom';
 import {useSnippets} from './utils/useSnippets';
 
@@ -107,6 +108,7 @@ function DemoComposer({editorType, isMultiplayer, setWordCount}) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [sidebarView, setSidebarView] = useState('json');
     const {snippets, createSnippet, deleteSnippet} = useSnippets();
+    const {collections, fetchCollectionPosts} = useCollections();
 
     const darkMode = searchParams.get('darkMode') === 'true';
     const contentParam = searchParams.get('content');
@@ -217,7 +219,7 @@ function DemoComposer({editorType, isMultiplayer, setWordCount}) {
 
     return (
         <KoenigComposer
-            cardConfig={{...cardConfig, snippets, createSnippet, deleteSnippet}}
+            cardConfig={{...cardConfig, snippets, createSnippet, deleteSnippet, collections, fetchCollectionPosts}}
             darkMode={darkMode}
             enableMultiplayer={isMultiplayer}
             fileUploader={{useFileUpload: useFileUpload({isMultiplayer}), fileTypes}}

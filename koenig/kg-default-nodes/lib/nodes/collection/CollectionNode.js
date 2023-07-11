@@ -4,7 +4,7 @@ import {generateDecoratorNode} from '../../generate-decorator-node';
 
 export class CollectionNode extends generateDecoratorNode({nodeType: 'collection',
     properties: [
-        {name: 'collection', default: {title: 'featured', id: 123456}},
+        {name: 'collection', default: {slug: 'index'}}, // start with empty object; might want to just store the slug
         {name: 'postCount', default: 3},
         {name: 'layout', default: 'grid'},
         {name: 'columns', default: 3}
