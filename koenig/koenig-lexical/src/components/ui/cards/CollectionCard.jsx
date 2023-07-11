@@ -21,19 +21,18 @@ export function CollectionPost({
         )}>
             {image &&
                 (<div className={'grow-1 relative m-0 min-w-[33%]'}>
-                    <img alt="" className="h-full max-h-[136px] w-full object-cover" src={image}/>
+                    <img alt="" className="aspect-video h-full w-full object-cover" src={image}/>
                 </div>)
             }
             <div className="flex grow basis-full flex-col items-start justify-start">
-                {title && <div className="text-[1.7rem] font-semibold leading-normal tracking-normal text-grey-900 dark:text-grey-100">{title}</div>}
-                {excerpt && <div className="mt-1 max-h-[44px] overflow-y-hidden text-sm font-normal leading-normal text-grey-800 line-clamp-2 dark:text-grey-600">{excerpt}</div>}
-                <div className="flex">
+                {title && <div className="text-[1.7rem] font-semibold leading-tight tracking-normal text-grey-900 dark:text-grey-100">{title}</div>}
+                {excerpt && <div className="mt-1 max-h-[44px] overflow-y-hidden text-sm font-normal leading-tight text-grey-800 line-clamp-2 dark:text-grey-600">{excerpt}</div>}
+                <div className="mt-1 flex">
                     {publishDate && <div className="mt-1 text-xs font-normal leading-normal text-grey-600 dark:text-grey-400">{DateTime.fromISO(publishDate).toLocaleString()}</div>}
                     {publishDate && readTime && <div className="mt-1 text-xs font-semibold leading-normal text-grey-600 dark:text-grey-400">&nbsp;&middot;&nbsp;</div>}
                     {readTime && <div className="mt-1 text-xs font-normal leading-normal text-grey-600 dark:text-grey-400">{readTime}</div>}
                 </div>
             </div>
-            <div className="absolute inset-0 z-50 mt-0"></div>
         </div>
     );
 }
@@ -96,9 +95,13 @@ export function CollectionCard({
     return (
         <>
             <div className={clsx(
-                'w-full gap-4',
+                'w-full gap-x-4 gap-y-6',
                 layout === 'list' && 'flex flex-col',
-                layout === 'grid' && 'grid grid-cols-3'
+                layout === 'grid' && 'grid',
+                columns === 1 && 'grid-cols-1',
+                columns === 2 && 'grid-cols-2',
+                columns === 3 && 'grid-cols-3',
+                columns === 4 && 'grid-cols-4'
             )}>
                 <Collection columns={columns} layout={layout} postCount={postCount} posts={posts} />
             </div>

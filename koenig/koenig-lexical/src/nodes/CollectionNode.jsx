@@ -10,8 +10,8 @@ export const INSERT_COLLECTION_COMMAND = createCommand();
 
 export class CollectionNode extends BaseCollectionNode {
     static kgMenu = [{
-        label: 'Collection',
-        desc: 'Add a collection of posts',
+        label: 'Post collection',
+        desc: 'Showcase latest or featured posts',
         Icon: CollectionCardIcon,
         insertCommand: INSERT_COLLECTION_COMMAND,
         matches: ['collection', 'post'],
