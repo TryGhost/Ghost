@@ -23,6 +23,6 @@
         "sinon": "15.0.3"
     },
     "dependencies": {
-        "@isaacs/ttlcache": "1.2.2"
+        "@isaacs/ttlcache": "1.4.1"
     }
 }
