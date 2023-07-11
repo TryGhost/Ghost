@@ -8,7 +8,6 @@ on:
       - 'v5.*'
       - 3.x
       - 2.x
-      - 'renovate/*'
 
 env:
   FORCE_COLOR: 1
@@ -30,7 +29,6 @@ jobs:
   job_get_metadata:
     name: Metadata
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     permissions:
       pull-requests: read
     steps:
@@ -43,7 +41,7 @@ jobs:
       - name: Get metadata (push)
         if: github.event_name == 'push'
         run: |
-          NUMBER_OF_COMMITS=$(echo '${{ env.GITHUB_CONTEXT }}' | jq '.event.commits | length')
+          NUMBER_OF_COMMITS=$(printf "%s\n" '${{ toJson(github.event.commits.*.id) }}' | jq length)
           echo "There are $NUMBER_OF_COMMITS commits in this push."
           echo "BASE_COMMIT=$(git rev-parse HEAD~$NUMBER_OF_COMMITS)" >> $GITHUB_ENV
 
@@ -732,7 +730,7 @@ jobs:
         job_comments_ui,
         job_signup_form,
       ]
-    if: always() && (github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/')))
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Check for failures

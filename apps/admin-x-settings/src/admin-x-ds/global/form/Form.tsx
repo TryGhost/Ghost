@@ -1,7 +1,9 @@
 import React from 'react';
+import Separator from '../Separator';
 import clsx from 'clsx';
 
 interface FormProps {
+    title?: string;
     gap?: 'sm' | 'md' | 'lg';
     marginTop?: boolean;
     marginBottom?: boolean;
@@ -12,6 +14,7 @@ interface FormProps {
  * A container to group form elements
  */
 const Form: React.FC<FormProps> = ({
+    title,
     gap = 'md',
     marginTop = false,
     marginBottom = true,
@@ -44,6 +47,11 @@ const Form: React.FC<FormProps> = ({
 
     return (
         <div className={classes}>
+            {title &&
+            (<div className='-mb-4'>
+                <div className='text-sm font-semibold text-grey-800'>{title}</div>
+                <Separator />
+            </div>)}
             {children}
         </div>
     );

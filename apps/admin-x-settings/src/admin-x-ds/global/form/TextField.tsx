@@ -6,6 +6,7 @@ import clsx from 'clsx';
 export type TextFieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
     inputRef?: React.RefObject<HTMLInputElement>;
     title?: string;
+    titleColor?: 'auto' | 'black' | 'grey';
     hideTitle?: boolean;
     type?: React.InputHTMLAttributes<HTMLInputElement>['type'];
     value?: string;
@@ -27,6 +28,7 @@ const TextField: React.FC<TextFieldProps> = ({
     type = 'text',
     inputRef,
     title,
+    titleColor = 'auto',
     hideTitle,
     value,
     error,
@@ -68,9 +70,15 @@ const TextField: React.FC<TextFieldProps> = ({
         {...props} />;
 
     if (title || hint) {
+        let titleGrey = false;
+        if (titleColor === 'auto') {
+            titleGrey = value ? true : false;
+        } else {
+            titleGrey = titleColor === 'grey' ? true : false;
+        }
         return (
             <div className={`flex flex-col ${containerClassName}`}>
-                {title && <Heading className={hideTitle ? 'sr-only' : ''} grey={value ? true : false} htmlFor={id} useLabelTag={true}>{title}</Heading>}
+                {title && <Heading className={hideTitle ? 'sr-only' : ''} grey={titleGrey} htmlFor={id} useLabelTag={true}>{title}</Heading>}
                 {field}
                 {hint && <Hint className={hintClassName} color={error ? 'red' : ''}>{hint}</Hint>}
             </div>

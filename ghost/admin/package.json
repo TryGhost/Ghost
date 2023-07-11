@@ -40,7 +40,7 @@
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "3.0.0",
     "@joeattardi/emoji-button": "4.6.4",
-    "@sentry/ember": "7.54.0",
+    "@sentry/ember": "7.57.0",
     "@tryghost/color-utils": "0.1.24",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "1.1.77",
@@ -112,16 +112,16 @@
     "ember-power-datepicker": "cibernox/ember-power-datepicker",
     "ember-power-select": "6.0.1",
     "ember-resolver": "8.1.0",
-    "ember-simple-auth": "4.2.2",
+    "ember-simple-auth": "5.0.0",
     "ember-sinon": "5.0.0",
     "ember-source": "3.24.0",
     "ember-svg-jar": "2.4.2",
-    "ember-template-lint": "5.7.2",
+    "ember-template-lint": "5.11.0",
     "ember-test-selectors": "6.0.0",
     "ember-tooltips": "3.6.0",
     "ember-truth-helpers": "3.1.1",
     "ember-websockets": "10.2.1",
-    "eslint": "8.37.0",
+    "eslint": "8.44.0",
     "eslint-plugin-babel": "5.3.1",
     "eslint-plugin-react": "7.32.2",
     "faker": "5.5.3",
@@ -180,8 +180,8 @@
     "*.js": "eslint"
   },
   "dependencies": {
-    "jose": "4.13.1",
+    "jose": "4.14.4",
     "path-browserify": "1.0.1",
-    "webpack": "5.77.0"
+    "webpack": "5.88.1"
   }
 }
