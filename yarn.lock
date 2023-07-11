@@ -3241,7 +3241,7 @@
     ember-compatibility-helpers "^1.2.1"
     ember-raf-scheduler "^0.3.0"
 
-"@html-validate/stylish@^4.0.1":
+"@html-validate/stylish@^4.1.0":
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/@html-validate/stylish/-/stylish-4.1.0.tgz#2683b64c3e845e413c86912c6239f7168e8fb941"
   integrity sha512-f2MOKJ2HVdLxpOOg2jD6hjDTDJic3wpb8/UdDDIic5jTvgfMMPN3PoiNWlqDg/mCzLIj1b/p1hCRx4Kz5lbVjw==
@@ -8661,7 +8661,7 @@ acorn-walk@^7.1.1, acorn-walk@^7.2.0:
   resolved "https://registry.yarnpkg.com/acorn-walk/-/acorn-walk-7.2.0.tgz#0de889a601203909b0fbe07b8938dc21d2e967bc"
   integrity sha512-OPdCF6GsMIP+Az+aWfAAOEt2/+iVDKE7oy6lJ098aoe59oAmK76qV6Gw60SbZ8jHuG2wH058GF4pLFbYamYrVA==
 
-acorn-walk@^8.0.0, acorn-walk@^8.0.2, acorn-walk@^8.1.1, acorn-walk@^8.2.0:
+acorn-walk@^8.0.2, acorn-walk@^8.1.1, acorn-walk@^8.2.0:
   version "8.2.0"
   resolved "https://registry.yarnpkg.com/acorn-walk/-/acorn-walk-8.2.0.tgz#741210f2e2426454508853a2f44d0ab83b7f69c1"
   integrity sha512-k+iyHEuPgSw6SbuDpGQM+06HQUa04DZ3o+F6CSzXMvvI5KMvnaEqXe+YVe555R9nn6GPt404fos4wcgpw12SDA==
@@ -16894,7 +16894,7 @@ espree@^7.3.0, espree@^7.3.1:
     acorn-jsx "^5.3.1"
     eslint-visitor-keys "^1.3.0"
 
-espree@^9.0.0, espree@^9.5.1, espree@^9.5.2:
+espree@^9.5.1, espree@^9.5.2:
   version "9.5.2"
   resolved "https://registry.yarnpkg.com/espree/-/espree-9.5.2.tgz#e994e7dc33a082a7a82dceaf12883a829353215b"
   integrity sha512-7OASN1Wma5fum5SrNhFMAMJxOUAbhyfQ8dQ//PJaJbNw0URTPWqIghHWt1MmAANKhHZIYOHruW4Kw4ruUWOdGw==
@@ -19320,18 +19320,16 @@ html-to-text@8.2.1:
     minimist "^1.2.6"
     selderee "^0.6.0"
 
-html-validate@7.18.1:
-  version "7.18.1"
-  resolved "https://registry.yarnpkg.com/html-validate/-/html-validate-7.18.1.tgz#179dcb102e9738365c5ea2bcebf437bfb065a39f"
-  integrity sha512-K5jb0h/xAoeR8sJqyR0n/QaKL7rdT88sPCtN+Pvtyn5JUU+nidQe2gBB09WRzPTcQtPXBj4QxBUH5IA2tt8JQg==
+html-validate@8.0.5:
+  version "8.0.5"
+  resolved "https://registry.yarnpkg.com/html-validate/-/html-validate-8.0.5.tgz#f28432aa254acf5dc98c1c82b8c9a3bea0440da9"
+  integrity sha512-8IBayugyDTiH49JjxSEq+A0UFQzuyG9m0382aHMrPoHVNQcr3IypjuKcjn150ahAwAqO0o4NgMbkC1LezQU1mw==
   dependencies:
     "@babel/code-frame" "^7.10.0"
-    "@html-validate/stylish" "^4.0.1"
+    "@html-validate/stylish" "^4.1.0"
     "@sidvind/better-ajv-errors" "^2.0.0"
-    acorn-walk "^8.0.0"
     ajv "^8.0.0"
     deepmerge "^4.2.0"
-    espree "^9.0.0"
     glob "^10.0.0"
     ignore "^5.0.0"
     kleur "^4.1.0"
