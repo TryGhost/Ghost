@@ -14,7 +14,6 @@ export function CollectionNodeComponent({
     layout,
     nodeKey,
     postCount,
-    header,
     headerTextEditor,
     headerTextEditorInitialState
 }) {
