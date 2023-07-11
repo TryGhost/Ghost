@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const Promise = require('bluebird');
 const debug = require('@tryghost/debug')('services:routing:controllers:static');
 const renderer = require('../../rendering');
 
@@ -36,27 +35,30 @@ function processQuery(query, locals) {
 module.exports = function staticController(req, res, next) {
     debug('staticController', res.routerOptions);
 
-    let props = {};
+    let promises = [];
 
-    _.each(res.routerOptions.data, function (query, name) {
-        props[name] = processQuery(query, res.locals);
+    _.each(res.routerOptions.data, function (query) {
+        promises.push(processQuery(query, res.locals));
     });
 
-    return Promise.props(props)
+    return Promise.all(promises)
         .then(function handleResult(result) {
             let response = {};
 
             if (res.routerOptions.data) {
                 response.data = {};
 
+                let resultIndex = 0;
                 _.each(res.routerOptions.data, function (config, name) {
-                    response.data[name] = result[name][config.resource];
+                    response.data[name] = result[resultIndex][config.resource];
 
                     if (config.type === 'browse') {
-                        response.data[name].meta = result[name].meta;
+                        response.data[name].meta = result[resultIndex].meta;
                         // @TODO: remove in Ghost 3.0 (see https://github.com/TryGhost/Ghost/issues/10434)
-                        response.data[name][config.resource] = result[name][config.resource];
+                        response.data[name][config.resource] = result[resultIndex][config.resource];
                     }
+
+                    resultIndex = resultIndex + 1;
                 });
             }
 
