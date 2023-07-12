@@ -1,5 +1,5 @@
 import Icon from './Icon';
-import React, {ReactNode, useState} from 'react';
+import React, {HTMLProps, ReactNode, useState} from 'react';
 import clsx from 'clsx';
 import {CSS} from '@dnd-kit/utilities';
 import {DndContext, DragOverlay, DraggableAttributes, closestCenter} from '@dnd-kit/core';
@@ -66,42 +66,48 @@ const SortableItem: React.FC<{
     });
 };
 
-export interface SortableListProps<Item extends {id: string}> {
+export interface SortableListProps<Item extends {id: string}> extends HTMLProps<HTMLDivElement> {
         items: Item[];
         onMove: (id: string, overId: string) => void;
         renderItem: (item: Item) => ReactNode;
         container?: (props: SortableItemContainerProps) => ReactNode;
 }
 
+/**
+ * Note: For lists which don't have an ID, you can use `useSortableIndexedList` to give items a consistent index-based ID.
+ */
 const SortableList = <Item extends {id: string}>({
     items,
     onMove,
     renderItem,
-    container = props => <DefaultContainer {...props} />
+    container = props => <DefaultContainer {...props} />,
+    ...props
 }: SortableListProps<Item>) => {
     const [draggingId, setDraggingId] = useState<string | null>(null);
 
     return (
-        <DndContext
-            collisionDetection={closestCenter}
-            onDragEnd={event => onMove(event.active.id as string, event.over?.id as string)}
-            onDragStart={event => setDraggingId(event.active.id as string)}
-        >
-            <SortableContext
-                items={items}
-                strategy={verticalListSortingStrategy}
+        <div {...props}>
+            <DndContext
+                collisionDetection={closestCenter}
+                onDragEnd={event => onMove(event.active.id as string, event.over?.id as string)}
+                onDragStart={event => setDraggingId(event.active.id as string)}
             >
-                {items.map(item => (
-                    <SortableItem key={item.id} container={container} id={item.id}>{renderItem(item)}</SortableItem>
-                ))}
-            </SortableContext>
-            <DragOverlay>
-                {draggingId ? container({
-                    isDragging: true,
-                    children: renderItem(items.find(({id}) => id === draggingId)!)
-                }) : null}
-            </DragOverlay>
-        </DndContext>
+                <SortableContext
+                    items={items}
+                    strategy={verticalListSortingStrategy}
+                >
+                    {items.map(item => (
+                        <SortableItem key={item.id} container={container} id={item.id}>{renderItem(item)}</SortableItem>
+                    ))}
+                </SortableContext>
+                <DragOverlay>
+                    {draggingId ? container({
+                        isDragging: true,
+                        children: renderItem(items.find(({id}) => id === draggingId)!)
+                    }) : null}
+                </DragOverlay>
+            </DndContext>
+        </div>
     );
 };
 
