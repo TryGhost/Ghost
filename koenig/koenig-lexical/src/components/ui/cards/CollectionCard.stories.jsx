@@ -29,6 +29,30 @@ const mockPosts = [
         excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
         image: 'https://placekitten.com/249/251',
         author: 'Author McAuthory'
+    },
+    {
+        title: 'A Post For The Ages',
+        id: 238756,
+        url: 'https://www.google.com',
+        excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
+        image: 'https://placekitten.com/250/250',
+        author: 'Author McAuthory'
+    },
+    {
+        title: 'Copilot Needs A Post',
+        id: 234259,
+        url: 'https://www.google.com',
+        excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
+        image: 'https://placekitten.com/251/250',
+        author: 'Writer Writterson'
+    },
+    {
+        title: 'More Suggestions Please And Thank You',
+        id: 129537,
+        url: 'https://www.google.com',
+        excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
+        image: 'https://placekitten.com/249/251',
+        author: 'Author McAuthory'
     }
 ];
 
@@ -67,6 +91,16 @@ const story = {
                 },
                 defaultValue: displayOptions.Default
             }
+        },
+        layout: {
+            options: ['list', 'grid'],
+            control: {type: 'radio'}
+        },
+        postCount: {
+            control: {type: 'range', min: 1, max: 12, step: 1}
+        },
+        columns: {
+            control: {type: 'range', min: 1, max: 4, step: 1}
         }
     },
     parameters: {
@@ -110,7 +144,7 @@ PopulatedList.args = {
     posts: mockPosts,
     collection: {id: 123456},
     collections: mockCollections,
-    postCount: 3,
+    postCount: 6,
     layout: 'list',
     headerTextEditorInitialState: editorEmptyState
 };
@@ -121,8 +155,8 @@ PopulatedGrid.args = {
     posts: mockPosts,
     collection: {id: 123456},
     collections: mockCollections,
-    postCount: 3,
+    postCount: 6,
     layout: 'grid',
-    columns: 2,
+    columns: 3,
     headerTextEditorInitialState: editorEmptyState
 };

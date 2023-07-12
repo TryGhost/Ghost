@@ -11,6 +11,7 @@ import {isEditorEmpty} from '../../../utils/isEditorEmpty';
 export function CollectionPost({
     post,
     layout,
+    columns,
     options
 }) {
     // may want options later for changing post display (like hiding feature img)
@@ -23,16 +24,37 @@ export function CollectionPost({
         )}>
             {image &&
                 (<div className={'grow-1 relative m-0 min-w-[33%]'}>
-                    <img alt="" className="aspect-video h-full w-full object-cover" src={image}/>
+                    <img alt="" className={clsx(
+                        'h-full w-full object-cover',
+                        columns === 1 || columns === 2 ? 'aspect-video' : 'aspect-[3/2]'
+                    )} src={image}/>
                 </div>)
             }
             <div className="flex grow basis-full flex-col items-start justify-start">
-                {title && <div className="text-[1.7rem] font-semibold leading-tight tracking-normal text-grey-900 dark:text-grey-100">{title}</div>}
-                {excerpt && <div className="mt-1 max-h-[44px] overflow-y-hidden text-sm font-normal leading-tight text-grey-800 line-clamp-2 dark:text-grey-600">{excerpt}</div>}
-                <div className="mt-1 flex">
-                    {publishDate && <div className="mt-1 text-xs font-normal leading-normal text-grey-600 dark:text-grey-400">{DateTime.fromISO(publishDate).toLocaleString()}</div>}
-                    {publishDate && readTime > 0 && <div className="mt-1 text-xs font-semibold leading-normal text-grey-600 dark:text-grey-400">&nbsp;&middot;&nbsp;</div>}
-                    {readTime > 0 && <div className="mt-1 text-xs font-normal leading-normal text-grey-600 dark:text-grey-400">{readTime} min</div>}
+                {title && <div className={clsx(
+                    'font-bold tracking-normal text-black dark:text-grey-100',
+                    columns === 1 && 'w-2/3 text-4xl leading-tight',
+                    columns === 2 && 'text-2xl leading-snug',
+                    columns === 3 && 'text-xl leading-snug',
+                    columns === 4 && 'text-[1.7rem] leading-snug'
+                )}>{title}</div>}
+                {excerpt && <div className={clsx(
+                    'max-h-[44px] overflow-y-hidden font-normal leading-snug text-grey-900 line-clamp-2 dark:text-grey-600',
+                    columns === 1 && 'mt-3 w-2/3 text-lg',
+                    columns === 2 && 'mt-3 text-[1.6rem]',
+                    columns === 3 && 'mt-2 text-md',
+                    columns === 4 && 'mt-2 text-md'
+                )}>{excerpt}</div>}
+                <div className={clsx(
+                    'flex font-normal leading-snug text-grey-600 dark:text-grey-400',
+                    columns === 1 && 'mt-3 w-2/3 text-lg',
+                    columns === 2 && 'mt-3 text-[1.6rem]',
+                    columns === 3 && 'mt-2 text-md',
+                    columns === 4 && 'mt-2 text-md'
+                )}>
+                    {publishDate && <div>{DateTime.fromISO(publishDate).toLocaleString()}</div>}
+                    {publishDate && readTime > 0 && <div>&nbsp;&middot;&nbsp;</div>}
+                    {readTime > 0 && <div>{readTime} min</div>}
                 </div>
             </div>
         </div>
@@ -42,7 +64,8 @@ export function CollectionPost({
 export function Collection({
     posts,
     postCount,
-    layout
+    layout,
+    columns
 }) {
     // would apply appropriate container styles here for the respective format
     // also need to figure out how to handle placeholders if we should have a specific # showing
@@ -50,7 +73,7 @@ export function Collection({
     const ListPosts = posts && posts
         .filter((post, index) => index < postCount)
         .map((post) => {
-            return <CollectionPost key={post.id} layout={layout} post={post} />;
+            return <CollectionPost key={post.id} columns={columns} layout={layout} post={post} />;
         });
 
     return (
@@ -111,19 +134,19 @@ export function CollectionCard({
                     placeholderClassName={'!font-sans !text-[2.2rem] !font-bold !leading-snug !tracking-tight text-black dark:text-grey-50 opacity-40'}
                     placeholderText="Collection Header"
                     singleParagraph={true}
-                    textClassName={'koenig-lexical-toggle-heading whitespace-normal text-black dark:text-grey-50 opacity-100 p-2'}
+                    textClassName={'koenig-lexical-toggle-heading whitespace-normal text-black dark:text-grey-50 opacity-100 py-2'}
                 />)
             }
             <div className={clsx(
-                'w-full gap-x-4 gap-y-6',
+                'w-full',
                 layout === 'list' && 'flex flex-col',
                 layout === 'grid' && 'grid',
-                columns === 1 && 'grid-cols-1',
-                columns === 2 && 'grid-cols-2',
-                columns === 3 && 'grid-cols-3',
-                columns === 4 && 'grid-cols-4'
+                columns === 1 && 'grid-cols-1 gap-y-14',
+                columns === 2 && 'grid-cols-2 gap-x-10 gap-y-14',
+                columns === 3 && 'grid-cols-3 gap-x-8 gap-y-12',
+                columns === 4 && 'grid-cols-4 gap-x-6 gap-y-10'
             )}>
-                <Collection layout={layout} postCount={postCount} posts={posts} />
+                <Collection columns={columns} layout={layout} postCount={postCount} posts={posts} />
             </div>
             {isEditing && (
                 <SettingsPanel>
@@ -186,11 +209,13 @@ CollectionCard.propTypes = {
 Collection.propTypes = {
     posts: PropTypes.array,
     layout: PropTypes.oneOf(['list', 'grid']),
-    postCount: PropTypes.number
+    postCount: PropTypes.number,
+    columns: PropTypes.number
 };
 
 CollectionPost.propTypes = {
     post: PropTypes.object,
     layout: PropTypes.oneOf(['list', 'grid']),
-    options: PropTypes.object
+    options: PropTypes.object,
+    columns: PropTypes.number
 };
