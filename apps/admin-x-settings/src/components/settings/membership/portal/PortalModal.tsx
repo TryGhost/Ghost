@@ -77,7 +77,7 @@ const PortalModal: React.FC = () => {
         },
 
         onSave: async () => {
-            await updateTiers(formState.tiers.filter(tier => tier.dirty));
+            await updateTiers(...formState.tiers.filter(tier => tier.dirty));
             const {meta, settings: currentSettings} = await saveSettings(formState.settings.filter(setting => setting.dirty));
 
             if (meta?.sent_email_verification) {

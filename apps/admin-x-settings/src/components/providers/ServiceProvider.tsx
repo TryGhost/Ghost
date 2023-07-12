@@ -1,6 +1,6 @@
 import React, {createContext, useContext, useMemo} from 'react';
 import setupGhostApi from '../../utils/api';
-import useDataService, {DataService, bulkEdit} from '../../utils/dataService';
+import useDataService, {DataService, bulkEdit, placeholderDataService} from '../../utils/dataService';
 import useSearchService, {SearchService} from '../../utils/search';
 import {OfficialTheme} from '../../models/themes';
 import {Tier} from '../../types/api';
@@ -27,7 +27,7 @@ const ServicesContext = createContext<ServicesContextProps>({
     fileService: null,
     officialThemes: [],
     search: {filter: '', setFilter: () => {}, checkVisible: () => true},
-    tiers: {data: [], update: async () => {}}
+    tiers: placeholderDataService
 });
 
 const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion, officialThemes}) => {
@@ -39,7 +39,12 @@ const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersi
         }
     }), [apiService]);
     const search = useSearchService();
-    const tiers = useDataService({key: 'tiers', browse: apiService.tiers.browse, edit: bulkEdit('tiers', apiService.tiers.edit)});
+    const tiers = useDataService({
+        key: 'tiers',
+        browse: apiService.tiers.browse,
+        edit: bulkEdit('tiers', apiService.tiers.edit),
+        add: apiService.tiers.add
+    });
 
     return (
         <ServicesContext.Provider value={{
