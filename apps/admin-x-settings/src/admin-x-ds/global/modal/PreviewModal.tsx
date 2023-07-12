@@ -146,7 +146,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
 
         preview = (
             <div className={`min-w-100 absolute inset-y-0 left-0 right-[400px] flex grow flex-col overflow-y-scroll ${previewBgColor === 'grey' ? 'bg-grey-50' : 'bg-white'}`}>
-                {previewToolbar && <header className="relative flex h-[74px] shrink-0 items-center justify-center px-3 py-5">
+                {previewToolbar && <header className="relative flex h-[74px] shrink-0 items-center justify-center px-3 py-5" data-testid="design-toolbar">
                     {leftToolbar && <div className='absolute left-5 flex h-full items-center'>
                         {toolbarLeft}
                     </div>}
