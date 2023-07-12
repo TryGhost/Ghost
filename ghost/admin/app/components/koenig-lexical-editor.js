@@ -135,6 +135,7 @@ export default class KoenigLexicalEditor extends Component {
     @service session;
     @service store;
     @service settings;
+    @service membersUtils;
 
     @inject config;
     offers = null;
@@ -261,7 +262,21 @@ export default class KoenigLexicalEditor extends Component {
                     value: this.config.getSiteUrl(offer.code)
                 };
             });
-            return [...defaults, ...offersLinks];
+
+            const memberLinks = () => {
+                if (this.membersUtils.paidMembersEnabled) {
+                    return [
+                        {
+                            label: 'Paid signup',
+                            value: this.config.getSiteUrl('/#/portal/signup')
+                        },
+                        {
+                            label: 'Upgrade or change plan',
+                            value: this.config.getSiteUrl('/#/portal/account/plans')
+                        }];
+                }
+            };
+            return [...defaults, ...offersLinks, ...memberLinks()];
         };
 
         const fetchLabels = async () => {
