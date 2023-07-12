@@ -22,9 +22,7 @@
   "scripts": {
     "archive": "npm pack",
     "start": "node index",
-    "setup": "knex-migrator init",
-    "build": "yarn build:css",
-    "build:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
+    "build": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
     "test": "yarn test:unit",
     "test:base": "mocha --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js",
     "test:single": "yarn test:base --timeout=60000",
@@ -54,7 +52,7 @@
     "lint:test": "eslint -c test/.eslintrc.js --ignore-path test/.eslintignore 'test/**/*.js' --cache",
     "lint:code": "yarn lint:server && yarn lint:shared && yarn lint:frontend",
     "lint": "yarn lint:server && yarn lint:shared && yarn lint:frontend && yarn lint:test",
-    "prepack": "lerna run build && monobundle"
+    "prepack": "nx run-many -t build --projects='ghost/*' && monobundle"
   },
   "engines": {
     "node": "^16.14.0 || ^18.12.1",
