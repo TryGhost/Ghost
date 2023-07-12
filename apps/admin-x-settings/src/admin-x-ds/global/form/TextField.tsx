@@ -55,7 +55,7 @@ const TextField: React.FC<TextFieldProps> = ({
         error ? `border-red` : `${disabled ? 'border-grey-300' : 'border-grey-500 hover:border-grey-700 focus:border-black'}`,
         (title && !hideTitle && !clearBg) && `mt-2`,
         (disabled ? 'text-grey-700' : ''),
-        rightPlaceholder && 'peer grow',
+        rightPlaceholder && 'peer w-0 grow',
         className
     );
 
@@ -81,7 +81,7 @@ const TextField: React.FC<TextFieldProps> = ({
         );
 
         field = (
-            <div className='flex items-center'>
+            <div className='flex w-full items-center'>
                 {inputField}
                 <span className={rightPHClasses || ''}>{rightPlaceholder}</span>
             </div>
