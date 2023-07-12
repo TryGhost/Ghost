@@ -11,6 +11,7 @@ export interface SelectOption {
 
 export interface SelectProps {
     title?: string;
+    size?: 'xs' | 'md';
     prompt?: string;
     options: SelectOption[];
     selectedOption?: string
@@ -18,6 +19,7 @@ export interface SelectProps {
     error?:boolean;
     hint?: React.ReactNode;
     clearBg?: boolean;
+    border?: boolean;
     containerClassName?: string;
     selectClassName?: string;
     optionClassName?: string;
@@ -26,6 +28,7 @@ export interface SelectProps {
 
 const Select: React.FC<SelectProps> = ({
     title,
+    size = 'md',
     prompt,
     options,
     selectedOption,
@@ -33,6 +36,7 @@ const Select: React.FC<SelectProps> = ({
     error,
     hint,
     clearBg = true,
+    border = true,
     containerClassName,
     selectClassName,
     optionClassName,
@@ -49,7 +53,7 @@ const Select: React.FC<SelectProps> = ({
         containerClasses = clsx(
             'relative w-full after:pointer-events-none',
             `after:absolute after:block after:h-2 after:w-2 after:rotate-45 after:border-[1px] after:border-l-0 after:border-t-0 after:border-grey-900 after:content-['']`,
-            title ? 'after:top-[14px]' : 'after:top-[14px]',
+            size === 'xs' ? 'after:top-[6px]' : 'after:top-[14px]',
             clearBg ? 'after:right-0' : 'after:right-4'
         );
     }
@@ -61,7 +65,9 @@ const Select: React.FC<SelectProps> = ({
     let selectClasses = '';
     if (!unstyled) {
         selectClasses = clsx(
-            'h-10 w-full cursor-pointer appearance-none border-b py-2 pr-5 outline-none',
+            size === 'xs' ? 'h-6 py-0 pr-3 text-xs' : 'h-10 py-2 pr-5',
+            'w-full cursor-pointer appearance-none outline-none',
+            border && 'border-b',
             !clearBg && 'bg-grey-75 px-[10px]',
             error ? 'border-red' : 'border-grey-500 hover:border-grey-700 focus:border-black',
             (title && !clearBg) && 'mt-2'

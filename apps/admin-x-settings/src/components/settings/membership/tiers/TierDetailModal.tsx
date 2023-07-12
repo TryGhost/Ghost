@@ -5,6 +5,7 @@ import Icon from '../../../../admin-x-ds/global/Icon';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
+import Select from '../../../../admin-x-ds/global/form/Select';
 import SortableList from '../../../../admin-x-ds/global/SortableList';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import TierDetailPreview from './TierDetailPreview';
@@ -88,22 +89,40 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                         onChange={e => updateForm(state => ({...state, description: e.target.value}))}
                     />
                     <div className='flex gap-10'>
-                        <div className='flex basis-1/2 flex-col gap-2'>
-                            <TextField
-                                placeholder='1'
-                                title='Prices'
-                                value={formState.monthly_price}
-                                onChange={e => updateForm(state => ({...state, monthly_price: e.target.value.replace(/[^\d.]/, '')}))}
-                            />
-                            <TextField
-                                placeholder='10'
-                                value={formState.yearly_price}
-                                onChange={e => updateForm(state => ({...state, yearly_price: e.target.value.replace(/[^\d.]/, '')}))}
-                            />
+                        <div className='basis-1/2'>
+                            <div className='mb-1 flex h-6 items-center justify-between'>
+                                <Heading level={6}>Prices</Heading>
+                                <div className='w-10'>
+                                    <Select
+                                        border={false}
+                                        options={[
+                                            {label: 'USD', value: 'US Dollaz'},
+                                            {label: 'HUF', value: 'Hungarian Dollaz'}
+                                        ]}
+                                        selectClassName='font-medium'
+                                        size='xs'
+                                        onSelect={() => {}}
+                                    />
+                                </div>
+                            </div>
+                            <div className='flex flex-col gap-2'>
+                                <TextField
+                                    placeholder='1'
+                                    rightPlaceholder='USD/month'
+                                    value={formState.monthly_price}
+                                    onChange={e => updateForm(state => ({...state, monthly_price: e.target.value.replace(/[^\d.]/, '')}))}
+                                />
+                                <TextField
+                                    placeholder='10'
+                                    rightPlaceholder='USD/year'
+                                    value={formState.yearly_price}
+                                    onChange={e => updateForm(state => ({...state, yearly_price: e.target.value.replace(/[^\d.]/, '')}))}
+                                />
+                            </div>
                         </div>
                         <div className='basis-1/2'>
-                            <div className='flex justify-between'>
-                                <Heading level={6} grey>Add a free trial</Heading>
+                            <div className='mb-1 flex h-6 items-center justify-between'>
+                                <Heading level={6}>Add a free trial</Heading>
                                 <Toggle onChange={() => {}} />
                             </div>
                             <TextField
@@ -111,6 +130,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                                     Members will be subscribed at full price once the trial ends. <a href="https://ghost.org/" rel="noreferrer" target="_blank">Learn more</a>
                                 </>}
                                 placeholder='0'
+                                rightPlaceholder='days'
                                 value={formState.trial_days}
                                 disabled
                                 onChange={e => updateForm(state => ({...state, trial_days: e.target.value.replace(/^[\d.]/, '')}))}
