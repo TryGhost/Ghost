@@ -1,5 +1,8 @@
+import Heading from './Heading';
+import Hint from './Hint';
 import Icon from './Icon';
 import React, {HTMLProps, ReactNode, useState} from 'react';
+import Separator from './Separator';
 import clsx from 'clsx';
 import {CSS} from '@dnd-kit/utilities';
 import {DndContext, DragOverlay, DraggableAttributes, closestCenter} from '@dnd-kit/core';
@@ -10,23 +13,36 @@ export interface SortableItemContainerProps {
     isDragging: boolean;
     dragHandleAttributes?: DraggableAttributes;
     dragHandleListeners?: Record<string, Function>;
+    dragHandleClass?: string;
     style?: React.CSSProperties;
-    children: ReactNode
+    children: ReactNode;
+    separator?: boolean;
 }
 
-const DefaultContainer: React.FC<SortableItemContainerProps> = ({setRef, isDragging, dragHandleAttributes, dragHandleListeners, style, children}) => (
+const DefaultContainer: React.FC<SortableItemContainerProps> = ({
+    setRef,
+    isDragging,
+    dragHandleAttributes,
+    dragHandleListeners,
+    dragHandleClass,
+    style,
+    separator,
+    children
+}) => (
     <div
         ref={setRef}
         className={clsx(
-            'flex w-full items-start gap-3 rounded border-b border-grey-200 bg-white py-4 hover:bg-grey-100',
+            'group flex w-full items-center gap-3 bg-white py-1',
+            separator && 'border-b border-grey-200',
             isDragging && 'opacity-75'
         )}
         style={style}
     >
         <button
             className={clsx(
-                'ml-2 h-7 pl-2',
-                isDragging ? 'cursor-grabbing' : 'cursor-grab'
+                'h-7 opacity-50 group-hover:opacity-100',
+                isDragging ? 'cursor-grabbing' : 'cursor-grab',
+                dragHandleClass
             )}
             type='button'
             {...dragHandleAttributes}
@@ -41,8 +57,10 @@ const DefaultContainer: React.FC<SortableItemContainerProps> = ({setRef, isDragg
 const SortableItem: React.FC<{
     id: string
     children: ReactNode;
+    separator?: boolean;
+    dragHandleClass?: string;
     container: (props: SortableItemContainerProps) => ReactNode;
-}> = ({id, children, container}) => {
+}> = ({id, children, separator, dragHandleClass, container}) => {
     const {
         attributes,
         listeners,
@@ -59,6 +77,8 @@ const SortableItem: React.FC<{
     return container({
         setRef: setNodeRef,
         isDragging: false,
+        separator: separator,
+        dragHandleClass: dragHandleClass,
         dragHandleAttributes: attributes,
         dragHandleListeners: listeners,
         style,
@@ -67,17 +87,27 @@ const SortableItem: React.FC<{
 };
 
 export interface SortableListProps<Item extends {id: string}> extends HTMLProps<HTMLDivElement> {
-        items: Item[];
-        onMove: (id: string, overId: string) => void;
-        renderItem: (item: Item) => ReactNode;
-        container?: (props: SortableItemContainerProps) => ReactNode;
+    title?: string;
+    titleSeparator?: boolean;
+    hint?: React.ReactNode;
+    items: Item[];
+    itemSeparator?: boolean;
+    dragHandleClass?: string;
+    onMove: (id: string, overId: string) => void;
+    renderItem: (item: Item) => ReactNode;
+    container?: (props: SortableItemContainerProps) => ReactNode;
 }
 
 /**
  * Note: For lists which don't have an ID, you can use `useSortableIndexedList` to give items a consistent index-based ID.
  */
 const SortableList = <Item extends {id: string}>({
+    title,
+    titleSeparator,
+    hint,
     items,
+    itemSeparator = true,
+    dragHandleClass,
     onMove,
     renderItem,
     container = props => <DefaultContainer {...props} />,
@@ -85,28 +115,41 @@ const SortableList = <Item extends {id: string}>({
 }: SortableListProps<Item>) => {
     const [draggingId, setDraggingId] = useState<string | null>(null);
 
+    if (!items.length) {
+        return <></>;
+    }
+
     return (
         <div {...props}>
-            <DndContext
-                collisionDetection={closestCenter}
-                onDragEnd={event => onMove(event.active.id as string, event.over?.id as string)}
-                onDragStart={event => setDraggingId(event.active.id as string)}
-            >
-                <SortableContext
-                    items={items}
-                    strategy={verticalListSortingStrategy}
+            {title && <Heading level={6} separator={titleSeparator} grey>{title}</Heading>}
+            <div className={`${title && titleSeparator ? '-mt-2' : ''}`}>
+                <DndContext
+                    collisionDetection={closestCenter}
+                    onDragEnd={event => onMove(event.active.id as string, event.over?.id as string)}
+                    onDragStart={event => setDraggingId(event.active.id as string)}
                 >
-                    {items.map(item => (
-                        <SortableItem key={item.id} container={container} id={item.id}>{renderItem(item)}</SortableItem>
-                    ))}
-                </SortableContext>
-                <DragOverlay>
-                    {draggingId ? container({
-                        isDragging: true,
-                        children: renderItem(items.find(({id}) => id === draggingId)!)
-                    }) : null}
-                </DragOverlay>
-            </DndContext>
+                    <SortableContext
+                        items={items}
+                        strategy={verticalListSortingStrategy}
+                    >
+                        {items.map(item => (
+                            <SortableItem key={item.id} container={container} dragHandleClass={dragHandleClass} id={item.id} separator={itemSeparator}>{renderItem(item)}</SortableItem>
+                        ))}
+                    </SortableContext>
+                    <DragOverlay>
+                        {draggingId ? container({
+                            isDragging: true,
+                            children: renderItem(items.find(({id}) => id === draggingId)!)
+                        }) : null}
+                    </DragOverlay>
+                </DndContext>
+            </div>
+            {hint &&
+            <>
+                {!itemSeparator && <Separator />}
+                <Hint>{hint}</Hint>
+            </>
+            }
         </div>
     );
 };
