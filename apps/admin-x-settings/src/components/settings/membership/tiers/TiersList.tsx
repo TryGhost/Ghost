@@ -9,25 +9,25 @@ import {Tier} from '../../../../types/api';
 interface TiersListProps {
     tab?: string;
     tiers: Tier[];
-    updateTiers: (data: Tier[]) => Promise<void>;
+    updateTier: (data: Tier) => Promise<void>;
 }
 
 interface TierActionsProps {
     tier: Tier;
-    updateTiers: (data: Tier[]) => Promise<void>;
+    updateTier: (data: Tier) => Promise<void>;
 }
 
-const TierActions: React.FC<TierActionsProps> = ({tier, updateTiers}) => {
+const TierActions: React.FC<TierActionsProps> = ({tier, updateTier}) => {
     if (tier.active) {
         return (
             <Button color='green' label='Archive' link onClick={() => {
-                updateTiers([{...tier, active: false}]);
+                updateTier({...tier, active: false});
             }} />
         );
     } else {
         return (
             <Button color='green' label='Activate' link onClick={() => {
-                updateTiers([{...tier, active: true}]);
+                updateTier({...tier, active: true});
             }}/>
         );
     }
@@ -35,19 +35,19 @@ const TierActions: React.FC<TierActionsProps> = ({tier, updateTiers}) => {
 
 const TiersList: React.FC<TiersListProps> = ({
     tiers,
-    updateTiers
+    updateTier
 }) => {
     return (
         <List>
             {tiers.map((tier) => {
                 return (
                     <ListItem
-                        action={<TierActions tier={tier} updateTiers={updateTiers} />}
+                        action={<TierActions tier={tier} updateTier={updateTier} />}
                         detail={tier?.description || ''}
                         title={tier?.name}
                         hideActions
                         onClick={() => {
-                            NiceModal.show(TierDetailModal);
+                            NiceModal.show(TierDetailModal, {tier});
                         }}
                     />
                 );

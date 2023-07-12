@@ -171,6 +171,7 @@ export interface API {
     tiers: {
         browse: () => Promise<TiersResponseType>
         edit: (newTier: Tier) => Promise<TiersResponseType>
+        add: (newTier: Partial<Tier>) => Promise<TiersResponseType>
     };
     labels: {
         browse: () => Promise<LabelsResponseType>
@@ -406,6 +407,14 @@ function setupGhostApi({ghostVersion}: GhostApiOptions): API {
             edit: async (tier) => {
                 const response = await fetcher(`/tiers/${tier.id}`, {
                     method: 'PUT',
+                    body: JSON.stringify({tiers: [tier]})
+                });
+                const data: TiersResponseType = await response.json();
+                return data;
+            },
+            add: async (tier) => {
+                const response = await fetcher(`/tiers/`, {
+                    method: 'POST',
                     body: JSON.stringify({tiers: [tier]})
                 });
                 const data: TiersResponseType = await response.json();
