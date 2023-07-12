@@ -1,7 +1,7 @@
 import Icon from '../../../../admin-x-ds/global/Icon';
 import React, {ReactNode, forwardRef} from 'react';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
-import UrlTextField from './UrlTextField';
+import URLTextField from '../../../../admin-x-ds/global/form/URLTextField';
 import {EditableItem, NavigationItem, NavigationItemErrors} from '../../../../hooks/site/useNavigationEditor';
 
 export type NavigationItemEditorProps = React.HTMLAttributes<HTMLDivElement> & {
@@ -42,7 +42,7 @@ const NavigationItemEditor = forwardRef<HTMLDivElement, NavigationItemEditorProp
                 />
             </div>
             <div className="flex flex-1">
-                <UrlTextField
+                <URLTextField
                     baseUrl={baseUrl}
                     className={textFieldClasses}
                     containerClassName="w-full"
