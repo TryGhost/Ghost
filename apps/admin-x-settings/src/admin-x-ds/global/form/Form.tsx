@@ -5,7 +5,7 @@ import clsx from 'clsx';
 interface FormProps {
     title?: string;
     grouped?: boolean;
-    gap?: 'sm' | 'md' | 'lg';
+    gap?: 'none' | 'sm' | 'md' | 'lg';
     marginTop?: boolean;
     marginBottom?: boolean;
     children?: React.ReactNode;

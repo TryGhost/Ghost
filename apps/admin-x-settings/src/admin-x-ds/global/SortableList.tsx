@@ -13,8 +13,10 @@ export interface SortableItemContainerProps {
     isDragging: boolean;
     dragHandleAttributes?: DraggableAttributes;
     dragHandleListeners?: Record<string, Function>;
+    dragHandleClass?: string;
     style?: React.CSSProperties;
-    children: ReactNode
+    children: ReactNode;
+    separator?: boolean;
 }
 
 const DefaultContainer: React.FC<SortableItemContainerProps> = ({
@@ -22,21 +24,25 @@ const DefaultContainer: React.FC<SortableItemContainerProps> = ({
     isDragging,
     dragHandleAttributes,
     dragHandleListeners,
+    dragHandleClass,
     style,
+    separator,
     children
 }) => (
     <div
         ref={setRef}
         className={clsx(
-            'group flex w-full items-start gap-3 rounded border-b border-grey-200 bg-white py-4 hover:bg-white',
+            'group flex w-full items-center gap-3 bg-white py-1',
+            separator && 'border-b border-grey-200',
             isDragging && 'opacity-75'
         )}
         style={style}
     >
         <button
             className={clsx(
-                'h-7 opacity-30 group-hover:opacity-100',
-                isDragging ? 'cursor-grabbing' : 'cursor-grab'
+                'h-7 opacity-50 group-hover:opacity-100',
+                isDragging ? 'cursor-grabbing' : 'cursor-grab',
+                dragHandleClass
             )}
             type='button'
             {...dragHandleAttributes}
@@ -51,8 +57,10 @@ const DefaultContainer: React.FC<SortableItemContainerProps> = ({
 const SortableItem: React.FC<{
     id: string
     children: ReactNode;
+    separator?: boolean;
+    dragHandleClass?: string;
     container: (props: SortableItemContainerProps) => ReactNode;
-}> = ({id, children, container}) => {
+}> = ({id, children, separator, dragHandleClass, container}) => {
     const {
         attributes,
         listeners,
@@ -69,6 +77,8 @@ const SortableItem: React.FC<{
     return container({
         setRef: setNodeRef,
         isDragging: false,
+        separator: separator,
+        dragHandleClass: dragHandleClass,
         dragHandleAttributes: attributes,
         dragHandleListeners: listeners,
         style,
@@ -80,8 +90,9 @@ export interface SortableListProps<Item extends {id: string}> extends HTMLProps<
     title?: string;
     titleSeparator?: boolean;
     hint?: React.ReactNode;
-    hintSeparator?: boolean;
     items: Item[];
+    itemSeparator?: boolean;
+    dragHandleClass?: string;
     onMove: (id: string, overId: string) => void;
     renderItem: (item: Item) => ReactNode;
     container?: (props: SortableItemContainerProps) => ReactNode;
@@ -94,14 +105,19 @@ const SortableList = <Item extends {id: string}>({
     title,
     titleSeparator,
     hint,
-    hintSeparator,
     items,
+    itemSeparator = true,
+    dragHandleClass,
     onMove,
     renderItem,
     container = props => <DefaultContainer {...props} />,
     ...props
 }: SortableListProps<Item>) => {
     const [draggingId, setDraggingId] = useState<string | null>(null);
+
+    if (!items.length) {
+        return <></>;
+    }
 
     return (
         <div {...props}>
@@ -117,7 +133,7 @@ const SortableList = <Item extends {id: string}>({
                         strategy={verticalListSortingStrategy}
                     >
                         {items.map(item => (
-                            <SortableItem key={item.id} container={container} id={item.id}>{renderItem(item)}</SortableItem>
+                            <SortableItem key={item.id} container={container} dragHandleClass={dragHandleClass} id={item.id} separator={itemSeparator}>{renderItem(item)}</SortableItem>
                         ))}
                     </SortableContext>
                     <DragOverlay>
@@ -130,7 +146,7 @@ const SortableList = <Item extends {id: string}>({
             </div>
             {hint &&
             <>
-                {hintSeparator && <Separator />}
+                {!itemSeparator && <Separator />}
                 <Hint>{hint}</Hint>
             </>
             }
