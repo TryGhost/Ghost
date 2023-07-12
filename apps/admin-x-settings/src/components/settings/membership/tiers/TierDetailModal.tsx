@@ -72,8 +72,8 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
         }}
     >
         <div className='mt-8 flex items-start gap-10'>
-            <div className='flex grow flex-col gap-10'>
-                <Form title='Basic'>
+            <div className='flex grow flex-col gap-5'>
+                <Form title='Basic' grouped>
                     <TextField
                         placeholder='Bronze'
                         title='Name'
@@ -118,7 +118,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                     </div>
                 </Form>
 
-                <Form title='Benefits'>
+                <Form title='Benefits' grouped>
                     <SortableList
                         items={benefits.items}
                         renderItem={({id, item}) => <div className='flex'>

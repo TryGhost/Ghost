@@ -1,9 +1,10 @@
+import Heading from '../Heading';
 import React from 'react';
-import Separator from '../Separator';
 import clsx from 'clsx';
 
 interface FormProps {
     title?: string;
+    grouped?: boolean;
     gap?: 'sm' | 'md' | 'lg';
     marginTop?: boolean;
     marginBottom?: boolean;
@@ -15,6 +16,7 @@ interface FormProps {
  */
 const Form: React.FC<FormProps> = ({
     title,
+    grouped = false,
     gap = 'md',
     marginTop = false,
     marginBottom = true,
@@ -45,14 +47,19 @@ const Form: React.FC<FormProps> = ({
         );
     }
 
+    if (grouped) {
+        classes = clsx(
+            classes,
+            'rounded-sm border border-grey-200 p-7'
+        );
+    }
+
     return (
-        <div className={classes}>
-            {title &&
-            (<div className='-mb-4'>
-                <div className='text-sm font-semibold text-grey-800'>{title}</div>
-                <Separator />
-            </div>)}
-            {children}
+        <div className={!title ? classes : ''}>
+            {title && <Heading className={`${grouped && 'pb-1'}`} level={6} separator={!grouped} grey>{title}</Heading>}
+            <div className={title ? classes : ''}>
+                {children}
+            </div>
         </div>
     );
 };

@@ -22,7 +22,7 @@ const Wrapper = (props: SortableListProps<any> & {updateArgs: (args: Partial<Sor
 };
 
 const meta = {
-    title: 'Global / Sortable List',
+    title: 'Global / List / Sortable',
     component: SortableList,
     tags: ['autodocs'],
     render: function Component(args) {
@@ -36,8 +36,11 @@ type Story = StoryObj<typeof SortableList>;
 
 export const Default: Story = {
     args: {
+        title: 'Sortable list',
+        titleSeparator: true,
         items: [{id: 'first item'}, {id: 'second item'}, {id: 'third item'}],
-        renderItem: item => <span className="self-center">{item.id}</span>
+        renderItem: item => <span className="self-center">{item.id}</span>,
+        hint: 'Drag items to order'
     }
 };
 
