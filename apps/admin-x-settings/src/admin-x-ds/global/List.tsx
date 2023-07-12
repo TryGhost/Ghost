@@ -1,5 +1,6 @@
 import Heading from './Heading';
 import Hint from './Hint';
+import ListHeading from './ListHeading';
 import React from 'react';
 import Separator from './Separator';
 import clsx from 'clsx';
@@ -33,28 +34,11 @@ const List: React.FC<ListProps> = ({title, titleSeparator, children, actions, hi
         className
     );
 
-    let heading;
-
-    if (title) {
-        const headingTitle = <Heading grey={true} level={6}>{title}</Heading>;
-        heading = actions ? (
-            <div className='flex items-end justify-between gap-2'>
-                {headingTitle}
-                {actions}
-            </div>
-        ) : headingTitle;
-    }
-
     return (
         <>
             {pageTitle && <Heading>{pageTitle}</Heading>}
             <section className={listClasses}>
-                {(!pageTitle && title) &&
-                    <div className='flex flex-col items-stretch gap-1'>
-                        {heading}
-                        {titleSeparator && <Separator />}
-                    </div>
-                }
+                <ListHeading actions={actions} title={title} titleSeparator={!pageTitle && titleSeparator} />
                 <div className='flex flex-col'>
                     {children}
                 </div>
