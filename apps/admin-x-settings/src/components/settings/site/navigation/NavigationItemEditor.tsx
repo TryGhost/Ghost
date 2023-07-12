@@ -1,6 +1,7 @@
 import React, {ReactNode} from 'react';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import URLTextField from '../../../../admin-x-ds/global/form/URLTextField';
+import clsx from 'clsx';
 import {EditableItem, NavigationItem, NavigationItemErrors} from '../../../../hooks/site/useNavigationEditor';
 
 export type NavigationItemEditorProps = React.HTMLAttributes<HTMLDivElement> & {
@@ -14,10 +15,10 @@ export type NavigationItemEditorProps = React.HTMLAttributes<HTMLDivElement> & {
     action?: ReactNode
 }
 
-const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, item, updateItem, clearError, labelPlaceholder, unstyled, textFieldClasses, action}) => {
+const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, item, updateItem, clearError, labelPlaceholder, unstyled, textFieldClasses, action, className, ...props}) => {
     return (
-        <>
-            <div className="flex flex-1">
+        <div className={clsx('flex w-full items-start gap-3', className)} data-testid='navigation-item-editor' {...props}>
+            <div className="flex flex-1 pt-1">
                 <TextField
                     className={textFieldClasses}
                     containerClassName="w-full"
@@ -33,7 +34,7 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, ite
                     onKeyDown={() => clearError?.('label')}
                 />
             </div>
-            <div className="flex flex-1">
+            <div className="flex flex-1 pt-1">
                 <URLTextField
                     baseUrl={baseUrl}
                     className={textFieldClasses}
@@ -50,7 +51,7 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, ite
                 />
             </div>
             {action}
-        </>
+        </div>
     );
 };
 

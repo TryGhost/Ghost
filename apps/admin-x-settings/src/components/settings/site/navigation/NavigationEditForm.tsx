@@ -23,18 +23,17 @@ const NavigationEditForm: React.FC<{
             )}
             onMove={navigation.moveItem}
         />
-
-        <div className="flex items-start gap-3 p-2" data-testid="new-navigation-item">
-            <NavigationItemEditor
-                action={<Button color='green' data-testid="add-button" icon="add" iconColorClass='text-white' size='sm' onClick={navigation.addItem} />}
-                baseUrl={baseUrl}
-                clearError={key => navigation.clearError(navigation.newItem.id, key)}
-                item={navigation.newItem}
-                labelPlaceholder="New item label"
-                textFieldClasses="w-full ml-2"
-                updateItem={navigation.setNewItem}
-            />
-        </div>
+        <NavigationItemEditor
+            action={<Button className='self-center' color='green' data-testid="add-button" icon="add" iconColorClass='text-white' size='sm' onClick={navigation.addItem} />}
+            baseUrl={baseUrl}
+            className="p-2 pl-9"
+            clearError={key => navigation.clearError(navigation.newItem.id, key)}
+            data-testid="new-navigation-item"
+            item={navigation.newItem}
+            labelPlaceholder="New item label"
+            textFieldClasses="w-full ml-2"
+            updateItem={navigation.setNewItem}
+        />
     </div>;
 };
 
