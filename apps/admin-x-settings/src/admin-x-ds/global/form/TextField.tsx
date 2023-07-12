@@ -12,6 +12,7 @@ export type TextFieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
     value?: string;
     error?: boolean;
     placeholder?: string;
+    rightPlaceholder?: string;
     hint?: React.ReactNode;
     clearBg?: boolean;
     onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -33,6 +34,7 @@ const TextField: React.FC<TextFieldProps> = ({
     value,
     error,
     placeholder,
+    rightPlaceholder,
     hint,
     clearBg = true,
     onChange,
@@ -53,10 +55,13 @@ const TextField: React.FC<TextFieldProps> = ({
         error ? `border-red` : `${disabled ? 'border-grey-300' : 'border-grey-500 hover:border-grey-700 focus:border-black'}`,
         (title && !hideTitle && !clearBg) && `mt-2`,
         (disabled ? 'text-grey-700' : ''),
+        rightPlaceholder && 'peer grow',
         className
     );
 
-    const field = <input
+    let field = <></>;
+
+    const inputField = <input
         ref={inputRef}
         className={textFieldClasses || className}
         disabled={disabled}
@@ -68,6 +73,22 @@ const TextField: React.FC<TextFieldProps> = ({
         onBlur={onBlur}
         onChange={onChange}
         {...props} />;
+
+    if (rightPlaceholder) {
+        const rightPHClasses = !unstyled && clsx(
+            'h-10 border-b py-2 text-right text-grey-500',
+            error ? `border-red` : `${disabled ? 'border-grey-300' : 'border-grey-500 peer-hover:border-grey-700 peer-focus:border-black'}`
+        );
+
+        field = (
+            <div className='flex items-center'>
+                {inputField}
+                <span className={rightPHClasses || ''}>{rightPlaceholder}</span>
+            </div>
+        );
+    } else {
+        field = inputField;
+    }
 
     if (title || hint) {
         let titleGrey = false;
