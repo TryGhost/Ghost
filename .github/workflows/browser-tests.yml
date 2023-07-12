@@ -54,7 +54,7 @@ jobs:
 
     - name: Run migrations
       working-directory: ghost/core
-      run: yarn setup && yarn knex-migrator init
+      run: yarn knex-migrator init
     - name: Get Playwright version
       id: playwright-version
       run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
