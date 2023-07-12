@@ -35,8 +35,8 @@ const TierBenefits: React.FC<{benefits: string[]}> = ({benefits}) => {
                 benefits.map((benefit) => {
                     return (
                         <div key={benefit} className="mt-4 w-full text-md leading-snug text-grey-900">
-                            <div className="mb-2 flex items-start">
-                                <Icon className="mr-[10px] mt-[3px] h-3.5 w-3.5 min-w-[14px] overflow-visible !stroke-[3px]" name='check' />
+                            <div className="mb-2.5 flex items-start">
+                                <Icon className="mr-[10px] mt-[3px] !h-3.5 !w-3.5 min-w-[14px] overflow-visible !stroke-[3px]" name='check' />
                                 <div>{benefit}</div>
                             </div>
                         </div>
@@ -72,13 +72,13 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier}) => {
                 <div>
                 </div>
             </div>
-            <div className="flex-column relative flex min-h-[200px] min-w-[320px] max-w-[420px] items-start justify-stretch rounded border border-grey-200 bg-white p-8">
+            <div className="flex-column relative flex min-h-[200px] w-full max-w-[420px] items-start justify-stretch rounded border border-grey-200 bg-white p-8">
                 <div className="min-h-[56px] w-full">
                     <h4 className="-mt-1 mb-0 w-full break-words text-lg font-semibold leading-tight text-pink">{name}</h4>
                     <div className="mt-4 flex w-full flex-row flex-wrap items-end justify-between gap-x-1 gap-y-[10px]">
-                        <div className="flex justify-center text-black">
+                        <div className="flex flex-wrap text-black">
                             <span className="self-start text-[2.7rem] font-bold uppercase leading-[1.115]">{currencySymbol}</span>
-                            <span className="text-[3.4rem] font-bold leading-none tracking-tight">{monthlyPrice}</span>
+                            <span className="break-all text-[3.4rem] font-bold leading-none tracking-tight">{monthlyPrice}</span>
                             <span className="ml-1 self-end text-[1.5rem] leading-snug text-grey-800">/month</span>
                         </div>
                         <TrialDaysLabel trialDays={trialDays} />
