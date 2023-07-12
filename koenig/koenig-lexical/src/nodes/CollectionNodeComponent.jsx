@@ -29,6 +29,7 @@ export function CollectionNodeComponent({
         if (cardConfig?.fetchCollectionPosts && collection?.slug) {
             fetchCollectionPosts(collection?.slug);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     React.useEffect(() => {
@@ -77,10 +78,13 @@ export function CollectionNodeComponent({
         });
     };
 
+    const collections = cardConfig?.collections || [];
+
     return (
         <>
             <CollectionCard
                 collection={collection}
+                collections={collections}
                 columns={columns}
                 handleCollectionChange={handleCollectionChange}
                 handleColumnChange={handleColumnChange}

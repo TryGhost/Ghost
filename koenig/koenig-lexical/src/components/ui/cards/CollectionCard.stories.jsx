@@ -1,6 +1,9 @@
 import React from 'react';
 import {CardWrapper} from './../CardWrapper';
 import {CollectionCard} from './CollectionCard';
+import {MINIMAL_NODES} from '../../../index.js';
+import {createEditor} from 'lexical';
+import {editorEmptyState} from '../../../../.storybook/editorEmptyState';
 
 const mockPosts = [
     {
@@ -26,6 +29,18 @@ const mockPosts = [
         excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
         image: 'https://placekitten.com/249/251',
         author: 'Author McAuthory'
+    }
+];
+
+const mockCollections = [
+    {
+        title: 'Latest',
+        slug: 'index',
+        posts: mockPosts
+    }, {
+        title: 'Featured',
+        slug: 'featured',
+        posts: mockPosts.slice(1, 2)
     }
 ];
 
@@ -63,11 +78,17 @@ const story = {
 export default story;
 
 const Template = ({display, caption, ...args}) => {
+    const headerTextEditor = createEditor({nodes: MINIMAL_NODES});
+
     return (
         <div className="kg-prose">
             <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
                 <CardWrapper {...display} {...args}>
-                    <CollectionCard {...display} {...args} />
+                    <CollectionCard
+                        {...display}
+                        {...args}
+                        headerTextEditor={headerTextEditor}
+                    />
                 </CardWrapper>
             </div>
         </div>
@@ -78,7 +99,9 @@ export const Empty = Template.bind({});
 Empty.args = {
     display: 'Editing',
     collection: {id: 123456}, // we'll always return some collections, but may need a placeholder in case of no api access
-    postCount: 0
+    collections: [],
+    postCount: 0,
+    headerTextEditorInitialState: editorEmptyState
 };
 
 export const PopulatedList = Template.bind({});
@@ -86,8 +109,10 @@ PopulatedList.args = {
     display: 'Editing',
     posts: mockPosts,
     collection: {id: 123456},
+    collections: mockCollections,
     postCount: 3,
-    layout: 'list'
+    layout: 'list',
+    headerTextEditorInitialState: editorEmptyState
 };
 
 export const PopulatedGrid = Template.bind({});
@@ -95,7 +120,9 @@ PopulatedGrid.args = {
     display: 'Editing',
     posts: mockPosts,
     collection: {id: 123456},
+    collections: mockCollections,
     postCount: 3,
     layout: 'grid',
-    columns: 2
+    columns: 2,
+    headerTextEditorInitialState: editorEmptyState
 };

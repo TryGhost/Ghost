@@ -1,4 +1,3 @@
-import KoenigComposerContext from '../../../context/KoenigComposerContext';
 import KoenigNestedEditor from '../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -16,7 +15,7 @@ export function CollectionPost({
 }) {
     // may want options later for changing post display (like hiding feature img)
     const {title, feature_image: image, published_at: publishDate, reading_time: readTime, excerpt} = post;
-    
+
     return (
         <div className={clsx(
             'not-kg-prose relative flex min-h-[120px] w-full gap-5 bg-transparent font-sans',
@@ -63,6 +62,7 @@ export function Collection({
 
 export function CollectionCard({
     collection,
+    collections,
     columns,
     layout,
     postCount,
@@ -76,11 +76,9 @@ export function CollectionCard({
     headerTextEditor,
     headerTextEditorInitialState
 }) {
-    const {cardConfig} = React.useContext(KoenigComposerContext);
-
     // collections should be passed in as the editor loads via cardConfig
     // TODO: we shouldn't be getting collections without posts from the editor load
-    const collectionOptions = cardConfig?.collections?.filter(item => item.posts.length > 0)
+    const collectionOptions = collections?.filter(item => item.posts.length > 0)
         .map((item) => {
             return {
                 label: item.title,
@@ -104,7 +102,7 @@ export function CollectionCard({
     return (
         <>
             {(isEditing || !isEditorEmpty(headerTextEditor)) && (
-                <KoenigNestedEditor 
+                <KoenigNestedEditor
                     autoFocus={true}
                     hasSettingsPanel={true}
                     initialEditor={headerTextEditor}
@@ -169,6 +167,7 @@ export function CollectionCard({
 
 CollectionCard.propTypes = {
     collection: PropTypes.object,
+    collections: PropTypes.array,
     columns: PropTypes.number,
     layout: PropTypes.oneOf(['list', 'grid']),
     postCount: PropTypes.number,
