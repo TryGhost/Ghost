@@ -16274,7 +16274,7 @@ esbuild@^0.17.0:
     "@esbuild/win32-ia32" "0.17.11"
     "@esbuild/win32-x64" "0.17.11"
 
-esbuild@^0.18.10:
+esbuild@^0.18.10, esbuild@^0.18.11:
   version "0.18.11"
   resolved "https://registry.yarnpkg.com/esbuild/-/esbuild-0.18.11.tgz#cbf94dc3359d57f600a0dbf281df9b1d1b4a156e"
   integrity sha512-i8u6mQF0JKJUlGR3OdFLKldJQMMs8OqM9Cc3UCi9XXziJ9WERM5bfkHaEAy0YAvPRMgqSW55W7xYn84XtEFTtA==
@@ -19475,10 +19475,10 @@ husky@8.0.3:
   resolved "https://registry.yarnpkg.com/husky/-/husky-8.0.3.tgz#4936d7212e46d1dea28fef29bb3a108872cd9184"
   integrity sha512-+dQSyqPh4x1hlO1swXBiNb2HzTDN1I2IGLQx1GrBuiqFJfoMrnZWwVmatvSiO+Iz8fBUnf+lekwNo4c2LlXItg==
 
-i18next-parser@8.0.0:
-  version "8.0.0"
-  resolved "https://registry.yarnpkg.com/i18next-parser/-/i18next-parser-8.0.0.tgz#dae5da549ec4fccb08a7de93563e34e082cc68c3"
-  integrity sha512-WnpIXJlwgUTwnlEFLJpL5E8Y7faWCV/GVqIJXJos15Zwoic5k3QXV3QodP4uYp8W1T1w4y5wXrSEGS1Y4obxCg==
+i18next-parser@8.2.0:
+  version "8.2.0"
+  resolved "https://registry.yarnpkg.com/i18next-parser/-/i18next-parser-8.2.0.tgz#a73bfe31a5a77f3f930786a3a58ce8bff4db1fc5"
+  integrity sha512-wR2Hu2rIR+m9S/Q6scP9/zuhiUgGr9TGnEWC7AtDqahewiJ9f8mGewYjQKJYCSm+CtYu0uYpLjtZwBzAS7CG2w==
   dependencies:
     "@babel/runtime" "^7.15.4"
     broccoli-plugin "^4.0.7"
@@ -19487,7 +19487,7 @@ i18next-parser@8.0.0:
     commander "~10.0.0"
     concat-stream "~2.0.0"
     eol "^0.9.1"
-    esbuild "^0.17.0"
+    esbuild "^0.18.11"
     fs-extra "^11.1.0"
     gulp-sort "^2.0.0"
     i18next "^22.0.4"
@@ -19496,7 +19496,7 @@ i18next-parser@8.0.0:
     rsvp "^4.8.2"
     sort-keys "^5.0.0"
     through2 "~4.0.2"
-    typescript "^4.2.4"
+    typescript "^5.0.4"
     vinyl "~3.0.0"
     vinyl-fs "^3.0.2"
     vue-template-compiler "^2.6.11"
@@ -31933,15 +31933,10 @@ typescript-memoize@^1.0.0-alpha.3, typescript-memoize@^1.0.1:
   resolved "https://registry.yarnpkg.com/typescript-memoize/-/typescript-memoize-1.1.1.tgz#02737495d5df6ebf72c07ba0d002e8f4cf5ccfa0"
   integrity sha512-GQ90TcKpIH4XxYTI2F98yEQYZgjNMOGPpOgdjIBhaLaWji5HPWlRnZ4AeA1hfBxtY7bCGDJsqDDHk/KaHOl5bA==
 
-typescript@5.1.6, "typescript@>=3 < 6":
+typescript@5.1.6, "typescript@>=3 < 6", typescript@^5.0.4:
   version "5.1.6"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.1.6.tgz#02f8ac202b6dad2c0dd5e0913745b47a37998274"
   integrity sha512-zaWCozRZ6DLEWAWFrVDz1H6FVXzUSfTy5FUMWsQlU8Ym5JP9eO4xkTIROFCQvhQf61z6O/G6ugw3SgAnvvm+HA==
-
-typescript@^4.2.4:
-  version "4.9.5"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.9.5.tgz#095979f9bcc0d09da324d58d03ce8f8374cbe65a"
-  integrity sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==
 
 uc.micro@^1.0.1, uc.micro@^1.0.5:
   version "1.0.6"
