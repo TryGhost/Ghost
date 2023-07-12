@@ -3718,21 +3718,21 @@
   resolved "https://registry.yarnpkg.com/@leichtgewicht/ip-codec/-/ip-codec-2.0.4.tgz#b2ac626d6cb9c8718ab459166d4bb405b8ffa78b"
   integrity sha512-Hcv+nVC0kZnQ3tD9GVu5xSMR4VVYOteQIr/hwFPVEvPdlXqgGEuRjiheChHgdM+JyqdgNcmzZOX/tnl0JOiI7A==
 
-"@lerna/child-process@7.1.1":
-  version "7.1.1"
-  resolved "https://registry.yarnpkg.com/@lerna/child-process/-/child-process-7.1.1.tgz#60eddd6dc4b6ba0fd51851c78b6dbdc4e1614220"
-  integrity sha512-mR8PaTkckYPLmEBG2VsVsJq2UuzEvjXevOB1rKLKUZ/dPCGcottVhbiEzTxickc+s7Y/1dTTLn/1BKj3B1a5BA==
+"@lerna/child-process@7.1.3":
+  version "7.1.3"
+  resolved "https://registry.yarnpkg.com/@lerna/child-process/-/child-process-7.1.3.tgz#8037449080e0d2fdbff957e15bf1877a5d9872c3"
+  integrity sha512-ZXHo30G5Ia/RCWKVyBm+3kAe/liWy7KaRF+CPWZpxYo+ysFPBIJ/7XZlGMzmq8fQaMsPj1z61q4wyqeAlUwuvQ==
   dependencies:
     chalk "^4.1.0"
     execa "^5.0.0"
     strong-log-transformer "^2.1.0"
 
-"@lerna/create@7.1.1":
-  version "7.1.1"
-  resolved "https://registry.yarnpkg.com/@lerna/create/-/create-7.1.1.tgz#2af94afb01971c1b594c06347b6998607aefe5c4"
-  integrity sha512-1PY2OgwGxp7b91JzLKEhONVl69mCt1IyYEc6pzKy3Sv+UOdeK2QFq1SX/85hNOR3iitiyZ75bNWUTcBly1ZlZg==
+"@lerna/create@7.1.3":
+  version "7.1.3"
+  resolved "https://registry.yarnpkg.com/@lerna/create/-/create-7.1.3.tgz#497b50cee176083f7457a7ac1cd5e8f180761e73"
+  integrity sha512-i/xUmT7sMNTUhGpSUuQJ8N776YiT/fJaKPrzMSAoxqDBhyDryi4o4JUR+rrN9oELOEsO+SOXQEusBdkmUdVTMg==
   dependencies:
-    "@lerna/child-process" "7.1.1"
+    "@lerna/child-process" "7.1.3"
     dedent "0.7.0"
     fs-extra "^11.1.1"
     init-package-json "5.0.0"
@@ -22089,13 +22089,13 @@ leek@0.0.24:
     lodash.assign "^3.2.0"
     rsvp "^3.0.21"
 
-lerna@7.1.1:
-  version "7.1.1"
-  resolved "https://registry.yarnpkg.com/lerna/-/lerna-7.1.1.tgz#6703062e6c4ddefdaf41e8890e9200690924fd71"
-  integrity sha512-rjivAl3bYu2+lWOi90vy0tYFgwBYPMiNkR/DuEWZC08wle5dsbOZ/SlXeLk9+kzbF89Bt5P6p+qF78A2tJsWPA==
+lerna@7.1.3:
+  version "7.1.3"
+  resolved "https://registry.yarnpkg.com/lerna/-/lerna-7.1.3.tgz#9aef15620b54038b1e4c5ea620c6b9b7590f26a4"
+  integrity sha512-LMs9HU0z5fNFMNOyDVinJcf04QaScReJ8Q2pqxO+nPOmbvNsBwykBgMTWLboL1rI1CCR0/WLdMnvObvR52MtTw==
   dependencies:
-    "@lerna/child-process" "7.1.1"
-    "@lerna/create" "7.1.1"
+    "@lerna/child-process" "7.1.3"
+    "@lerna/create" "7.1.3"
     "@npmcli/run-script" "6.0.2"
     "@nx/devkit" ">=16.1.3 < 17"
     "@octokit/plugin-enterprise-rest" "6.0.1"
