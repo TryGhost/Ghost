@@ -1,57 +1,130 @@
 import React from 'react';
 import {CardWrapper} from './../CardWrapper';
 import {CollectionCard} from './CollectionCard';
+import {DateTime} from 'luxon';
 import {MINIMAL_NODES} from '../../../index.js';
 import {createEditor} from 'lexical';
 import {editorEmptyState} from '../../../../.storybook/editorEmptyState';
 
 const mockPosts = [
     {
-        title: 'A Post For The Ages',
-        id: 123456,
+        title: 'The Secret Life of Kittens: Uncovering Their Mischievous Master Plans',
+        id: 1,
         url: 'https://www.google.com',
+        published_at: DateTime.now().minus({days: Math.floor(Math.random() * 100)}).toISO(),
         excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
-        image: 'https://placekitten.com/250/250',
+        feature_image: 'https://placekitten.com/230/250',
+        reading_time: `${Math.floor(Math.random() * 10)}`,
         author: 'Author McAuthory'
     },
     {
-        title: 'Copilot Needs A Post',
-        id: 234059,
+        title: 'Kittens Gone Wild: Epic Adventures of Feline Daredevils',
+        id: 2,
         url: 'https://www.google.com',
+        published_at: DateTime.now().minus({days: Math.random() * 100}).toISO(),
         excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
-        image: 'https://placekitten.com/251/250',
+        feature_image: 'https://placekitten.com/251/250',
+        reading_time: `${Math.floor(Math.random() * 10)}`,
         author: 'Writer Writterson'
     },
     {
-        title: 'More Suggestions Please And Thank You',
-        id: 129837,
+        title: 'The Kitten Olympics: Hilarious Competitions and Paw-some Winners',
+        id: 3,
         url: 'https://www.google.com',
+        published_at: DateTime.now().minus({days: Math.random() * 100}).toISO(),
         excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
-        image: 'https://placekitten.com/249/251',
+        feature_image: 'https://placekitten.com/249/251',
+        reading_time: `${Math.floor(Math.random() * 10)}`,
         author: 'Author McAuthory'
     },
     {
-        title: 'A Post For The Ages',
-        id: 238756,
+        title: `Kitten Fashion Faux Paws: The Dos and Don'ts of Kitty Couture`,
+        id: 4,
         url: 'https://www.google.com',
+        published_at: DateTime.now().minus({days: Math.random() * 100}).toISO(),
         excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
-        image: 'https://placekitten.com/250/250',
+        feature_image: 'https://placekitten.com/245/250',
+        reading_time: `${Math.floor(Math.random() * 10)}`,
         author: 'Author McAuthory'
     },
     {
-        title: 'Copilot Needs A Post',
-        id: 234259,
+        title: 'Kittens vs. Veggies: The Great Battle of Green Leafy Monsters',
+        id: 5,
         url: 'https://www.google.com',
+        published_at: DateTime.now().minus({days: Math.random() * 100}).toISO(),
         excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
-        image: 'https://placekitten.com/251/250',
+        feature_image: 'https://placekitten.com/251/255',
+        reading_time: `${Math.floor(Math.random() * 10)}`,
         author: 'Writer Writterson'
     },
     {
-        title: 'More Suggestions Please And Thank You',
-        id: 129537,
+        title: 'Kitten Karaoke Night: Unleashing the Musical Talents of Fluffy',
+        id: 6,
         url: 'https://www.google.com',
+        published_at: DateTime.now().minus({days: Math.random() * 100}).toISO(),
         excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
-        image: 'https://placekitten.com/249/251',
+        feature_image: 'https://placekitten.com/249/248',
+        reading_time: `${Math.floor(Math.random() * 10)}`,
+        author: 'Author McAuthory'
+    },
+    {
+        title: `The Kitten's Guide to World Domination: Tips from Aspiring Dictators`,
+        id: 7,
+        url: 'https://www.google.com',
+        published_at: DateTime.now().minus({days: Math.random() * 100}).toISO(),
+        excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
+        feature_image: 'https://placekitten.com/248/250',
+        reading_time: `${Math.floor(Math.random() * 10)}`,
+        author: 'Author McAuthory'
+    },
+    {
+        title: 'Kitten Yoga: Finding Inner Peace, One Stretch at a Time',
+        id: 8,
+        url: 'https://www.google.com',
+        published_at: DateTime.now().minus({days: Math.random() * 100}).toISO(),
+        excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
+        feature_image: 'https://placekitten.com/251/252',
+        reading_time: `${Math.floor(Math.random() * 10)}`,
+        author: 'Writer Writterson'
+    },
+    {
+        title: 'The Purrfect Detective: Solving Mysteries with the Clueless Kitten Squad',
+        id: 9,
+        url: 'https://www.google.com',
+        published_at: DateTime.now().minus({days: Math.random() * 100}).toISO(),
+        excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
+        feature_image: 'https://placekitten.com/252/251',
+        reading_time: `${Math.floor(Math.random() * 10)}`,
+        author: 'Author McAuthory'
+    },
+    {
+        title: 'Kitten IQ Test: Are You Smarter Than Your Whiskered Companion?',
+        id: 10,
+        url: 'https://www.google.com',
+        published_at: DateTime.now().minus({days: Math.random() * 100}).toISO(),
+        excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
+        feature_image: 'https://placekitten.com/250/252',
+        reading_time: `${Math.floor(Math.random() * 10)}`,
+        author: 'Author McAuthory'
+    },
+    {
+        title: `The Catnip Chronicles: Tales of Kittens' Hilarious and Trippy Adventures`,
+        id: 11,
+        url: 'https://www.google.com',
+        published_at: DateTime.now().minus({days: Math.random() * 100}).toISO(),
+        excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
+        feature_image: 'https://placekitten.com/251/260',
+        reading_time: `${Math.floor(Math.random() * 10)}`,
+        author: 'Writer Writterson'
+    },
+    {
+        title: `Kitten Celebrity Gossip: Who's Dating Whom in the Glamorous Feline World`,
+        id: 12,
+        url: 'https://www.google.com',
+        published_at: DateTime.now().minus({days: Math.random() * 100}).toISO(),
+        excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
+        feature_image: 'https://placekitten.com/240/251',
+        reading_time: `${Math.floor(Math.random() * 10)}`,
         author: 'Author McAuthory'
     }
 ];
@@ -132,7 +205,7 @@ const Template = ({display, caption, ...args}) => {
 export const Empty = Template.bind({});
 Empty.args = {
     display: 'Editing',
-    collection: {id: 123456}, // we'll always return some collections, but may need a placeholder in case of no api access
+    collection: {slug: 'index'}, // we'll always return some collections, but may need a placeholder in case of no api access
     collections: [],
     postCount: 0,
     headerTextEditorInitialState: editorEmptyState
@@ -142,7 +215,7 @@ export const PopulatedList = Template.bind({});
 PopulatedList.args = {
     display: 'Editing',
     posts: mockPosts,
-    collection: {id: 123456},
+    collection: {slug: 'index'},
     collections: mockCollections,
     postCount: 6,
     layout: 'list',
@@ -153,10 +226,11 @@ export const PopulatedGrid = Template.bind({});
 PopulatedGrid.args = {
     display: 'Editing',
     posts: mockPosts,
-    collection: {id: 123456},
+    collection: {slug: 'index'},
     collections: mockCollections,
     postCount: 6,
     layout: 'grid',
     columns: 3,
-    headerTextEditorInitialState: editorEmptyState
+    headerTextEditorInitialState: editorEmptyState,
+    cardWidth: 'wide'
 };
