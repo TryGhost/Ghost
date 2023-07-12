@@ -2,6 +2,7 @@ import Breadcrumbs from '../../../../admin-x-ds/global/Breadcrumbs';
 import Button from '../../../../admin-x-ds/global/Button';
 import ButtonGroup from '../../../../admin-x-ds/global/ButtonGroup';
 import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
+import DesktopChrome from '../../../../admin-x-ds/global/chrome/DesktopChrome';
 import MobileChrome from '../../../../admin-x-ds/global/chrome/MobileChrome';
 import NiceModal from '@ebay/nice-modal-react';
 import PageHeader from '../../../../admin-x-ds/global/layout/PageHeader';
@@ -105,8 +106,10 @@ const ThemePreview: React.FC<{
             <PageHeader containerClassName='bg-grey-50 z-[100]' left={left} right={right} sticky={false} />
             <div className='flex h-[calc(100%-74px)] grow flex-col items-center justify-center bg-grey-50'>
                 {previewMode === 'desktop' ?
-                    <iframe className='h-full w-full'
-                        src={selectedTheme?.previewUrl} title='Theme preview' />
+                    <DesktopChrome>
+                        <iframe className='h-full w-full'
+                            src={selectedTheme?.previewUrl} title='Theme preview' />
+                    </DesktopChrome>
                     :
                     <MobileChrome>
                         <iframe className='h-full w-full'
