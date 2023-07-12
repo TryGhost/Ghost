@@ -1,7 +1,5 @@
-import Button, {ButtonProps} from '../Button';
 import ButtonGroup from '../ButtonGroup';
 import DesktopChrome from '../chrome/DesktopChrome';
-import DesktopChromeHeader from '../chrome/DesktopChromeHeader';
 import Heading from '../Heading';
 import MobileChrome from '../chrome/MobileChrome';
 import Modal, {ModalSize} from './Modal';
@@ -10,6 +8,7 @@ import React, {useEffect, useState} from 'react';
 import Select, {SelectOption} from '../form/Select';
 import TabView, {Tab} from '../TabView';
 import useGlobalDirtyState from '../../../hooks/useGlobalDirtyState';
+import {ButtonProps} from '../Button';
 import {confirmIfDirty} from '../../../utils/modals';
 
 export interface PreviewModalProps {
