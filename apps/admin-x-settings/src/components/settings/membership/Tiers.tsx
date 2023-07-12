@@ -13,7 +13,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
         updateRoute('tiers/add');
     };
     const [selectedTab, setSelectedTab] = useState('active-tiers');
-    const {data: tiers, update: updateTiers} = useTiers();
+    const {data: tiers, update: updateTier} = useTiers();
     const activeTiers = getPaidActiveTiers(tiers);
     const archivedTiers = getArchivedTiers(tiers);
 
@@ -27,12 +27,12 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
         {
             id: 'active-tiers',
             title: 'Active',
-            contents: (<TiersList tab='active-tiers' tiers={activeTiers} updateTiers={updateTiers} />)
+            contents: (<TiersList tab='active-tiers' tiers={activeTiers} updateTier={updateTier} />)
         },
         {
             id: 'archived-tiers',
             title: 'Archived',
-            contents: (<TiersList tab='archive-tiers' tiers={archivedTiers} updateTiers={updateTiers} />)
+            contents: (<TiersList tab='archive-tiers' tiers={archivedTiers} updateTier={updateTier} />)
         }
     ];
 

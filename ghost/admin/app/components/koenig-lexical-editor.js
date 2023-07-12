@@ -135,6 +135,7 @@ export default class KoenigLexicalEditor extends Component {
     @service session;
     @service store;
     @service settings;
+    @service membersUtils;
 
     @inject config;
     offers = null;
@@ -239,6 +240,14 @@ export default class KoenigLexicalEditor extends Component {
             return response;
         };
 
+        const fetchCollectionPosts = async (collectionSlug) => {
+            const collectionPostsEndpoint = this.ghostPaths.url.api('collections', collectionSlug,'posts');
+            const {collection_posts: collectionPosts} = await this.ajax.request(collectionPostsEndpoint, {
+                data: {limit: 12}
+            });
+            return collectionPosts;
+        };
+
         const fetchAutocompleteLinks = async () => {
             const offers = await this.fetchOffersTask.perform();
 
@@ -253,7 +262,21 @@ export default class KoenigLexicalEditor extends Component {
                     value: this.config.getSiteUrl(offer.code)
                 };
             });
-            return [...defaults, ...offersLinks];
+
+            const memberLinks = () => {
+                if (this.membersUtils.paidMembersEnabled) {
+                    return [
+                        {
+                            label: 'Paid signup',
+                            value: this.config.getSiteUrl('/#/portal/signup')
+                        },
+                        {
+                            label: 'Upgrade or change plan',
+                            value: this.config.getSiteUrl('/#/portal/account/plans')
+                        }];
+                }
+            };
+            return [...defaults, ...offersLinks, ...memberLinks()];
         };
 
         const fetchLabels = async () => {
@@ -273,7 +296,8 @@ export default class KoenigLexicalEditor extends Component {
                 }
             },
             tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null,
-            fetchEmbed: fetchEmbed,
+            fetchEmbed,
+            fetchCollectionPosts,
             fetchAutocompleteLinks,
             fetchLabels,
             feature: {
