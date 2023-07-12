@@ -1,3 +1,4 @@
+import Button, {ButtonProps} from '../Button';
 import ButtonGroup from '../ButtonGroup';
 import DesktopChrome from '../chrome/DesktopChrome';
 import DesktopChromeHeader from '../chrome/DesktopChromeHeader';
@@ -9,7 +10,6 @@ import React, {useEffect, useState} from 'react';
 import Select, {SelectOption} from '../form/Select';
 import TabView, {Tab} from '../TabView';
 import useGlobalDirtyState from '../../../hooks/useGlobalDirtyState';
-import {ButtonProps} from '../Button';
 import {confirmIfDirty} from '../../../utils/modals';
 
 export interface PreviewModalProps {
@@ -147,13 +147,16 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
 
         preview = (
             <div className={`min-w-100 absolute inset-y-0 left-0 right-[400px] flex grow flex-col overflow-y-scroll ${previewBgColor === 'grey' ? 'bg-grey-50' : 'bg-white'}`}>
-                {previewToolbar && <DesktopChromeHeader
-                    data-testid="design-toolbar"
-                    size='lg'
-                    toolbarCenter={<></>}
-                    toolbarLeft={leftToolbar && toolbarLeft}
-                    toolbarRight={rightToolbar && toolbarRight}
-                />}
+                {previewToolbar && <header className="relative flex h-[74px] shrink-0 items-center justify-center px-3 py-5">
+                    <div className='absolute left-5 flex h-full items-center'>
+                        <section>
+                            {toolbarLeft}
+                        </section>
+                    </div>
+                    <div className='absolute right-5 flex h-full items-center'>
+                        {toolbarRight}
+                    </div>
+                </header>}
                 <div className='flex h-full grow items-center justify-center text-sm text-grey-400'>
                     {preview}
                 </div>
