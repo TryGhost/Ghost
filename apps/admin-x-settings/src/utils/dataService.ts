@@ -2,18 +2,22 @@ import {useEffect, useState} from 'react';
 
 export interface DataService<Data> {
     data: Data[];
-    update: (data: Data[]) => Promise<void>;
+    update: (...data: Data[]) => Promise<void>;
+    create: (data: Partial<Data>) => Promise<void>;
 }
 
 // eslint-disable-next-line no-unused-vars
 type BulkEditFunction<Data, DataKey extends string> = (newData: Data[]) => Promise<{ [k in DataKey]: Data[] }>
+// eslint-disable-next-line no-unused-vars
+type AddFunction<Data, DataKey extends string> = (newData: Partial<Data>) => Promise<{ [k in DataKey]: Data[] }>
 
-const useDataService = <Data extends { id: string }, DataKey extends string>({key, browse, edit}: {
+const useDataService = <Data extends { id: string }, DataKey extends string>({key, browse, edit, add}: {
     key: DataKey
     // eslint-disable-next-line no-unused-vars
     browse: () => Promise<{ [k in DataKey]: Data[] }>
     // eslint-disable-next-line no-unused-vars
     edit: BulkEditFunction<Data, DataKey>
+    add: AddFunction<Data, DataKey>
 }): DataService<Data> => {
     const [data, setData] = useState<Data[]>([]);
 
@@ -23,7 +27,7 @@ const useDataService = <Data extends { id: string }, DataKey extends string>({ke
         });
     }, [browse, key]);
 
-    const update = async (newData: Data[]) => {
+    const update = async (...newData: Data[]) => {
         const response = await edit(newData);
         setData(data.map((item) => {
             const replacement = response[key].find(newItem => newItem.id === item.id);
@@ -31,7 +35,12 @@ const useDataService = <Data extends { id: string }, DataKey extends string>({ke
         }));
     };
 
-    return {data, update};
+    const create = async (newData: Partial<Data>) => {
+        const response = await add(newData);
+        setData([...data, response[key][0]]);
+    };
+
+    return {data, update, create};
 };
 
 export default useDataService;
@@ -51,3 +60,5 @@ export const bulkEdit = <Data extends { id: string }, DataKey extends string>(
         } as { [k in DataKey]: Data[] };
     };
 };
+
+export const placeholderDataService = {data: [], update: async () => {}, create: async () => {}};

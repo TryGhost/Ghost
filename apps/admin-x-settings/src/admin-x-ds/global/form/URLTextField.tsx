@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import TextField, {TextFieldProps} from '../../../../admin-x-ds/global/form/TextField';
+import TextField, {TextFieldProps} from './TextField';
 import validator from 'validator';
 
 const formatUrl = (value: string, baseUrl: string) => {
@@ -74,7 +74,16 @@ const formatUrl = (value: string, baseUrl: string) => {
     return {save: url, display: new URL(url, baseUrl).toString()};
 };
 
-const UrlTextField: React.FC<Omit<TextFieldProps, 'onChange'> & {
+/**
+ * A text field that displays and saves relative URLs as absolute relative to a given base URL (probably the site URL).
+ *
+ * - URLs for the current site are displayed as absolute (e.g. `https://my.site/test/`) but saved as relative (e.g. `/test/`)
+ * - URLs on other sites are displayed and saved as absolute (e.g. `https://other.site/test/`)
+ * - Email addresses are displayed and saved as "mailto:" URLs (e.g. `mailto:test@my.site`)
+ * - Anchor links are displayed and saved as-is (e.g. `#test`)
+ * - Values that don't look like URLs are displayed and saved as-is (e.g. `test`)
+ */
+const URLTextField: React.FC<Omit<TextFieldProps, 'onChange'> & {
     baseUrl: string;
     onChange: (value: string) => void;
 }> = ({baseUrl, value, onChange, ...props}) => {
@@ -121,4 +130,4 @@ const UrlTextField: React.FC<Omit<TextFieldProps, 'onChange'> & {
     );
 };
 
-export default UrlTextField;
+export default URLTextField;

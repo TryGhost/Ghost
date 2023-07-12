@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const Promise = require('bluebird');
 const validator = require('@tryghost/validator');
 const ObjectId = require('bson-objectid').default;
 const ghostBookshelf = require('./base');
@@ -204,7 +203,7 @@ User = ghostBookshelf.Model.extend({
 
         // If the user's email is set & has changed & we are not importing
         if (self.hasChanged('email') && self.get('email') && !options.importing) {
-            tasks.gravatar = (function lookUpGravatar() {
+            tasks.push((function lookUpGravatar() {
                 const {gravatar} = require('../lib/image');
 
                 return gravatar.lookup({
@@ -214,11 +213,11 @@ User = ghostBookshelf.Model.extend({
                         self.set('profile_image', response.image);
                     }
                 });
-            })();
+            })());
         }
 
         if (this.hasChanged('slug') || !this.get('slug')) {
-            tasks.slug = (function generateSlug() {
+            tasks.push((function generateSlug() {
                 return ghostBookshelf.Model.generateSlug(
                     User,
                     self.get('slug') || self.get('name'),
@@ -230,7 +229,7 @@ User = ghostBookshelf.Model.extend({
                     .then(function then(slug) {
                         self.set({slug: slug});
                     });
-            })();
+            })());
         }
 
         /**
@@ -274,15 +273,15 @@ User = ghostBookshelf.Model.extend({
                 }
             }
 
-            tasks.hashPassword = (function hashPassword() {
+            tasks.push((function hashPassword() {
                 return security.password.hash(self.get('password'))
                     .then(function (hash) {
                         self.set('password', hash);
                     });
-            })();
+            })());
         }
 
-        return Promise.props(tasks);
+        return Promise.all(tasks);
     },
 
     toJSON: function toJSON(unfilteredOptions) {

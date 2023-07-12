@@ -7,7 +7,7 @@ const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const {HtmlValidate} = require('html-validate');
 
-function validateHtml(html) {
+async function validateHtml(html) {
     const htmlvalidate = new HtmlValidate({
         extends: [
             'html-validate:document',
@@ -34,7 +34,7 @@ function validateHtml(html) {
             }
         ]
     });
-    const report = htmlvalidate.validateString(html);
+    const report = await htmlvalidate.validateString(html);
 
     // Improve debugging and show a snippet of the invalid HTML instead of just the line number or a huge HTML-dump
     const parsedErrors = [];
@@ -1581,7 +1581,7 @@ describe('Email renderer', function () {
                 options
             );
 
-            validateHtml(response.html);
+            await validateHtml(response.html);
 
             // Check footer content is not escaped
             assert.equal(response.html.includes('<span>Footer content with valid HTML</span>'), true, 'Should include footer content without escaping');

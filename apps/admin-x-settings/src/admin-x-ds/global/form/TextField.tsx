@@ -6,11 +6,13 @@ import clsx from 'clsx';
 export type TextFieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
     inputRef?: React.RefObject<HTMLInputElement>;
     title?: string;
+    titleColor?: 'auto' | 'black' | 'grey';
     hideTitle?: boolean;
     type?: React.InputHTMLAttributes<HTMLInputElement>['type'];
     value?: string;
     error?: boolean;
     placeholder?: string;
+    rightPlaceholder?: string;
     hint?: React.ReactNode;
     clearBg?: boolean;
     onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -27,10 +29,12 @@ const TextField: React.FC<TextFieldProps> = ({
     type = 'text',
     inputRef,
     title,
+    titleColor = 'auto',
     hideTitle,
     value,
     error,
     placeholder,
+    rightPlaceholder,
     hint,
     clearBg = true,
     onChange,
@@ -51,10 +55,13 @@ const TextField: React.FC<TextFieldProps> = ({
         error ? `border-red` : `${disabled ? 'border-grey-300' : 'border-grey-500 hover:border-grey-700 focus:border-black'}`,
         (title && !hideTitle && !clearBg) && `mt-2`,
         (disabled ? 'text-grey-700' : ''),
+        rightPlaceholder && 'peer w-0 grow',
         className
     );
 
-    const field = <input
+    let field = <></>;
+
+    const inputField = <input
         ref={inputRef}
         className={textFieldClasses || className}
         disabled={disabled}
@@ -67,10 +74,32 @@ const TextField: React.FC<TextFieldProps> = ({
         onChange={onChange}
         {...props} />;
 
+    if (rightPlaceholder) {
+        const rightPHClasses = !unstyled && clsx(
+            'h-10 border-b py-2 text-right text-grey-500',
+            error ? `border-red` : `${disabled ? 'border-grey-300' : 'border-grey-500 peer-hover:border-grey-700 peer-focus:border-black'}`
+        );
+
+        field = (
+            <div className='flex w-full items-center'>
+                {inputField}
+                <span className={rightPHClasses || ''}>{rightPlaceholder}</span>
+            </div>
+        );
+    } else {
+        field = inputField;
+    }
+
     if (title || hint) {
+        let titleGrey = false;
+        if (titleColor === 'auto') {
+            titleGrey = value ? true : false;
+        } else {
+            titleGrey = titleColor === 'grey' ? true : false;
+        }
         return (
             <div className={`flex flex-col ${containerClassName}`}>
-                {title && <Heading className={hideTitle ? 'sr-only' : ''} grey={value ? true : false} htmlFor={id} useLabelTag={true}>{title}</Heading>}
+                {title && <Heading className={hideTitle ? 'sr-only' : ''} grey={titleGrey} htmlFor={id} useLabelTag={true}>{title}</Heading>}
                 {field}
                 {hint && <Hint className={hintClassName} color={error ? 'red' : ''}>{hint}</Hint>}
             </div>

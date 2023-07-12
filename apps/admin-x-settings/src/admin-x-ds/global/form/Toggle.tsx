@@ -6,7 +6,6 @@ type ToggleSizes = 'sm' | 'md' | 'lg';
 type ToggleDirections = 'ltr' | 'rtl';
 
 interface ToggleProps {
-    color?: string;
     checked?: boolean;
     disabled?: boolean;
     error?: boolean;
