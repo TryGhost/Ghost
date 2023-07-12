@@ -223,6 +223,30 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Finds a Stripe Customer ID based on the provided email address. Returns null if no customer is found.
+     * @param {string} email
+     * @see https://stripe.com/docs/api/customers/search
+     *
+     * @returns {Promise<string|null>} Stripe Customer ID, if found
+     */
+    async getCustomerIdByEmail(email) {
+        try {
+            const result = await this._stripe.customers.search({
+                query: `email:"${email}"`,
+                limit: 1
+            });
+
+            if (result.data.length === 0) {
+                return;
+            }
+
+            return result.data[0].id;
+        } catch (err) {
+            debug(`getCustomerByEmail(${email}) -> ${err.type}:${err.message}`);
+        }
+    }
+
+    /**
      * @param {import('stripe').Stripe.CustomerCreateParams} options
      *
      * @returns {Promise<ICustomer>}
