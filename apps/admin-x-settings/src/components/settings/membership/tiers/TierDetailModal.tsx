@@ -1,13 +1,16 @@
+import Button from '../../../../admin-x-ds/global/Button';
 import Form from '../../../../admin-x-ds/global/form/Form';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
+import SortableList from '../../../../admin-x-ds/global/SortableList';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import TierDetailPreview from './TierDetailPreview';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
+import useSortableIndexedList from '../../../../hooks/useSortableIndexedList';
 import {Tier} from '../../../../types/api';
 import {useTiers} from '../../../providers/ServiceProvider';
 
@@ -40,6 +43,12 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                 await createTier(values);
             }
         }
+    });
+    const benefits = useSortableIndexedList({
+        items: formState.benefits || [],
+        setItems: newBenefits => updateForm(state => ({...state, benefits: newBenefits})),
+        blank: '',
+        canAddNewItem: item => !!item
     });
 
     return <Modal
@@ -103,7 +112,26 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                 </Form>
 
                 <Form title='Benefits'>
-                    TBD
+                    <SortableList
+                        items={benefits.items}
+                        renderItem={({id, item}) => <div className='flex'>
+                            <TextField
+                                placeholder='Expert analysis'
+                                value={item}
+                                onChange={e => benefits.updateItem(id, e.target.value)}
+                            />
+                            <Button icon='trash' onClick={() => benefits.removeItem(id)} />
+                        </div>}
+                        onMove={benefits.moveItem}
+                    />
+                    <div className="flex">
+                        <TextField
+                            placeholder='Expert analysis'
+                            value={benefits.newItem}
+                            onChange={e => benefits.setNewItem(e.target.value)}
+                        />
+                        <Button icon="add" onClick={() => benefits.addItem()} />
+                    </div>
                 </Form>
             </div>
             <div className='sticky top-[77px] shrink-0 basis-[380px]'>
