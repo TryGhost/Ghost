@@ -1442,6 +1442,23 @@ Object {
       "collections": Array [
         Object {
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z/,
+          "description": null,
+          "feature_image": null,
+          "filter": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "posts": Array [
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 0,
+            },
+          ],
+          "slug": "collection-to-add",
+          "title": "Collection to add.",
+          "type": "manual",
+          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z/,
+        },
+        Object {
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z/,
           "description": "Collection with all posts",
           "feature_image": null,
           "filter": null,
@@ -1523,23 +1540,6 @@ Object {
           "slug": "latest",
           "title": "Latest",
           "type": "automatic",
-          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z/,
-        },
-        Object {
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z/,
-          "description": null,
-          "feature_image": null,
-          "filter": null,
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "posts": Array [
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 0,
-            },
-          ],
-          "slug": "collection-to-add",
-          "title": "Collection to add.",
-          "type": "manual",
           "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z/,
         },
       ],

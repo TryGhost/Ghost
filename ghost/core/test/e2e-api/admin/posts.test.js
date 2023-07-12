@@ -511,8 +511,8 @@ describe('Posts API', function () {
                 .matchBodySnapshot({
                     posts: [
                         Object.assign({}, matchPostShallowIncludes, {published_at: null}, {collections: [
-                            buildCollectionMatcher(18),
-                            collectionMatcher
+                            collectionMatcher,
+                            buildCollectionMatcher(18)
                         ]}
                         )
                     ]
