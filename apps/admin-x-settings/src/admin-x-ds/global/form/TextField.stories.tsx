@@ -58,6 +58,14 @@ export const WithHint: Story = {
     }
 };
 
+export const WithRightPlaceholder: Story = {
+    args: {
+        title: 'Monthly price',
+        placeholder: '0',
+        rightPlaceholder: 'USD/month'
+    }
+};
+
 export const PasswordType: Story = {
     args: {
         title: 'Password',

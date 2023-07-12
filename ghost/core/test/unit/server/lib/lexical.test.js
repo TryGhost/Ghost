@@ -41,7 +41,7 @@ describe('lib/lexical', function () {
 
             const rendered = lexicalLib.render(lexicalState);
 
-            rendered.should.containEql('<figure class="kg-card kg-image-card kg-width-wide">');
+            rendered.should.containEql('<figure class="kg-card kg-image-card kg-width-wide kg-card-hascaption">');
             rendered.should.containEql('<div class="kg-card kg-audio-card">');
         });
     });

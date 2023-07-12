@@ -175,7 +175,7 @@ jobs:
           path: ghost/**/.eslintcache
           key: eslint-cache
 
-      - run: yarn lint --since ${{ needs.job_get_metadata.outputs.BASE_COMMIT }}
+      - run: yarn nx affected -t lint --base=${{ needs.job_get_metadata.outputs.BASE_COMMIT }}
 
       - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -248,7 +248,7 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
 
-      - run: yarn test:unit --include-dependents --since ${{ needs.job_get_metadata.outputs.BASE_COMMIT }}
+      - run: yarn nx affected -t test:unit --base=${{ needs.job_get_metadata.outputs.BASE_COMMIT }}
 
       - uses: actions/upload-artifact@v3
         if: startsWith(matrix.node, '18')
@@ -739,7 +739,7 @@ jobs:
           echo "One of the dependent jobs have failed. You may need to re-run it." && exit 1
 
   canary:
-    needs: 
+    needs:
       [
         job_get_metadata,
         job_required_tests

@@ -1,4 +1,5 @@
 import ButtonGroup from '../ButtonGroup';
+import DesktopChrome from '../chrome/DesktopChrome';
 import DesktopChromeHeader from '../chrome/DesktopChromeHeader';
 import Heading from '../Heading';
 import MobileChrome from '../chrome/MobileChrome';
@@ -89,6 +90,12 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             <MobileChrome data-testid="preview-mobile">
                 {preview}
             </MobileChrome>
+        );
+    } else if (view === 'desktop' && deviceSelector) {
+        preview = (
+            <DesktopChrome data-testid="preview-desktop">
+                {preview}
+            </DesktopChrome>
         );
     }
 

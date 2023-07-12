@@ -22,9 +22,7 @@
   "scripts": {
     "archive": "npm pack",
     "start": "node index",
-    "setup": "knex-migrator init",
-    "build": "yarn build:css",
-    "build:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
+    "build": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
     "test": "yarn test:unit",
     "test:base": "mocha --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js",
     "test:single": "yarn test:base --timeout=60000",
@@ -54,7 +52,7 @@
     "lint:test": "eslint -c test/.eslintrc.js --ignore-path test/.eslintignore 'test/**/*.js' --cache",
     "lint:code": "yarn lint:server && yarn lint:shared && yarn lint:frontend",
     "lint": "yarn lint:server && yarn lint:shared && yarn lint:frontend && yarn lint:test",
-    "prepack": "lerna run build && monobundle"
+    "prepack": "nx run-many -t build --projects='ghost/*' && monobundle"
   },
   "engines": {
     "node": "^16.14.0 || ^18.12.1",
@@ -104,8 +102,8 @@
     "@tryghost/kg-card-factory": "4.0.8",
     "@tryghost/kg-default-atoms": "4.0.1",
     "@tryghost/kg-default-cards": "9.1.0",
-    "@tryghost/kg-default-nodes": "0.1.6",
-    "@tryghost/kg-lexical-html-renderer": "0.3.1",
+    "@tryghost/kg-default-nodes": "0.1.7",
+    "@tryghost/kg-lexical-html-renderer": "0.3.2",
     "@tryghost/kg-mobiledoc-html-renderer": "6.0.8",
     "@tryghost/limit-service": "1.2.6",
     "@tryghost/link-redirects": "0.0.0",
@@ -229,7 +227,7 @@
   },
   "devDependencies": {
     "@actions/core": "1.10.0",
-    "@playwright/test": "1.35.1",
+    "@playwright/test": "1.36.0",
     "@tryghost/express-test": "0.13.4",
     "@tryghost/webhook-mock-receiver": "0.2.6",
     "@types/common-tags": "1.8.1",
