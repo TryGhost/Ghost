@@ -18,11 +18,18 @@ interface TierDetailModalProps {
     tier?: Tier
 }
 
+type TierFormState = Partial<Omit<Tier, 'monthly_price' | 'yearly_price' | 'trial_days'>> & {
+    monthly_price: string;
+    yearly_price: string;
+    trial_days: string;
+};
+
 const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
     const modal = useModal();
     const {updateRoute} = useRouting();
     const {update: updateTier, create: createTier} = useTiers();
-    const {formState, updateForm, handleSave} = useForm({
+
+    const {formState, updateForm, handleSave} = useForm<TierFormState>({
         initialState: {
             ...(tier || {}),
             monthly_price: tier?.monthly_price?.toString() || '',
@@ -135,7 +142,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                 </Form>
             </div>
             <div className='sticky top-[77px] shrink-0 basis-[380px]'>
-                <TierDetailPreview />
+                <TierDetailPreview tier={formState} />
             </div>
         </div>
     </Modal>;
