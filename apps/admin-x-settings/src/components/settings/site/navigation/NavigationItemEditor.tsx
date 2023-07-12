@@ -21,10 +21,9 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, ite
             <div className="flex flex-1 pt-1">
                 <TextField
                     className={textFieldClasses}
-                    containerClassName="w-full"
+                    containerClassName="grow"
                     error={!!item.errors.label}
                     hint={item.errors.label}
-                    hintClassName="px-2"
                     placeholder={labelPlaceholder}
                     title='Label'
                     unstyled={unstyled}
@@ -38,10 +37,9 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, ite
                 <URLTextField
                     baseUrl={baseUrl}
                     className={textFieldClasses}
-                    containerClassName="w-full"
+                    containerClassName="grow"
                     error={!!item.errors.url}
                     hint={item.errors.url}
-                    hintClassName="px-2"
                     title='URL'
                     unstyled={unstyled}
                     value={item.url}

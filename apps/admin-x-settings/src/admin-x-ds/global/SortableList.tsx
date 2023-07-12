@@ -122,7 +122,7 @@ const SortableList = <Item extends {id: string}>({
     return (
         <div {...props}>
             {title && <Heading level={6} separator={titleSeparator} grey>{title}</Heading>}
-            <div className={`${titleSeparator} -mt-2`}>
+            <div className={`${title && titleSeparator ? '-mt-2' : ''}`}>
                 <DndContext
                     collisionDetection={closestCenter}
                     onDragEnd={event => onMove(event.active.id as string, event.over?.id as string)}
