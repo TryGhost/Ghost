@@ -239,6 +239,14 @@ export default class KoenigLexicalEditor extends Component {
             return response;
         };
 
+        const fetchCollectionPosts = async (collectionSlug) => {
+            const collectionPostsEndpoint = this.ghostPaths.url.api('collections', collectionSlug,'posts');
+            const {collection_posts: collectionPosts} = await this.ajax.request(collectionPostsEndpoint, {
+                data: {limit: 12}
+            });
+            return collectionPosts;
+        };
+
         const fetchAutocompleteLinks = async () => {
             const offers = await this.fetchOffersTask.perform();
 
@@ -273,7 +281,8 @@ export default class KoenigLexicalEditor extends Component {
                 }
             },
             tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null,
-            fetchEmbed: fetchEmbed,
+            fetchEmbed,
+            fetchCollectionPosts,
             fetchAutocompleteLinks,
             fetchLabels,
             feature: {

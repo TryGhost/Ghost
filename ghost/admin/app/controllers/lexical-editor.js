@@ -187,6 +187,11 @@ export default class LexicalEditorController extends Controller {
         });
     }
 
+    @computed
+    get collections() {
+        return this.store.peekAll('collection');
+    }
+
     @computed('session.user.{isAdmin,isEditor}')
     get canManageSnippets() {
         let {user} = this.session;
@@ -775,10 +780,13 @@ export default class LexicalEditorController extends Controller {
         }
     }
 
-    // load supplemental data such as snippets and members count in the background
+    // load supplemental data such as snippets and collections in the background
     @restartableTask
     *backgroundLoaderTask() {
         yield this.store.query('snippet', {limit: 'all'});
+        if (this.post.displayName === 'page' && this.feature.get('collections') && this.feature.get('collectionsCard')) {
+            yield this.store.query('collection', {limit: 'all'});
+        }
         this.syncMobiledocSnippets();
     }
 
