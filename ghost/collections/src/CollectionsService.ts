@@ -401,7 +401,11 @@ export class CollectionsService {
             filter: `posts:${postId}`
         });
 
-        return collections.map(collection => this.toDTO(collection));
+        return collections.map(collection => this.toDTO(collection))
+            .sort((a, b) => {
+                // NOTE: sorting is here to keep DB engine ordering consistent
+                return a.slug.localeCompare(b.slug);
+            });
     }
 
     async destroy(id: string): Promise<Collection | null> {
