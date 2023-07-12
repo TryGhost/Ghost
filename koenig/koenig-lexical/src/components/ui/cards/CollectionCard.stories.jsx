@@ -5,6 +5,7 @@ import {DateTime} from 'luxon';
 import {MINIMAL_NODES} from '../../../index.js';
 import {createEditor} from 'lexical';
 import {editorEmptyState} from '../../../../.storybook/editorEmptyState';
+import {populateNestedEditor} from '../../../utils/nested-editors';
 
 const mockPosts = [
     {
@@ -184,8 +185,10 @@ const story = {
 };
 export default story;
 
-const Template = ({display, caption, ...args}) => {
-    const headerTextEditor = createEditor({nodes: MINIMAL_NODES});
+const Template = ({display, header, ...args}) => {
+    const headerEditor = createEditor({nodes: MINIMAL_NODES});
+
+    populateNestedEditor({editor: headerEditor, initialHtml: `<p>FEATURED POSTS</p>`});
 
     return (
         <div className="kg-prose">
@@ -194,7 +197,7 @@ const Template = ({display, caption, ...args}) => {
                     <CollectionCard
                         {...display}
                         {...args}
-                        headerTextEditor={headerTextEditor}
+                        headerEditor={headerEditor}
                     />
                 </CardWrapper>
             </div>
@@ -208,7 +211,7 @@ Empty.args = {
     collection: {slug: 'index'}, // we'll always return some collections, but may need a placeholder in case of no api access
     collections: [],
     postCount: 0,
-    headerTextEditorInitialState: editorEmptyState
+    headerEditorInitialState: editorEmptyState
 };
 
 export const PopulatedList = Template.bind({});
@@ -217,9 +220,9 @@ PopulatedList.args = {
     posts: mockPosts,
     collection: {slug: 'index'},
     collections: mockCollections,
+    header: 'Latest Posts',
     postCount: 6,
-    layout: 'list',
-    headerTextEditorInitialState: editorEmptyState
+    layout: 'list'
 };
 
 export const PopulatedGrid = Template.bind({});
@@ -229,8 +232,8 @@ PopulatedGrid.args = {
     collection: {slug: 'index'},
     collections: mockCollections,
     postCount: 6,
+    header: 'Latest Posts',
     layout: 'grid',
     columns: 3,
-    headerTextEditorInitialState: editorEmptyState,
     cardWidth: 'wide'
 };

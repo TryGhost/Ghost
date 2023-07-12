@@ -14,8 +14,8 @@ export function CollectionNodeComponent({
     layout,
     nodeKey,
     postCount,
-    headerTextEditor,
-    headerTextEditorInitialState
+    headerEditor,
+    headerEditorInitialState
 }) {
     const [editor] = useLexicalComposerContext();
     const [isLoading, setIsLoading] = React.useState(false);
@@ -33,8 +33,8 @@ export function CollectionNodeComponent({
     }, []);
 
     React.useEffect(() => {
-        headerTextEditor.setEditable(isEditing);
-    }, [isEditing, headerTextEditor]);
+        headerEditor.setEditable(isEditing);
+    }, [isEditing, headerEditor]);
 
     const fetchCollectionPosts = async (collectionSlug) => {
         setIsLoading(true);
@@ -90,8 +90,8 @@ export function CollectionNodeComponent({
                 handleColumnChange={handleColumnChange}
                 handleLayoutChange={handleLayoutChange}
                 handlePostCountChange={handlePostCountChange}
-                headerTextEditor={headerTextEditor}
-                headerTextEditorInitialState={headerTextEditorInitialState}
+                headerEditor={headerEditor}
+                headerEditorInitialState={headerEditorInitialState}
                 isEditing={isEditing}
                 isLoading={isLoading}
                 layout={layout}

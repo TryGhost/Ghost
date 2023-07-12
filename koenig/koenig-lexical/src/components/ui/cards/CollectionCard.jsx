@@ -2,6 +2,7 @@ import KoenigNestedEditor from '../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
 import React from 'react';
 import clsx from 'clsx';
+import {$createParagraphNode, $createTextNode, $getRoot} from 'lexical';
 import {ButtonGroupSetting, DropdownSetting, SettingsPanel, SliderSetting} from '../SettingsPanel';
 import {DateTime} from 'luxon';
 import {ReactComponent as GridLayoutIcon} from '../../../assets/icons/kg-layout-grid.svg';
@@ -96,8 +97,8 @@ export function CollectionCard({
     handlePostCountChange,
     isEditing,
     isLoading,
-    headerTextEditor,
-    headerTextEditorInitialState
+    headerEditor,
+    headerEditorInitialState
 }) {
     // collections should be passed in as the editor loads via cardConfig
     // TODO: we shouldn't be getting collections without posts from the editor load
@@ -122,14 +123,45 @@ export function CollectionCard({
         }
     ];
 
+    const onCollectionChange = (value) => {
+        checkHeaderDefaults(value);
+        handleCollectionChange(value);
+    };
+
+    // only update the header if the user hasn't changed anything and is using the default collections & headers
+    const checkHeaderDefaults = (value) => {
+        if (value !== 'index' && value !== 'featured') {
+            return;
+        }
+        const header = headerEditor.getEditorState().read(() => ($getRoot().getTextContent()));
+        if (value === 'index' && header === 'Featured Posts') {
+            headerEditor.update(() => {
+                const newHeader = $createParagraphNode().append($createTextNode('Latest Posts'));
+                const root = $getRoot();
+                root.clear();
+                root.append(newHeader);
+                root.selectEnd();
+            });
+        }
+        if (value === 'featured' && header === 'Latest Posts') {
+            headerEditor.update(() => {
+                const newHeader = $createParagraphNode().append($createTextNode('Featured Posts'));
+                const root = $getRoot();
+                root.clear();
+                root.append(newHeader);
+                root.selectEnd();
+            });
+        }
+    };
+
     return (
         <>
-            {(isEditing || !isEditorEmpty(headerTextEditor)) && (
+            {(isEditing || !isEditorEmpty(headerEditor)) && (
                 <KoenigNestedEditor
                     autoFocus={true}
                     hasSettingsPanel={true}
-                    initialEditor={headerTextEditor}
-                    initialState={headerTextEditorInitialState}
+                    initialEditor={headerEditor}
+                    initialState={headerEditorInitialState}
                     nodes="minimal"
                     placeholderClassName={'!font-sans !text-[2.2rem] !font-bold !leading-snug !tracking-tight text-black dark:text-grey-50 opacity-40'}
                     placeholderText="Collection Header"
@@ -155,7 +187,7 @@ export function CollectionCard({
                         label='Collection'
                         menu={collectionOptions}
                         value={collection?.slug}
-                        onChange={handleCollectionChange}
+                        onChange={onCollectionChange}
                     />
                     <ButtonGroupSetting
                         buttons={layoutOptions}
@@ -202,8 +234,8 @@ CollectionCard.propTypes = {
     handleRowChange: PropTypes.func,
     isEditing: PropTypes.bool,
     isLoading: PropTypes.bool,
-    headerTextEditor: PropTypes.object,
-    headerTextEditorInitialState: PropTypes.object
+    headerEditor: PropTypes.object,
+    headerEditorInitialState: PropTypes.object
 };
 
 Collection.propTypes = {

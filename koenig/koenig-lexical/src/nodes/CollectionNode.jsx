@@ -11,8 +11,8 @@ import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 export const INSERT_COLLECTION_COMMAND = createCommand();
 
 export class CollectionNode extends BaseCollectionNode {
-    __headerTextEditor;
-    __headerTextEditorInitialState;
+    __headerEditor;
+    __headerEditorInitialState;
 
     static kgMenu = [{
         label: 'Post collection',
@@ -28,19 +28,20 @@ export class CollectionNode extends BaseCollectionNode {
     constructor(dataset = {}, key) {
         super(dataset, key);
 
-        setupNestedEditor(this, '__headerTextEditor', {editor: dataset.headerTextEditor, nodes: MINIMAL_NODES});
+        setupNestedEditor(this, '__headerEditor', {editor: dataset.headerEditor, nodes: MINIMAL_NODES});
 
         // populate nested editors on initial construction
-        if (!dataset.headerTextEditor && dataset.header) {
-            populateNestedEditor(this, '__headerTextEditor', `<p>${dataset.header}</p>`);
+        const header = dataset.header || this.header; // dataset is not set when inserting a new card
+        if (!dataset.headerEditor && header) {
+            populateNestedEditor(this, '__headerEditor', `<p>${header}</p>`);
         }
     }
 
     exportJSON() {
         const json = super.exportJSON();
-        if (this.__headerTextEditor) {
-            this.__headerTextEditor.getEditorState().read(() => {
-                const html = $generateHtmlFromNodes(this.__headerTextEditor, null);
+        if (this.__headerEditor) {
+            this.__headerEditor.getEditorState().read(() => {
+                const html = $generateHtmlFromNodes(this.__headerEditor, null);
                 const cleanedHtml = cleanBasicHtml(html, {firstChildInnerContent: true, allowBr: true});
                 json.header = cleanedHtml;
             });
@@ -52,14 +53,23 @@ export class CollectionNode extends BaseCollectionNode {
         return CollectionCardIcon;
     }
 
+    getDataset() {
+        const dataset = super.getDataset();
+        const self = this.getLatest();
+
+        dataset.headerEditor = self.__headerEditor;
+
+        return dataset;
+    }
+
     decorate() {
         return (
             <KoenigCardWrapper nodeKey={this.getKey()} width={this.layout === 'grid' ? 'wide' : null}>
                 <CollectionNodeComponent
                     collection={this.collection}
                     columns={this.columns}
-                    headerTextEditor={this.__headerTextEditor}
-                    headerTextEditorInitialState={this.__headerTextEditorInitialState}
+                    headerEditor={this.__headerEditor}
+                    headerEditorInitialState={this.__headerEditorInitialState}
                     layout={this.layout}
                     nodeKey={this.getKey()}
                     postCount={this.postCount}
