@@ -1,5 +1,4 @@
-import Icon from '../../../../admin-x-ds/global/Icon';
-import React, {ReactNode, forwardRef} from 'react';
+import React, {ReactNode} from 'react';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import URLTextField from '../../../../admin-x-ds/global/form/URLTextField';
 import {EditableItem, NavigationItem, NavigationItemErrors} from '../../../../hooks/site/useNavigationEditor';
@@ -9,22 +8,15 @@ export type NavigationItemEditorProps = React.HTMLAttributes<HTMLDivElement> & {
     item: EditableItem;
     clearError?: (key: keyof NavigationItemErrors) => void;
     updateItem?: (item: Partial<NavigationItem>) => void;
-    onDelete?: () => void;
-    dragHandleProps?: React.ButtonHTMLAttributes<HTMLButtonElement>;
     labelPlaceholder?: string
     unstyled?: boolean
-    containerClasses?: string
-    dragHandleClasses?: string
     textFieldClasses?: string
     action?: ReactNode
 }
 
-const NavigationItemEditor = forwardRef<HTMLDivElement, NavigationItemEditorProps>(function NavigationItemEditor({baseUrl, item, updateItem, onDelete, clearError, dragHandleProps, labelPlaceholder, unstyled, containerClasses, dragHandleClasses, textFieldClasses, action, ...props}, ref) {
+const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, item, updateItem, clearError, labelPlaceholder, unstyled, textFieldClasses, action}) => {
     return (
-        <div ref={ref} className={containerClasses} data-testid='navigation-item-editor' {...props}>
-            <button className={dragHandleClasses} type='button' {...dragHandleProps}>
-                <Icon colorClass='text-grey-500' name='hamburger' size='sm' />
-            </button>
+        <>
             <div className="flex flex-1">
                 <TextField
                     className={textFieldClasses}
@@ -58,8 +50,8 @@ const NavigationItemEditor = forwardRef<HTMLDivElement, NavigationItemEditorProp
                 />
             </div>
             {action}
-        </div>
+        </>
     );
-});
+};
 
 export default NavigationItemEditor;
