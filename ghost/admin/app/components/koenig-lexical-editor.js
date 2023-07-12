@@ -241,11 +241,10 @@ export default class KoenigLexicalEditor extends Component {
 
         const fetchCollectionPosts = async (collectionSlug) => {
             const collectionPostsEndpoint = this.ghostPaths.url.api('collections', collectionSlug,'posts');
-            const {collection_posts} = await this.ajax.request(collectionPostsEndpoint, {
+            const {collection_posts: collectionPosts} = await this.ajax.request(collectionPostsEndpoint, {
                 data: {limit: 12}
             });
-            console.log(`response`,collection_posts);
-            return collection_posts;
+            return collectionPosts;
         };
 
         const fetchAutocompleteLinks = async () => {

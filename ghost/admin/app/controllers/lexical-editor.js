@@ -189,7 +189,6 @@ export default class LexicalEditorController extends Controller {
 
     @computed
     get collections() {
-        console.log(`this.store.peekAll('collection')`, this.store.query('collection', ) )
         return this.store.peekAll('collection');
     }
 
