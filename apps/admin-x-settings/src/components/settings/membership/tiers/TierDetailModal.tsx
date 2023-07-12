@@ -46,7 +46,9 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
     });
     const benefits = useSortableIndexedList({
         items: formState.benefits || [],
-        setItems: newBenefits => updateForm(state => ({...state, benefits: newBenefits}))
+        setItems: newBenefits => updateForm(state => ({...state, benefits: newBenefits})),
+        blank: '',
+        canAddNewItem: item => !!item
     });
 
     return <Modal
@@ -114,7 +116,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                         items={benefits.items}
                         renderItem={({id, item}) => <div className='flex'>
                             <TextField
-                                placeholder='Priority support'
+                                placeholder='Expert analysis'
                                 value={item}
                                 onChange={e => benefits.updateItem(id, e.target.value)}
                             />
@@ -122,7 +124,14 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                         </div>}
                         onMove={benefits.moveItem}
                     />
-                    <Button label="Add" onClick={() => benefits.addItem('')} />
+                    <div className="flex">
+                        <TextField
+                            placeholder='Expert analysis'
+                            value={benefits.newItem}
+                            onChange={e => benefits.setNewItem(e.target.value)}
+                        />
+                        <Button icon="add" onClick={() => benefits.addItem()} />
+                    </div>
                 </Form>
             </div>
             <div className='sticky top-[77px] shrink-0 basis-[380px]'>

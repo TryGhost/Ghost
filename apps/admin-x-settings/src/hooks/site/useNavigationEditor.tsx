@@ -1,6 +1,5 @@
 import useSortableIndexedList from '../useSortableIndexedList';
 import validator from 'validator';
-import {useCallback, useEffect, useState} from 'react';
 
 export type NavigationItem = {
     label: string;
@@ -27,30 +26,12 @@ const useNavigationEditor = ({items, setItems}: {
     items: NavigationItem[];
     setItems: (newItems: NavigationItem[]) => void;
 }): NavigationEditor => {
-    const [newItem, setNewItem] = useState<EditableItem>({label: '', url: '/', id: 'new', errors: {}});
-
-    const isEditingNewItem = Boolean((newItem.label && !newItem.label.match(/^\s*$/)) || newItem.url !== '/');
-
-    const setAllItems = useCallback((newItems: Array<NavigationItem>) => {
-        const allItems = newItems.map(({url, label}) => ({url, label}));
-
-        // If the user is adding a new item, save the new item if the form is saved
-        if (isEditingNewItem) {
-            allItems.push({url: newItem.url, label: newItem.label});
-        }
-
-        if (JSON.stringify(allItems) !== JSON.stringify(items)) {
-            setItems(allItems);
-        }
-    }, [isEditingNewItem, items, newItem.label, newItem.url, setItems]);
-
     const list = useSortableIndexedList<Omit<EditableItem, 'id'>>({
         items: items.map(item => ({...item, errors: {}})),
-        setItems: setAllItems
+        setItems: newItems => setItems(newItems.map(({url, label}) => ({url, label}))),
+        blank: {label: '', url: '/', errors: {}},
+        canAddNewItem: newItem => Boolean((newItem.label && !newItem.label.match(/^\s*$/)) || newItem.url !== '/')
     });
-
-    // Also make sure the list is updated when newItem or other setAllItems dependencies change
-    useEffect(() => setAllItems(list.items.map(({item}) => item)), [list.items, setAllItems]);
 
     const urlRegex = new RegExp(/^(\/|#|[a-zA-Z0-9-]+:)/);
 
@@ -74,13 +55,12 @@ const useNavigationEditor = ({items, setItems}: {
     };
 
     const addItem = () => {
-        const errors = validateItem(newItem);
+        const errors = validateItem(list.newItem);
 
         if (Object.values(errors).some(message => message)) {
-            setNewItem({...newItem, errors});
+            list.setNewItem({...list.newItem, errors});
         } else {
-            list.addItem(newItem);
-            setNewItem({label: '', url: '/', id: 'new', errors: {}});
+            list.addItem();
         }
     };
 
@@ -92,9 +72,11 @@ const useNavigationEditor = ({items, setItems}: {
         list.moveItem(activeId, overId);
     };
 
+    const newItemId = 'new';
+
     const clearError = (id: string, key: keyof NavigationItem) => {
-        if (id === newItem.id) {
-            setNewItem({...newItem, errors: {...newItem.errors, [key]: undefined}});
+        if (id === newItemId) {
+            list.setNewItem({...list.newItem, errors: {...list.newItem.errors, [key]: undefined}});
         } else {
             const currentItem = list.items.find(current => current.id === id)!.item;
             list.updateItem(id, {...currentItem, errors: {...currentItem.errors, [key]: undefined}});
@@ -109,8 +91,8 @@ const useNavigationEditor = ({items, setItems}: {
         removeItem,
         moveItem,
 
-        newItem,
-        setNewItem: item => setNewItem({...newItem, ...item}),
+        newItem: {...list.newItem, id: newItemId},
+        setNewItem: item => list.setNewItem({...list.newItem, ...item}),
 
         clearError,
         validate: () => {
@@ -125,11 +107,11 @@ const useNavigationEditor = ({items, setItems}: {
                 }
             });
 
-            const newItemErrors = validateItem(newItem);
+            const newItemErrors = validateItem(list.newItem);
 
             if (Object.values(newItemErrors).some(message => message)) {
                 isValid = false;
-                setNewItem({...newItem, errors: newItemErrors});
+                list.setNewItem({...list.newItem, errors: newItemErrors});
             }
 
             return isValid;

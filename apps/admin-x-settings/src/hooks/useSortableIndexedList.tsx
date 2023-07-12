@@ -1,20 +1,39 @@
 import {arrayMove} from '@dnd-kit/sortable';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 
 export type SortableIndexedList<Item> = {
     items: Array<{ item: Item; id: string }>;
     updateItem: (id: string, item: Item) => void;
-    addItem: (item: Item) => void;
+    addItem: () => void;
     removeItem: (id: string) => void;
     moveItem: (activeId: string, overId?: string) => void;
+    newItem: Item;
+    setNewItem: (item: Item) => void;
 }
 
-const useSortableIndexedList = <Item extends unknown>({items, setItems}: {
+const useSortableIndexedList = <Item extends unknown>({items, setItems, blank, canAddNewItem}: {
     items: Item[];
     setItems: (newItems: Item[]) => void;
+    blank: Item
+    canAddNewItem: (item: Item) => boolean
 }): SortableIndexedList<Item> => {
     // Copy items to a local state we can reorder without changing IDs, so that drag and drop animations work nicely
     const [editableItems, setEditableItems] = useState<Array<{ item: Item; id: string }>>(items.map((item, index) => ({item, id: index.toString()})));
+
+    const [newItem, setNewItem] = useState<Item>(blank);
+
+    useEffect(() => {
+        const allItems = editableItems.map(({item}) => item);
+
+        // If the user is adding a new item, save the new item if the form is saved
+        if (canAddNewItem(newItem)) {
+            allItems.push(newItem);
+        }
+
+        if (JSON.stringify(allItems) !== JSON.stringify(items)) {
+            setItems(allItems);
+        }
+    }, [editableItems, newItem, items, setItems, canAddNewItem]);
 
     const updateItem = (id: string, item: Item) => {
         const updatedItems = editableItems.map(current => (current.id === id ? {...current, item} : current));
@@ -22,11 +41,14 @@ const useSortableIndexedList = <Item extends unknown>({items, setItems}: {
         setItems(updatedItems.map(updatedItem => updatedItem.item));
     };
 
-    const addItem = (item: Item) => {
-        const maxId = editableItems.reduce((max, current) => Math.max(max, parseInt(current.id)), 0);
-        const updatedItems = editableItems.concat({item, id: (maxId + 1).toString()});
-        setEditableItems(updatedItems);
-        setItems(updatedItems.map(updatedItem => updatedItem.item));
+    const addItem = () => {
+        if (canAddNewItem(newItem)) {
+            const maxId = editableItems.reduce((max, current) => Math.max(max, parseInt(current.id)), 0);
+            const updatedItems = editableItems.concat({item: newItem, id: (maxId + 1).toString()});
+            setEditableItems(updatedItems);
+            setItems(updatedItems.map(updatedItem => updatedItem.item));
+            setNewItem(blank);
+        }
     };
 
     const removeItem = (id: string) => {
@@ -51,7 +73,10 @@ const useSortableIndexedList = <Item extends unknown>({items, setItems}: {
         updateItem,
         addItem,
         removeItem,
-        moveItem
+        moveItem,
+
+        newItem,
+        setNewItem
     };
 };
 
