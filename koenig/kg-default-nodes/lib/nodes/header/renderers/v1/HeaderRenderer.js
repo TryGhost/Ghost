@@ -1,5 +1,5 @@
-import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-import {renderEmptyContainer} from '../../utils/render-empty-container';
+import {addCreateDocumentOption} from '../../../../utils/add-create-document-option';
+import {renderEmptyContainer} from '../../../../utils/render-empty-container';
 
 function slugify(str) {
     // Remove any non-word character with whitespace
@@ -14,7 +14,7 @@ function slugify(str) {
     return str;
 }
 
-export function renderHeaderNode(node, options = {}) {
+export function renderHeaderNodeV1(node, options = {}) {
     addCreateDocumentOption(options);
 
     const document = options.createDocument();

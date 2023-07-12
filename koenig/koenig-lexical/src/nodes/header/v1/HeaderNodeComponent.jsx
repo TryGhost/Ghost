@@ -1,13 +1,13 @@
-import CardContext from '../context/CardContext';
-import KoenigComposerContext from '../context/KoenigComposerContext';
+import CardContext from '../../../context/CardContext';
+import KoenigComposerContext from '../../../context/KoenigComposerContext';
 import React from 'react';
 import {$getNodeByKey} from 'lexical';
-import {ActionToolbar} from '../components/ui/ActionToolbar';
-import {EDIT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin';
-import {HeaderCard} from '../components/ui/cards/HeaderCard';
-import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
-import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
-import {backgroundImageUploadHandler} from '../utils/imageUploadHandler';
+import {ActionToolbar} from '../../../components/ui/ActionToolbar';
+import {EDIT_CARD_COMMAND} from '../../../plugins/KoenigBehaviourPlugin';
+import {HeaderCard} from '../../../components/ui/cards/HeaderCard/v1/HeaderCard';
+import {SnippetActionToolbar} from '../../../components/ui/SnippetActionToolbar.jsx';
+import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../../../components/ui/ToolbarMenu';
+import {backgroundImageUploadHandler} from '../../../utils/imageUploadHandler';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 function HeaderNodeComponent({

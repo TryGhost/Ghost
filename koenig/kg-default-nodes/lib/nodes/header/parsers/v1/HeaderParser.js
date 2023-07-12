@@ -1,4 +1,4 @@
-export function parseHeaderNode(HeaderNode) {
+export function parseHeaderNodeV1(HeaderNode) {
     return {
         div: (nodeElem) => {
             const isHeaderCard = nodeElem.classList?.contains('kg-header-card');

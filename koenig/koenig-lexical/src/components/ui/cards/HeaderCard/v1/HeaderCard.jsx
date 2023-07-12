@@ -1,11 +1,11 @@
-import KoenigNestedEditor from '../../KoenigNestedEditor';
+import KoenigNestedEditor from '../../../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
 import React from 'react';
 import clsx from 'clsx';
-import {BackgroundImagePicker} from '../BackgroundImagePicker';
-import {Button} from '../Button';
-import {ButtonGroupSetting, ColorOptionSetting, InputSetting, InputUrlSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
-import {isEditorEmpty} from '../../../utils/isEditorEmpty';
+import {BackgroundImagePicker} from '../../../BackgroundImagePicker';
+import {Button} from '../../../Button';
+import {ButtonGroupSetting, ColorOptionSetting, InputSetting, InputUrlSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../../../SettingsPanel';
+import {isEditorEmpty} from '../../../../../utils/isEditorEmpty';
 
 export const HEADER_COLORS = {
     dark: 'bg-black',
@@ -22,6 +22,7 @@ export const HEADER_TEXT_COLORS = {
     image: 'text-white caret-white'
 };
 
+// Header Card version 1
 export function HeaderCard({isEditing,
     size,
     subheader,

@@ -1,4 +1,5 @@
-import HeaderNodeComponent from './HeaderNodeComponent';
+import HeaderNodeComponent from './header/v2/HeaderNodeComponent';
+import HeaderNodeComponentV1 from './header/v1/HeaderNodeComponent';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import MINIMAL_NODES from './MinimalNodes';
 import React from 'react';
@@ -18,14 +19,37 @@ export class HeaderNode extends BaseHeaderNode {
     __headerTextEditorInitialState;
     __subheaderTextEditorInitialState;
 
-    static kgMenu = {
-        label: 'Header',
-        desc: 'Add a header',
-        Icon: HeaderCardIcon,
-        insertCommand: INSERT_HEADER_COMMAND,
-        matches: ['header', 'heading'],
-        priority: 17
-    };
+    // TODO: remove this once we have version 2 finalised because the default header node will be v2
+    static kgMenu = [
+        {
+            label: 'Header',
+            desc: 'Add a header',
+            Icon: HeaderCardIcon,
+            insertCommand: INSERT_HEADER_COMMAND,
+            matches: ['header', 'heading'],
+            priority: 17,
+            insertParams: () => ({
+                version: 1
+            }),
+            isHidden: ({config}) => {
+                return config?.depreciated?.headerV1;
+            }
+        },
+        {
+            label: 'Header v2',
+            desc: '[WIP] Add a header card (v2)',
+            Icon: HeaderCardIcon,
+            insertCommand: INSERT_HEADER_COMMAND,
+            matches: ['header2', 'heading2'],
+            priority: 18,
+            insertParams: () => ({
+                version: 2
+            }),
+            isHidden: ({config}) => {
+                return !config?.feature?.headerV2;
+            }
+        }
+    ];
 
     getIcon() {
         return HeaderCardIcon;
@@ -78,26 +102,71 @@ export class HeaderNode extends BaseHeaderNode {
         return dataset;
     }
 
+    getCardWidth() {
+        const version = this.version;
+
+        if (version === 1) {
+            return 'full';
+        }
+
+        if (version === 2) {
+            const layout = this.layout;
+            return layout === 'split' ? 'full' : layout;
+        }
+    }
+
     decorate() {
-        return (
-            <KoenigCardWrapper nodeKey={this.getKey()} width={'full'}>
-                <HeaderNodeComponent
-                    backgroundImageSrc={this.backgroundImageSrc}
-                    button={this.buttonEnabled}
-                    buttonText={this.buttonText}
-                    buttonUrl={this.buttonUrl}
-                    header={this.header}
-                    headerTextEditor={this.__headerTextEditor}
-                    headerTextEditorInitialState={this.__headerTextEditorInitialState}
-                    nodeKey={this.getKey()}
-                    size={this.size}
-                    subheader={this.subheader}
-                    subheaderTextEditor={this.__subheaderTextEditor}
-                    subheaderTextEditorInitialState={this.__subheaderTextEditorInitialState}
-                    type={this.style}
-                />
-            </KoenigCardWrapper>
-        );
+        // for backwards compatibility with v1 cards
+        if (this.version === 1) {
+            return (
+                <KoenigCardWrapper nodeKey={this.getKey()} width={this.getCardWidth()}>
+                    <HeaderNodeComponentV1
+                        backgroundImageSrc={this.backgroundImageSrc}
+                        button={this.buttonEnabled}
+                        buttonText={this.buttonText}
+                        buttonUrl={this.buttonUrl}
+                        header={this.header}
+                        headerTextEditor={this.__headerTextEditor} 
+                        headerTextEditorInitialState={this.__headerTextEditorInitialState}
+                        nodeKey={this.getKey()}
+                        size={this.size}
+                        subheader={this.subheader}
+                        subheaderTextEditor={this.__subheaderTextEditor}
+                        subheaderTextEditorInitialState={this.__subheaderTextEditorInitialState}
+                        type={this.style}
+                    />
+                </KoenigCardWrapper>
+            );
+        }
+
+        if (this.version === 2) {
+            return (
+                <KoenigCardWrapper nodeKey={this.getKey()} width={this.getCardWidth()}>
+                    <HeaderNodeComponent
+                        alignment={this.alignment}
+                        backgroundColor={this.backgroundColor}
+                        backgroundImageSrc={this.backgroundImageSrc}
+                        backgroundSize={this.backgroundSize}
+                        buttonColor={this.buttonColor}
+                        buttonEnabled={this.buttonEnabled}
+                        buttonText={this.buttonText}
+                        buttonTextColor={this.buttonTextColor}
+                        buttonUrl={this.buttonUrl}
+                        header={this.header}
+                        headerTextEditor={this.__headerTextEditor}
+                        headerTextEditorState={this.__headerTextEditorInitialState}
+                        isSwapped={this.swapped}
+                        layout={this.layout}
+                        nodeKey={this.getKey()}
+                        subheader={this.subheader}
+                        subheaderTextEditor={this.__subheaderTextEditor}
+                        subheaderTextEditorInitialState={this.__subheaderTextEditorInitialState}
+                        subheaderTextEditorState={this.__subheaderTextEditorInitialState}
+                        textColor={this.textColor}
+                    />
+                </KoenigCardWrapper>
+            );
+        }
     }
 
     // override the default `isEmpty` check because we need to check the nested editors
