@@ -1,7 +1,7 @@
 import Icon from '../../../../admin-x-ds/global/Icon';
 import React from 'react';
 import {Tier} from '../../../../types/api';
-import {getNonDecimal, getSymbol} from '../../../../utils/currency';
+import {getSymbol} from '../../../../utils/currency';
 
 export type TierFormState = Partial<Omit<Tier, 'monthly_price' | 'yearly_price' | 'trial_days'>> & {
     monthly_price: string;
@@ -59,7 +59,7 @@ const DiscountLabel: React.FC<{discount: number}> = ({discount}) => {
 const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier}) => {
     const name = tier?.name || '';
     const description = tier?.description || '';
-    const monthlyPrice = getNonDecimal(parseFloat(tier?.monthly_price || '0'));
+    const monthlyPrice = parseFloat(tier?.monthly_price || '0');
     const trialDays = parseFloat(tier?.trial_days || '0');
     const currency = tier?.currency || 'USD';
     const currencySymbol = currency ? getSymbol(currency) : '$';
