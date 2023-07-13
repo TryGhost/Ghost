@@ -13,7 +13,7 @@ const displayOptions = {
 };
 
 const story = {
-    title: 'Primary cards/Header card',
+    title: 'Primary cards/Header card v1',
     component: HeaderCard,
     subcomponent: {CardWrapper},
     argTypes: {
