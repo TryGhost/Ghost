@@ -133,6 +133,10 @@ export function getSymbol(currency: string): string {
 }
 
 // We currently only support decimal currencies
-export function getNonDecimal(amount: number): number {
-    return amount / 100;
+export function currencyToDecimal(integerAmount: number): number {
+    return integerAmount / 100;
+}
+
+export function currencyFromDecimal(decimalAmount: number): number {
+    return decimalAmount * 100;
 }
