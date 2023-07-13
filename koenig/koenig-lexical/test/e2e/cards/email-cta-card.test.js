@@ -54,7 +54,7 @@ test.describe('Email card', async () => {
                         <div>Free members</div>
                         <div>
                             <div data-kg="editor">
-                                <div contenteditable="false" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none">
+                                <div contenteditable="false" role="textbox" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none" aria-readonly="true">
                                     <p dir="ltr"><span data-lexical-text="true">Hello</span></p>
                                 </div>
                             </div>
@@ -99,7 +99,7 @@ test.describe('Email card', async () => {
                         <hr />
                         <div>
                             <div data-kg="editor">
-                                <div contenteditable="false" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none">
+                                <div contenteditable="false" role="textbox" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none" aria-readonly="true">
                                     <p dir="ltr"><span data-lexical-text="true">Hello</span></p>
                                 </div>
                             </div>
@@ -147,7 +147,7 @@ test.describe('Email card', async () => {
                         <div
                             class="koenig-lexical kg-inherit-styles w-full bg-transparent whitespace-normal font-serif text-xl text-grey-900 dark:text-grey-200 text-center mx-auto [&amp;:has(.placeholder)]:w-fit [&amp;:has(.placeholder)]:text-left">
                             <div data-kg="editor">
-                                <div class="kg-prose" contenteditable="false" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none">
+                                <div class="kg-prose" contenteditable="false" role="textbox" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none" aria-readonly="true">
                                     <p dir="ltr"><span data-lexical-text="true">Hello</span></p>
                                 </div>
                             </div>
@@ -193,7 +193,7 @@ test.describe('Email card', async () => {
                         <div>Free members</div>
                         <div>
                             <div data-kg="editor">
-                                <div contenteditable="false" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none">
+                                <div contenteditable="false" role="textbox" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none" aria-readonly="true">
                                     <p dir="ltr"><span data-lexical-text="true">Hello</span></p>
                                 </div>
                             </div>
@@ -289,7 +289,7 @@ test.describe('Email card', async () => {
                     <hr />
                     <div>
                         <div data-kg="editor">
-                            <div contenteditable="true" spellcheck="true" data-lexical-editor="true" role="textbox">
+                            <div contenteditable="true" role="textbox" spellcheck="true" data-lexical-editor="true">
                                 <p><br /></p>
                             </div>
                         </div>
@@ -461,7 +461,7 @@ test.describe('Email card', async () => {
                         <hr />
                         <div>
                             <div data-kg="editor">
-                                <div contenteditable="false" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none">
+                                <div contenteditable="false" role="textbox" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none" aria-readonly="true">
                                     <p dir="ltr"><span data-lexical-text="true">Hello</span></p>
                                 </div>
                             </div>

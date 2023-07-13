@@ -66,9 +66,9 @@ test.describe('Bookmark card', async () => {
                                     <div data-kg="editor">
                                         <div
                                             contenteditable="true"
+                                            role="textbox"
                                             spellcheck="true"
-                                            data-lexical-editor="true"
-                                            role="textbox">
+                                            data-lexical-editor="true">
                                             <p dir="ltr">
                                                 <span data-lexical-text="true">caption here</span>
                                             </p>
@@ -283,9 +283,9 @@ test.describe('Bookmark card', async () => {
                                     <div data-kg="editor">
                                         <div
                                             contenteditable="true"
+                                            role="textbox"
                                             spellcheck="true"
-                                            data-lexical-editor="true"
-                                            role="textbox">
+                                            data-lexical-editor="true">
                                             <p dir="ltr">
                                                 <span data-lexical-text="true">My test caption</span>
                                             </p>

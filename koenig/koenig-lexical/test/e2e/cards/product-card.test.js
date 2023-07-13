@@ -59,9 +59,11 @@ test.describe('Product card', async () => {
                                     <div data-kg="editor">
                                         <div
                                             contenteditable="false"
+                                            role="textbox"
                                             spellcheck="true"
                                             data-lexical-editor="true"
-                                            aria-autocomplete="none">
+                                            aria-autocomplete="none"
+                                            aria-readonly="true">
                                             <p dir="ltr">
                                                 <span data-lexical-text="true">This is</span>
                                                 <em data-lexical-text="true">title</em>
@@ -83,9 +85,11 @@ test.describe('Product card', async () => {
                                 <div data-kg="editor">
                                     <div
                                         contenteditable="false"
+                                        role="textbox"
                                         spellcheck="true"
                                         data-lexical-editor="true"
-                                        aria-autocomplete="none">
+                                        aria-autocomplete="none"
+                                        aria-readonly="true">
                                         <p dir="ltr"><span data-lexical-text="true">Description</span></p>
                                     </div>
                                 </div>
@@ -270,9 +274,10 @@ test.describe('Product card', async () => {
                                     <div data-kg="editor">
                                         <div
                                             contenteditable="true"
+                                            role="textbox"
                                             spellcheck="true"
                                             data-lexical-editor="true"
-                                            role="textbox">
+                                        >
                                             <p dir="ltr"><span data-lexical-text="true">Title</span></p>
                                         </div>
                                     </div>
@@ -284,9 +289,10 @@ test.describe('Product card', async () => {
                                 <div data-kg="editor">
                                     <div
                                         contenteditable="true"
+                                        role="textbox"
                                         spellcheck="true"
                                         data-lexical-editor="true"
-                                        role="textbox">
+                                    >
                                         <p dir="ltr"><span data-lexical-text="true">Description</span></p>
                                     </div>
                                 </div>
@@ -408,9 +414,11 @@ test.describe('Product card', async () => {
                                     <div data-kg="editor">
                                         <div
                                             contenteditable="false"
+                                            role="textbox"
                                             spellcheck="true"
                                             data-lexical-editor="true"
-                                            aria-autocomplete="none">
+                                            aria-autocomplete="none"
+                                            aria-readonly="true">
                                             <p dir="ltr">
                                                 <span data-lexical-text="true">Test title</span>
                                             </p>
@@ -424,9 +432,11 @@ test.describe('Product card', async () => {
                                 <div data-kg="editor">
                                     <div
                                         contenteditable="false"
+                                        role="textbox"
                                         spellcheck="true"
                                         data-lexical-editor="true"
-                                        aria-autocomplete="none">
+                                        aria-autocomplete="none"
+                                        aria-readonly="true">
                                         <p dir="ltr">
                                             <span data-lexical-text="true">Test description</span>
                                         </p>

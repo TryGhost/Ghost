@@ -48,7 +48,7 @@ test.describe('Email card', async () => {
                 <div>
                     <div>
                         <div data-kg="editor">
-                            <div contenteditable="false" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none">
+                            <div contenteditable="false" role="textbox" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none" aria-readonly="true">
                                 <p dir="ltr">
                                     <span data-lexical-text="true">A paragraph</span>
                                 </p>
@@ -73,7 +73,7 @@ test.describe('Email card', async () => {
                 <div>
                     <div>
                         <div data-kg="editor">
-                            <div contenteditable="true" spellcheck="true" data-lexical-editor="true" role="textbox">
+                            <div contenteditable="true" role="textbox" spellcheck="true" data-lexical-editor="true">
                                 <p dir="ltr">
                                   <span data-lexical-text="true">Hey</span>
                                   <code data-lexical-text="true">

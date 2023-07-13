@@ -67,9 +67,10 @@ test.describe('Image card', async () => {
                                     <div data-kg="editor">
                                         <div
                                             contenteditable="true"
+                                            role="textbox"
                                             spellcheck="true"
                                             data-lexical-editor="true"
-                                            role="textbox">
+                                        >
                                             <p dir="ltr">
                                                 <span data-lexical-text="true">This is a</span>
                                                 <strong data-lexical-text="true">caption</strong>
@@ -242,7 +243,7 @@ test.describe('Image card', async () => {
                             <div data-testid="image-caption-editor">
                                 <div>
                                     <div data-kg="editor">
-                                        <div contenteditable="true" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true" role="textbox">
+                                        <div contenteditable="true" role="textbox" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true">
                                             <p dir="ltr" data-koenig-dnd-droppable="true">
                                                 <span data-lexical-text="true">This is link </span>
                                                 <a href="https://ghost.org/changelog/markdown/" dir="ltr">
@@ -413,7 +414,7 @@ test.describe('Image card', async () => {
                             <div data-testid="image-caption-editor">
                                 <div>
                                     <div data-kg="editor">
-                                        <div contenteditable="true" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true" role="textbox">
+                                        <div contenteditable="true" role="textbox" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true" role="textbox">
                                             <p><br /></p>
                                         </div>
                                     </div>
@@ -685,7 +686,7 @@ test.describe('Image card', async () => {
                             <div data-testid="image-caption-editor">
                                 <div>
                                     <div data-kg="editor">
-                                        <div contenteditable="true" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true" role="textbox">
+                                        <div contenteditable="true" role="textbox" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true">
                                         <p dir="ltr">
                                         <span data-lexical-text="true">Photo by</span>
                                         <a href="https://unsplash.com/@jamillatrach" dir="ltr">
@@ -737,7 +738,7 @@ test.describe('Image card', async () => {
                             <div data-testid="image-caption-editor">
                                 <div>
                                     <div data-kg="editor">
-                                        <div contenteditable="true" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true" role="textbox">
+                                        <div contenteditable="true" role="textbox" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true">
                                             <p><br /></p>
                                         </div>
                                     </div>
@@ -783,7 +784,7 @@ test.describe('Image card', async () => {
                             <div data-testid="image-caption-editor">
                                 <div>
                                     <div data-kg="editor">
-                                        <div contenteditable="true" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true" role="textbox">
+                                        <div contenteditable="true" role="textbox" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true">
                                             <p><br /></p>
                                         </div>
                                     </div>

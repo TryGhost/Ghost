@@ -134,7 +134,7 @@ test.describe('Gallery card', async () => {
                             <div>
                                 <div>
                                     <div data-kg="editor">
-                                        <div contenteditable="true" spellcheck="true" data-lexical-editor="true" role="textbox">
+                                        <div contenteditable="true" role="textbox" spellcheck="true" data-lexical-editor="true">
                                             <p><br /></p>
                                         </div>
                                     </div>
@@ -195,7 +195,7 @@ test.describe('Gallery card', async () => {
                             <div>
                                 <div>
                                     <div data-kg="editor">
-                                        <div contenteditable="true" spellcheck="true" data-lexical-editor="true" role="textbox">
+                                        <div contenteditable="true" role="textbox" spellcheck="true" data-lexical-editor="true">
                                             <p><br /></p>
                                         </div>
                                     </div>
@@ -380,9 +380,10 @@ test.describe('Gallery card', async () => {
                               <div data-kg="editor">
                                 <div
                                   contenteditable="true"
+                                  role="textbox"
                                   spellcheck="true"
                                   data-lexical-editor="true"
-                                  role="textbox">
+                                >
                                   <p dir="ltr"><span data-lexical-text="true">Caption</span></p>
                                 </div>
                               </div>

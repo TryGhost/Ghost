@@ -67,14 +67,14 @@ test.describe('Signup card', async () => {
                             <div>
                                 <div>
                                     <div data-kg="editor">
-                                        <div contenteditable="false" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none">
+                                        <div contenteditable="false" role="textbox" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none" aria-readonly="true">
                                             <p dir="ltr"><span data-lexical-text="true">Header</span></p>
                                         </div>
                                     </div>
                                 </div>
                                 <div>
                                     <div data-kg="editor">
-                                        <div contenteditable="false" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none">
+                                        <div contenteditable="false" role="textbox" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none" aria-readonly="true">
                                             <p dir="ltr"><span data-lexical-text="true">Subheader</span></p>
                                         </div>
                                     </div>
@@ -87,7 +87,7 @@ test.describe('Signup card', async () => {
                                 </div>
                                 <div>
                                     <div data-kg="editor">
-                                        <div contenteditable="false" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none">
+                                        <div contenteditable="false" role="textbox" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none" aria-readonly="true">
                                             <p dir="ltr"><span data-lexical-text="true">Disclaimer</span></p>
                                         </div>
                                     </div>
@@ -530,7 +530,7 @@ test.describe('Signup card', async () => {
                         <div>
                             <div>
                                 <div data-kg="editor">
-                                    <div contenteditable="false" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none">
+                                    <div contenteditable="false" role="textbox" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none" aria-readonly="true">
                                         <p dir="ltr"><span data-lexical-text="true">
                                             Header. Sign up for Koenig Lexical
                                         </span></p>
@@ -539,7 +539,7 @@ test.describe('Signup card', async () => {
                             </div>
                             <div>
                                 <div data-kg="editor">
-                                    <div contenteditable="false" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none">
+                                    <div contenteditable="false" role="textbox" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none" aria-readonly="true">
                                         <p dir="ltr"><span data-lexical-text="true">
                                             There's a whole lot to discover in this editor. Let us help you settle in. Subheader
                                         </span></p>
@@ -554,7 +554,7 @@ test.describe('Signup card', async () => {
                             </div>
                             <div>
                                 <div data-kg="editor">
-                                    <div contenteditable="true" spellcheck="true" data-lexical-editor="true" role="textbox">
+                                    <div contenteditable="true" role="textbox" spellcheck="true" data-lexical-editor="true">
                                         <p dir="ltr"><span data-lexical-text="true">
                                             No spam. Unsubscribe anytime. Disclaimer
                                         </span></p>

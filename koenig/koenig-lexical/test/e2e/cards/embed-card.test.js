@@ -67,9 +67,10 @@ test.describe('Embed card', async () => {
                                     <div data-kg="editor">
                                         <div
                                             contenteditable="true"
+                                            role="textbox"
                                             spellcheck="true"
                                             data-lexical-editor="true"
-                                            role="textbox">
+                                        >
                                             <p dir="ltr">
                                                 <span data-lexical-text="true">This is a</span>
                                                 <em data-lexical-text="true">caption</em>
@@ -318,9 +319,10 @@ test.describe('Embed card', async () => {
                                     <div data-kg="editor">
                                         <div
                                             contenteditable="true"
+                                            role="textbox"
                                             spellcheck="true"
                                             data-lexical-editor="true"
-                                            role="textbox">
+                                        >
                                             <p dir="ltr">
                                                 <span data-lexical-text="true">test caption</span>
                                             </p>

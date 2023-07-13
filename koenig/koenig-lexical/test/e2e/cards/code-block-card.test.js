@@ -49,9 +49,9 @@ test.describe('Code Block card', async () => {
                                 <div data-kg="editor">
                                     <div
                                         contenteditable="true"
+                                        role="textbox"
                                         spellcheck="true"
-                                        data-lexical-editor="true"
-                                        role="textbox">
+                                        data-lexical-editor="true">
                                         <p dir="ltr">
                                             <span data-lexical-text="true">A code block</span>
                                         </p>
@@ -193,9 +193,9 @@ test.describe('Code Block card', async () => {
                                 <div data-kg="editor">
                                     <div
                                         contenteditable="true"
+                                        role="textbox"
                                         spellcheck="true"
-                                        data-lexical-editor="true"
-                                        role="textbox">
+                                        data-lexical-editor="true">
                                         <p dir="ltr">
                                             <span data-lexical-text="true">My caption</span>
                                         </p>
@@ -241,9 +241,9 @@ test.describe('Code Block card', async () => {
                                 <div data-kg="editor">
                                     <div
                                         contenteditable="true"
+                                        role="textbox"
                                         spellcheck="true"
-                                        data-lexical-editor="true"
-                                        role="textbox">
+                                        data-lexical-editor="true">
                                         <p dir="ltr">
                                             <span data-lexical-text="true">My caption</span>
                                         </p>

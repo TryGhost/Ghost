@@ -48,9 +48,11 @@ test.describe('Callout Card', async () => {
                             <div data-kg="editor">
                                 <div
                                     contenteditable="false"
+                                    role="textbox"
                                     spellcheck="true"
                                     data-lexical-editor="true"
                                     aria-autocomplete="none"
+                                    aria-readonly="true"
                                 >
                                     <p dir="ltr"><span data-lexical-text="true">Hello World</span></p>
                                 </div>
@@ -206,9 +208,11 @@ test.describe('Callout Card', async () => {
                                 <div data-kg="editor">
                                     <div
                                         contenteditable="false"
+                                        role="textbox"
                                         spellcheck="true"
                                         data-lexical-editor="true"
-                                        aria-autocomplete="none">
+                                        aria-autocomplete="none"
+                                        aria-readonly="true">
                                         <p dir="ltr">
                                             <span data-lexical-text="true">testing nesting</span>
                                         </p>
@@ -240,9 +244,11 @@ test.describe('Callout Card', async () => {
                                 <div data-kg="editor">
                                     <div
                                         contenteditable="false"
+                                        role="textbox"
                                         spellcheck="true"
                                         data-lexical-editor="true"
-                                        aria-autocomplete="none">
+                                        aria-autocomplete="none"
+                                        aria-readonly="true">
                                         <p dir="ltr">
                                             <span data-lexical-text="true">testing nesting</span>
                                         </p>
@@ -340,9 +346,11 @@ test.describe('Callout Card', async () => {
                             <div data-kg="editor">
                                 <div
                                     contenteditable="false"
+                                    role="textbox"
                                     spellcheck="true"
                                     data-lexical-editor="true"
                                     aria-autocomplete="none"
+                                    aria-readonly="true"
                                 >
                                     <p dir="ltr"><span data-lexical-text="true">Hello world</span></p>
                                 </div>

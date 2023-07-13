@@ -88,7 +88,7 @@ test.describe('Editor text formatting keyboard shortcuts', async () => {
 
             await assertHTML(page, html`
             <p dir="ltr">
-                <a href="https://example.com" rel="noopener" dir="ltr">
+                <a href="https://example.com" rel="noreferrer" dir="ltr">
                     <span data-lexical-text="true">test</span>
                 </a>
             </p>`);

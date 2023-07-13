@@ -240,7 +240,7 @@ test.describe('Floating format toolbar', async () => {
 
             await assertHTML(page, html`
                 <p dir="ltr">
-                    <a href="https://ghost.org/" rel="noopener" dir="ltr">
+                    <a href="https://ghost.org/" rel="noreferrer" dir="ltr">
                        <span data-lexical-text="true">link</span>
                     </a>
                 </p>
