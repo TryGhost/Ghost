@@ -26,11 +26,13 @@ const useNavigationEditor = ({items, setItems}: {
     items: NavigationItem[];
     setItems: (newItems: NavigationItem[]) => void;
 }): NavigationEditor => {
+    const hasNewItem = (newItem: NavigationItem) => Boolean((newItem.label && !newItem.label.match(/^\s*$/)) || newItem.url !== '/');
+
     const list = useSortableIndexedList<Omit<EditableItem, 'id'>>({
         items: items.map(item => ({...item, errors: {}})),
         setItems: newItems => setItems(newItems.map(({url, label}) => ({url, label}))),
         blank: {label: '', url: '/', errors: {}},
-        canAddNewItem: newItem => Boolean((newItem.label && !newItem.label.match(/^\s*$/)) || newItem.url !== '/')
+        canAddNewItem: hasNewItem
     });
 
     const urlRegex = new RegExp(/^(\/|#|[a-zA-Z0-9-]+:)/);
@@ -107,11 +109,13 @@ const useNavigationEditor = ({items, setItems}: {
                 }
             });
 
-            const newItemErrors = validateItem(list.newItem);
+            if (hasNewItem(list.newItem)) {
+                const newItemErrors = validateItem(list.newItem);
 
-            if (Object.values(newItemErrors).some(message => message)) {
-                isValid = false;
-                list.setNewItem({...list.newItem, errors: newItemErrors});
+                if (Object.values(newItemErrors).some(message => message)) {
+                    isValid = false;
+                    list.setNewItem({...list.newItem, errors: newItemErrors});
+                }
             }
 
             return isValid;

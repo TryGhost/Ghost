@@ -1,5 +1,5 @@
-import Button from './admin-x-ds/global/Button';
 import DataProvider from './components/providers/DataProvider';
+import ExitSettingsButton from './components/ExitSettingsButton';
 import Heading from './admin-x-ds/global/Heading';
 import NiceModal from '@ebay/nice-modal-react';
 import RoutingProvider from './components/providers/RoutingProvider';
@@ -12,21 +12,20 @@ import {Toaster} from 'react-hot-toast';
 
 interface AppProps {
     ghostVersion: string;
-    officialThemes: OfficialTheme[]
-    setDirty?: (dirty: boolean) => void;
+    officialThemes: OfficialTheme[];
 }
 
-function App({ghostVersion, officialThemes, setDirty}: AppProps) {
+function App({ghostVersion, officialThemes}: AppProps) {
     return (
         <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes}>
             <DataProvider>
                 <RoutingProvider>
-                    <GlobalDirtyStateProvider setDirty={setDirty}>
+                    <GlobalDirtyStateProvider>
                         <div className="admin-x-settings">
                             <Toaster />
                             <NiceModal.Provider>
                                 <div className='fixed left-6 top-4'>
-                                    <Button label='&larr; Done' link={true} onClick={() => window.history.back()} />
+                                    <ExitSettingsButton />
                                 </div>
 
                                 {/* Main container */}
