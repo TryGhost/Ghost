@@ -233,14 +233,43 @@ module.exports = class StripeAPI {
         try {
             const result = await this._stripe.customers.search({
                 query: `email:"${email}"`,
-                limit: 1
+                limit: 10,
+                expand: ['data.subscriptions']
             });
+            const customers = result.data;
 
-            if (result.data.length === 0) {
+            // No customer found, return null
+            if (customers.length === 0) {
                 return;
             }
 
-            return result.data[0].id;
+            // Return the only customer found
+            if (customers.length === 1) {
+                return customers[0].id;
+            }
+
+            // Multiple customers found, return the one with the most recent subscription
+            if (customers.length > 1) {
+                let latestCustomer = customers[0];
+                let latestSubscriptionTime = 0;
+
+                for (let customer of customers) {
+                    // skip customers with no subscriptions
+                    if (!customer.subscriptions || !customer.subscriptions.data || customer.subscriptions.data.length === 0) {
+                        continue;
+                    }
+
+                    // find the customer with the most recent subscription
+                    for (let subscription of customer.subscriptions.data) {
+                        if (subscription.created > latestSubscriptionTime) {
+                            latestSubscriptionTime = subscription.created;
+                            latestCustomer = customer;
+                        }
+                    }
+                }
+
+                return latestCustomer.id;
+            }
         } catch (err) {
             debug(`getCustomerByEmail(${email}) -> ${err.type}:${err.message}`);
         }
