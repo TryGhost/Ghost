@@ -14,6 +14,7 @@ import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import useSortableIndexedList from '../../../../hooks/useSortableIndexedList';
 import {Tier} from '../../../../types/api';
+import {currencyFromDecimal, currencyToDecimal} from '../../../../utils/currency';
 import {useTiers} from '../../../providers/ServiceProvider';
 
 interface TierDetailModalProps {
@@ -34,16 +35,16 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
     const {formState, updateForm, handleSave} = useForm<TierFormState>({
         initialState: {
             ...(tier || {}),
-            monthly_price: tier?.monthly_price?.toString() || '',
-            yearly_price: tier?.monthly_price?.toString() || '',
+            monthly_price: tier?.monthly_price ? currencyToDecimal(tier.monthly_price).toString() : '',
+            yearly_price: tier?.yearly_price ? currencyToDecimal(tier.yearly_price).toString() : '',
             trial_days: tier?.trial_days?.toString() || ''
         },
         onSave: async () => {
             const values = {
                 ...formState,
-                monthly_price: parseFloat(formState.monthly_price),
-                yearly_price: parseFloat(formState.yearly_price),
-                trial_days: parseFloat(formState.trial_days)
+                monthly_price: currencyFromDecimal(parseFloat(formState.monthly_price)),
+                yearly_price: currencyFromDecimal(parseFloat(formState.yearly_price)),
+                trial_days: currencyFromDecimal(parseFloat(formState.trial_days))
             };
 
             if (tier?.id) {
