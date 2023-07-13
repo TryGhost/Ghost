@@ -20,6 +20,10 @@ env:
     ~/.cache/ms-playwright/
   CACHED_BUILD_PATHS: |
     ${{ github.workspace }}/ghost/*/build
+  NX_CACHE_RESTORE_KEYS: |
+    nx-Linux-${{ github.ref }}-${{ github.sha }}
+    nx-Linux-${{ github.ref }}
+    nx-Linux
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
@@ -100,7 +104,7 @@ jobs:
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       base_commit: ${{ env.BASE_COMMIT }}
       is_canary_branch: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/arch') }}
-      is_git_sync: ${{ github.head_ref == 'main' || github.ref == 'refs/heads/main' }}
+      is_main: ${{ github.ref == 'refs/heads/main' }}
 
   job_install_deps:
     name: Install Dependencies
@@ -116,6 +120,14 @@ jobs:
       - name: Compute dependency cache key
         id: compute_lockfile_hash
         run: echo "hash=${{ hashFiles('yarn.lock') }}" >> "$GITHUB_OUTPUT"
+
+      - name: Nx cache
+        uses: actions/cache@v3
+        id: cache_nx
+        with:
+          path: .nxcache
+          key: nx-Linux-${{ github.ref }}-${{ env.HEAD_COMMIT }}
+          restore-keys: ${{needs.job_get_metadata.outputs.is_main == 'false' && env.NX_CACHE_RESTORE_KEYS || 'nx-never-restore'}}
 
       - name: Check dependency cache
         uses: actions/cache@v3
