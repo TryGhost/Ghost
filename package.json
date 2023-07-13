@@ -20,7 +20,7 @@
     "**/node_modules/**"
   ],
   "scripts": {
-    "archive": "yarn workspace ghost run archive",
+    "archive": "nx run ghost:archive",
     "build": "nx run-many -t build",
     "dev:debug": "DEBUG_COLORS=true DEBUG=@tryghost*,ghost:* yarn dev",
     "dev:admin": "node .github/scripts/dev.js --admin",
@@ -35,7 +35,7 @@
     "main": "yarn main:monorepo && yarn main:submodules",
     "main:monorepo": "git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn",
     "main:submodules": "git submodule sync && git submodule update && git submodule foreach \"git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn\"",
-    "prepare": "husky install .github/hooks && nx run-many -t build:ts"
+    "prepare": "husky install .github/hooks"
   },
   "resolutions": {
     "@elastic/elasticsearch": "8.5.0",
