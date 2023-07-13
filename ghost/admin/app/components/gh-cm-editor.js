@@ -74,7 +74,7 @@ class CmEditorComponent extends Component {
 
     @task(function* () {
         let loader = this.lazyLoader;
-        yield loader.loadScript('codemirror', 'assets/codemirror/codemirror.js');
+        yield loader.loadScript('codemirror', 'codemirror/codemirror.js');
 
         scheduleOnce('afterRender', this, this._initCodeMirror);
     })

@@ -17,7 +17,7 @@ export default function () {
     let path = window.location.pathname;
     let subdir = path.substr(0, path.search('/ghost/'));
     let adminRoot = `${subdir}/ghost/`;
-    let assetRoot = `${subdir}/ghost/assets/`;
+    let assetRoot = document.head.dataset.ghostCdnUrl || `${subdir}/ghost/assets/`;
     let apiRoot = `${subdir}/ghost/api/admin`;
 
     function assetUrl(src) {

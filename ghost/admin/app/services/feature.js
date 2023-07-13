@@ -154,7 +154,7 @@ export default class FeatureService extends Service {
             nightShift = enabled || this.nightShift;
         }
 
-        return this.lazyLoader.loadStyle('dark', 'assets/ghost-dark.css', true).then(() => {
+        return this.lazyLoader.loadStyle('dark', 'ghost-dark.css', true).then(() => {
             $('link[title=dark]').prop('disabled', !nightShift);
         }).catch(() => {
             //TODO: Also disable toggle from settings and Labs hover

@@ -80,7 +80,7 @@ export default class GhSimplemde extends TextArea {
     }
 
     @task(function* () {
-        yield this.lazyLoader.loadScript('simplemde', 'assets/simplemde/simplemde.js');
+        yield this.lazyLoader.loadScript('simplemde', 'simplemde/simplemde.js');
 
         let editorOptions = assign(
             {element: document.getElementById(this.elementId)},
