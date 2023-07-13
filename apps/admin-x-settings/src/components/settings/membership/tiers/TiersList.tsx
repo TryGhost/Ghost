@@ -2,6 +2,7 @@ import Button from '../../../../admin-x-ds/global/Button';
 import List from '../../../../admin-x-ds/global/List';
 import ListItem from '../../../../admin-x-ds/global/ListItem';
 import NiceModal from '@ebay/nice-modal-react';
+import NoValueLabel from '../../../../admin-x-ds/global/NoValueLabel';
 import React from 'react';
 import TierDetailModal from './TierDetailModal';
 import {Tier} from '../../../../types/api';
@@ -20,7 +21,7 @@ interface TierActionsProps {
 const TierActions: React.FC<TierActionsProps> = ({tier, updateTier}) => {
     if (tier.active) {
         return (
-            <Button color='green' label='Archive' link onClick={() => {
+            <Button color='red' label='Archive' link onClick={() => {
                 updateTier({...tier, active: false});
             }} />
         );
@@ -34,11 +35,20 @@ const TierActions: React.FC<TierActionsProps> = ({tier, updateTier}) => {
 };
 
 const TiersList: React.FC<TiersListProps> = ({
+    tab,
     tiers,
     updateTier
 }) => {
+    if (!tiers.length) {
+        return (
+            <NoValueLabel icon='money-bags'>
+                No {tab === 'active-tiers' ? 'active' : 'archived'} tiers found.
+            </NoValueLabel>
+        );
+    }
+
     return (
-        <List>
+        <List borderTop={false}>
             {tiers.map((tier) => {
                 return (
                     <ListItem
