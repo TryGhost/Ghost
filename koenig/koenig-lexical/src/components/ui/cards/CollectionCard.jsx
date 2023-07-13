@@ -20,18 +20,17 @@ export function CollectionPost({
 
     return (
         <div className={clsx(
-            'not-kg-prose relative flex min-h-[120px] w-full gap-5 bg-transparent font-sans',
-            layout === 'grid' && 'flex-col'
+            'not-kg-prose relative w-full gap-5 bg-transparent font-sans',
+            layout === 'list' && 'grid grid-cols-3',
+            layout === 'grid' && 'flex flex-col'
         )}>
             {image &&
-                (<div className={'grow-1 relative m-0 min-w-[33%]'}>
-                    <img alt="" className={clsx(
-                        'h-full w-full object-cover',
-                        columns === 1 || columns === 2 ? 'aspect-video' : 'aspect-[3/2]'
-                    )} src={image}/>
-                </div>)
+                (<img alt="" className={clsx(
+                    'w-full object-cover',
+                    (layout === 'grid' && (columns === 1 || columns === 2)) ? 'aspect-video' : 'aspect-[3/2]'
+                )} src={image}/>)
             }
-            <div className="flex grow basis-full flex-col items-start justify-start">
+            <div className="col-span-2 flex flex-col items-start justify-start">
                 {title && <div className={clsx(
                     'font-bold tracking-normal text-black dark:text-grey-100',
                     columns === 1 && 'w-2/3 text-4xl leading-tight',
@@ -134,18 +133,18 @@ export function CollectionCard({
             return;
         }
         const header = headerEditor.getEditorState().read(() => ($getRoot().getTextContent()));
-        if (value === 'index' && header === 'Featured Posts') {
+        if (value === 'index' && header === 'Featured') {
             headerEditor.update(() => {
-                const newHeader = $createParagraphNode().append($createTextNode('Latest Posts'));
+                const newHeader = $createParagraphNode().append($createTextNode('Latest'));
                 const root = $getRoot();
                 root.clear();
                 root.append(newHeader);
                 root.selectEnd();
             });
         }
-        if (value === 'featured' && header === 'Latest Posts') {
+        if (value === 'featured' && header === 'Latest') {
             headerEditor.update(() => {
-                const newHeader = $createParagraphNode().append($createTextNode('Featured Posts'));
+                const newHeader = $createParagraphNode().append($createTextNode('Featured'));
                 const root = $getRoot();
                 root.clear();
                 root.append(newHeader);
@@ -166,17 +165,16 @@ export function CollectionCard({
                     placeholderClassName={'!font-sans !text-[2.2rem] !font-bold !leading-snug !tracking-tight text-black dark:text-grey-50 opacity-40'}
                     placeholderText="Collection Header"
                     singleParagraph={true}
-                    textClassName={'koenig-lexical-toggle-heading whitespace-normal text-black dark:text-grey-50 opacity-100 py-2'}
+                    textClassName={'koenig-lexical-collection-heading whitespace-normal text-black dark:text-grey-50 opacity-100 pt-2 pb-4'}
                 />)
             }
             <div className={clsx(
-                'w-full',
-                layout === 'list' && 'flex flex-col',
-                layout === 'grid' && 'grid',
-                columns === 1 && 'grid-cols-1 gap-y-14',
-                columns === 2 && 'grid-cols-2 gap-x-10 gap-y-14',
-                columns === 3 && 'grid-cols-3 gap-x-8 gap-y-12',
-                columns === 4 && 'grid-cols-4 gap-x-6 gap-y-10'
+                'grid w-full',
+                layout === 'list' && 'gap-5',
+                (layout === 'grid' && columns === 1) && 'grid-cols-1 gap-y-14',
+                (layout === 'grid' && columns === 2) && 'grid-cols-2 gap-x-10 gap-y-14',
+                (layout === 'grid' && columns === 3) && 'grid-cols-3 gap-x-8 gap-y-12',
+                (layout === 'grid' && columns === 4) && 'grid-cols-4 gap-x-6 gap-y-10'
             )}>
                 <Collection columns={columns} layout={layout} postCount={postCount} posts={posts} />
             </div>

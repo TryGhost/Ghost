@@ -65,8 +65,8 @@ describe('CollectionNode', function () {
             node.layout.should.equal('grid');
             node.columns = 2;
             node.columns.should.equal(2);
-            node.header = 'Latest Posts';
-            node.header.should.equal('Latest Posts');
+            node.header = 'Latest';
+            node.header.should.equal('Latest');
         }));
 
         it('has getDataset() method', editorTest(function () {

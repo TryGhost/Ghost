@@ -863,6 +863,25 @@
 
 /* stylelint-disable at-rule-disallowed-list */
 
+.koenig-lexical-collection-heading {
+    .kg-prose {
+        :where(
+                    p,
+                    blockquote,
+                    aside,
+                    ul,
+                    ol
+                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+                    @apply text-md uppercase font-sans leading-normal font-bold tracking-tight;
+        }
+        :where(
+                    strong
+                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            @apply !font-extrabold;
+        }
+    }
+}
+
 .koenig-lexical-header-heading {
     .kg-prose {
         :where(

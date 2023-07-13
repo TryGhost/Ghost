@@ -221,7 +221,7 @@ PopulatedList.args = {
     posts: mockPosts,
     collection: {slug: 'index'},
     collections: mockCollections,
-    header: 'Latest Posts',
+    header: 'Latest',
     postCount: 6,
     layout: 'list'
 };
@@ -233,7 +233,7 @@ PopulatedGrid.args = {
     collection: {slug: 'index'},
     collections: mockCollections,
     postCount: 6,
-    header: 'Latest Posts',
+    header: 'Latest',
     layout: 'grid',
     columns: 3,
     cardWidth: 'wide'
