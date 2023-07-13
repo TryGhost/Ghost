@@ -1,5 +1,6 @@
+import Button from '../../../../admin-x-ds/global/Button';
 import Icon from '../../../../admin-x-ds/global/Icon';
-import React from 'react';
+import React, {useState} from 'react';
 import {Tier} from '../../../../types/api';
 import {getSymbol} from '../../../../utils/currency';
 
@@ -57,19 +58,28 @@ const DiscountLabel: React.FC<{discount: number}> = ({discount}) => {
 };
 
 const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier}) => {
+    const [showingYearly, setShowingYearly] = useState(false);
+
     const name = tier?.name || '';
     const description = tier?.description || '';
-    const monthlyPrice = parseFloat(tier?.monthly_price || '0');
     const trialDays = parseFloat(tier?.trial_days || '0');
     const currency = tier?.currency || 'USD';
     const currencySymbol = currency ? getSymbol(currency) : '$';
     const benefits = tier?.benefits || [];
 
+    const monthlyPrice = parseFloat(tier?.monthly_price || '0');
+    const yearlyPrice = parseFloat(tier?.yearly_price || '0');
+    const yearlyDiscount = tier?.monthly_price && tier?.yearly_price
+        ? Math.ceil(((monthlyPrice * 12 - yearlyPrice) / (monthlyPrice * 12)) * 100)
+        : 0;
+
     return (
         <div className="-mt-[6px]">
             <div className="flex items-baseline justify-between">
                 <h4 className="z-10 pb-3 text-2xs font-semibold uppercase tracking-wide text-grey-700">Tier preview</h4>
-                <div>
+                <div className="flex">
+                    <Button label="Monthly" onClick={() => setShowingYearly(false)} />
+                    <Button label="Yearly" onClick={() => setShowingYearly(true)} />
                 </div>
             </div>
             <div className="flex-column relative flex min-h-[200px] w-full max-w-[420px] items-start justify-stretch rounded border border-grey-200 bg-white p-8">
@@ -78,12 +88,12 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier}) => {
                     <div className="mt-4 flex w-full flex-row flex-wrap items-end justify-between gap-x-1 gap-y-[10px]">
                         <div className="flex flex-wrap text-black">
                             <span className="self-start text-[2.7rem] font-bold uppercase leading-[1.115]">{currencySymbol}</span>
-                            <span className="break-all text-[3.4rem] font-bold leading-none tracking-tight">{monthlyPrice}</span>
-                            <span className="ml-1 self-end text-[1.5rem] leading-snug text-grey-800">/month</span>
+                            <span className="break-all text-[3.4rem] font-bold leading-none tracking-tight">{showingYearly ? yearlyPrice : monthlyPrice}</span>
+                            <span className="ml-1 self-end text-[1.5rem] leading-snug text-grey-800">/{showingYearly ? 'year' : 'month'}</span>
                         </div>
                         <TrialDaysLabel trialDays={trialDays} />
                     </div>
-                    <DiscountLabel discount={25} />
+                    {(showingYearly && yearlyDiscount > 0) && <DiscountLabel discount={yearlyDiscount} />}
                 </div>
                 <div className="flex-column flex w-full flex-1">
                     <div className="flex-1">
