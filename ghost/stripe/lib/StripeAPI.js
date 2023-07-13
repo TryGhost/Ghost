@@ -223,6 +223,59 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Finds a Stripe Customer ID based on the provided email address. Returns null if no customer is found.
+     * @param {string} email
+     * @see https://stripe.com/docs/api/customers/search
+     *
+     * @returns {Promise<string|null>} Stripe Customer ID, if found
+     */
+    async getCustomerIdByEmail(email) {
+        try {
+            const result = await this._stripe.customers.search({
+                query: `email:"${email}"`,
+                limit: 10,
+                expand: ['data.subscriptions']
+            });
+            const customers = result.data;
+
+            // No customer found, return null
+            if (customers.length === 0) {
+                return;
+            }
+
+            // Return the only customer found
+            if (customers.length === 1) {
+                return customers[0].id;
+            }
+
+            // Multiple customers found, return the one with the most recent subscription
+            if (customers.length > 1) {
+                let latestCustomer = customers[0];
+                let latestSubscriptionTime = 0;
+
+                for (let customer of customers) {
+                    // skip customers with no subscriptions
+                    if (!customer.subscriptions || !customer.subscriptions.data || customer.subscriptions.data.length === 0) {
+                        continue;
+                    }
+
+                    // find the customer with the most recent subscription
+                    for (let subscription of customer.subscriptions.data) {
+                        if (subscription.created > latestSubscriptionTime) {
+                            latestSubscriptionTime = subscription.created;
+                            latestCustomer = customer;
+                        }
+                    }
+                }
+
+                return latestCustomer.id;
+            }
+        } catch (err) {
+            debug(`getCustomerByEmail(${email}) -> ${err.type}:${err.message}`);
+        }
+    }
+
+    /**
      * @param {import('stripe').Stripe.CustomerCreateParams} options
      *
      * @returns {Promise<ICustomer>}
