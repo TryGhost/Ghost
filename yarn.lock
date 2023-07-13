@@ -5473,10 +5473,10 @@
     "@storybook/types" "7.0.27"
     ts-dedent "^2.0.0"
 
-"@storybook/addon-styling@1.3.2":
-  version "1.3.2"
-  resolved "https://registry.yarnpkg.com/@storybook/addon-styling/-/addon-styling-1.3.2.tgz#b8a689bcfa5e2e46a9c42d616fe587243ae7be09"
-  integrity sha512-pxc2ncCH3jlOjsJFOmUECxIFvC4jmUxd0noeEC4shGfKvGhsssHpxcVtA36+s3JhDdx+Yhrk/0KeYoMe+35/qg==
+"@storybook/addon-styling@1.3.3":
+  version "1.3.3"
+  resolved "https://registry.yarnpkg.com/@storybook/addon-styling/-/addon-styling-1.3.3.tgz#7884bb0b3b4e86a0b961a2f812db0a06eb99d054"
+  integrity sha512-rCGgi7Z/2I772y3gcdqfbELKbBcaBIfNsymSaWLn0gcT5DTz2ALrrCGvTpUX7YkKk07dAWDSVFTK6V0rOzo6Hw==
   dependencies:
     "@babel/template" "^7.20.7"
     "@babel/types" "^7.21.5"
@@ -5492,6 +5492,7 @@
     css-loader "^6.7.3"
     less-loader "^11.1.0"
     postcss-loader "^7.2.4"
+    prettier "^2.8.0"
     resolve-url-loader "^5.0.0"
     sass-loader "^13.2.2"
     style-loader "^3.3.2"
