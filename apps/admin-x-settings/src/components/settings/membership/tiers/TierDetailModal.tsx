@@ -14,7 +14,7 @@ import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import useSortableIndexedList from '../../../../hooks/useSortableIndexedList';
 import {Tier} from '../../../../types/api';
-import {currencyFromDecimal, currencyToDecimal} from '../../../../utils/currency';
+import {currencies, currencyFromDecimal, currencyGroups, currencyToDecimal} from '../../../../utils/currency';
 import {useTiers} from '../../../providers/ServiceProvider';
 
 interface TierDetailModalProps {
@@ -38,7 +38,8 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
             ...(tier || {}),
             monthly_price: tier?.monthly_price ? currencyToDecimal(tier.monthly_price).toString() : '',
             yearly_price: tier?.yearly_price ? currencyToDecimal(tier.yearly_price).toString() : '',
-            trial_days: tier?.trial_days?.toString() || ''
+            trial_days: tier?.trial_days?.toString() || '',
+            currency: tier?.currency || currencies[0].isoCode
         },
         onSave: async () => {
             const values = {
@@ -97,26 +98,29 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                                 <div className='w-10'>
                                     <Select
                                         border={false}
-                                        options={[
-                                            {label: 'USD', value: 'US Dollaz'},
-                                            {label: 'HUF', value: 'Hungarian Dollaz'}
-                                        ]}
+                                        options={Object.values(currencyGroups()).map(group => ({
+                                            label: '—',
+                                            options: group.map(({isoCode,name}) => ({
+                                                value: isoCode,
+                                                label: `${isoCode} - ${name}`
+                                            }))
+                                        }))}
                                         selectClassName='font-medium'
                                         size='xs'
-                                        onSelect={() => {}}
+                                        onSelect={currency => updateForm(state => ({...state, currency}))}
                                     />
                                 </div>
                             </div>
                             <div className='flex flex-col gap-2'>
                                 <TextField
                                     placeholder='1'
-                                    rightPlaceholder='USD/month'
+                                    rightPlaceholder={`${formState.currency}/month`}
                                     value={formState.monthly_price}
                                     onChange={e => updateForm(state => ({...state, monthly_price: e.target.value.replace(/[^\d.]/, '')}))}
                                 />
                                 <TextField
                                     placeholder='10'
-                                    rightPlaceholder='USD/year'
+                                    rightPlaceholder={`${formState.currency}/year`}
                                     value={formState.yearly_price}
                                     onChange={e => updateForm(state => ({...state, yearly_price: e.target.value.replace(/[^\d.]/, '')}))}
                                 />
