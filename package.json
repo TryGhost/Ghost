@@ -128,7 +128,7 @@
     "eslint-plugin-ghost": "3.2.0",
     "husky": "8.0.3",
     "lint-staged": "13.2.3",
-    "nx": "16.5.1",
+    "nx": "16.5.2",
     "ts-node": "10.9.1"
   }
 }
