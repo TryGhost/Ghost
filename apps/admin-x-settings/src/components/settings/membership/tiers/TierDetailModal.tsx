@@ -31,6 +31,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
     const modal = useModal();
     const {updateRoute} = useRouting();
     const {update: updateTier, create: createTier} = useTiers();
+    const [hasFreeTrial, setHasFreeTrial] = React.useState(!!tier?.trial_days);
 
     const {formState, updateForm, handleSave} = useForm<TierFormState>({
         initialState: {
@@ -124,17 +125,17 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                         <div className='basis-1/2'>
                             <div className='mb-1 flex h-6 items-center justify-between'>
                                 <Heading level={6}>Add a free trial</Heading>
-                                <Toggle onChange={() => {}} />
+                                <Toggle onChange={e => setHasFreeTrial(e.target.checked)} />
                             </div>
                             <TextField
+                                disabled={!hasFreeTrial}
                                 hint={<>
                                     Members will be subscribed at full price once the trial ends. <a href="https://ghost.org/" rel="noreferrer" target="_blank">Learn more</a>
                                 </>}
                                 placeholder='0'
                                 rightPlaceholder='days'
                                 value={formState.trial_days}
-                                disabled
-                                onChange={e => updateForm(state => ({...state, trial_days: e.target.value.replace(/^[\d.]/, '')}))}
+                                onChange={e => updateForm(state => ({...state, trial_days: e.target.value.replace(/[^\d.]/, '')}))}
                             />
                         </div>
                     </div>
