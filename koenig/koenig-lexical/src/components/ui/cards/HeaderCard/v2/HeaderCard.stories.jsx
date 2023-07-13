@@ -1,10 +1,10 @@
 import React from 'react';
-import populateNestedEditor from '../../../utils/populateNestedEditor';
-import {CardWrapper} from './../CardWrapper';
+import populateNestedEditor from '../../../../../utils/populateNestedEditor';
+import {CardWrapper} from '../../../CardWrapper';
 import {HeaderCard} from './HeaderCard';
-import {MINIMAL_NODES} from '../../../index.js';
+import {MINIMAL_NODES} from '../../../../../index.js';
 import {createEditor} from 'lexical';
-import {editorEmptyState} from '../../../../.storybook/editorEmptyState';
+import {editorEmptyState} from '../../../../../../.storybook/editorEmptyState';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},
