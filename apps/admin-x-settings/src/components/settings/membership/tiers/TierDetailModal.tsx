@@ -155,7 +155,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                         </div>}
                         onMove={benefits.moveItem}
                     />
-                    <div className="relative flex items-center gap-3">
+                    <div className="relative mt-0.5 flex items-center gap-3">
                         <Icon name='check' size='sm' />
                         <TextField
                             className='grow'
