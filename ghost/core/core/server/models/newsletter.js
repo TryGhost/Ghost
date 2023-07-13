@@ -149,6 +149,7 @@ const Newsletter = ghostBookshelf.Model.extend({
                     qb.count('members_newsletters.id')
                         .from('members_newsletters')
                         .whereRaw('members_newsletters.newsletter_id = newsletters.id')
+                        .whereRaw('members_newsletters.active = 1')
                         .as('count__members');
                 });
             }

@@ -26,7 +26,7 @@ class EmailSegmenter {
     }
 
     getMemberFilterForSegment(newsletter, emailRecipientFilter, segment) {
-        const filter = [`newsletters.id:${newsletter.id}`];
+        const filter = [`(newsletters.id:${newsletter.id}+members_newsletters.active:1)`];
 
         switch (emailRecipientFilter) {
         case 'all':

@@ -46,10 +46,13 @@ export default class Newsletter extends Model.extend(ValidationEngine) {
      * The filter that we should use to filter out members that are subscribed to this newsletter
      */
     get recipientFilter() {
-        const idFilter = 'newsletters.slug:' + this.slug;
+        const filters = [
+            `newsletters.slug:${this.slug}`,
+            'members_newsletters.active:1'
+        ];
         if (this.visibility === 'paid') {
-            return idFilter + '+status:-free';
+            filters.push('status:-free');
         }
-        return idFilter;
+        return filters.join('+');
     }
 }
