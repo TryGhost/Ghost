@@ -158,7 +158,7 @@ jobs:
 
       - name: Build packages
         if: steps.cache_built_packages.outputs.cache-hit != 'true'
-        run: yarn prepare
+        run: yarn nx run-many -t build:ts
     outputs:
       dependency_cache_key: ${{ steps.compute_lockfile_hash.outputs.hash }}
 
