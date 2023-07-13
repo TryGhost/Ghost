@@ -2505,12 +2505,12 @@
     resolve "^1.20.0"
     semver "^7.3.2"
 
-"@embroider/macros@1.12.2", "@embroider/macros@^0.50.0 || ^1.0.0", "@embroider/macros@^1.0.0", "@embroider/macros@^1.10.0", "@embroider/macros@^1.12.2", "@embroider/macros@^1.2.0", "@embroider/macros@^1.8.0", "@embroider/macros@^1.8.3", "@embroider/macros@^1.9.0":
-  version "1.12.2"
-  resolved "https://registry.yarnpkg.com/@embroider/macros/-/macros-1.12.2.tgz#feaa0deb3a2329a6441f5a0790279bd85bd80d08"
-  integrity sha512-3AY1iWq9ctQESgTeKk6Hdw/E5ypAx793bK5WZHHYcmjJAIVfR6lHa6SBoNjDNuYRduabd2lN0VJq7StwL62ETg==
+"@embroider/macros@1.12.3", "@embroider/macros@^0.50.0 || ^1.0.0", "@embroider/macros@^1.0.0", "@embroider/macros@^1.10.0", "@embroider/macros@^1.12.2", "@embroider/macros@^1.2.0", "@embroider/macros@^1.8.0", "@embroider/macros@^1.8.3", "@embroider/macros@^1.9.0":
+  version "1.12.3"
+  resolved "https://registry.yarnpkg.com/@embroider/macros/-/macros-1.12.3.tgz#6d364e6b53e686a62b6c2dbc7235f9ebbf3c1c7b"
+  integrity sha512-ZdgDo7ckNbZ0DxMgEmcX70PUNPqodKSkgifDoX3Ysf5P5LkpST/PV1E49GZTxv9p17+XwQ8j0JSf5yd7KY1f/w==
   dependencies:
-    "@embroider/shared-internals" "2.2.2"
+    "@embroider/shared-internals" "2.2.3"
     assert-never "^1.2.1"
     babel-import-util "^1.1.0"
     ember-cli-babel "^7.26.6"
@@ -2545,10 +2545,10 @@
     semver "^7.3.5"
     typescript-memoize "^1.0.1"
 
-"@embroider/shared-internals@2.2.2", "@embroider/shared-internals@^2.0.0":
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/@embroider/shared-internals/-/shared-internals-2.2.2.tgz#8f19c9a8621b4c3f061a4af5060a82ec024655eb"
-  integrity sha512-fOED89UjsNT8e/maA1P3co2D7q/UOmH3DMxqAlJyueyo57LKuVDXFDG6JUYiEyHb2H5eCrzIdGoHI5cz9rH3Ow==
+"@embroider/shared-internals@2.2.3", "@embroider/shared-internals@^2.0.0":
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/@embroider/shared-internals/-/shared-internals-2.2.3.tgz#2c7ffaa42066906bfc30c766450c199d9602cdd9"
+  integrity sha512-4RXJ07TqkQN4FpLBnQ92TZWW4wGAH7CRG37F1iE99rjxoD3IkoKe1IeyNr0Q85lws+2awx4/cEpaUsSwUYiJSg==
   dependencies:
     babel-import-util "^1.1.0"
     ember-rfc176-data "^0.3.17"
