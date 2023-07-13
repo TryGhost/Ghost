@@ -27,6 +27,9 @@ module.exports = {
                 resource.feature_image_caption = new SafeString(resource.feature_image_caption);
             }
         });
+
+        // some properties are extracted to local template data to force one way of using it
+        delete data.show_title_and_feature_image;
     },
 
     /**
