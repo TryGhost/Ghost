@@ -29,11 +29,15 @@ const story = {
                 },
                 defaultValue: displayOptions.Default
             }
+        },
+        layout: {
+            options: ['regular', 'wide', 'full', 'split'],
+            control: {type: 'radio'}
         }
     },
     parameters: {
         status: {
-            type: 'uiReady'
+            type: 'inProgress'
         }
     }
 };
@@ -65,16 +69,19 @@ const Template = ({display, header, subheader, ...args}) => {
 export const Empty = Template.bind({});
 Empty.args = {
     display: 'Editing',
-    size: 'small',
-    type: 'dark',
+    layout: 'regular',
+    alignment: 'center',
+    showBackgroundImage: false,
+    backgroundImageSrc: 'https://static.ghost.org/v4.0.0/images/andreas-selter-e4yK8QQlZa0-unsplash.jpg',
     header: '',
-    headerPlaceholder: 'Enter heading text',
     subheader: '',
-    subheaderPlaceholder: 'Enter subheading text',
-    button: false,
     buttonText: '',
-    buttonPlaceholder: 'Add button text',
+    buttonColor: '#000000',
+    buttonTextColor: '#ffffff',
+    backgroundColor: '#F3B389',
+    textColor: '#000000',
     buttonUrl: '',
+    handleBackgroundColor: () => {},
     headerTextEditorInitialState: editorEmptyState,
     subheaderTextEditorInitialState: editorEmptyState
 };
@@ -82,34 +89,19 @@ Empty.args = {
 export const Populated = Template.bind({});
 Populated.args = {
     display: 'Editing',
-    size: 'small',
-    handleButtonToggle: () => {},
+    layout: 'split',
+    alignment: 'center',
+    showBackgroundImage: true,
+    backgroundImageSrc: 'https://static.ghost.org/v4.0.0/images/andreas-selter-e4yK8QQlZa0-unsplash.jpg',
     header: 'This is a heading',
-    headerPlaceholder: 'Enter heading text',
     subheader: 'And here is some subheading text.',
-    subheaderPlaceholder: 'Enter subheading text',
-    button: false,
-    buttonText: 'Subscribe',
-    buttonPlaceholder: 'Add button text',
+    buttonEnabled: true,
+    buttonText: 'Click Me',
+    buttonColor: '#000000',
+    buttonTextColor: '#ffffff',
+    backgroundColor: '#F3B389',
+    textColor: '#000000',
     buttonUrl: 'https://ghost.org/',
-    backgroundImageSrc: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
-    type: 'image'
+    handleBackgroundColor: () => {}
 };
 
-export const Loading = Template.bind({});
-Loading.args = {
-    display: 'Editing',
-    size: 'small',
-    handleButtonToggle: () => {},
-    heading: 'This is a heading',
-    subheader: 'And here is some subheading text.',
-    button: false,
-    buttonText: 'Subscribe',
-    buttonUrl: 'https://ghost.org/',
-    backgroundImageSrc: 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
-    type: 'image',
-    fileUploader: {
-        isLoading: true,
-        progress: 80
-    }
-};
