@@ -1,10 +1,10 @@
 import Button from '../../../../admin-x-ds/global/Button';
-import List from '../../../../admin-x-ds/global/List';
-import ListItem from '../../../../admin-x-ds/global/ListItem';
+import Icon from '../../../../admin-x-ds/global/Icon';
 import NiceModal from '@ebay/nice-modal-react';
 import NoValueLabel from '../../../../admin-x-ds/global/NoValueLabel';
 import React from 'react';
 import TierDetailModal from './TierDetailModal';
+import useRouting from '../../../../hooks/useRouting';
 import {Tier} from '../../../../types/api';
 
 interface TiersListProps {
@@ -13,25 +13,42 @@ interface TiersListProps {
     updateTier: (data: Tier) => Promise<void>;
 }
 
-interface TierActionsProps {
+interface TierCardProps {
     tier: Tier;
     updateTier: (data: Tier) => Promise<void>;
 }
 
-const TierActions: React.FC<TierActionsProps> = ({tier, updateTier}) => {
-    if (tier.active) {
-        return (
-            <Button color='red' label='Archive' link onClick={() => {
-                updateTier({...tier, active: false});
-            }} />
-        );
-    } else {
-        return (
-            <Button color='green' label='Activate' link onClick={() => {
-                updateTier({...tier, active: true});
-            }}/>
-        );
-    }
+const cardContainerClasses = 'group flex min-h-[200px] flex-col items-start justify-between gap-4 self-stretch rounded-sm border border-grey-300 p-4 transition-all hover:border-grey-400';
+
+const TierCard: React.FC<TierCardProps> = ({
+    tier,
+    updateTier
+}) => {
+    return (
+        <div className={cardContainerClasses}>
+            <div className='w-full grow cursor-pointer' onClick={() => {
+                NiceModal.show(TierDetailModal, {tier});
+            }}>
+                <div className='text-[1.65rem] font-bold tracking-tight text-pink'>{tier.name}</div>
+                <div className='mt-2 flex items-baseline gap-1'>
+                    <span className='text-2xl font-bold tracking-tighter'>{tier.monthly_price}</span>
+                    <span className='text-sm text-grey-700'>/month</span>
+                </div>
+                <div className='mt-2 text-sm font-medium'>
+                    {tier.description || <span className='opacity-50'>No description</span>}
+                </div>
+            </div>
+            {tier.active ?
+                <Button className='group opacity-0 group-hover:opacity-100' color='red' label='Archive' link onClick={() => {
+                    updateTier({...tier, active: false});
+                }}/>
+                :
+                <Button className='group opacity-0 group-hover:opacity-100' color='green' label='Activate' link onClick={() => {
+                    updateTier({...tier, active: true});
+                }}/>
+            }
+        </div>
+    );
 };
 
 const TiersList: React.FC<TiersListProps> = ({
@@ -39,6 +56,11 @@ const TiersList: React.FC<TiersListProps> = ({
     tiers,
     updateTier
 }) => {
+    const {updateRoute} = useRouting();
+    const openTierModal = () => {
+        updateRoute('tiers/add');
+    };
+
     if (!tiers.length) {
         return (
             <NoValueLabel icon='money-bags'>
@@ -48,21 +70,23 @@ const TiersList: React.FC<TiersListProps> = ({
     }
 
     return (
-        <List borderTop={false}>
+        <div className='mt-4 grid grid-cols-3 gap-4'>
             {tiers.map((tier) => {
-                return (
-                    <ListItem
-                        action={<TierActions tier={tier} updateTier={updateTier} />}
-                        detail={tier?.description || ''}
-                        title={tier?.name}
-                        hideActions
-                        onClick={() => {
-                            NiceModal.show(TierDetailModal, {tier});
-                        }}
-                    />
-                );
+                return <TierCard tier={tier} updateTier={updateTier} />;
             })}
-        </List>
+            {tab === 'active-tiers' && (
+                <div className={`${cardContainerClasses} group cursor-pointer`} onClick={() => {
+                    openTierModal();
+                }}>
+                    <div className='flex h-full w-full flex-col items-center justify-center'>
+                        <div className='flex flex-col items-center justify-center'>
+                            <div className='translate-y-[15px] transition-all group-hover:translate-y-0'><Icon colorClass='text-green' name='add' /></div>
+                            <div className='mt-2 translate-y-[-10px] text-sm font-semibold text-green opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100'>Add tier</div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 };
 
