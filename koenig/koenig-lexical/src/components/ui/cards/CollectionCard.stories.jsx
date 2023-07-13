@@ -1,11 +1,11 @@
 import React from 'react';
+import generateEditorState from '../../../utils/generateEditorState';
 import {CardWrapper} from './../CardWrapper';
 import {CollectionCard} from './CollectionCard';
 import {DateTime} from 'luxon';
 import {MINIMAL_NODES} from '../../../index.js';
 import {createEditor} from 'lexical';
 import {editorEmptyState} from '../../../../.storybook/editorEmptyState';
-import {populateNestedEditor} from '../../../utils/nested-editors';
 
 const mockPosts = [
     {
@@ -186,10 +186,14 @@ const story = {
 };
 export default story;
 
-const Template = ({display, header, ...args}) => {
+const Template = ({display, header = 'Featured posts', ...args}) => {
     const headerEditor = createEditor({nodes: MINIMAL_NODES});
 
-    populateNestedEditor({editor: headerEditor, initialHtml: `<p>FEATURED POSTS</p>`});
+    const editorState = generateEditorState({
+        editor: headerEditor,
+        initialHtml: `<p>${header}</p>`
+    });
+    headerEditor.setEditorState(editorState, {tag: 'history-merge'});
 
     return (
         <div className="kg-prose">
