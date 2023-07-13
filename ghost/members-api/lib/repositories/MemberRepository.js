@@ -829,6 +829,10 @@ module.exports = class MemberRepository {
         }
     }
 
+    async getCustomerIdByEmail(email) {
+        return this._stripeAPIService.getCustomerIdByEmail(email);
+    }
+
     async getSubscriptionByStripeID(id, options) {
         const subscription = await this._StripeCustomerSubscription.findOne({
             subscription_id: id

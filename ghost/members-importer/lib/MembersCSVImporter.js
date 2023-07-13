@@ -172,10 +172,21 @@ module.exports = class MembersCSVImporter {
                 }
 
                 if (row.stripe_customer_id && typeof row.stripe_customer_id === 'string') {
-                    await membersRepository.linkStripeCustomer({
-                        customer_id: row.stripe_customer_id,
-                        member_id: member.id
-                    }, options);
+                    let stripeCustomerId;
+
+                    // If 'auto' is passed, try to find the Stripe customer by email
+                    if (row.stripe_customer_id.toLowerCase() === 'auto') {
+                        stripeCustomerId = await membersRepository.getCustomerIdByEmail(row.email);
+                    } else {
+                        stripeCustomerId = row.stripe_customer_id;
+                    }
+
+                    if (stripeCustomerId) {
+                        await membersRepository.linkStripeCustomer({
+                            customer_id: stripeCustomerId,
+                            member_id: member.id
+                        }, options);
+                    }
                 } else if (row.complimentary_plan) {
                     await membersRepository.update({
                         products: [{id: defaultTier.id.toString()}]
