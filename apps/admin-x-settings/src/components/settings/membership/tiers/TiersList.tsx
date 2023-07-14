@@ -29,7 +29,7 @@ const TierCard: React.FC<TierCardProps> = ({
     const currencySymbol = currency ? getSymbol(currency) : '$';
 
     return (
-        <div className={cardContainerClasses}>
+        <div className={cardContainerClasses} data-testid='tier-card'>
             <div className='w-full grow cursor-pointer' onClick={() => {
                 NiceModal.show(TierDetailModal, {tier});
             }}>
@@ -81,7 +81,7 @@ const TiersList: React.FC<TiersListProps> = ({
                 return <TierCard tier={tier} updateTier={updateTier} />;
             })}
             {tab === 'active-tiers' && (
-                <div className={`${cardContainerClasses} group cursor-pointer`} onClick={() => {
+                <button className={`${cardContainerClasses} group cursor-pointer`} type='button' onClick={() => {
                     openTierModal();
                 }}>
                     <div className='flex h-full w-full flex-col items-center justify-center'>
@@ -90,7 +90,7 @@ const TiersList: React.FC<TiersListProps> = ({
                             <div className='mt-2 translate-y-[-10px] text-sm font-semibold text-green opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100'>Add tier</div>
                         </div>
                     </div>
-                </div>
+                </button>
             )}
         </div>
     );
