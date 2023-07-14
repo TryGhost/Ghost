@@ -19,7 +19,7 @@ module.exports = createTransactionalMigration(
                 id: (new ObjectID()).toHexString(),
                 title: 'Latest',
                 slug: 'latest',
-                description: 'Collection with all posts',
+                description: 'All posts',
                 type: 'automatic',
                 filter: '',
                 created_at: knex.raw('current_timestamp')
@@ -39,7 +39,7 @@ module.exports = createTransactionalMigration(
                 id: (new ObjectID()).toHexString(),
                 title: 'Featured',
                 slug: 'featured',
-                description: 'Collection of featured posts',
+                description: 'Featured posts',
                 type: 'automatic',
                 filter: 'featured:true',
                 created_at: knex.raw('current_timestamp')
