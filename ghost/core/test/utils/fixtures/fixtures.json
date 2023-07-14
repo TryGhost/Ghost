@@ -6,14 +6,14 @@
                 {
                     "title":            "Latest",
                     "slug":             "latest",
-                    "description":      "Collection with all posts",
+                    "description":      "All posts",
                     "type":             "automatic",
                     "filter":           ""
                 },
                 {
-                    "title":            "Featured Posts",
+                    "title":            "Featured",
                     "slug":             "featured",
-                    "description":      "Collection of featured posts",
+                    "description":      "Featured posts",
                     "type":             "automatic",
                     "filter":           "featured:true"
                 }
