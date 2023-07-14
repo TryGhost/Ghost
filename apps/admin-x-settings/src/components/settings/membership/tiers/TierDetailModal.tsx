@@ -62,6 +62,8 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
             const {monthly_price: monthlyPrice, yearly_price: yearlyPrice, trial_days: trialDays, currency, ...rest} = formState;
             const values: Partial<Tier> = rest;
 
+            values.benefits = values.benefits?.filter(benefit => benefit);
+
             if (!isFreeTier) {
                 values.currency = currency;
                 values.monthly_price = currencyFromDecimal(parseFloat(monthlyPrice));
