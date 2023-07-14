@@ -26,7 +26,7 @@ module.exports = {
         return lexicalHtmlRenderer;
     },
 
-    render(lexical, userOptions = {}) {
+    async render(lexical, userOptions = {}) {
         const options = Object.assign({
             siteUrl: config.get('url'),
             imageOptimization: config.get('imageOptimization'),
