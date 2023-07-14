@@ -70,7 +70,7 @@
         "stylelint": "15.10.1",
         "tailwindcss": "3.3.3",
         "typescript": "5.1.6",
-        "vite": "4.4.3",
+        "vite": "4.4.4",
         "vite-plugin-commonjs": "0.8.1",
         "vite-plugin-svgr": "3.2.0",
         "vitest": "0.33.0"
