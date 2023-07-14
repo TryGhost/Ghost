@@ -56,12 +56,17 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
             }
         }
     });
+
     const benefits = useSortableIndexedList({
         items: formState.benefits || [],
         setItems: newBenefits => updateForm(state => ({...state, benefits: newBenefits})),
         blank: '',
         canAddNewItem: item => !!item
     });
+
+    const forceCurrencyValue = (value: string) => {
+        return value.match(/[\d]+\.?[\d]{0,2}/)?.[0] || '';
+    };
 
     return <Modal
         afterClose={() => {
@@ -116,13 +121,13 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                                     placeholder='1'
                                     rightPlaceholder={`${formState.currency}/month`}
                                     value={formState.monthly_price}
-                                    onChange={e => updateForm(state => ({...state, monthly_price: e.target.value.replace(/[^\d.]/, '')}))}
+                                    onChange={e => updateForm(state => ({...state, monthly_price: forceCurrencyValue(e.target.value)}))}
                                 />
                                 <TextField
                                     placeholder='10'
                                     rightPlaceholder={`${formState.currency}/year`}
                                     value={formState.yearly_price}
-                                    onChange={e => updateForm(state => ({...state, yearly_price: e.target.value.replace(/[^\d.]/, '')}))}
+                                    onChange={e => updateForm(state => ({...state, yearly_price: forceCurrencyValue(e.target.value)}))}
                                 />
                             </div>
                         </div>
@@ -139,7 +144,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                                 placeholder='0'
                                 rightPlaceholder='days'
                                 value={formState.trial_days}
-                                onChange={e => updateForm(state => ({...state, trial_days: e.target.value.replace(/[^\d.]/, '')}))}
+                                onChange={e => updateForm(state => ({...state, trial_days: e.target.value.replace(/[^\d]/, '')}))}
                             />
                         </div>
                     </div>
