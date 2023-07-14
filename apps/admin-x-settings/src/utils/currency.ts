@@ -125,6 +125,13 @@ export const currencies: CurrencyOption[] = [
     {isoCode: 'ZMW', name: 'Zambian kwacha'}
 ];
 
+export function currencyGroups() {
+    return {
+        top: currencies.slice(0, 5),
+        other: currencies.slice(5)
+    };
+}
+
 export function getSymbol(currency: string): string {
     if (!currency) {
         return '';

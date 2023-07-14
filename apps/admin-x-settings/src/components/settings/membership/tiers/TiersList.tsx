@@ -6,6 +6,7 @@ import React from 'react';
 import TierDetailModal from './TierDetailModal';
 import useRouting from '../../../../hooks/useRouting';
 import {Tier} from '../../../../types/api';
+import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
 
 interface TiersListProps {
     tab?: string;
@@ -24,6 +25,9 @@ const TierCard: React.FC<TierCardProps> = ({
     tier,
     updateTier
 }) => {
+    const currency = tier?.currency || 'USD';
+    const currencySymbol = currency ? getSymbol(currency) : '$';
+
     return (
         <div className={cardContainerClasses}>
             <div className='w-full grow cursor-pointer' onClick={() => {
@@ -31,8 +35,9 @@ const TierCard: React.FC<TierCardProps> = ({
             }}>
                 <div className='text-[1.65rem] font-bold tracking-tight text-pink'>{tier.name}</div>
                 <div className='mt-2 flex items-baseline gap-1'>
-                    <span className='text-2xl font-bold tracking-tighter'>{tier.monthly_price}</span>
-                    <span className='text-sm text-grey-700'>/month</span>
+                    <span className="self-start text-xl font-bold uppercase">{currencySymbol}</span>
+                    <span className='text-2xl font-bold tracking-tighter'>{currencyToDecimal(tier.monthly_price || 0)}</span>
+                    {(tier.monthly_price && tier.monthly_price > 0) && <span className='text-sm text-grey-700'>/month</span>}
                 </div>
                 <div className='mt-2 text-sm font-medium'>
                     {tier.description || <span className='opacity-50'>No description</span>}

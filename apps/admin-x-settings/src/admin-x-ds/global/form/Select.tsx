@@ -9,11 +9,16 @@ export interface SelectOption {
     label: string;
 }
 
+export interface SelectOptionGroup {
+    label: string;
+    options: SelectOption[];
+}
+
 export interface SelectProps {
     title?: string;
     size?: 'xs' | 'md';
     prompt?: string;
-    options: SelectOption[];
+    options: SelectOption[] | SelectOptionGroup[];
     selectedOption?: string
     onSelect: (value: string) => void;
     error?:boolean;
@@ -87,13 +92,25 @@ const Select: React.FC<SelectProps> = ({
                 <select className={selectClasses} id={id} value={selectedOption} onChange={handleOptionChange}>
                     {prompt && <option className={optionClasses} value="">{prompt}</option>}
                     {options.map(option => (
-                        <option
-                            key={option.value}
-                            className={optionClasses}
-                            value={option.value}
-                        >
-                            {option.label}
-                        </option>
+                        'options' in option ?
+                            <optgroup key={option.label} label={option.label}>
+                                {option.options.map(child => (
+                                    <option
+                                        key={child.value}
+                                        className={optionClasses}
+                                        value={child.value}
+                                    >
+                                        {child.label}
+                                    </option>
+                                ))}
+                            </optgroup> :
+                            <option
+                                key={option.value}
+                                className={optionClasses}
+                                value={option.value}
+                            >
+                                {option.label}
+                            </option>
                     ))}
                 </select>
             </div>
