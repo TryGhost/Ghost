@@ -68,9 +68,7 @@ export default class MemberImportValidatorService extends Service {
     }
 
     /**
-     * Detects supported data types and auto-detects following two needed for validation:
-     *  1. email
-     *  2. stripe_customer_id
+     * Detects supported data types and auto-detects following needed for validation: email
      *
      * Returned "mapping" object contains mappings that could be accepted by the API
      * to map validated types.
@@ -83,6 +81,7 @@ export default class MemberImportValidatorService extends Service {
             'note',
             'subscribed_to_emails',
             'complimentary_plan',
+            'stripe_customer_id',
             'labels',
             'created_at'
         ];
