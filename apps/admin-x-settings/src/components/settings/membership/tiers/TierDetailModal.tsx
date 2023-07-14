@@ -4,7 +4,7 @@ import Heading from '../../../../admin-x-ds/global/Heading';
 import Icon from '../../../../admin-x-ds/global/Icon';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React from 'react';
+import React, {useState} from 'react';
 import Select from '../../../../admin-x-ds/global/form/Select';
 import SortableList from '../../../../admin-x-ds/global/SortableList';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
@@ -14,7 +14,8 @@ import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import useSortableIndexedList from '../../../../hooks/useSortableIndexedList';
 import {Tier} from '../../../../types/api';
-import {currencies, currencyFromDecimal, currencyGroups, currencyToDecimal} from '../../../../utils/currency';
+import {currencies, currencyFromDecimal, currencyGroups, currencyToDecimal, getSymbol} from '../../../../utils/currency';
+import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {useTiers} from '../../../providers/ServiceProvider';
 
 interface TierDetailModalProps {
@@ -35,6 +36,12 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
     const {update: updateTier, create: createTier} = useTiers();
     const [hasFreeTrial, setHasFreeTrial] = React.useState(!!tier?.trial_days);
 
+    const [errors, setErrors] = useState<{ [key in keyof Tier]?: string }>({}); // eslint-disable-line no-unused-vars
+
+    const setError = (field: keyof Tier, error: string | undefined) => {
+        setErrors({...errors, [field]: error});
+    };
+
     const {formState, updateForm, handleSave} = useForm<TierFormState>({
         initialState: {
             ...(tier || {}),
@@ -44,6 +51,14 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
             currency: tier?.currency || currencies[0].isoCode
         },
         onSave: async () => {
+            if (Object.values(errors).some(error => error)) {
+                showToast({
+                    type: 'pageError',
+                    message: 'One or more fields have errors'
+                });
+                return;
+            }
+
             const {monthly_price: monthlyPrice, yearly_price: yearlyPrice, trial_days: trialDays, currency, ...rest} = formState;
             const values: Partial<Tier> = rest;
 
@@ -59,6 +74,8 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
             } else {
                 await createTier(values);
             }
+
+            modal.remove();
         }
     });
 
@@ -73,6 +90,8 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
         return value.match(/[\d]+\.?[\d]{0,2}/)?.[0] || '';
     };
 
+    const currencySymbol = formState.currency ? getSymbol(formState.currency) : '$';
+
     return <Modal
         afterClose={() => {
             updateRoute('tiers');
@@ -81,18 +100,18 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
         size='lg'
         title='Tier'
         stickyFooter
-        onOk={async () => {
-            await handleSave();
-            modal.remove();
-        }}
+        onOk={handleSave}
     >
         <div className='mt-8 flex items-start gap-10'>
             <div className='flex grow flex-col gap-5'>
                 <Form title='Basic' grouped>
                     {!isFreeTier && <TextField
+                        error={Boolean(errors.name)}
+                        hint={errors.name}
                         placeholder='Bronze'
                         title='Name'
                         value={formState.name || ''}
+                        onBlur={e => setError('name', e.target.value ? undefined : 'You must specify a name')}
                         onChange={e => updateForm(state => ({...state, name: e.target.value}))}
                     />}
                     <TextField
@@ -123,15 +142,21 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                             </div>
                             <div className='flex flex-col gap-2'>
                                 <TextField
+                                    error={Boolean(errors.monthly_price)}
+                                    hint={errors.monthly_price}
                                     placeholder='1'
                                     rightPlaceholder={`${formState.currency}/month`}
                                     value={formState.monthly_price}
+                                    onBlur={e => setError('monthly_price', e.target.value ? undefined : `Subscription amount must be at least ${currencySymbol}1.00`)}
                                     onChange={e => updateForm(state => ({...state, monthly_price: forceCurrencyValue(e.target.value)}))}
                                 />
                                 <TextField
+                                    error={Boolean(errors.yearly_price)}
+                                    hint={errors.yearly_price}
                                     placeholder='10'
                                     rightPlaceholder={`${formState.currency}/year`}
                                     value={formState.yearly_price}
+                                    onBlur={e => setError('yearly_price', e.target.value ? undefined : `Subscription amount must be at least ${currencySymbol}1.00`)}
                                     onChange={e => updateForm(state => ({...state, yearly_price: forceCurrencyValue(e.target.value)}))}
                                 />
                             </div>
