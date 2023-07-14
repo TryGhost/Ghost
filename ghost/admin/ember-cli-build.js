@@ -135,6 +135,7 @@ module.exports = function (defaults) {
         },
         fingerprint: {
             enabled: isProduction,
+            prepend: process.env.GHOST_CDN_URL || '',
             extensions: [
                 'js',
                 'css',
