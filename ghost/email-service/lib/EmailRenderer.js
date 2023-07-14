@@ -235,11 +235,11 @@ class EmailRenderer {
         return allowedSegments;
     }
 
-    renderPostBaseHtml(post) {
+    async renderPostBaseHtml(post) {
         const postUrl = this.#getPostUrl(post);
         let html;
         if (post.get('lexical')) {
-            html = this.#renderers.lexical.render(
+            html = await this.#renderers.lexical.render(
                 post.get('lexical'), {target: 'email', postUrl}
             );
         } else {
@@ -259,7 +259,7 @@ class EmailRenderer {
      * @returns {Promise<EmailBody>}
      */
     async renderBody(post, newsletter, segment, options) {
-        let html = this.renderPostBaseHtml(post);
+        let html = await this.renderPostBaseHtml(post);
 
         // We don't allow the usage of the %%{uuid}%% replacement in the email body (only in links and special cases)
         // So we need to filter them before we introduce the real %%{uuid}%%
