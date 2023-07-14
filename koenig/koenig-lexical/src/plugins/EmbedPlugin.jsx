@@ -1,11 +1,7 @@
 import React from 'react';
 import {$createEmbedNode, EmbedNode, INSERT_EMBED_COMMAND} from '../nodes/EmbedNode';
-import {
-    $getSelection,
-    $isRangeSelection,
-    COMMAND_PRIORITY_HIGH
-} from 'lexical';
-import {$insertAndSelectNode} from '../utils/$insertAndSelectNode';
+import {COMMAND_PRIORITY_LOW} from 'lexical';
+import {INSERT_CARD_COMMAND} from './KoenigBehaviourPlugin';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -21,22 +17,12 @@ export const EmbedPlugin = () => {
             editor.registerCommand(
                 INSERT_EMBED_COMMAND,
                 async (dataset) => {
-                    const selection = $getSelection();
-
-                    if (!$isRangeSelection(selection)) {
-                        return false;
-                    }
-
-                    const focusNode = selection.focus.getNode();
-
-                    if (focusNode !== null) {
-                        const embedNode = $createEmbedNode({...dataset, _openInEditMode: true});
-                        $insertAndSelectNode({selectedNode: focusNode, newNode: embedNode});
-                    }
+                    const cardNode = $createEmbedNode(dataset);
+                    editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode});
 
                     return true;
                 },
-                COMMAND_PRIORITY_HIGH
+                COMMAND_PRIORITY_LOW
             )
         );
     }, [editor]);

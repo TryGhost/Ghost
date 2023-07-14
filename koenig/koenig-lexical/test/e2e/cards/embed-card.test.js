@@ -92,7 +92,7 @@ test.describe('Embed card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="embed"></div>
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="embed"></div>
             </div>
             <p><br /></p>
         `, {ignoreCardContents: true});

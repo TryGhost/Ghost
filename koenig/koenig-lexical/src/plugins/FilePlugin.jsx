@@ -1,7 +1,7 @@
 import React from 'react';
 import {$createFileNode, FileNode, INSERT_FILE_COMMAND} from '../nodes/FileNode';
-import {$getSelection, $isNodeSelection, $isRangeSelection, COMMAND_PRIORITY_HIGH} from 'lexical';
-import {$insertAndSelectNode} from '../utils/$insertAndSelectNode';
+import {COMMAND_PRIORITY_LOW} from 'lexical';
+import {INSERT_CARD_COMMAND} from './KoenigBehaviourPlugin';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -17,24 +17,12 @@ export const FilePlugin = () => {
             editor.registerCommand(
                 INSERT_FILE_COMMAND,
                 async (dataset) => {
-                    const selection = $getSelection();
-
-                    let focusNode;
-                    if ($isRangeSelection(selection)) {
-                        focusNode = selection.focus.getNode();
-                    } else if ($isNodeSelection(selection)) {
-                        focusNode = selection.getNodes()[0];
-                    } else {
-                        return false;
-                    }
-                    if (focusNode !== null) {
-                        const calloutNode = $createFileNode(dataset);
-                        $insertAndSelectNode({selectedNode: focusNode, newNode: calloutNode});
-                    }
+                    const cardNode = $createFileNode(dataset);
+                    editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode});
 
                     return true;
                 },
-                COMMAND_PRIORITY_HIGH
+                COMMAND_PRIORITY_LOW
             )
         );
     });
