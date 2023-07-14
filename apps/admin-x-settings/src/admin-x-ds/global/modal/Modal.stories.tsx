@@ -113,7 +113,12 @@ export const CompletePage: Story = {
 
 export const CustomButtons: Story = {
     args: {
-        leftButtonLabel: 'Extra action',
+        leftButtonProps: {
+            label: 'Left button',
+            onClick: () => {
+                alert('Left button click');
+            }
+        },
         cancelLabel: 'Nope',
         okLabel: 'Yep',
         onOk: () => {

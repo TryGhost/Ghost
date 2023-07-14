@@ -219,7 +219,7 @@ module.exports = {
                 xs: '1.2rem',
                 sm: '1.35rem',
                 md: '1.5rem',
-                lg: '1.8rem',
+                lg: '1.75rem',
                 xl: '2rem',
                 '2xl': '2.4rem',
                 '3xl': '3rem',
