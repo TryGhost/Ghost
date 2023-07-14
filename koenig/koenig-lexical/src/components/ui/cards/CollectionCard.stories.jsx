@@ -12,7 +12,7 @@ const mockPosts = [
         title: 'Casablanca: A Local\'s Guide',
         id: 1,
         url: 'https://www.google.com',
-        published_at: DateTime.now().minus({days: Math.floor(Math.random() * 100)}).toISO(),
+        published_at: DateTime.now().toISO(),
         excerpt: 'Heading to Casablanca? We\'ve got you covered with our locally sourced cultural insights.',
         feature_image: 'https://images.unsplash.com/photo-1572942718085-154c6bc86c28?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2929&q=80',
         reading_time: `${Math.floor(Math.random() * 10)}`,

@@ -6,15 +6,98 @@ import {$createParagraphNode, $createTextNode, $getRoot} from 'lexical';
 import {ButtonGroupSetting, DropdownSetting, SettingsPanel, SliderSetting} from '../SettingsPanel';
 import {DateTime} from 'luxon';
 import {ReactComponent as GridLayoutIcon} from '../../../assets/icons/kg-layout-grid.svg';
+import {ReactComponent as ImgPlaceholderIcon} from '../../../assets/icons/kg-img-placeholder.svg';
 import {ReactComponent as ListLayoutIcon} from '../../../assets/icons/kg-layout-list.svg';
 import {isEditorEmpty} from '../../../utils/isEditorEmpty';
+
+function PostImage({image, layout, columns}) {
+    return (
+        <div className="relative flex w-full items-center justify-center bg-grey-200">
+            <img alt="" className={clsx(
+                'w-full object-cover',
+                (layout === 'grid' && (columns === 1 || columns === 2)) ? 'aspect-video' : 'aspect-[3/2]',
+                (image === null) && 'invisible'
+            )} src={image}/>
+            <ImgPlaceholderIcon className={clsx(
+                'absolute shrink-0 text-grey/80',
+                image && 'hidden',
+                layout === 'list' && 'h-9 w-9',
+                (layout === 'grid' && columns === 1) && 'h-20 w-20',
+                (layout === 'grid' && columns === 2) && 'h-14 w-14',
+                (layout === 'grid' && columns === 3) && 'h-12 w-12',
+                (layout === 'grid' && columns === 4) && 'h-10 w-10'
+            )} />
+        </div>
+    );
+}
+
+function PostTitle({title, layout, columns}) {
+    return (
+        <div className={clsx(
+            'font-bold tracking-normal text-black dark:text-grey-100',
+            layout === 'list' && 'text-xl leading-snug',
+            (layout === 'grid' && columns === 1) && 'w-2/3 text-4xl leading-tight',
+            (layout === 'grid' && columns === 2) && 'text-2xl leading-snug',
+            (layout === 'grid' && columns === 3) && 'text-xl leading-snug',
+            (layout === 'grid' && columns === 4) && 'text-[1.7rem] leading-snug'
+        )}>{title}</div>
+    );
+}
+
+function PostExcerpt({excerpt, layout, columns}) {
+    return (
+        <div className={clsx(
+            'overflow-y-hidden font-normal leading-snug text-grey-900 dark:text-grey-600',
+            layout === 'list' && 'mt-2 max-h-[62px] text-md line-clamp-3',
+            (layout === 'grid' && columns === 1) && 'mt-3 max-h-[75px] w-2/3 text-lg line-clamp-3',
+            (layout === 'grid' && columns === 2) && 'mt-3 max-h-[66px] text-[1.6rem] line-clamp-3',
+            (layout === 'grid' && columns === 3) && 'mt-2 max-h-[42px] text-md line-clamp-2',
+            (layout === 'grid' && columns === 4) && 'mt-2 max-h-[42px] text-md line-clamp-2'
+        )}>{excerpt}</div>
+    );
+}
+
+function PostMeta({publishDate, readTime, layout, columns}) {
+    return (
+        <div className={clsx(
+            'flex font-normal leading-snug text-grey-600 dark:text-grey-400',
+            layout === 'list' && 'mt-2 text-md',
+            (layout === 'grid' && columns === 1) && 'mt-3 w-2/3 text-lg',
+            (layout === 'grid' && columns === 2) && 'mt-3 text-[1.6rem]',
+            (layout === 'grid' && columns === 3) && 'mt-2 text-md',
+            (layout === 'grid' && columns === 4) && 'mt-2 text-md'
+        )}>
+            {publishDate ? 
+                (<div>{DateTime.fromISO(publishDate).toFormat('d LLL yyyy')}</div>)
+                : (<div>{DateTime.now().toFormat('d LLL yyyy')}</div>)}
+            {readTime > 0 && <div>&nbsp;&middot; {readTime} min</div>}
+        </div>
+    );
+}
 
 export function CollectionPost({
     post,
     layout,
     columns,
+    isPlaceholder,
     options
 }) {
+    if (isPlaceholder) {
+        return (
+            <div className={clsx(
+                'not-kg-prose relative w-full gap-5 bg-transparent font-sans',
+                layout === 'list' && 'grid grid-cols-3',
+                layout === 'grid' && 'flex flex-col'
+            )}>
+                <PostImage columns={columns} image={null} layout={layout} />
+                <div className="col-span-2 flex flex-col items-start justify-start">
+                    <PostTitle columns={columns} layout={layout} title="Post title" />
+                    <PostExcerpt columns={columns} excerpt="Once you've published more posts, they'll automatically be displayed here." layout={layout} />
+                    <PostMeta columns={columns} layout={layout} publishDate={null} readTime={null} />
+                </div>
+            </div>
+        );
+    }
     // may want options later for changing post display (like hiding feature img)
     const {title, feature_image: image, published_at: publishDate, reading_time: readTime, excerpt} = post;
 
@@ -24,38 +107,11 @@ export function CollectionPost({
             layout === 'list' && 'grid grid-cols-3',
             layout === 'grid' && 'flex flex-col'
         )}>
-            {image &&
-                (<img alt="" className={clsx(
-                    'w-full object-cover',
-                    (layout === 'grid' && (columns === 1 || columns === 2)) ? 'aspect-video' : 'aspect-[3/2]'
-                )} src={image}/>)
-            }
+            {image && <PostImage columns={columns} image={image} layout={layout} />}
             <div className="col-span-2 flex flex-col items-start justify-start">
-                {title && <div className={clsx(
-                    'font-bold tracking-normal text-black dark:text-grey-100',
-                    columns === 1 && 'w-2/3 text-4xl leading-tight',
-                    columns === 2 && 'text-2xl leading-snug',
-                    columns === 3 && 'text-xl leading-snug',
-                    columns === 4 && 'text-[1.7rem] leading-snug'
-                )}>{title}</div>}
-                {excerpt && <div className={clsx(
-                    'max-h-[44px] overflow-y-hidden font-normal leading-snug text-grey-900 line-clamp-2 dark:text-grey-600',
-                    columns === 1 && 'mt-3 w-2/3 text-lg',
-                    columns === 2 && 'mt-3 text-[1.6rem]',
-                    columns === 3 && 'mt-2 text-md',
-                    columns === 4 && 'mt-2 text-md'
-                )}>{excerpt}</div>}
-                <div className={clsx(
-                    'flex font-normal leading-snug text-grey-600 dark:text-grey-400',
-                    columns === 1 && 'mt-3 w-2/3 text-lg',
-                    columns === 2 && 'mt-3 text-[1.6rem]',
-                    columns === 3 && 'mt-2 text-md',
-                    columns === 4 && 'mt-2 text-md'
-                )}>
-                    {publishDate && <div>{DateTime.fromISO(publishDate).toLocaleString()}</div>}
-                    {publishDate && readTime > 0 && <div>&nbsp;&middot;&nbsp;</div>}
-                    {readTime > 0 && <div>{readTime} min</div>}
-                </div>
+                {title && <PostTitle columns={columns} layout={layout} title={title} />}
+                {excerpt && <PostExcerpt columns={columns} excerpt={excerpt} layout={layout} />}
+                <PostMeta columns={columns} layout={layout} publishDate={publishDate} readTime={readTime} />
             </div>
         </div>
     );
@@ -70,15 +126,22 @@ export function Collection({
     // would apply appropriate container styles here for the respective format
     // also need to figure out how to handle placeholders if we should have a specific # showing
     //  in the editor vs. in the rendered post (handled by the renderer method)
-    const ListPosts = posts && posts
-        .filter((post, index) => index < postCount)
-        .map((post) => {
-            return <CollectionPost key={post.id} columns={columns} layout={layout} post={post} />;
-        });
+
+    function ListPosts() {
+        let postList = [];
+        for (let i = 0; i < postCount; i++) {
+            if (posts && posts[i]) {
+                postList.push(<CollectionPost key={posts[i].id} columns={columns} layout={layout} post={posts[i]} />);
+            } else {
+                postList.push(<CollectionPost key={i} columns={columns} isPlaceholder={true} layout={layout} />);
+            }
+        }
+        return postList;
+    }
 
     return (
         <>
-            {ListPosts}
+            {ListPosts()}
         </>
     );
 }
@@ -101,7 +164,13 @@ export function CollectionCard({
 }) {
     // collections should be passed in as the editor loads via cardConfig
     // TODO: we shouldn't be getting collections without posts from the editor load
-    const collectionOptions = collections?.filter(item => item.posts.length > 0)
+    const collectionOptions = collections?.filter((item) => {
+        // always show default collections
+        if (item.slug === 'index' || item.slug === 'featured') {
+            return true;
+        }
+        return item.posts.length > 0;
+    })
         .map((item) => {
             return {
                 label: item.title,
@@ -247,5 +316,31 @@ CollectionPost.propTypes = {
     post: PropTypes.object,
     layout: PropTypes.oneOf(['list', 'grid']),
     options: PropTypes.object,
+    columns: PropTypes.number,
+    isPlaceholder: PropTypes.bool
+};
+
+PostImage.propTypes = {
+    image: PropTypes.object,
+    layout: PropTypes.oneOf(['list', 'grid']),
+    columns: PropTypes.number
+};
+
+PostTitle.propTypes = {
+    title: PropTypes.string,
+    layout: PropTypes.oneOf(['list', 'grid']),
+    columns: PropTypes.number
+};
+
+PostExcerpt.propTypes = {
+    excerpt: PropTypes.string,
+    layout: PropTypes.oneOf(['list', 'grid']),
+    columns: PropTypes.number
+};
+
+PostMeta.propTypes = {
+    publishDate: PropTypes.string,
+    readTime: PropTypes.number,
+    layout: PropTypes.oneOf(['list', 'grid']),
     columns: PropTypes.number
 };
