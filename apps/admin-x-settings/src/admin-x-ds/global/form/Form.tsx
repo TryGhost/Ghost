@@ -55,11 +55,9 @@ const Form: React.FC<FormProps> = ({
     }
 
     return (
-        <div className={!title ? classes : ''}>
+        <div className={classes}>
             {title && <Heading className={`${grouped && 'pb-2'}`} level={6} separator={!grouped} grey>{title}</Heading>}
-            <div className={title ? classes : ''}>
-                {children}
-            </div>
+            {children}
         </div>
     );
 };
