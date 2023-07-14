@@ -145,6 +145,8 @@ module.exports = function (defaults) {
                 'map',
                 'svg',
                 'ttf',
+                'woff2',
+                'mp4',
                 'ico'
             ]
         },
