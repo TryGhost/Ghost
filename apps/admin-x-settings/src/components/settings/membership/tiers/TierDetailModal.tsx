@@ -28,6 +28,8 @@ type TierFormState = Partial<Omit<Tier, 'monthly_price' | 'yearly_price' | 'tria
 };
 
 const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
+    const isFreeTier = tier?.type === 'free';
+
     const modal = useModal();
     const {updateRoute} = useRouting();
     const {update: updateTier, create: createTier} = useTiers();
@@ -42,12 +44,15 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
             currency: tier?.currency || currencies[0].isoCode
         },
         onSave: async () => {
-            const values = {
-                ...formState,
-                monthly_price: currencyFromDecimal(parseFloat(formState.monthly_price)),
-                yearly_price: currencyFromDecimal(parseFloat(formState.yearly_price)),
-                trial_days: currencyFromDecimal(parseFloat(formState.trial_days))
-            };
+            const {monthly_price: monthlyPrice, yearly_price: yearlyPrice, trial_days: trialDays, currency, ...rest} = formState;
+            const values: Partial<Tier> = rest;
+
+            if (!isFreeTier) {
+                values.currency = currency;
+                values.monthly_price = currencyFromDecimal(parseFloat(monthlyPrice));
+                values.yearly_price = currencyFromDecimal(parseFloat(yearlyPrice));
+                values.trial_days = parseInt(formState.trial_days);
+            }
 
             if (tier?.id) {
                 await updateTier({...tier, ...values});
@@ -84,19 +89,19 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
         <div className='mt-8 flex items-start gap-10'>
             <div className='flex grow flex-col gap-5'>
                 <Form title='Basic' grouped>
-                    <TextField
+                    {!isFreeTier && <TextField
                         placeholder='Bronze'
                         title='Name'
                         value={formState.name || ''}
                         onChange={e => updateForm(state => ({...state, name: e.target.value}))}
-                    />
+                    />}
                     <TextField
                         placeholder='Full access to premium content'
                         title='Description'
                         value={formState.description || ''}
                         onChange={e => updateForm(state => ({...state, description: e.target.value}))}
                     />
-                    <div className='flex gap-10'>
+                    {!isFreeTier && <div className='flex gap-10'>
                         <div className='basis-1/2'>
                             <div className='mb-1 flex h-6 items-center justify-between'>
                                 <Heading level={6}>Prices</Heading>
@@ -147,7 +152,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                                 onChange={e => updateForm(state => ({...state, trial_days: e.target.value.replace(/[^\d]/, '')}))}
                             />
                         </div>
-                    </div>
+                    </div>}
                 </Form>
 
                 <Form gap='none' title='Benefits' grouped>
@@ -179,7 +184,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                 </Form>
             </div>
             <div className='sticky top-[77px] shrink-0 basis-[380px]'>
-                <TierDetailPreview tier={formState} />
+                <TierDetailPreview isFreeTier={isFreeTier} tier={formState} />
             </div>
         </div>
     </Modal>;
