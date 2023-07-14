@@ -12,9 +12,11 @@ import TierDetailPreview from './TierDetailPreview';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
+import useSettingGroup from '../../../../hooks/useSettingGroup';
 import useSortableIndexedList from '../../../../hooks/useSortableIndexedList';
 import {Tier} from '../../../../types/api';
 import {currencies, currencyFromDecimal, currencyGroups, currencyToDecimal, getSymbol} from '../../../../utils/currency';
+import {getSettingValues} from '../../../../utils/helpers';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {useTiers} from '../../../providers/ServiceProvider';
 
@@ -35,6 +37,8 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
     const {updateRoute} = useRouting();
     const {update: updateTier, create: createTier} = useTiers();
     const [hasFreeTrial, setHasFreeTrial] = React.useState(!!tier?.trial_days);
+    const {localSettings} = useSettingGroup();
+    const siteTitle = getSettingValues(localSettings, ['title']) as string[];
 
     const [errors, setErrors] = useState<{ [key in keyof Tier]?: string }>({}); // eslint-disable-line no-unused-vars
 
@@ -104,10 +108,11 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
         stickyFooter
         onOk={handleSave}
     >
-        <div className='mt-8 flex items-start gap-10'>
+        <div className='mt-8 flex items-start gap-16'>
             <div className='flex grow flex-col gap-5'>
-                <Form title='Basic' grouped>
+                <Form title='Basic'>
                     {!isFreeTier && <TextField
+                        autoComplete='off'
                         error={Boolean(errors.name)}
                         hint={errors.name}
                         placeholder='Bronze'
@@ -117,7 +122,8 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                         onChange={e => updateForm(state => ({...state, name: e.target.value}))}
                     />}
                     <TextField
-                        placeholder='Full access to premium content'
+                        autoComplete='off'
+                        placeholder={isFreeTier ? `Free preview of ${siteTitle}` : 'Full access to premium content'}
                         title='Description'
                         value={formState.description || ''}
                         onChange={e => updateForm(state => ({...state, description: e.target.value}))}
@@ -137,6 +143,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                                             }))
                                         }))}
                                         selectClassName='font-medium'
+                                        selectedOption={formState.currency}
                                         size='xs'
                                         onSelect={currency => updateForm(state => ({...state, currency}))}
                                     />
@@ -182,7 +189,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                     </div>}
                 </Form>
 
-                <Form gap='none' title='Benefits' grouped>
+                <Form gap='none' title='Benefits'>
                     <SortableList
                         items={benefits.items}
                         itemSeparator={false}
@@ -202,7 +209,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                         <Icon name='check' size='sm' />
                         <TextField
                             className='grow'
-                            placeholder='New benefit'
+                            placeholder='Expert analysis'
                             value={benefits.newItem}
                             onChange={e => benefits.setNewItem(e.target.value)}
                         />

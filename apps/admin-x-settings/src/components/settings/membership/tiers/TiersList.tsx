@@ -33,25 +33,26 @@ const TierCard: React.FC<TierCardProps> = ({
             <div className='w-full grow cursor-pointer' onClick={() => {
                 NiceModal.show(TierDetailModal, {tier});
             }}>
-                <div className='text-[1.65rem] font-bold tracking-tight text-pink'>{tier.name}</div>
-                <div className='mt-2 flex items-baseline gap-1'>
-                    <span className="self-start text-xl font-bold uppercase">{currencySymbol}</span>
+                <div className='text-[1.65rem] font-bold leading-tight tracking-tight text-pink'>{tier.name}</div>
+                <div className='mt-2 flex items-baseline'>
+                    <span className="ml-1 translate-y-[-3px] text-xl font-bold uppercase">{currencySymbol}</span>
                     <span className='text-2xl font-bold tracking-tighter'>{currencyToDecimal(tier.monthly_price || 0)}</span>
                     {(tier.monthly_price && tier.monthly_price > 0) && <span className='text-sm text-grey-700'>/month</span>}
                 </div>
-                <div className='mt-2 text-sm font-medium'>
+                <div className='mt-2 line-clamp-2 text-sm font-medium'>
                     {tier.description || <span className='opacity-50'>No description</span>}
                 </div>
             </div>
-            {tier.active ?
-                <Button className='group opacity-0 group-hover:opacity-100' color='red' label='Archive' link onClick={() => {
-                    updateTier({...tier, active: false});
-                }}/>
-                :
-                <Button className='group opacity-0 group-hover:opacity-100' color='green' label='Activate' link onClick={() => {
-                    updateTier({...tier, active: true});
-                }}/>
-            }
+            {tier.monthly_price && (
+                tier.active ?
+                    <Button className='group opacity-0 group-hover:opacity-100' color='red' label='Archive' link onClick={() => {
+                        updateTier({...tier, active: false});
+                    }}/>
+                    :
+                    <Button className='group opacity-0 group-hover:opacity-100' color='green' label='Activate' link onClick={() => {
+                        updateTier({...tier, active: true});
+                    }}/>
+            )}
         </div>
     );
 };

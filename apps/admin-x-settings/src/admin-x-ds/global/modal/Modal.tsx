@@ -22,7 +22,7 @@ export interface ModalProps {
     okLabel?: string;
     okColor?: string;
     cancelLabel?: string;
-    leftButtonLabel?: string;
+    leftButtonProps?: ButtonProps;
     buttonsDisabled?: boolean;
     footer?: boolean | React.ReactNode;
     noPadding?: boolean;
@@ -44,7 +44,7 @@ const Modal: React.FC<ModalProps> = ({
     okLabel = 'OK',
     cancelLabel = 'Cancel',
     footer,
-    leftButtonLabel,
+    leftButtonProps,
     buttonsDisabled,
     noPadding = false,
     onOk,
@@ -181,8 +181,8 @@ const Modal: React.FC<ModalProps> = ({
         footerContent = (
             <div className={footerClasses}>
                 <div>
-                    {leftButtonLabel &&
-                    <Button label={leftButtonLabel} link={true} />
+                    {leftButtonProps &&
+                    <Button {...leftButtonProps} />
                     }
                 </div>
                 <div className='flex gap-3'>
