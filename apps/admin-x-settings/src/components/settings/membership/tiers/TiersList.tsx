@@ -6,6 +6,7 @@ import React from 'react';
 import TierDetailModal from './TierDetailModal';
 import useRouting from '../../../../hooks/useRouting';
 import {Tier} from '../../../../types/api';
+import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
 
 interface TiersListProps {
     tab?: string;
@@ -24,29 +25,34 @@ const TierCard: React.FC<TierCardProps> = ({
     tier,
     updateTier
 }) => {
+    const currency = tier?.currency || 'USD';
+    const currencySymbol = currency ? getSymbol(currency) : '$';
+
     return (
-        <div className={cardContainerClasses}>
+        <div className={cardContainerClasses} data-testid='tier-card'>
             <div className='w-full grow cursor-pointer' onClick={() => {
                 NiceModal.show(TierDetailModal, {tier});
             }}>
-                <div className='text-[1.65rem] font-bold tracking-tight text-pink'>{tier.name}</div>
-                <div className='mt-2 flex items-baseline gap-1'>
-                    <span className='text-2xl font-bold tracking-tighter'>{tier.monthly_price}</span>
-                    <span className='text-sm text-grey-700'>/month</span>
+                <div className='text-[1.65rem] font-bold leading-tight tracking-tight text-pink'>{tier.name}</div>
+                <div className='mt-2 flex items-baseline'>
+                    <span className="ml-1 translate-y-[-3px] text-xl font-bold uppercase">{currencySymbol}</span>
+                    <span className='text-2xl font-bold tracking-tighter'>{currencyToDecimal(tier.monthly_price || 0)}</span>
+                    {(tier.monthly_price && tier.monthly_price > 0) && <span className='text-sm text-grey-700'>/month</span>}
                 </div>
-                <div className='mt-2 text-sm font-medium'>
+                <div className='mt-2 line-clamp-2 text-sm font-medium'>
                     {tier.description || <span className='opacity-50'>No description</span>}
                 </div>
             </div>
-            {tier.active ?
-                <Button className='group opacity-0 group-hover:opacity-100' color='red' label='Archive' link onClick={() => {
-                    updateTier({...tier, active: false});
-                }}/>
-                :
-                <Button className='group opacity-0 group-hover:opacity-100' color='green' label='Activate' link onClick={() => {
-                    updateTier({...tier, active: true});
-                }}/>
-            }
+            {tier.monthly_price && (
+                tier.active ?
+                    <Button className='group opacity-0 group-hover:opacity-100' color='red' label='Archive' link onClick={() => {
+                        updateTier({...tier, active: false});
+                    }}/>
+                    :
+                    <Button className='group opacity-0 group-hover:opacity-100' color='green' label='Activate' link onClick={() => {
+                        updateTier({...tier, active: true});
+                    }}/>
+            )}
         </div>
     );
 };
@@ -75,7 +81,7 @@ const TiersList: React.FC<TiersListProps> = ({
                 return <TierCard tier={tier} updateTier={updateTier} />;
             })}
             {tab === 'active-tiers' && (
-                <div className={`${cardContainerClasses} group cursor-pointer`} onClick={() => {
+                <button className={`${cardContainerClasses} group cursor-pointer`} type='button' onClick={() => {
                     openTierModal();
                 }}>
                     <div className='flex h-full w-full flex-col items-center justify-center'>
@@ -84,7 +90,7 @@ const TiersList: React.FC<TiersListProps> = ({
                             <div className='mt-2 translate-y-[-10px] text-sm font-semibold text-green opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100'>Add tier</div>
                         </div>
                     </div>
-                </div>
+                </button>
             )}
         </div>
     );

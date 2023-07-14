@@ -156,18 +156,22 @@ export class CollectionsService {
         // generic handler for all events that are not handled optimally yet
         // this handler should go away once we have logic fo reach event
         this.DomainEvents.subscribe(CollectionResourceChangeEvent, async () => {
+            logging.info('CollectionResourceChangeEvent received, updating all collections');
             await this.updateCollections();
         });
 
         this.DomainEvents.subscribe(PostDeletedEvent, async (event: PostDeletedEvent) => {
+            logging.info(`PostDeletedEvent received, removing post ${event.id} from all collections`);
             await this.removePostFromAllCollections(event.id);
         });
 
         this.DomainEvents.subscribe(PostAddedEvent, async (event: PostAddedEvent) => {
+            logging.info(`PostAddedEvent received, adding post ${event.data.id} to matching collections`);
             await this.addPostToMatchingCollections(event.data);
         });
 
         this.DomainEvents.subscribe(PostEditedEvent, async (event: PostEditedEvent) => {
+            logging.info(`PostEditedEvent received, updating post ${event.data.id} in matching collections`);
             await this.updatePostInMatchingCollections(event.data);
         });
     }

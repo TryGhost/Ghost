@@ -54,6 +54,10 @@ const Form: React.FC<FormProps> = ({
         );
     }
 
+    let titleClasses = clsx(
+        grouped ? 'mb-2' : 'mb-4'
+    );
+
     return (
         <div className={classes}>
             {title && <Heading className={`${grouped && 'pb-2'}`} level={6} separator={!grouped} grey>{title}</Heading>}

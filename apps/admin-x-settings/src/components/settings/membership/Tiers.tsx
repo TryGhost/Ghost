@@ -2,13 +2,13 @@ import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
 import TiersList from './tiers/TiersList';
-import {getArchivedTiers, getPaidActiveTiers} from '../../../utils/helpers';
+import {getActiveTiers, getArchivedTiers} from '../../../utils/helpers';
 import {useTiers} from '../../providers/ServiceProvider';
 
 const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [selectedTab, setSelectedTab] = useState('active-tiers');
     const {data: tiers, update: updateTier} = useTiers();
-    const activeTiers = getPaidActiveTiers(tiers);
+    const activeTiers = getActiveTiers(tiers);
     const archivedTiers = getArchivedTiers(tiers);
 
     const tabs = [

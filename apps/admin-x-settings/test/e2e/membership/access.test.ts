@@ -64,7 +64,7 @@ test.describe('Access settings', async () => {
         await section.getByLabel('Select tiers').click();
 
         await section.locator('[data-testid="multiselect-option"]', {hasText: 'Basic Supporter'}).click();
-        await section.locator('[data-testid="multiselect-option"]', {hasText: 'Ultimate Starlight Diamond Supporter'}).click();
+        await section.locator('[data-testid="multiselect-option"]', {hasText: 'Ultimate Starlight Diamond Tier'}).click();
 
         await section.getByRole('button', {name: 'Save'}).click();
 
@@ -73,7 +73,7 @@ test.describe('Access settings', async () => {
         expect(lastApiRequests.settings.edit.body).toEqual({
             settings: [
                 {key: 'default_content_visibility', value: 'tiers'},
-                {key: 'default_content_visibility_tiers', value: JSON.stringify(responseFixtures.tiers.tiers.map(tier => tier.id))}
+                {key: 'default_content_visibility_tiers', value: JSON.stringify(responseFixtures.tiers.tiers.slice(1).map(tier => tier.id))}
             ]
         });
     });

@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.54.0",
+  "version": "5.54.1",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -21,7 +21,7 @@
   "license": "MIT",
   "scripts": {
     "archive": "npm pack",
-    "start": "node index",
+    "dev": "node --watch index.js",
     "build": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
     "test": "yarn test:unit",
     "test:base": "mocha --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js",
@@ -52,7 +52,7 @@
     "lint:test": "eslint -c test/.eslintrc.js --ignore-path test/.eslintignore 'test/**/*.js' --cache",
     "lint:code": "yarn lint:server && yarn lint:shared && yarn lint:frontend",
     "lint": "yarn lint:server && yarn lint:shared && yarn lint:frontend && yarn lint:test",
-    "prepack": "nx run-many -t build --projects='ghost/*' && monobundle"
+    "prepack": "monobundle"
   },
   "engines": {
     "node": "^16.14.0 || ^18.12.1",
@@ -60,7 +60,7 @@
   },
   "dependencies": {
     "@extractus/oembed-extractor": "3.2.1",
-    "@sentry/node": "7.58.0",
+    "@sentry/node": "7.58.1",
     "@tryghost/adapter-base-cache": "0.1.5",
     "@tryghost/adapter-cache-redis": "0.0.0",
     "@tryghost/adapter-manager": "0.0.0",
@@ -245,7 +245,7 @@
     "monobundle": "TryGhost/monobundle#2aca618f8880250fb99ad48d61f0ca7251f1e648",
     "nock": "13.3.1",
     "papaparse": "5.3.2",
-    "postcss": "8.4.25",
+    "postcss": "8.4.26",
     "postcss-cli": "10.1.0",
     "rewire": "6.0.0",
     "should": "13.2.3",
@@ -260,5 +260,25 @@
     "@tryghost/logging": "2.4.4",
     "moment": "2.24.0",
     "moment-timezone": "0.5.23"
+  },
+  "nx": {
+    "targets": {
+      "archive": {
+        "dependsOn": [
+          "^build:ts",
+          {
+            "projects": [
+              "ghost-admin"
+            ],
+            "target": "build"
+          }
+        ]
+      },
+      "dev": {
+        "dependsOn": [
+          "^build:ts"
+        ]
+      }
+    }
   }
 }
