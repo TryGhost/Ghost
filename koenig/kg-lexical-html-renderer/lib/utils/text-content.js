@@ -14,11 +14,8 @@ const FORMAT_TAG_MAP = {
 // Builds and renders text content, useful to ensure proper format tag opening/closing
 // and html escaping
 class TextContent {
-    constructor() {
-        const jsdom = require('jsdom');
-        const {JSDOM} = jsdom;
-
-        this.dom = new JSDOM();
+    constructor(dom) {
+        this.dom = dom;
         this.doc = this.dom.window.document;
         this.root = this.doc.createElement('div');
         this.currentNode = this.root;

@@ -1,5 +1,9 @@
 class LexicalHTMLRenderer {
     constructor({nodes} = {}) {
+        const jsdom = require('jsdom');
+        const {JSDOM} = jsdom;
+
+        this.dom = new JSDOM();
         this.nodes = nodes || [];
     }
 
@@ -11,7 +15,8 @@ class LexicalHTMLRenderer {
         const {$convertToHtmlString} = require('./convert-to-html-string');
 
         const defaultOptions = {
-            target: 'html'
+            target: 'html',
+            dom: this.dom
         };
         const options = Object.assign({}, defaultOptions, userOptions);
 

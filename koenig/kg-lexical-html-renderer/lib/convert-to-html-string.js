@@ -56,7 +56,7 @@ function exportChildren(node, options) {
     const output = [];
     const children = node.getChildren();
 
-    const textContent = new TextContent();
+    const textContent = new TextContent(options.dom);
 
     for (const child of children) {
         if (!textContent.isEmpty() && !$isLineBreakNode(child) && !$isTextNode(child) && !$isLinkNode(child)) {
