@@ -135,7 +135,18 @@ module.exports = function (defaults) {
         },
         fingerprint: {
             enabled: isProduction,
-            extensions: ['js', 'css', 'png', 'jpg', 'jpeg', 'gif', 'map', 'svg', 'ttf', 'ico']
+            extensions: [
+                'js',
+                'css',
+                'png',
+                'jpg',
+                'jpeg',
+                'gif',
+                'map',
+                'svg',
+                'ttf',
+                'ico'
+            ]
         },
         minifyJS: {
             options: {
