@@ -49,7 +49,7 @@ export const ProductsSectionStyles = ({site}) => {
         .gh-portal-products-pricetoggle .gh-portal-btn {
             border: 0;
             height: 100% !important;
-            width: 50%;import { is } from '../../../../../ghost/admin/tests/acceptance/members/filter-test';
+            width: 50%;
 
             border-radius: 999px;
             color: var(--grey7);
