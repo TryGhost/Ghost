@@ -1,5 +1,5 @@
 import React from 'react';
-import populateNestedEditor from '../../../utils/populateNestedEditor';
+import populateEditor from '../../../utils/storybook/populate-storybook-editor';
 import {CardWrapper} from './../CardWrapper';
 import {MINIMAL_NODES} from '../../../index.js';
 import {SignupCard} from './SignupCard';
@@ -49,9 +49,9 @@ const Template = ({display, heading, subheader, disclaimer, ...args}) => {
     const disclaimerTextEditor = createEditor({nodes: MINIMAL_NODES});
     const cardWidth = args.layout === 'split' ? 'full' : args.layout;
 
-    populateNestedEditor({editor: headerTextEditor, initialHtml: `<p>${heading}</p>`});
-    populateNestedEditor({editor: subheaderTextEditor, initialHtml: `<p>${subheader}</p>`});
-    populateNestedEditor({editor: disclaimerTextEditor, initialHtml: `<p>${disclaimer}</p>`});
+    populateEditor({editor: headerTextEditor, initialHtml: `<p>${heading}</p>`});
+    populateEditor({editor: subheaderTextEditor, initialHtml: `<p>${subheader}</p>`});
+    populateEditor({editor: disclaimerTextEditor, initialHtml: `<p>${disclaimer}</p>`});
 
     return (<div className="kg-prose">
         <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">

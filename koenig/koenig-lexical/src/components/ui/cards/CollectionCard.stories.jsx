@@ -1,5 +1,5 @@
 import React from 'react';
-import generateEditorState from '../../../utils/generateEditorState';
+import populateEditor from '../../../utils/storybook/populate-storybook-editor.js';
 import {CardWrapper} from './../CardWrapper';
 import {CollectionCard} from './CollectionCard';
 import {DateTime} from 'luxon';
@@ -188,12 +188,7 @@ export default story;
 
 const Template = ({display, header = 'Featured posts', ...args}) => {
     const headerEditor = createEditor({nodes: MINIMAL_NODES});
-
-    const editorState = generateEditorState({
-        editor: headerEditor,
-        initialHtml: `<p>${header}</p>`
-    });
-    headerEditor.setEditorState(editorState, {tag: 'history-merge'});
+    populateEditor({editor: headerEditor, initialHtml: `<p>${header}</p>`});
 
     return (
         <div className="kg-prose">

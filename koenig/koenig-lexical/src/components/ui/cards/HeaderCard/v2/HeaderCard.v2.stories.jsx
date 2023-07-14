@@ -1,5 +1,5 @@
 import React from 'react';
-import populateNestedEditor from '../../../../../utils/populateNestedEditor';
+import populateEditor from '../../../../../utils/storybook/populate-storybook-editor';
 import {CardWrapper} from '../../../CardWrapper';
 import {HeaderCard} from './HeaderCard';
 import {MINIMAL_NODES} from '../../../../../index.js';
@@ -47,8 +47,8 @@ const Template = ({display, header, subheader, ...args}) => {
     const headerTextEditor = createEditor({nodes: MINIMAL_NODES});
     const subheaderTextEditor = createEditor({nodes: MINIMAL_NODES});
 
-    populateNestedEditor({editor: headerTextEditor, initialHtml: `<p>${header}</p>`});
-    populateNestedEditor({editor: subheaderTextEditor, initialHtml: `<p>${subheader}</p>`});
+    populateEditor({editor: headerTextEditor, initialHtml: `<p>${header}</p>`});
+    populateEditor({editor: subheaderTextEditor, initialHtml: `<p>${subheader}</p>`});
 
     return (<div className="kg-prose">
         <div className="mx-auto my-8 w-full min-w-[initial]">

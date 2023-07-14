@@ -1,5 +1,5 @@
 import React from 'react';
-import populateNestedEditor from '../../../utils/populateNestedEditor';
+import populateEditor from '../../../utils/storybook/populate-storybook-editor';
 import {BASIC_NODES, MINIMAL_NODES} from '../../../index.js';
 import {CardWrapper} from './../CardWrapper';
 import {ToggleCard} from './ToggleCard';
@@ -40,10 +40,10 @@ export default story;
 
 const Template = ({display, heading, content, ...args}) => {
     const headingEditor = createEditor({nodes: MINIMAL_NODES});
-    populateNestedEditor({editor: headingEditor, initialHtml: `<p>${heading}</p>`});
+    populateEditor({editor: headingEditor, initialHtml: `<p>${heading}</p>`});
 
     const contentEditor = createEditor({nodes: BASIC_NODES});
-    populateNestedEditor({editor: contentEditor, initialHtml: `<p>${content}</p>`});
+    populateEditor({editor: contentEditor, initialHtml: `<p>${content}</p>`});
 
     return (
         <div className="kg-prose">

@@ -1,5 +1,5 @@
 import React from 'react';
-import populateNestedEditor from '../../../utils/populateNestedEditor';
+import populateEditor from '../../../utils/storybook/populate-storybook-editor';
 import {BASIC_NODES} from '../../../index.js';
 import {CardWrapper} from '../CardWrapper';
 import {EmailCard} from './EmailCard';
@@ -41,7 +41,7 @@ export default story;
 
 const Template = ({display, html, ...args}) => {
     const editor = createEditor({nodes: BASIC_NODES});
-    populateNestedEditor({editor, initialHtml: `<p>${html}</p>`});
+    populateEditor({editor, initialHtml: `<p>${html}</p>`});
 
     return (
         <div className="kg-prose">
