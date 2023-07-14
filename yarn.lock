@@ -3987,13 +3987,13 @@
   resolved "https://registry.yarnpkg.com/@pkgjs/parseargs/-/parseargs-0.11.0.tgz#a77ea742fab25775145434eb1d2328cf5013ac33"
   integrity sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==
 
-"@playwright/test@1.36.0", "@playwright/test@^1.34.3":
-  version "1.36.0"
-  resolved "https://registry.yarnpkg.com/@playwright/test/-/test-1.36.0.tgz#df2c0b09bbd27016adf1892b0c3502c4ce88d307"
-  integrity sha512-yN+fvMYtiyLFDCQos+lWzoX4XW3DNuaxjBu68G0lkgLgC6BP+m/iTxJQoSicz/x2G5EsrqlZTqTIP9sTgLQerg==
+"@playwright/test@1.36.1", "@playwright/test@^1.34.3":
+  version "1.36.1"
+  resolved "https://registry.yarnpkg.com/@playwright/test/-/test-1.36.1.tgz#0b1247d279f142ac0876ce25e7daf15439d5367b"
+  integrity sha512-YK7yGWK0N3C2QInPU6iaf/L3N95dlGdbsezLya4n0ZCh3IL7VgPGxC6Gnznh9ApWdOmkJeleT2kMTcWPRZvzqg==
   dependencies:
     "@types/node" "*"
-    playwright-core "1.36.0"
+    playwright-core "1.36.1"
   optionalDependencies:
     fsevents "2.3.2"
 
@@ -25170,10 +25170,10 @@ pkg-up@^3.1.0:
   dependencies:
     find-up "^3.0.0"
 
-playwright-core@1.36.0:
-  version "1.36.0"
-  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.36.0.tgz#35d1ed5f364a31e58bc8f06688ab02d538b96eb6"
-  integrity sha512-7RTr8P6YJPAqB+8j5ATGHqD6LvLLM39sYVNsslh78g8QeLcBs5750c6+msjrHUwwGt+kEbczBj1XB22WMwn+WA==
+playwright-core@1.36.1:
+  version "1.36.1"
+  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.36.1.tgz#f5f275d70548768ca892583519c89b237a381c77"
+  integrity sha512-7+tmPuMcEW4xeCL9cp9KxmYpQYHKkyjwoXRnoeTowaeNat8PoBMk/HwCYhqkH2fRkshfKEOiVus/IhID2Pg8kg==
 
 pluralize@8.0.0, pluralize@^8.0.0:
   version "8.0.0"
