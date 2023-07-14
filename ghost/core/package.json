@@ -52,7 +52,7 @@
     "lint:test": "eslint -c test/.eslintrc.js --ignore-path test/.eslintignore 'test/**/*.js' --cache",
     "lint:code": "yarn lint:server && yarn lint:shared && yarn lint:frontend",
     "lint": "yarn lint:server && yarn lint:shared && yarn lint:frontend && yarn lint:test",
-    "prepack": "nx run-many -t build --projects='ghost/*' && monobundle"
+    "prepack": "monobundle"
   },
   "engines": {
     "node": "^16.14.0 || ^18.12.1",
@@ -265,7 +265,13 @@
     "targets": {
       "archive": {
         "dependsOn": [
-          "^build:ts"
+          "^build:ts",
+          {
+            "projects": [
+              "ghost-admin"
+            ],
+            "target": "build"
+          }
         ]
       },
       "dev": {
