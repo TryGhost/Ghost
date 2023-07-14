@@ -104,10 +104,11 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
         stickyFooter
         onOk={handleSave}
     >
-        <div className='mt-8 flex items-start gap-10'>
+        <div className='mt-8 flex items-start gap-16'>
             <div className='flex grow flex-col gap-5'>
-                <Form title='Basic' grouped>
+                <Form title='Basic'>
                     {!isFreeTier && <TextField
+                        autoComplete='off'
                         error={Boolean(errors.name)}
                         hint={errors.name}
                         placeholder='Bronze'
@@ -117,6 +118,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                         onChange={e => updateForm(state => ({...state, name: e.target.value}))}
                     />}
                     <TextField
+                        autoComplete='off'
                         placeholder='Full access to premium content'
                         title='Description'
                         value={formState.description || ''}
@@ -137,6 +139,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                                             }))
                                         }))}
                                         selectClassName='font-medium'
+                                        selectedOption={formState.currency}
                                         size='xs'
                                         onSelect={currency => updateForm(state => ({...state, currency}))}
                                     />
@@ -182,7 +185,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                     </div>}
                 </Form>
 
-                <Form gap='none' title='Benefits' grouped>
+                <Form gap='none' title='Benefits'>
                     <SortableList
                         items={benefits.items}
                         itemSeparator={false}

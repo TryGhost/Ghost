@@ -83,7 +83,7 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier})
         : 0;
 
     return (
-        <div className="mt-[-5px]">
+        <div className="mt-1">
             <div className="flex items-baseline justify-between">
                 <Heading className="pb-2" level={6} grey>{isFreeTier ? 'Free membership preview' : 'Tier preview'}</Heading>
                 {!isFreeTier && <div className="flex">
