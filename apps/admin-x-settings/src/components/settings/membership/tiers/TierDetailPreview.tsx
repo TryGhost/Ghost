@@ -2,7 +2,9 @@ import Button from '../../../../admin-x-ds/global/Button';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import Icon from '../../../../admin-x-ds/global/Icon';
 import React, {useState} from 'react';
+import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {Tier} from '../../../../types/api';
+import {getSettingValues} from '../../../../utils/helpers';
 import {getSymbol} from '../../../../utils/currency';
 
 export type TierFormState = Partial<Omit<Tier, 'monthly_price' | 'yearly_price' | 'trial_days'>> & {
@@ -68,6 +70,8 @@ const DiscountLabel: React.FC<{discount: number}> = ({discount}) => {
 
 const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier}) => {
     const [showingYearly, setShowingYearly] = useState(false);
+    const {localSettings} = useSettingGroup();
+    const siteTitle = getSettingValues(localSettings, ['title']) as string[];
 
     const name = tier?.name || '';
     const description = tier?.description || '';
@@ -106,7 +110,7 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier})
                 </div>
                 <div className="flex-column flex w-full flex-1">
                     <div className="flex-1">
-                        <div className={`mt-4 w-full text-[1.55rem] font-semibold leading-snug text-grey-900 ${!description && 'opacity-30'}`}>{description || 'Full access to premium content'}</div>
+                        <div className={`mt-4 w-full text-[1.55rem] font-semibold leading-snug text-grey-900 ${!description && 'opacity-30'}`}>{description || (isFreeTier ? `Free preview of ${siteTitle}` : 'Full access to premium content')}</div>
                         <TierBenefits benefits={benefits} />
                     </div>
                 </div>

@@ -12,9 +12,11 @@ import TierDetailPreview from './TierDetailPreview';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
+import useSettingGroup from '../../../../hooks/useSettingGroup';
 import useSortableIndexedList from '../../../../hooks/useSortableIndexedList';
 import {Tier} from '../../../../types/api';
 import {currencies, currencyFromDecimal, currencyGroups, currencyToDecimal, getSymbol} from '../../../../utils/currency';
+import {getSettingValues} from '../../../../utils/helpers';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {useTiers} from '../../../providers/ServiceProvider';
 
@@ -35,6 +37,8 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
     const {updateRoute} = useRouting();
     const {update: updateTier, create: createTier} = useTiers();
     const [hasFreeTrial, setHasFreeTrial] = React.useState(!!tier?.trial_days);
+    const {localSettings} = useSettingGroup();
+    const siteTitle = getSettingValues(localSettings, ['title']) as string[];
 
     const [errors, setErrors] = useState<{ [key in keyof Tier]?: string }>({}); // eslint-disable-line no-unused-vars
 
@@ -119,7 +123,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                     />}
                     <TextField
                         autoComplete='off'
-                        placeholder='Full access to premium content'
+                        placeholder={isFreeTier ? `Free preview of ${siteTitle}` : 'Full access to premium content'}
                         title='Description'
                         value={formState.description || ''}
                         onChange={e => updateForm(state => ({...state, description: e.target.value}))}
@@ -205,7 +209,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                         <Icon name='check' size='sm' />
                         <TextField
                             className='grow'
-                            placeholder='New benefit'
+                            placeholder='Expert analysis'
                             value={benefits.newItem}
                             onChange={e => benefits.setNewItem(e.target.value)}
                         />
