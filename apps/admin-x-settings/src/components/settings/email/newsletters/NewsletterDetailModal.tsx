@@ -34,7 +34,7 @@ const selectOptions: SelectOption[] = [
 const Sidebar: React.FC = () => {
     const [selectedTab, setSelectedTab] = useState('generalSettings');
     const values = {
-        HEADER: false
+        HEADER: ''
     };
 
     const tabs: Tab[] = [
@@ -75,6 +75,12 @@ const Sidebar: React.FC = () => {
                             height={values.HEADER ? '66px' : '64px'}
                             id='logo'
                             imageURL={values.HEADER || ''}
+                            onDelete={() => {
+                                alert();
+                            }}
+                            onUpload={() => {
+                                alert();
+                            }}
                         >
                         Upload header image
                         </ImageUpload>
