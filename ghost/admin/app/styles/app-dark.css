@@ -1545,3 +1545,8 @@ kbd {
     background: var(--dark-main-bg-color);
     box-shadow: 0 0 1px rgba(0,0,0,.65), 0 8px 28px rgba(0,0,0,.72);
 }
+
+/* Labs Content Importer */
+.gh-import-content-spinner .gh-loading-content {
+    background: color-mod(var(--white) l(+2%));
+}
