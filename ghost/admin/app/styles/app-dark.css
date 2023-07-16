@@ -199,6 +199,10 @@ input:focus,
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
 
+.ember-basic-dropdown-content--right.ember-basic-dropdown-content--below {
+    background-color: var(--whitegrey-l1);
+}
+
 .ember-power-select-dropdown,
 .ember-power-select-options:not([role="group"]),
 .ember-power-select-dropdown.ember-basic-dropdown-content--in-place {
