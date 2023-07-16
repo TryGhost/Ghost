@@ -125,6 +125,13 @@ export const currencies: CurrencyOption[] = [
     {isoCode: 'ZMW', name: 'Zambian kwacha'}
 ];
 
+export function currencyGroups() {
+    return {
+        top: currencies.slice(0, 5),
+        other: currencies.slice(5)
+    };
+}
+
 export function getSymbol(currency: string): string {
     if (!currency) {
         return '';
@@ -133,6 +140,10 @@ export function getSymbol(currency: string): string {
 }
 
 // We currently only support decimal currencies
-export function getNonDecimal(amount: number): number {
-    return amount / 100;
+export function currencyToDecimal(integerAmount: number): number {
+    return integerAmount / 100;
+}
+
+export function currencyFromDecimal(decimalAmount: number): number {
+    return decimalAmount * 100;
 }

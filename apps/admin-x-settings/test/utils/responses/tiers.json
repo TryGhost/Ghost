@@ -1,6 +1,20 @@
 {
     "tiers": [
         {
+            "id": "645453f4d254799990dd0e21",
+            "name": "Free",
+            "description": null,
+            "slug": "free",
+            "active": true,
+            "type": "free",
+            "welcome_page_url": null,
+            "created_at": "2023-05-05T00:55:16.000Z",
+            "updated_at": "2023-05-08T06:08:47.000Z",
+            "visibility": "public",
+            "benefits": [],
+            "trial_days": 0
+        },
+        {
             "id": "645453f4d254799990dd0e22",
             "name": "Basic Supporter",
             "description": null,
@@ -21,9 +35,9 @@
         },
         {
             "id": "649a4f08e1de1c862cd79063",
-            "name": "Ultimate Starlight Diamond Supporter",
+            "name": "Ultimate Starlight Diamond Tier",
             "description": null,
-            "slug": "ultimate-starlight-diamond-supporter",
+            "slug": "ultimate-starlight-diamond-tier",
             "active": true,
             "type": "paid",
             "welcome_page_url": null,

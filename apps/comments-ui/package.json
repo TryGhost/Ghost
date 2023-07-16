@@ -74,9 +74,9 @@
     "eslint-plugin-react-refresh": "0.4.3",
     "eslint-plugin-tailwindcss": "3.13.0",
     "jsdom": "22.1.0",
-    "postcss": "8.4.25",
-    "tailwindcss": "3.3.2",
-    "vite": "4.4.3",
+    "postcss": "8.4.26",
+    "tailwindcss": "3.3.3",
+    "vite": "4.4.4",
     "vite-plugin-css-injected-by-js": "3.2.0",
     "vite-plugin-svgr": "3.2.0",
     "vitest": "0.33.0"
@@ -85,7 +85,7 @@
     "@tiptap/extension-bubble-menu": "2.0.0-beta.61",
     "@tiptap/extension-floating-menu": "2.0.0-beta.56",
     "prosemirror-state": "1.4.3",
-    "prosemirror-model": "1.19.2",
+    "prosemirror-model": "1.19.3",
     "prosemirror-transform": "1.7.3"
   }
 }

@@ -60,7 +60,8 @@ describe('Importer', function () {
             },
             create: memberCreateStub,
             update: sinon.stub().resolves(null),
-            linkStripeCustomer: sinon.stub().resolves(null)
+            linkStripeCustomer: sinon.stub().resolves(null),
+            getCustomerIdByEmail: sinon.stub().resolves('cus_mock_123456')
         };
 
         knexStub = {
@@ -325,7 +326,7 @@ describe('Importer', function () {
             assert.equal(result.errors.length, 0);
         });
 
-        it ('handles various special cases', async function () {
+        it('handles various special cases', async function () {
             const importer = buildMockImporterInstance();
 
             const result = await importer.perform(`${csvPath}/special-cases.csv`);
@@ -344,7 +345,19 @@ describe('Importer', function () {
             assert.equal(result.errors.length, 0);
         });
 
-        it ('respects existing member newsletter subscription preferences', async function () {
+        it('searches for stripe customer ID by email when "auto" is passed', async function () {
+            const importer = buildMockImporterInstance();
+
+            const result = await importer.perform(`${csvPath}/auto-stripe-customer-id.csv`);
+
+            should.equal(membersRepositoryStub.linkStripeCustomer.args[0][0].customer_id, 'cus_mock_123456');
+
+            assert.equal(result.total, 1);
+            assert.equal(result.imported, 1);
+            assert.equal(result.errors.length, 0);
+        });
+
+        it('respects existing member newsletter subscription preferences', async function () {
             const importer = buildMockImporterInstance();
 
             const newsletters = [
@@ -375,7 +388,7 @@ describe('Importer', function () {
             assert.deepEqual(membersRepositoryStub.update.args[0][0].newsletters, newsletters);
         });
 
-        it ('does not add subscriptions for existing member when they do not have any subscriptions', async function () {
+        it('does not add subscriptions for existing member when they do not have any subscriptions', async function () {
             const importer = buildMockImporterInstance();
 
             const member = {
@@ -396,7 +409,7 @@ describe('Importer', function () {
             assert.deepEqual(membersRepositoryStub.update.args[0][0].subscribed, false);
         });
 
-        it ('removes existing member newsletter subscriptions when set to not be subscribed', async function () {
+        it('removes existing member newsletter subscriptions when set to not be subscribed', async function () {
             const importer = buildMockImporterInstance();
 
             const newsletters = [
