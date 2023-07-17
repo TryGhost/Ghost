@@ -73,7 +73,8 @@ describe('Pages API', function () {
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
-                    etag: anyEtag
+                    etag: anyEtag,
+                    'x-cache-invalidate': anyString
                 });
         });
     });
