@@ -31544,10 +31544,10 @@ vite-plugin-commonjs@0.8.2:
     magic-string "^0.30.1"
     vite-plugin-dynamic-import "^1.5.0"
 
-vite-plugin-css-injected-by-js@3.2.0:
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/vite-plugin-css-injected-by-js/-/vite-plugin-css-injected-by-js-3.2.0.tgz#0e0fa1de9281a918f9945bc6401b46f7d396d7f9"
-  integrity sha512-a6MtYm/qfswVCtLezzzKJWL2ZpxrXXQd6/1UHy0t/G0IILHl4GG6n4OprbcC93aXIwkeS19JNbuKWD0Xt+pZtg==
+vite-plugin-css-injected-by-js@3.2.1:
+  version "3.2.1"
+  resolved "https://registry.yarnpkg.com/vite-plugin-css-injected-by-js/-/vite-plugin-css-injected-by-js-3.2.1.tgz#c23e10e28a1afb78414fa3c162ac8a253cd1a6a4"
+  integrity sha512-8UQWy7tcmgwkaUKYfbj/8GOeAD0RPG2tdetAGg7WikWC8IEtNrovs8RRuLjFqdRqORT1XxchBB5tPl6xO/H95g==
 
 vite-plugin-dynamic-import@^1.5.0:
   version "1.5.0"
