@@ -5,7 +5,7 @@ export const useCollections = () => {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 resolve(collections.find(collection => collection?.slug === collectionSlug)?.posts);
-            }, 1000);
+            }, 2000);
         });
     };
 
@@ -17,7 +17,7 @@ export const useCollections = () => {
             published_at: DateTime.now().minus({days: Math.floor(Math.random() * 100)}).toISO(),
             excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
             feature_image: 'https://placekitten.com/230/250',
-            reading_time: `${Math.floor(Math.random() * 10)}`,
+            reading_time: Math.floor(Math.random() * 10),
             author: 'Author McAuthory'
         },
         {
@@ -27,7 +27,7 @@ export const useCollections = () => {
             published_at: DateTime.now().minus({days: Math.random() * 100}).toISO(),
             excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
             feature_image: 'https://placekitten.com/251/250',
-            reading_time: `${Math.floor(Math.random() * 10)}`,
+            reading_time: Math.floor(Math.random() * 10),
             author: 'Writer Writterson'
         },
         {
@@ -37,7 +37,7 @@ export const useCollections = () => {
             published_at: DateTime.now().minus({days: Math.random() * 100}).toISO(),
             excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
             feature_image: 'https://placekitten.com/249/251',
-            reading_time: `${Math.floor(Math.random() * 10)}`,
+            reading_time: Math.floor(Math.random() * 10),
             author: 'Author McAuthory'
         },
         {
@@ -47,7 +47,7 @@ export const useCollections = () => {
             published_at: DateTime.now().minus({days: Math.random() * 100}).toISO(),
             excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
             feature_image: 'https://placekitten.com/245/250',
-            reading_time: `${Math.floor(Math.random() * 10)}`,
+            reading_time: Math.floor(Math.random() * 10),
             author: 'Author McAuthory'
         },
         {
@@ -57,7 +57,7 @@ export const useCollections = () => {
             published_at: DateTime.now().minus({days: Math.random() * 100}).toISO(),
             excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
             feature_image: 'https://placekitten.com/251/255',
-            reading_time: `${Math.floor(Math.random() * 10)}`,
+            reading_time: Math.floor(Math.random() * 10),
             author: 'Writer Writterson'
         },
         {
@@ -67,7 +67,7 @@ export const useCollections = () => {
             published_at: DateTime.now().minus({days: Math.random() * 100}).toISO(),
             excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
             feature_image: 'https://placekitten.com/249/248',
-            reading_time: `${Math.floor(Math.random() * 10)}`,
+            reading_time: Math.floor(Math.random() * 10),
             author: 'Author McAuthory'
         },
         {
@@ -77,7 +77,7 @@ export const useCollections = () => {
             published_at: DateTime.now().minus({days: Math.random() * 100}).toISO(),
             excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
             feature_image: 'https://placekitten.com/248/250',
-            reading_time: `${Math.floor(Math.random() * 10)}`,
+            reading_time: Math.floor(Math.random() * 10),
             author: 'Author McAuthory'
         },
         {
@@ -87,7 +87,7 @@ export const useCollections = () => {
             published_at: DateTime.now().minus({days: Math.random() * 100}).toISO(),
             excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
             feature_image: 'https://placekitten.com/251/252',
-            reading_time: `${Math.floor(Math.random() * 10)}`,
+            reading_time: Math.floor(Math.random() * 10),
             author: 'Writer Writterson'
         },
         {
@@ -97,7 +97,7 @@ export const useCollections = () => {
             published_at: DateTime.now().minus({days: Math.random() * 100}).toISO(),
             excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
             feature_image: 'https://placekitten.com/252/251',
-            reading_time: `${Math.floor(Math.random() * 10)}`,
+            reading_time: Math.floor(Math.random() * 10),
             author: 'Author McAuthory'
         },
         {
@@ -107,7 +107,7 @@ export const useCollections = () => {
             published_at: DateTime.now().minus({days: Math.random() * 100}).toISO(),
             excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
             feature_image: 'https://placekitten.com/250/252',
-            reading_time: `${Math.floor(Math.random() * 10)}`,
+            reading_time: Math.floor(Math.random() * 10),
             author: 'Author McAuthory'
         },
         {
@@ -117,7 +117,7 @@ export const useCollections = () => {
             published_at: DateTime.now().minus({days: Math.random() * 100}).toISO(),
             excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
             feature_image: 'https://placekitten.com/251/260',
-            reading_time: `${Math.floor(Math.random() * 10)}`,
+            reading_time: Math.floor(Math.random() * 10),
             author: 'Writer Writterson'
         },
         {
@@ -127,7 +127,7 @@ export const useCollections = () => {
             published_at: DateTime.now().minus({days: Math.random() * 100}).toISO(),
             excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
             feature_image: 'https://placekitten.com/240/251',
-            reading_time: `${Math.floor(Math.random() * 10)}`,
+            reading_time: Math.floor(Math.random() * 10),
             author: 'Author McAuthory'
         }
     ];

@@ -10,9 +10,9 @@ import {ReactComponent as ImgPlaceholderIcon} from '../../../assets/icons/kg-img
 import {ReactComponent as ListLayoutIcon} from '../../../assets/icons/kg-layout-list.svg';
 import {isEditorEmpty} from '../../../utils/isEditorEmpty';
 
-function PostImage({image, layout, columns}) {
+function PostImage({image, layout, columns, isLoading}) {
     return (
-        <div className="relative flex w-full items-center justify-center bg-grey-200">
+        <div className={`relative flex w-full ${isLoading ? 'animate-pulse' : ''} items-center justify-center bg-grey-200`}>
             <img alt="" className={clsx(
                 'w-full object-cover',
                 (layout === 'grid' && (columns === 1 || columns === 2)) ? 'aspect-video' : 'aspect-[3/2]',
@@ -31,7 +31,7 @@ function PostImage({image, layout, columns}) {
     );
 }
 
-function PostTitle({title, layout, columns}) {
+function PostTitle({title, layout, columns, isLoading}) {
     return (
         <div className={clsx(
             'font-bold tracking-normal text-black dark:text-grey-100',
@@ -39,12 +39,14 @@ function PostTitle({title, layout, columns}) {
             (layout === 'grid' && columns === 1) && 'text-4xl leading-tight',
             (layout === 'grid' && columns === 2) && 'text-2xl leading-snug',
             (layout === 'grid' && columns === 3) && 'text-xl leading-snug',
-            (layout === 'grid' && columns === 4) && 'text-[1.7rem] leading-snug'
-        )}>{title}</div>
+            (layout === 'grid' && columns === 4) && 'text-[1.7rem] leading-snug',
+            isLoading && 'h-3 w-full animate-pulse rounded-full bg-grey-200'
+        )}>
+            {isLoading ? ' ' : title}</div>
     );
 }
 
-function PostExcerpt({excerpt, layout, columns}) {
+function PostExcerpt({excerpt, layout, columns, isLoading}) {
     return (
         <div className={clsx(
             'overflow-y-hidden font-normal leading-snug text-grey-900 dark:text-grey-600',
@@ -52,12 +54,20 @@ function PostExcerpt({excerpt, layout, columns}) {
             (layout === 'grid' && columns === 1) && 'mt-3 max-h-[75px] text-lg line-clamp-3',
             (layout === 'grid' && columns === 2) && 'mt-3 max-h-[66px] text-[1.6rem] line-clamp-3',
             (layout === 'grid' && columns === 3) && 'mt-2 max-h-[42px] text-md line-clamp-2',
-            (layout === 'grid' && columns === 4) && 'mt-2 max-h-[42px] text-md line-clamp-2'
-        )}>{excerpt}</div>
+            (layout === 'grid' && columns === 4) && 'mt-2 max-h-[42px] text-md line-clamp-2',
+            isLoading && 'w-1/2 animate-pulse rounded-full bg-grey-200'
+        )}>
+            {isLoading ? 
+                <div className="h-3"></div>
+                : excerpt}
+        </div>
     );
 }
 
-function PostMeta({publishDate, readTime, layout, columns}) {
+function PostMeta({publishDate, readTime, layout, columns, isLoading}) {
+    if (isLoading) {
+        return null;
+    }
     return (
         <div className={clsx(
             'flex font-normal leading-snug text-grey-600 dark:text-grey-400',
@@ -65,7 +75,7 @@ function PostMeta({publishDate, readTime, layout, columns}) {
             (layout === 'grid' && columns === 1) && 'mt-3 text-lg',
             (layout === 'grid' && columns === 2) && 'mt-3 text-[1.6rem]',
             (layout === 'grid' && columns === 3) && 'mt-2 text-md',
-            (layout === 'grid' && columns === 4) && 'mt-2 text-md'
+            (layout === 'grid' && columns === 4) && 'mt-2 text-md',
         )}>
             {publishDate ? 
                 (<div>{DateTime.fromISO(publishDate).toFormat('d LLL yyyy')}</div>)
@@ -80,7 +90,8 @@ export function CollectionPost({
     layout,
     columns,
     isPlaceholder,
-    options
+    options,
+    isLoading
 }) {
     if (isPlaceholder) {
         return (
@@ -89,11 +100,11 @@ export function CollectionPost({
                 layout === 'list' && 'grid grid-cols-3',
                 layout === 'grid' && 'flex flex-col'
             )}>
-                <PostImage columns={columns} image={null} layout={layout} />
+                <PostImage columns={columns} image={null} isLoading={isLoading} layout={layout} />
                 <div className="col-span-2 flex flex-col items-start justify-start">
-                    <PostTitle columns={columns} layout={layout} title="Post title" />
-                    <PostExcerpt columns={columns} excerpt="Once you've published more posts, they'll automatically be displayed here." layout={layout} />
-                    <PostMeta columns={columns} layout={layout} publishDate={null} readTime={null} />
+                    <PostTitle columns={columns} isLoading={isLoading} layout={layout} title="Post title" />
+                    <PostExcerpt columns={columns} excerpt="Once you've published more posts, they'll automatically be displayed here." isLoading={isLoading} layout={layout} />
+                    <PostMeta columns={columns} isLoading={isLoading} layout={layout} publishDate={null} readTime={null} />
                 </div>
             </div>
         );
@@ -111,11 +122,11 @@ export function CollectionPost({
             (layout === 'grid' && columns === 3) && 'gap-3',
             (layout === 'grid' && columns === 4) && 'gap-3'
         )}>
-            {image && <PostImage columns={columns} image={image} layout={layout} />}
+            {image && <PostImage columns={columns} image={image} isLoading={isLoading} layout={layout} />}
             <div className="col-span-2 flex flex-col items-start justify-start">
-                {title && <PostTitle columns={columns} layout={layout} title={title} />}
-                {excerpt && <PostExcerpt columns={columns} excerpt={excerpt} layout={layout} />}
-                <PostMeta columns={columns} layout={layout} publishDate={publishDate} readTime={readTime} />
+                {title && <PostTitle columns={columns} isLoading={isLoading} layout={layout} title={title} />}
+                {excerpt && <PostExcerpt columns={columns} excerpt={excerpt} isLoading={isLoading} layout={layout} />}
+                <PostMeta columns={columns} isLoading={isLoading} layout={layout} publishDate={publishDate} readTime={readTime} />
             </div>
         </div>
     );
@@ -125,19 +136,16 @@ export function Collection({
     posts,
     postCount,
     layout,
-    columns
+    columns,
+    isLoading
 }) {
-    // would apply appropriate container styles here for the respective format
-    // also need to figure out how to handle placeholders if we should have a specific # showing
-    //  in the editor vs. in the rendered post (handled by the renderer method)
-
     function ListPosts() {
         let postList = [];
         for (let i = 0; i < postCount; i++) {
             if (posts && posts[i]) {
                 postList.push(<CollectionPost key={posts[i].id} columns={columns} layout={layout} post={posts[i]} />);
             } else {
-                postList.push(<CollectionPost key={i} columns={columns} isPlaceholder={true} layout={layout} />);
+                postList.push(<CollectionPost key={i} columns={columns} isLoading={isLoading} isPlaceholder={true} layout={layout} />);
             }
         }
         return postList;
@@ -249,7 +257,7 @@ export function CollectionCard({
                 (layout === 'grid' && columns === 3) && 'grid-cols-3 gap-8',
                 (layout === 'grid' && columns === 4) && 'grid-cols-4 gap-6'
             )}>
-                <Collection columns={columns} layout={layout} postCount={postCount} posts={posts} />
+                <Collection columns={columns} isLoading={isLoading} layout={layout} postCount={postCount} posts={posts} />
             </div>
             {isEditing && (
                 <SettingsPanel>
@@ -313,7 +321,8 @@ Collection.propTypes = {
     posts: PropTypes.array,
     layout: PropTypes.oneOf(['list', 'grid']),
     postCount: PropTypes.number,
-    columns: PropTypes.number
+    columns: PropTypes.number,
+    isLoading: PropTypes.bool
 };
 
 CollectionPost.propTypes = {
@@ -321,30 +330,35 @@ CollectionPost.propTypes = {
     layout: PropTypes.oneOf(['list', 'grid']),
     options: PropTypes.object,
     columns: PropTypes.number,
-    isPlaceholder: PropTypes.bool
+    isPlaceholder: PropTypes.bool,
+    isLoading: PropTypes.bool
 };
 
 PostImage.propTypes = {
-    image: PropTypes.object,
+    image: PropTypes.string,
     layout: PropTypes.oneOf(['list', 'grid']),
-    columns: PropTypes.number
+    columns: PropTypes.number,
+    isLoading: PropTypes.bool
 };
 
 PostTitle.propTypes = {
     title: PropTypes.string,
     layout: PropTypes.oneOf(['list', 'grid']),
-    columns: PropTypes.number
+    columns: PropTypes.number,
+    isLoading: PropTypes.bool
 };
 
 PostExcerpt.propTypes = {
     excerpt: PropTypes.string,
     layout: PropTypes.oneOf(['list', 'grid']),
-    columns: PropTypes.number
+    columns: PropTypes.number,
+    isLoading: PropTypes.bool
 };
 
 PostMeta.propTypes = {
     publishDate: PropTypes.string,
     readTime: PropTypes.number,
     layout: PropTypes.oneOf(['list', 'grid']),
-    columns: PropTypes.number
+    columns: PropTypes.number,
+    isLoading: PropTypes.bool
 };

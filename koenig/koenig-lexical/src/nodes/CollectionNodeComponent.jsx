@@ -38,6 +38,7 @@ export function CollectionNodeComponent({
 
     const fetchCollectionPosts = async (collectionSlug) => {
         setIsLoading(true);
+        setPosts([]);
         const response = await cardConfig?.fetchCollectionPosts(collectionSlug);
         setPosts(response);
         setIsLoading(false);
