@@ -59,11 +59,9 @@ const Form: React.FC<FormProps> = ({
     );
 
     return (
-        <div className={!title ? classes : ''}>
+        <div className={classes}>
             {title && <Heading className={titleClasses} level={5}>{title}</Heading>}
-            <div className={title ? classes : ''}>
-                {children}
-            </div>
+            {children}
         </div>
     );
 };
