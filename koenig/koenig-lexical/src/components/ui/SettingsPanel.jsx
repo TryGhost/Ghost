@@ -49,7 +49,7 @@ export function ToggleSetting({label, description, isChecked, onChange, dataTest
 export function SliderSetting({label, onChange, max, min, value, defaultValue, dataTestId}) {
     return (
         <div className="my-2 flex w-full flex-col gap-1">
-            <div className="flex items-center justify-between pb-1 font-sans text-[1.3rem] font-normal">
+            <div className="flex items-center justify-between font-sans text-[1.3rem] font-normal">
                 <div className="font-bold text-grey-900 dark:text-grey-200">{label}</div>
                 <div className="text-grey-500">
                     <span className="text-grey-900 dark:text-grey-200">{value}</span>
