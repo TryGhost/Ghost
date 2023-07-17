@@ -264,8 +264,9 @@ export default class KoenigLexicalEditor extends Component {
             });
 
             const memberLinks = () => {
+                let links = [];
                 if (this.membersUtils.paidMembersEnabled) {
-                    return [
+                    links = [
                         {
                             label: 'Paid signup',
                             value: this.config.getSiteUrl('/#/portal/signup')
@@ -275,6 +276,8 @@ export default class KoenigLexicalEditor extends Component {
                             value: this.config.getSiteUrl('/#/portal/account/plans')
                         }];
                 }
+
+                return links;
             };
             return [...defaults, ...offersLinks, ...memberLinks()];
         };
