@@ -2,7 +2,13 @@ const {VersionMismatchError} = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('stripe');
 const Stripe = require('stripe').Stripe;
 const LeakyBucket = require('leaky-bucket');
+
+/* Stripe has the following rate limits:
+*  - For most APIs, 100 read requests per second in live mode, 25 read requests per second in test mode
+*  - For search, 20 requests per second in both live and test modes
+*/
 const EXPECTED_API_EFFICIENCY = 0.95;
+const EXPECTED_SEARCH_API_EFFICIENCY = 0.15;
 
 const STRIPE_API_VERSION = '2020-08-27';
 
@@ -70,6 +76,7 @@ module.exports = class StripeAPI {
         } else {
             this._rateLimitBucket = new LeakyBucket(EXPECTED_API_EFFICIENCY * 100, 1);
         }
+        this._searchRateLimitBucket = new LeakyBucket(EXPECTED_SEARCH_API_EFFICIENCY * 100, 1);
         this._configured = true;
     }
 
@@ -230,6 +237,7 @@ module.exports = class StripeAPI {
      * @returns {Promise<string|null>} Stripe Customer ID, if found
      */
     async getCustomerIdByEmail(email) {
+        await this._searchRateLimitBucket.throttle();
         try {
             const result = await this._stripe.customers.search({
                 query: `email:"${email}"`,
@@ -420,7 +428,7 @@ module.exports = class StripeAPI {
         const metadata = options.metadata || undefined;
         const customerId = customer ? customer.id : undefined;
         const customerEmail = customer ? customer.email : options.customerEmail;
- 
+
         await this._rateLimitBucket.throttle();
         let discounts;
         if (options.coupon) {
