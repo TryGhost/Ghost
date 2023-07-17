@@ -36,7 +36,7 @@ function PostTitle({title, layout, columns}) {
         <div className={clsx(
             'font-bold tracking-normal text-black dark:text-grey-100',
             layout === 'list' && 'text-xl leading-snug',
-            (layout === 'grid' && columns === 1) && 'w-2/3 text-4xl leading-tight',
+            (layout === 'grid' && columns === 1) && 'text-4xl leading-tight',
             (layout === 'grid' && columns === 2) && 'text-2xl leading-snug',
             (layout === 'grid' && columns === 3) && 'text-xl leading-snug',
             (layout === 'grid' && columns === 4) && 'text-[1.7rem] leading-snug'
@@ -49,7 +49,7 @@ function PostExcerpt({excerpt, layout, columns}) {
         <div className={clsx(
             'overflow-y-hidden font-normal leading-snug text-grey-900 dark:text-grey-600',
             layout === 'list' && 'mt-2 max-h-[62px] text-md line-clamp-3',
-            (layout === 'grid' && columns === 1) && 'mt-3 max-h-[75px] w-2/3 text-lg line-clamp-3',
+            (layout === 'grid' && columns === 1) && 'mt-3 max-h-[75px] text-lg line-clamp-3',
             (layout === 'grid' && columns === 2) && 'mt-3 max-h-[66px] text-[1.6rem] line-clamp-3',
             (layout === 'grid' && columns === 3) && 'mt-2 max-h-[42px] text-md line-clamp-2',
             (layout === 'grid' && columns === 4) && 'mt-2 max-h-[42px] text-md line-clamp-2'
@@ -62,7 +62,7 @@ function PostMeta({publishDate, readTime, layout, columns}) {
         <div className={clsx(
             'flex font-normal leading-snug text-grey-600 dark:text-grey-400',
             layout === 'list' && 'mt-2 text-md',
-            (layout === 'grid' && columns === 1) && 'mt-3 w-2/3 text-lg',
+            (layout === 'grid' && columns === 1) && 'mt-3 text-lg',
             (layout === 'grid' && columns === 2) && 'mt-3 text-[1.6rem]',
             (layout === 'grid' && columns === 3) && 'mt-2 text-md',
             (layout === 'grid' && columns === 4) && 'mt-2 text-md'
@@ -85,7 +85,7 @@ export function CollectionPost({
     if (isPlaceholder) {
         return (
             <div className={clsx(
-                'not-kg-prose relative w-full gap-5 bg-transparent font-sans',
+                'not-kg-prose relative w-full gap-4 bg-transparent font-sans',
                 layout === 'list' && 'grid grid-cols-3',
                 layout === 'grid' && 'flex flex-col'
             )}>
@@ -103,9 +103,13 @@ export function CollectionPost({
 
     return (
         <div className={clsx(
-            'not-kg-prose relative w-full gap-5 bg-transparent font-sans',
-            layout === 'list' && 'grid grid-cols-3',
-            layout === 'grid' && 'flex flex-col'
+            'not-kg-prose relative w-full bg-transparent font-sans',
+            layout === 'list' && 'grid grid-cols-3 gap-5',
+            layout === 'grid' && 'flex flex-col',
+            (layout === 'grid' && columns === 1) && 'gap-5',
+            (layout === 'grid' && columns === 2) && 'gap-4',
+            (layout === 'grid' && columns === 3) && 'gap-3',
+            (layout === 'grid' && columns === 4) && 'gap-3'
         )}>
             {image && <PostImage columns={columns} image={image} layout={layout} />}
             <div className="col-span-2 flex flex-col items-start justify-start">
@@ -231,8 +235,8 @@ export function CollectionCard({
                     initialEditor={headerEditor}
                     initialState={headerEditorInitialState}
                     nodes="minimal"
-                    placeholderClassName={'!font-sans !text-[2.2rem] !font-bold !leading-snug !tracking-tight text-black dark:text-grey-50 opacity-40'}
-                    placeholderText="Collection Header"
+                    placeholderClassName={'text-md uppercase font-sans leading-normal font-bold tracking-tight text-black dark:text-grey-50 opacity-40'}
+                    placeholderText="Collection title"
                     singleParagraph={true}
                     textClassName={'koenig-lexical-collection-heading whitespace-normal text-black dark:text-grey-50 opacity-100 pt-2 pb-4'}
                 />)
@@ -240,10 +244,10 @@ export function CollectionCard({
             <div className={clsx(
                 'grid w-full',
                 layout === 'list' && 'gap-5',
-                (layout === 'grid' && columns === 1) && 'grid-cols-1 gap-y-14',
-                (layout === 'grid' && columns === 2) && 'grid-cols-2 gap-x-10 gap-y-14',
-                (layout === 'grid' && columns === 3) && 'grid-cols-3 gap-x-8 gap-y-12',
-                (layout === 'grid' && columns === 4) && 'grid-cols-4 gap-x-6 gap-y-10'
+                (layout === 'grid' && columns === 1) && 'grid-cols-1 gap-y-12',
+                (layout === 'grid' && columns === 2) && 'grid-cols-2 gap-10',
+                (layout === 'grid' && columns === 3) && 'grid-cols-3 gap-8',
+                (layout === 'grid' && columns === 4) && 'grid-cols-4 gap-6'
             )}>
                 <Collection columns={columns} layout={layout} postCount={postCount} posts={posts} />
             </div>
