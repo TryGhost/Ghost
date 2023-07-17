@@ -404,7 +404,7 @@ Object {
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-cache-invalidate": "/p/6b776308-98f3-44eb-931c-0e235024d7f2/",
+  "x-cache-invalidate": Any<String>,
   "x-powered-by": "Express",
 }
 `;
