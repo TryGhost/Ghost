@@ -27,6 +27,12 @@ module.exports = {
     },
 
     async render(lexical, userOptions = {}) {
+        const fetchCollectionPosts = async (collectionSlug) => {
+            const posts = [];
+            // fetch posts for collection
+            return posts;
+        };
+
         const options = Object.assign({
             siteUrl: config.get('url'),
             imageOptimization: config.get('imageOptimization'),
@@ -42,7 +48,8 @@ module.exports = {
             createDocument() {
                 const {JSDOM} = require('jsdom');
                 return (new JSDOM()).window.document;
-            }
+            },
+            fetchCollectionPosts
         }, userOptions);
 
         return this.lexicalHtmlRenderer.render(lexical, options);
