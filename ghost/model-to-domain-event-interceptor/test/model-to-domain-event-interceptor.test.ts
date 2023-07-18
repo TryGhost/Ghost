@@ -82,7 +82,10 @@ describe('ModelToDomainEventInterceptor', function () {
             assert.ok(event.data);
             assert.ok(event.data.current);
             assert.equal(event.data.current.status, 'draft');
+            assert.equal(event.data.previous.status, 'published');
 
+            assert.equal(event.data.current.tags[0], 'tag-current-slug');
+            assert.equal(event.data.previous.tags[0], 'tag-previous-slug');
             interceptedEvent = event;
         });
 
@@ -92,6 +95,28 @@ describe('ModelToDomainEventInterceptor', function () {
                 status: 'draft',
                 featured: false,
                 published_at: new Date()
+            },
+            _previousAttributes: {
+                status: 'published',
+                featured: true
+            },
+            relations: {
+                tags: {
+                    models: [{
+                        get: function (key: string) {
+                            return `tag-current-${key}`;
+                        }
+                    }]
+                }
+            },
+            _previousRelations: {
+                tags: {
+                    models: [{
+                        get: function (key: string) {
+                            return `tag-previous-${key}`;
+                        }
+                    }]
+                }
             }
         });
 
