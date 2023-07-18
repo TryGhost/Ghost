@@ -738,8 +738,6 @@ function ProductCardButton({selectedProduct, product, disabled, noOfProducts, tr
                 }}
             />
         );
-        // return ('Start ' + trialDays + '-day free trial');
-        // return t('Start {{amount}}-day free trial', trialDays);
     }
 
     return (noOfProducts > 1 ? t('Choose') : t('Continue'));
