@@ -2,8 +2,8 @@ const {
     CollectionsService
 } = require('@tryghost/collections');
 const BookshelfCollectionsRepository = require('./BookshelfCollectionsRepository');
-const labs = require('../../../shared/labs');
 
+let inited = false;
 class CollectionsServiceWrapper {
     /** @type {CollectionsService} */
     api;
@@ -31,10 +31,10 @@ class CollectionsServiceWrapper {
     }
 
     async init() {
-        if (!labs.isSet('collections')) {
+        if (inited) {
             return;
         }
-
+        inited = true;
         this.api.subscribeToEvents();
         require('./intercept-events')();
     }
