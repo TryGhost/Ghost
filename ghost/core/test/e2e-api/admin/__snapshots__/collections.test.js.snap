@@ -114,6 +114,107 @@ Object {
 }
 `;
 
+exports[`Collections API Automatic Collection Filtering Creates an automatic Collection with a tag filter 1: [body] 1`] = `
+Object {
+  "collections": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": "BACON!",
+      "feature_image": null,
+      "filter": "tags:['bacon']",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "posts": Array [
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 0,
+        },
+        Object {
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "sort_order": 1,
+        },
+      ],
+      "slug": "bacon",
+      "title": "Test Collection with tag filter",
+      "type": "automatic",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Collections API Automatic Collection Filtering Creates an automatic Collection with a tag filter 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "385",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/collections\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Collections API Automatic Collection Filtering Creates an automatic Collection with a tag filter 3: [body] 1`] = `
+Object {
+  "collection_posts": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "featured": false,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "slug": "ghostly-kitchen-sink",
+      "tags": Array [
+        "kitchen-sink",
+        "bacon",
+      ],
+      "title": "Ghostly Kitchen Sink",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "url": StringMatching /http:\\\\/\\\\/127\\.0\\.0\\.1:2369\\\\/\\[A-Za-z0-9_-\\]\\+\\\\//,
+    },
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "featured": false,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "slug": "html-ipsum",
+      "tags": Array [
+        "kitchen-sink",
+        "bacon",
+      ],
+      "title": "HTML Ipsum",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "url": StringMatching /http:\\\\/\\\\/127\\.0\\.0\\.1:2369\\\\/\\[A-Za-z0-9_-\\]\\+\\\\//,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 2,
+    },
+  },
+}
+`;
+
+exports[`Collections API Automatic Collection Filtering Creates an automatic Collection with a tag filter 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "746",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Collections API Browse Can browse Collections 1: [body] 1`] = `
 Object {
   "collections": Array [
