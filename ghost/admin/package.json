@@ -38,7 +38,7 @@
     "@ember/test-helpers": "2.9.4",
     "@embroider/macros": "1.12.3",
     "@glimmer/component": "1.1.2",
-    "@html-next/vertical-collection": "3.0.0",
+    "@html-next/vertical-collection": "4.0.2",
     "@joeattardi/emoji-button": "4.6.4",
     "@sentry/ember": "7.58.1",
     "@tryghost/color-utils": "0.1.24",
