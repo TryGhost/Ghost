@@ -50,7 +50,6 @@ export const ProductsSectionStyles = ({site}) => {
             border: 0;
             height: 100% !important;
             width: 50%;
-
             border-radius: 999px;
             color: var(--grey7);
             background: transparent;
