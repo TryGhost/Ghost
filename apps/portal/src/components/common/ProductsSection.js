@@ -942,9 +942,9 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
         if (isComplimentary) {
             const supportAddress = getSupportAddress({site});
             return (
-                <p>
-                    {t('Please contact {{supportAddress}} to adjust your complimentary subscription.', {supportAddress})}
-                </p>
+                <p style={{textAlign: 'center'}}
+                    dangerouslySetInnerHTML={{__html: t('Please contact <a href="mailto:{{supportAddress}}">{{supportAddress}}</a> to adjust your complimentary subscription.', {supportAddress})}}
+                ></p>
             );
         } else {
             return null;
