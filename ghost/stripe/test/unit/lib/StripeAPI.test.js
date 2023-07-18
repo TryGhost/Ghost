@@ -209,8 +209,8 @@ describe('StripeAPI', function () {
                                 id: 'recent_customer_id',
                                 subscriptions: {
                                     data: [
-                                        {created: 1000},
-                                        {created: 9000}
+                                        {current_period_end: 1000},
+                                        {current_period_end: 9000}
                                     ]
                                 }
                             },
@@ -224,7 +224,7 @@ describe('StripeAPI', function () {
                                 id: 'old_customer_id',
                                 subscriptions: {
                                     data: [
-                                        {created: 5000}
+                                        {current_period_end: 5000}
                                     ]
                                 }
                             }
