@@ -37,6 +37,7 @@
     },
     "c8": {
         "exclude": [
+            "src/CollectionPost.ts",
             "src/CollectionRepository.ts",
             "src/UniqueChecker.ts",
             "src/**/*.d.ts",

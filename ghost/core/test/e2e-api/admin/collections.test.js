@@ -12,10 +12,9 @@ const {
     anyLocationFor,
     anyObjectId,
     anyISODateTime,
-    // anyISODateTimeWithTZ,
+    anyISODateTimeWithTZ,
     anyNumber,
-    // anyUuid,
-    // anyLocalURL,
+    anyLocalURL,
     anyString
 } = matchers;
 
@@ -25,14 +24,13 @@ const matchCollection = {
     updated_at: anyISODateTime
 };
 
-// const matchCollectionPost = {
-//     id: anyObjectId,
-//     url: anyLocalURL,
-//     created_at: anyISODateTimeWithTZ,
-//     updated_at: anyISODateTimeWithTZ,
-//     published_at: anyISODateTimeWithTZ,
-//     uuid: anyUuid
-// };
+const matchCollectionPost = {
+    id: anyObjectId,
+    url: anyLocalURL,
+    created_at: anyISODateTimeWithTZ,
+    updated_at: anyISODateTimeWithTZ,
+    published_at: anyISODateTimeWithTZ
+};
 
 /**
  *
@@ -371,6 +369,45 @@ describe('Collections API', function () {
                 })
                 .matchBodySnapshot({
                     collections: [buildMatcher(9)]
+                });
+        });
+
+        it('Creates an automatic Collection with a tag filter', async function () {
+            const collection = {
+                title: 'Test Collection with tag filter',
+                slug: 'bacon',
+                description: 'BACON!',
+                type: 'automatic',
+                filter: 'tags:[\'bacon\']'
+            };
+
+            await agent
+                .post('/collections/')
+                .body({
+                    collections: [collection]
+                })
+                .expectStatus(201)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('collections')
+                })
+                .matchBodySnapshot({
+                    collections: [buildMatcher(2)]
+                });
+
+            await agent
+                .get('/collections/bacon/posts/')
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collection_posts: [
+                        matchCollectionPost,
+                        matchCollectionPost
+                    ]
                 });
         });
     });

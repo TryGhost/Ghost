@@ -2,6 +2,7 @@ type PostData = {
     id: string;
     featured: boolean;
     published_at: Date;
+    tags: string[];
 };
 
 export class PostAddedEvent {
