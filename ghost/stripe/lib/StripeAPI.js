@@ -269,8 +269,8 @@ module.exports = class StripeAPI {
 
                     // find the customer with the most recent subscription
                     for (let subscription of customer.subscriptions.data) {
-                        if (subscription.created > latestSubscriptionTime) {
-                            latestSubscriptionTime = subscription.created;
+                        if (subscription.current_period_end && subscription.current_period_end > latestSubscriptionTime) {
+                            latestSubscriptionTime = subscription.current_period_end;
                             latestCustomer = customer;
                         }
                     }
