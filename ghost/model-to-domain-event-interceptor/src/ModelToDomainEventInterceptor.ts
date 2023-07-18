@@ -64,16 +64,20 @@ export class ModelToDomainEventInterceptor {
         }, data._changed);
 
         let event;
-        if (modelEventName === 'post.deleted') {
+
+        switch (modelEventName) {
+        case 'post.deleted':
             event = PostDeletedEvent.create({id: data.id});
-        } else if (modelEventName === 'post.added') {
+            break;
+        case 'post.added':
             event = PostAddedEvent.create({
                 id: data.id,
                 featured: data.attributes.featured,
                 status: data.attributes.status,
                 published_at: data.attributes.published_at
             });
-        } else if (modelEventName === 'post.edited') {
+            break;
+        case 'post.edited':
             event = PostEditedEvent.create({
                 id: data.id,
                 current: {
@@ -88,7 +92,8 @@ export class ModelToDomainEventInterceptor {
                 previous: {
                 }
             });
-        } else {
+            break;
+        default:
             event = CollectionResourceChangeEvent.create(modelEventName, change);
         }
 
