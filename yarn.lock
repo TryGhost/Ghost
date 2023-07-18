@@ -21989,10 +21989,10 @@ lint-staged@13.2.3:
     string-argv "^0.3.1"
     yaml "^2.2.2"
 
-liquid-fire@0.34.0:
-  version "0.34.0"
-  resolved "https://registry.yarnpkg.com/liquid-fire/-/liquid-fire-0.34.0.tgz#3522b444a4ae3f2fb824cc6c483e04fc5bba2d94"
-  integrity sha512-IppYBxIUhv00+Hi2Lno9kG4pcBUHVJD2ROQA7o9r0bLuLDfXTG94C8m6dwfYlswQBGdJAuN6a9ItLxftj8DgSw==
+liquid-fire@0.35.1:
+  version "0.35.1"
+  resolved "https://registry.yarnpkg.com/liquid-fire/-/liquid-fire-0.35.1.tgz#eb4871ed08761ef6a673c73e5f2e6ed1cbd6d6cc"
+  integrity sha512-F36LoR9AuL1kGiVszZoA+4quXABizk6ZVTp1/Ti556Y7BjEbE12k16ySAJE+bAuqJiI847DGclRmIrRAuAR2zw==
   dependencies:
     "@embroider/macros" "^1.0.0"
     broccoli-funnel "^3.0.8"
