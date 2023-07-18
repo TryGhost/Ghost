@@ -21,7 +21,7 @@ export function SettingsPanel({children, darkMode}) {
         // However, Portal causes problems with drag/drop, focus, etc
         <div className={`!mt-0 touch-none ${darkMode ? 'dark' : ''}`}>
             <div ref={ref}
-                className="not-kg-prose fixed left-0 top-0 z-[9999999] m-0 flex w-[320px] flex-col gap-2 rounded-lg bg-white bg-clip-padding p-6 font-sans shadow will-change-transform dark:bg-grey-950"
+                className="not-kg-prose fixed left-0 top-0 z-[9999999] m-0 flex w-[320px] flex-col gap-2 rounded-lg bg-white bg-clip-padding p-6 font-sans shadow-md will-change-transform dark:bg-grey-950"
                 data-testid="settings-panel"
             >
                 {children}
@@ -51,8 +51,8 @@ export function SliderSetting({label, onChange, max, min, value, defaultValue, d
         <div className="my-2 flex w-full flex-col gap-1">
             <div className="flex items-center justify-between font-sans text-[1.3rem] font-normal">
                 <div className="font-bold text-grey-900 dark:text-grey-200">{label}</div>
-                <div className="text-grey-500">
-                    <span className="text-grey-900 dark:text-grey-200">{value}</span>
+                <div className="text-grey-500 dark:text-grey-600">
+                    <span className="text-grey-900 dark:text-grey-100">{value}</span>
                     <span className="px-[2px]">/</span>{max}
                 </div>
             </div>
