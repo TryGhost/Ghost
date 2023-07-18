@@ -85,11 +85,18 @@ export class ModelToDomainEventInterceptor {
                     title: data.attributes.title,
                     status: data.attributes.status,
                     featured: data.attributes.featured,
-                    published_at: data.attributes.published_at
+                    published_at: data.attributes.published_at,
+                    tags: data.relations?.tags?.models.map((tag: any) => (tag.get('slug')))
                 },
                 // @NOTE: this will need to represent the previous state of the post
                 //        will be needed to optimize the query for the collection
                 previous: {
+                    id: data.id,
+                    title: data._previousAttributes?.title,
+                    status: data._previousAttributes?.status,
+                    featured: data._previousAttributes?.featured,
+                    published_at: data._previousAttributes?.published_at,
+                    tags: data._previousRelations?.tags?.models.map((tag: any) => (tag.get('slug')))
                 }
             });
             break;
