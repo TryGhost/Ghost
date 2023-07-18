@@ -22,6 +22,7 @@
   "scripts": {
     "archive": "nx run ghost:archive",
     "build": "nx run-many -t build",
+    "build:clean": "nx reset && rimraf -g 'ghost/*/build'",
     "dev:debug": "DEBUG_COLORS=true DEBUG=@tryghost*,ghost:* yarn dev",
     "dev:admin": "node .github/scripts/dev.js --admin",
     "dev:ghost": "node .github/scripts/dev.js --ghost",
@@ -129,6 +130,7 @@
     "husky": "8.0.3",
     "lint-staged": "13.2.3",
     "nx": "16.5.2",
+    "rimraf": "5.0.1",
     "ts-node": "10.9.1"
   }
 }
