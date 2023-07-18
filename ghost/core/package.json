@@ -255,7 +255,7 @@
     "toml": "3.0.0"
   },
   "resolutions": {
-    "@elastic/elasticsearch": "8.5.0",
+    "@elastic/elasticsearch": "8.8.1",
     "@tryghost/errors": "1.2.24",
     "@tryghost/logging": "2.4.4",
     "moment": "2.24.0",

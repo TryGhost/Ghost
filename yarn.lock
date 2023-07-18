@@ -2157,15 +2157,15 @@
   resolved "https://registry.yarnpkg.com/@ebay/nice-modal-react/-/nice-modal-react-1.2.10.tgz#6b2406bfce4a5daffc43f5b85f5f238311cdfe93"
   integrity sha512-qNp8vQo5kPRwB9bHlkh8lcwH/0KFWpp58X/b9KaLB/gNlJ3W24nCT2l/qBBSnWgV7NEIq25uLowaPS2mbfpZiw==
 
-"@elastic/elasticsearch@8.5.0", "@elastic/elasticsearch@8.6.0":
-  version "8.5.0"
-  resolved "https://registry.yarnpkg.com/@elastic/elasticsearch/-/elasticsearch-8.5.0.tgz#407aee0950a082ee76735a567f2571cf4301d4ea"
-  integrity sha512-iOgr/3zQi84WmPhAplnK2W13R89VXD2oc6WhlQmH3bARQwmI+De23ZJKBEn7bvuG/AHMAqasPXX7uJIiJa2MqQ==
+"@elastic/elasticsearch@8.6.0", "@elastic/elasticsearch@8.8.1":
+  version "8.8.1"
+  resolved "https://registry.yarnpkg.com/@elastic/elasticsearch/-/elasticsearch-8.8.1.tgz#a3cee66f8588f3534eb6641530994daac9eb0caa"
+  integrity sha512-ibArPKHEmak3jao7xts2gROATiwPQo9aOrWWdix5mJcX1gnjm/UeJBVO901ROmaxFVPKxVnjC9Op3gJYkqagjg==
   dependencies:
-    "@elastic/transport" "^8.2.0"
+    "@elastic/transport" "^8.3.2"
     tslib "^2.4.0"
 
-"@elastic/transport@^8.2.0":
+"@elastic/transport@^8.3.2":
   version "8.3.2"
   resolved "https://registry.yarnpkg.com/@elastic/transport/-/transport-8.3.2.tgz#295e91f43e3a60a839f998ac3090a83ddb441592"
   integrity sha512-ZiBYRVPj6pwYW99fueyNU4notDf7ZPs7Ix+4T1btIJsKJmeaORIItIfs+0O7KV4vV+DcvyMhkY1FXQx7kQOODw==
