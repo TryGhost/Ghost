@@ -12,14 +12,17 @@ import {isEditorEmpty} from '../../../utils/isEditorEmpty';
 
 function PostImage({image, layout, columns, isLoading}) {
     return (
-        <div className={`relative flex w-full ${isLoading ? 'animate-pulse' : ''} items-center justify-center bg-grey-200`}>
+        <div className={clsx(
+            'relative flex w-full items-center justify-center bg-grey-200 dark:bg-grey-950',
+            isLoading && 'animate-pulse'
+        )}>
             <img alt="" className={clsx(
                 'w-full object-cover',
                 (layout === 'grid' && (columns === 1 || columns === 2)) ? 'aspect-video' : 'aspect-[3/2]',
                 (image === null) && 'invisible'
             )} src={image}/>
             <ImgPlaceholderIcon className={clsx(
-                'absolute shrink-0 text-grey/80',
+                'absolute shrink-0 text-grey/80 dark:text-grey/50',
                 image && 'hidden',
                 layout === 'list' && 'h-9 w-9',
                 (layout === 'grid' && columns === 1) && 'h-20 w-20',
@@ -40,7 +43,7 @@ function PostTitle({title, layout, columns, isLoading}) {
             (layout === 'grid' && columns === 2) && 'text-2xl leading-snug',
             (layout === 'grid' && columns === 3) && 'text-xl leading-snug',
             (layout === 'grid' && columns === 4) && 'text-[1.7rem] leading-snug',
-            isLoading && 'h-3 w-full animate-pulse rounded-full bg-grey-200'
+            isLoading && 'h-3 w-full animate-pulse rounded-full bg-grey-200 dark:bg-grey-950'
         )}>
             {isLoading ? ' ' : title}</div>
     );
@@ -55,7 +58,7 @@ function PostExcerpt({excerpt, layout, columns, isLoading}) {
             (layout === 'grid' && columns === 2) && 'mt-3 max-h-[66px] text-[1.6rem] line-clamp-3',
             (layout === 'grid' && columns === 3) && 'mt-2 max-h-[42px] text-md line-clamp-2',
             (layout === 'grid' && columns === 4) && 'mt-2 max-h-[42px] text-md line-clamp-2',
-            isLoading && 'w-1/2 animate-pulse rounded-full bg-grey-200'
+            isLoading && 'w-1/2 animate-pulse rounded-full bg-grey-200 dark:bg-grey-950'
         )}>
             {isLoading ? 
                 <div className="h-3"></div>

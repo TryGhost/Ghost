@@ -1,3 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 28 28">
-  <path fill="#14B8FF" fill-rule="evenodd" d="M0 3a3 3 0 0 1 3-3h22a3 3 0 0 1 3 3v22a3 3 0 0 1-3 3H3a3 3 0 0 1-3-3V3Zm5 14a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-5Zm12-1a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1h-5ZM16 6a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1V6ZM6 5a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1H6Z" clip-rule="evenodd"/>
+  <rect width="28" height="28" fill="#14B8FF" rx="3"/>
+  <rect width="7" height="7" x="5" y="5" fill="#fff" rx="1"/>
+  <rect width="7" height="7" x="5" y="16" fill="#fff" rx="1"/>
+  <rect width="7" height="7" x="16" y="5" fill="#fff" rx="1"/>
+  <rect width="7" height="7" x="16" y="16" fill="#fff" rx="1"/>
 </svg>
