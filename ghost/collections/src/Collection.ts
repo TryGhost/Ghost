@@ -2,6 +2,7 @@ import {UniqueChecker} from './UniqueChecker';
 import {ValidationError} from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import nql = require('@tryghost/nql');
+import {CollectionPost} from './CollectionPost';
 
 import ObjectID from 'bson-objectid';
 
@@ -15,12 +16,6 @@ const messages = {
     noTitleProvided: 'Title must be provided',
     slugMustBeUnique: 'Slug must be unique'
 };
-
-type CollectionPost = {
-    id: string;
-    featured?: boolean;
-    published_at?: Date;
-}
 
 export class Collection {
     id: string;
