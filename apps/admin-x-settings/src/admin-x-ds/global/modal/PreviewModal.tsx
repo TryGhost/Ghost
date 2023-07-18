@@ -196,7 +196,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             title=''
         >
             <div className='flex h-full grow'>
-                <div className='flex grow flex-col'>
+                <div className={`flex grow flex-col ${previewBgColor === 'grey' ? 'bg-grey-50' : 'bg-white'}`}>
                     {preview}
                 </div>
                 {sidebar &&
