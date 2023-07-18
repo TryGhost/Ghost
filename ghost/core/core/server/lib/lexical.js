@@ -2,6 +2,7 @@ const path = require('path');
 const urlUtils = require('../../shared/url-utils');
 const config = require('../../shared/config');
 const storage = require('../adapters/storage');
+const collectionsService = require('../services/collections');
 
 let nodes;
 let lexicalHtmlRenderer;
@@ -26,13 +27,15 @@ module.exports = {
         return lexicalHtmlRenderer;
     },
 
-    async render(lexical, userOptions = {}) {
-        const fetchCollectionPosts = async (collectionSlug) => {
-            const posts = [];
-            // fetch posts for collection
-            return posts;
-        };
-
+    async render(lexical, userOptions = {}) {        
+        console.log(`--starting render--`);
+        const test = await collectionsService.api.getAll();
+        console.log(`all collections`,test);
+        // const fetchCollectionPosts = async () => {
+        //     const posts = await collectionsService.api.getAllPosts('index', {limit: 3});
+        //     console.log(`posts`,posts);
+        //     return posts;
+        // };
         const options = Object.assign({
             siteUrl: config.get('url'),
             imageOptimization: config.get('imageOptimization'),
@@ -48,11 +51,11 @@ module.exports = {
             createDocument() {
                 const {JSDOM} = require('jsdom');
                 return (new JSDOM()).window.document;
-            },
-            fetchCollectionPosts
+            }
+            // fetchCollectionPosts
         }, userOptions);
 
-        return this.lexicalHtmlRenderer.render(lexical, options);
+        return await this.lexicalHtmlRenderer.render(lexical, options);
     },
 
     get nodes() {
