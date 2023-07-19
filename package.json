@@ -40,15 +40,10 @@
   },
   "resolutions": {
     "@elastic/elasticsearch": "8.5.0",
-    "@tiptap/extension-bubble-menu": "2.0.0-beta.61",
-    "@tiptap/extension-floating-menu": "2.0.0-beta.56",
     "@tryghost/errors": "1.2.24",
     "@tryghost/logging": "2.4.4",
     "moment": "2.24.0",
-    "moment-timezone": "0.5.23",
-    "prosemirror-state": "1.4.3",
-    "prosemirror-model": "1.19.3",
-    "prosemirror-transform": "1.7.3"
+    "moment-timezone": "0.5.23"
   },
   "renovate": {
     "extends": [

@@ -44,15 +44,16 @@
   },
   "dependencies": {
     "@headlessui/react": "1.7.15",
-    "@tiptap/core": "2.0.0-beta.182",
-    "@tiptap/extension-blockquote": "2.0.0-beta.29",
-    "@tiptap/extension-document": "2.0.0-beta.17",
-    "@tiptap/extension-hard-break": "2.0.0-beta.33",
-    "@tiptap/extension-link": "2.0.0-beta.43",
-    "@tiptap/extension-paragraph": "2.0.0-beta.26",
-    "@tiptap/extension-placeholder": "2.0.0-beta.53",
-    "@tiptap/extension-text": "2.0.0-beta.17",
-    "@tiptap/react": "2.0.0-beta.114",
+    "@tiptap/core": "2.0.3",
+    "@tiptap/extension-blockquote": "2.0.3",
+    "@tiptap/extension-document": "2.0.3",
+    "@tiptap/extension-hard-break": "2.0.3",
+    "@tiptap/extension-link": "2.0.3",
+    "@tiptap/extension-paragraph": "2.0.3",
+    "@tiptap/extension-placeholder": "2.0.3",
+    "@tiptap/extension-text": "2.0.3",
+    "@tiptap/pm": "2.0.3",
+    "@tiptap/react": "2.0.3",
     "react": "17.0.2",
     "react-dom": "17.0.2"
   },
@@ -80,12 +81,5 @@
     "vite-plugin-css-injected-by-js": "3.2.1",
     "vite-plugin-svgr": "3.2.0",
     "vitest": "0.33.0"
-  },
-  "resolutions": {
-    "@tiptap/extension-bubble-menu": "2.0.0-beta.61",
-    "@tiptap/extension-floating-menu": "2.0.0-beta.56",
-    "prosemirror-state": "1.4.3",
-    "prosemirror-model": "1.19.3",
-    "prosemirror-transform": "1.7.3"
   }
 }
