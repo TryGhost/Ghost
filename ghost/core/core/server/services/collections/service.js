@@ -19,8 +19,10 @@ class CollectionsServiceWrapper {
             postsRepository: postsRepository,
             DomainEvents: DomainEvents,
             slugService: {
-                async generate(input) {
-                    return models.Collection.generateSlug(models.Collection, input, {});
+                async generate(input, options) {
+                    return models.Collection.generateSlug(models.Collection, input, {
+                        transacting: options.transaction
+                    });
                 }
             }
         });
