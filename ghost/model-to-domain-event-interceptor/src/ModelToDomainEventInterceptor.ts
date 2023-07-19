@@ -1,5 +1,4 @@
 const {
-    CollectionResourceChangeEvent,
     PostDeletedEvent,
     PostAddedEvent,
     PostEditedEvent
@@ -29,19 +28,8 @@ export class ModelToDomainEventInterceptor {
             'post.added',
             'post.deleted',
             'post.edited',
-
-            // @NOTE: uncomment events below once they have appropriate DomainEvent to map to
-            // 'tag.added',
-            // 'tag.edited',
-            // 'tag.attached',
-            // 'tag.detached',
-            // 'tag.deleted',
-
-            // 'user.activated',
-            'user.activated.edited'
-            // 'user.attached',
-            // 'user.detached',
-            // 'user.deleted'
+            // NOTE: currently unmapped and unused event
+            'tag.added'
         ];
 
         for (const modelEventName of ghostModelUpdateEvents) {
@@ -58,11 +46,6 @@ export class ModelToDomainEventInterceptor {
     }
 
     domainEventDispatcher(modelEventName: string, data: any) {
-        const change = Object.assign({}, {
-            id: data.id,
-            resource: modelEventName.split('.')[0]
-        }, data._changed);
-
         let event;
 
         switch (modelEventName) {
@@ -101,9 +84,10 @@ export class ModelToDomainEventInterceptor {
             });
             break;
         default:
-            event = CollectionResourceChangeEvent.create(modelEventName, change);
         }
 
-        this.DomainEvents.dispatch(event);
+        if (event) {
+            this.DomainEvents.dispatch(event);
+        }
     }
 }
