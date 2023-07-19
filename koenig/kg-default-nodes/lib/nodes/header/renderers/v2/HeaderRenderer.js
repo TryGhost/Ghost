@@ -1,8 +1,4 @@
-// This is a little fork from the header Form that we can reuse as a base to create a new header card.
-
 import {addCreateDocumentOption} from '../../../../utils/add-create-document-option';
-
-// THIS IS WIP FOR THE V2 HEADER CARD
 
 function cardTemplate(nodeData) {
     const cardClasses = getCardClasses(nodeData).join(' ');
@@ -14,17 +10,17 @@ function cardTemplate(nodeData) {
     const backgroundImageStyle = nodeData.backgroundColor !== 'accent' && (!nodeData.backgroundImageSrc || nodeData.layout === 'split') ? `background-color: ${nodeData.backgroundColor}` : '';
 
     const imgTemplate = nodeData.backgroundImageSrc ? `
-        <picture><img class="kg-header-card-image" src="${nodeData.backgroundImageSrc}" alt="" /></picture>
+        <picture><img class="kg-header-card-v2-image" src="${nodeData.backgroundImageSrc}" alt="" /></picture>
     ` : ``;
     return `
         <div class="${cardClasses} ${backgroundAccent}" style="${backgroundImageStyle};">
             ${nodeData.layout !== 'split' ? imgTemplate : ''}
-            <div class="kg-header-card-content">
+            <div class="kg-header-card-v2-content">
                 ${nodeData.layout === 'split' ? imgTemplate : ''}
-                <div class="kg-header-card-text ${alignment}">
-                    <h2 class="kg-header-card-heading" style="color: ${nodeData.textColor};">${nodeData.header}</h2>
-                    <h3 class="kg-header-card-subheading" style="color: ${nodeData.textColor};">${nodeData.subheader}</h3>
-                    ${nodeData.buttonEnabled ? `<a href="${nodeData.buttonUrl}" class="kg-header-card-button ${buttonAccent}" style="${buttonStyle}color: ${nodeData.buttonTextColor};">${nodeData.buttonText}</a>` : ''}
+                <div class="kg-header-card-v2-text ${alignment}">
+                    <h2 class="kg-header-card-v2-heading" style="color: ${nodeData.textColor};">${nodeData.header}</h2>
+                    <h3 class="kg-header-card-v2-subheading" style="color: ${nodeData.textColor};">${nodeData.subheader}</h3>
+                    ${nodeData.buttonEnabled ? `<a href="${nodeData.buttonUrl}" class="kg-header-card-v2-button ${buttonAccent}" style="${buttonStyle}color: ${nodeData.buttonTextColor};">${nodeData.buttonText}</a>` : ''}
                 </div>
             </div>
         </div>
@@ -58,20 +54,18 @@ export function renderHeaderNodeV2(dataset, options = {}) {
 
     const htmlString = cardTemplate(node);
 
-    // const htmlString = `<div>This is a v2 header</div>`;
-
     const element = document.createElement('div');
     element.innerHTML = htmlString?.trim();
 
     if (node.header === '') {
-        const h2Element = element.querySelector('.kg-header-card-heading');
+        const h2Element = element.querySelector('.kg-header-card-v2-heading');
         if (h2Element) {
             h2Element.remove();
         }
     }
 
     if (node.subheader === '') {
-        const h3Element = element.querySelector('.kg-header-card-subheading');
+        const h3Element = element.querySelector('.kg-header-card-v2-subheading');
         if (h3Element) {
             h3Element.remove();
         }
