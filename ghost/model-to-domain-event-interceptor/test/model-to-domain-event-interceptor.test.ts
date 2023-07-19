@@ -1,8 +1,8 @@
 import assert from 'assert/strict';
 import events from 'events';
+import sinon from 'sinon';
 import DomainEvents from '@tryghost/domain-events';
 const {
-    CollectionResourceChangeEvent,
     PostDeletedEvent,
     PostEditedEvent,
     PostAddedEvent
@@ -149,28 +149,23 @@ describe('ModelToDomainEventInterceptor', function () {
         assert.ok(interceptedEvent);
     });
 
-    it('Intercepts unmapped Model event and dispatches CollectionResourceChangeEvent Domain event', async function () {
+    it('Intercepts unmapped Model event and dispatches nothing', async function () {
         let eventRegistry = new EventRegistry();
         const modelToDomainEventInterceptor = new ModelToDomainEventInterceptor({
             ModelEvents: eventRegistry,
             DomainEvents: DomainEvents
         });
 
+        const domainEventsSpy = sinon.spy(DomainEvents, 'dispatch');
+
         modelToDomainEventInterceptor.init();
 
-        let interceptedEvent;
-        DomainEvents.subscribe(CollectionResourceChangeEvent, (event: any) => {
-            assert.equal(event.name, 'user.activated.edited');
-            assert.equal(event.data.id, '1234-user-edit');
-            interceptedEvent = event;
-        });
-
-        eventRegistry.emit('user.activated.edited', {
-            id: '1234-user-edit'
+        eventRegistry.emit('tag.added', {
+            id: '1234-tag'
         });
 
         await DomainEvents.allSettled();
 
-        assert.ok(interceptedEvent);
+        assert.equal(domainEventsSpy.called, false);
     });
 });
