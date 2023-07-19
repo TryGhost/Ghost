@@ -22,7 +22,7 @@ const messages = {
 };
 
 interface SlugService {
-    generate(desired: string): Promise<string>;
+    generate(desired: string, options: {transaction: any}): Promise<string>;
 }
 
 type CollectionsServiceDeps = {
@@ -190,30 +190,37 @@ export class CollectionsService {
     }
 
     async createCollection(data: CollectionInputDTO): Promise<CollectionDTO> {
-        const slug = await this.slugService.generate(data.slug || data.title);
-        const collection = await Collection.create({
-            title: data.title,
-            slug: slug,
-            description: data.description,
-            type: data.type,
-            filter: data.filter,
-            featureImage: data.feature_image,
-            deletable: data.deletable
-        });
-
-        if (collection.type === 'automatic' && collection.filter) {
-            const posts = await this.postsRepository.getAll({
-                filter: collection.filter
+        return await this.collectionsRepository.createTransaction(async (transaction) => {
+            const slug = await this.slugService.generate(data.slug || data.title, {
+                transaction: transaction
+            });
+            const collection = await Collection.create({
+                title: data.title,
+                slug: slug,
+                description: data.description,
+                type: data.type,
+                filter: data.filter,
+                featureImage: data.feature_image,
+                deletable: data.deletable
             });
 
-            for (const post of posts) {
-                collection.addPost(post);
+            if (collection.type === 'automatic' && collection.filter) {
+                const posts = await this.postsRepository.getAll({
+                    filter: collection.filter,
+                    transaction: transaction
+                });
+
+                for (const post of posts) {
+                    collection.addPost(post);
+                }
             }
-        }
 
-        await this.collectionsRepository.save(collection);
+            await this.collectionsRepository.save(collection, {
+                transaction: transaction
+            });
 
-        return this.toDTO(collection);
+            return this.toDTO(collection);
+        });
     }
 
     async addPostToCollection(collectionId: string, post: CollectionPostListItemDTO): Promise<CollectionDTO | null> {
