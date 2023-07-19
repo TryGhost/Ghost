@@ -92,6 +92,7 @@ type QueryOptions = {
     include?: string;
     page?: number;
     limit?: number;
+    transaction?: any;
 }
 
 interface PostsRepository {
@@ -253,32 +254,22 @@ export class CollectionsService {
     }
 
     private async addPostToMatchingCollections(post: CollectionPost) {
-        const collections = await this.collectionsRepository.getAll({
-            filter: 'type:automatic'
-        });
+        return await this.collectionsRepository.createTransaction(async (transaction) => {
+            const collections = await this.collectionsRepository.getAll({
+                filter: 'type:automatic',
+                transaction: transaction
+            });
 
-        for (const collection of collections) {
-            const added = await collection.addPost(post);
+            for (const collection of collections) {
+                const added = await collection.addPost(post);
 
-            if (added) {
-                await this.collectionsRepository.save(collection);
+                if (added) {
+                    await this.collectionsRepository.save(collection, {
+                        transaction: transaction
+                    });
+                }
             }
-        }
-    }
-
-    /**
-     * @description Updates all automatic collections. Can be time intensive and is a temporary solution
-     * while all of the events are mapped out and handled optimally
-     */
-    async updateCollections() {
-        const collections = await this.collectionsRepository.getAll({
-            filter: 'type:automatic'
         });
-
-        for (const collection of collections) {
-            await this.updateAutomaticCollectionItems(collection);
-            await this.collectionsRepository.save(collection);
-        }
     }
 
     async updatePostInMatchingCollections(postEdit: PostEditedEvent['data']) {

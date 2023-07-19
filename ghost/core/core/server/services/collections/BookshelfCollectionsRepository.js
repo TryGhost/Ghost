@@ -12,6 +12,10 @@ module.exports = class BookshelfCollectionsRepository {
         this.#model = model;
     }
 
+    async createTransaction(cb) {
+        return this.#model.transaction(cb);
+    }
+
     /**
      * @param {string} id
      * @returns {Promise<Collection>}
@@ -40,9 +44,15 @@ module.exports = class BookshelfCollectionsRepository {
      * @param {object} [options]
      * @param {string} [options.filter]
      * @param {string} [options.order]
+     * @param {import('knex').Transaction} [options.transaction]
      */
     async getAll(options = {}) {
-        const models = await this.#model.findAll({...options, withRelated: ['posts']});
+        const models = await this.#model.findAll({
+            ...options,
+            transacting: options.transaction,
+            withRelated: ['posts']
+        });
+
         return await Promise.all(models.map(model => this.#modelToCollection(model)));
     }
 
@@ -65,9 +75,11 @@ module.exports = class BookshelfCollectionsRepository {
 
     /**
      * @param {Collection} collection
+     * @param {object} [options]
+     * @param {import('knex').Transaction} [options.transaction]
      * @returns {Promise<void>}
      */
-    async save(collection) {
+    async save(collection, options = {}) {
         if (collection.deleted) {
             await this.#model.destroy({id: collection.id});
             return;
@@ -85,13 +97,22 @@ module.exports = class BookshelfCollectionsRepository {
             updated_at: collection.updatedAt
         };
 
-        const existing = await this.#model.findOne({id: data.id}, {require: false});
+        const existing = await this.#model.findOne(
+            {id: data.id},
+            {
+                require: false,
+                transacting: options.transaction
+            }
+        );
 
         if (!existing) {
-            await this.#model.add(data);
+            await this.#model.add(data, {
+                transacting: options.transaction
+            });
         } else {
-            await this.#model.edit(data, {
-                id: data.id
+            return this.#model.edit(data, {
+                id: data.id,
+                transacting: options.transaction
             });
         }
     }
