@@ -1,10 +1,8 @@
 import assert from 'assert/strict';
-import sinon from 'sinon';
 import DomainEvents from '@tryghost/domain-events';
 import {
     CollectionsService,
     CollectionsRepositoryInMemory,
-    CollectionResourceChangeEvent,
     PostDeletedEvent,
     PostAddedEvent,
     PostEditedEvent
@@ -313,26 +311,6 @@ describe('CollectionsService', function () {
         });
     });
 
-    describe('subscribeToEvents', function () {
-        it('Subscribes to Domain Events', async function () {
-            const updateCollectionsSpy = sinon.spy(collectionsService, 'updateCollections');
-            const collectionChangeEvent = CollectionResourceChangeEvent.create('tag.added', {
-                id: 'test-id'
-            });
-
-            DomainEvents.dispatch(collectionChangeEvent);
-            await DomainEvents.allSettled();
-            assert.equal(updateCollectionsSpy.calledOnce, false, 'updateCollections should not be called yet');
-
-            collectionsService.subscribeToEvents();
-
-            DomainEvents.dispatch(collectionChangeEvent);
-            await DomainEvents.allSettled();
-
-            assert.equal(updateCollectionsSpy.calledOnce, true, 'updateCollections should be called');
-        });
-    });
-
     describe('Automatic Collections', function () {
         it('Can create an automatic collection', async function () {
             const collection = await collectionsService.createCollection({
@@ -440,30 +418,6 @@ describe('CollectionsService', function () {
 
                 assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 2);
                 assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 3);
-                assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 2);
-            });
-
-            it('Updates automatic collections only when post is published', async function () {
-                const newPost = {
-                    id: 'post-published',
-                    title: 'Post Published',
-                    slug: 'post-published',
-                    featured: true,
-                    published_at: new Date('2023-03-16T07:19:07.447Z'),
-                    deleted: false
-                };
-                await postsRepository.save(newPost);
-
-                collectionsService.subscribeToEvents();
-                const updateCollectionEvent = CollectionResourceChangeEvent.create('post.published', {
-                    id: newPost.id
-                });
-
-                DomainEvents.dispatch(updateCollectionEvent);
-                await DomainEvents.allSettled();
-
-                assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 3);
-                assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 2);
                 assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 2);
             });
 

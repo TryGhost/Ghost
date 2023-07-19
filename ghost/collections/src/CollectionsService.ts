@@ -2,7 +2,6 @@ import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
 import ObjectID from 'bson-objectid';
 import {Collection} from './Collection';
-import {CollectionResourceChangeEvent} from './CollectionResourceChangeEvent';
 import {CollectionRepository} from './CollectionRepository';
 import {CollectionPost} from './CollectionPost';
 import {MethodNotAllowedError, NotFoundError} from '@tryghost/errors';
@@ -173,13 +172,6 @@ export class CollectionsService {
      * @description Subscribes to Domain events to update collections when posts are added, updated or deleted
      */
     subscribeToEvents() {
-        // generic handler for all events that are not handled optimally yet
-        // this handler should go away once we have logic fo reach event
-        this.DomainEvents.subscribe(CollectionResourceChangeEvent, async () => {
-            logging.info('CollectionResourceChangeEvent received, updating all collections');
-            await this.updateCollections();
-        });
-
         this.DomainEvents.subscribe(PostDeletedEvent, async (event: PostDeletedEvent) => {
             logging.info(`PostDeletedEvent received, removing post ${event.id} from all collections`);
             await this.removePostFromAllCollections(event.id);
@@ -237,19 +229,15 @@ export class CollectionsService {
         return this.toDTO(collection);
     }
 
-    private async updateAutomaticCollectionItems(collection: Collection, filter?:string) {
-        const collectionFilter = filter || collection.filter;
+    private async updateAutomaticCollectionItems(collection: Collection, filter:string) {
+        const posts = await this.postsRepository.getAll({
+            filter: filter
+        });
 
-        if (collectionFilter) {
-            const posts = await this.postsRepository.getAll({
-                filter: collectionFilter
-            });
+        collection.removeAllPosts();
 
-            collection.removeAllPosts();
-
-            for (const post of posts) {
-                await collection.addPost(post);
-            }
+        for (const post of posts) {
+            await collection.addPost(post);
         }
     }
 
