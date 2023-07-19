@@ -1,8 +1,9 @@
 import {Collection} from './Collection';
 
 export interface CollectionRepository {
-    save(collection: Collection): Promise<void>
-    getById(id: string): Promise<Collection | null>
+    createTransaction(fn: (transaction: any) => Promise<any>): Promise<any>
+    save(collection: Collection, options?: {transaction: any}): Promise<void>
+    getById(id: string, options?: {transaction: any}): Promise<Collection | null>
     getBySlug(slug: string): Promise<Collection | null>
     getAll(options?: any): Promise<Collection[]>
 }
