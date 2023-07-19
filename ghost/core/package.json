@@ -265,6 +265,7 @@
     "targets": {
       "archive": {
         "dependsOn": [
+          "build",
           "^build:ts",
           {
             "projects": [
