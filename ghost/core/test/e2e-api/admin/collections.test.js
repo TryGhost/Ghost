@@ -85,73 +85,71 @@ describe('Collections API', function () {
             });
     });
 
-    // @NOTE: Below are flaky tests. They have inconsistent state due to collection events race conditions.
-    //        Should be uncommented and fixed with: https://github.com/TryGhost/Arch/issues/16
-    // describe('Browse', function () {
-    //     it('Can browse Collections', async function () {
-    //         await agent
-    //             .get('/collections/')
-    //             .expectStatus(200)
-    //             .matchHeaderSnapshot({
-    //                 'content-version': anyContentVersion,
-    //                 etag: anyEtag
-    //             })
-    //             .matchBodySnapshot({
-    //                 collections: [
-    //                     buildMatcher(13, {withSortOrder: true}),
-    //                     buildMatcher(2, {withSortOrder: true}),
-    //                     buildMatcher(0)
-    //                 ]
-    //             });
-    //     });
-    // });
+    describe('Browse', function () {
+        it('Can browse Collections', async function () {
+            await agent
+                .get('/collections/')
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [
+                        buildMatcher(13, {withSortOrder: true}),
+                        buildMatcher(2, {withSortOrder: true}),
+                        buildMatcher(0)
+                    ]
+                });
+        });
+    });
 
-    // describe('Browse Posts', function () {
-    //     it('Can browse Collections Posts', async function () {
-    //         const collections = await agent.get('/collections/');
-    //         const latestCollection = collections.body.collections.find(c => c.slug === 'latest');
+    describe('Browse Posts', function () {
+        it('Can browse Collections Posts', async function () {
+            const collections = await agent.get('/collections/');
+            const latestCollection = collections.body.collections.find(c => c.slug === 'latest');
 
-    //         await agent
-    //             .get(`/collections/${latestCollection.id}/posts/`)
-    //             .expectStatus(200)
-    //             .matchHeaderSnapshot({
-    //                 'content-version': anyContentVersion,
-    //                 etag: anyEtag
-    //             })
-    //             .matchBodySnapshot({
-    //                 collection_posts: Array(13).fill(matchCollectionPost)
-    //             });
-    //     });
+            await agent
+                .get(`/collections/${latestCollection.id}/posts/`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collection_posts: Array(13).fill(matchCollectionPost)
+                });
+        });
 
-    //     it('Can browse Collections Posts using paging parameters', async function () {
-    //         const collections = await agent.get('/collections/');
-    //         const indexCollection = collections.body.collections.find(c => c.slug === 'latest');
+        it('Can browse Collections Posts using paging parameters', async function () {
+            const collections = await agent.get('/collections/');
+            const indexCollection = collections.body.collections.find(c => c.slug === 'latest');
 
-    //         await agent
-    //             .get(`/collections/${indexCollection.id}/posts/?limit=2&page=2`)
-    //             .expectStatus(200)
-    //             .matchHeaderSnapshot({
-    //                 'content-version': anyContentVersion,
-    //                 etag: anyEtag
-    //             })
-    //             .matchBodySnapshot({
-    //                 collection_posts: Array(2).fill(matchCollectionPost)
-    //             });
-    //     });
+            await agent
+                .get(`/collections/${indexCollection.id}/posts/?limit=2&page=2`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collection_posts: Array(2).fill(matchCollectionPost)
+                });
+        });
 
-    //     it('Can browse Collections Posts using collection slug', async function () {
-    //         await agent
-    //             .get(`/collections/latest/posts/`)
-    //             .expectStatus(200)
-    //             .matchHeaderSnapshot({
-    //                 'content-version': anyContentVersion,
-    //                 etag: anyEtag
-    //             })
-    //             .matchBodySnapshot({
-    //                 collection_posts: Array(13).fill(matchCollectionPost)
-    //             });
-    //     });
-    // });
+        it('Can browse Collections Posts using collection slug', async function () {
+            await agent
+                .get(`/collections/latest/posts/`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collection_posts: Array(13).fill(matchCollectionPost)
+                });
+        });
+    });
 
     it('Can read a Collection', async function () {
         const collection = {
