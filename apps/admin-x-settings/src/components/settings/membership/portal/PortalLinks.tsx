@@ -2,12 +2,11 @@ import Button from '../../../../admin-x-ds/global/Button';
 import List from '../../../../admin-x-ds/global/List';
 import ListItem from '../../../../admin-x-ds/global/ListItem';
 import ModalPage from '../../../../admin-x-ds/global/modal/ModalPage';
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import Select from '../../../../admin-x-ds/global/form/Select';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
-import {SettingsContext} from '../../../providers/SettingsProvider';
 import {getHomepageUrl, getPaidActiveTiers} from '../../../../utils/helpers';
-import {useTiers} from '../../../providers/ServiceProvider';
+import {useGlobalData} from '../../../providers/DataProvider';
 
 interface PortalLinkPrefs {
     name: string;
@@ -39,8 +38,7 @@ const PortalLink: React.FC<PortalLinkPrefs> = ({name, value}) => {
 const PortalLinks: React.FC = () => {
     const [isDataAttributes, setIsDataAttributes] = useState(false);
     const [selectedTier, setSelectedTier] = useState('');
-    const {siteData} = useContext(SettingsContext);
-    const {data: allTiers} = useTiers();
+    const {siteData, tiers: allTiers} = useGlobalData();
     const tiers = getPaidActiveTiers(allTiers);
 
     const toggleIsDataAttributes = () => {

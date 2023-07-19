@@ -9,17 +9,14 @@ import React from 'react';
 import {Theme} from '../../../../types/api';
 import {downloadFile, getGhostPaths} from '../../../../utils/helpers';
 import {isActiveTheme, isDefaultTheme, isDeletableTheme} from '../../../../models/themes';
-import {useApi} from '../../../providers/ServiceProvider';
+import {useActivateTheme, useDeleteTheme} from '../../../../utils/api/themes';
 
 interface ThemeActionProps {
     theme: Theme;
-    themes: Theme[];
-    updateThemes: (themes: Theme[]) => void;
 }
 
 interface ThemeSettingProps {
     themes: Theme[];
-    setThemes: (themes: Theme[]) => void;
 }
 
 function getThemeLabel(theme: Theme): React.ReactNode {
@@ -49,26 +46,13 @@ function getThemeVersion(theme: Theme): string {
 }
 
 const ThemeActions: React.FC<ThemeActionProps> = ({
-    theme,
-    themes,
-    updateThemes
+    theme
 }) => {
-    const api = useApi();
+    const {mutateAsync: activateTheme} = useActivateTheme();
+    const {mutateAsync: deleteTheme} = useDeleteTheme();
 
     const handleActivate = async () => {
-        const data = await api.themes.activate(theme.name);
-        const updatedTheme = data.themes[0];
-
-        const updatedThemes: Theme[] = themes.map((t) => {
-            if (t.name === updatedTheme.name) {
-                return updatedTheme;
-            }
-            return {
-                ...t,
-                active: false
-            };
-        });
-        updateThemes(updatedThemes);
+        await activateTheme(theme.name);
     };
 
     const handleDownload = async () => {
@@ -98,9 +82,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
             okRunningLabel: 'Deleting',
             okColor: 'red',
             onOk: async (modal) => {
-                await api.themes.delete(theme.name);
-                const updatedThemes = themes.filter(t => t.name !== theme.name);
-                updateThemes(updatedThemes);
+                await deleteTheme(theme.name);
                 modal?.remove();
             }
         });
@@ -150,8 +132,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
 };
 
 const ThemeList:React.FC<ThemeSettingProps> = ({
-    themes,
-    setThemes
+    themes
 }) => {
     themes.sort((a, b) => {
         if (a.active && !b.active) {
@@ -173,13 +154,7 @@ const ThemeList:React.FC<ThemeSettingProps> = ({
                 return (
                     <ListItem
                         key={theme.name}
-                        action={
-                            <ThemeActions
-                                theme={theme}
-                                themes={themes}
-                                updateThemes={setThemes}
-                            />
-                        }
+                        action={<ThemeActions theme={theme} />}
                         detail={detail}
                         id={`theme-${theme.name}`}
                         separator={false}
@@ -192,16 +167,10 @@ const ThemeList:React.FC<ThemeSettingProps> = ({
     );
 };
 
-const AdvancedThemeSettings: React.FC<ThemeSettingProps> = ({
-    themes,
-    setThemes
-}) => {
+const AdvancedThemeSettings: React.FC<ThemeSettingProps> = ({themes}) => {
     return (
         <ModalPage>
-            <ThemeList
-                setThemes={setThemes}
-                themes={themes}
-            />
+            <ThemeList themes={themes} />
         </ModalPage>
     );
 };
