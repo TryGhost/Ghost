@@ -21,6 +21,7 @@ const SUPPORTED_LOCALES = [
     'ms', // Malay
     'nl', // Dutch
     'no', // Norwegian
+    'nn', // Norwegian Nynorsk
     'pl', // Polish
     'pt', // Portuguese
     'pt-BR', // Portuguese (Brazil)
