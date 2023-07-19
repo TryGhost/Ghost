@@ -17,7 +17,7 @@ function cardTemplate(nodeData) {
         <picture><img class="kg-header-card-image" src="${nodeData.backgroundImageSrc}" alt="" /></picture>
     ` : ``;
     return `
-        <div class="${cardClasses} ${backgroundAccent}" data-lexical-header-form style="${backgroundImageStyle}; display: none;">
+        <div class="${cardClasses} ${backgroundAccent}" style="${backgroundImageStyle};">
             ${nodeData.layout !== 'split' ? imgTemplate : ''}
             <div class="kg-header-card-content">
                 ${nodeData.layout === 'split' ? imgTemplate : ''}
