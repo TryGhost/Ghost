@@ -1,9 +1,10 @@
 const Renderer = require('../../');
 
 function shouldRender({input, output, options}) {
-    return function () {
+    return async function () {
         const renderer = new Renderer();
-        renderer.render(input, options).should.equal(output);
+        const renderedInput = await renderer.render(input, options);
+        renderedInput.should.equal(output);
     };
 }
 

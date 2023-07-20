@@ -7,7 +7,7 @@ class LexicalHTMLRenderer {
         this.nodes = nodes || [];
     }
 
-    render(lexicalState, userOptions = {}) {
+    async render(lexicalState, userOptions = {}) {
         const {createHeadlessEditor} = require('@lexical/headless');
         const {ListItemNode, ListNode} = require('@lexical/list');
         const {HeadingNode, QuoteNode} = require('@lexical/rich-text');

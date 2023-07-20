@@ -36,7 +36,7 @@ describe('Cards', function () {
         };
     });
 
-    it('renders an image card', function () {
+    it('renders an image card', async function () {
         const imageCard = {
             type: 'image',
             src: '/content/images/2022/11/koenig-lexical.jpg',
@@ -45,7 +45,10 @@ describe('Cards', function () {
         };
         lexicalState.root.children.push(imageCard);
 
-        const output = Prettier.format((new Renderer({nodes})).render(JSON.stringify(lexicalState), options), {parser: 'html'});
+        const renderer = new Renderer({nodes});
+        const renderedInput = await renderer.render(JSON.stringify(lexicalState), options);
+
+        const output = Prettier.format(renderedInput, {parser: 'html'});
 
         const expected =
 `<figure class="kg-card kg-image-card kg-card-hascaption">
@@ -61,7 +64,7 @@ describe('Cards', function () {
         output.should.equal(expected);
     });
 
-    it('renders a paywall card', function () {
+    it('renders a paywall card', async function () {
         const paywallCard = {
             type: 'paywall'
         };
@@ -69,8 +72,9 @@ describe('Cards', function () {
         lexicalState.root.children.push(paywallCard);
 
         const renderer = new Renderer({nodes});
+        const renderedInput = await renderer.render(JSON.stringify(lexicalState), options);
 
-        const output = Prettier.format(renderer.render(JSON.stringify(lexicalState), options), {parser: 'html'});
+        const output = Prettier.format(renderedInput, {parser: 'html'});
 
         const expected =
 `<!--members-only-->
@@ -78,7 +82,7 @@ describe('Cards', function () {
         output.should.equal(expected);
     });
 
-    it('renders HTML card with unclosed tags', function () {
+    it('renders HTML card with unclosed tags', async function () {
         lexicalState.root.children.push({
             type: 'html',
             html: '<div style="color: red">'
@@ -105,8 +109,9 @@ describe('Cards', function () {
         });
 
         const renderer = new Renderer({nodes});
+        const renderedInput = await renderer.render(JSON.stringify(lexicalState), options);
 
-        const output = Prettier.format(renderer.render(JSON.stringify(lexicalState), options), {parser: 'html'});
+        const output = Prettier.format(renderedInput, {parser: 'html'});
 
         const expected =
 `<div style="color: red">

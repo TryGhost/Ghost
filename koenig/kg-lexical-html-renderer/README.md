@@ -26,13 +26,13 @@ const LexicalHTMLRenderer = require('@tryghost/kg-lexical-html-renderer');
 const renderer = new Renderer();
 
 const lexicalState = '{...}';
-const html = renderer.render(lexicalState);
+const html = await renderer.render(lexicalState);
 ```
 
 Options can be passed in as the second argument to `.render()`.
 
 ```js
-const html = renderer.render(lexicalState, {target: 'email'});
+const html = await renderer.render(lexicalState, {target: 'email'});
 ```
 
 | Option   | Values |
