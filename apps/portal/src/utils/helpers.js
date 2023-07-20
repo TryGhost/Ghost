@@ -137,6 +137,15 @@ export function getMemberActivePrice({member}) {
     return getPriceFromSubscription({subscription});
 }
 
+export function getMemberActiveProduct({member, site}) {
+    const subscription = getMemberSubscription({member});
+    const price = getPriceFromSubscription({subscription});
+    const allProducts = getAllProductsForSite({site});
+    return allProducts.find((product) => {
+        return product.id === price?.product.product_id;
+    });
+}
+
 export function isMemberActivePrice({priceId, site, member}) {
     const activePrice = getMemberActivePrice({member});
     const {tierId, cadence} = getProductCadenceFromPrice({site, priceId});
