@@ -1597,7 +1597,9 @@ describe('Email renderer', function () {
         let emailRenderer;
 
         beforeEach(function () {
-            settings = {};
+            settings = {
+                timezone: 'Etc/UTC'
+            };
             labsEnabled = true;
             emailRenderer = new EmailRenderer({
                 audienceFeedbackService: {
