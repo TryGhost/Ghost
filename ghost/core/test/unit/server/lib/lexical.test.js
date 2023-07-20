@@ -6,8 +6,8 @@ describe('lib/lexical', function () {
         it('renders', async function () {
             const lexical = `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Lexical is ","type":"text","version":1},{"detail":0,"format":3,"mode":"normal","style":"","text":"rendering.","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`;
 
-            await lexicalLib.render(lexical)
-                .should.eql('<p>Lexical is <strong><em>rendering.</em></strong></p>');
+            const renderedHtml = await lexicalLib.render(lexical);
+            renderedHtml.should.eql('<p>Lexical is <strong><em>rendering.</em></strong></p>');
         });
 
         it('renders all default cards', async function () {
