@@ -14,7 +14,7 @@ interface ToggleProps {
     label?: React.ReactNode;
     labelStyle?: 'heading' | 'value';
     labelClasses?: string;
-    toggleBgClass?: string;
+    toggleBg?: 'green' | 'stripetest';
     separator?: boolean;
     direction?: ToggleDirections;
     hint?: React.ReactNode;
@@ -27,7 +27,7 @@ const Toggle: React.FC<ToggleProps> = ({
     label,
     labelStyle = 'value',
     labelClasses,
-    toggleBgClass = 'bg-green',
+    toggleBg = 'green',
     hint,
     separator,
     error,
@@ -64,11 +64,22 @@ const Toggle: React.FC<ToggleProps> = ({
         direction = 'rtl';
     }
 
+    let toggleBgClass;
+    switch (toggleBg) {
+    case 'stripetest':
+        toggleBgClass = 'checked:bg-[#EC6803]';
+        break;
+
+    default:
+        toggleBgClass = 'checked:bg-green';
+        break;
+    }
+
     return (
         <div>
             <div className={`group flex items-start gap-2 ${direction === 'rtl' && 'justify-between'} ${separator && 'pb-2'}`}>
                 <input checked={checked}
-                    className={`checked:${toggleBgClass} appearance-none rounded-full bg-grey-300 transition after:absolute after:ml-0.5 after:mt-0.5 after:rounded-full after:border-none after:bg-white after:transition-[background-color_0.2s,transform_0.2s] after:content-[''] checked:after:absolute checked:after:rounded-full checked:after:border-none checked:after:bg-white checked:after:transition-[background-color_0.2s,transform_0.2s] checked:after:content-[''] hover:cursor-pointer group-hover:opacity-80 ${sizeStyles} ${direction === 'rtl' && ' order-2'}`}
+                    className={`${toggleBgClass} appearance-none rounded-full bg-grey-300 transition after:absolute after:ml-0.5 after:mt-0.5 after:rounded-full after:border-none after:bg-white after:transition-[background-color_0.2s,transform_0.2s] after:content-[''] checked:after:absolute checked:after:rounded-full checked:after:border-none checked:after:bg-white checked:after:transition-[background-color_0.2s,transform_0.2s] checked:after:content-[''] hover:cursor-pointer group-hover:opacity-80 ${sizeStyles} ${direction === 'rtl' && ' order-2'}`}
                     id={id}
                     role="switch"
                     type="checkbox"

@@ -80,7 +80,7 @@ export const WithSeparator: Story = {
 
 export const CustomBgColor: Story = {
     args: {
-        toggleBgClass: 'bg-[#EC6803]'
+        toggleBg: 'stripetest'
     }
 };
 

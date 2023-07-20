@@ -1,9 +1,13 @@
+import BookmarkThumb from '../../../../assets/images/stripe-thumb.jpg';
 import Button from '../../../../admin-x-ds/global/Button';
+import GhostLogo from '../../../../assets/images/orb-squircle.png';
+import GhostLogoPink from '../../../../assets/images/orb-pink.png';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
-import NiceModal from '@ebay/nice-modal-react';
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import StripeButton from '../../../../admin-x-ds/settings/StripeButton';
+import StripeLogo from '../../../../assets/images/stripe-emblem.svg';
 import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import useRouting from '../../../../hooks/useRouting';
@@ -45,7 +49,7 @@ const Connect: React.FC<{
                     direction='rtl'
                     label='Test mode'
                     labelClasses={`text-sm translate-y-[1px] ${testMode ? 'text-[#EC6803]' : 'text-grey-800'}`}
-                    toggleBgClass='bg-[#EC6803]'
+                    toggleBg='stripetest'
                     onChange={onTestMode}
                 />
             </div>
@@ -61,14 +65,55 @@ const Connect: React.FC<{
     );
 };
 
+const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
+    return (
+        <section>
+            <div className='flex items-center justify-between'>
+                <Button icon='link-broken' label='Disconnect' link />
+                <Button icon='close' size='sm' link onClick={onClose} />
+            </div>
+            <div className='my-20 flex flex-col items-center'>
+                <div className='relative h-20 w-[200px]'>
+                    <img alt='Ghost Logo' className='absolute left-10 h-16 w-16' src={GhostLogo} />
+                    <img alt='Stripe Logo' className='absolute right-10 h-16 w-16 rounded-2xl shadow-[-1.5px_0_0_1.5px_#fff]' src={StripeLogo} />
+                </div>
+                <Heading level={3}>You are connected with Stripe!</Heading>
+                <div className='mt-1'>Connected to <strong>Dummy</strong></div>
+            </div>
+            <div className='flex flex-col items-center'>
+                <Heading level={6}>Read next</Heading>
+                <a className='w-100 mt-5 flex items-stretch justify-between border border-grey-200 transition-all hover:border-grey-400' href="https://ghost.org/resources/managing-your-stripe-account/?ref=admin" rel="noopener noreferrer" target="_blank">
+                    <div className='p-4'>
+                        <div className='font-bold'>How to setup and manage your Stripe account</div>
+                        <div className='mt-1 text-sm text-grey-800'>Learn how to configure your Stripe account to work with Ghost, from custom branding to payment receipt emails.</div>
+                        <div className='mt-3 flex items-center gap-1 text-sm text-grey-800'>
+                            <img alt='Ghost Logo' className='h-4 w-4' src={GhostLogoPink} />
+                            <strong>Ghost Resources</strong>
+                            <span>&middot;</span>
+                            <span>by Kym Ellis</span>
+                        </div>
+                    </div>
+                    <div className='flex w-[200px] shrink-0 items-center justify-center overflow-hidden'>
+                        <img alt="Bookmark Thumb" className='min-h-full min-w-full shrink-0' src={BookmarkThumb} />
+                    </div>
+                </a>
+            </div>
+        </section>
+    );
+};
+
 const StripeConnectModal: React.FC = () => {
     const {updateRoute} = useRouting();
     const [step, setStep] = useState('start');
     const [submitEnabled, setSubmitEnabled] = useState(false);
     const [testMode, setTestMode] = useState(false);
+    const mainModal = useModal();
 
     const next = () => {
         switch (step) {
+        case 'connect':
+            setStep('connected');
+            break;
         default:
             setStep('connect');
             break;
@@ -83,10 +128,17 @@ const StripeConnectModal: React.FC = () => {
         setTestMode(event.target.checked);
     };
 
+    const close = () => {
+        mainModal.remove();
+    };
+
     let contents;
     switch (step) {
     case 'connect':
-        contents = <Connect submitEnabled={submitEnabled} testMode={testMode} onEnterKey={enterKey} onTestMode={onTestMode} />;
+        contents = <Connect submitEnabled={submitEnabled} testMode={testMode} onEnterKey={enterKey} onSubmit={next} onTestMode={onTestMode} />;
+        break;
+    case 'connected':
+        contents = <Connected onClose={close} />;
         break;
     default:
         contents = <Start onNext={next} />;
@@ -99,7 +151,7 @@ const StripeConnectModal: React.FC = () => {
         }}
         cancelLabel=''
         footer={<></>}
-        size={520}
+        size={step === 'connected' ? 740 : 520}
         title=''
     >
         {contents}
