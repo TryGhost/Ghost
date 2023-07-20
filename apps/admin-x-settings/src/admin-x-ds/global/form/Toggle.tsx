@@ -1,5 +1,6 @@
 import React, {useId} from 'react';
 import Separator from '../Separator';
+import clsx from 'clsx';
 import {Heading6Styles} from '../Heading';
 
 type ToggleSizes = 'sm' | 'md' | 'lg';
@@ -12,6 +13,8 @@ interface ToggleProps {
     size?: ToggleSizes;
     label?: React.ReactNode;
     labelStyle?: 'heading' | 'value';
+    labelClasses?: string;
+    toggleBgClass?: string;
     separator?: boolean;
     direction?: ToggleDirections;
     hint?: React.ReactNode;
@@ -23,6 +26,8 @@ const Toggle: React.FC<ToggleProps> = ({
     direction,
     label,
     labelStyle = 'value',
+    labelClasses,
+    toggleBgClass = 'bg-green',
     hint,
     separator,
     error,
@@ -50,6 +55,11 @@ const Toggle: React.FC<ToggleProps> = ({
         break;
     }
 
+    labelStyles = clsx(
+        labelClasses,
+        labelStyles
+    );
+
     if (labelStyle === 'heading') {
         direction = 'rtl';
     }
@@ -58,7 +68,7 @@ const Toggle: React.FC<ToggleProps> = ({
         <div>
             <div className={`group flex items-start gap-2 ${direction === 'rtl' && 'justify-between'} ${separator && 'pb-2'}`}>
                 <input checked={checked}
-                    className={`appearance-none rounded-full bg-grey-300 transition after:absolute after:ml-0.5 after:mt-0.5 after:rounded-full after:border-none after:bg-white after:transition-[background-color_0.2s,transform_0.2s] after:content-[''] checked:bg-green checked:after:absolute checked:after:rounded-full checked:after:border-none checked:after:bg-white checked:after:transition-[background-color_0.2s,transform_0.2s] checked:after:content-[''] hover:cursor-pointer group-hover:bg-grey-400 checked:group-hover:bg-green-600 ${sizeStyles} ${direction === 'rtl' && ' order-2'}`}
+                    className={`checked:${toggleBgClass} appearance-none rounded-full bg-grey-300 transition after:absolute after:ml-0.5 after:mt-0.5 after:rounded-full after:border-none after:bg-white after:transition-[background-color_0.2s,transform_0.2s] after:content-[''] checked:after:absolute checked:after:rounded-full checked:after:border-none checked:after:bg-white checked:after:transition-[background-color_0.2s,transform_0.2s] checked:after:content-[''] hover:cursor-pointer group-hover:opacity-80 ${sizeStyles} ${direction === 'rtl' && ' order-2'}`}
                     id={id}
                     role="switch"
                     type="checkbox"
