@@ -57,7 +57,7 @@ test.describe('Image card', async () => {
         await initialize({page, uri: `/#/?content=${contentParam}`});
 
         await assertHTML(page, html`
-            <div data-lexical-decorator="true" contenteditable="false">
+            <div data-lexical-decorator="true" contenteditable="false" data-kg-card-width="wide">
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="image">
                     <figure data-kg-card-width="wide">
                         <div><img alt="" src="/content/images/2022/11/koenig-lexical.jpg" /></div>

@@ -670,6 +670,12 @@
             margin: 3.2rem 0 0;
         }
 
+        > :where(
+            div[data-kg-card-width="full"] + div[data-kg-card-width="full"]
+        ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            margin: 0;
+        }
+
         :where(
             p + div,
             blockquote + div,

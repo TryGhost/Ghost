@@ -57,7 +57,7 @@ test.describe('Gallery card', async () => {
         await initialize({page, uri: `/#/?content=${contentParam}`});
 
         await assertHTML(page, html`
-            <div data-lexical-decorator="true" contenteditable="false">
+            <div data-lexical-decorator="true" contenteditable="false" data-kg-card-width="wide">
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="gallery">
                     <figure>
                         <div>
@@ -109,7 +109,7 @@ test.describe('Gallery card', async () => {
         await insertCard(page, {cardName: 'gallery'});
 
         await assertHTML(page, html`
-            <div data-lexical-decorator="true" contenteditable="false">
+            <div data-lexical-decorator="true" contenteditable="false" data-kg-card-width="wide">
                 <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="gallery">
                     <figure>
                         <div>
@@ -163,7 +163,7 @@ test.describe('Gallery card', async () => {
         await page.waitForSelector('[data-gallery="true"]');
 
         await assertHTML(page, html`
-            <div data-lexical-decorator="true" contenteditable="false">
+            <div data-lexical-decorator="true" contenteditable="false" data-kg-card-width="wide">
                 <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="gallery">
                     <figure>
                         <div>
@@ -335,7 +335,7 @@ test.describe('Gallery card', async () => {
         await page.keyboard.press(`${ctrlOrCmd()}+z`);
 
         await assertHTML(page, html`
-            <div data-lexical-decorator="true" contenteditable="false">
+            <div data-lexical-decorator="true" contenteditable="false" data-kg-card-width="wide">
                 <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="gallery">
                     <figure>
                         <div>

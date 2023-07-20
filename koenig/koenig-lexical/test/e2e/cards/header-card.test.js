@@ -64,7 +64,7 @@ test.describe('Header card V1', async () => {
         await initialize({page, uri: `/#/?content=${contentParam}`});
 
         await assertHTML(page, html`
-            <div data-lexical-decorator="true" contenteditable="false">
+            <div data-lexical-decorator="true" contenteditable="false" data-kg-card-width="full">
             <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="header">
                 <div>
                     <div>
@@ -104,7 +104,7 @@ test.describe('Header card V1', async () => {
         await createHeaderCard({page, version: 1});
 
         await assertHTML(page, html`
-            <div data-lexical-decorator="true" contenteditable="false">
+            <div data-lexical-decorator="true" contenteditable="false" data-kg-card-width="full">
                 <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="header">
                 </div>
             </div>
@@ -351,7 +351,7 @@ test.describe('Header card V1', async () => {
         await page.keyboard.press(`${ctrlOrCmd}+z`);
 
         await assertHTML(page, html`
-            <div data-lexical-decorator="true" contenteditable="false">
+            <div data-lexical-decorator="true" contenteditable="false" data-kg-card-width="full">
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="header">
                     <div>
                         <div>
@@ -445,7 +445,7 @@ test.describe('Header card V2', () => {
         await createHeaderCard({page, version: 2});
 
         await assertHTML(page, html`
-            <div data-lexical-decorator="true" contenteditable="false">
+            <div data-lexical-decorator="true" contenteditable="false" data-kg-card-width="wide">
                 <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="header">
                 </div>
             </div>
