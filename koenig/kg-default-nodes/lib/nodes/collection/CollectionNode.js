@@ -1,10 +1,10 @@
 import {generateDecoratorNode} from '../../generate-decorator-node';
 // import {parseCollectionNode} from './CollectionParser';
-// import {renderCollectionNode} from './CollectionRenderer';
+import {renderCollectionNode} from './CollectionRenderer';
 
 export class CollectionNode extends generateDecoratorNode({nodeType: 'collection',
     properties: [
-        {name: 'collection', default: {slug: 'index'}}, // start with empty object; might want to just store the slug
+        {name: 'collection', default: {slug: 'latest'}}, // start with empty object; might want to just store the slug
         {name: 'postCount', default: 3},
         {name: 'layout', default: 'grid'},
         {name: 'columns', default: 3},
@@ -18,9 +18,9 @@ export class CollectionNode extends generateDecoratorNode({nodeType: 'collection
     //     return parseCollectionNode(this);
     // }
 
-    // exportDOM(options = {}) {
-    //     return renderCollectionNode(this, options);
-    // }
+    exportDOM(options = {}) {
+        return renderCollectionNode(this, options);
+    }
 }
 
 export const $createCollectionNode = (dataset) => {

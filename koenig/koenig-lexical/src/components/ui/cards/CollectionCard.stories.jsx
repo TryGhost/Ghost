@@ -134,7 +134,7 @@ const mockPosts = [
 const mockCollections = [
     {
         title: 'Latest',
-        slug: 'index',
+        slug: 'latest',
         posts: mockPosts
     }, {
         title: 'Featured',
@@ -208,7 +208,7 @@ const Template = ({display, header = 'Featured posts', ...args}) => {
 export const Empty = Template.bind({});
 Empty.args = {
     display: 'Editing',
-    collection: {slug: 'index'}, // we'll always return some collections, but may need a placeholder in case of no api access
+    collection: {slug: 'latest'}, // we'll always return some collections, but may need a placeholder in case of no api access
     collections: [],
     postCount: 0,
     headerEditorInitialState: editorEmptyState
@@ -218,7 +218,7 @@ export const PopulatedList = Template.bind({});
 PopulatedList.args = {
     display: 'Editing',
     posts: mockPosts,
-    collection: {slug: 'index'},
+    collection: {slug: 'latest'},
     collections: mockCollections,
     header: 'Latest',
     postCount: 6,
@@ -229,7 +229,7 @@ export const PopulatedGrid = Template.bind({});
 PopulatedGrid.args = {
     display: 'Editing',
     posts: mockPosts,
-    collection: {slug: 'index'},
+    collection: {slug: 'latest'},
     collections: mockCollections,
     postCount: 6,
     header: 'Latest',

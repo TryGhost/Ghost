@@ -181,7 +181,7 @@ export function CollectionCard({
     // TODO: we shouldn't be getting collections without posts from the editor load
     const collectionOptions = collections?.filter((item) => {
         // always show default collections
-        if (item.slug === 'index' || item.slug === 'featured') {
+        if (item.slug === 'latest' || item.slug === 'featured') {
             return true;
         }
         return item.posts.length > 0;
@@ -213,11 +213,11 @@ export function CollectionCard({
 
     // only update the header if the user hasn't changed anything and is using the default collections & headers
     const checkHeaderDefaults = (value) => {
-        if (value !== 'index' && value !== 'featured') {
+        if (value !== 'latest' && value !== 'featured') {
             return;
         }
         const header = headerEditor.getEditorState().read(() => ($getRoot().getTextContent()));
-        if (value === 'index' && header === 'Featured') {
+        if (value === 'latest' && header === 'Featured') {
             headerEditor.update(() => {
                 const newHeader = $createParagraphNode().append($createTextNode('Latest'));
                 const root = $getRoot();

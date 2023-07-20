@@ -135,7 +135,7 @@ export const useCollections = () => {
     const collections = [
         {
             title: 'Latest',
-            slug: 'index',
+            slug: 'latest',
             posts: postData
         }, {
             title: 'Featured',
