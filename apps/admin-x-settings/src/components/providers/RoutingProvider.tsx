@@ -5,6 +5,7 @@ import NavigationModal from '../settings/site/NavigationModal';
 import NiceModal from '@ebay/nice-modal-react';
 import PortalModal from '../settings/membership/portal/PortalModal';
 import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
+import StripeConnectModal from '../settings/membership/stripe/StripeConnectModal';
 import TierDetailModal from '../settings/membership/tiers/TierDetailModal';
 import {SettingsContext} from './SettingsProvider';
 
@@ -55,6 +56,8 @@ function handleNavigation() {
             NiceModal.show(PortalModal);
         } else if (pathName === 'tiers/add') {
             NiceModal.show(TierDetailModal);
+        } else if (pathName === 'stripe-connect') {
+            NiceModal.show(StripeConnectModal);
         }
         const element = document.getElementById(pathName);
         if (element) {
