@@ -1,6 +1,7 @@
 import Form from '../../../../admin-x-ds/global/form/Form';
 import NiceModal from '@ebay/nice-modal-react';
 
+import ButtonGroup from '../../../../admin-x-ds/global/ButtonGroup';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import Hint from '../../../../admin-x-ds/global/Hint';
 import Icon from '../../../../admin-x-ds/global/Icon';
@@ -108,9 +109,33 @@ const Sidebar: React.FC = () => {
                 <Select containerClassName="-mt-[16px]" options={selectOptions} onSelect={(value: string) => {
                     alert(value);
                 }}/>
-                <Select options={selectOptions} title="Body style" onSelect={(value: string) => {
-                    alert(value);
-                }}/>
+                <div className="flex items-end">
+                    <div className="w-full pr-4">
+                        <Select containerClassName="" options={selectOptions} title="Body style" onSelect={(value: string) => {
+                            alert(value);
+                        }}/>
+                    </div>
+                    <ButtonGroup buttons={[
+                        {
+                            icon: 'align-left',
+                            label: 'Align left',
+                            hideLabel: true,
+                            link: false,
+                            size: 'sm',
+                            iconColorClass: 'text-grey-500'
+                        },
+                        {
+                            icon: 'align-center',
+                            label: 'Align center',
+                            hideLabel: true,
+                            link: false,
+                            size: 'sm',
+                            iconColorClass: 'text-grey-900'
+                        }
+                    ]}
+                    className="mb-1 !gap-0"
+                    />
+                </div>
                 <Toggle
                     direction="rtl"
                     label='Feature image'
