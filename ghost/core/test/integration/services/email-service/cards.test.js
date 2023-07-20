@@ -81,7 +81,7 @@ describe('Can send cards via email', function () {
         await agent.loginAsOwner();
     });
 
-    it('Paragraphs', async function () {
+    it.only('Paragraphs', async function () {
         const data = await sendEmail(agent, {
             lexical: createLexicalJson([
                 createParagraphCard('This is a paragraph test.')
