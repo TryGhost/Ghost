@@ -54,6 +54,13 @@ export const WithLabelAndHint: Story = {
     }
 };
 
+export const CustomLabelStyle: Story = {
+    args: {
+        label: 'Check me',
+        labelClasses: 'text-sm translate-y-[1px]'
+    }
+};
+
 export const LeftToRight: Story = {
     args: {
         label: 'Check me',
@@ -68,6 +75,12 @@ export const WithSeparator: Story = {
         hint: 'But only if you dare',
         direction: 'rtl',
         separator: true
+    }
+};
+
+export const CustomBgColor: Story = {
+    args: {
+        toggleBg: 'stripetest'
     }
 };
 
