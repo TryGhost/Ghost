@@ -74,13 +74,9 @@ async function sendEmail(agent, settings, email_recipient_filter) {
     assert.ok(emailModel.get('subject'));
     assert.ok(emailModel.get('from'));
     assert.equal(emailModel.get('source_type'), settings && settings.lexical ? 'lexical' : 'mobiledoc');
-    
-    console.log(`awaiting completed promise`);
 
     // Await sending job
     await completedPromise;
-
-    console.log(`awaiting email refresh`);
 
     await emailModel.refresh();
     assert.equal(emailModel.get('status'), 'submitted');
