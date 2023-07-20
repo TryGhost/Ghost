@@ -205,11 +205,11 @@ class EmailRenderer {
 		Returns all the segments that we need to render the email for because they have different content.
         WARNING: The sum of all the returned segments should always include all the members. Those members are later limited if needed based on the recipient filter of the email.
         @param {Post} post
-        @returns {Segment[]}
+        @returns {Promise<Segment[]>}
 	*/
-    getSegments(post) {
+    async getSegments(post) {
         const allowedSegments = ['status:free', 'status:-free'];
-        const html = this.renderPostBaseHtml(post);
+        const html = await this.renderPostBaseHtml(post);
 
         /**
          * Always add free and paid segments if email has paywall card
@@ -235,11 +235,12 @@ class EmailRenderer {
         return allowedSegments;
     }
 
-    renderPostBaseHtml(post) {
+    async renderPostBaseHtml(post) {
         const postUrl = this.#getPostUrl(post);
         let html;
         if (post.get('lexical')) {
-            html = this.#renderers.lexical.render(
+            // only lexical's renderer is async
+            html = await this.#renderers.lexical.render(
                 post.get('lexical'), {target: 'email', postUrl}
             );
         } else {
@@ -259,7 +260,7 @@ class EmailRenderer {
      * @returns {Promise<EmailBody>}
      */
     async renderBody(post, newsletter, segment, options) {
-        let html = this.renderPostBaseHtml(post);
+        let html = await this.renderPostBaseHtml(post);
 
         // We don't allow the usage of the %%{uuid}%% replacement in the email body (only in links and special cases)
         // So we need to filter them before we introduce the real %%{uuid}%%

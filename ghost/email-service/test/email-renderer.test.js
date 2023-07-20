@@ -775,7 +775,7 @@ describe('Email renderer', function () {
             }
         });
 
-        it('returns correct empty segment for post', function () {
+        it('returns correct empty segment for post', async function () {
             let post = {
                 get: (key) => {
                     if (key === 'lexical') {
@@ -783,7 +783,7 @@ describe('Email renderer', function () {
                     }
                 }
             };
-            let response = emailRenderer.getSegments(post);
+            let response = await emailRenderer.getSegments(post);
             response.should.eql([null]);
 
             post = {
@@ -793,11 +793,11 @@ describe('Email renderer', function () {
                     }
                 }
             };
-            response = emailRenderer.getSegments(post);
+            response = await emailRenderer.getSegments(post);
             response.should.eql([null]);
         });
 
-        it('returns correct segments for post with members only card', function () {
+        it('returns correct segments for post with members only card', async function () {
             emailRenderer = new EmailRenderer({
                 renderers: {
                     lexical: {
@@ -821,11 +821,11 @@ describe('Email renderer', function () {
                     }
                 }
             };
-            let response = emailRenderer.getSegments(post);
+            let response = await emailRenderer.getSegments(post);
             response.should.eql(['status:free', 'status:-free']);
         });
 
-        it('returns correct segments for post with email card', function () {
+        it('returns correct segments for post with email card', async function () {
             emailRenderer = new EmailRenderer({
                 renderers: {
                     lexical: {
@@ -849,7 +849,7 @@ describe('Email renderer', function () {
                     }
                 }
             };
-            let response = emailRenderer.getSegments(post);
+            let response = await emailRenderer.getSegments(post);
             response.should.eql(['status:free', 'status:-free']);
         });
     });
