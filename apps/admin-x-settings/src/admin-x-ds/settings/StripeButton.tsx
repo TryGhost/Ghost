@@ -8,8 +8,8 @@ interface StripeButtonProps {
 
 const StripeButton: React.FC<StripeButtonProps | ButtonProps> = ({label, ...props}) => {
     const classNames = clsx(
-        'cursor-pointer rounded-md bg-[#625BF6] font-semibold text-white',
-        label ? 'px-5 py-1.5 text-sm' : 'px-6 py-[9px]'
+        'cursor-pointer rounded-md bg-[#625BF6] font-semibold text-white transition-all hover:opacity-90',
+        label ? 'px-5 py-2 text-sm' : 'px-6 py-[9px]'
     );
 
     if (!label) {
