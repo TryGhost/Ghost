@@ -3,14 +3,18 @@ type PostEditData = {
     current: {
         id: string;
         title: string;
+        status: string;
         featured: boolean;
         published_at: Date;
+        tags: string[];
     },
     previous: {
         id: string;
         title: string;
+        status: string;
         featured: boolean;
         published_at: Date;
+        tags: string[];
     }
 };
 

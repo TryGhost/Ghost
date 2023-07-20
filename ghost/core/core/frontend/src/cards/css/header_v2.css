@@ -1,0 +1,283 @@
+.kg-header-card-v2 {
+    position: relative;
+}
+
+.kg-header-card-v2,
+.kg-header-card-v2 * {
+    box-sizing: border-box;
+}
+
+.kg-header-card-v2 a,
+.kg-header-card-v2 a span {
+    color: currentColor;
+}
+
+.kg-header-card-v2.kg-style-accent {
+    background-color: var(--ghost-accent-color);
+}
+
+.kg-layout-split .kg-header-card-v2-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.kg-header-card-v2-text {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    height: 100%;
+    padding: 4vmax;
+    background-size: cover;
+    background-position: center;
+    text-align: left;
+}
+
+.kg-width-wide .kg-header-card-v2-text {
+    padding: 6.4vmax;
+}
+
+.kg-width-full .kg-header-card-v2-text {
+    padding: 12vmax 0;
+}
+
+.kg-layout-split .kg-header-card-v2-text {
+    padding: 12vmax 4vmax;
+}
+
+.kg-layout-split.kg-content-wide .kg-header-card-v2-text {
+    padding: 10vmax 0 10vmax 4vmax;
+}
+
+.kg-layout-split.kg-content-wide.kg-swapped .kg-header-card-v2-text {
+    padding: 10vmax 4vmax 10vmax 0;
+}
+
+.kg-swapped .kg-header-card-v2-text {
+    grid-row: 1;
+}
+
+.kg-header-card-v2-text.kg-align-center {
+    align-items: center;
+    text-align: center;
+}
+
+.kg-header-card-v2.kg-style-image h2.kg-header-card-v2-heading,
+.kg-header-card-v2.kg-style-image h3.kg-header-card-v2-subheading,
+.kg-header-card-v2.kg-style-image .kg-header-card-v2-button {
+    z-index: 999;
+}
+
+/* Background image */
+
+.kg-header-card-v2 > picture > .kg-header-card-v2-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    background-color: #FFFFFF;
+    pointer-events: none;
+}
+
+/* Split layout image */
+
+.kg-header-card-v2-content .kg-header-card-v2-image {
+    /* this will force the image to follow the signup card height */
+    height: 0;
+    min-height: 100%;
+    /**/
+    object-fit: cover;
+    object-position: center;
+}
+
+.kg-content-wide .kg-header-card-v2-content .kg-header-card-v2-image {
+    height: 100%;
+    padding: 8rem 0;
+    object-fit: contain;
+}
+
+/* Heading */
+
+.kg-header-card-v2 h2.kg-header-card-v2-heading {
+    margin: 0;
+    font-size: clamp(2.8rem, 4vw, 4rem);
+    font-weight: 700;
+    line-height: 1em;
+    letter-spacing: -0.01em;
+}
+
+.kg-header-card-v2.kg-width-wide h2.kg-header-card-v2-heading {
+    font-size: clamp(2.8rem, 5vw, 5.2rem);
+}
+
+.kg-header-card-v2.kg-width-full h2.kg-header-card-v2-heading {
+    font-size: clamp(3.6rem, 5.6vw, 6.4rem);
+}
+
+.kg-header-card-v2.kg-width-full.kg-layout-split h2.kg-header-card-v2-heading {
+    font-size: clamp(3.2rem, 4vw, 5.6rem);
+}
+
+.kg-header-card-v2.kg-width-full.kg-layout-split.kg-content-wide h2.kg-header-card-v2-heading {
+    font-size: clamp(2.8rem, 4vw, 5.2rem);
+}
+
+/* Subheading */
+
+.kg-header-card-v2-subheading {
+    margin: 0 0 2em;
+}
+
+.kg-header-card-v2 h3.kg-header-card-v2-subheading {
+    max-width: 40em;
+    margin: 0;
+    font-size: clamp(1.05em, 2vw, 2rem);
+    font-weight: 500;
+    line-height: 1.4em;
+}
+
+.kg-header-card-v2 h2 + h3.kg-header-card-v2-subheading {
+    margin: 0.6em 0 0;
+}
+
+.kg-header-card-v2 h3.kg-header-card-v2-subheading strong {
+    font-weight: 600;
+}
+
+.kg-header-card-v2.kg-width-wide h3.kg-header-card-v2-subheading {
+    font-size: clamp(1.05em, 2vw, 2.4rem);
+}
+
+.kg-header-card-v2.kg-width-full h3.kg-header-card-v2-subheading:not(.kg-layout-split h3.kg-header-card-v2-subheading) {
+    max-width: 65vmax;
+    font-size: clamp(1.05em, 2vw, 2.6rem);
+}
+
+.kg-header-card-v2.kg-width-full.kg-layout-split h3.kg-header-card-v2-subheading {
+    font-size: clamp(1.05em, 2vw, 2.4rem);
+}
+
+.kg-width-wide .kg-header-card-v2-fields,
+.kg-width-full .kg-header-card-v2-fields {
+    width: 100%;
+    max-width: 500px;
+}
+
+.kg-header-card-v2-input {
+    width: 100%;
+    height: 4.6rem;
+    margin-right: 3px;
+    padding: 12px 16px;
+    border: none;
+    font-size: 1.1em;
+}
+
+.kg-header-card-v2-input:focus,
+.kg-header-card-v2-input:focus-visible {
+    outline: none;
+}
+
+.kg-header-card-v2-button {
+    display: flex;
+    position: relative;
+    align-items: center;
+    height: 4.6rem;
+    padding: 0 1.2em;
+    outline: none;
+    border: none;
+    font-size: 1em;
+    font-weight: 600;
+    line-height: 1em;
+    text-align: center;
+    text-decoration: none;
+    letter-spacing: .2px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    border-radius: 3px;
+    transition: opacity .2s ease;
+}
+
+.kg-header-card-v2-button.kg-style-accent {
+    background-color: var(--ghost-accent-color);
+}
+
+.kg-header-card-v2 h2 + .kg-header-card-v2-button,
+.kg-header-card-v2 h3 + .kg-header-card-v2-button {
+    margin: 1.5em 0 0;
+}
+
+.kg-header-card-v2 .kg-header-card-v2-button:hover {
+    opacity: 0.85;
+}
+
+.kg-header-card-v2.kg-width-wide .kg-header-card-v2-button {
+    font-size: 1.05em;
+}
+
+.kg-header-card-v2.kg-width-wide h2 + .kg-header-card-v2-button,
+.kg-header-card-v2.kg-width-wide h3 + .kg-header-card-v2-button {
+    margin-top: 1.75em;
+}
+
+.kg-header-card-v2.kg-width-full .kg-header-card-v2-button {
+    font-size: 1.1em;
+}
+
+.kg-header-card-v2.kg-width-full h2 + .kg-header-card-v2-button,
+.kg-header-card-v2.kg-width-full h3 + .kg-header-card-v2-button {
+    margin-top: 2em;
+}
+
+/* Responsive styles */
+
+@media (max-width: 640px) {
+    .kg-layout-split .kg-header-card-v2-content {
+        grid-template-columns: 1fr;
+    }
+
+    .kg-width-wide .kg-header-card-v2-text {
+        padding: 6.4vmax 4vmax;
+    }
+
+    .kg-layout-split.kg-content-wide .kg-header-card-v2-text,
+    .kg-layout-split.kg-content-wide.kg-swapped .kg-header-card-v2-text {
+        padding: 9.6vmax 0;
+    }
+
+    .kg-header-card-v2.kg-width-full h3.kg-header-card-v2-subheading:not(.kg-layout-split h3.kg-header-card-v2-subheading) {
+        max-width: unset;
+    }
+
+    .kg-header-card-v2-content .kg-header-card-v2-image:not(.kg-content-wide .kg-header-card-v2-content .kg-header-card-v2-image) {
+        height: auto;
+        min-height: unset;
+        aspect-ratio: 1 / 1;
+    }
+
+    .kg-content-wide .kg-header-card-v2-content .kg-header-card-v2-image {
+        padding: 2.4rem 0 0;
+    }
+
+    .kg-content-wide.kg-swapped .kg-header-card-v2-content .kg-header-card-v2-image {
+        padding: 0 0 2.4rem;
+    }
+
+    .kg-header-card-v2-input {
+        height: 4.2rem;
+        padding: 6px 12px;
+        font-size: 1em;
+    }
+
+    .kg-header-card-v2-button {
+        height: 4.2rem;
+    }
+
+    .kg-header-card-v2.kg-width-wide .kg-header-card-v2-button,
+    .kg-header-card-v2.kg-width-full .kg-header-card-v2-button {
+        font-size: 1em;
+    }
+}

@@ -749,3 +749,27 @@ jobs:
         if: contains(needs.*.result, 'failure')
         run: |
           echo "One of the dependent jobs have failed. You may need to re-run it." && exit 1
+
+  canary:
+    needs: [
+      job_get_metadata,
+      job_required_tests
+    ]
+    name: Canary
+    runs-on: ubuntu-latest
+    if: always() && needs.job_get_metadata.outputs.is_canary_branch == 'true' && !(contains(needs.*.result, 'failure') || contains(needs.*.result, 'skipped'))
+    steps:
+      - name: Set env variables
+        run: |
+          echo "CANARY_BUILD_INPUTS={\"version\":\"canary\",\"environment\":\"staging\"}" >> $GITHUB_ENV
+
+      - name: Invoke build
+        uses: aurelien-baudet/workflow-dispatch@v2
+        with:
+          token: ${{ secrets.CANARY_DOCKER_BUILD }}
+          workflow: .github/workflows/deploy.yml
+          ref: 'refs/heads/main'
+          repo: TryGhost/Ghost-Moya
+          inputs: ${{ env.CANARY_BUILD_INPUTS }}
+          wait-for-completion-timeout: 25m
+          wait-for-completion-interval: 30s

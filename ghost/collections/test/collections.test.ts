@@ -117,15 +117,24 @@ describe('CollectionsService', function () {
         it('Can get collections for a post', async function () {
             const collection = await collectionsService.createCollection({
                 title: 'testing collections',
+                slug: 'testing-collections',
+                type: 'manual'
+            });
+
+            const collection2 = await collectionsService.createCollection({
+                title: 'testing collections 1',
+                slug: '1-testing-collections',
                 type: 'manual'
             });
 
             await collectionsService.addPostToCollection(collection.id, posts[0]);
+            await collectionsService.addPostToCollection(collection2.id, posts[0]);
 
             const collections = await collectionsService.getCollectionsForPost(posts[0].id);
 
-            assert.equal(collections.length, 1, 'There should be one collection');
-            assert.equal(collections[0].id, collection.id, 'Collection should be the correct one');
+            assert.equal(collections.length, 2, 'There should be one collection');
+            assert.equal(collections[0].id, collection2.id, 'Collections should be sorted by slug');
+            assert.equal(collections[1].id, collection.id, 'Collections should be sorted by slug');
         });
     });
 

@@ -27,16 +27,31 @@ class PostsRepository {
         return attrs;
     }
 
+    serializeTags(attrs) {
+        if (attrs.tags) {
+            attrs.tags = attrs.tags.map(tag => tag.slug);
+        }
+
+        if (attrs.primary_tag) {
+            delete attrs.primary_tag;
+        }
+
+        return attrs;
+    }
+
     async getAll({filter}) {
         const response = await this.browsePostsAPI({
             options: {
                 filter: `(${filter})+type:post`,
-                limit: 'all'
+                status: 'all',
+                limit: 'all',
+                withRelated: ['tags']
             }
         });
 
         response.posts = response.posts
-            .map(this.serializeDates.bind(this));
+            .map(this.serializeDates.bind(this))
+            .map(this.serializeTags.bind(this));
 
         return response.posts;
     }
@@ -44,12 +59,15 @@ class PostsRepository {
     async getBulk(ids) {
         const response = await this.browsePostsAPI({
             options: {
-                filter: `id:[${ids.join(',')}]+type:post`
+                filter: `id:[${ids.join(',')}]+type:post`,
+                status: 'all',
+                withRelated: ['tags']
             }
         });
 
         response.posts = response.posts
-            .map(this.serializeDates.bind(this));
+            .map(this.serializeDates.bind(this))
+            .map(this.serializeTags.bind(this));
 
         return response.posts;
     }

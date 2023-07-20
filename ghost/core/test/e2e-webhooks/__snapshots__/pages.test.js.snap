@@ -218,6 +218,7 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"ghostVersion\\":\\"4.0\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"\\"]]]]}",
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "show_title_and_feature_image": true,
       "slug": "testing-page-deleted-webhook",
       "status": "published",
       "title": "testing page.deleted webhook",
