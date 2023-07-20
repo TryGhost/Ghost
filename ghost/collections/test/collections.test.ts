@@ -117,20 +117,29 @@ describe('CollectionsService', function () {
         it('Can get collections for a post', async function () {
             const collection = await collectionsService.createCollection({
                 title: 'testing collections',
+                slug: 'testing-collections',
+                type: 'manual'
+            });
+
+            const collection2 = await collectionsService.createCollection({
+                title: 'testing collections 1',
+                slug: '1-testing-collections',
                 type: 'manual'
             });
 
             await collectionsService.addPostToCollection(collection.id, posts[0]);
+            await collectionsService.addPostToCollection(collection2.id, posts[0]);
 
             const collections = await collectionsService.getCollectionsForPost(posts[0].id);
 
-            assert.equal(collections.length, 1, 'There should be one collection');
-            assert.equal(collections[0].id, collection.id, 'Collection should be the correct one');
+            assert.equal(collections.length, 2, 'There should be one collection');
+            assert.equal(collections[0].id, collection2.id, 'Collections should be sorted by slug');
+            assert.equal(collections[1].id, collection.id, 'Collections should be sorted by slug');
         });
     });
 
     describe('getAllPosts', function () {
-        it('Can get paged posts of a collection', async function () {
+        it('Can get paged posts of a collection by collection id', async function () {
             const collection = await collectionsService.createCollection({
                 title: 'testing paging',
                 type: 'manual'
@@ -151,6 +160,38 @@ describe('CollectionsService', function () {
             assert.equal(postsPage1.data[1].id, posts[1].id, 'Second post should be the correct one');
 
             const postsPage2 = await collectionsService.getAllPosts(collection.id, {page: 2, limit: 2});
+
+            assert.ok(postsPage2, 'Posts should be returned');
+            assert.equal(postsPage2.meta.pagination.page, 2, 'Page should be 2');
+            assert.equal(postsPage2.meta.pagination.limit, 2, 'Limit should be 2');
+            assert.equal(postsPage2.meta.pagination.pages, 2, 'Pages should be 2');
+            assert.equal(postsPage2.data.length, 2, 'There should be 2 posts');
+            assert.equal(postsPage2.data[0].id, posts[2].id, 'First post should be the correct one');
+            assert.equal(postsPage2.data[1].id, posts[3].id, 'Second post should be the correct one');
+        });
+
+        it('Can get paged posts of a collection by collection slug', async function () {
+            const collection = await collectionsService.createCollection({
+                title: 'testing fetch by slug',
+                slug: 'testing-fetch-by-slug',
+                type: 'manual'
+            });
+
+            for (const post of posts) {
+                await collectionsService.addPostToCollection(collection.id, post);
+            }
+
+            const postsPage1 = await collectionsService.getAllPosts(collection.slug, {page: 1, limit: 2});
+
+            assert.ok(postsPage1, 'Posts should be returned');
+            assert.equal(postsPage1.meta.pagination.page, 1, 'Page should be 1');
+            assert.equal(postsPage1.meta.pagination.limit, 2, 'Limit should be 2');
+            assert.equal(postsPage1.meta.pagination.pages, 2, 'Pages should be 2');
+            assert.equal(postsPage1.data.length, 2, 'There should be 2 posts');
+            assert.equal(postsPage1.data[0].id, posts[0].id, 'First post should be the correct one');
+            assert.equal(postsPage1.data[1].id, posts[1].id, 'Second post should be the correct one');
+
+            const postsPage2 = await collectionsService.getAllPosts(collection.slug, {page: 2, limit: 2});
 
             assert.ok(postsPage2, 'Posts should be returned');
             assert.equal(postsPage2.meta.pagination.page, 2, 'Page should be 2');

@@ -1,9 +1,11 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
-import {getCurrencySymbol, getPriceString, getStripeAmount, getMemberActivePrice, getProductFromPrice, getFreeTierTitle, getFreeTierDescription, getFreeProduct, getFreeProductBenefits, formatNumber, isCookiesDisabled, hasOnlyFreeProduct, isMemberActivePrice, hasFreeTrialTier} from '../../utils/helpers';
+import {getCurrencySymbol, getPriceString, getStripeAmount, getMemberActivePrice, getProductFromPrice, getFreeTierTitle, getFreeTierDescription, getFreeProduct, getFreeProductBenefits, getSupportAddress, formatNumber, isCookiesDisabled, hasOnlyFreeProduct, isMemberActivePrice, hasFreeTrialTier, isComplimentaryMember} from '../../utils/helpers';
 import AppContext from '../../AppContext';
 import calculateDiscount from '../../utils/discount';
+import Interpolate from '@doist/react-interpolate';
+import {SYNTAX_I18NEXT} from '@doist/react-interpolate';
 
 export const ProductsSectionStyles = ({site}) => {
     // const products = getSiteProducts({site});
@@ -636,7 +638,7 @@ function ProductCardPrice({product}) {
 }
 
 function FreeProductCard({products, handleChooseSignup, error}) {
-    const {site, action} = useContext(AppContext);
+    const {site, action, t} = useContext(AppContext);
     const {selectedProduct, setSelectedProduct} = useContext(ProductsContext);
 
     let cardClass = selectedProduct === 'free' ? 'gh-portal-product-card free checked' : 'gh-portal-product-card free';
@@ -707,7 +709,7 @@ function FreeProductCard({products, handleChooseSignup, error}) {
                                 onClick={(e) => {
                                     handleChooseSignup(e, 'free');
                                 }}>
-                                {((selectedProduct === 'free' && disabled) ? <LoaderIcon className='gh-portal-loadingicon' /> : 'Choose')}
+                                {((selectedProduct === 'free' && disabled) ? <LoaderIcon className='gh-portal-loadingicon' /> : t('Choose'))}
                             </button>
                             {error && <div className="gh-portal-error-message">{error}</div>}
                         </div>
@@ -719,6 +721,7 @@ function FreeProductCard({products, handleChooseSignup, error}) {
 }
 
 function ProductCardButton({selectedProduct, product, disabled, noOfProducts, trialDays}) {
+    const {t} = useContext(AppContext);
     if (selectedProduct === product.id && disabled) {
         return (
             <LoaderIcon className='gh-portal-loadingicon' />
@@ -726,10 +729,18 @@ function ProductCardButton({selectedProduct, product, disabled, noOfProducts, tr
     }
 
     if (trialDays > 0) {
-        return ('Start ' + trialDays + '-day free trial');
+        return (
+            <Interpolate
+                syntax={SYNTAX_I18NEXT}
+                string={t('Start {{amount}}-day free trial')}
+                mapping={{
+                    amount: trialDays
+                }}
+            />
+        );
     }
 
-    return (noOfProducts > 1 ? 'Choose' : 'Continue');
+    return (noOfProducts > 1 ? t('Choose') : t('Continue'));
 }
 
 function ProductCard({product, products, selectedInterval, handleChooseSignup, error}) {
@@ -902,7 +913,7 @@ function getActiveInterval({portalPlans, selectedInterval = 'year'}) {
 }
 
 function ProductsSection({onPlanSelect, products, type = null, handleChooseSignup, errors}) {
-    const {site} = useContext(AppContext);
+    const {site, member, t} = useContext(AppContext);
     const {portal_plans: portalPlans} = site;
     const defaultInterval = getActiveInterval({portalPlans});
 
@@ -912,6 +923,8 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
 
     const selectedPrice = getSelectedPrice({products, selectedInterval, selectedProduct});
     const activeInterval = getActiveInterval({portalPlans, selectedInterval});
+
+    const isComplimentary = isComplimentaryMember({member});
 
     useEffect(() => {
         setSelectedProduct(defaultProductId);
@@ -926,7 +939,16 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
     }
 
     if (products.length === 0) {
-        return null;
+        if (isComplimentary) {
+            const supportAddress = getSupportAddress({site});
+            return (
+                <p style={{textAlign: 'center'}}>
+                    {t('Please contact {{supportAddress}} to adjust your complimentary subscription.', {supportAddress})}
+                </p>
+            );
+        } else {
+            return null;
+        }
     }
 
     let className = 'gh-portal-products';
@@ -1080,7 +1102,7 @@ function ChangeProductCard({product, onPlanSelect}) {
 
 function ChangeProductCards({products, onPlanSelect}) {
     return products.map((product) => {
-        if (product.id === 'free') {
+        if (!product || product.id === 'free') {
             return null;
         }
         return (

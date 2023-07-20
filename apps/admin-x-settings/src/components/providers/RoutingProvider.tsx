@@ -3,7 +3,9 @@ import DesignModal from '../settings/site/DesignModal';
 import InviteUserModal from '../settings/general/InviteUserModal';
 import NavigationModal from '../settings/site/NavigationModal';
 import NiceModal from '@ebay/nice-modal-react';
+import PortalModal from '../settings/membership/portal/PortalModal';
 import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
+import TierDetailModal from '../settings/membership/tiers/TierDetailModal';
 import {SettingsContext} from './SettingsProvider';
 
 type RoutingContextProps = {
@@ -41,14 +43,18 @@ function handleNavigation() {
     const pathName = getHashPath(hash);
 
     if (pathName) {
-        if (pathName === 'themes/manage') {
+        if (pathName === 'design/edit/themes') {
             NiceModal.show(ChangeThemeModal);
-        } else if (pathName === 'branding-and-design/edit') {
+        } else if (pathName === 'design/edit') {
             NiceModal.show(DesignModal);
         } else if (pathName === 'navigation/edit') {
             NiceModal.show(NavigationModal);
         } else if (pathName === 'users/invite') {
             NiceModal.show(InviteUserModal);
+        } else if (pathName === 'portal/edit') {
+            NiceModal.show(PortalModal);
+        } else if (pathName === 'tiers/add') {
+            NiceModal.show(TierDetailModal);
         }
         const element = document.getElementById(pathName);
         if (element) {

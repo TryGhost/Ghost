@@ -1,6 +1,6 @@
 import FileUpload from './FileUpload';
 import Icon from '../Icon';
-import React from 'react';
+import React, {MouseEventHandler} from 'react';
 import clsx from 'clsx';
 
 type ImageFit = 'cover' | 'contain' | 'fill' | 'scale-down' | 'none';
@@ -18,6 +18,7 @@ interface ImageUploadProps {
     fileUploadClassName?: string;
     deleteButtonClassName?: string;
     deleteButtonContent?: React.ReactNode;
+    deleteButtonUnstyled?: boolean;
 
     /**
      * Removes all the classnames from all elements so you can set a completely custom styling
@@ -25,6 +26,7 @@ interface ImageUploadProps {
     unstyled?: boolean;
     onUpload: (file: File) => void;
     onDelete: () => void;
+    onImageClick?: MouseEventHandler<HTMLImageElement>;
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -39,10 +41,12 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     fileUploadClassName,
     deleteButtonClassName,
     deleteButtonContent,
+    deleteButtonUnstyled = false,
     imageBWCheckedBg = false,
     unstyled = false,
     onUpload,
-    onDelete
+    onDelete,
+    onImageClick
 }) => {
     if (!unstyled) {
         imageContainerClassName = clsx(
@@ -65,10 +69,12 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
         );
 
-        deleteButtonClassName = clsx(
-            'invisible absolute right-4 top-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible',
-            deleteButtonClassName
-        );
+        if (!deleteButtonUnstyled) {
+            deleteButtonClassName = clsx(
+                'invisible absolute right-4 top-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible',
+                deleteButtonClassName
+            );
+        }
     }
 
     deleteButtonContent = deleteButtonContent || <Icon colorClass='text-white' name='trash' size='sm' />;
@@ -82,7 +88,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                 <img alt='' className={imageClassName} id={id} src={imageURL} style={{
                     width: (unstyled ? '' : width || '100%'),
                     height: (unstyled ? '' : height || 'auto')
-                }} />
+                }} onClick={onImageClick} />
                 <button className={deleteButtonClassName} type='button' onClick={onDelete}>
                     {deleteButtonContent}
                 </button>
@@ -117,7 +123,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                     height: (unstyled ? '' : height)
                 }
             } unstyled={unstyled} onUpload={onUpload}>
-                {children}
+                <span>{children}</span>
             </FileUpload>
         );
     }

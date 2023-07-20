@@ -22,7 +22,7 @@ export interface ModalProps {
     okLabel?: string;
     okColor?: string;
     cancelLabel?: string;
-    leftButtonLabel?: string;
+    leftButtonProps?: ButtonProps;
     buttonsDisabled?: boolean;
     footer?: boolean | React.ReactNode;
     noPadding?: boolean;
@@ -44,7 +44,7 @@ const Modal: React.FC<ModalProps> = ({
     okLabel = 'OK',
     cancelLabel = 'Cancel',
     footer,
-    leftButtonLabel,
+    leftButtonProps,
     buttonsDisabled,
     noPadding = false,
     onOk,
@@ -133,7 +133,7 @@ const Modal: React.FC<ModalProps> = ({
 
     case 'full':
         modalClasses += ' h-full ';
-        backdropClasses += ' p-[2vmin]';
+        backdropClasses += ' p-[3vmin]';
         padding = 'p-10';
         break;
 
@@ -181,8 +181,8 @@ const Modal: React.FC<ModalProps> = ({
         footerContent = (
             <div className={footerClasses}>
                 <div>
-                    {leftButtonLabel &&
-                    <Button label={leftButtonLabel} link={true} />
+                    {leftButtonProps &&
+                    <Button {...leftButtonProps} />
                     }
                 </div>
                 <div className='flex gap-3'>
@@ -206,12 +206,12 @@ const Modal: React.FC<ModalProps> = ({
         <div className={backdropClasses} id='modal-backdrop' onClick={handleBackdropClick}>
             <div className={clsx(
                 'pointer-events-none fixed inset-0 z-0',
-                backDrop && 'bg-[rgba(98,109,121,0.15)] backdrop-blur-[3px]'
+                backDrop && 'bg-[rgba(98,109,121,0.2)] backdrop-blur-[3px]'
             )}></div>
             <section className={modalClasses} data-testid={testId} style={modalStyles}>
                 <div className={contentClasses}>
                     <div className='h-full'>
-                        {title && <Heading level={4}>{title}</Heading>}
+                        {title && <Heading level={3}>{title}</Heading>}
                         {children}
                     </div>
                 </div>

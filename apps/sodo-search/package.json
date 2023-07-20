@@ -83,12 +83,12 @@
     "copy-webpack-plugin": "11.0.0",
     "eslint-plugin-ghost": "3.2.0",
     "minimist": "1.2.8",
-    "nock": "13.3.0",
+    "nock": "13.3.1",
     "ora": "5.4.1",
-    "postcss": "8.4.24",
+    "postcss": "8.4.26",
     "rewire": "6.0.0",
     "serve-handler": "6.1.5",
-    "tailwindcss": "3.3.2",
+    "tailwindcss": "3.3.3",
     "webpack-cli": "5.1.4"
   },
   "resolutions": {

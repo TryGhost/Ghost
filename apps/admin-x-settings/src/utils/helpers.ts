@@ -1,4 +1,4 @@
-import {Config, Setting, SettingValue, SiteData, User} from '../types/api';
+import {Config, Setting, SettingValue, SiteData, Tier, User} from '../types/api';
 
 export interface IGhostPaths {
     adminRoot: string;
@@ -108,6 +108,11 @@ export function getEmailDomain(siteData: SiteData): string {
     return domain;
 }
 
+export function fullEmailAddress(value: 'noreply' | string, siteData: SiteData) {
+    const emailDomain = getEmailDomain(siteData);
+    return value === 'noreply' ? `noreply@${emailDomain}` : value;
+}
+
 export function checkStripeEnabled(settings: Setting[], config: Config) {
     const hasSetting = (key: string) => settings.some(setting => setting.key === key && setting.value);
 
@@ -119,4 +124,22 @@ export function checkStripeEnabled(settings: Setting[], config: Config) {
     }
 
     return hasConnectKeys || hasDirectKeys;
+}
+
+export function getPaidActiveTiers(tiers: Tier[]) {
+    return tiers.filter((tier) => {
+        return tier.type === 'paid' && tier.active;
+    });
+}
+
+export function getActiveTiers(tiers: Tier[]) {
+    return tiers.filter((tier) => {
+        return tier.active;
+    });
+}
+
+export function getArchivedTiers(tiers: Tier[]) {
+    return tiers.filter((tier) => {
+        return !tier.active;
+    });
 }

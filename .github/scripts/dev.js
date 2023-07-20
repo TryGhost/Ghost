@@ -25,7 +25,7 @@ let commands = [];
 const COMMAND_GHOST = {
     name: 'ghost',
     // Note: if this isn't working for you, please use Node 18 and above
-    command: 'node --watch index.js',
+    command: 'nx run ghost:dev',
     cwd: path.resolve(__dirname, '../../ghost/core'),
     prefixColor: 'blue',
     env: {}
@@ -39,52 +39,20 @@ const COMMAND_ADMIN = {
     env: {}
 };
 
+const COMMAND_TYPESCRIPT = {
+    name: 'ts',
+    command: 'nx watch --projects=ghost/collections,ghost/in-memory-repository,ghost/mail-events,ghost/model-to-domain-event-interceptor,ghost/post-revisions -- nx run \\$NX_PROJECT_NAME:build:ts',
+    cwd: path.resolve(__dirname, '../../'),
+    prefixColor: 'cyan',
+    env: {}
+};
+
 if (DASH_DASH_ARGS.includes('ghost')) {
-    commands = [COMMAND_GHOST];
+    commands = [COMMAND_GHOST, COMMAND_TYPESCRIPT];
 } else if (DASH_DASH_ARGS.includes('admin')) {
     commands = [COMMAND_ADMIN];
 } else {
-    commands = [COMMAND_GHOST, COMMAND_ADMIN];
-}
-
-if (DASH_DASH_ARGS.includes('revisions') || DASH_DASH_ARGS.includes('all')) {
-    commands.push({
-        name: 'post-revisions',
-        command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../../ghost/post-revisions'),
-        prefixColor: 'green',
-        env: {}
-    });
-}
-
-if (DASH_DASH_ARGS.includes('in-memory-repository') || DASH_DASH_ARGS.includes('all')) {
-    commands.push({
-        name: 'in-memory-repository',
-        command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../../ghost/in-memory-repository'),
-        prefixColor: 'pink',
-        env: {}
-    });
-}
-
-if (DASH_DASH_ARGS.includes('collections') || DASH_DASH_ARGS.includes('all')) {
-    commands.push({
-        name: 'collections',
-        command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../../ghost/collections'),
-        prefixColor: 'pink',
-        env: {}
-    });
-}
-
-if (DASH_DASH_ARGS.includes('mail-events') || DASH_DASH_ARGS.includes('all')) {
-    commands.push({
-        name: 'collections',
-        command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../../ghost/mail-events'),
-        prefixColor: 'pink',
-        env: {}
-    });
+    commands = [COMMAND_GHOST, COMMAND_TYPESCRIPT, COMMAND_ADMIN];
 }
 
 if (DASH_DASH_ARGS.includes('admin-x') || DASH_DASH_ARGS.includes('adminx') || DASH_DASH_ARGS.includes('adminX') || DASH_DASH_ARGS.includes('all')) {

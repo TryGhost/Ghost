@@ -1,5 +1,6 @@
 import Heading from './Heading';
 import Hint from './Hint';
+import ListHeading from './ListHeading';
 import React from 'react';
 import Separator from './Separator';
 import clsx from 'clsx';
@@ -16,30 +17,28 @@ interface ListProps {
     title?: React.ReactNode;
     titleSeparator?: boolean;
     children?: React.ReactNode;
+    actions?: React.ReactNode;
     hint?: React.ReactNode;
     hintSeparator?: boolean;
     borderTop?: boolean;
+    className?: string;
 }
 
-const List: React.FC<ListProps> = ({title, titleSeparator, children, hint, hintSeparator, borderTop, pageTitle}) => {
+const List: React.FC<ListProps> = ({title, titleSeparator, children, actions, hint, hintSeparator, borderTop, pageTitle, className}) => {
     titleSeparator = (titleSeparator === undefined) ? true : titleSeparator;
     hintSeparator = (hintSeparator === undefined) ? true : hintSeparator;
 
     const listClasses = clsx(
         (borderTop || pageTitle) && 'border-t border-grey-300',
-        pageTitle && 'mt-14'
+        pageTitle && 'mt-14',
+        className
     );
 
     return (
         <>
             {pageTitle && <Heading>{pageTitle}</Heading>}
             <section className={listClasses}>
-                {(!pageTitle && title) &&
-                    <div className='flex flex-col gap-1'>
-                        <Heading grey={true} level={6}>{title}</Heading>
-                        {titleSeparator && <Separator />}
-                    </div>
-                }
+                <ListHeading actions={actions} title={title} titleSeparator={!pageTitle && titleSeparator && borderTop} />
                 <div className='flex flex-col'>
                     {children}
                 </div>

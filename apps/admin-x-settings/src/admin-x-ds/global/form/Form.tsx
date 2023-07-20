@@ -1,8 +1,11 @@
+import Heading from '../Heading';
 import React from 'react';
 import clsx from 'clsx';
 
 interface FormProps {
-    gap?: 'sm' | 'md' | 'lg';
+    title?: string;
+    grouped?: boolean;
+    gap?: 'none' | 'sm' | 'md' | 'lg';
     marginTop?: boolean;
     marginBottom?: boolean;
     children?: React.ReactNode;
@@ -12,6 +15,8 @@ interface FormProps {
  * A container to group form elements
  */
 const Form: React.FC<FormProps> = ({
+    title,
+    grouped = false,
     gap = 'md',
     marginTop = false,
     marginBottom = true,
@@ -42,8 +47,20 @@ const Form: React.FC<FormProps> = ({
         );
     }
 
+    if (grouped) {
+        classes = clsx(
+            classes,
+            'rounded-sm border border-grey-200 p-7'
+        );
+    }
+
+    let titleClasses = clsx(
+        grouped ? 'mb-2' : 'mb-4'
+    );
+
     return (
         <div className={classes}>
+            {title && <Heading className={titleClasses} level={5}>{title}</Heading>}
             {children}
         </div>
     );

@@ -18,11 +18,11 @@
     "lib"
   ],
   "devDependencies": {
-    "c8": "7.13.0",
-    "html-validate": "7.15.1",
+    "c8": "7.14.0",
+    "html-validate": "8.0.5",
     "mocha": "10.2.0",
     "should": "13.2.3",
-    "sinon": "15.0.3"
+    "sinon": "15.2.0"
   },
   "dependencies": {
     "@tryghost/color-utils": "0.1.24",

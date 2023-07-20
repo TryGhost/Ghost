@@ -1,6 +1,5 @@
+import useSortableIndexedList from '../useSortableIndexedList';
 import validator from 'validator';
-import {arrayMove} from '@dnd-kit/sortable';
-import {useEffect, useState} from 'react';
 
 export type NavigationItem = {
     label: string;
@@ -27,28 +26,18 @@ const useNavigationEditor = ({items, setItems}: {
     items: NavigationItem[];
     setItems: (newItems: NavigationItem[]) => void;
 }): NavigationEditor => {
-    // Copy items to a local state we can reorder without changing IDs, so that drag and drop animations work nicely
-    const [editableItems, setEditableItems] = useState<EditableItem[]>(items.map((item, index) => ({...item, id: index.toString(), errors: {}})));
-    const [newItem, setNewItem] = useState<EditableItem>({label: '', url: '/', id: 'new', errors: {}});
+    const hasNewItem = (newItem: NavigationItem) => Boolean((newItem.label && !newItem.label.match(/^\s*$/)) || newItem.url !== '/');
 
-    const isEditingNewItem = Boolean((newItem.label && !newItem.label.match(/^\s*$/)) || newItem.url !== '/');
-
-    useEffect(() => {
-        const allItems = editableItems.map(({url, label}) => ({url, label}));
-
-        // If the user is adding a new item, save the new item if the form is saved
-        if (isEditingNewItem) {
-            allItems.push({url: newItem.url, label: newItem.label});
-        }
-
-        if (JSON.stringify(allItems) !== JSON.stringify(items)) {
-            setItems(allItems);
-        }
-    }, [editableItems, newItem, isEditingNewItem, items, setItems]);
+    const list = useSortableIndexedList<Omit<EditableItem, 'id'>>({
+        items: items.map(item => ({...item, errors: {}})),
+        setItems: newItems => setItems(newItems.map(({url, label}) => ({url, label}))),
+        blank: {label: '', url: '/', errors: {}},
+        canAddNewItem: hasNewItem
+    });
 
     const urlRegex = new RegExp(/^(\/|#|[a-zA-Z0-9-]+:)/);
 
-    const validateItem = (item: EditableItem) => {
+    const validateItem = (item: NavigationItem) => {
         const errors: NavigationItemErrors = {};
 
         if (!item.label || item.label.match(/^\s*$/)) {
@@ -63,70 +52,73 @@ const useNavigationEditor = ({items, setItems}: {
     };
 
     const updateItem = (id: string, item: Partial<NavigationItem>) => {
-        setEditableItems(editableItems.map(current => (current.id === id ? {...current, ...item} : current)));
+        const currentItem = list.items.find(current => current.id === id)!;
+        list.updateItem(id, {...currentItem.item, ...item});
     };
 
     const addItem = () => {
-        const errors = validateItem(newItem);
+        const errors = validateItem(list.newItem);
 
         if (Object.values(errors).some(message => message)) {
-            setNewItem({...newItem, errors});
+            list.setNewItem({...list.newItem, errors});
         } else {
-            setEditableItems(editableItems.concat({...newItem, id: editableItems.length.toString(), errors: {}}));
-            setNewItem({label: '', url: '/', id: 'new', errors: {}});
+            list.addItem();
         }
     };
 
     const removeItem = (id: string) => {
-        setEditableItems(editableItems.filter(item => item.id !== id));
+        list.removeItem(id);
     };
 
     const moveItem = (activeId: string, overId?: string) => {
-        if (activeId !== overId) {
-            const fromIndex = editableItems.findIndex(item => item.id === activeId);
-            const toIndex = overId ? editableItems.findIndex(item => item.id === overId) : 0;
-            setEditableItems(arrayMove(editableItems, fromIndex, toIndex));
-        }
+        list.moveItem(activeId, overId);
     };
 
+    const newItemId = 'new';
+
     const clearError = (id: string, key: keyof NavigationItem) => {
-        if (id === newItem.id) {
-            setNewItem({...newItem, errors: {...newItem.errors, [key]: undefined}});
+        if (id === newItemId) {
+            list.setNewItem({...list.newItem, errors: {...list.newItem.errors, [key]: undefined}});
         } else {
-            setEditableItems(editableItems.map(current => (current.id === id ? {...current, errors: {...current.errors, [key]: undefined}} : current)));
+            const currentItem = list.items.find(current => current.id === id)!.item;
+            list.updateItem(id, {...currentItem, errors: {...currentItem.errors, [key]: undefined}});
         }
     };
 
     return {
-        items: editableItems,
+        items: list.items.map(({item, id}) => ({...item, id})),
 
         updateItem,
         addItem,
         removeItem,
         moveItem,
 
-        newItem,
-        setNewItem: item => setNewItem({...newItem, ...item}),
+        newItem: {...list.newItem, id: newItemId},
+        setNewItem: item => list.setNewItem({...list.newItem, ...item}),
 
         clearError,
         validate: () => {
-            const errors: { [id: string]: NavigationItemErrors } = {};
+            let isValid = true;
 
-            editableItems.forEach((item) => {
-                errors[item.id] = validateItem(item);
+            list.items.forEach(({item, id}) => {
+                let errors = validateItem(item);
+
+                if (Object.values(errors).some(message => message)) {
+                    isValid = false;
+                    list.updateItem(id, {...item, errors});
+                }
             });
 
-            if (isEditingNewItem) {
-                errors[newItem.id] = validateItem(newItem);
+            if (hasNewItem(list.newItem)) {
+                const newItemErrors = validateItem(list.newItem);
+
+                if (Object.values(newItemErrors).some(message => message)) {
+                    isValid = false;
+                    list.setNewItem({...list.newItem, errors: newItemErrors});
+                }
             }
 
-            if (Object.values(errors).some(error => Object.values(error).some(message => message))) {
-                setEditableItems(editableItems.map(item => ({...item, errors: errors[item.id] || {}})));
-                setNewItem({...newItem, errors: errors[newItem.id] || {}});
-                return false;
-            }
-
-            return true;
+            return isValid;
         }
     };
 };

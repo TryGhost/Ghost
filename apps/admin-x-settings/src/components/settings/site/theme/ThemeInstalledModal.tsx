@@ -13,22 +13,28 @@ const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
     const [isExpanded, setExpanded] = useState(false);
 
     return <ListItem
-        action={<Button color="green" label={isExpanded ? 'Collapse' : 'Expand'} link onClick={() => setExpanded(!isExpanded)} />}
-        detail={
-            isExpanded ?
-                <>
-                    <div dangerouslySetInnerHTML={{__html: problem.details}} />
-                    <Heading level={6}>Affected files:</Heading>
-                    <ul>
-                        {problem.failures.map(failure => <li><code>{failure.ref}</code>{failure.message ? `: ${failure.message}` : ''}</li>)}
-                    </ul>
-                </> :
-                null
+        title={
+            <>
+                <div className={`${problem.level === 'error' ? 'before:bg-red' : 'before:bg-yellow'} relative px-4 text-sm before:absolute before:left-0 before:top-1.5 before:block before:h-2 before:w-2 before:rounded-full before:content-['']`}>
+                    <strong>{problem.level === 'error' ? 'Error: ' : 'Warning: '}</strong>
+                    <span dangerouslySetInnerHTML={{__html: problem.rule}} />
+                    <div className='absolute -right-4 top-1'>
+                        <Button color="green" icon={isExpanded ? 'chevron-down' : 'chevron-right'} iconColorClass='text-grey-700' size='sm' link onClick={() => setExpanded(!isExpanded)} />
+                    </div>
+                </div>
+                {
+                    isExpanded ?
+                        <div className='mt-2 px-4 text-[13px] leading-8'>
+                            <div dangerouslySetInnerHTML={{__html: problem.details}} className='mb-4' />
+                            <Heading level={6}>Affected files:</Heading>
+                            <ul className='mt-1'>
+                                {problem.failures.map(failure => <li><code>{failure.ref}</code>{failure.message ? `: ${failure.message}` : ''}</li>)}
+                            </ul>
+                        </div> :
+                        null
+                }
+            </>
         }
-        title={<>
-            <strong>{problem.level === 'error' ? 'Error: ' : 'Warning: '}</strong>
-            <span dangerouslySetInnerHTML={{__html: problem.rule}} />
-        </>}
         hideActions
         separator
     />;
@@ -39,7 +45,8 @@ const ThemeInstalledModal: React.FC<{
     prompt: ReactNode
     installedTheme: InstalledTheme;
     setThemes: (callback: (themes: Theme[]) => Theme[]) => void;
-}> = ({title, prompt, installedTheme, setThemes}) => {
+    onActivate?: () => void;
+}> = ({title, prompt, installedTheme, setThemes, onActivate}) => {
     const api = useApi();
 
     let errorPrompt = null;
@@ -53,7 +60,7 @@ const ThemeInstalledModal: React.FC<{
 
     let warningPrompt = null;
     if (installedTheme.warnings) {
-        warningPrompt = <div className="mt-6">
+        warningPrompt = <div className="mt-10">
             <List title="Warnings">
                 {installedTheme.warnings?.map(warning => <ThemeProblemView problem={warning} />)}
             </List>
@@ -98,9 +105,10 @@ const ThemeInstalledModal: React.FC<{
 
                 showToast({
                     type: 'success',
-                    message: `${updatedTheme.name} is now your active theme.`
+                    message: <div><span className='capitalize'>{updatedTheme.name}</span> is now your active theme.</div>
                 });
             }
+            onActivate?.();
             activateModal?.remove();
         }}
     />;

@@ -39,19 +39,19 @@
 }
 
 .kg-width-full .kg-signup-card-text {
-    padding: 9.6vmax 0;
+    padding: 12vmax 0;
 }
 
 .kg-layout-split .kg-signup-card-text {
-    padding: 9.6vmax 4vmax;
+    padding: 12vmax 4vmax;
 }
 
 .kg-layout-split.kg-content-wide .kg-signup-card-text {
-    padding: 9.6vmax 0 9.6vmax 4vmax;
+    padding: 10vmax 0 10vmax 4vmax;
 }
 
 .kg-layout-split.kg-content-wide.kg-swapped .kg-signup-card-text {
-    padding: 9.6vmax 4vmax 9.6vmax 0;
+    padding: 10vmax 4vmax 10vmax 0;
 }
 
 .kg-swapped .kg-signup-card-text {

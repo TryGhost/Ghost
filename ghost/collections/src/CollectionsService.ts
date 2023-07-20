@@ -1,8 +1,10 @@
 import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
+import ObjectID from 'bson-objectid';
 import {Collection} from './Collection';
 import {CollectionResourceChangeEvent} from './CollectionResourceChangeEvent';
 import {CollectionRepository} from './CollectionRepository';
+import {CollectionPost} from './CollectionPost';
 import {MethodNotAllowedError, NotFoundError} from '@tryghost/errors';
 import {PostDeletedEvent} from './events/PostDeletedEvent';
 import {PostAddedEvent} from './events/PostAddedEvent';
@@ -40,11 +42,15 @@ type CollectionPostDTO = {
 
 type CollectionPostListItemDTO = {
     id: string;
+    url: string;
     slug: string;
     title: string;
     featured: boolean;
     featured_image?: string;
-    published_at: Date
+    created_at: Date;
+    updated_at: Date;
+    published_at: Date,
+    tags?: string[];
 }
 
 type ManualCollection = {
@@ -129,6 +135,21 @@ export class CollectionsService {
         };
     }
 
+    private toCollectionPostDTO(post: any): CollectionPostListItemDTO {
+        return {
+            id: post.id,
+            url: post.url,
+            slug: post.slug,
+            title: post.title,
+            featured: post.featured,
+            featured_image: post.featured_image,
+            created_at: post.created_at,
+            updated_at: post.updated_at,
+            published_at: post.published_at,
+            tags: post.tags
+        };
+    }
+
     private fromDTO(data: any): any {
         const mappedDTO: {[index: string]:any} = {
             title: data.title,
@@ -155,18 +176,22 @@ export class CollectionsService {
         // generic handler for all events that are not handled optimally yet
         // this handler should go away once we have logic fo reach event
         this.DomainEvents.subscribe(CollectionResourceChangeEvent, async () => {
+            logging.info('CollectionResourceChangeEvent received, updating all collections');
             await this.updateCollections();
         });
 
         this.DomainEvents.subscribe(PostDeletedEvent, async (event: PostDeletedEvent) => {
+            logging.info(`PostDeletedEvent received, removing post ${event.id} from all collections`);
             await this.removePostFromAllCollections(event.id);
         });
 
         this.DomainEvents.subscribe(PostAddedEvent, async (event: PostAddedEvent) => {
+            logging.info(`PostAddedEvent received, adding post ${event.data.id} to matching collections`);
             await this.addPostToMatchingCollections(event.data);
         });
 
         this.DomainEvents.subscribe(PostEditedEvent, async (event: PostEditedEvent) => {
+            logging.info(`PostEditedEvent received, updating post ${event.data.id} in matching collections`);
             await this.updatePostInMatchingCollections(event.data);
         });
     }
@@ -239,7 +264,7 @@ export class CollectionsService {
         }
     }
 
-    private async addPostToMatchingCollections(post: {id: string, featured: boolean, published_at: Date}) {
+    private async addPostToMatchingCollections(post: CollectionPost) {
         const collections = await this.collectionsRepository.getAll({
             filter: 'type:automatic'
         });
@@ -350,8 +375,19 @@ export class CollectionsService {
         };
     }
 
+    /**
+     * @param id {string | ObjectID} - collection id or slug
+     * @param pagingOpts {QueryOptions}
+     * @returns
+     */
     async getAllPosts(id: string, {limit = 15, page = 1}: QueryOptions): Promise<{data: CollectionPostListItemDTO[], meta: any}> {
-        const collection = await this.getById(id);
+        let collection;
+
+        if (ObjectID.isValid(id)) {
+            collection = await this.getById(id);
+        } else {
+            collection = await this.getBySlug(id);
+        }
 
         if (!collection) {
             throw new NotFoundError({
@@ -366,7 +402,7 @@ export class CollectionsService {
         const posts = await this.postsRepository.getBulk(postIds);
 
         return {
-            data: posts,
+            data: posts.map(this.toCollectionPostDTO),
             meta: {
                 pagination: {
                     page: page,
@@ -385,7 +421,11 @@ export class CollectionsService {
             filter: `posts:${postId}`
         });
 
-        return collections.map(collection => this.toDTO(collection));
+        return collections.map(collection => this.toDTO(collection))
+            .sort((a, b) => {
+                // NOTE: sorting is here to keep DB engine ordering consistent
+                return a.slug.localeCompare(b.slug);
+            });
     }
 
     async destroy(id: string): Promise<Collection | null> {

@@ -286,6 +286,20 @@
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
+                            <h4 class="gh-expandable-title">Collections Card</h4>
+                            <p class="gh-expandable-description">
+                                Enables the Collections Card for pages - requires Collections and the beta Editor to be enabled
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="collectionsCard" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
                             <h4 class="gh-expandable-title">Admin X</h4>
                             <p class="gh-expandable-description">
                                 Enables Admin X, the new admin UI for Ghost
@@ -335,6 +349,20 @@
                         </div>
                         <div class="for-switch">
                             <GhFeatureFlag @flag="mailEvents" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Header Card v2</h4>
+                            <p class="gh-expandable-description">
+                                A new enhanced version of the header card
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="headerUpgrade" />
                         </div>
                     </div>
                 </div>

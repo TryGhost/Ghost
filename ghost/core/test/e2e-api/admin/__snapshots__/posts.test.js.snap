@@ -1457,6 +1457,91 @@ Object {
           "type": "manual",
           "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z/,
         },
+        Object {
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z/,
+          "description": "All posts",
+          "feature_image": null,
+          "filter": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "posts": Array [
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 0,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 1,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 2,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 3,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 4,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 5,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 6,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 7,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 8,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 9,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 10,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 11,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 12,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 13,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 14,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 15,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 16,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 17,
+            },
+          ],
+          "slug": "latest",
+          "title": "Latest",
+          "type": "automatic",
+          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z/,
+        },
       ],
       "comment_id": Any<String>,
       "count": Object {
@@ -1547,7 +1632,7 @@ exports[`Posts API Update Can add and remove collections 6: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4016",
+  "content-length": "5143",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const Promise = require('bluebird');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
@@ -41,7 +40,9 @@ const ALPHA_FEATURES = [
     'adminXSettings',
     'pageImprovements',
     'flatUrls',
-    'mailEvents'
+    'mailEvents',
+    'collectionsCard',
+    'headerUpgrade'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

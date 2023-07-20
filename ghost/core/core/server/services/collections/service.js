@@ -1,7 +1,7 @@
 const {
-    CollectionsService,
-    CollectionsRepositoryInMemory
+    CollectionsService
 } = require('@tryghost/collections');
+const BookshelfCollectionsRepository = require('./BookshelfCollectionsRepository');
 const labs = require('../../../shared/labs');
 
 class CollectionsServiceWrapper {
@@ -9,9 +9,10 @@ class CollectionsServiceWrapper {
     api;
 
     constructor() {
-        const postsRepository = require('./PostsRepository').getInstance();
-        const collectionsRepositoryInMemory = new CollectionsRepositoryInMemory();
         const DomainEvents = require('@tryghost/domain-events');
+        const postsRepository = require('./PostsRepository').getInstance();
+        const models = require('../../models');
+        const collectionsRepositoryInMemory = new BookshelfCollectionsRepository(models.Collection);
 
         const collectionsService = new CollectionsService({
             collectionsRepository: collectionsRepositoryInMemory,
@@ -19,7 +20,7 @@ class CollectionsServiceWrapper {
             DomainEvents: DomainEvents,
             slugService: {
                 async generate(input) {
-                    return input.toLowerCase().trim().replace(/^[^a-z0-9A-Z_]+/, '').replace(/[^a-z0-9A-Z_]+$/, '').replace(/[^a-z0-9A-Z_]+/g, '-');
+                    return models.Collection.generateSlug(models.Collection, input, {});
                 }
             }
         });
@@ -30,28 +31,6 @@ class CollectionsServiceWrapper {
     async init() {
         if (!labs.isSet('collections')) {
             return;
-        }
-
-        const existingBuiltins = await this.api.getAll({filter: 'slug:featured'});
-
-        if (!existingBuiltins.data.length) {
-            await this.api.createCollection({
-                title: 'Index',
-                slug: 'index',
-                description: 'Collection with all posts',
-                type: 'automatic',
-                deletable: false,
-                filter: 'status:published'
-            });
-
-            await this.api.createCollection({
-                title: 'Featured Posts',
-                slug: 'featured',
-                description: 'Collection of featured posts',
-                type: 'automatic',
-                deletable: false,
-                filter: 'featured:true'
-            });
         }
 
         this.api.subscribeToEvents();

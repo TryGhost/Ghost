@@ -1,4 +1,5 @@
 import Heading from '../../../../admin-x-ds/global/Heading';
+import ModalPage from '../../../../admin-x-ds/global/modal/ModalPage';
 import React from 'react';
 import {OfficialTheme} from '../../../../models/themes';
 import {getGhostPaths} from '../../../../utils/helpers';
@@ -13,9 +14,8 @@ const OfficialThemes: React.FC<{
     const officialThemes = useOfficialThemes();
 
     return (
-        <div className='h-[calc(100vh-74px-40px)] overflow-y-auto overflow-x-hidden p-[8vmin] pt-5'>
-            <Heading>Themes</Heading>
-            <div className='mt-[6vmin] grid grid-cols-1 gap-[6vmin] sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'>
+        <ModalPage heading='Themes'>
+            <div className='mt-[6vmin] grid grid-cols-1 gap-[6vmin] sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4'>
                 {officialThemes.map((theme) => {
                     return (
                         <button key={theme.name} className='flex cursor-pointer flex-col gap-3 text-left' type='button' onClick={() => {
@@ -37,7 +37,7 @@ const OfficialThemes: React.FC<{
                     );
                 })}
             </div>
-        </div>
+        </ModalPage>
     );
 };
 

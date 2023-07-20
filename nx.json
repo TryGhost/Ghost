@@ -1,0 +1,36 @@
+{
+    "tasksRunnerOptions": {
+        "default": {
+            "runner": "nx/tasks-runners/default",
+            "options": {
+                "cacheableOperations": [
+                    "build:ts",
+                    "lint",
+                    "test",
+                    "test:unit"
+                ],
+                "cacheDirectory": ".nxcache"
+            }
+        }
+    },
+    "namedInputs": {
+        "default": [
+            "{projectRoot}/**/*"
+        ]
+    },
+    "targetDefaults": {
+        "build:ts": {
+            "dependsOn": [
+                "^build:ts"
+            ],
+            "inputs": [
+                "default",
+                "^default"
+            ],
+            "outputs": [
+                "{projectRoot}/build"
+            ]
+        }
+    },
+    "$schema": "./node_modules/nx/schemas/nx-schema.json"
+}

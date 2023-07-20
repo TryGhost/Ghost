@@ -51,7 +51,7 @@ const DesktopChromeHeader: React.FC<DesktopChromeHeaderProps & React.HTMLAttribu
     );
 
     return (
-        <header className={`relative flex items-center justify-center bg-grey-50 ${containerSize} ${toolbarClasses}`} {...props}>
+        <header className={`relative flex shrink-0 items-center justify-center ${containerSize} ${toolbarClasses}`} {...props}>
             {toolbarLeft ?
                 <div className='absolute left-5 flex h-full items-center'>
                     {toolbarLeft}

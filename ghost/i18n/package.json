@@ -25,12 +25,12 @@
     "locales"
   ],
   "devDependencies": {
-    "c8": "7.13.0",
-    "i18next-parser": "8.0.0",
+    "c8": "7.14.0",
+    "i18next-parser": "8.3.0",
     "mocha": "10.2.0",
     "typescript": "5.1.6"
   },
   "dependencies": {
-    "i18next": "23.0.1"
+    "i18next": "23.2.8"
   }
 }

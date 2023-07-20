@@ -88,6 +88,7 @@ describe('Posts API', function () {
     let agent;
 
     before(async function () {
+        mockManager.mockLabsEnabled('collections', true);
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts');
         await agent.loginAsOwner();
@@ -472,6 +473,9 @@ describe('Posts API', function () {
                     }]
                 });
 
+            const collectionPostMatcher = {
+                id: anyObjectId
+            };
             const collectionMatcher = {
                 id: anyObjectId,
                 created_at: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/),
@@ -479,6 +483,14 @@ describe('Posts API', function () {
                 posts: [{
                     id: anyObjectId
                 }]
+            };
+            const buildCollectionMatcher = (postsCount) => {
+                return {
+                    id: anyObjectId,
+                    created_at: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/),
+                    updated_at: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/),
+                    posts: Array(postsCount).fill(collectionPostMatcher)
+                };
             };
 
             await agent.put(`/posts/${postResponse.id}/`)
@@ -497,7 +509,13 @@ describe('Posts API', function () {
                 .body({posts: [Object.assign({}, postResponse, {collections: [collectionToAdd.id]})]})
                 .expectStatus(200)
                 .matchBodySnapshot({
-                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null}, {collections: [collectionMatcher]})]
+                    posts: [
+                        Object.assign({}, matchPostShallowIncludes, {published_at: null}, {collections: [
+                            collectionMatcher,
+                            buildCollectionMatcher(18)
+                        ]}
+                        )
+                    ]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,

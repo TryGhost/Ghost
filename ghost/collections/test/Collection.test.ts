@@ -209,6 +209,23 @@ describe('Collection', function () {
                 return true;
             });
         });
+
+        it('Does not throw when collection filter is empty for automatic "latest" collection', async function (){
+            const collection = await Collection.create({
+                title: 'Latest',
+                slug: 'latest',
+                type: 'automatic',
+                filter: ''
+            });
+
+            const editedCollection = await collection.edit({
+                title: 'Edited latest',
+                filter: ''
+            }, uniqueChecker);
+
+            assert.equal(editedCollection.title, 'Edited latest');
+            assert.equal(editedCollection.filter, '');
+        });
     });
 
     it('Can add posts to different positions', async function () {
@@ -286,10 +303,10 @@ describe('Collection', function () {
         assert.equal(collection.posts.length, 0);
     });
 
-    it('Cannot set index collection to deleted', async function () {
+    it('Cannot set "latest" collection to deleted', async function () {
         const collection = await Collection.create({
             title: 'Testing adding posts',
-            slug: 'index'
+            slug: 'latest'
         });
 
         assert.equal(collection.deleted, false);

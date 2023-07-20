@@ -6,7 +6,7 @@ import useRouting from '../../../hooks/useRouting';
 const DesignSetting: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {updateRoute} = useRouting();
     const openPreviewModal = () => {
-        updateRoute('branding-and-design/edit');
+        updateRoute('design/edit');
     };
 
     return (
@@ -14,7 +14,7 @@ const DesignSetting: React.FC<{ keywords: string[] }> = ({keywords}) => {
             customButtons={<Button color='green' label='Customize' link onClick={openPreviewModal}/>}
             description="Customize the look and feel of your site"
             keywords={keywords}
-            navid='branding-and-design'
+            navid='design'
             testId='design'
             title="Branding and design"
         />

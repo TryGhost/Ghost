@@ -2,6 +2,7 @@ import {UniqueChecker} from './UniqueChecker';
 import {ValidationError} from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import nql = require('@tryghost/nql');
+import {CollectionPost} from './CollectionPost';
 
 import ObjectID from 'bson-objectid';
 
@@ -15,12 +16,6 @@ const messages = {
     noTitleProvided: 'Title must be provided',
     slugMustBeUnique: 'Slug must be unique'
 };
-
-type CollectionPost = {
-    id: string;
-    featured?: boolean;
-    published_at?: Date;
-}
 
 export class Collection {
     id: string;
@@ -49,7 +44,7 @@ export class Collection {
     createdAt: Date;
     updatedAt: Date;
     get deletable() {
-        return this.slug !== 'index' && this.slug !== 'featured';
+        return this.slug !== 'latest' && this.slug !== 'featured';
     }
     private _deleted: boolean = false;
 
@@ -69,7 +64,7 @@ export class Collection {
     }
 
     public async edit(data: Partial<Collection>, uniqueChecker: UniqueChecker) {
-        if (this.type === 'automatic' && (data.filter === null || data.filter === '')) {
+        if (this.type === 'automatic' && this.slug !== 'latest' && (data.filter === null || data.filter === '')) {
             throw new ValidationError({
                 message: tpl(messages.invalidFilterProvided.message),
                 context: tpl(messages.invalidFilterProvided.context)
@@ -201,7 +196,7 @@ export class Collection {
             });
         }
 
-        if (data.type === 'automatic' && !data.filter) {
+        if (data.type === 'automatic' && (data.slug !== 'latest') && !data.filter) {
             // @NOTE: add filter validation here
             throw new ValidationError({
                 message: tpl(messages.invalidFilterProvided.message),

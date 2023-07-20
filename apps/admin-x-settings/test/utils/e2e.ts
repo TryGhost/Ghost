@@ -56,6 +56,8 @@ interface Responses {
     }
     tiers?: {
         browse?: TiersResponseType
+        edit?: TiersResponseType
+        add?: TiersResponseType
     }
     labels?: {
         browse?: LabelsResponseType
@@ -121,6 +123,8 @@ type LastRequests = {
     }
     tiers: {
         browse: RequestRecord
+        edit: RequestRecord
+        add: RequestRecord
     }
     labels: {
         browse: RequestRecord
@@ -152,7 +156,7 @@ export async function mockApi({page,responses}: {page: Page, responses?: Respons
         images: {upload: {}},
         customThemeSettings: {browse: {}, edit: {}},
         latestPost: {browse: {}},
-        tiers: {browse: {}},
+        tiers: {browse: {}, edit: {}, add: {}},
         labels: {browse: {}},
         offers: {browse: {}},
         themes: {browse: {}, activate: {}, delete: {}, install: {}, upload: {}},
@@ -386,7 +390,29 @@ export async function mockApi({page,responses}: {page: Page, responses?: Respons
 
     await mockApiResponse({
         page,
-        path: /\/ghost\/api\/admin\/tiers\/\?filter=/,
+        path: /\/ghost\/api\/admin\/tiers\/\w{24}/,
+        respondTo: {
+            PUT: {
+                body: responses?.tiers?.edit ?? responseFixtures.tiers,
+                updateLastRequest: lastApiRequests.tiers.edit
+            }
+        }
+    });
+
+    await mockApiResponse({
+        page,
+        path: /\/ghost\/api\/admin\/tiers\/$/,
+        respondTo: {
+            POST: {
+                body: responses?.tiers?.add ?? responseFixtures.tiers,
+                updateLastRequest: lastApiRequests.tiers.add
+            }
+        }
+    });
+
+    await mockApiResponse({
+        page,
+        path: /\/ghost\/api\/admin\/tiers\/\?limit/,
         respondTo: {
             GET: {
                 body: responses?.tiers?.browse ?? responseFixtures.tiers,

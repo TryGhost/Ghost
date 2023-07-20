@@ -3,6 +3,7 @@ import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationM
 import List from '../../../../admin-x-ds/global/List';
 import ListItem from '../../../../admin-x-ds/global/ListItem';
 import Menu from '../../../../admin-x-ds/global/Menu';
+import ModalPage from '../../../../admin-x-ds/global/modal/ModalPage';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import {Theme} from '../../../../types/api';
@@ -35,7 +36,7 @@ function getThemeLabel(theme: Theme): React.ReactNode {
 
     if (isActiveTheme(theme)) {
         label =
-            <span className='font-bold'>
+            <span className="font-bold">
                 {label} &mdash; <span className='text-green'> Active</span>
             </span>;
     }
@@ -152,6 +153,17 @@ const ThemeList:React.FC<ThemeSettingProps> = ({
     themes,
     setThemes
 }) => {
+    themes.sort((a, b) => {
+        if (a.active && !b.active) {
+            return -1; // a comes before b
+        } else if (!a.active && b.active) {
+            return 1; // b comes before a
+        } else {
+            // Both have the same active status, sort alphabetically
+            return a.name.localeCompare(b.name);
+        }
+    });
+
     return (
         <List pageTitle='Installed themes'>
             {themes.map((theme) => {
@@ -185,12 +197,12 @@ const AdvancedThemeSettings: React.FC<ThemeSettingProps> = ({
     setThemes
 }) => {
     return (
-        <div className='p-[8vmin] pt-5'>
+        <ModalPage>
             <ThemeList
                 setThemes={setThemes}
                 themes={themes}
             />
-        </div>
+        </ModalPage>
     );
 };
 

@@ -109,6 +109,12 @@ export const GlobalStyles = `
         cursor: pointer;
     }
 
+    p a {
+        font-weight: 500;
+        color: var(--brandcolor);
+        text-decoration: none;
+    }
+
     svg {
         box-sizing: content-box;
     }
