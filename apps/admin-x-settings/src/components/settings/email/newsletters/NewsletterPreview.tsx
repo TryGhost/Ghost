@@ -6,14 +6,16 @@ const NewsletterPreview: React.FC = () => {
     return (
         <div className="relative flex grow flex-col">
             <div className="GIGI absolute inset-0 m-5">
-                <div className="mx-auto my-0 flex h-full w-full max-w-[700px] flex-col overflow-hidden rounded-[4px] text-black shadow-xl">
+                <div className="mx-auto my-0 flex h-full w-full max-w-[700px] flex-col overflow-hidden rounded-[4px] text-black shadow-sm">
 
                     {/* Email header */}
                     <div className="flex-column flex min-h-[77px] justify-center rounded-t-sm border-b border-grey-200 bg-grey-100 px-6 text-sm text-grey-700">
                         <p className="leading-normal"><span className="font-semibold text-grey-900">Ghost</span><span> noreply@localhost</span></p>
                         <p className="leading-normal"><span className="font-semibold text-grey-900">To:</span> Jamie Larson jamie@example.com</p>
                     </div>
-                    <div className="overflow-y-auto px-20 text-sm">
+
+                    {/* Email content */}
+                    <div className="overflow-y-auto bg-white px-20 text-sm">
                         <div>
                             <img alt="" className="mt-6 block" src="https://images.unsplash.com/photo-1681898190846-0a133b5b7fe0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80"/>
                         </div>
