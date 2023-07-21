@@ -26,6 +26,24 @@ const matchPostShallowIncludes = {
     post_revisions: anyArray
 };
 
+const buildMatchPostShallowIncludes = (tiersCount = 2) => {
+    return {
+        id: anyObjectId,
+        uuid: anyUuid,
+        comment_id: anyString,
+        url: anyString,
+        authors: anyArray,
+        primary_author: anyObject,
+        tags: anyArray,
+        primary_tag: anyObject,
+        tiers: Array(tiersCount).fill(tierSnapshot),
+        created_at: anyISODateTime,
+        updated_at: anyISODateTime,
+        published_at: anyISODateTime,
+        post_revisions: anyArray
+    };
+};
+
 function testCleanedSnapshot(text, ignoreReplacements) {
     for (const {match, replacement} of ignoreReplacements) {
         if (match instanceof RegExp) {
@@ -131,6 +149,19 @@ describe('Posts API', function () {
             })
             .matchBodySnapshot({
                 posts: new Array(2).fill(matchPostShallowIncludes)
+            });
+    });
+
+    it('Can browse filtering by collection using paging parameters', async function () {
+        await agent
+            .get(`posts/?collection=latest&limit=1&page=7`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                posts: Array(1).fill(buildMatchPostShallowIncludes(2))
             });
     });
 
@@ -497,7 +528,13 @@ describe('Posts API', function () {
                 .body({posts: [Object.assign({}, postResponse, {collections: [collectionToRemove.id]})]})
                 .expectStatus(200)
                 .matchBodySnapshot({
-                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null}, {collections: [collectionMatcher]})]
+                    posts: [
+                        Object.assign({}, matchPostShallowIncludes, {published_at: null}, {collections: [
+                            // collectionToRemove
+                            collectionMatcher,
+                            // automatic "latest" collection which cannot be removed
+                            buildCollectionMatcher(18)
+                        ]})]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
@@ -511,11 +548,11 @@ describe('Posts API', function () {
                 .matchBodySnapshot({
                     posts: [
                         Object.assign({}, matchPostShallowIncludes, {published_at: null}, {collections: [
+                            // collectionToAdd
                             collectionMatcher,
+                            // automatic "latest" collection which cannot be removed
                             buildCollectionMatcher(18)
-                        ]}
-                        )
-                    ]
+                        ]})]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,

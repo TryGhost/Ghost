@@ -191,9 +191,7 @@ export class CollectionsService {
 
     async createCollection(data: CollectionInputDTO): Promise<CollectionDTO> {
         return await this.collectionsRepository.createTransaction(async (transaction) => {
-            const slug = await this.slugService.generate(data.slug || data.title, {
-                transaction: transaction
-            });
+            const slug = await this.slugService.generate(data.slug || data.title, {transaction});
             const collection = await Collection.create({
                 title: data.title,
                 slug: slug,
@@ -211,13 +209,11 @@ export class CollectionsService {
                 });
 
                 for (const post of posts) {
-                    collection.addPost(post);
+                    await collection.addPost(post);
                 }
             }
 
-            await this.collectionsRepository.save(collection, {
-                transaction: transaction
-            });
+            await this.collectionsRepository.save(collection, {transaction});
 
             return this.toDTO(collection);
         });
@@ -225,15 +221,15 @@ export class CollectionsService {
 
     async addPostToCollection(collectionId: string, post: CollectionPostListItemDTO): Promise<CollectionDTO | null> {
         return await this.collectionsRepository.createTransaction(async (transaction) => {
-            const collection = await this.collectionsRepository.getById(collectionId);
+            const collection = await this.collectionsRepository.getById(collectionId, {transaction});
 
             if (!collection) {
                 return null;
             }
 
-            collection.addPost(post);
+            await collection.addPost(post);
 
-            await this.collectionsRepository.save(collection);
+            await this.collectionsRepository.save(collection, {transaction});
 
             return this.toDTO(collection);
         });
@@ -249,7 +245,7 @@ export class CollectionsService {
             collection.removeAllPosts();
 
             for (const post of posts) {
-                collection.addPost(post);
+                await collection.addPost(post);
             }
 
             await this.collectionsRepository.save(collection, {transaction});
@@ -281,9 +277,7 @@ export class CollectionsService {
                 const added = await collection.addPost(post);
 
                 if (added) {
-                    await this.collectionsRepository.save(collection, {
-                        transaction: transaction
-                    });
+                    await this.collectionsRepository.save(collection, {transaction});
                 }
             }
         });
@@ -330,7 +324,7 @@ export class CollectionsService {
 
             if (collection.type === 'manual' && data.posts) {
                 for (const post of data.posts) {
-                    collection.addPost(post);
+                    await collection.addPost(post);
                 }
             }
 
@@ -343,7 +337,7 @@ export class CollectionsService {
                 collection.removeAllPosts();
 
                 for (const post of posts) {
-                    collection.addPost(post);
+                    await collection.addPost(post);
                 }
             }
 

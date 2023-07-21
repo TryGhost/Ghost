@@ -430,6 +430,123 @@ Object {
 }
 `;
 
+exports[`Posts API Can browse filtering by collection using paging parameters 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": 1,
+      "next": 8,
+      "page": 7,
+      "pages": 11,
+      "prev": 6,
+      "total": 11,
+    },
+  },
+  "posts": Array [
+    Object {
+      "authors": Any<Array>,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "comment_id": Any<String>,
+      "count": Object {
+        "clicks": 0,
+        "negative_feedback": 0,
+        "positive_feedback": 0,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "custom_excerpt": "Work with all your favorite apps and tools or create your own custom integrations using the Ghost API.",
+      "custom_template": null,
+      "email": null,
+      "email_only": false,
+      "email_segment": "all",
+      "email_subject": null,
+      "excerpt": "Work with all your favorite apps and tools or create your own custom integrations using the Ghost API.",
+      "feature_image": "https://static.ghost.org/v4.0.0/images/app-integrations.png",
+      "feature_image_alt": null,
+      "feature_image_caption": null,
+      "featured": false,
+      "frontmatter": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "meta_description": null,
+      "meta_title": null,
+      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"atoms\\":[],\\"cards\\":[[\\"image\\",{\\"src\\":\\"https://static.ghost.org/v4.0.0/images/integrations-icons.png\\",\\"cardWidth\\":\\"full\\"}],[\\"markdown\\",{\\"markdown\\":\\"<script src=\\\\\\"https://zapier.com/apps/embed/widget.js?services=Ghost,-shortcm,-hubspot,-sendpulse,-noticeable,-aweber,-icontact,-facebook-pages,-github,-medium,-slack,-mailchimp,-activecampaign,-twitter,-discourse&container,-convertkit,-drip,-airtable=true&limit=5\\\\\\"></script>\\\\n\\"}],[\\"image\\",{\\"src\\":\\"https://static.ghost.org/v4.0.0/images/iawriter-integration.png\\",\\"width\\":2244,\\"height\\":936}]],\\"markups\\":[[\\"a\\",[\\"href\\",\\"https://ghost.org/integrations/\\"]],[\\"strong\\"]],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"It's possible to extend your Ghost site and connect it with hundreds of the most popular apps and tools using integrations. \\"]]],[1,\\"p\\",[[0,[],0,\\"Whether you need to automatically publish new posts on social media, connect your favorite analytics tool, sync your community or embed forms into your content — our \\"],[0,[0],1,\\"integrations library\\"],[0,[],0,\\" has got it all covered with hundreds of integration tutorials.\\"]]],[1,\\"p\\",[[0,[],0,\\"Many integrations are as simple as inserting an embed by pasting a link, or copying a snippet of code directly from an app and pasting it into Ghost. Our integration tutorials are used by creators of all kinds to get apps and integrations up and running in no time — no technical knowledge required.\\"]]],[10,0],[1,\\"h2\\",[[0,[],0,\\"Zapier\\"]]],[1,\\"p\\",[[0,[],0,\\"Zapier is a no-code tool that allows you to build powerful automations, and our official integration allows you to connect your Ghost site to more than 1,000 external services.\\"]]],[1,\\"blockquote\\",[[0,[1],1,\\"Example\\"],[0,[],0,\\": When someone new subscribes to a newsletter on a Ghost site (Trigger) then the contact information is automatically pushed into MailChimp (Action).\\"]]],[1,\\"p\\",[[0,[1],1,\\"Here's a few of the most popular automation templates:\\"],[0,[],0,\\" \\"]]],[10,1],[1,\\"h2\\",[[0,[],0,\\"Custom integrations\\"]]],[1,\\"p\\",[[0,[],0,\\"For more advanced automation, it's possible to create custom Ghost integrations with dedicated API keys from the Integrations page within Ghost Admin. \\"]]],[10,2],[1,\\"p\\",[[0,[],0,\\"These custom integrations allow you to use the Ghost API without needing to write code, and create powerful workflows such as sending content from your favorite desktop editor into Ghost as a new draft.\\"]]]],\\"ghostVersion\\":\\"4.0\\"}",
+      "newsletter": null,
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "post_revisions": Any<Array>,
+      "primary_author": Any<Object>,
+      "primary_tag": Any<Object>,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "reading_time": 1,
+      "slug": "integrations",
+      "status": "published",
+      "tags": Any<Array>,
+      "tiers": Array [
+        Object {
+          "active": true,
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "currency": null,
+          "description": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "monthly_price": null,
+          "monthly_price_id": null,
+          "name": "Free",
+          "slug": "free",
+          "trial_days": 0,
+          "type": "free",
+          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "visibility": "public",
+          "welcome_page_url": null,
+          "yearly_price": null,
+          "yearly_price_id": null,
+        },
+        Object {
+          "active": true,
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "currency": "usd",
+          "description": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "monthly_price": 500,
+          "monthly_price_id": null,
+          "name": "Default Product",
+          "slug": "default-product",
+          "trial_days": 0,
+          "type": "paid",
+          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "visibility": "public",
+          "welcome_page_url": null,
+          "yearly_price": 5000,
+          "yearly_price_id": null,
+        },
+      ],
+      "title": "Setting up apps and custom integrations",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": Any<String>,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "public",
+    },
+  ],
+}
+`;
+
+exports[`Posts API Can browse filtering by collection using paging parameters 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "7700",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Posts API Can browse with formats 1: [body] 1`] = `
 Object {
   "meta": Object {
@@ -1062,6 +1179,18 @@ Object {
 }
 `;
 
+exports[`Posts API Delete Can destroy a post 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Posts API Delete Cannot delete a non-existent posts 1: [body] 1`] = `
 Object {
   "errors": Array [
@@ -1331,6 +1460,91 @@ Object {
           "type": "manual",
           "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z/,
         },
+        Object {
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z/,
+          "description": "All posts",
+          "feature_image": null,
+          "filter": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "posts": Array [
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 0,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 1,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 2,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 3,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 4,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 5,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 6,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 7,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 8,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 9,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 10,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 11,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 12,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 13,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 14,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 15,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 16,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 17,
+            },
+          ],
+          "slug": "latest",
+          "title": "Latest",
+          "type": "automatic",
+          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z/,
+        },
       ],
       "comment_id": Any<String>,
       "count": Object {
@@ -1421,7 +1635,7 @@ exports[`Posts API Update Can add and remove collections 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4022",
+  "content-length": "5149",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
