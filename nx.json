@@ -15,7 +15,8 @@
     },
     "namedInputs": {
         "default": [
-            "{projectRoot}/**/*"
+            "{projectRoot}/**/*",
+            "{workspaceRoot}/ghost/tsconfig.json"
         ]
     },
     "targetDefaults": {
