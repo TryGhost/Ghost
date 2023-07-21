@@ -124,7 +124,7 @@
     "eslint-plugin-ghost": "3.2.0",
     "husky": "8.0.3",
     "lint-staged": "13.2.3",
-    "nx": "16.5.3",
+    "nx": "16.5.4",
     "rimraf": "5.0.1",
     "ts-node": "10.9.1"
   }
