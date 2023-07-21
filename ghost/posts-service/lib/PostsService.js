@@ -135,6 +135,11 @@ class PostsService {
                 });
             }
             for (const existingCollection of existingCollections) {
+                // we only remove posts from manual collections
+                if (existingCollection.type !== 'manual') {
+                    continue;
+                }
+
                 if (frame.data.posts[0].collections.find((item) => {
                     if (typeof item === 'string') {
                         return item === existingCollection.id;
