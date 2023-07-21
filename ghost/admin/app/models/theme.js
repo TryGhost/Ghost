@@ -40,10 +40,10 @@ export default Model.extend({
         return codedWarnings;
     }),
 
-    codedErrors: computed('errors.[]', function () {
+    codedErrors: computed('gscanErrors.[]', function () {
         const codedErrors = {};
 
-        this.errors.forEach((error) => {
+        this.gscanErrors.forEach((error) => {
             if (!codedErrors[error.code]) {
                 codedErrors[error.code] = [];
             }
@@ -82,7 +82,7 @@ export default Model.extend({
         }
 
         return !failures['GS110-NO-MISSING-PAGE-BUILDER-USAGE'].some((failure) => {
-            return !failure.failures.some(({ref}) => ref === `@page.${feature}`);
+            return failure.failures.some(({ref}) => ref === `@page.${feature}`);
         });
     },
 
