@@ -21,10 +21,6 @@ module.exports = {
         return require('./authentication');
     },
 
-    get collections() {
-        return require('./collections');
-    },
-
     get db() {
         return require('./db');
     },
