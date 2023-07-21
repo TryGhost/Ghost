@@ -36,7 +36,6 @@
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
     // "typeRoots": [],                                  /* Specify multiple folders that act like './node_modules/@types'. */
     "types": [
-      "jest",
       "mocha",
       "node",
     ],                                      /* Specify type package names to be included without being referenced in a source file. */
