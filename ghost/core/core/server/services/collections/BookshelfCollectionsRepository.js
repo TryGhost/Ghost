@@ -20,8 +20,12 @@ module.exports = class BookshelfCollectionsRepository {
      * @param {string} id
      * @returns {Promise<Collection>}
      */
-    async getById(id) {
-        const model = await this.#model.findOne({id}, {require: false, withRelated: ['posts']});
+    async getById(id, options = {}) {
+        const model = await this.#model.findOne({id}, {
+            require: false,
+            withRelated: ['posts'],
+            transacting: options.transaction
+        });
         if (!model) {
             return null;
         }
@@ -32,8 +36,12 @@ module.exports = class BookshelfCollectionsRepository {
      * @param {string} slug
      * @returns {Promise<Collection>}
      */
-    async getBySlug(slug) {
-        const model = await this.#model.findOne({slug}, {require: false, withRelated: ['posts']});
+    async getBySlug(slug, options = {}) {
+        const model = await this.#model.findOne({slug}, {
+            require: false,
+            withRelated: ['posts'],
+            transacting: options.transaction
+        });
         if (!model) {
             return null;
         }

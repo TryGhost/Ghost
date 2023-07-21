@@ -12,10 +12,11 @@ const {
     anyLocationFor,
     anyObjectId,
     anyISODateTime,
-    anyISODateTimeWithTZ,
     anyNumber,
-    anyLocalURL,
-    anyString
+    anyString,
+    anyUuid,
+    anyArray,
+    anyObject
 } = matchers;
 
 const matchCollection = {
@@ -24,12 +25,26 @@ const matchCollection = {
     updated_at: anyISODateTime
 };
 
-const matchCollectionPost = {
+const tierSnapshot = {
     id: anyObjectId,
-    url: anyLocalURL,
-    created_at: anyISODateTimeWithTZ,
-    updated_at: anyISODateTimeWithTZ,
-    published_at: anyISODateTimeWithTZ
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime
+};
+
+const matchPostShallowIncludes = {
+    id: anyObjectId,
+    uuid: anyUuid,
+    comment_id: anyString,
+    url: anyString,
+    authors: anyArray,
+    primary_author: anyObject,
+    tags: anyArray,
+    primary_tag: anyObject,
+    tiers: Array(2).fill(tierSnapshot),
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime,
+    published_at: anyISODateTime,
+    post_revisions: anyArray
 };
 
 /**
@@ -100,53 +115,6 @@ describe('Collections API', function () {
                         buildMatcher(2, {withSortOrder: true}),
                         buildMatcher(0)
                     ]
-                });
-        });
-    });
-
-    describe('Browse Posts', function () {
-        it('Can browse Collections Posts', async function () {
-            const collections = await agent.get('/collections/');
-            const latestCollection = collections.body.collections.find(c => c.slug === 'latest');
-
-            await agent
-                .get(`/collections/${latestCollection.id}/posts/`)
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    collection_posts: Array(13).fill(matchCollectionPost)
-                });
-        });
-
-        it('Can browse Collections Posts using paging parameters', async function () {
-            const collections = await agent.get('/collections/');
-            const indexCollection = collections.body.collections.find(c => c.slug === 'latest');
-
-            await agent
-                .get(`/collections/${indexCollection.id}/posts/?limit=2&page=2`)
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    collection_posts: Array(2).fill(matchCollectionPost)
-                });
-        });
-
-        it('Can browse Collections Posts using collection slug', async function () {
-            await agent
-                .get(`/collections/latest/posts/`)
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    collection_posts: Array(13).fill(matchCollectionPost)
                 });
         });
     });
@@ -350,7 +318,6 @@ describe('Collections API', function () {
                 title: 'Test Collection with published_at filter',
                 description: 'Test Collection Description with published_at filter',
                 type: 'automatic',
-                // should return all available posts
                 filter: 'published_at:>=2022-05-25'
             };
 
@@ -394,18 +361,14 @@ describe('Collections API', function () {
                     collections: [buildMatcher(2)]
                 });
 
-            await agent
-                .get('/collections/bacon/posts/')
+            await agent.get(`posts/?collection=${collection.slug}`)
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    collection_posts: [
-                        matchCollectionPost,
-                        matchCollectionPost
-                    ]
+                    posts: new Array(2).fill(matchPostShallowIncludes)
                 });
         });
     });
