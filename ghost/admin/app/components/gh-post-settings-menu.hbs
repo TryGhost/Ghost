@@ -142,6 +142,12 @@
                                             <span class="input-toggle-component"></span>
                                         </div>
                                     </label>
+                                    {{#liquid-if (and (not this.post.showTitleAndFeatureImage) this.themeMissingShowTitleAndFeatureImage)}}
+                                        <div class="nav-list-item-notification">
+                                            Uh-oh. Looks like your theme doesn't support this feature.
+                                            <a href="#">Learn more</a>
+                                        </div>
+                                    {{/liquid-if}}
                                 </div>
                             </li>
                         {{/if}}
