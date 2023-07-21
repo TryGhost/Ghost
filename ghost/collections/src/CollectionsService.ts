@@ -1,10 +1,9 @@
 import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
-import ObjectID from 'bson-objectid';
 import {Collection} from './Collection';
 import {CollectionRepository} from './CollectionRepository';
 import {CollectionPost} from './CollectionPost';
-import {MethodNotAllowedError, NotFoundError} from '@tryghost/errors';
+import {MethodNotAllowedError} from '@tryghost/errors';
 import {PostDeletedEvent} from './events/PostDeletedEvent';
 import {PostAddedEvent} from './events/PostAddedEvent';
 import {PostEditedEvent} from './events/PostEditedEvent';
@@ -135,21 +134,6 @@ export class CollectionsService {
         };
     }
 
-    private toCollectionPostDTO(post: any): CollectionPostListItemDTO {
-        return {
-            id: post.id,
-            url: post.url,
-            slug: post.slug,
-            title: post.title,
-            featured: post.featured,
-            featured_image: post.featured_image,
-            created_at: post.created_at,
-            updated_at: post.updated_at,
-            published_at: post.published_at,
-            tags: post.tags
-        };
-    }
-
     private fromDTO(data: any): any {
         const mappedDTO: {[index: string]:any} = {
             title: data.title,
@@ -232,23 +216,6 @@ export class CollectionsService {
             await this.collectionsRepository.save(collection, {transaction});
 
             return this.toDTO(collection);
-        });
-    }
-
-    private async updateAutomaticCollectionItems(collection: Collection, filter:string) {
-        return await this.collectionsRepository.createTransaction(async (transaction) => {
-            const posts = await this.postsRepository.getAll({
-                filter: filter,
-                transaction
-            });
-
-            collection.removeAllPosts();
-
-            for (const post of posts) {
-                await collection.addPost(post);
-            }
-
-            await this.collectionsRepository.save(collection, {transaction});
         });
     }
 
