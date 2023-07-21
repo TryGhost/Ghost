@@ -25,25 +25,6 @@ module.exports = {
         }
     },
 
-    browsePosts: {
-        headers: {
-            cacheInvalidate: false
-        },
-        data: [
-            'id'
-        ],
-        options: [
-            'limit',
-            'page'
-        ],
-        permissions: {
-            method: 'browse'
-        },
-        query(frame) {
-            return collectionsService.api.getAllPosts(frame.data.id, frame.options);
-        }
-    },
-
     read: {
         headers: {
             cacheInvalidate: false
