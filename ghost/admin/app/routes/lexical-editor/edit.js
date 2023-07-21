@@ -1,7 +1,11 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {pluralize} from 'ember-inflector';
-
+import {inject as service} from '@ember/service';
 export default class EditRoute extends AuthenticatedRoute {
+    @service ajax;
+    @service ghostPaths;
+    @service feature;
+
     beforeModel(transition) {
         super.beforeModel(...arguments);
 
@@ -29,10 +33,17 @@ export default class EditRoute extends AuthenticatedRoute {
         };
 
         const records = await this.store.query(modelName, query);
-        const post = records.firstObject;
+        let post = records.firstObject;
 
         if (post.mobiledoc) {
-            return this.router.transitionTo('editor.edit', post);
+            if (this.feature.get('convertToLexical')) {
+                const convertUrl = this.ghostPaths.url.api(`${post.isPost ? 'posts' : 'pages'}/${post.id}/convert`) + '?formats=mobiledoc,lexical,html';
+                const response = await this.ajax.put(convertUrl);
+                await this.store.pushPayload(response);
+                post = await this.store.peekRecord(modelName, post_id);
+            } else {
+                return this.router.transitionTo('editor.edit', post);
+            }
         }
 
         return post;

@@ -11,6 +11,7 @@ const {
     PostsBulkFeaturedEvent,
     PostsBulkUnfeaturedEvent
 } = require('@tryghost/post-events');
+const {mobiledocToLexical} = require('@tryghost/kg-converters');
 
 const messages = {
     invalidVisibilityFilter: 'Invalid visibility filter.',
@@ -604,6 +605,36 @@ class PostsService {
         }
 
         return this.models.Post.add(newPostData, frame.options);
+    }
+
+    async convertPost(frame, options) {
+        let post = await this.models.Post.findOne({
+            id: frame.options.id,
+            status: 'all'
+        }, frame.options);
+
+        if (!post) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.postNotFound)
+            });
+        }
+
+        const mobiledoc = post.get('mobiledoc');
+        const lexical = post.get('lexical');
+
+        if (mobiledoc && !lexical) {
+            // Convert the post to lexical
+            const converted = mobiledocToLexical(mobiledoc);
+            post = await this.models.Post.edit({...post, lexical: converted, mobiledoc: null}, frame.options);
+        }
+
+        const dto = post.toJSON(frame.options);
+
+        if (typeof options?.eventHandler === 'function') {
+            await options.eventHandler(this.getChanges(post), dto);
+        }
+
+        return dto;
     }
 
     /**

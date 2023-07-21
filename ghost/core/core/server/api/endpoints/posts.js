@@ -321,5 +321,35 @@ module.exports = {
         async query(frame) {
             return postsService.copyPost(frame);
         }
+    },
+
+    convert: {
+        headers: {
+            /** @type {boolean | {value: string}} */
+            cacheInvalidate: false
+        },
+        options: [
+            'include',
+            'id',
+            'formats'
+        ],
+        validation: {
+            options: {
+                include: {
+                    values: allowedIncludes
+                },
+                id: {
+                    required: true
+                }
+            }
+        },
+        permissions: {
+            method: 'edit'
+        },
+        async query(frame) {
+            let model = await postsService.convertPost(frame);
+
+            return model;
+        }
     }
 };
