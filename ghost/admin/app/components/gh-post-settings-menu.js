@@ -165,7 +165,7 @@ export default class GhPostSettingsMenu extends Component {
     }
 
     get themeMissingShowTitleAndFeatureImage() {
-        return this.themeManagement.activeTheme.hasPageBuilderFeature('show_title_and_feature_image');
+        return !this.themeManagement.activeTheme.hasPageBuilderFeature('show_title_and_feature_image');
     }
 
     willDestroyElement() {
