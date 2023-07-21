@@ -113,6 +113,7 @@ module.exports = async function collection(slug, options) {
     // Parse the options we're going to pass to the API
     apiOptions = parseOptions(apiOptions);
     apiOptions.context = {member: data.member};
+    apiOptions.collection = slug;
 
     try {
         const response = await makeAPICall(resource, controllerName, action, apiOptions);

@@ -40,7 +40,8 @@ module.exports = {
             'order',
             'page',
             'debug',
-            'absolute_urls'
+            'absolute_urls',
+            'collection'
         ],
         validation: {
             options: {
