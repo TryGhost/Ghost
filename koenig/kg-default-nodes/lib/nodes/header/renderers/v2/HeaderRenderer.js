@@ -27,6 +27,25 @@ function cardTemplate(nodeData) {
         `;
 }
 
+function emailTemplate(nodeData) {
+    const backgroundAccent = nodeData.backgroundColor === 'accent' ? `background-color: ${nodeData.accentColor};` : '';
+    const buttonAccent = nodeData.buttonColor === 'accent' ? `background-color: ${nodeData.accentColor};` : nodeData.buttonColor;
+    const buttonStyle = nodeData.buttonColor !== 'accent' ? `background-color: ${nodeData.buttonColor};` : '';
+    const alignment = nodeData.alignment === 'center' ? 'text-align: center;' : '';
+    const backgroundImageStyle = nodeData.backgroundImageSrc ? `background-image: url(${nodeData.backgroundImageSrc}); background-size: cover; background-position: center center;` : `background-color: ${nodeData.backgroundColor};`;
+
+    return `
+        <div style="color:${nodeData.textColor}; margin: 0 0 1.5em 0; padding: 110px 35px 110px 35px; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
+            <h2 style="color:${nodeData.textColor} margin-top: 0; font-family: Arial, sans-serif; font-size: 3em; font-weight: 700; line-height: 1.1em; margin: 0 0 0.125em;">${nodeData.header}</h2>
+            <h3 style="color:${nodeData.textColor} margin-top: 0; font-family: Arial, sans-serif; font-size: 1.125em; font-weight: 500; line-height: 1.3em; margin: 0;">${nodeData.subheader}</h3>
+
+            ${nodeData.buttonEnabled ? `
+        <a href="${nodeData.buttonUrl}" style="display: inline-block; padding: 12px 20px; color: ${nodeData.buttonTextColor}; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 3px; ${buttonStyle} ${buttonAccent}">${nodeData.buttonText}</a>
+      ` : ''}
+        </div>
+    `;
+}
+
 export function renderHeaderNodeV2(dataset, options = {}) {
     addCreateDocumentOption(options);
     const document = options.createDocument();
@@ -45,11 +64,18 @@ export function renderHeaderNodeV2(dataset, options = {}) {
         layout: dataset.__layout,
         textColor: dataset.__textColor,
         buttonTextColor: dataset.__buttonTextColor,
-        swapped: dataset.__swapped
+        swapped: dataset.__swapped,
+        accentColor: dataset.__accentColor
     };
 
     if (options.target === 'email') {
-        return {element: document.createElement('div')}; // TODO
+        const emailDoc = options.createDocument();
+        const emailDiv = emailDoc.createElement('div');
+
+        emailDiv.innerHTML = emailTemplate(node)?.trim();
+
+        return {element: emailDiv.firstElementChild};
+        // return {element: document.createElement('div')}; // TODO
     }
 
     const htmlString = cardTemplate(node);

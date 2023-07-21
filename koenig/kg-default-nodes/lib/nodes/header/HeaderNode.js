@@ -19,6 +19,7 @@ export class HeaderNode extends generateDecoratorNode({nodeType: 'header',
         // we should never remove old properties, only add new ones, as this could break & corrupt existing content
         // ref https://lexical.dev/docs/concepts/serialization#versioning--breaking-changes
         {name: 'version', default: 1},
+        {name: 'accentColor', default: '#FF1A75'}, // this is used to have the accent color hex for email
         // v2 properties
         {name: 'alignment', default: 'center'},
         {name: 'backgroundColor', default: '#F0F0F0'},

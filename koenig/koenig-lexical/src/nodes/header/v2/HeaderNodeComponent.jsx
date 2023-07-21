@@ -10,6 +10,7 @@ import {HeaderCard} from '../../../components/ui/cards/HeaderCard/v2/HeaderCard'
 import {SnippetActionToolbar} from '../../../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../../../components/ui/ToolbarMenu';
 import {backgroundImageUploadHandler} from '../../../utils/imageUploadHandler';
+import {getAccentColor} from '../../../utils/getAccentColor';
 import {openFileSelection} from '../../../utils/openFileSelection';
 import {useContext, useEffect, useRef, useState} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -37,7 +38,8 @@ function HeaderNodeComponent({
     subheaderTextEditor,
     subheaderTextEditorInitialState,
     textColor,
-    isSwapped
+    isSwapped,
+    accentColor
 }) {
     const [editor] = useLexicalComposerContext();
     const {cardConfig} = useContext(KoenigComposerContext);
@@ -48,14 +50,6 @@ function HeaderNodeComponent({
     const [lastBackgroundImage, setLastBackgroundImage] = useState(backgroundImageSrc);
     const {isEnabled: isPinturaEnabled, openEditor: openImageEditor} = usePinturaEditor({config: cardConfig.pinturaConfig});
     const fileInputRef = useRef(null);
-
-    // useEffect(() => {
-    //     if (cardConfig?.fetchLabels) {
-    //         cardConfig.fetchLabels().then((options) => {
-    //             setAvailableLabels(options);
-    //         });
-    //     }
-    // }, [cardConfig]);
 
     useEffect(() => {
         if (layout !== 'split') {
@@ -68,6 +62,17 @@ function HeaderNodeComponent({
         // We just want to reset the show background image state when the layout changes, not when the image changes
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [layout]);
+
+    useEffect(() => {
+        let accent = getAccentColor();
+
+        if (accent) {
+            editor.update(() => {
+                const node = $getNodeByKey(nodeKey);
+                node.accentColor = accent;
+            });
+        }
+    }, [editor, nodeKey]);
 
     const handleAlignment = (a) => {
         editor.update(() => {

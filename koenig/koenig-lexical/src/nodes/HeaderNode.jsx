@@ -143,6 +143,7 @@ export class HeaderNode extends BaseHeaderNode {
             return (
                 <KoenigCardWrapper nodeKey={this.getKey()} width={this.getCardWidth()}>
                     <HeaderNodeComponent
+                        accentColor={this.accentColor}
                         alignment={this.alignment}
                         backgroundColor={this.backgroundColor}
                         backgroundImageSrc={this.backgroundImageSrc}
