@@ -120,7 +120,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
     >
         <div className='mt-8 flex items-start gap-16'>
             <div className='flex grow flex-col gap-5'>
-                <Form title='Basic'>
+                <Form title='Basic' grouped>
                     {!isFreeTier && <TextField
                         autoComplete='off'
                         error={Boolean(errors.name)}
@@ -204,7 +204,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                     </div>}
                 </Form>
 
-                <Form gap='none' title='Benefits'>
+                <Form gap='none' title='Benefits' grouped>
                     <SortableList
                         items={benefits.items}
                         itemSeparator={false}
@@ -224,8 +224,8 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                         <Icon name='check' size='sm' />
                         <TextField
                             className='grow'
+                            containerClassName='w-100'
                             placeholder='Expert analysis'
-                            title='New benefit'
                             value={benefits.newItem}
                             hideTitle
                             onChange={e => benefits.setNewItem(e.target.value)}
