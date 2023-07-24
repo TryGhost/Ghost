@@ -363,5 +363,53 @@ describe('Collection', function () {
             assert.ok(collection.postMatchesFilter(featuredPost), 'Post should match the filter');
             assert.ok(!collection.postMatchesFilter(nonFeaturedPost), 'Post should not match the filter');
         });
+
+        it('Can match a post with a tag filter', async function () {
+            const collection = await Collection.create({
+                title: 'Testing filtering posts',
+                type: 'automatic',
+                filter: 'tag:avocado'
+            });
+
+            const avocadoPost = {
+                id: '0',
+                tags: [{
+                    slug: 'avocado'
+                }]
+            };
+            const nonAvocadoPost = {
+                id: '1',
+                tags: [{
+                    slug: 'not-avocado'
+                }]
+            };
+
+            assert.ok(collection.postMatchesFilter(avocadoPost), 'Post should match the filter');
+            assert.ok(!collection.postMatchesFilter(nonAvocadoPost), 'Post should not match the filter');
+        });
+
+        it('Can match a post with a tags filter', async function () {
+            const collection = await Collection.create({
+                title: 'Testing filtering posts',
+                type: 'automatic',
+                filter: 'tags:avocado'
+            });
+
+            const avocadoPost = {
+                id: '0',
+                tags: [{
+                    slug: 'avocado'
+                }]
+            };
+            const nonAvocadoPost = {
+                id: '1',
+                tags: [{
+                    slug: 'not-avocado'
+                }]
+            };
+
+            assert.ok(collection.postMatchesFilter(avocadoPost), 'Post should match the filter');
+            assert.ok(!collection.postMatchesFilter(nonAvocadoPost), 'Post should not match the filter');
+        });
     });
 });
