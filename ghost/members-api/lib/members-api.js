@@ -355,7 +355,7 @@ module.exports = function MembersAPI({
         if (!member) {
             return;
         }
-        await memberRepository.update({newsletters: []}, {id: member.id});
+        await memberRepository.update({email_disabled: true}, {id: member.id});
     });
 
     return {
