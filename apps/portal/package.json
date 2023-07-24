@@ -73,7 +73,6 @@
     "@vitest/ui": "0.33.0",
     "concurrently": "8.2.0",
     "cross-fetch": "4.0.0",
-    "eslint": "8.44.0",
     "eslint-config-react-app": "7.0.1",
     "eslint-plugin-i18next": "^6.0.1",
     "jsdom": "22.1.0",

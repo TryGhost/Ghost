@@ -121,7 +121,6 @@
     "ember-tooltips": "3.6.0",
     "ember-truth-helpers": "3.1.1",
     "ember-websockets": "10.2.1",
-    "eslint": "8.44.0",
     "eslint-plugin-babel": "5.3.1",
     "eslint-plugin-react": "7.32.2",
     "faker": "5.5.3",
