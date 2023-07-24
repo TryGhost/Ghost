@@ -84,8 +84,8 @@ describe('ModelToDomainEventInterceptor', function () {
             assert.equal(event.data.current.status, 'draft');
             assert.equal(event.data.previous.status, 'published');
 
-            assert.equal(event.data.current.tags[0], 'tag-current-slug');
-            assert.equal(event.data.previous.tags[0], 'tag-previous-slug');
+            assert.deepEqual(event.data.current.tags[0], {slug: 'tag-current-slug'});
+            assert.deepEqual(event.data.previous.tags[0], {slug: 'tag-previous-slug'});
             interceptedEvent = event;
         });
 

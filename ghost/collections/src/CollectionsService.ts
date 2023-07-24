@@ -48,7 +48,7 @@ type CollectionPostListItemDTO = {
     created_at: Date;
     updated_at: Date;
     published_at: Date,
-    tags?: string[];
+    tags?: Array<{slug: string}>;
 }
 
 type ManualCollection = {
