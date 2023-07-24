@@ -249,7 +249,7 @@ export function CollectionCard({
                     placeholderClassName={'text-md uppercase font-sans leading-normal font-bold tracking-tight text-black dark:text-grey-50 opacity-40'}
                     placeholderText="Collection title"
                     singleParagraph={true}
-                    textClassName={'koenig-lexical-collection-heading whitespace-normal text-black dark:text-grey-50 opacity-100 pt-2 pb-4'}
+                    textClassName={'koenig-lexical-section-title whitespace-normal text-black dark:text-grey-50 opacity-100 pt-2 pb-4'}
                 />)
             }
             <div className={clsx(

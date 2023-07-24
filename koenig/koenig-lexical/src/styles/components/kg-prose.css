@@ -779,6 +779,8 @@
     }
 }
 
+/* stylelint-disable at-rule-disallowed-list */
+
 .koenig-lexical-caption {
     .kg-prose {
         :where(
@@ -788,88 +790,12 @@
                     ul,
                     ol
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-family: "Inter", -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
-            line-height: 1.6em;
-            font-size: 1.4rem;
+                    @apply text-sm font-sans leading-relaxed;
         }
     }
 }
 
-.koenig-lexical-product-title {
-        .kg-prose {
-            :where(
-                        p,
-                        blockquote,
-                        aside,
-                        ul,
-                        ol
-                    ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-                font-family: "Inter", -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
-                line-height: 1.375;
-                font-size: 2.2rem;
-                font-weight: bold;
-                letter-spacing: -0.025em;
-            }
-        }
-    }
-
-.koenig-lexical-product-description {
-        .kg-prose {
-            :where(
-                        p,
-                        blockquote,
-                        aside,
-                        ul,
-                        ol
-                    ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-                font-family: "Inter", -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
-                line-height: 1.375;
-                font-size: 1.6rem;
-            }
-        }
-    }
-
-.koenig-lexical-toggle-heading {
-    .kg-prose {
-        :where(
-                    p,
-                    blockquote,
-                    aside,
-                    ul,
-                    ol
-                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-family: "Inter", -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
-            line-height: 1.375;
-            font-size: 2.2rem !important;
-            font-weight: bold;
-            letter-spacing: -0.025em;
-        }
-        :where(
-                    strong
-                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-weight: 800;
-        }
-    }
-}
-
-.koenig-lexical-toggle-description {
-    .kg-prose {
-        :where(
-                    p,
-                    blockquote,
-                    aside,
-                    ul,
-                    ol
-                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            font-family: georgia,Times,serif;
-            line-height: 1.5;
-        }
-    }
-}
-
-/* stylelint-disable at-rule-disallowed-list */
-
-.koenig-lexical-collection-heading {
+.koenig-lexical-section-title {
     .kg-prose {
         :where(
                     p,
@@ -888,7 +814,7 @@
     }
 }
 
-.koenig-lexical-header-heading {
+.koenig-lexical-heading {
     .kg-prose {
         :where(
                     p,
@@ -908,7 +834,21 @@
     }
 }
 
-.koenig-lexical-header-heading.koenig-lexical-header-small {
+.koenig-lexical-heading.heading-small {
+    .kg-prose {
+        :where(
+                    p,
+                    blockquote,
+                    aside,
+                    ul,
+                    ol
+                ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            @apply text-2xl;
+        }
+    }
+}
+
+.koenig-lexical-heading.heading-medium {
     .kg-prose {
         :where(
                     p,
@@ -922,7 +862,7 @@
     }
 }
 
-.koenig-lexical-header-heading.koenig-lexical-header-large {
+.koenig-lexical-heading.heading-large {
     .kg-prose {
         :where(
                     p,
@@ -936,7 +876,7 @@
     }
 }
 
-.koenig-lexical-header-subheading {
+.koenig-lexical-subheading {
     .kg-prose {
         :where(
                     p,
@@ -950,7 +890,7 @@
         :where(
                     strong
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            @apply font-extrabold;
+            @apply font-bold;
         }
         :where(
                     a,
@@ -961,7 +901,7 @@
     }
 }
 
-.koenig-lexical-header-subheading.koenig-lexical-header-xsmall {
+.koenig-lexical-subheading.subheading-xsmall {
     .kg-prose {
         :where(
                     p,
@@ -975,7 +915,7 @@
     }
 }
 
-.koenig-lexical-header-subheading.koenig-lexical-header-small {
+.koenig-lexical-subheading.subheading-small {
     .kg-prose {
         :where(
                     p,
@@ -989,7 +929,7 @@
     }
 }
 
-.koenig-lexical-header-subheading.koenig-lexical-header-medium {
+.koenig-lexical-subheading.subheading-medium {
     .kg-prose {
         :where(
                     p,
@@ -1003,7 +943,7 @@
     }
 }
 
-.koenig-lexical-header-subheading.koenig-lexical-header-large {
+.koenig-lexical-subheading.subheading-large {
     .kg-prose {
         :where(
                     p,

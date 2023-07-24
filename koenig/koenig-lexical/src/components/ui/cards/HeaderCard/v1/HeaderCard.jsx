@@ -118,9 +118,9 @@ export function HeaderCard({isEditing,
                             placeholderText={headerPlaceholder}
                             singleParagraph={true}
                             textClassName={clsx(
-                                'koenig-lexical-header-heading relative w-full whitespace-normal text-center font-bold [&:has(.placeholder)]:w-fit [&:has(.placeholder)]:text-left',
-                                (size === 'small') && 'koenig-lexical-header-small',
-                                ((size === 'medium') || (size === 'large')) && 'koenig-lexical-header-large',
+                                'koenig-lexical-heading relative w-full whitespace-normal text-center font-bold [&:has(.placeholder)]:w-fit [&:has(.placeholder)]:text-left',
+                                (size === 'small') && 'heading-medium',
+                                ((size === 'medium') || (size === 'large')) && 'heading-large',
                                 (HEADER_TEXT_COLORS[type])
                             )}
                         />
@@ -145,10 +145,10 @@ export function HeaderCard({isEditing,
                             placeholderText={subheaderPlaceholder}
                             singleParagraph={true}
                             textClassName={clsx(
-                                'koenig-lexical-header-subheading relative w-full whitespace-normal text-center [&:has(.placeholder)]:w-fit [&:has(.placeholder)]:text-left',
-                                (size === 'small') && 'koenig-lexical-header-small !mt-2',
-                                (size === 'medium') && 'koenig-lexical-header-medium !mt-3',
-                                (size === 'large') && 'koenig-lexical-header-large !mt-3',
+                                'koenig-lexical-subheading relative w-full whitespace-normal text-center [&:has(.placeholder)]:w-fit [&:has(.placeholder)]:text-left',
+                                (size === 'small') && 'subheading-small !mt-2',
+                                (size === 'medium') && 'subheading-medium !mt-3',
+                                (size === 'large') && 'subheading-large !mt-3',
                                 (HEADER_TEXT_COLORS[type])
                             )}
                         />

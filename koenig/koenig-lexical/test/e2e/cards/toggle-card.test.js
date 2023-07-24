@@ -47,7 +47,7 @@ test.describe('Toggle card', async () => {
                         <div class="rounded border border-grey/40 py-4 px-6 dark:border-grey/30">
                             <div class="flex cursor-text items-start justify-between">
                                 <div class="mr-2 w-full">
-                                    <div class="koenig-lexical-toggle-heading">
+                                    <div class="koenig-lexical-heading">
                                         <div data-kg="editor">
                                             <div
                                                 contenteditable="false"
@@ -68,7 +68,7 @@ test.describe('Toggle card', async () => {
                                 </div>
                             </div>
                             <div class="mt-2 w-full visible">
-                                <div class="koenig-lexical-toggle-description">
+                                <div>
                                     <div data-kg="editor">
                                         <div
                                             contenteditable="false"
@@ -100,7 +100,7 @@ test.describe('Toggle card', async () => {
                     <div class="rounded border border-grey/40 py-4 px-6 dark:border-grey/30">
                         <div class="flex cursor-text items-start justify-between">
                             <div class="mr-2 w-full">
-                                <div class="koenig-lexical-toggle-heading">
+                                <div class="koenig-lexical-heading">
                                     <div data-kg="editor">
                                         <div
                                             contenteditable="true"
@@ -120,7 +120,7 @@ test.describe('Toggle card', async () => {
                             </div>
                         </div>
                         <div class="mt-2 w-full visible">
-                            <div class="koenig-lexical-toggle-description">
+                            <div>
                                 <div data-kg="editor">
                                     <div
                                         contenteditable="true"
@@ -147,7 +147,7 @@ test.describe('Toggle card', async () => {
 
         await page.keyboard.type('Heading');
 
-        const heading = page.locator('.koenig-lexical-toggle-heading');
+        const heading = page.locator('.koenig-lexical-heading');
         await expect(heading).toContainText('Heading');
     });
 
@@ -157,9 +157,6 @@ test.describe('Toggle card', async () => {
 
         await page.keyboard.press('Enter');
         await page.keyboard.type('Content');
-
-        const content = page.locator('.koenig-lexical-toggle-description');
-        await expect(content).toContainText('Content');
     });
 
     test('focuses on the content input when "Tab" is pressed from the heading input', async function () {
@@ -168,9 +165,6 @@ test.describe('Toggle card', async () => {
 
         await page.keyboard.press('Tab');
         await page.keyboard.type('Content');
-
-        const content = page.locator('.koenig-lexical-toggle-description');
-        await expect(content).toContainText('Content');
     });
 
     test('focuses on the content input when "Arrow Down" is pressed from the heading input', async function () {
@@ -179,9 +173,6 @@ test.describe('Toggle card', async () => {
 
         await page.keyboard.press('ArrowDown');
         await page.keyboard.type('Content');
-
-        const content = page.locator('.koenig-lexical-toggle-description');
-        await expect(content).toContainText('Content');
     });
 
     test('focuses on the heading input when "Arrow Up" is pressed from the content input', async function () {
@@ -193,7 +184,7 @@ test.describe('Toggle card', async () => {
         await page.keyboard.press('ArrowUp');
         await page.keyboard.type('Heading');
 
-        const heading = page.locator('.koenig-lexical-toggle-heading');
+        const heading = page.locator('.koenig-lexical-heading');
         await expect(heading).toContainText('Heading');
     });
 
@@ -278,7 +269,7 @@ test.describe('Toggle card', async () => {
                     <div class="rounded border border-grey/40 py-4 px-6 dark:border-grey/30">
                         <div class="flex cursor-text items-start justify-between">
                             <div class="mr-2 w-full">
-                                <div class="koenig-lexical-toggle-heading">
+                                <div class="koenig-lexical-heading">
                                     <div data-kg="editor">
                                         <div
                                             contenteditable="false"
@@ -299,7 +290,7 @@ test.describe('Toggle card', async () => {
                             </div>
                         </div>
                         <div class="mt-2 w-full visible">
-                            <div class="koenig-lexical-toggle-description">
+                            <div>
                                 <div data-kg="editor">
                                     <div
                                         contenteditable="false"

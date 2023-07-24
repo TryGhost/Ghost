@@ -282,11 +282,11 @@ export function HeaderCard({alignment,
                             singleParagraph={true}
                             style={{color: matchingTextColor(backgroundColor)}}
                             textClassName={clsx(
-                                'koenig-lexical-header-heading relative w-full whitespace-normal font-bold caret-current',
+                                'koenig-lexical-heading relative w-full whitespace-normal font-bold caret-current',
                                 (!isEditing && isEditorEmpty(headerTextEditor)) ? 'hidden' : 'peer',
                                 (alignment === 'center') && 'text-center [&:has(.placeholder)]:w-fit [&:has(.placeholder)]:text-left',
-                                (layout === 'regular' || layout === 'wide' || layout === 'split') && 'koenig-lexical-header-small',
-                                (layout === 'full') && 'koenig-lexical-header-large',
+                                (layout === 'regular' || layout === 'wide' || layout === 'split') && 'heading-medium',
+                                (layout === 'full') && 'heading-large',
                             )}
                         />}
 
@@ -301,19 +301,19 @@ export function HeaderCard({alignment,
                                 '!font-medium !leading-snug !tracking-tight opacity-60',
                                 (alignment === 'center') && 'text-center',
                                 (layout === 'regular') && 'text-lg sm:text-xl',
-                                (layout === 'wide' || layout === 'split') && 'text-lg sm:text-xl md:text-[2.2rem]',
+                                (layout === 'wide' || layout === 'split') && 'text-lg leading-snug sm:text-xl md:text-[2.2rem]',
                                 layout === 'full' && 'text-lg sm:text-xl md:text-[2.2rem] lg:text-[2.6rem] xl:max-w-[880px]',
                             )}
                             placeholderText={subheaderPlaceholder}
                             singleParagraph={true}
                             style={{color: matchingTextColor(backgroundColor)}}
                             textClassName={clsx(
-                                'koenig-lexical-header-subheading relative w-full whitespace-normal caret-current',
+                                'koenig-lexical-subheading relative w-full whitespace-normal caret-current',
                                 (!isEditing && isEditorEmpty(subheaderTextEditor)) ? 'hidden' : 'peer',
                                 (alignment === 'center') && 'text-center [&:has(.placeholder)]:w-fit [&:has(.placeholder)]:text-left',
-                                (layout === 'regular') && 'koenig-lexical-header-small !mt-2',
-                                (layout === 'wide' || layout === 'split') && 'koenig-lexical-header-medium !mt-3',
-                                (layout === 'full') && 'koenig-lexical-header-large !mt-3 xl:max-w-[880px]'
+                                (layout === 'regular') && 'subheading-small !mt-2',
+                                (layout === 'wide' || layout === 'split') && 'subheading-medium !mt-3',
+                                (layout === 'full') && 'subheading-large !mt-3 xl:max-w-[880px]'
                             )}
                         />}
 

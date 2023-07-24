@@ -60,10 +60,10 @@ export function ProductCard({
                                     initialEditor={titleEditor}
                                     initialEditorState={titleEditorInitialState}
                                     nodes='minimal'
-                                    placeholderClassName="whitespace-normal !text-[22px] !font-bold !leading-snug text-black opacity-40 dark:text-white !tracking-tight"
+                                    placeholderClassName="whitespace-normal !font-sans !text-2xl !leading-[1.1] !font-bold !tracking-tight text-black dark:text-grey-50 opacity-40"
                                     placeholderText="Product title"
                                     singleParagraph={true}
-                                    textClassName="koenig-lexical-product-title whitespace-normal"
+                                    textClassName="koenig-lexical-heading heading-small whitespace-normal"
                                 />
                             </div>
                         )
@@ -81,9 +81,9 @@ export function ProductCard({
                                 hasSettingsPanel={true}
                                 initialEditor={descriptionEditor}
                                 initialEditorState={descriptionEditorInitialState}
-                                placeholderClassName="!text-[1.6rem] !font-normal !leading-snug text-grey-700 opacity-50"
+                                placeholderClassName="!text-[1.6rem] !font-sans !font-normal !tracking-tight !leading-snug text-grey-700 opacity-50"
                                 placeholderText="Description"
-                                textClassName="koenig-lexical-product-description whitespace-normal text-grey-700"
+                                textClassName="koenig-lexical-subheading subheading-xsmall whitespace-normal text-grey-700"
                             />
                         </div>
                     )
