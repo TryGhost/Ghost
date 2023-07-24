@@ -343,7 +343,7 @@ class EmailRenderer {
 
         // Juice HTML (inline CSS)
         const juice = require('juice');
-        html = juice(html, {inlinePseudoElements: true, removeStyleTags: true});
+        html = juice(html, {inlinePseudoElements: true, removeStyleTags: true, applyWidthAttributes: false, applyHeightAttributes: false});
 
         // happens after inlining of CSS so we can change element types without worrying about styling
         $ = cheerio.load(html);
