@@ -31,6 +31,12 @@ const tierSnapshot = {
     updated_at: anyISODateTime
 };
 
+const tagSnapshotMatcher = {
+    id: anyObjectId,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime
+};
+
 const matchPostShallowIncludes = {
     id: anyObjectId,
     uuid: anyUuid,
@@ -38,7 +44,7 @@ const matchPostShallowIncludes = {
     url: anyString,
     authors: anyArray,
     primary_author: anyObject,
-    tags: anyArray,
+    tags: Array(2).fill(tagSnapshotMatcher),
     primary_tag: anyObject,
     tiers: Array(2).fill(tierSnapshot),
     created_at: anyISODateTime,
