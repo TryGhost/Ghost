@@ -30,11 +30,17 @@ module.exports = {
             cacheInvalidate: false
         },
         data: [
-            'id'
+            'id',
+            'slug'
         ],
         permissions: true,
         async query(frame) {
-            const model = await collectionsService.api.getById(frame.data.id);
+            let model;
+            if (frame.data.id) {
+                model = await collectionsService.api.getById(frame.data.id);
+            } else {
+                model = await collectionsService.api.getBySlug(frame.data.slug);
+            }
 
             if (!model) {
                 throw new errors.NotFoundError({
