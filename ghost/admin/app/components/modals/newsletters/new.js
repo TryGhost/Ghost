@@ -49,7 +49,7 @@ export default class NewNewsletterModal extends Component {
             });
 
             // Re-fetch newsletter data to refresh counts
-            yield this.store.query('newsletter', {include: 'count.members,count.posts', limit: 'all'});
+            yield this.store.query('newsletter', {include: 'count.active_members,count.posts', limit: 'all'});
             this.args.data.afterSave?.(result);
 
             return result;

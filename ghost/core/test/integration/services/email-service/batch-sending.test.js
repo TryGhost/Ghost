@@ -207,7 +207,8 @@ describe('Batch sending tests', function () {
                 status: 'free',
                 newsletters: [{
                     id: fixtureManager.get('newsletters', 0).id
-                }]
+                }],
+                email_disabled: false
             });
 
             return r;
@@ -652,7 +653,8 @@ describe('Batch sending tests', function () {
                 labels: [{name: 'replacements-tests'}],
                 newsletters: [{
                     id: fixtureManager.get('newsletters', 0).id
-                }]
+                }],
+                email_disabled: false
             });
 
             const {html, plaintext} = await sendEmail(agent, {
@@ -685,7 +687,8 @@ describe('Batch sending tests', function () {
                 labels: [{name: 'replacements-tests-2'}],
                 newsletters: [{
                     id: fixtureManager.get('newsletters', 0).id
-                }]
+                }],
+                email_disabled: false
             });
 
             const {html, plaintext} = await sendEmail(agent, {
@@ -859,7 +862,8 @@ describe('Batch sending tests', function () {
                 labels: [{name: 'subscription-box-tests'}],
                 newsletters: [{
                     id: fixtureManager.get('newsletters', 0).id
-                }]
+                }],
+                email_disabled: false
             });
 
             mockSetting('email_track_clicks', false); // Disable link replacement for this test
@@ -892,7 +896,8 @@ describe('Batch sending tests', function () {
                 newsletters: [{
                     id: fixtureManager.get('newsletters', 0).id
                 }],
-                status: 'comped'
+                status: 'comped',
+                email_disabled: false
             });
 
             mockSetting('email_track_clicks', false); // Disable link replacement for this test

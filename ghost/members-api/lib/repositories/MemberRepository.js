@@ -224,6 +224,7 @@ module.exports = class MemberRepository {
      * @param {Object} [data.stripeCustomer]
      * @param {string} [data.offerId]
      * @param {import('@tryghost/member-attribution/lib/Attribution').AttributionResource} [data.attribution]
+     * @param {boolean} [data.email_disabled]
      * @param {*} options
      * @returns
      */
@@ -247,7 +248,7 @@ module.exports = class MemberRepository {
             });
         }
 
-        const memberData = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation', 'created_at', 'products', 'newsletters']);
+        const memberData = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation', 'created_at', 'products', 'newsletters', 'email_disabled']);
 
         // Throw error if email is invalid using latest validator
         if (!validator.isEmail(memberData.email, {legacy: false})) {
@@ -256,6 +257,8 @@ module.exports = class MemberRepository {
                 property: 'email'
             });
         }
+
+        memberData.email_disabled = !!memberData.email_disabled;
 
         if (memberData.products && memberData.products.length > 1) {
             throw new errors.BadRequestError({message: tpl(messages.moreThanOneProduct)});
@@ -415,7 +418,8 @@ module.exports = class MemberRepository {
             'enable_comment_notifications',
             'last_seen_at',
             'last_commented_at',
-            'expertise'
+            'expertise',
+            'email_disabled'
         ]);
 
         // Trim whitespaces from expertise

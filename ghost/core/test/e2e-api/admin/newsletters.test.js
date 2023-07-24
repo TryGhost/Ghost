@@ -72,9 +72,9 @@ describe('Newsletters API', function () {
             });
     });
 
-    it('Can include members & posts counts when browsing newsletters', async function () {
+    it('Can include members, active members & posts counts when browsing newsletters', async function () {
         await agent
-            .get(`newsletters/?include=count.members,count.posts`)
+            .get(`newsletters/?include=count.members,count.active_members,count.posts`)
             .expectStatus(200)
             .matchBodySnapshot({
                 newsletters: new Array(4).fill(newsletterSnapshot)
@@ -85,9 +85,9 @@ describe('Newsletters API', function () {
             });
     });
 
-    it('Can include members & posts counts when reading a newsletter', async function () {
+    it('Can include members, active members & posts counts when reading a newsletter', async function () {
         await agent
-            .get(`newsletters/${fixtureManager.get('newsletters', 0).id}/?include=count.members,count.posts`)
+            .get(`newsletters/${fixtureManager.get('newsletters', 0).id}/?include=count.members,count.active_members,count.posts`)
             .expectStatus(200)
             .matchBodySnapshot({
                 newsletters: new Array(1).fill(newsletterSnapshot)
@@ -143,7 +143,7 @@ describe('Newsletters API', function () {
         assert.equal(header_image, transformReadyPath);
     });
 
-    it('Can include members & posts counts when adding a newsletter', async function () {
+    it('Can include members, active members & posts counts when adding a newsletter', async function () {
         const newsletter = {
             name: 'My test newsletter 2',
             sender_name: 'Test',
@@ -160,7 +160,7 @@ describe('Newsletters API', function () {
         };
 
         await agent
-            .post(`newsletters/?include=count.members,count.posts`)
+            .post(`newsletters/?include=count.members,count.active_members,count.posts`)
             .body({newsletters: [newsletter]})
             .expectStatus(201)
             .matchBodySnapshot({
@@ -305,9 +305,9 @@ describe('Newsletters API', function () {
             });
     });
 
-    it('Can include members & posts counts when editing newsletters', async function () {
+    it('Can include members, active members & posts counts when editing newsletters', async function () {
         const id = fixtureManager.get('newsletters', 0).id;
-        await agent.put(`newsletters/${id}/?include=count.members,count.posts`)
+        await agent.put(`newsletters/${id}/?include=count.members,count.active_members,count.posts`)
             .body({
                 newsletters: [{
                     name: 'Updated newsletter name 2'

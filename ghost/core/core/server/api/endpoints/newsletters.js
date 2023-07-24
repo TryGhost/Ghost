@@ -1,5 +1,5 @@
 const models = require('../../models');
-const allowedIncludes = ['count.posts', 'count.members'];
+const allowedIncludes = ['count.posts', 'count.members', 'count.active_members'];
 
 const newslettersService = require('../../services/newsletters');
 

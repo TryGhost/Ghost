@@ -302,14 +302,16 @@ DataGenerator.Content = {
             email: 'member1@test.com',
             name: 'Mr Egg',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b340',
-            status: 'free'
+            status: 'free',
+            email_disabled: false
         },
         {
             id: ObjectId().toHexString(),
             email: 'member2@test.com',
             email_open_rate: 50,
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b341',
-            status: 'free'
+            status: 'free',
+            email_disabled: false
         },
         {
             id: ObjectId().toHexString(),
@@ -317,28 +319,32 @@ DataGenerator.Content = {
             name: 'Egon Spengler',
             email_open_rate: 80,
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b342',
-            status: 'paid'
+            status: 'paid',
+            email_disabled: false
         },
         {
             id: ObjectId().toHexString(),
             email: 'trialing@test.com',
             name: 'Ray Stantz',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b343',
-            status: 'paid'
+            status: 'paid',
+            email_disabled: false
         },
         {
             id: ObjectId().toHexString(),
             email: 'comped@test.com',
             name: 'Vinz Clortho',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b344',
-            status: 'paid'
+            status: 'paid',
+            email_disabled: false
         },
         {
             id: ObjectId().toHexString(),
             email: 'vip@test.com',
             name: 'Winston Zeddemore',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b345',
-            status: 'free'
+            status: 'free',
+            email_disabled: false
         },
         {
             id: ObjectId().toHexString(),
@@ -346,7 +352,8 @@ DataGenerator.Content = {
             name: 'Peter Venkman',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b346',
             status: 'paid',
-            subscribed: false
+            subscribed: false,
+            email_disabled: false
         },
         {
             id: ObjectId().toHexString(),
@@ -354,7 +361,8 @@ DataGenerator.Content = {
             name: 'Dana Barrett',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b347',
             status: 'paid',
-            subscribed: false
+            subscribed: false,
+            email_disabled: false
         }
     ],
 

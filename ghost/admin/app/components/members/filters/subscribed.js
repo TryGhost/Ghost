@@ -2,7 +2,7 @@ import {MATCH_RELATION_OPTIONS} from './relation-options';
 
 export const SUBSCRIBED_FILTER = {
     label: 'Newsletter subscription',
-    name: 'subscribed', 
+    name: 'subscribed',
     columnLabel: 'Subscribed',
     relationOptions: MATCH_RELATION_OPTIONS,
     valueType: 'options',
@@ -31,8 +31,8 @@ export const NEWSLETTERS_FILTER = (newsletterList) => {
                 const value = flt.value;
 
                 return (relation === 'is' && value === 'true') || (relation === 'is-not' && value === 'false')
-                    ? `newsletters.slug:${newsletter.slug}`
-                    : `newsletters.slug:-${newsletter.slug}`;
+                    ? `newsletters.slug:${newsletter.slug}+email_disabled:0`
+                    : `newsletters.slug:-${newsletter.slug},email_disabled:1`;
             },
             parseNqlFilter: (flt) => {
                 if (!flt['newsletters.slug']) {
@@ -62,7 +62,7 @@ export const NEWSLETTERS_FILTER = (newsletterList) => {
                 {label: 'Unsubscribed', name: 'false'}
             ]
         };
-        newsletters.push(filter); 
+        newsletters.push(filter);
     });
     return newsletters;
 };
