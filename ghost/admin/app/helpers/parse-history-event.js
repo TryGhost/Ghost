@@ -1,4 +1,5 @@
 import Helper from '@ember/component/helper';
+import config from 'ghost-admin/config/environment';
 import {inject as service} from '@ember/service';
 
 export default class ParseHistoryEvent extends Helper {
@@ -13,7 +14,7 @@ export default class ParseHistoryEvent extends Helper {
         const actor = getActor(ev);
         const actorLinkTarget = getActorLinkTarget(ev);
 
-        const assetRoot = this.ghostPaths.assetRoot.replace(/\/$/, '');
+        const assetRoot = (config.cdnUrl ? '' : this.ghostPaths.assetRoot.replace(/\/$/, ''));
         const actorIcon = getActorIcon(ev, assetRoot);
 
         return {
@@ -39,14 +40,11 @@ function getActor(ev) {
 }
 
 function getActorIcon(ev, assetRoot) {
-    const defaultImage = `${assetRoot}/img/user-image.png`;
+    const defaultImage = `/img/user-image.png`;
+    let defaultImageUrl = `${assetRoot}${defaultImage}`;
 
-    if (!ev.actor.id) {
-        return defaultImage;
-    }
-
-    if (!ev.actor.image) {
-        return defaultImage;
+    if (!ev.actor.id || !ev.actor.image) {
+        return defaultImageUrl;
     }
 
     return ev.actor.image;
