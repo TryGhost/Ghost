@@ -65,7 +65,7 @@ module.exports = class DomainEventsAnalytics {
         if (event.data.milestone
             && event.data.milestone.value === 100
         ) {
-            const eventName = event.data.milestone.type === 'arr' ? '$100 MRR reached' : '100 Members reached';
+            const eventName = event.data.milestone.type === 'arr' ? '$100 ARR reached' : '100 Members reached';
 
             try {
                 this.#analytics.track(Object.assign(this.#trackDefaults, {}, {event: this.#prefix + eventName}));
