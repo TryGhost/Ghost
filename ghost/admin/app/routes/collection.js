@@ -8,6 +8,10 @@ export default class CollectionRoute extends AuthenticatedRoute {
     @service router;
     @service session;
 
+    // ensures if a tag model is passed in directly we show it immediately
+    // and refresh in the background
+    _requiresBackgroundRefresh = true;
+
     beforeModel() {
         super.beforeModel(...arguments);
 
@@ -28,6 +32,21 @@ export default class CollectionRoute extends AuthenticatedRoute {
 
     serialize(collection) {
         return {collection_slug: collection.get('slug')};
+    }
+
+    setupController(controller, tag) {
+        super.setupController(...arguments);
+
+        if (this._requiresBackgroundRefresh) {
+            tag.reload();
+        }
+    }
+
+    deactivate() {
+        this._requiresBackgroundRefresh = true;
+
+        this.confirmModal = null;
+        this.hasConfirmed = false;
     }
 
     @action

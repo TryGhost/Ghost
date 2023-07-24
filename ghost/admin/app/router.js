@@ -53,6 +53,7 @@ Router.map(function () {
     this.route('collections');
     this.route('collection.new', {path: '/collections/new'});
     this.route('collection', {path: '/collections/:collection_slug'});
+
     this.route('settings-x', function () {
         this.route('settings-x', {path: '/*sub'});
     });
