@@ -343,6 +343,10 @@ class EmailRenderer {
 
         // Juice HTML (inline CSS)
         const juice = require('juice');
+        // Don't replace <img /> height or width attributes
+        // refs: https://github.com/TryGhost/Product/issues/3647
+        juice.heightElements = ['TABLE', 'TD', 'TH'];
+        juice.widthElements = ['TABLE', 'TD', 'TH'];
         html = juice(html, {inlinePseudoElements: true, removeStyleTags: true});
 
         // happens after inlining of CSS so we can change element types without worrying about styling
