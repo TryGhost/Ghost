@@ -119,7 +119,7 @@ describe('Collections API', function () {
         });
     });
 
-    it('Can read a Collection', async function () {
+    it('Can read a Collection by id and slug', async function () {
         const collection = {
             title: 'Test Collection to Read'
         };
@@ -153,6 +153,20 @@ describe('Collections API', function () {
             });
 
         assert.equal(readResponse.body.collections[0].title, 'Test Collection to Read');
+
+        const collectionSlug = addResponse.body.collections[0].slug;
+        const readBySlugResponse = await agent
+            .get(`/collections/slug/${collectionSlug}/`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                collections: [matchCollection]
+            });
+
+        assert.equal(readBySlugResponse.body.collections[0].title, 'Test Collection to Read');
 
         await agent
             .delete(`/collections/${collectionId}/`)
