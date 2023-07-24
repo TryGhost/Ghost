@@ -357,13 +357,48 @@ describe('Collections API', function () {
                 });
         });
 
-        it('Creates an automatic Collection with a tag filter', async function () {
+        it('Creates an automatic Collection with a tags filter', async function () {
             const collection = {
-                title: 'Test Collection with tag filter',
+                title: 'Test Collection with tags filter',
                 slug: 'bacon',
                 description: 'BACON!',
                 type: 'automatic',
                 filter: 'tags:[\'bacon\']'
+            };
+
+            await agent
+                .post('/collections/')
+                .body({
+                    collections: [collection]
+                })
+                .expectStatus(201)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('collections')
+                })
+                .matchBodySnapshot({
+                    collections: [buildMatcher(2)]
+                });
+
+            await agent.get(`posts/?collection=${collection.slug}`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    posts: new Array(2).fill(matchPostShallowIncludes)
+                });
+        });
+
+        it('Creates an automatic Collection with a tag filter, checking filter aliases', async function () {
+            const collection = {
+                title: 'Test Collection with tag filter alias',
+                slug: 'bacon-tag-expansion',
+                description: 'BACON!',
+                type: 'automatic',
+                filter: 'tag:[\'bacon\']'
             };
 
             await agent

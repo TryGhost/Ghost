@@ -3,5 +3,5 @@ export type CollectionPost = {
     id: string;
     featured?: boolean;
     published_at?: Date;
-    tags?: string[];
+    tags?: Array<{slug: string}>;
 };

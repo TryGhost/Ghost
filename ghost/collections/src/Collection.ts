@@ -1,7 +1,8 @@
 import {UniqueChecker} from './UniqueChecker';
 import {ValidationError} from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
-import nql = require('@tryghost/nql');
+import nql from '@tryghost/nql';
+import {posts as postExpansions} from '@tryghost/nql-filter-expansions';
 import {CollectionPost} from './CollectionPost';
 
 import ObjectID from 'bson-objectid';
@@ -95,7 +96,9 @@ export class Collection {
     }
 
     postMatchesFilter(post: CollectionPost) {
-        const filterNql = nql(this.filter);
+        const filterNql = nql(this.filter, {
+            expansions: postExpansions
+        });
         return filterNql.queryJSON(post);
     }
 

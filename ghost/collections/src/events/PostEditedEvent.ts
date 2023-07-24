@@ -6,7 +6,7 @@ type PostEditData = {
         status: string;
         featured: boolean;
         published_at: Date;
-        tags: string[];
+        tags: Array<{slug: string}>;
     },
     previous: {
         id: string;
@@ -14,7 +14,7 @@ type PostEditData = {
         status: string;
         featured: boolean;
         published_at: Date;
-        tags: string[];
+        tags: Array<{slug: string}>;
     }
 };
 
