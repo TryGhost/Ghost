@@ -153,7 +153,7 @@ describe('DomainEventsAnalytics', function () {
             assert(analyticsStub.calledWith({
                 userId: '9876',
                 properties: {email: 'john+arr@test.com'},
-                event: 'Pro: $100 MRR reached'
+                event: 'Pro: $100 ARR reached'
             }));
             assert(loggingStub.callCount === 0);
 
