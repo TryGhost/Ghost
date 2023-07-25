@@ -42,7 +42,8 @@ const ALPHA_FEATURES = [
     'flatUrls',
     'mailEvents',
     'collectionsCard',
-    'headerUpgrade'
+    'headerUpgrade',
+    'importMemberTier'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
