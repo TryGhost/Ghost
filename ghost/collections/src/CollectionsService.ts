@@ -7,6 +7,7 @@ import {MethodNotAllowedError} from '@tryghost/errors';
 import {PostDeletedEvent} from './events/PostDeletedEvent';
 import {PostAddedEvent} from './events/PostAddedEvent';
 import {PostEditedEvent} from './events/PostEditedEvent';
+import {PostsBulkDestroyedEvent} from '@tryghost/post-events';
 import {RepositoryUniqueChecker} from './RepositoryUniqueChecker';
 import {TagDeletedEvent} from './events/TagDeletedEvent';
 
@@ -178,6 +179,11 @@ export class CollectionsService {
             await this.updatePostInMatchingCollections(event.data);
         });
 
+        this.DomainEvents.subscribe(PostsBulkDestroyedEvent, async (event: PostsBulkDestroyedEvent) => {
+            logging.info(`BulkDestroyEvent received, removing posts ${event.data} from all collections`);
+            await this.removePostsFromAllCollections(event.data);
+        });
+
         this.DomainEvents.subscribe(TagDeletedEvent, async (event: TagDeletedEvent) => {
             logging.info(`TagDeletedEvent received for ${event.data.id}, updating all collections`);
             await this.updateAllAutomaticCollections();
@@ -265,6 +271,21 @@ export class CollectionsService {
                     collection.removePost(postId);
                     await this.collectionsRepository.save(collection, {transaction});
                 }
+            }
+        });
+    }
+
+    private async removePostsFromAllCollections(postIds: string[]) {
+        return await this.collectionsRepository.createTransaction(async (transaction) => {
+            const collections = await this.collectionsRepository.getAll({transaction});
+
+            for (const collection of collections) {
+                for (const postId of postIds) {
+                    if (collection.includesPost(postId)) {
+                        collection.removePost(postId);
+                    }
+                }
+                await this.collectionsRepository.save(collection, {transaction});
             }
         });
     }
