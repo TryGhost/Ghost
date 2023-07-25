@@ -356,7 +356,8 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 identity: identity,
                 metadata: metadataObj,
                 successUrl,
-                cancelUrl
+                cancelUrl,
+                type: 'donation'
             };
 
             if (customerEmail) {
