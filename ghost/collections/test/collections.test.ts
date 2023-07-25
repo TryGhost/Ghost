@@ -8,6 +8,7 @@ import {
     PostEditedEvent,
     TagDeletedEvent
 } from '../src/index';
+import {PostsBulkDestroyedEvent} from '@tryghost/post-events';
 import {PostsRepositoryInMemory} from './fixtures/PostsRepositoryInMemory';
 import {posts as postFixtures} from './fixtures/posts';
 import {CollectionPost} from '../src/CollectionPost';
@@ -401,6 +402,25 @@ describe('CollectionsService', function () {
                 assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 2);
                 assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 1);
                 assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 1);
+            });
+
+            it('Updates all collections when posts are deleted in bulk', async function () {
+                assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 2);
+                assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 2);
+                assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 2);
+
+                collectionsService.subscribeToEvents();
+                const postDeletedEvent = PostsBulkDestroyedEvent.create([
+                    posts[0].id,
+                    posts[1].id
+                ]);
+
+                DomainEvents.dispatch(postDeletedEvent);
+                await DomainEvents.allSettled();
+
+                assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 2);
+                assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 0);
+                assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 0);
             });
 
             it('Updates only index collection when a non-featured post is added', async function () {
