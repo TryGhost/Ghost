@@ -56,6 +56,14 @@ jobs:
           echo "Setting BASE_COMMIT to $BASE_COMMIT"
           echo "BASE_COMMIT=$BASE_COMMIT" >> $GITHUB_ENV
 
+      - name: Determine added packages
+        uses: dorny/paths-filter@v2.11.1
+        id: added
+        with:
+          filters: |
+            new-package:
+              - added: 'ghost/*'
+
       - name: Determine changed packages
         uses: AurorNZ/paths-filter@v3.0.1
         id: changed
@@ -102,6 +110,7 @@ jobs:
       changed_signup_form: ${{ steps.changed.outputs.signup-form }}
       changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
+      changed_new_package: ${{ steps.added.outputs.new-package }}
       base_commit: ${{ env.BASE_COMMIT }}
       is_canary_branch: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/arch') }}
       is_main: ${{ github.ref == 'refs/heads/main' }}
@@ -145,7 +154,7 @@ jobs:
 
       - name: Set up Node
         uses: actions/setup-node@v3
-        if: steps.cache_dependencies.outputs.cache-hit != 'true'
+        if: steps.cache_dependencies.outputs.cache-hit != 'true' || needs.job_get_metadata.outputs.changed_new_package == 'true'
         env:
           FORCE_COLOR: 0
         with:
@@ -153,11 +162,11 @@ jobs:
           cache: yarn
 
       - name: Install dependencies
-        if: steps.cache_dependencies.outputs.cache-hit != 'true'
+        if: steps.cache_dependencies.outputs.cache-hit != 'true' || needs.job_get_metadata.outputs.changed_new_package == 'true'
         run: yarn install --prefer-offline --frozen-lockfile
 
       - name: Build packages
-        if: steps.cache_built_packages.outputs.cache-hit != 'true'
+        if: steps.cache_built_packages.outputs.cache-hit != 'true' || needs.job_get_metadata.outputs.changed_new_package == 'true'
         run: yarn nx run-many -t build:ts
     outputs:
       dependency_cache_key: ${{ steps.compute_lockfile_hash.outputs.hash }}
