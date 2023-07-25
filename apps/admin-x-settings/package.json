@@ -64,7 +64,7 @@
     "@storybook/testing-library": "0.2.0",
     "@tailwindcss/forms": "0.5.4",
     "@tailwindcss/line-clamp": "0.4.4",
-    "@types/react": "18.2.15",
+    "@types/react": "18.2.16",
     "@types/react-dom": "18.2.7",
     "@types/validator": "13.7.17",
     "@typescript-eslint/eslint-plugin": "5.62.0",
