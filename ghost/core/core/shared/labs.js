@@ -43,7 +43,8 @@ const ALPHA_FEATURES = [
     'mailEvents',
     'collectionsCard',
     'headerUpgrade',
-    'importMemberTier'
+    'importMemberTier',
+    'tipsAndDonations'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

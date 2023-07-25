@@ -12,5 +12,19 @@
                 </button>
             </div>
         </div>
+        {{#if (feature "tipsAndDonations")}}
+        <div class="gh-expandable-block">
+            <div class="gh-expandable-header">
+                <div>
+                    <h4 class="gh-expandable-title">Tips & donations</h4>
+                    <p class="gh-expandable-description">Give your audience a one-time way to support your work</p>
+                </div>
+                <GhTaskButton @buttonText="Copy link" @successText="Link copied" @task={{this.copyTipsAndDonationsLink}} @class="gh-btn gh-btn-icon"/>
+            </div>
+        </div>
+        {{/if}}
     </div>
 </section>
+
+    
+
