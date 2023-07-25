@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.55.0",
+  "version": "5.55.1",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -135,6 +135,7 @@
     "@tryghost/mw-vhost": "0.0.0",
     "@tryghost/nodemailer": "0.3.35",
     "@tryghost/nql": "0.11.0",
+    "@tryghost/nql-filter-expansions": "0.0.0",
     "@tryghost/oembed-service": "0.0.0",
     "@tryghost/package-json": "0.0.0",
     "@tryghost/post-revisions": "0.0.0",
@@ -227,7 +228,7 @@
   },
   "devDependencies": {
     "@actions/core": "1.10.0",
-    "@playwright/test": "1.36.1",
+    "@playwright/test": "1.36.2",
     "@tryghost/express-test": "0.13.4",
     "@tryghost/webhook-mock-receiver": "0.2.6",
     "@types/common-tags": "1.8.1",

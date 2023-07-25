@@ -20,7 +20,9 @@ class PostsRepository {
                 id: postJson.id,
                 featured: postJson.featured,
                 published_at: this.moment(postJson.published_at).toISOString(true),
-                tags: postJson.tags.map(tag => tag.slug)
+                tags: postJson.tags.map(tag => ({
+                    slug: tag.slug
+                }))
             };
         });
     }

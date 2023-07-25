@@ -78,6 +78,7 @@ export default class FeatureService extends Service {
     @feature('mailEvents') mailEvents;
     @feature('collectionsCard') collectionsCard;
     @feature('headerUpgrade') headerUpgrade;
+    @feature('importMemberTier') importMemberTier;
 
     _user = null;
 

@@ -24,6 +24,12 @@ const matchCollection = {
     updated_at: anyISODateTime
 };
 
+const tagSnapshotMatcher = {
+    id: anyObjectId,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime
+};
+
 const matchPostShallowIncludes = {
     id: anyObjectId,
     uuid: anyUuid,
@@ -40,7 +46,7 @@ const matchPostShallowIncludes = {
     post_revisions: anyArray
 };
 
-describe('Collections API', function () {
+describe.only('Collections API', function () {
     let agent;
 
     before(async function () {
@@ -349,7 +355,7 @@ describe('Collections API', function () {
                 });
         });
 
-        it('Creates an automatic Collection with a tag filter', async function () {
+        it('Creates an automatic Collection with a tags filter', async function () {
             const collection = {
                 title: 'Test Collection with tag filter',
                 slug: 'tag-filter',
@@ -380,7 +386,48 @@ describe('Collections API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    posts: new Array(2).fill(matchPostShallowIncludes)
+                    posts: new Array(2).fill({
+                        ...matchPostShallowIncludes,
+                        tags: new Array(2).fill(tagSnapshotMatcher)
+                    })
+                });
+        });
+
+        it('Creates an automatic Collection with a tag filter, checking filter aliases', async function () {
+            const collection = {
+                title: 'Test Collection with tag filter alias',
+                slug: 'bacon-tag-expansion',
+                description: 'BACON!',
+                type: 'automatic',
+                filter: 'tag:[\'bacon\']'
+            };
+
+            await agent
+                .post('/collections/')
+                .body({
+                    collections: [collection]
+                })
+                .expectStatus(201)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('collections')
+                })
+                .matchBodySnapshot({
+                    collections: [matchCollection]
+                });
+
+            await agent.get(`posts/?collection=${collection.slug}`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    posts: new Array(2).fill({
+                        ...matchPostShallowIncludes,
+                        tags: new Array(2).fill(tagSnapshotMatcher)
+                    })
                 });
         });
     });
