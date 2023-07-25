@@ -1,8 +1,4 @@
-const {
-    PostDeletedEvent,
-    PostAddedEvent,
-    PostEditedEvent
-} = require('@tryghost/collections');
+import { PostDeletedEvent, PostAddedEvent, PostEditedEvent } from '@tryghost/collections';
 
 type ModelToDomainEventInterceptorDeps = {
     ModelEvents: {
