@@ -66,7 +66,7 @@ describe('Collections API', function () {
             description: 'Test Collection Description'
         };
 
-        await agent
+        const {body: {collections: [{id: collectionId}]}} = await agent
             .post('/collections/')
             .body({
                 collections: [collection]
@@ -80,6 +80,10 @@ describe('Collections API', function () {
             .matchBodySnapshot({
                 collections: [matchCollection]
             });
+
+        await agent
+            .delete(`/collections/${collectionId}/`)
+            .expectStatus(204);
     });
 
     describe('Browse', function () {
@@ -93,7 +97,6 @@ describe('Collections API', function () {
                 })
                 .matchBodySnapshot({
                     collections: [
-                        matchCollection,
                         matchCollection,
                         matchCollection
                     ]
