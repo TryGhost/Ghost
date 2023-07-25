@@ -16,8 +16,6 @@ export abstract class InMemoryRepository<IDType, T extends Entity<IDType>> {
     protected store: T[] = [];
     private ids: Map<IDType, true> = new Map();
 
-    constructor() {}
-
     protected abstract toPrimitive(entity: T): object;
 
     public async save(entity: T): Promise<void> {
