@@ -568,12 +568,13 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
         }
     ]);
 
-    let okLabel = saveState === 'saved' ? 'Saved' : 'Save';
+    let okLabel = saveState === 'saved' ? 'Saved' : 'Save & close';
     if (saveState === 'saving') {
         okLabel = 'Saving...';
+    } else if (saveState === 'saved') {
+        mainModal.remove();
     }
 
-    // remove saved state after 2 seconds
     useEffect(() => {
         if (saveState === 'saved') {
             setTimeout(() => {
@@ -589,7 +590,6 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
     return (
         <Modal
             backDropClick={false}
-            cancelLabel='Close'
             okLabel={okLabel}
             size='lg'
             stickyFooter={true}
