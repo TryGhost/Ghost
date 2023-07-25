@@ -46,7 +46,7 @@ const matchPostShallowIncludes = {
     post_revisions: anyArray
 };
 
-describe.only('Collections API', function () {
+describe('Collections API', function () {
     let agent;
 
     before(async function () {
