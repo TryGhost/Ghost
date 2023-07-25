@@ -25,7 +25,9 @@
         "mocha": "10.2.0",
         "sinon": "15.2.0"
     },
-    "dependencies": {},
+    "dependencies": {
+        "@tryghost/collections": "0.0.0"
+    },
     "c8": {
         "exclude": [
             "src/**/*.d.ts"
