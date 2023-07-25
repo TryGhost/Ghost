@@ -217,6 +217,10 @@ module.exports = {
         return apiFramework.pipeline(require('./pages-public'), localUtils, 'content');
     },
 
+    get collectionsPublic() {
+        return apiFramework.pipeline(require('./collections-public'), localUtils);
+    },
+
     get tagsPublic() {
         return apiFramework.pipeline(require('./tags-public'), localUtils, 'content');
     },
