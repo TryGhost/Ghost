@@ -589,7 +589,6 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
 
     return (
         <Modal
-            backDropClick={false}
             okLabel={okLabel}
             size='lg'
             stickyFooter={true}
