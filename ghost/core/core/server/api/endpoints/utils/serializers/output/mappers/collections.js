@@ -4,7 +4,7 @@
  *
  * @returns {SerializedCollection}
  */
-const mapper = (collection) => {
+const mapper = (collection, frame) => {
     let json;
     if (collection.toJSON) {
         json = collection.toJSON();
@@ -23,6 +23,12 @@ const mapper = (collection) => {
         created_at: (json.created_at || json.createdAt).toISOString().replace(/\d{3}Z$/, '000Z'),
         updated_at: (json.updated_at || json.updatedAt).toISOString().replace(/\d{3}Z$/, '000Z')
     };
+
+    if (frame?.options?.withRelated?.includes('count.posts')) {
+        serialized.count = {
+            posts: json.posts.length
+        };
+    }
 
     return serialized;
 };

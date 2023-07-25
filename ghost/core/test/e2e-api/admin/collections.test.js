@@ -102,6 +102,22 @@ describe('Collections API', function () {
                     ]
                 });
         });
+
+        it('Can browse Collections and include the posts count', async function () {
+            await agent
+                .get('/collections/?include=count.posts')
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [
+                        {...matchCollection, count: {posts: 13}},
+                        {...matchCollection, count: {posts: 2}}
+                    ]
+                });
+        });
     });
 
     it('Can read a Collection by id and slug', async function () {
@@ -156,6 +172,38 @@ describe('Collections API', function () {
         await agent
             .delete(`/collections/${collectionId}/`)
             .expectStatus(204);
+    });
+
+    it('Can read a Collection by id and slug and include the post counts', async function () {
+        const {body: {collections: [collection]}} = await agent.get(`/collections/slug/featured/?include=count.posts`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                collections: [{
+                    ...matchCollection,
+                    count: {
+                        posts: 2
+                    }
+                }]
+            });
+
+        await agent.get(`/collections/${collection.id}/?include=count.posts`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                collections: [{
+                    ...matchCollection,
+                    count: {
+                        posts: 2
+                    }
+                }]
+            });
     });
 
     describe('Edit', function () {
