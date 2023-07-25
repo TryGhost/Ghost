@@ -17,8 +17,16 @@ module.exports = {
             'limit',
             'order',
             'page',
-            'filter'
+            'filter',
+            'include'
         ],
+        validation: {
+            options: {
+                include: {
+                    values: ['count.posts']
+                }
+            }
+        },
         permissions: true,
         query(frame) {
             return collectionsService.api.getAll(frame.options);
@@ -29,10 +37,20 @@ module.exports = {
         headers: {
             cacheInvalidate: false
         },
+        options: [
+            'include'
+        ],
         data: [
             'id',
             'slug'
         ],
+        validation: {
+            options: {
+                include: {
+                    values: ['count.posts']
+                }
+            }
+        },
         permissions: true,
         async query(frame) {
             let model;
