@@ -1589,6 +1589,41 @@ describe('Email renderer', function () {
             // Check doesn't contain the non escaped string '<3'
             assert.equal(response.html.includes('<3'), false, 'Should escape HTML characters');
         });
+
+        it('does not replace img height and width with auto from css', async function () {
+            const post = createModel(basePost);
+            const newsletter = createModel({
+                feedback_enabled: true,
+                name: 'My newsletter <3</body>',
+                header_image: 'https://testpost.com/test-post</body>/',
+                show_header_icon: true,
+                show_header_title: true,
+                show_feature_image: true,
+                title_font_category: 'sans-serif',
+                title_alignment: 'center',
+                body_font_category: 'serif',
+                show_badge: true,
+                show_header_name: true,
+                // Note: we don't need to check the footer content because this should contain valid HTML (not text)
+                footer_content: '<span>Footer content with valid HTML</span>'
+            });
+            const segment = null;
+            const options = {};
+
+            renderedPost = '<p>This is the post.</p><figure class="kg-card kg-image-card"><img src="__GHOST_URL__/content/images/2023/07/audio-sample_thumb.png" class="kg-image" alt loading="lazy" width="248" height="248"></figure><p>Theres an image!</p>';
+
+            const response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                segment,
+                options
+            );
+
+            // console.log(response.html);
+
+            assert.equal(response.html.includes('width="248" height="248"'), true, 'Should not replace img height and width with auto from css');
+            assert.equal(response.html.includes('width="auto" height="auto"'), false, 'Should not replace img height and width with auto from css');
+        });
     });
 
     describe('getTemplateData', function () {
