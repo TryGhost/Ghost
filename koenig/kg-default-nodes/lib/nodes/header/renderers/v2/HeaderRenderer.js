@@ -10,17 +10,17 @@ function cardTemplate(nodeData) {
     const backgroundImageStyle = nodeData.backgroundColor !== 'accent' && (!nodeData.backgroundImageSrc || nodeData.layout === 'split') ? `background-color: ${nodeData.backgroundColor}` : '';
 
     const imgTemplate = nodeData.backgroundImageSrc ? `
-        <picture><img class="kg-header-card-v2-image" src="${nodeData.backgroundImageSrc}" alt="" /></picture>
+        <picture><img class="kg-header-card-image" src="${nodeData.backgroundImageSrc}" alt="" /></picture>
     ` : ``;
     return `
         <div class="${cardClasses} ${backgroundAccent}" style="${backgroundImageStyle};">
             ${nodeData.layout !== 'split' ? imgTemplate : ''}
-            <div class="kg-header-card-v2-content">
+            <div class="kg-header-card-content">
                 ${nodeData.layout === 'split' ? imgTemplate : ''}
-                <div class="kg-header-card-v2-text ${alignment}">
-                    <h2 class="kg-header-card-v2-heading" style="color: ${nodeData.textColor};">${nodeData.header}</h2>
-                    <h3 class="kg-header-card-v2-subheading" style="color: ${nodeData.textColor};">${nodeData.subheader}</h3>
-                    ${nodeData.buttonEnabled ? `<a href="${nodeData.buttonUrl}" class="kg-header-card-v2-button ${buttonAccent}" style="${buttonStyle}color: ${nodeData.buttonTextColor};">${nodeData.buttonText}</a>` : ''}
+                <div class="kg-header-card-text ${alignment}">
+                    <h2 class="kg-header-card-heading" style="color: ${nodeData.textColor};">${nodeData.header}</h2>
+                    <h3 class="kg-header-card-subheading" style="color: ${nodeData.textColor};">${nodeData.subheader}</h3>
+                    ${nodeData.buttonEnabled ? `<a href="${nodeData.buttonUrl}" class="kg-header-card-button ${buttonAccent}" style="${buttonStyle}color: ${nodeData.buttonTextColor};">${nodeData.buttonText}</a>` : ''}
                 </div>
             </div>
         </div>
@@ -84,14 +84,14 @@ export function renderHeaderNodeV2(dataset, options = {}) {
     element.innerHTML = htmlString?.trim();
 
     if (node.header === '') {
-        const h2Element = element.querySelector('.kg-header-card-v2-heading');
+        const h2Element = element.querySelector('.kg-header-card-heading');
         if (h2Element) {
             h2Element.remove();
         }
     }
 
     if (node.subheader === '') {
-        const h3Element = element.querySelector('.kg-header-card-v2-subheading');
+        const h3Element = element.querySelector('.kg-header-card-subheading');
         if (h3Element) {
             h3Element.remove();
         }
@@ -101,7 +101,7 @@ export function renderHeaderNodeV2(dataset, options = {}) {
 }
 
 export function getCardClasses(nodeData) {
-    let cardClasses = ['kg-card kg-header-card-v2'];
+    let cardClasses = ['kg-card kg-header-card kg-v2'];
 
     if (nodeData.layout && nodeData.layout !== 'split') {
         cardClasses.push(`kg-width-${nodeData.layout}`);
