@@ -12,7 +12,6 @@ const {
     anyLocationFor,
     anyObjectId,
     anyISODateTime,
-    anyNumber,
     anyString,
     anyUuid,
     anyArray,
@@ -20,12 +19,6 @@ const {
 } = matchers;
 
 const matchCollection = {
-    id: anyObjectId,
-    created_at: anyISODateTime,
-    updated_at: anyISODateTime
-};
-
-const tierSnapshot = {
     id: anyObjectId,
     created_at: anyISODateTime,
     updated_at: anyISODateTime
@@ -44,30 +37,13 @@ const matchPostShallowIncludes = {
     url: anyString,
     authors: anyArray,
     primary_author: anyObject,
-    tags: Array(2).fill(tagSnapshotMatcher),
+    tags: anyArray,
     primary_tag: anyObject,
-    tiers: Array(2).fill(tierSnapshot),
+    tiers: anyArray,
     created_at: anyISODateTime,
     updated_at: anyISODateTime,
     published_at: anyISODateTime,
     post_revisions: anyArray
-};
-
-/**
- *
- * @param {number} postCount
- */
-const buildMatcher = (postCount, opts = {}) => {
-    let obj = {
-        id: anyObjectId
-    };
-    if (opts.withSortOrder) {
-        obj.sort_order = anyNumber;
-    }
-    return {
-        ...matchCollection,
-        posts: Array(postCount).fill(obj)
-    };
 };
 
 describe('Collections API', function () {
@@ -117,9 +93,9 @@ describe('Collections API', function () {
                 })
                 .matchBodySnapshot({
                     collections: [
-                        buildMatcher(13, {withSortOrder: true}),
-                        buildMatcher(2, {withSortOrder: true}),
-                        buildMatcher(0)
+                        matchCollection,
+                        matchCollection,
+                        matchCollection
                     ]
                 });
         });
@@ -312,6 +288,7 @@ describe('Collections API', function () {
         it('Creates an automatic Collection with a featured filter', async function () {
             const collection = {
                 title: 'Test Featured Collection',
+                slug: 'featured-filter',
                 description: 'Test Collection Description',
                 type: 'automatic',
                 filter: 'featured:true'
@@ -329,13 +306,24 @@ describe('Collections API', function () {
                     location: anyLocationFor('collections')
                 })
                 .matchBodySnapshot({
-                    collections: [buildMatcher(2)]
+                    collections: [matchCollection]
+                });
+
+            await agent.get(`posts/?collection=${collection.slug}`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    posts: new Array(2).fill(matchPostShallowIncludes)
                 });
         });
 
         it('Creates an automatic Collection with a published_at filter', async function () {
             const collection = {
                 title: 'Test Collection with published_at filter',
+                slug: 'published-at-filter',
                 description: 'Test Collection Description with published_at filter',
                 type: 'automatic',
                 filter: 'published_at:>=2022-05-25'
@@ -353,14 +341,24 @@ describe('Collections API', function () {
                     location: anyLocationFor('collections')
                 })
                 .matchBodySnapshot({
-                    collections: [buildMatcher(9)]
+                    collections: [matchCollection]
+                });
+
+            await agent.get(`posts/?collection=${collection.slug}`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    posts: new Array(7).fill(matchPostShallowIncludes)
                 });
         });
 
         it('Creates an automatic Collection with a tags filter', async function () {
             const collection = {
-                title: 'Test Collection with tags filter',
-                slug: 'bacon',
+                title: 'Test Collection with tag filter',
+                slug: 'tag-filter',
                 description: 'BACON!',
                 type: 'automatic',
                 filter: 'tags:[\'bacon\']'
@@ -378,7 +376,7 @@ describe('Collections API', function () {
                     location: anyLocationFor('collections')
                 })
                 .matchBodySnapshot({
-                    collections: [buildMatcher(2)]
+                    collections: [matchCollection]
                 });
 
             await agent.get(`posts/?collection=${collection.slug}`)
@@ -388,7 +386,10 @@ describe('Collections API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    posts: new Array(2).fill(matchPostShallowIncludes)
+                    posts: new Array(2).fill({
+                        ...matchPostShallowIncludes,
+                        tags: new Array(2).fill(tagSnapshotMatcher)
+                    })
                 });
         });
 
@@ -413,7 +414,7 @@ describe('Collections API', function () {
                     location: anyLocationFor('collections')
                 })
                 .matchBodySnapshot({
-                    collections: [buildMatcher(2)]
+                    collections: [matchCollection]
                 });
 
             await agent.get(`posts/?collection=${collection.slug}`)
@@ -423,7 +424,10 @@ describe('Collections API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    posts: new Array(2).fill(matchPostShallowIncludes)
+                    posts: new Array(2).fill({
+                        ...matchPostShallowIncludes,
+                        tags: new Array(2).fill(tagSnapshotMatcher)
+                    })
                 });
         });
     });
