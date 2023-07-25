@@ -62,7 +62,7 @@ jobs:
         with:
           filters: |
             new-package:
-              - added: 'ghost/*'
+              - added: 'ghost/**/package.json'
 
       - name: Determine changed packages
         uses: AurorNZ/paths-filter@v3.0.1
