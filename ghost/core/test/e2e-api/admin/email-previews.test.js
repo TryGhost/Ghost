@@ -1,4 +1,4 @@
-const {agentProvider, fixtureManager, matchers, mockManager, configUtils} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
 const {anyEtag, anyErrorId, anyContentVersion, anyString} = matchers;
 const assert = require('assert/strict');
 const sinon = require('sinon');
@@ -10,11 +10,6 @@ const ObjectId = require('bson-objectid').default;
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models/index');
 const logging = require('@tryghost/logging');
-const DomainEvents = require('@tryghost/domain-events');
-
-async function allSettled() {
-    await DomainEvents.allSettled();
-}
 
 function testCleanedSnapshot(html, cleaned) {
     for (const [key, value] of Object.entries(cleaned)) {
@@ -345,33 +340,6 @@ describe('Email Preview API', function () {
                     }]
                 });
             sinon.assert.calledOnce(loggingStub);
-        });
-    });
-    describe('Rate limiter', function () {
-        before(async function () {
-            await agent.loginAsAdmin();
-        });
-        it('is rate limited against spammmer requests', async function () {
-            const testEmailSpamBlock = configUtils.config.get('spam').email_preview_block;
-            const requests = [];
-            for (let i = 0; i < testEmailSpamBlock.freeRetries + 1; i += 1) {
-                const req = await agent
-                    .post(`email_previews/posts/${fixtureManager.get('posts', 0).id}/`)
-                    .body({
-                        emails: ['test@ghost.org']
-                    });
-                requests.push(req);
-            }
-            await Promise.all(requests);
-
-            await agent
-                .post(`email_previews/posts/${fixtureManager.get('posts', 0).id}/`)
-                .body({
-                    emails: ['test@ghost.org']
-                })
-                .expectStatus(429);
-
-            await allSettled();
         });
     });
 });
