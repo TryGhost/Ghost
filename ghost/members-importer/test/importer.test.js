@@ -28,7 +28,8 @@ describe('Importer', function () {
         created_at: 'created_at',
         complimentary_plan: 'complimentary_plan',
         stripe_customer_id: 'stripe_customer_id',
-        labels: 'labels'
+        labels: 'labels',
+        import_tier: 'import_tier'
     };
 
     beforeEach(function () {
@@ -295,7 +296,7 @@ describe('Importer', function () {
         it('performs import on a single csv file', async function () {
             const importer = buildMockImporterInstance();
 
-            const result = await importer.perform(`${csvPath}/single-column-with-header.csv`, defaultAllowedFields);
+            const result = await importer.perform(`${csvPath}/single-column-with-header.csv`);
 
             assert.equal(membersRepositoryStub.create.args[0][0].email, 'jbloggs@example.com');
             assert.deepEqual(membersRepositoryStub.create.args[0][0].labels, []);
@@ -383,7 +384,7 @@ describe('Importer', function () {
                 .withArgs({email: 'jbloggs@example.com'})
                 .resolves(member);
 
-            await importer.perform(`${csvPath}/subscribed-to-emails-header.csv`, defaultAllowedFields);
+            await importer.perform(`${csvPath}/subscribed-to-emails-header.csv`);
 
             assert.deepEqual(membersRepositoryStub.update.args[0][0].newsletters, newsletters);
         });
@@ -404,7 +405,7 @@ describe('Importer', function () {
                 .withArgs({email: 'jbloggs@example.com'})
                 .resolves(member);
 
-            await importer.perform(`${csvPath}/subscribed-to-emails-header.csv`, defaultAllowedFields);
+            await importer.perform(`${csvPath}/subscribed-to-emails-header.csv`);
 
             assert.deepEqual(membersRepositoryStub.update.args[0][0].subscribed, false);
         });
@@ -435,10 +436,21 @@ describe('Importer', function () {
                 .withArgs({email: 'test@example.com'})
                 .resolves(member);
 
-            await importer.perform(`${csvPath}/subscribed-to-emails-header.csv`, defaultAllowedFields);
+            await importer.perform(`${csvPath}/subscribed-to-emails-header.csv`);
 
             assert.equal(membersRepositoryStub.update.args[0][0].subscribed, false);
             assert.equal(membersRepositoryStub.update.args[0][0].newsletters, undefined);
+        });
+
+        it('does not import a free member with an import tier', async function () {
+            const importer = buildMockImporterInstance();
+
+            const result = await importer.perform(`${csvPath}/free-member-import-tier.csv`);
+
+            assert.equal(result.total, 1);
+            assert.equal(result.imported, 0);
+            assert.equal(result.errors.length, 1);
+            assert.equal(result.errors[0].error, 'You cannot import a free member with a specified tier.');
         });
     });
 });

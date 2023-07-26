@@ -8,7 +8,8 @@ const emailTemplate = require('./email-template');
 const logging = require('@tryghost/logging');
 
 const messages = {
-    filenameCollision: 'Filename already exists, please try again.'
+    filenameCollision: 'Filename already exists, please try again.',
+    freeMemberNotAllowedImportTier: 'You cannot import a free member with a specified tier.'
 };
 
 // The key should correspond to a member model field (unless it's a special purpose field like 'complimentary_plan')
@@ -195,6 +196,8 @@ module.exports = class MembersCSVImporter {
                         ...options,
                         id: member.id
                     });
+                } else if (row.import_tier) {
+                    throw new errors.DataImportError({message: tpl(messages.freeMemberNotAllowedImportTier)});
                 }
 
                 await trx.commit();
