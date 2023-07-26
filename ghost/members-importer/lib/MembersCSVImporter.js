@@ -9,7 +9,8 @@ const logging = require('@tryghost/logging');
 
 const messages = {
     filenameCollision: 'Filename already exists, please try again.',
-    freeMemberNotAllowedImportTier: 'You cannot import a free member with a specified tier.'
+    freeMemberNotAllowedImportTier: 'You cannot import a free member with a specified tier.',
+    invalidImportTier: '"{tier}" is not a valid tier.'
 };
 
 // The key should correspond to a member model field (unless it's a special purpose field like 'complimentary_plan')
@@ -33,6 +34,7 @@ module.exports = class MembersCSVImporter {
      * @param {Function} options.getTimezone - function returning currently configured timezone
      * @param {() => Object} options.getMembersRepository - member model access instance for data access and manipulation
      * @param {() => Promise<import('@tryghost/tiers/lib/Tier')>} options.getDefaultTier - async function returning default Member Tier
+     * @param {() => Promise<import('@tryghost/tiers/lib/Tier')>} options.getTierByName - async function returning Member Tier by name
      * @param {Function} options.sendEmail - function sending an email
      * @param {(string) => boolean} options.isSet - Method checking if specific feature is enabled
      * @param {({job, offloaded, name}) => void} options.addJob - Method registering an async job
@@ -40,17 +42,19 @@ module.exports = class MembersCSVImporter {
      * @param {Function} options.urlFor - function generating urls
      * @param {Object} options.context
      */
-    constructor({storagePath, getTimezone, getMembersRepository, getDefaultTier, sendEmail, isSet, addJob, knex, urlFor, context}) {
+    constructor({storagePath, getTimezone, getMembersRepository, getDefaultTier, getTierByName, sendEmail, isSet, addJob, knex, urlFor, context}) {
         this._storagePath = storagePath;
         this._getTimezone = getTimezone;
         this._getMembersRepository = getMembersRepository;
         this._getDefaultTier = getDefaultTier;
+        this._getTierByName = getTierByName;
         this._sendEmail = sendEmail;
         this._isSet = isSet;
         this._addJob = addJob;
         this._knex = knex;
         this._urlFor = urlFor;
         this._context = context;
+        this._tierCache = new Map();
     }
 
     /**
@@ -190,9 +194,25 @@ module.exports = class MembersCSVImporter {
                         }, options);
                     }
                 } else if (row.complimentary_plan) {
-                    await membersRepository.update({
-                        products: [{id: defaultTier.id.toString()}]
-                    }, {
+                    const products = [];
+
+                    if (row.import_tier) {
+                        const tier = await this.#getTierByName(row.import_tier);
+
+                        if (!tier) {
+                            throw new errors.DataImportError({
+                                message: tpl(messages.invalidImportTier, {tier: row.import_tier})
+                            });
+                        }
+
+                        products.push({id: tier.id.toString()});
+                    }
+
+                    if (products.length === 0) {
+                        products.push({id: defaultTier.id.toString()});
+                    }
+
+                    await membersRepository.update({products}, {
                         ...options,
                         id: member.id
                     });
@@ -374,5 +394,21 @@ module.exports = class MembersCSVImporter {
                 meta
             };
         }
+    }
+
+    /**
+     * Retrieve a tier by its name and cache the result
+     *
+     * @private
+     * @param {string} name
+     * @returns {Promise<import('@tryghost/tiers/lib/Tier')|null>}
+     */
+    async #getTierByName(name) {
+        if (!this._tierCache.has(name)) {
+            const tier = await this._getTierByName(name);
+            this._tierCache.set(name, tier);
+        }
+
+        return this._tierCache.get(name);
     }
 };

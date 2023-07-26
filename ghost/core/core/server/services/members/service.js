@@ -53,6 +53,19 @@ const membersImporter = new MembersCSVImporter({
     getDefaultTier: () => {
         return tiersService.api.readDefaultTier();
     },
+    getTierByName: async (name) => {
+        // @TODO: Should we implement a specific findBy method in the tiers service?
+        const res = await tiersService.api.browse({
+            filter: `name:'${name}'+active:true`
+        });
+
+        if (res.data.length > 0) {
+            // @TODO: What if there are multiple tiers with the same name?
+            return res.data[0];
+        }
+
+        return null;
+    },
     sendEmail: ghostMailer.send.bind(ghostMailer),
     isSet: flag => labsService.isSet(flag),
     addJob: jobsService.addJob.bind(jobsService),

@@ -46,7 +46,7 @@ describe('Importer', function () {
         sinon.restore();
     });
 
-    const buildMockImporterInstance = () => {
+    const buildMockImporterInstance = (deps = {}) => {
         defaultTierId = new ObjectID();
         const defaultTierDummy = new Tier({
             id: defaultTierId
@@ -88,7 +88,8 @@ describe('Importer', function () {
             addJob: sinon.stub(),
             knex: knexStub,
             urlFor: sinon.stub(),
-            context: {importer: true}
+            context: {importer: true},
+            ...deps
         });
     };
 
@@ -451,6 +452,52 @@ describe('Importer', function () {
             assert.equal(result.imported, 0);
             assert.equal(result.errors.length, 1);
             assert.equal(result.errors[0].error, 'You cannot import a free member with a specified tier.');
+        });
+
+        it('imports a comped member with an import tier', async function () {
+            const tier = {
+                id: 'abc123',
+                name: 'Premium Tier'
+            };
+            const getTierByNameStub = sinon.stub();
+
+            getTierByNameStub.withArgs(tier.name).resolves(tier);
+
+            const importer = buildMockImporterInstance({
+                getTierByName: getTierByNameStub
+            });
+
+            const result = await importer.perform(`${csvPath}/comped-member-import-tier.csv`);
+
+            assert.equal(result.total, 1);
+            assert.equal(result.imported, 1);
+            assert.equal(result.errors.length, 0);
+            assert.ok(membersRepositoryStub.update.calledOnce);
+            assert.deepEqual(
+                membersRepositoryStub.update.getCall(0).args[0],
+                {products: [{id: tier.id}]}
+            );
+        });
+
+        it('does not import a comped member with an invalid import tier', async function () {
+            const tier = {
+                id: 'abc123',
+                name: 'Premium Tier'
+            };
+            const getTierByNameStub = sinon.stub();
+
+            getTierByNameStub.withArgs(tier.name).resolves(tier);
+
+            const importer = buildMockImporterInstance({
+                getTierByName: getTierByNameStub
+            });
+
+            const result = await importer.perform(`${csvPath}/comped-member-invalid-import-tier.csv`);
+
+            assert.equal(result.total, 1);
+            assert.equal(result.imported, 0);
+            assert.equal(result.errors.length, 1);
+            assert.equal(result.errors[0].error, '"Invalid Tier" is not a valid tier.');
         });
     });
 });
