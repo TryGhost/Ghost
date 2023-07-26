@@ -9,7 +9,7 @@ import Select, {SelectOption} from '../form/Select';
 import TabView, {Tab} from '../TabView';
 import clsx from 'clsx';
 import useGlobalDirtyState from '../../../hooks/useGlobalDirtyState';
-import {ButtonProps} from '../Button';
+import {ButtonColor, ButtonProps} from '../Button';
 import {confirmIfDirty} from '../../../utils/modals';
 
 export interface PreviewModalProps {
@@ -21,7 +21,7 @@ export interface PreviewModalProps {
     dirty?: boolean
     cancelLabel?: string;
     okLabel?: string;
-    okColor?: string;
+    okColor?: ButtonColor;
     buttonsDisabled?: boolean
     previewToolbar?: boolean;
     leftToolbar?: boolean;
@@ -202,6 +202,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     return (
         <Modal
             afterClose={afterClose}
+            animate={false}
             footer={false}
             noPadding={true}
             size={size}

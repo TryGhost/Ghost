@@ -76,7 +76,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
         styles += ' border-grey-200';
     }
 
-    let viewButtons = [];
+    let viewButtons: ButtonProps[] = [];
 
     if (!hideEditButton) {
         let label = 'Edit';

@@ -1,6 +1,7 @@
 import Modal from './Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
+import {ButtonColor} from '../Button';
 
 export interface ConfirmationModalProps {
     title?: string;
@@ -8,7 +9,7 @@ export interface ConfirmationModalProps {
     cancelLabel?: string;
     okLabel?: string;
     okRunningLabel?: string;
-    okColor?: string;
+    okColor?: ButtonColor;
     onCancel?: () => void;
     onOk?: (modal?: {
         remove: () => void;
