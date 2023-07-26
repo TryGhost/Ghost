@@ -7,6 +7,7 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import Select, {SelectOption} from '../form/Select';
 import TabView, {Tab} from '../TabView';
+import clsx from 'clsx';
 import useGlobalDirtyState from '../../../hooks/useGlobalDirtyState';
 import {ButtonProps} from '../Button';
 import {confirmIfDirty} from '../../../utils/modals';
@@ -27,7 +28,7 @@ export interface PreviewModalProps {
     rightToolbar?: boolean;
     deviceSelector?: boolean;
     previewToolbarURLs?: SelectOption[];
-    previewBgColor?: 'grey' | 'white';
+    previewBgColor?: 'grey' | 'white' | 'greygradient';
     selectedURL?: string;
     previewToolbarTabs?: Tab[];
     defaultTab?: string;
@@ -144,8 +145,20 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             />
         );
 
+        let previewBgClass = '';
+        if (previewBgColor === 'grey') {
+            previewBgClass = 'bg-grey-50';
+        } else if (previewBgColor === 'greygradient') {
+            previewBgClass = 'bg-gradient-to-tr from-white to-[#f9f9fa]';
+        }
+
+        const containerClasses = clsx(
+            'min-w-100 absolute inset-y-0 left-0 right-[400px] flex grow flex-col overflow-y-scroll',
+            previewBgClass
+        );
+
         preview = (
-            <div className={`min-w-100 absolute inset-y-0 left-0 right-[400px] flex grow flex-col overflow-y-scroll ${previewBgColor === 'grey' ? 'bg-grey-50' : 'bg-white'}`}>
+            <div className={containerClasses}>
                 {previewToolbar && <header className="relative flex h-[74px] shrink-0 items-center justify-center px-3 py-5" data-testid="design-toolbar">
                     {leftToolbar && <div className='absolute left-5 flex h-full items-center'>
                         {toolbarLeft}
