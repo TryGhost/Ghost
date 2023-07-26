@@ -52,7 +52,7 @@ const Option: React.FC<OptionProps<MultiSelectOption, true>> = ({children, ...op
 
 const MultiSelect: React.FC<MultiSelectProps> = ({
     title = '',
-    clearBg = false,
+    clearBg = true,
     error = false,
     placeholder,
     color = 'grey',

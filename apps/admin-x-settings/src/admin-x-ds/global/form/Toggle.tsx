@@ -1,7 +1,7 @@
 import React, {useId} from 'react';
 import Separator from '../Separator';
 import clsx from 'clsx';
-import {Heading6Styles} from '../Heading';
+import {Heading6StylesGrey} from '../Heading';
 
 type ToggleSizes = 'sm' | 'md' | 'lg';
 type ToggleDirections = 'ltr' | 'rtl';
@@ -14,7 +14,7 @@ interface ToggleProps {
     label?: React.ReactNode;
     labelStyle?: 'heading' | 'value';
     labelClasses?: string;
-    toggleBg?: 'green' | 'stripetest';
+    toggleBg?: 'green' | 'black' | 'stripetest';
     separator?: boolean;
     direction?: ToggleDirections;
     hint?: React.ReactNode;
@@ -27,7 +27,7 @@ const Toggle: React.FC<ToggleProps> = ({
     label,
     labelStyle = 'value',
     labelClasses,
-    toggleBg = 'green',
+    toggleBg = 'black',
     hint,
     separator,
     error,
@@ -70,8 +70,12 @@ const Toggle: React.FC<ToggleProps> = ({
         toggleBgClass = 'checked:bg-[#EC6803]';
         break;
 
-    default:
+    case 'green':
         toggleBgClass = 'checked:bg-green';
+        break;
+
+    default:
+        toggleBgClass = 'checked:bg-black';
         break;
     }
 
@@ -88,7 +92,7 @@ const Toggle: React.FC<ToggleProps> = ({
                     <label className={`flex flex-col hover:cursor-pointer ${direction === 'rtl' && 'order-1'} ${labelStyles}`} htmlFor={id}>
                         {
                             labelStyle === 'heading' ?
-                                <span className={`${Heading6Styles} mt-1`}>{label}</span>
+                                <span className={`${Heading6StylesGrey} mt-1`}>{label}</span>
                                 :
                                 <span>{label}</span>
                         }

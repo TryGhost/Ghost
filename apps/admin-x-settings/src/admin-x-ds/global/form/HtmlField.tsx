@@ -47,7 +47,7 @@ const HtmlField: React.FC<HtmlFieldProps> = ({
 
     return (
         <div className={`flex flex-col ${containerClassName}`}>
-            {title && <Heading className={hideTitle ? 'sr-only' : ''} grey={value ? true : false} useLabelTag={true}>{title}</Heading>}
+            {title && <Heading className={hideTitle ? 'sr-only' : ''} grey={true} useLabelTag={true}>{title}</Heading>}
             <div className={textFieldClasses}>
                 <HtmlEditor {...props} value={value} />
             </div>

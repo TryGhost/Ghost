@@ -15,9 +15,6 @@ import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
-// import {ServicesContext} from '../../providers/ServiceProvider';
-// import {SettingsContext} from '../../providers/SettingsProvider';
-// import {getHomepageUrl, getSettingValues} from '../../../utils/helpers';
 
 interface NewsletterDetailModalProps {
 
@@ -29,8 +26,8 @@ interface NewsletterDetailModalProps {
 // ];
 
 const selectOptions: SelectOption[] = [
-    {value: 'option-1', label: 'Option 1'},
-    {value: 'option-2', label: 'Option 2'}
+    {value: 'option-1', label: 'Elegant serif'},
+    {value: 'option-2', label: 'Modern sans-serif'}
 ];
 
 const Sidebar: React.FC = () => {
@@ -57,6 +54,7 @@ const Sidebar: React.FC = () => {
 
                 <Heading className="mt-5" level={5}>Member settings</Heading>
                 <Toggle
+                    direction='rtl'
                     label='Subscribe new members on signup'
                     labelStyle='value'
                 />
@@ -180,7 +178,7 @@ const Sidebar: React.FC = () => {
             <StickyFooter height={96}>
                 <div className='flex w-full items-start px-7'>
                     <span>
-                        <Icon className='-mt-[1px] mr-2' colorClass='text-red' name='heart'/>
+                        <Icon className='mr-2 mt-[-1px]' colorClass='text-red' name='heart'/>
                     </span>
                     <Form marginBottom={false}>
                         <Toggle

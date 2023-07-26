@@ -39,3 +39,18 @@ export const LargeGap: Story = {
         gap: 'lg'
     }
 };
+
+export const WithTitle: Story = {
+    args: {
+        title: 'Form group',
+        children: formElements
+    }
+};
+
+export const Grouped: Story = {
+    args: {
+        title: 'Form group',
+        children: formElements,
+        grouped: true
+    }
+};

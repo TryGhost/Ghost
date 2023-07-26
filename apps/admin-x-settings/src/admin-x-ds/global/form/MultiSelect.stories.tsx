@@ -25,10 +25,10 @@ export const Default: Story = {
     }
 };
 
-export const Clear: Story = {
+export const WithBackground: Story = {
     args: {
         options: options,
-        clearBg: true
+        clearBg: false
     }
 };
 

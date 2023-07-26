@@ -58,9 +58,19 @@ const Form: React.FC<FormProps> = ({
         grouped ? 'mb-2' : 'mb-4'
     );
 
+    if (grouped || title) {
+        return (
+            <div>
+                {title && <Heading className={titleClasses} level={5}>{title}</Heading>}
+                <div className={classes}>
+                    {children}
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className={classes}>
-            {title && <Heading className={titleClasses} level={5}>{title}</Heading>}
             {children}
         </div>
     );

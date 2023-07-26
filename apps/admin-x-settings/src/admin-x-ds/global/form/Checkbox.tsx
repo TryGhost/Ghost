@@ -45,7 +45,7 @@ const Checkbox: React.FC<CheckboxProps> = ({title, label, value, onChange, disab
                         onChange={handleOnChange}
                     />
                     <div className={`ml-2 flex flex-col ${hint && 'mb-2'}`}>
-                        <span className={`inline-block text-md ${hint && '-mb-1'}`}>{label}</span>
+                        <span className={`inline-block text-[1.425rem] ${hint && '-mb-1'}`}>{label}</span>
                         {hint && <Hint color={error ? 'red' : ''}>{hint}</Hint>}
                     </div>
                 </label>
