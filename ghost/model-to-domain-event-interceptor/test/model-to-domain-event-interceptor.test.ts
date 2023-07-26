@@ -5,7 +5,8 @@ import DomainEvents from '@tryghost/domain-events';
 import {
     PostDeletedEvent,
     PostEditedEvent,
-    PostAddedEvent
+    PostAddedEvent,
+    TagDeletedEvent
 } from '@tryghost/collections';
 
 import {ModelToDomainEventInterceptor} from '../src';
@@ -142,6 +143,34 @@ describe('ModelToDomainEventInterceptor', function () {
 
         eventRegistry.emit('post.deleted', {
             id: '1234-deleted'
+        });
+
+        await DomainEvents.allSettled();
+
+        assert.ok(interceptedEvent);
+    });
+
+    it('Intercepts tag.deleted Model event and dispatches TagDeletedEvent Domain event', async function () {
+        let eventRegistry = new EventRegistry();
+        const modelToDomainEventInterceptor = new ModelToDomainEventInterceptor({
+            ModelEvents: eventRegistry,
+            DomainEvents: DomainEvents
+        });
+
+        modelToDomainEventInterceptor.init();
+
+        let interceptedEvent;
+        DomainEvents.subscribe(TagDeletedEvent, (event: TagDeletedEvent) => {
+            assert.equal(event.id, '1234-deleted');
+            assert.equal(event.data.slug, 'tag-slug');
+            interceptedEvent = event;
+        });
+
+        eventRegistry.emit('tag.deleted', {
+            id: '1234-deleted',
+            attributes: {
+                slug: 'tag-slug'
+            }
         });
 
         await DomainEvents.allSettled();
