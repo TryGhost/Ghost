@@ -1,4 +1,4 @@
-import Button, {ButtonProps} from '../Button';
+import Button, {ButtonColor, ButtonProps} from '../Button';
 import ButtonGroup from '../ButtonGroup';
 import Heading from '../Heading';
 import React, {useEffect} from 'react';
@@ -20,7 +20,7 @@ export interface ModalProps {
     testId?: string;
     title?: string;
     okLabel?: string;
-    okColor?: string;
+    okColor?: ButtonColor;
     cancelLabel?: string;
     leftButtonProps?: ButtonProps;
     buttonsDisabled?: boolean;
@@ -79,6 +79,7 @@ const Modal: React.FC<ModalProps> = ({
             buttons.push({
                 key: 'cancel-modal',
                 label: cancelLabel,
+                color: 'outline',
                 onClick: (onCancel ? onCancel : () => {
                     removeModal();
                 }),
