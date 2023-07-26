@@ -76,7 +76,6 @@ export default Model.extend({
 
     hasPageBuilderFeature(feature) {
         const failures = this.codedErrorsAndWarnings;
-        console.log(failures);
 
         if (!failures['GS110-NO-MISSING-PAGE-BUILDER-USAGE']) {
             return true;
