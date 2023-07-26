@@ -14,7 +14,7 @@ interface ToggleProps {
     label?: React.ReactNode;
     labelStyle?: 'heading' | 'value';
     labelClasses?: string;
-    toggleBg?: 'green' | 'stripetest';
+    toggleBg?: 'green' | 'black' | 'stripetest';
     separator?: boolean;
     direction?: ToggleDirections;
     hint?: React.ReactNode;
@@ -27,7 +27,7 @@ const Toggle: React.FC<ToggleProps> = ({
     label,
     labelStyle = 'value',
     labelClasses,
-    toggleBg = 'green',
+    toggleBg = 'black',
     hint,
     separator,
     error,
@@ -70,8 +70,12 @@ const Toggle: React.FC<ToggleProps> = ({
         toggleBgClass = 'checked:bg-[#EC6803]';
         break;
 
-    default:
+    case 'green':
         toggleBgClass = 'checked:bg-green';
+        break;
+
+    default:
+        toggleBgClass = 'checked:bg-black';
         break;
     }
 
