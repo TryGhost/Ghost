@@ -1,4 +1,4 @@
-import Button, {ButtonProps} from '../Button';
+import Button, {ButtonColor, ButtonProps} from '../Button';
 import ButtonGroup from '../ButtonGroup';
 import Heading from '../Heading';
 import React, {useEffect} from 'react';
@@ -20,7 +20,7 @@ export interface ModalProps {
     testId?: string;
     title?: string;
     okLabel?: string;
-    okColor?: string;
+    okColor?: ButtonColor;
     cancelLabel?: string;
     leftButtonProps?: ButtonProps;
     buttonsDisabled?: boolean;
@@ -35,6 +35,7 @@ export interface ModalProps {
     stickyFooter?: boolean;
     scrolling?: boolean;
     dirty?: boolean;
+    animate?: boolean;
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -56,7 +57,8 @@ const Modal: React.FC<ModalProps> = ({
     backDropClick = true,
     stickyFooter = false,
     scrolling = true,
-    dirty = false
+    dirty = false,
+    animate = true
 }) => {
     const modal = useModal();
     const {setGlobalDirtyState} = useGlobalDirtyState();
@@ -64,6 +66,28 @@ const Modal: React.FC<ModalProps> = ({
     useEffect(() => {
         setGlobalDirtyState(dirty);
     }, [dirty, setGlobalDirtyState]);
+
+    useEffect(() => {
+        const handleEscapeKey = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                if (onCancel) {
+                    onCancel();
+                } else {
+                    confirmIfDirty(dirty, () => {
+                        modal.remove();
+                        afterClose?.();
+                    });
+                }
+            }
+        };
+
+        document.addEventListener('keydown', handleEscapeKey);
+
+        // Clean up the event listener when the modal is closed
+        return () => {
+            document.removeEventListener('keydown', handleEscapeKey);
+        };
+    }, [modal, dirty, afterClose, onCancel]);
 
     let buttons: ButtonProps[] = [];
 
@@ -79,6 +103,7 @@ const Modal: React.FC<ModalProps> = ({
             buttons.push({
                 key: 'cancel-modal',
                 label: cancelLabel,
+                color: 'outline',
                 onClick: (onCancel ? onCancel : () => {
                     removeModal();
                 }),
@@ -100,9 +125,13 @@ const Modal: React.FC<ModalProps> = ({
 
     let modalClasses = clsx(
         'relative z-50 mx-auto flex max-h-[100%] w-full flex-col justify-between overflow-x-hidden rounded bg-white shadow-xl',
+        animate && 'animate-modal-in',
         scrolling ? 'overflow-y-auto' : 'overflow-y-hidden'
     );
-    let backdropClasses = clsx('fixed inset-0 z-40 h-[100vh] w-[100vw]');
+
+    let backdropClasses = clsx(
+        'fixed inset-0 z-40 h-[100vh] w-[100vw]'
+    );
 
     let padding = '';
 

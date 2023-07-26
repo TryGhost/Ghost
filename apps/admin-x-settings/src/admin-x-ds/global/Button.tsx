@@ -1,7 +1,7 @@
 import Icon from './Icon';
 import React from 'react';
 
-export type ButtonColor = 'clear' | 'grey' | 'black' | 'green' | 'red' | 'white';
+export type ButtonColor = 'clear' | 'grey' | 'black' | 'green' | 'red' | 'white' | 'outline';
 export type ButtonSize = 'sm' | 'md';
 
 export interface ButtonProps {
@@ -11,7 +11,7 @@ export interface ButtonProps {
     icon?: string;
     iconColorClass?: string;
     key?: string;
-    color?: string;
+    color?: ButtonColor;
     fullWidth?: boolean;
     link?: boolean;
     disabled?: boolean;
@@ -63,6 +63,9 @@ const Button: React.FC<ButtonProps> = ({
             break;
         case 'white':
             styles += link ? ' text-white hover:text-white' : ' bg-white text-black';
+            break;
+        case 'outline':
+            styles += link ? ' text-black hover:text-grey-800' : ' border border-grey-300 bg-transparent text-black hover:!border-black';
             break;
         default:
             styles += link ? ' text-black hover:text-grey-800' : ' text-black hover:bg-grey-200';
