@@ -572,16 +572,11 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
     if (saveState === 'saving') {
         okLabel = 'Saving...';
     } else if (saveState === 'saved') {
-        mainModal.remove();
+        okLabel = 'Saved';
+        setTimeout(() => {
+            mainModal.remove();
+        }, 300);
     }
-
-    useEffect(() => {
-        if (saveState === 'saved') {
-            setTimeout(() => {
-                setSaveState('');
-            }, 2000);
-        }
-    }, [saveState]);
 
     const fileUploadButtonClasses = 'absolute right-[104px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium z-10';
 

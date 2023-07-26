@@ -228,6 +228,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                             className='grow'
                             containerClassName='w-100'
                             placeholder='Expert analysis'
+                            title='New benefit'
                             value={benefits.newItem}
                             hideTitle
                             onChange={e => benefits.setNewItem(e.target.value)}
