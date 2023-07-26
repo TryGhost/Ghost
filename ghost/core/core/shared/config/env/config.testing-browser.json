@@ -54,7 +54,7 @@
             "minWait": 360000,
             "maxWait": 360000,
             "lifetime": 3600,
-            "freeRetries": 100
+            "freeRetries": 10
         }
     },
     "privacy": {
