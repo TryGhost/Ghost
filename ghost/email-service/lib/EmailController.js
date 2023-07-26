@@ -4,7 +4,8 @@ const tpl = require('@tryghost/tpl');
 const messages = {
     postNotFound: 'Post not found.',
     noEmailsProvided: 'No emails provided.',
-    emailNotFound: 'Email not found.'
+    emailNotFound: 'Email not found.',
+    tooManyEmailsProvided: 'Too many emails provided. Maximum of 1 test email can be sent at once.'
 };
 
 class EmailController {
@@ -64,6 +65,13 @@ class EmailController {
         if (emails.length === 0) {
             throw new errors.ValidationError({
                 message: tpl(messages.noEmailsProvided)
+            });
+        }
+
+        // test emails are limited to 1
+        if (emails.length > 1) {
+            throw new errors.ValidationError({
+                message: tpl(messages.tooManyEmailsProvided)
             });
         }
 
