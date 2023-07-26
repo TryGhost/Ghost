@@ -51,7 +51,6 @@
             "lifetime": 3600,
             "freeRetries": 3
         }
-
     },
     "privacy": {
         "useTinfoil": true,

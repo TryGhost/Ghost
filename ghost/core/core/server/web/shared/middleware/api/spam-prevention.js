@@ -31,6 +31,7 @@ let spamUserLogin = spam.user_login || {};
 let spamMemberLogin = spam.member_login || {};
 let spamContentApiKey = spam.content_api_key || {};
 let spamWebmentionsBlock = spam.webmentions_block || {};
+let spamEmailPreviewBlock = spam.email_preview_block || {};
 
 let store;
 let memoryStore;
@@ -43,6 +44,7 @@ let membersAuthInstance;
 let membersAuthEnumerationInstance;
 let userResetInstance;
 let contentApiKeyInstance;
+let emailPreviewBlockInstance;
 
 const spamConfigKeys = ['freeRetries', 'minWait', 'maxWait', 'lifetime'];
 
@@ -150,6 +152,32 @@ const webmentionsBlock = () => {
     );
 
     return webmentionsBlockInstance;
+};
+
+const emailPreviewBlock = () => {
+    const ExpressBrute = require('express-brute');
+    const BruteKnex = require('brute-knex');
+    const db = require('../../../../data/db');
+
+    store = store || new BruteKnex({
+        tablename: 'brute',
+        createTable: false,
+        knex: db.knex
+    });
+
+    emailPreviewBlockInstance = emailPreviewBlockInstance || new ExpressBrute(store,
+        extend({
+            attachResetToRequest: false,
+            failCallback(req, res, next) {
+                return next(new errors.TooManyRequestsError({
+                    message: messages.emailPreviewBlock
+                }));
+            },
+            handleStoreError: handleStoreError
+        }, pick(spamEmailPreviewBlock, spamConfigKeys))
+    );
+
+    return emailPreviewBlockInstance;
 };
 
 const membersAuth = () => {
@@ -349,6 +377,7 @@ module.exports = {
     privateBlog: privateBlog,
     contentApiKey: contentApiKey,
     webmentionsBlock: webmentionsBlock,
+    emailPreviewBlock: emailPreviewBlock,
     reset: () => {
         store = undefined;
         memoryStore = undefined;
