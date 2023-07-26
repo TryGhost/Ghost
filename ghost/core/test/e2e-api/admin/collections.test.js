@@ -402,7 +402,7 @@ describe('Collections API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    posts: new Array(7).fill(matchPostShallowIncludes)
+                    posts: new Array(9).fill(matchPostShallowIncludes)
                 });
         });
 
