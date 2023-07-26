@@ -22,7 +22,7 @@ const messages = {
     },
     tooManyAttempts: 'Too many attempts.',
     webmentionsBlock: 'Too many mention attempts',
-    emailPreviewBlock: 'Only 10 preview emails can be sent per hour'
+    emailPreviewBlock: 'Only 10 test emails can be sent per hour'
 };
 let spamPrivateBlock = spam.private_block || {};
 let spamGlobalBlock = spam.global_block || {};
