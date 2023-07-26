@@ -5,7 +5,12 @@ const errors = require('@tryghost/errors');
 const ObjectId = require('bson-objectid').default;
 const pick = require('lodash/pick');
 const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
-const {PostsBulkDestroyedEvent} = require('@tryghost/post-events');
+const {
+    PostsBulkDestroyedEvent,
+    PostsBulkUnpublishedEvent,
+    PostsBulkFeaturedEvent,
+    PostsBulkUnfeaturedEvent
+} = require('@tryghost/post-events');
 
 const messages = {
     invalidVisibilityFilter: 'Invalid visibility filter.',
@@ -456,6 +461,23 @@ class PostsService {
                 transacting: options.transacting,
                 throwErrors: true
             });
+        }
+
+        if (options.actionName) {
+            let bulkActionEvent;
+            switch (options.actionName) {
+            case 'unpublished':
+                bulkActionEvent = PostsBulkUnpublishedEvent.create(editIds);
+                break;
+            case 'featured':
+                bulkActionEvent = PostsBulkFeaturedEvent.create(editIds);
+                break;
+            case 'unfeatured':
+                bulkActionEvent = PostsBulkUnfeaturedEvent.create(editIds);
+                break;
+            }
+
+            DomainEvents.dispatch(bulkActionEvent);
         }
 
         return result;
