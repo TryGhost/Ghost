@@ -1,6 +1,6 @@
 import Heading from './Heading';
 import Hint from './Hint';
-import ListHeading from './ListHeading';
+import ListHeading, {ListHeadingSize} from './ListHeading';
 import React from 'react';
 import Separator from './Separator';
 import clsx from 'clsx';
@@ -15,6 +15,7 @@ interface ListProps {
      * When you use the list in a block and it's not the primary content of the page then you can set a title to the list
      */
     title?: React.ReactNode;
+    titleSize?: ListHeadingSize;
     titleSeparator?: boolean;
     children?: React.ReactNode;
     actions?: React.ReactNode;
@@ -24,10 +25,18 @@ interface ListProps {
     className?: string;
 }
 
-const List: React.FC<ListProps> = ({title, titleSeparator, children, actions, hint, hintSeparator, borderTop, pageTitle, className}) => {
-    titleSeparator = (titleSeparator === undefined) ? true : titleSeparator;
-    hintSeparator = (hintSeparator === undefined) ? true : hintSeparator;
-
+const List: React.FC<ListProps> = ({
+    title,
+    titleSeparator = true,
+    titleSize = 'sm',
+    children,
+    actions,
+    hint,
+    hintSeparator = true,
+    borderTop,
+    pageTitle,
+    className
+}) => {
     const listClasses = clsx(
         (borderTop || pageTitle) && 'border-t border-grey-300',
         pageTitle && 'mt-14',
@@ -38,15 +47,15 @@ const List: React.FC<ListProps> = ({title, titleSeparator, children, actions, hi
         <>
             {pageTitle && <Heading>{pageTitle}</Heading>}
             <section className={listClasses}>
-                <ListHeading actions={actions} title={title} titleSeparator={!pageTitle && titleSeparator && borderTop} />
+                <ListHeading actions={actions} title={title} titleSeparator={!pageTitle && titleSeparator && !borderTop} titleSize={titleSize} />
                 <div className='flex flex-col'>
                     {children}
                 </div>
                 {hint &&
-                <>
+                <div className='-mt-px'>
                     {hintSeparator && <Separator />}
                     <Hint>{hint}</Hint>
-                </>
+                </div>
                 }
             </section>
         </>

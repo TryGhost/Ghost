@@ -19,7 +19,7 @@ const listItems = (
     <>
         <ListItem id='list-item-1' {...listItemProps}/>
         <ListItem id='list-item-2' {...listItemProps}/>
-        <ListItem id='list-item-3' {...listItemProps}/>
+        <ListItem id='list-item-3' separator={false} {...listItemProps}/>
     </>
 );
 

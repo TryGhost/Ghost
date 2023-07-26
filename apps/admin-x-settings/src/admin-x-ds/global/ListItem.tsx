@@ -21,12 +21,24 @@ interface ListItemProps {
     children?: React.ReactNode;
 }
 
-const ListItem: React.FC<ListItemProps> = ({id, title, detail, action, hideActions, avatar, className, testId, separator, bgOnHover = true, onClick, children}) => {
+const ListItem: React.FC<ListItemProps> = ({
+    id,
+    title,
+    detail,
+    action,
+    hideActions,
+    avatar,
+    className,
+    testId,
+    separator = true,
+    bgOnHover = true,
+    onClick,
+    children
+}) => {
     const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
         onClick?.(e);
     };
 
-    separator = (separator === undefined) ? true : separator;
     const listItemClasses = clsx(
         'group flex items-center justify-between',
         bgOnHover && 'hover:bg-gradient-to-r hover:from-white hover:to-grey-50',

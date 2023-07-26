@@ -167,7 +167,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                         {toolbarRight}
                     </div>}
                 </header>}
-                <div className='flex h-full grow items-center justify-center text-sm text-grey-400'>
+                <div className='flex grow items-center justify-center text-sm text-grey-400'>
                     {preview}
                 </div>
             </div>
