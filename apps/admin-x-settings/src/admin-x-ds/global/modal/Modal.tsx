@@ -70,10 +70,14 @@ const Modal: React.FC<ModalProps> = ({
     useEffect(() => {
         const handleEscapeKey = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
-                confirmIfDirty(dirty, () => {
-                    modal.remove();
-                    afterClose?.();
-                });
+                if (onCancel) {
+                    onCancel();
+                } else {
+                    confirmIfDirty(dirty, () => {
+                        modal.remove();
+                        afterClose?.();
+                    });
+                }
             }
         };
 
@@ -83,7 +87,7 @@ const Modal: React.FC<ModalProps> = ({
         return () => {
             document.removeEventListener('keydown', handleEscapeKey);
         };
-    }, [modal, dirty, afterClose]);
+    }, [modal, dirty, afterClose, onCancel]);
 
     let buttons: ButtonProps[] = [];
 
