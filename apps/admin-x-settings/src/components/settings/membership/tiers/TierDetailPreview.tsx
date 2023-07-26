@@ -6,6 +6,7 @@ import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {Tier} from '../../../../types/api';
 import {getSettingValues} from '../../../../utils/helpers';
 import {getSymbol} from '../../../../utils/currency';
+import {numberWithCommas} from '../../../../utils/helpers';
 
 export type TierFormState = Partial<Omit<Tier, 'monthly_price' | 'yearly_price' | 'trial_days'>> & {
     monthly_price: string;
@@ -101,7 +102,7 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier})
                     <div className="mt-4 flex w-full flex-row flex-wrap items-end justify-between gap-x-1 gap-y-[10px]">
                         <div className={`flex flex-wrap text-black ${!yearlyPrice && !monthlyPrice && !isFreeTier && 'opacity-30'}`}>
                             <span className="self-start text-[2.7rem] font-bold uppercase leading-[1.115]">{currencySymbol}</span>
-                            <span className="break-all text-[3.4rem] font-bold leading-none tracking-tight">{showingYearly ? yearlyPrice : monthlyPrice}</span>
+                            <span className="break-all text-[3.4rem] font-bold leading-none tracking-tight">{showingYearly ? numberWithCommas(yearlyPrice) : numberWithCommas(monthlyPrice)}</span>
                             {!isFreeTier && <span className="ml-1 self-end text-[1.5rem] leading-snug text-grey-800">/{showingYearly ? 'year' : 'month'}</span>}
                         </div>
                         <TrialDaysLabel trialDays={trialDays} />
