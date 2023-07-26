@@ -21,7 +21,8 @@ const DEFAULT_CSV_HEADER_MAPPING = {
     created_at: 'created_at',
     complimentary_plan: 'complimentary_plan',
     stripe_customer_id: 'stripe_customer_id',
-    labels: 'labels'
+    labels: 'labels',
+    import_tier: 'import_tier'
 };
 
 module.exports = class MembersCSVImporter {
