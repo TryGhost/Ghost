@@ -35,6 +35,7 @@ export interface ModalProps {
     stickyFooter?: boolean;
     scrolling?: boolean;
     dirty?: boolean;
+    animate?: boolean;
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -56,7 +57,8 @@ const Modal: React.FC<ModalProps> = ({
     backDropClick = true,
     stickyFooter = false,
     scrolling = true,
-    dirty = false
+    dirty = false,
+    animate = true
 }) => {
     const modal = useModal();
     const {setGlobalDirtyState} = useGlobalDirtyState();
@@ -101,9 +103,13 @@ const Modal: React.FC<ModalProps> = ({
 
     let modalClasses = clsx(
         'relative z-50 mx-auto flex max-h-[100%] w-full flex-col justify-between overflow-x-hidden rounded bg-white shadow-xl',
+        animate && 'animate-modal-in',
         scrolling ? 'overflow-y-auto' : 'overflow-y-hidden'
     );
-    let backdropClasses = clsx('fixed inset-0 z-40 h-[100vh] w-[100vw]');
+
+    let backdropClasses = clsx(
+        'fixed inset-0 z-40 h-[100vh] w-[100vw]'
+    );
 
     let padding = '';
 

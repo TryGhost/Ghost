@@ -202,6 +202,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     return (
         <Modal
             afterClose={afterClose}
+            animate={false}
             footer={false}
             noPadding={true}
             size={size}
