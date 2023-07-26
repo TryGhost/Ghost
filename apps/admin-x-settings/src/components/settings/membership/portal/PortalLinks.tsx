@@ -48,10 +48,10 @@ const PortalLinks: React.FC = () => {
     };
 
     useEffect(() => {
-        if (tiers?.length) {
+        if (tiers?.length && !selectedTier) {
             setSelectedTier(tiers[0].id);
         }
-    }, [tiers]);
+    }, [tiers, selectedTier]);
 
     const tierOptions = tiers?.map((tier) => {
         return {
@@ -66,19 +66,19 @@ const PortalLinks: React.FC = () => {
         <ModalPage className='max-w-[920px] text-base text-black' heading='Links'>
             <p className='-mt-6 mb-16'>Use these {isDataAttributes ? 'data attributes' : 'links'} in your theme to show pages of Portal.</p>
 
-            <List actions={<Button color='green' label={isDataAttributes ? 'Links' : 'Data attributes'} link onClick={toggleIsDataAttributes}/>} title='Generic'>
+            <List actions={<Button color='green' label={isDataAttributes ? 'Links' : 'Data attributes'} link onClick={toggleIsDataAttributes}/>} title='Generic' titleSize='lg'>
                 <PortalLink name='Default' value={isDataAttributes ? 'data-portal' : `${homePageURL}#/portal`} />
                 <PortalLink name='Sign in' value={isDataAttributes ? 'data-portal="signin"' : `${homePageURL}#/portal/signin`} />
                 <PortalLink name='Sign up' value={isDataAttributes ? 'data-portal="signup"' : `${homePageURL}#/portal/signup`} />
             </List>
 
-            <List className='mt-14' title='Tiers'>
+            <List className='mt-14' title='Tiers' titleSize='lg'>
                 <ListItem
                     hideActions
                     separator
                 >
                     <div className='flex w-full items-center gap-5 py-2 pr-6'>
-                        <span className='inline-block w-[240px] shrink-0 font-bold'>Tier</span>
+                        <span className='inline-block w-[240px] shrink-0'>Tier</span>
                         <Select
                             options={tierOptions}
                             selectedOption={selectedTier}
@@ -93,7 +93,7 @@ const PortalLinks: React.FC = () => {
                 <PortalLink name='Signup / Free' value={isDataAttributes ? 'data-portal="signup/free"' : `${homePageURL}#/portal/signup/free`} />
             </List>
 
-            <List className='mt-14' title='Account'>
+            <List className='mt-14' title='Account' titleSize='lg'>
                 <PortalLink name='Account' value={isDataAttributes ? 'data-portal="account"' : `${homePageURL}#/portal/account`} />
                 <PortalLink name='Account / Plans' value={isDataAttributes ? 'data-portal="account/plans"' : `${homePageURL}#/portal/account/plans`} />
                 <PortalLink name='Account / Profile' value={isDataAttributes ? 'data-portal="account/profile"' : `${homePageURL}#/portal/account/profile`} />

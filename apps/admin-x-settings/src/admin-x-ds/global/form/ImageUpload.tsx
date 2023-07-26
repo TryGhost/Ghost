@@ -96,8 +96,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         );
 
         if (imageBWCheckedBg) {
-            const dark = '#ddd';
-            const light = '#f9f9f9';
+            const dark = '#d9d9d9';
+            const light = '#f1f1f1';
             image = (
                 <div style={{
                     backgroundImage: `

@@ -2,17 +2,28 @@ import Heading from './Heading';
 import React from 'react';
 import Separator from './Separator';
 
+export type ListHeadingSize = 'sm' | 'lg';
+
 interface ListHeadingProps {
     title?: React.ReactNode;
+    titleSize?: ListHeadingSize,
     actions?: React.ReactNode;
     titleSeparator?: boolean;
 }
 
-const ListHeading: React.FC<ListHeadingProps> = ({title, actions, titleSeparator}) => {
+const ListHeading: React.FC<ListHeadingProps> = ({
+    title,
+    titleSize = 'sm',
+    actions,
+    titleSeparator
+}) => {
     let heading;
 
     if (title) {
-        const headingTitle = <Heading grey={true} level={6}>{title}</Heading>;
+        const headingTitle = titleSize === 'sm' ?
+            <Heading grey={true} level={6}>{title}</Heading>
+            :
+            <Heading level={5}>{title}</Heading>;
         heading = actions ? (
             <div className='flex items-end justify-between gap-2'>
                 {headingTitle}

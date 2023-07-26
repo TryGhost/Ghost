@@ -24,13 +24,6 @@ export const Default: Story = {
     }
 };
 
-export const ClearBackground: Story = {
-    args: {
-        placeholder: 'Enter description',
-        clearBg: true
-    }
-};
-
 export const WithValue: Story = {
     render: function Component(args) {
         const [, updateArgs] = useArgs();
