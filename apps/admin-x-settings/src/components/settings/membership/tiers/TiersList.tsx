@@ -7,6 +7,7 @@ import TierDetailModal from './TierDetailModal';
 import useRouting from '../../../../hooks/useRouting';
 import {Tier} from '../../../../types/api';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
+import {numberWithCommas} from '../../../../utils/helpers';
 
 interface TiersListProps {
     tab?: string;
@@ -35,11 +36,11 @@ const TierCard: React.FC<TierCardProps> = ({
             }}>
                 <div className='text-[1.65rem] font-bold leading-tight tracking-tight text-pink'>{tier.name}</div>
                 <div className='mt-2 flex items-baseline'>
-                    <span className="ml-1 translate-y-[-3px] text-xl font-bold uppercase">{currencySymbol}</span>
-                    <span className='text-2xl font-bold tracking-tighter'>{currencyToDecimal(tier.monthly_price || 0)}</span>
+                    <span className="ml-1 translate-y-[-3px] text-md font-bold uppercase">{currencySymbol}</span>
+                    <span className='text-xl font-bold tracking-tighter'>{numberWithCommas(currencyToDecimal(tier.monthly_price || 0))}</span>
                     {(tier.monthly_price && tier.monthly_price > 0) && <span className='text-sm text-grey-700'>/month</span>}
                 </div>
-                <div className='mt-2 line-clamp-2 text-sm font-medium'>
+                <div className='mt-2 line-clamp-2 text-[1.4rem] font-medium'>
                     {tier.description || <span className='opacity-50'>No description</span>}
                 </div>
             </div>

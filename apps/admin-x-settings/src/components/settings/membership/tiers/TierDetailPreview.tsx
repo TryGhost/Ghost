@@ -6,6 +6,7 @@ import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {Tier} from '../../../../types/api';
 import {getSettingValues} from '../../../../utils/helpers';
 import {getSymbol} from '../../../../utils/currency';
+import {numberWithCommas} from '../../../../utils/helpers';
 
 export type TierFormState = Partial<Omit<Tier, 'monthly_price' | 'yearly_price' | 'trial_days'>> & {
     monthly_price: string;
@@ -95,23 +96,25 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier})
                     <Button className={`ml-2 ${showingYearly === true ? 'text-grey-900' : 'text-grey-500'}`} label="Yearly" link onClick={() => setShowingYearly(true)} />
                 </div>}
             </div>
-            <div className="flex-column relative flex min-h-[200px] w-full max-w-[420px] items-start justify-stretch rounded border border-grey-200 bg-white p-8">
-                <div className="min-h-[56px] w-full">
-                    <h4 className={`-mt-1 mb-0 w-full break-words text-lg font-semibold leading-tight text-pink ${!name && 'opacity-30'}`}>{name || 'Bronze'}</h4>
-                    <div className="mt-4 flex w-full flex-row flex-wrap items-end justify-between gap-x-1 gap-y-[10px]">
-                        <div className={`flex flex-wrap text-black ${!yearlyPrice && !monthlyPrice && !isFreeTier && 'opacity-30'}`}>
-                            <span className="self-start text-[2.7rem] font-bold uppercase leading-[1.115]">{currencySymbol}</span>
-                            <span className="break-all text-[3.4rem] font-bold leading-none tracking-tight">{showingYearly ? yearlyPrice : monthlyPrice}</span>
-                            {!isFreeTier && <span className="ml-1 self-end text-[1.5rem] leading-snug text-grey-800">/{showingYearly ? 'year' : 'month'}</span>}
+            <div className='border border-grey-200'>
+                <div className="flex-column relative flex min-h-[200px] w-full max-w-[420px] scale-90 items-start justify-stretch rounded bg-white p-4">
+                    <div className="min-h-[56px] w-full">
+                        <h4 className={`-mt-1 mb-0 w-full break-words text-lg font-semibold leading-tight text-pink ${!name && 'opacity-30'}`}>{name || 'Bronze'}</h4>
+                        <div className="mt-4 flex w-full flex-row flex-wrap items-end justify-between gap-x-1 gap-y-[10px]">
+                            <div className={`flex flex-wrap text-black ${!yearlyPrice && !monthlyPrice && !isFreeTier && 'opacity-30'}`}>
+                                <span className="self-start text-[2.7rem] font-bold uppercase leading-[1.115]">{currencySymbol}</span>
+                                <span className="break-all text-[3.4rem] font-bold leading-none tracking-tight">{showingYearly ? numberWithCommas(yearlyPrice) : numberWithCommas(monthlyPrice)}</span>
+                                {!isFreeTier && <span className="ml-1 self-end text-[1.5rem] leading-snug text-grey-800">/{showingYearly ? 'year' : 'month'}</span>}
+                            </div>
+                            <TrialDaysLabel trialDays={trialDays} />
                         </div>
-                        <TrialDaysLabel trialDays={trialDays} />
+                        {(showingYearly && yearlyDiscount > 0) && <DiscountLabel discount={yearlyDiscount} />}
                     </div>
-                    {(showingYearly && yearlyDiscount > 0) && <DiscountLabel discount={yearlyDiscount} />}
-                </div>
-                <div className="flex-column flex w-full flex-1">
-                    <div className="flex-1">
-                        <div className={`mt-4 w-full text-[1.55rem] font-semibold leading-snug text-grey-900 ${!description && 'opacity-30'}`}>{description || (isFreeTier ? `Free preview of ${siteTitle}` : 'Full access to premium content')}</div>
-                        <TierBenefits benefits={benefits} />
+                    <div className="flex-column flex w-full flex-1">
+                        <div className="flex-1">
+                            <div className={`mt-4 w-full text-[1.55rem] font-semibold leading-snug text-grey-900 ${!description && 'opacity-30'}`}>{description || (isFreeTier ? `Free preview of ${siteTitle}` : 'Full access to premium content')}</div>
+                            <TierBenefits benefits={benefits} />
+                        </div>
                     </div>
                 </div>
             </div>

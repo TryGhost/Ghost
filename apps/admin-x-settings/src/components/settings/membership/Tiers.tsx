@@ -4,6 +4,7 @@ import StripeButton from '../../../admin-x-ds/settings/StripeButton';
 import TabView from '../../../admin-x-ds/global/TabView';
 import TiersList from './tiers/TiersList';
 import useRouting from '../../../hooks/useRouting';
+import {Tier} from '../../../types/api';
 import {getActiveTiers, getArchivedTiers} from '../../../utils/helpers';
 import {useTiers} from '../../providers/ServiceProvider';
 
@@ -18,16 +19,27 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
         updateRoute('stripe-connect');
     };
 
+    const sortTiers = (t: Tier[]) => {
+        t.sort((a, b) => {
+            if ((a.monthly_price as number) < (b.monthly_price as number)) {
+                return -1;
+            } else {
+                return 1;
+            }
+        });
+        return t;
+    };
+
     const tabs = [
         {
             id: 'active-tiers',
             title: 'Active',
-            contents: (<TiersList tab='active-tiers' tiers={activeTiers} updateTier={updateTier} />)
+            contents: (<TiersList tab='active-tiers' tiers={sortTiers(activeTiers)} updateTier={updateTier} />)
         },
         {
             id: 'archived-tiers',
             title: 'Archived',
-            contents: (<TiersList tab='archive-tiers' tiers={archivedTiers} updateTier={updateTier} />)
+            contents: (<TiersList tab='archive-tiers' tiers={sortTiers(archivedTiers)} updateTier={updateTier} />)
         }
     ];
 

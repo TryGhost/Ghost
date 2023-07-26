@@ -143,3 +143,7 @@ export function getArchivedTiers(tiers: Tier[]) {
         return !tier.active;
     });
 }
+
+export function numberWithCommas(x: number) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
