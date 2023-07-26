@@ -87,6 +87,7 @@
     "Plan checkout was cancelled.": "Pembayaran paket dibatalkan.",
     "Plan upgrade was cancelled.": "Peningkatan paket dibatalkan.",
     "Please fill in required fields": "Harap isi kolom yang wajib diisi",
+    "Please contact {{supportAddress}} to adjust your complimentary subscription.": "Harap hubungi {{supportAddress}} untuk mengubah langganan gratis Anda",
     "Price": "Harga",
     "Re-enable emails": "Aktifkan kembali email",
     "Renews at {{price}}.": "Perpanjang dengan harga {{price}}",
