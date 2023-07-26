@@ -67,6 +67,24 @@ const Modal: React.FC<ModalProps> = ({
         setGlobalDirtyState(dirty);
     }, [dirty, setGlobalDirtyState]);
 
+    useEffect(() => {
+        const handleEscapeKey = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                confirmIfDirty(dirty, () => {
+                    modal.remove();
+                    afterClose?.();
+                });
+            }
+        };
+
+        document.addEventListener('keydown', handleEscapeKey);
+
+        // Clean up the event listener when the modal is closed
+        return () => {
+            document.removeEventListener('keydown', handleEscapeKey);
+        };
+    }, [modal, dirty, afterClose]);
+
     let buttons: ButtonProps[] = [];
 
     const removeModal = () => {
