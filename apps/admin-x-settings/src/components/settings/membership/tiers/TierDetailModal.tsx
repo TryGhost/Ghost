@@ -47,7 +47,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
         return error;
     };
 
-    const {formState, updateForm, handleSave} = useForm<TierFormState>({
+    const {formState, saveState, updateForm, handleSave} = useForm<TierFormState>({
         initialState: {
             ...(tier || {}),
             monthly_price: tier?.monthly_price ? currencyToDecimal(tier.monthly_price).toString() : '',
@@ -101,6 +101,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
         afterClose={() => {
             updateRoute('tiers');
         }}
+        dirty={saveState === 'unsaved'}
         okLabel='Save & close'
         size='lg'
         testId='tier-detail-modal'
@@ -116,6 +117,10 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
             }
 
             handleSave();
+
+            if (saveState !== 'unsaved') {
+                modal.remove();
+            }
         }}
     >
         <div className='-mb-8 mt-8 flex items-start gap-8'>
