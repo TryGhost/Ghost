@@ -1,4 +1,4 @@
-import { PostDeletedEvent, PostAddedEvent, PostEditedEvent } from '@tryghost/collections';
+import { PostDeletedEvent, PostAddedEvent, PostEditedEvent, TagDeletedEvent } from '@tryghost/collections';
 
 type ModelToDomainEventInterceptorDeps = {
     ModelEvents: {
@@ -25,7 +25,8 @@ export class ModelToDomainEventInterceptor {
             'post.deleted',
             'post.edited',
             // NOTE: currently unmapped and unused event
-            'tag.added'
+            'tag.added',
+            'tag.deleted'
         ];
 
         for (const modelEventName of ghostModelUpdateEvents) {
@@ -82,6 +83,9 @@ export class ModelToDomainEventInterceptor {
                     }))
                 }
             });
+            break;
+        case 'tag.deleted':
+            event = TagDeletedEvent.create({id: data.id, slug: data.attributes.slug});
             break;
         default:
         }
