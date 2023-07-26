@@ -97,6 +97,16 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
         return value.match(/[\d]+\.?[\d]{0,2}/)?.[0] || '';
     };
 
+    const toggleFreeTrial = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.checked) {
+            setHasFreeTrial(true);
+            updateForm(state => ({...state, trial_days: tier?.trial_days ? tier?.trial_days.toString() : '7'}));
+        } else {
+            setHasFreeTrial(false);
+            updateForm(state => ({...state, trial_days: '0'}));
+        }
+    };
+
     return <Modal
         afterClose={() => {
             updateRoute('tiers');
@@ -191,7 +201,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                         </div>
                         <div className='basis-1/2'>
                             <div className='mb-1 flex h-6 flex-col justify-center'>
-                                <Toggle label='Add a free trial' labelStyle='heading' onChange={e => setHasFreeTrial(e.target.checked)} />
+                                <Toggle checked={hasFreeTrial} label='Add a free trial' labelStyle='heading' onChange={toggleFreeTrial} />
                             </div>
                             <TextField
                                 disabled={!hasFreeTrial}
