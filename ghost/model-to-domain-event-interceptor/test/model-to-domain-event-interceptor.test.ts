@@ -2,11 +2,11 @@ import assert from 'assert/strict';
 import events from 'events';
 import sinon from 'sinon';
 import DomainEvents from '@tryghost/domain-events';
-const {
+import {
     PostDeletedEvent,
     PostEditedEvent,
     PostAddedEvent
-} = require('@tryghost/collections');
+} from '@tryghost/collections';
 
 import {ModelToDomainEventInterceptor} from '../src';
 
