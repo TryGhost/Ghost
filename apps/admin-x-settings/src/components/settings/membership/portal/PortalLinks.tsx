@@ -48,10 +48,10 @@ const PortalLinks: React.FC = () => {
     };
 
     useEffect(() => {
-        if (tiers?.length) {
+        if (tiers?.length && !selectedTier) {
             setSelectedTier(tiers[0].id);
         }
-    }, [tiers]);
+    }, [tiers, selectedTier]);
 
     const tierOptions = tiers?.map((tier) => {
         return {
