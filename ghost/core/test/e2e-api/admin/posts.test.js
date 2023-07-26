@@ -1,4 +1,5 @@
 const should = require('should');
+const assert = require('assert/strict');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
 const {anyArray, anyContentVersion, anyEtag, anyErrorId, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyStringNumber, anyUuid, stringMatching} = matchers;
 const models = require('../../../core/server/models');
@@ -154,7 +155,7 @@ describe('Posts API', function () {
 
     it('Can browse filtering by collection using paging parameters', async function () {
         await agent
-            .get(`posts/?collection=latest&limit=1&page=7`)
+            .get(`posts/?collection=latest&limit=1&page=6`)
             .expectStatus(200)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -162,6 +163,10 @@ describe('Posts API', function () {
             })
             .matchBodySnapshot({
                 posts: Array(1).fill(buildMatchPostShallowIncludes(2))
+            })
+            .expect((res) => {
+                // the total of posts with any status is 13
+                assert.equal(res.body.meta.pagination.total, 13);
             });
     });
 

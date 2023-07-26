@@ -435,11 +435,11 @@ Object {
   "meta": Object {
     "pagination": Object {
       "limit": 1,
-      "next": 8,
-      "page": 7,
-      "pages": 11,
-      "prev": 6,
-      "total": 11,
+      "next": 7,
+      "page": 6,
+      "pages": 13,
+      "prev": 5,
+      "total": 13,
     },
   },
   "posts": Array [
@@ -455,14 +455,14 @@ Object {
         "positive_feedback": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "custom_excerpt": "Work with all your favorite apps and tools or create your own custom integrations using the Ghost API.",
+      "custom_excerpt": "How Ghost allows you to turn anonymous readers into an audience of active subscribers, so you know what's working and what isn't.",
       "custom_template": null,
       "email": null,
       "email_only": false,
       "email_segment": "all",
       "email_subject": null,
-      "excerpt": "Work with all your favorite apps and tools or create your own custom integrations using the Ghost API.",
-      "feature_image": "https://static.ghost.org/v4.0.0/images/app-integrations.png",
+      "excerpt": "How Ghost allows you to turn anonymous readers into an audience of active subscribers, so you know what's working and what isn't.",
+      "feature_image": "https://static.ghost.org/v4.0.0/images/creating-a-custom-theme.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
       "featured": false,
@@ -470,7 +470,7 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"atoms\\":[],\\"cards\\":[[\\"image\\",{\\"src\\":\\"https://static.ghost.org/v4.0.0/images/integrations-icons.png\\",\\"cardWidth\\":\\"full\\"}],[\\"markdown\\",{\\"markdown\\":\\"<script src=\\\\\\"https://zapier.com/apps/embed/widget.js?services=Ghost,-shortcm,-hubspot,-sendpulse,-noticeable,-aweber,-icontact,-facebook-pages,-github,-medium,-slack,-mailchimp,-activecampaign,-twitter,-discourse&container,-convertkit,-drip,-airtable=true&limit=5\\\\\\"></script>\\\\n\\"}],[\\"image\\",{\\"src\\":\\"https://static.ghost.org/v4.0.0/images/iawriter-integration.png\\",\\"width\\":2244,\\"height\\":936}]],\\"markups\\":[[\\"a\\",[\\"href\\",\\"https://ghost.org/integrations/\\"]],[\\"strong\\"]],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"It's possible to extend your Ghost site and connect it with hundreds of the most popular apps and tools using integrations. \\"]]],[1,\\"p\\",[[0,[],0,\\"Whether you need to automatically publish new posts on social media, connect your favorite analytics tool, sync your community or embed forms into your content — our \\"],[0,[0],1,\\"integrations library\\"],[0,[],0,\\" has got it all covered with hundreds of integration tutorials.\\"]]],[1,\\"p\\",[[0,[],0,\\"Many integrations are as simple as inserting an embed by pasting a link, or copying a snippet of code directly from an app and pasting it into Ghost. Our integration tutorials are used by creators of all kinds to get apps and integrations up and running in no time — no technical knowledge required.\\"]]],[10,0],[1,\\"h2\\",[[0,[],0,\\"Zapier\\"]]],[1,\\"p\\",[[0,[],0,\\"Zapier is a no-code tool that allows you to build powerful automations, and our official integration allows you to connect your Ghost site to more than 1,000 external services.\\"]]],[1,\\"blockquote\\",[[0,[1],1,\\"Example\\"],[0,[],0,\\": When someone new subscribes to a newsletter on a Ghost site (Trigger) then the contact information is automatically pushed into MailChimp (Action).\\"]]],[1,\\"p\\",[[0,[1],1,\\"Here's a few of the most popular automation templates:\\"],[0,[],0,\\" \\"]]],[10,1],[1,\\"h2\\",[[0,[],0,\\"Custom integrations\\"]]],[1,\\"p\\",[[0,[],0,\\"For more advanced automation, it's possible to create custom Ghost integrations with dedicated API keys from the Integrations page within Ghost Admin. \\"]]],[10,2],[1,\\"p\\",[[0,[],0,\\"These custom integrations allow you to use the Ghost API without needing to write code, and create powerful workflows such as sending content from your favorite desktop editor into Ghost as a new draft.\\"]]]],\\"ghostVersion\\":\\"4.0\\"}",
+      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"atoms\\":[],\\"cards\\":[[\\"image\\",{\\"src\\":\\"https://static.ghost.org/v4.0.0/images/portalsettings.png\\",\\"width\\":2924,\\"height\\":1810,\\"cardWidth\\":\\"wide\\"}],[\\"hr\\",{}]],\\"markups\\":[[\\"em\\"],[\\"a\\",[\\"href\\",\\"#/portal\\"]],[\\"a\\",[\\"href\\",\\"http://127.0.0.1:2369/sell/\\"]]],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"What sets Ghost apart from other products is that you can publish content and grow your audience using the same platform. Rather than just endlessly posting and hoping someone is listening, you can track real signups against your work and have them subscribe to be notified of future posts. The feature that makes all this possible is called \\"],[0,[0],1,\\"Portal\\"],[0,[],0,\\".\\"]]],[1,\\"p\\",[[0,[],0,\\"Portal is an embedded interface for your audience to sign up to your site. It works on every Ghost site, with every theme, and for any type of publisher. \\"]]],[1,\\"p\\",[[0,[],0,\\"You can customize the design, content and settings of Portal to suit your site, whether you just want people to sign up to your newsletter — or you're running a full premium publication with user sign-ins and private content.\\"]]],[10,0],[1,\\"p\\",[[0,[],0,\\"Once people sign up to your site, they'll receive an email confirmation with a link to click. The link acts as an automatic sign-in, so subscribers will be automatically signed-in to your site when they click on it. There are a couple of interesting angles to this:\\"]]],[1,\\"p\\",[[0,[],0,\\"Because subscribers are automatically able to sign in and out of your site as registered members: You can (optionally) restrict access to posts and pages depending on whether people are signed-in or not. So if you want to publish some posts for free, but keep some really great stuff for members-only, this can be a great draw to encourage people to sign up!\\"]]],[1,\\"p\\",[[0,[],0,\\"Ghost members sign in using email authentication links, so there are no passwords for people to set or forget. You can turn any list of email subscribers into a database of registered members who can sign in to your site. Like magic.\\"]]],[1,\\"p\\",[[0,[],0,\\"Portal makes all of this possible, and it appears by default as a floating button in the bottom-right corner of your site. When people are logged out, clicking it will open a sign-up/sign-in window. When members are logged in, clicking the Portal button will open the account menu where they can edit their name, email, and subscription settings.\\"]]],[1,\\"p\\",[[0,[],0,\\"The floating Portal button is completely optional. If you prefer, you can add manual links to your content, navigation, or theme to trigger it instead.\\"]]],[1,\\"p\\",[[0,[],0,\\"Like this! \\"],[0,[1],1,\\"Sign up here\\"]]],[10,1],[1,\\"p\\",[[0,[],0,\\"As you start to grow your registered audience, you'll be able to get a sense of who you're publishing \\"],[0,[0],1,\\"for\\"],[0,[],0,\\" and where those people are coming \\"],[0,[0],1,\\"from\\"],[0,[],0,\\". Best of all: You'll have a straightforward, reliable way to connect with people who enjoy your work.\\"]]],[1,\\"p\\",[[0,[],0,\\"Social networks go in and out of fashion all the time. Email addresses are timeless.\\"]]],[1,\\"p\\",[[0,[],0,\\"Growing your audience is valuable no matter what type of site you run, but if your content \\"],[0,[0],1,\\"is\\"],[0,[],0,\\" your business, then you might also be interested in \\"],[0,[2],1,\\"setting up premium subscriptions\\"],[0,[],0,\\".\\"]]]],\\"ghostVersion\\":\\"4.0\\"}",
       "newsletter": null,
       "og_description": null,
       "og_image": null,
@@ -479,8 +479,8 @@ Object {
       "primary_author": Any<Object>,
       "primary_tag": Any<Object>,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "reading_time": 1,
-      "slug": "integrations",
+      "reading_time": 2,
+      "slug": "portal",
       "status": "published",
       "tags": Any<Array>,
       "tiers": Array [
@@ -521,7 +521,7 @@ Object {
           "yearly_price_id": null,
         },
       ],
-      "title": "Setting up apps and custom integrations",
+      "title": "Building your audience with subscriber signups",
       "twitter_description": null,
       "twitter_image": null,
       "twitter_title": null,
@@ -534,11 +534,24 @@ Object {
 }
 `;
 
+exports[`Posts API Can browse filtering by collection using paging parameters 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "7639",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Posts API Can browse filtering by collection using paging parameters 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "7700",
+  "content-length": "8690",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
