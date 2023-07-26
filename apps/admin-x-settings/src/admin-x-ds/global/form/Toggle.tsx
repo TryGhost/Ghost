@@ -1,7 +1,7 @@
 import React, {useId} from 'react';
 import Separator from '../Separator';
 import clsx from 'clsx';
-import {Heading6Styles} from '../Heading';
+import {Heading6StylesGrey} from '../Heading';
 
 type ToggleSizes = 'sm' | 'md' | 'lg';
 type ToggleDirections = 'ltr' | 'rtl';
@@ -92,7 +92,7 @@ const Toggle: React.FC<ToggleProps> = ({
                     <label className={`flex flex-col hover:cursor-pointer ${direction === 'rtl' && 'order-1'} ${labelStyles}`} htmlFor={id}>
                         {
                             labelStyle === 'heading' ?
-                                <span className={`${Heading6Styles} mt-1`}>{label}</span>
+                                <span className={`${Heading6StylesGrey} mt-1`}>{label}</span>
                                 :
                                 <span>{label}</span>
                         }

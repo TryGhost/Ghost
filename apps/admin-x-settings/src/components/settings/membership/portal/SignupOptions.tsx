@@ -129,13 +129,13 @@ const SignupOptions: React.FC<{
             onChange={html => updateSetting('portal_signup_terms_html', html)}
         />
 
-        <Toggle
+        {portalSignupTermsHtml?.toString() && <Toggle
             checked={Boolean(portalSignupCheckboxRequired)}
             disabled={isDisabled}
             label='Require agreement'
             labelStyle='heading'
             onChange={e => updateSetting('portal_signup_checkbox_required', e.target.checked)}
-        />
+        />}
     </Form>;
 };
 
