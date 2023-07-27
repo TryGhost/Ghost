@@ -75,12 +75,12 @@ const TextField: React.FC<TextFieldProps> = ({
 
     if (rightPlaceholder) {
         const rightPHClasses = !unstyled && clsx(
-            'h-10 border-b py-2 text-right text-grey-500',
+            'order-3 h-10 border-b py-2 text-right text-grey-500',
             error ? `border-red` : `${disabled ? 'border-grey-300' : 'border-grey-500 peer-hover:border-grey-700 peer-focus:border-black'}`
         );
 
         field = (
-            <div className='flex w-full items-center'>
+            <div className='order-2 flex w-full items-center'>
                 {inputField}
                 <span className={rightPHClasses || ''}>{rightPlaceholder}</span>
             </div>

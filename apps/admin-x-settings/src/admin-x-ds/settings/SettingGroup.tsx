@@ -58,7 +58,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     const {yScroll, updateScrolled, route} = useRouting();
     const [highlight, setHighlight] = useState(false);
     const scrollRef = useRef<HTMLDivElement | null>(null);
-    const [currentRect, setCurrentRect] = useState<DOMRect>(DOMRect.fromRect());
+    const [currentRect, setCurrentRect] = useState<{top: number, bottom: number}>({top: 0, bottom: 0});
     const topOffset = -193.5;
     const bottomOffset = 36;
 
@@ -134,9 +134,15 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
 
     useEffect(() => {
         if (scrollRef.current) {
-            setCurrentRect(scrollRef.current.getBoundingClientRect());
+            const rootElement = document.getElementById('admin-x-settings-content');
+            const rootRect = rootElement?.getBoundingClientRect();
+            const sectionRect = scrollRef.current.getBoundingClientRect();
+            setCurrentRect({
+                top: sectionRect.top - rootRect!.top,
+                bottom: (sectionRect.top - rootRect!.top) + sectionRect.height
+            });
         }
-    }, [checkVisible]);
+    }, [checkVisible, navid]);
 
     useEffect(() => {
         if (currentRect.top && yScroll! >= currentRect.top + topOffset && yScroll! < currentRect.bottom + topOffset + bottomOffset) {
