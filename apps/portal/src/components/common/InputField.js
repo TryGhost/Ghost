@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from 'react';
+import {useEffect, useRef} from 'react';
 import {hasMode} from '../../utils/check-mode';
 import {isCookiesDisabled} from '../../utils/helpers';
 

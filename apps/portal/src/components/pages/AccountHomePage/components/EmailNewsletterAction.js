@@ -9,7 +9,7 @@ function EmailNewsletterAction() {
 
     const subscribed = !!newsletters?.length;
     let label = subscribed ? t('Subscribed') : t('Unsubscribed');
-    const onToggleSubscription = (e, sub) => {
+    const onToggleSubscription = (e) => {
         e.preventDefault();
         const siteNewsletters = getSiteNewsletters({site});
         const subscribedNewsletters = !member?.newsletters?.length ? siteNewsletters : [];

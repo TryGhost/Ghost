@@ -48,13 +48,13 @@ const NotificationText = ({type, status, context}) => {
         /* eslint-disable i18next/no-literal-string */
         return (
             <p>
-                You've successfully subscribed to <br /><strong>{context.site.title}</strong>
+                You&apos;ve successfully subscribed to <br /><strong>{context.site.title}</strong>
             </p>
         );
     } else if (type === 'signup-paid' && status === 'success') {
         return (
             <p>
-                You've successfully subscribed to <br /><strong>{context.site.title}</strong>
+                You&apos;ve successfully subscribed to <br /><strong>{context.site.title}</strong>
             </p>
         );
         /* eslint-enable i18next/no-literal-string */

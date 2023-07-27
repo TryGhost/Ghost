@@ -43,7 +43,7 @@ const NewsletterPreview: React.FC = () => {
 
                         <div className="max-w-[600px] border-b border-grey-200 py-5 text-[1.6rem] leading-[1.7] text-black">
                             <p className="mb-5">This is what your content will look like when you send one of your posts as an email newsletter to your subscribers.</p>
-                            <p className="mb-5">Over there on the left you'll see some settings that allow you to customize the look and feel of this template to make it perfectly suited to your brand. Email templates are exceptionally finnicky to make, but we've spent a long time optimising this one to make it work beautifully across devices, email clients and content types.</p>
+                            <p className="mb-5">Over there on the left you&apos;ll see some settings that allow you to customize the look and feel of this template to make it perfectly suited to your brand. Email templates are exceptionally finnicky to make, but we&apos;ve spent a long time optimising this one to make it work beautifully across devices, email clients and content types.</p>
                             <p className="mb-5">So, you can trust that every email you send with Ghost will look great and work well. Just like the rest of your site.</p>
                         </div>
 

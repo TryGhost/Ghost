@@ -38,14 +38,29 @@
     "prepublishOnly": "yarn build"
   },
   "eslintConfig": {
+    "env": {
+      "browser": true,
+      "jest": true
+    },
+    "parserOptions": {
+      "sourceType": "module",
+      "ecmaVersion": 2022
+    },
     "extends": [
-      "react-app",
-      "react-app/jest",
-      "plugin:ghost/browser"
+      "plugin:ghost/browser",
+      "plugin:react/recommended"
     ],
     "plugins": [
       "ghost"
-    ]
+    ],
+    "rules": {
+      "react/prop-types": "off"
+    },
+    "settings": {
+      "react": {
+        "version": "detect"
+      }
+    }
   },
   "browserslist": {
     "production": [

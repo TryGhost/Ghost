@@ -20,7 +20,7 @@ const ICON_MAPPING = {
     'icon-5': ButtonIcon5
 };
 
-const Styles = ({brandColor, hasText}) => {
+const Styles = ({hasText}) => {
     const frame = {
         ...(!hasText ? {width: '105px'} : {}),
         ...(hasMode(['preview']) ? {opacity: 1} : {})

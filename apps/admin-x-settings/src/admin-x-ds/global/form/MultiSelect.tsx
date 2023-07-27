@@ -76,6 +76,8 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     };
 
     const dropdownIndicatorComponent = useMemo(() => {
+        // TODO: fix "Component definition is missing display name"
+        // eslint-disable-next-line react/display-name
         return (ddiProps: DropdownIndicatorProps<MultiSelectOption, true>) => <DropdownIndicator {...ddiProps} clearBg={clearBg} />;
     }, [clearBg]);
 

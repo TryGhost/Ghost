@@ -31,15 +31,32 @@
     "prepublishOnly": "yarn build"
   },
   "eslintConfig": {
+    "env": {
+      "browser": true,
+      "jest": true
+    },
+    "parserOptions": {
+      "sourceType": "module",
+      "ecmaVersion": 2022
+    },
     "extends": [
-      "react-app",
       "plugin:ghost/browser",
-      "plugin:i18next/recommended"
+      "plugin:i18next/recommended",
+      "plugin:react/recommended",
+      "plugin:react/jsx-runtime"
     ],
     "plugins": [
       "ghost",
       "i18next"
-    ]
+    ],
+    "rules": {
+      "react/prop-types": "off"
+    },
+    "settings": {
+      "react": {
+        "version": "detect"
+      }
+    }
   },
   "browserslist": {
     "production": [

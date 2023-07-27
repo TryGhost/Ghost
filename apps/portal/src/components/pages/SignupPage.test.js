@@ -1,4 +1,3 @@
-import React from 'react';
 import SignupPage from './SignupPage';
 import {getFreeProduct, getProductData, getSiteData} from '../../utils/fixtures-generator';
 import {render, fireEvent} from '../../utils/test-utils';
