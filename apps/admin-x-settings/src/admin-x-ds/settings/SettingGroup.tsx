@@ -137,10 +137,6 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
             const rootElement = document.getElementById('admin-x-settings-content');
             const rootRect = rootElement?.getBoundingClientRect();
             const sectionRect = scrollRef.current.getBoundingClientRect();
-            if (navid === 'title-and-description') {
-                console.log(rootRect?.top, sectionRect.top);
-            }
-
             setCurrentRect({
                 top: sectionRect.top - rootRect!.top,
                 bottom: (sectionRect.top - rootRect!.top) + sectionRect.height
