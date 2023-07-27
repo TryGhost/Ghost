@@ -1,7 +1,8 @@
 import ButtonGroup from '../global/ButtonGroup';
-import React from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import SettingGroupHeader from './SettingGroupHeader';
 import clsx from 'clsx';
+import useRouting from '../../hooks/useRouting';
 import {ButtonProps} from '../global/Button';
 import {SaveState} from '../../hooks/useForm';
 import {useSearch} from '../../components/providers/ServiceProvider';
@@ -54,6 +55,12 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     onCancel
 }) => {
     const {checkVisible} = useSearch();
+    const {yScroll, updateScrolled, route} = useRouting();
+    const [highlight, setHighlight] = useState(false);
+    const scrollRef = useRef<HTMLDivElement | null>(null);
+    const [currentRect, setCurrentRect] = useState<DOMRect>(DOMRect.fromRect());
+    const topOffset = -193.5;
+    const bottomOffset = 36;
 
     const handleEdit = () => {
         onEditingChange?.(true);
@@ -125,9 +132,42 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
         );
     }
 
+    useEffect(() => {
+        if (scrollRef.current) {
+            setCurrentRect(scrollRef.current.getBoundingClientRect());
+        }
+    }, [checkVisible]);
+
+    useEffect(() => {
+        if (currentRect.top && yScroll! >= currentRect.top + topOffset && yScroll! < currentRect.bottom + topOffset + bottomOffset) {
+            updateScrolled(navid!);
+        }
+    }, [yScroll, currentRect, navid, updateScrolled, topOffset, bottomOffset]);
+
+    useEffect(() => {
+        setHighlight(route === navid);
+    }, [route, navid]);
+
+    useEffect(() => {
+        if (highlight) {
+            setTimeout(() => {
+                setHighlight(false);
+            }, 3000);
+        }
+    }, [highlight]);
+
+    const containerClasses = clsx(
+        'relative flex-col gap-6 rounded',
+        border && 'border p-5 md:p-7',
+        !checkVisible(keywords) ? 'hidden' : 'flex',
+        highlight && 'before:pointer-events-none before:absolute before:inset-[1px] before:z-20 before:animate-setting-highlight-fade-out before:rounded before:shadow-[0_0_0_3px_rgba(48,207,67,0.45)]',
+        styles
+    );
+
     return (
-        <div className={clsx('relative flex flex-col gap-6 rounded', border && 'border p-5 md:p-7', !checkVisible(keywords) && 'hidden', styles)} data-testid={testId}>
-            <div className='absolute top-[-60px]' id={navid && navid}></div>
+        <div ref={scrollRef} className={containerClasses} data-testid={testId}>
+            {/* {yScroll} / {currentRect.top + topOffset} / {currentRect.bottom + topOffset + bottomOffset} */}
+            <div className='absolute top-[-193px]' id={navid && navid}></div>
             {customHeader ? customHeader :
                 <SettingGroupHeader description={description} title={title!}>
                     {customButtons ? customButtons :
