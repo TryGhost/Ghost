@@ -29,7 +29,6 @@ const TextField: React.FC<TextFieldProps> = ({
     type = 'text',
     inputRef,
     title,
-    //titleColor = 'grey',
     hideTitle,
     value,
     error,
@@ -50,12 +49,12 @@ const TextField: React.FC<TextFieldProps> = ({
     const id = useId();
 
     const textFieldClasses = !unstyled && clsx(
-        'h-10 w-full border-b py-2',
+        'peer order-2 h-10 w-full border-b py-2',
         clearBg ? 'bg-transparent' : 'bg-grey-75 px-[10px]',
         error ? `border-red` : `${disabled ? 'border-grey-300' : 'border-grey-500 hover:border-grey-700 focus:border-black'}`,
         (title && !hideTitle && !clearBg) && `mt-2`,
         (disabled ? 'text-grey-700' : ''),
-        rightPlaceholder && 'peer w-0 grow',
+        rightPlaceholder && 'w-0 grow',
         className
     );
 
@@ -91,17 +90,11 @@ const TextField: React.FC<TextFieldProps> = ({
     }
 
     if (title || hint) {
-        // let titleGrey = false;
-        // if (titleColor === 'auto') {
-        //     titleGrey = value ? true : false;
-        // } else {
-        //     titleGrey = titleColor === 'grey' ? true : false;
-        // }
         return (
             <div className={`flex flex-col ${containerClassName}`}>
-                {title && <Heading className={hideTitle ? 'sr-only' : ''} grey={true} htmlFor={id} useLabelTag={true}>{title}</Heading>}
                 {field}
-                {hint && <Hint className={hintClassName} color={error ? 'red' : ''}>{hint}</Hint>}
+                {title && <Heading className={hideTitle ? 'sr-only' :  'order-1 !text-grey-700 peer-focus:!text-black'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
+                {hint && <Hint className={'order-3' + hintClassName} color={error ? 'red' : ''}>{hint}</Hint>}
             </div>
         );
     } else {
