@@ -10,6 +10,7 @@ type Order<T> = {
     direction: 'asc' | 'desc';
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type OrderOption<T extends Entity<any>> = Order<T>[];
 
 export abstract class InMemoryRepository<IDType, T extends Entity<IDType>> {
@@ -51,6 +52,7 @@ export abstract class InMemoryRepository<IDType, T extends Entity<IDType>> {
             for (const order of options.order) {
                 results.sort((a, b) => {
                     if (order.direction === 'asc') {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         return a[order.field] as any > (b[order.field] as any) ? 1 : -1;
                     } else {
                         return a[order.field] < b[order.field] ? 1 : -1;

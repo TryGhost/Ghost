@@ -41,6 +41,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
     };
 
     const PageComponent = pages[page.name];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data = page.data as any; // issue with TypeScript understanding the type here when passing it to the component
     return (
         <>

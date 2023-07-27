@@ -22,6 +22,7 @@ const messages = {
 };
 
 interface SlugService {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     generate(desired: string, options: {transaction: any}): Promise<string>;
 }
 
@@ -30,6 +31,7 @@ type CollectionsServiceDeps = {
     postsRepository: PostsRepository;
     slugService: SlugService;
     DomainEvents: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         subscribe: (event: any, handler: (e: any) => void) => void;
     };
 };
@@ -92,6 +94,7 @@ type QueryOptions = {
     include?: string;
     page?: number;
     limit?: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     transaction?: any;
 }
 
@@ -103,6 +106,7 @@ export class CollectionsService {
     private collectionsRepository: CollectionRepository;
     private postsRepository: PostsRepository;
     private DomainEvents: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         subscribe: (event: any, handler: (e: any) => void) => void;
     };
     private uniqueChecker: RepositoryUniqueChecker;
@@ -134,7 +138,9 @@ export class CollectionsService {
         };
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private fromDTO(data: any): any {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const mappedDTO: {[index: string]:any} = {
             title: data.title,
             slug: data.slug,
@@ -308,6 +314,7 @@ export class CollectionsService {
         });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async edit(data: any): Promise<CollectionDTO | null> {
         return await this.collectionsRepository.createTransaction(async (transaction) => {
             const collection = await this.collectionsRepository.getById(data.id, {transaction});
@@ -352,6 +359,7 @@ export class CollectionsService {
         return await this.collectionsRepository.getBySlug(slug);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async getAll(options?: QueryOptions): Promise<{data: CollectionDTO[], meta: any}> {
         const collections = await this.collectionsRepository.getAll(options);
 

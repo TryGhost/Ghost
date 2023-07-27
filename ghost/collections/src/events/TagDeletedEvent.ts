@@ -9,6 +9,7 @@ export class TagDeletedEvent {
         this.timestamp = timestamp;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static create(data: any, timestamp = new Date()) {
         return new TagDeletedEvent(data, timestamp);
     }
