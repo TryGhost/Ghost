@@ -85,7 +85,7 @@ async function handleThemeUpload({
 
         title = `Upload successful with ${hasErrors ? 'errors' : 'warnings'}`;
         prompt = <>
-            The theme <strong>"{uploadedTheme.name}"</strong> was installed successfully but we detected some {hasErrors ? 'errors' : 'warnings'}.
+            The theme <strong>&quot;{uploadedTheme.name}&quot;</strong> was installed successfully but we detected some {hasErrors ? 'errors' : 'warnings'}.
         </>;
 
         if (!uploadedTheme.active) {
@@ -250,7 +250,7 @@ const ChangeThemeModal = NiceModal.create(() => {
 
                 title = `Installed with ${hasErrors ? 'errors' : 'warnings'}`;
                 prompt = <>
-                    The theme <strong>"{newlyInstalledTheme.name}"</strong> was installed successfully but we detected some {hasErrors ? 'errors' : 'warnings'}.
+                    The theme <strong>&quot;{newlyInstalledTheme.name}&quot;</strong> was installed successfully but we detected some {hasErrors ? 'errors' : 'warnings'}.
                 </>;
 
                 if (!newlyInstalledTheme.active) {

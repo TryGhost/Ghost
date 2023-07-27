@@ -1,8 +1,7 @@
-import React from 'react';
 import {render, fireEvent} from '../../utils/test-utils';
 import SigninPage from './SigninPage';
 
-const setup = (overrides) => {
+const setup = () => {
     const {mockOnActionFn, ...utils} = render(
         <SigninPage />,
         {

@@ -11,6 +11,8 @@ export type SortableIndexedList<Item> = {
     setNewItem: (item: Item) => void;
 }
 
+// TODO: figure out if we need to extend `unknown`?
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
 const useSortableIndexedList = <Item extends unknown>({items, setItems, blank, canAddNewItem}: {
     items: Item[];
     setItems: (newItems: Item[]) => void;

@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import {Component} from 'react';
 import {createPortal} from 'react-dom';
 
 export default class Frame extends Component {

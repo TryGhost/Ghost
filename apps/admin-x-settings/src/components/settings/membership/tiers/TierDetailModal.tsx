@@ -65,7 +65,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                 values.currency = currency;
                 values.monthly_price = currencyFromDecimal(parseFloat(monthlyPrice));
                 values.yearly_price = currencyFromDecimal(parseFloat(yearlyPrice));
-                values.trial_days = parseInt(formState.trial_days);
+                values.trial_days = parseInt(trialDays);
             }
 
             if (tier?.id) {

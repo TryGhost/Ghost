@@ -51,7 +51,7 @@ export function generateAvatarColor(name: string) {
     const s = 70;
     const l = 40;
     let hash = 0;
-    for (var i = 0; i < name.length; i++) {
+    for (let i = 0; i < name.length; i++) {
         hash = name.charCodeAt(i) + ((hash << 5) - hash);
     }
 

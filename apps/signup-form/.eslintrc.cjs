@@ -2,8 +2,8 @@
 module.exports = {
     root: true,
     extends: [
-        'react-app',
-        'plugin:ghost/browser'
+        'plugin:ghost/ts',
+        'plugin:react/recommended'
     ],
     plugins: [
         'ghost',
@@ -14,6 +14,9 @@ module.exports = {
         'ghost/sort-imports-es6-autofix/sort-imports-es6': ['error', {
             memberSyntaxSortOrder: ['none', 'all', 'single', 'multiple']
         }],
+
+        // TODO: fix + remove this
+        '@typescript-eslint/no-explicit-any': 'warn',
 
         // suppress errors for missing 'import React' in JSX files, as we don't need it
         'react/react-in-jsx-scope': 'off',

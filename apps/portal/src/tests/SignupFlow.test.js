@@ -1,4 +1,3 @@
-import React from 'react';
 import App from '../App.js';
 import {fireEvent, appRender, within, waitFor} from '../utils/test-utils';
 import {offer as FixtureOffer, site as FixtureSite} from '../utils/test-fixtures';

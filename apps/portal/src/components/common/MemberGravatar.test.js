@@ -1,8 +1,7 @@
-import React from 'react';
 import {render} from '@testing-library/react';
 import MemberGravatar from './MemberGravatar';
 
-const setup = (overrides = {}) => {
+const setup = () => {
     const props = {
         gravatar: 'https://gravatar.com/avatar/76a4c5450dbb6fde8a293a811622aa6f?s=250&d=blank'
     };

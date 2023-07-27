@@ -63,7 +63,7 @@ export default class MagicLinkPage extends React.Component {
         );
     }
 
-    handleClose(e) {
+    handleClose() {
         this.context.onAction('closePopup');
     }
 

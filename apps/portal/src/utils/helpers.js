@@ -453,7 +453,7 @@ export function freeHasBenefitsOrDescription({site}) {
     return false;
 }
 
-export function getProductBenefits({product, site = null}) {
+export function getProductBenefits({product}) {
     if (product?.monthlyPrice && product?.yearlyPrice) {
         const productBenefits = product?.benefits || [];
         const monthlyBenefits = productBenefits;

@@ -4,7 +4,7 @@ import React from 'react';
 import Button from '../Button';
 import Modal, {ModalProps} from './Modal';
 
-const ModalContainer: React.FC<ModalProps> = ({children, onCancel, ...props}) => {
+const ModalContainer: React.FC<ModalProps> = ({children, ...props}) => {
     const modal = NiceModal.create<ModalProps>(() => {
         return (
             <Modal {...props}>

@@ -1,5 +1,5 @@
 import AppContext from '../../AppContext';
-import React, {useContext, useEffect, useState} from 'react';
+import {useContext, useEffect, useState} from 'react';
 import {isPaidMember} from '../../utils/helpers';
 import NewsletterManagement from '../common/NewsletterManagement';
 

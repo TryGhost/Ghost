@@ -177,7 +177,7 @@ async function likeComment({state, api, data: comment}: {state: AppContextType, 
     };
 }
 
-async function reportComment({state, api, data: comment}: {state: AppContextType, api: GhostApi, data: {id: string}}) {
+async function reportComment({api, data: comment}: {api: GhostApi, data: {id: string}}) {
     await api.comments.report({comment});
 
     return {};

@@ -13,7 +13,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof List>;
 
-const {id, ...listItemProps} = ListItemStories.HiddenActions.args || {};
+const {/*id,*/ ...listItemProps} = ListItemStories.HiddenActions.args || {};
 
 const listItems = (
     <>

@@ -171,7 +171,7 @@ const PaidAccountActions = () => {
     return null;
 };
 
-function FreeTrialLabel({subscription, priceLabel, t}) {
+function FreeTrialLabel({subscription, t}) {
     if (subscriptionHasFreeTrial({sub: subscription})) {
         const trialEnd = getDateString(subscription.trial_end_at);
         return (

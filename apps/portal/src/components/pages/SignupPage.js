@@ -422,7 +422,7 @@ class SignupPage extends React.Component {
         e && e.preventDefault();
         // Hack: React checkbox gets out of sync with dom state with instant update
         this.timeoutId = setTimeout(() => {
-            this.setState((prevState) => {
+            this.setState(() => {
                 return {
                     plan: priceId
                 };
@@ -517,7 +517,7 @@ class SignupPage extends React.Component {
                     required={true}
                     onChange={handleCheckboxChange}
                 />
-                <span class="checkbox"></span>
+                <span className="checkbox"></span>
                 {termsText}
             </label>
         ) : termsText;

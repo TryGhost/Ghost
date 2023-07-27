@@ -87,7 +87,7 @@ const PortalModal: React.FC = () => {
                 NiceModal.show(ConfirmationModal, {
                     title: 'Confirm email address',
                     prompt: <>
-                        We've sent a confirmation email to <strong>{newEmail}</strong>.
+                        We&apos;ve sent a confirmation email to <strong>{newEmail}</strong>.
                         Until verified, your support address will remain {fullEmailAddress(currentEmail?.toString() || 'noreply', siteData!)}.
                     </>,
                     okLabel: 'Close',
