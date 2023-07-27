@@ -5,7 +5,8 @@ import {
     CollectionsRepositoryInMemory,
     PostDeletedEvent,
     PostAddedEvent,
-    PostEditedEvent
+    PostEditedEvent,
+    TagDeletedEvent
 } from '../src/index';
 import {PostsRepositoryInMemory} from './fixtures/PostsRepositoryInMemory';
 import {posts as postFixtures} from './fixtures/posts';
@@ -309,6 +310,79 @@ describe('CollectionsService', function () {
                 await collectionsService.destroy(automaticFeaturedCollection.id);
                 await collectionsService.destroy(automaticNonFeaturedCollection.id);
                 await collectionsService.destroy(manualCollection.id);
+            });
+
+            it('Updates all automatic collections when a tag is deleted', async function () {
+                const collectionsRepository = new CollectionsRepositoryInMemory();
+                postsRepository = initPostsRepository([
+                    {
+                        id: 'post-1',
+                        url: 'http://localhost:2368/post-1/',
+                        title: 'Post 1',
+                        slug: 'post-1',
+                        featured: false,
+                        tags: [{slug: 'to-be-deleted'}, {slug: 'other-tag'}],
+                        created_at: new Date('2023-03-15T07:19:07.447Z'),
+                        updated_at: new Date('2023-03-15T07:19:07.447Z'),
+                        published_at: new Date('2023-03-15T07:19:07.447Z')
+                    }, {
+                        id: 'post-2',
+                        url: 'http://localhost:2368/post-2/',
+                        title: 'Post 2',
+                        slug: 'post-2',
+                        featured: false,
+                        tags: [{slug: 'to-be-deleted'}, {slug: 'other-tag'}],
+                        created_at: new Date('2023-04-05T07:20:07.447Z'),
+                        updated_at: new Date('2023-04-05T07:20:07.447Z'),
+                        published_at: new Date('2023-04-05T07:20:07.447Z')
+                    }
+                ]);
+
+                collectionsService = new CollectionsService({
+                    collectionsRepository,
+                    postsRepository,
+                    DomainEvents,
+                    slugService: {
+                        async generate(input) {
+                            return input.replace(/\s+/g, '-').toLowerCase();
+                        }
+                    }
+                });
+
+                const automaticCollectionWithTag = await collectionsService.createCollection({
+                    title: 'Automatic Collection with Tag',
+                    description: 'testing automatic collection with tag',
+                    type: 'automatic',
+                    filter: 'tags:to-be-deleted'
+                });
+
+                const automaticCollectionWithoutTag = await collectionsService.createCollection({
+                    title: 'Automatic Collection without Tag',
+                    description: 'testing automatic collection without tag',
+                    type: 'automatic',
+                    filter: 'tags:other-tag'
+                });
+
+                assert.equal((await collectionsService.getById(automaticCollectionWithTag.id))?.posts.length, 2);
+                assert.equal((await collectionsService.getById(automaticCollectionWithoutTag.id))?.posts.length, 2);
+
+                collectionsService.subscribeToEvents();
+                const tagDeletedEvent = TagDeletedEvent.create({
+                    id: 'to-be-deleted'
+                });
+
+                const posts = await postsRepository.getAll();
+
+                for (const post of posts) {
+                    post.tags = post.tags.filter(tag => tag.slug !== 'to-be-deleted');
+                    await postsRepository.save(post);
+                }
+
+                DomainEvents.dispatch(tagDeletedEvent);
+                await DomainEvents.allSettled();
+
+                assert.equal((await collectionsService.getById(automaticCollectionWithTag.id))?.posts.length, 0);
+                assert.equal((await collectionsService.getById(automaticCollectionWithoutTag.id))?.posts.length, 2);
             });
 
             it('Updates all collections when post is deleted', async function () {
