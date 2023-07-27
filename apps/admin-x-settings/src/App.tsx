@@ -21,7 +21,11 @@ function App({ghostVersion, officialThemes}: AppProps) {
             <DataProvider>
                 <RoutingProvider>
                     <GlobalDirtyStateProvider>
-                        <div className="admin-x-settings">
+                        <div className="admin-x-settings h-[100vh] w-full overflow-y-auto" style={{
+                                height: '100vh',
+                                width: '100%'
+                            }} id="admin-x-root"
+                        >
                             <Toaster />
                             <NiceModal.Provider>
                                 <div className='fixed left-6 top-4 z-20'>
