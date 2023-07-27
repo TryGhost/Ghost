@@ -46,7 +46,7 @@ function App({ghostVersion, officialThemes}: AppProps) {
                                     </div>
 
                                     <div className="relative flex-auto pt-[3vmin] md:ml-[300px] md:pt-[85px]">
-                                        <div className='fixed inset-x-0 top-0 z-[5] h-[130px] bg-gradient-to-t from-transparent to-white to-60%'></div>
+                                        <div className='pointer-events-none fixed inset-x-0 top-0 z-[5] h-[130px] bg-gradient-to-t from-transparent to-white to-60%'></div>
                                         <Settings />
                                     </div>
                                 </div>

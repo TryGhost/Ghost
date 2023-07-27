@@ -19,6 +19,7 @@ import {FileService, ServicesContext} from '../../providers/ServiceProvider';
 import {User} from '../../../types/api';
 import {isAdminUser, isOwnerUser} from '../../../utils/helpers';
 import {showToast} from '../../../admin-x-ds/global/Toast';
+import { toast } from 'react-hot-toast';
 
 interface CustomHeadingProps {
     children?: React.ReactNode;
@@ -28,6 +29,7 @@ interface UserDetailProps {
     user: User;
     setUserData?: (user: User) => void;
     errors?: {
+        name?: string;
         url?: string;
         email?: string;
     };
@@ -89,11 +91,13 @@ const RoleSelector: React.FC<UserDetailProps> = ({user, setUserData}) => {
         />
     );
 };
+
 const BasicInputs: React.FC<UserDetailProps> = ({errors, user, setUserData}) => {
     return (
         <SettingGroupContent>
             <TextField
-                hint="Use real name so people can recognize you"
+                error={!!errors?.name}
+                hint={errors?.name || "Use real name so people can recognize you"}
                 title="Full name"
                 value={user.name}
                 onChange={(e) => {
@@ -406,6 +410,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
     const [userData, setUserData] = useState(user);
     const [saveState, setSaveState] = useState('');
     const [errors, setErrors] = useState<{
+        name?: string;
         email?: string;
         url?: string;
     }>({});
@@ -590,20 +595,36 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
             testId='user-detail-modal'
             onOk={async () => {
                 setSaveState('saving');
+                let error = false;
+                if (!userData.name) {
+                    setErrors?.((_errors) => {
+                        return {..._errors, name: 'Please enter a name'};
+                    });
+                    error = true;
+                }
                 if (!validator.isEmail(userData.email)) {
                     setErrors?.((_errors) => {
-                        return {..._errors, email: 'Please enter a valid email address'};
+                        return {..._errors, email: 'Enter a valid email address'};
                     });
-                    setSaveState('');
-                    return;
+                    error = true;
                 }
                 if (!validator.isURL(userData.url)) {
                     setErrors?.((_errors) => {
-                        return {..._errors, url: 'Please enter a valid URL'};
+                        return {..._errors, url: 'Enter a valid URL'};
+                    });
+                    error = true;
+                }
+
+                if (error) {
+                    showToast({
+                        type: 'pageError',
+                        message: "Can't save user because one or more fields have errors. Please doublecheck if you filled everything."
                     });
                     setSaveState('');
                     return;
                 }
+
+                toast.dismiss();
 
                 await updateUser?.(userData);
                 setSaveState('saved');
