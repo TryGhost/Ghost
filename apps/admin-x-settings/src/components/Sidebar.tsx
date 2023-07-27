@@ -11,7 +11,7 @@ const Sidebar: React.FC = () => {
     const {updateRoute} = useRouting();
 
     const handleSectionClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-        updateRoute(e.currentTarget.name, true);
+        updateRoute(e.currentTarget.name);
     };
 
     return (

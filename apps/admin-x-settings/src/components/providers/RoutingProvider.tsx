@@ -39,6 +39,13 @@ function getHashPath(urlPath: string | undefined) {
     return null;
 }
 
+const scrollToSectionGroup = (pathName: string) => {
+    const element = document.getElementById(pathName);
+    if (element) {
+        element.scrollIntoView({behavior: 'smooth'});
+    }
+}
+
 const handleNavigation = (scroll: boolean = true) => {
     // Get the hash from the URL
     let hash = window.location.hash;
@@ -67,10 +74,7 @@ const handleNavigation = (scroll: boolean = true) => {
         }
 
         if (scroll) {
-            const element = document.getElementById(pathName);
-            if (element) {
-                element.scrollIntoView({behavior: 'smooth'});
-            }
+            scrollToSectionGroup(pathName);
         }
 
         return pathName;
@@ -90,37 +94,32 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({children}) => {
     const {settingsLoaded} = useContext(SettingsContext) || {};
 
     const handleScroll = () => {
-        // Do something in response to the scroll event
         const element = document.getElementsByClassName('gh-main');
         const scrollPosition = element[0].scrollTop;
-        // console.log(`Scrolling at: ${scrollPosition}`);
         setYScroll(scrollPosition);
     };
 
-    useEffect(() => {
-        // Add event listener for the scroll event
-        const element = document.getElementsByClassName('gh-main');
-        element[0].addEventListener('scroll', handleScroll);
-
-        // Clean up the event listener when the component unmounts
-        return () => {
-            element[0].removeEventListener('scroll', handleScroll);
-        };
-    }, []); // Empty dependency array to run the effect only once
-
     const updateRoute = useCallback((newPath: string) => {
         if (newPath) {
-            window.location.hash = `/settings-x/${newPath}`;
+            if (newPath === route) {
+                scrollToSectionGroup(newPath);
+            } else {
+                window.location.hash = `/settings-x/${newPath}`;
+            }
         } else {
             window.location.hash = `/settings-x`;
         }
-    }, []);
+    }, [route]);
 
     const updateScrolled = useCallback((newPath: string) => {
         setScrolledRoute(newPath);
     }, []);
 
     useEffect(() => {
+        // Add event listener for the scroll event
+        const element = document.getElementsByClassName('gh-main');
+        element[0].addEventListener('scroll', handleScroll);
+
         const handleHashChange = () => {
             const matchedRoute = handleNavigation();
             setRoute(matchedRoute);
@@ -133,6 +132,7 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({children}) => {
         window.addEventListener('hashchange', handleHashChange);
 
         return () => {
+            element[0].removeEventListener('scroll', handleScroll);
             window.removeEventListener('hashchange', handleHashChange);
         };
     }, [settingsLoaded]);
