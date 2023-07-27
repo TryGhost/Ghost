@@ -108,7 +108,7 @@ if (DASH_DASH_ARGS.includes('announcement-bar') || DASH_DASH_ARGS.includes('anno
         prefixColor: '#DC9D00',
         env: {}
     });
-    COMMAND_GHOST.env['announcementBar__url'] = 'http://localhost:5371/announcement-bar';
+    COMMAND_GHOST.env['announcementBar__url'] = 'http://localhost:4177/announcement-bar.min.js';
 }
 
 if (DASH_DASH_ARGS.includes('search') || DASH_DASH_ARGS.includes('all')) {
@@ -119,8 +119,8 @@ if (DASH_DASH_ARGS.includes('search') || DASH_DASH_ARGS.includes('all')) {
         prefixColor: '#23de43',
         env: {}
     });
-    COMMAND_GHOST.env['sodoSearch__url'] = 'http://localhost:5370/umd/sodo-search.min.js';
-    COMMAND_GHOST.env['sodoSearch__styles'] = 'http://localhost:5370/umd/main.css';
+    COMMAND_GHOST.env['sodoSearch__url'] = 'http://localhost:4178/sodo-search.min.js';
+    COMMAND_GHOST.env['sodoSearch__styles'] = 'http://localhost:4178/main.css';
 }
 
 if (DASH_DASH_ARGS.includes('lexical')) {

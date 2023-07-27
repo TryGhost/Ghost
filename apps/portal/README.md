@@ -55,8 +55,6 @@ Creates the production single minified bundle for external use in `umd/portal.mi
 ### `yarn test`
 
 Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
 
 ## Publish
 
@@ -68,8 +66,3 @@ Run `yarn ship` to publish new version of script.
 - Publishes package on npm as `@tryghost/portal` and creates an unpkg link for script at https://unpkg.com/@tryghost/portal@VERSION
 
 (Core team only)
-
-## Learn More
-
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).

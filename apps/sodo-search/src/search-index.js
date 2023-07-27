@@ -1,4 +1,4 @@
-import {Document} from 'flexsearch';
+import Flexsearch from 'flexsearch';
 import GhostContentAPI from '@tryghost/content-api';
 
 export default class SearchIndex {
@@ -9,7 +9,7 @@ export default class SearchIndex {
             version: 'v5.0'
         });
 
-        this.postsIndex = new Document({
+        this.postsIndex = new Flexsearch.Document({
             tokenize: 'forward',
             document: {
                 id: 'id',
@@ -17,7 +17,7 @@ export default class SearchIndex {
                 store: true
             }
         });
-        this.authorsIndex = new Document({
+        this.authorsIndex = new Flexsearch.Document({
             tokenize: 'forward',
             document: {
                 id: 'id',
@@ -25,7 +25,7 @@ export default class SearchIndex {
                 store: true
             }
         });
-        this.tagsIndex = new Document({
+        this.tagsIndex = new Flexsearch.Document({
             tokenize: 'forward',
             document: {
                 id: 'id',
