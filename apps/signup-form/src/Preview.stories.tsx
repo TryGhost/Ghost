@@ -16,6 +16,7 @@ const Preview: React.FC<SignupFormOptions & {
         data: {}
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const _setPage = (name: PageName, data: any) => {
         setPage(() => ({
             name,
@@ -24,6 +25,7 @@ const Preview: React.FC<SignupFormOptions & {
     };
 
     const PageComponent = pages[page.name];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data = page.data as any;
 
     const i18n = i18nLib(options.locale || 'en', 'signup-form');

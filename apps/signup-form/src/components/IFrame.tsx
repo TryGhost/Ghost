@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {Component} from 'react';
 import {createPortal} from 'react-dom';
 

@@ -1,5 +1,6 @@
 export class PostDeletedEvent {
     id: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: any;
     timestamp: Date;
 
@@ -9,6 +10,7 @@ export class PostDeletedEvent {
         this.timestamp = timestamp;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static create(data: any, timestamp = new Date()) {
         return new PostDeletedEvent(data, timestamp);
     }

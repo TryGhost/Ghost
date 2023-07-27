@@ -21,10 +21,12 @@ export type AppContextType = {
     setPage: <T extends PageName>(name: T, data: ComponentProps<typeof pages[T]>) => void,
     options: SignupFormOptions,
     api: GhostApi,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     t: any,
     scriptTag: HTMLElement
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const AppContext = React.createContext<AppContextType>({} as any);
 
 export const AppContextProvider = AppContext.Provider;

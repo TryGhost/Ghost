@@ -141,6 +141,7 @@ export class Collection {
         this._posts = [];
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private constructor(data: any) {
         this.id = data.id;
         this.title = data.title;
@@ -170,6 +171,7 @@ export class Collection {
         };
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static validateDateField(date: any, fieldName: string): Date {
         if (!date) {
             return new Date();
@@ -184,6 +186,7 @@ export class Collection {
         });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static async create(data: any): Promise<Collection> {
         let id;
 
