@@ -8,6 +8,7 @@ import {PostDeletedEvent} from './events/PostDeletedEvent';
 import {PostAddedEvent} from './events/PostAddedEvent';
 import {PostEditedEvent} from './events/PostEditedEvent';
 import {RepositoryUniqueChecker} from './RepositoryUniqueChecker';
+import {TagDeletedEvent} from './events/TagDeletedEvent';
 
 const messages = {
     cannotDeleteBuiltInCollectionError: {
@@ -169,6 +170,36 @@ export class CollectionsService {
         this.DomainEvents.subscribe(PostEditedEvent, async (event: PostEditedEvent) => {
             logging.info(`PostEditedEvent received, updating post ${event.data.id} in matching collections`);
             await this.updatePostInMatchingCollections(event.data);
+        });
+
+        this.DomainEvents.subscribe(TagDeletedEvent, async (event: TagDeletedEvent) => {
+            logging.info(`TagDeletedEvent received for ${event.data.id}, updating all collections`);
+            await this.updateAllAutomaticCollections();
+        });
+    }
+
+    async updateAllAutomaticCollections(): Promise<void> {
+        return await this.collectionsRepository.createTransaction(async (transaction) => {
+            const collections = await this.collectionsRepository.getAll({
+                transaction
+            })
+
+            for (const collection of collections) {
+                if (collection.type === 'automatic' && collection.filter) {
+                    collection.removeAllPosts();
+
+                    const posts = await this.postsRepository.getAll({
+                        filter: collection.filter,
+                        transaction
+                    });
+
+                    for (const post of posts) {
+                        collection.addPost(post);
+                    }
+
+                    await this.collectionsRepository.save(collection, {transaction});
+                }
+            }
         });
     }
 
