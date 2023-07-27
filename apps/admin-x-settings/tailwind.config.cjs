@@ -145,6 +145,14 @@ module.exports = {
                         opacity: '1'
                     }
                 },
+                fadeOut: {
+                    '0%': {
+                        opacity: '1'
+                    },
+                    '100%': {
+                        opacity: '0'
+                    }
+                },
                 modalIn: {
                     '0%': {
                         transform: 'translateY(32px)'
@@ -158,6 +166,9 @@ module.exports = {
                 'toaster-in': 'toasterIn 0.8s cubic-bezier(0.445, 0.050, 0.550, 0.950)',
                 'toaster-out': 'toasterOut 0.4s 0s 1 ease forwards',
                 'toaster-top-in': 'toasterTopIn 0.8s cubic-bezier(0.445, 0.050, 0.550, 0.950)',
+                'fade-in': 'fadeIn 0.15s ease forwards',
+                'fade-out': 'fadeOut 0.15s ease forwards',
+                'setting-highlight-fade-out': 'fadeOut 0.2s 1.4s ease forwards',
                 'modal-backdrop-in': 'fadeIn 0.15s ease forwards',
                 'modal-in': 'modalIn 0.25s ease forwards'
             },

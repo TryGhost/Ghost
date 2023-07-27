@@ -24,7 +24,7 @@ function App({ghostVersion, officialThemes}: AppProps) {
                         <div className="admin-x-settings">
                             <Toaster />
                             <NiceModal.Provider>
-                                <div className='fixed left-6 top-4'>
+                                <div className='fixed left-6 top-4 z-20'>
                                     <ExitSettingsButton />
                                 </div>
 
@@ -32,7 +32,7 @@ function App({ghostVersion, officialThemes}: AppProps) {
                                 <div className="mx-auto flex max-w-[1080px] flex-col px-[5vmin] py-[12vmin] md:flex-row md:items-start md:gap-x-10 md:py-[8vmin]">
 
                                     {/* Sidebar */}
-                                    <div className="relative min-w-[260px] grow-0 md:fixed md:top-[8vmin] md:basis-[260px]">
+                                    <div className="relative min-w-[260px] grow-0 md:fixed md:top-[8vmin] md:basis-[260px] z-20">
                                         <div className='h-[84px]'>
                                             <Heading>Settings</Heading>
                                         </div>
@@ -40,7 +40,9 @@ function App({ghostVersion, officialThemes}: AppProps) {
                                             <Sidebar />
                                         </div>
                                     </div>
-                                    <div className="flex-auto pt-[3vmin] md:ml-[300px] md:pt-[85px]">
+
+                                    <div className="relative flex-auto pt-[3vmin] md:ml-[300px] md:pt-[85px]">
+                                        <div className='fixed top-0 left-0 right-0 h-[130px] z-[5] bg-gradient-to-t from-transparent to-white to-60%'></div>
                                         <Settings />
                                     </div>
                                 </div>

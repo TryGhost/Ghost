@@ -6,7 +6,7 @@ export type RoutingHook = {
     scrolledRoute: string;
     yScroll?: number;
     updateScrolled: (newPath: string) => void,
-    updateRoute: (newPath: string) => void
+    updateRoute: (newPath: string, highlight: boolean) => void
 };
 
 const useRouting = (): RoutingHook => {

@@ -55,7 +55,8 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     onCancel
 }) => {
     const {checkVisible} = useSearch();
-    const {yScroll, updateScrolled} = useRouting();
+    const {yScroll, updateScrolled, route} = useRouting();
+    const [highlight, setHighlight] = useState(false);
     const scrollRef = useRef<HTMLDivElement | null>(null);
     const [currentRect, setCurrentRect] = useState<DOMRect>(DOMRect.fromRect());
     const topOffset = -193.5;
@@ -143,8 +144,28 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
         }
     }, [yScroll, currentRect, navid, updateScrolled, topOffset, bottomOffset]);
 
+    useEffect(() => {
+        setHighlight(route === navid);
+    }, [route, navid]);
+
+    useEffect(() => {
+        if (highlight) {
+            setTimeout(() => {
+                setHighlight(false);
+            }, 3000);
+        }
+    }, [highlight])
+
+    const containerClasses = clsx(
+        'relative flex flex-col gap-6 rounded',
+        border && 'border p-5 md:p-7',
+        !checkVisible(keywords) && 'hidden',
+        highlight && 'before:absolute before:inset-[1px] before:z-20 before:shadow-[0_0_0_3px] before:shadow-[rgba(48,207,67,0.45)] before:rounded before:animate-setting-highlight-fade-out before:pointer-events-none',
+        styles
+    );
+
     return (
-        <div ref={scrollRef} className={clsx('relative flex flex-col gap-6 rounded', border && 'border p-5 md:p-7', !checkVisible(keywords) && 'hidden', styles)} data-testid={testId}>
+        <div ref={scrollRef} className={containerClasses} data-testid={testId}>
             {/* {yScroll} / {currentRect.top + topOffset} / {currentRect.bottom + topOffset + bottomOffset} */}
             <div className='absolute top-[-193px]' id={navid && navid}></div>
             {customHeader ? customHeader :
