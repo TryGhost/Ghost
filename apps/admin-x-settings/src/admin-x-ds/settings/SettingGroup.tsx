@@ -58,7 +58,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     const {yScroll, updateScrolled} = useRouting();
     const scrollRef = useRef<HTMLDivElement | null>(null);
     const [currentRect, setCurrentRect] = useState<DOMRect>(DOMRect.fromRect());
-    const topOffset = -60;
+    const topOffset = -193.5;
     const bottomOffset = 36;
 
     const handleEdit = () => {
@@ -135,10 +135,10 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
         if (scrollRef.current) {
             setCurrentRect(scrollRef.current.getBoundingClientRect());
         }
-    }, [checkVisible(keywords)]);
+    }, [checkVisible]);
 
     useEffect(() => {
-        if (yScroll! >= currentRect.top + topOffset && yScroll! < currentRect.bottom + topOffset + bottomOffset) {
+        if (currentRect.top && yScroll! >= currentRect.top + topOffset && yScroll! < currentRect.bottom + topOffset + bottomOffset) {
             updateScrolled(navid!);
         }
     }, [yScroll, currentRect, navid, updateScrolled, topOffset, bottomOffset]);
@@ -146,7 +146,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     return (
         <div ref={scrollRef} className={clsx('relative flex flex-col gap-6 rounded', border && 'border p-5 md:p-7', !checkVisible(keywords) && 'hidden', styles)} data-testid={testId}>
             {/* {yScroll} / {currentRect.top + topOffset} / {currentRect.bottom + topOffset + bottomOffset} */}
-            <div className='absolute top-[-60px]' id={navid && navid}></div>
+            <div className='absolute top-[-193px]' id={navid && navid}></div>
             {customHeader ? customHeader :
                 <SettingGroupHeader description={description} title={title!}>
                     {customButtons ? customButtons :

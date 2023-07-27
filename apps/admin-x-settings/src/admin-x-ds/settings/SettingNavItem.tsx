@@ -17,7 +17,7 @@ const SettingNavItem: React.FC<Props> = ({
 
     const classNames = clsx(
         'block px-0 py-1 text-sm',
-        scrolledRoute === navid && 'font-bold'
+        (scrolledRoute === navid) && 'font-bold'
     );
 
     return (
