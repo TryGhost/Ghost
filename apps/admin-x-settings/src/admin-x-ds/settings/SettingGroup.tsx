@@ -154,7 +154,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
                 setHighlight(false);
             }, 3000);
         }
-    }, [highlight])
+    }, [highlight]);
 
     const containerClasses = clsx(
         'relative flex flex-col gap-6 rounded',
