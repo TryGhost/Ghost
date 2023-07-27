@@ -33,6 +33,11 @@ interface UserDetailProps {
         url?: string;
         email?: string;
     };
+    validators?: {
+        name: (name: string) => boolean,
+        email: (email: string) => boolean,
+        url: (url: string) => boolean
+    }
 }
 
 const CustomHeader: React.FC<CustomHeadingProps> = ({children}) => {
@@ -92,7 +97,7 @@ const RoleSelector: React.FC<UserDetailProps> = ({user, setUserData}) => {
     );
 };
 
-const BasicInputs: React.FC<UserDetailProps> = ({errors, user, setUserData}) => {
+const BasicInputs: React.FC<UserDetailProps> = ({errors, validators, user, setUserData}) => {
     return (
         <SettingGroupContent>
             <TextField
@@ -100,6 +105,9 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, user, setUserData}) => 
                 hint={errors?.name || "Use real name so people can recognize you"}
                 title="Full name"
                 value={user.name}
+                onBlur={(e) => {
+                    validators?.name(e.target.value);
+                }}
                 onChange={(e) => {
                     setUserData?.({...user, name: e.target.value});
                 }}
@@ -109,6 +117,9 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, user, setUserData}) => 
                 hint={errors?.email || ''}
                 title="Email"
                 value={user.email}
+                onBlur={(e) => {
+                    validators?.email(e.target.value);
+                }}
                 onChange={(e) => {
                     setUserData?.({...user, email: e.target.value});
                 }}
@@ -118,19 +129,19 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, user, setUserData}) => 
     );
 };
 
-const Basic: React.FC<UserDetailProps> = ({errors, user, setUserData}) => {
+const Basic: React.FC<UserDetailProps> = ({errors, validators, user, setUserData}) => {
     return (
         <SettingGroup
             border={false}
             customHeader={<CustomHeader>Basic info</CustomHeader>}
             title='Basic'
         >
-            <BasicInputs errors={errors} setUserData={setUserData} user={user} />
+            <BasicInputs errors={errors} setUserData={setUserData} user={user} validators={validators} />
         </SettingGroup>
     );
 };
 
-const DetailsInputs: React.FC<UserDetailProps> = ({errors, user, setUserData}) => {
+const DetailsInputs: React.FC<UserDetailProps> = ({errors, validators, user, setUserData}) => {
     return (
         <SettingGroupContent>
             <TextField
@@ -153,6 +164,9 @@ const DetailsInputs: React.FC<UserDetailProps> = ({errors, user, setUserData}) =
                 hint={errors?.url || ''}
                 title="Website"
                 value={user.website}
+                onBlur={(e) => {
+                    validators?.url(e.target.value);
+                }}
                 onChange={(e) => {
                     setUserData?.({...user, website: e.target.value});
                 }}
@@ -183,14 +197,14 @@ const DetailsInputs: React.FC<UserDetailProps> = ({errors, user, setUserData}) =
     );
 };
 
-const Details: React.FC<UserDetailProps> = ({errors, user, setUserData}) => {
+const Details: React.FC<UserDetailProps> = ({errors, validators, user, setUserData}) => {
     return (
         <SettingGroup
             border={false}
             customHeader={<CustomHeader>Details</CustomHeader>}
             title='Details'
         >
-            <DetailsInputs errors={errors} setUserData={setUserData} user={user} />
+            <DetailsInputs errors={errors} setUserData={setUserData} user={user} validators={validators} />
         </SettingGroup>
     );
 };
@@ -587,6 +601,29 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
 
     const suspendedText = userData.status === 'inactive' ? ' (Suspended)' : '';
 
+    const validators = {
+        name: (name: string) => {
+            setErrors?.((_errors) => {
+                return {..._errors, name: name ? '' : 'Please enter a name'};
+            });
+            return !!name;
+        },
+        email: (email: string) => {
+            const valid = validator.isEmail(email);
+            setErrors?.((_errors) => {
+                return {..._errors, email: valid ? '' : 'Please enter a valid email address'};
+            });
+            return valid;
+        },
+        url: (url: string) => {
+            const valid = !url || validator.isURL(url);
+            setErrors?.((_errors) => {
+                return {..._errors, url: valid ? '' : 'Please enter a valid URL'};
+            });
+            return valid;
+        }
+    };
+
     return (
         <Modal
             okLabel={okLabel}
@@ -596,22 +633,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
             onOk={async () => {
                 setSaveState('saving');
                 let error = false;
-                if (!userData.name) {
-                    setErrors?.((_errors) => {
-                        return {..._errors, name: 'Please enter a name'};
-                    });
-                    error = true;
-                }
-                if (!validator.isEmail(userData.email)) {
-                    setErrors?.((_errors) => {
-                        return {..._errors, email: 'Enter a valid email address'};
-                    });
-                    error = true;
-                }
-                if (!validator.isURL(userData.url)) {
-                    setErrors?.((_errors) => {
-                        return {..._errors, url: 'Enter a valid URL'};
-                    });
+                if (!validators.name(userData.name) || !validators.email(userData.email) || !validators.url(userData.website)) {
                     error = true;
                 }
 
@@ -679,8 +701,8 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                     </div>
                 </div>
                 <div className='mt-10 grid grid-cols-2 gap-x-12 gap-y-20'>
-                    <Basic errors={errors} setUserData={setUserData} user={userData} />
-                    <Details errors={errors} setUserData={setUserData} user={userData} />
+                    <Basic errors={errors} setUserData={setUserData} user={userData} validators={validators} />
+                    <Details errors={errors} setUserData={setUserData} user={userData} validators={validators} />
                     <EmailNotifications setUserData={setUserData} user={userData} />
                     <Password user={userData} />
                 </div>
