@@ -7,7 +7,7 @@ import calculateDiscount from '../../utils/discount';
 import Interpolate from '@doist/react-interpolate';
 import {SYNTAX_I18NEXT} from '@doist/react-interpolate';
 
-export const ProductsSectionStyles = ({site}) => {
+export const ProductsSectionStyles = () => {
     // const products = getSiteProducts({site});
     // const noOfProducts = products.length;
     return `
@@ -824,7 +824,7 @@ function ProductCards({products, selectedInterval, handleChooseSignup, errors}) 
     });
 }
 
-function YearlyDiscount({discount, trialDays}) {
+function YearlyDiscount({discount}) {
     const {site, t} = useContext(AppContext);
     const {portal_plans: portalPlans} = site;
 
@@ -847,7 +847,7 @@ function YearlyDiscount({discount, trialDays}) {
     }
 }
 
-function ProductPriceSwitch({products, selectedInterval, setSelectedInterval}) {
+function ProductPriceSwitch({selectedInterval, setSelectedInterval}) {
     const {site, t} = useContext(AppContext);
     const {portal_plans: portalPlans} = site;
     if (!portalPlans.includes('monthly') || !portalPlans.includes('yearly')) {
@@ -860,7 +860,7 @@ function ProductPriceSwitch({products, selectedInterval, setSelectedInterval}) {
                 <button
                     data-test-button='switch-monthly'
                     className={'gh-portal-btn' + (selectedInterval === 'month' ? ' active' : '')}
-                    onClick={(e) => {
+                    onClick={() => {
                         setSelectedInterval('month');
                     }}
                 >
@@ -869,7 +869,7 @@ function ProductPriceSwitch({products, selectedInterval, setSelectedInterval}) {
                 <button
                     data-test-button='switch-yearly'
                     className={'gh-portal-btn' + (selectedInterval === 'year' ? ' active' : '')}
-                    onClick={(e) => {
+                    onClick={() => {
                         setSelectedInterval('year');
                     }}
                 >
@@ -1044,7 +1044,7 @@ export function ChangeProductSection({onPlanSelect, selectedPlan, products, type
     );
 }
 
-function ProductDescription({product, selectedPrice, activePrice}) {
+function ProductDescription({product}) {
     if (product?.description) {
         return (
             <div className="gh-portal-product-description" data-testid="product-description">

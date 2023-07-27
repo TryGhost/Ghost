@@ -1,7 +1,7 @@
 import AppContext from '../../AppContext';
 import CloseButton from '../common/CloseButton';
 import BackButton from '../common/BackButton';
-import React, {useContext, useState} from 'react';
+import {useContext, useState} from 'react';
 import Switch from '../common/Switch';
 import {getSiteNewsletters, hasMemberGotEmailSuppression} from '../../utils/helpers';
 import ActionButton from '../common/ActionButton';
@@ -11,7 +11,7 @@ function AccountHeader() {
     const {brandColor, lastPage, onAction, t} = useContext(AppContext);
     return (
         <header className='gh-portal-detail-header'>
-            <BackButton brandColor={brandColor} hidden={!lastPage} onClick={(e) => {
+            <BackButton brandColor={brandColor} hidden={!lastPage} onClick={() => {
                 onAction('back');
             }} />
             <h3 className='gh-portal-main-title'>{t('Email preferences')}</h3>
@@ -187,7 +187,7 @@ export default function NewsletterManagement({
                 <div style={{width: '100%'}}>
                     <ActionButton
                         isRunning={false}
-                        onClick={(e) => {
+                        onClick={() => {
                             unsubscribeAll();
                         }}
                         disabled={isDisabled}

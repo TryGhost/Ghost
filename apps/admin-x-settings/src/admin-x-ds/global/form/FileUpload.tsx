@@ -1,4 +1,4 @@
-import React, {ChangeEvent, useState} from 'react';
+import React, {CSSProperties, ChangeEvent, useState} from 'react';
 
 export interface FileUploadProps {
     id: string;
@@ -11,7 +11,7 @@ export interface FileUploadProps {
     children?: string | React.ReactNode;
     className?: string;
     onUpload: (file: File) => void;
-    style?: {}
+    style?: CSSProperties;
     unstyled?: boolean;
 }
 

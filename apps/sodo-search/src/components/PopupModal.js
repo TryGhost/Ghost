@@ -3,9 +3,7 @@ import AppContext from '../AppContext';
 import {ReactComponent as SearchIcon} from '../icons/search.svg';
 import {ReactComponent as ClearIcon} from '../icons/clear.svg';
 import {ReactComponent as CircleAnimated} from '../icons/circle-anim.svg';
-import {useContext, useEffect, useMemo, useRef, useState} from 'react';
-
-const React = require('react');
+import React, {useContext, useEffect, useMemo, useRef, useState} from 'react';
 
 const DEFAULT_MAX_POSTS = 10;
 const STEP_MAX_POSTS = 10;

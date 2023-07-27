@@ -93,10 +93,10 @@ const AddDetailsPopup = (props: Props) => {
             );
         };
 
-        let returnable = [];
+        const returnable = [];
 
         // using URLS over real images for avatars as serving JPG images was not optimal (based on discussion with team)
-        let exampleProfiles = [
+        const exampleProfiles = [
             {avatar: 'https://randomuser.me/api/portraits/men/32.jpg', name: 'James Fletcher', expertise: 'Full-time parent'},
             {avatar: 'https://randomuser.me/api/portraits/women/30.jpg', name: 'Naomi Schiff', expertise: 'Founder @ Acme Inc'},
             {avatar: 'https://randomuser.me/api/portraits/men/4.jpg', name: 'Franz Tost', expertise: 'Neurosurgeon'},
@@ -172,7 +172,7 @@ const AddDetailsPopup = (props: Props) => {
                             type="text"
                             value={expertise}
                             onChange={(e) => {
-                                let expertiseText = e.currentTarget.value;
+                                const expertiseText = e.currentTarget.value;
                                 setExpertiseCharsLeft(maxExpertiseChars - expertiseText.length);
                                 setExpertise(expertiseText);
                             }}

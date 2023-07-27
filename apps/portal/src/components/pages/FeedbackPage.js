@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import {useContext, useEffect, useState} from 'react';
 import AppContext from '../../AppContext';
 import {ReactComponent as ThumbDownIcon} from '../../images/icons/thumbs-down.svg';
 import {ReactComponent as ThumbUpIcon} from '../../images/icons/thumbs-up.svg';
@@ -171,7 +171,7 @@ function ErrorPage({error}) {
     return (
         <div className='gh-portal-content gh-portal-feedback with-footer'>
             <CloseButton />
-            <div class="gh-feedback-icon gh-feedback-icon-error">
+            <div className="gh-feedback-icon gh-feedback-icon-error">
                 <ThumbErrorIcon />
             </div>
             <h1 className="gh-portal-main-title">{t('Sorry, that didn’t work.')}</h1>

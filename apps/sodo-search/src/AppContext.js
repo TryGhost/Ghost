@@ -1,5 +1,5 @@
 // Ref: https://reactjs.org/docs/context.html
-const React = require('react');
+import React from 'react';
 
 const AppContext = React.createContext({
     posts: [],
@@ -9,6 +9,7 @@ const AppContext = React.createContext({
     lastPage: '',
     page: '',
     pageData: {},
+    // eslint-disable-next-line no-unused-vars
     dispatch: (_action, _data) => {},
     searchIndex: null,
     indexComplete: false,

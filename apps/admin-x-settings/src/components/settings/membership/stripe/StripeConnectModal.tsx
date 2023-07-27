@@ -23,7 +23,7 @@ const Start: React.FC<{onNext?: () => void}> = ({onNext}) => {
             <div className='mb-7 mt-6'>
                 Stripe is our exclusive direct payments partner. Ghost collects <strong>no fees</strong> on any payments! If you don’t have a Stripe account yet, you can <a className='underline' href="https://stripe.com" rel="noopener noreferrer" target="_blank">sign up here</a>.
             </div>
-            <StripeButton label={<>I have a Stripe account, let's go &rarr;</>} onClick={onNext} />
+            <StripeButton label={<>I have a Stripe account, let&apos;s go &rarr;</>} onClick={onNext} />
         </div>
     );
 };

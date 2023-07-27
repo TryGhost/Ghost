@@ -34,7 +34,7 @@ const ContinueSubscriptionButton = () => {
         <div className='gh-portal-cancelcontinue-container'>
             <CancelNotice />
             <ActionButton
-                onClick={(e) => {
+                onClick={() => {
                     onAction('continueSubscription', {
                         subscriptionId: subscription.id
                     });

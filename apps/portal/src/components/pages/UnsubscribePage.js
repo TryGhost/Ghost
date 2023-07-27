@@ -1,6 +1,6 @@
 import AppContext from '../../AppContext';
 import ActionButton from '../common/ActionButton';
-import React, {useContext, useEffect, useState} from 'react';
+import {useContext, useEffect, useState} from 'react';
 import {getSiteNewsletters} from '../../utils/helpers';
 import setupGhostApi from '../../utils/api';
 import NewsletterManagement from '../common/NewsletterManagement';
@@ -98,7 +98,7 @@ export default function UnsubscribePage() {
         return (
             <div className='gh-portal-content gh-portal-feedback with-footer'>
                 <CloseButton />
-                <div class="gh-feedback-icon gh-feedback-icon-error">
+                <div className="gh-feedback-icon gh-feedback-icon-error">
                     <WarningIcon />
                 </div>
                 <h1 className="gh-portal-main-title">{t('That didn\'t go to plan')}</h1>

@@ -53,7 +53,7 @@ function openNotification({data}) {
     };
 }
 
-function closeNotification({state}) {
+function closeNotification() {
     return {
         showNotification: false
     };

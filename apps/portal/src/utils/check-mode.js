@@ -12,6 +12,8 @@ export const isOfferPreviewMode = function () {
     return (path === '/portal/preview/offer');
 };
 
+/* eslint-disable no-undef */
+
 export const isDevMode = function ({customSiteUrl = ''} = {}) {
     if (customSiteUrl && process.env.NODE_ENV === 'development') {
         return false;
@@ -22,6 +24,8 @@ export const isDevMode = function ({customSiteUrl = ''} = {}) {
 export const isTestMode = function () {
     return (process.env.NODE_ENV === 'test');
 };
+
+/* eslint-enable no-undef */
 
 const modeFns = {
     preview: isPreviewMode,

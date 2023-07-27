@@ -29,7 +29,7 @@ const TextField: React.FC<TextFieldProps> = ({
     type = 'text',
     inputRef,
     title,
-    titleColor = 'grey',
+    //titleColor = 'grey',
     hideTitle,
     value,
     error,

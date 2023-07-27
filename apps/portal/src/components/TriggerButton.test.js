@@ -1,14 +1,14 @@
-import React from 'react';
 import {render} from '../utils/test-utils';
 import TriggerButton from './TriggerButton';
 
-const setup = (overrides) => {
+const setup = () => {
     const {mockOnActionFn, ...utils} = render(
         <TriggerButton />
     );
 
     const triggerFrame = utils.getByTitle('portal-trigger');
     return {
+        mockOnActionFn,
         triggerFrame,
         ...utils
     };

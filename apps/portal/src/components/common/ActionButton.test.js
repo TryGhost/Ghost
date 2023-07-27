@@ -1,8 +1,7 @@
-import React from 'react';
 import {render, fireEvent} from '@testing-library/react';
 import ActionButton from './ActionButton';
 
-const setup = (overrides) => {
+const setup = () => {
     const mockOnClickFn = jest.fn();
     const props = {
         label: 'Test Action Button', onClick: mockOnClickFn, disabled: false

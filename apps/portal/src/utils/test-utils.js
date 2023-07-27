@@ -1,17 +1,18 @@
 // Common test setup util - Ref: https://testing-library.com/docs/react-testing-library/setup#custom-render
-import React from 'react';
 import {render} from '@testing-library/react';
 import AppContext from '../AppContext';
 import {testSite, member} from './fixtures';
 
 const setupProvider = (context) => {
-    return ({children}) => {
+    const Provider = ({children}) => {
         return (
             <AppContext.Provider value={context}>
                 {children}
             </AppContext.Provider>
         );
     };
+    Provider.displayName = 'AppContextProvider';
+    return Provider;
 };
 
 const customRender = (ui, {options = {}, overrideContext = {}} = {}) => {

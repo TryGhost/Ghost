@@ -25,7 +25,7 @@ export default function EmailReceivingPage() {
                 <CloseButton />
             </header>
 
-            <div class="gh-longform">
+            <div className="gh-longform">
                 <h3>{t(`Help! I'm not receiving emails`)}</h3>
 
                 <p>{t(`If you're not receiving the email newsletter you've subscribed to, here are few things to check.`)}</p>

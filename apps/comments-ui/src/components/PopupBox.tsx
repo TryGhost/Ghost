@@ -3,7 +3,10 @@ import {Pages} from '../pages';
 import {useAppContext} from '../AppContext';
 import {useEffect, useState} from 'react';
 
+// TODO: figure out what this type should be?
+// eslint-disable-next-line @typescript-eslint/ban-types
 type Props = {};
+
 const PopupBox: React.FC<Props> = () => {
     const {popup} = useAppContext();
 

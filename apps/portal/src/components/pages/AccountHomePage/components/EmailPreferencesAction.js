@@ -24,7 +24,7 @@ function EmailPreferencesAction() {
                         : <p>{t('Update your preferences')}</p>
                 }
             </div>
-            <button className='gh-portal-btn gh-portal-btn-list' onClick={(e) => {
+            <button className='gh-portal-btn gh-portal-btn-list' onClick={() => {
                 onAction('switchPage', {
                     page,
                     lastPage: 'accountHome'

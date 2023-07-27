@@ -1,6 +1,6 @@
 import AppContext from '../../../../AppContext';
 import MemberAvatar from '../../../common/MemberGravatar';
-import React, {useContext} from 'react';
+import {useContext} from 'react';
 
 const UserHeader = () => {
     const {member, brandColor, t} = useContext(AppContext);

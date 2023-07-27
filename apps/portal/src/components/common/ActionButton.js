@@ -1,4 +1,3 @@
-import React from 'react';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
 import {isCookiesDisabled} from '../../utils/helpers';
 
@@ -56,7 +55,7 @@ export const ActionButtonStyles = `
     }
 `;
 
-const Styles = ({brandColor, retry, disabled, style = {}, isPrimary}) => {
+const Styles = ({brandColor, disabled, style = {}, isPrimary}) => {
     let backgroundColor = (brandColor || '#3eb0ef');
     let opacity = '1.0';
     let pointerEvents = 'auto';

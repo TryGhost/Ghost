@@ -1,5 +1,5 @@
 import AppContext from '../../AppContext';
-import React, {useContext, useState} from 'react';
+import {useContext, useState} from 'react';
 import Switch from '../common/Switch';
 import {getSiteNewsletters, hasOnlyFreePlan} from '../../utils/helpers';
 import ActionButton from '../common/ActionButton';
@@ -16,7 +16,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
                     <h3>{newsletter.name}</h3>
                     <p>{newsletter.description}</p>
                 </div>
-                <div class="gh-portal-lock-icon-container">
+                <div className="gh-portal-lock-icon-container">
                     <LockIcon className='gh-portal-lock-icon' alt='' title={t('Unlock access to all newsletters by becoming a paid subscriber.')} />
                 </div>
             </section>
@@ -103,7 +103,7 @@ export default function NewsletterSelectionPage({pageData, onBack}) {
                             isRunning={isRunning}
                             retry={retry}
                             disabled={disabled}
-                            onClick={(e) => {
+                            onClick={() => {
                                 let newsletters = subscribedNewsletters.map((d) => {
                                     return {
                                         id: d.id

@@ -123,7 +123,6 @@
     "ember-truth-helpers": "3.1.1",
     "ember-websockets": "10.2.1",
     "eslint-plugin-babel": "5.3.1",
-    "eslint-plugin-react": "7.32.2",
     "faker": "5.5.3",
     "fs-extra": "11.1.1",
     "glob": "8.1.0",

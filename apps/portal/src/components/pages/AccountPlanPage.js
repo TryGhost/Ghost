@@ -50,7 +50,7 @@ function getConfirmationPageTitle({confirmationType, t}) {
     }
 }
 
-const Header = ({onBack, showConfirmation, confirmationType}) => {
+const Header = ({showConfirmation, confirmationType}) => {
     const {member, t} = useContext(AppContext);
     let title = isPaidMember({member}) ? 'Change plan' : 'Choose a plan';
     if (showConfirmation) {
@@ -87,7 +87,7 @@ const CancelSubscriptionButton = ({member, onCancelSubscription, action, brandCo
         <div className="gh-portal-expire-container">
             <ActionButton
                 dataTestId={'cancel-subscription'}
-                onClick={(e) => {
+                onClick={() => {
                     onCancelSubscription({
                         subscriptionId: subscription.id,
                         cancelAtPeriodEnd: true
@@ -222,7 +222,7 @@ const ChangePlanSection = ({plans, selectedPlan, onPlanSelect, onCancelSubscript
     );
 };
 
-function PlansOrProductSection({showLabel, plans, selectedPlan, onPlanSelect, onPlanCheckout, changePlan = false}) {
+function PlansOrProductSection({selectedPlan, onPlanSelect, onPlanCheckout, changePlan = false}) {
     const {site, member} = useContext(AppContext);
     const products = getUpgradeProducts({site, member});
     const isComplimentary = isComplimentaryMember({member});
@@ -354,7 +354,7 @@ export default class AccountPlanPage extends React.Component {
         this.context.onAction('signout');
     }
 
-    onBack(e) {
+    onBack() {
         if (this.state.showConfirmation) {
             this.cancelConfirmPage();
         } else {
@@ -419,7 +419,7 @@ export default class AccountPlanPage extends React.Component {
         }
     };
 
-    onCancelSubscription({subscriptionId, cancelAtPeriodEnd}) {
+    onCancelSubscription({subscriptionId}) {
         const {member} = this.context;
         const subscription = getSubscriptionFromId({subscriptionId, member});
         const subscriptionPlan = getPriceFromSubscription({subscription});
