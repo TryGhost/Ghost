@@ -135,7 +135,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
         if (scrollRef.current) {
             setCurrentRect(scrollRef.current.getBoundingClientRect());
         }
-    }, []);
+    }, [checkVisible(keywords)]);
 
     useEffect(() => {
         if (yScroll! >= currentRect.top + topOffset && yScroll! < currentRect.bottom + topOffset + bottomOffset) {
