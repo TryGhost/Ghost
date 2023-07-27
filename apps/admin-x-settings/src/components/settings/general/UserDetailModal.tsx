@@ -640,7 +640,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                 if (error) {
                     showToast({
                         type: 'pageError',
-                        message: "Can't save user because one or more fields have errors. Please doublecheck if you filled everything."
+                        message: "Can't save user! One or more fields have errors, please doublecheck you filled all mandatory fields"
                     });
                     setSaveState('');
                     return;

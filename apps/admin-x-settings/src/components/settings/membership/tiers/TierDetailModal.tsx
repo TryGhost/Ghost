@@ -122,7 +122,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
             if (Object.values(validators).filter(validator => validator()).length) {
                 showToast({
                     type: 'pageError',
-                    message: 'One or more fields have errors'
+                    message: "Can't save tier! One or more fields have errors, please doublecheck you filled all mandatory fields"
                 });
                 return;
             }
