@@ -176,7 +176,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
 
     return (
         <div ref={scrollRef} className={containerClasses} data-testid={testId}>
-            {yScroll} / {currentRect.top + topOffset} / {currentRect.bottom + topOffset + bottomOffset}
+            {/* {yScroll} / {currentRect.top + topOffset} / {currentRect.bottom + topOffset + bottomOffset} */}
             <div className='absolute top-[-193px]' id={navid && navid}></div>
             {customHeader ? customHeader :
                 <SettingGroupHeader description={description} title={title!}>
