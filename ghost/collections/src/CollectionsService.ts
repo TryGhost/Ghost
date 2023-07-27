@@ -48,7 +48,7 @@ type CollectionPostListItemDTO = {
     created_at: Date;
     updated_at: Date;
     published_at: Date,
-    tags?: Array<{slug: string}>;
+    tags: Array<{slug: string}>;
 }
 
 type ManualCollection = {
@@ -95,8 +95,7 @@ type QueryOptions = {
 }
 
 interface PostsRepository {
-    getAll(options: QueryOptions): Promise<any[]>;
-    getBulk(ids: string[]): Promise<any[]>;
+    getAll(options: QueryOptions): Promise<CollectionPost[]>;
 }
 
 export class CollectionsService {

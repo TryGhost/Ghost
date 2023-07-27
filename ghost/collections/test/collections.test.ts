@@ -8,9 +8,10 @@ import {
     PostEditedEvent
 } from '../src/index';
 import {PostsRepositoryInMemory} from './fixtures/PostsRepositoryInMemory';
-import {posts} from './fixtures/posts';
+import {posts as postFixtures} from './fixtures/posts';
+import {CollectionPost} from '../src/CollectionPost';
 
-const initPostsRepository = (): PostsRepositoryInMemory => {
+const initPostsRepository = (posts: any): PostsRepositoryInMemory => {
     const postsRepository = new PostsRepositoryInMemory();
 
     for (const post of posts) {
@@ -20,9 +21,10 @@ const initPostsRepository = (): PostsRepositoryInMemory => {
             slug: post.slug,
             featured: post.featured,
             published_at: post.published_at,
+            tags: post.tags,
             deleted: false
         };
-        postsRepository.save(collectionPost);
+        postsRepository.save(collectionPost as CollectionPost & {deleted: false});
     }
 
     return postsRepository;
@@ -34,7 +36,7 @@ describe('CollectionsService', function () {
 
     beforeEach(async function () {
         const collectionsRepository = new CollectionsRepositoryInMemory();
-        postsRepository = initPostsRepository();
+        postsRepository = initPostsRepository(postFixtures);
 
         collectionsService = new CollectionsService({
             collectionsRepository,
@@ -125,10 +127,10 @@ describe('CollectionsService', function () {
                 type: 'manual'
             });
 
-            await collectionsService.addPostToCollection(collection.id, posts[0]);
-            await collectionsService.addPostToCollection(collection2.id, posts[0]);
+            await collectionsService.addPostToCollection(collection.id, postFixtures[0]);
+            await collectionsService.addPostToCollection(collection2.id, postFixtures[0]);
 
-            const collections = await collectionsService.getCollectionsForPost(posts[0].id);
+            const collections = await collectionsService.getCollectionsForPost(postFixtures[0].id);
 
             assert.equal(collections.length, 2, 'There should be one collection');
             assert.equal(collections[0].id, collection2.id, 'Collections should be sorted by slug');
@@ -144,14 +146,14 @@ describe('CollectionsService', function () {
                 type: 'manual'
             });
 
-            const editedCollection = await collectionsService.addPostToCollection(collection.id, posts[0]);
+            const editedCollection = await collectionsService.addPostToCollection(collection.id, postFixtures[0]);
 
             assert.equal(editedCollection?.posts.length, 1, 'Collection should have one post');
-            assert.equal(editedCollection?.posts[0].id, posts[0].id, 'Collection should have the correct post');
+            assert.equal(editedCollection?.posts[0].id, postFixtures[0].id, 'Collection should have the correct post');
         });
 
         it('Does not error when trying to add a post to a collection that does not exist', async function () {
-            const editedCollection = await collectionsService.addPostToCollection('fake id', posts[0]);
+            const editedCollection = await collectionsService.addPostToCollection('fake id', postFixtures[0]);
             assert(editedCollection === null);
         });
     });
@@ -197,12 +199,12 @@ describe('CollectionsService', function () {
             const editedCollection = await collectionsService.edit({
                 id: collection.id,
                 posts: [{
-                    id: posts[0].id
+                    id: postFixtures[0].id
                 }]
             });
 
             assert.equal(editedCollection?.posts.length, 1, 'Collection should have one post');
-            assert.equal(editedCollection?.posts[0].id, posts[0].id, 'Collection should have the correct post');
+            assert.equal(editedCollection?.posts[0].id, postFixtures[0].id, 'Collection should have the correct post');
             assert.equal(editedCollection?.posts[0].sort_order, 0, 'Collection should have the correct post sort order');
         });
 
@@ -216,21 +218,21 @@ describe('CollectionsService', function () {
             let editedCollection = await collectionsService.edit({
                 id: collection.id,
                 posts: [{
-                    id: posts[0].id
+                    id: postFixtures[0].id
                 }, {
-                    id: posts[1].id
+                    id: postFixtures[1].id
                 }]
             });
 
             assert.equal(editedCollection?.posts.length, 2, 'Collection should have two posts');
 
-            editedCollection = await collectionsService.removePostFromCollection(collection.id, posts[0].id);
+            editedCollection = await collectionsService.removePostFromCollection(collection.id, postFixtures[0].id);
 
             assert.equal(editedCollection?.posts.length, 1, 'Collection should have one posts');
         });
 
         it('Returns null when removing post from non existing collection', async function () {
-            const collection = await collectionsService.removePostFromCollection('i-do-not-exist', posts[0].id);
+            const collection = await collectionsService.removePostFromCollection('i-do-not-exist', postFixtures[0].id);
 
             assert.equal(collection, null, 'Collection should be null');
         });
@@ -266,11 +268,11 @@ describe('CollectionsService', function () {
 
             let updatedCollection = await collectionsService.edit({
                 id: collection.id,
-                filter: 'slug:post-2'
+                filter: 'id:post-3-featured'
             });
 
             assert.equal(updatedCollection?.posts.length, 1, 'Collection should have one post');
-            assert.equal(updatedCollection?.posts[0].id, 'post-2', 'Collection should have the correct post');
+            assert.equal(updatedCollection?.posts[0].id, 'post-3-featured', 'Collection should have the correct post');
         });
 
         describe('updateCollections', function () {
@@ -299,8 +301,8 @@ describe('CollectionsService', function () {
                     type: 'manual'
                 });
 
-                await collectionsService.addPostToCollection(manualCollection.id, posts[0]);
-                await collectionsService.addPostToCollection(manualCollection.id, posts[1]);
+                await collectionsService.addPostToCollection(manualCollection.id, postFixtures[0]);
+                await collectionsService.addPostToCollection(manualCollection.id, postFixtures[1]);
             });
 
             afterEach(async function () {
@@ -316,7 +318,7 @@ describe('CollectionsService', function () {
 
                 collectionsService.subscribeToEvents();
                 const postDeletedEvent = PostDeletedEvent.create({
-                    id: posts[0].id
+                    id: postFixtures[0].id
                 });
 
                 DomainEvents.dispatch(postDeletedEvent);
@@ -348,12 +350,11 @@ describe('CollectionsService', function () {
 
             it('Moves post form featured to non featured collection when the featured attribute is changed', async function () {
                 collectionsService.subscribeToEvents();
-                const newFeaturedPost = {
+                const newFeaturedPost: CollectionPost & {deleted: false} = {
                     id: 'post-featured',
-                    title: 'Post Featured',
-                    slug: 'post-featured',
                     featured: false,
                     published_at: new Date('2023-03-16T07:19:07.447Z'),
+                    tags: [],
                     deleted: false
                 };
                 await postsRepository.save(newFeaturedPost);
