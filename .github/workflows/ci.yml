@@ -126,9 +126,13 @@ jobs:
         with:
           ref: ${{ env.HEAD_COMMIT }}
 
-      - name: Compute dependency cache key
-        id: compute_lockfile_hash
-        run: echo "hash=${{ hashFiles('yarn.lock') }}" >> "$GITHUB_OUTPUT"
+      - name: Compute dependency cache key (existing code)
+        if: ${{ needs.job_get_metadata.outputs.changed_new_package == 'false' }}
+        run: echo "hash=${{ hashFiles('yarn.lock') }}" >> "$GITHUB_ENV"
+
+      - name: Compute dependency cache key (new package)
+        if: ${{ needs.job_get_metadata.outputs.changed_new_package == 'true' }}
+        run: echo "hash=${{ hashFiles('yarn.lock') }}-${{ env.HEAD_COMMIT }}" >> "$GITHUB_ENV"
 
       - name: Nx cache
         uses: actions/cache@v3
@@ -143,7 +147,7 @@ jobs:
         id: cache_dependencies
         with:
           path: ${{ env.CACHED_DEPENDENCY_PATHS }}
-          key: ${{ steps.compute_lockfile_hash.outputs.hash }}
+          key: ${{ env.hash }}
 
       - name: Check build cache
         uses: actions/cache@v3
@@ -169,7 +173,7 @@ jobs:
         if: steps.cache_built_packages.outputs.cache-hit != 'true' || needs.job_get_metadata.outputs.changed_new_package == 'true'
         run: yarn nx run-many -t build:ts
     outputs:
-      dependency_cache_key: ${{ steps.compute_lockfile_hash.outputs.hash }}
+      dependency_cache_key: ${{ env.hash }}
 
   job_lint:
     runs-on: ubuntu-latest
