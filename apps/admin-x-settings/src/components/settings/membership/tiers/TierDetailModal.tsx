@@ -18,6 +18,7 @@ import {Tier} from '../../../../types/api';
 import {currencies, currencyFromDecimal, currencyGroups, currencyToDecimal, getSymbol} from '../../../../utils/currency';
 import {getSettingValues} from '../../../../utils/helpers';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
+import { toast } from 'react-hot-toast';
 import {useTiers} from '../../../providers/ServiceProvider';
 
 interface TierDetailModalProps {
@@ -121,7 +122,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
             if (Object.values(validators).filter(validator => validator()).length) {
                 showToast({
                     type: 'pageError',
-                    message: 'One or more fields have errors'
+                    message: "Can't save tier! One or more fields have errors, please doublecheck you filled all mandatory fields"
                 });
                 return;
             }
@@ -129,6 +130,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
             handleSave();
 
             if (saveState !== 'unsaved') {
+                toast.dismiss();
                 modal.remove();
             }
         }}

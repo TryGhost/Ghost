@@ -19,6 +19,7 @@ import {FileService, ServicesContext} from '../../providers/ServiceProvider';
 import {User} from '../../../types/api';
 import {isAdminUser, isOwnerUser} from '../../../utils/helpers';
 import {showToast} from '../../../admin-x-ds/global/Toast';
+import { toast } from 'react-hot-toast';
 
 interface CustomHeadingProps {
     children?: React.ReactNode;
@@ -28,9 +29,15 @@ interface UserDetailProps {
     user: User;
     setUserData?: (user: User) => void;
     errors?: {
+        name?: string;
         url?: string;
         email?: string;
     };
+    validators?: {
+        name: (name: string) => boolean,
+        email: (email: string) => boolean,
+        url: (url: string) => boolean
+    }
 }
 
 const CustomHeader: React.FC<CustomHeadingProps> = ({children}) => {
@@ -89,13 +96,18 @@ const RoleSelector: React.FC<UserDetailProps> = ({user, setUserData}) => {
         />
     );
 };
-const BasicInputs: React.FC<UserDetailProps> = ({errors, user, setUserData}) => {
+
+const BasicInputs: React.FC<UserDetailProps> = ({errors, validators, user, setUserData}) => {
     return (
         <SettingGroupContent>
             <TextField
-                hint="Use real name so people can recognize you"
+                error={!!errors?.name}
+                hint={errors?.name || "Use real name so people can recognize you"}
                 title="Full name"
                 value={user.name}
+                onBlur={(e) => {
+                    validators?.name(e.target.value);
+                }}
                 onChange={(e) => {
                     setUserData?.({...user, name: e.target.value});
                 }}
@@ -105,6 +117,9 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, user, setUserData}) => 
                 hint={errors?.email || ''}
                 title="Email"
                 value={user.email}
+                onBlur={(e) => {
+                    validators?.email(e.target.value);
+                }}
                 onChange={(e) => {
                     setUserData?.({...user, email: e.target.value});
                 }}
@@ -114,19 +129,19 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, user, setUserData}) => 
     );
 };
 
-const Basic: React.FC<UserDetailProps> = ({errors, user, setUserData}) => {
+const Basic: React.FC<UserDetailProps> = ({errors, validators, user, setUserData}) => {
     return (
         <SettingGroup
             border={false}
             customHeader={<CustomHeader>Basic info</CustomHeader>}
             title='Basic'
         >
-            <BasicInputs errors={errors} setUserData={setUserData} user={user} />
+            <BasicInputs errors={errors} setUserData={setUserData} user={user} validators={validators} />
         </SettingGroup>
     );
 };
 
-const DetailsInputs: React.FC<UserDetailProps> = ({errors, user, setUserData}) => {
+const DetailsInputs: React.FC<UserDetailProps> = ({errors, validators, user, setUserData}) => {
     return (
         <SettingGroupContent>
             <TextField
@@ -149,6 +164,9 @@ const DetailsInputs: React.FC<UserDetailProps> = ({errors, user, setUserData}) =
                 hint={errors?.url || ''}
                 title="Website"
                 value={user.website}
+                onBlur={(e) => {
+                    validators?.url(e.target.value);
+                }}
                 onChange={(e) => {
                     setUserData?.({...user, website: e.target.value});
                 }}
@@ -179,14 +197,14 @@ const DetailsInputs: React.FC<UserDetailProps> = ({errors, user, setUserData}) =
     );
 };
 
-const Details: React.FC<UserDetailProps> = ({errors, user, setUserData}) => {
+const Details: React.FC<UserDetailProps> = ({errors, validators, user, setUserData}) => {
     return (
         <SettingGroup
             border={false}
             customHeader={<CustomHeader>Details</CustomHeader>}
             title='Details'
         >
-            <DetailsInputs errors={errors} setUserData={setUserData} user={user} />
+            <DetailsInputs errors={errors} setUserData={setUserData} user={user} validators={validators} />
         </SettingGroup>
     );
 };
@@ -406,6 +424,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
     const [userData, setUserData] = useState(user);
     const [saveState, setSaveState] = useState('');
     const [errors, setErrors] = useState<{
+        name?: string;
         email?: string;
         url?: string;
     }>({});
@@ -569,6 +588,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
     ]);
 
     let okLabel = saveState === 'saved' ? 'Saved' : 'Save & close';
+
     if (saveState === 'saving') {
         okLabel = 'Saving...';
     } else if (saveState === 'saved') {
@@ -582,6 +602,29 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
 
     const suspendedText = userData.status === 'inactive' ? ' (Suspended)' : '';
 
+    const validators = {
+        name: (name: string) => {
+            setErrors?.((_errors) => {
+                return {..._errors, name: name ? '' : 'Please enter a name'};
+            });
+            return !!name;
+        },
+        email: (email: string) => {
+            const valid = validator.isEmail(email);
+            setErrors?.((_errors) => {
+                return {..._errors, email: valid ? '' : 'Please enter a valid email address'};
+            });
+            return valid;
+        },
+        url: (url: string) => {
+            const valid = !url || validator.isURL(url);
+            setErrors?.((_errors) => {
+                return {..._errors, url: valid ? '' : 'Please enter a valid URL'};
+            });
+            return valid;
+        }
+    };
+
     return (
         <Modal
             okLabel={okLabel}
@@ -590,20 +633,21 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
             testId='user-detail-modal'
             onOk={async () => {
                 setSaveState('saving');
-                if (!validator.isEmail(userData.email)) {
-                    setErrors?.((_errors) => {
-                        return {..._errors, email: 'Please enter a valid email address'};
+                let error = false;
+                if (!validators.name(userData.name) || !validators.email(userData.email) || !validators.url(userData.website)) {
+                    error = true;
+                }
+
+                if (error) {
+                    showToast({
+                        type: 'pageError',
+                        message: "Can't save user! One or more fields have errors, please doublecheck you filled all mandatory fields"
                     });
                     setSaveState('');
                     return;
                 }
-                if (!validator.isURL(userData.url)) {
-                    setErrors?.((_errors) => {
-                        return {..._errors, url: 'Please enter a valid URL'};
-                    });
-                    setSaveState('');
-                    return;
-                }
+
+                toast.dismiss();
 
                 await updateUser?.(userData);
                 setSaveState('saved');
@@ -658,8 +702,8 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                     </div>
                 </div>
                 <div className='mt-10 grid grid-cols-2 gap-x-12 gap-y-20'>
-                    <Basic errors={errors} setUserData={setUserData} user={userData} />
-                    <Details errors={errors} setUserData={setUserData} user={userData} />
+                    <Basic errors={errors} setUserData={setUserData} user={userData} validators={validators} />
+                    <Details errors={errors} setUserData={setUserData} user={userData} validators={validators} />
                     <EmailNotifications setUserData={setUserData} user={userData} />
                     <Password user={userData} />
                 </div>
