@@ -588,6 +588,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
     ]);
 
     let okLabel = saveState === 'saved' ? 'Saved' : 'Save & close';
+
     if (saveState === 'saving') {
         okLabel = 'Saving...';
     } else if (saveState === 'saved') {

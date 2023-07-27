@@ -32,7 +32,7 @@ test.describe('User profile', async () => {
         await modal.getByLabel('Email').fill('newadmin@test.com');
         await modal.getByLabel('Slug').fill('newadmin');
         await modal.getByLabel('Location').fill('some location');
-        await modal.getByLabel('Website').fill('some site');
+        await modal.getByLabel('Website').fill('https://example.com');
         await modal.getByLabel('Facebook profile').fill('some fb');
         await modal.getByLabel('Twitter profile').fill('some tw');
         await modal.getByLabel('Bio').fill('some bio');
@@ -53,7 +53,7 @@ test.describe('User profile', async () => {
                 name: 'New Admin',
                 slug: 'newadmin',
                 location: 'some location',
-                website: 'some site',
+                website: 'https://example.com',
                 facebook: 'some fb',
                 twitter: 'some tw',
                 bio: 'some bio',
