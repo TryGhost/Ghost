@@ -108,6 +108,12 @@
             "maxWait": 100,
             "lifetime": 1000,
             "freeRetries": 100
+        },
+        "email_preview_block": {
+            "minWait": 360000,
+            "maxWait": 360000,
+            "lifetime": 3600,
+            "freeRetries": 10
         }
     },
     "caching": {
