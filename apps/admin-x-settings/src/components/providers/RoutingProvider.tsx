@@ -11,12 +11,18 @@ import {SettingsContext} from './SettingsProvider';
 
 type RoutingContextProps = {
     route: string;
+    scrolledRoute: string;
+    yScroll: number;
     updateRoute: (newPath: string) => void;
+    updateScrolled: (newPath: string) => void;
 };
 
 export const RouteContext = createContext<RoutingContextProps>({
     route: '',
-    updateRoute: () => {}
+    scrolledRoute: '',
+    yScroll: 0,
+    updateRoute: () => {},
+    updateScrolled: () => {}
 });
 
 function getHashPath(urlPath: string | undefined) {
@@ -33,7 +39,7 @@ function getHashPath(urlPath: string | undefined) {
     return null;
 }
 
-function handleNavigation() {
+const handleNavigation = (scroll: boolean = true) => {
     // Get the hash from the URL
     let hash = window.location.hash;
 
@@ -59,14 +65,18 @@ function handleNavigation() {
         } else if (pathName === 'stripe-connect') {
             NiceModal.show(StripeConnectModal);
         }
-        const element = document.getElementById(pathName);
-        if (element) {
-            element.scrollIntoView({behavior: 'smooth'});
+
+        if (scroll) {
+            const element = document.getElementById(pathName);
+            if (element) {
+                element.scrollIntoView({behavior: 'smooth'});
+            }
         }
+
         return pathName;
     }
     return '';
-}
+};
 
 type RouteProviderProps = {
     children: React.ReactNode;
@@ -74,8 +84,29 @@ type RouteProviderProps = {
 
 const RoutingProvider: React.FC<RouteProviderProps> = ({children}) => {
     const [route, setRoute] = useState<string>('');
+    const [yScroll, setYScroll] = useState(0);
+    const [scrolledRoute, setScrolledRoute] = useState<string>('');
 
     const {settingsLoaded} = useContext(SettingsContext) || {};
+
+    const handleScroll = () => {
+        // Do something in response to the scroll event
+        const element = document.getElementsByClassName('gh-main');
+        const scrollPosition = element[0].scrollTop;
+        // console.log(`Scrolling at: ${scrollPosition}`);
+        setYScroll(scrollPosition);
+    };
+
+    useEffect(() => {
+        // Add event listener for the scroll event
+        const element = document.getElementsByClassName('gh-main');
+        element[0].addEventListener('scroll', handleScroll);
+
+        // Clean up the event listener when the component unmounts
+        return () => {
+            element[0].removeEventListener('scroll', handleScroll);
+        };
+    }, []); // Empty dependency array to run the effect only once
 
     const updateRoute = useCallback((newPath: string) => {
         if (newPath) {
@@ -83,6 +114,10 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({children}) => {
         } else {
             window.location.hash = `/settings-x`;
         }
+    }, []);
+
+    const updateScrolled = useCallback((newPath: string) => {
+        setScrolledRoute(newPath);
     }, []);
 
     useEffect(() => {
@@ -104,8 +139,11 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({children}) => {
 
     return (
         <RouteContext.Provider value={{
+            route,
+            scrolledRoute,
+            yScroll,
             updateRoute,
-            route
+            updateScrolled
         }}>
             {children}
         </RouteContext.Provider>

@@ -1,7 +1,8 @@
 import ButtonGroup from '../global/ButtonGroup';
-import React from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import SettingGroupHeader from './SettingGroupHeader';
 import clsx from 'clsx';
+import useRouting from '../../hooks/useRouting';
 import {ButtonProps} from '../global/Button';
 import {SaveState} from '../../hooks/useForm';
 import {useSearch} from '../../components/providers/ServiceProvider';
@@ -54,6 +55,11 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     onCancel
 }) => {
     const {checkVisible} = useSearch();
+    const {yScroll, updateScrolled} = useRouting();
+    const scrollRef = useRef<HTMLDivElement | null>(null);
+    const [currentRect, setCurrentRect] = useState<DOMRect>(DOMRect.fromRect());
+    const topOffset = -60;
+    const bottomOffset = 36;
 
     const handleEdit = () => {
         onEditingChange?.(true);
@@ -125,8 +131,21 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
         );
     }
 
+    useEffect(() => {
+        if (scrollRef.current) {
+            setCurrentRect(scrollRef.current.getBoundingClientRect());
+        }
+    }, []);
+
+    useEffect(() => {
+        if (yScroll! >= currentRect.top + topOffset && yScroll! < currentRect.bottom + topOffset + bottomOffset) {
+            updateScrolled(navid!);
+        }
+    }, [yScroll, currentRect, navid, updateScrolled, topOffset, bottomOffset]);
+
     return (
-        <div className={clsx('relative flex flex-col gap-6 rounded', border && 'border p-5 md:p-7', !checkVisible(keywords) && 'hidden', styles)} data-testid={testId}>
+        <div ref={scrollRef} className={clsx('relative flex flex-col gap-6 rounded', border && 'border p-5 md:p-7', !checkVisible(keywords) && 'hidden', styles)} data-testid={testId}>
+            {/* {yScroll} / {currentRect.top + topOffset} / {currentRect.bottom + topOffset + bottomOffset} */}
             <div className='absolute top-[-60px]' id={navid && navid}></div>
             {customHeader ? customHeader :
                 <SettingGroupHeader description={description} title={title!}>
