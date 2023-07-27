@@ -39,6 +39,7 @@ interface Labs {
 }
 
 interface Config {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     get(key: string): any;
 }
 

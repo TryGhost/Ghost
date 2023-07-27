@@ -6,6 +6,7 @@ export class CollectionsRepositoryInMemory extends InMemoryRepository<string, Co
         return entity.toJSON();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     createTransaction(cb: (transaction: any) => Promise<any>): Promise<any> {
         return cb(null);
     }
