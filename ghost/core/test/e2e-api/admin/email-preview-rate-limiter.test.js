@@ -1,3 +1,5 @@
+// Decided to have this test separately from the other email preview tests since the rate limiter would interfere with the other tests
+
 const {agentProvider, fixtureManager, mockManager, configUtils} = require('../../utils/e2e-framework');
 const sinon = require('sinon');
 const DomainEvents = require('@tryghost/domain-events');
