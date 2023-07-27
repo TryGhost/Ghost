@@ -160,7 +160,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
         'relative flex flex-col gap-6 rounded',
         border && 'border p-5 md:p-7',
         !checkVisible(keywords) && 'hidden',
-        highlight && 'before:absolute before:inset-[1px] before:z-20 before:shadow-[0_0_0_3px] before:shadow-[rgba(48,207,67,0.45)] before:rounded before:animate-setting-highlight-fade-out before:pointer-events-none',
+        highlight && 'before:absolute before:inset-[1px] before:z-20 before:shadow-[0_0_0_3px_rgba(48,207,67,0.45)] before:rounded before:animate-setting-highlight-fade-out before:pointer-events-none',
         styles
     );
 

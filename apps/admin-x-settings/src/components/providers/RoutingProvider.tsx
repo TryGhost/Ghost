@@ -118,8 +118,16 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({children}) => {
     useEffect(() => {
         // Add event listener for the scroll event
         const element = document.getElementsByClassName('gh-main');
-        element[0].addEventListener('scroll', handleScroll);
+        if (settingsLoaded) {
+            element[0].addEventListener('scroll', handleScroll);
+        }
 
+        return () => {
+            element[0].removeEventListener('scroll', handleScroll);
+        };
+    }, [settingsLoaded]);
+
+    useEffect(() => {
         const handleHashChange = () => {
             const matchedRoute = handleNavigation();
             setRoute(matchedRoute);
@@ -132,7 +140,6 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({children}) => {
         window.addEventListener('hashchange', handleHashChange);
 
         return () => {
-            element[0].removeEventListener('scroll', handleScroll);
             window.removeEventListener('hashchange', handleHashChange);
         };
     }, [settingsLoaded]);
