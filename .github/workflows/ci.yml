@@ -126,13 +126,20 @@ jobs:
         with:
           ref: ${{ env.HEAD_COMMIT }}
 
-      - name: Compute dependency cache key (existing code)
-        if: ${{ needs.job_get_metadata.outputs.changed_new_package == 'false' }}
-        run: echo "hash=${{ hashFiles('yarn.lock') }}" >> "$GITHUB_ENV"
+      - name: Compute lockfile hash
+        run: echo "hash=lockfile-${{ hashFiles('yarn.lock') }}" >> "$GITHUB_ENV"
 
-      - name: Compute dependency cache key (new package)
-        if: ${{ needs.job_get_metadata.outputs.changed_new_package == 'true' }}
-        run: echo "hash=${{ hashFiles('yarn.lock') }}-${{ env.HEAD_COMMIT }}" >> "$GITHUB_ENV"
+      - name: Compute dependency cache key
+        run: echo "cachekey=dep-cache-${{ hashFiles('yarn.lock') }}-${{ env.HEAD_COMMIT }}" >> "$GITHUB_ENV"
+
+      - name: Compute dependency cache restore key
+        run: |
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "DEPENDENCY_CACHE_RESTORE_KEYS<<$EOF" >> "$GITHUB_ENV"
+          echo "dep-cache-${{ env.hash }}-${{ github.sha }}" >> "$GITHUB_ENV"
+          echo "dep-cache-${{ env.hash }}" >> "$GITHUB_ENV"
+          echo "dep-cache" >> "$GITHUB_ENV"
+          echo "$EOF" >> "$GITHUB_ENV"
 
       - name: Nx cache
         uses: actions/cache@v3
@@ -147,7 +154,8 @@ jobs:
         id: cache_dependencies
         with:
           path: ${{ env.CACHED_DEPENDENCY_PATHS }}
-          key: ${{ env.hash }}
+          key: ${{ env.cachekey }}
+          restore-keys: ${{needs.job_get_metadata.outputs.is_main == 'false' && env.DEPENDENCY_CACHE_RESTORE_KEYS || 'dep-never-restore'}}
 
       - name: Check build cache
         uses: actions/cache@v3
@@ -158,7 +166,6 @@ jobs:
 
       - name: Set up Node
         uses: actions/setup-node@v3
-        if: steps.cache_dependencies.outputs.cache-hit != 'true' || needs.job_get_metadata.outputs.changed_new_package == 'true'
         env:
           FORCE_COLOR: 0
         with:
@@ -166,14 +173,13 @@ jobs:
           cache: yarn
 
       - name: Install dependencies
-        if: steps.cache_dependencies.outputs.cache-hit != 'true' || needs.job_get_metadata.outputs.changed_new_package == 'true'
         run: yarn install --prefer-offline --frozen-lockfile
 
       - name: Build packages
-        if: steps.cache_built_packages.outputs.cache-hit != 'true' || needs.job_get_metadata.outputs.changed_new_package == 'true'
+        if: steps.cache_built_packages.outputs.cache-hit != 'true'
         run: yarn nx run-many -t build:ts
     outputs:
-      dependency_cache_key: ${{ env.hash }}
+      dependency_cache_key: ${{ env.cachekey }}
 
   job_lint:
     runs-on: ubuntu-latest
