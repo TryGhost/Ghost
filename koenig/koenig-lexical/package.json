@@ -99,7 +99,7 @@
     "@testing-library/react": "14.0.0",
     "@types/react": "18.2.17",
     "@types/react-dom": "18.2.7",
-    "@vitejs/plugin-react": "4.0.3",
+    "@vitejs/plugin-react": "4.0.4",
     "@vitest/coverage-c8": "0.33.0",
     "@vitest/ui": "0.33.0",
     "autoprefixer": "10.4.14",
