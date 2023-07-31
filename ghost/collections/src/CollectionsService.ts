@@ -23,8 +23,7 @@ const messages = {
 };
 
 interface SlugService {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    generate(desired: string, options: {transaction: any}): Promise<string>;
+    generate(desired: string, options: {transaction: Knex.Transaction}): Promise<string>;
 }
 
 type CollectionsServiceDeps = {
@@ -95,12 +94,12 @@ type QueryOptions = {
     include?: string;
     page?: number;
     limit?: number;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    transaction?: any;
+    transaction?: Knex.Transaction;
 }
 
 interface PostsRepository {
     getAll(options: QueryOptions): Promise<CollectionPost[]>;
+    getBulk(ids: string[], transaction?: Knex.Transaction): Promise<CollectionPost[]>;
 }
 
 export class CollectionsService {
