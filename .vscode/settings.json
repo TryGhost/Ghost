@@ -22,20 +22,5 @@
   },
   "tailwindCSS.experimental.classRegex": [
     ["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
-  ],
-  "workbench.colorCustomizations": {
-    "editorIndentGuide.background": "#00000000",
-    "[Material Theme Palenight High Contrast]": {
-      "tab.activeBorder": "#00000000",
-      "tab.inactiveBackground": "#1b1e2b",
-      "activityBar.activeBorder": "#a6accd",
-      "editorGroupHeader.tabsBackground": "#1b1e2b",
-      "tab.border": "#00000000",
-      "sideBarSectionHeader.border": "#00000000",
-      "terminal.border": "#a6accd"
-    },
-    "activityBar.background": "#0C3429",
-    "titleBar.activeBackground": "#114939",
-    "titleBar.activeForeground": "#F4FDFA"
-  }
+  ]
 }
