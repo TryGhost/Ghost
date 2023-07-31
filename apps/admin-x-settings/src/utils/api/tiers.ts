@@ -20,12 +20,13 @@ export const useAddTier = createMutation<TiersResponseType, Partial<Tier>>({
     method: 'POST',
     path: () => '/tiers/',
     body: tier => ({tiers: [tier]}),
+    // We may have queries for paid/archived/etc, so we can't assume how to update the global store and need to reload queries from the server
     invalidateQueries: {dataType}
 });
 
 export const useEditTier = createMutation<TiersResponseType, Tier>({
     method: 'PUT',
-    path: () => '/tiers/:id/',
+    path: tier => `/tiers/${tier.id}/`,
     body: tier => ({tiers: [tier]}),
     updateQueries: {
         dataType,

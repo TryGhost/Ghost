@@ -35,7 +35,17 @@ export const useAddInvite = createMutation<InvitesResponseType, {email: string, 
             token: null
         }]
     }),
-    invalidateQueries: {dataType}
+    updateQueries: {
+        dataType,
+        // Assume that all invite queries should include this new one
+        update: (newData, currentData) => ({
+            ...(currentData as InvitesResponseType),
+            invites: [
+                ...((currentData as InvitesResponseType).invites),
+                ...newData.invites
+            ]
+        })
+    }
 });
 
 export const useDeleteInvite = createMutation<unknown, string>({

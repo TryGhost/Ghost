@@ -11,18 +11,9 @@ export interface ThemesInstallResponseType {
 
 const dataType = 'ThemesResponseType';
 
-const updateThemes = (newData: ThemesResponseType, currentData: unknown) => ({
-    ...(currentData as ThemesResponseType),
-    themes: (currentData as ThemesResponseType).themes.map((theme) => {
-        const newTheme = newData.themes.find(({name}) => name === theme.name);
-        return newTheme || theme;
-    })
-});
-
 export const useBrowseThemes = createQuery<ThemesResponseType>({
     dataType,
-    path: '/themes/',
-    defaultSearchParams: {limit: 'all', include: 'roles'}
+    path: '/themes/'
 });
 
 export const useActivateTheme = createMutation<ThemesResponseType, string>({
@@ -30,13 +21,24 @@ export const useActivateTheme = createMutation<ThemesResponseType, string>({
     path: name => `/themes/${name}/activate/`,
     updateQueries: {
         dataType,
-        update: updateThemes
+        update: (newData: ThemesResponseType, currentData: unknown) => ({
+            ...(currentData as ThemesResponseType),
+            themes: (currentData as ThemesResponseType).themes.map((theme) => {
+                const newTheme = newData.themes.find(({name}) => name === theme.name);
+
+                if (newTheme) {
+                    return newTheme;
+                } else {
+                    return {...theme, active: false};
+                }
+            })
+        })
     }
 });
 
 export const useDeleteTheme = createMutation<unknown, string>({
     method: 'DELETE',
-    path: name => `/themes/${name}`,
+    path: name => `/themes/${name}/`,
     updateQueries: {
         dataType,
         update: (_, currentData, name) => ({
@@ -50,7 +52,17 @@ export const useInstallTheme = createMutation<ThemesInstallResponseType, string>
     method: 'POST',
     path: () => '/themes/install/',
     searchParams: repo => ({source: 'github', ref: repo}),
-    invalidateQueries: {dataType}
+    updateQueries: {
+        dataType,
+        // Assume that all invite queries should include this new one
+        update: (newData, currentData) => ({
+            ...(currentData as ThemesResponseType),
+            themes: [
+                ...((currentData as ThemesResponseType).themes),
+                ...newData.themes
+            ]
+        })
+    }
 });
 
 export const useUploadTheme = createMutation<ThemesInstallResponseType, {file: File}>({
@@ -61,5 +73,15 @@ export const useUploadTheme = createMutation<ThemesInstallResponseType, {file: F
         formData.append('file', file);
         return formData;
     },
-    invalidateQueries: {dataType}
+    updateQueries: {
+        dataType,
+        // Assume that all invite queries should include this new one
+        update: (newData, currentData) => ({
+            ...(currentData as ThemesResponseType),
+            themes: [
+                ...((currentData as ThemesResponseType).themes),
+                ...newData.themes
+            ]
+        })
+    }
 });

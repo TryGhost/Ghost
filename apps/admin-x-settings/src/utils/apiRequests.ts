@@ -109,6 +109,7 @@ const mutate = <ResponseData, Payload>({fetchApi, path, payload, searchParams, o
 }) => {
     const {defaultSearchParams, body, ...requestOptions} = options;
     const url = apiUrl(path, searchParams || defaultSearchParams);
+    console.log('api url', path, searchParams, url)
     const generatedBody = payload && body?.(payload);
     const requestBody = (generatedBody && generatedBody instanceof FormData) ? generatedBody : JSON.stringify(generatedBody)
 
@@ -128,12 +129,12 @@ const afterMutate = <ResponseData, Payload>(newData: ResponseData, payload: Payl
     }
 };
 
-export const createMutation = <ResponseData, Payload>(options: MutationOptions<ResponseData, Payload>) => (searchParams?: { [key: string]: string }) => {
+export const createMutation = <ResponseData, Payload>(options: MutationOptions<ResponseData, Payload>) => () => {
     const fetchApi = useFetchApi();
     const queryClient = useQueryClient();
 
     return useMutation<ResponseData, unknown, Payload>({
-        mutationFn: payload => mutate({fetchApi, path: options.path(payload), payload, searchParams, options}),
+        mutationFn: payload => mutate({fetchApi, path: options.path(payload), payload, searchParams: options.searchParams?.(payload) || options.defaultSearchParams, options}),
         onSuccess: (newData, payload) => afterMutate(newData, payload, queryClient, options)
     });
 };
