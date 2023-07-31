@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const Promise = require('bluebird');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
@@ -37,9 +36,15 @@ const ALPHA_FEATURES = [
     'websockets',
     'stripeAutomaticTax',
     'emailCustomization',
-    'signupCard',
     'collections',
-    'adminXSettings'
+    'adminXSettings',
+    'pageImprovements',
+    'flatUrls',
+    'mailEvents',
+    'collectionsCard',
+    'headerUpgrade',
+    'importMemberTier',
+    'tipsAndDonations'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

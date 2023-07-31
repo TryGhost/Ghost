@@ -51,10 +51,12 @@ Router.map(function () {
     this.route('tag', {path: '/tags/:tag_slug'});
 
     this.route('collections');
-    this.route('collection.new', {path: '/collection/new'});
-    this.route('collection', {path: '/collection/:collection_slug'});
+    this.route('collection.new', {path: '/collections/new'});
+    this.route('collection', {path: '/collections/:collection_slug'});
 
-    this.route('settings-x');
+    this.route('settings-x', function () {
+        this.route('settings-x', {path: '/*sub'});
+    });
     this.route('settings');
     this.route('settings.general', {path: '/settings/general'});
     this.route('settings.membership', {path: '/settings/members'});

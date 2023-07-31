@@ -1,8 +1,7 @@
-import React from 'react';
 import {render, fireEvent} from '../../utils/test-utils';
 import AccountProfilePage from './AccountProfilePage';
 
-const setup = (overrides) => {
+const setup = () => {
     const {mockOnActionFn, context, ...utils} = render(
         <AccountProfilePage />
     );

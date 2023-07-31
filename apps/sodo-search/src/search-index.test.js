@@ -3,11 +3,11 @@ import nock from 'nock';
 
 describe('search index', function () {
     test('initializes search index', async () => {
-        const adminUrl = 'http://localhost';
+        const adminUrl = 'http://localhost:3000';
         const apiKey = '69010382388f9de5869ad6e558';
         const searchIndex = new SearchIndex({adminUrl, apiKey, storage: localStorage});
 
-        const scope = nock('http://localhost/ghost/api/content')
+        const scope = nock('http://localhost:3000/ghost/api/content')
             .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
             .reply(200, {
                 posts: []
@@ -33,11 +33,11 @@ describe('search index', function () {
     });
 
     test('allows to search for indexed posts and authors', async () => {
-        const adminUrl = 'http://localhost';
+        const adminUrl = 'http://localhost:3000';
         const apiKey = '69010382388f9de5869ad6e558';
         const searchIndex = new SearchIndex({adminUrl, apiKey, storage: localStorage});
 
-        nock('http://localhost/ghost/api/content')
+        nock('http://localhost:3000/ghost/api/content')
             .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
             .reply(200, {
                 posts: [{

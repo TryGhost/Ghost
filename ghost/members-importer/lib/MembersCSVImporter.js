@@ -21,7 +21,8 @@ const DEFAULT_CSV_HEADER_MAPPING = {
     created_at: 'created_at',
     complimentary_plan: 'complimentary_plan',
     stripe_customer_id: 'stripe_customer_id',
-    labels: 'labels'
+    labels: 'labels',
+    import_tier: 'import_tier'
 };
 
 module.exports = class MembersCSVImporter {
@@ -138,11 +139,24 @@ module.exports = class MembersCSVImporter {
                 };
                 const existingMember = await membersRepository.get({email: memberValues.email}, {
                     ...options,
-                    withRelated: ['labels']
+                    withRelated: ['labels', 'newsletters']
                 });
                 let member;
                 if (existingMember) {
                     const existingLabels = existingMember.related('labels') ? existingMember.related('labels').toJSON() : [];
+                    const existingNewsletters = existingMember.related('newsletters');
+
+                    // Preserve member's existing newsletter subscription preferences
+                    if (existingNewsletters.length > 0 && memberValues.subscribed) {
+                        memberValues.newsletters = existingNewsletters.toJSON();
+                    }
+
+                    // If member does not have any subscriptions, assume they have previously unsubscribed
+                    // and do not re-subscribe them
+                    if (!existingNewsletters.length && memberValues.subscribed) {
+                        memberValues.subscribed = false;
+                    }
+
                     member = await membersRepository.update({
                         ...memberValues,
                         labels: existingLabels.concat(memberValues.labels)
@@ -159,10 +173,21 @@ module.exports = class MembersCSVImporter {
                 }
 
                 if (row.stripe_customer_id && typeof row.stripe_customer_id === 'string') {
-                    await membersRepository.linkStripeCustomer({
-                        customer_id: row.stripe_customer_id,
-                        member_id: member.id
-                    }, options);
+                    let stripeCustomerId;
+
+                    // If 'auto' is passed, try to find the Stripe customer by email
+                    if (row.stripe_customer_id.toLowerCase() === 'auto') {
+                        stripeCustomerId = await membersRepository.getCustomerIdByEmail(row.email);
+                    } else {
+                        stripeCustomerId = row.stripe_customer_id;
+                    }
+
+                    if (stripeCustomerId) {
+                        await membersRepository.linkStripeCustomer({
+                            customer_id: stripeCustomerId,
+                            member_id: member.id
+                        }, options);
+                    }
                 } else if (row.complimentary_plan) {
                     await membersRepository.update({
                         products: [{id: defaultTier.id.toString()}]

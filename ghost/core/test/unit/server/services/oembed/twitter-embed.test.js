@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const TwitterOEmbedProvider = require('../../../../../core/server/services/oembed/TwitterOEmbedProvider');
 const externalRequest = require('../../../../../core/server/lib/request-external');
 const nock = require('nock');

@@ -1,6 +1,5 @@
 // Utility Packages
 const debug = require('@tryghost/debug')('test');
-const Promise = require('bluebird');
 const _ = require('lodash');
 const fs = require('fs-extra');
 const path = require('path');

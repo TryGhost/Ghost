@@ -50,8 +50,13 @@
             "maxWait": 100000,
             "lifetime": 3600,
             "freeRetries": 3
+        },
+        "email_preview_block": {
+            "minWait": 360000,
+            "maxWait": 360000,
+            "lifetime": 3600,
+            "freeRetries": 10
         }
-
     },
     "privacy": {
         "useTinfoil": true,

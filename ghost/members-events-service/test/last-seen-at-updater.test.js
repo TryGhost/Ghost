@@ -2,7 +2,7 @@
 // const testUtils = require('./utils');
 require('./utils');
 
-const assert = require('assert');
+const assert = require('assert/strict');
 const sinon = require('sinon');
 const {LastSeenAtUpdater} = require('../');
 const DomainEvents = require('@tryghost/domain-events');

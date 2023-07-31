@@ -2,7 +2,13 @@ const {VersionMismatchError} = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('stripe');
 const Stripe = require('stripe').Stripe;
 const LeakyBucket = require('leaky-bucket');
+
+/* Stripe has the following rate limits:
+*  - For most APIs, 100 read requests per second in live mode, 25 read requests per second in test mode
+*  - For search, 20 requests per second in both live and test modes
+*/
 const EXPECTED_API_EFFICIENCY = 0.95;
+const EXPECTED_SEARCH_API_EFFICIENCY = 0.15;
 
 const STRIPE_API_VERSION = '2020-08-27';
 
@@ -70,6 +76,7 @@ module.exports = class StripeAPI {
         } else {
             this._rateLimitBucket = new LeakyBucket(EXPECTED_API_EFFICIENCY * 100, 1);
         }
+        this._searchRateLimitBucket = new LeakyBucket(EXPECTED_SEARCH_API_EFFICIENCY * 100, 1);
         this._configured = true;
     }
 
@@ -223,6 +230,60 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Finds a Stripe Customer ID based on the provided email address. Returns null if no customer is found.
+     * @param {string} email
+     * @see https://stripe.com/docs/api/customers/search
+     *
+     * @returns {Promise<string|null>} Stripe Customer ID, if found
+     */
+    async getCustomerIdByEmail(email) {
+        await this._searchRateLimitBucket.throttle();
+        try {
+            const result = await this._stripe.customers.search({
+                query: `email:"${email}"`,
+                limit: 10,
+                expand: ['data.subscriptions']
+            });
+            const customers = result.data;
+
+            // No customer found, return null
+            if (customers.length === 0) {
+                return;
+            }
+
+            // Return the only customer found
+            if (customers.length === 1) {
+                return customers[0].id;
+            }
+
+            // Multiple customers found, return the one with the most recent subscription
+            if (customers.length > 1) {
+                let latestCustomer = customers[0];
+                let latestSubscriptionTime = 0;
+
+                for (let customer of customers) {
+                    // skip customers with no subscriptions
+                    if (!customer.subscriptions || !customer.subscriptions.data || customer.subscriptions.data.length === 0) {
+                        continue;
+                    }
+
+                    // find the customer with the most recent subscription
+                    for (let subscription of customer.subscriptions.data) {
+                        if (subscription.current_period_end && subscription.current_period_end > latestSubscriptionTime) {
+                            latestSubscriptionTime = subscription.current_period_end;
+                            latestCustomer = customer;
+                        }
+                    }
+                }
+
+                return latestCustomer.id;
+            }
+        } catch (err) {
+            debug(`getCustomerByEmail(${email}) -> ${err.type}:${err.message}`);
+        }
+    }
+
+    /**
      * @param {import('stripe').Stripe.CustomerCreateParams} options
      *
      * @returns {Promise<ICustomer>}
@@ -367,7 +428,7 @@ module.exports = class StripeAPI {
         const metadata = options.metadata || undefined;
         const customerId = customer ? customer.id : undefined;
         const customerEmail = customer ? customer.email : options.customerEmail;
- 
+
         await this._rateLimitBucket.throttle();
         let discounts;
         if (options.coupon) {

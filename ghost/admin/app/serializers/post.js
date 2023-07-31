@@ -15,7 +15,7 @@ export default class PostSerializer extends ApplicationSerializer.extend(Embedde
         postRevisions: {embedded: 'always'}
     };
 
-    serialize(/*snapshot, options*/) {
+    serialize(snapshot/*, options*/) {
         let json = super.serialize(...arguments);
 
         // Inserted locally as a convenience.
@@ -29,6 +29,10 @@ export default class PostSerializer extends ApplicationSerializer.extend(Embedde
         delete json.newsletter;
         // Deprecated property (replaced with data.authors)
         delete json.author;
+        // Page-only properties
+        if (snapshot.modelName !== 'page') {
+            delete json.show_title_and_feature_image;
+        }
 
         if (json.visibility === null) {
             delete json.visibility;

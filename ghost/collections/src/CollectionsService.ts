@@ -1,7 +1,14 @@
+import logging from '@tryghost/logging';
+import tpl from '@tryghost/tpl';
 import {Collection} from './Collection';
 import {CollectionRepository} from './CollectionRepository';
-import tpl from '@tryghost/tpl';
-import {MethodNotAllowedError, NotFoundError} from '@tryghost/errors';
+import {CollectionPost} from './CollectionPost';
+import {MethodNotAllowedError} from '@tryghost/errors';
+import {PostDeletedEvent} from './events/PostDeletedEvent';
+import {PostAddedEvent} from './events/PostAddedEvent';
+import {PostEditedEvent} from './events/PostEditedEvent';
+import {RepositoryUniqueChecker} from './RepositoryUniqueChecker';
+import {TagDeletedEvent} from './events/TagDeletedEvent';
 
 const messages = {
     cannotDeleteBuiltInCollectionError: {
@@ -14,9 +21,19 @@ const messages = {
     }
 };
 
+interface SlugService {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    generate(desired: string, options: {transaction: any}): Promise<string>;
+}
+
 type CollectionsServiceDeps = {
     collectionsRepository: CollectionRepository;
     postsRepository: PostsRepository;
+    slugService: SlugService;
+    DomainEvents: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        subscribe: (event: any, handler: (e: any) => void) => void;
+    };
 };
 
 type CollectionPostDTO = {
@@ -26,10 +43,15 @@ type CollectionPostDTO = {
 
 type CollectionPostListItemDTO = {
     id: string;
+    url: string;
     slug: string;
     title: string;
     featured: boolean;
     featured_image?: string;
+    created_at: Date;
+    updated_at: Date;
+    published_at: Date,
+    tags: Array<{slug: string}>;
 }
 
 type ManualCollection = {
@@ -67,31 +89,35 @@ type CollectionDTO = {
     posts: CollectionPostDTO[];
 };
 
-type CollectionPostInputDTO = {
-    id: string;
-    featured: boolean;
-    published_at: Date;
-};
-
 type QueryOptions = {
     filter?: string;
     include?: string;
     page?: number;
     limit?: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    transaction?: any;
 }
 
 interface PostsRepository {
-    getAll(options: QueryOptions): Promise<any[]>;
-    getBulk(ids: string[]): Promise<any[]>;
+    getAll(options: QueryOptions): Promise<CollectionPost[]>;
 }
 
 export class CollectionsService {
     private collectionsRepository: CollectionRepository;
     private postsRepository: PostsRepository;
+    private DomainEvents: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        subscribe: (event: any, handler: (e: any) => void) => void;
+    };
+    private uniqueChecker: RepositoryUniqueChecker;
+    private slugService: SlugService;
 
     constructor(deps: CollectionsServiceDeps) {
         this.collectionsRepository = deps.collectionsRepository;
         this.postsRepository = deps.postsRepository;
+        this.DomainEvents = deps.DomainEvents;
+        this.uniqueChecker = new RepositoryUniqueChecker(this.collectionsRepository);
+        this.slugService = deps.slugService;
     }
 
     private toDTO(collection: Collection): CollectionDTO {
@@ -112,7 +138,9 @@ export class CollectionsService {
         };
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private fromDTO(data: any): any {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const mappedDTO: {[index: string]:any} = {
             title: data.title,
             slug: data.slug,
@@ -131,97 +159,196 @@ export class CollectionsService {
         return mappedDTO;
     }
 
+    /**
+     * @description Subscribes to Domain events to update collections when posts are added, updated or deleted
+     */
+    subscribeToEvents() {
+        this.DomainEvents.subscribe(PostDeletedEvent, async (event: PostDeletedEvent) => {
+            logging.info(`PostDeletedEvent received, removing post ${event.id} from all collections`);
+            await this.removePostFromAllCollections(event.id);
+        });
+
+        this.DomainEvents.subscribe(PostAddedEvent, async (event: PostAddedEvent) => {
+            logging.info(`PostAddedEvent received, adding post ${event.data.id} to matching collections`);
+            await this.addPostToMatchingCollections(event.data);
+        });
+
+        this.DomainEvents.subscribe(PostEditedEvent, async (event: PostEditedEvent) => {
+            logging.info(`PostEditedEvent received, updating post ${event.data.id} in matching collections`);
+            await this.updatePostInMatchingCollections(event.data);
+        });
+
+        this.DomainEvents.subscribe(TagDeletedEvent, async (event: TagDeletedEvent) => {
+            logging.info(`TagDeletedEvent received for ${event.data.id}, updating all collections`);
+            await this.updateAllAutomaticCollections();
+        });
+    }
+
+    async updateAllAutomaticCollections(): Promise<void> {
+        return await this.collectionsRepository.createTransaction(async (transaction) => {
+            const collections = await this.collectionsRepository.getAll({
+                transaction
+            })
+
+            for (const collection of collections) {
+                if (collection.type === 'automatic' && collection.filter) {
+                    collection.removeAllPosts();
+
+                    const posts = await this.postsRepository.getAll({
+                        filter: collection.filter,
+                        transaction
+                    });
+
+                    for (const post of posts) {
+                        collection.addPost(post);
+                    }
+
+                    await this.collectionsRepository.save(collection, {transaction});
+                }
+            }
+        });
+    }
+
     async createCollection(data: CollectionInputDTO): Promise<CollectionDTO> {
-        const collection = await Collection.create({
-            title: data.title,
-            slug: data.slug,
-            description: data.description,
-            type: data.type,
-            filter: data.filter,
-            featureImage: data.feature_image,
-            deletable: data.deletable
-        });
-
-        if (collection.type === 'automatic' && collection.filter) {
-            const posts = await this.postsRepository.getAll({
-                filter: collection.filter
+        return await this.collectionsRepository.createTransaction(async (transaction) => {
+            const slug = await this.slugService.generate(data.slug || data.title, {transaction});
+            const collection = await Collection.create({
+                title: data.title,
+                slug: slug,
+                description: data.description,
+                type: data.type,
+                filter: data.filter,
+                featureImage: data.feature_image,
+                deletable: data.deletable
             });
 
-            for (const post of posts) {
-                collection.addPost(post);
+            if (collection.type === 'automatic' && collection.filter) {
+                const posts = await this.postsRepository.getAll({
+                    filter: collection.filter,
+                    transaction: transaction
+                });
+
+                for (const post of posts) {
+                    await collection.addPost(post);
+                }
             }
-        }
 
-        await this.collectionsRepository.save(collection);
+            await this.collectionsRepository.save(collection, {transaction});
 
-        return this.toDTO(collection);
+            return this.toDTO(collection);
+        });
     }
 
-    async addPostToCollection(collectionId: string, post: CollectionPostInputDTO): Promise<CollectionDTO | null> {
-        const collection = await this.collectionsRepository.getById(collectionId);
+    async addPostToCollection(collectionId: string, post: CollectionPostListItemDTO): Promise<CollectionDTO | null> {
+        return await this.collectionsRepository.createTransaction(async (transaction) => {
+            const collection = await this.collectionsRepository.getById(collectionId, {transaction});
 
-        if (!collection) {
-            return null;
-        }
+            if (!collection) {
+                return null;
+            }
 
-        collection.addPost(post);
+            await collection.addPost(post);
 
-        this.collectionsRepository.save(collection);
+            await this.collectionsRepository.save(collection, {transaction});
 
-        return this.toDTO(collection);
+            return this.toDTO(collection);
+        });
     }
 
-    private async updateAutomaticCollectionItems(collection: Collection, filter?:string) {
-        const collectionFilter = filter || collection.filter;
+    private async removePostFromAllCollections(postId: string) {
+        return await this.collectionsRepository.createTransaction(async (transaction) => {
+            // @NOTE: can be optimized by having a "getByPostId" method on the collections repository
+            const collections = await this.collectionsRepository.getAll({transaction});
 
-        if (collectionFilter) {
-            const posts = await this.postsRepository.getAll({
-                filter: collectionFilter
+            for (const collection of collections) {
+                if (collection.includesPost(postId)) {
+                    collection.removePost(postId);
+                    await this.collectionsRepository.save(collection, {transaction});
+                }
+            }
+        });
+    }
+
+    private async addPostToMatchingCollections(post: CollectionPost) {
+        return await this.collectionsRepository.createTransaction(async (transaction) => {
+            const collections = await this.collectionsRepository.getAll({
+                filter: 'type:automatic',
+                transaction: transaction
             });
 
-            collection.removeAllPosts();
+            for (const collection of collections) {
+                const added = await collection.addPost(post);
 
-            for (const post of posts) {
-                collection.addPost(post);
+                if (added) {
+                    await this.collectionsRepository.save(collection, {transaction});
+                }
             }
-        }
-    }
-
-    async updateAutomaticCollections() {
-        const collections = await this.collectionsRepository.getAll({
-            filter: 'type:automatic'
         });
-
-        for (const collection of collections) {
-            await this.updateAutomaticCollectionItems(collection);
-            await this.collectionsRepository.save(collection);
-        }
     }
 
+    async updatePostInMatchingCollections(postEdit: PostEditedEvent['data']) {
+        return await this.collectionsRepository.createTransaction(async (transaction) => {
+            const collections = await this.collectionsRepository.getAll({
+                filter: 'type:automatic',
+                transaction
+            });
+
+            for (const collection of collections) {
+                if (collection.includesPost(postEdit.id) && !collection.postMatchesFilter(postEdit.current)) {
+                    collection.removePost(postEdit.id);
+                    await this.collectionsRepository.save(collection, {transaction});
+
+                    logging.info(`[Collections] Post ${postEdit.id} was updated and removed from collection ${collection.id} with filter ${collection.filter}`);
+                } else if (!collection.includesPost(postEdit.id) && collection.postMatchesFilter(postEdit.current)) {
+                    const added = await collection.addPost(postEdit.current);
+
+                    if (added) {
+                        await this.collectionsRepository.save(collection, {transaction});
+                    }
+
+                    logging.info(`[Collections] Post ${postEdit.id} was updated and added to collection ${collection.id} with filter ${collection.filter}`);
+                } else {
+                    logging.info(`[Collections] Post ${postEdit.id} was updated but did not update any collections`);
+                }
+            }
+        });
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async edit(data: any): Promise<CollectionDTO | null> {
-        const collection = await this.collectionsRepository.getById(data.id);
+        return await this.collectionsRepository.createTransaction(async (transaction) => {
+            const collection = await this.collectionsRepository.getById(data.id, {transaction});
 
-        if (!collection) {
-            return null;
-        }
-
-        if (collection.type === 'manual' && data.posts) {
-            for (const post of data.posts) {
-                collection.addPost(post);
+            if (!collection) {
+                return null;
             }
-        }
 
-        if ((collection.type === 'automatic' || data.type === 'automatic') && data.filter) {
-            await this.updateAutomaticCollectionItems(collection, data.filter);
-        }
+            const collectionData = this.fromDTO(data);
+            await collection.edit(collectionData, this.uniqueChecker);
 
-        const collectionData = this.fromDTO(data);
+            if (collection.type === 'manual' && data.posts) {
+                for (const post of data.posts) {
+                    await collection.addPost(post);
+                }
+            }
 
-        Object.assign(collection, collectionData);
+            if (collection.type === 'automatic' && data.filter) {
+                const posts = await this.postsRepository.getAll({
+                    filter: data.filter,
+                    transaction
+                });
 
-        await this.collectionsRepository.save(collection);
+                collection.removeAllPosts();
 
-        return this.toDTO(collection);
+                for (const post of posts) {
+                    await collection.addPost(post);
+                }
+            }
+
+            await this.collectionsRepository.save(collection, {transaction});
+
+            return this.toDTO(collection);
+        });
     }
 
     async getById(id: string): Promise<Collection | null> {
@@ -232,6 +359,7 @@ export class CollectionsService {
         return await this.collectionsRepository.getBySlug(slug);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async getAll(options?: QueryOptions): Promise<{data: CollectionDTO[], meta: any}> {
         const collections = await this.collectionsRepository.getAll(options);
 
@@ -255,43 +383,16 @@ export class CollectionsService {
             }
         };
     }
-
-    async getAllPosts(id: string, {limit = 15, page = 1}: QueryOptions): Promise<{data: CollectionPostListItemDTO[], meta: any}> {
-        const collection = await this.getById(id);
-
-        if (!collection) {
-            throw new NotFoundError({
-                message: tpl(messages.collectionNotFound.message),
-                context: tpl(messages.collectionNotFound.context, {id})
-            });
-        }
-
-        const startIdx = limit * (page - 1);
-        const endIdx = limit * page;
-        const postIds = collection.posts.slice(startIdx, endIdx);
-        const posts = await this.postsRepository.getBulk(postIds);
-
-        return {
-            data: posts,
-            meta: {
-                pagination: {
-                    page: page,
-                    pages: Math.ceil(collection.posts.length / limit),
-                    limit: limit,
-                    total: posts.length,
-                    prev: null,
-                    next: null
-                }
-            }
-        };
-    }
-
     async getCollectionsForPost(postId: string): Promise<CollectionDTO[]> {
         const collections = await this.collectionsRepository.getAll({
             filter: `posts:${postId}`
         });
 
-        return collections.map(collection => this.toDTO(collection));
+        return collections.map(collection => this.toDTO(collection))
+            .sort((a, b) => {
+                // NOTE: sorting is here to keep DB engine ordering consistent
+                return a.slug.localeCompare(b.slug);
+            });
     }
 
     async destroy(id: string): Promise<Collection | null> {
@@ -315,17 +416,19 @@ export class CollectionsService {
     }
 
     async removePostFromCollection(id: string, postId: string): Promise<CollectionDTO | null> {
-        const collection = await this.getById(id);
+        return await this.collectionsRepository.createTransaction(async (transaction) => {
+            const collection = await this.collectionsRepository.getById(id, {transaction});
 
-        if (!collection) {
-            return null;
-        }
+            if (!collection) {
+                return null;
+            }
 
-        if (collection) {
-            collection.removePost(postId);
-            await this.collectionsRepository.save(collection);
-        }
+            if (collection) {
+                collection.removePost(postId);
+                await this.collectionsRepository.save(collection, {transaction});
+            }
 
-        return this.toDTO(collection);
+            return this.toDTO(collection);
+        });
     }
 }

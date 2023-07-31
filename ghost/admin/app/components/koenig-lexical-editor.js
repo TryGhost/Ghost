@@ -135,6 +135,7 @@ export default class KoenigLexicalEditor extends Component {
     @service session;
     @service store;
     @service settings;
+    @service membersUtils;
 
     @inject config;
     offers = null;
@@ -239,6 +240,17 @@ export default class KoenigLexicalEditor extends Component {
             return response;
         };
 
+        const fetchCollectionPosts = async (collectionSlug) => {
+            const collectionPostsEndpoint = this.ghostPaths.url.api('posts');
+            const {posts} = await this.ajax.request(collectionPostsEndpoint, {
+                data: {
+                    collection: collectionSlug, 
+                    limit: 12
+                }
+            });
+            return posts;
+        };
+
         const fetchAutocompleteLinks = async () => {
             const offers = await this.fetchOffersTask.perform();
 
@@ -253,7 +265,24 @@ export default class KoenigLexicalEditor extends Component {
                     value: this.config.getSiteUrl(offer.code)
                 };
             });
-            return [...defaults, ...offersLinks];
+
+            const memberLinks = () => {
+                let links = [];
+                if (this.membersUtils.paidMembersEnabled) {
+                    links = [
+                        {
+                            label: 'Paid signup',
+                            value: this.config.getSiteUrl('/#/portal/signup')
+                        },
+                        {
+                            label: 'Upgrade or change plan',
+                            value: this.config.getSiteUrl('/#/portal/account/plans')
+                        }];
+                }
+
+                return links;
+            };
+            return [...defaults, ...offersLinks, ...memberLinks()];
         };
 
         const fetchLabels = async () => {
@@ -273,11 +302,15 @@ export default class KoenigLexicalEditor extends Component {
                 }
             },
             tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null,
-            fetchEmbed: fetchEmbed,
+            fetchEmbed,
+            fetchCollectionPosts,
             fetchAutocompleteLinks,
             fetchLabels,
             feature: {
-                signupCard: this.feature.get('signupCard')
+                signupCard: true,
+                collectionsCard: this.feature.get('collectionsCard'),
+                collections: this.feature.get('collections'),
+                headerV2: this.feature.get('headerUpgrade')
             },
             membersEnabled: this.settings.get('membersSignupAccess') === 'all',
             siteTitle: this.settings.title,

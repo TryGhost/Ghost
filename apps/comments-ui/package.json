@@ -1,0 +1,81 @@
+{
+  "name": "@tryghost/comments-ui",
+  "version": "0.12.4",
+  "license": "MIT",
+  "repository": "git@github.com:TryGhost/comments-ui.git",
+  "author": "Ghost Foundation",
+  "unpkg": "umd/comments-ui.umd.js",
+  "files": [
+    "umd/",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "dev": "concurrently \"yarn preview --host -l silent\" \"yarn build:watch\"",
+    "dev:test": "vite build && vite preview --port 7175",
+    "build": "vite build",
+    "build:watch": "vite build --watch",
+    "preview": "vite preview",
+    "test": "vitest run --coverage && yarn test:e2e",
+    "test:e2e": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' VITE_TEST=true playwright test",
+    "test:slowmo": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=1000 yarn test:e2e --headed",
+    "test:e2e:full": "ALL_BROWSERS=1 yarn test:e2e",
+    "lint": "eslint src --ext .js,.ts,.jsx,.tsx --cache",
+    "preship": "yarn lint",
+    "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn version; fi",
+    "postship": "git push ${GHOST_UPSTREAM:-origin} --follow-tags && npm publish",
+    "prepublishOnly": "yarn build"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "dependencies": {
+    "@headlessui/react": "1.7.15",
+    "@tiptap/core": "2.0.4",
+    "@tiptap/extension-blockquote": "2.0.4",
+    "@tiptap/extension-document": "2.0.4",
+    "@tiptap/extension-hard-break": "2.0.4",
+    "@tiptap/extension-link": "2.0.4",
+    "@tiptap/extension-paragraph": "2.0.4",
+    "@tiptap/extension-placeholder": "2.0.4",
+    "@tiptap/extension-text": "2.0.4",
+    "@tiptap/pm": "2.0.4",
+    "@tiptap/react": "2.0.4",
+    "react": "17.0.2",
+    "react-dom": "17.0.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.36.2",
+    "@testing-library/jest-dom": "5.16.5",
+    "@testing-library/react": "12.1.5",
+    "@testing-library/user-event": "14.4.3",
+    "@vitejs/plugin-react": "4.0.3",
+    "@vitest/coverage-v8": "0.33.0",
+    "autoprefixer": "10.4.14",
+    "bson-objectid": "2.0.4",
+    "concurrently": "8.2.0",
+    "eslint-plugin-react-hooks": "4.6.0",
+    "eslint-plugin-react-refresh": "0.4.3",
+    "eslint-plugin-tailwindcss": "3.13.0",
+    "jsdom": "22.1.0",
+    "postcss": "8.4.27",
+    "tailwindcss": "3.3.3",
+    "vite": "4.4.7",
+    "vite-plugin-css-injected-by-js": "3.2.1",
+    "vite-plugin-svgr": "3.2.0",
+    "vitest": "0.33.0"
+  }
+}

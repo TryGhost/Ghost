@@ -7,11 +7,23 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "Ghost core + Admin",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/.github/scripts/dev.js",
+            "autoAttachChildProcesses": true,
+            "outputCapture": "std",
+            "console": "integratedTerminal",
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "Full Dev",
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/.github/dev.js",
+            "program": "${workspaceFolder}/.github/scripts/dev.js",
             "args": [
                 "--all"
             ],
@@ -26,9 +38,10 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/.github/dev.js",
+            "program": "${workspaceFolder}/.github/scripts/dev.js",
             "args": [
-                "--all --offline"
+                "--all",
+                "--offline"
             ],
             "autoAttachChildProcesses": true,
             "outputCapture": "std",

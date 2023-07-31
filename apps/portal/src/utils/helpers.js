@@ -137,6 +137,15 @@ export function getMemberActivePrice({member}) {
     return getPriceFromSubscription({subscription});
 }
 
+export function getMemberActiveProduct({member, site}) {
+    const subscription = getMemberSubscription({member});
+    const price = getPriceFromSubscription({subscription});
+    const allProducts = getAllProductsForSite({site});
+    return allProducts.find((product) => {
+        return product.id === price?.product.product_id;
+    });
+}
+
 export function isMemberActivePrice({priceId, site, member}) {
     const activePrice = getMemberActivePrice({member});
     const {tierId, cadence} = getProductCadenceFromPrice({site, priceId});
@@ -410,8 +419,8 @@ export function getSiteProducts({site, pageQuery}) {
     return products;
 }
 
-export function hasFreeTrialTier({site}) {
-    const tiers = getSiteProducts({site});
+export function hasFreeTrialTier({site, pageQuery}) {
+    const tiers = getSiteProducts({site, pageQuery});
     return tiers.some((tier) => {
         return !!tier?.trial_days;
     });
@@ -444,7 +453,7 @@ export function freeHasBenefitsOrDescription({site}) {
     return false;
 }
 
-export function getProductBenefits({product, site = null}) {
+export function getProductBenefits({product}) {
     if (product?.monthlyPrice && product?.yearlyPrice) {
         const productBenefits = product?.benefits || [];
         const monthlyBenefits = productBenefits;

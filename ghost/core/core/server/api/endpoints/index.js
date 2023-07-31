@@ -201,6 +201,10 @@ module.exports = {
         return apiFramework.pipeline(require('./links'), localUtils);
     },
 
+    get mailEvents() {
+        return apiFramework.pipeline(require('./mail-events'), localUtils);
+    },
+
     /**
      * Content API Controllers
      *
@@ -211,6 +215,10 @@ module.exports = {
      */
     get pagesPublic() {
         return apiFramework.pipeline(require('./pages-public'), localUtils, 'content');
+    },
+
+    get collectionsPublic() {
+        return apiFramework.pipeline(require('./collections-public'), localUtils);
     },
 
     get tagsPublic() {

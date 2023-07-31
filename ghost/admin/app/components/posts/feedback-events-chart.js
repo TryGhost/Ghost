@@ -79,7 +79,7 @@ export default class FeedbackEventsChart extends Component {
     }
 
     get chartData() {
-        let borderColor = this.feature.nightShift ? '#101114' : '#fff';
+        let borderColor = this.feature.nightShift ? '#15171A' : '#fff';
 
         return {
             labels: this.args.data.labels,

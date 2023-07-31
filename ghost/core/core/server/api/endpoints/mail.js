@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const tpl = require('@tryghost/tpl');
 const mailService = require('../../services/mail');
 const api = require('./');

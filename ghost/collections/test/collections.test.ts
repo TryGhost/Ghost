@@ -1,9 +1,18 @@
-import assert from 'assert';
-import {CollectionsService, CollectionsRepositoryInMemory} from '../src/index';
+import assert from 'assert/strict';
+import DomainEvents from '@tryghost/domain-events';
+import {
+    CollectionsService,
+    CollectionsRepositoryInMemory,
+    PostDeletedEvent,
+    PostAddedEvent,
+    PostEditedEvent,
+    TagDeletedEvent
+} from '../src/index';
 import {PostsRepositoryInMemory} from './fixtures/PostsRepositoryInMemory';
-import {posts} from './fixtures/posts';
+import {posts as postFixtures} from './fixtures/posts';
+import {CollectionPost} from '../src/CollectionPost';
 
-const initPostsRepository = (): PostsRepositoryInMemory => {
+const initPostsRepository = (posts: any): PostsRepositoryInMemory => {
     const postsRepository = new PostsRepositoryInMemory();
 
     for (const post of posts) {
@@ -13,9 +22,10 @@ const initPostsRepository = (): PostsRepositoryInMemory => {
             slug: post.slug,
             featured: post.featured,
             published_at: post.published_at,
+            tags: post.tags,
             deleted: false
         };
-        postsRepository.save(collectionPost);
+        postsRepository.save(collectionPost as CollectionPost & {deleted: false});
     }
 
     return postsRepository;
@@ -23,14 +33,21 @@ const initPostsRepository = (): PostsRepositoryInMemory => {
 
 describe('CollectionsService', function () {
     let collectionsService: CollectionsService;
+    let postsRepository: PostsRepositoryInMemory;
 
     beforeEach(async function () {
         const collectionsRepository = new CollectionsRepositoryInMemory();
-        const postsRepository = initPostsRepository();
+        postsRepository = initPostsRepository(postFixtures);
 
         collectionsService = new CollectionsService({
             collectionsRepository,
-            postsRepository
+            postsRepository,
+            DomainEvents,
+            slugService: {
+                async generate(input) {
+                    return input.replace(/\s+/g, '-').toLowerCase();
+                }
+            }
         });
     });
 
@@ -101,58 +118,24 @@ describe('CollectionsService', function () {
         it('Can get collections for a post', async function () {
             const collection = await collectionsService.createCollection({
                 title: 'testing collections',
+                slug: 'testing-collections',
                 type: 'manual'
             });
 
-            await collectionsService.addPostToCollection(collection.id, posts[0]);
-
-            const collections = await collectionsService.getCollectionsForPost(posts[0].id);
-
-            assert.equal(collections.length, 1, 'There should be one collection');
-            assert.equal(collections[0].id, collection.id, 'Collection should be the correct one');
-        });
-    });
-
-    describe('getAllPosts', function () {
-        it('Can get paged posts of a collection', async function () {
-            const collection = await collectionsService.createCollection({
-                title: 'testing paging',
+            const collection2 = await collectionsService.createCollection({
+                title: 'testing collections 1',
+                slug: '1-testing-collections',
                 type: 'manual'
             });
 
-            for (const post of posts) {
-                await collectionsService.addPostToCollection(collection.id, post);
-            }
+            await collectionsService.addPostToCollection(collection.id, postFixtures[0]);
+            await collectionsService.addPostToCollection(collection2.id, postFixtures[0]);
 
-            const postsPage1 = await collectionsService.getAllPosts(collection.id, {page: 1, limit: 2});
+            const collections = await collectionsService.getCollectionsForPost(postFixtures[0].id);
 
-            assert.ok(postsPage1, 'Posts should be returned');
-            assert.equal(postsPage1.meta.pagination.page, 1, 'Page should be 1');
-            assert.equal(postsPage1.meta.pagination.limit, 2, 'Limit should be 2');
-            assert.equal(postsPage1.meta.pagination.pages, 2, 'Pages should be 2');
-            assert.equal(postsPage1.data.length, 2, 'There should be 2 posts');
-            assert.equal(postsPage1.data[0].id, posts[0].id, 'First post should be the correct one');
-            assert.equal(postsPage1.data[1].id, posts[1].id, 'Second post should be the correct one');
-
-            const postsPage2 = await collectionsService.getAllPosts(collection.id, {page: 2, limit: 2});
-
-            assert.ok(postsPage2, 'Posts should be returned');
-            assert.equal(postsPage2.meta.pagination.page, 2, 'Page should be 2');
-            assert.equal(postsPage2.meta.pagination.limit, 2, 'Limit should be 2');
-            assert.equal(postsPage2.meta.pagination.pages, 2, 'Pages should be 2');
-            assert.equal(postsPage2.data.length, 2, 'There should be 2 posts');
-            assert.equal(postsPage2.data[0].id, posts[2].id, 'First post should be the correct one');
-            assert.equal(postsPage2.data[1].id, posts[3].id, 'Second post should be the correct one');
-        });
-
-        it('Throws when trying to get posts of a collection that does not exist', async function () {
-            await assert.rejects(async () => {
-                await collectionsService.getAllPosts('fake id', {});
-            }, (err: any) => {
-                assert.equal(err.message, 'Collection not found', 'Error message should match');
-                assert.equal(err.context, 'Collection with id: fake id does not exist', 'Error context should match');
-                return true;
-            });
+            assert.equal(collections.length, 2, 'There should be one collection');
+            assert.equal(collections[0].id, collection2.id, 'Collections should be sorted by slug');
+            assert.equal(collections[1].id, collection.id, 'Collections should be sorted by slug');
         });
     });
 
@@ -164,14 +147,14 @@ describe('CollectionsService', function () {
                 type: 'manual'
             });
 
-            const editedCollection = await collectionsService.addPostToCollection(collection.id, posts[0]);
+            const editedCollection = await collectionsService.addPostToCollection(collection.id, postFixtures[0]);
 
             assert.equal(editedCollection?.posts.length, 1, 'Collection should have one post');
-            assert.equal(editedCollection?.posts[0].id, posts[0].id, 'Collection should have the correct post');
+            assert.equal(editedCollection?.posts[0].id, postFixtures[0].id, 'Collection should have the correct post');
         });
 
         it('Does not error when trying to add a post to a collection that does not exist', async function () {
-            const editedCollection = await collectionsService.addPostToCollection('fake id', posts[0]);
+            const editedCollection = await collectionsService.addPostToCollection('fake id', postFixtures[0]);
             assert(editedCollection === null);
         });
     });
@@ -188,10 +171,12 @@ describe('CollectionsService', function () {
                 id: savedCollection.id,
                 title: 'Edited title',
                 description: 'Edited description',
-                feature_image: '/assets/images/edited.jpg'
+                feature_image: '/assets/images/edited.jpg',
+                slug: 'changed'
             });
 
             assert.equal(editedCollection?.title, 'Edited title', 'Collection title should be edited');
+            assert.equal(editedCollection?.slug, 'changed', 'Collection slug should be edited');
             assert.equal(editedCollection?.description, 'Edited description', 'Collection description should be edited');
             assert.equal(editedCollection?.feature_image, '/assets/images/edited.jpg', 'Collection feature_image should be edited');
             assert.equal(editedCollection?.type, 'manual', 'Collection type should not be edited');
@@ -215,12 +200,12 @@ describe('CollectionsService', function () {
             const editedCollection = await collectionsService.edit({
                 id: collection.id,
                 posts: [{
-                    id: posts[0].id
+                    id: postFixtures[0].id
                 }]
             });
 
             assert.equal(editedCollection?.posts.length, 1, 'Collection should have one post');
-            assert.equal(editedCollection?.posts[0].id, posts[0].id, 'Collection should have the correct post');
+            assert.equal(editedCollection?.posts[0].id, postFixtures[0].id, 'Collection should have the correct post');
             assert.equal(editedCollection?.posts[0].sort_order, 0, 'Collection should have the correct post sort order');
         });
 
@@ -234,21 +219,21 @@ describe('CollectionsService', function () {
             let editedCollection = await collectionsService.edit({
                 id: collection.id,
                 posts: [{
-                    id: posts[0].id
+                    id: postFixtures[0].id
                 }, {
-                    id: posts[1].id
+                    id: postFixtures[1].id
                 }]
             });
 
             assert.equal(editedCollection?.posts.length, 2, 'Collection should have two posts');
 
-            editedCollection = await collectionsService.removePostFromCollection(collection.id, posts[0].id);
+            editedCollection = await collectionsService.removePostFromCollection(collection.id, postFixtures[0].id);
 
             assert.equal(editedCollection?.posts.length, 1, 'Collection should have one posts');
         });
 
         it('Returns null when removing post from non existing collection', async function () {
-            const collection = await collectionsService.removePostFromCollection('i-do-not-exist', posts[0].id);
+            const collection = await collectionsService.removePostFromCollection('i-do-not-exist', postFixtures[0].id);
 
             assert.equal(collection, null, 'Collection should be null');
         });
@@ -269,26 +254,6 @@ describe('CollectionsService', function () {
             assert.equal(collection.posts.length, 2, 'Collection should have two posts');
         });
 
-        it('Populates collection when the type is changed to automatic and filter is present', async function () {
-            const collection = await collectionsService.createCollection({
-                title: 'I am automatic',
-                description: 'testing automatic collection',
-                type: 'manual'
-            });
-
-            assert.equal(collection.type, 'manual', 'Collection should be manual');
-            assert.equal(collection.posts.length, 0, 'Collection should have no posts');
-
-            const automaticCollection = await collectionsService.edit({
-                id: collection.id,
-                type: 'automatic',
-                filter: 'featured:true'
-            });
-
-            assert.equal(automaticCollection?.posts.length, 2, 'Collection should have two featured post');
-            assert.equal(automaticCollection?.posts[0].id, 'post-3-featured', 'Collection should have the correct post');
-        });
-
         it('Updates the automatic collection posts when the filter is changed', async function () {
             let collection = await collectionsService.createCollection({
                 title: 'I am automatic',
@@ -304,36 +269,208 @@ describe('CollectionsService', function () {
 
             let updatedCollection = await collectionsService.edit({
                 id: collection.id,
-                filter: 'slug:post-2'
+                filter: 'id:post-3-featured'
             });
 
             assert.equal(updatedCollection?.posts.length, 1, 'Collection should have one post');
-            assert.equal(updatedCollection?.posts[0].id, 'post-2', 'Collection should have the correct post');
+            assert.equal(updatedCollection?.posts[0].id, 'post-3-featured', 'Collection should have the correct post');
         });
 
-        // @NOTE: add a more comprehensive test as this one is too basic
-        it('Updates all automatic collections', async function () {
-            let collection1 = await collectionsService.createCollection({
-                title: 'Featured Collection 1',
-                description: 'testing automatic collection',
-                type: 'automatic',
-                filter: 'featured:true'
+        describe('updateCollections', function () {
+            let automaticFeaturedCollection: any;
+            let automaticNonFeaturedCollection: any;
+            let manualCollection: any;
+
+            beforeEach(async function () {
+                automaticFeaturedCollection = await collectionsService.createCollection({
+                    title: 'Featured Collection',
+                    description: 'testing automatic collection',
+                    type: 'automatic',
+                    filter: 'featured:true'
+                });
+
+                automaticNonFeaturedCollection = await collectionsService.createCollection({
+                    title: 'Non-Featured Collection',
+                    description: 'testing automatic collection',
+                    type: 'automatic',
+                    filter: 'featured:false'
+                });
+
+                manualCollection = await collectionsService.createCollection({
+                    title: 'Manual Collection',
+                    description: 'testing manual collection',
+                    type: 'manual'
+                });
+
+                await collectionsService.addPostToCollection(manualCollection.id, postFixtures[0]);
+                await collectionsService.addPostToCollection(manualCollection.id, postFixtures[1]);
             });
 
-            let collection2 = await collectionsService.createCollection({
-                title: 'Featured Collection 2',
-                description: 'testing automatic collection',
-                type: 'automatic',
-                filter: 'featured:true'
+            afterEach(async function () {
+                await collectionsService.destroy(automaticFeaturedCollection.id);
+                await collectionsService.destroy(automaticNonFeaturedCollection.id);
+                await collectionsService.destroy(manualCollection.id);
             });
 
-            assert.equal(collection1.posts.length, 2);
-            assert.equal(collection2.posts.length, 2);
+            it('Updates all automatic collections when a tag is deleted', async function () {
+                const collectionsRepository = new CollectionsRepositoryInMemory();
+                postsRepository = initPostsRepository([
+                    {
+                        id: 'post-1',
+                        url: 'http://localhost:2368/post-1/',
+                        title: 'Post 1',
+                        slug: 'post-1',
+                        featured: false,
+                        tags: [{slug: 'to-be-deleted'}, {slug: 'other-tag'}],
+                        created_at: new Date('2023-03-15T07:19:07.447Z'),
+                        updated_at: new Date('2023-03-15T07:19:07.447Z'),
+                        published_at: new Date('2023-03-15T07:19:07.447Z')
+                    }, {
+                        id: 'post-2',
+                        url: 'http://localhost:2368/post-2/',
+                        title: 'Post 2',
+                        slug: 'post-2',
+                        featured: false,
+                        tags: [{slug: 'to-be-deleted'}, {slug: 'other-tag'}],
+                        created_at: new Date('2023-04-05T07:20:07.447Z'),
+                        updated_at: new Date('2023-04-05T07:20:07.447Z'),
+                        published_at: new Date('2023-04-05T07:20:07.447Z')
+                    }
+                ]);
 
-            await collectionsService.updateAutomaticCollections();
+                collectionsService = new CollectionsService({
+                    collectionsRepository,
+                    postsRepository,
+                    DomainEvents,
+                    slugService: {
+                        async generate(input) {
+                            return input.replace(/\s+/g, '-').toLowerCase();
+                        }
+                    }
+                });
 
-            assert.equal(collection1.posts.length, 2);
-            assert.equal(collection2.posts.length, 2);
+                const automaticCollectionWithTag = await collectionsService.createCollection({
+                    title: 'Automatic Collection with Tag',
+                    description: 'testing automatic collection with tag',
+                    type: 'automatic',
+                    filter: 'tags:to-be-deleted'
+                });
+
+                const automaticCollectionWithoutTag = await collectionsService.createCollection({
+                    title: 'Automatic Collection without Tag',
+                    description: 'testing automatic collection without tag',
+                    type: 'automatic',
+                    filter: 'tags:other-tag'
+                });
+
+                assert.equal((await collectionsService.getById(automaticCollectionWithTag.id))?.posts.length, 2);
+                assert.equal((await collectionsService.getById(automaticCollectionWithoutTag.id))?.posts.length, 2);
+
+                collectionsService.subscribeToEvents();
+                const tagDeletedEvent = TagDeletedEvent.create({
+                    id: 'to-be-deleted'
+                });
+
+                const posts = await postsRepository.getAll();
+
+                for (const post of posts) {
+                    post.tags = post.tags.filter(tag => tag.slug !== 'to-be-deleted');
+                    await postsRepository.save(post);
+                }
+
+                DomainEvents.dispatch(tagDeletedEvent);
+                await DomainEvents.allSettled();
+
+                assert.equal((await collectionsService.getById(automaticCollectionWithTag.id))?.posts.length, 0);
+                assert.equal((await collectionsService.getById(automaticCollectionWithoutTag.id))?.posts.length, 2);
+            });
+
+            it('Updates all collections when post is deleted', async function () {
+                assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 2);
+                assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 2);
+                assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 2);
+
+                collectionsService.subscribeToEvents();
+                const postDeletedEvent = PostDeletedEvent.create({
+                    id: postFixtures[0].id
+                });
+
+                DomainEvents.dispatch(postDeletedEvent);
+                await DomainEvents.allSettled();
+
+                assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 2);
+                assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 1);
+                assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 1);
+            });
+
+            it('Updates only index collection when a non-featured post is added', async function () {
+                assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 2);
+                assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 2);
+                assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 2);
+
+                collectionsService.subscribeToEvents();
+                const postAddedEvent = PostAddedEvent.create({
+                    id: 'non-featured-post',
+                    featured: false
+                });
+
+                DomainEvents.dispatch(postAddedEvent);
+                await DomainEvents.allSettled();
+
+                assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 2);
+                assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 3);
+                assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 2);
+            });
+
+            it('Moves post form featured to non featured collection when the featured attribute is changed', async function () {
+                collectionsService.subscribeToEvents();
+                const newFeaturedPost: CollectionPost & {deleted: false} = {
+                    id: 'post-featured',
+                    featured: false,
+                    published_at: new Date('2023-03-16T07:19:07.447Z'),
+                    tags: [],
+                    deleted: false
+                };
+                await postsRepository.save(newFeaturedPost);
+                const updateCollectionEvent = PostEditedEvent.create({
+                    id: newFeaturedPost.id,
+                    current: {
+                        id: newFeaturedPost.id,
+                        featured: false
+                    },
+                    previous: {
+                        id: newFeaturedPost.id,
+                        featured: true
+                    }
+                });
+
+                DomainEvents.dispatch(updateCollectionEvent);
+                await DomainEvents.allSettled();
+
+                assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 2);
+                assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 3);
+                assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 2);
+
+                // change featured back to true
+                const updateCollectionEventBackToFeatured = PostEditedEvent.create({
+                    id: newFeaturedPost.id,
+                    current: {
+                        id: newFeaturedPost.id,
+                        featured: true
+                    },
+                    previous: {
+                        id: newFeaturedPost.id,
+                        featured: false
+                    }
+                });
+
+                DomainEvents.dispatch(updateCollectionEventBackToFeatured);
+                await DomainEvents.allSettled();
+
+                assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 3);
+                assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 2);
+                assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 2);
+            });
         });
     });
 });

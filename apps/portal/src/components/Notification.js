@@ -34,7 +34,7 @@ const NotificationText = ({type, status, context}) => {
         const firstname = context.member.firstname || '';
         return (
             <p>
-                {firstname ? t('Welcome back, {{name}}!', firstname) : t('Welcome back!')}<br />{t('You\'ve successfully signed in.')}
+                {firstname ? t('Welcome back, {{name}}!', {name: firstname}) : t('Welcome back!')}<br />{t('You\'ve successfully signed in.')}
             </p>
         );
     } else if (type === 'signin' && status === 'error') {
@@ -48,13 +48,13 @@ const NotificationText = ({type, status, context}) => {
         /* eslint-disable i18next/no-literal-string */
         return (
             <p>
-                You've successfully subscribed to <br /><strong>{context.site.title}</strong>
+                You&apos;ve successfully subscribed to <br /><strong>{context.site.title}</strong>
             </p>
         );
     } else if (type === 'signup-paid' && status === 'success') {
         return (
             <p>
-                You've successfully subscribed to <br /><strong>{context.site.title}</strong>
+                You&apos;ve successfully subscribed to <br /><strong>{context.site.title}</strong>
             </p>
         );
         /* eslint-enable i18next/no-literal-string */

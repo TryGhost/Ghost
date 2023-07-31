@@ -1,6 +1,6 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
 const {anyEtag, anyErrorId, anyContentVersion, anyString} = matchers;
-const assert = require('assert');
+const assert = require('assert/strict');
 const sinon = require('sinon');
 const escapeRegExp = require('lodash/escapeRegExp');
 const should = require('should');

@@ -1,5 +1,5 @@
 const {EmailRenderer} = require('../');
-const assert = require('assert');
+const assert = require('assert/strict');
 const cheerio = require('cheerio');
 const {createModel, createModelClass} = require('./utils');
 const linkReplacer = require('@tryghost/link-replacer');
@@ -7,7 +7,7 @@ const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const {HtmlValidate} = require('html-validate');
 
-function validateHtml(html) {
+async function validateHtml(html) {
     const htmlvalidate = new HtmlValidate({
         extends: [
             'html-validate:document',
@@ -34,7 +34,7 @@ function validateHtml(html) {
             }
         ]
     });
-    const report = htmlvalidate.validateString(html);
+    const report = await htmlvalidate.validateString(html);
 
     // Improve debugging and show a snippet of the invalid HTML instead of just the line number or a huge HTML-dump
     const parsedErrors = [];
@@ -775,7 +775,7 @@ describe('Email renderer', function () {
             }
         });
 
-        it('returns correct empty segment for post', function () {
+        it('returns correct empty segment for post', async function () {
             let post = {
                 get: (key) => {
                     if (key === 'lexical') {
@@ -783,7 +783,7 @@ describe('Email renderer', function () {
                     }
                 }
             };
-            let response = emailRenderer.getSegments(post);
+            let response = await emailRenderer.getSegments(post);
             response.should.eql([null]);
 
             post = {
@@ -793,11 +793,11 @@ describe('Email renderer', function () {
                     }
                 }
             };
-            response = emailRenderer.getSegments(post);
+            response = await emailRenderer.getSegments(post);
             response.should.eql([null]);
         });
 
-        it('returns correct segments for post with members only card', function () {
+        it('returns correct segments for post with members only card', async function () {
             emailRenderer = new EmailRenderer({
                 renderers: {
                     lexical: {
@@ -821,11 +821,11 @@ describe('Email renderer', function () {
                     }
                 }
             };
-            let response = emailRenderer.getSegments(post);
+            let response = await emailRenderer.getSegments(post);
             response.should.eql(['status:free', 'status:-free']);
         });
 
-        it('returns correct segments for post with email card', function () {
+        it('returns correct segments for post with email card', async function () {
             emailRenderer = new EmailRenderer({
                 renderers: {
                     lexical: {
@@ -849,13 +849,13 @@ describe('Email renderer', function () {
                     }
                 }
             };
-            let response = emailRenderer.getSegments(post);
+            let response = await emailRenderer.getSegments(post);
             response.should.eql(['status:free', 'status:-free']);
         });
     });
 
     describe('renderBody', function () {
-        let renderedPost = '<p>Lexical Test</p><img class="is-light-background" src="test-dark" /><img class="is-dark-background" src="test-light" />';
+        let renderedPost;
         let postUrl = 'http://example.com';
         let customSettings = {};
         let emailRenderer;
@@ -864,6 +864,7 @@ describe('Email renderer', function () {
         let labsEnabled;
 
         beforeEach(function () {
+            renderedPost = '<p>Lexical Test</p><img class="is-light-background" src="test-dark" /><img class="is-dark-background" src="test-light" />';
             labsEnabled = true;
             basePost = {
                 lexical: '{}',
@@ -1055,6 +1056,74 @@ describe('Email renderer', function () {
 
             const $ = cheerio.load(response.html);
             should($('.preheader').text()).eql('Custom excerpt');
+        });
+
+        it('does not include members-only content in preheader for non-members', async function () {
+            renderedPost = '<div> Lexical Test </div> some text for both <!--members-only--> finishing part only for members';
+            let post = {
+                related: sinon.stub(),
+                get: (key) => {
+                    if (key === 'lexical') {
+                        return '{}';
+                    }
+
+                    if (key === 'visibility') {
+                        return 'paid';
+                    }
+
+                    if (key === 'plaintext') {
+                        return 'foobarbaz';
+                    }
+                },
+                getLazyRelation: sinon.stub()
+            };
+            let newsletter = {
+                get: sinon.stub()
+            };
+
+            let response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                'status:free',
+                {}
+            );
+
+            const $ = cheerio.load(response.html);
+            should($('.preheader').text()).eql('Lexical Test some text for both');
+        });
+
+        it('does not include paid segmented content in preheader for non-paying members', async function () {
+            renderedPost = '<div> Lexical Test </div> <div data-gh-segment="status:-free"> members only section</div> some text for both';
+            let post = {
+                related: sinon.stub(),
+                get: (key) => {
+                    if (key === 'lexical') {
+                        return '{}';
+                    }
+
+                    if (key === 'visibility') {
+                        return 'public';
+                    }
+
+                    if (key === 'plaintext') {
+                        return 'foobarbaz';
+                    }
+                },
+                getLazyRelation: sinon.stub()
+            };
+            let newsletter = {
+                get: sinon.stub()
+            };
+
+            let response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                'status:free',
+                {}
+            );
+
+            const $ = cheerio.load(response.html);
+            should($('.preheader').text()).eql('Lexical Test some text for both');
         });
 
         it('only includes first author if more than 2', async function () {
@@ -1414,6 +1483,11 @@ describe('Email renderer', function () {
                     if (key === 'feedback_enabled') {
                         return true;
                     }
+
+                    if (key === 'show_post_title_section') {
+                        return true;
+                    }
+
                     return false;
                 }
             };
@@ -1429,7 +1503,10 @@ describe('Email renderer', function () {
             response.plaintext.should.containEql('Test Post');
             response.plaintext.should.containEql('Unsubscribe [%%{unsubscribe_url}%%]');
             response.plaintext.should.containEql('http://example.com');
-            response.html.should.containEql('Test Post');
+
+            // Check contains the post name twice
+            assert.equal(response.html.match(/Test Post/g).length, 3, 'Should contain the post name 3 times: in the title element, the preheader and in the post title section');
+
             response.html.should.containEql('Unsubscribe');
             response.html.should.containEql('http://example.com');
             response.replacements.length.should.eql(2);
@@ -1504,13 +1581,48 @@ describe('Email renderer', function () {
                 options
             );
 
-            validateHtml(response.html);
+            await validateHtml(response.html);
 
             // Check footer content is not escaped
             assert.equal(response.html.includes('<span>Footer content with valid HTML</span>'), true, 'Should include footer content without escaping');
 
             // Check doesn't contain the non escaped string '<3'
             assert.equal(response.html.includes('<3'), false, 'Should escape HTML characters');
+        });
+
+        it('does not replace img height and width with auto from css', async function () {
+            const post = createModel(basePost);
+            const newsletter = createModel({
+                feedback_enabled: true,
+                name: 'My newsletter <3</body>',
+                header_image: 'https://testpost.com/test-post</body>/',
+                show_header_icon: true,
+                show_header_title: true,
+                show_feature_image: true,
+                title_font_category: 'sans-serif',
+                title_alignment: 'center',
+                body_font_category: 'serif',
+                show_badge: true,
+                show_header_name: true,
+                // Note: we don't need to check the footer content because this should contain valid HTML (not text)
+                footer_content: '<span>Footer content with valid HTML</span>'
+            });
+            const segment = null;
+            const options = {};
+
+            renderedPost = '<p>This is the post.</p><figure class="kg-card kg-image-card"><img src="__GHOST_URL__/content/images/2023/07/audio-sample_thumb.png" class="kg-image" alt loading="lazy" width="248" height="248"></figure><p>Theres an image!</p>';
+
+            const response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                segment,
+                options
+            );
+
+            // console.log(response.html);
+
+            assert.equal(response.html.includes('width="248" height="248"'), true, 'Should not replace img height and width with auto from css');
+            assert.equal(response.html.includes('width="auto" height="auto"'), false, 'Should not replace img height and width with auto from css');
         });
     });
 
@@ -1520,7 +1632,9 @@ describe('Email renderer', function () {
         let emailRenderer;
 
         beforeEach(function () {
-            settings = {};
+            settings = {
+                timezone: 'Etc/UTC'
+            };
             labsEnabled = true;
             emailRenderer = new EmailRenderer({
                 audienceFeedbackService: {

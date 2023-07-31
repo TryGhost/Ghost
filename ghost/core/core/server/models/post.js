@@ -2,12 +2,12 @@
 const _ = require('lodash');
 const uuid = require('uuid');
 const moment = require('moment');
-const Promise = require('bluebird');
 const {sequence} = require('@tryghost/promise');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const nql = require('@tryghost/nql');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
+const {posts: postExpansions} = require('@tryghost/nql-filter-expansions');
 const ghostBookshelf = require('./base');
 const config = require('../../shared/config');
 const settingsCache = require('../../shared/settings-cache');
@@ -94,7 +94,8 @@ Post = ghostBookshelf.Model.extend({
             type: 'post',
             tiers,
             visibility: visibility,
-            email_recipient_filter: 'all'
+            email_recipient_filter: 'all',
+            show_title_and_feature_image: true
         };
     },
 
@@ -290,28 +291,6 @@ Post = ghostBookshelf.Model.extend({
     filterExpansions: function filterExpansions() {
         const postsMetaKeys = _.without(ghostBookshelf.model('PostsMeta').prototype.orderAttributes(), 'posts_meta.id', 'posts_meta.post_id');
 
-        const expansions = [{
-            key: 'primary_tag',
-            replacement: 'tags.slug',
-            expansion: 'posts_tags.sort_order:0+tags.visibility:public'
-        }, {
-            key: 'primary_author',
-            replacement: 'authors.slug',
-            expansion: 'posts_authors.sort_order:0+authors.visibility:public'
-        }, {
-            key: 'authors',
-            replacement: 'authors.slug'
-        }, {
-            key: 'author',
-            replacement: 'authors.slug'
-        }, {
-            key: 'tag',
-            replacement: 'tags.slug'
-        }, {
-            key: 'tags',
-            replacement: 'tags.slug'
-        }];
-
         const postMetaKeyExpansions = postsMetaKeys.map((pmk) => {
             return {
                 key: pmk.split('.')[1],
@@ -319,7 +298,7 @@ Post = ghostBookshelf.Model.extend({
             };
         });
 
-        return expansions.concat(postMetaKeyExpansions);
+        return postExpansions.concat(postMetaKeyExpansions);
     },
 
     filterRelations: function filterRelations() {
@@ -688,7 +667,7 @@ Post = ghostBookshelf.Model.extend({
             )
         ) {
             try {
-                this.set('html', lexicalLib.render(this.get('lexical')));
+                this.set('html', await lexicalLib.render(this.get('lexical')));
             } catch (err) {
                 throw new errors.ValidationError({
                     message: tpl(messages.invalidLexicalStructure),
@@ -875,7 +854,11 @@ Post = ghostBookshelf.Model.extend({
                     revision_interval_ms: POST_REVISIONS_INTERVAL_MS
                 }
             });
-            const authorId = this.contextUser(options);
+            let authorId = this.contextUser(options);
+            const authorExists = await ghostBookshelf.model('User').findOne({id: authorId}, {transacting: options.transacting});
+            if (!authorExists) {
+                authorId = await ghostBookshelf.model('User').getOwnerUser().get('id');
+            }
             ops.push(async function updateRevisions() {
                 const revisionModels = await ghostBookshelf.model('PostRevision')
                     .findAll(Object.assign({

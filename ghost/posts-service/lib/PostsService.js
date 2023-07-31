@@ -3,7 +3,7 @@ const {BadRequestError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const ObjectId = require('bson-objectid').default;
-const omit = require('lodash/omit');
+const pick = require('lodash/pick');
 
 const messages = {
     invalidVisibilityFilter: 'Invalid visibility filter.',
@@ -50,6 +50,7 @@ class PostsService {
 
             const postIds = collection.posts;
             options.filter = `id:[${postIds.join(',')}]+type:post`;
+            options.status = 'all';
             posts = await this.models.Post.findPage(options);
         } else {
             posts = await this.models.Post.findPage(options);
@@ -135,6 +136,11 @@ class PostsService {
                 });
             }
             for (const existingCollection of existingCollections) {
+                // we only remove posts from manual collections
+                if (existingCollection.type !== 'manual') {
+                    continue;
+                }
+
                 if (frame.data.posts[0].collections.find((item) => {
                     if (typeof item === 'string') {
                         return item === existingCollection.id;
@@ -512,21 +518,24 @@ class PostsService {
             status: 'all'
         }, frame.options);
 
-        const newPostData = omit(
+        const newPostData = pick(
             existingPost.attributes,
             [
-                'id',
-                'uuid',
-                'slug',
-                'comment_id',
-                'created_at',
-                'created_by',
-                'updated_at',
-                'updated_by',
-                'published_at',
-                'published_by',
-                'canonical_url',
-                'count__clicks'
+                'title',
+                'mobiledoc',
+                'lexical',
+                'html',
+                'plaintext',
+                'feature_image',
+                'featured',
+                'type',
+                'locale',
+                'visibility',
+                'email_recipient_filter',
+                'custom_excerpt',
+                'codeinjection_head',
+                'codeinjection_foot',
+                'custom_template'
             ]
         );
 
@@ -540,11 +549,21 @@ class PostsService {
         const existingPostMeta = existingPost.related('posts_meta');
 
         if (existingPostMeta.isNew() === false) {
-            newPostData.posts_meta = omit(
+            newPostData.posts_meta = pick(
                 existingPostMeta.attributes,
                 [
-                    'id',
-                    'post_id'
+                    'og_image',
+                    'og_title',
+                    'og_description',
+                    'twitter_image',
+                    'twitter_title',
+                    'twitter_description',
+                    'meta_title',
+                    'meta_description',
+                    'frontmatter',
+                    'feature_image_alt',
+                    'feature_image_caption',
+                    'hide_title_and_feature_image'
                 ]
             );
         }

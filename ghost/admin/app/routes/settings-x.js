@@ -4,6 +4,7 @@ import {inject as service} from '@ember/service';
 export default class SettingsXRoute extends AuthenticatedRoute {
     @service session;
     @service ui;
+    @service modals;
 
     beforeModel() {
         super.beforeModel(...arguments);

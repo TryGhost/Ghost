@@ -126,6 +126,10 @@ const post = (attrs, frame) => {
         delete attrs.primary_author;
     }
 
+    if (attrs.type !== 'page') {
+        delete attrs.show_title_and_feature_image;
+    }
+
     delete attrs.locale;
     delete attrs.author;
     delete attrs.type;

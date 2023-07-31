@@ -126,7 +126,6 @@ const NotificationText = ({message, site, t}) => {
                 syntax={SYNTAX_I18NEXT}
                 string={t('An unexpected error occured. Please try again or <a>contact support</a> if the error persists.')}
                 mapping={{
-                    // eslint-disable-next-line jsx-a11y/anchor-has-content
                     a: <a href={supportAddressMail} onClick={() => {
                         supportAddressMail && window.open(supportAddressMail);
                     }}/>
@@ -156,7 +155,7 @@ export default class PopupNotification extends React.Component {
         }
     }
 
-    closeNotification(e) {
+    closeNotification() {
         this.context.onAction('clearPopupNotification');
     }
 

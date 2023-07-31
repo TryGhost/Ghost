@@ -3,6 +3,8 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const {mapQuery} = require('@tryghost/mongo-utils');
 const postsPublicService = require('../../services/posts-public');
+const getPostServiceInstance = require('../../services/posts/posts-service');
+const postsService = getPostServiceInstance();
 
 const allowedIncludes = ['tags', 'authors', 'tiers', 'sentiment'];
 
@@ -38,7 +40,8 @@ module.exports = {
             'order',
             'page',
             'debug',
-            'absolute_urls'
+            'absolute_urls',
+            'collection'
         ],
         validation: {
             options: {
@@ -56,7 +59,7 @@ module.exports = {
                 ...frame.options,
                 mongoTransformer: rejectPrivateFieldsTransformer
             };
-            return models.Post.findPage(options);
+            return postsService.browsePosts(options);
         }
     },
 
