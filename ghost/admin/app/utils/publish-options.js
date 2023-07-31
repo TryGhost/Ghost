@@ -340,6 +340,7 @@ export default class PublishOptions {
             }
 
             this.post.status = 'draft';
+            this.post.emailOnly = false;
 
             return yield this.post.save();
         } catch (e) {
