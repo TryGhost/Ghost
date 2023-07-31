@@ -1,6 +1,6 @@
-import {QueryClient, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
-import {getGhostPaths} from './helpers';
-import {useServices} from '../components/providers/ServiceProvider';
+import { QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { getGhostPaths } from './helpers';
+import { useServices } from '../components/providers/ServiceProvider';
 
 export interface Meta {
     pagination: {
@@ -69,7 +69,7 @@ interface QueryOptions<ResponseData> {
     dataType: string
     path: string
     defaultSearchParams?: { [key: string]: string };
-    returnData?: (originalData: any) => ResponseData;
+    returnData?: (originalData: unknown) => ResponseData;
 }
 
 export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) => (searchParams?: { [key: string]: string }) => {
@@ -94,10 +94,10 @@ export const createQueryWithId = <ResponseData>(options: QueryOptions<ResponseDa
 
 interface MutationOptions<ResponseData, Payload> extends Omit<QueryOptions<ResponseData>, 'dataType' | 'path'>, Omit<RequestOptions, 'body'> {
     path: (payload: Payload) => string;
-    body?: (payload: Payload) => any;
+    body?: (payload: Payload) => FormData | object;
     searchParams?: (payload: Payload) => { [key: string]: string; };
     invalidateQueries?: { dataType: string; };
-    updateQueries?: { dataType: string; update: (newData: ResponseData, currentData: any, payload: Payload) => any };
+    updateQueries?: { dataType: string; update: <CurrentData>(newData: ResponseData, currentData: CurrentData, payload: Payload) => unknown };
 }
 
 const mutate = <ResponseData, Payload>({fetchApi, path, payload, searchParams, options}: {
@@ -109,11 +109,8 @@ const mutate = <ResponseData, Payload>({fetchApi, path, payload, searchParams, o
 }) => {
     const {defaultSearchParams, body, ...requestOptions} = options;
     const url = apiUrl(path, searchParams || defaultSearchParams);
-    let requestBody = payload && body?.(payload);
-
-    if (requestBody && !(requestBody instanceof FormData)) {
-        requestBody = JSON.stringify(requestBody);
-    }
+    const generatedBody = payload && body?.(payload);
+    const requestBody = (generatedBody && generatedBody instanceof FormData) ? generatedBody : JSON.stringify(generatedBody)
 
     return fetchApi(url, {
         body: requestBody,
@@ -127,7 +124,7 @@ const afterMutate = <ResponseData, Payload>(newData: ResponseData, payload: Payl
     }
 
     if (options.updateQueries) {
-        queryClient.setQueriesData([options.updateQueries.dataType], (data: any) => options.updateQueries!.update(newData, data, payload));
+        queryClient.setQueriesData([options.updateQueries.dataType], (data: unknown) => options.updateQueries!.update(newData, data, payload));
     }
 };
 

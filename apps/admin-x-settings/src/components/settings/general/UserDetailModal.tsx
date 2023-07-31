@@ -523,8 +523,8 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
                 });
                 break;
             }
-        } catch (err: any) {
-            // handle error
+        } catch (err) {
+            // TODO: handle error
         }
     };
 

@@ -1,15 +1,15 @@
-import NiceModal from '@ebay/nice-modal-react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from 'react-hot-toast';
-import Heading from './admin-x-ds/global/Heading';
+import DataProvider from './components/providers/DataProvider';
 import ExitSettingsButton from './components/ExitSettingsButton';
+import Heading from './admin-x-ds/global/Heading';
+import NiceModal from '@ebay/nice-modal-react';
+import RoutingProvider from './components/providers/RoutingProvider';
 import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
-import DataProvider from './components/providers/DataProvider';
-import RoutingProvider from './components/providers/RoutingProvider';
-import { ServicesProvider } from './components/providers/ServiceProvider';
 import { GlobalDirtyStateProvider } from './hooks/useGlobalDirtyState';
 import { OfficialTheme } from './models/themes';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ServicesProvider } from './components/providers/ServiceProvider';
+import { Toaster } from 'react-hot-toast';
 
 interface AppProps {
     ghostVersion: string;

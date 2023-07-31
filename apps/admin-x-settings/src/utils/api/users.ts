@@ -1,5 +1,5 @@
-import {Meta, createMutation, createQuery} from '../apiRequests';
-import {User} from '../../types/api';
+import { Meta, createMutation, createQuery } from '../apiRequests';
+import { User } from '../../types/api';
 
 export interface UsersResponseType {
     meta?: Meta;
@@ -27,9 +27,9 @@ export interface DeleteUserResponse {
 
 const dataType = 'UsersResponseType';
 
-const updateUsers = (newData: UsersResponseType, currentData: UsersResponseType) => ({
-    ...currentData,
-    users: currentData.users.map((user) => {
+const updateUsers = (newData: UsersResponseType, currentData: unknown) => ({
+    ...(currentData as UsersResponseType),
+    users: (currentData as UsersResponseType).users.map((user) => {
         const newUser = newData.users.find(({id}) => id === user.id);
         return newUser || user;
     })
@@ -44,7 +44,7 @@ export const useBrowseUsers = createQuery<UsersResponseType>({
 export const useCurrentUser = createQuery<User>({
     dataType,
     path: '/users/me/',
-    returnData: ({users}) => users?.[0]
+    returnData: (originalData) => (originalData as UsersResponseType).users?.[0]
 });
 
 export const useEditUser = createMutation<UsersResponseType, User>({
@@ -62,9 +62,9 @@ export const useDeleteUser = createMutation<DeleteUserResponse, string>({
     path: id => `/users/${id}/`,
     updateQueries: {
         dataType,
-        update: (_, currentData: UsersResponseType, id) => ({
-            ...currentData,
-            users: currentData.users.filter(user => user.id !== id)
+        update: (_, currentData, id) => ({
+            ...(currentData as UsersResponseType),
+            users: (currentData as UsersResponseType).users.filter(user => user.id !== id)
         })
     }
 });

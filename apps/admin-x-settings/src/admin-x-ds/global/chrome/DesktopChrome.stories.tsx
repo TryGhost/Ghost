@@ -1,4 +1,5 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import { ReactNode } from 'react';
+import type { Meta, StoryObj } from '@storybook/react';
 
 import DesktopChrome from './DesktopChrome';
 
@@ -6,7 +7,7 @@ const meta = {
     title: 'Global / Chrome / Desktop Chrome',
     component: DesktopChrome,
     tags: ['autodocs'],
-    decorators: [(_story: any) => (<div style={{padding: '40px', backgroundColor: '#efefef', display: 'flex', justifyContent: 'center'}}>{_story()}</div>)]
+    decorators: [(_story: () => ReactNode) => (<div style={{padding: '40px', backgroundColor: '#efefef', display: 'flex', justifyContent: 'center'}}>{_story()}</div>)]
 } satisfies Meta<typeof DesktopChrome>;
 
 export default meta;

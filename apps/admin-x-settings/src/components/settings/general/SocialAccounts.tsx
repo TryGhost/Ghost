@@ -1,10 +1,10 @@
-import React, {useRef, useState} from 'react';
+import React, { useRef, useState } from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import validator from 'validator';
-import {getSettingValues} from '../../../utils/helpers';
+import { getSettingValues } from '../../../utils/helpers';
 
 function validateFacebookUrl(newUrl: string) {
     const errMessage = 'The URL must be in a format like https://www.facebook.com/yourPage';
@@ -121,7 +121,7 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         if (focusRef.current) {
                             focusRef.current.value = newUrl;
                         }
-                    } catch (err: any) {
+                    } catch (err) {
                         // ignore error
                     }
                 }}
@@ -143,7 +143,7 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         if (twitterInputRef.current) {
                             twitterInputRef.current.value = newUrl;
                         }
-                    } catch (err: any) {
+                    } catch (err) {
                         // ignore error
                     }
                 }}
@@ -172,14 +172,18 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 } = {};
                 try {
                     validateFacebookUrl(facebookUrl);
-                } catch (e: any) {
-                    formErrors.facebook = e?.message;
+                } catch (e) {
+                    if (e instanceof Error) {
+                        formErrors.facebook = e.message;
+                    }
                 }
 
                 try {
                     validateTwitterUrl(twitterUrl);
-                } catch (e: any) {
-                    formErrors.twitter = e?.message;
+                } catch (e) {
+                    if (e instanceof Error) {
+                        formErrors.twitter = e.message;
+                    }
                 }
 
                 setErrors(formErrors);

@@ -1,5 +1,5 @@
-import {InstalledTheme, Theme} from '../../types/api';
-import {createMutation, createQuery} from '../apiRequests';
+import { InstalledTheme, Theme } from '../../types/api';
+import { createMutation, createQuery } from '../apiRequests';
 
 export interface ThemesResponseType {
     themes: Theme[];
@@ -11,9 +11,9 @@ export interface ThemesInstallResponseType {
 
 const dataType = 'ThemesResponseType';
 
-const updateThemes = (newData: ThemesResponseType, currentData: ThemesResponseType) => ({
-    ...currentData,
-    themes: currentData.themes.map((theme) => {
+const updateThemes = (newData: ThemesResponseType, currentData: unknown) => ({
+    ...(currentData as ThemesResponseType),
+    themes: (currentData as ThemesResponseType).themes.map((theme) => {
         const newTheme = newData.themes.find(({name}) => name === theme.name);
         return newTheme || theme;
     })
@@ -39,9 +39,9 @@ export const useDeleteTheme = createMutation<unknown, string>({
     path: name => `/themes/${name}`,
     updateQueries: {
         dataType,
-        update: (_, currentData: ThemesResponseType, name) => ({
-            ...currentData,
-            themes: currentData.themes.filter(theme => theme.name !== name)
+        update: (_, currentData, name) => ({
+            ...(currentData as ThemesResponseType),
+            themes: (currentData as ThemesResponseType).themes.filter(theme => theme.name !== name)
         })
     }
 });

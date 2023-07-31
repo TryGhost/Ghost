@@ -4,9 +4,9 @@ import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {ReactComponent as TwitterLogo} from '../../../admin-x-ds/assets/images/twitter-logo.svg';
-import {getImageUrl, useUploadImage} from '../../../utils/api/images';
-import {getSettingValues} from '../../../utils/helpers';
+import { ReactComponent as TwitterLogo } from '../../../admin-x-ds/assets/images/twitter-logo.svg';
+import { getImageUrl, useUploadImage } from '../../../utils/api/images';
+import { getSettingValues } from '../../../utils/helpers';
 
 const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -38,8 +38,8 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
         try {
             const imageUrl = getImageUrl(await uploadImage({file}));
             updateSetting('twitter_image', imageUrl);
-        } catch (err: any) {
-            // handle error
+        } catch (err) {
+            // TODO: handle error
         }
     };
 

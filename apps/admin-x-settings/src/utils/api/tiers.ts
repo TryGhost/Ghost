@@ -29,9 +29,9 @@ export const useEditTier = createMutation<TiersResponseType, Tier>({
     body: tier => ({tiers: [tier]}),
     updateQueries: {
         dataType,
-        update: (newData, currentData: TiersResponseType) => ({
-            ...currentData,
-            tiers: currentData.tiers.map((tier) => {
+        update: (newData, currentData) => ({
+            ...(currentData as TiersResponseType),
+            tiers: (currentData as TiersResponseType).tiers.map((tier) => {
                 const newTier = newData.tiers.find(({id}) => id === tier.id);
                 return newTier || tier;
             })

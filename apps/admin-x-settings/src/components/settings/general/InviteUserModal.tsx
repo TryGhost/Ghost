@@ -4,10 +4,10 @@ import Radio from '../../../admin-x-ds/global/form/Radio';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import useRouting from '../../../hooks/useRouting';
 import validator from 'validator';
-import {showToast} from '../../../admin-x-ds/global/Toast';
-import {useAddInvite} from '../../../utils/api/invites';
-import {useBrowseRoles} from '../../../utils/api/roles';
-import {useEffect, useRef, useState} from 'react';
+import { showToast } from '../../../admin-x-ds/global/Toast';
+import { useAddInvite } from '../../../utils/api/invites';
+import { useBrowseRoles } from '../../../utils/api/roles';
+import { useEffect, useRef, useState } from 'react';
 
 type RoleType = 'administrator' | 'editor' | 'author' | 'contributor';
 
@@ -81,7 +81,7 @@ const InviteUserModal = NiceModal.create(() => {
                 message: `Invitation successfully sent to ${email}`,
                 type: 'success'
             });
-        } catch (e: any) {
+        } catch (e) {
             setSaveState('error');
 
             showToast({

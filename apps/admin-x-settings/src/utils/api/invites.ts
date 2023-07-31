@@ -1,4 +1,4 @@
-import {Meta, createMutation, createQuery} from '../apiRequests';
+import { Meta, createMutation, createQuery } from '../apiRequests';
 
 export interface UserInvite {
     created_at: string;
@@ -43,9 +43,9 @@ export const useDeleteInvite = createMutation<unknown, string>({
     method: 'DELETE',
     updateQueries: {
         dataType,
-        update: (_, currentData: InvitesResponseType, id) => ({
-            ...currentData,
-            invites: currentData.invites.filter(invite => invite.id !== id)
+        update: (_, currentData, id) => ({
+            ...(currentData as InvitesResponseType),
+            invites: (currentData as InvitesResponseType).invites.filter(invite => invite.id !== id)
         })
     }
 });

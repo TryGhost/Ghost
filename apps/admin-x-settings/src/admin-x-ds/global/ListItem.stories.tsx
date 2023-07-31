@@ -1,5 +1,5 @@
-import React from 'react';
-import type {Meta, StoryObj} from '@storybook/react';
+import React, { ReactNode } from 'react';
+import type { Meta, StoryObj } from '@storybook/react';
 
 import Avatar from './Avatar';
 import Button from './Button';
@@ -9,7 +9,7 @@ const meta = {
     title: 'Global / List / List Item',
     component: ListItem,
     tags: ['autodocs'],
-    decorators: [(_story: any) => (<div style={{maxWidth: '600px'}}>{_story()}</div>)],
+    decorators: [(_story: () => ReactNode) => (<div style={{maxWidth: '600px'}}>{_story()}</div>)],
     argTypes: {
         title: {control: 'text'},
         detail: {control: 'text'}
