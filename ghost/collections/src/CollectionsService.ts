@@ -105,7 +105,6 @@ type QueryOptions = {
 
 interface PostsRepository {
     getAll(options: QueryOptions): Promise<CollectionPost[]>;
-    getBulk(ids: string[], transaction?: Knex.Transaction): Promise<CollectionPost[]>;
 }
 
 export class CollectionsService {
@@ -392,8 +391,10 @@ export class CollectionsService {
     }
 
     async updatePostsInCollections(postIds: string[], collections: Collection[], transaction: Knex.Transaction) {
-        const posts = await this.postsRepository.getBulk(postIds, transaction);
-
+        const posts = await this.postsRepository.getAll({
+            filter: `id:[${postIds.join(',')}]`,
+            transaction: transaction
+        });
 
         for (const collection of collections) {
             for (const post of posts) {
