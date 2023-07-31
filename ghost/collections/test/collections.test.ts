@@ -8,7 +8,10 @@ import {
     PostEditedEvent,
     TagDeletedEvent
 } from '../src/index';
-import {PostsBulkDestroyedEvent} from '@tryghost/post-events';
+import {
+    PostsBulkDestroyedEvent,
+    PostsBulkUnpublishedEvent
+} from '@tryghost/post-events';
 import {PostsRepositoryInMemory} from './fixtures/PostsRepositoryInMemory';
 import {posts as postFixtures} from './fixtures/posts';
 import {CollectionPost} from '../src/CollectionPost';
@@ -22,7 +25,7 @@ const initPostsRepository = (posts: any): PostsRepositoryInMemory => {
             title: post.title,
             slug: post.slug,
             featured: post.featured,
-            published_at: post.published_at,
+            published_at: post.published_at?.toISOString(),
             tags: post.tags,
             deleted: false
         };
@@ -411,8 +414,8 @@ describe('CollectionsService', function () {
 
                 collectionsService.subscribeToEvents();
                 const postDeletedEvent = PostsBulkDestroyedEvent.create([
-                    posts[0].id,
-                    posts[1].id
+                    postFixtures[0].id,
+                    postFixtures[1].id
                 ]);
 
                 DomainEvents.dispatch(postDeletedEvent);
@@ -421,6 +424,39 @@ describe('CollectionsService', function () {
                 assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 2);
                 assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 0);
                 assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 0);
+            });
+
+            it('Updates collections with publish filter when PostsBulkUnpublishedEvent event is produced', async function () {
+                const publishedPostsCollection = await collectionsService.createCollection({
+                    title: 'Published Posts',
+                    slug: 'published-posts',
+                    type: 'automatic',
+                    filter: 'published_at:>=2023-05-00T00:00:00.000Z'
+                });
+
+                assert.equal((await collectionsService.getById(publishedPostsCollection.id))?.posts.length, 2, 'Only two post fixtures are published on the 5th month of 2023');
+
+                assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 2);
+                assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 2);
+                assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 2);
+
+                collectionsService.subscribeToEvents();
+
+                postsRepository.save(Object.assign(postFixtures[2], {
+                    published_at: null
+                }));
+                const postsBulkUnpublishedEvent = PostsBulkUnpublishedEvent.create([
+                    postFixtures[2].id
+                ]);
+
+                DomainEvents.dispatch(postsBulkUnpublishedEvent);
+                await DomainEvents.allSettled();
+
+                assert.equal((await collectionsService.getById(publishedPostsCollection.id))?.posts.length, 1, 'Only one post left as published on the 5th month of 2023');
+
+                assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts.length, 2, 'There should be no change to the featured filter collection');
+                assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 2, 'There should be no change to the non-featured filter collection');
+                assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 2, 'There should be no change to the manual collection');
             });
 
             it('Updates only index collection when a non-featured post is added', async function () {
@@ -442,7 +478,7 @@ describe('CollectionsService', function () {
                 assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 2);
             });
 
-            it('Moves post form featured to non featured collection when the featured attribute is changed', async function () {
+            it('Moves post from featured to non featured collection when the featured attribute is changed', async function () {
                 collectionsService.subscribeToEvents();
                 const newFeaturedPost: CollectionPost & {deleted: false} = {
                     id: 'post-featured',
