@@ -738,9 +738,28 @@ module.exports = {
         },
         newsletter_id: {type: 'string', maxlength: 24, nullable: true, references: 'newsletters.id', cascadeDelete: false}
     },
+    donation_payment_events: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        name: {type: 'string', maxlength: 191, nullable: true},
+        email: {type: 'string', maxlength: 191, nullable: false, unique: false, validations: {isEmail: true}},
+        member_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'members.id', setNullDelete: true},
+        amount: {type: 'integer', nullable: false},
+        currency: {type: 'string', maxlength: 50, nullable: false},
+        attribution_id: {type: 'string', maxlength: 24, nullable: true},
+        attribution_type: {
+            type: 'string', maxlength: 50, nullable: true, validations: {
+                isIn: [['url', 'post', 'page', 'author', 'tag']]
+            }
+        },
+        attribution_url: {type: 'string', maxlength: 2000, nullable: true},
+        referrer_source: {type: 'string', maxlength: 191, nullable: true},
+        referrer_medium: {type: 'string', maxlength: 191, nullable: true},
+        referrer_url: {type: 'string', maxlength: 2000, nullable: true},
+        created_at: {type: 'dateTime', nullable: false}
+    },
     stripe_products: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        product_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'products.id'},
+        product_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'products.id'},
         stripe_product_id: {type: 'string', maxlength: 255, nullable: false, unique: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
@@ -755,7 +774,7 @@ module.exports = {
         // so we should decide whether we should reduce it down in the future
         currency: {type: 'string', maxlength: 191, nullable: false},
         amount: {type: 'integer', nullable: false},
-        type: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'recurring', validations: {isIn: [['recurring', 'one_time']]}},
+        type: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'recurring', validations: {isIn: [['recurring', 'one_time', 'donation']]}},
         interval: {type: 'string', maxlength: 50, nullable: true},
         description: {type: 'string', maxlength: 191, nullable: true},
         created_at: {type: 'dateTime', nullable: false},

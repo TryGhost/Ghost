@@ -31,6 +31,7 @@ describe('Exporter', function () {
                 'comment_likes',
                 'comment_reports',
                 'custom_theme_settings',
+                'donation_payment_events',
                 'email_batches',
                 'email_recipient_failures',
                 'email_recipients',

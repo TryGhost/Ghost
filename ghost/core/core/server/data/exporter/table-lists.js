@@ -3,6 +3,7 @@ const BACKUP_TABLES = [
     'actions',
     'api_keys',
     'brute',
+    'donation_payment_events',
     'emails',
     'integrations',
     'invites',
