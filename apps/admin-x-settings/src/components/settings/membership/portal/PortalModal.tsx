@@ -3,16 +3,17 @@ import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationM
 import LookAndFeel from './LookAndFeel';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import PortalPreview from './PortalPreview';
-import React, {useContext, useState} from 'react';
+import React, {useState} from 'react';
 import SignupOptions from './SignupOptions';
 import TabView, {Tab} from '../../../../admin-x-ds/global/TabView';
 import useForm, {Dirtyable} from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
+import useSettings from '../../../../hooks/useSettings';
 import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
 import {Setting, SettingValue, Tier} from '../../../../types/api';
-import {SettingsContext} from '../../../providers/SettingsProvider';
 import {fullEmailAddress, getPaidActiveTiers} from '../../../../utils/helpers';
-import {useTiers} from '../../../providers/ServiceProvider';
+import {useEditTier} from '../../../../utils/api/tiers';
+import {useGlobalData} from '../../../providers/DataProvider';
 
 const Sidebar: React.FC<{
     localSettings: Setting[]
@@ -66,9 +67,11 @@ const PortalModal: React.FC = () => {
 
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('signup');
 
-    const {settings, saveSettings, siteData} = useContext(SettingsContext);
-    const {data: allTiers, update: updateTiers} = useTiers();
+    const {settings, saveSettings, siteData} = useSettings();
+    const {tiers: allTiers} = useGlobalData();
     const tiers = getPaidActiveTiers(allTiers);
+
+    const {mutateAsync: editTier} = useEditTier();
 
     const {formState, saveState, handleSave, updateForm} = useForm({
         initialState: {
@@ -77,7 +80,8 @@ const PortalModal: React.FC = () => {
         },
 
         onSave: async () => {
-            await updateTiers(...formState.tiers.filter(tier => tier.dirty));
+            await Promise.all(formState.tiers.filter(({dirty}) => dirty).map(tier => editTier(tier)));
+
             const {meta, settings: currentSettings} = await saveSettings(formState.settings.filter(setting => setting.dirty));
 
             if (meta?.sent_email_verification) {

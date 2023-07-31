@@ -1,6 +1,18 @@
-import {ConfigResponseType, CustomThemeSettingsResponseType, ImagesResponseType, InvitesResponseType, LabelsResponseType, OffersResponseType, PostsResponseType, RolesResponseType, SettingsResponseType, SiteResponseType, ThemesResponseType, TiersResponseType, UsersResponseType} from '../../src/utils/api';
-import {Page, Request} from '@playwright/test';
-import {readFileSync} from 'fs';
+import { ConfigResponseType } from '../../src/utils/api/config'
+import { CustomThemeSettingsResponseType } from '../../src/utils/api/customThemeSettings'
+import { ImagesResponseType } from '../../src/utils/api/images'
+import { InvitesResponseType } from '../../src/utils/api/invites'
+import { LabelsResponseType } from '../../src/utils/api/labels'
+import { OffersResponseType } from '../../src/utils/api/offers'
+import { Page, Request } from '@playwright/test'
+import { PostsResponseType } from '../../src/utils/api/posts'
+import { RolesResponseType } from '../../src/utils/api/roles'
+import { SettingsResponseType } from '../../src/utils/api/settings'
+import { SiteResponseType } from '../../src/utils/api/site'
+import { ThemesResponseType } from '../../src/utils/api/themes'
+import { TiersResponseType } from '../../src/utils/api/tiers'
+import { UsersResponseType } from '../../src/utils/api/users'
+import { readFileSync } from 'fs'
 
 export const responseFixtures = {
     settings: JSON.parse(readFileSync(`${__dirname}/responses/settings.json`).toString()) as SettingsResponseType,
@@ -80,7 +92,7 @@ interface Responses {
 
 interface RequestRecord {
     url?: string
-    body?: any
+    body?: object | null
     headers?: {[key: string]: string}
 }
 
@@ -472,7 +484,7 @@ export async function mockApi({page,responses}: {page: Page, responses?: Respons
 
 interface ResponseOptions {
     condition?: (request: Request) => boolean
-    body: any
+    body: object | string
     status?: number
     updateLastRequest: RequestRecord
 }
@@ -492,7 +504,7 @@ async function mockApiResponse({page, path, respondTo}: { page: Page; path: stri
 
         await route.fulfill({
             status: response.status || 200,
-            body: JSON.stringify(response.body)
+            body: typeof response.body === 'string' ? response.body : JSON.stringify(response.body)
         });
     });
 }

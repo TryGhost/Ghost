@@ -1,30 +1,9 @@
-import {expect, test} from '@playwright/test';
-import {mockApi, responseFixtures} from '../../utils/e2e';
+import { expect, test } from '@playwright/test';
+import { mockApi, responseFixtures } from '../../utils/e2e';
 
 test.describe('Tier settings', async () => {
     test('Supports creating a new tier', async ({page}) => {
-        const lastApiRequests = await mockApi({page, responses: {
-            tiers: {
-                add: {
-                    tiers: [{
-                        id: 'new-tier',
-                        type: 'paid',
-                        active: true,
-                        name: 'Plus tier',
-                        slug: 'plus-tier',
-                        description: null,
-                        monthly_price: 800,
-                        yearly_price: 8000,
-                        benefits: [],
-                        welcome_page_url: null,
-                        trial_days: 0,
-                        visibility: 'public',
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString()
-                    }]
-                }
-            }
-        }});
+        await mockApi({page});
 
         await page.goto('/');
 
@@ -43,6 +22,31 @@ test.describe('Tier settings', async () => {
         await modal.getByLabel('Name').fill('Plus tier');
         await modal.getByLabel('Monthly price').fill('8');
         await modal.getByLabel('Yearly price').fill('80');
+
+        const newTier = {
+            id: 'new-tier',
+            type: 'paid',
+            active: true,
+            name: 'Plus tier',
+            slug: 'plus-tier',
+            description: null,
+            monthly_price: 800,
+            yearly_price: 8000,
+            benefits: [],
+            welcome_page_url: null,
+            trial_days: 0,
+            visibility: 'public',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+        }
+
+        const lastApiRequests = await mockApi({page, responses: {
+            tiers: {
+                add: { tiers: [newTier] },
+                // This request will be reloaded after the new tier is added
+                browse: { tiers: [...responseFixtures.tiers.tiers, newTier] }
+            }
+        }});
 
         await modal.getByRole('button', {name: 'Save & close'}).click();
 

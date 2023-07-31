@@ -1,14 +1,16 @@
 import Heading from '../Heading';
 import Hint from '../Hint';
-import HtmlEditor, {HtmlEditorProps} from './HtmlEditor';
+import HtmlEditor, { HtmlEditorProps } from './HtmlEditor';
 import React from 'react';
 import clsx from 'clsx';
+
+export type EditorConfig = { editor: { url: string; version: string; } }
 
 export type HtmlFieldProps = HtmlEditorProps & {
     /**
      * Should be passed the Ghost instance config to get the editor JS URL
      */
-    config: { editor: { url: string; version: string; } };
+    config: EditorConfig;
     title?: string;
     hideTitle?: boolean;
     error?: boolean;

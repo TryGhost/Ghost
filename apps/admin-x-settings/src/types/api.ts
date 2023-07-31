@@ -1,3 +1,7 @@
+export type JSONValue = string|number|boolean|null|Date|JSONObject|JSONArray;
+export interface JSONObject { [key: string]: JSONValue }
+export interface JSONArray extends Array<string|number|boolean|Date|JSONObject|JSONValue> {}
+
 export type SettingValue = string | boolean | null;
 
 export type Setting = {
@@ -5,9 +9,7 @@ export type Setting = {
     value: SettingValue;
 }
 
-export type Config = {
-    [key: string]: any;
-}
+export type Config = JSONObject;
 
 export type User = {
     id: string;

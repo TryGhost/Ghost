@@ -1,12 +1,12 @@
 import CheckboxGroup from '../../../../admin-x-ds/global/form/CheckboxGroup';
 import Form from '../../../../admin-x-ds/global/form/Form';
-import HtmlField from '../../../../admin-x-ds/global/form/HtmlField';
-import React, {useContext, useEffect, useMemo} from 'react';
+import HtmlField, { EditorConfig } from '../../../../admin-x-ds/global/form/HtmlField';
+import React, { useEffect, useMemo } from 'react';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import {CheckboxProps} from '../../../../admin-x-ds/global/form/Checkbox';
-import {Setting, SettingValue, Tier} from '../../../../types/api';
-import {SettingsContext} from '../../../providers/SettingsProvider';
-import {checkStripeEnabled, getSettingValues} from '../../../../utils/helpers';
+import { CheckboxProps } from '../../../../admin-x-ds/global/form/Checkbox';
+import { Setting, SettingValue, Tier } from '../../../../types/api';
+import { checkStripeEnabled, getSettingValues } from '../../../../utils/helpers';
+import { useGlobalData } from '../../../providers/DataProvider';
 
 const SignupOptions: React.FC<{
     localSettings: Setting[]
@@ -16,7 +16,7 @@ const SignupOptions: React.FC<{
     errors: Record<string, string | undefined>
     setError: (key: string, error: string | undefined) => void
 }> = ({localSettings, updateSetting, localTiers, updateTier, errors, setError}) => {
-    const {config} = useContext(SettingsContext);
+    const {config} = useGlobalData();
 
     const [membersSignupAccess, portalName, portalSignupTermsHtml, portalSignupCheckboxRequired, portalPlansJson] = getSettingValues(
         localSettings, ['members_signup_access', 'portal_name', 'portal_signup_terms_html', 'portal_signup_checkbox_required', 'portal_plans']
@@ -119,7 +119,7 @@ const SignupOptions: React.FC<{
         )}
 
         <HtmlField
-            config={config as { editor: any }}
+            config={config as EditorConfig}
             error={Boolean(errors.portal_signup_terms_html)}
             hint={errors.portal_signup_terms_html || <>Recommended: <strong>115</strong> characters. You&apos;ve used <strong className="text-green">{signupTermsLength}</strong></>}
             nodes='MINIMAL_NODES'

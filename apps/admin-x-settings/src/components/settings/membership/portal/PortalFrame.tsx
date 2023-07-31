@@ -1,7 +1,7 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
-import {Setting, SiteData, Tier} from '../../../../types/api';
-import {getSettingValue} from '../../../../utils/helpers';
+import { Setting, SiteData, Tier } from '../../../../types/api';
+import { getSettingValue } from '../../../../utils/helpers';
 
 type PortalFrameProps = {
     settings: Setting[];
@@ -91,7 +91,7 @@ const PortalFrame: React.FC<PortalFrameProps> = ({settings, tiers, selectedTab})
     });
 
     useEffect(() => {
-        const messageListener = (event: any) => {
+        const messageListener = (event: MessageEvent<'portal-ready' | {type: string}>) => {
             if (!href) {
                 return;
             }

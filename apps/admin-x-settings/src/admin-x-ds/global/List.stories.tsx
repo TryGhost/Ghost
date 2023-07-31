@@ -1,8 +1,9 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 
 import * as ListItemStories from './ListItem.stories';
 import List from './List';
 import ListItem from './ListItem';
+import { ReactNode } from 'react';
 
 const meta = {
     title: 'Global / List',
@@ -29,7 +30,7 @@ export const Default: Story = {
         children: listItems,
         hint: 'And here is a hint for the whole list'
     },
-    decorators: [(_story: any) => (<div style={{maxWidth: '600px'}}>{_story()}</div>)]
+    decorators: [(_story: () => ReactNode) => (<div style={{maxWidth: '600px'}}>{_story()}</div>)]
 };
 
 export const PageLevel: Story = {

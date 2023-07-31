@@ -1,4 +1,4 @@
-import React, {ReactNode, Suspense, useCallback, useMemo} from 'react';
+import React, { ReactNode, Suspense, useCallback, useMemo } from 'react';
 
 export interface HtmlEditorProps {
     value?: string
@@ -10,12 +10,14 @@ export interface HtmlEditorProps {
 
 declare global {
     interface Window {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         '@tryghost/koenig-lexical': any;
     }
 }
 
 const fetchKoenig = function ({editorUrl, editorVersion}: { editorUrl: string; editorVersion: string; }) {
     let status = 'pending';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let response: any;
 
     const fetchPackage = async () => {
@@ -64,7 +66,7 @@ class ErrorHandler extends React.Component<{ children: ReactNode }> {
         return {hasError: true};
     }
 
-    componentDidCatch(error: any, errorInfo: any) {
+    componentDidCatch(error: unknown, errorInfo: unknown) {
         console.error(error, errorInfo); // eslint-disable-line
     }
 
@@ -87,7 +89,7 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
     placeholder,
     nodes
 }) => {
-    const onError = useCallback((error: any) => {
+    const onError = useCallback((error: unknown) => {
         // ensure we're still showing errors in development
         console.error(error); // eslint-disable-line
 
@@ -105,6 +107,7 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
         // don't rethrow, Lexical will attempt to gracefully recover
     }, []);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const koenig = useMemo(() => new Proxy({} as { [key: string]: any }, {
         get: (_target, prop) => {
             return editor.read()[prop];

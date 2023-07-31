@@ -1,5 +1,5 @@
 import Form from '../../../../admin-x-ds/global/form/Form';
-import React, {useContext, useState} from 'react';
+import React, {useState} from 'react';
 import Select from '../../../../admin-x-ds/global/form/Select';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
@@ -15,7 +15,7 @@ import {ReactComponent as PortalIcon2} from '../../../../assets/icons/portal-ico
 import {ReactComponent as PortalIcon3} from '../../../../assets/icons/portal-icon-3.svg';
 import {ReactComponent as PortalIcon4} from '../../../../assets/icons/portal-icon-4.svg';
 import {ReactComponent as PortalIcon5} from '../../../../assets/icons/portal-icon-5.svg';
-import {ServicesContext} from '../../../providers/ServiceProvider';
+import {getImageUrl, useUploadImage} from '../../../../utils/api/images';
 
 const defaultButtonIcons = [
     {
@@ -44,7 +44,7 @@ const LookAndFeel: React.FC<{
     localSettings: Setting[]
     updateSetting: (key: string, setting: SettingValue) => void
 }> = ({localSettings, updateSetting}) => {
-    const {fileService} = useContext(ServicesContext);
+    const {mutateAsync: uploadImage} = useUploadImage();
 
     const [portalButton, portalButtonStyle, portalButtonIcon, portalButtonSignupText] = getSettingValues(localSettings, ['portal_button', 'portal_button_style', 'portal_button_icon', 'portal_button_signup_text']);
 
@@ -54,7 +54,7 @@ const LookAndFeel: React.FC<{
     const [uploadedIcon, setUploadedIcon] = useState(isDefaultIcon ? undefined : currentIcon);
 
     const handleImageUpload = async (file: File) => {
-        const imageUrl = await fileService!.uploadImage(file);
+        const imageUrl = getImageUrl(await uploadImage({file}));
         updateSetting('portal_button_icon', imageUrl);
         setUploadedIcon(imageUrl);
     };

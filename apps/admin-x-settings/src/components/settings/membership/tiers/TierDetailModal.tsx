@@ -3,8 +3,8 @@ import Form from '../../../../admin-x-ds/global/form/Form';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import Icon from '../../../../admin-x-ds/global/Icon';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React, {useState} from 'react';
+import NiceModal, { useModal } from '@ebay/nice-modal-react';
+import React, { useState } from 'react';
 import Select from '../../../../admin-x-ds/global/form/Select';
 import SortableList from '../../../../admin-x-ds/global/SortableList';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
@@ -14,12 +14,12 @@ import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import useSortableIndexedList from '../../../../hooks/useSortableIndexedList';
-import {Tier} from '../../../../types/api';
-import {currencies, currencyFromDecimal, currencyGroups, currencyToDecimal, getSymbol} from '../../../../utils/currency';
-import {getSettingValues} from '../../../../utils/helpers';
-import {showToast} from '../../../../admin-x-ds/global/Toast';
+import { Tier } from '../../../../types/api';
+import { currencies, currencyFromDecimal, currencyGroups, currencyToDecimal, getSymbol } from '../../../../utils/currency';
+import { getSettingValues } from '../../../../utils/helpers';
+import { showToast } from '../../../../admin-x-ds/global/Toast';
 import { toast } from 'react-hot-toast';
-import {useTiers} from '../../../providers/ServiceProvider';
+import { useAddTier, useEditTier } from '../../../../utils/api/tiers';
 
 interface TierDetailModalProps {
     tier?: Tier
@@ -36,7 +36,8 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
 
     const modal = useModal();
     const {updateRoute} = useRouting();
-    const {update: updateTier, create: createTier} = useTiers();
+    const {mutateAsync: updateTier} = useEditTier();
+    const {mutateAsync: createTier} = useAddTier();
     const [hasFreeTrial, setHasFreeTrial] = React.useState(!!tier?.trial_days);
     const {localSettings} = useSettingGroup();
     const siteTitle = getSettingValues(localSettings, ['title']) as string[];

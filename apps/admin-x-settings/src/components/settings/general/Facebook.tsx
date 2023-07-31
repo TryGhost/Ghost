@@ -1,11 +1,11 @@
 import ImageUpload from '../../../admin-x-ds/global/form/ImageUpload';
-import React, {useContext} from 'react';
+import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {ReactComponent as FacebookLogo} from '../../../admin-x-ds/assets/images/facebook-logo.svg';
-import {FileService, ServicesContext} from '../../providers/ServiceProvider';
+import {getImageUrl, useUploadImage} from '../../../utils/api/images';
 import {getSettingValues} from '../../../utils/helpers';
 
 const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
@@ -20,7 +20,7 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
         handleEditingChange
     } = useSettingGroup();
 
-    const {fileService} = useContext(ServicesContext) as {fileService: FileService};
+    const {mutateAsync: uploadImage} = useUploadImage();
 
     const [
         facebookTitle, facebookDescription, facebookImage, siteTitle, siteDescription
@@ -35,7 +35,7 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const handleImageUpload = async (file: File) => {
-        const imageUrl = await fileService.uploadImage(file);
+        const imageUrl = getImageUrl(await uploadImage({file}));
         updateSetting('og_image', imageUrl);
     };
 

@@ -1,4 +1,5 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import { ReactNode } from 'react';
+import type { Meta, StoryObj } from '@storybook/react';
 
 import Toggle from './Toggle';
 
@@ -6,7 +7,7 @@ const meta = {
     title: 'Global / Form / Toggle',
     component: Toggle,
     tags: ['autodocs'],
-    decorators: [(_story: any) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)]
+    decorators: [(_story: () => ReactNode) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)]
 } satisfies Meta<typeof Toggle>;
 
 export default meta;

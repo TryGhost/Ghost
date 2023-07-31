@@ -1,8 +1,8 @@
-import React, {useContext, useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import useForm, {SaveState} from './useForm';
 import useGlobalDirtyState from './useGlobalDirtyState';
+import useSettings from './useSettings';
 import {Setting, SettingValue, SiteData} from '../types/api';
-import {SettingsContext} from '../components/providers/SettingsProvider';
 
 interface LocalSetting extends Setting {
     dirty?: boolean;
@@ -24,8 +24,7 @@ const useSettingGroup = (): SettingGroupHook => {
     // create a ref to focus the input field
     const focusRef = useRef<HTMLInputElement>(null);
 
-    // get the settings and saveSettings function from the Settings Context
-    const {siteData, settings, saveSettings} = useContext(SettingsContext) || {};
+    const {siteData, settings, saveSettings} = useSettings();
 
     const [isEditing, setEditing] = useState(false);
 

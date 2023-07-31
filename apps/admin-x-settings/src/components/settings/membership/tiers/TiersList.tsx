@@ -5,27 +5,24 @@ import NoValueLabel from '../../../../admin-x-ds/global/NoValueLabel';
 import React from 'react';
 import TierDetailModal from './TierDetailModal';
 import useRouting from '../../../../hooks/useRouting';
-import {Tier} from '../../../../types/api';
-import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
-import {numberWithCommas} from '../../../../utils/helpers';
+import { Tier } from '../../../../types/api';
+import { currencyToDecimal, getSymbol } from '../../../../utils/currency';
+import { numberWithCommas } from '../../../../utils/helpers';
+import { useEditTier } from '../../../../utils/api/tiers';
 
 interface TiersListProps {
     tab?: string;
     tiers: Tier[];
-    updateTier: (data: Tier) => Promise<void>;
 }
 
 interface TierCardProps {
     tier: Tier;
-    updateTier: (data: Tier) => Promise<void>;
 }
 
 const cardContainerClasses = 'group flex min-h-[200px] flex-col items-start justify-between gap-4 self-stretch rounded-sm border border-grey-300 p-4 transition-all hover:border-grey-400';
 
-const TierCard: React.FC<TierCardProps> = ({
-    tier,
-    updateTier
-}) => {
+const TierCard: React.FC<TierCardProps> = ({tier}) => {
+    const {mutateAsync: updateTier} = useEditTier();
     const currency = tier?.currency || 'USD';
     const currencySymbol = currency ? getSymbol(currency) : '$';
 
@@ -60,8 +57,7 @@ const TierCard: React.FC<TierCardProps> = ({
 
 const TiersList: React.FC<TiersListProps> = ({
     tab,
-    tiers,
-    updateTier
+    tiers
 }) => {
     const {updateRoute} = useRouting();
     const openTierModal = () => {
@@ -79,7 +75,7 @@ const TiersList: React.FC<TiersListProps> = ({
     return (
         <div className='mt-4 grid grid-cols-3 gap-4'>
             {tiers.map((tier) => {
-                return <TierCard tier={tier} updateTier={updateTier} />;
+                return <TierCard tier={tier} />;
             })}
             {tab === 'active-tiers' && (
                 <button className={`${cardContainerClasses} group cursor-pointer`} type='button' onClick={() => {

@@ -1,4 +1,5 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import { ReactNode } from 'react';
+import type { Meta, StoryContext, StoryObj } from '@storybook/react';
 
 import Modal from './Modal';
 import ModalContainer from './ModalContainer';
@@ -9,7 +10,7 @@ const meta = {
     title: 'Global / Modal',
     component: Modal,
     tags: ['autodocs'],
-    decorators: [(_story: any, context: any) => (
+    decorators: [(_story: () => ReactNode, context: StoryContext) => (
         <NiceModal.Provider>
             <ModalContainer {...context.args} />
         </NiceModal.Provider>

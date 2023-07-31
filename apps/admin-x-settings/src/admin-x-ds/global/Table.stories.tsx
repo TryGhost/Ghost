@@ -1,4 +1,5 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import { ReactNode } from 'react';
+import type { Meta, StoryObj } from '@storybook/react';
 
 import Table from './Table';
 import TableCell from './TableCell';
@@ -34,5 +35,5 @@ export const Default: Story = {
     args: {
         children: tableRows
     },
-    decorators: [(_story: any) => (<div style={{maxWidth: '600px'}}>{_story()}</div>)]
+    decorators: [(_story: () => ReactNode) => (<div style={{maxWidth: '600px'}}>{_story()}</div>)]
 };
