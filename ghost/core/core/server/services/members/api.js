@@ -214,7 +214,8 @@ function createApiInstance(config) {
         labsService: labsService,
         newslettersService: newslettersService,
         memberAttributionService: memberAttributionService.service,
-        emailSuppressionList
+        emailSuppressionList,
+        settingsCache
     });
 
     return membersApiInstance;

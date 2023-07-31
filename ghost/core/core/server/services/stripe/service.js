@@ -9,6 +9,7 @@ const events = require('../../lib/common/events');
 const models = require('../../models');
 const {getConfig} = require('./config');
 const settingsHelpers = require('../settings-helpers');
+const donationService = require('../donations');
 
 async function configureApi() {
     const cfg = getConfig({settingsHelpers, config, urlUtils});
@@ -54,7 +55,8 @@ module.exports = new StripeService({
                 value: data.secret
             }]);
         }
-    }
+    },
+    donationService
 });
 
 module.exports.init = async function init() {
