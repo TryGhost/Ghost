@@ -10,10 +10,4 @@ export class PostsRepositoryInMemory extends InMemoryRepository<string, Collecti
             tags: entity.tags.map(tag => tag.slug)
         };
     }
-
-    async getBulk(ids: string[]) {
-        return this.getAll({
-            filter: `id:[${ids.join(',')}]`
-        });
-    }
 }
