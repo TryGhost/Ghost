@@ -1,16 +1,16 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import StripeButton from '../../../admin-x-ds/settings/StripeButton';
 import TabView from '../../../admin-x-ds/global/TabView';
 import TiersList from './tiers/TiersList';
 import useRouting from '../../../hooks/useRouting';
-import {Tier} from '../../../types/api';
-import {getActiveTiers, getArchivedTiers} from '../../../utils/helpers';
-import {useTiers} from '../../providers/ServiceProvider';
+import { Tier } from '../../../types/api';
+import { getActiveTiers, getArchivedTiers } from '../../../utils/helpers';
+import { useGlobalData } from '../../providers/DataProvider';
 
 const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [selectedTab, setSelectedTab] = useState('active-tiers');
-    const {data: tiers, update: updateTier} = useTiers();
+    const {tiers} = useGlobalData();
     const activeTiers = getActiveTiers(tiers);
     const archivedTiers = getArchivedTiers(tiers);
     const {updateRoute} = useRouting();
@@ -34,12 +34,12 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
         {
             id: 'active-tiers',
             title: 'Active',
-            contents: (<TiersList tab='active-tiers' tiers={sortTiers(activeTiers)} updateTier={updateTier} />)
+            contents: (<TiersList tab='active-tiers' tiers={sortTiers(activeTiers)} />)
         },
         {
             id: 'archived-tiers',
             title: 'Archived',
-            contents: (<TiersList tab='archive-tiers' tiers={sortTiers(archivedTiers)} updateTier={updateTier} />)
+            contents: (<TiersList tab='archive-tiers' tiers={sortTiers(archivedTiers)} />)
         }
     ];
 

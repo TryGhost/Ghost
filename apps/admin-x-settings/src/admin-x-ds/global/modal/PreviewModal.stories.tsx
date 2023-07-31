@@ -1,16 +1,17 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import { ReactNode } from 'react';
+import type { Meta, StoryContext, StoryObj } from '@storybook/react';
 
 import Heading from '../Heading';
 import NiceModal from '@ebay/nice-modal-react';
 import PreviewModal from './PreviewModal';
 import PreviewModalContainer from './PreviewModalContainer';
-import {Tab} from '../TabView';
+import { Tab } from '../TabView';
 
 const meta = {
     title: 'Global / Modal / Preview Modal',
     component: PreviewModal,
     tags: ['autodocs'],
-    decorators: [(_story: any, context: any) => (
+    decorators: [(_story: () => ReactNode, context: StoryContext) => (
         <NiceModal.Provider>
             <PreviewModalContainer {...context.args} />
         </NiceModal.Provider>

@@ -1,13 +1,14 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import { ReactNode } from 'react';
+import type { Meta, StoryObj } from '@storybook/react';
 
 import ToastContainer from './ToastContainer';
-import {Toaster} from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
 
 const meta = {
     title: 'Global / Toast',
     component: ToastContainer,
     tags: ['autodocs'],
-    decorators: [(_story: any) => (
+    decorators: [(_story: () => ReactNode) => (
         <>
             <Toaster />
             {_story()}

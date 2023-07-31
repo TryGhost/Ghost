@@ -2,20 +2,19 @@ import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 import Radio from '../../../admin-x-ds/global/form/Radio';
 import TextField from '../../../admin-x-ds/global/form/TextField';
-import useRoles from '../../../hooks/useRoles';
 import useRouting from '../../../hooks/useRouting';
-import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
-import {ServicesContext} from '../../providers/ServiceProvider';
-import {showToast} from '../../../admin-x-ds/global/Toast';
-import {useContext, useEffect, useRef, useState} from 'react';
+import { showToast } from '../../../admin-x-ds/global/Toast';
+import { useAddInvite } from '../../../utils/api/invites';
+import { useBrowseRoles } from '../../../utils/api/roles';
+import { useEffect, useRef, useState } from 'react';
 
 type RoleType = 'administrator' | 'editor' | 'author' | 'contributor';
 
 const InviteUserModal = NiceModal.create(() => {
-    const {api} = useContext(ServicesContext);
-    const {roles, assignableRoles, getRoleId} = useRoles();
-    const {invites, setInvites} = useStaffUsers();
+    const rolesQuery = useBrowseRoles();
+    const assignableRolesQuery = useBrowseRoles({limit: 'all', permissions: 'assign'});
+
     const {updateRoute} = useRouting();
 
     const focusRef = useRef<HTMLInputElement>(null);
@@ -25,6 +24,8 @@ const InviteUserModal = NiceModal.create(() => {
     const [errors, setErrors] = useState<{
         email?: string;
     }>({});
+
+    const {mutateAsync: addInvite} = useAddInvite();
 
     useEffect(() => {
         if (focusRef.current) {
@@ -39,6 +40,13 @@ const InviteUserModal = NiceModal.create(() => {
             }, 2000);
         }
     }, [saveState]);
+
+    if (!rolesQuery.data?.roles || !assignableRolesQuery.data?.roles) {
+        return null;
+    }
+
+    const roles = rolesQuery.data.roles;
+    const assignableRoles = assignableRolesQuery.data.roles;
 
     let okLabel = 'Send invitation now';
     if (saveState === 'saving') {
@@ -62,13 +70,10 @@ const InviteUserModal = NiceModal.create(() => {
         }
         setSaveState('saving');
         try {
-            const res = await api.invites.add({
+            await addInvite({
                 email,
-                roleId: getRoleId(role, roles)
+                roleId: roles.find(({name}) => name.toLowerCase() === role.toLowerCase())!.id
             });
-
-            // Update invites list
-            setInvites([...invites, res.invites[0]]);
 
             setSaveState('saved');
 
@@ -76,7 +81,7 @@ const InviteUserModal = NiceModal.create(() => {
                 message: `Invitation successfully sent to ${email}`,
                 type: 'success'
             });
-        } catch (e: any) {
+        } catch (e) {
             setSaveState('error');
 
             showToast({

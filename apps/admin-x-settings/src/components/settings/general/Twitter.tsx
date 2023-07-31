@@ -1,12 +1,12 @@
 import ImageUpload from '../../../admin-x-ds/global/form/ImageUpload';
-import React, {useContext} from 'react';
+import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {FileService, ServicesContext} from '../../providers/ServiceProvider';
-import {ReactComponent as TwitterLogo} from '../../../admin-x-ds/assets/images/twitter-logo.svg';
-import {getSettingValues} from '../../../utils/helpers';
+import { ReactComponent as TwitterLogo } from '../../../admin-x-ds/assets/images/twitter-logo.svg';
+import { getImageUrl, useUploadImage } from '../../../utils/api/images';
+import { getSettingValues } from '../../../utils/helpers';
 
 const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -20,7 +20,7 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
         handleEditingChange
     } = useSettingGroup();
 
-    const {fileService} = useContext(ServicesContext) as {fileService: FileService};
+    const {mutateAsync: uploadImage} = useUploadImage();
 
     const [
         twitterTitle, twitterDescription, twitterImage, siteTitle, siteDescription
@@ -36,10 +36,10 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const handleImageUpload = async (file: File) => {
         try {
-            const imageUrl = await fileService.uploadImage(file);
+            const imageUrl = getImageUrl(await uploadImage({file}));
             updateSetting('twitter_image', imageUrl);
-        } catch (err: any) {
-            // handle error
+        } catch (err) {
+            // TODO: handle error
         }
     };
 

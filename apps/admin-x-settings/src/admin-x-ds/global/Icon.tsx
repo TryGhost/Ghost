@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import clsx from 'clsx';
 
 interface UseDynamicSVGImportOptions {
@@ -27,9 +27,13 @@ function useDynamicSVGImport(
                 ).ReactComponent;
                 setSvgComponent(() => SvgIcon);
                 onCompleted?.(name, SvgIcon);
-            } catch (err: any) {
-                onError?.(err);
-                setError(() => err);
+            } catch (err) {
+                if (err instanceof Error) {
+                    onError?.(err);
+                    setError(err);
+                } else {
+                    throw err;
+                }
             } finally {
                 setLoading(() => false);
             }
