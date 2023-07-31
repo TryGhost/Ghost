@@ -3,6 +3,8 @@ import tpl from '@tryghost/tpl';
 import {Knex} from "knex";
 import {
     PostsBulkUnpublishedEvent,
+    PostsBulkFeaturedEvent,
+    PostsBulkUnfeaturedEvent
 } from "@tryghost/post-events";
 import {Collection} from './Collection';
 import {CollectionRepository} from './CollectionRepository';
@@ -192,6 +194,16 @@ export class CollectionsService {
             await this.updateUnpublishedPosts(event.data);
         });
 
+        this.DomainEvents.subscribe(PostsBulkFeaturedEvent, async (event: PostsBulkFeaturedEvent) => {
+            logging.info(`PostsBulkFeaturedEvent received, updating collection posts ${event.data}`);
+            await this.updateFeaturedPosts(event.data);
+        });
+
+        this.DomainEvents.subscribe(PostsBulkUnfeaturedEvent, async (event: PostsBulkUnfeaturedEvent) => {
+            logging.info(`PostsBulkUnfeaturedEvent received, updating collection posts ${event.data}`);
+            await this.updateFeaturedPosts(event.data);
+        });
+
         this.DomainEvents.subscribe(TagDeletedEvent, async (event: TagDeletedEvent) => {
             logging.info(`TagDeletedEvent received for ${event.data.id}, updating all collections`);
             await this.updateAllAutomaticCollections();
@@ -318,7 +330,7 @@ export class CollectionsService {
     async updatePostInMatchingCollections(postEdit: PostEditedEvent['data']) {
         return await this.collectionsRepository.createTransaction(async (transaction) => {
             const collections = await this.collectionsRepository.getAll({
-                filter: 'type:automatic',
+                filter: 'type:automatic+slug:-latest',
                 transaction
             });
 
@@ -352,6 +364,24 @@ export class CollectionsService {
 
             // only process collections that have a filter that includes published_at
             collections = collections.filter((collection) => collection.filter?.includes('published_at'));
+
+            if (!collections.length) {
+                return;
+            }
+
+            this.updatePostsInCollections(postIds, collections, transaction);
+        });
+    }
+
+    async updateFeaturedPosts(postIds: string[]) {
+        return await this.collectionsRepository.createTransaction(async (transaction) => {
+            let collections = await this.collectionsRepository.getAll({
+                filter: 'type:automatic+slug:-latest',
+                transaction
+            });
+
+            // only process collections that have a filter that includes featured
+            collections = collections.filter((collection) => collection.filter?.includes('featured'));
 
             if (!collections.length) {
                 return;
