@@ -518,7 +518,7 @@ module.exports = class StripeAPI {
                 enabled: this._config.enableAutomaticTax
             },
             metadata,
-            customer: customer ?? undefined,
+            customer: customer ? customer.id : undefined,
             customer_email: customer ? undefined : customerEmail,
             submit_type: 'donate',
             invoice_creation: {
