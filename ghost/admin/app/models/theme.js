@@ -76,13 +76,13 @@ export default Model.extend({
 
     hasPageBuilderFeature(feature) {
         const failures = this.codedErrorsAndWarnings;
-
+        
         if (!failures['GS110-NO-MISSING-PAGE-BUILDER-USAGE']) {
             return true;
         }
 
         return !failures['GS110-NO-MISSING-PAGE-BUILDER-USAGE'].some((failure) => {
-            return failure.failures.some(({ref}) => ref === `@page.${feature}`);
+            return failure.failures.some(({message}) => message.includes(`@page.${feature}`));
         });
     },
 
