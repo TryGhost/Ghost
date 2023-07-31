@@ -1,5 +1,9 @@
 import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
+import {Knex} from "knex";
+import {
+    PostsBulkUnpublishedEvent,
+} from "@tryghost/post-events";
 import {Collection} from './Collection';
 import {CollectionRepository} from './CollectionRepository';
 import {CollectionPost} from './CollectionPost';
@@ -183,6 +187,11 @@ export class CollectionsService {
             await this.removePostsFromAllCollections(event.data);
         });
 
+        this.DomainEvents.subscribe(PostsBulkUnpublishedEvent, async (event: PostsBulkUnpublishedEvent) => {
+            logging.info(`PostsBulkUnpublishedEvent received, updating collection posts ${event.data}`);
+            await this.updateUnpublishedPosts(event.data);
+        });
+
         this.DomainEvents.subscribe(TagDeletedEvent, async (event: TagDeletedEvent) => {
             logging.info(`TagDeletedEvent received for ${event.data.id}, updating all collections`);
             await this.updateAllAutomaticCollections();
@@ -332,6 +341,43 @@ export class CollectionsService {
                 }
             }
         });
+    }
+
+    async updateUnpublishedPosts(postIds: string[]) {
+        return await this.collectionsRepository.createTransaction(async (transaction) => {
+            let collections = await this.collectionsRepository.getAll({
+                filter: 'type:automatic+slug:-latest+slug:-featured',
+                transaction
+            });
+
+            // only process collections that have a filter that includes published_at
+            collections = collections.filter((collection) => collection.filter?.includes('published_at'));
+
+            if (!collections.length) {
+                return;
+            }
+
+            this.updatePostsInCollections(postIds, collections, transaction);
+        });
+    }
+
+    async updatePostsInCollections(postIds: string[], collections: Collection[], transaction: Knex.Transaction) {
+        const posts = await this.postsRepository.getBulk(postIds, transaction);
+
+
+        for (const collection of collections) {
+            for (const post of posts) {
+                if (collection.includesPost(post.id) && !collection.postMatchesFilter(post)) {
+                    collection.removePost(post.id);
+                    logging.info(`[Collections] Post ${post.id} was updated and removed from collection ${collection.id} with filter ${collection.filter}`);
+                } else if (!collection.includesPost(post.id) && collection.postMatchesFilter(post)) {
+                    await collection.addPost(post);
+                    logging.info(`[Collections] Post ${post.id} was unpublished and added to collection ${collection.id} with filter ${collection.filter}`);
+                }
+            }
+
+            await this.collectionsRepository.save(collection, {transaction});
+        }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
