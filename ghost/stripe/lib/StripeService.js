@@ -8,6 +8,7 @@ const {StripeLiveEnabledEvent, StripeLiveDisabledEvent} = require('./events');
 module.exports = class StripeService {
     constructor({
         membersService,
+        donationService,
         StripeWebhook,
         models
     }) {
@@ -31,6 +32,9 @@ module.exports = class StripeService {
             },
             get eventRepository() {
                 return membersService.api.events;
+            },
+            get donationRepository() {
+                return donationService.repository;
             },
             sendSignupEmail(email){
                 return membersService.api.sendEmailWithMagicLink({

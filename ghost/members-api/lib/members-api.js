@@ -69,7 +69,8 @@ module.exports = function MembersAPI({
     labsService,
     newslettersService,
     memberAttributionService,
-    emailSuppressionList
+    emailSuppressionList,
+    settingsCache
 }) {
     const tokenService = new TokenService({
         privateKey,
@@ -159,7 +160,8 @@ module.exports = function MembersAPI({
         StripeCustomer,
         Offer,
         offersAPI,
-        stripeAPIService
+        stripeAPIService,
+        settingsCache
     });
 
     const memberController = new MemberController({

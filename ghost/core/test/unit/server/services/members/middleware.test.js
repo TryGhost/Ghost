@@ -144,7 +144,7 @@ describe('Members Service Middleware', function () {
             res.redirect.firstCall.args[0].should.eql('https://custom.com/paid/');
         });
 
-        it('redirects member to referrer param path on signup if it is on the site', async function () {
+        it('redirects member to referrer param path on signin if it is on the site', async function () {
             req.url = '/members?token=test&action=signin&r=https%3A%2F%2Fsite.com%2Fblah%2Fmy-post%2F';
             req.query = {token: 'test', action: 'signin', r: 'https://site.com/blah/my-post/#comment-123'};
 
@@ -157,7 +157,23 @@ describe('Members Service Middleware', function () {
             // Check behavior
             next.calledOnce.should.be.false();
             res.redirect.calledOnce.should.be.true();
-            res.redirect.firstCall.args[0].should.eql('https://site.com/blah/my-post/?success=true&action=signin#comment-123');
+            res.redirect.firstCall.args[0].should.eql('https://site.com/blah/my-post/?action=signin&success=true#comment-123');
+        });
+
+        it('redirects member to referrer param path on signup if it is on the site', async function () {
+            req.url = '/members?token=test&action=signup&r=https%3A%2F%2Fsite.com%2Fblah%2Fmy-post%2F';
+            req.query = {token: 'test', action: 'signup', r: 'https://site.com/blah/my-post/#comment-123'};
+
+            // Fake token handling failure
+            membersService.ssr.exchangeTokenForSession.resolves({});
+
+            // Call the middleware
+            await membersMiddleware.createSessionFromMagicLink(req, res, next);
+
+            // Check behavior
+            next.calledOnce.should.be.false();
+            res.redirect.calledOnce.should.be.true();
+            res.redirect.firstCall.args[0].should.eql('https://site.com/blah/my-post/?action=signup&success=true#comment-123');
         });
 
         it('does not redirect to referrer param if it is external', async function () {
