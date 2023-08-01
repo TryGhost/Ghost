@@ -7,7 +7,6 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const nql = require('@tryghost/nql');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
-const {posts: postExpansions} = require('@tryghost/nql-filter-expansions');
 const ghostBookshelf = require('./base');
 const config = require('../../shared/config');
 const settingsCache = require('../../shared/settings-cache');
@@ -291,6 +290,28 @@ Post = ghostBookshelf.Model.extend({
     filterExpansions: function filterExpansions() {
         const postsMetaKeys = _.without(ghostBookshelf.model('PostsMeta').prototype.orderAttributes(), 'posts_meta.id', 'posts_meta.post_id');
 
+        const expansions = [{
+            key: 'primary_tag',
+            replacement: 'tags.slug',
+            expansion: 'posts_tags.sort_order:0+tags.visibility:public'
+        }, {
+            key: 'primary_author',
+            replacement: 'authors.slug',
+            expansion: 'posts_authors.sort_order:0+authors.visibility:public'
+        }, {
+            key: 'authors',
+            replacement: 'authors.slug'
+        }, {
+            key: 'author',
+            replacement: 'authors.slug'
+        }, {
+            key: 'tag',
+            replacement: 'tags.slug'
+        }, {
+            key: 'tags',
+            replacement: 'tags.slug'
+        }];
+
         const postMetaKeyExpansions = postsMetaKeys.map((pmk) => {
             return {
                 key: pmk.split('.')[1],
@@ -298,7 +319,7 @@ Post = ghostBookshelf.Model.extend({
             };
         });
 
-        return postExpansions.concat(postMetaKeyExpansions);
+        return expansions.concat(postMetaKeyExpansions);
     },
 
     filterRelations: function filterRelations() {
