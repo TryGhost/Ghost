@@ -62,7 +62,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
                             </div>
                         )}
                         {newsletter.show_post_title_section && (
-                            <div className="flex flex-col items-center pb-10 pt-12">
+                            <div className={clsx('flex flex-col pb-10 pt-12', newsletter.title_alignment === 'center' ? 'items-center' : 'items-start')}>
                                 <h2 className={clsx(
                                     'pb-4 text-5xl font-bold leading-supertight text-black',
                                     newsletter.title_font_category === 'serif' && 'font-serif',
@@ -70,7 +70,10 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
                                 )}>
                                     Your email newsletter
                                 </h2>
-                                <div className="flex w-full flex-col justify-between text-center text-sm leading-none tracking-[0.1px] text-grey-600">
+                                <div className={clsx(
+                                    'flex w-full justify-between text-center text-sm leading-none tracking-[0.1px] text-grey-600',
+                                    newsletter.title_alignment === 'center' ? 'flex-col' : 'flex-row'
+                                )}>
                                     <p className="pb-2">
                                         By {currentUser.name || currentUser.email}
                                         <span className="before:pl-0.5 before:pr-1 before:content-['•']">{currentDate}</span>

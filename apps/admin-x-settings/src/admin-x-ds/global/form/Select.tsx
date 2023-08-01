@@ -1,4 +1,4 @@
-import React, {useId} from 'react';
+import React, { useId } from 'react';
 
 import Heading from '../Heading';
 import Hint from '../Hint';
@@ -7,6 +7,7 @@ import clsx from 'clsx';
 export interface SelectOption {
     value: string;
     label: string;
+    className?: string;
 }
 
 export interface SelectOptionGroup {
@@ -97,7 +98,7 @@ const Select: React.FC<SelectProps> = ({
                                 {option.options.map(child => (
                                     <option
                                         key={child.value}
-                                        className={optionClasses}
+                                        className={clsx(optionClasses, child.className)}
                                         value={child.value}
                                     >
                                         {child.label}
@@ -106,7 +107,7 @@ const Select: React.FC<SelectProps> = ({
                             </optgroup> :
                             <option
                                 key={option.value}
-                                className={optionClasses}
+                                className={clsx(optionClasses, option.className)}
                                 value={option.value}
                             >
                                 {option.label}

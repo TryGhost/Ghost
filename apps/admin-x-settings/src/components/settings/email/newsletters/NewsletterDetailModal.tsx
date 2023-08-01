@@ -36,13 +36,13 @@ const Sidebar: React.FC<{
     const [selectedTab, setSelectedTab] = useState('generalSettings');
 
     const replyToEmails = [
-        {label: `Newsletter address (${fullEmailAddress(newsletter.sender_email || 'noreply', siteData)})`, value: newsletter.sender_email || 'noreply'},
-        {label: `Support address (${fullEmailAddress(membersSupportAddress || 'noreply', siteData)})`, value: membersSupportAddress || 'noreply'}
+        {label: `Newsletter address (${fullEmailAddress(newsletter.sender_email || 'noreply', siteData)})`, value: 'newsletter'},
+        {label: `Support address (${fullEmailAddress(membersSupportAddress || 'noreply', siteData)})`, value: 'support'}
     ];
 
     const fontOptions: SelectOption[] = [
-        {value: 'serif', label: 'Elegant serif'},
-        {value: 'sans-serif', label: 'Clean sans-serif'}
+        {value: 'serif', label: 'Elegant serif', className: 'font-serif'},
+        {value: 'sans_serif', label: 'Clean sans-serif'}
     ];
 
     const tabs: Tab[] = [
