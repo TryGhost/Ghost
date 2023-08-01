@@ -136,7 +136,6 @@
     "@tryghost/mw-vhost": "0.0.0",
     "@tryghost/nodemailer": "0.3.35",
     "@tryghost/nql": "0.11.0",
-    "@tryghost/nql-filter-expansions": "0.0.0",
     "@tryghost/oembed-service": "0.0.0",
     "@tryghost/package-json": "0.0.0",
     "@tryghost/post-revisions": "0.0.0",
