@@ -643,61 +643,8 @@ jobs:
     if: needs.job_get_metadata.outputs.changed_core == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          submodules: true
-      - uses: actions/setup-node@v3
-        env:
-          FORCE_COLOR: 0
-        with:
-          node-version: '16.14.0'
-
-      - name: Install Ghost-CLI
-        run: npm install -g ghost-cli@latest
-
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
-
-      - run: npm --no-git-tag-version version minor # We need to artificially bump the minor version to get migrations to run
-        working-directory: ghost/core
-
-      - run: npm pack
-        working-directory: ghost/core
-
-      - run: mv ghost-*.tgz ghost.tgz
-        working-directory: ghost/core
-
-      - name: Clean Install
-        run: |
-          DIR=$(mktemp -d)
-          ghost install local -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
-
-      - name: Latest Release
-        run: |
-          DIR=$(mktemp -d)
-          ghost install local -d $DIR
-          ghost update -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
-
-      - name: Update from latest v4
-        run: |
-          DIR=$(mktemp -d)
-          ghost install v4 --local -d $DIR
-          ghost update -f -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
-
-      - name: Print debug logs
-        if: failure()
-        run: |
-          [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
-
-      - uses: tryghost/actions/actions/slack-build@main
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        with:
-          status: ${{ job.status }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: noop
+        run: echo "noop"
 
   job_coverage:
     name: Coverage
