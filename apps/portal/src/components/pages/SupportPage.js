@@ -15,7 +15,7 @@ const SupportPage = () => {
             const siteUrl = window.location.origin;
             const currentUrl = siteUrl + window.location.pathname;
             const successUrl = `${currentUrl}#/portal/support/success`;
-            const cancelUrl = `${currentUrl}#/portal/support/error`;
+            const cancelUrl = currentUrl;
             const api = setupGhostApi({siteUrl});
 
             try {
