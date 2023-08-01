@@ -1,5 +1,5 @@
 import Form from '../../../../admin-x-ds/global/form/Form';
-import NiceModal from '@ebay/nice-modal-react';
+import NiceModal, { useModal } from '@ebay/nice-modal-react';
 
 import ButtonGroup from '../../../../admin-x-ds/global/ButtonGroup';
 import Heading from '../../../../admin-x-ds/global/Heading';
@@ -7,36 +7,43 @@ import Hint from '../../../../admin-x-ds/global/Hint';
 import Icon from '../../../../admin-x-ds/global/Icon';
 import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
 import NewsletterPreview from './NewsletterPreview';
-import React, {useState} from 'react';
-import Select, {SelectOption} from '../../../../admin-x-ds/global/form/Select';
+import React, { useState } from 'react';
+import Select, { SelectOption } from '../../../../admin-x-ds/global/form/Select';
 import StickyFooter from '../../../../admin-x-ds/global/StickyFooter';
-import TabView, {Tab} from '../../../../admin-x-ds/global/TabView';
+import TabView, { Tab } from '../../../../admin-x-ds/global/TabView';
 import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
+import useForm from '../../../../hooks/useForm';
+import useSettings from '../../../../hooks/useSettings';
+import { Newsletter } from '../../../../types/api';
+import { PreviewModalContent } from '../../../../admin-x-ds/global/modal/PreviewModal';
+import { fullEmailAddress, getSettingValues } from '../../../../utils/helpers';
+import { getImageUrl, useUploadImage } from '../../../../utils/api/images';
+import { useEditNewsletter } from '../../../../utils/api/newsletters';
 
-// TODO: do we need this interface?
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface NewsletterDetailModalProps {
-
+    newsletter: Newsletter
 }
 
-// const REPLY_TO_EMAILS = [
-//     {label: 'Newsletter address (noreply@localhost)', value: 'noreply@localhost'},
-//     {label: 'Support address (noreply@localhost)', value: 'noreply@localhost'}
-// ];
-
-const selectOptions: SelectOption[] = [
-    {value: 'option-1', label: 'Elegant serif'},
-    {value: 'option-2', label: 'Modern sans-serif'}
-];
-
-const Sidebar: React.FC = () => {
+const Sidebar: React.FC<{
+    newsletter: Newsletter;
+    updateNewsletter: (fields: Partial<Newsletter>) => void;
+}> = ({newsletter, updateNewsletter}) => {
+    const {settings, siteData} = useSettings();
+    const [membersSupportAddress] = getSettingValues<string>(settings, ['members_support_address']);
+    const {mutateAsync: uploadImage} = useUploadImage();
     const [selectedTab, setSelectedTab] = useState('generalSettings');
-    const values = {
-        HEADER: ''
-    };
+
+    const replyToEmails = [
+        {label: `Newsletter address (${fullEmailAddress(newsletter.sender_email || 'noreply', siteData)})`, value: 'newsletter'},
+        {label: `Support address (${fullEmailAddress(membersSupportAddress || 'noreply', siteData)})`, value: 'support'}
+    ];
+
+    const fontOptions: SelectOption[] = [
+        {value: 'serif', label: 'Elegant serif', className: 'font-serif'},
+        {value: 'sans_serif', label: 'Clean sans-serif'}
+    ];
 
     const tabs: Tab[] = [
         {
@@ -44,21 +51,21 @@ const Sidebar: React.FC = () => {
             title: 'General',
             contents: <Form gap="sm" marginTop>
                 <Heading className="mt-5" level={5}>Name and description</Heading>
-                <TextField placeholder="Weekly Roundup" title="Name"></TextField>
-                <TextArea clearBg={false} rows={2} title="Description"></TextArea>
+                <TextField placeholder="Weekly Roundup" title="Name" value={newsletter.name || ''} onChange={e => updateNewsletter({name: e.target.value})} />
+                <TextArea clearBg={false} rows={2} title="Description" value={newsletter.description || ''} onChange={e => updateNewsletter({description: e.target.value})} />
 
                 <Heading className="mt-5" level={5}>Email addresses</Heading>
-                <TextField placeholder="Ghost" title="Sender name"></TextField>
-                <TextField placeholder="noreply@localhost" title="Sender email address"></TextField>
-                <Select options={selectOptions} title="Reply-to email" onSelect={(value: string) => {
-                    alert(value);
-                }}/>
+                <TextField placeholder="Ghost" title="Sender name" value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />
+                <TextField placeholder="noreply@localhost" title="Sender email address" value={newsletter.sender_email || ''} onChange={e => updateNewsletter({sender_email: e.target.value})} />
+                <Select options={replyToEmails} selectedOption={newsletter.sender_reply_to} title="Reply-to email" onSelect={value => updateNewsletter({sender_reply_to: value})}/>
 
                 <Heading className="mt-5" level={5}>Member settings</Heading>
                 <Toggle
+                    checked={newsletter.subscribe_on_signup}
                     direction='rtl'
                     label='Subscribe new members on signup'
                     labelStyle='value'
+                    onChange={e => updateNewsletter({subscribe_on_signup: e.target.checked})}
                 />
             </Form>
         },
@@ -74,14 +81,15 @@ const Sidebar: React.FC = () => {
                     <div className='flex-column flex gap-1'>
                         <ImageUpload
                             deleteButtonClassName='!top-1 !right-1'
-                            height={values.HEADER ? '66px' : '64px'}
+                            height={newsletter.header_image ? '66px' : '64px'}
                             id='logo'
-                            imageURL={values.HEADER || ''}
+                            imageURL={newsletter.header_image || undefined}
                             onDelete={() => {
-                                alert();
+                                updateNewsletter({header_image: null});
                             }}
-                            onUpload={() => {
-                                alert();
+                            onUpload={async (file) => {
+                                const imageUrl = getImageUrl(await uploadImage({file}));
+                                updateNewsletter({header_image: imageUrl});
                             }}
                         >
                         Upload header image
@@ -90,30 +98,35 @@ const Sidebar: React.FC = () => {
                     </div>
                 </div>
                 <Toggle
+                    checked={newsletter.show_header_title}
                     direction="rtl"
                     label='Publication title'
                     labelStyle='value'
+                    onChange={e => updateNewsletter({show_header_title: e.target.checked})}
                 />
                 <Toggle
+                    checked={newsletter.show_header_name}
                     direction="rtl"
                     label='Newsletter name'
                     labelStyle='value'
+                    onChange={e => updateNewsletter({show_header_name: e.target.checked})}
                 />
 
                 <Heading className="mt-5" level={5}>Body</Heading>
                 <Toggle
+                    checked={newsletter.show_post_title_section}
                     direction="rtl"
-                    label='Title'
+                    label='Post title'
                     labelStyle='heading'
+                    onChange={e => updateNewsletter({show_post_title_section: e.target.checked})}
                 />
-                <Select containerClassName="-mt-[16px]" options={selectOptions} onSelect={(value: string) => {
-                    alert(value);
-                }}/>
-                <div className="flex items-end">
+                <div className="mt-[-16px] flex items-end">
                     <div className="w-full pr-4">
-                        <Select containerClassName="" options={selectOptions} title="Body style" onSelect={(value: string) => {
-                            alert(value);
-                        }}/>
+                        <Select
+                            options={fontOptions}
+                            selectedOption={newsletter.title_font_category}
+                            onSelect={value => updateNewsletter({title_font_category: value})}
+                        />
                     </div>
                     <ButtonGroup buttons={[
                         {
@@ -122,7 +135,9 @@ const Sidebar: React.FC = () => {
                             hideLabel: true,
                             link: false,
                             size: 'sm',
-                            iconColorClass: 'text-grey-500'
+                            color: newsletter.title_alignment === 'left' ? 'green' : 'clear',
+                            iconColorClass: newsletter.title_alignment === 'left' ? 'text-grey-900' : 'text-grey-500',
+                            onClick: () => updateNewsletter({title_alignment: 'left'})
                         },
                         {
                             icon: 'align-center',
@@ -130,40 +145,65 @@ const Sidebar: React.FC = () => {
                             hideLabel: true,
                             link: false,
                             size: 'sm',
-                            iconColorClass: 'text-grey-900'
+                            color: newsletter.title_alignment === 'center' ? 'green' : 'clear',
+                            iconColorClass: newsletter.title_alignment === 'center' ? 'text-grey-900' : 'text-grey-500',
+                            onClick: () => updateNewsletter({title_alignment: 'center'})
                         }
                     ]}
                     className="mb-1 !gap-0"
                     />
                 </div>
+                <Select
+                    options={fontOptions}
+                    selectedOption={newsletter.body_font_category}
+                    title='Body style'
+                    onSelect={value => updateNewsletter({body_font_category: value})}
+                />
                 <Toggle
+                    checked={newsletter.show_feature_image}
                     direction="rtl"
                     label='Feature image'
                     labelStyle='value'
+                    onChange={e => updateNewsletter({show_feature_image: e.target.checked})}
                 />
 
                 <Heading className="mt-5" level={5}>Footer</Heading>
                 <Toggle
+                    checked={newsletter.feedback_enabled}
                     direction="rtl"
                     label='Ask your readers for feedback'
                     labelStyle='value'
+                    onChange={e => updateNewsletter({feedback_enabled: e.target.checked})}
                 />
                 <Toggle
+                    checked={newsletter.show_comment_cta}
                     direction="rtl"
                     label='Add a link to your comments'
                     labelStyle='value'
+                    onChange={e => updateNewsletter({show_comment_cta: e.target.checked})}
                 />
                 <Toggle
+                    checked={newsletter.show_latest_posts}
                     direction="rtl"
                     label='Share your latest posts'
                     labelStyle='value'
+                    onChange={e => updateNewsletter({show_latest_posts: e.target.checked})}
                 />
                 <Toggle
+                    checked={newsletter.show_subscription_details}
                     direction="rtl"
                     label='Show subscription details'
                     labelStyle='value'
+                    onChange={e => updateNewsletter({show_subscription_details: e.target.checked})}
                 />
-                <TextArea clearBg={false} hint="Any extra information or legal text" rows={2} title="Email footer"></TextArea>
+                <TextArea
+                    clearBg={false}
+                    hint="Any extra information or legal text"
+                    rows={2}
+                    title="Email footer"
+                    value={newsletter.footer_content || ''}
+                    onChange={e => updateNewsletter({footer_content: e.target.value})}
+                />
             </Form>
         }
     ];
@@ -184,11 +224,12 @@ const Sidebar: React.FC = () => {
                     </span>
                     <Form marginBottom={false}>
                         <Toggle
-                            checked={true}
+                            checked={newsletter.show_badge}
                             direction='rtl'
                             hint='Show you’re a part of the indie publishing movement with a small badge in the footer'
                             label='Promote independent publishing'
                             labelStyle='value'
+                            onChange={e => updateNewsletter({show_badge: e.target.checked})}
                         />
                     </Form>
                 </div>
@@ -197,14 +238,28 @@ const Sidebar: React.FC = () => {
     );
 };
 
-const preview = <NewsletterPreview/>;
+const NewsletterDetailModal: React.FC<NewsletterDetailModalProps> = ({newsletter}) => {
+    const modal = useModal();
+    const {mutateAsync: editNewsletter} = useEditNewsletter();
 
-const NewsletterDetailModal: React.FC<NewsletterDetailModalProps> = () => {
-    const sidebar = <Sidebar/>;
+    const {formState, updateForm, handleSave} = useForm({
+        initialState: newsletter,
+        onSave: async () => {
+            await editNewsletter(formState);
+            modal.remove();
+        }
+    })
+
+    const updateNewsletter = (fields: Partial<Newsletter>) => {
+        updateForm(state => ({...state, ...fields}));
+    };
+
+    const preview = <NewsletterPreview newsletter={formState} />;
+    const sidebar = <Sidebar newsletter={formState} updateNewsletter={updateNewsletter} />;
 
     return <PreviewModalContent
         deviceSelector={false}
-        okLabel={'Save & close'}
+        okLabel='Save & close'
         preview={preview}
         previewBgColor={'grey'}
         previewToolbar={false}
@@ -212,6 +267,7 @@ const NewsletterDetailModal: React.FC<NewsletterDetailModalProps> = () => {
         sidebarPadding={false}
         testId='newsletter-modal'
         title='Newsletter'
+        onOk={handleSave}
     />;
 };
 
