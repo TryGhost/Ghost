@@ -9,7 +9,19 @@ export type Setting = {
     value: SettingValue;
 }
 
-export type Config = JSONObject;
+export type Config = {
+    version: string;
+    environment: string;
+    editor: {
+        url: string
+        version: string
+    };
+    labs: Record<string, boolean>;
+    stripeDirect: boolean;
+
+    // Config is relatively fluid, so we only type used properties above and still support arbitrary property access when needed
+    [key: string]: JSONValue;
+};
 
 export type User = {
     id: string;

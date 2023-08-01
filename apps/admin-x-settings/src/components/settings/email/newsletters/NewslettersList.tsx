@@ -1,6 +1,4 @@
 import Button from '../../../../admin-x-ds/global/Button';
-// import List from '../../../../admin-x-ds/global/List';
-// import ListItem from '../../../../admin-x-ds/global/ListItem';
 import NewsletterDetailModal from './NewsletterDetailModal';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
@@ -78,7 +76,7 @@ const NewslettersList: React.FC<NewslettersListProps> = ({
                     action={action}
                     hideActions
                     onClick={() => {
-                        NiceModal.show(NewsletterDetailModal);
+                        NiceModal.show(NewsletterDetailModal, {newsletter});
                     }}>
                     <TableCell>
                         <div className={`flex grow flex-col`}>

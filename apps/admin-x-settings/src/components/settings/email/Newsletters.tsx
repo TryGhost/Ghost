@@ -12,9 +12,7 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
         updateRoute('newsletters/add');
     };
     const [selectedTab, setSelectedTab] = useState('active-newsletters');
-    const {data: {newsletters} = {}} = useBrowseNewsletters({
-        searchParams: {include: 'count.active_members,count.posts', limit: 'all'}
-    });
+    const {data: {newsletters} = {}} = useBrowseNewsletters();
 
     const buttons = (
         <Button color='green' label='Add newsletter' link={true} onClick={() => {
