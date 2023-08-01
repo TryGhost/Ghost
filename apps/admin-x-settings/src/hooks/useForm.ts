@@ -46,8 +46,13 @@ const useForm = <State>({initialState, onSave}: {
         }
 
         setSaveState('saving');
-        await onSave();
-        setSaveState('saved');
+        try {
+            await onSave();
+            setSaveState('saved');
+        } catch (e) {
+            setSaveState('unsaved');
+            throw e;
+        }
     };
 
     const updateForm = useCallback((updater: (state: State) => State) => {

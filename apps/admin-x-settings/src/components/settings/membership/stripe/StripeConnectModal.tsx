@@ -1,6 +1,7 @@
 import BookmarkThumb from '../../../../assets/images/stripe-thumb.jpg';
 import Button from '../../../../admin-x-ds/global/Button';
 import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
+import Form from '../../../../admin-x-ds/global/form/Form';
 import GhostLogo from '../../../../assets/images/orb-squircle.png';
 import GhostLogoPink from '../../../../assets/images/orb-pink.png';
 import Heading from '../../../../admin-x-ds/global/Heading';
@@ -18,6 +19,8 @@ import useSettings from '../../../../hooks/useSettings';
 import { ApiError } from '../../../../utils/apiRequests';
 import { ReactComponent as StripeVerified } from '../../../../assets/images/stripe-verified.svg';
 import { checkStripeEnabled, getGhostPaths, getSettingValue, getSettingValues } from '../../../../utils/helpers';
+import { showToast } from '../../../../admin-x-ds/global/Toast';
+import { toast } from 'react-hot-toast';
 import { useBrowseMembers } from '../../../../utils/api/members';
 import { useBrowseTiers, useEditTier } from '../../../../utils/api/tiers';
 import { useDeleteStripeSettings, useEditSettings } from '../../../../utils/api/settings';
@@ -216,16 +219,36 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
     );
 };
 
-const Direct: React.FC = () => {
+const Direct: React.FC<{onClose: () => void}> = ({onClose}) => {
     const {localSettings, updateSetting, handleSave, saveState} = useSettingGroup();
     const [publishableKey, secretKey] = getSettingValues(localSettings, ['stripe_publishable_key', 'stripe_secret_key']);
+
+    const onSubmit = async () => {
+        try {
+            toast.remove();
+            await handleSave();
+            onClose();
+        } catch (e) {
+            if (e instanceof ApiError) {
+                showToast({
+                    type: 'pageError',
+                    message: 'Failed to save settings. Please check you copied both keys correctly.'
+                })
+                return;
+            }
+
+            throw e;
+        }
+    }
 
     return (
         <div>
             <Heading level={3}>Connect Stripe</Heading>
-            <TextField title='Publishable key' value={publishableKey?.toString()} onChange={(e) => updateSetting('stripe_publishable_key', e.target.value)} />
-            <TextField title='Secure key' value={secretKey?.toString()} onChange={(e) => updateSetting('stripe_secret_key', e.target.value)} />
-            <Button className='mt-5' color='green' disabled={saveState === 'saving'} label='Save Stripe settings' onClick={handleSave} />
+            <Form marginBottom={false} marginTop>
+                <TextField title='Publishable key' value={publishableKey?.toString()} onChange={(e) => updateSetting('stripe_publishable_key', e.target.value)} />
+                <TextField title='Secure key' value={secretKey?.toString()} onChange={(e) => updateSetting('stripe_secret_key', e.target.value)} />
+                <Button className='mt-5' color='green' disabled={saveState === 'saving'} label='Save Stripe settings' onClick={onSubmit} />
+            </Form>
         </div>
     );
 };
@@ -253,7 +276,7 @@ const StripeConnectModal: React.FC = () => {
         // Still show Stripe Direct to allow disabling the keys if the config was turned off but stripe direct is still set up
         checkStripeEnabled(settings || [], config || {}) && !stripeConnectAccountId
     )) {
-        contents = <Direct />;
+        contents = <Direct onClose={close} />;
     } else if (stripeConnectAccountId) {
         contents = <Connected onClose={close} />;
     } else if (step === 'start') {
