@@ -81,10 +81,12 @@ const DesignModal: React.FC = () => {
 
     const {settings, siteData, saveSettings} = useSettings();
     const {data: {posts: [latestPost]} = {posts: []}} = useBrowsePosts({
-        filter: 'status:published',
-        order: 'published_at DESC',
-        limit: '1',
-        fields: 'id,url'
+        searchParams: {
+            filter: 'status:published',
+            order: 'published_at DESC',
+            limit: '1',
+            fields: 'id,url'
+        }
     });
     const {data: themeSettings} = useBrowseCustomThemeSettings();
     const {mutateAsync: editThemeSettings} = useEditCustomThemeSettings();

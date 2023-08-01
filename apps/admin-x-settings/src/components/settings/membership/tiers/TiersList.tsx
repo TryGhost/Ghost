@@ -11,7 +11,7 @@ import { numberWithCommas } from '../../../../utils/helpers';
 import { useEditTier } from '../../../../utils/api/tiers';
 
 interface TiersListProps {
-    tab?: string;
+    tab?: 'active-tiers' | 'archive-tiers' | 'free-tier';
     tiers: Tier[];
 }
 

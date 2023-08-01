@@ -1,5 +1,5 @@
-import {Meta, createMutation, createQuery} from '../apiRequests';
-import {Setting} from '../../types/api';
+import { Meta, createMutation, createQuery } from '../apiRequests';
+import { Setting } from '../../types/api';
 
 export type SettingsResponseMeta = Meta & { sent_email_verification?: boolean }
 
@@ -26,4 +26,10 @@ export const useEditSettings = createMutation<SettingsResponseType, Setting[]>({
         dataType,
         update: newData => newData
     }
+});
+
+export const useDeleteStripeSettings = createMutation<unknown, null>({
+    method: 'DELETE',
+    path: () => '/settings/stripe/connect/',
+    invalidateQueries: {dataType}
 });
