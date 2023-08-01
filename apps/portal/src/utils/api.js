@@ -424,14 +424,14 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 body: JSON.stringify(body)
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                const errorMessage = errorData?.errors?.[0]?.message || 'There was an error processing your payment. Please try again.';
+            const responseJson = await response.json();
 
+            if (!response.ok) {
+                const errorMessage = responseJson?.errors?.[0]?.message || 'There was an error processing your payment. Please try again.';
                 throw new Error(errorMessage);
             }
 
-            return response.json();
+            return responseJson;
         },
 
         async editBilling({successUrl, cancelUrl, subscriptionId} = {}) {
