@@ -9,7 +9,19 @@ export type Setting = {
     value: SettingValue;
 }
 
-export type Config = JSONObject;
+export type Config = {
+    version: string;
+    environment: string;
+    editor: {
+        url: string
+        version: string
+    };
+    labs: Record<string, boolean>;
+    stripeDirect: boolean;
+
+    // Config is relatively fluid, so we only type used properties above and still support arbitrary property access when needed
+    [key: string]: JSONValue;
+};
 
 export type User = {
     id: string;
@@ -165,4 +177,43 @@ export type ThemeProblem<Level extends string = 'error' | 'warning'> = {
     fatal: boolean
     level: Level
     rule: string
+}
+
+export type Newsletter = {
+    id: string;
+    uuid: string;
+    name: string;
+    description: string | null;
+    feedback_enabled: boolean;
+    slug: string;
+    sender_name: string | null;
+    sender_email: string | null;
+    sender_reply_to: string;
+    status: string;
+    visibility: string;
+    subscribe_on_signup: boolean;
+    sort_order: number;
+    header_image: string | null;
+    show_header_icon: boolean;
+    show_header_title: boolean;
+    title_font_category: string;
+    title_alignment: string;
+    show_feature_image: boolean;
+    body_font_category: string;
+    footer_content: string | null;
+    show_badge: boolean;
+    show_header_name: boolean;
+    show_post_title_section: boolean;
+    show_comment_cta: boolean;
+    show_subscription_details: boolean;
+    show_latest_posts: boolean;
+    background_color: string;
+    border_color: string | null;
+    title_color: string | null;
+    created_at: string;
+    updated_at: string;
+    count?: {
+        posts?: number;
+        active_members?: number;
+    }
 }
