@@ -47,13 +47,14 @@ export const useFetchApi = () => {
 
     return async (endpoint: string | URL, options: RequestOptions = {}) => {
         // By default, we set the Content-Type header to application/json
-        const defaultHeaders = {
+        const defaultHeaders: Record<string, string> = {
             'app-pragma': 'no-cache',
             'x-ghost-version': ghostVersion
         };
-        const headers = options?.headers || {
-            'Content-Type': 'application/json'
-        };
+        if (typeof options.body === 'string') {
+            defaultHeaders['content-type'] = 'application/json';
+        }
+        const headers = options?.headers || {};
         const response = await fetch(endpoint, {
             headers: {
                 ...defaultHeaders,
