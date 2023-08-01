@@ -780,6 +780,18 @@ export default class App extends React.Component {
             return {
                 page: 'accountEmail'
             };
+        } else if (path === 'support') {
+            return {
+                page: 'support'
+            };
+        } else if (path === 'support/success') {
+            return {
+                page: 'supportSuccess'
+            };
+        } else if (path === 'support/error') {
+            return {
+                page: 'supportError'
+            };
         }
         return {};
     }

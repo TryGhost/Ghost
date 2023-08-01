@@ -1,13 +1,12 @@
 import MultiSelect, {MultiSelectOption} from '../../../admin-x-ds/global/form/MultiSelect';
-import React, {useContext, useEffect, useState} from 'react';
+import React from 'react';
 import Select from '../../../admin-x-ds/global/form/Select';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {GroupBase, MultiValue} from 'react-select';
-import {ServicesContext} from '../../providers/ServiceProvider';
-import {Tier} from '../../../types/api';
-import {getOptionLabel, getPaidActiveTiers, getSettingValues} from '../../../utils/helpers';
+import {getOptionLabel, getSettingValues} from '../../../utils/helpers';
+import {useGlobalData} from '../../providers/DataProvider';
 
 const MEMBERS_SIGNUP_ACCESS_OPTIONS = [
     {value: 'all', label: 'Anyone can sign up'},
@@ -47,14 +46,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const defaultContentVisibilityLabel = getOptionLabel(DEFAULT_CONTENT_VISIBILITY_OPTIONS, defaultContentVisibility);
     const commentsEnabledLabel = getOptionLabel(COMMENTS_ENABLED_OPTIONS, commentsEnabled);
 
-    const {api} = useContext(ServicesContext);
-    const [tiers, setTiers] = useState<Tier[]>([]);
-
-    useEffect(() => {
-        api.tiers.browse().then((response) => {
-            setTiers(getPaidActiveTiers(response.tiers));
-        });
-    }, [api]);
+    const {tiers} = useGlobalData();
 
     const tierOptionGroups: GroupBase<MultiSelectOption>[] = [
         {

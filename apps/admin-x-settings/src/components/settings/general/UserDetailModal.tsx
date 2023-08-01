@@ -3,23 +3,24 @@ import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModa
 import Heading from '../../../admin-x-ds/global/Heading';
 import Icon from '../../../admin-x-ds/global/Icon';
 import ImageUpload from '../../../admin-x-ds/global/form/ImageUpload';
-import Menu, {MenuItem} from '../../../admin-x-ds/global/Menu';
+import Menu, { MenuItem } from '../../../admin-x-ds/global/Menu';
 import Modal from '../../../admin-x-ds/global/modal/Modal';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import NiceModal, { useModal } from '@ebay/nice-modal-react';
 import Radio from '../../../admin-x-ds/global/form/Radio';
-import React, {useContext, useEffect, useRef, useState} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
-import useRoles from '../../../hooks/useRoles';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
-import {FileService, ServicesContext} from '../../providers/ServiceProvider';
-import {User} from '../../../types/api';
-import {isAdminUser, isOwnerUser} from '../../../utils/helpers';
-import {showToast} from '../../../admin-x-ds/global/Toast';
+import { User } from '../../../types/api';
+import { getImageUrl, useUploadImage } from '../../../utils/api/images';
+import { isAdminUser, isOwnerUser } from '../../../utils/helpers';
+import { showToast } from '../../../admin-x-ds/global/Toast';
 import { toast } from 'react-hot-toast';
+import { useBrowseRoles } from '../../../utils/api/roles';
+import { useDeleteUser, useEditUser, useMakeOwner, useUpdatePassword } from '../../../utils/api/users';
 
 interface CustomHeadingProps {
     children?: React.ReactNode;
@@ -47,7 +48,8 @@ const CustomHeader: React.FC<CustomHeadingProps> = ({children}) => {
 };
 
 const RoleSelector: React.FC<UserDetailProps> = ({user, setUserData}) => {
-    const {roles} = useRoles();
+    const {data: {roles} = {}} = useBrowseRoles();
+
     if (isOwnerUser(user)) {
         return (
             <>
@@ -303,7 +305,8 @@ const Password: React.FC<UserDetailProps> = ({user}) => {
     }>({});
     const newPasswordRef = useRef<HTMLInputElement>(null);
     const confirmNewPasswordRef = useRef<HTMLInputElement>(null);
-    const {api} = useContext(ServicesContext);
+
+    const {mutateAsync: updatePassword} = useUpdatePassword();
 
     useEffect(() => {
         if (saveState === 'saved') {
@@ -378,7 +381,7 @@ const Password: React.FC<UserDetailProps> = ({user}) => {
                         return;
                     }
                     try {
-                        await api.users.updatePassword({
+                        await updatePassword({
                             newPassword,
                             confirmNewPassword,
                             oldPassword: '',
@@ -408,7 +411,6 @@ const Password: React.FC<UserDetailProps> = ({user}) => {
 
 interface UserDetailModalProps {
     user: User;
-    updateUser?: (user: User) => void;
 }
 
 const UserMenuTrigger = () => (
@@ -418,9 +420,8 @@ const UserMenuTrigger = () => (
     </button>
 );
 
-const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
-    const {api} = useContext(ServicesContext);
-    const {users, setUsers, ownerUser} = useStaffUsers();
+const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
+    const {ownerUser} = useStaffUsers();
     const [userData, setUserData] = useState(user);
     const [saveState, setSaveState] = useState('');
     const [errors, setErrors] = useState<{
@@ -429,8 +430,11 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
         url?: string;
     }>({});
 
-    const {fileService} = useContext(ServicesContext) as {fileService: FileService};
     const mainModal = useModal();
+    const {mutateAsync: uploadImage} = useUploadImage();
+    const {mutateAsync: updateUser} = useEditUser();
+    const {mutateAsync: deleteUser} = useDeleteUser();
+    const {mutateAsync: makeOwner} = useMakeOwner();
 
     const confirmSuspend = (_user: User) => {
         let warningText = 'This user will no longer be able to log in but their posts will be kept.';
@@ -452,16 +456,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                     ..._user,
                     status: _user.status === 'inactive' ? 'active' : 'inactive'
                 };
-                const res = await api.users.edit(updatedUserData);
-                const updatedUser = res.users[0];
-                setUsers((_users) => {
-                    return _users.map((u) => {
-                        if (u.id === updatedUser.id) {
-                            return updatedUser;
-                        }
-                        return u;
-                    });
-                });
+                await updateUser(updatedUserData);
                 setUserData(updatedUserData);
                 modal?.remove();
                 showToast({
@@ -484,9 +479,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
             okLabel: 'Delete user',
             okColor: 'red',
             onOk: async (modal) => {
-                await api.users.delete(_user?.id);
-                const newUsers = users.filter(u => u.id !== _user.id);
-                setUsers(newUsers);
+                await deleteUser(_user?.id);
                 modal?.remove();
                 mainModal?.remove();
                 showToast({
@@ -504,8 +497,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
             okLabel: 'Yep — I\'m sure',
             okColor: 'red',
             onOk: async (modal) => {
-                const res = await api.users.makeOwner(user.id);
-                setUsers(res.users);
+                await makeOwner(user.id);
                 modal?.remove();
                 showToast({
                     message: 'Ownership transferred',
@@ -517,7 +509,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
 
     const handleImageUpload = async (image: string, file: File) => {
         try {
-            const imageUrl = await fileService.uploadImage(file);
+            const imageUrl = getImageUrl(await uploadImage({file}));
 
             switch (image) {
             case 'cover_image':
@@ -531,8 +523,8 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user, updateUser}) => {
                 });
                 break;
             }
-        } catch (err: any) {
-            // handle error
+        } catch (err) {
+            // TODO: handle error
         }
     };
 

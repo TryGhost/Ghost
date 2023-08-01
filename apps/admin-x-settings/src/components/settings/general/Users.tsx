@@ -4,15 +4,14 @@ import List from '../../../admin-x-ds/global/List';
 import ListItem from '../../../admin-x-ds/global/ListItem';
 import NiceModal from '@ebay/nice-modal-react';
 import NoValueLabel from '../../../admin-x-ds/global/NoValueLabel';
-import React, {useContext, useState} from 'react';
+import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
 import UserDetailModal from './UserDetailModal';
 import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
-import {ServicesContext} from '../../providers/ServiceProvider';
 import {User} from '../../../types/api';
-import {UserInvite} from '../../../utils/api';
+import {UserInvite, useAddInvite, useDeleteInvite} from '../../../utils/api/invites';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
 import {showToast} from '../../../admin-x-ds/global/Toast';
 
@@ -31,9 +30,9 @@ interface InviteListProps {
     updateUser?: (user: User) => void;
 }
 
-const Owner: React.FC<OwnerProps> = ({user, updateUser}) => {
+const Owner: React.FC<OwnerProps> = ({user}) => {
     const showDetailModal = () => {
-        NiceModal.show(UserDetailModal, {user, updateUser});
+        NiceModal.show(UserDetailModal, {user});
     };
 
     if (!user) {
@@ -51,9 +50,9 @@ const Owner: React.FC<OwnerProps> = ({user, updateUser}) => {
     );
 };
 
-const UsersList: React.FC<UsersListProps> = ({users, updateUser}) => {
+const UsersList: React.FC<UsersListProps> = ({users}) => {
     const showDetailModal = (user: User) => {
-        NiceModal.show(UserDetailModal, {user, updateUser});
+        NiceModal.show(UserDetailModal, {user});
     };
 
     if (!users || !users.length) {
@@ -91,10 +90,12 @@ const UsersList: React.FC<UsersListProps> = ({users, updateUser}) => {
 };
 
 const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
-    const {api} = useContext(ServicesContext);
-    const {setInvites} = useStaffUsers();
     const [revokeState, setRevokeState] = useState<'progress'|''>('');
     const [resendState, setResendState] = useState<'progress'|''>('');
+
+    const {mutateAsync: deleteInvite} = useDeleteInvite();
+    const {mutateAsync: addInvite} = useAddInvite();
+
     let revokeActionLabel = 'Revoke';
     if (revokeState === 'progress') {
         revokeActionLabel = 'Revoking...';
@@ -111,9 +112,7 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
                 link={true}
                 onClick={async () => {
                     setRevokeState('progress');
-                    await api.invites.delete(invite.id);
-                    const res = await api.invites.browse();
-                    setInvites(res.invites);
+                    await deleteInvite(invite.id);
                     setRevokeState('');
                     showToast({
                         message: `Invitation revoked (${invite.email})`,
@@ -128,13 +127,11 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
                 link={true}
                 onClick={async () => {
                     setResendState('progress');
-                    await api.invites.delete(invite.id);
-                    await api.invites.add({
+                    await deleteInvite(invite.id);
+                    await addInvite({
                         email: invite.email,
                         roleId: invite.role_id
                     });
-                    const res = await api.invites.browse();
-                    setInvites(res.invites);
                     setResendState('');
                     showToast({
                         message: `Invitation resent! (${invite.email})`,
@@ -187,8 +184,7 @@ const Users: React.FC<{ keywords: string[] }> = ({keywords}) => {
         editorUsers,
         authorUsers,
         contributorUsers,
-        invites,
-        updateUser
+        invites
     } = useStaffUsers();
     const {updateRoute} = useRouting();
     const showInviteModal = () => {
@@ -207,27 +203,27 @@ const Users: React.FC<{ keywords: string[] }> = ({keywords}) => {
         {
             id: 'users-admins',
             title: 'Administrators',
-            contents: (<UsersList updateUser={updateUser} users={adminUsers} />)
+            contents: (<UsersList users={adminUsers} />)
         },
         {
             id: 'users-editors',
             title: 'Editors',
-            contents: (<UsersList updateUser={updateUser} users={editorUsers} />)
+            contents: (<UsersList users={editorUsers} />)
         },
         {
             id: 'users-authors',
             title: 'Authors',
-            contents: (<UsersList updateUser={updateUser} users={authorUsers} />)
+            contents: (<UsersList users={authorUsers} />)
         },
         {
             id: 'users-contributors',
             title: 'Contributors',
-            contents: (<UsersList updateUser={updateUser} users={contributorUsers} />)
+            contents: (<UsersList users={contributorUsers} />)
         },
         {
             id: 'users-invited',
             title: 'Invited',
-            contents: (<InvitesUserList updateUser={updateUser} users={invites} />)
+            contents: (<InvitesUserList users={invites} />)
         }
     ];
 
@@ -239,7 +235,7 @@ const Users: React.FC<{ keywords: string[] }> = ({keywords}) => {
             testId='users'
             title='Users and permissions'
         >
-            <Owner updateUser={updateUser} user={ownerUser} />
+            <Owner user={ownerUser} />
             <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
         </SettingGroup>
     );

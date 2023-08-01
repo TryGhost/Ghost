@@ -1,9 +1,9 @@
 import Form from '../../../../admin-x-ds/global/form/Form';
-import React, {FocusEventHandler, useContext, useState} from 'react';
+import React, {FocusEventHandler, useState} from 'react';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import {Setting, SettingValue} from '../../../../types/api';
-import {SettingsContext} from '../../../providers/SettingsProvider';
 import {fullEmailAddress, getEmailDomain, getSettingValues} from '../../../../utils/helpers';
+import {useGlobalData} from '../../../providers/DataProvider';
 
 const AccountPage: React.FC<{
     localSettings: Setting[]
@@ -11,7 +11,7 @@ const AccountPage: React.FC<{
 }> = ({localSettings, updateSetting}) => {
     const [membersSupportAddress] = getSettingValues(localSettings, ['members_support_address']);
 
-    const {siteData} = useContext(SettingsContext) || {};
+    const {siteData} = useGlobalData();
     const emailDomain = getEmailDomain(siteData!);
 
     const [value, setValue] = useState(fullEmailAddress(membersSupportAddress?.toString() || '', siteData!));

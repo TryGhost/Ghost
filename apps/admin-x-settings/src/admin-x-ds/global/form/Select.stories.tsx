@@ -1,13 +1,14 @@
-import {useArgs} from '@storybook/preview-api';
-import type {Meta, StoryObj} from '@storybook/react';
+import { ReactNode } from 'react';
+import { useArgs } from '@storybook/preview-api';
+import type { Meta, StoryObj } from '@storybook/react';
 
-import Select, {SelectOption} from './Select';
+import Select, { SelectOption } from './Select';
 
 const meta = {
     title: 'Global / Form / Select',
     component: Select,
     tags: ['autodocs'],
-    decorators: [(_story: any) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)],
+    decorators: [(_story: () => ReactNode) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)],
     argTypes: {
         hint: {
             control: 'text'

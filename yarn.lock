@@ -5818,6 +5818,19 @@
   resolved "https://registry.yarnpkg.com/@tailwindcss/line-clamp/-/line-clamp-0.4.4.tgz#767cf8e5d528a5d90c9740ca66eb079f5e87d423"
   integrity sha512-5U6SY5z8N42VtrCrKlsTAA35gy2VSyYtHWCsg1H87NU1SXnEfekTVlrga9fzUDrrHcGi2Lb5KenUWb4lRQT5/g==
 
+"@tanstack/query-core@4.29.25":
+  version "4.29.25"
+  resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-4.29.25.tgz#605d357968a740544af6754004eed1dfd4587cb8"
+  integrity sha512-DI4y4VC6Uw4wlTpOocEXDky69xeOScME1ezLKsj+hOk7DguC9fkqXtp6Hn39BVb9y0b5IBrY67q6kIX623Zj4Q==
+
+"@tanstack/react-query@4.29.25":
+  version "4.29.25"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-query/-/react-query-4.29.25.tgz#64df3260b65760fbd3c81ffae23b7b3802c71aa6"
+  integrity sha512-c1+Ezu+XboYrdAMdusK2fTdRqXPMgPAnyoTrzHOZQqr8Hqz6PNvV9DSKl8agUo6nXX4np7fdWabIprt+838dLg==
+  dependencies:
+    "@tanstack/query-core" "4.29.25"
+    use-sync-external-store "^1.2.0"
+
 "@testing-library/dom@^8.0.0":
   version "8.20.0"
   resolved "https://registry.yarnpkg.com/@testing-library/dom/-/dom-8.20.0.tgz#914aa862cef0f5e89b98cc48e3445c4c921010f6"
@@ -6271,10 +6284,10 @@
     lodash "^4.17.21"
     luxon "^3.0.0"
 
-"@tryghost/kg-default-nodes@0.1.10", "@tryghost/kg-default-nodes@^0.1.10":
-  version "0.1.10"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-nodes/-/kg-default-nodes-0.1.10.tgz#d7cdf76238a54368ad3ba7d0ad991de9e9006e08"
-  integrity sha512-d7GkuoLV99EWjaVwrZRjT9Y8eKVeAJSG4FSLOn8rGGul7z59qFIIzd1Ufkw0uqJKPtiHvuyCTFdmknspV6r5UA==
+"@tryghost/kg-default-nodes@0.1.11", "@tryghost/kg-default-nodes@^0.1.11":
+  version "0.1.11"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-nodes/-/kg-default-nodes-0.1.11.tgz#7decf3c7b8cd815c8cb59f41e4485b514c9b0f5d"
+  integrity sha512-EoesMVsPWMugJcsUZS2cNXxNB88qBWVbk/PpUp9ALPOIiqbWypGPEuJvFZGQI5YaAGJl3mtNaNaIkRndnnGtSA==
   dependencies:
     "@tryghost/kg-clean-basic-html" "^3.0.21"
     "@tryghost/kg-markdown-html-renderer" "^6.0.8"
@@ -6284,10 +6297,10 @@
     lodash "^4.17.21"
     luxon "^3.3.0"
 
-"@tryghost/kg-lexical-html-renderer@0.3.6":
-  version "0.3.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-0.3.6.tgz#a262f6e363420d2f0291bc283fc9122ceb033bbd"
-  integrity sha512-H1F1uBUJgAnG5sbNemvNELzZrriAXDokbit44O9nTGF8W5ys5F0ibwZns6DV8h8ZPToG57GxjggmA25Qw/ghwg==
+"@tryghost/kg-lexical-html-renderer@0.3.7":
+  version "0.3.7"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-0.3.7.tgz#1361ce0368a10d90cd3ad8dec3f826ef83d1ba5a"
+  integrity sha512-zAiXO7VASFVBCuL37Cp7rOSwcb1UlmfoXDIMl/rQQFxBnlbhMrQN9A9T3vWj2Dq7HQhynPuc2dAvT/ogEntRUA==
   dependencies:
     "@lexical/clipboard" "^0.11.0"
     "@lexical/code" "^0.11.0"
@@ -6295,7 +6308,7 @@
     "@lexical/link" "^0.11.0"
     "@lexical/list" "^0.11.0"
     "@lexical/rich-text" "^0.11.0"
-    "@tryghost/kg-default-nodes" "^0.1.10"
+    "@tryghost/kg-default-nodes" "^0.1.11"
     jsdom "^22.1.0"
     lexical "^0.11.0"
     prettier "^2.7.1"
@@ -10627,6 +10640,24 @@ c8@8.0.0:
     v8-to-istanbul "^9.0.0"
     yargs "^16.2.0"
     yargs-parser "^20.2.9"
+
+c8@8.0.1:
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/c8/-/c8-8.0.1.tgz#bafd60be680e66c5530ee69f621e45b1364af9fd"
+  integrity sha512-EINpopxZNH1mETuI0DzRA4MZpAUH+IFiRhnmFD3vFr3vdrgxqi3VfE3KL0AIL+zDq8rC9bZqwM/VDmmoe04y7w==
+  dependencies:
+    "@bcoe/v8-coverage" "^0.2.3"
+    "@istanbuljs/schema" "^0.1.3"
+    find-up "^5.0.0"
+    foreground-child "^2.0.0"
+    istanbul-lib-coverage "^3.2.0"
+    istanbul-lib-report "^3.0.1"
+    istanbul-reports "^3.1.6"
+    rimraf "^3.0.2"
+    test-exclude "^6.0.0"
+    v8-to-istanbul "^9.0.0"
+    yargs "^17.7.2"
+    yargs-parser "^21.1.1"
 
 cac@^6.7.14:
   version "6.7.14"
@@ -17148,10 +17179,10 @@ growly@^1.3.0:
   resolved "https://registry.yarnpkg.com/growly/-/growly-1.3.0.tgz#f10748cbe76af964b7c96c93c6bcc28af120c081"
   integrity sha512-+xGQY0YyAWCnqy7Cd++hc2JqMYzlm0dG30Jd0beaA64sROr8C4nt8Yc9V5Ro3avlSUDTN0ulqP/VBKi1/lLygw==
 
-gscan@4.37.3:
-  version "4.37.3"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.37.3.tgz#4a705f3bc5222655fcad378f489f25deac6a60fc"
-  integrity sha512-ADpxd72ak/c0gPSoCYwdIZvlKqCJuKb4DtHuk0padqY6nexh7dMdXreL3rXir0w9tlYyIXsqoF8OuJdrIS0G9g==
+gscan@4.37.4:
+  version "4.37.4"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.37.4.tgz#d9a05d22f3ad774c947abe8ea2a5af9a69bb3847"
+  integrity sha512-XI6QazyN9roUJ9kjlwU+qG73XYi8L0mSM0KLm9oLUdhoTFBSHOWUsVVCSu1TJ6z/v0QLmop/dOQYfGinr6bWxg==
   dependencies:
     "@sentry/node" "7.60.1"
     "@tryghost/config" "0.2.17"
@@ -18849,6 +18880,15 @@ istanbul-lib-report@^3.0.0:
     make-dir "^3.0.0"
     supports-color "^7.1.0"
 
+istanbul-lib-report@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/istanbul-lib-report/-/istanbul-lib-report-3.0.1.tgz#908305bac9a5bd175ac6a74489eafd0fc2445a7d"
+  integrity sha512-GCfE1mtsHGOELCU8e/Z7YWzpmybrx/+dSTfLrvY8qRmaY6zXTKWn6WQIjaAFw069icm6GVMNkgu0NzI4iPZUNw==
+  dependencies:
+    istanbul-lib-coverage "^3.0.0"
+    make-dir "^4.0.0"
+    supports-color "^7.1.0"
+
 istanbul-lib-source-maps@^4.0.1:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/istanbul-lib-source-maps/-/istanbul-lib-source-maps-4.0.1.tgz#895f3a709fcfba34c6de5a42939022f3e4358551"
@@ -18862,6 +18902,14 @@ istanbul-reports@^3.0.2, istanbul-reports@^3.1.4, istanbul-reports@^3.1.5:
   version "3.1.5"
   resolved "https://registry.yarnpkg.com/istanbul-reports/-/istanbul-reports-3.1.5.tgz#cc9a6ab25cb25659810e4785ed9d9fb742578bae"
   integrity sha512-nUsEMa9pBt/NOHqbcbeJEgqIlY/K7rVWUX6Lql2orY5e9roQOthbR3vtY4zzf2orPELg80fnxxk9zUyPlgwD1w==
+  dependencies:
+    html-escaper "^2.0.0"
+    istanbul-lib-report "^3.0.0"
+
+istanbul-reports@^3.1.6:
+  version "3.1.6"
+  resolved "https://registry.yarnpkg.com/istanbul-reports/-/istanbul-reports-3.1.6.tgz#2544bcab4768154281a2f0870471902704ccaa1a"
+  integrity sha512-TLgnMkKg3iTDsQ9PbPTdpfAK2DzjF9mqUG7RMgcQl8oFjad8ob4laGxv5XV5U9MAfx8D6tSJiUyuAwzLicaxlg==
   dependencies:
     html-escaper "^2.0.0"
     istanbul-lib-report "^3.0.0"
@@ -20784,6 +20832,13 @@ make-dir@^3.0.0, make-dir@^3.0.2, make-dir@^3.1.0:
   integrity sha512-g3FeP20LNwhALb/6Cz6Dd4F2ngze0jz7tbzrD2wAV+o9FeNHe4rL+yK2md0J/fiSf1sa1ADhXqi5+oVwOM/eGw==
   dependencies:
     semver "^6.0.0"
+
+make-dir@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/make-dir/-/make-dir-4.0.0.tgz#c3c2307a771277cd9638305f915c29ae741b614e"
+  integrity sha512-hXdUTZYIVOt1Ex//jAQi+wTZZpUpwBj/0QsOzqegb3rGMMeJiSEu5xLHnYfBrRV4RH2+OCSOO95Is/7x1WJ4bw==
+  dependencies:
+    semver "^7.5.3"
 
 make-error@^1.1.1, make-error@^1.3.6:
   version "1.3.6"
@@ -28908,6 +28963,11 @@ use-resize-observer@^9.1.0:
   integrity sha512-R25VqO9Wb3asSD4eqtcxk8sJalvIOYBqS8MNZlpDSQ4l4xMQxC/J7Id9HoTqPq8FwULIn0PVW+OAqF2dyYbjow==
   dependencies:
     "@juggle/resize-observer" "^3.3.1"
+
+use-sync-external-store@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/use-sync-external-store/-/use-sync-external-store-1.2.0.tgz#7dbefd6ef3fe4e767a0cf5d7287aacfb5846928a"
+  integrity sha512-eEgnFxGQ1Ife9bzYs6VLi8/4X6CObHMw9Qr9tPY43iKwsPw8xE8+EFsf/2cFZ5S3esXgpWgtSCtLNS41F+sKPA==
 
 use@^3.1.0:
   version "3.1.1"
