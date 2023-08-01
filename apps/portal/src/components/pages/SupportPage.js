@@ -14,18 +14,19 @@ const SupportPage = () => {
         async function checkoutDonation() {
             const siteUrl = window.location.origin;
             const currentUrl = siteUrl + window.location.pathname;
-            const api = setupGhostApi({siteUrl});
             const successUrl = `${currentUrl}#/portal/support/success`;
             const cancelUrl = `${currentUrl}#/portal/support/error`;
+            const api = setupGhostApi({siteUrl});
 
             try {
-                await api.member.checkoutDonation({successUrl, cancelUrl});
-            } catch (err) {
-                if (err.message) {
-                    setError(err.message);
-                } else {
-                    setError('There was an error processing your payment. Please try again.');
+                const response = await api.member.checkoutDonation({successUrl, cancelUrl});
+
+                if (response.url) {
+                    await window.location.assign(response.url);
                 }
+            } catch (err) {
+                const errorMessage = err.message || 'There was an error processing your payment. Please try again.';
+                setError(errorMessage);
             } finally {
                 setLoading(false);
             }
