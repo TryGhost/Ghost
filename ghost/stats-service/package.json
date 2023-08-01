@@ -22,7 +22,7 @@
   "devDependencies": {
     "@types/luxon": "3.3.1",
     "@types/mocha": "10.0.1",
-    "@types/sinon": "10.0.15",
+    "@types/sinon": "10.0.16",
     "c8": "7.14.0",
     "knex": "2.4.2",
     "luxon": "3.3.0",
