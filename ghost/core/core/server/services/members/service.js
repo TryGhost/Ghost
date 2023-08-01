@@ -54,14 +54,15 @@ const membersImporter = new MembersCSVImporter({
         return tiersService.api.readDefaultTier();
     },
     getTierByName: async (name) => {
-        // @TODO: Should we implement a specific findBy method in the tiers service?
-        const res = await tiersService.api.browse({
-            filter: `name:'${name}'+active:true`
+        const tiers = await tiersService.api.browse({
+            filter: `name:'${name}'`
         });
 
-        if (res.data.length > 0) {
-            // @TODO: What if there are multiple tiers with the same name?
-            return res.data[0];
+        if (tiers.data.length > 0) {
+            // It is possible that there are multiple tiers with the same name so return the last one in the array -
+            // `tiersService.api.browse` returns all tiers, but without any ordering applied, so we assume that
+            // the last one in the array is the most recently created
+            return tiers.data.pop();
         }
 
         return null;

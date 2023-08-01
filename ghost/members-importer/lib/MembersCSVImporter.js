@@ -54,7 +54,7 @@ module.exports = class MembersCSVImporter {
         this._knex = knex;
         this._urlFor = urlFor;
         this._context = context;
-        this._tierCache = new Map();
+        this._tierIdCache = new Map();
     }
 
     /**
@@ -118,6 +118,14 @@ module.exports = class MembersCSVImporter {
         const defaultTier = await this._getDefaultTier();
         const membersRepository = await this._getMembersRepository();
 
+        // Clear tier ID cache before each import in-case tiers have been updated since last import
+        this._tierIdCache.clear();
+
+        // Keep track of any Stripe prices created as a result of an import tier being specified so that they
+        // can be archived after the import has completed - This ensures the created Stripe prices cannot be re-used
+        // for future subscriptions
+        const archiveStripePriceTasks = [];
+
         const result = await rows.reduce(async (resultPromise, row) => {
             const resultAccumulator = await resultPromise;
 
@@ -177,6 +185,17 @@ module.exports = class MembersCSVImporter {
                     }));
                 }
 
+                let importTierId;
+                if (row.import_tier) {
+                    importTierId = await this.#getTierIdByName(row.import_tier);
+
+                    if (!importTierId) {
+                        throw new errors.DataImportError({
+                            message: tpl(messages.invalidImportTier, {tier: row.import_tier})
+                        });
+                    }
+                }
+
                 if (row.stripe_customer_id && typeof row.stripe_customer_id === 'string') {
                     let stripeCustomerId;
 
@@ -188,6 +207,17 @@ module.exports = class MembersCSVImporter {
                     }
 
                     if (stripeCustomerId) {
+                        if (row.import_tier) {
+                            const {isNewStripePrice, archiveStripePrice} = await membersRepository.forceStripeSubscriptionToProduct({
+                                customer_id: stripeCustomerId,
+                                product_id: importTierId
+                            }, options);
+
+                            if (isNewStripePrice) {
+                                archiveStripePriceTasks.push(archiveStripePrice);
+                            }
+                        }
+
                         await membersRepository.linkStripeCustomer({
                             customer_id: stripeCustomerId,
                             member_id: member.id
@@ -197,18 +227,8 @@ module.exports = class MembersCSVImporter {
                     const products = [];
 
                     if (row.import_tier) {
-                        const tier = await this.#getTierByName(row.import_tier);
-
-                        if (!tier) {
-                            throw new errors.DataImportError({
-                                message: tpl(messages.invalidImportTier, {tier: row.import_tier})
-                            });
-                        }
-
-                        products.push({id: tier.id.toString()});
-                    }
-
-                    if (products.length === 0) {
+                        products.push({id: importTierId});
+                    } else {
                         products.push({id: defaultTier.id.toString()});
                     }
 
@@ -242,6 +262,10 @@ module.exports = class MembersCSVImporter {
             imported: 0,
             errors: []
         }));
+
+        await Promise.all(
+            archiveStripePriceTasks.map(task => task())
+        );
 
         return {
             total: result.imported + result.errors.length,
@@ -397,18 +421,22 @@ module.exports = class MembersCSVImporter {
     }
 
     /**
-     * Retrieve a tier by its name and cache the result
+     * Retrieve the ID for a tier by querying by its name, and cache the result
      *
-     * @private
      * @param {string} name
-     * @returns {Promise<import('@tryghost/tiers/lib/Tier')|null>}
+     * @returns {Promise<string|null>}
      */
-    async #getTierByName(name) {
-        if (!this._tierCache.has(name)) {
+    async #getTierIdByName(name) {
+        if (!this._tierIdCache.has(name)) {
             const tier = await this._getTierByName(name);
-            this._tierCache.set(name, tier);
+
+            if (!tier) {
+                return null;
+            }
+
+            this._tierIdCache.set(name, tier.id.toString());
         }
 
-        return this._tierCache.get(name);
+        return this._tierIdCache.get(name);
     }
 };
