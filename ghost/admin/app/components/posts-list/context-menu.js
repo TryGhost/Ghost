@@ -6,7 +6,6 @@ import UnpublishPostsModal from './modals/unpublish-posts';
 import nql from '@tryghost/nql';
 import {action} from '@ember/object';
 import {capitalizeFirstLetter} from 'ghost-admin/helpers/capitalize-first-letter';
-import {posts as postExpansions} from '@tryghost/nql-filter-expansions';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
@@ -258,7 +257,29 @@ export default class PostsContextMenu extends Component {
         const updatedModels = this.selectionList.availableModels;
         const filter = this.selectionList.allFilter;
         const filterNql = nql(filter, {
-            expansions: postExpansions
+            expansions: [
+                {
+                    key: 'primary_tag',
+                    replacement: 'tags.slug',
+                    expansion: 'posts_tags.sort_order:0+tags.visibility:public'
+                }, {
+                    key: 'primary_author',
+                    replacement: 'authors.slug',
+                    expansion: 'posts_authors.sort_order:0+authors.visibility:public'
+                }, {
+                    key: 'authors',
+                    replacement: 'authors.slug'
+                }, {
+                    key: 'author',
+                    replacement: 'authors.slug'
+                }, {
+                    key: 'tag',
+                    replacement: 'tags.slug'
+                }, {
+                    key: 'tags',
+                    replacement: 'tags.slug'
+                }
+            ]
         });
 
         const remainingModels = this.selectionList.infinityModel.content.filter((model) => {
