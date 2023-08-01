@@ -67,6 +67,10 @@ export type Post = {
     url: string;
 };
 
+export type Member = {
+    id: string;
+};
+
 export type Tier = {
     id: string;
     name: string;

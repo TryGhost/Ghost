@@ -1,7 +1,7 @@
-import {Setting} from '../types/api';
-import {useCallback, useMemo} from 'react';
-import {useEditSettings} from '../utils/api/settings';
-import {useGlobalData} from '../components/providers/DataProvider';
+import { Setting } from '../types/api';
+import { useCallback, useMemo } from 'react';
+import { useEditSettings } from '../utils/api/settings';
+import { useGlobalData } from '../components/providers/DataProvider';
 
 function serialiseSettingsData(settings: Setting[]): Setting[] {
     return settings.map((setting) => {
@@ -66,21 +66,16 @@ const useSettings = () => {
     const {mutateAsync: editSettings} = useEditSettings();
 
     const saveSettings = useCallback(async (updatedSettings: Setting[]) => {
-        try {
-            // handle transformation for settings before save
-            updatedSettings = deserializeSettings(updatedSettings);
-            // Make an API call to save the updated settings
-            const data = await editSettings(updatedSettings);
-            const newSettings = serialiseSettingsData(data.settings);
+        // handle transformation for settings before save
+        updatedSettings = deserializeSettings(updatedSettings);
+        // Make an API call to save the updated settings
+        const data = await editSettings(updatedSettings);
+        const newSettings = serialiseSettingsData(data.settings);
 
-            return {
-                settings: newSettings,
-                meta: data.meta
-            };
-        } catch (error) {
-            // Log error in settings API
-            return {settings: []};
-        }
+        return {
+            settings: newSettings,
+            meta: data.meta
+        };
     }, [editSettings]);
 
     const serializedSettings = useMemo(() => serialiseSettingsData(settings), [settings]);

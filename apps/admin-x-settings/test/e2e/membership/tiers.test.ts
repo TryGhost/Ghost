@@ -1,9 +1,18 @@
 import { expect, test } from '@playwright/test';
-import { mockApi, responseFixtures } from '../../utils/e2e';
+import { mockApi, responseFixtures, updatedSettingsResponse } from '../../utils/e2e';
+
+const settingsWithStripe = updatedSettingsResponse([
+    { key: 'stripe_connect_publishable_key', value: 'pk_test_123' },
+    { key: 'stripe_connect_secret_key', value: 'sk_test_123' },
+    { key: 'stripe_connect_display_name', value: 'Dummy' },
+    { key: 'stripe_connect_account_id', value: 'acct_123' }
+])
 
 test.describe('Tier settings', async () => {
     test('Supports creating a new tier', async ({page}) => {
-        await mockApi({page});
+        await mockApi({page, responses: {
+            settings: {browse: settingsWithStripe}
+        }});
 
         await page.goto('/');
 
@@ -65,6 +74,7 @@ test.describe('Tier settings', async () => {
 
     test('Supports updating a tier', async ({page}) => {
         const lastApiRequests = await mockApi({page, responses: {
+            settings: {browse: settingsWithStripe},
             tiers: {
                 edit: {
                     tiers: [{
@@ -127,6 +137,7 @@ test.describe('Tier settings', async () => {
 
     test('Supports editing the free tier', async ({page}) => {
         const lastApiRequests = await mockApi({page, responses: {
+            settings: {browse: settingsWithStripe},
             tiers: {
                 edit: {
                     tiers: [{

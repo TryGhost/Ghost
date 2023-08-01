@@ -1,4 +1,4 @@
-import Button, {ButtonProps} from '../global/Button';
+import Button, { ButtonProps } from '../global/Button';
 import React from 'react';
 import clsx from 'clsx';
 

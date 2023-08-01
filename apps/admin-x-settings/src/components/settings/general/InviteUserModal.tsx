@@ -13,7 +13,9 @@ type RoleType = 'administrator' | 'editor' | 'author' | 'contributor';
 
 const InviteUserModal = NiceModal.create(() => {
     const rolesQuery = useBrowseRoles();
-    const assignableRolesQuery = useBrowseRoles({limit: 'all', permissions: 'assign'});
+    const assignableRolesQuery = useBrowseRoles({
+        searchParams: {limit: 'all', permissions: 'assign'}
+    });
 
     const {updateRoute} = useRouting();
 

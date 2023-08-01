@@ -1,10 +1,10 @@
 import Icon from './Icon';
-import React from 'react';
+import React, { HTMLProps } from 'react';
 
 export type ButtonColor = 'clear' | 'grey' | 'black' | 'green' | 'red' | 'white' | 'outline';
 export type ButtonSize = 'sm' | 'md';
 
-export interface ButtonProps {
+export interface ButtonProps extends Omit<HTMLProps<HTMLButtonElement>, 'label' | 'size' | 'children'> {
     size?: ButtonSize;
     label?: React.ReactNode;
     hideLabel?: boolean;
