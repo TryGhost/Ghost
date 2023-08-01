@@ -368,7 +368,7 @@ export class CollectionsService {
                 return;
             }
 
-            this.updatePostsInCollections(postIds, collections, transaction);
+            await this.updatePostsInCollections(postIds, collections, transaction);
         });
     }
 
@@ -386,7 +386,7 @@ export class CollectionsService {
                 return;
             }
 
-            this.updatePostsInCollections(postIds, collections, transaction);
+            await this.updatePostsInCollections(postIds, collections, transaction);
         });
     }
 
