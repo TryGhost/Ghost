@@ -81,7 +81,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "4.0.3",
-    "vite": "4.4.7",
+    "vite": "4.4.8",
     "vite-plugin-svgr": "3.2.0",
     "vitest": "0.33.0"
   }
