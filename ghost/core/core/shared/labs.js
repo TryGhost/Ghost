@@ -38,7 +38,6 @@ const ALPHA_FEATURES = [
     'emailCustomization',
     'collections',
     'adminXSettings',
-    'flatUrls',
     'mailEvents',
     'collectionsCard',
     'headerUpgrade',
