@@ -408,7 +408,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             };
 
             const body = {
-                identity: identity,
+                identity,
                 metadata: metadataObj,
                 successUrl,
                 cancelUrl,
