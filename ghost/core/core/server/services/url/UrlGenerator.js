@@ -3,7 +3,26 @@ const nql = require('@tryghost/nql');
 const debug = require('@tryghost/debug')('services:url:generator');
 const localUtils = require('../../../shared/url-utils');
 
-const {posts: postExpansions} = require('@tryghost/nql-filter-expansions');
+// @TODO: merge with filter plugin
+const EXPANSIONS = [{
+    key: 'author',
+    replacement: 'authors.slug'
+}, {
+    key: 'tags',
+    replacement: 'tags.slug'
+}, {
+    key: 'tag',
+    replacement: 'tags.slug'
+}, {
+    key: 'authors',
+    replacement: 'authors.slug'
+}, {
+    key: 'primary_tag',
+    replacement: 'primary_tag.slug'
+}, {
+    key: 'primary_author',
+    replacement: 'primary_author.slug'
+}];
 
 /**
  * The UrlGenerator class is responsible to generate urls based on a router's conditions.
@@ -38,7 +57,7 @@ class UrlGenerator {
         if (filter) {
             this.filter = filter;
             this.nql = nql(this.filter, {
-                expansions: postExpansions,
+                expansions: EXPANSIONS,
                 transformer: nql.utils.mapKeyValues({
                     key: {
                         from: 'page',
