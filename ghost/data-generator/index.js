@@ -1,1 +1,1 @@
-module.exports = require('./lib/data-generator');
+module.exports = require('./lib/DataGenerator');
