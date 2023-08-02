@@ -2,11 +2,10 @@
 // const testUtils = require('./utils');
 require('./utils');
 const knex = require('knex');
-const {
-    ProductsImporter,
-    StripeProductsImporter,
-    StripePricesImporter
-} = require('../lib/tables');
+const importers = require('../lib/importers');
+const ProductsImporter = importers.find(i => i.table === 'products');
+const StripeProductsImporter = importers.find(i => i.table === 'stripe_products');
+const StripePricesImporter = importers.find(i => i.table === 'stripe_prices');
 
 const generateEvents = require('../lib/utils/event-generator');
 
@@ -82,11 +81,14 @@ describe('Data Generator', function () {
                 info: () => { },
                 ok: () => { }
             },
-            modelQuantities: {
-                members: 10,
-                membersLoginEvents: 5,
-                posts: 2
-            }
+            tables: [{
+                name: 'members',
+                quantity: 10
+            }, {
+                name: 'posts',
+                quantity: 2
+            }],
+            withDefault: true
         });
         try {
             return await dataGenerator.importData();
@@ -152,27 +154,25 @@ describe('Importer', function () {
     });
 
     it('Should import a single item', async function () {
-        const productsImporter = new ProductsImporter(db);
-        const products = await productsImporter.import({amount: 1, rows: ['name', 'monthly_price', 'yearly_price']});
+        const transaction = await db.transaction();
+        const productsImporter = new ProductsImporter(db, transaction);
+        await productsImporter.import();
+        transaction.commit();
 
-        products.length.should.eql(1);
+        const products = await db.select('id', 'name').from('products');
+
+        products.length.should.eql(4);
         products[0].name.should.eql('Free');
-
-        const results = await db.select('id', 'name').from('products');
-
-        results.length.should.eql(1);
-        results[0].name.should.eql('Free');
     });
 
     it('Should import an item for each entry in an array', async function () {
-        const productsImporter = new ProductsImporter(db);
-        const products = await productsImporter.import({amount: 4, rows: ['name', 'monthly_price', 'yearly_price']});
+        const transaction = await db.transaction();
+        const productsImporter = new ProductsImporter(db, transaction);
+        await productsImporter.import();
 
-        const stripeProductsImporter = new StripeProductsImporter(db);
-        await stripeProductsImporter.importForEach(products, {
-            amount: 1,
-            rows: ['product_id', 'stripe_product_id']
-        });
+        const stripeProductsImporter = new StripeProductsImporter(db, transaction);
+        await stripeProductsImporter.import();
+        transaction.commit();
 
         const results = await db.select('id').from('stripe_products');
 
@@ -180,26 +180,20 @@ describe('Importer', function () {
     });
 
     it('Should update products to reference price ids', async function () {
-        const productsImporter = new ProductsImporter(db);
-        const products = await productsImporter.import({amount: 4, rows: ['name', 'monthly_price', 'yearly_price']});
+        const transaction = await db.transaction();
+        const productsImporter = new ProductsImporter(db, transaction);
+        await productsImporter.import();
 
-        const stripeProductsImporter = new StripeProductsImporter(db);
-        const stripeProducts = await stripeProductsImporter.importForEach(products, {
-            amount: 1,
-            rows: ['product_id', 'stripe_product_id']
-        });
+        const stripeProductsImporter = new StripeProductsImporter(db, transaction);
+        await stripeProductsImporter.import();
 
-        const stripePricesImporter = new StripePricesImporter(db, {products});
-        const stripePrices = await stripePricesImporter.importForEach(stripeProducts, {
-            amount: 2,
-            rows: ['stripe_price_id', 'interval', 'stripe_product_id', 'currency', 'amount', 'nickname']
-        });
+        const stripePricesImporter = new StripePricesImporter(db, transaction);
+        await stripePricesImporter.import();
 
-        await productsImporter.addStripePrices({
-            products,
-            stripeProducts,
-            stripePrices
-        });
+        await productsImporter.finalise();
+        await stripeProductsImporter.finalise();
+        await stripePricesImporter.finalise();
+        transaction.commit();
 
         const results = await db.select('id', 'name', 'monthly_price_id', 'yearly_price_id').from('products');
 
