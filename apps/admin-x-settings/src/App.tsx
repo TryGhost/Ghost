@@ -5,11 +5,11 @@ import NiceModal from '@ebay/nice-modal-react';
 import RoutingProvider from './components/providers/RoutingProvider';
 import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
-import { GlobalDirtyStateProvider } from './hooks/useGlobalDirtyState';
-import { OfficialTheme } from './models/themes';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ServicesProvider } from './components/providers/ServiceProvider';
-import { Toaster } from 'react-hot-toast';
+import {GlobalDirtyStateProvider} from './hooks/useGlobalDirtyState';
+import {OfficialTheme} from './models/themes';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {ServicesProvider} from './components/providers/ServiceProvider';
+import {Toaster} from 'react-hot-toast';
 
 interface AppProps {
     ghostVersion: string;
@@ -26,9 +26,9 @@ function App({ghostVersion, officialThemes}: AppProps) {
                     <RoutingProvider>
                         <GlobalDirtyStateProvider>
                             <div className="admin-x-settings h-[100vh] w-full overflow-y-auto" id="admin-x-root" style={{
-                                    height: '100vh',
-                                    width: '100%'
-                                }}
+                                height: '100vh',
+                                width: '100%'
+                            }}
                             >
                                 <Toaster />
                                 <NiceModal.Provider>

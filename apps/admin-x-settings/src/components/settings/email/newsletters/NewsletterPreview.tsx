@@ -6,10 +6,10 @@ import LatestPosts3 from '../../../../assets/images/latest-posts-3.png';
 import React from 'react';
 import clsx from 'clsx';
 import useSettings from '../../../../hooks/useSettings';
-import { ReactComponent as GhostOrb } from '../../../../admin-x-ds/assets/images/ghost-orb.svg';
-import { Newsletter } from '../../../../types/api';
-import { fullEmailAddress, getSettingValues } from '../../../../utils/helpers';
-import { useGlobalData } from '../../../providers/DataProvider';
+import {ReactComponent as GhostOrb} from '../../../../admin-x-ds/assets/images/ghost-orb.svg';
+import {Newsletter} from '../../../../types/api';
+import {fullEmailAddress, getSettingValues} from '../../../../utils/helpers';
+import {useGlobalData} from '../../../providers/DataProvider';
 
 const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
     const {currentUser} = useGlobalData();
@@ -35,7 +35,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
     const currentYear = new Date().getFullYear();
 
     const showCommentCta = newsletter.show_comment_cta && commentsEnabled !== 'off';
-    const showFeedback = newsletter.feedback_enabled && config.labs.audienceFeedback
+    const showFeedback = newsletter.feedback_enabled && config.labs.audienceFeedback;
 
     return (
         <div className="relative flex grow flex-col">

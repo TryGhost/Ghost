@@ -6,8 +6,8 @@ import GhostLogo from '../../../../assets/images/orb-squircle.png';
 import GhostLogoPink from '../../../../assets/images/orb-pink.png';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
-import NiceModal, { useModal } from '@ebay/nice-modal-react';
-import React, { useState } from 'react';
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import React, {useState} from 'react';
 import StripeButton from '../../../../admin-x-ds/settings/StripeButton';
 import StripeLogo from '../../../../assets/images/stripe-emblem.svg';
 import TextArea from '../../../../admin-x-ds/global/form/TextArea';
@@ -16,15 +16,15 @@ import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import useSettings from '../../../../hooks/useSettings';
-import { ApiError } from '../../../../utils/apiRequests';
-import { ReactComponent as StripeVerified } from '../../../../assets/images/stripe-verified.svg';
-import { checkStripeEnabled, getGhostPaths, getSettingValue, getSettingValues } from '../../../../utils/helpers';
-import { showToast } from '../../../../admin-x-ds/global/Toast';
-import { toast } from 'react-hot-toast';
-import { useBrowseMembers } from '../../../../utils/api/members';
-import { useBrowseTiers, useEditTier } from '../../../../utils/api/tiers';
-import { useDeleteStripeSettings, useEditSettings } from '../../../../utils/api/settings';
-import { useGlobalData } from '../../../providers/DataProvider';
+import {ApiError} from '../../../../utils/apiRequests';
+import {ReactComponent as StripeVerified} from '../../../../assets/images/stripe-verified.svg';
+import {checkStripeEnabled, getGhostPaths, getSettingValue, getSettingValues} from '../../../../utils/helpers';
+import {showToast} from '../../../../admin-x-ds/global/Toast';
+import {toast} from 'react-hot-toast';
+import {useBrowseMembers} from '../../../../utils/api/members';
+import {useBrowseTiers, useEditTier} from '../../../../utils/api/tiers';
+import {useDeleteStripeSettings, useEditSettings} from '../../../../utils/api/settings';
+import {useGlobalData} from '../../../providers/DataProvider';
 
 const RETRY_PRODUCT_SAVE_POLL_LENGTH = 1000;
 const RETRY_PRODUCT_SAVE_MAX_POLL = 15 * RETRY_PRODUCT_SAVE_POLL_LENGTH;
@@ -64,7 +64,7 @@ const Connect: React.FC = () => {
 
     const saveTier = async () => {
         const {data} = await fetchActiveTiers();
-        const tier = data?.tiers[0]
+        const tier = data?.tiers[0];
 
         if (tier) {
             tier.monthly_price = 500;
@@ -75,7 +75,7 @@ const Connect: React.FC = () => {
             /** To allow Stripe config to be ready in backend, we poll the save tier request */
             while (pollTimeout < RETRY_PRODUCT_SAVE_MAX_POLL) {
                 await new Promise((resolve) => {
-                    setTimeout(resolve, RETRY_PRODUCT_SAVE_POLL_LENGTH)
+                    setTimeout(resolve, RETRY_PRODUCT_SAVE_POLL_LENGTH);
                 });
 
                 try {
@@ -118,7 +118,7 @@ const Connect: React.FC = () => {
         } else {
             setError('Please enter a secure key');
         }
-    }
+    };
 
     const {apiRoot} = getGhostPaths();
     const stripeConnectUrl = `${apiRoot}/members/stripe_connect?mode=${testMode ? 'test' : 'live'}`;
@@ -152,7 +152,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
     const [stripeConnectAccountName, stripeConnectLivemode] = getSettingValues(settings, ['stripe_connect_account_name', 'stripe_connect_livemode']);
 
     const {refetch: fetchMembers, isFetching: isFetchingMembers} = useBrowseMembers({
-        searchParams: { filter: 'status:paid', limit: '0' },
+        searchParams: {filter: 'status:paid', limit: '0'},
         enabled: false
     });
 
@@ -160,11 +160,11 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
 
     const openDisconnectStripeModal = async () => {
         const {data} = await fetchMembers();
-        const hasActiveStripeSubscriptions = Boolean(data?.meta?.pagination.total)
+        const hasActiveStripeSubscriptions = Boolean(data?.meta?.pagination.total);
 
         // const hasActiveStripeSubscriptions = false; //...
         // this.ghostPaths.url.api('/members/') + '?filter=status:paid&limit=0';
-         NiceModal.show(ConfirmationModal, {
+        NiceModal.show(ConfirmationModal, {
             title: 'Are you sure you want to disconnect?',
             prompt: <>
                 {hasActiveStripeSubscriptions && <p className="text-red">
@@ -233,20 +233,20 @@ const Direct: React.FC<{onClose: () => void}> = ({onClose}) => {
                 showToast({
                     type: 'pageError',
                     message: 'Failed to save settings. Please check you copied both keys correctly.'
-                })
+                });
                 return;
             }
 
             throw e;
         }
-    }
+    };
 
     return (
         <div>
             <Heading level={3}>Connect Stripe</Heading>
             <Form marginBottom={false} marginTop>
-                <TextField title='Publishable key' value={publishableKey?.toString()} onChange={(e) => updateSetting('stripe_publishable_key', e.target.value)} />
-                <TextField title='Secure key' value={secretKey?.toString()} onChange={(e) => updateSetting('stripe_secret_key', e.target.value)} />
+                <TextField title='Publishable key' value={publishableKey?.toString()} onChange={e => updateSetting('stripe_publishable_key', e.target.value)} />
+                <TextField title='Secure key' value={secretKey?.toString()} onChange={e => updateSetting('stripe_secret_key', e.target.value)} />
                 <Button className='mt-5' color='green' disabled={saveState === 'saving'} label='Save Stripe settings' onClick={onSubmit} />
             </Form>
         </div>
@@ -256,7 +256,7 @@ const Direct: React.FC<{onClose: () => void}> = ({onClose}) => {
 const StripeConnectModal: React.FC = () => {
     const {config} = useGlobalData();
     const {settings} = useSettings();
-    const stripeConnectAccountId = getSettingValue(settings, 'stripe_connect_account_id')
+    const stripeConnectAccountId = getSettingValue(settings, 'stripe_connect_account_id');
     const {updateRoute} = useRouting();
     const [step, setStep] = useState<'start' | 'connect'>('start');
     const mainModal = useModal();

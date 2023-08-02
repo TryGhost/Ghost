@@ -1,5 +1,5 @@
-import { CustomThemeSetting, Setting } from '../../types/api';
-import { createMutation, createQuery } from '../apiRequests';
+import {CustomThemeSetting, Setting} from '../../types/api';
+import {createMutation, createQuery} from '../apiRequests';
 
 export interface CustomThemeSettingsResponseType {
     custom_theme_settings: CustomThemeSetting[];

@@ -1,5 +1,5 @@
-import React, { ReactNode } from 'react';
-import type { Meta, StoryObj } from '@storybook/react';
+import React, {ReactNode} from 'react';
+import type {Meta, StoryObj} from '@storybook/react';
 
 import Avatar from './Avatar';
 import Button from './Button';

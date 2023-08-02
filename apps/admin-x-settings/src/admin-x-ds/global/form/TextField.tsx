@@ -93,7 +93,7 @@ const TextField: React.FC<TextFieldProps> = ({
         return (
             <div className={`flex flex-col ${containerClassName}`}>
                 {field}
-                {title && <Heading className={hideTitle ? 'sr-only' :  'order-1 !text-grey-700 peer-focus:!text-black'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
+                {title && <Heading className={hideTitle ? 'sr-only' : 'order-1 !text-grey-700 peer-focus:!text-black'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
                 {hint && <Hint className={'order-3' + hintClassName} color={error ? 'red' : ''}>{hint}</Hint>}
             </div>
         );

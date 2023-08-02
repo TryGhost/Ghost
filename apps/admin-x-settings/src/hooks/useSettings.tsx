@@ -1,7 +1,7 @@
-import { Setting } from '../types/api';
-import { useCallback, useMemo } from 'react';
-import { useEditSettings } from '../utils/api/settings';
-import { useGlobalData } from '../components/providers/DataProvider';
+import {Setting} from '../types/api';
+import {useCallback, useMemo} from 'react';
+import {useEditSettings} from '../utils/api/settings';
+import {useGlobalData} from '../components/providers/DataProvider';
 
 function serialiseSettingsData(settings: Setting[]): Setting[] {
     return settings.map((setting) => {

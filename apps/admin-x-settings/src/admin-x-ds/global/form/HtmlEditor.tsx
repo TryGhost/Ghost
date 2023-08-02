@@ -1,4 +1,4 @@
-import React, { ReactNode, Suspense, useCallback, useMemo } from 'react';
+import React, {ReactNode, Suspense, useCallback, useMemo} from 'react';
 
 export interface HtmlEditorProps {
     value?: string

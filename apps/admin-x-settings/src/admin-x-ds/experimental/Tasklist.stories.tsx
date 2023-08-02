@@ -1,5 +1,5 @@
 import TaskList from './Tasklist';
-import { ReactNode } from 'react';
+import {ReactNode} from 'react';
 
 import * as TaskStories from './Task.stories';
 

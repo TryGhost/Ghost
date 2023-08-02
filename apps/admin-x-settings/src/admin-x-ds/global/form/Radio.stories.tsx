@@ -1,7 +1,7 @@
-import { ReactNode } from 'react';
-import type { Meta, StoryObj } from '@storybook/react';
+import {ReactNode} from 'react';
+import type {Meta, StoryObj} from '@storybook/react';
 
-import Radio, { RadioOption } from './Radio';
+import Radio, {RadioOption} from './Radio';
 
 const meta = {
     title: 'Global / Form / Radio',

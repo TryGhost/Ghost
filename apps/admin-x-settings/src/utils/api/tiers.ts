@@ -1,5 +1,5 @@
-import { Meta, createMutation, createQuery } from '../apiRequests';
-import { Tier } from '../../types/api';
+import {Meta, createMutation, createQuery} from '../apiRequests';
+import {Tier} from '../../types/api';
 
 export interface TiersResponseType {
     meta?: Meta

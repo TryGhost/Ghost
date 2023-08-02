@@ -1,5 +1,5 @@
-import { expect, test } from '@playwright/test';
-import { mockApi, responseFixtures } from '../../utils/e2e';
+import {expect, test} from '@playwright/test';
+import {mockApi, responseFixtures} from '../../utils/e2e';
 
 test.describe('Theme settings', async () => {
     test('Browsing and installing default themes', async ({page}) => {

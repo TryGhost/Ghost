@@ -4,17 +4,17 @@ import Button from '../../../admin-x-ds/global/Button';
 import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
 import FileUpload from '../../../admin-x-ds/global/form/FileUpload';
 import Modal from '../../../admin-x-ds/global/modal/Modal';
-import NiceModal, { NiceModalHandler, useModal } from '@ebay/nice-modal-react';
+import NiceModal, {NiceModalHandler, useModal} from '@ebay/nice-modal-react';
 import OfficialThemes from './theme/OfficialThemes';
 import PageHeader from '../../../admin-x-ds/global/layout/PageHeader';
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import TabView from '../../../admin-x-ds/global/TabView';
 import ThemeInstalledModal from './theme/ThemeInstalledModal';
 import ThemePreview from './theme/ThemePreview';
 import useRouting from '../../../hooks/useRouting';
-import { OfficialTheme } from '../../../models/themes';
-import { Theme } from '../../../types/api';
-import { useBrowseThemes, useInstallTheme, useUploadTheme } from '../../../utils/api/themes';
+import {OfficialTheme} from '../../../models/themes';
+import {Theme} from '../../../types/api';
+import {useBrowseThemes, useInstallTheme, useUploadTheme} from '../../../utils/api/themes';
 
 interface ThemeToolbarProps {
     selectedTheme: OfficialTheme|null;

@@ -1,5 +1,5 @@
-import { ReactNode } from 'react';
-import type { Meta, StoryContext, StoryObj } from '@storybook/react';
+import {ReactNode} from 'react';
+import type {Meta, StoryContext, StoryObj} from '@storybook/react';
 
 import Modal from './Modal';
 import ModalContainer from './ModalContainer';
