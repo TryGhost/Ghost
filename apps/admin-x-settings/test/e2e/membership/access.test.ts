@@ -1,16 +1,15 @@
 import {expect, test} from '@playwright/test';
-import {mockApi, responseFixtures, updatedSettingsResponse} from '../../utils/e2e';
+import {globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '../../utils/e2e';
 
 test.describe('Access settings', async () => {
     test('Supports editing access', async ({page}) => {
-        const lastApiRequests = await mockApi({page, responses: {
-            settings: {
-                edit: updatedSettingsResponse([
-                    {key: 'default_content_visibility', value: 'members'},
-                    {key: 'members_signup_access', value: 'invite'},
-                    {key: 'comments_enabled', value: 'all'}
-                ])
-            }
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
+                {key: 'default_content_visibility', value: 'members'},
+                {key: 'members_signup_access', value: 'invite'},
+                {key: 'comments_enabled', value: 'all'}
+            ])}
         }});
 
         await page.goto('/');
@@ -35,7 +34,7 @@ test.describe('Access settings', async () => {
         await expect(section.getByText('Members only')).toHaveCount(1);
         await expect(section.getByText('All members')).toHaveCount(1);
 
-        expect(lastApiRequests.settings.edit.body).toEqual({
+        expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
                 {key: 'default_content_visibility', value: 'members'},
                 {key: 'members_signup_access', value: 'invite'},
@@ -45,13 +44,13 @@ test.describe('Access settings', async () => {
     });
 
     test('Supports selecting specific tiers', async ({page}) => {
-        const lastApiRequests = await mockApi({page, responses: {
-            settings: {
-                edit: updatedSettingsResponse([
-                    {key: 'default_content_visibility', value: 'tiers'},
-                    {key: 'default_content_visibility_tiers', value: JSON.stringify(responseFixtures.tiers.tiers.map(tier => tier.id))}
-                ])
-            }
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseTiers: {method: 'GET', path: '/tiers/?limit=all', response: responseFixtures.tiers},
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
+                {key: 'default_content_visibility', value: 'tiers'},
+                {key: 'default_content_visibility_tiers', value: JSON.stringify(responseFixtures.tiers.tiers.map(tier => tier.id))}
+            ])}
         }});
 
         await page.goto('/');
@@ -70,7 +69,7 @@ test.describe('Access settings', async () => {
 
         await expect(section.getByText('Specific tiers')).toHaveCount(1);
 
-        expect(lastApiRequests.settings.edit.body).toEqual({
+        expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
                 {key: 'default_content_visibility', value: 'tiers'},
                 {key: 'default_content_visibility_tiers', value: JSON.stringify(responseFixtures.tiers.tiers.slice(1).map(tier => tier.id))}

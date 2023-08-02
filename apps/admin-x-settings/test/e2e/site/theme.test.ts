@@ -1,27 +1,27 @@
 import {expect, test} from '@playwright/test';
-import {mockApi, responseFixtures} from '../../utils/e2e';
+import {globalDataRequests, mockApi, responseFixtures} from '../../utils/e2e';
 
 test.describe('Theme settings', async () => {
     test('Browsing and installing default themes', async ({page}) => {
-        const lastApiRequests = await mockApi({page, responses: {
-            themes: {
-                install: {
-                    themes: [{
-                        name: 'headline',
-                        package: {},
-                        active: false,
-                        templates: []
-                    }]
-                },
-                activate: {
-                    themes: [{
-                        name: 'headline',
-                        package: {},
-                        active: true,
-                        templates: []
-                    }]
-                }
-            }
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            installTheme: {method: 'POST', path: /^\/themes\/install\/\?/, response: {
+                themes: [{
+                    name: 'headline',
+                    package: {},
+                    active: false,
+                    templates: []
+                }]
+            }},
+            activateTheme: {method: 'PUT', path: '/themes/headline/activate/', response: {
+                themes: [{
+                    name: 'headline',
+                    package: {},
+                    active: true,
+                    templates: []
+                }]
+            }}
         }});
 
         await page.goto('/');
@@ -58,19 +58,20 @@ test.describe('Theme settings', async () => {
 
         await expect(page.getByTestId('toast')).toHaveText(/headline is now your active theme/);
 
-        expect(lastApiRequests.themes.install.url).toMatch(/\?source=github&ref=TryGhost%2FHeadline/);
+        expect(lastApiRequests.installTheme?.url).toMatch(/\?source=github&ref=TryGhost%2FHeadline/);
     });
 
     test('Managing installed themes', async ({page}) => {
-        const lastApiRequests = await mockApi({page, responses: {
-            themes: {
-                activate: {
-                    themes: [{
-                        ...responseFixtures.themes.themes.find(theme => theme.name === 'casper')!,
-                        active: true
-                    }]
-                }
-            }
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            activateTheme: {method: 'PUT', path: '/themes/casper/activate/', response: {
+                themes: [{
+                    ...responseFixtures.themes.themes.find(theme => theme.name === 'casper')!,
+                    active: true
+                }]
+            }},
+            deleteTheme: {method: 'DELETE', path: '/themes/edition/', response: {}}
         }});
 
         await page.goto('/');
@@ -102,7 +103,7 @@ test.describe('Theme settings', async () => {
         await expect(casper).toHaveText(/Active/);
         await expect(edition.getByRole('button', {name: 'Activate'})).toBeVisible();
 
-        expect(lastApiRequests.themes.activate.url).toMatch(/\/themes\/casper\/activate\//);
+        expect(lastApiRequests.activateTheme?.url).toMatch(/\/themes\/casper\/activate\//);
 
         // Download the active theme
 
@@ -123,6 +124,6 @@ test.describe('Theme settings', async () => {
 
         await expect(modal.getByTestId('theme-list-item')).toHaveCount(1);
 
-        expect(lastApiRequests.themes.delete.url).toMatch(/\/themes\/edition\/$/);
+        expect(lastApiRequests.deleteTheme?.url).toMatch(/\/themes\/edition\/$/);
     });
 });
