@@ -23,7 +23,7 @@ import {toast} from 'react-hot-toast';
 import {useBrowseMembers} from '../../../../utils/api/members';
 import {useBrowseTiers, useEditTier} from '../../../../utils/api/tiers';
 import {useDeleteStripeSettings, useEditSettings} from '../../../../utils/api/settings';
-import {useGlobalData} from '../../../providers/DataProvider';
+import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const RETRY_PRODUCT_SAVE_POLL_LENGTH = 1000;
 const RETRY_PRODUCT_SAVE_MAX_POLL = 15 * RETRY_PRODUCT_SAVE_POLL_LENGTH;

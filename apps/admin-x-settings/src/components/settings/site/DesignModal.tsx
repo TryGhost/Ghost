@@ -16,7 +16,7 @@ import {getHomepageUrl, getSettingValues} from '../../../utils/helpers';
 import {useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '../../../utils/api/customThemeSettings';
 import {useBrowsePosts} from '../../../utils/api/posts';
 import {useEditSettings} from '../../../utils/api/settings';
-import {useGlobalData} from '../../providers/DataProvider';
+import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const Sidebar: React.FC<{
     brandSettings: BrandSettingValues

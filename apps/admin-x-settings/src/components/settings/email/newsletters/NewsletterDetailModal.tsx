@@ -20,7 +20,7 @@ import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewMo
 import {fullEmailAddress, getSettingValues} from '../../../../utils/helpers';
 import {getImageUrl, useUploadImage} from '../../../../utils/api/images';
 import {useEditNewsletter} from '../../../../utils/api/newsletters';
-import {useGlobalData} from '../../../providers/DataProvider';
+import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 interface NewsletterDetailModalProps {
     newsletter: Newsletter

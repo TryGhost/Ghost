@@ -8,7 +8,7 @@ import clsx from 'clsx';
 import {ReactComponent as GhostOrb} from '../../../../admin-x-ds/assets/images/ghost-orb.svg';
 import {Newsletter} from '../../../../types/api';
 import {fullEmailAddress, getSettingValues} from '../../../../utils/helpers';
-import {useGlobalData} from '../../../providers/DataProvider';
+import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
     const {currentUser, settings, siteData, config} = useGlobalData();

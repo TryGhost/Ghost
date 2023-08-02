@@ -1,19 +1,19 @@
 import AccountPage from './AccountPage';
 import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import LookAndFeel from './LookAndFeel';
-import NiceModal, { useModal } from '@ebay/nice-modal-react';
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import PortalPreview from './PortalPreview';
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import SignupOptions from './SignupOptions';
-import TabView, { Tab } from '../../../../admin-x-ds/global/TabView';
-import useForm, { Dirtyable } from '../../../../hooks/useForm';
+import TabView, {Tab} from '../../../../admin-x-ds/global/TabView';
+import useForm, {Dirtyable} from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
-import { PreviewModalContent } from '../../../../admin-x-ds/global/modal/PreviewModal';
-import { Setting, SettingValue, Tier } from '../../../../types/api';
-import { fullEmailAddress, getPaidActiveTiers } from '../../../../utils/helpers';
-import { useEditSettings } from '../../../../utils/api/settings';
-import { useEditTier } from '../../../../utils/api/tiers';
-import { useGlobalData } from '../../../providers/DataProvider';
+import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
+import {Setting, SettingValue, Tier} from '../../../../types/api';
+import {fullEmailAddress, getPaidActiveTiers} from '../../../../utils/helpers';
+import {useBrowseTiers, useEditTier} from '../../../../utils/api/tiers';
+import {useEditSettings} from '../../../../utils/api/settings';
+import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const Sidebar: React.FC<{
     localSettings: Setting[]
@@ -67,9 +67,10 @@ const PortalModal: React.FC = () => {
 
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('signup');
 
-    const {settings, siteData, tiers: allTiers} = useGlobalData();
+    const {settings, siteData} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
-    const tiers = getPaidActiveTiers(allTiers);
+    const {data: {tiers: allTiers} = {}} = useBrowseTiers();
+    const tiers = getPaidActiveTiers(allTiers || []);
 
     const {mutateAsync: editTier} = useEditTier();
 
