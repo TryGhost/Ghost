@@ -39,8 +39,8 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
 
     return (
         <div className="relative flex grow flex-col">
-            <div className="GIGI absolute inset-0 m-5">
-                <div className="mx-auto my-0 flex h-full w-full max-w-[700px] flex-col overflow-hidden rounded-[4px] text-black shadow-sm">
+            <div className="absolute inset-0 m-5 flex items-center justify-center">
+                <div className="mx-auto my-0 flex max-h-full w-full max-w-[700px] flex-col overflow-hidden rounded-[4px] text-black shadow-sm">
                     {/* Email header */}
                     <div className="flex-column flex min-h-[77px] justify-center rounded-t-sm border-b border-grey-200 bg-white px-6 text-sm text-grey-700">
                         <p className="leading-normal"><span className="font-semibold text-grey-900">{newsletter.sender_name || title}</span><span> {fullEmailAddress(newsletter.sender_email || 'noreply', siteData)}</span></p>
