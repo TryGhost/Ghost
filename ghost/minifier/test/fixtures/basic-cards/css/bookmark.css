@@ -77,7 +77,7 @@
     overflow: hidden;
 }
 
-.kg-bookmark-publisher::before {
+.kg-bookmark-author::before {
     content: "•";
     margin: 0 .5em;
 }

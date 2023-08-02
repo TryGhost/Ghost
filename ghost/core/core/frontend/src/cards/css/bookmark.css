@@ -4,7 +4,7 @@
 }
 
 .kg-bookmark-card,
-.kg-bookmark-publisher {
+.kg-bookmark-author {
     position: relative;
     width: 100%;
 }
@@ -74,7 +74,7 @@
     display: inline;
 }
 
-.kg-bookmark-publisher {
+.kg-bookmark-author {
     text-overflow: ellipsis;
     overflow: hidden;
     max-width: 240px;
