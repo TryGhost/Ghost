@@ -1,21 +1,21 @@
-import BrandSettings, { BrandSettingValues } from './designAndBranding/BrandSettings';
+import BrandSettings, {BrandSettingValues} from './designAndBranding/BrandSettings';
 // import Button from '../../../admin-x-ds/global/Button';
 // import ChangeThemeModal from './ThemeModal';
 import Icon from '../../../admin-x-ds/global/Icon';
-import NiceModal, { NiceModalHandler, useModal } from '@ebay/nice-modal-react';
-import React, { useEffect, useState } from 'react';
+import NiceModal, {NiceModalHandler, useModal} from '@ebay/nice-modal-react';
+import React, {useEffect, useState} from 'react';
 import StickyFooter from '../../../admin-x-ds/global/StickyFooter';
-import TabView, { Tab } from '../../../admin-x-ds/global/TabView';
+import TabView, {Tab} from '../../../admin-x-ds/global/TabView';
 import ThemePreview from './designAndBranding/ThemePreview';
 import ThemeSettings from './designAndBranding/ThemeSettings';
 import useForm from '../../../hooks/useForm';
 import useRouting from '../../../hooks/useRouting';
 import useSettings from '../../../hooks/useSettings';
-import { CustomThemeSetting, Setting, SettingValue } from '../../../types/api';
-import { PreviewModalContent } from '../../../admin-x-ds/global/modal/PreviewModal';
-import { getHomepageUrl, getSettingValues } from '../../../utils/helpers';
-import { useBrowseCustomThemeSettings, useEditCustomThemeSettings } from '../../../utils/api/customThemeSettings';
-import { useBrowsePosts } from '../../../utils/api/posts';
+import {CustomThemeSetting, Setting, SettingValue} from '../../../types/api';
+import {PreviewModalContent} from '../../../admin-x-ds/global/modal/PreviewModal';
+import {getHomepageUrl, getSettingValues} from '../../../utils/helpers';
+import {useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '../../../utils/api/customThemeSettings';
+import {useBrowsePosts} from '../../../utils/api/posts';
 
 const Sidebar: React.FC<{
     brandSettings: BrandSettingValues

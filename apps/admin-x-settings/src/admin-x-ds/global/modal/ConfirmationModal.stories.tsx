@@ -1,5 +1,5 @@
-import { ReactNode } from 'react';
-import type { Meta, StoryContext, StoryObj } from '@storybook/react';
+import {ReactNode} from 'react';
+import type {Meta, StoryContext, StoryObj} from '@storybook/react';
 
 import ConfirmationModal from './ConfirmationModal';
 import ConfirmationModalContainer from './ConfirmationModalContainer';

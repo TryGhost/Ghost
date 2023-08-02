@@ -1,7 +1,7 @@
 import Icon from './Icon';
 import React from 'react';
 import clsx from 'clsx';
-import { Toast as HotToast, ToastOptions, toast } from 'react-hot-toast';
+import {Toast as HotToast, ToastOptions, toast} from 'react-hot-toast';
 
 export type ToastType = 'neutral' | 'success' | 'error' | 'pageError';
 

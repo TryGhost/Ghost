@@ -1,13 +1,13 @@
 import Button from '../../../admin-x-ds/global/Button';
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import StripeButton from '../../../admin-x-ds/settings/StripeButton';
 import TabView from '../../../admin-x-ds/global/TabView';
 import TiersList from './tiers/TiersList';
 import useRouting from '../../../hooks/useRouting';
-import { Tier } from '../../../types/api';
-import { checkStripeEnabled, getActiveTiers, getArchivedTiers } from '../../../utils/helpers';
-import { useGlobalData } from '../../providers/DataProvider';
+import {Tier} from '../../../types/api';
+import {checkStripeEnabled, getActiveTiers, getArchivedTiers} from '../../../utils/helpers';
+import {useGlobalData} from '../../providers/DataProvider';
 
 const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [selectedTab, setSelectedTab] = useState('active-tiers');
@@ -44,11 +44,11 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
         }
     ];
 
-    let content
+    let content;
     if (checkStripeEnabled(settings, config)) {
-        content = <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
+        content = <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />;
     } else {
-        content = <TiersList tab='free-tier' tiers={activeTiers.filter(tier => tier.type === 'free')} />
+        content = <TiersList tab='free-tier' tiers={activeTiers.filter(tier => tier.type === 'free')} />;
     }
 
     return (

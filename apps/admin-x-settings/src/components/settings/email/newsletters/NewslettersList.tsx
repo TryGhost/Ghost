@@ -5,7 +5,7 @@ import React from 'react';
 import Table from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
-import { Newsletter } from '../../../../types/api';
+import {Newsletter} from '../../../../types/api';
 
 interface NewslettersListProps {
     tab?: string;

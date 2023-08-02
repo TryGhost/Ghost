@@ -1,4 +1,4 @@
-import { Meta, createMutation, createQuery } from '../apiRequests';
+import {Meta, createMutation, createQuery} from '../apiRequests';
 
 export interface UserInvite {
     created_at: string;

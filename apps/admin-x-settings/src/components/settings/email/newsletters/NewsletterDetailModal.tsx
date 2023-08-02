@@ -1,5 +1,5 @@
 import Form from '../../../../admin-x-ds/global/form/Form';
-import NiceModal, { useModal } from '@ebay/nice-modal-react';
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
 
 import ButtonGroup from '../../../../admin-x-ds/global/ButtonGroup';
 import Heading from '../../../../admin-x-ds/global/Heading';
@@ -7,20 +7,20 @@ import Hint from '../../../../admin-x-ds/global/Hint';
 import Icon from '../../../../admin-x-ds/global/Icon';
 import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
 import NewsletterPreview from './NewsletterPreview';
-import React, { useState } from 'react';
-import Select, { SelectOption } from '../../../../admin-x-ds/global/form/Select';
+import React, {useState} from 'react';
+import Select, {SelectOption} from '../../../../admin-x-ds/global/form/Select';
 import StickyFooter from '../../../../admin-x-ds/global/StickyFooter';
-import TabView, { Tab } from '../../../../admin-x-ds/global/TabView';
+import TabView, {Tab} from '../../../../admin-x-ds/global/TabView';
 import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import useForm from '../../../../hooks/useForm';
 import useSettings from '../../../../hooks/useSettings';
-import { Newsletter } from '../../../../types/api';
-import { PreviewModalContent } from '../../../../admin-x-ds/global/modal/PreviewModal';
-import { fullEmailAddress, getSettingValues } from '../../../../utils/helpers';
-import { getImageUrl, useUploadImage } from '../../../../utils/api/images';
-import { useEditNewsletter } from '../../../../utils/api/newsletters';
+import {Newsletter} from '../../../../types/api';
+import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
+import {fullEmailAddress, getSettingValues} from '../../../../utils/helpers';
+import {getImageUrl, useUploadImage} from '../../../../utils/api/images';
+import {useEditNewsletter} from '../../../../utils/api/newsletters';
 
 interface NewsletterDetailModalProps {
     newsletter: Newsletter
@@ -248,7 +248,7 @@ const NewsletterDetailModal: React.FC<NewsletterDetailModalProps> = ({newsletter
             await editNewsletter(formState);
             modal.remove();
         }
-    })
+    });
 
     const updateNewsletter = (fields: Partial<Newsletter>) => {
         updateForm(state => ({...state, ...fields}));
