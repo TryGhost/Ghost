@@ -144,20 +144,20 @@ function frontendTemplate(node, document) {
         metadata.appendChild(icon);
     }
 
-    metadata.author = node.author;
-    if (metadata.author) {
-        const author = document.createElement('span');
-        author.setAttribute('class','kg-bookmark-author');
-        author.textContent = metadata.author;
-        metadata.appendChild(author);
-    }
-
     metadata.publisher = node.publisher;
     if (metadata.publisher) {
         const publisher = document.createElement('span');
         publisher.setAttribute('class','kg-bookmark-publisher');
         publisher.textContent = metadata.publisher;
         metadata.appendChild(publisher);
+    }
+
+    metadata.author = node.author;
+    if (metadata.author) {
+        const author = document.createElement('span');
+        author.setAttribute('class','kg-bookmark-author');
+        author.textContent = metadata.author;
+        metadata.appendChild(author);
     }
 
     metadata.thumbnail = node.thumbnail;
