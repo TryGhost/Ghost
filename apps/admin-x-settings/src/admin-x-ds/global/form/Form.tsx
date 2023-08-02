@@ -6,8 +6,10 @@ interface FormProps {
     title?: string;
     grouped?: boolean;
     gap?: 'none' | 'sm' | 'md' | 'lg';
+    margins?: 'none' | 'sm' | 'md' | 'lg';
     marginTop?: boolean;
     marginBottom?: boolean;
+    className?: string;
     children?: React.ReactNode;
 }
 
@@ -18,32 +20,38 @@ const Form: React.FC<FormProps> = ({
     title,
     grouped = false,
     gap = 'md',
+    margins = 'md',
     marginTop = false,
     marginBottom = true,
+    className = '',
     children
 }) => {
     let classes = clsx(
         'flex flex-col',
-        (gap === 'sm' && 'gap-4'),
+        (gap === 'sm' && 'gap-6'),
         (gap === 'md' && 'gap-8'),
         (gap === 'lg' && 'gap-11')
     );
 
+    if (!margins) {
+        margins = gap;
+    }
+
     if (marginBottom) {
         classes = clsx(
             classes,
-            (gap === 'sm' && 'mb-4'),
-            (gap === 'md' && 'mb-8'),
-            (gap === 'lg' && 'mb-11')
+            (margins === 'sm' && 'mb-7'),
+            (margins === 'md' && 'mb-11'),
+            (margins === 'lg' && 'mb-14')
         );
     }
 
     if (marginTop) {
         classes = clsx(
             classes,
-            (gap === 'sm' && 'mt-4'),
-            (gap === 'md' && 'mt-8'),
-            (gap === 'lg' && 'mt-11')
+            (margins === 'sm' && 'mt-7'),
+            (margins === 'md' && 'mt-11'),
+            (margins === 'lg' && 'mt-14')
         );
     }
 
@@ -55,12 +63,12 @@ const Form: React.FC<FormProps> = ({
     }
 
     let titleClasses = clsx(
-        grouped ? 'mb-2' : 'mb-4'
+        grouped ? 'mb-2' : 'mb-3'
     );
 
     if (grouped || title) {
         return (
-            <div>
+            <div className={className}>
                 {title && <Heading className={titleClasses} level={5}>{title}</Heading>}
                 <div className={classes}>
                     {children}
@@ -70,7 +78,7 @@ const Form: React.FC<FormProps> = ({
     }
 
     return (
-        <div className={classes}>
+        <div className={classes + className}>
             {children}
         </div>
     );

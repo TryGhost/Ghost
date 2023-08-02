@@ -14,6 +14,7 @@ import TabView, {Tab} from '../../../../admin-x-ds/global/TabView';
 import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
+import ToggleGroup from '../../../../admin-x-ds/global/form/ToggleGroup';
 import useForm from '../../../../hooks/useForm';
 import useSettings from '../../../../hooks/useSettings';
 import {Newsletter} from '../../../../types/api';
@@ -49,162 +50,174 @@ const Sidebar: React.FC<{
         {
             id: 'generalSettings',
             title: 'General',
-            contents: <Form gap="sm" marginTop>
-                <Heading className="mt-5" level={5}>Name and description</Heading>
-                <TextField placeholder="Weekly Roundup" title="Name" value={newsletter.name || ''} onChange={e => updateNewsletter({name: e.target.value})} />
-                <TextArea clearBg={false} rows={2} title="Description" value={newsletter.description || ''} onChange={e => updateNewsletter({description: e.target.value})} />
-
-                <Heading className="mt-5" level={5}>Email addresses</Heading>
-                <TextField placeholder="Ghost" title="Sender name" value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />
-                <TextField placeholder="noreply@localhost" title="Sender email address" value={newsletter.sender_email || ''} onChange={e => updateNewsletter({sender_email: e.target.value})} />
-                <Select options={replyToEmails} selectedOption={newsletter.sender_reply_to} title="Reply-to email" onSelect={value => updateNewsletter({sender_reply_to: value})}/>
-
-                <Heading className="mt-5" level={5}>Member settings</Heading>
-                <Toggle
-                    checked={newsletter.subscribe_on_signup}
-                    direction='rtl'
-                    label='Subscribe new members on signup'
-                    labelStyle='value'
-                    onChange={e => updateNewsletter({subscribe_on_signup: e.target.checked})}
-                />
-            </Form>
+            contents:
+            <>
+                <Form className='mt-6' gap='sm' margins='lg' title='Name and description'>
+                    <TextField placeholder="Weekly Roundup" title="Name" value={newsletter.name || ''} onChange={e => updateNewsletter({name: e.target.value})} />
+                    <TextArea rows={2} title="Description" value={newsletter.description || ''} onChange={e => updateNewsletter({description: e.target.value})} />
+                </Form>
+                <Form className='mt-6' gap='sm' margins='lg' title='Email addresses'>
+                    <TextField placeholder="Ghost" title="Sender name" value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />
+                    <TextField placeholder="noreply@localhost" title="Sender email address" value={newsletter.sender_email || ''} onChange={e => updateNewsletter({sender_email: e.target.value})} />
+                    <Select options={replyToEmails} selectedOption={newsletter.sender_reply_to} title="Reply-to email" onSelect={value => updateNewsletter({sender_reply_to: value})}/>
+                </Form>
+                <Form className='mt-6' gap='sm' margins='lg' title='Member settings'>
+                    <Toggle
+                        checked={newsletter.subscribe_on_signup}
+                        direction='rtl'
+                        label='Subscribe new members on signup'
+                        labelStyle='value'
+                        onChange={e => updateNewsletter({subscribe_on_signup: e.target.checked})}
+                    />
+                </Form>
+            </>
         },
         {
             id: 'design',
             title: 'Design',
-            contents: <Form gap="sm" marginTop>
-                <Heading level={5}>Header</Heading>
-                <div>
+            contents:
+            <>
+                <Form className='mt-6' gap='sm' margins='lg' title='Header'>
                     <div>
-                        <Heading className="mb-2" level={6}>Header image</Heading>
-                    </div>
-                    <div className='flex-column flex gap-1'>
-                        <ImageUpload
-                            deleteButtonClassName='!top-1 !right-1'
-                            height={newsletter.header_image ? '66px' : '64px'}
-                            id='logo'
-                            imageURL={newsletter.header_image || undefined}
-                            onDelete={() => {
-                                updateNewsletter({header_image: null});
-                            }}
-                            onUpload={async (file) => {
-                                const imageUrl = getImageUrl(await uploadImage({file}));
-                                updateNewsletter({header_image: imageUrl});
-                            }}
-                        >
+                        <div>
+                            <Heading className="mb-2" level={6}>Header image</Heading>
+                        </div>
+                        <div className='flex-column flex gap-1'>
+                            <ImageUpload
+                                deleteButtonClassName='!top-1 !right-1'
+                                height={newsletter.header_image ? '66px' : '64px'}
+                                id='logo'
+                                imageURL={newsletter.header_image || undefined}
+                                onDelete={() => {
+                                    updateNewsletter({header_image: null});
+                                }}
+                                onUpload={async (file) => {
+                                    const imageUrl = getImageUrl(await uploadImage({file}));
+                                    updateNewsletter({header_image: imageUrl});
+                                }}
+                            >
                         Upload header image
-                        </ImageUpload>
-                        <Hint>Optional, recommended size 1200x600</Hint>
+                            </ImageUpload>
+                            <Hint>Optional, recommended size 1200x600</Hint>
+                        </div>
                     </div>
-                </div>
-                <Toggle
-                    checked={newsletter.show_header_title}
-                    direction="rtl"
-                    label='Publication title'
-                    labelStyle='value'
-                    onChange={e => updateNewsletter({show_header_title: e.target.checked})}
-                />
-                <Toggle
-                    checked={newsletter.show_header_name}
-                    direction="rtl"
-                    label='Newsletter name'
-                    labelStyle='value'
-                    onChange={e => updateNewsletter({show_header_name: e.target.checked})}
-                />
+                    <ToggleGroup>
+                        <Toggle
+                            checked={newsletter.show_header_title}
+                            direction="rtl"
+                            label='Publication title'
+                            labelStyle='value'
+                            onChange={e => updateNewsletter({show_header_title: e.target.checked})}
+                        />
+                        <Toggle
+                            checked={newsletter.show_header_name}
+                            direction="rtl"
+                            label='Newsletter name'
+                            labelStyle='value'
+                            onChange={e => updateNewsletter({show_header_name: e.target.checked})}
+                        />
+                    </ToggleGroup>
+                </Form>
 
-                <Heading className="mt-5" level={5}>Body</Heading>
-                <Toggle
-                    checked={newsletter.show_post_title_section}
-                    direction="rtl"
-                    label='Post title'
-                    labelStyle='heading'
-                    onChange={e => updateNewsletter({show_post_title_section: e.target.checked})}
-                />
-                <div className="mt-[-16px] flex items-end">
-                    <div className="w-full pr-4">
-                        <Select
-                            options={fontOptions}
-                            selectedOption={newsletter.title_font_category}
-                            onSelect={value => updateNewsletter({title_font_category: value})}
+                <Form className='mt-6' gap='sm' margins='lg' title='Body'>
+                    <Toggle
+                        checked={newsletter.show_post_title_section}
+                        direction="rtl"
+                        label='Post title'
+                        labelStyle='heading'
+                        onChange={e => updateNewsletter({show_post_title_section: e.target.checked})}
+                    />
+                    <div className={newsletter.show_post_title_section ? 'mt-[-16px] flex items-end' : 'hidden'}>
+                        <div className="w-full pr-4">
+                            <Select
+                                disabled={!newsletter.show_post_title_section}
+                                options={fontOptions}
+                                selectedOption={newsletter.title_font_category}
+                                onSelect={value => updateNewsletter({title_font_category: value})}
+                            />
+                        </div>
+                        <ButtonGroup buttons={[
+                            {
+                                icon: 'align-left',
+                                label: 'Align left',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                color: newsletter.title_alignment === 'left' ? 'clear' : 'clear',
+                                iconColorClass: newsletter.title_alignment === 'left' ? 'text-grey-900' : 'text-grey-500',
+                                onClick: () => updateNewsletter({title_alignment: 'left'}),
+                                disabled: !newsletter.show_post_title_section
+                            },
+                            {
+                                icon: 'align-center',
+                                label: 'Align center',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                color: newsletter.title_alignment === 'center' ? 'clear' : 'clear',
+                                iconColorClass: newsletter.title_alignment === 'center' ? 'text-grey-900' : 'text-grey-500',
+                                onClick: () => updateNewsletter({title_alignment: 'center'}),
+                                disabled: !newsletter.show_post_title_section
+                            }
+                        ]}
+                        className="mb-1 !gap-0"
                         />
                     </div>
-                    <ButtonGroup buttons={[
-                        {
-                            icon: 'align-left',
-                            label: 'Align left',
-                            hideLabel: true,
-                            link: false,
-                            size: 'sm',
-                            color: newsletter.title_alignment === 'left' ? 'green' : 'clear',
-                            iconColorClass: newsletter.title_alignment === 'left' ? 'text-grey-900' : 'text-grey-500',
-                            onClick: () => updateNewsletter({title_alignment: 'left'})
-                        },
-                        {
-                            icon: 'align-center',
-                            label: 'Align center',
-                            hideLabel: true,
-                            link: false,
-                            size: 'sm',
-                            color: newsletter.title_alignment === 'center' ? 'green' : 'clear',
-                            iconColorClass: newsletter.title_alignment === 'center' ? 'text-grey-900' : 'text-grey-500',
-                            onClick: () => updateNewsletter({title_alignment: 'center'})
-                        }
-                    ]}
-                    className="mb-1 !gap-0"
+                    <Select
+                        options={fontOptions}
+                        selectedOption={newsletter.body_font_category}
+                        title='Body style'
+                        onSelect={value => updateNewsletter({body_font_category: value})}
                     />
-                </div>
-                <Select
-                    options={fontOptions}
-                    selectedOption={newsletter.body_font_category}
-                    title='Body style'
-                    onSelect={value => updateNewsletter({body_font_category: value})}
-                />
-                <Toggle
-                    checked={newsletter.show_feature_image}
-                    direction="rtl"
-                    label='Feature image'
-                    labelStyle='value'
-                    onChange={e => updateNewsletter({show_feature_image: e.target.checked})}
-                />
+                    <Toggle
+                        checked={newsletter.show_feature_image}
+                        direction="rtl"
+                        label='Feature image'
+                        labelStyle='value'
+                        onChange={e => updateNewsletter({show_feature_image: e.target.checked})}
+                    />
+                </Form>
 
-                <Heading className="mt-5" level={5}>Footer</Heading>
-                <Toggle
-                    checked={newsletter.feedback_enabled}
-                    direction="rtl"
-                    label='Ask your readers for feedback'
-                    labelStyle='value'
-                    onChange={e => updateNewsletter({feedback_enabled: e.target.checked})}
-                />
-                <Toggle
-                    checked={newsletter.show_comment_cta}
-                    direction="rtl"
-                    label='Add a link to your comments'
-                    labelStyle='value'
-                    onChange={e => updateNewsletter({show_comment_cta: e.target.checked})}
-                />
-                <Toggle
-                    checked={newsletter.show_latest_posts}
-                    direction="rtl"
-                    label='Share your latest posts'
-                    labelStyle='value'
-                    onChange={e => updateNewsletter({show_latest_posts: e.target.checked})}
-                />
-                <Toggle
-                    checked={newsletter.show_subscription_details}
-                    direction="rtl"
-                    label='Show subscription details'
-                    labelStyle='value'
-                    onChange={e => updateNewsletter({show_subscription_details: e.target.checked})}
-                />
-                <TextArea
-                    clearBg={false}
-                    hint="Any extra information or legal text"
-                    rows={2}
-                    title="Email footer"
-                    value={newsletter.footer_content || ''}
-                    onChange={e => updateNewsletter({footer_content: e.target.value})}
-                />
-            </Form>
+                <Form className='mt-6' gap='sm' margins='lg' title='Footer'>
+                    <ToggleGroup>
+                        <Toggle
+                            checked={newsletter.feedback_enabled}
+                            direction="rtl"
+                            label='Ask your readers for feedback'
+                            labelStyle='value'
+                            onChange={e => updateNewsletter({feedback_enabled: e.target.checked})}
+                        />
+                        <Toggle
+                            checked={newsletter.show_comment_cta}
+                            direction="rtl"
+                            label='Add a link to your comments'
+                            labelStyle='value'
+                            onChange={e => updateNewsletter({show_comment_cta: e.target.checked})}
+                        />
+                        <Toggle
+                            checked={newsletter.show_latest_posts}
+                            direction="rtl"
+                            label='Share your latest posts'
+                            labelStyle='value'
+                            onChange={e => updateNewsletter({show_latest_posts: e.target.checked})}
+                        />
+                        <Toggle
+                            checked={newsletter.show_subscription_details}
+                            direction="rtl"
+                            label='Show subscription details'
+                            labelStyle='value'
+                            onChange={e => updateNewsletter({show_subscription_details: e.target.checked})}
+                        />
+                    </ToggleGroup>
+                    <TextArea
+                        hint="Any extra information or legal text"
+                        rows={2}
+                        title="Email footer"
+                        value={newsletter.footer_content || ''}
+                        onChange={e => updateNewsletter({footer_content: e.target.value})}
+                    />
+                </Form>
+            </>
         }
     ];
 

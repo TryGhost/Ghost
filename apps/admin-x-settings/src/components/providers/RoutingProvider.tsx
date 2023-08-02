@@ -1,3 +1,4 @@
+import AddNewsletterModal from '../settings/email/newsletters/AddNewsletterModal';
 import ChangeThemeModal from '../settings/site/ThemeModal';
 import DesignModal from '../settings/site/DesignModal';
 import InviteUserModal from '../settings/general/InviteUserModal';
@@ -70,6 +71,8 @@ const handleNavigation = (scroll: boolean = true) => {
             NiceModal.show(TierDetailModal);
         } else if (pathName === 'stripe-connect') {
             NiceModal.show(StripeConnectModal);
+        } else if (pathName === 'newsletters/add') {
+            NiceModal.show(AddNewsletterModal);
         }
 
         if (scroll) {
