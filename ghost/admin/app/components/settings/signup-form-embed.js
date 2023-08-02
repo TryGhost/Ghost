@@ -3,10 +3,14 @@ import SignupFormEmbedModal from '../../components/modals/settings/signup-form-e
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
+import {tracked} from '@glimmer/tracking';
 
 export default class SignupFormEmbed extends Component {
     @service modals;
     @service settings;
+
+    @tracked currency = 'USD';
+    @tracked allCurrencies = ['USD', 'RSD'];
 
     @action
     open() {
