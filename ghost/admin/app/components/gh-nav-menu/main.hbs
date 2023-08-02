@@ -120,11 +120,6 @@
                             </li>
                         {{/if}}
                     {{/if}}
-                    {{#if (and (gh-user-can-admin this.session.user) (feature "adminXSettings"))}}
-                            <li>
-                                <LinkTo @route="settings-x" @current-when={{this.isSettingsRoute}} data-test-nav="settings">{{svg-jar "settings"}} AdminX Settings</LinkTo>
-                            </li>
-                    {{/if}}
                 </ul>
 
                 {{#if this.session.user.isOwnerOnly}}

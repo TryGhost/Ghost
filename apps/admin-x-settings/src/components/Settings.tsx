@@ -12,6 +12,9 @@ const Settings: React.FC = () => {
             <SiteSettings />
             <MembershipSettings />
             <EmailSettings />
+            <div className='mt-40 text-sm'>
+                <a className='text-green' href="/ghost/#/settings">Click here</a> to open the original Admin settings.
+            </div>
         </>
     );
 };
