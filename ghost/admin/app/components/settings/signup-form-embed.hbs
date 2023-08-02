@@ -33,6 +33,7 @@
                 </div>
             </div>
             <div class="gh-expandable-content">
+                {{#liquid-if true}}
                 <div class="gh-setting-content-extended">
                     {{!-- Option 1 --}}
                     {{!-- <GhFormGroup>
@@ -119,8 +120,10 @@
                                 @successText="Link copied"
                                 @class="gh-btn gh-btn-black gh-btn-icon" />
                         </div>
+                        <p>You can add the link to any of your posts or pages</p>
                     </GhFormGroup>
                 </div>
+                {{/liquid-if}}
             </div>
         </div>
         {{/if}}
