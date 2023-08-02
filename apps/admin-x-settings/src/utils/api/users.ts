@@ -1,5 +1,5 @@
-import { Meta, createMutation, createQuery } from '../apiRequests';
-import { User } from '../../types/api';
+import {Meta, createMutation, createQuery} from '../apiRequests';
+import {User} from '../../types/api';
 
 export interface UsersResponseType {
     meta?: Meta;
@@ -44,7 +44,7 @@ export const useBrowseUsers = createQuery<UsersResponseType>({
 export const useCurrentUser = createQuery<User>({
     dataType,
     path: '/users/me/',
-    returnData: (originalData) => (originalData as UsersResponseType).users?.[0]
+    returnData: originalData => (originalData as UsersResponseType).users?.[0]
 });
 
 export const useEditUser = createMutation<UsersResponseType, User>({

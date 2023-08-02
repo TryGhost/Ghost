@@ -1,12 +1,12 @@
 import CheckboxGroup from '../../../../admin-x-ds/global/form/CheckboxGroup';
 import Form from '../../../../admin-x-ds/global/form/Form';
 import HtmlField from '../../../../admin-x-ds/global/form/HtmlField';
-import React, { useEffect, useMemo } from 'react';
+import React, {useEffect, useMemo} from 'react';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import { CheckboxProps } from '../../../../admin-x-ds/global/form/Checkbox';
-import { Setting, SettingValue, Tier } from '../../../../types/api';
-import { checkStripeEnabled, getSettingValues } from '../../../../utils/helpers';
-import { useGlobalData } from '../../../providers/DataProvider';
+import {CheckboxProps} from '../../../../admin-x-ds/global/form/Checkbox';
+import {Setting, SettingValue, Tier} from '../../../../types/api';
+import {checkStripeEnabled, getSettingValues} from '../../../../utils/helpers';
+import {useGlobalData} from '../../../providers/DataProvider';
 
 const SignupOptions: React.FC<{
     localSettings: Setting[]

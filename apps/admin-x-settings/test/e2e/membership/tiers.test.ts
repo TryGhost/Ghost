@@ -1,12 +1,12 @@
-import { expect, test } from '@playwright/test';
-import { mockApi, responseFixtures, updatedSettingsResponse } from '../../utils/e2e';
+import {expect, test} from '@playwright/test';
+import {mockApi, responseFixtures, updatedSettingsResponse} from '../../utils/e2e';
 
 const settingsWithStripe = updatedSettingsResponse([
-    { key: 'stripe_connect_publishable_key', value: 'pk_test_123' },
-    { key: 'stripe_connect_secret_key', value: 'sk_test_123' },
-    { key: 'stripe_connect_display_name', value: 'Dummy' },
-    { key: 'stripe_connect_account_id', value: 'acct_123' }
-])
+    {key: 'stripe_connect_publishable_key', value: 'pk_test_123'},
+    {key: 'stripe_connect_secret_key', value: 'sk_test_123'},
+    {key: 'stripe_connect_display_name', value: 'Dummy'},
+    {key: 'stripe_connect_account_id', value: 'acct_123'}
+]);
 
 test.describe('Tier settings', async () => {
     test('Supports creating a new tier', async ({page}) => {
@@ -47,13 +47,13 @@ test.describe('Tier settings', async () => {
             visibility: 'public',
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
-        }
+        };
 
         const lastApiRequests = await mockApi({page, responses: {
             tiers: {
-                add: { tiers: [newTier] },
+                add: {tiers: [newTier]},
                 // This request will be reloaded after the new tier is added
-                browse: { tiers: [...responseFixtures.tiers.tiers, newTier] }
+                browse: {tiers: [...responseFixtures.tiers.tiers, newTier]}
             }
         }});
 

@@ -1,5 +1,5 @@
 import Icon from './Icon';
-import React, { HTMLProps } from 'react';
+import React, {HTMLProps} from 'react';
 
 export type ButtonColor = 'clear' | 'grey' | 'black' | 'green' | 'red' | 'white' | 'outline';
 export type ButtonSize = 'sm' | 'md';

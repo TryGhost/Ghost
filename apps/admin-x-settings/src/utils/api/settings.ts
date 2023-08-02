@@ -1,5 +1,5 @@
-import { Meta, createMutation, createQuery } from '../apiRequests';
-import { Setting } from '../../types/api';
+import {Meta, createMutation, createQuery} from '../apiRequests';
+import {Setting} from '../../types/api';
 
 export type SettingsResponseMeta = Meta & { sent_email_verification?: boolean }
 

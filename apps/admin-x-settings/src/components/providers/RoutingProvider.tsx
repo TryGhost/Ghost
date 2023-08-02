@@ -1,12 +1,12 @@
-import ChangeThemeModal from "../settings/site/ThemeModal";
-import DesignModal from "../settings/site/DesignModal";
-import InviteUserModal from "../settings/general/InviteUserModal";
-import NavigationModal from "../settings/site/NavigationModal";
-import NiceModal from "@ebay/nice-modal-react";
-import PortalModal from "../settings/membership/portal/PortalModal";
-import React, { createContext, useCallback, useEffect, useState } from "react";
-import StripeConnectModal from "../settings/membership/stripe/StripeConnectModal";
-import TierDetailModal from "../settings/membership/tiers/TierDetailModal";
+import ChangeThemeModal from '../settings/site/ThemeModal';
+import DesignModal from '../settings/site/DesignModal';
+import InviteUserModal from '../settings/general/InviteUserModal';
+import NavigationModal from '../settings/site/NavigationModal';
+import NiceModal from '@ebay/nice-modal-react';
+import PortalModal from '../settings/membership/portal/PortalModal';
+import React, {createContext, useCallback, useEffect, useState} from 'react';
+import StripeConnectModal from '../settings/membership/stripe/StripeConnectModal';
+import TierDetailModal from '../settings/membership/tiers/TierDetailModal';
 
 type RoutingContextProps = {
     route: string;
@@ -17,11 +17,11 @@ type RoutingContextProps = {
 };
 
 export const RouteContext = createContext<RoutingContextProps>({
-    route: "",
-    scrolledRoute: "",
+    route: '',
+    scrolledRoute: '',
     yScroll: 0,
     updateRoute: () => {},
-    updateScrolled: () => {},
+    updateScrolled: () => {}
 });
 
 function getHashPath(urlPath: string | undefined) {
@@ -41,7 +41,7 @@ function getHashPath(urlPath: string | undefined) {
 const scrollToSectionGroup = (pathName: string) => {
     const element = document.getElementById(pathName);
     if (element) {
-        element.scrollIntoView({ behavior: "smooth" });
+        element.scrollIntoView({behavior: 'smooth'});
     }
 };
 
@@ -56,19 +56,19 @@ const handleNavigation = (scroll: boolean = true) => {
     const pathName = getHashPath(hash);
 
     if (pathName) {
-        if (pathName === "design/edit/themes") {
+        if (pathName === 'design/edit/themes') {
             NiceModal.show(ChangeThemeModal);
-        } else if (pathName === "design/edit") {
+        } else if (pathName === 'design/edit') {
             NiceModal.show(DesignModal);
-        } else if (pathName === "navigation/edit") {
+        } else if (pathName === 'navigation/edit') {
             NiceModal.show(NavigationModal);
-        } else if (pathName === "users/invite") {
+        } else if (pathName === 'users/invite') {
             NiceModal.show(InviteUserModal);
-        } else if (pathName === "portal/edit") {
+        } else if (pathName === 'portal/edit') {
             NiceModal.show(PortalModal);
-        } else if (pathName === "tiers/add") {
+        } else if (pathName === 'tiers/add') {
             NiceModal.show(TierDetailModal);
-        } else if (pathName === "stripe-connect") {
+        } else if (pathName === 'stripe-connect') {
             NiceModal.show(StripeConnectModal);
         }
 
@@ -78,17 +78,17 @@ const handleNavigation = (scroll: boolean = true) => {
 
         return pathName;
     }
-    return "";
+    return '';
 };
 
 type RouteProviderProps = {
     children: React.ReactNode;
 };
 
-const RoutingProvider: React.FC<RouteProviderProps> = ({ children }) => {
-    const [route, setRoute] = useState<string>("");
+const RoutingProvider: React.FC<RouteProviderProps> = ({children}) => {
+    const [route, setRoute] = useState<string>('');
     const [yScroll, setYScroll] = useState(0);
-    const [scrolledRoute, setScrolledRoute] = useState<string>("");
+    const [scrolledRoute, setScrolledRoute] = useState<string>('');
 
     const updateRoute = useCallback(
         (newPath: string) => {
@@ -116,21 +116,21 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({ children }) => {
         };
 
         const handleScroll = () => {
-            const element = document.getElementById("admin-x-root");
+            const element = document.getElementById('admin-x-root');
             const scrollPosition = element!.scrollTop;
             setYScroll(scrollPosition);
         };
 
-        const element = document.getElementById("admin-x-root");
+        const element = document.getElementById('admin-x-root');
         const matchedRoute = handleNavigation();
         setRoute(matchedRoute);
-        element!.addEventListener("scroll", handleScroll);
+        element!.addEventListener('scroll', handleScroll);
 
-        window.addEventListener("hashchange", handleHashChange);
+        window.addEventListener('hashchange', handleHashChange);
 
         return () => {
-            element!.removeEventListener("scroll", handleScroll);
-            window.removeEventListener("hashchange", handleHashChange);
+            element!.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('hashchange', handleHashChange);
         };
     }, []);
 
@@ -141,7 +141,7 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({ children }) => {
                 scrolledRoute,
                 yScroll,
                 updateRoute,
-                updateScrolled,
+                updateScrolled
             }}
         >
             {children}

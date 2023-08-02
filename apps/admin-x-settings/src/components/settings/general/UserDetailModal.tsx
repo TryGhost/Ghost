@@ -3,24 +3,24 @@ import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModa
 import Heading from '../../../admin-x-ds/global/Heading';
 import Icon from '../../../admin-x-ds/global/Icon';
 import ImageUpload from '../../../admin-x-ds/global/form/ImageUpload';
-import Menu, { MenuItem } from '../../../admin-x-ds/global/Menu';
+import Menu, {MenuItem} from '../../../admin-x-ds/global/Menu';
 import Modal from '../../../admin-x-ds/global/modal/Modal';
-import NiceModal, { useModal } from '@ebay/nice-modal-react';
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import Radio from '../../../admin-x-ds/global/form/Radio';
-import React, { useEffect, useRef, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
-import { User } from '../../../types/api';
-import { getImageUrl, useUploadImage } from '../../../utils/api/images';
-import { isAdminUser, isOwnerUser } from '../../../utils/helpers';
-import { showToast } from '../../../admin-x-ds/global/Toast';
-import { toast } from 'react-hot-toast';
-import { useBrowseRoles } from '../../../utils/api/roles';
-import { useDeleteUser, useEditUser, useMakeOwner, useUpdatePassword } from '../../../utils/api/users';
+import {User} from '../../../types/api';
+import {getImageUrl, useUploadImage} from '../../../utils/api/images';
+import {isAdminUser, isOwnerUser} from '../../../utils/helpers';
+import {showToast} from '../../../admin-x-ds/global/Toast';
+import {toast} from 'react-hot-toast';
+import {useBrowseRoles} from '../../../utils/api/roles';
+import {useDeleteUser, useEditUser, useMakeOwner, useUpdatePassword} from '../../../utils/api/users';
 
 interface CustomHeadingProps {
     children?: React.ReactNode;
@@ -104,7 +104,7 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, validators, user, setUs
         <SettingGroupContent>
             <TextField
                 error={!!errors?.name}
-                hint={errors?.name || "Use real name so people can recognize you"}
+                hint={errors?.name || 'Use real name so people can recognize you'}
                 title="Full name"
                 value={user.name}
                 onBlur={(e) => {
@@ -633,7 +633,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
                 if (error) {
                     showToast({
                         type: 'pageError',
-                        message: "Can't save user! One or more fields have errors, please doublecheck you filled all mandatory fields"
+                        message: 'Can\'t save user! One or more fields have errors, please doublecheck you filled all mandatory fields'
                     });
                     setSaveState('');
                     return;

@@ -6,9 +6,9 @@ import Select from '../../../../admin-x-ds/global/form/Select';
 import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import { CustomThemeSetting } from '../../../../types/api';
-import { getImageUrl, useUploadImage } from '../../../../utils/api/images';
-import { humanizeSettingKey } from '../../../../utils/helpers';
+import {CustomThemeSetting} from '../../../../types/api';
+import {getImageUrl, useUploadImage} from '../../../../utils/api/images';
+import {humanizeSettingKey} from '../../../../utils/helpers';
 
 const ThemeSetting: React.FC<{
     setting: CustomThemeSetting,
@@ -78,7 +78,7 @@ const ThemeSetting: React.FC<{
 const ThemeSettings: React.FC<{ settings: CustomThemeSetting[], updateSetting: (setting: CustomThemeSetting) => void }> = ({settings, updateSetting}) => {
     return (
         <SettingGroupContent className='mt-7'>
-            {settings.map(setting => <ThemeSetting key={setting.key} setSetting={(value) => updateSetting({...setting, value} as CustomThemeSetting)} setting={setting} />)}
+            {settings.map(setting => <ThemeSetting key={setting.key} setSetting={value => updateSetting({...setting, value} as CustomThemeSetting)} setting={setting} />)}
         </SettingGroupContent>
     );
 };
