@@ -70,7 +70,7 @@ function formatSettingsForApi(settings: Setting[]): Setting[] {
 export const useBrowseSettings = createQuery<SettingsResponseType>({
     dataType,
     path: '/settings/',
-    returnData: (data) => ({
+    returnData: data => ({
         ...(data as SettingsResponseType),
         settings: formatSettingsForDisplay((data as SettingsResponseType).settings)
     }),
@@ -85,7 +85,7 @@ export const useEditSettings = createMutation<SettingsResponseType, Setting[]>({
     body: settings => ({settings: formatSettingsForApi(settings)}),
     updateQueries: {
         dataType,
-        update: (newData) => ({
+        update: newData => ({
             ...newData,
             settings: formatSettingsForDisplay(newData.settings)
         })
