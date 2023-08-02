@@ -14,14 +14,14 @@ type Story = StoryObj<typeof NoValueLabel>;
 
 export const Default: Story = {
     args: {
-        icon: 'single-user-neutral-block',
+        icon: 'single-user-block',
         children: 'No availble entry'
     }
 };
 
 export const InList: Story = {
     args: {
-        icon: 'single-user-neutral-block',
+        icon: 'single-user-block',
         children: 'No availble entry'
     },
     decorators: [
