@@ -5,13 +5,18 @@ import React, {useState} from 'react';
 import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
+import useRouting from '../../../../hooks/useRouting';
 
 interface AddNewsletterModalProps {}
 
 const AddNewsletterModal: React.FC<AddNewsletterModalProps> = () => {
+    const {updateRoute} = useRouting();
     const [optIn, setOptIn] = useState(true);
 
     return <Modal
+        afterClose={() => {
+            updateRoute('newsletters');
+        }}
         okColor='black'
         okLabel='Create'
         size='sm'
