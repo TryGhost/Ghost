@@ -1,12 +1,12 @@
-import Form from '../../../../admin-x-ds/global/form/Form';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
-
 import ButtonGroup from '../../../../admin-x-ds/global/ButtonGroup';
+import Form from '../../../../admin-x-ds/global/form/Form';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import Hint from '../../../../admin-x-ds/global/Hint';
+import HtmlField from '../../../../admin-x-ds/global/form/HtmlField';
 import Icon from '../../../../admin-x-ds/global/Icon';
 import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
 import NewsletterPreview from './NewsletterPreview';
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import Select, {SelectOption} from '../../../../admin-x-ds/global/form/Select';
 import StickyFooter from '../../../../admin-x-ds/global/StickyFooter';
@@ -16,10 +16,13 @@ import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import ToggleGroup from '../../../../admin-x-ds/global/form/ToggleGroup';
 import useForm from '../../../../hooks/useForm';
+import validator from 'validator';
 import {Newsletter} from '../../../../types/api';
 import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
 import {fullEmailAddress, getSettingValues} from '../../../../utils/helpers';
 import {getImageUrl, useUploadImage} from '../../../../utils/api/images';
+import {showToast} from '../../../../admin-x-ds/global/Toast';
+import {toast} from 'react-hot-toast';
 import {useEditNewsletter} from '../../../../utils/api/newsletters';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
@@ -30,8 +33,11 @@ interface NewsletterDetailModalProps {
 const Sidebar: React.FC<{
     newsletter: Newsletter;
     updateNewsletter: (fields: Partial<Newsletter>) => void;
-}> = ({newsletter, updateNewsletter}) => {
-    const {settings, siteData} = useGlobalData();
+    validate: () => void;
+    errors: Record<string, string>;
+    clearError: (field: string) => void;
+}> = ({newsletter, updateNewsletter, validate, errors, clearError}) => {
+    const {settings, siteData, config} = useGlobalData();
     const [membersSupportAddress] = getSettingValues<string>(settings, ['members_support_address']);
     const {mutateAsync: uploadImage} = useUploadImage();
     const [selectedTab, setSelectedTab] = useState('generalSettings');
@@ -53,12 +59,30 @@ const Sidebar: React.FC<{
             contents:
             <>
                 <Form className='mt-6' gap='sm' margins='lg' title='Name and description'>
-                    <TextField placeholder="Weekly Roundup" title="Name" value={newsletter.name || ''} onChange={e => updateNewsletter({name: e.target.value})} />
+                    <TextField
+                        error={Boolean(errors.name)}
+                        hint={errors.name}
+                        placeholder="Weekly Roundup"
+                        title="Name"
+                        value={newsletter.name || ''}
+                        onBlur={validate}
+                        onChange={e => updateNewsletter({name: e.target.value})}
+                        onKeyDown={() => clearError('name')}
+                    />
                     <TextArea rows={2} title="Description" value={newsletter.description || ''} onChange={e => updateNewsletter({description: e.target.value})} />
                 </Form>
                 <Form className='mt-6' gap='sm' margins='lg' title='Email addresses'>
                     <TextField placeholder="Ghost" title="Sender name" value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />
-                    <TextField placeholder="noreply@localhost" title="Sender email address" value={newsletter.sender_email || ''} onChange={e => updateNewsletter({sender_email: e.target.value})} />
+                    <TextField
+                        error={Boolean(errors.sender_email)}
+                        hint={errors.sender_email}
+                        placeholder="noreply@localhost"
+                        title="Sender email address"
+                        value={newsletter.sender_email || ''}
+                        onBlur={validate}
+                        onChange={e => updateNewsletter({sender_email: e.target.value})}
+                        onKeyDown={() => clearError('sender_email')}
+                    />
                     <Select options={replyToEmails} selectedOption={newsletter.sender_reply_to} title="Reply-to email" onSelect={value => updateNewsletter({sender_reply_to: value})}/>
                 </Form>
                 <Form className='mt-6' gap='sm' margins='lg' title='Member settings'>
@@ -209,12 +233,13 @@ const Sidebar: React.FC<{
                             onChange={e => updateNewsletter({show_subscription_details: e.target.checked})}
                         />
                     </ToggleGroup>
-                    <TextArea
-                        hint="Any extra information or legal text"
-                        rows={2}
-                        title="Email footer"
+                    <HtmlField
+                        config={config}
+                        hint='Any extra information or legal text'
+                        nodes='MINIMAL_NODES'
+                        title='Email footer'
                         value={newsletter.footer_content || ''}
-                        onChange={e => updateNewsletter({footer_content: e.target.value})}
+                        onChange={html => updateNewsletter({footer_content: html})}
                     />
                 </Form>
             </>
@@ -255,11 +280,24 @@ const NewsletterDetailModal: React.FC<NewsletterDetailModalProps> = ({newsletter
     const modal = useModal();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
 
-    const {formState, updateForm, handleSave} = useForm({
+    const {formState, updateForm, handleSave, validate, errors, clearError} = useForm({
         initialState: newsletter,
         onSave: async () => {
             await editNewsletter(formState);
             modal.remove();
+        },
+        onValidate: () => {
+            const newErrors: Record<string, string> = {};
+
+            if (!formState.name) {
+                newErrors.name = 'Please enter a name';
+            }
+
+            if (formState.sender_email && !validator.isEmail(formState.sender_email)) {
+                newErrors.sender_email = 'Invalid email.';
+            }
+
+            return newErrors;
         }
     });
 
@@ -268,7 +306,7 @@ const NewsletterDetailModal: React.FC<NewsletterDetailModalProps> = ({newsletter
     };
 
     const preview = <NewsletterPreview newsletter={formState} />;
-    const sidebar = <Sidebar newsletter={formState} updateNewsletter={updateNewsletter} />;
+    const sidebar = <Sidebar clearError={clearError} errors={errors} newsletter={formState} updateNewsletter={updateNewsletter} validate={validate} />;
 
     return <PreviewModalContent
         deviceSelector={false}
@@ -280,7 +318,17 @@ const NewsletterDetailModal: React.FC<NewsletterDetailModalProps> = ({newsletter
         sidebarPadding={false}
         testId='newsletter-modal'
         title='Newsletter'
-        onOk={handleSave}
+        onOk={async () => {
+            toast.remove();
+            if (await handleSave()) {
+                modal.remove();
+            } else {
+                showToast({
+                    type: 'pageError',
+                    message: 'Can\'t save newsletter! One or more fields have errors, please doublecheck you filled all mandatory fields'
+                });
+            }
+        }}
     />;
 };
 

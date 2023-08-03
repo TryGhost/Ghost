@@ -25,7 +25,7 @@ const Sidebar: React.FC<{
     updateBrandSetting: (key: string, value: SettingValue) => void
     updateThemeSetting: (updated: CustomThemeSetting) => void
     onTabChange: (id: string) => void
-    handleSave: () => Promise<void>
+    handleSave: () => Promise<boolean>
 }> = ({
     brandSettings,
     themeSettingSections,

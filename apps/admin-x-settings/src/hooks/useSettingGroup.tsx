@@ -15,7 +15,7 @@ export interface SettingGroupHook {
     saveState: SaveState;
     siteData: SiteData | null;
     focusRef: React.RefObject<HTMLInputElement>;
-    handleSave: () => Promise<void>;
+    handleSave: () => Promise<boolean>;
     handleCancel: () => void;
     updateSetting: (key: string, value: SettingValue) => void;
     handleEditingChange: (newState: boolean) => void;
