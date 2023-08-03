@@ -26,8 +26,6 @@ export interface FormHook<State> {
     errors: Record<string, string>;
 }
 
-// TODO: figure out if we need to extend `any`?
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
 const useForm = <State>({initialState, onSave, onValidate}: {
     initialState: State,
     onSave: () => void | Promise<void>
