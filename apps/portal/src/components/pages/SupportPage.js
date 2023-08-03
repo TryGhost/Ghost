@@ -1,11 +1,9 @@
-import {useEffect, useState, useContext} from 'react';
+import {useEffect, useState} from 'react';
 import SupportError from './SupportError';
 import LoadingPage from './LoadingPage';
 import setupGhostApi from '../../utils/api';
-import AppContext from '../../AppContext';
 
 const SupportPage = () => {
-    const {site} = useContext(AppContext);
     const [isLoading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -37,10 +35,10 @@ const SupportPage = () => {
     }, []);
 
     if (isLoading) {
-        const title = `Support ${site.title}`;
+        const title = `Loading checkout...`;
         return (
             <div>
-                <h1>{title}</h1>
+                <h1 style={{textAlign: 'center'}}>{title}</h1>
                 <LoadingPage />
             </div>
         );

@@ -24,10 +24,10 @@ export const TipsAndDonationsErrorStyle = `
 `;
 
 const SupportError = ({error}) => {
+    const {onAction} = useContext(AppContext);
     const errorTitle = 'Sorry, that didn’t work.';
     const errorMessage = error || 'There was an error processing your payment. Please try again.';
-    const buttonLabel = 'Retry';
-    const {brandColor} = useContext(AppContext);
+    const buttonLabel = 'Close';
 
     return (
         <div className='gh-portal-content gh-portal-tips-and-donations'>
@@ -41,10 +41,9 @@ const SupportError = ({error}) => {
             <ActionButton
                 style={{width: '100%'}}
                 retry={true}
-                // onClick = {() => onAction('closePopup')}
+                onClick = {() => onAction('closePopup')}
                 disabled={false}
-                brandColor={brandColor}
-                // brandColor='#000000'
+                brandColor='#000000'
                 label={buttonLabel}
                 isDestructive={true}
                 isRunning={false}
