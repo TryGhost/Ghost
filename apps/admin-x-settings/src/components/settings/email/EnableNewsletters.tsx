@@ -6,7 +6,7 @@ import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import {Setting} from '../../../types/api';
 import {getSettingValues} from '../../../utils/helpers';
 import {useEditSettings} from '../../../utils/api/settings';
-import {useGlobalData} from '../../providers/DataProvider';
+import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();
