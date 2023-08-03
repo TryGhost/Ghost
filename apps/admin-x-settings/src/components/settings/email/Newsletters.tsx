@@ -24,12 +24,12 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
         {
             id: 'active-newsletters',
             title: 'Active',
-            contents: (<NewslettersList newsletters={newsletters?.filter(newsletter => newsletter.status === 'active') || []} tab='active-newsletters' />)
+            contents: (<NewslettersList newsletters={newsletters?.filter(newsletter => newsletter.status === 'active') || []} />)
         },
         {
             id: 'archived-newsletters',
             title: 'Archived',
-            contents: (<NewslettersList newsletters={newsletters?.filter(newsletter => newsletter.status !== 'active') || []} tab='archive-newsletters' />)
+            contents: (<NewslettersList newsletters={newsletters?.filter(newsletter => newsletter.status !== 'active') || []} />)
         }
     ];
 
