@@ -4,11 +4,16 @@ import SettingNavItem from '../admin-x-ds/settings/SettingNavItem';
 import SettingNavSection from '../admin-x-ds/settings/SettingNavSection';
 import TextField from '../admin-x-ds/global/form/TextField';
 import useRouting from '../hooks/useRouting';
+import {getSettingValues} from '../utils/helpers';
+import {useGlobalData} from './providers/GlobalDataProvider';
 import {useSearch} from './providers/ServiceProvider';
 
 const Sidebar: React.FC = () => {
     const {filter, setFilter} = useSearch();
     const {updateRoute} = useRouting();
+
+    const {settings} = useGlobalData();
+    const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
 
     const handleSectionClick = (e: React.MouseEvent<HTMLButtonElement>) => {
         updateRoute(e.currentTarget.name);
@@ -47,10 +52,14 @@ const Sidebar: React.FC = () => {
             </SettingNavSection>
 
             <SettingNavSection title="Email newsletters">
-                <SettingNavItem navid='newsletter-sending' title="Newsletter sending" onClick={handleSectionClick} />
-                <SettingNavItem navid='newsletters' title="Newsletters" onClick={handleSectionClick} />
-                <SettingNavItem navid='default-recipients' title="Default recipients" onClick={handleSectionClick} />
-                <SettingNavItem navid='mailgun' title="Mailgun settings" onClick={handleSectionClick} />
+                <SettingNavItem navid='enable-newsletters' title="Newsletter sending" onClick={handleSectionClick} />
+                {newslettersEnabled !== 'disabled' && (
+                    <>
+                        <SettingNavItem navid='newsletters' title="Newsletters" onClick={handleSectionClick} />
+                        <SettingNavItem navid='default-recipients' title="Default recipients" onClick={handleSectionClick} />
+                        <SettingNavItem navid='mailgun' title="Mailgun settings" onClick={handleSectionClick} />
+                    </>
+                )}
             </SettingNavSection>
 
             <SettingNavSection title="Advanced">
