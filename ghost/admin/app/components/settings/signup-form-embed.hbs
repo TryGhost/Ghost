@@ -35,59 +35,63 @@
             <div class="gh-expandable-content">
                 {{#liquid-if true}}
                 <div class="gh-setting-content-extended">
-                    <div class="gh-offer-discount">
-                        <label for="tips-and-donations-amount" class="fw6 mb1">Suggest an amount</label>
-                        <div class="flex items-start" style="max-width: 620px;">
-                            <GhFormGroup>
-                                <div class="percentage">
-                                    <input
-                                        type="number"
-                                        id="tips-and-donations-amount"
-                                        class="gh-input"
-                                        name="amount"
-                                        value="0"
+                    <GhFormGroup>
+                        <div class="flex items-center">
+                            <div class="gh-tips-and-donations-suggested-amount">
+                                <label for="tips-and-donations-amount" class="fw6 mb1">Suggested amount</label>
+                                <div class="flex flex-row items-start">
+                                    <GhFormGroup class="no-margin">
+                                        <div class="percentage">
+                                            <input
+                                                type="number"
+                                                id="tips-and-donations-amount"
+                                                class="gh-input"
+                                                name="amount"
+                                                value="0"
+                                            />
+                                        </div>
+                                    </GhFormGroup>
+                                    <div class="gh-tips-and-donations-currency" style="width: 120px;">
+                                        <GhFormGroup class="no-margin">
+                                            <span class="gh-select">
+                                                <OneWaySelect
+                                                    @value={{this.currency}}
+                                                    @options={{this.allCurrencies}}
+                                                    id="currency"
+                                                    name="currency"
+                                                    @optionValuePath="value"
+                                                    @optionLabelPath="label"
+                                                >
+                                                    <option value="">USD</option>
+                                                </OneWaySelect>
+                                                {{svg-jar "arrow-down-small"}}
+                                            </span>
+                                        </GhFormGroup>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <GhFormGroup class="no-margin">
+                                <label for="tips-and-donations-link" class="fw6 mb1">Your link</label>
+                                <div class="gh-input-group">
+                                    <GhTextInput
+                                        data-test-input="tips-and-donations-link"
+                                        @id="tips-and-donations-link"
+                                        @name="tips-and-donations-link"
+                                        @disabled={{true}}
+                                        @value="https://publication.com/portal/support"
+                                        @placeholder="https://publication.com/portal/support"
                                     />
+                                        <GhTaskButton
+                                        data-test-button="tips-and-donations-copy-link"
+                                        @buttonText="Copy link"
+                                        @task={{this.copyTipsAndDonationsLink}}
+                                        @successText="Copied"
+                                        @class="gh-btn gh-btn-black gh-btn-icon" />
                                 </div>
                             </GhFormGroup>
-                            <div class="gh-offer-type">
-                                <GhFormGroup class="no-margin">
-                                    <span class="gh-select">
-                                        <OneWaySelect
-                                            @value={{this.currency}}
-                                            @options={{this.allCurrencies}}
-                                            id="currency"
-                                            name="currency"
-                                            @optionValuePath="value"
-                                            @optionLabelPath="label"
-                                        >
-                                            <option value="">USD</option>
-                                        </OneWaySelect>
-                                        {{svg-jar "arrow-down-small"}}
-                                    </span>
-                                </GhFormGroup>
-                            </div>
                         </div>
-                    </div>
-
-                    <GhFormGroup>
-                        <label for="tips-and-donations-link" class="fw6 mb1">Your personalized link</label>
-                        <div class="gh-input-group">
-                            <GhTextInput
-                                data-test-input="tips-and-donations-link"
-                                @id="tips-and-donations-link"
-                                @name="tips-and-donations-link"
-                                @disabled={{true}}
-                                @value="https://publication.com/portal/support"
-                                @placeholder="https://publication.com/portal/support"
-                            />
-                                <GhTaskButton
-                                data-test-button="tips-and-donations-copy-link"
-                                @buttonText="Copy link"
-                                @task={{this.copyTipsAndDonationsLink}}
-                                @successText="Link copied"
-                                @class="gh-btn gh-btn-black gh-btn-icon" />
-                        </div>
-                        <p>You can add the link to any of your posts or pages</p>
+                        <p>Use this link to send your audience to your Stripe checkout page</p>
                     </GhFormGroup>
                 </div>
                 {{/liquid-if}}

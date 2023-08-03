@@ -3181,6 +3181,28 @@ p.theme-validation-details {
     box-shadow: none;
 }
 
+/* Tips & donations
+/* ---------------------------------------------------------- */
+.gh-tips-and-donations-suggested-amount {
+    max-width: 200px;
+    margin-right: 12px;
+}
+
+.gh-tips-and-donations-suggested-amount .gh-input {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.gh-tips-and-donations-currency {
+    width: 120px;
+}
+
+.gh-tips-and-donations-currency select {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-left: none !important;
+}
+
 /* History log
 /* ---------------------------------------------------------- */
 .gh-history-filter-li {
