@@ -3,24 +3,27 @@ import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
-import useSettingGroup from '../../../hooks/useSettingGroup';
+import {Setting} from '../../../types/api';
 import {getSettingValues} from '../../../utils/helpers';
+import {useEditSettings} from '../../../utils/api/settings';
+import {useGlobalData} from '../../providers/DataProvider';
 
 const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
-    const {
-        localSettings,
-        handleSave,
-        updateSetting
-    } = useSettingGroup();
+    const {settings} = useGlobalData();
+    const {mutateAsync: editSettings} = useEditSettings();
 
-    const [newslettersEnabled] = getSettingValues(localSettings, ['editor_default_email_recipients']) as [string];
+    const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
 
     const handleToggleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        updateSetting('editor_default_email_recipients', (e.target.checked ? 'visibility' : 'disabled'));
+        const updates: Setting[] = [
+            {key: 'editor_default_email_recipients', value: (e.target.checked ? 'visibility' : 'disabled')}
+        ];
+
         if (!e.target.checked) {
-            updateSetting('editor_default_email_recipients_filter', null);
+            updates.push({key: 'editor_default_email_recipients_filter', value: null});
         }
-        await handleSave();
+
+        await editSettings(updates);
     };
 
     const enableToggle = (
