@@ -8,12 +8,12 @@ import SignupOptions from './SignupOptions';
 import TabView, {Tab} from '../../../../admin-x-ds/global/TabView';
 import useForm, {Dirtyable} from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
-import useSettings from '../../../../hooks/useSettings';
 import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
 import {Setting, SettingValue, Tier} from '../../../../types/api';
 import {fullEmailAddress, getPaidActiveTiers} from '../../../../utils/helpers';
-import {useEditTier} from '../../../../utils/api/tiers';
-import {useGlobalData} from '../../../providers/DataProvider';
+import {useBrowseTiers, useEditTier} from '../../../../utils/api/tiers';
+import {useEditSettings} from '../../../../utils/api/settings';
+import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const Sidebar: React.FC<{
     localSettings: Setting[]
@@ -67,9 +67,10 @@ const PortalModal: React.FC = () => {
 
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('signup');
 
-    const {settings, saveSettings, siteData} = useSettings();
-    const {tiers: allTiers} = useGlobalData();
-    const tiers = getPaidActiveTiers(allTiers);
+    const {settings, siteData} = useGlobalData();
+    const {mutateAsync: editSettings} = useEditSettings();
+    const {data: {tiers: allTiers} = {}} = useBrowseTiers();
+    const tiers = getPaidActiveTiers(allTiers || []);
 
     const {mutateAsync: editTier} = useEditTier();
 
@@ -82,7 +83,7 @@ const PortalModal: React.FC = () => {
         onSave: async () => {
             await Promise.all(formState.tiers.filter(({dirty}) => dirty).map(tier => editTier(tier)));
 
-            const {meta, settings: currentSettings} = await saveSettings(formState.settings.filter(setting => setting.dirty));
+            const {meta, settings: currentSettings} = await editSettings(formState.settings.filter(setting => setting.dirty));
 
             if (meta?.sent_email_verification) {
                 const newEmail = formState.settings.find(setting => setting.key === 'members_support_address')?.value;

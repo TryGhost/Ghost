@@ -1,15 +1,14 @@
 import {expect, test} from '@playwright/test';
-import {mockApi, updatedSettingsResponse} from '../../utils/e2e';
+import {globalDataRequests, mockApi, updatedSettingsResponse} from '../../utils/e2e';
 
 test.describe('Site password settings', async () => {
     test('Supports locking and unlocking the site', async ({page}) => {
-        let lastApiRequests = await mockApi({page, responses: {
-            settings: {
-                edit: updatedSettingsResponse([
-                    {key: 'is_private', value: true},
-                    {key: 'password', value: 'password'}
-                ])
-            }
+        const mockLock = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
+                {key: 'is_private', value: true},
+                {key: 'password', value: 'password'}
+            ])}
         }});
 
         await page.goto('/');
@@ -31,7 +30,7 @@ test.describe('Site password settings', async () => {
 
         await expect(section.getByText('Your site is password protected')).toHaveCount(1);
 
-        expect(lastApiRequests.settings.edit.body).toEqual({
+        expect(mockLock.lastApiRequests.editSettings?.body).toEqual({
             settings: [
                 {key: 'is_private', value: true},
                 {key: 'password', value: 'password'}
@@ -40,12 +39,11 @@ test.describe('Site password settings', async () => {
 
         // Remove the site password
 
-        lastApiRequests = await mockApi({page, responses: {
-            settings: {
-                edit: updatedSettingsResponse([
-                    {key: 'is_private', value: false}
-                ])
-            }
+        const mockUnlock = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
+                {key: 'is_private', value: false}
+            ])}
         }});
 
         await section.getByRole('button', {name: 'Edit'}).click();
@@ -56,7 +54,7 @@ test.describe('Site password settings', async () => {
 
         await expect(section.getByText('Your site is not password protected')).toHaveCount(1);
 
-        expect(lastApiRequests.settings.edit.body).toEqual({
+        expect(mockUnlock.lastApiRequests.editSettings?.body).toEqual({
             settings: [
                 {key: 'is_private', value: false}
             ]
