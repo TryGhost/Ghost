@@ -1,23 +1,15 @@
 <div class="gh-expandable-block">
     <div class="gh-expandable-header">
         <div>
-            <h4 class="gh-expandable-title">Enable tips & donations</h4>
+            <h4 class="gh-expandable-title">Tips & donations</h4>
             <p class="gh-expandable-description">Give your audience a one-time way to support your work</p>
         </div>
-        <div class="for-switch">
-            <label class="switch" for="tips-and-donations" data-test-label="tips-and-donations">
-                <input
-                    id="tips-and-donations"
-                    type="checkbox"
-                    checked={{true}}
-                    data-test-checkbox="tips-and-donations"
-                >
-                <span class="input-toggle-component"></span>
-            </label>
-        </div>
+        <button type="button" class="gh-btn" {{on "click" (toggle-action "tipsAndDonationsOpen" this)}}>
+            <span>{{if this.tipsAndDonationsOpen "Close" "Expand"}}</span>
+        </button>
     </div>
     <div class="gh-expandable-content">
-        {{#liquid-if true}}
+        {{#liquid-if this.tipsAndDonationsOpen}}
         <div class="gh-setting-content-extended">
             <GhFormGroup>
                 <div class="flex items-center">
