@@ -47,7 +47,7 @@ const Sidebar: React.FC = () => {
             </SettingNavSection>
 
             <SettingNavSection title="Email newsletters">
-                <SettingNavItem navid='newsletter-sending' title="Newsletter sending" onClick={handleSectionClick} />
+                <SettingNavItem navid='enable-newsletters' title="Newsletter sending" onClick={handleSectionClick} />
                 <SettingNavItem navid='newsletters' title="Newsletters" onClick={handleSectionClick} />
                 <SettingNavItem navid='default-recipients' title="Default recipients" onClick={handleSectionClick} />
                 <SettingNavItem navid='mailgun' title="Mailgun settings" onClick={handleSectionClick} />
