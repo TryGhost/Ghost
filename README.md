@@ -74,7 +74,7 @@ const limits = {
 // The startDate has to be in ISO 8601 format (https://en.wikipedia.org/wiki/ISO_8601)
 const subscription = {
     interval: 'month',
-    startDate: '2022-09-18T19:00:52Z'
+    startDate: '2023-09-18T19:00:52Z'
 };
 
 // initialize the URL linking to help documentation etc.
@@ -219,4 +219,4 @@ Follow the instructions for the top-level repo.
 
 # Copyright & License 
 
-Copyright (c) 2013-2022 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2023 Ghost Foundation - Released under the [MIT license](LICENSE).
