@@ -1,6 +1,5 @@
 import {useEffect, useState, useContext} from 'react';
 import SupportError from './SupportError';
-import SupportSuccess from './SupportSuccess';
 import LoadingPage from './LoadingPage';
 import setupGhostApi from '../../utils/api';
 import AppContext from '../../AppContext';
@@ -22,13 +21,12 @@ const SupportPage = () => {
                 const response = await api.member.checkoutDonation({successUrl, cancelUrl});
 
                 if (response.url) {
-                    await window.location.assign(response.url);
+                    window.location.assign(response.url);
                 }
             } catch (err) {
                 const errorMessage = err.message || 'There was an error processing your payment. Please try again.';
-                setError(errorMessage);
-            } finally {
                 setLoading(false);
+                setError(errorMessage);
             }
         }
 
@@ -52,7 +50,7 @@ const SupportPage = () => {
         return <SupportError error={error} />;
     }
 
-    return <SupportSuccess />;
+    return null;
 };
 
 export default SupportPage;
