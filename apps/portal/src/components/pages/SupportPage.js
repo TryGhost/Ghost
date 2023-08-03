@@ -1,12 +1,10 @@
-import {useEffect, useState, useContext} from 'react';
+import {useEffect, useState} from 'react';
 import SupportError from './SupportError';
 import SupportSuccess from './SupportSuccess';
 import LoadingPage from './LoadingPage';
 import setupGhostApi from '../../utils/api';
-import AppContext from '../../AppContext';
 
 const SupportPage = () => {
-    // const {site} = useContext(AppContext);
     const [isLoading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
