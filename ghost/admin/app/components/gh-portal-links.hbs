@@ -343,6 +343,43 @@
                         </td>
                     </tr>
                 {{/if}}
+                {{#if (feature "tipsAndDonations")}}
+                <tr>
+                    <td colspan="2"><hr class="gh-portal-links-group-divider" /></td>
+                </tr>
+                <tr>
+                    <td class='pagename'>Tips & donations</td>
+                    <td class='page-url'>
+                        <div class="gh-portal-page-url-container">
+                            {{#if this.isLink}}
+                            <input class="gh-input page-url-field"
+                                type="text"
+                                data-test-input="portal-tier-link-account"
+                                value="{{this.siteUrl}}/#/portal/account"
+                                disabled="true"
+                                aria-label="Account Portal link">
+                            {{else}}
+                                <input class="gh-input page-url-field"
+                                    type="text"
+                                    data-test-input="portal-tier-data-attr-account"
+                                    value='data-portal="account"'
+                                    disabled="true"
+                                    aria-label="Account Portal data attribute">
+                            {{/if}}
+                            <button
+                                type="button" {{action (perform this.copyStaticLink "account")}} class="gh-portal-setting-copy"
+                                data-test-button="copy-url-attr"
+                            >
+                                {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "account"))}}
+                                    {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
+                                {{else}}
+                                    <span data-tooltip="Copy">{{svg-jar "copy" class="w4 v-mid fill-darkgrey"}}</span>
+                                {{/if}}
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {{/if}}
                 <tr>
                     <td colspan="2"><hr class="gh-portal-links-group-divider" /></td>
                 </tr>
@@ -466,41 +503,6 @@
                                 data-test-button="copy-url-attr"
                             >
                                 {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "account/newsletters"))}}
-                                    {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
-                                {{else}}
-                                    <span data-tooltip="Copy">{{svg-jar "copy" class="w4 v-mid fill-darkgrey"}}</span>
-                                {{/if}}
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2"><hr class="gh-portal-links-group-divider" /></td>
-                </tr>
-                <tr>
-                    <td class='pagename'>Tips & donations</td>
-                    <td class='page-url'>
-                        <div class="gh-portal-page-url-container">
-                            {{#if this.isLink}}
-                            <input class="gh-input page-url-field"
-                                type="text"
-                                data-test-input="portal-tier-link-account"
-                                value="{{this.siteUrl}}/#/portal/account"
-                                disabled="true"
-                                aria-label="Account Portal link">
-                            {{else}}
-                                <input class="gh-input page-url-field"
-                                    type="text"
-                                    data-test-input="portal-tier-data-attr-account"
-                                    value='data-portal="account"'
-                                    disabled="true"
-                                    aria-label="Account Portal data attribute">
-                            {{/if}}
-                            <button
-                                type="button" {{action (perform this.copyStaticLink "account")}} class="gh-portal-setting-copy"
-                                data-test-button="copy-url-attr"
-                            >
-                                {{#if (and this.copyStaticLink.isRunning (eq this.copiedPrice "account"))}}
                                     {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
                                 {{else}}
                                     <span data-tooltip="Copy">{{svg-jar "copy" class="w4 v-mid fill-darkgrey"}}</span>
