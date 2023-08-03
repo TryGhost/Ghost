@@ -30,6 +30,7 @@ export interface SelectProps {
     selectClassName?: string;
     optionClassName?: string;
     unstyled?: boolean;
+    disabled?: boolean;
 }
 
 const Select: React.FC<SelectProps> = ({
@@ -46,7 +47,8 @@ const Select: React.FC<SelectProps> = ({
     containerClassName,
     selectClassName,
     optionClassName,
-    unstyled
+    unstyled,
+    disabled = false
 }) => {
     const id = useId();
 
@@ -60,7 +62,8 @@ const Select: React.FC<SelectProps> = ({
             'relative w-full after:pointer-events-none',
             `after:absolute after:block after:h-2 after:w-2 after:rotate-45 after:border-[1px] after:border-l-0 after:border-t-0 after:border-grey-900 after:content-['']`,
             size === 'xs' ? 'after:top-[6px]' : 'after:top-[14px]',
-            clearBg ? 'after:right-0' : 'after:right-4'
+            clearBg ? 'after:right-0' : 'after:right-4',
+            disabled && 'opacity-40'
         );
     }
     containerClasses = clsx(
@@ -72,10 +75,11 @@ const Select: React.FC<SelectProps> = ({
     if (!unstyled) {
         selectClasses = clsx(
             size === 'xs' ? 'h-6 py-0 pr-3 text-xs' : 'h-10 py-2 pr-5',
-            'w-full cursor-pointer appearance-none outline-none',
+            'w-full appearance-none outline-none',
             border && 'border-b',
             !clearBg && 'bg-grey-75 px-[10px]',
-            error ? 'border-red' : 'border-grey-500 hover:border-grey-700 focus:border-black',
+            error ? 'border-red' : 'border-grey-500 focus:border-black',
+            disabled ? 'cursor-auto' : 'cursor-pointer hover:border-grey-700',
             (title && !clearBg) && 'mt-2'
         );
     }
@@ -90,7 +94,7 @@ const Select: React.FC<SelectProps> = ({
         <>
             {title && <Heading grey={selectedOption || !prompt ? true : false} htmlFor={id} useLabelTag={true}>{title}</Heading>}
             <div className={containerClasses}>
-                <select className={selectClasses} id={id} value={selectedOption} onChange={handleOptionChange}>
+                <select className={selectClasses} disabled={disabled} id={id} value={selectedOption} onChange={handleOptionChange}>
                     {prompt && <option className={optionClasses} value="">{prompt}</option>}
                     {options.map(option => (
                         'options' in option ?

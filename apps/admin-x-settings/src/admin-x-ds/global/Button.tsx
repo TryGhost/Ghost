@@ -50,25 +50,25 @@ const Button: React.FC<ButtonProps> = ({
 
         switch (color) {
         case 'black':
-            styles += link ? ' text-black hover:text-grey-800' : ' bg-black text-white hover:bg-grey-900';
+            styles += link ? ' text-black hover:text-grey-800' : ` bg-black text-white ${!disabled && 'hover:bg-grey-900'}`;
             break;
         case 'grey':
-            styles += link ? ' text-black hover:text-grey-800' : ' bg-grey-100 text-black hover:!bg-grey-300';
+            styles += link ? ' text-black hover:text-grey-800' : ` bg-grey-100 text-black ${!disabled && 'hover:!bg-grey-300'}`;
             break;
         case 'green':
-            styles += link ? ' text-green hover:text-green-400' : ' bg-green text-white hover:bg-green-400';
+            styles += link ? ' text-green hover:text-green-400' : ` bg-green text-white ${!disabled && 'hover:bg-green-400'}`;
             break;
         case 'red':
-            styles += link ? ' text-red hover:text-red-400' : ' bg-red text-white hover:bg-red-400';
+            styles += link ? ' text-red hover:text-red-400' : ` bg-red text-white ${!disabled && 'hover:bg-red-400'}`;
             break;
         case 'white':
-            styles += link ? ' text-white hover:text-white' : ' bg-white text-black';
+            styles += link ? ' text-white hover:text-white' : ` bg-white text-black`;
             break;
         case 'outline':
-            styles += link ? ' text-black hover:text-grey-800' : ' border border-grey-300 bg-transparent text-black hover:!border-black';
+            styles += link ? ' text-black hover:text-grey-800' : ` border border-grey-300 bg-transparent text-black ${!disabled && 'hover:!border-black'}`;
             break;
         default:
-            styles += link ? ' text-black hover:text-grey-800' : ' text-black hover:bg-grey-200';
+            styles += link ? ' text-black hover:text-grey-800' : ` text-black ${!disabled && 'hover:bg-grey-200'}`;
             break;
         }
 

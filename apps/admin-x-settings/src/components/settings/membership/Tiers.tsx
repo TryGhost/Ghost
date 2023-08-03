@@ -1,4 +1,3 @@
-import Button from '../../../admin-x-ds/global/Button';
 import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import StripeButton from '../../../admin-x-ds/settings/StripeButton';
@@ -56,7 +55,11 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     return (
         <SettingGroup
             customButtons={checkStripeEnabled(settings, config) ?
-                <Button label='Stripe connected' onClick={openConnectModal} /> :
+                <button className='group flex items-center gap-2 rounded border border-grey-300 px-3 py-1.5 text-sm font-semibold text-grey-900 transition-all hover:border-grey-500' type='button' onClick={openConnectModal}>
+                    <span className="inline-flex h-2 w-2 rounded-full bg-green transition-all group-hover:bg-[#625BF6]"></span>
+                    Stripe connected
+                </button>
+                :
                 <StripeButton onClick={openConnectModal}/>}
             description='Set prices and paid member sign up settings'
             keywords={keywords}
