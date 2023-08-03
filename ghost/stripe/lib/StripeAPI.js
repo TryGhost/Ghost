@@ -519,7 +519,7 @@ module.exports = class StripeAPI {
             },
             metadata,
             customer: customer ? customer.id : undefined,
-            customer_email: customer ? undefined : customerEmail,
+            customer_email: !customer && customerEmail ? customerEmail : undefined,
             submit_type: 'donate',
             invoice_creation: {
                 enabled: true,
