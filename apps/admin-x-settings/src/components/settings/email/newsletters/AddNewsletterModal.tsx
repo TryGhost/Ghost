@@ -11,12 +11,17 @@ import useRouting from '../../../../hooks/useRouting';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
 import {useAddNewsletter} from '../../../../utils/api/newsletters';
+import {useBrowseMembers} from '../../../../utils/api/members';
 
 interface AddNewsletterModalProps {}
 
 const AddNewsletterModal: React.FC<AddNewsletterModalProps> = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
+
+    const {data: members} = useBrowseMembers({
+        searchParams: {filter: 'newsletters.status:active+email_disabled:0', limit: '1', page: '1', include: 'newsletters,labels'}
+    });
 
     const {mutateAsync: addNewsletter} = useAddNewsletter();
     const {formState, updateForm, handleSave, errors, validate, clearError} = useForm({
@@ -91,7 +96,10 @@ const AddNewsletterModal: React.FC<AddNewsletterModalProps> = () => {
             <Toggle
                 checked={formState.optInExistingSubscribers}
                 direction='rtl'
-                hint='This newsletter will be available to all members. Your 1 existing subscriber will also be opted-in to receive it.'
+                hint={formState.optInExistingSubscribers ?
+                    `This newsletter will be available to all members. Your ${members?.meta?.pagination.total} existing subscriber${members?.meta?.pagination.total === 1 ? '' : 's'} will also be opted-in to receive it.` :
+                    'The newsletter will be available to all new members. Existing members won’t be subscribed, but may visit their account area to opt-in to future emails.'
+                }
                 label='Opt-in existing subscribers'
                 labelStyle='heading'
                 onChange={e => updateForm(state => ({...state, optInExistingSubscribers: e.target.checked}))}
