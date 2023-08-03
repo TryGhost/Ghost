@@ -1,5 +1,5 @@
-import DataProvider from './components/providers/DataProvider';
 import ExitSettingsButton from './components/ExitSettingsButton';
+import GlobalDataProvider from './components/providers/GlobalDataProvider';
 import Heading from './admin-x-ds/global/Heading';
 import NiceModal from '@ebay/nice-modal-react';
 import RoutingProvider from './components/providers/RoutingProvider';
@@ -22,7 +22,7 @@ function App({ghostVersion, officialThemes}: AppProps) {
     return (
         <QueryClientProvider client={queryClient}>
             <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes}>
-                <DataProvider>
+                <GlobalDataProvider>
                     <RoutingProvider>
                         <GlobalDirtyStateProvider>
                             <div className="admin-x-settings h-[100vh] w-full overflow-y-auto" id="admin-x-root" style={{
@@ -57,7 +57,7 @@ function App({ghostVersion, officialThemes}: AppProps) {
                             </div>
                         </GlobalDirtyStateProvider>
                     </RoutingProvider>
-                </DataProvider>
+                </GlobalDataProvider>
             </ServicesProvider>
         </QueryClientProvider>
     );

@@ -21,10 +21,13 @@ export const useBrowseSettings = createQuery<SettingsResponseType>({
 export const useEditSettings = createMutation<SettingsResponseType, Setting[]>({
     method: 'PUT',
     path: () => '/settings/',
-    body: settings => ({settings}),
+    body: settings => ({settings: settings.map(({key, value}) => ({key, value}))}),
     updateQueries: {
         dataType,
-        update: newData => newData
+        update: newData => ({
+            ...newData,
+            settings: newData.settings
+        })
     }
 });
 

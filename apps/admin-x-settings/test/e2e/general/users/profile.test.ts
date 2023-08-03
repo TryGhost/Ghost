@@ -1,18 +1,20 @@
 import {expect, test} from '@playwright/test';
-import {mockApi, responseFixtures} from '../../../utils/e2e';
+import {globalDataRequests, mockApi, responseFixtures} from '../../../utils/e2e';
 
 test.describe('User profile', async () => {
     test('Supports editing user profiles', async ({page}) => {
-        const lastApiRequests = await mockApi({page, responses: {
-            users: {
-                edit: {
-                    users: [{
-                        ...responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!,
-                        email: 'newadmin@test.com',
-                        name: 'New Admin'
-                    }]
-                }
-            }
+        const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+            editUser: {method: 'PUT', path: `/users/${userToEdit.id}/`, response: {
+                users: [{
+                    ...userToEdit,
+                    email: 'newadmin@test.com',
+                    name: 'New Admin'
+                }]
+            }}
         }});
 
         await page.goto('/');
@@ -47,7 +49,7 @@ test.describe('User profile', async () => {
         await expect(listItem.getByText('New Admin')).toBeVisible();
         await expect(listItem.getByText('newadmin@test.com')).toBeVisible();
 
-        expect(lastApiRequests.users.edit.body).toMatchObject({
+        expect(lastApiRequests.editUser?.body).toMatchObject({
             users: [{
                 email: 'newadmin@test.com',
                 name: 'New Admin',
@@ -64,7 +66,11 @@ test.describe('User profile', async () => {
     });
 
     test('Supports changing password', async ({page}) => {
-        const lastApiRequests = await mockApi({page});
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+            updatePassword: {method: 'PUT', path: '/users/password/', response: {}}
+        }});
 
         await page.goto('/');
 
@@ -88,7 +94,7 @@ test.describe('User profile', async () => {
 
         await expect(modal.getByRole('button', {name: 'Updated'})).toBeVisible();
 
-        expect(lastApiRequests.users.updatePassword.body).toMatchObject({
+        expect(lastApiRequests.updatePassword?.body).toMatchObject({
             password: [{
                 newPassword: 'newpassword',
                 ne2Password: 'newpassword',
@@ -99,7 +105,20 @@ test.describe('User profile', async () => {
     });
 
     test('Supports uploading profile picture', async ({page}) => {
-        const lastApiRequests = await mockApi({page});
+        const userToEdit = responseFixtures.users.users.find(user => user.email === 'owner@test.com')!;
+
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+            uploadImage: {method: 'POST', path: '/images/upload/', response: {images: [{url: 'http://example.com/image.png', ref: null}]}},
+            editUser: {method: 'PUT', path: `/users/${userToEdit.id}/`, response: {
+                users: [{
+                    ...userToEdit,
+                    profile_image: 'http://example.com/image.png',
+                    cover_image: 'http://example.com/image.png'
+                }]
+            }}
+        }});
 
         await page.goto('/');
 
@@ -139,7 +158,7 @@ test.describe('User profile', async () => {
 
         await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
 
-        expect(lastApiRequests.users.edit.body).toMatchObject({
+        expect(lastApiRequests.editUser?.body).toMatchObject({
             users: [{
                 email: 'owner@test.com',
                 profile_image: 'http://example.com/image.png',

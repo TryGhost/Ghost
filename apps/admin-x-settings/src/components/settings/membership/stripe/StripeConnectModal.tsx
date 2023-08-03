@@ -15,7 +15,6 @@ import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
-import useSettings from '../../../../hooks/useSettings';
 import {ApiError} from '../../../../utils/apiRequests';
 import {ReactComponent as StripeVerified} from '../../../../assets/images/stripe-verified.svg';
 import {checkStripeEnabled, getGhostPaths, getSettingValue, getSettingValues} from '../../../../utils/helpers';
@@ -24,7 +23,7 @@ import {toast} from 'react-hot-toast';
 import {useBrowseMembers} from '../../../../utils/api/members';
 import {useBrowseTiers, useEditTier} from '../../../../utils/api/tiers';
 import {useDeleteStripeSettings, useEditSettings} from '../../../../utils/api/settings';
-import {useGlobalData} from '../../../providers/DataProvider';
+import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const RETRY_PRODUCT_SAVE_POLL_LENGTH = 1000;
 const RETRY_PRODUCT_SAVE_MAX_POLL = 15 * RETRY_PRODUCT_SAVE_POLL_LENGTH;
@@ -148,7 +147,7 @@ const Connect: React.FC = () => {
 };
 
 const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
-    const {settings} = useSettings();
+    const {settings} = useGlobalData();
     const [stripeConnectAccountName, stripeConnectLivemode] = getSettingValues(settings, ['stripe_connect_account_name', 'stripe_connect_livemode']);
 
     const {refetch: fetchMembers, isFetching: isFetchingMembers} = useBrowseMembers({
@@ -254,8 +253,7 @@ const Direct: React.FC<{onClose: () => void}> = ({onClose}) => {
 };
 
 const StripeConnectModal: React.FC = () => {
-    const {config} = useGlobalData();
-    const {settings} = useSettings();
+    const {config, settings} = useGlobalData();
     const stripeConnectAccountId = getSettingValue(settings, 'stripe_connect_account_id');
     const {updateRoute} = useRouting();
     const [step, setStep] = useState<'start' | 'connect'>('start');

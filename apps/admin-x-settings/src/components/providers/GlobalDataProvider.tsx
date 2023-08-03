@@ -1,24 +1,15 @@
-import React, {ReactNode, createContext, useContext} from 'react';
-import {Config, Setting, SiteData, Tier, User} from '../../types/api';
-import {UserInvite, useBrowseInvites} from '../../utils/api/invites';
+import {Config, Setting, SiteData, User} from '../../types/api';
+import {ReactNode, createContext, useContext} from 'react';
 import {useBrowseConfig} from '../../utils/api/config';
 import {useBrowseSettings} from '../../utils/api/settings';
 import {useBrowseSite} from '../../utils/api/site';
-import {useBrowseTiers} from '../../utils/api/tiers';
-import {useBrowseUsers, useCurrentUser} from '../../utils/api/users';
-
-type DataProviderProps = {
-    children: React.ReactNode;
-};
+import {useCurrentUser} from '../../utils/api/users';
 
 interface GlobalData {
     settings: Setting[]
     siteData: SiteData
     config: Config
-    users: User[]
     currentUser: User
-    invites: UserInvite[]
-    tiers: Tier[]
 }
 
 const GlobalDataContext = createContext<GlobalData | undefined>(undefined);
@@ -27,19 +18,13 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     const settings = useBrowseSettings();
     const site = useBrowseSite();
     const config = useBrowseConfig();
-    const users = useBrowseUsers();
     const currentUser = useCurrentUser();
-    const invites = useBrowseInvites();
-    const tiers = useBrowseTiers();
 
     const requests = [
         settings,
         site,
         config,
-        users,
-        currentUser,
-        invites,
-        tiers
+        currentUser
     ];
 
     const error = requests.map(request => request.error).find(Boolean);
@@ -60,10 +45,7 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
         settings: settings.data!.settings,
         siteData: site.data!.site,
         config: config.data!.config,
-        users: users.data!.users,
-        currentUser: currentUser.data!,
-        invites: invites.data!.invites,
-        tiers: tiers.data!.tiers
+        currentUser: currentUser.data!
     }}>
         {children}
     </GlobalDataContext.Provider>;
@@ -71,12 +53,4 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
 
 export const useGlobalData = () => useContext(GlobalDataContext)!;
 
-const DataProvider: React.FC<DataProviderProps> = ({children}) => {
-    return (
-        <GlobalDataProvider>
-            {children}
-        </GlobalDataProvider>
-    );
-};
-
-export default DataProvider;
+export default GlobalDataProvider;

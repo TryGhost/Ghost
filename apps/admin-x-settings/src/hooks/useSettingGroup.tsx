@@ -1,8 +1,9 @@
 import React, {useEffect, useRef, useState} from 'react';
 import useForm, {SaveState} from './useForm';
 import useGlobalDirtyState from './useGlobalDirtyState';
-import useSettings from './useSettings';
 import {Setting, SettingValue, SiteData} from '../types/api';
+import {useEditSettings} from '../utils/api/settings';
+import {useGlobalData} from '../components/providers/GlobalDataProvider';
 
 interface LocalSetting extends Setting {
     dirty?: boolean;
@@ -24,14 +25,15 @@ const useSettingGroup = (): SettingGroupHook => {
     // create a ref to focus the input field
     const focusRef = useRef<HTMLInputElement>(null);
 
-    const {siteData, settings, saveSettings} = useSettings();
+    const {siteData, settings} = useGlobalData();
+    const {mutateAsync: editSettings} = useEditSettings();
 
     const [isEditing, setEditing] = useState(false);
 
     const {formState: localSettings, saveState, handleSave, updateForm, reset} = useForm<LocalSetting[]>({
         initialState: settings || [],
         onSave: async () => {
-            await saveSettings?.(changedSettings());
+            await editSettings?.(changedSettings());
             setEditing(false);
         }
     });

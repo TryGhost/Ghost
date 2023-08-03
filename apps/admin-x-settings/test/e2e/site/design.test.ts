@@ -1,14 +1,23 @@
 import {expect, test} from '@playwright/test';
-import {mockApi} from '../../utils/e2e';
+import {globalDataRequests, mockApi, mockSitePreview, responseFixtures} from '../../utils/e2e';
 
 test.describe('Design settings', async () => {
     test('Working with the preview', async ({page}) => {
-        await mockApi({page, responses: {
-            previewHtml: {
-                homepage: '<html><head><style></style></head><body><div>homepage preview</div></body></html>',
-                post: '<html><head><style></style></head><body><div>post preview</div></body></html>'
-            }
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseCustomThemeSettings: {method: 'GET', path: '/custom_theme_settings/', response: responseFixtures.customThemeSettings},
+            browseLatestPost: {method: 'GET', path: /^\/posts\/.+limit=1/, response: responseFixtures.latestPost}
         }});
+        await mockSitePreview({
+            page,
+            url: responseFixtures.site.site.url,
+            response: '<html><head><style></style></head><body><div>homepage preview</div></body></html>'
+        });
+        await mockSitePreview({
+            page,
+            url: responseFixtures.latestPost.posts[0].url,
+            response: '<html><head><style></style></head><body><div>post preview</div></body></html>'
+        });
 
         await page.goto('/');
 
@@ -48,11 +57,17 @@ test.describe('Design settings', async () => {
     });
 
     test('Editing brand settings', async ({page}) => {
-        const lastApiRequests = await mockApi({page, responses: {
-            previewHtml: {
-                homepage: '<html><head><style></style></head><body><div>homepage preview</div></body></html>'
-            }
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editSettings: {method: 'PUT', path: '/settings/', response: responseFixtures.settings},
+            browseCustomThemeSettings: {method: 'GET', path: '/custom_theme_settings/', response: responseFixtures.customThemeSettings},
+            browseLatestPost: {method: 'GET', path: /^\/posts\/.+limit=1/, response: responseFixtures.latestPost}
         }});
+        const lastPreviewRequest = await mockSitePreview({
+            page,
+            url: responseFixtures.site.site.url,
+            response: '<html><head><style></style></head><body><div>homepage preview</div></body></html>'
+        });
 
         await page.goto('/');
 
@@ -69,9 +84,9 @@ test.describe('Design settings', async () => {
 
         await expect(modal).not.toBeVisible();
 
-        expect(lastApiRequests.previewHtml.homepage.headers?.['x-ghost-preview']).toMatch(/&d=new\+description&/);
+        expect(lastPreviewRequest.previewHeader).toMatch(/&d=new\+description&/);
 
-        expect(lastApiRequests.settings.edit.body).toEqual({
+        expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
                 {key: 'description', value: 'new description'}
             ]
@@ -79,24 +94,30 @@ test.describe('Design settings', async () => {
     });
 
     test('Editing custom theme settings', async ({page}) => {
-        const lastApiRequests = await mockApi({page, responses: {
-            customThemeSettings: {
-                browse: {
-                    custom_theme_settings: [{
-                        type: 'select',
-                        options: [
-                            'Logo on cover',
-                            'Logo in the middle',
-                            'Stacked'
-                        ],
-                        default: 'Logo on cover',
-                        id: '648047658d265b0c8b33c591',
-                        value: 'Stacked',
-                        key: 'navigation_layout'
-                    }]
-                }
-            }
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editCustomThemeSettings: {method: 'PUT', path: '/custom_theme_settings/', response: responseFixtures.customThemeSettings},
+            browseCustomThemeSettings: {method: 'GET', path: '/custom_theme_settings/', response: {
+                custom_theme_settings: [{
+                    type: 'select',
+                    options: [
+                        'Logo on cover',
+                        'Logo in the middle',
+                        'Stacked'
+                    ],
+                    default: 'Logo on cover',
+                    id: '648047658d265b0c8b33c591',
+                    value: 'Stacked',
+                    key: 'navigation_layout'
+                }]
+            }},
+            browseLatestPost: {method: 'GET', path: /^\/posts\/.+limit=1/, response: responseFixtures.latestPost}
         }});
+        const lastPreviewRequest = await mockSitePreview({
+            page,
+            url: responseFixtures.site.site.url,
+            response: '<html><head><style></style></head><body><div>homepage preview</div></body></html>'
+        });
 
         await page.goto('/');
 
@@ -115,9 +136,9 @@ test.describe('Design settings', async () => {
 
         const expectedSettings = {navigation_layout: 'Logo in the middle'};
         const expectedEncoded = new URLSearchParams([['custom', JSON.stringify(expectedSettings)]]).toString();
-        expect(lastApiRequests.previewHtml.homepage.headers?.['x-ghost-preview']).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
+        expect(lastPreviewRequest.previewHeader).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
 
-        expect(lastApiRequests.customThemeSettings.edit.body).toMatchObject({
+        expect(lastApiRequests.editCustomThemeSettings?.body).toMatchObject({
             custom_theme_settings: [
                 {key: 'navigation_layout', value: 'Logo in the middle'}
             ]

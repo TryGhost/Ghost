@@ -16,12 +16,12 @@ import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import ToggleGroup from '../../../../admin-x-ds/global/form/ToggleGroup';
 import useForm from '../../../../hooks/useForm';
-import useSettings from '../../../../hooks/useSettings';
 import {Newsletter} from '../../../../types/api';
 import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
 import {fullEmailAddress, getSettingValues} from '../../../../utils/helpers';
 import {getImageUrl, useUploadImage} from '../../../../utils/api/images';
 import {useEditNewsletter} from '../../../../utils/api/newsletters';
+import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 interface NewsletterDetailModalProps {
     newsletter: Newsletter
@@ -31,7 +31,7 @@ const Sidebar: React.FC<{
     newsletter: Newsletter;
     updateNewsletter: (fields: Partial<Newsletter>) => void;
 }> = ({newsletter, updateNewsletter}) => {
-    const {settings, siteData} = useSettings();
+    const {settings, siteData} = useGlobalData();
     const [membersSupportAddress] = getSettingValues<string>(settings, ['members_support_address']);
     const {mutateAsync: uploadImage} = useUploadImage();
     const [selectedTab, setSelectedTab] = useState('generalSettings');

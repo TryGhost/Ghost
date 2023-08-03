@@ -1,7 +1,8 @@
 import {User} from '../types/api';
-import {UserInvite} from '../utils/api/invites';
+import {UserInvite, useBrowseInvites} from '../utils/api/invites';
 import {useBrowseRoles} from '../utils/api/roles';
-import {useGlobalData} from '../components/providers/DataProvider';
+import {useBrowseUsers} from '../utils/api/users';
+import {useGlobalData} from '../components/providers/GlobalDataProvider';
 
 export type UsersHook = {
     users: User[];
@@ -27,7 +28,9 @@ function getOwnerUser(users: User[]): User {
 }
 
 const useStaffUsers = (): UsersHook => {
-    const {users, currentUser, invites} = useGlobalData();
+    const {currentUser} = useGlobalData();
+    const {data: {users} = {users: []}} = useBrowseUsers();
+    const {data: {invites} = {invites: []}} = useBrowseInvites();
     const {data: {roles} = {}} = useBrowseRoles();
 
     const ownerUser = getOwnerUser(users);
@@ -35,7 +38,7 @@ const useStaffUsers = (): UsersHook => {
     const editorUsers = getUsersByRole(users, 'Editor');
     const authorUsers = getUsersByRole(users, 'Author');
     const contributorUsers = getUsersByRole(users, 'Contributor');
-    const mappedInvites = invites?.map((invite) => {
+    const mappedInvites = invites.map((invite) => {
         let role = roles?.find((r) => {
             return invite.role_id === r.id;
         });

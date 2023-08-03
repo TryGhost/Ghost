@@ -6,7 +6,7 @@ import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import {CheckboxProps} from '../../../../admin-x-ds/global/form/Checkbox';
 import {Setting, SettingValue, Tier} from '../../../../types/api';
 import {checkStripeEnabled, getSettingValues} from '../../../../utils/helpers';
-import {useGlobalData} from '../../../providers/DataProvider';
+import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const SignupOptions: React.FC<{
     localSettings: Setting[]

@@ -1,15 +1,14 @@
 import {expect, test} from '@playwright/test';
-import {mockApi, updatedSettingsResponse} from '../../utils/e2e';
+import {globalDataRequests, mockApi, updatedSettingsResponse} from '../../utils/e2e';
 
 test.describe('Social account settings', async () => {
     test('Supports editing social URLs', async ({page}) => {
-        const lastApiRequests = await mockApi({page, responses: {
-            settings: {
-                edit: updatedSettingsResponse([
-                    {key: 'facebook', value: 'fb'},
-                    {key: 'twitter', value: '@tw'}
-                ])
-            }
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
+                {key: 'facebook', value: 'fb'},
+                {key: 'twitter', value: '@tw'}
+            ])}
         }});
 
         await page.goto('/');
@@ -31,7 +30,7 @@ test.describe('Social account settings', async () => {
         await expect(section.getByText('https://www.facebook.com/fb')).toHaveCount(1);
         await expect(section.getByText('https://twitter.com/tw')).toHaveCount(1);
 
-        expect(lastApiRequests.settings.edit.body).toEqual({
+        expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
                 {key: 'facebook', value: 'fb'},
                 {key: 'twitter', value: '@tw'}

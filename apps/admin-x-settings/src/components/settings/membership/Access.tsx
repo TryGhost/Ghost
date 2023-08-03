@@ -6,7 +6,7 @@ import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupConten
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {GroupBase, MultiValue} from 'react-select';
 import {getOptionLabel, getSettingValues} from '../../../utils/helpers';
-import {useGlobalData} from '../../providers/DataProvider';
+import {useBrowseTiers} from '../../../utils/api/tiers';
 
 const MEMBERS_SIGNUP_ACCESS_OPTIONS = [
     {value: 'all', label: 'Anyone can sign up'},
@@ -46,16 +46,16 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const defaultContentVisibilityLabel = getOptionLabel(DEFAULT_CONTENT_VISIBILITY_OPTIONS, defaultContentVisibility);
     const commentsEnabledLabel = getOptionLabel(COMMENTS_ENABLED_OPTIONS, commentsEnabled);
 
-    const {tiers} = useGlobalData();
+    const {data: {tiers} = {}} = useBrowseTiers();
 
     const tierOptionGroups: GroupBase<MultiSelectOption>[] = [
         {
             label: 'Active Tiers',
-            options: tiers.filter(({active}) => active).map(tier => ({value: tier.id, label: tier.name}))
+            options: tiers?.filter(({active}) => active).map(tier => ({value: tier.id, label: tier.name})) || []
         },
         {
             label: 'Archived Tiers',
-            options: tiers.filter(({active}) => !active).map(tier => ({value: tier.id, label: tier.name}))
+            options: tiers?.filter(({active}) => !active).map(tier => ({value: tier.id, label: tier.name})) || []
         }
     ];
 

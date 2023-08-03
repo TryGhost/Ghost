@@ -8,7 +8,7 @@ import {GroupBase, MultiValue} from 'react-select';
 import {getOptionLabel, getSettingValues} from '../../../utils/helpers';
 import {useBrowseLabels} from '../../../utils/api/labels';
 import {useBrowseOffers} from '../../../utils/api/offers';
-import {useGlobalData} from '../../providers/DataProvider';
+import {useBrowseTiers} from '../../../utils/api/tiers';
 
 type RefipientValueArgs = {
     defaultEmailRecipients: string;
@@ -81,7 +81,7 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
         defaultEmailRecipientsFilter
     }));
 
-    const {tiers} = useGlobalData();
+    const {data: {tiers} = {}} = useBrowseTiers();
     const {data: {labels} = {}} = useBrowseLabels();
     const {data: {offers} = {}} = useBrowseOffers();
 
@@ -114,11 +114,11 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
         },
         {
             label: 'Active Tiers',
-            options: tiers.filter(({active}) => active).map(tier => ({value: tier.id, label: tier.name, color: 'black'}))
+            options: tiers?.filter(({active}) => active).map(tier => ({value: tier.id, label: tier.name, color: 'black'})) || []
         },
         {
             label: 'Archived Tiers',
-            options: tiers.filter(({active}) => !active).map(tier => ({value: tier.id, label: tier.name, color: 'black'}))
+            options: tiers?.filter(({active}) => !active).map(tier => ({value: tier.id, label: tier.name, color: 'black'})) || []
         },
         {
             label: 'Labels',

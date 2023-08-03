@@ -1,15 +1,14 @@
 import {expect, test} from '@playwright/test';
-import {mockApi, updatedSettingsResponse} from '../../utils/e2e';
+import {globalDataRequests, mockApi, updatedSettingsResponse} from '../../utils/e2e';
 
 test.describe('Metadata settings', async () => {
     test('Supports editing metadata', async ({page}) => {
-        const lastApiRequests = await mockApi({page, responses: {
-            settings: {
-                edit: updatedSettingsResponse([
-                    {key: 'meta_title', value: 'Alternative title'},
-                    {key: 'meta_description', value: 'Alternative description'}
-                ])
-            }
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
+                {key: 'meta_title', value: 'Alternative title'},
+                {key: 'meta_description', value: 'Alternative description'}
+            ])}
         }});
 
         await page.goto('/');
@@ -31,7 +30,7 @@ test.describe('Metadata settings', async () => {
         await expect(section.getByText('Alternative title')).toHaveCount(1);
         await expect(section.getByText('Alternative description')).toHaveCount(1);
 
-        expect(lastApiRequests.settings.edit.body).toEqual({
+        expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
                 {key: 'meta_title', value: 'Alternative title'},
                 {key: 'meta_description', value: 'Alternative description'}

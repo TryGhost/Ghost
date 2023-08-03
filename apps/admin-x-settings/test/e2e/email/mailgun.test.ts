@@ -1,15 +1,14 @@
 import {expect, test} from '@playwright/test';
-import {mockApi, updatedSettingsResponse} from '../../utils/e2e';
+import {globalDataRequests, mockApi, updatedSettingsResponse} from '../../utils/e2e';
 
 test.describe('Mailgun settings', async () => {
     test('Supports setting up mailgun', async ({page}) => {
-        const lastApiRequests = await mockApi({page, responses: {
-            settings: {
-                edit: updatedSettingsResponse([
-                    {key: 'mailgun_domain', value: 'test.com'},
-                    {key: 'mailgun_api_key', value: 'test'}
-                ])
-            }
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
+                {key: 'mailgun_domain', value: 'test.com'},
+                {key: 'mailgun_api_key', value: 'test'}
+            ])}
         }});
 
         await page.goto('/');
@@ -29,7 +28,7 @@ test.describe('Mailgun settings', async () => {
 
         await expect(section.getByText('Mailgun is set up')).toHaveCount(1);
 
-        expect(lastApiRequests.settings.edit.body).toEqual({
+        expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
                 {key: 'mailgun_domain', value: 'test.com'},
                 {key: 'mailgun_api_key', value: 'test'}

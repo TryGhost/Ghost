@@ -1,14 +1,13 @@
 import {expect, test} from '@playwright/test';
-import {mockApi, updatedSettingsResponse} from '../../utils/e2e';
+import {globalDataRequests, mockApi, updatedSettingsResponse} from '../../utils/e2e';
 
 test.describe('Time zone settings', async () => {
     test('Supports editing the time zone', async ({page}) => {
-        const lastApiRequests = await mockApi({page, responses: {
-            settings: {
-                edit: updatedSettingsResponse([
-                    {key: 'timezone', value: 'Asia/Tokyo'}
-                ])
-            }
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
+                {key: 'timezone', value: 'Asia/Tokyo'}
+            ])}
         }});
 
         await page.goto('/');
@@ -27,7 +26,7 @@ test.describe('Time zone settings', async () => {
 
         await expect(section.getByText('Asia/Tokyo')).toHaveCount(1);
 
-        expect(lastApiRequests.settings.edit.body).toEqual({
+        expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
                 {key: 'timezone', value: 'Asia/Tokyo'}
             ]
