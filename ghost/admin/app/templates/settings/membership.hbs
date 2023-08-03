@@ -171,8 +171,17 @@
         </div>
     </section>
 
-    <Settings::SignupFormEmbed />
 
+    <section class="gh-main-section">
+        <h4 class="gh-main-section-header small bn">Growth</h4>
+        <div class="gh-expandable">
+            <Settings::SignupFormEmbed />
+            {{#if (feature "tipsAndDonations")}}
+                <Settings::TipsAndDonations />
+            {{/if}}
+        </div>
+    </section>
+    
     {{#if this.showPortalSettings}}
         <GhFullscreenModal
             @modal="portal-settings"
