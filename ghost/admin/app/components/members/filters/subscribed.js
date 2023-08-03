@@ -31,14 +31,21 @@ export const NEWSLETTERS_FILTER = (newsletterList) => {
                 const value = flt.value;
 
                 return (relation === 'is' && value === 'true') || (relation === 'is-not' && value === 'false')
-                    ? `newsletters.slug:${newsletter.slug}+email_disabled:0`
-                    : `newsletters.slug:-${newsletter.slug},email_disabled:1`;
+                    ? `(newsletters.slug:${newsletter.slug}+email_disabled:0)`
+                    : `(newsletters.slug:-${newsletter.slug},email_disabled:1)`;
             },
             parseNqlFilter: (flt) => {
-                if (!flt['newsletters.slug']) {
+                const comparator = flt.$and || flt.$or;
+
+                if (!comparator || comparator.length !== 2) {
                     return;
                 }
-                let value = flt['newsletters.slug'];
+
+                if (!comparator[0]['newsletters.slug'] || comparator[1].email_disabled === undefined) {
+                    return;
+                }
+
+                let value = comparator[0]['newsletters.slug'];
                 let invert = false;
                 if (typeof value === 'object') {
                     if (!value.$ne) {

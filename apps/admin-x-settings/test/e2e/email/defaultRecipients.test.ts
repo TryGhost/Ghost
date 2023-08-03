@@ -1,15 +1,14 @@
 import {expect, test} from '@playwright/test';
-import {mockApi, updatedSettingsResponse} from '../../utils/e2e';
+import {globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '../../utils/e2e';
 
 test.describe('Default recipient settings', async () => {
     test('Supports editing default recipients', async ({page}) => {
-        const lastApiRequests = await mockApi({page, responses: {
-            settings: {
-                edit: updatedSettingsResponse([
-                    {key: 'editor_default_email_recipients', value: 'filter'},
-                    {key: 'editor_default_email_recipients_filter', value: 'status:-free'}
-                ])
-            }
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
+                {key: 'editor_default_email_recipients', value: 'filter'},
+                {key: 'editor_default_email_recipients_filter', value: 'status:-free'}
+            ])}
         }});
 
         await page.goto('/');
@@ -22,7 +21,7 @@ test.describe('Default recipient settings', async () => {
         await section.getByLabel('Default newsletter recipients').selectOption('All members');
         await section.getByRole('button', {name: 'Save'}).click();
 
-        expect(lastApiRequests.settings.edit.body).toEqual({
+        expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
                 {key: 'editor_default_email_recipients', value: 'filter'},
                 {key: 'editor_default_email_recipients_filter', value: 'status:free,status:-free'}
@@ -33,7 +32,7 @@ test.describe('Default recipient settings', async () => {
         await section.getByLabel('Default newsletter recipients').selectOption('Usually nobody');
         await section.getByRole('button', {name: 'Save'}).click();
 
-        expect(lastApiRequests.settings.edit.body).toEqual({
+        expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
                 {key: 'editor_default_email_recipients', value: 'filter'},
                 {key: 'editor_default_email_recipients_filter', value: null}
@@ -48,7 +47,7 @@ test.describe('Default recipient settings', async () => {
 
         await expect(section.getByText('Paid-members only')).toHaveCount(1);
 
-        expect(lastApiRequests.settings.edit.body).toEqual({
+        expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
                 {key: 'editor_default_email_recipients', value: 'filter'},
                 {key: 'editor_default_email_recipients_filter', value: 'status:-free'}
@@ -57,19 +56,21 @@ test.describe('Default recipient settings', async () => {
     });
 
     test('Supports selecting specific tiers, labels and offers', async ({page}) => {
-        const lastApiRequests = await mockApi({page, responses: {
-            settings: {
-                edit: updatedSettingsResponse([
-                    {
-                        key: 'editor_default_email_recipients',
-                        value: 'filter'
-                    },
-                    {
-                        key: 'editor_default_email_recipients_filter',
-                        value: '645453f4d254799990dd0e22,label:first-label,offer_redemptions:6487ea6464fca78ec2fff5fe'
-                    }
-                ])
-            }
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseTiers: {method: 'GET', path: '/tiers/?limit=all', response: responseFixtures.tiers},
+            browseLabels: {method: 'GET', path: '/labels/?limit=all', response: responseFixtures.labels},
+            browseOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
+                {
+                    key: 'editor_default_email_recipients',
+                    value: 'filter'
+                },
+                {
+                    key: 'editor_default_email_recipients_filter',
+                    value: '645453f4d254799990dd0e22,label:first-label,offer_redemptions:6487ea6464fca78ec2fff5fe'
+                }
+            ])}
         }});
 
         await page.goto('/');
@@ -89,7 +90,7 @@ test.describe('Default recipient settings', async () => {
 
         await expect(section.getByText('Specific people')).toHaveCount(1);
 
-        expect(lastApiRequests.settings.edit.body).toEqual({
+        expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
                 {
                     key: 'editor_default_email_recipients',
