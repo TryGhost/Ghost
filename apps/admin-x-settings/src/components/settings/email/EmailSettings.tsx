@@ -4,8 +4,8 @@ import MailGun from './Mailgun';
 import Newsletters from './Newsletters';
 import React from 'react';
 import SettingSection from '../../../admin-x-ds/settings/SettingSection';
-import useSettings from '../../../hooks/useSettings';
 import {getSettingValues} from '../../../utils/helpers';
+import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const searchKeywords = {
     enableNewsletters: ['newsletter', 'enable', 'disable', 'turn on'],
@@ -15,7 +15,7 @@ const searchKeywords = {
 };
 
 const EmailSettings: React.FC = () => {
-    const {settings} = useSettings();
+    const {settings} = useGlobalData();
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
 
     return (

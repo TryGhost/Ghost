@@ -4,15 +4,15 @@ import SettingNavItem from '../admin-x-ds/settings/SettingNavItem';
 import SettingNavSection from '../admin-x-ds/settings/SettingNavSection';
 import TextField from '../admin-x-ds/global/form/TextField';
 import useRouting from '../hooks/useRouting';
-import useSettings from '../hooks/useSettings';
 import {getSettingValues} from '../utils/helpers';
+import {useGlobalData} from './providers/GlobalDataProvider';
 import {useSearch} from './providers/ServiceProvider';
 
 const Sidebar: React.FC = () => {
     const {filter, setFilter} = useSearch();
     const {updateRoute} = useRouting();
 
-    const {settings} = useSettings();
+    const {settings} = useGlobalData();
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
 
     const handleSectionClick = (e: React.MouseEvent<HTMLButtonElement>) => {
