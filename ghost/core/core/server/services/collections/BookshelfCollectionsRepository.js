@@ -23,7 +23,7 @@ module.exports = class BookshelfCollectionsRepository {
     async getById(id, options = {}) {
         const model = await this.#model.findOne({id}, {
             require: false,
-            withRelated: ['posts'],
+            withRelated: ['collectionPosts'],
             transacting: options.transaction
         });
         if (!model) {
@@ -39,7 +39,7 @@ module.exports = class BookshelfCollectionsRepository {
     async getBySlug(slug, options = {}) {
         const model = await this.#model.findOne({slug}, {
             require: false,
-            withRelated: ['posts'],
+            withRelated: ['collectionPosts'],
             transacting: options.transaction
         });
         if (!model) {
@@ -58,7 +58,7 @@ module.exports = class BookshelfCollectionsRepository {
         const models = await this.#model.findAll({
             ...options,
             transacting: options.transaction,
-            withRelated: ['posts']
+            withRelated: ['collectionPosts']
         });
 
         return await Promise.all(models.map(model => this.#modelToCollection(model)));
@@ -75,7 +75,7 @@ module.exports = class BookshelfCollectionsRepository {
             filter: json.filter,
             type: json.type,
             featureImage: json.feature_image,
-            posts: json.posts.map(post => post.id),
+            posts: json.collectionPosts.map(collectionPost => collectionPost.post_id),
             createdAt: json.created_at,
             updatedAt: json.updated_at
         });
