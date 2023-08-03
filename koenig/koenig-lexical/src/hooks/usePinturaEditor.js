@@ -1,6 +1,5 @@
 import trackEvent from '../utils/analytics';
 import {useCallback, useEffect, useState} from 'react';
-import trackEvent from '../utils/analytics';
 
 export default function usePinturaEditor({
     config, disabled = false
