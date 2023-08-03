@@ -17,6 +17,9 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const handleToggleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         updateSetting('editor_default_email_recipients', (e.target.checked ? 'visibility' : 'disabled'));
+        if (!e.target.checked) {
+            updateSetting('editor_default_email_recipients_filter', null);
+        }
         await handleSave();
     };
 
