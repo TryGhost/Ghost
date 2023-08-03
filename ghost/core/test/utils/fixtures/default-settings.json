@@ -559,20 +559,6 @@
         }
     },
     "donations": {
-        "donations_enabled": {
-            "defaultValue": "false",
-            "validations": {
-                "isEmpty": false,
-                "isIn": [
-                    [
-                        "true",
-                        "false"
-                    ]
-                ]
-            },
-            "type": "boolean",
-            "flags": "PUBLIC"
-        },
         "donations_currency": {
             "defaultValue": "USD",
             "validations": {
