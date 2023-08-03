@@ -2,6 +2,7 @@ const {
     CollectionsService
 } = require('@tryghost/collections');
 const BookshelfCollectionsRepository = require('./BookshelfCollectionsRepository');
+const labs = require('../../../shared/labs');
 
 let inited = false;
 class CollectionsServiceWrapper {
@@ -31,6 +32,9 @@ class CollectionsServiceWrapper {
     }
 
     async init() {
+        if (!labs.isSet('collections')) {
+            return;
+        }
         if (inited) {
             return;
         }
