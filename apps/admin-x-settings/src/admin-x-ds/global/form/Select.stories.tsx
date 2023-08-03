@@ -1,8 +1,8 @@
-import { ReactNode } from 'react';
-import { useArgs } from '@storybook/preview-api';
-import type { Meta, StoryObj } from '@storybook/react';
+import {ReactNode} from 'react';
+import {useArgs} from '@storybook/preview-api';
+import type {Meta, StoryObj} from '@storybook/react';
 
-import Select, { SelectOption } from './Select';
+import Select, {SelectOption} from './Select';
 
 const meta = {
     title: 'Global / Form / Select',

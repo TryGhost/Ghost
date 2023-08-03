@@ -57,7 +57,7 @@ const UsersList: React.FC<UsersListProps> = ({users}) => {
 
     if (!users || !users.length) {
         return (
-            <NoValueLabel icon='single-user-neutral-block'>
+            <NoValueLabel icon='single-user-block'>
                 No users found.
             </NoValueLabel>
         );
@@ -146,7 +146,7 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
 const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
     if (!users || !users.length) {
         return (
-            <NoValueLabel icon='single-user-neutral-block'>
+            <NoValueLabel icon='single-user-block'>
                 No users found.
             </NoValueLabel>
         );

@@ -1,11 +1,12 @@
 import Button from '../../../../admin-x-ds/global/Button';
 import NewsletterDetailModal from './NewsletterDetailModal';
 import NiceModal from '@ebay/nice-modal-react';
+import NoValueLabel from '../../../../admin-x-ds/global/NoValueLabel';
 import React from 'react';
 import Table from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
-import { Newsletter } from '../../../../types/api';
+import {Newsletter} from '../../../../types/api';
 
 interface NewslettersListProps {
     tab?: string;
@@ -69,8 +70,8 @@ const NewslettersList: React.FC<NewslettersListProps> = ({
         <Button color='green' label='Activate' link />
     );
 
-    return (
-        <Table>
+    if (newsletters.length) {
+        return <Table>
             {newsletters.map(newsletter => (
                 <TableRow
                     action={action}
@@ -98,8 +99,12 @@ const NewslettersList: React.FC<NewslettersListProps> = ({
                     </TableCell>
                 </TableRow>
             ))}
-        </Table>
-    );
+        </Table>;
+    } else {
+        return <NoValueLabel icon='mail-block'>
+            No newsletters found.
+        </NoValueLabel>;
+    }
 };
 
 export default NewslettersList;

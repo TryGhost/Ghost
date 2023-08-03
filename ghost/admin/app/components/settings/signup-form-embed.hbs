@@ -12,6 +12,7 @@
                 </button>
             </div>
         </div>
+
         {{#if (feature "tipsAndDonations")}}
         <div class="gh-expandable-block">
             <div class="gh-expandable-header">
@@ -19,12 +20,112 @@
                     <h4 class="gh-expandable-title">Tips & donations</h4>
                     <p class="gh-expandable-description">Give your audience a one-time way to support your work</p>
                 </div>
-                <GhTaskButton @buttonText="Copy link" @successText="Link copied" @task={{this.copyTipsAndDonationsLink}} @class="gh-btn gh-btn-icon"/>
+                <div class="for-switch">
+                    <label class="switch" for="tips-and-donations" data-test-label="tips-and-donations">
+                        <input
+                            id="tips-and-donations"
+                            type="checkbox"
+                            checked={{true}}
+                            data-test-checkbox="tips-and-donations"
+                        >
+                        <span class="input-toggle-component"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="gh-expandable-content">
+                {{#liquid-if true}}
+                <div class="gh-setting-content-extended">
+                    {{!-- Option 1 --}}
+                    {{!-- <GhFormGroup>
+                        <div class="gh-settings-members-pricelabelcont free-trial-enabled">
+                            <label for="monthlyPrice" class="fw6">Suggest an amount</label>
+                            <div>
+                                <span class="gh-setting-members-currency gh-select">
+                                    <div class="gh-setting-members-currencylabel">
+                                        <span>USD</span>
+                                        {{svg-jar "arrow-down-small"}}
+                                    </div>
+                                    <OneWaySelect
+                                        @value="USD"
+                                        @options="USD"
+                                        id="currency"
+                                        name="currency"
+                                        @optionValuePath="value"
+                                        @optionLabelPath="label"
+                                    />
+                                </span>
+                            </div>
+                        </div>
+                        <div class="gh-input-group">
+                            <GhTextInput
+                                @id="tips-and-donations-default-amount"
+                                @value="0"
+                                @type="number"
+                                data-test-input="tips-and-donations-default-amount"
+                            />
+                            <span class="gh-input-append"><span class="ttu">USD</span></span>
+                        </div>
+                    </GhFormGroup> --}}
+
+                    {{!-- Option 2 --}}
+                    <div class="gh-offer-discount">
+                        <label for="tips-and-donations-amount" class="fw6 mb1">Suggest an amount</label>
+                        <div class="flex items-start" style="max-width: 620px;">
+                            <GhFormGroup>
+                                <div class="gh-offer-value percentage">
+                                    <input
+                                        type="number"
+                                        id="tips-and-donations-amount"
+                                        class="gh-input"
+                                        name="amount"
+                                        value="0"
+                                    />
+                                </div>
+                            </GhFormGroup>
+                            <div class="gh-offer-type">
+                                <GhFormGroup class="no-margin">
+                                    <span class="gh-select">
+                                        <OneWaySelect
+                                            @value={{this.currency}}
+                                            @options={{this.allCurrencies}}
+                                            id="currency"
+                                            name="currency"
+                                            @optionValuePath="value"
+                                            @optionLabelPath="label"
+                                        >
+                                            <option value="">USD</option>
+                                        </OneWaySelect>
+                                        {{svg-jar "arrow-down-small"}}
+                                    </span>
+                                </GhFormGroup>
+                            </div>
+                        </div>
+                    </div>
+
+                    <GhFormGroup>
+                        <label for="tips-and-donations-link" class="fw6 mb1">Your personalized link</label>
+                        <div class="gh-input-group">
+                            <GhTextInput
+                                data-test-input="tips-and-donations-link"
+                                @id="tips-and-donations-link"
+                                @name="tips-and-donations-link"
+                                @disabled={{true}}
+                                @value="https://publication.com/portal/support"
+                                @placeholder="https://publication.com/portal/support"
+                            />
+                                <GhTaskButton
+                                data-test-button="tips-and-donations-copy-link"
+                                @buttonText="Copy link"
+                                @task={{this.copyTipsAndDonationsLink}}
+                                @successText="Link copied"
+                                @class="gh-btn gh-btn-black gh-btn-icon" />
+                        </div>
+                        <p>You can add the link to any of your posts or pages</p>
+                    </GhFormGroup>
+                </div>
+                {{/liquid-if}}
             </div>
         </div>
         {{/if}}
     </div>
 </section>
-
-    
-

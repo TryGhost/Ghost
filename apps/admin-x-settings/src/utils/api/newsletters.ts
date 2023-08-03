@@ -1,5 +1,5 @@
-import { Meta, createMutation, createQuery } from '../apiRequests';
-import { Newsletter } from '../../types/api';
+import {Meta, createMutation, createQuery} from '../apiRequests';
+import {Newsletter} from '../../types/api';
 
 export interface NewslettersResponseType {
     meta?: Meta

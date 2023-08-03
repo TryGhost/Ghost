@@ -1,10 +1,10 @@
-import { useArgs } from '@storybook/preview-api';
-import type { Meta, StoryObj } from '@storybook/react';
+import {useArgs} from '@storybook/preview-api';
+import type {Meta, StoryObj} from '@storybook/react';
 
-import SortableList, { SortableListProps } from './SortableList';
+import SortableList, {SortableListProps} from './SortableList';
 import clsx from 'clsx';
-import { arrayMove } from '@dnd-kit/sortable';
-import { useState } from 'react';
+import {arrayMove} from '@dnd-kit/sortable';
+import {useState} from 'react';
 
 const Wrapper = (props: SortableListProps<{id: string}> & {updateArgs: (args: Partial<SortableListProps<{id: string}>>) => void}) => {
     // Seems like Storybook recreates items on every render, so we need to keep our own state

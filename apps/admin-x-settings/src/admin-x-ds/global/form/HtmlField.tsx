@@ -1,6 +1,6 @@
 import Heading from '../Heading';
 import Hint from '../Hint';
-import HtmlEditor, { HtmlEditorProps } from './HtmlEditor';
+import HtmlEditor, {HtmlEditorProps} from './HtmlEditor';
 import React from 'react';
 import clsx from 'clsx';
 

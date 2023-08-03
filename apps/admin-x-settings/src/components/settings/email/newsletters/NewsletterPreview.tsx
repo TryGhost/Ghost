@@ -6,10 +6,10 @@ import LatestPosts3 from '../../../../assets/images/latest-posts-3.png';
 import React from 'react';
 import clsx from 'clsx';
 import useSettings from '../../../../hooks/useSettings';
-import { ReactComponent as GhostOrb } from '../../../../admin-x-ds/assets/images/ghost-orb.svg';
-import { Newsletter } from '../../../../types/api';
-import { fullEmailAddress, getSettingValues } from '../../../../utils/helpers';
-import { useGlobalData } from '../../../providers/DataProvider';
+import {ReactComponent as GhostOrb} from '../../../../admin-x-ds/assets/images/ghost-orb.svg';
+import {Newsletter} from '../../../../types/api';
+import {fullEmailAddress, getSettingValues} from '../../../../utils/helpers';
+import {useGlobalData} from '../../../providers/DataProvider';
 
 const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
     const {currentUser} = useGlobalData();
@@ -35,14 +35,14 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
     const currentYear = new Date().getFullYear();
 
     const showCommentCta = newsletter.show_comment_cta && commentsEnabled !== 'off';
-    const showFeedback = newsletter.feedback_enabled && config.labs.audienceFeedback
+    const showFeedback = newsletter.feedback_enabled && config.labs.audienceFeedback;
 
     return (
         <div className="relative flex grow flex-col">
-            <div className="GIGI absolute inset-0 m-5">
-                <div className="mx-auto my-0 flex h-full w-full max-w-[700px] flex-col overflow-hidden rounded-[4px] text-black shadow-sm">
+            <div className="absolute inset-0 m-5 flex items-center justify-center">
+                <div className="mx-auto my-0 flex max-h-full w-full max-w-[700px] flex-col overflow-hidden rounded-[4px] text-black shadow-sm">
                     {/* Email header */}
-                    <div className="flex-column flex min-h-[77px] justify-center rounded-t-sm border-b border-grey-200 bg-grey-100 px-6 text-sm text-grey-700">
+                    <div className="flex-column flex min-h-[77px] justify-center rounded-t-sm border-b border-grey-200 bg-white px-6 text-sm text-grey-700">
                         <p className="leading-normal"><span className="font-semibold text-grey-900">{newsletter.sender_name || title}</span><span> {fullEmailAddress(newsletter.sender_email || 'noreply', siteData)}</span></p>
                         <p className="leading-normal"><span className="font-semibold text-grey-900">To:</span> Jamie Larson jamie@example.com</p>
                     </div>

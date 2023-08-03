@@ -1,5 +1,5 @@
-import { InstalledTheme, Theme } from '../../types/api';
-import { createMutation, createQuery } from '../apiRequests';
+import {InstalledTheme, Theme} from '../../types/api';
+import {createMutation, createQuery} from '../apiRequests';
 
 export interface ThemesResponseType {
     themes: Theme[];
