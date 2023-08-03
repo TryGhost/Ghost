@@ -4,6 +4,7 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import ButtonGroup from '../../../../admin-x-ds/global/ButtonGroup';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import Hint from '../../../../admin-x-ds/global/Hint';
+import HtmlField from '../../../../admin-x-ds/global/form/HtmlField';
 import Icon from '../../../../admin-x-ds/global/Icon';
 import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
 import NewsletterPreview from './NewsletterPreview';
@@ -31,7 +32,7 @@ const Sidebar: React.FC<{
     newsletter: Newsletter;
     updateNewsletter: (fields: Partial<Newsletter>) => void;
 }> = ({newsletter, updateNewsletter}) => {
-    const {settings, siteData} = useGlobalData();
+    const {settings, siteData, config} = useGlobalData();
     const [membersSupportAddress] = getSettingValues<string>(settings, ['members_support_address']);
     const {mutateAsync: uploadImage} = useUploadImage();
     const [selectedTab, setSelectedTab] = useState('generalSettings');
@@ -209,12 +210,13 @@ const Sidebar: React.FC<{
                             onChange={e => updateNewsletter({show_subscription_details: e.target.checked})}
                         />
                     </ToggleGroup>
-                    <TextArea
-                        hint="Any extra information or legal text"
-                        rows={2}
-                        title="Email footer"
+                    <HtmlField
+                        config={config}
+                        hint='Any extra information or legal text'
+                        nodes='MINIMAL_NODES'
+                        title='Email footer'
                         value={newsletter.footer_content || ''}
-                        onChange={e => updateNewsletter({footer_content: e.target.value})}
+                        onChange={html => updateNewsletter({footer_content: html})}
                     />
                 </Form>
             </>
@@ -280,7 +282,10 @@ const NewsletterDetailModal: React.FC<NewsletterDetailModalProps> = ({newsletter
         sidebarPadding={false}
         testId='newsletter-modal'
         title='Newsletter'
-        onOk={handleSave}
+        onOk={async () => {
+            await handleSave();
+            modal.remove();
+        }}
     />;
 };
 
