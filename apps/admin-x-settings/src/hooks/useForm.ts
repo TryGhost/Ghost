@@ -9,7 +9,7 @@ export type SaveState = 'unsaved' | 'saving' | 'saved' | 'error' | '';
 export interface FormHook<State> {
     formState: State;
     saveState: SaveState;
-    handleSave: () => Promise<void>;
+    handleSave: () => Promise<boolean>;
     /**
      * Update the form state and mark the form as dirty. Should be used in input events
      */
@@ -19,16 +19,23 @@ export interface FormHook<State> {
      */
     setFormState: (updater: (state: State) => State) => void;
     reset: () => void;
+
+    validate: () => boolean;
+    clearError: (field: string) => void;
+    isValid: boolean;
+    errors: Record<string, string>;
 }
 
 // TODO: figure out if we need to extend `any`?
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
-const useForm = <State>({initialState, onSave}: {
+const useForm = <State>({initialState, onSave, onValidate}: {
     initialState: State,
     onSave: () => void | Promise<void>
+    onValidate?: () => Record<string, string>
 }): FormHook<State> => {
     const [formState, setFormState] = useState(initialState);
     const [saveState, setSaveState] = useState<SaveState>('');
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     // Reset saved state after 2 seconds
     useEffect(() => {
@@ -39,16 +46,33 @@ const useForm = <State>({initialState, onSave}: {
         }
     }, [saveState]);
 
+    const isValid = (errs: Record<string, string>) => Object.values(errs).filter(Boolean).length === 0;
+
+    const validate = () => {
+        if (!onValidate) {
+            return true;
+        }
+
+        const newErrors = onValidate();
+        setErrors(newErrors);
+        return isValid(newErrors);
+    };
+
     // function to save the changed settings via API
     const handleSave = async () => {
         if (saveState !== 'unsaved') {
-            return;
+            return true;
+        }
+
+        if (!validate()) {
+            return false;
         }
 
         setSaveState('saving');
         try {
             await onSave();
             setSaveState('saved');
+            return true;
         } catch (e) {
             setSaveState('unsaved');
             throw e;
@@ -69,7 +93,13 @@ const useForm = <State>({initialState, onSave}: {
         reset() {
             setFormState(initialState);
             setSaveState('');
-        }
+        },
+        validate,
+        isValid: isValid(errors),
+        clearError: (field: string) => {
+            setErrors(state => ({...state, [field]: ''}));
+        },
+        errors
     };
 };
 
