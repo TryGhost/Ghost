@@ -17,7 +17,7 @@
         <div class="gh-expandable-block">
             <div class="gh-expandable-header">
                 <div>
-                    <h4 class="gh-expandable-title">Tips & donations</h4>
+                    <h4 class="gh-expandable-title">Enable tips & donations</h4>
                     <p class="gh-expandable-description">Give your audience a one-time way to support your work</p>
                 </div>
                 <div class="for-switch">
@@ -35,39 +35,6 @@
             <div class="gh-expandable-content">
                 {{#liquid-if true}}
                 <div class="gh-setting-content-extended">
-                    {{!-- Option 1 --}}
-                    {{!-- <GhFormGroup>
-                        <div class="gh-settings-members-pricelabelcont free-trial-enabled">
-                            <label for="monthlyPrice" class="fw6">Suggest an amount</label>
-                            <div>
-                                <span class="gh-setting-members-currency gh-select">
-                                    <div class="gh-setting-members-currencylabel">
-                                        <span>USD</span>
-                                        {{svg-jar "arrow-down-small"}}
-                                    </div>
-                                    <OneWaySelect
-                                        @value="USD"
-                                        @options="USD"
-                                        id="currency"
-                                        name="currency"
-                                        @optionValuePath="value"
-                                        @optionLabelPath="label"
-                                    />
-                                </span>
-                            </div>
-                        </div>
-                        <div class="gh-input-group">
-                            <GhTextInput
-                                @id="tips-and-donations-default-amount"
-                                @value="0"
-                                @type="number"
-                                data-test-input="tips-and-donations-default-amount"
-                            />
-                            <span class="gh-input-append"><span class="ttu">USD</span></span>
-                        </div>
-                    </GhFormGroup> --}}
-
-                    {{!-- Option 2 --}}
                     <div class="gh-offer-discount">
                         <label for="tips-and-donations-amount" class="fw6 mb1">Suggest an amount</label>
                         <div class="flex items-start" style="max-width: 620px;">
