@@ -70,7 +70,7 @@ class MembersImporter extends TableImporter {
         return {
             id,
             uuid: faker.datatype.uuid(),
-            email: faker.internet.email(name, faker.date.birthdate().getFullYear().toString(), 'example.com').toLowerCase(),
+            email: `${name.replace(' ', '.').replace(/[^a-zA-Z0-9]/g, '').toLowerCase()}${faker.datatype.number({min: 1000, max: 9999})}@example.com`,
             status: luck(5) ? 'comped' : luck(25) ? 'paid' : 'free',
             name: name,
             expertise: luck(30) ? faker.name.jobTitle() : undefined,
