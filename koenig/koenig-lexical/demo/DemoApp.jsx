@@ -48,6 +48,7 @@ const cardConfig = {
         collectionsCard: true
     },
     // todo: figure out how to dynamically set this for testing to ensure we keep v1 tested
+    // for now we can keep it false in the demo, but we need to set this to True in Ghost when releasing v2.
     depreciated: {
         headerV1: false // if false, shows header v1 in the menu
     }
