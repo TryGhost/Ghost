@@ -314,7 +314,12 @@ export default class KoenigLexicalEditor extends Component {
             },
             membersEnabled: this.settings.get('membersSignupAccess') === 'all',
             siteTitle: this.settings.title,
-            siteDescription: this.settings.description
+            siteDescription: this.settings.description,
+
+            // if false, shows header v1 in the menu. We want to set this to true when we release v2
+            depreciated: {
+                headerV1: false
+            }
         };
         const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig});
 
