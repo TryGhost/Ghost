@@ -57,7 +57,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
             customButtons={checkStripeEnabled(settings, config) ?
                 <button className='group flex items-center gap-2 rounded border border-grey-300 px-3 py-1.5 text-sm font-semibold text-grey-900 transition-all hover:border-grey-500' type='button' onClick={openConnectModal}>
                     <span className="inline-flex h-2 w-2 rounded-full bg-green transition-all group-hover:bg-[#625BF6]"></span>
-                    Stripe connected
+                    Connected to Stripe
                 </button>
                 :
                 <StripeButton onClick={openConnectModal}/>}
