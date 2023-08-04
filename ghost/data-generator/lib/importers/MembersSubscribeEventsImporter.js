@@ -13,7 +13,7 @@ class MembersSubscribeEventsImporter extends TableImporter {
 
     async import(quantity) {
         const members = await this.transaction.select('id', 'created_at', 'status').from('members');
-        this.newsletters = await this.transaction.select('id').from('newsletters');
+        this.newsletters = await this.transaction.select('id').from('newsletters').orderBy('sort_order');
         this.subscriptions = await this.transaction.select('member_id', 'created_at').from('subscriptions');
 
         await this.importForEach(members, quantity ? quantity / members.length : 2);
