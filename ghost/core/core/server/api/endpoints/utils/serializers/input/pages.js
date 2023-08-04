@@ -204,12 +204,5 @@ module.exports = {
 
         defaultFormat(frame);
         defaultRelations(frame);
-    },
-
-    convert(apiConfig, frame) {
-        debug('convert');
-
-        defaultFormat(frame);
-        defaultRelations(frame);
     }
 };

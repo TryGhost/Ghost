@@ -35,15 +35,10 @@ export default class EditRoute extends AuthenticatedRoute {
         const records = await this.store.query(modelName, query);
         let post = records.firstObject;
 
-        if (post.mobiledoc) {
-            if (this.feature.get('convertToLexical')) {
-                const convertUrl = this.ghostPaths.url.api(`${post.isPost ? 'posts' : 'pages'}/${post.id}/convert`) + '?formats=mobiledoc,lexical,html';
-                const response = await this.ajax.put(convertUrl);
-                await this.store.pushPayload(response);
-                post = await this.store.peekRecord(modelName, post_id);
-            } else {
-                return this.router.transitionTo('editor.edit', post);
-            }
+        if (post.mobiledoc && this.feature.get('convertToLexical')) {
+            post = await post.save({adapterOptions: {convertToLexical: 1}});
+        } else {
+            return this.router.transitionTo('editor.edit', post);
         }
 
         return post;

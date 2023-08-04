@@ -24,6 +24,12 @@ export default class Post extends ApplicationAdapter {
             const saveRevision = snapshot.adapterOptions.saveRevision;
             parsedUrl.searchParams.append('save_revision', saveRevision);
         }
+
+        if (snapshot?.adapterOptions?.convertToLexical) {
+            const convertToLexical = snapshot.adapterOptions.convertToLexical;
+            parsedUrl.searchParams.append('convert_to_lexical', convertToLexical);
+        }
+        
         return parsedUrl.toString();
     }
 

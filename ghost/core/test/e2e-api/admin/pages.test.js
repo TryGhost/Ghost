@@ -176,7 +176,7 @@ describe('Pages API', function () {
             const [pageResponse] = pageBody.pages;
 
             await agent
-                .put(`/pages/${pageResponse.id}/convert/?formats=mobiledoc,lexical,html`)
+                .put(`/pages/${pageResponse.id}/?formats=mobiledoc,lexical,html&convert_to_lexical=true`)
                 .body({pages: [Object.assign({}, pageResponse)]})
                 .expectStatus(200)
                 .matchBodySnapshot({

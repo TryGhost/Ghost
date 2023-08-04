@@ -12,6 +12,7 @@ const {
     PostsBulkUnfeaturedEvent
 } = require('@tryghost/post-events');
 const {mobiledocToLexical} = require('@tryghost/kg-converters');
+const labs = require('../../core/core/shared/labs');
 
 const messages = {
     invalidVisibilityFilter: 'Invalid visibility filter.',
@@ -161,7 +162,21 @@ class PostsService {
             }
         }
 
-        const model = await this.models.Post.edit(frame.data.posts[0], frame.options);
+        const post = frame.data.posts[0];
+
+        console.log('frame.options', frame.options);
+        console.log(labs.isSet('convertToLexical'));
+        console.log(frame.options.convert_to_lexical);
+
+        /** Convert mobiledoc post to lexical */
+        if (labs.isSet('convertToLexical') && frame.options.convert_to_lexical && post.mobiledoc && !post.lexical) {
+            const mobiledoc = post.mobiledoc;
+            const convertedLexical = mobiledocToLexical(mobiledoc);
+            post.lexical = convertedLexical;
+            post.mobiledoc = null;
+        }
+
+        const model = await this.models.Post.edit(post, frame.options);
 
         /**Handle newsletter email */
         if (model.get('newsletter_id')) {

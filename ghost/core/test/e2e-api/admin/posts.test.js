@@ -652,7 +652,7 @@ describe('Posts API', function () {
             const [postResponse] = body.posts;
 
             await agent
-                .put(`/posts/${postResponse.id}/convert/?formats=mobiledoc,lexical,html`)
+                .put(`/posts/${postResponse.id}/?formats=mobiledoc,lexical,html&convert_to_lexical=true`)
                 .body({posts: [Object.assign({}, postResponse)]})
                 .expectStatus(200)
                 .matchBodySnapshot({
