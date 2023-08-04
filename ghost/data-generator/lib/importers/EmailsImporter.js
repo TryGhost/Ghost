@@ -14,7 +14,7 @@ class EmailsImporter extends TableImporter {
 
     async import(quantity) {
         const posts = await this.transaction.select('id', 'title', 'published_at').from('posts').where('type', 'post');
-        this.newsletters = await this.transaction.select('id').from('newsletters');
+        this.newsletters = await this.transaction.select('id').from('newsletters').orderBy('sort_order');
         this.membersSubscribeEvents = await this.transaction.select('id', 'newsletter_id', 'created_at').from('members_subscribe_events');
 
         await this.importForEach(posts, quantity ? quantity / posts.length : 1);

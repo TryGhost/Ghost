@@ -19,7 +19,7 @@ class PostsImporter extends TableImporter {
     }
 
     async import(quantity = this.defaultQuantity) {
-        this.newsletters = await this.transaction.select('id').from('newsletters');
+        this.newsletters = await this.transaction.select('id').from('newsletters').orderBy('sort_order');
 
         await super.import(quantity);
     }
