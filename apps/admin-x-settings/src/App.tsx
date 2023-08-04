@@ -16,7 +16,15 @@ interface AppProps {
     officialThemes: OfficialTheme[];
 }
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            refetchOnWindowFocus: false,
+            staleTime: 5 * (60 * 1000), // 5 mins
+            cacheTime: 10 * (60 * 1000) // 10 mins
+        }
+    }
+});
 
 function App({ghostVersion, officialThemes}: AppProps) {
     return (
