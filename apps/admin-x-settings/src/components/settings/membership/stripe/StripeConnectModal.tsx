@@ -186,7 +186,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
         <section>
             <div className='flex items-center justify-between'>
                 <Button disabled={isFetchingMembers} icon='link-broken' label='Disconnect' link onClick={openDisconnectStripeModal} />
-                <Button icon='close' size='sm' link onClick={onClose} />
+                <Button icon='close' label='Close' size='sm' hideLabel link onClick={onClose} />
             </div>
             <div className='my-20 flex flex-col items-center'>
                 <div className='relative h-20 w-[200px]'>
@@ -290,6 +290,7 @@ const StripeConnectModal: React.FC = () => {
         cancelLabel=''
         footer={<></>}
         size={stripeConnectAccountId ? 740 : 520}
+        testId='stripe-modal'
         title=''
     >
         {contents}
