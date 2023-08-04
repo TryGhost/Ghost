@@ -172,7 +172,7 @@
                                         aria-label="Monthly sign up Portal data attribute">
                                 {{/if}}
                                 <button
-                                    type="button" {{on "click" (fn (perform this.copyStaticLink) 'monthly')}}
+                                    type="button" {{on "click" (fn (perform this.copyTierSignupLink) 'monthly')}}
                                     class="gh-portal-setting-copy"
                                     data-test-button="copy-url-attr"
                                 >
@@ -205,7 +205,7 @@
                                         aria-label="Yearly sign up Portal data attribute">
                                 {{/if}}
                                 <button
-                                    type="button" {{on "click" (fn (perform this.copyStaticLink) 'yearly')}}
+                                    type="button" {{on "click" (fn (perform this.copyTierSignupLink) 'yearly')}}
                                     class="gh-portal-setting-copy"
                                     data-test-button="copy-url-attr"
                                 >
