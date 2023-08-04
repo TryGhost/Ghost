@@ -5,13 +5,11 @@ import {currencies} from 'ghost-admin/utils/currency';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
-import {tracked} from '@glimmer/tracking';
 
 const CURRENCIES = currencies.map((currency) => {
     return {
         value: currency.isoCode,
-        label: `${currency.isoCode}`,
-        isoCode: currency.isoCode
+        label: `${currency.isoCode}`
     };
 });
 
@@ -20,11 +18,12 @@ export default class TipsAndDonations extends Component {
 
     @inject config;
 
-    @tracked donationsCurrency;
-    @tracked donationsSuggestedAmount;
-
     get allCurrencies() {
         return CURRENCIES;
+    }
+
+    get selectedAmount() {
+        return this.settings.donationsSuggestedAmount && this.settings.donationsSuggestedAmount / 100;
     }
 
     get selectedCurrency() {
@@ -54,6 +53,9 @@ export default class TipsAndDonations extends Component {
 
     @action
     setDonationsSuggestedAmount(event) {
-        this.settings.donationsSuggestedAmount = Number(event.target.value);
+        const amount = Math.abs(event.target.value);
+        const amountInCents = Math.round(amount * 100);
+
+        this.settings.donationsSuggestedAmount = amountInCents;
     }
 }

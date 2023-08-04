@@ -23,7 +23,8 @@
                                         id="gh-tips-and-donations-amount"
                                         class="gh-input"
                                         name="amount"
-                                        value={{this.settings.donationsSuggestedAmount}}
+                                        min="0"
+                                        value={{this.selectedAmount}}
                                         {{on "input" this.setDonationsSuggestedAmount}}
                                     />
                                 </div>
