@@ -20,7 +20,7 @@ function cardTemplate(nodeData) {
                 <div class="kg-header-card-text ${alignment}">
                     <h2 class="kg-header-card-heading" style="color: ${nodeData.textColor};">${nodeData.header}</h2>
                     <h3 class="kg-header-card-subheading" style="color: ${nodeData.textColor};">${nodeData.subheader}</h3>
-                    ${nodeData.buttonEnabled ? `<a href="${nodeData.buttonUrl}" class="kg-header-card-button ${buttonAccent}" style="${buttonStyle}color: ${nodeData.buttonTextColor};">${nodeData.buttonText}</a>` : ''}
+                    ${nodeData.buttonEnabled && nodeData.buttonUrl && nodeData.buttonUrl.trim() !== '' ? `<a href="${nodeData.buttonUrl}" class="kg-header-card-button ${buttonAccent}" style="${buttonStyle}color: ${nodeData.buttonTextColor};">${nodeData.buttonText}</a>` : ''}
                 </div>
             </div>
         </div>
@@ -39,7 +39,7 @@ function emailTemplate(nodeData) {
             <h2 style="color:${nodeData.textColor} margin-top: 0; font-family: Arial, sans-serif; font-size: 3em; font-weight: 700; line-height: 1.1em; margin: 0 0 0.125em;">${nodeData.header}</h2>
             <h3 style="color:${nodeData.textColor} margin-top: 0; font-family: Arial, sans-serif; font-size: 1.125em; font-weight: 500; line-height: 1.3em; margin: 0;">${nodeData.subheader}</h3>
 
-            ${nodeData.buttonEnabled ? `
+            ${nodeData.buttonEnabled && nodeData.buttonUrl && nodeData.buttonUrl.trim() !== '' ? `
         <a href="${nodeData.buttonUrl}" style="display: inline-block; padding: 12px 20px; color: ${nodeData.buttonTextColor}; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 3px; ${buttonStyle} ${buttonAccent}">${nodeData.buttonText}</a>
       ` : ''}
         </div>

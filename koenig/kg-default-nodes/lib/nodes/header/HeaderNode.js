@@ -27,7 +27,7 @@ export class HeaderNode extends generateDecoratorNode({nodeType: 'header',
         {name: 'textColor', default: '#000000'},
         {name: 'buttonColor', default: 'accent'},
         {name: 'buttonTextColor', default: '#FFFFFF'},
-        {name: 'layout', default: 'wide'},
+        {name: 'layout', default: 'wide'}, // replaces size
         {name: 'swapped', default: false}
     ]}
 ) {
