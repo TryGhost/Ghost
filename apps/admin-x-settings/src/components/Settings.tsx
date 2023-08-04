@@ -7,7 +7,7 @@ import SiteSettings from './settings/site/SiteSettings';
 
 const Settings: React.FC = () => {
     return (
-        <>
+        <div className='mb-[40vh]'>
             <GeneralSettings />
             <SiteSettings />
             <MembershipSettings />
@@ -15,7 +15,7 @@ const Settings: React.FC = () => {
             <div className='mt-40 text-sm'>
                 <a className='text-green' href="/ghost/#/settings">Click here</a> to open the original Admin settings.
             </div>
-        </>
+        </div>
     );
 };
 
