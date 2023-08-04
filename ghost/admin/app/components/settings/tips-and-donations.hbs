@@ -20,10 +20,11 @@
                                 <div class="percentage">
                                     <input
                                         type="number"
-                                        id="tips-and-donations-amount"
+                                        id="gh-tips-and-donations-amount"
                                         class="gh-input"
                                         name="amount"
-                                        value="0"
+                                        value={{this.settings.donationsSuggestedAmount}}
+                                        {{on "input" this.setDonationsSuggestedAmount}}
                                     />
                                 </div>
                             </GhFormGroup>
@@ -31,15 +32,14 @@
                                 <GhFormGroup class="no-margin">
                                     <span class="gh-select">
                                         <OneWaySelect
-                                            @value={{this.currency}}
-                                            @options={{this.allCurrencies}}
-                                            id="currency"
+                                            @value={{this.selectedCurrency}}
+                                            id="gh-tips-and-donations-currency"
                                             name="currency"
+                                            @options={{readonly this.allCurrencies}}
                                             @optionValuePath="value"
                                             @optionLabelPath="label"
-                                        >
-                                            <option value="">USD</option>
-                                        </OneWaySelect>
+                                            @update={{action this.setDonationsCurrency}}
+                                        />
                                         {{svg-jar "arrow-down-small"}}
                                     </span>
                                 </GhFormGroup>
@@ -52,11 +52,11 @@
                         <div class="gh-input-group">
                             <GhTextInput
                                 data-test-input="tips-and-donations-link"
-                                @id="tips-and-donations-link"
+                                @id="gh-tips-and-donations-link"
                                 @name="tips-and-donations-link"
                                 @disabled={{true}}
-                                @value="https://publication.com/portal/support"
-                                @placeholder="https://publication.com/portal/support"
+                                @value="{{this.siteUrl}}/#/portal/support"
+                                @placeholder="{{this.siteUrl}}/#/portal/support"
                             />
                                 <GhTaskButton
                                 data-test-button="tips-and-donations-copy-link"
