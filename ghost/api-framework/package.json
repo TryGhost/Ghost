@@ -24,11 +24,11 @@
     "sinon": "15.2.0"
   },
   "dependencies": {
-    "@tryghost/debug": "0.1.24",
-    "@tryghost/errors": "1.2.24",
-    "@tryghost/promise": "0.3.4",
-    "@tryghost/tpl": "0.1.24",
-    "@tryghost/validator": "0.2.4",
+    "@tryghost/debug": "0.1.26",
+    "@tryghost/errors": "1.2.26",
+    "@tryghost/promise": "0.3.6",
+    "@tryghost/tpl": "0.1.26",
+    "@tryghost/validator": "0.2.6",
     "jsonpath": "1.1.1",
     "lodash": "4.17.21"
   }

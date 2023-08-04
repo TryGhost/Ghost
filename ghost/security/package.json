@@ -25,7 +25,7 @@
     "uuid": "9.0.0"
   },
   "dependencies": {
-    "@tryghost/string": "0.2.4",
+    "@tryghost/string": "0.2.8",
     "bcryptjs": "2.4.3"
   }
 }

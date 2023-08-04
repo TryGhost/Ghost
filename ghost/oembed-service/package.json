@@ -23,9 +23,9 @@
   },
   "dependencies": {
     "@extractus/oembed-extractor": "3.2.1",
-    "@tryghost/errors": "1.2.24",
-    "@tryghost/logging": "2.4.4",
-    "@tryghost/tpl": "0.1.24",
+    "@tryghost/errors": "1.2.26",
+    "@tryghost/logging": "2.4.6",
+    "@tryghost/tpl": "0.1.26",
     "charset": "1.0.1",
     "cheerio": "0.22.0",
     "iconv-lite": "0.6.3",
