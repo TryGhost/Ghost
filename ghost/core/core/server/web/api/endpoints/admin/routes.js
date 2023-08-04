@@ -43,7 +43,6 @@ module.exports = function apiRoutes() {
     router.get('/posts/:id', mw.authAdminApi, http(api.posts.read));
     router.get('/posts/slug/:slug', mw.authAdminApi, http(api.posts.read));
     router.put('/posts/:id', mw.authAdminApi, http(api.posts.edit));
-    router.put('/posts/:id/convert', mw.authAdminApi, http(api.posts.convert));
     router.del('/posts/:id', mw.authAdminApi, http(api.posts.destroy));
     router.post('/posts/:id/copy', mw.authAdminApi, http(api.posts.copy));
 
@@ -61,7 +60,6 @@ module.exports = function apiRoutes() {
     router.put('/pages/:id', mw.authAdminApi, http(api.pages.edit));
     router.del('/pages/:id', mw.authAdminApi, http(api.pages.destroy));
     router.post('/pages/:id/copy', mw.authAdminApi, http(api.pages.copy));
-    router.put('/pages/:id/convert', mw.authAdminApi, http(api.pages.convert));
 
     // # Integrations
 

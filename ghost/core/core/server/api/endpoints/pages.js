@@ -275,35 +275,4 @@ module.exports = {
             return postsService.copyPost(frame);
         }
     }
-
-    // convert: {
-    //     headers: {
-    //         /** @type {boolean | {value: string}} */
-    //         cacheInvalidate: false
-    //     },
-    //     options: [
-    //         'include',
-    //         'id',
-    //         'formats'
-    //     ],
-    //     validation: {
-    //         options: {
-    //             include: {
-    //                 values: ALLOWED_INCLUDES
-    //             },
-    //             id: {
-    //                 required: true
-    //             }
-    //         }
-    //     },
-    //     permissions: {
-    //         docName: 'posts',
-    //         method: 'edit'
-    //     },
-    //     async query(frame) {
-    //         let model = await postsService.convertPost(frame);
-
-    //         return model;
-    //     }
-    // }
 };
