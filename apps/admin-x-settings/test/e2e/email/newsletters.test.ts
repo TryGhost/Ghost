@@ -90,6 +90,33 @@ test.describe('Newsletter settings', async () => {
         });
     });
 
+    test('Displays a prompt when email verification is required', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=all', response: responseFixtures.newsletters},
+            editNewsletter: {method: 'PUT', path: `/newsletters/${responseFixtures.newsletters.newsletters[0].id}/?include=count.active_members%2Ccount.posts`, response: {
+                newsletters: [responseFixtures.newsletters.newsletters[0]],
+                meta: {
+                    sent_email_verification: ['sender_email']
+                }
+            }}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('newsletters');
+
+        await section.getByText('Awesome newsletter').click();
+
+        const modal = page.getByTestId('newsletter-modal');
+
+        await modal.getByLabel('Sender email').fill('test@test.com');
+        await modal.getByRole('button', {name: 'Save & close'}).click();
+
+        await expect(page.getByTestId('confirmation-modal')).toHaveCount(1);
+        await expect(page.getByTestId('confirmation-modal')).toHaveText(/Confirm newsletter email address/);
+    });
+
     test('Supports archiving newsletters', async ({page}) => {
         const activate = await mockApi({page, requests: {
             ...globalDataRequests,
