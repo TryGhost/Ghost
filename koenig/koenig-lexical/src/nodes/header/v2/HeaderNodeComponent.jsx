@@ -208,10 +208,10 @@ function HeaderNodeComponent({
         });
     };
 
-    const handleButtonUrl = (event) => {
+    const handleButtonUrl = (val) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.buttonUrl = event.target.value;
+            node.buttonUrl = val;
         });
     };
 

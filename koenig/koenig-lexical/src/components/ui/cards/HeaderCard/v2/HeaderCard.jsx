@@ -4,7 +4,7 @@ import React, {useEffect, useState} from 'react';
 import clsx from 'clsx';
 import trackEvent from '../../../../../utils/analytics';
 import {Button} from '../../../Button';
-import {ButtonGroupSetting, ColorPickerSetting, InputSetting, MediaUploadSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../../../SettingsPanel';
+import {ButtonGroupSetting, ColorPickerSetting, InputSetting, InputUrlSetting, MediaUploadSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../../../SettingsPanel';
 import {ReactComponent as CenterAlignIcon} from '../../../../../assets/icons/kg-align-center.svg';
 import {Color, textColorForBackgroundColor} from '@tryghost/color-utils';
 import {ReactComponent as ExpandIcon} from '../../../../../assets/icons/kg-expand.svg';
@@ -493,12 +493,10 @@ export function HeaderCard({alignment,
                                 onBlur={handleButtonTextBlur}
                                 onChange={handleButtonText}
                             />
-                            <InputSetting
+                            <InputUrlSetting
                                 dataTestId='header-button-url'
-                                label='Button Url'
-                                placeholder='Add a link to the button'
+                                label='Button URL'
                                 value={buttonUrl}
-                                onBlur={handleButtonUrlBlur}
                                 onChange={handleButtonUrl}
                             />
                         </>
