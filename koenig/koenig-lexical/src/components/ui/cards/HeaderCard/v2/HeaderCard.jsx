@@ -210,23 +210,6 @@ export function HeaderCard({alignment,
 
     const correctedBackgroundSize = backgroundSize === 'contain' && backgroundImageSrc ? 'contain' : 'cover';
 
-    const getButtonSize = (layout) => {
-        if (layout === 'regular') {
-            return 'small';
-        }
-
-        if (layout === 'wide') {
-            return 'medium';
-        }
-
-        if (layout === 'full') {
-            return 'large';
-        }
-
-        if (layout === 'split') {
-            return 'medium';
-        }
-    };
     return (
         <>
             <div className='flex w-full font-sans text-black transition-colors ease-in-out' data-testid={'header-card-container'} style={wrapperStyle()}>
@@ -341,8 +324,9 @@ export function HeaderCard({alignment,
                                 <div className={`text-${alignment} w-full ${(layout === 'regular') ? 'peer-[.koenig-lexical]:mt-10' : (layout === 'wide') ? 'peer-[.koenig-lexical]:mt-12 md:w-2/3' : (layout === 'full') ? 'peer-[.koenig-lexical]:mt-12 md:w-2/3 peer-[.koenig-lexical]:md:mt-16 xl:w-1/2' : 'max-w-[500px] peer-[.koenig-lexical]:mt-10 peer-[.koenig-lexical]:md:mt-16'}`}>
                                     <Button 
                                         dataTestId="header-card-button" 
-                                        placeholder='Add button text'
-                                        size={getButtonSize(layout)}
+                                        disabled={true} 
+                                        placeholder='Add button text' 
+                                        size={`${(layout === 'regular') ? 'medium' : 'large'}`}
                                         style={buttonColor ? {
                                             backgroundColor: hexColorValue(buttonColor),
                                             color: hexColorValue(buttonTextColor)

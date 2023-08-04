@@ -21,7 +21,6 @@ export class HeaderNode extends BaseHeaderNode {
 
     // TODO: remove this once we have version 2 finalised because the default header node will be v2
     static kgMenu = [
-        // Header V1
         {
             label: 'Header',
             desc: 'Add a header',
@@ -36,13 +35,11 @@ export class HeaderNode extends BaseHeaderNode {
                 return config?.depreciated?.headerV1;
             }
         },
-        // Header V2 - we want to reword the labels when ready to go
         {
             label: 'Header v2',
             desc: '[WIP] Add a header card (v2)',
             Icon: HeaderCardIcon,
             insertCommand: INSERT_HEADER_COMMAND,
-            // we can keep it header 2 since we need it for testing to keep both versions tested.
             matches: ['header2', 'heading2'],
             priority: 18,
             insertParams: () => ({
