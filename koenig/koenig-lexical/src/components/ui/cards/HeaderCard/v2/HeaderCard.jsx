@@ -252,7 +252,7 @@ export function HeaderCard({alignment,
                                 (isSwapped && (correctedBackgroundSize === 'contain')) && 'mb-10 px-[calc(32px-(4rem/2))] xs:px-[calc(92px-(8rem/2))] sm:pl-0 sm:pr-[calc(92px-(12rem/2))] md:pr-[calc(92px-(12rem/2))] lg:pr-0',
                             )}
                             desc='Click to select an image'
-                            dragHandler={imageDragHandler}  
+                            dragHandler={imageDragHandler}
                             errors={fileUploader?.errors}
                             icon='image'
                             imgClassName={`${(correctedBackgroundSize === 'cover') && 'aspect-[3/2]'}`}
@@ -273,8 +273,8 @@ export function HeaderCard({alignment,
                         className={clsx(
                             'mx-auto flex w-full flex-1 flex-col justify-center',
                             (alignment === 'center') && 'items-center',
-                            (layout === 'regular') && 'p-[4rem] sm:py-[6rem] md:py-[8rem] md:px-[6rem] lg:px-[8rem]',
-                            (layout === 'wide') && 'max-w-[740px] p-[4rem] sm:py-[6rem] md:py-[10rem] md:px-[8rem] lg:px-0',
+                            (layout === 'regular') && 'p-[4rem] sm:py-[6rem] md:py-[10rem] md:px-[6rem] lg:px-[8rem]',
+                            (layout === 'wide') && 'max-w-[740px] p-[4rem] sm:py-[6rem] md:py-[14rem] md:px-[8rem] lg:px-0',
                             (layout === 'full') && 'py-[4rem] px-[calc(32px-(4rem/2))] xs:px-[calc(92px-(8rem/2))] sm:py-[6rem] md:py-[12rem] md:px-[calc(92px-(12rem/2))] lg:py-[14rem] lg:px-0 xl:py-[16rem]',
                             (layout === 'split') && 'p-[4rem] sm:py-[6rem] md:px-[6rem] md:py-[12rem] lg:px-[8rem] lg:py-[16rem]',
                             (!isSwapped && layout === 'split' && correctedBackgroundSize === 'contain') && 'px-[calc(32px-(4rem/2))] xs:px-[calc(92px-(8rem/2))] sm:px-[calc(92px-(12rem/2))] md:pr-[calc(92px-(12rem/2))] lg:pr-0',
@@ -339,12 +339,12 @@ export function HeaderCard({alignment,
 
                         {
                             buttonEnabled && (
-                                <div 
+                                <div
                                     className={`text-${alignment} w-full ${(layout === 'regular') ? 'peer-[.koenig-lexical]:mt-8' : (layout === 'wide') ? 'peer-[.koenig-lexical]:mt-8 md:w-2/3' : (layout === 'full') ? 'peer-[.koenig-lexical]:mt-8 md:w-2/3 peer-[.koenig-lexical]:md:mt-8 xl:w-1/2' : 'max-w-[500px] peer-[.koenig-lexical]:mt-8 peer-[.koenig-lexical]:md:mt-8'}`}>
-                                    <Button 
-                                        dataTestId="header-card-button" 
-                                        disabled={true} 
-                                        placeholder='Add button text' 
+                                    <Button
+                                        dataTestId="header-card-button"
+                                        disabled={true}
+                                        placeholder='Add button text'
                                         size={getButtonSize(layout)}
                                         style={buttonColor ? {
                                             backgroundColor: hexColorValue(buttonColor),
@@ -418,8 +418,8 @@ export function HeaderCard({alignment,
                                     </button>
                                 )
                             }),
-                            {title: 'Grey', hex: '#F0F0F0'},
                             {title: 'Black', hex: '#000000'},
+                            {title: 'Grey', hex: '#F0F0F0'},
                             {title: 'Brand color', accent: true}
                         ].filter(Boolean)}
                         value={(showBackgroundImage && layout !== 'split') ? '' : backgroundColor}
