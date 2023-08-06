@@ -22,11 +22,11 @@ export class HeaderNode extends generateDecoratorNode({nodeType: 'header',
         {name: 'accentColor', default: '#FF1A75'}, // this is used to have the accent color hex for email
         // v2 properties
         {name: 'alignment', default: 'center'},
-        {name: 'backgroundColor', default: '#F0F0F0'},
+        {name: 'backgroundColor', default: '#000000'},
         {name: 'backgroundSize', default: 'cover'},
-        {name: 'textColor', default: '#000000'},
-        {name: 'buttonColor', default: 'accent'},
-        {name: 'buttonTextColor', default: '#FFFFFF'},
+        {name: 'textColor', default: '#FFFFFF'},
+        {name: 'buttonColor', default: '#ffffff'},
+        {name: 'buttonTextColor', default: '#000000'},
         {name: 'layout', default: 'wide'}, // replaces size
         {name: 'swapped', default: false}
     ]}

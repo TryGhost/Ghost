@@ -137,7 +137,7 @@ function HeaderNodeComponent({
         if (!event.target.value) {
             editor.update(() => {
                 const node = $getNodeByKey(nodeKey);
-                node.buttonText = 'New Button';
+                node.buttonText = '';
             });
         }
     };
@@ -230,7 +230,7 @@ function HeaderNodeComponent({
     }, [isEditing, headerTextEditor, subheaderTextEditor]);
 
     return (
-        <> 
+        <>
             <HeaderCard
                 alignment={alignment}
                 backgroundColor={backgroundColor}
