@@ -282,7 +282,19 @@ export default class KoenigLexicalEditor extends Component {
 
                 return links;
             };
-            return [...defaults, ...offersLinks, ...memberLinks()];
+
+            const donationLink = () => {
+                if (this.settings.donationsEnabled) {
+                    return [{
+                        label: `Support ${this.settings.title}`,
+                        value: this.config.getSiteUrl('/#/portal/support')
+                    }];
+                }
+
+                return [];
+            };
+
+            return [...defaults, ...offersLinks, ...memberLinks(), ...donationLink()];
         };
 
         const fetchLabels = async () => {

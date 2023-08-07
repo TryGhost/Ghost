@@ -15,6 +15,7 @@ import {tracked} from '@glimmer/tracking';
 export default class KoenigCardEmailCtaComponent extends Component {
     @service feature;
     @service store;
+    @service settings;
     @service membersUtils;
     @service ui;
 
@@ -102,6 +103,13 @@ export default class KoenigCardEmailCtaComponent extends Component {
                     name: `Offer - ${offer.name}`,
                     url: this.config.getSiteUrl(offer.code)
                 }]);
+            });
+        }
+
+        if (this.settings.donationsEnabled) {
+            urls.push({
+                name: `Support ${this.settings.title}`,
+                url: this.config.getSiteUrl('/#/portal/support')
             });
         }
 
