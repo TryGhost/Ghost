@@ -13,7 +13,7 @@ import {
 } from 'lexical';
 import {$getNearestNodeOfType} from '@lexical/utils';
 import {$isListNode, ListNode} from '@lexical/list';
-import {$wrapNodes} from '@lexical/selection';
+import {$setBlocksType} from '@lexical/selection';
 import {HeadingNode, QuoteNode} from '@lexical/rich-text';
 import {
     ToolbarMenu,
@@ -127,7 +127,7 @@ export default function FormatToolbar({
                 const selection = $getSelection();
 
                 if ($isRangeSelection(selection)) {
-                    $wrapNodes(selection, () => $createParagraphNode());
+                    $setBlocksType(selection, () => $createParagraphNode());
                 }
             });
         }
@@ -139,7 +139,7 @@ export default function FormatToolbar({
                 const selection = $getSelection();
 
                 if ($isRangeSelection(selection)) {
-                    $wrapNodes(selection, () => $createHeadingNode(headingSize));
+                    $setBlocksType(selection, () => $createHeadingNode(headingSize));
                 }
             });
         }
@@ -151,11 +151,11 @@ export default function FormatToolbar({
 
             if ($isRangeSelection(selection)) {
                 if (blockType === 'quote') {
-                    $wrapNodes(selection, () => $createAsideNode());
+                    $setBlocksType(selection, () => $createAsideNode());
                 } else if (blockType === 'aside') {
-                    $wrapNodes(selection, () => $createParagraphNode());
+                    $setBlocksType(selection, () => $createParagraphNode());
                 } else {
-                    $wrapNodes(selection, () => $createQuoteNode());
+                    $setBlocksType(selection, () => $createQuoteNode());
                 }
             }
         });

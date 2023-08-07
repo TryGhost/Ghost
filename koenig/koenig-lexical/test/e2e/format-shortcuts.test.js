@@ -32,7 +32,7 @@ test.describe('Editor text formatting keyboard shortcuts', async () => {
 
             await page.keyboard.press(`${ctrlOrCmd}+B`, {delay: 100});
 
-            await assertHTML(page, html`<p dir=\"ltr\"><strong data-lexical-text=\"true\">test</strong></p>`);
+            await assertHTML(page, html`<p dir="ltr"><strong data-lexical-text="true">test</strong></p>`);
         });
 
         test('italic', async function () {
@@ -49,7 +49,7 @@ test.describe('Editor text formatting keyboard shortcuts', async () => {
 
             await page.keyboard.press(`${ctrlOrCmd}+I`, {delay: 100});
 
-            await assertHTML(page, html`<p dir=\"ltr\"><em data-lexical-text=\"true\">test</em></p>`);
+            await assertHTML(page, html`<p dir="ltr"><em data-lexical-text="true">test</em></p>`);
         });
 
         test('strikethrough', async function () {
@@ -66,7 +66,7 @@ test.describe('Editor text formatting keyboard shortcuts', async () => {
 
             await page.keyboard.press(`${ctrlOrCmd}+Alt+U`, {delay: 100});
 
-            await assertHTML(page, html`<p dir=\"ltr\"><span data-lexical-text=\"true\" class="line-through">test</span></p>`);
+            await assertHTML(page, html`<p dir="ltr"><span data-lexical-text="true" class="line-through">test</span></p>`);
         });
 
         test('link', async function () {
@@ -108,7 +108,7 @@ test.describe('Editor text formatting keyboard shortcuts', async () => {
 
             await page.keyboard.press(`${ctrlOrCmd}+Shift+K`, {delay: 100});
 
-            await assertHTML(page, html`<p dir=\"ltr\"><code data-lexical-text=\"true\"><span>test</span></code></p>`);
+            await assertHTML(page, html`<p dir="ltr"><code data-lexical-text="true"><span>test</span></code></p>`);
         });
 
         // TODO : these are currently missing from the editor
@@ -129,7 +129,7 @@ test.describe('Editor text formatting keyboard shortcuts', async () => {
 
         //     // no extra paragraph created
         //     await assertHTML(page, html`
-        //         "<p dir=\"ltr\"><strong data-lexical-text=\"true\">B</strong></p>"
+        //         "<p dir="ltr"><strong data-lexical-text="true">B</strong></p>"
         //     `);
         // });
 
@@ -149,7 +149,7 @@ test.describe('Editor text formatting keyboard shortcuts', async () => {
 
         //     // no extra paragraph created
         //     await assertHTML(page, html`
-        //         "<p dir=\"ltr\"><strong data-lexical-text=\"true\">B</strong></p>"
+        //         "<p dir="ltr"><strong data-lexical-text="true">B</strong></p>"
         //     `);
         // });
     });

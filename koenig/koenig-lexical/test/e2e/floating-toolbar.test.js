@@ -1,7 +1,13 @@
-import {assertHTML, focusEditor, html, initialize} from '../utils/e2e';
+import path from 'path';
+import {assertHTML, ctrlOrCmd, focusEditor, html, initialize, insertCard} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
+import {fileURLToPath} from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 test.describe('Floating format toolbar', async () => {
+    const ctrlOrCmdKey = ctrlOrCmd();
     let page;
 
     test.beforeAll(async ({browser}) => {
@@ -260,6 +266,91 @@ test.describe('Floating format toolbar', async () => {
             await assertHTML(page, html`
                 <p dir="ltr"><span data-lexical-text="true">link</span></p>
             `);
+        });
+    });
+
+    test.describe('with cards', function () {
+        test('toggles all text when text+hr cards are selected', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('First paragraph');
+            await page.keyboard.press('Enter');
+            await insertCard(page, {cardName: 'divider'});
+            await page.keyboard.type('Second paragraph');
+            await page.keyboard.press(`${ctrlOrCmdKey}+A`);
+
+            const buttonSelector = `[data-kg-floating-toolbar] [data-kg-toolbar-button="h2"] button`;
+            await page.click(buttonSelector);
+
+            await assertHTML(page, html`
+                <h2 dir="ltr"><span data-lexical-text="true">First paragraph</span></h2>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
+                    </div>
+                </div>
+                <h2 dir="ltr"><span data-lexical-text="true">Second paragraph</span></h2>
+            `, {ignoreCardContents: true});
+        });
+
+        test('toggles all text when text+image cards are selected', async function () {
+            const filePath = path.relative(process.cwd(), __dirname + '/fixtures/large-image.png');
+
+            await focusEditor(page);
+            await page.keyboard.type('First paragraph');
+            await page.keyboard.press('Enter');
+
+            const [fileChooser] = await Promise.all([
+                page.waitForEvent('filechooser'),
+                await insertCard(page, {cardName: 'image'})
+            ]);
+            await fileChooser.setFiles([filePath]);
+
+            await expect(page.getByTestId('image-card-populated')).toBeVisible();
+
+            await page.keyboard.press('ArrowDown');
+            await page.keyboard.type('Second paragraph');
+            await page.keyboard.press(`${ctrlOrCmdKey}+A`);
+
+            const buttonSelector = `[data-kg-floating-toolbar] [data-kg-toolbar-button="h2"] button`;
+            await page.click(buttonSelector);
+
+            await assertHTML(page, html`
+                <h2 dir="ltr"><span data-lexical-text="true">First paragraph</span></h2>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="image">
+                    </div>
+                </div>
+                <h2 dir="ltr"><span data-lexical-text="true">Second paragraph</span></h2>
+            `, {ignoreCardContents: true});
+        });
+
+        test('toggles all text when text+audio cards are selected', async function () {
+            const filePath = path.relative(process.cwd(), __dirname + '/fixtures/large-image.png');
+
+            await focusEditor(page);
+            await page.keyboard.type('First paragraph');
+            await page.keyboard.press('Enter');
+
+            const [fileChooser] = await Promise.all([
+                page.waitForEvent('filechooser'),
+                await insertCard(page, {cardName: 'audio'})
+            ]);
+            await fileChooser.setFiles([filePath]);
+
+            await page.keyboard.press('ArrowDown');
+            await page.keyboard.type('Second paragraph');
+            await page.keyboard.press(`${ctrlOrCmdKey}+A`);
+
+            const buttonSelector = `[data-kg-floating-toolbar] [data-kg-toolbar-button="h2"] button`;
+            await page.click(buttonSelector);
+
+            await assertHTML(page, html`
+                <h2 dir="ltr"><span data-lexical-text="true">First paragraph</span></h2>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="audio">
+                    </div>
+                </div>
+                <h2 dir="ltr"><span data-lexical-text="true">Second paragraph</span></h2>
+            `, {ignoreCardContents: true});
         });
     });
 });
