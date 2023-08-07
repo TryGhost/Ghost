@@ -1,18 +1,6 @@
 import {addCreateDocumentOption} from '../../../../utils/add-create-document-option';
 import {renderEmptyContainer} from '../../../../utils/render-empty-container';
-
-function slugify(str) {
-    // Remove any non-word character with whitespace
-    str = str.replace(/[^\w\s]/gi, '');
-
-    // Replace any whitespace character with a dash
-    str = str.replace(/\s+/g, '-');
-
-    // Convert to lowercase
-    str = str.toLowerCase();
-
-    return str;
-}
+import {slugify} from '../../../../utils/slugify';
 
 export function renderHeaderNodeV1(node, options = {}) {
     addCreateDocumentOption(options);

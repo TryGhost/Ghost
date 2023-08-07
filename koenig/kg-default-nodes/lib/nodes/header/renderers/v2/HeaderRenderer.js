@@ -1,4 +1,5 @@
 import {addCreateDocumentOption} from '../../../../utils/add-create-document-option';
+import {slugify} from '../../../../utils/slugify';
 
 function cardTemplate(nodeData) {
     const cardClasses = getCardClasses(nodeData).join(' ');
@@ -18,8 +19,8 @@ function cardTemplate(nodeData) {
             <div class="kg-header-card-content">
                 ${nodeData.layout === 'split' ? imgTemplate : ''}
                 <div class="kg-header-card-text ${alignment}">
-                    <h2 class="kg-header-card-heading" style="color: ${nodeData.textColor};" data-text-color="${nodeData.textColor}">${nodeData.header}</h2>
-                    <h3 class="kg-header-card-subheading" style="color: ${nodeData.textColor};" data-text-color="${nodeData.textColor}">${nodeData.subheader}</h3>
+                    <h2 ${nodeData.header ? `id="${slugify(nodeData.header)}"` : ''} class="kg-header-card-heading" style="color: ${nodeData.textColor};" data-text-color="${nodeData.textColor}">${nodeData.header}</h2>
+                    <h3 ${nodeData.subheader ? `id="${slugify(nodeData.subheader)}"` : ''} class="kg-header-card-subheading" style="color: ${nodeData.textColor};" data-text-color="${nodeData.textColor}">${nodeData.subheader}</h3>
                     ${nodeData.buttonEnabled && nodeData.buttonUrl && nodeData.buttonUrl.trim() !== '' ? `<a href="${nodeData.buttonUrl}" class="kg-header-card-button ${buttonAccent}" style="${buttonStyle}color: ${nodeData.buttonTextColor};" data-button-color="${nodeData.buttonColor}" data-button-text-color="${nodeData.buttonTextColor}">${nodeData.buttonText}</a>` : ''}
                 </div>
             </div>
