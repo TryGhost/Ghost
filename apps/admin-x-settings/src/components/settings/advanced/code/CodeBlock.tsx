@@ -1,5 +1,6 @@
+import CodeEditor from '../../../../admin-x-ds/global/form/CodeEditor';
 import React from 'react';
-import TextArea from '../../../../admin-x-ds/global/form/TextArea';
+import {html} from '@codemirror/lang-html';
 
 interface CodeBlockProps {
     hint?: React.ReactNode;
@@ -8,7 +9,7 @@ interface CodeBlockProps {
 const CodeBlock: React.FC<CodeBlockProps> = ({hint}) => {
     return (
         <div className='flex-column mt-5 flex gap-1'>
-            <TextArea hint={hint} rows={10} />
+            <CodeEditor extensions={[html()]} hint={hint} />
         </div>
     );
 };
