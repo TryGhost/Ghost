@@ -35,10 +35,8 @@ const SupportPage = () => {
     }, []);
 
     if (isLoading) {
-        const title = `Loading checkout...`;
         return (
             <div>
-                <h1 style={{textAlign: 'center'}}>{title}</h1>
                 <LoadingPage />
             </div>
         );
