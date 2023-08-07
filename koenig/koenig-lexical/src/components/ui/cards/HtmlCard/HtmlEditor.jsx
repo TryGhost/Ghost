@@ -1,6 +1,5 @@
 import CodeMirror from '@uiw/react-codemirror';
 import React from 'react';
-import {CodeMirrorPlugin} from '../../../../plugins/CodeMirrorPlugin';
 import {EditorView, keymap, lineNumbers} from '@codemirror/view';
 import {HighlightStyle, syntaxHighlighting} from '@codemirror/language';
 import {closeBrackets, closeBracketsKeymap} from '@codemirror/autocomplete';
@@ -150,7 +149,6 @@ export default function HtmlEditor({darkMode, html, updateHtml, onBlur}) {
 
     return (
         <div className="not-kg-prose min-h-[170px]">
-            <CodeMirrorPlugin />
             <CodeMirror
                 autoFocus={true} // autofocus the editor whenever it is rendered
                 basicSetup={false} // basic setup includes unnecessary extensions

@@ -10,10 +10,11 @@ import {
 import {copyToClipboard} from '@lexical/clipboard';
 import {lexicalToMobiledoc} from '@tryghost/kg-converters';
 import {mergeRegister} from '@lexical/utils';
+import {shouldIgnoreEvent} from '../utils/shouldIgnoreEvent';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 async function copyToClipboardWithMobiledoc(editor, event) {
-    if (!(event instanceof ClipboardEvent)) { 
+    if (!(event instanceof ClipboardEvent)) {
         return;
     }
     // avoid processing card behaviours when an inner element has focus (e.g. nested editors)
@@ -63,6 +64,10 @@ function useMobiledocCopyPlugin({editor}) {
             editor.registerCommand(
                 COPY_COMMAND,
                 async (event) => {
+                    if (shouldIgnoreEvent(event)) {
+                        return true;
+                    }
+
                     await copyToClipboardWithMobiledoc(editor, event);
                     return true;
                 },
@@ -71,6 +76,10 @@ function useMobiledocCopyPlugin({editor}) {
             editor.registerCommand(
                 CUT_COMMAND,
                 async (event) => {
+                    if (shouldIgnoreEvent(event)) {
+                        return true;
+                    }
+
                     await copyToClipboardWithMobiledoc(editor, event);
 
                     // copied from @lexical/rich-text `onCutForRichText`

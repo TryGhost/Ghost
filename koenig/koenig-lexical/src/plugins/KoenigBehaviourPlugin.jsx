@@ -25,6 +25,7 @@ import {
     KEY_ARROW_UP_COMMAND,
     KEY_BACKSPACE_COMMAND,
     KEY_DELETE_COMMAND,
+    KEY_DOWN_COMMAND,
     KEY_ENTER_COMMAND,
     KEY_ESCAPE_COMMAND,
     KEY_MODIFIER_COMMAND,
@@ -43,6 +44,7 @@ import {$isKoenigCard, ImageNode} from '@tryghost/kg-default-nodes';
 import {$isListItemNode, $isListNode, ListNode} from '@lexical/list';
 import {MIME_TEXT_HTML, MIME_TEXT_PLAIN, PASTE_MARKDOWN_COMMAND} from './MarkdownPastePlugin.jsx';
 import {mergeRegister} from '@lexical/utils';
+import {shouldIgnoreEvent} from '../utils/shouldIgnoreEvent';
 import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -317,6 +319,20 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     editor.getRootElement().focus();
 
                     return true;
+                },
+                COMMAND_PRIORITY_LOW
+            ),
+            editor.registerCommand(
+                KEY_DOWN_COMMAND,
+                (event) => {
+                    // Avoid processing custom commands when inside a card's editor.
+                    // This also prevents Lexical calling event.preventDefault on
+                    // cut/copy/paste events letting the browser/inner editors do their thing
+                    if (shouldIgnoreEvent(event)) {
+                        return true;
+                    }
+
+                    return false;
                 },
                 COMMAND_PRIORITY_LOW
             ),
@@ -658,10 +674,11 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             editor.registerCommand(
                 KEY_MODIFIER_COMMAND,
                 (event) => {
+                    const {metaKey, code} = event;
                     const isArrowUp = event.key === 'ArrowUp' || event.keyCode === 38;
                     const isArrowDown = event.key === 'ArrowDown' || event.keyCode === 40;
 
-                    if (event.metaKey && (isArrowUp || isArrowDown)) {
+                    if (metaKey && (isArrowUp || isArrowDown)) {
                         const selection = $getSelection();
                         const isNodeSelected = $isNodeSelection(selection);
                         const hasCardAtStart = $isDecoratorNode($getRoot().getFirstChild());
@@ -700,14 +717,13 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         }
                     }
 
-                    const {metaKey, code} = event;
                     if (metaKey && code === 'KeyA') {
                         const selection = $getSelection();
                         if ($isRangeSelection(selection)) {
                             const root = $getRoot();
                             const firstNode = root.getFirstChildOrThrow();
                             const lastNode = root.getLastChildOrThrow();
-                  
+
                             if (firstNode && lastNode) {
                                 if (!$isDecoratorNode(firstNode) && !firstNode.isEmpty()) {
                                     const firstChild = firstNode.getFirstChild();
@@ -717,7 +733,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                 } else {
                                     selection.anchor.set('root', 0, 'element');
                                 }
-                  
+
                                 if (!$isDecoratorNode(lastNode) && !lastNode.isEmpty()) {
                                     const lastChild = lastNode.getLastChild();
                                     if ($isTextNode(lastChild)) {

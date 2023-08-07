@@ -1,4 +1,4 @@
-import {assertHTML, assertSelection, focusEditor, html, initialize, insertCard, pasteText} from '../utils/e2e';
+import {assertHTML, assertSelection, ctrlOrCmd, focusEditor, html, initialize, insertCard, pasteText} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Card behaviour', async () => {
@@ -8,7 +8,8 @@ test.describe('Card behaviour', async () => {
         page = await browser.newPage();
     });
 
-    test.beforeEach(async () => {
+    test.beforeEach(async ({context}) => {
+        await context.grantPermissions(['clipboard-read', 'clipboard-write']);
         await initialize({page});
     });
 
@@ -1566,6 +1567,64 @@ test.describe('Card behaviour', async () => {
 
             await expect(page.locator('[data-kg-card="image"] figcaption [data-kg="editor"]')).toHaveText('Caption value');
             await expect(page.locator('[data-kg-card="codeblock"] .cm-line')).toHaveText('Code content');
+        });
+    });
+
+    test.describe('inner editors', function () {
+        test.describe('codemirror', function () {
+            // Skipped because CodeMirror does not pick up the copy/paste properly inside Playwright - manual testing is working
+            test.skip('can copy/paste', async function () {
+                const ctrlOrCmdKey = ctrlOrCmd();
+
+                await focusEditor(page);
+                await insertCard(page, {cardName: 'html'});
+
+                // waiting for html editor
+                await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
+
+                await page.keyboard.type('Testing', {delay: 10});
+                await page.waitForTimeout(100);
+                await page.keyboard.press(`${ctrlOrCmdKey}+KeyA`, {delay: 10});
+                await page.waitForTimeout(100);
+                await page.keyboard.press(`${ctrlOrCmdKey}+KeyC`, {delay: 10});
+                await page.waitForTimeout(100);
+                await page.keyboard.press(`${ctrlOrCmdKey}+KeyV`, {delay: 10});
+                await page.waitForTimeout(100);
+                await page.keyboard.press(`${ctrlOrCmdKey}+KeyV`, {delay: 10});
+                await page.waitForTimeout(100);
+
+                await assertHTML(page, html`
+                    <div data-lexical-decorator="true" contenteditable="false">
+                        <div><svg></svg></div>
+                        <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="html">
+                            <div>
+                                <div>
+                                    <div>
+                                        <div aria-live="polite"></div>
+                                        <div tabindex="-1">
+                                            <div aria-hidden="true">
+                                                <div>
+                                                    <div>9</div>
+                                                    <div>1</div>
+                                                </div>
+                                            </div>
+                                            <div spellcheck="false" autocorrect="off" autocapitalize="off" translate="no"
+                                                contenteditable="true" role="textbox" aria-multiline="true" data-language="html">
+                                                <div>Testing</div>
+                                            </div>
+                                            <div aria-hidden="true">
+                                                <div></div>
+                                            </div>
+                                            <div aria-hidden="true"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p><br /></p>
+                `, {ignoreCardContents: false});
+            });
         });
     });
 });

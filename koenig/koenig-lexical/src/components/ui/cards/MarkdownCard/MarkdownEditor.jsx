@@ -6,7 +6,6 @@ import UnsplashModal from '../../UnsplashModal';
 
 import ctrlOrCmd from '../../../../utils/ctrlOrCmd';
 import useMarkdownImageUploader from './useMarkdownImageUploader';
-import {CodeMirrorPlugin} from '../../../../plugins/CodeMirrorPlugin';
 
 export default function MarkdownEditor({
     markdown,
@@ -207,7 +206,6 @@ export default function MarkdownEditor({
 
     return (
         <div className="not-kg-prose">
-            <CodeMirrorPlugin />
             <textarea ref={editorRef}></textarea>
 
             <MarkdownHelpDialog

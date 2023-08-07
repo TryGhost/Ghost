@@ -3,7 +3,6 @@ import KoenigComposerContext from '../../../context/KoenigComposerContext';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {CardCaptionEditor} from '../CardCaptionEditor';
-import {CodeMirrorPlugin} from '../../../plugins/CodeMirrorPlugin';
 import {EditorView, keymap, lineNumbers} from '@codemirror/view';
 import {HighlightStyle, syntaxHighlighting} from '@codemirror/language';
 import {css} from '@codemirror/lang-css';
@@ -184,7 +183,6 @@ export function CodeEditor({code, language, updateCode, updateLanguage, onBlur})
 
     return (
         <div className="not-kg-prose min-h-[170px]">
-            <CodeMirrorPlugin />
             <CodeMirror
                 autoFocus={true} // autofocus the editor whenever it is rendered
                 basicSetup={false} // basic setup includes unnecessary extensions
