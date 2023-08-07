@@ -2,6 +2,7 @@ import {ConfigResponseType} from '../../src/utils/api/config';
 import {CustomThemeSettingsResponseType} from '../../src/utils/api/customThemeSettings';
 import {InvitesResponseType} from '../../src/utils/api/invites';
 import {LabelsResponseType} from '../../src/utils/api/labels';
+import {NewslettersResponseType} from '../../src/utils/api/newsletters';
 import {OffersResponseType} from '../../src/utils/api/offers';
 import {Page} from '@playwright/test';
 import {RolesResponseType} from '../../src/utils/api/roles';
@@ -40,6 +41,7 @@ export const responseFixtures = {
     labels: JSON.parse(readFileSync(`${__dirname}/responses/labels.json`).toString()) as LabelsResponseType,
     offers: JSON.parse(readFileSync(`${__dirname}/responses/offers.json`).toString()) as OffersResponseType,
     themes: JSON.parse(readFileSync(`${__dirname}/responses/themes.json`).toString()) as ThemesResponseType,
+    newsletters: JSON.parse(readFileSync(`${__dirname}/responses/newsletters.json`).toString()) as NewslettersResponseType,
     latestPost: {posts: [{id: '1', url: `${siteFixture.site.url}/test-post/`}]}
 };
 

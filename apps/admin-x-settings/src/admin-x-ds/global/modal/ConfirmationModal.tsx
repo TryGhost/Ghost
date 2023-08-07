@@ -13,7 +13,7 @@ export interface ConfirmationModalProps {
     onCancel?: () => void;
     onOk?: (modal?: {
         remove: () => void;
-    }) => void;
+    }) => void | Promise<void>;
     customFooter?: boolean | React.ReactNode;
 }
 

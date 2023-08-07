@@ -19,7 +19,7 @@ export const useAddNewsletter = createMutation<NewslettersResponseType, Partial<
     path: () => '/newsletters/',
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     body: ({opt_in_existing: _, ...newsletter}) => ({newsletters: [newsletter]}),
-    searchParams: payload => ({opt_in_existing: payload.opt_in_existing.toString(), include: 'count.active_members,count.posts', limit: 'all'}),
+    searchParams: payload => ({opt_in_existing: payload.opt_in_existing.toString(), include: 'count.active_members,count.posts'}),
     updateQueries: {
         dataType,
         update: (newData, currentData) => ({
@@ -29,11 +29,15 @@ export const useAddNewsletter = createMutation<NewslettersResponseType, Partial<
     }
 });
 
-export const useEditNewsletter = createMutation<NewslettersResponseType, Newsletter>({
+export interface NewslettersEditResponseType extends NewslettersResponseType {
+    meta?: Meta & {sent_email_verification: string[]}
+}
+
+export const useEditNewsletter = createMutation<NewslettersEditResponseType, Newsletter>({
     method: 'PUT',
     path: newsletter => `/newsletters/${newsletter.id}/`,
     body: newsletter => ({newsletters: [newsletter]}),
-    defaultSearchParams: {include: 'count.active_members,count.posts', limit: 'all'},
+    defaultSearchParams: {include: 'count.active_members,count.posts'},
     updateQueries: {
         dataType,
         update: (newData, currentData) => ({
