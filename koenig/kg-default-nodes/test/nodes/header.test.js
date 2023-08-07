@@ -3,6 +3,7 @@ const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
 const {JSDOM} = require('jsdom');
 const {HeaderNode, $createHeaderNode, $isHeaderNode} = require('../../');
+const {_} = require('lodash');
 
 const editorNodes = [HeaderNode];
 
@@ -216,6 +217,21 @@ describe('HeaderNode', function () {
                 node.buttonUrl.should.equal('https://example.com');
                 node.buttonText.should.equal('Button');
             }));
+            
+            it('does not parse a v2 header as v1', editorTest(function () {
+                const htmlstring = `
+            <div class="kg-card kg-header-card kg-v2 kg-size-large kg-style-image" data-kg-background-image="https://example.com/image.jpg" style="background-image: url(https://example.com/image.jpg)">
+                <h2 class="kg-header-card-header" id="header-slug">Header</h2>
+                <h3 class="kg-header-card-subheader" id="subheader-slug">Subheader</h3>
+                <a class="kg-header-card-button" href="https://example.com">Button</a>
+            </div>`;
+
+                const dom = new JSDOM(htmlstring).window.document;
+                const nodes = $generateNodesFromDOM(editor, dom);
+                nodes.length.should.equal(1);
+                const node = nodes[0];
+                node.version.should.equal(2);
+            }));
         });
 
         describe('getTextContent', function () {
@@ -335,6 +351,53 @@ describe('HeaderNode', function () {
             }));
         });
 
+        describe('importDOM', function () {
+            it('parses a header card V2', editorTest(function () {
+                const htmlstring = `
+                    <div class="kg-card kg-header-card kg-v2 kg-style-accent" data-background-color="#abcdef">
+                        <picture><img class="kg-header-card-image" src="https://example.com/image.jpg" alt="" /></picture>
+                        <div class="kg-header-card-content">
+                            <div class="kg-header-card-text kg-align-center">
+                                <h2 class="kg-header-card-heading" data-text-color="#abcdef">Header</h2>
+                                <h3 class="kg-header-card-subheading" data-text-color="#abcdef">Subheader</h3>
+                                <a href="https://example.com" class="kg-header-card-button" data-button-color="#abcdef" data-button-text-color="#abcdef">Button</a>
+                            </div>
+                        </div>
+                    </div>`;
+                const dom = new JSDOM(htmlstring).window.document;
+                const nodes = $generateNodesFromDOM(editor, dom);
+                nodes.length.should.equal(1);
+                const node = nodes[0];
+                node.backgroundColor.should.equal('accent');
+                node.buttonColor.should.equal('#abcdef');
+                node.alignment.should.equal('center');
+                node.backgroundImageSrc.should.equal('https://example.com/image.jpg');
+                node.layout.should.equal('split');
+                node.textColor.should.equal('#abcdef');
+                node.header.should.equal('Header');
+                node.subheader.should.equal('Subheader');
+                node.buttonEnabled.should.be.true;
+                node.buttonUrl.should.equal('https://example.com');
+                node.buttonText.should.equal('Button');
+                node.buttonTextColor.should.equal('#abcdef');
+            }));
+            
+            it('does not parse a v1 header as v2', editorTest(function () {
+                const htmlstring = `
+            <div class="kg-card kg-header-card kg-size-large kg-style-image" data-kg-background-image="https://example.com/image.jpg" style="background-image: url(https://example.com/image.jpg)">
+                <h2 class="kg-header-card-header" id="header-slug">Header</h2>
+                <h3 class="kg-header-card-subheader" id="subheader-slug">Subheader</h3>
+                <a class="kg-header-card-button" href="https://example.com">Button</a>
+            </div>`;
+
+                const dom = new JSDOM(htmlstring).window.document;
+                const nodes = $generateNodesFromDOM(editor, dom);
+                nodes.length.should.equal(1);
+                const node = nodes[0];
+                node.version.should.equal(1);
+            }));
+        });
+
         describe('getType', function () {
             it('returns correct node type', editorTest(function () {
                 const node = $createHeaderNode(dataset);
@@ -375,61 +438,62 @@ describe('HeaderNode', function () {
                 const headerNode = $createHeaderNode(dataset);
                 const {element} = headerNode.exportDOM(exportOptions);
 
-                // const expected = html``;
-
-                // element.outerHTML.should.prettifyTo(expected);
-
-                // to add when we have design finalized
-
-                element.should.not.be.null;
+                // Assuming outerHTML gets the full HTML string of the element
+                const renderedHtml = _.replace(element.outerHTML, /\s/g, '');
+                const expectedHtml = `
+                <div class="kg-card kg-header-card kg-v2 kg-width-wide " style=";" data-background-color="#F0F0F0">
+                <picture><img class="kg-header-card-image" src="https://example.com/image.jpg" alt=""></picture>
+                    <div class="kg-header-card-content">
+                        <div class="kg-header-card-text kg-align-center">
+                            <h2 class="kg-header-card-heading" style="color: #000000;" data-text-color="#000000">This is the header card</h2>
+                            <h3 class="kg-header-card-subheading" style="color: #000000;" data-text-color="#000000">hello</h3>
+                            <a href="https://example.com/" class="kg-header-card-button " style="background-color: #000000;color: #FFFFFF;" data-button-color="#000000" data-button-text-color="#FFFFFF">The button</a>
+                        </div>
+                    </div>
+                </div>
+                `;
+                const cleanedExpectedHtml = _.replace(expectedHtml, /\s/g, '');
+                renderedHtml.should.equal(cleanedExpectedHtml);
             }));
 
-            // it('renders nothing when header and subheader is undefined and the button is disabled', editorTest(function () {
-            //     const node = $createHeaderNode(dataset);
-            //     node.header = null;
-            //     node.subheader = null;
-            //     node.buttonEnabled = false;
-            //     const {element} = node.exportDOM(exportOptions);
-            //     element.should.be.null;
-            // }));
+            it('renders nothing when header and subheader is undefined and the button is disabled', editorTest(function () {
+                const node = $createHeaderNode(dataset);
+                node.header = null;
+                node.subheader = null;
+                node.buttonEnabled = false;
+                const {element} = node.exportDOM(exportOptions);
+                element.should.be.null;
+            }));
 
-            // it('renders a minimal header card', editorTest(function () {
-            //     let payload = {
-            //         version: 1,
-            //         backgroundImageSrc: '',
-            //         buttonEnabled: false,
-            //         buttonText: 'The button',
-            //         buttonUrl: 'https://example.com/',
-            //         header: 'hello world',
-            //         size: 'small',
-            //         style: 'dark',
-            //         subheader: 'hello sub world'
-            //     };
-            //     const node = $createHeaderNode(payload);
+            it('renders without subheader', editorTest(function () {
+                let payload = {
+                    version: 2,
+                    backgroundImageSrc: '',
+                    buttonEnabled: false,
+                    buttonText: 'The button',
+                    buttonUrl: 'https://example.com/',
+                    header: 'hello world',
+                    size: 'small',
+                    style: 'dark',
+                    subheader: ''
+                };
+                const node = $createHeaderNode(payload);
 
-            //     const {element} = node.exportDOM(exportOptions);
-            //     const expectedElement = `<div class="kg-card kg-header-card kg-width-full kg-size-small kg-style-dark" data-kg-background-image="" style=""><h2 class="kg-header-card-header" id="hello-world">hello world</h2><h3 class="kg-header-card-subheader" id="hello-sub-world">hello sub world</h3></div>`;
-            //     element.outerHTML.should.equal(expectedElement);
-            // }));
+                const {element} = node.exportDOM(exportOptions);
+                const renderedHtml = _.replace(element.outerHTML, /\s/g, '');
+                const expectedHtml = `
+                <div class="kg-card kg-header-card kg-v2 kg-width-wide " style="background-color: #000000;" data-background-color="#000000">
+                    <div class="kg-header-card-content">
+                        <div class="kg-header-card-text kg-align-center">
+                        <h2 class="kg-header-card-heading" style="color: #FFFFFF;" data-text-color="#FFFFFF">hello world</h2>
+                        </div>
+                    </div>
+                </div>
+                `;
 
-            // it('renders without subheader', editorTest(function () {
-            //     let payload = {
-            //         version: 1,
-            //         backgroundImageSrc: '',
-            //         buttonEnabled: false,
-            //         buttonText: 'The button',
-            //         buttonUrl: 'https://example.com/',
-            //         header: 'hello world',
-            //         size: 'small',
-            //         style: 'dark',
-            //         subheader: ''
-            //     };
-            //     const node = $createHeaderNode(payload);
-
-            //     const {element} = node.exportDOM(exportOptions);
-            //     const expectedElement = `<div class="kg-card kg-header-card kg-width-full kg-size-small kg-style-dark" data-kg-background-image="" style=""><h2 class="kg-header-card-header" id="hello-world">hello world</h2></div>`;
-            //     element.outerHTML.should.equal(expectedElement);
-            // }));
+                const cleanedExpectedHtml = _.replace(expectedHtml, /\s/g, '');
+                renderedHtml.should.equal(cleanedExpectedHtml);
+            }));
         });
     });
 });

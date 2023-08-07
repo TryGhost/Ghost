@@ -13,14 +13,14 @@ function cardTemplate(nodeData) {
         <picture><img class="kg-header-card-image" src="${nodeData.backgroundImageSrc}" alt="" /></picture>
     ` : ``;
     return `
-        <div class="${cardClasses} ${backgroundAccent}" style="${backgroundImageStyle};">
+        <div class="${cardClasses} ${backgroundAccent}" style="${backgroundImageStyle};" data-background-color="${nodeData.backgroundColor}">
             ${nodeData.layout !== 'split' ? imgTemplate : ''}
             <div class="kg-header-card-content">
                 ${nodeData.layout === 'split' ? imgTemplate : ''}
                 <div class="kg-header-card-text ${alignment}">
-                    <h2 class="kg-header-card-heading" style="color: ${nodeData.textColor};">${nodeData.header}</h2>
-                    <h3 class="kg-header-card-subheading" style="color: ${nodeData.textColor};">${nodeData.subheader}</h3>
-                    ${nodeData.buttonEnabled && nodeData.buttonUrl && nodeData.buttonUrl.trim() !== '' ? `<a href="${nodeData.buttonUrl}" class="kg-header-card-button ${buttonAccent}" style="${buttonStyle}color: ${nodeData.buttonTextColor};">${nodeData.buttonText}</a>` : ''}
+                    <h2 class="kg-header-card-heading" style="color: ${nodeData.textColor};" data-text-color="${nodeData.textColor}">${nodeData.header}</h2>
+                    <h3 class="kg-header-card-subheading" style="color: ${nodeData.textColor};" data-text-color="${nodeData.textColor}">${nodeData.subheader}</h3>
+                    ${nodeData.buttonEnabled && nodeData.buttonUrl && nodeData.buttonUrl.trim() !== '' ? `<a href="${nodeData.buttonUrl}" class="kg-header-card-button ${buttonAccent}" style="${buttonStyle}color: ${nodeData.buttonTextColor};" data-button-color="${nodeData.buttonColor}" data-button-text-color="${nodeData.buttonTextColor}">${nodeData.buttonText}</a>` : ''}
                 </div>
             </div>
         </div>

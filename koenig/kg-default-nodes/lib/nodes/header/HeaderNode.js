@@ -1,6 +1,6 @@
 import {generateDecoratorNode} from '../../generate-decorator-node';
 import {renderHeaderNodeV1} from './renderers/v1/HeaderRenderer';
-import {parseHeaderNodeV1} from './parsers/v1/HeaderParser';
+import {parseHeaderNode} from './parsers/HeaderParser';
 // V2 imports below
 import {renderHeaderNodeV2} from './renderers/v2/HeaderRenderer';
 
@@ -32,7 +32,7 @@ export class HeaderNode extends generateDecoratorNode({nodeType: 'header',
     ]}
 ) {
     static importDOM() {
-        return parseHeaderNodeV1(this);
+        return parseHeaderNode(this);
     }
 
     exportDOM(options = {}) {
