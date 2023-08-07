@@ -12,6 +12,7 @@ module.exports = class WebhookController {
      * @param {any} deps.memberRepository
      * @param {any} deps.productRepository
      * @param {import('@tryghost/donations').DonationRepository} deps.donationRepository
+     * @param {any} deps.staffServiceEmails
      * @param {any} deps.sendSignupEmail
      */
     constructor(deps) {
@@ -135,6 +136,9 @@ module.exports = class WebhookController {
                 });
 
                 await this.deps.donationRepository.save(data);
+                await this.deps.staffServiceEmails.notifyDonationReceived({
+                    donationPaymentEvent: data
+                });
             }
             return;
         }

@@ -241,6 +241,57 @@ class StaffServiceEmails {
         }
     }
 
+    /**
+     *
+     * @param {object} eventData
+     * @param {import('@tryghost/donations').DonationPaymentEvent} eventData.donationPaymentEvent
+     *
+     * @returns {Promise<void>}
+     */
+    async notifyDonationReceived({donationPaymentEvent}) {
+        const emailPromises = [];
+        const users = await this.models.User.getEmailAlertUsers('donation');
+        const formattedAmount = this.getFormattedAmount({currency: donationPaymentEvent.currency, amount: donationPaymentEvent.amount / 100});
+
+        const subject = `💸 Received a donation of ${formattedAmount} from ${donationPaymentEvent.name ?? donationPaymentEvent.email}`;
+
+        for (const user of users) {
+            const to = user.email;
+
+            const templateData = {
+                siteTitle: this.settingsCache.get('title'),
+                siteUrl: this.urlUtils.getSiteUrl(),
+                siteDomain: this.siteDomain,
+                fromEmail: this.fromEmailAddress,
+                toEmail: to,
+                adminUrl: this.urlUtils.urlFor('admin', true),
+                staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`),
+                donation: {
+                    name: donationPaymentEvent.name ?? donationPaymentEvent.email,
+                    email: donationPaymentEvent.email,
+                    amount: formattedAmount
+                }
+            };
+
+            const {html, text} = await this.renderEmailTemplate('donation', templateData);
+
+            emailPromises.push(await this.sendMail({
+                to,
+                subject,
+                html,
+                text
+            }));
+        }
+
+        const results = await Promise.allSettled(emailPromises);
+
+        for (const result of results) {
+            if (result.status === 'rejected') {
+                this.logging.warn(result?.reason);
+            }
+        }
+    }
+
     // Utils
 
     /** @private */
