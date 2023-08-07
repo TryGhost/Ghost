@@ -43,6 +43,7 @@ export default BaseModel.extend(ValidationEngine, {
     paidSubscriptionCanceledNotification: attr(),
     mentionNotifications: attr(),
     milestoneNotifications: attr(),
+    donationNotifications: attr(),
     ghostPaths: service(),
     ajax: service(),
     session: service(),
