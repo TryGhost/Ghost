@@ -13,15 +13,36 @@ function cardTemplate(nodeData) {
     const imgTemplate = nodeData.backgroundImageSrc ? `
         <picture><img class="kg-header-card-image" src="${nodeData.backgroundImageSrc}" alt="" /></picture>
     ` : ``;
+
+    const header = () => {
+        if (nodeData.header) {
+            return `<h2 id="${slugify(nodeData.header)}" class="kg-header-card-heading" style="color: ${nodeData.textColor};" data-text-color="${nodeData.textColor}">${nodeData.header}</h2>`;
+        }
+        return '';
+    };
+
+    const subheader = () => {
+        if (nodeData.subheader) {
+            return `<h3 id="${slugify(nodeData.subheader)}" class="kg-header-card-subheading" style="color: ${nodeData.textColor};" data-text-color="${nodeData.textColor}">${nodeData.subheader}</h3>`;
+        }
+        return '';
+    };
+
+    const button = () => {
+        if (nodeData.buttonEnabled && nodeData.buttonUrl && nodeData.buttonUrl.trim() !== '') {
+            return `<a href="${nodeData.buttonUrl}" class="kg-header-card-button ${buttonAccent}" style="${buttonStyle}color: ${nodeData.buttonTextColor};" data-button-color="${nodeData.buttonColor}" data-button-text-color="${nodeData.buttonTextColor}">${nodeData.buttonText}</a>`;
+        }
+        return '';
+    };
     return `
         <div class="${cardClasses} ${backgroundAccent}" style="${backgroundImageStyle};" data-background-color="${nodeData.backgroundColor}">
             ${nodeData.layout !== 'split' ? imgTemplate : ''}
             <div class="kg-header-card-content">
                 ${nodeData.layout === 'split' ? imgTemplate : ''}
                 <div class="kg-header-card-text ${alignment}">
-                    <h2 ${nodeData.header ? `id="${slugify(nodeData.header)}"` : ''} class="kg-header-card-heading" style="color: ${nodeData.textColor};" data-text-color="${nodeData.textColor}">${nodeData.header}</h2>
-                    <h3 ${nodeData.subheader ? `id="${slugify(nodeData.subheader)}"` : ''} class="kg-header-card-subheading" style="color: ${nodeData.textColor};" data-text-color="${nodeData.textColor}">${nodeData.subheader}</h3>
-                    ${nodeData.buttonEnabled && nodeData.buttonUrl && nodeData.buttonUrl.trim() !== '' ? `<a href="${nodeData.buttonUrl}" class="kg-header-card-button ${buttonAccent}" style="${buttonStyle}color: ${nodeData.buttonTextColor};" data-button-color="${nodeData.buttonColor}" data-button-text-color="${nodeData.buttonTextColor}">${nodeData.buttonText}</a>` : ''}
+                    ${header()}
+                    ${subheader()}
+                    ${button()}
                 </div>
             </div>
         </div>
