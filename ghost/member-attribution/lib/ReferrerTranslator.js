@@ -39,6 +39,12 @@ class ReferrerTranslator {
 
         for (const item of history) {
             const referrerUrl = this.getUrlFromStr(item.referrerUrl);
+
+            if (referrerUrl?.hostname === 'checkout.stripe.com') {
+                // Ignore stripe, because second try payments should not be attributed to Stripe
+                continue;
+            }
+
             const referrerSource = item.referrerSource;
             const referrerMedium = item.referrerMedium;
 
