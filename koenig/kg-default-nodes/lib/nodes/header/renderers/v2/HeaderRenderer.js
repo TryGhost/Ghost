@@ -32,16 +32,23 @@ function emailTemplate(nodeData) {
     const buttonAccent = nodeData.buttonColor === 'accent' ? `background-color: ${nodeData.accentColor};` : nodeData.buttonColor;
     const buttonStyle = nodeData.buttonColor !== 'accent' ? `background-color: ${nodeData.buttonColor};` : '';
     const alignment = nodeData.alignment === 'center' ? 'text-align: center;' : '';
-    const backgroundImageStyle = nodeData.backgroundImageSrc ? `background-image: url(${nodeData.backgroundImageSrc}); background-size: cover; background-position: center center;` : `background-color: ${nodeData.backgroundColor};`;
+    const backgroundImageStyle = nodeData.backgroundImageSrc ? (nodeData.layout !== 'split' ? `background-image: url(${nodeData.backgroundImageSrc}); background-size: cover; background-position: center center;` : `background-color: ${nodeData.backgroundColor};`) : `background-color: ${nodeData.backgroundColor};`;
+    const splitImageStyle = `background: url(${nodeData.backgroundImageSrc}) center center / ${nodeData.backgroundSize !== 'contain' ? 'cover' : '40%'}; mso-hide: all`;
 
     return `
-        <div style="color:${nodeData.textColor}; margin: 0 0 1.5em 0; padding: 110px 35px 110px 35px; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
-            <h2 style="color:${nodeData.textColor} margin-top: 0; font-family: Arial, sans-serif; font-size: 3em; font-weight: 700; line-height: 1.1em; margin: 0 0 0.125em;">${nodeData.header}</h2>
-            <h3 style="color:${nodeData.textColor} margin-top: 0; font-family: Arial, sans-serif; font-size: 1.125em; font-weight: 500; line-height: 1.3em; margin: 0;">${nodeData.subheader}</h3>
-
-            ${nodeData.buttonEnabled && nodeData.buttonUrl && nodeData.buttonUrl.trim() !== '' ? `
-        <a href="${nodeData.buttonUrl}" style="display: inline-block; padding: 12px 20px; color: ${nodeData.buttonTextColor}; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 3px; ${buttonStyle} ${buttonAccent}">${nodeData.buttonText}</a>
-      ` : ''}
+        <div class="kg-header-card kg-v2" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
+            ${nodeData.layout === 'split' && nodeData.backgroundImageSrc ? `
+                <table class="kg-header-card-image" background="${nodeData.backgroundImageSrc}" style="${splitImageStyle} role="presentation" cellpadding="0" cellspacing="0" border="0">
+                    <tr><td></td></tr>
+                </table>
+            ` : ''}
+            <div class="kg-header-card-content" style="${nodeData.layout === 'split' && nodeData.backgroundSize === 'contain' ? 'padding-top: 0;' : ''}">
+                <h2 class="kg-header-card-heading" style="color:${nodeData.textColor};">${nodeData.header}</h2>
+                <h3 class="kg-header-card-subheading" style="color:${nodeData.textColor};">${nodeData.subheader}</h3>
+                ${nodeData.buttonEnabled && nodeData.buttonUrl && nodeData.buttonUrl.trim() !== '' ? `
+                    <a class="kg-header-card-button" href="${nodeData.buttonUrl}" style="color: ${nodeData.buttonTextColor}; ${buttonStyle} ${buttonAccent}">${nodeData.buttonText}</a>
+                ` : ''}
+            </div>
         </div>
     `;
 }
