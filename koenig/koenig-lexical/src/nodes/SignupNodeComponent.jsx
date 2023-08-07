@@ -44,6 +44,10 @@ function SignupNodeComponent({
     const [availableLabels, setAvailableLabels] = useState([]);
     const [showBackgroundImage, setShowBackgroundImage] = useState(Boolean(backgroundImageSrc));
     const [lastBackgroundImage, setLastBackgroundImage] = useState(backgroundImageSrc);
+
+    // this is used to determine if the image was deliberately removed by the user or not, for some UX finesse
+    const [imageRemoved, setImageRemoved] = useState(false);
+
     const {isEnabled: isPinturaEnabled, openEditor: openImageEditor} = usePinturaEditor({config: cardConfig.pinturaConfig});
     const fileInputRef = useRef(null);
 
@@ -104,6 +108,7 @@ function SignupNodeComponent({
         });
 
         setLastBackgroundImage(imageSrc);
+        setImageRemoved(false);
     };
 
     const onFileChange = async (e) => {
@@ -140,12 +145,13 @@ function SignupNodeComponent({
             const node = $getNodeByKey(nodeKey);
             node.backgroundImageSrc = '';
         });
+        setImageRemoved(true);
     };
 
     const handleShowBackgroundImage = () => {
         setShowBackgroundImage(true);
 
-        if (lastBackgroundImage) {
+        if (lastBackgroundImage && !imageRemoved) {
             editor.update(() => {
                 const node = $getNodeByKey(nodeKey);
                 node.backgroundImageSrc = lastBackgroundImage;
@@ -157,7 +163,10 @@ function SignupNodeComponent({
 
     const handleHideBackgroundImage = () => {
         setShowBackgroundImage(false);
-        handleClearBackgroundImage();
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.backgroundImageSrc = '';
+        });
     };
 
     const handleBackgroundColor = (color, matchingTextColor) => {

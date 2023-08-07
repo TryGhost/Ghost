@@ -48,6 +48,10 @@ function HeaderNodeComponent({
     const [showSnippetToolbar, setShowSnippetToolbar] = useState(false);
     const [showBackgroundImage, setShowBackgroundImage] = useState(Boolean(backgroundImageSrc));
     const [lastBackgroundImage, setLastBackgroundImage] = useState(backgroundImageSrc);
+
+    // this is used to determine if the image was deliberately removed by the user or not, for some UX finesse
+    const [imageRemoved, setImageRemoved] = useState(false);
+
     const {isEnabled: isPinturaEnabled, openEditor: openImageEditor} = usePinturaEditor({config: cardConfig.pinturaConfig});
     const fileInputRef = useRef(null);
 
@@ -111,6 +115,7 @@ function HeaderNodeComponent({
         });
 
         setLastBackgroundImage(imageSrc);
+        setImageRemoved(false);
     };
 
     const onFileChange = async (e) => {
@@ -147,12 +152,13 @@ function HeaderNodeComponent({
             const node = $getNodeByKey(nodeKey);
             node.backgroundImageSrc = '';
         });
+        setImageRemoved(true);
     };
 
     const handleShowBackgroundImage = () => {
         setShowBackgroundImage(true);
 
-        if (lastBackgroundImage) {
+        if (lastBackgroundImage && !imageRemoved) {
             editor.update(() => {
                 const node = $getNodeByKey(nodeKey);
                 node.backgroundImageSrc = lastBackgroundImage;
@@ -164,7 +170,10 @@ function HeaderNodeComponent({
 
     const handleHideBackgroundImage = () => {
         setShowBackgroundImage(false);
-        handleClearBackgroundImage();
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.backgroundImageSrc = '';
+        });
     };
 
     const handleBackgroundColor = (color, matchingTextColor) => {
