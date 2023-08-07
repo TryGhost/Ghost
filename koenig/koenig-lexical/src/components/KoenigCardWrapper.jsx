@@ -70,10 +70,14 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
             if (cardWidth === 'regular') {
                 delete containerRef.current.parentElement.dataset.kgCardWidth;
             } else {
-                containerRef.current.parentElement.dataset.kgCardWidth = cardWidth;
+                if (cardWidth !== width) {
+                    setCardWidth(cardWidth);
+                }
+                // we are now using the width passed from the property instead of the state, as it is the source of truth
+                containerRef.current.parentElement.dataset.kgCardWidth = width;
             }
         }
-    }, [cardWidth, containerRef]);
+    }, [cardWidth, containerRef, width]);
 
     const setEditing = (shouldEdit) => {
         // convert nodeKey to int

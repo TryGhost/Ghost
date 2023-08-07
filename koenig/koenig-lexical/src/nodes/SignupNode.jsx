@@ -111,7 +111,6 @@ export class SignupNode extends BaseSignupNode {
 
     getCardWidth() {
         const layout = this.layout;
-
         return layout === 'split' ? 'full' : layout;
     }
 
