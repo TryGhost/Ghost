@@ -16,10 +16,8 @@ export function parseHeaderNode(HeaderNode) {
                         const backgroundImageSrc = div.getAttribute('data-kg-background-image');
                         const hasHeader = !!headerElement;
                         const header = hasHeader ? headerElement.textContent : '';
-                        const headerSlug = hasHeader ? headerElement.getAttribute('id') : '';
                         const hasSubheader = !!subheaderElement;
                         const subheader = hasSubheader ? subheaderElement.textContent : '';
-                        const subheaderSlug = hasSubheader ? subheaderElement.getAttribute('id') : '';
                         const buttonEnabled = !!buttonElement;
                         const buttonUrl = buttonEnabled ? buttonElement.getAttribute('href') : '';
                         const buttonText = buttonEnabled ? buttonElement.textContent : '';
@@ -29,9 +27,7 @@ export function parseHeaderNode(HeaderNode) {
                             style,
                             backgroundImageSrc,
                             header,
-                            headerSlug,
                             subheader,
-                            subheaderSlug,
                             buttonEnabled,
                             buttonUrl,
                             buttonText,
