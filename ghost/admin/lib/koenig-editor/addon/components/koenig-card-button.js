@@ -11,6 +11,7 @@ import {tracked} from '@glimmer/tracking';
 export default class KoenigCardButtonComponent extends Component {
     @service feature;
     @service store;
+    @service settings;
     @service membersUtils;
     @service ui;
 
@@ -79,6 +80,16 @@ export default class KoenigCardButtonComponent extends Component {
                     url: this.config.getSiteUrl(offer.code)
                 }]);
             });
+        }
+
+        // TODO: remove feature condition once Tips & Donations have been released
+        if (this.feature.tipsAndDonations) {
+            if (this.settings.donationsEnabled) {
+                urls.push({
+                    name: `Support ${this.settings.title}`,
+                    url: this.config.getSiteUrl('/#/portal/support')
+                });
+            }
         }
 
         return urls;
