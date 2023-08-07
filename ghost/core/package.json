@@ -229,7 +229,7 @@
   "devDependencies": {
     "@actions/core": "1.10.0",
     "@playwright/test": "1.36.2",
-    "@tryghost/express-test": "0.13.4",
+    "@tryghost/express-test": "0.13.6",
     "@tryghost/webhook-mock-receiver": "0.2.6",
     "@types/common-tags": "1.8.1",
     "c8": "7.14.0",
