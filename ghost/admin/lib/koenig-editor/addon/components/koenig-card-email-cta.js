@@ -106,11 +106,14 @@ export default class KoenigCardEmailCtaComponent extends Component {
             });
         }
 
-        if (this.settings.donationsEnabled) {
-            urls.push({
-                name: `Support ${this.settings.title}`,
-                url: this.config.getSiteUrl('/#/portal/support')
-            });
+        // TODO: remove feature condition once Tips & Donations have been released
+        if (this.feature.tipsAndDonations) {
+            if (this.settings.donationsEnabled) {
+                urls.push({
+                    name: `Support ${this.settings.title}`,
+                    url: this.config.getSiteUrl('/#/portal/support')
+                });
+            }
         }
 
         return urls;
