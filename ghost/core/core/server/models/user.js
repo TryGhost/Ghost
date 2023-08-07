@@ -510,6 +510,8 @@ User = ghostBookshelf.Model.extend({
             filter += '+mention_notifications:true';
         } else if (type === 'milestone-received') {
             filter += '+milestone_notifications:true';
+        } else if (type === 'donation') {
+            filter += '+donation_notifications:true';
         }
         const updatedOptions = _.merge({}, options, {filter, withRelated: ['roles']});
         return this.findAll(updatedOptions).then((users) => {

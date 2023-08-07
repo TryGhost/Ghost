@@ -10,6 +10,7 @@ const models = require('../../models');
 const {getConfig} = require('./config');
 const settingsHelpers = require('../settings-helpers');
 const donationService = require('../donations');
+const staffService = require('../staff');
 
 async function configureApi() {
     const cfg = getConfig({settingsHelpers, config, urlUtils});
@@ -56,7 +57,8 @@ module.exports = new StripeService({
             }]);
         }
     },
-    donationService
+    donationService,
+    staffService
 });
 
 module.exports.init = async function init() {
