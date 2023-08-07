@@ -34,14 +34,12 @@ function emailTemplate(nodeData) {
     const buttonStyle = nodeData.buttonColor !== 'accent' ? `background-color: ${nodeData.buttonColor};` : '';
     const alignment = nodeData.alignment === 'center' ? 'text-align: center;' : '';
     const backgroundImageStyle = nodeData.backgroundImageSrc ? (nodeData.layout !== 'split' ? `background-image: url(${nodeData.backgroundImageSrc}); background-size: cover; background-position: center center;` : `background-color: ${nodeData.backgroundColor};`) : `background-color: ${nodeData.backgroundColor};`;
-    const splitImageStyle = `background: url(${nodeData.backgroundImageSrc}) center center / ${nodeData.backgroundSize !== 'contain' ? 'cover' : '40%'}; mso-hide: all`;
+    const splitImageStyle = `background-image: url(${nodeData.backgroundImageSrc}); background-size: ${nodeData.backgroundSize !== 'contain' ? 'cover' : '40%'}; background-position: center`;
 
     return `
         <div class="kg-header-card kg-v2" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
             ${nodeData.layout === 'split' && nodeData.backgroundImageSrc ? `
-                <table class="kg-header-card-image" background="${nodeData.backgroundImageSrc}" style="${splitImageStyle} role="presentation" cellpadding="0" cellspacing="0" border="0">
-                    <tr><td></td></tr>
-                </table>
+                <div class="kg-header-card-image" background="${nodeData.backgroundImageSrc}" style="${splitImageStyle}></div>
             ` : ''}
             <div class="kg-header-card-content" style="${nodeData.layout === 'split' && nodeData.backgroundSize === 'contain' ? 'padding-top: 0;' : ''}">
                 <h2 class="kg-header-card-heading" style="color:${nodeData.textColor};">${nodeData.header}</h2>
