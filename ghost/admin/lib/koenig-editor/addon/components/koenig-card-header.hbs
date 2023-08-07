@@ -18,7 +18,6 @@
     @moveCursorToNextSection={{@moveCursorToNextSection}}
     @editor={{@editor}}
     {{did-insert this.registerElement}}
-    as |card|
 >
     {{#if @isEditing}}
         <div class="kg-header-card kg-size-{{@payload.size}} kg-style-{{@payload.style}}" style="{{if (eq @payload.style "image") this.backgroundImageStyle}}">
