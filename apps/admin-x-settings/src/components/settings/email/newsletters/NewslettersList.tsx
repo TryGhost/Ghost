@@ -14,11 +14,11 @@ interface NewslettersListProps {
     newsletters: Newsletter[]
 }
 
-const NewsletterItem: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
+const NewsletterItem: React.FC<{newsletter: Newsletter, onlyOne: boolean}> = ({newsletter, onlyOne}) => {
     const {mutateAsync: editNewsletter} = useEditNewsletter();
 
     const action = newsletter.status === 'active' ? (
-        <Button color='green' label='Archive' link onClick={() => {
+        <Button color='green' disabled={onlyOne} label='Archive' link onClick={() => {
             NiceModal.show(ConfirmationModal, {
                 title: 'Archive newsletter',
                 prompt: <>
@@ -79,7 +79,7 @@ const NewsletterItem: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
 const NewslettersList: React.FC<NewslettersListProps> = ({newsletters}) => {
     if (newsletters.length) {
         return <Table>
-            {newsletters.map(newsletter => <NewsletterItem key={newsletter.id} newsletter={newsletter} />)}
+            {newsletters.map(newsletter => <NewsletterItem key={newsletter.id} newsletter={newsletter} onlyOne={newsletters.length === 1} />)}
         </Table>;
     } else {
         return <NoValueLabel icon='mail-block'>
