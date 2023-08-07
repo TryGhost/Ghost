@@ -40,7 +40,31 @@ export class Collection {
     }
     description: string;
     type: 'manual' | 'automatic';
-    filter: string | null;
+    _filter: string | null;
+    get filter() {
+        return this._filter;
+    }
+    set filter(value) {
+        // Cannot change the filter of these collections
+        if (this.slug === 'latest' || this.slug === 'featured') {
+            return;
+        }
+        if (this.type === 'manual') {
+            if (value !== null) {
+                throw new ValidationError({
+                    message: tpl(messages.invalidFilterProvided.message),
+                    context: tpl(messages.invalidFilterProvided.context)
+                });
+            }
+        } else {
+            if (value === null || value === '') {
+                throw new ValidationError({
+                    message: tpl(messages.invalidFilterProvided.message),
+                    context: tpl(messages.invalidFilterProvided.context)
+                });
+            }
+        }
+    }
     featureImage: string | null;
     createdAt: Date;
     updatedAt: Date;
@@ -62,37 +86,6 @@ export class Collection {
         if (this.deletable) {
             this._deleted = value;
         }
-    }
-
-    public async edit(data: Partial<Collection>, uniqueChecker: UniqueChecker) {
-        if (this.type === 'automatic' && this.slug !== 'latest' && (data.filter === null || data.filter === '')) {
-            throw new ValidationError({
-                message: tpl(messages.invalidFilterProvided.message),
-                context: tpl(messages.invalidFilterProvided.context)
-            });
-        }
-
-        if (data.title !== undefined) {
-            this.title = data.title;
-        }
-
-        if (data.slug !== undefined) {
-            await this.setSlug(data.slug, uniqueChecker);
-        }
-
-        if (data.description !== undefined) {
-            this.description = data.description;
-        }
-
-        if (data.filter !== undefined) {
-            this.filter = data.filter;
-        }
-
-        if (data.featureImage !== undefined) {
-            this.featureImage = data.featureImage;
-        }
-
-        return this;
     }
 
     postMatchesFilter(post: CollectionPost) {
@@ -148,7 +141,7 @@ export class Collection {
         this._slug = data.slug;
         this.description = data.description;
         this.type = data.type;
-        this.filter = data.filter;
+        this._filter = data.filter;
         this.featureImage = data.featureImage;
         this.createdAt = data.createdAt;
         this.updatedAt = data.updatedAt;
