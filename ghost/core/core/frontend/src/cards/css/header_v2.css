@@ -19,6 +19,10 @@
     background-color: var(--ghost-accent-color);
 }
 
+.kg-header-card-content {
+    width: 100%;
+}
+
 .kg-layout-split .kg-header-card-content {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -31,14 +35,14 @@
     align-items: flex-start;
     justify-content: center;
     height: 100%;
-    padding: 4vmax;
+    padding: 6.4vmax 4vmax;
     background-size: cover;
     background-position: center;
     text-align: left;
 }
 
 .kg-width-wide .kg-header-card-text {
-    padding: 6.4vmax;
+    padding: 10vmax 6.4vmax;
 }
 
 .kg-width-full .kg-header-card-text {
