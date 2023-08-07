@@ -283,8 +283,9 @@ class PaymentsService {
         const currency = this.settingsCache.get('donations_currency');
         const suggestedAmount = this.settingsCache.get('donations_suggested_amount');
 
-        // Stripe requires a minimum of 50 cents
-        const amount = suggestedAmount && suggestedAmount > 50 ? suggestedAmount : 0;
+        // Stripe requires a minimum charge amount
+        // @see https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts
+        const amount = suggestedAmount && suggestedAmount >= 100 ? suggestedAmount : 0;
 
         const price = await this.StripePriceModel
             .where({
@@ -338,13 +339,15 @@ class PaymentsService {
     async createPriceForDonations({currency, amount, nickname}) {
         const product = await this.getProductForDonations({name: nickname});
 
+        const preset = amount ? amount : null;
+
         // Create the price in Stripe
         const price = await this.stripeAPIService.createPrice({
             currency,
             product: product.id,
             custom_unit_amount: {
                 enabled: true,
-                preset: amount
+                preset
             },
             nickname,
             type: 'one-time',
