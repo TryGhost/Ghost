@@ -70,6 +70,12 @@ const Collection = ghostBookshelf.Model.extend({
             'id',
             'id'
         );
+    },
+
+    collectionPosts() {
+        return this.hasMany(
+            'CollectionPost'
+        );
     }
 });
 
