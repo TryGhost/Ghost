@@ -60,7 +60,7 @@ function emailTemplate(nodeData) {
     return `
         <div class="kg-header-card kg-v2" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
             ${nodeData.layout === 'split' && nodeData.backgroundImageSrc ? `
-                <div class="kg-header-card-image" background="${nodeData.backgroundImageSrc}" style="${splitImageStyle}></div>
+                <div class="kg-header-card-image" background="${nodeData.backgroundImageSrc}" style="${splitImageStyle}"></div>
             ` : ''}
             <div class="kg-header-card-content" style="${nodeData.layout === 'split' && nodeData.backgroundSize === 'contain' ? 'padding-top: 0;' : ''}">
                 <h2 class="kg-header-card-heading" style="color:${nodeData.textColor};">${nodeData.header}</h2>
