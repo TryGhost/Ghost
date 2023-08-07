@@ -421,7 +421,26 @@ export class CollectionsService {
             }
 
             const collectionData = this.fromDTO(data);
-            await collection.edit(collectionData, this.uniqueChecker);
+
+            if (collectionData.title) {
+                collection.title = collectionData.title;
+            }
+
+            if (data.slug !== undefined) {
+                await collection.setSlug(data.slug, this.uniqueChecker);
+            }
+
+            if (data.description !== undefined) {
+                collection.description = data.description;
+            }
+
+            if (data.filter !== undefined) {
+                collection.filter = data.filter;
+            }
+
+            if (data.feature_image !== undefined) {
+                collection.featureImage = data.feature_image;
+            }
 
             if (collection.type === 'manual' && data.posts) {
                 for (const post of data.posts) {
