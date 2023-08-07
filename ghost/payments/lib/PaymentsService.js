@@ -339,7 +339,7 @@ class PaymentsService {
     async createPriceForDonations({currency, amount, nickname}) {
         const product = await this.getProductForDonations({name: nickname});
 
-        const preset = amount ? amount : null;
+        const preset = amount ? amount : undefined;
 
         // Create the price in Stripe
         const price = await this.stripeAPIService.createPrice({
