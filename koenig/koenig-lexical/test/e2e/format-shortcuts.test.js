@@ -1,9 +1,9 @@
-import {assertHTML, focusEditor, html, initialize, isMac} from '../utils/e2e';
+import {assertHTML, ctrlOrCmd, focusEditor, html, initialize} from '../utils/e2e';
 import {test} from '@playwright/test';
 
-test.describe('Editor text formatting keyboard shortcuts', async () => {
+test.describe('Editor keyboard shortcuts', async () => {
+    const ctrlOrCmdKey = ctrlOrCmd();
     let page;
-    const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -30,7 +30,7 @@ test.describe('Editor text formatting keyboard shortcuts', async () => {
             await page.keyboard.press('ArrowLeft');
             await page.keyboard.up('Shift', {delay: 100});
 
-            await page.keyboard.press(`${ctrlOrCmd}+B`, {delay: 100});
+            await page.keyboard.press(`${ctrlOrCmdKey}+B`, {delay: 100});
 
             await assertHTML(page, html`<p dir="ltr"><strong data-lexical-text="true">test</strong></p>`);
         });
@@ -47,7 +47,7 @@ test.describe('Editor text formatting keyboard shortcuts', async () => {
             await page.keyboard.press('ArrowLeft');
             await page.keyboard.up('Shift', {delay: 100});
 
-            await page.keyboard.press(`${ctrlOrCmd}+I`, {delay: 100});
+            await page.keyboard.press(`${ctrlOrCmdKey}+I`, {delay: 100});
 
             await assertHTML(page, html`<p dir="ltr"><em data-lexical-text="true">test</em></p>`);
         });
@@ -64,7 +64,7 @@ test.describe('Editor text formatting keyboard shortcuts', async () => {
             await page.keyboard.press('ArrowLeft');
             await page.keyboard.up('Shift', {delay: 100});
 
-            await page.keyboard.press(`${ctrlOrCmd}+Alt+U`, {delay: 100});
+            await page.keyboard.press(`${ctrlOrCmdKey}+Alt+U`, {delay: 100});
 
             await assertHTML(page, html`<p dir="ltr"><span data-lexical-text="true" class="line-through">test</span></p>`);
         });
@@ -81,7 +81,7 @@ test.describe('Editor text formatting keyboard shortcuts', async () => {
             await page.keyboard.press('ArrowLeft');
             await page.keyboard.up('Shift', {delay: 100});
 
-            await page.keyboard.press(`${ctrlOrCmd}+K`, {delay: 100});
+            await page.keyboard.press(`${ctrlOrCmdKey}+K`, {delay: 100});
 
             await page.keyboard.type('https://example.com');
             await page.keyboard.press('Enter');
@@ -106,32 +106,42 @@ test.describe('Editor text formatting keyboard shortcuts', async () => {
             await page.keyboard.press('ArrowLeft');
             await page.keyboard.up('Shift', {delay: 100});
 
-            await page.keyboard.press(`${ctrlOrCmd}+Shift+K`, {delay: 100});
+            await page.keyboard.press(`${ctrlOrCmdKey}+Shift+K`, {delay: 100});
 
             await assertHTML(page, html`<p dir="ltr"><code data-lexical-text="true"><span>test</span></code></p>`);
         });
+    });
 
-        // TODO : these are currently missing from the editor
+    test('quotes', async function () {
+        await focusEditor(page);
 
-        // test('blockquote', async function () {
-        //     await focusEditor(page);
+        await page.keyboard.type('test');
 
-        //     await page.keyboard.type('test');
+        // paragraph -> blockquote
+        await page.keyboard.press('Control+q');
 
-        //     await page.keyboard.down('Shift');
-        //     await page.keyboard.press('ArrowLeft');
-        //     await page.keyboard.press('ArrowLeft');
-        //     await page.keyboard.press('ArrowLeft');
-        //     await page.keyboard.press('ArrowLeft');
-        //     await page.keyboard.up('Shift', {delay: 100});
+        await assertHTML(page, html`
+            <blockquote dir="ltr">
+                <span data-lexical-text="true">test</span>
+            </blockquote>
+        `);
 
-        //     await page.keyboard.press('Meta+B', {delay: 100});
+        // blockquote -> aside
+        await page.keyboard.press('Control+q');
 
-        //     // no extra paragraph created
-        //     await assertHTML(page, html`
-        //         "<p dir="ltr"><strong data-lexical-text="true">B</strong></p>"
-        //     `);
-        // });
+        await assertHTML(page, html`
+            <aside dir="ltr">
+                <span data-lexical-text="true">test</span>
+            </aside>
+        `);
+
+        // aside -> paragraph
+        await page.keyboard.press('Control+q');
+
+        await assertHTML(page, html`
+            <p dir="ltr"><span data-lexical-text="true">test</span></p>
+        `);
+    });
 
         // test('header (h2)', async function () {
         //     await focusEditor(page);

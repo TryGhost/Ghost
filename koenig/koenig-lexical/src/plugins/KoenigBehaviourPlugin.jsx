@@ -1,4 +1,5 @@
 import React from 'react';
+import {$createAsideNode, $isAsideNode} from '../nodes/AsideNode';
 import {$createCodeBlockNode} from '../nodes/CodeBlockNode';
 import {$createEmbedNode} from '../nodes/EmbedNode';
 import {$createLinkNode} from '@lexical/link';
@@ -34,6 +35,7 @@ import {
     PASTE_COMMAND,
     createCommand
 } from 'lexical';
+import {$createQuoteNode, $isQuoteNode} from '@lexical/rich-text';
 import {$insertAndSelectNode} from '../utils/$insertAndSelectNode';
 import {
     $isAtStartOfDocument,
@@ -43,6 +45,7 @@ import {
 } from '../utils/';
 import {$isKoenigCard, ImageNode} from '@tryghost/kg-default-nodes';
 import {$isListItemNode, $isListNode, ListNode} from '@lexical/list';
+import {$setBlocksType} from '@lexical/selection';
 import {MIME_TEXT_HTML, MIME_TEXT_PLAIN, PASTE_MARKDOWN_COMMAND} from './MarkdownPastePlugin.jsx';
 import {mergeRegister} from '@lexical/utils';
 import {shouldIgnoreEvent} from '../utils/shouldIgnoreEvent';
@@ -695,9 +698,9 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             editor.registerCommand(
                 KEY_MODIFIER_COMMAND,
                 (event) => {
-                    const {metaKey, code} = event;
-                    const isArrowUp = event.key === 'ArrowUp' || event.keyCode === 38;
-                    const isArrowDown = event.key === 'ArrowDown' || event.keyCode === 40;
+                    const {ctrlKey, metaKey, code, key} = event;
+                    const isArrowUp = key === 'ArrowUp' || event.keyCode === 38;
+                    const isArrowDown = key === 'ArrowDown' || event.keyCode === 40;
 
                     if (metaKey && (isArrowUp || isArrowDown)) {
                         const selection = $getSelection();
@@ -738,6 +741,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         }
                     }
 
+                    // TODO: does this need ctrlKey too for windows support?
                     if (metaKey && code === 'KeyA') {
                         const selection = $getSelection();
                         if ($isRangeSelection(selection)) {
@@ -773,6 +777,24 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                 }
                                 event.preventDefault();
                                 return true;
+                            }
+                        }
+                    }
+
+                    if (ctrlKey && code === 'KeyQ') {
+                        // avoid quit behaviour
+                        event.preventDefault();
+
+                        const selection = $getSelection();
+                        if ($isRangeSelection(selection)) {
+                            const firstNode = selection.anchor.getNode().getTopLevelElement();
+
+                            if ($isParagraphNode(firstNode)) {
+                                $setBlocksType(selection, () => $createQuoteNode());
+                            } else if ($isQuoteNode(firstNode)) {
+                                $setBlocksType(selection, () => $createAsideNode());
+                            } else if ($isAsideNode(firstNode)) {
+                                $setBlocksType(selection, () => $createParagraphNode());
                             }
                         }
                     }
