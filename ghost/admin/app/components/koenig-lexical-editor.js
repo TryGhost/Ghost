@@ -282,7 +282,22 @@ export default class KoenigLexicalEditor extends Component {
 
                 return links;
             };
-            return [...defaults, ...offersLinks, ...memberLinks()];
+
+            const donationLink = () => {
+                // TODO: remove feature condition once Tips & Donations have been released
+                if (this.feature.tipsAndDonations) {
+                    if (this.settings.donationsEnabled) {
+                        return [{
+                            label: 'Tips & donations',
+                            value: this.config.getSiteUrl('/#/portal/support')
+                        }];
+                    }
+                }
+
+                return [];
+            };
+
+            return [...defaults, ...offersLinks, ...memberLinks(), ...donationLink()];
         };
 
         const fetchLabels = async () => {

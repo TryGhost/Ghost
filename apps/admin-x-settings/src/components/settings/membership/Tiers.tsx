@@ -6,13 +6,15 @@ import TiersList from './tiers/TiersList';
 import useRouting from '../../../hooks/useRouting';
 import {Tier} from '../../../types/api';
 import {checkStripeEnabled, getActiveTiers, getArchivedTiers} from '../../../utils/helpers';
-import {useGlobalData} from '../../providers/DataProvider';
+import {useBrowseTiers} from '../../../utils/api/tiers';
+import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [selectedTab, setSelectedTab] = useState('active-tiers');
-    const {tiers, settings, config} = useGlobalData();
-    const activeTiers = getActiveTiers(tiers);
-    const archivedTiers = getArchivedTiers(tiers);
+    const {settings, config} = useGlobalData();
+    const {data: {tiers} = {}} = useBrowseTiers();
+    const activeTiers = getActiveTiers(tiers || []);
+    const archivedTiers = getArchivedTiers(tiers || []);
     const {updateRoute} = useRouting();
 
     const openConnectModal = () => {
@@ -55,7 +57,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
             customButtons={checkStripeEnabled(settings, config) ?
                 <button className='group flex items-center gap-2 rounded border border-grey-300 px-3 py-1.5 text-sm font-semibold text-grey-900 transition-all hover:border-grey-500' type='button' onClick={openConnectModal}>
                     <span className="inline-flex h-2 w-2 rounded-full bg-green transition-all group-hover:bg-[#625BF6]"></span>
-                    Stripe connected
+                    Connected to Stripe
                 </button>
                 :
                 <StripeButton onClick={openConnectModal}/>}

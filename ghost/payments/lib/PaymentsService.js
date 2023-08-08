@@ -279,13 +279,19 @@ class PaymentsService {
      * @returns {Promise<{id: string}>}
      */
     async getPriceForDonations() {
-        const currency = 'usd'; // TODO: we need to use a setting here!
         const nickname = 'Support ' + this.settingsCache.get('title');
+        const currency = this.settingsCache.get('donations_currency');
+        const suggestedAmount = this.settingsCache.get('donations_suggested_amount');
+
+        // Stripe requires a minimum charge amount
+        // @see https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts
+        const amount = suggestedAmount && suggestedAmount >= 100 ? suggestedAmount : 0;
 
         const price = await this.StripePriceModel
             .where({
                 type: 'donation',
                 active: true,
+                amount,
                 currency
             })
             .query()
@@ -319,7 +325,8 @@ class PaymentsService {
 
         const newPrice = await this.createPriceForDonations({
             nickname,
-            currency
+            currency,
+            amount
         });
         return {
             id: newPrice.id
@@ -329,15 +336,18 @@ class PaymentsService {
     /**
      * @returns {Promise<import('stripe').default.Price>}
      */
-    async createPriceForDonations({currency, nickname}) {
+    async createPriceForDonations({currency, amount, nickname}) {
         const product = await this.getProductForDonations({name: nickname});
+
+        const preset = amount ? amount : undefined;
 
         // Create the price in Stripe
         const price = await this.stripeAPIService.createPrice({
             currency,
             product: product.id,
             custom_unit_amount: {
-                enabled: true
+                enabled: true,
+                preset
             },
             nickname,
             type: 'one-time',
@@ -351,7 +361,7 @@ class PaymentsService {
             active: price.active,
             nickname: price.nickname,
             currency: price.currency,
-            amount: 0,
+            amount,
             type: 'donation',
             interval: null
         });

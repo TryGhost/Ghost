@@ -15,7 +15,6 @@ import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
-import useSettings from '../../../../hooks/useSettings';
 import {ApiError} from '../../../../utils/apiRequests';
 import {ReactComponent as StripeVerified} from '../../../../assets/images/stripe-verified.svg';
 import {checkStripeEnabled, getGhostPaths, getSettingValue, getSettingValues} from '../../../../utils/helpers';
@@ -24,7 +23,7 @@ import {toast} from 'react-hot-toast';
 import {useBrowseMembers} from '../../../../utils/api/members';
 import {useBrowseTiers, useEditTier} from '../../../../utils/api/tiers';
 import {useDeleteStripeSettings, useEditSettings} from '../../../../utils/api/settings';
-import {useGlobalData} from '../../../providers/DataProvider';
+import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const RETRY_PRODUCT_SAVE_POLL_LENGTH = 1000;
 const RETRY_PRODUCT_SAVE_MAX_POLL = 15 * RETRY_PRODUCT_SAVE_POLL_LENGTH;
@@ -148,7 +147,7 @@ const Connect: React.FC = () => {
 };
 
 const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
-    const {settings} = useSettings();
+    const {settings} = useGlobalData();
     const [stripeConnectAccountName, stripeConnectLivemode] = getSettingValues(settings, ['stripe_connect_account_name', 'stripe_connect_livemode']);
 
     const {refetch: fetchMembers, isFetching: isFetchingMembers} = useBrowseMembers({
@@ -187,7 +186,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
         <section>
             <div className='flex items-center justify-between'>
                 <Button disabled={isFetchingMembers} icon='link-broken' label='Disconnect' link onClick={openDisconnectStripeModal} />
-                <Button icon='close' size='sm' link onClick={onClose} />
+                <Button icon='close' label='Close' size='sm' hideLabel link onClick={onClose} />
             </div>
             <div className='my-20 flex flex-col items-center'>
                 <div className='relative h-20 w-[200px]'>
@@ -254,8 +253,7 @@ const Direct: React.FC<{onClose: () => void}> = ({onClose}) => {
 };
 
 const StripeConnectModal: React.FC = () => {
-    const {config} = useGlobalData();
-    const {settings} = useSettings();
+    const {config, settings} = useGlobalData();
     const stripeConnectAccountId = getSettingValue(settings, 'stripe_connect_account_id');
     const {updateRoute} = useRouting();
     const [step, setStep] = useState<'start' | 'connect'>('start');
@@ -292,6 +290,7 @@ const StripeConnectModal: React.FC = () => {
         cancelLabel=''
         footer={<></>}
         size={stripeConnectAccountId ? 740 : 520}
+        testId='stripe-modal'
         title=''
     >
         {contents}

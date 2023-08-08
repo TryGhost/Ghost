@@ -1,9 +1,9 @@
 import {expect, test} from '@playwright/test';
-import {mockApi} from '../utils/e2e';
+import {globalDataRequests, mockApi} from '../utils/e2e';
 
 test.describe('Search', async () => {
     test('Hiding and showing groups based on the search term', async ({page}) => {
-        await mockApi({page});
+        await mockApi({page, requests: globalDataRequests});
 
         await page.goto('/');
 

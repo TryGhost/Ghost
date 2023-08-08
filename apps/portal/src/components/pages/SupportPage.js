@@ -1,12 +1,9 @@
-import {useEffect, useState, useContext} from 'react';
+import {useEffect, useState} from 'react';
 import SupportError from './SupportError';
-import SupportSuccess from './SupportSuccess';
 import LoadingPage from './LoadingPage';
 import setupGhostApi from '../../utils/api';
-import AppContext from '../../AppContext';
 
 const SupportPage = () => {
-    const {site} = useContext(AppContext);
     const [isLoading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -22,13 +19,12 @@ const SupportPage = () => {
                 const response = await api.member.checkoutDonation({successUrl, cancelUrl});
 
                 if (response.url) {
-                    await window.location.assign(response.url);
+                    window.location.assign(response.url);
                 }
             } catch (err) {
                 const errorMessage = err.message || 'There was an error processing your payment. Please try again.';
-                setError(errorMessage);
-            } finally {
                 setLoading(false);
+                setError(errorMessage);
             }
         }
 
@@ -39,10 +35,8 @@ const SupportPage = () => {
     }, []);
 
     if (isLoading) {
-        const title = `Support ${site.title}`;
         return (
             <div>
-                <h1>{title}</h1>
                 <LoadingPage />
             </div>
         );
@@ -52,7 +46,7 @@ const SupportPage = () => {
         return <SupportError error={error} />;
     }
 
-    return <SupportSuccess />;
+    return null;
 };
 
 export default SupportPage;

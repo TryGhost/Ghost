@@ -5,15 +5,13 @@ import LatestPosts2 from '../../../../assets/images/latest-posts-2.png';
 import LatestPosts3 from '../../../../assets/images/latest-posts-3.png';
 import React from 'react';
 import clsx from 'clsx';
-import useSettings from '../../../../hooks/useSettings';
 import {ReactComponent as GhostOrb} from '../../../../admin-x-ds/assets/images/ghost-orb.svg';
 import {Newsletter} from '../../../../types/api';
 import {fullEmailAddress, getSettingValues} from '../../../../utils/helpers';
-import {useGlobalData} from '../../../providers/DataProvider';
+import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
-    const {currentUser} = useGlobalData();
-    const {settings, siteData, config} = useSettings();
+    const {currentUser, settings, siteData, config} = useGlobalData();
     const [title, icon, commentsEnabled] = getSettingValues<string>(settings, ['title', 'icon', 'comments_enabled']);
 
     let headerTitle: string | null = null;

@@ -1,9 +1,12 @@
 import {expect, test} from '@playwright/test';
-import {mockApi} from '../../utils/e2e';
+import {globalDataRequests, mockApi, responseFixtures} from '../../utils/e2e';
 
 test.describe('Navigation settings', async () => {
     test('Editing primary and secondary navigation', async ({page}) => {
-        const lastApiRequests = await mockApi({page});
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editSettings: {method: 'PUT', path: '/settings/', response: responseFixtures.settings}
+        }});
 
         await page.goto('/');
 
@@ -39,7 +42,7 @@ test.describe('Navigation settings', async () => {
 
         await expect(modal).not.toBeVisible();
 
-        expect(lastApiRequests.settings.edit.body).toEqual({
+        expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
                 {key: 'navigation', value: '[{"url":"/existing/","label":"existing item label"},{"url":"/about/","label":"About"},{"url":"/new/","label":"new item label"}]'},
                 {key: 'secondary_navigation', value: '[{"url":"/existing2/","label":"existing item 2"},{"url":"https://google.com","label":"new item 2"}]'}
@@ -48,7 +51,7 @@ test.describe('Navigation settings', async () => {
     });
 
     test('Existing item validations', async ({page}) => {
-        await mockApi({page});
+        await mockApi({page, requests: {...globalDataRequests}});
 
         await page.goto('/');
 
@@ -78,7 +81,7 @@ test.describe('Navigation settings', async () => {
     });
 
     test('Adding a new item', async ({page}) => {
-        await mockApi({page});
+        await mockApi({page, requests: {...globalDataRequests}});
 
         await page.goto('/');
 
