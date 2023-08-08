@@ -698,7 +698,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             editor.registerCommand(
                 KEY_MODIFIER_COMMAND,
                 (event) => {
-                    const {ctrlKey, metaKey, code, key} = event;
+                    const {altKey, ctrlKey, metaKey, code, key} = event;
                     const isArrowUp = key === 'ArrowUp' || event.keyCode === 38;
                     const isArrowDown = key === 'ArrowDown' || event.keyCode === 40;
 
@@ -820,6 +820,15 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                     $setBlocksType(selection, () => $createHeadingNode(`h${newLevel}`));
                                 }
                             }
+                        }
+                    }
+
+                    if (ctrlKey && altKey && key.match(/^[1-6]$/)) {
+                        event.preventDefault();
+
+                        const selection = $getSelection();
+                        if ($isRangeSelection(selection)) {
+                            $setBlocksType(selection, () => $createHeadingNode(`h${key}`));
                         }
                     }
 

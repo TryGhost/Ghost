@@ -143,7 +143,7 @@ test.describe('Editor keyboard shortcuts', async () => {
         `);
     });
 
-    test('header cycle', async function () {
+    test('heading cycle', async function () {
         await focusEditor(page);
 
         await page.keyboard.type('test');
@@ -182,6 +182,55 @@ test.describe('Editor keyboard shortcuts', async () => {
 
         await assertHTML(page, html`
             <p dir="ltr"><span data-lexical-text="true">test</span></p>
+        `);
+    });
+
+    test('specific heading', async function () {
+        await focusEditor(page);
+
+        await page.keyboard.type('test');
+
+        await page.keyboard.press(`Control+Alt+1`);
+
+        await assertHTML(page, html`
+            <h1 dir="ltr"><span data-lexical-text="true">test</span></h1>
+        `);
+
+        await page.keyboard.press(`Control+Alt+2`);
+
+        await assertHTML(page, html`
+            <h2 dir="ltr"><span data-lexical-text="true">test</span></h2>
+        `);
+
+        await page.keyboard.press(`Control+Alt+3`);
+
+        await assertHTML(page, html`
+            <h3 dir="ltr"><span data-lexical-text="true">test</span></h3>
+        `);
+
+        await page.keyboard.press(`Control+Alt+4`);
+
+        await assertHTML(page, html`
+            <h4 dir="ltr"><span data-lexical-text="true">test</span></h4>
+        `);
+
+        await page.keyboard.press(`Control+Alt+5`);
+
+        await assertHTML(page, html`
+            <h5 dir="ltr"><span data-lexical-text="true">test</span></h5>
+        `);
+
+        await page.keyboard.press(`Control+Alt+6`);
+
+        await assertHTML(page, html`
+            <h6 dir="ltr"><span data-lexical-text="true">test</span></h6>
+        `);
+
+        // higher levels are ignored
+        await page.keyboard.press(`Control+Alt+7`);
+
+        await assertHTML(page, html`
+            <h6 dir="ltr"><span data-lexical-text="true">test</span></h6>
         `);
     });
 });
