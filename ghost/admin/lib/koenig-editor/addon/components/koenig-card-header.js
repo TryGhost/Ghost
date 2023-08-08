@@ -99,7 +99,7 @@ export default class KoenigCardHeaderComponent extends Component {
         if (this.feature.tipsAndDonations) {
             if (this.settings.donationsEnabled) {
                 urls.push({
-                    name: 'Tips & donations',
+                    name: 'Tip or donation',
                     url: this.config.getSiteUrl('/#/portal/support')
                 });
             }

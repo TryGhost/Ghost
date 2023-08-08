@@ -288,7 +288,7 @@ export default class KoenigLexicalEditor extends Component {
                 if (this.feature.tipsAndDonations) {
                     if (this.settings.donationsEnabled) {
                         return [{
-                            label: 'Tips & donations',
+                            label: 'Tip or donation',
                             value: this.config.getSiteUrl('/#/portal/support')
                         }];
                     }
