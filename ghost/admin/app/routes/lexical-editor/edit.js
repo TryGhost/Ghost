@@ -2,8 +2,6 @@ import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';
 export default class EditRoute extends AuthenticatedRoute {
-    @service ajax;
-    @service ghostPaths;
     @service feature;
 
     beforeModel(transition) {
