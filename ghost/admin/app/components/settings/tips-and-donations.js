@@ -17,6 +17,8 @@ const CURRENCIES = currencies.map((currency) => {
 
 export default class TipsAndDonations extends Component {
     @service settings;
+    @service session;
+    @service membersUtils;
 
     @inject config;
     @tracked showStripeConnect = false;
@@ -70,9 +72,6 @@ export default class TipsAndDonations extends Component {
 
     @action
     async closeStripeConnect() {
-        if (this.stripeEnabledOnOpen !== this.membersUtils.isStripeEnabled) {
-            await this.saveSettingsTask.perform({forceRefresh: true});
-        }
         this.showStripeConnect = false;
     }
 
