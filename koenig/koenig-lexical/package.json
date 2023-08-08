@@ -111,7 +111,7 @@
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-storybook": "^0.6.12",
     "eslint-plugin-tailwindcss": "3.11.0",
-    "jsdom": "21.1.2",
+    "jsdom": "22.1.0",
     "playwright": "1.33.0",
     "postcss": "8.4.27",
     "postcss-import": "15.1.0",
