@@ -46,12 +46,12 @@ const CodeInjection: React.FC<{ keywords: string[] }> = ({keywords}) => {
         {
             id: 'header',
             title: 'Site header',
-            contents: (<CodeEditor {...headerProps} ref={headerEditorRef} autoFocus />)
+            contents: (<CodeEditor {...headerProps} ref={headerEditorRef} data-testid='header-code' autoFocus />)
         },
         {
             id: 'footer',
             title: 'Site footer',
-            contents: (<CodeEditor {...footerProps} ref={footerEditorRef} />)
+            contents: (<CodeEditor {...footerProps} ref={footerEditorRef} data-testid='footer-code' />)
         }
     ] as const;
 

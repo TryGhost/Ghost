@@ -19,7 +19,7 @@ const CodeModal: React.FC<CodeModalProps> = ({hint, value, onChange, afterClose}
         afterClose?.();
     };
 
-    return <Modal afterClose={afterClose} cancelLabel='' okColor='grey' okLabel='Done' size='full' onOk={onOk}>
+    return <Modal afterClose={afterClose} cancelLabel='' okColor='grey' okLabel='Done' size='full' testId='modal-code' onOk={onOk}>
         <CodeEditor extensions={[html()]} height='full' hint={hint} value={value} autoFocus onChange={onChange} />
     </Modal>;
 };
