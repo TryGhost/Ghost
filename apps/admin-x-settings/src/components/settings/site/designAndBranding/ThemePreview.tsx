@@ -1,5 +1,5 @@
 import React, {useEffect, useRef} from 'react';
-import {CustomThemeSetting} from '../../../../types/api';
+import {CustomThemeSetting} from '../../../../api/customThemeSettings';
 
 type BrandSettings = {
     description: string;

@@ -10,8 +10,8 @@ import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
-import {useAddNewsletter} from '../../../../utils/api/newsletters';
-import {useBrowseMembers} from '../../../../utils/api/members';
+import {useAddNewsletter} from '../../../../api/newsletters';
+import {useBrowseMembers} from '../../../../api/members';
 
 interface AddNewsletterModalProps {}
 

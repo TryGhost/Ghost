@@ -1,5 +1,9 @@
-import {Meta, createQuery} from '../apiRequests';
-import {Post} from '../../types/api';
+import {Meta, createQuery} from '../utils/apiRequests';
+
+export type Post = {
+    id: string;
+    url: string;
+};
 
 export interface PostsResponseType {
     meta?: Meta

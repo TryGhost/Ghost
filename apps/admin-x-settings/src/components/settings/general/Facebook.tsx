@@ -5,8 +5,8 @@ import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupConten
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {ReactComponent as FacebookLogo} from '../../../admin-x-ds/assets/images/facebook-logo.svg';
-import {getImageUrl, useUploadImage} from '../../../utils/api/images';
-import {getSettingValues} from '../../../utils/helpers';
+import {getImageUrl, useUploadImage} from '../../../api/images';
+import {getSettingValues} from '../../../api/settings';
 
 const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {

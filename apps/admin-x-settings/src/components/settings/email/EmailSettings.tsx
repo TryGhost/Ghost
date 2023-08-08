@@ -4,7 +4,7 @@ import MailGun from './Mailgun';
 import Newsletters from './Newsletters';
 import React from 'react';
 import SettingSection from '../../../admin-x-ds/settings/SettingSection';
-import {getSettingValues} from '../../../utils/helpers';
+import {getSettingValues} from '../../../api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const searchKeywords = {

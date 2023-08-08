@@ -4,7 +4,7 @@ import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupConten
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import validator from 'validator';
-import {getSettingValues} from '../../../utils/helpers';
+import {getSettingValues} from '../../../api/settings';
 
 function validateFacebookUrl(newUrl: string) {
     const errMessage = 'The URL must be in a format like https://www.facebook.com/yourPage';

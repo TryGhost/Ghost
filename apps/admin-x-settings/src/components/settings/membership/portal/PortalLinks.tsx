@@ -5,8 +5,8 @@ import ModalPage from '../../../../admin-x-ds/global/modal/ModalPage';
 import React, {useEffect, useState} from 'react';
 import Select from '../../../../admin-x-ds/global/form/Select';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
-import {getHomepageUrl, getPaidActiveTiers} from '../../../../utils/helpers';
-import {useBrowseTiers} from '../../../../utils/api/tiers';
+import {getHomepageUrl} from '../../../../api/site';
+import {getPaidActiveTiers, useBrowseTiers} from '../../../../api/tiers';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 interface PortalLinkPrefs {

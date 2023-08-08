@@ -4,7 +4,7 @@ import SettingNavItem from '../admin-x-ds/settings/SettingNavItem';
 import SettingNavSection from '../admin-x-ds/settings/SettingNavSection';
 import TextField from '../admin-x-ds/global/form/TextField';
 import useRouting from '../hooks/useRouting';
-import {getSettingValues} from '../utils/helpers';
+import {getSettingValues} from '../api/settings';
 import {useGlobalData} from './providers/GlobalDataProvider';
 import {useSearch} from './providers/ServiceProvider';
 

@@ -1,5 +1,8 @@
-import {Member} from '../../types/api';
-import {Meta, createQuery} from '../apiRequests';
+import {Meta, createQuery} from '../utils/apiRequests';
+
+export type Member = {
+    id: string;
+};
 
 export interface MembersResponseType {
     meta?: Meta

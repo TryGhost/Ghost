@@ -6,9 +6,9 @@ import Select from '../../../../admin-x-ds/global/form/Select';
 import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import {CustomThemeSetting} from '../../../../types/api';
-import {getImageUrl, useUploadImage} from '../../../../utils/api/images';
-import {humanizeSettingKey} from '../../../../utils/helpers';
+import {CustomThemeSetting} from '../../../../api/customThemeSettings';
+import {getImageUrl, useUploadImage} from '../../../../api/images';
+import {humanizeSettingKey} from '../../../../api/settings';
 
 const ThemeSetting: React.FC<{
     setting: CustomThemeSetting,

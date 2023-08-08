@@ -7,7 +7,7 @@ import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {ReactCodeMirrorRef} from '@uiw/react-codemirror';
-import {getSettingValues} from '../../../utils/helpers';
+import {getSettingValues} from '../../../api/settings';
 import {html} from '@codemirror/lang-html';
 
 const CodeInjection: React.FC<{ keywords: string[] }> = ({keywords}) => {

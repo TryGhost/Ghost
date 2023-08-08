@@ -6,7 +6,7 @@ import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {ReactComponent as GoogleLogo} from '../../../admin-x-ds/assets/images/google-logo.svg';
 import {ReactComponent as MagnifyingGlass} from '../../../admin-x-ds/assets/icons/magnifying-glass.svg';
-import {getSettingValues} from '../../../utils/helpers';
+import {getSettingValues} from '../../../api/settings';
 
 interface SearchEnginePreviewProps {
     title: string;
