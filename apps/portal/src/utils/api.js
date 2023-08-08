@@ -427,8 +427,12 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             const responseJson = await response.json();
 
             if (!response.ok) {
-                const errorMessage = responseJson?.errors?.[0]?.message || 'There was an error processing your payment. Please try again.';
-                throw new Error(errorMessage);
+                const error = responseJson?.errors?.[0];
+                if (error) {
+                    throw error;
+                }
+
+                throw new Error('We\'re unable to process your payment right now. Please try again later.');
             }
 
             return responseJson;

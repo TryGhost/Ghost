@@ -6,6 +6,7 @@ import setupGhostApi from '../../utils/api';
 const SupportPage = () => {
     const [isLoading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [disabledFeatureError, setDisabledFeatureError] = useState(null);
 
     useEffect(() => {
         async function checkoutDonation() {
@@ -22,9 +23,13 @@ const SupportPage = () => {
                     window.location.assign(response.url);
                 }
             } catch (err) {
-                const errorMessage = err.message || 'There was an error processing your payment. Please try again.';
+                if (err.type && err.type === 'DisabledFeatureError') {
+                    setDisabledFeatureError('Your support means a lot. Unfortunately, we are not accepting payments at the moment.');
+                } else {
+                    setError('We\'re unable to process your payment right now. Please try again later.');
+                }
+
                 setLoading(false);
-                setError(errorMessage);
             }
         }
 
@@ -44,6 +49,11 @@ const SupportPage = () => {
 
     if (error) {
         return <SupportError error={error} />;
+    }
+
+    if (disabledFeatureError) {
+        // TODO: use a different layout for this error
+        return <SupportError error={disabledFeatureError} />;
     }
 
     return null;

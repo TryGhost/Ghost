@@ -1,7 +1,7 @@
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const _ = require('lodash');
-const {BadRequestError, NoPermissionError, UnauthorizedError} = require('@tryghost/errors');
+const {BadRequestError, NoPermissionError, UnauthorizedError, DisabledFeatureError} = require('@tryghost/errors');
 const errors = require('@tryghost/errors');
 
 const messages = {
@@ -15,7 +15,8 @@ const messages = {
     inviteOnly: 'This site is invite-only, contact the owner for access.',
     memberNotFound: 'No member exists with this e-mail address.',
     memberNotFoundSignUp: 'No member exists with this e-mail address. Please sign up first.',
-    invalidType: 'Invalid checkout type.'
+    invalidType: 'Invalid checkout type.',
+    notConfigured: 'This site is not accepting payments at the moment.'
 };
 
 module.exports = class RouterController {
@@ -331,6 +332,12 @@ module.exports = class RouterController {
      * @returns
      */
     async _createDonationCheckoutSession(options) {
+        if (!this._paymentsService.stripeAPIService.configured) {
+            throw new DisabledFeatureError({
+                message: tpl(messages.notConfigured)
+            });
+        }
+
         try {
             const paymentLink = await this._paymentsService.getDonationPaymentLink(options);
 
