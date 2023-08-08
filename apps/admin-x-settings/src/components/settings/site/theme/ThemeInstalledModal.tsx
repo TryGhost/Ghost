@@ -5,9 +5,8 @@ import ListItem from '../../../../admin-x-ds/global/ListItem';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {ReactNode, useState} from 'react';
 import {ConfirmationModalContent} from '../../../../admin-x-ds/global/modal/ConfirmationModal';
-import {InstalledTheme, ThemeProblem} from '../../../../types/api';
+import {InstalledTheme, ThemeProblem, useActivateTheme} from '../../../../api/themes';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
-import {useActivateTheme} from '../../../../utils/api/themes';
 
 const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
     const [isExpanded, setExpanded] = useState(false);

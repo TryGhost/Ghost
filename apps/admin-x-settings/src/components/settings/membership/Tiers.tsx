@@ -4,9 +4,8 @@ import StripeButton from '../../../admin-x-ds/settings/StripeButton';
 import TabView from '../../../admin-x-ds/global/TabView';
 import TiersList from './tiers/TiersList';
 import useRouting from '../../../hooks/useRouting';
-import {Tier} from '../../../types/api';
-import {checkStripeEnabled, getActiveTiers, getArchivedTiers} from '../../../utils/helpers';
-import {useBrowseTiers} from '../../../utils/api/tiers';
+import {Tier, getActiveTiers, getArchivedTiers, useBrowseTiers} from '../../../api/tiers';
+import {checkStripeEnabled} from '../../../api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {

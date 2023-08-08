@@ -1,10 +1,31 @@
-import {Meta, createMutation, createQuery} from '../apiRequests';
-import {Tier} from '../../types/api';
+import {Meta, createMutation, createQuery} from '../utils/apiRequests';
+
+// Types
+
+export type Tier = {
+    id: string;
+    name: string;
+    description: string | null;
+    slug: string;
+    active: boolean,
+    type: string;
+    welcome_page_url: string | null;
+    created_at: string;
+    updated_at: string;
+    visibility: string;
+    benefits: string[];
+    currency?: string;
+    monthly_price?: number;
+    yearly_price?: number;
+    trial_days: number;
+}
 
 export interface TiersResponseType {
     meta?: Meta
     tiers: Tier[]
 }
+
+// Requests
 
 const dataType = 'TiersResponseType';
 
@@ -39,3 +60,23 @@ export const useEditTier = createMutation<TiersResponseType, Tier>({
         })
     }
 });
+
+// Helpers
+
+export function getPaidActiveTiers(tiers: Tier[]) {
+    return tiers.filter((tier) => {
+        return tier.type === 'paid' && tier.active;
+    });
+}
+
+export function getActiveTiers(tiers: Tier[]) {
+    return tiers.filter((tier) => {
+        return tier.active;
+    });
+}
+
+export function getArchivedTiers(tiers: Tier[]) {
+    return tiers.filter((tier) => {
+        return !tier.active;
+    });
+}

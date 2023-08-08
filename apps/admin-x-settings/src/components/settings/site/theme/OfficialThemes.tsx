@@ -1,9 +1,8 @@
 import Heading from '../../../../admin-x-ds/global/Heading';
 import ModalPage from '../../../../admin-x-ds/global/modal/ModalPage';
 import React from 'react';
-import {OfficialTheme} from '../../../../models/themes';
+import {OfficialTheme, useOfficialThemes} from '../../../providers/ServiceProvider';
 import {getGhostPaths} from '../../../../utils/helpers';
-import {useOfficialThemes} from '../../../providers/ServiceProvider';
 
 const OfficialThemes: React.FC<{
     onSelectTheme?: (theme: OfficialTheme) => void;

@@ -9,10 +9,9 @@ import TabView, {Tab} from '../../../../admin-x-ds/global/TabView';
 import useForm, {Dirtyable} from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
-import {Setting, SettingValue, Tier} from '../../../../types/api';
-import {fullEmailAddress, getPaidActiveTiers} from '../../../../utils/helpers';
-import {useBrowseTiers, useEditTier} from '../../../../utils/api/tiers';
-import {useEditSettings} from '../../../../utils/api/settings';
+import {Setting, SettingValue, useEditSettings} from '../../../../api/settings';
+import {Tier, getPaidActiveTiers, useBrowseTiers, useEditTier} from '../../../../api/tiers';
+import {fullEmailAddress} from '../../../../api/site';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const Sidebar: React.FC<{

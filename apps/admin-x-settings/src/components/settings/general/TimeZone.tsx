@@ -4,7 +4,8 @@ import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import timezoneData from '@tryghost/timezone-data';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {getLocalTime, getSettingValues} from '../../../utils/helpers';
+import {getLocalTime} from '../../../utils/helpers';
+import {getSettingValues} from '../../../api/settings';
 
 interface TimezoneDataDropdownOption {
     name: string;

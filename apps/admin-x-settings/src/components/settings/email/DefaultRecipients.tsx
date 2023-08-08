@@ -5,10 +5,11 @@ import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {GroupBase, MultiValue} from 'react-select';
-import {getOptionLabel, getSettingValues} from '../../../utils/helpers';
-import {useBrowseLabels} from '../../../utils/api/labels';
-import {useBrowseOffers} from '../../../utils/api/offers';
-import {useBrowseTiers} from '../../../utils/api/tiers';
+import {getOptionLabel} from '../../../utils/helpers';
+import {getSettingValues} from '../../../api/settings';
+import {useBrowseLabels} from '../../../api/labels';
+import {useBrowseOffers} from '../../../api/offers';
+import {useBrowseTiers} from '../../../api/tiers';
 
 type RefipientValueArgs = {
     defaultEmailRecipients: string;

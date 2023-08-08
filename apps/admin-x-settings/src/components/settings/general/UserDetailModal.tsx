@@ -14,13 +14,11 @@ import TextField from '../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
-import {User} from '../../../types/api';
-import {getImageUrl, useUploadImage} from '../../../utils/api/images';
-import {isAdminUser, isOwnerUser} from '../../../utils/helpers';
+import {User, isAdminUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner, useUpdatePassword} from '../../../api/users';
+import {getImageUrl, useUploadImage} from '../../../api/images';
 import {showToast} from '../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
-import {useBrowseRoles} from '../../../utils/api/roles';
-import {useDeleteUser, useEditUser, useMakeOwner, useUpdatePassword} from '../../../utils/api/users';
+import {useBrowseRoles} from '../../../api/roles';
 
 interface CustomHeadingProps {
     children?: React.ReactNode;

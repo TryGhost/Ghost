@@ -12,9 +12,8 @@ import TabView from '../../../admin-x-ds/global/TabView';
 import ThemeInstalledModal from './theme/ThemeInstalledModal';
 import ThemePreview from './theme/ThemePreview';
 import useRouting from '../../../hooks/useRouting';
-import {OfficialTheme} from '../../../models/themes';
-import {Theme} from '../../../types/api';
-import {useBrowseThemes, useInstallTheme, useUploadTheme} from '../../../utils/api/themes';
+import {OfficialTheme} from '../../providers/ServiceProvider';
+import {Theme, useBrowseThemes, useInstallTheme, useUploadTheme} from '../../../api/themes';
 
 interface ThemeToolbarProps {
     selectedTheme: OfficialTheme|null;

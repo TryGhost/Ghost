@@ -1,5 +1,35 @@
-import {InstalledTheme, Theme} from '../../types/api';
-import {createMutation, createQuery} from '../apiRequests';
+import {createMutation, createQuery} from '../utils/apiRequests';
+
+// Types
+
+export type Theme = {
+    active: boolean;
+    name: string;
+    package: {
+        name?: string;
+        description?: string;
+        version?: string;
+    };
+    templates?: string[];
+}
+
+export type InstalledTheme = Theme & {
+    errors?: ThemeProblem<'error'>[];
+    warnings?: ThemeProblem<'warning'>[];
+}
+
+export type ThemeProblem<Level extends string = 'error' | 'warning'> = {
+    code: string
+    details: string
+    failures: Array<{
+        ref: string
+        message?: string
+        rule?: string
+    }>
+    fatal: boolean
+    level: Level
+    rule: string
+}
 
 export interface ThemesResponseType {
     themes: Theme[];
@@ -8,6 +38,8 @@ export interface ThemesResponseType {
 export interface ThemesInstallResponseType {
     themes: InstalledTheme[];
 }
+
+// Requests
 
 const dataType = 'ThemesResponseType';
 
@@ -85,3 +117,17 @@ export const useUploadTheme = createMutation<ThemesInstallResponseType, {file: F
         })
     }
 });
+
+// Helpers
+
+export function isActiveTheme(theme: Theme): boolean {
+    return theme.active;
+}
+
+export function isDefaultTheme(theme: Theme): boolean {
+    return theme.name === 'casper';
+}
+
+export function isDeletableTheme(theme: Theme): boolean {
+    return !isDefaultTheme(theme) && !isActiveTheme(theme);
+}

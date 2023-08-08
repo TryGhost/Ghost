@@ -4,8 +4,8 @@ import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
 import React from 'react';
 import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
-import {SettingValue} from '../../../../types/api';
-import {getImageUrl, useUploadImage} from '../../../../utils/api/images';
+import {SettingValue} from '../../../../api/settings';
+import {getImageUrl, useUploadImage} from '../../../../api/images';
 
 export interface BrandSettingValues {
     description: string

@@ -10,12 +10,11 @@ import ThemePreview from './designAndBranding/ThemePreview';
 import ThemeSettings from './designAndBranding/ThemeSettings';
 import useForm from '../../../hooks/useForm';
 import useRouting from '../../../hooks/useRouting';
-import {CustomThemeSetting, Setting, SettingValue} from '../../../types/api';
+import {CustomThemeSetting, useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '../../../api/customThemeSettings';
 import {PreviewModalContent} from '../../../admin-x-ds/global/modal/PreviewModal';
-import {getHomepageUrl, getSettingValues} from '../../../utils/helpers';
-import {useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '../../../utils/api/customThemeSettings';
-import {useBrowsePosts} from '../../../utils/api/posts';
-import {useEditSettings} from '../../../utils/api/settings';
+import {Setting, SettingValue, getSettingValues, useEditSettings} from '../../../api/settings';
+import {getHomepageUrl} from '../../../api/site';
+import {useBrowsePosts} from '../../../api/posts';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const Sidebar: React.FC<{

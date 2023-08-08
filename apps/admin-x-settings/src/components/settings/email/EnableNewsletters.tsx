@@ -3,9 +3,7 @@ import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
-import {Setting} from '../../../types/api';
-import {getSettingValues} from '../../../utils/helpers';
-import {useEditSettings} from '../../../utils/api/settings';
+import {Setting, getSettingValues, useEditSettings} from '../../../api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {

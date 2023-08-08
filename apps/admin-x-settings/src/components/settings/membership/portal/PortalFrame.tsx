@@ -1,7 +1,8 @@
 import React, {useEffect, useRef, useState} from 'react';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
-import {Setting, SiteData, Tier} from '../../../../types/api';
-import {getSettingValue} from '../../../../utils/helpers';
+import {Setting, getSettingValue} from '../../../../api/settings';
+import {SiteData} from '../../../../api/site';
+import {Tier} from '../../../../api/tiers';
 
 type PortalFrameProps = {
     settings: Setting[];

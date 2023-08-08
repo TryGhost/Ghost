@@ -4,7 +4,7 @@ import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
 import useRouting from '../../../hooks/useRouting';
-import {useBrowseNewsletters} from '../../../utils/api/newsletters';
+import {useBrowseNewsletters} from '../../../api/newsletters';
 
 const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {updateRoute} = useRouting();

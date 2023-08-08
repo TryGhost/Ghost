@@ -6,10 +6,8 @@ import Menu from '../../../../admin-x-ds/global/Menu';
 import ModalPage from '../../../../admin-x-ds/global/modal/ModalPage';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
-import {Theme} from '../../../../types/api';
+import {Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, useActivateTheme, useDeleteTheme} from '../../../../api/themes';
 import {downloadFile, getGhostPaths} from '../../../../utils/helpers';
-import {isActiveTheme, isDefaultTheme, isDeletableTheme} from '../../../../models/themes';
-import {useActivateTheme, useDeleteTheme} from '../../../../utils/api/themes';
 
 interface ThemeActionProps {
     theme: Theme;
