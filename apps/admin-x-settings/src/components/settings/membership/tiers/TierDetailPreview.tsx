@@ -3,8 +3,8 @@ import Heading from '../../../../admin-x-ds/global/Heading';
 import Icon from '../../../../admin-x-ds/global/Icon';
 import React, {useState} from 'react';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
-import {Tier} from '../../../../types/api';
-import {getSettingValues} from '../../../../utils/helpers';
+import {Tier} from '../../../../api/tiers';
+import {getSettingValues} from '../../../../api/settings';
 import {getSymbol} from '../../../../utils/currency';
 import {numberWithCommas} from '../../../../utils/helpers';
 

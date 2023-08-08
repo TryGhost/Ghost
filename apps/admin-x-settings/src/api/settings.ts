@@ -1,5 +1,14 @@
+import {Config} from './config';
 import {Meta, createMutation, createQuery} from '../utils/apiRequests';
-import {Setting} from '../types/api';
+
+// Types
+
+export type SettingValue = string | boolean | null;
+
+export type Setting = {
+    key: string;
+    value: SettingValue;
+}
 
 export type SettingsResponseMeta = Meta & { sent_email_verification?: boolean }
 
@@ -7,6 +16,8 @@ export interface SettingsResponseType {
     meta?: SettingsResponseMeta;
     settings: Setting[];
 }
+
+// Requests
 
 const dataType = 'SettingsResponseType';
 
@@ -36,3 +47,39 @@ export const useDeleteStripeSettings = createMutation<unknown, null>({
     path: () => '/settings/stripe/connect/',
     invalidateQueries: {dataType}
 });
+
+// Helpers
+
+export function humanizeSettingKey(key: string) {
+    const allCaps = ['API', 'CTA', 'RSS'];
+
+    return key
+        .replace(/^[a-z]/, char => char.toUpperCase())
+        .replace(/_/g, ' ')
+        .replace(new RegExp(`\\b(${allCaps.join('|')})\\b`, 'ig'), match => match.toUpperCase());
+}
+
+export function getSettingValues<ValueType = SettingValue>(settings: Setting[] | null, keys: string[]): Array<ValueType | undefined> {
+    return keys.map(key => settings?.find(setting => setting.key === key)?.value) as ValueType[];
+}
+
+export function getSettingValue(settings: Setting[] | null | undefined, key: string): SettingValue {
+    if (!settings) {
+        return '';
+    }
+    const setting = settings.find(d => d.key === key);
+    return setting?.value || null;
+}
+
+export function checkStripeEnabled(settings: Setting[], config: Config) {
+    const hasSetting = (key: string) => settings.some(setting => setting.key === key && setting.value);
+
+    const hasDirectKeys = hasSetting('stripe_secret_key') && hasSetting('stripe_publishable_key');
+    const hasConnectKeys = hasSetting('stripe_connect_secret_key') && hasSetting('stripe_connect_publishable_key');
+
+    if (config.stripeDirect) {
+        return hasDirectKeys;
+    }
+
+    return hasConnectKeys || hasDirectKeys;
+}

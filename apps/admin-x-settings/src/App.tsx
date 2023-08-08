@@ -6,9 +6,8 @@ import RoutingProvider from './components/providers/RoutingProvider';
 import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
 import {GlobalDirtyStateProvider} from './hooks/useGlobalDirtyState';
-import {OfficialTheme} from './models/themes';
+import {OfficialTheme, ServicesProvider} from './components/providers/ServiceProvider';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import {ServicesProvider} from './components/providers/ServiceProvider';
 import {Toaster} from 'react-hot-toast';
 
 interface AppProps {

@@ -1,5 +1,25 @@
 import {Meta, createQuery} from '../utils/apiRequests';
-import {Offer} from '../types/api';
+
+export type Offer = {
+    id: string;
+    name: string;
+    code: string;
+    display_title: string;
+    display_description: string;
+    type: string;
+    cadence: string;
+    amount: number;
+    duration: string;
+    duration_in_months: number | null;
+    currency_restriction: boolean;
+    currency: string | null;
+    status: string;
+    redemption_count: number;
+    tier: {
+        id: string;
+        name: string;
+    }
+}
 
 export interface OffersResponseType {
     meta?: Meta

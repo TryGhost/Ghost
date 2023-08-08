@@ -17,12 +17,12 @@ import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {ApiError} from '../../../../utils/apiRequests';
 import {ReactComponent as StripeVerified} from '../../../../assets/images/stripe-verified.svg';
-import {checkStripeEnabled, getGhostPaths, getSettingValue, getSettingValues} from '../../../../utils/helpers';
+import {checkStripeEnabled, getSettingValue, getSettingValues, useDeleteStripeSettings, useEditSettings} from '../../../../api/settings';
+import {getGhostPaths} from '../../../../utils/helpers';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
 import {useBrowseMembers} from '../../../../api/members';
 import {useBrowseTiers, useEditTier} from '../../../../api/tiers';
-import {useDeleteStripeSettings, useEditSettings} from '../../../../api/settings';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const RETRY_PRODUCT_SAVE_POLL_LENGTH = 1000;

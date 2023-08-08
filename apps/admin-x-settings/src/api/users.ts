@@ -1,5 +1,37 @@
 import {Meta, createMutation, createQuery} from '../utils/apiRequests';
-import {User} from '../types/api';
+import {UserRole} from './roles';
+
+// Types
+
+export type User = {
+    id: string;
+    name: string;
+    slug: string;
+    email: string;
+    profile_image: string;
+    cover_image: string|null;
+    bio: string;
+    website: string;
+    location: string;
+    facebook: string;
+    twitter: string;
+    accessibility: string|null;
+    status: string;
+    meta_title: string|null;
+    meta_description: string|null;
+    tour: string|null;
+    last_seen: string|null;
+    created_at: string;
+    updated_at: string;
+    comment_notifications: boolean;
+    free_member_signup_notification: boolean;
+    paid_subscription_canceled_notification: boolean;
+    paid_subscription_started_notification: boolean;
+    mention_notifications: boolean;
+    milestone_notifications: boolean;
+    roles: UserRole[];
+    url: string;
+}
 
 export interface UsersResponseType {
     meta?: Meta;
@@ -24,6 +56,8 @@ export interface DeleteUserResponse {
         filename: string;
     }
 }
+
+// Requests
 
 const dataType = 'UsersResponseType';
 
@@ -95,3 +129,13 @@ export const useMakeOwner = createMutation<UsersResponseType, string>({
         update: updateUsers
     }
 });
+
+// Helpers
+
+export function isOwnerUser(user: User) {
+    return user.roles.some(role => role.name === 'Owner');
+}
+
+export function isAdminUser(user: User) {
+    return user.roles.some(role => role.name === 'Administrator');
+}

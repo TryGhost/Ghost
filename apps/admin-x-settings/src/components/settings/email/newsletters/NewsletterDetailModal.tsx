@@ -18,13 +18,13 @@ import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import ToggleGroup from '../../../../admin-x-ds/global/form/ToggleGroup';
 import useForm from '../../../../hooks/useForm';
 import validator from 'validator';
-import {Newsletter} from '../../../../types/api';
+import {Newsletter, useEditNewsletter} from '../../../../api/newsletters';
 import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
-import {fullEmailAddress, getSettingValues} from '../../../../utils/helpers';
+import {fullEmailAddress} from '../../../../api/site';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
+import {getSettingValues} from '../../../../api/settings';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
-import {useEditNewsletter} from '../../../../api/newsletters';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 interface NewsletterDetailModalProps {

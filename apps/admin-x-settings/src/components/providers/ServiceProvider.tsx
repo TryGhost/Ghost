@@ -1,6 +1,14 @@
 import React, {createContext, useContext} from 'react';
 import useSearchService, {SearchService} from '../../utils/search';
-import {OfficialTheme} from '../../models/themes';
+
+export type OfficialTheme = {
+    name: string;
+    category: string;
+    previewUrl: string;
+    ref: string;
+    image: string;
+    url?: string;
+};
 
 interface ServicesContextProps {
     ghostVersion: string

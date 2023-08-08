@@ -1,8 +1,8 @@
 import Form from '../../../../admin-x-ds/global/form/Form';
 import React, {FocusEventHandler, useState} from 'react';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
-import {Setting, SettingValue} from '../../../../types/api';
-import {fullEmailAddress, getEmailDomain, getSettingValues} from '../../../../utils/helpers';
+import {Setting, SettingValue, getSettingValues} from '../../../../api/settings';
+import {fullEmailAddress, getEmailDomain} from '../../../../api/site';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const AccountPage: React.FC<{

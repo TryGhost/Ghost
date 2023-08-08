@@ -5,7 +5,7 @@ import TabView from '../../../admin-x-ds/global/TabView';
 import useNavigationEditor, {NavigationItem} from '../../../hooks/site/useNavigationEditor';
 import useRouting from '../../../hooks/useRouting';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {getSettingValues} from '../../../utils/helpers';
+import {getSettingValues} from '../../../api/settings';
 import {useState} from 'react';
 
 const NavigationModal = NiceModal.create(() => {

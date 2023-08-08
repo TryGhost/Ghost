@@ -4,8 +4,8 @@ import HtmlField from '../../../../admin-x-ds/global/form/HtmlField';
 import React, {useEffect, useMemo} from 'react';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import {CheckboxProps} from '../../../../admin-x-ds/global/form/Checkbox';
-import {Setting, SettingValue, Tier} from '../../../../types/api';
-import {checkStripeEnabled, getSettingValues} from '../../../../utils/helpers';
+import {Setting, SettingValue, checkStripeEnabled, getSettingValues} from '../../../../api/settings';
+import {Tier} from '../../../../api/tiers';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const SignupOptions: React.FC<{

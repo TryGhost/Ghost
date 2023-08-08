@@ -6,8 +6,9 @@ import LatestPosts3 from '../../../../assets/images/latest-posts-3.png';
 import React from 'react';
 import clsx from 'clsx';
 import {ReactComponent as GhostOrb} from '../../../../admin-x-ds/assets/images/ghost-orb.svg';
-import {Newsletter} from '../../../../types/api';
-import {fullEmailAddress, getSettingValues} from '../../../../utils/helpers';
+import {Newsletter} from '../../../../api/newsletters';
+import {fullEmailAddress} from '../../../../api/site';
+import {getSettingValues} from '../../../../api/settings';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {

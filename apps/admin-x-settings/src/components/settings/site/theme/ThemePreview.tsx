@@ -7,8 +7,8 @@ import MobileChrome from '../../../../admin-x-ds/global/chrome/MobileChrome';
 import NiceModal from '@ebay/nice-modal-react';
 import PageHeader from '../../../../admin-x-ds/global/layout/PageHeader';
 import React, {useState} from 'react';
-import {OfficialTheme} from '../../../../models/themes';
-import {Theme} from '../../../../types/api';
+import {OfficialTheme} from '../../../providers/ServiceProvider';
+import {Theme} from '../../../../api/themes';
 
 const ThemePreview: React.FC<{
     selectedTheme?: OfficialTheme;

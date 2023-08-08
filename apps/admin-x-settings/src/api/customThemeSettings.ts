@@ -1,5 +1,25 @@
-import {CustomThemeSetting, Setting} from '../types/api';
+import {Setting} from './settings';
 import {createMutation, createQuery} from '../utils/apiRequests';
+
+type CustomThemeSettingData =
+    { type: 'text', value: string | null, default: string | null } |
+    { type: 'color', value: string, default: string } |
+    { type: 'image', value: string | null } |
+    { type: 'boolean', value: boolean, default: boolean } |
+    {
+        type: 'select',
+        value: string
+        default: string
+        options: string[]
+    };
+
+export type CustomThemeSetting = CustomThemeSettingData & {
+    id: string
+    key: string
+    description?: string
+    // homepage and post are the only two groups we handle, but technically theme authors can put other things in package.json
+    group?: 'homepage' | 'post' | string
+}
 
 export interface CustomThemeSettingsResponseType {
     custom_theme_settings: CustomThemeSetting[];

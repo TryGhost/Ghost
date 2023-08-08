@@ -1,5 +1,14 @@
 import {Meta, createQuery} from '../utils/apiRequests';
-import {UserRole} from '../types/api';
+
+export type UserRoleType = 'Owner' | 'Administrator' | 'Editor' | 'Author' | 'Contributor';
+
+export type UserRole = {
+    id: string;
+    name: UserRoleType;
+    description: string;
+    created_at: string;
+    updated_at: string;
+};
 
 export interface RolesResponseType {
     meta?: Meta;
