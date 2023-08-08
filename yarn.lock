@@ -6475,7 +6475,7 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-3.0.23.tgz#22e039701b3dc99b9803d6ac4c74f532daf17f0a"
   integrity sha512-v7PeaBN1/H24Ep07+FbcgQRNMm5Os8PQutZ1iU49qxx+NVJXFxMHhCewFe9+P6HBAeiUaHxaKRADyotYjP9ctQ==
 
-"@tryghost/kg-converters@0.0.7":
+"@tryghost/kg-converters@0.0.7", "@tryghost/kg-converters@^0.0.7":
   version "0.0.7"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-converters/-/kg-converters-0.0.7.tgz#22ddd4166d1603ffaa28173ec9ad781a430423a2"
   integrity sha512-mIFbfcK7PpSpZk52d67yJ3PsuQhsBq5XSDGO9hAOFWluGBIqtViDcvCOnk/XaN4nHbq/rRtklt2bxYBAUmsu2g==
