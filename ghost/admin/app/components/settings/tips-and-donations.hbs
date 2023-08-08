@@ -4,9 +4,15 @@
             <h4 class="gh-expandable-title">Tips or donations</h4>
             <p class="gh-expandable-description">Give your audience a one-time way to support your work</p>
         </div>
-        <button type="button" class="gh-btn" {{on "click" (toggle-action "tipsAndDonationsOpen" this)}}>
-            <span>{{if this.tipsAndDonationsOpen "Close" "Expand"}}</span>
-        </button>
+        {{#if this.membersUtils.isStripeEnabled}}
+            <button type="button" class="gh-btn" {{on "click" (toggle-action "tipsAndDonationsOpen" this)}}>
+                <span>{{if this.tipsAndDonationsOpen "Close" "Expand"}}</span>
+            </button>
+        {{else}}
+            <button type="button" class="stripe-connect {{if (or (not this.session.user.isAdmin) this.isConnectDisallowed) "disabled"}}" {{on "click" this.openStripeConnect}}>
+                <span></span>
+            </button>
+        {{/if}}
     </div>
     <div class="gh-expandable-content">
         {{#liquid-if this.tipsAndDonationsOpen}}
