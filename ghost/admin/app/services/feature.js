@@ -78,6 +78,7 @@ export default class FeatureService extends Service {
     @feature('headerUpgrade') headerUpgrade;
     @feature('importMemberTier') importMemberTier;
     @feature('tipsAndDonations') tipsAndDonations;
+    @feature('convertToLexical') convertToLexical;
 
     _user = null;
 

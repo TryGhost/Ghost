@@ -628,4 +628,40 @@ describe('Posts API', function () {
                 });
         });
     });
+
+    describe('Convert', function () {
+        it('can convert a mobiledoc post to lexical', async function () { 
+            const mobiledoc = createMobiledoc('This is some great content.');
+            const expectedLexical = createLexical('This is some great content.');
+            const postData = {
+                title: 'Test Post',
+                status: 'published',
+                mobiledoc: mobiledoc,
+                lexical: null
+            };
+
+            const {body} = await agent
+                .post('/posts/?formats=mobiledoc,lexical,html', {
+                    headers: {
+                        'content-type': 'application/json'
+                    }
+                })
+                .body({posts: [postData]})
+                .expectStatus(201);
+
+            const [postResponse] = body.posts;
+
+            await agent
+                .put(`/posts/${postResponse.id}/?formats=mobiledoc,lexical,html&convert_to_lexical=true`)
+                .body({posts: [Object.assign({}, postResponse)]})
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    posts: [Object.assign({}, matchPostShallowIncludes, {lexical: expectedLexical, mobiledoc: null})]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+    });
 });

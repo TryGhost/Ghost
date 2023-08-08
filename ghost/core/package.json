@@ -101,6 +101,7 @@
     "@tryghost/importer-revue": "0.0.0",
     "@tryghost/job-manager": "0.0.0",
     "@tryghost/kg-card-factory": "4.0.9",
+    "@tryghost/kg-converters": "0.0.7",
     "@tryghost/kg-default-atoms": "4.0.2",
     "@tryghost/kg-default-cards": "9.1.2",
     "@tryghost/kg-default-nodes": "0.1.17",

@@ -19,6 +19,8 @@ const {Tag} = require('./tag');
 const {Newsletter} = require('./newsletter');
 const {BadRequestError} = require('@tryghost/errors');
 const {PostRevisions} = require('@tryghost/post-revisions');
+const {mobiledocToLexical} = require('@tryghost/kg-converters');
+const labs = require('../../shared/labs');
 
 const messages = {
     isAlreadyPublished: 'Your post is already published, please reload your page.',
@@ -913,6 +915,16 @@ Post = ghostBookshelf.Model.extend({
             });
         }
 
+        // CASE: Convert post to lexical on the fly
+        if (labs.isSet('convertToLexical') && labs.isSet('lexicalEditor') && options.convert_to_lexical) {
+            ops.push(async function convertToLexical() {
+                const mobiledoc = model.get('mobiledoc');
+                const lexical = mobiledocToLexical(mobiledoc);
+                model.set('lexical', lexical);
+                model.set('mobiledoc', null);
+            });
+        }
+
         if (this.get('tiers')) {
             this.set('tiers', this.get('tiers').map(t => ({
                 id: t.id
@@ -1154,9 +1166,10 @@ Post = ghostBookshelf.Model.extend({
         const validOptions = {
             findOne: ['columns', 'importing', 'withRelated', 'require', 'filter'],
             findPage: ['status'],
+
             findAll: ['columns', 'filter'],
             destroy: ['destroyAll', 'destroyBy'],
-            edit: ['filter', 'email_segment', 'force_rerender', 'newsletter', 'save_revision']
+            edit: ['filter', 'email_segment', 'force_rerender', 'newsletter', 'save_revision', 'convert_to_lexical']
         };
 
         // The post model additionally supports having a formats option

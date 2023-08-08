@@ -342,6 +342,20 @@
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
+                            <h4 class="gh-expandable-title">Convert to Lexical</h4>
+                            <p class="gh-expandable-description">
+                                Convert mobiledoc posts to lexical upon opening in the editor.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="convertToLexical" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
                             <h4 class="gh-expandable-title">Import Member Tier</h4>
                             <p class="gh-expandable-description">
                                 Enables tier to be specified when importing members

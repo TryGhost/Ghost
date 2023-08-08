@@ -11,6 +11,11 @@ export default class Page extends ApplicationAdapter {
             parsedUrl.searchParams.append('save_revision', saveRevision);
         }
 
+        if (snapshot?.adapterOptions?.convertToLexical) {
+            const convertToLexical = snapshot.adapterOptions.convertToLexical;
+            parsedUrl.searchParams.append('convert_to_lexical', convertToLexical);
+        }
+
         return parsedUrl.toString();
     }
 
