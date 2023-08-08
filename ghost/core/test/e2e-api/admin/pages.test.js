@@ -113,4 +113,79 @@ describe('Pages API', function () {
                 });
         });
     });
+
+    describe('Convert', function () {
+        it('can convert a mobiledoc page to lexical', async function () { 
+            const mobiledoc = JSON.stringify({
+                version: '0.3.1',
+                ghostVersion: '4.0',
+                markups: [],
+                atoms: [],
+                cards: [],
+                sections: [
+                    [1, 'p', [
+                        [0, [], 0, 'This is some great content.']
+                    ]]
+                ]
+            });
+            const expectedLexical = JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'This is some great content.',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        }
+                    ],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+            const pageData = {
+                title: 'Test Post',
+                status: 'published',
+                mobiledoc: mobiledoc,
+                lexical: null
+            };
+
+            const {body: pageBody} = await agent
+                .post('/pages/?formats=mobiledoc,lexical,html', {
+                    headers: {
+                        'content-type': 'application/json'
+                    }
+                })
+                .body({pages: [pageData]})
+                .expectStatus(201);
+
+            const [pageResponse] = pageBody.pages;
+
+            await agent
+                .put(`/pages/${pageResponse.id}/?formats=mobiledoc,lexical,html&convert_to_lexical=true`)
+                .body({pages: [Object.assign({}, pageResponse)]})
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    pages: [Object.assign({}, matchPageShallowIncludes, {lexical: expectedLexical, mobiledoc: null})]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+    });
 });

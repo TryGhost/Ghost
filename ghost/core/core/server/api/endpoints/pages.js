@@ -141,6 +141,7 @@ module.exports = {
             'source',
             'force_rerender',
             'save_revision',
+            'convert_to_lexical',
             // NOTE: only for internal context
             'forUpdate',
             'transacting'
