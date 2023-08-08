@@ -6,7 +6,7 @@ import TiersList from './tiers/TiersList';
 import useRouting from '../../../hooks/useRouting';
 import {Tier} from '../../../types/api';
 import {checkStripeEnabled, getActiveTiers, getArchivedTiers} from '../../../utils/helpers';
-import {useBrowseTiers} from '../../../utils/api/tiers';
+import {useBrowseTiers} from '../../../api/tiers';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {

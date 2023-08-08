@@ -1,7 +1,7 @@
 import {User} from '../types/api';
-import {UserInvite, useBrowseInvites} from '../utils/api/invites';
-import {useBrowseRoles} from '../utils/api/roles';
-import {useBrowseUsers} from '../utils/api/users';
+import {UserInvite, useBrowseInvites} from '../api/invites';
+import {useBrowseRoles} from '../api/roles';
+import {useBrowseUsers} from '../api/users';
 import {useGlobalData} from '../components/providers/GlobalDataProvider';
 
 export type UsersHook = {

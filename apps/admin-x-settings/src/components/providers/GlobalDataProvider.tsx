@@ -1,9 +1,9 @@
 import {Config, Setting, SiteData, User} from '../../types/api';
 import {ReactNode, createContext, useContext} from 'react';
-import {useBrowseConfig} from '../../utils/api/config';
-import {useBrowseSettings} from '../../utils/api/settings';
-import {useBrowseSite} from '../../utils/api/site';
-import {useCurrentUser} from '../../utils/api/users';
+import {useBrowseConfig} from '../../api/config';
+import {useBrowseSettings} from '../../api/settings';
+import {useBrowseSite} from '../../api/site';
+import {useCurrentUser} from '../../api/users';
 
 interface GlobalData {
     settings: Setting[]

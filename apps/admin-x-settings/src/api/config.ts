@@ -1,5 +1,5 @@
-import {Config} from '../../types/api';
-import {createQuery} from '../apiRequests';
+import {Config} from '../types/api';
+import {createQuery} from '../utils/apiRequests';
 
 export interface ConfigResponseType {
     config: Config;

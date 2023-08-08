@@ -7,7 +7,7 @@ import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupCon
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import {CustomThemeSetting} from '../../../../types/api';
-import {getImageUrl, useUploadImage} from '../../../../utils/api/images';
+import {getImageUrl, useUploadImage} from '../../../../api/images';
 import {humanizeSettingKey} from '../../../../utils/helpers';
 
 const ThemeSetting: React.FC<{

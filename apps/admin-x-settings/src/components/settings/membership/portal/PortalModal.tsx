@@ -11,8 +11,8 @@ import useRouting from '../../../../hooks/useRouting';
 import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
 import {Setting, SettingValue, Tier} from '../../../../types/api';
 import {fullEmailAddress, getPaidActiveTiers} from '../../../../utils/helpers';
-import {useBrowseTiers, useEditTier} from '../../../../utils/api/tiers';
-import {useEditSettings} from '../../../../utils/api/settings';
+import {useBrowseTiers, useEditTier} from '../../../../api/tiers';
+import {useEditSettings} from '../../../../api/settings';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const Sidebar: React.FC<{

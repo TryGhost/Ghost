@@ -13,9 +13,9 @@ import useRouting from '../../../hooks/useRouting';
 import {CustomThemeSetting, Setting, SettingValue} from '../../../types/api';
 import {PreviewModalContent} from '../../../admin-x-ds/global/modal/PreviewModal';
 import {getHomepageUrl, getSettingValues} from '../../../utils/helpers';
-import {useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '../../../utils/api/customThemeSettings';
-import {useBrowsePosts} from '../../../utils/api/posts';
-import {useEditSettings} from '../../../utils/api/settings';
+import {useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '../../../api/customThemeSettings';
+import {useBrowsePosts} from '../../../api/posts';
+import {useEditSettings} from '../../../api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const Sidebar: React.FC<{

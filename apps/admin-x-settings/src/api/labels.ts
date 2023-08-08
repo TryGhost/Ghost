@@ -1,5 +1,5 @@
-import {Label} from '../../types/api';
-import {Meta, createQuery} from '../apiRequests';
+import {Label} from '../types/api';
+import {Meta, createQuery} from '../utils/apiRequests';
 
 export interface LabelsResponseType {
     meta?: Meta

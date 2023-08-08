@@ -19,7 +19,7 @@ import {currencies, currencyFromDecimal, currencyGroups, currencyToDecimal, getS
 import {getSettingValues} from '../../../../utils/helpers';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
-import {useAddTier, useEditTier} from '../../../../utils/api/tiers';
+import {useAddTier, useEditTier} from '../../../../api/tiers';
 
 interface TierDetailModalProps {
     tier?: Tier

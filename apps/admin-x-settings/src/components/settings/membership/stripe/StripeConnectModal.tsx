@@ -20,9 +20,9 @@ import {ReactComponent as StripeVerified} from '../../../../assets/images/stripe
 import {checkStripeEnabled, getGhostPaths, getSettingValue, getSettingValues} from '../../../../utils/helpers';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
-import {useBrowseMembers} from '../../../../utils/api/members';
-import {useBrowseTiers, useEditTier} from '../../../../utils/api/tiers';
-import {useDeleteStripeSettings, useEditSettings} from '../../../../utils/api/settings';
+import {useBrowseMembers} from '../../../../api/members';
+import {useBrowseTiers, useEditTier} from '../../../../api/tiers';
+import {useDeleteStripeSettings, useEditSettings} from '../../../../api/settings';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const RETRY_PRODUCT_SAVE_POLL_LENGTH = 1000;

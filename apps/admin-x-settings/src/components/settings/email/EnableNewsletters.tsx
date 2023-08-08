@@ -5,7 +5,7 @@ import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupConten
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import {Setting} from '../../../types/api';
 import {getSettingValues} from '../../../utils/helpers';
-import {useEditSettings} from '../../../utils/api/settings';
+import {useEditSettings} from '../../../api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {

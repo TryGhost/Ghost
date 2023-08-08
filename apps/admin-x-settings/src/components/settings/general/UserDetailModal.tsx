@@ -15,12 +15,12 @@ import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
 import {User} from '../../../types/api';
-import {getImageUrl, useUploadImage} from '../../../utils/api/images';
+import {getImageUrl, useUploadImage} from '../../../api/images';
 import {isAdminUser, isOwnerUser} from '../../../utils/helpers';
 import {showToast} from '../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
-import {useBrowseRoles} from '../../../utils/api/roles';
-import {useDeleteUser, useEditUser, useMakeOwner, useUpdatePassword} from '../../../utils/api/users';
+import {useBrowseRoles} from '../../../api/roles';
+import {useDeleteUser, useEditUser, useMakeOwner, useUpdatePassword} from '../../../api/users';
 
 interface CustomHeadingProps {
     children?: React.ReactNode;

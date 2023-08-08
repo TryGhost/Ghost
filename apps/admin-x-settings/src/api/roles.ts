@@ -1,5 +1,5 @@
-import {Meta, createQuery} from '../apiRequests';
-import {UserRole} from '../../types/api';
+import {Meta, createQuery} from '../utils/apiRequests';
+import {UserRole} from '../types/api';
 
 export interface RolesResponseType {
     meta?: Meta;

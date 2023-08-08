@@ -1,5 +1,5 @@
-import {Meta, createMutation, createQuery} from '../apiRequests';
-import {User} from '../../types/api';
+import {Meta, createMutation, createQuery} from '../utils/apiRequests';
+import {User} from '../types/api';
 
 export interface UsersResponseType {
     meta?: Meta;

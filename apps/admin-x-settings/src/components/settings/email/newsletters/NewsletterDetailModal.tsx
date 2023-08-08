@@ -21,10 +21,10 @@ import validator from 'validator';
 import {Newsletter} from '../../../../types/api';
 import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
 import {fullEmailAddress, getSettingValues} from '../../../../utils/helpers';
-import {getImageUrl, useUploadImage} from '../../../../utils/api/images';
+import {getImageUrl, useUploadImage} from '../../../../api/images';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
-import {useEditNewsletter} from '../../../../utils/api/newsletters';
+import {useEditNewsletter} from '../../../../api/newsletters';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 interface NewsletterDetailModalProps {

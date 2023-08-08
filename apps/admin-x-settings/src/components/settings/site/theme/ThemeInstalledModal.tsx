@@ -7,7 +7,7 @@ import React, {ReactNode, useState} from 'react';
 import {ConfirmationModalContent} from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import {InstalledTheme, ThemeProblem} from '../../../../types/api';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
-import {useActivateTheme} from '../../../../utils/api/themes';
+import {useActivateTheme} from '../../../../api/themes';
 
 const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
     const [isExpanded, setExpanded] = useState(false);

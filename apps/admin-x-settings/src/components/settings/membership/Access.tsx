@@ -6,7 +6,7 @@ import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupConten
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {GroupBase, MultiValue} from 'react-select';
 import {getOptionLabel, getSettingValues} from '../../../utils/helpers';
-import {useBrowseTiers} from '../../../utils/api/tiers';
+import {useBrowseTiers} from '../../../api/tiers';
 
 const MEMBERS_SIGNUP_ACCESS_OPTIONS = [
     {value: 'all', label: 'Anyone can sign up'},

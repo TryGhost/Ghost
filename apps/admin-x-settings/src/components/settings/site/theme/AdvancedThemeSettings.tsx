@@ -9,7 +9,7 @@ import React from 'react';
 import {Theme} from '../../../../types/api';
 import {downloadFile, getGhostPaths} from '../../../../utils/helpers';
 import {isActiveTheme, isDefaultTheme, isDeletableTheme} from '../../../../models/themes';
-import {useActivateTheme, useDeleteTheme} from '../../../../utils/api/themes';
+import {useActivateTheme, useDeleteTheme} from '../../../../api/themes';
 
 interface ThemeActionProps {
     theme: Theme;

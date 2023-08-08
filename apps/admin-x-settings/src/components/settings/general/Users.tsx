@@ -11,7 +11,7 @@ import UserDetailModal from './UserDetailModal';
 import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import {User} from '../../../types/api';
-import {UserInvite, useAddInvite, useDeleteInvite} from '../../../utils/api/invites';
+import {UserInvite, useAddInvite, useDeleteInvite} from '../../../api/invites';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
 import {showToast} from '../../../admin-x-ds/global/Toast';
 

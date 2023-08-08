@@ -6,9 +6,9 @@ import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupConten
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {GroupBase, MultiValue} from 'react-select';
 import {getOptionLabel, getSettingValues} from '../../../utils/helpers';
-import {useBrowseLabels} from '../../../utils/api/labels';
-import {useBrowseOffers} from '../../../utils/api/offers';
-import {useBrowseTiers} from '../../../utils/api/tiers';
+import {useBrowseLabels} from '../../../api/labels';
+import {useBrowseOffers} from '../../../api/offers';
+import {useBrowseTiers} from '../../../api/tiers';
 
 type RefipientValueArgs = {
     defaultEmailRecipients: string;

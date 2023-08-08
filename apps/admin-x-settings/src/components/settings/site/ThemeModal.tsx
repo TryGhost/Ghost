@@ -14,7 +14,7 @@ import ThemePreview from './theme/ThemePreview';
 import useRouting from '../../../hooks/useRouting';
 import {OfficialTheme} from '../../../models/themes';
 import {Theme} from '../../../types/api';
-import {useBrowseThemes, useInstallTheme, useUploadTheme} from '../../../utils/api/themes';
+import {useBrowseThemes, useInstallTheme, useUploadTheme} from '../../../api/themes';
 
 interface ThemeToolbarProps {
     selectedTheme: OfficialTheme|null;

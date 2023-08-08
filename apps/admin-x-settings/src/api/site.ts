@@ -1,5 +1,5 @@
-import {SiteData} from '../../types/api';
-import {createQuery} from '../apiRequests';
+import {SiteData} from '../types/api';
+import {createQuery} from '../utils/apiRequests';
 
 export interface SiteResponseType {
     site: SiteData;

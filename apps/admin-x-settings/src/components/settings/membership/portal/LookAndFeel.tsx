@@ -15,7 +15,7 @@ import {ReactComponent as PortalIcon2} from '../../../../assets/icons/portal-ico
 import {ReactComponent as PortalIcon3} from '../../../../assets/icons/portal-icon-3.svg';
 import {ReactComponent as PortalIcon4} from '../../../../assets/icons/portal-icon-4.svg';
 import {ReactComponent as PortalIcon5} from '../../../../assets/icons/portal-icon-5.svg';
-import {getImageUrl, useUploadImage} from '../../../../utils/api/images';
+import {getImageUrl, useUploadImage} from '../../../../api/images';
 
 const defaultButtonIcons = [
     {

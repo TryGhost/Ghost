@@ -1,5 +1,5 @@
-import {Meta, createQuery} from '../apiRequests';
-import {Offer} from '../../types/api';
+import {Meta, createQuery} from '../utils/apiRequests';
+import {Offer} from '../types/api';
 
 export interface OffersResponseType {
     meta?: Meta

@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import useForm, {SaveState} from './useForm';
 import useGlobalDirtyState from './useGlobalDirtyState';
 import {Setting, SettingValue, SiteData} from '../types/api';
-import {useEditSettings} from '../utils/api/settings';
+import {useEditSettings} from '../api/settings';
 import {useGlobalData} from '../components/providers/GlobalDataProvider';
 
 interface LocalSetting extends Setting {

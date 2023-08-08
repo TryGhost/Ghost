@@ -1,4 +1,4 @@
-import {createMutation} from '../apiRequests';
+import {createMutation} from '../utils/apiRequests';
 
 export interface ImagesResponseType {
     images: {

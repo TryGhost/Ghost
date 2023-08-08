@@ -8,7 +8,7 @@ import Table from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
 import {Newsletter} from '../../../../types/api';
-import {useEditNewsletter} from '../../../../utils/api/newsletters';
+import {useEditNewsletter} from '../../../../api/newsletters';
 
 interface NewslettersListProps {
     newsletters: Newsletter[]
