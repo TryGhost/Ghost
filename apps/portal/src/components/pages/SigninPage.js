@@ -5,6 +5,7 @@ import CloseButton from '../common/CloseButton';
 import AppContext from '../../AppContext';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
+import {isSigninAllowed} from '../../utils/helpers';
 
 export default class SigninPage extends React.Component {
     static contextType = AppContext;
@@ -116,6 +117,23 @@ export default class SigninPage extends React.Component {
     }
 
     renderForm() {
+        const {site, t} = this.context;
+
+        if (!isSigninAllowed({site})) {
+            return (
+                <section>
+                    <div className='gh-portal-section'>
+                        <p
+                            className='gh-portal-members-disabled-notification'
+                            data-testid="members-disabled-notification-text"
+                        >
+                            {t('This site is not accepting new members at the moment.')}
+                        </p>
+                    </div>
+                </section>
+            );
+        }
+
         return (
             <section>
                 <div className='gh-portal-section'>
@@ -125,6 +143,10 @@ export default class SigninPage extends React.Component {
                         onKeyDown={(e, field) => this.onKeyDown(e, field)}
                     />
                 </div>
+                <footer className='gh-portal-signin-footer'>
+                    {this.renderSubmitButton()}
+                    {this.renderSignupMessage()}
+                </footer>
             </section>
         );
     }
@@ -158,19 +180,12 @@ export default class SigninPage extends React.Component {
     render() {
         return (
             <>
-                {/* <div className='gh-portal-back-sitetitle'>
-                    <SiteTitleBackButton />
-                </div> */}
                 <CloseButton />
                 <div className='gh-portal-logged-out-form-container'>
                     <div className='gh-portal-content signin'>
                         {this.renderFormHeader()}
                         {this.renderForm()}
                     </div>
-                    <footer className='gh-portal-signin-footer'>
-                        {this.renderSubmitButton()}
-                        {this.renderSignupMessage()}
-                    </footer>
                 </div>
             </>
         );
