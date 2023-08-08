@@ -1,7 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
 
-export type Tab<ID> = {
+export type Tab<ID = string> = {
     id: ID;
     title: string;
 
@@ -11,7 +11,7 @@ export type Tab<ID> = {
     contents?: React.ReactNode;
 }
 
-interface TabViewProps<ID> {
+interface TabViewProps<ID = string> {
     tabs: readonly Tab<ID>[];
     onTabChange: (id: ID) => void;
     selectedTab?: ID;
