@@ -24,6 +24,7 @@ env:
     nx-Linux-${{ github.ref }}-${{ github.sha }}
     nx-Linux-${{ github.ref }}
     nx-Linux
+  NX_REJECT_UNKNOWN_LOCAL_CACHE: 0
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
