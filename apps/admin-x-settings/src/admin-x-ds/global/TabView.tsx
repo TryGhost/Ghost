@@ -1,8 +1,8 @@
 import React from 'react';
 import clsx from 'clsx';
 
-export type Tab = {
-    id: string;
+export type Tab<ID = string> = {
+    id: ID;
     title: string;
 
     /**
@@ -11,21 +11,21 @@ export type Tab = {
     contents?: React.ReactNode;
 }
 
-interface TabViewProps {
-    tabs: Tab[];
-    onTabChange: (id: string) => void;
-    selectedTab?: string;
-    border?:boolean;
+interface TabViewProps<ID = string> {
+    tabs: readonly Tab<ID>[];
+    onTabChange: (id: ID) => void;
+    selectedTab?: ID;
+    border?: boolean;
     width?: 'narrow' | 'normal' | 'wide';
 }
 
-const TabView: React.FC<TabViewProps> = ({
+function TabView<ID extends string = string>({
     tabs,
     onTabChange,
     selectedTab,
     border = true,
     width = 'normal'
-}) => {
+}: TabViewProps<ID>) {
     if (tabs.length !== 0 && selectedTab === undefined) {
         selectedTab = tabs[0].id;
     }
@@ -35,7 +35,7 @@ const TabView: React.FC<TabViewProps> = ({
     }
 
     const handleTabChange = (e: React.MouseEvent<HTMLButtonElement>) => {
-        const newTab = e.currentTarget.id;
+        const newTab = e.currentTarget.id as ID;
         onTabChange(newTab);
     };
 
