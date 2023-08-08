@@ -1,6 +1,5 @@
 import Form from '../../../../admin-x-ds/global/form/Form';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
-import NewsletterDetailModal from './NewsletterDetailModal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import TextArea from '../../../../admin-x-ds/global/form/TextArea';
@@ -37,9 +36,7 @@ const AddNewsletterModal: React.FC<AddNewsletterModalProps> = () => {
                 opt_in_existing: formState.optInExistingSubscribers
             });
 
-            NiceModal.show(NewsletterDetailModal, {
-                newsletter: response.newsletters[0]
-            });
+            updateRoute(`newsletters/show/${response.newsletters[0].id}`);
         },
         onValidate: () => {
             const newErrors: Record<string, string> = {};

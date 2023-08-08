@@ -1,12 +1,12 @@
 import Button from '../../../../admin-x-ds/global/Button';
 import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
-import NewsletterDetailModal from './NewsletterDetailModal';
 import NiceModal from '@ebay/nice-modal-react';
 import NoValueLabel from '../../../../admin-x-ds/global/NoValueLabel';
 import React from 'react';
 import Table from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
+import useRouting from '../../../../hooks/useRouting';
 import {Newsletter, useEditNewsletter} from '../../../../api/newsletters';
 
 interface NewslettersListProps {
@@ -15,6 +15,7 @@ interface NewslettersListProps {
 
 const NewsletterItem: React.FC<{newsletter: Newsletter, onlyOne: boolean}> = ({newsletter, onlyOne}) => {
     const {mutateAsync: editNewsletter} = useEditNewsletter();
+    const {updateRoute} = useRouting();
 
     const action = newsletter.status === 'active' ? (
         <Button color='green' disabled={onlyOne} label='Archive' link onClick={() => {
@@ -48,7 +49,7 @@ const NewsletterItem: React.FC<{newsletter: Newsletter, onlyOne: boolean}> = ({n
     );
 
     const showDetails = () => {
-        NiceModal.show(NewsletterDetailModal, {newsletter});
+        updateRoute(`newsletters/show/${newsletter.id}`);
     };
 
     return (

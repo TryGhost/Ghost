@@ -33,7 +33,9 @@ export const RouteContext = createContext<RoutingContextData>({
 // useHandleRoute hook. The idea is that those components will open a modal after
 // loading any data required for the route
 export const modalRoutes = {
-    showUser: 'users/show/:slug'
+    showUser: 'users/show/:slug',
+    showNewsletter: 'newsletters/show/:id',
+    showTier: 'tiers/show/:id'
 };
 
 function getHashPath(urlPath: string | undefined) {
