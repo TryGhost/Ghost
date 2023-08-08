@@ -44,7 +44,7 @@ import {
     getTopLevelNativeElement
 } from '../utils/';
 import {$isKoenigCard, ImageNode} from '@tryghost/kg-default-nodes';
-import {$isListItemNode, $isListNode, ListNode} from '@lexical/list';
+import {$isListItemNode, $isListNode, INSERT_UNORDERED_LIST_COMMAND, ListNode} from '@lexical/list';
 import {$setBlocksType} from '@lexical/selection';
 import {MIME_TEXT_HTML, MIME_TEXT_PLAIN, PASTE_MARKDOWN_COMMAND} from './MarkdownPastePlugin.jsx';
 import {mergeRegister} from '@lexical/utils';
@@ -829,6 +829,28 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         const selection = $getSelection();
                         if ($isRangeSelection(selection)) {
                             $setBlocksType(selection, () => $createHeadingNode(`h${key}`));
+                        }
+                    }
+
+                    if (ctrlKey && code === 'KeyL') {
+                        event.preventDefault();
+
+                        const selection = $getSelection();
+                        if ($isRangeSelection(selection)) {
+                            const firstNode = selection.anchor.getNode().getTopLevelElement();
+
+                            if ($isListNode(firstNode)) {
+                                editor.update(() => {
+                                    const pNode = $createParagraphNode();
+                                    $setBlocksType(selection, () => pNode);
+
+                                    // Lexical will automatically indent the paragraph node to the
+                                    // list item level but we don't allow indented paragraphs
+                                    pNode.setIndent(0);
+                                });
+                            } else {
+                                editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined);
+                            }
                         }
                     }
 

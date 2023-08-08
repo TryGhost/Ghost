@@ -233,4 +233,23 @@ test.describe('Editor keyboard shortcuts', async () => {
             <h6 dir="ltr"><span data-lexical-text="true">test</span></h6>
         `);
     });
+
+    test('list', async function () {
+        await focusEditor(page);
+
+        await page.keyboard.type('test');
+        await page.keyboard.press('Control+l');
+
+        await assertHTML(page, html`
+            <ul>
+                <li value="1" dir="ltr"><span data-lexical-text="true">test</span></li>
+            </ul>
+        `);
+
+        await page.keyboard.press('Control+l');
+
+        await assertHTML(page, html`
+            <p dir="ltr"><span data-lexical-text="true">test</span></p>
+        `);
+    });
 });
