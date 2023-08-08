@@ -1324,7 +1324,7 @@ describe('Email renderer', function () {
                 clickTrackingEnabled: true
             };
 
-            renderedPost = '<p>Lexical Test</p><p><a href="https://external-domain.com/?ref=123">Hello</a><a href="https://encoded-link.com?code&#x3D;test">Hello</a><a href="https://example.com/?ref=123"><img src="example" /></a></p>';
+            renderedPost = '<p>Lexical Test</p><p><a href="https://external-domain.com/?ref=123">Hello</a><a href="https://encoded-link.com?code&#x3D;test">Hello</a><a href="https://example.com/?ref=123"><img src="example" /></a><a href="#">Ignore me</a></p>';
 
             let response = await emailRenderer.renderBody(
                 post,
@@ -1339,6 +1339,10 @@ describe('Email renderer', function () {
             for (const link of $('a').toArray()) {
                 const href = $(link).attr('href');
                 links.push(href);
+
+                if (href === '#') {
+                    continue;
+                }
                 if (href.includes('unsubscribe_url')) {
                     href.should.eql('%%{unsubscribe_url}%%');
                 } else if (href.includes('feedback-link.com')) {
@@ -1357,6 +1361,7 @@ describe('Email renderer', function () {
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexternal-domain.com%2F%3Fref%3D123%26source_tracking%3Dsite`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fencoded-link.com%2F%3Fcode%3Dtest%26source_tracking%3Dsite`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexample.com%2F%3Fref%3D123%26source_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
+                '#',
                 `http://feedback-link.com/?score=1&uuid=%%{uuid}%%`,
                 `http://feedback-link.com/?score=0&uuid=%%{uuid}%%`,
                 `http://feedback-link.com/?score=1&uuid=%%{uuid}%%`,
@@ -1371,6 +1376,53 @@ describe('Email renderer', function () {
             response.replacements[0].token.should.eql(/%%\{uuid\}%%/g);
             response.replacements[1].id.should.eql('unsubscribe_url');
             response.replacements[1].token.should.eql(/%%\{unsubscribe_url\}%%/g);
+        });
+
+        it('replaces all relative links if click tracking is disabled', async function () {
+            const post = createModel(basePost);
+            const newsletter = createModel({
+                header_image: null,
+                name: 'Test Newsletter',
+                show_badge: true,
+                feedback_enabled: true,
+                show_post_title_section: true
+            });
+            const segment = null;
+            const options = {
+                clickTrackingEnabled: false
+            };
+
+            renderedPost = '<p>Lexical Test</p><p><a href="#relative-test">Hello</a><a href="#">Ignore me</a></p>';
+
+            let response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                segment,
+                options
+            );
+
+            // Check all links have domain tracked-link.com
+            const $ = cheerio.load(response.html);
+            const links = [];
+            for (const link of $('a').toArray()) {
+                const href = $(link).attr('href');
+                links.push(href);
+            }
+
+            // Update the following array when you make changes to the email template, check if replacements are correct for each newly added link.
+            assert.deepEqual(links, [
+                'http://example.com/',
+                'http://example.com/',
+                'http://example.com/',
+                'http://example.com/#relative-test',
+                '#',
+                'http://feedback-link.com/?score=1&uuid=%%{uuid}%%',
+                'http://feedback-link.com/?score=0&uuid=%%{uuid}%%',
+                'http://feedback-link.com/?score=1&uuid=%%{uuid}%%',
+                'http://feedback-link.com/?score=0&uuid=%%{uuid}%%',
+                '%%{unsubscribe_url}%%',
+                'https://ghost.org/'
+            ]);
         });
 
         it('handles encoded links', async function () {
