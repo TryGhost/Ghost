@@ -248,13 +248,14 @@ test.describe('Embed card', async () => {
         await expect(await page.locator('[data-kg-card="embed"]')).toHaveCount(2);
     });
 
-    test('can convert link to embed card on paste', async function () {
-        await focusEditor(page);
-        await pasteText(page, 'https://ghost.org/');
-        await expect(await page.getByTestId('embed-url-loading-container')).toBeVisible();
-        await expect(await page.getByTestId('embed-url-loading-container')).toBeHidden();
-        await expect(await page.getByTestId('embed-iframe')).toBeVisible();
-    });
+    // NOTE: tested in paste-behaviour.test.js
+    // test('can convert link to embed card on paste', async function () {
+    //     await focusEditor(page);
+    //     await pasteText(page, 'https://ghost.org/');
+    //     await expect(await page.getByTestId('embed-url-loading-container')).toBeVisible();
+    //     await expect(await page.getByTestId('embed-url-loading-container')).toBeHidden();
+    //     await expect(await page.getByTestId('embed-iframe')).toBeVisible();
+    // });
 
     // flaky test
     test.skip('can delete and undo without losing caption', async function () {

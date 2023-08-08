@@ -95,7 +95,24 @@ test.describe('Paste behaviour', async () => {
         test('pasted on blank paragraph creates embed/bookmark', async function () {
             await focusEditor(page);
             await pasteText(page, 'https://ghost.org/');
+            await expect(await page.getByTestId('embed-url-loading-container')).toBeVisible();
+            await expect(await page.getByTestId('embed-url-loading-container')).toBeHidden();
             await expect(page.getByTestId('embed-iframe')).toBeVisible();
+        });
+
+        test('pasted on blank paragraph with shift creates a link', async function () {
+            await focusEditor(page);
+            await page.keyboard.down('Shift');
+            await pasteText(page, 'https://ghost.org/');
+            await page.keyboard.up('Shift');
+
+            await assertHTML(page, html`
+                <p>
+                    <a href="https://ghost.org/" dir="ltr">
+                        <span data-lexical-text="true">https://ghost.org/</span>
+                    </a>
+                </p>
+            `);
         });
     });
 });

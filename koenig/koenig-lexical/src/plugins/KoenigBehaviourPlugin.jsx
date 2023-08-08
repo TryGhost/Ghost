@@ -108,6 +108,26 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
         setIsEditingCard
     } = useKoenigSelectedCardContext();
 
+    const isShiftPressed = React.useRef(false);
+
+    React.useEffect(() => {
+        const keyDown = (event) => {
+            isShiftPressed.current = event.shiftKey;
+        };
+
+        const keyUp = (event) => {
+            isShiftPressed.current = event.shiftKey;
+        };
+
+        document.addEventListener('keydown', keyDown);
+        document.addEventListener('keyup', keyUp);
+
+        return () => {
+            document.removeEventListener('keydown', keyDown);
+            document.removeEventListener('keyup', keyUp);
+        };
+    }, []);
+
     // deselect cards on mousedown outside of the editor container
     React.useEffect(() => {
         const onMousedown = (event) => {
@@ -1052,8 +1072,8 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         return true;
                     }
 
-                    // if a link is pasted in a populated text node, insert a link
-                    if (nodeContent.length > 0) {
+                    // if a link is pasted in a populated text node or pasted with Shift pressed, insert a link
+                    if (nodeContent.length > 0 || isShiftPressed.current === true) {
                         const link = linkMatch[1];
                         const linkNode = $createLinkNode(link);
                         const linkTextNode = $createTextNode(link);
