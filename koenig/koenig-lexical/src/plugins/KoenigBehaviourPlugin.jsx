@@ -9,6 +9,7 @@ import {
     $getNodeByKey,
     $getRoot,
     $getSelection,
+    $insertNodes,
     $isDecoratorNode,
     $isElementNode,
     $isNodeSelection,
@@ -1037,6 +1038,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     const selectionContent = selection.getTextContent();
                     const node = selection.anchor.getNode();
                     const nodeContent = node.getTextContent();
+
                     if (selectionContent.length > 0) {
                         const link = linkMatch[1];
                         if ($isRangeSelection(selection)) {
@@ -1052,24 +1054,30 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                     // if a link is pasted in a populated text node, insert a link
                     if (nodeContent.length > 0) {
-                        const textNode = selection.extract()[0];
-                        const parentNode = textNode.getParent();
                         const link = linkMatch[1];
                         const linkNode = $createLinkNode(link);
                         const linkTextNode = $createTextNode(link);
                         linkNode.append(linkTextNode);
-                        parentNode.append(linkNode);
-                        parentNode.selectEnd();
+
+                        // add a space after to avoid the rest of the text being linked when inserting
+                        // then immediately remove as we don't want the extra space
+                        // TODO: raise Lexical bug?
+                        const spaceTextNode = $createTextNode(' ');
+                        $insertNodes([linkNode, spaceTextNode]);
+                        spaceTextNode.remove();
+
                         return true;
                     }
 
                     // if a link is pasted in a blank text node, insert an embed card (may turn into bookmark)
-                    if (!selectionContent.length > 0 && !nodeContent.length > 0) {
+                    if (selectionContent.length === 0 && nodeContent.length === 0) {
                         const url = linkMatch[1];
                         const embedNode = $createEmbedNode({url});
                         editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode: embedNode, createdWithUrl: true});
                         return true;
                     }
+
+                    return false;
                 },
                 COMMAND_PRIORITY_LOW
             )
