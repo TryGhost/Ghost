@@ -302,24 +302,28 @@ describe('api/endpoints/content/posts', function () {
         before (function () {
             publicPost = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'free-to-see',
-                visibility: 'public'
+                visibility: 'public',
+                published_at: new Date('2023-07-15T04:20:30.000+00:00')
             });
 
             membersPost = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'thou-shalt-not-be-seen',
-                visibility: 'members'
+                visibility: 'members',
+                published_at: new Date('2023-07-20T04:20:30.000+00:00')
             });
 
             paidPost = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'thou-shalt-be-paid-for',
-                visibility: 'paid'
+                visibility: 'paid',
+                published_at: new Date('2023-07-25T04:20:30.000+00:00')
             });
 
             membersPostWithPaywallCard = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'thou-shalt-have-a-taste',
                 visibility: 'members',
                 mobiledoc: '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["paywall",{}]],"sections":[[1,"p",[[0,[],0,"Free content"]]],[10,0],[1,"p",[[0,[],0,"Members content"]]]]}',
-                html: '<p>Free content</p><!--members-only--><p>Members content</p>'
+                html: '<p>Free content</p><!--members-only--><p>Members content</p>',
+                published_at: new Date('2023-07-30T04:20:30.000+00:00')
             });
 
             return testUtils.fixtures.insertPosts([

@@ -1,4 +1,5 @@
 const logging = require('@tryghost/logging');
+const DatabaseInfo = require('@tryghost/database-info');
 const {createNonTransactionalMigration} = require('../../utils');
 
 const INDEX_NAME = 'posts_published_at_index';
@@ -7,7 +8,7 @@ module.exports = createNonTransactionalMigration(
     async function up(knex) {
         let hasIndex = false;
 
-        if (knex.client.config.client === 'sqlite3') {
+        if (DatabaseInfo.isSQLite(knex)) {
             const result = await knex.raw(`select * from sqlite_master where type = 'index' and tbl_name = 'posts' and name = '${INDEX_NAME}'`);
             hasIndex = (result.length !== 0);
         } else {
@@ -29,7 +30,7 @@ module.exports = createNonTransactionalMigration(
     async function down(knex) {
         let missingIndex = false;
 
-        if (knex.client.config.client === 'sqlite3') {
+        if (DatabaseInfo.isSQLite(knex)) {
             const result = await knex.raw(`select * from sqlite_master where type = 'index' and tbl_name = 'posts' and name = '${INDEX_NAME}'`);
             missingIndex = (result.length === 0);
         } else {
