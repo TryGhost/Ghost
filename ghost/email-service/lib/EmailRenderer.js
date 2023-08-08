@@ -309,9 +309,22 @@ class EmailRenderer {
         });
         html = await this.renderTemplate(templateData);
 
+        // We pass the base option to the link replacer so relative links are replaced with absolute links, relative to this base url
+        const base = templateData.post.url;
+
         // Link tracking
         if (options.clickTrackingEnabled) {
-            html = await this.#linkReplacer.replace(html, async (url) => {
+            html = await this.#linkReplacer.replace(html, async (url, originalPath) => {
+                if (originalPath.startsWith('%%{') && originalPath.endsWith('}%%')) {
+                    // Don't add the base url to replacement strings
+                    return originalPath;
+                }
+
+                // Ignore empty hashtags (used as a hack for email addresses to prevent making them clickable)
+                if (originalPath === '#') {
+                    return originalPath;
+                }
+
                 // We ignore all links that contain %%{uuid}%%
                 // because otherwise we would add tracking to links that need to be replaced first
                 if (url.toString().indexOf('%%{uuid}%%') !== -1) {
@@ -338,7 +351,21 @@ class EmailRenderer {
                 // We need to convert to a string at this point, because we need invalid string characters in the URL
                 const str = url.toString().replace(/--uuid--/g, '%%{uuid}%%');
                 return str;
-            });
+            }, {base});
+        } else {
+            // Replace all relative links to absolute ones
+            html = await this.#linkReplacer.replace(html, (url, originalPath) => {
+                if (originalPath.startsWith('%%{') && originalPath.endsWith('}%%')) {
+                    // Don't add the base url to replacement strings
+                    return originalPath;
+                }
+
+                // Ignore empty hashtags (used as a hack for email addresses to prevent making them clickable)
+                if (originalPath === '#') {
+                    return originalPath;
+                }
+                return url;
+            }, {base});
         }
 
         // Juice HTML (inline CSS)
