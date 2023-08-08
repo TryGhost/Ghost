@@ -1,4 +1,5 @@
 import ButtonGroup from '../../../../admin-x-ds/global/ButtonGroup';
+import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import Form from '../../../../admin-x-ds/global/form/Form';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import Hint from '../../../../admin-x-ds/global/Hint';
@@ -278,13 +279,32 @@ const Sidebar: React.FC<{
 
 const NewsletterDetailModal: React.FC<NewsletterDetailModalProps> = ({newsletter}) => {
     const modal = useModal();
+    const {siteData} = useGlobalData();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
 
     const {formState, updateForm, handleSave, validate, errors, clearError} = useForm({
         initialState: newsletter,
         onSave: async () => {
-            await editNewsletter(formState);
-            modal.remove();
+            const {newsletters, meta} = await editNewsletter(formState);
+
+            if (meta?.sent_email_verification) {
+                NiceModal.show(ConfirmationModal, {
+                    title: 'Confirm newsletter email address',
+                    prompt: <>
+                        We&lsquo;ve sent a confirmation email to <strong>{formState.sender_email}</strong>.
+                        Until the address has been verified newsletters will be sent from the
+                        {newsletters[0].sender_email ? ' previous' : ' default'} email address
+                        ({fullEmailAddress(newsletters[0].sender_email || 'noreply', siteData)}).
+                    </>,
+                    cancelLabel: '',
+                    onOk: (confirmModal) => {
+                        confirmModal?.remove();
+                        modal.remove();
+                    }
+                });
+            } else {
+                modal.remove();
+            }
         },
         onValidate: () => {
             const newErrors: Record<string, string> = {};

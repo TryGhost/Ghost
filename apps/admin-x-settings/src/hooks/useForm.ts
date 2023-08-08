@@ -58,12 +58,12 @@ const useForm = <State>({initialState, onSave, onValidate}: {
 
     // function to save the changed settings via API
     const handleSave = async () => {
-        if (saveState !== 'unsaved') {
-            return true;
-        }
-
         if (!validate()) {
             return false;
+        }
+
+        if (saveState !== 'unsaved') {
+            return true;
         }
 
         setSaveState('saving');
