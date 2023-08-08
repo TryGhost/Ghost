@@ -34,11 +34,14 @@ export default class EditRoute extends AuthenticatedRoute {
 
         const records = await this.store.query(modelName, query);
         let post = records.firstObject;
-
-        if (post.mobiledoc && this.feature.get('convertToLexical')) {
-            post = await post.save({adapterOptions: {convertToLexical: 1}});
-        } else {
-            return this.router.transitionTo('editor.edit', post);
+        
+        // CASE: Post is in mobiledoc — convert to lexical or redirect
+        if (post.mobiledoc) {
+            if (this.feature.get('convertToLexical') && this.feature.get('lexicalEditor')) {
+                post = await post.save({adapterOptions: {convertToLexical: 1}});
+            } else {
+                return this.replaceWith('editor.edit', post);
+            }
         }
 
         return post;

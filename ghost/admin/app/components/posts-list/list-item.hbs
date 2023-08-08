@@ -51,6 +51,17 @@
                     {{svg-jar "star-fill" class="gh-featured-post"}}
                 {{/if}}
                 {{@post.title}}
+
+                <!-- Display lexical/mobiledoc indicators for easier testing of the feature -->
+                {{#if (feature 'convertToLexical')}}
+                    {{#if @post.lexical}}
+                        <span class="gh-lexical-indicator">L</span>
+                    {{/if}}
+                    {{#if @post.mobiledoc}}
+                        <span class="gh-lexical-indicator">M</span>
+                    {{/if}}
+                {{/if}}
+                
             </h3>
             {{#unless @hideAuthor }}
                 <p class="gh-content-entry-meta">
