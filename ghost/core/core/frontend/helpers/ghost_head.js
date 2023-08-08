@@ -45,9 +45,10 @@ function finaliseStructuredData(meta) {
 }
 
 function getMembersHelper(data, frontendKey) {
-    if (!settingsCache.get('members_enabled')) {
+    if (!settingsCache.get('members_enabled') && !settingsCache.get('donations_enabled')) {
         return '';
     }
+
     const {scriptUrl} = getFrontendAppConfig('portal');
 
     const colorString = (_.has(data, 'site._preview') && data.site.accent_color) ? data.site.accent_color : '';
