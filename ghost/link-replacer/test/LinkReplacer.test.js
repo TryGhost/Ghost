@@ -21,6 +21,30 @@ describe('LinkReplacementService', function () {
             assert.equal(replaced, expected);
         });
 
+        it('Can replace relative URLs', async function () {
+            const html = '<a href="dir/path">link</a>';
+            const expected = '<a href="https://google.com/test-dir/dir/path">link</a>';
+
+            const replaced = await linkReplacer.replace(html, u => u, {base: 'https://google.com/test-dir/'});
+            assert.equal(replaced, expected);
+        });
+
+        it('Can replace relative URLs relative to root domain', async function () {
+            const html = '<a href="/dir/path">link</a>';
+            const expected = '<a href="https://google.com/dir/path">link</a>';
+
+            const replaced = await linkReplacer.replace(html, u => u, {base: 'https://google.com/test-dir/'});
+            assert.equal(replaced, expected);
+        });
+
+        it('Can replace fragments relative to base', async function () {
+            const html = '<a href="#support">link</a>';
+            const expected = '<a href="https://google.com/test-dir/#support">link</a>';
+
+            const replaced = await linkReplacer.replace(html, u => u, {base: 'https://google.com/test-dir/'});
+            assert.equal(replaced, expected);
+        });
+
         it('Doesn\'t break weird &map', async function () {
             // Refs https://github.com/TryGhost/Team/issues/2666: somehow this gets replaced with https://example.com/test.jpg?test=true↦id=de76 if decoding entities is enabled
             const html = '<img src="https://example.com/test.jpg?test=true&map_id=test">';
