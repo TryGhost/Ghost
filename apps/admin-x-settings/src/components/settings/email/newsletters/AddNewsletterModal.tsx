@@ -7,6 +7,7 @@ import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
+import {modalRoutes} from '../../../providers/RoutingProvider';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
 import {useAddNewsletter} from '../../../../api/newsletters';
@@ -36,7 +37,7 @@ const AddNewsletterModal: React.FC<AddNewsletterModalProps> = () => {
                 opt_in_existing: formState.optInExistingSubscribers
             });
 
-            updateRoute(`newsletters/show/${response.newsletters[0].id}`);
+            updateRoute(modalRoutes.showNewsletter, {id: response.newsletters[0].id});
         },
         onValidate: () => {
             const newErrors: Record<string, string> = {};
@@ -62,7 +63,6 @@ const AddNewsletterModal: React.FC<AddNewsletterModalProps> = () => {
             toast.remove();
             if (await handleSave()) {
                 modal.remove();
-                updateRoute('newsletters');
             } else {
                 showToast({
                     type: 'pageError',

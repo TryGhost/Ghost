@@ -8,6 +8,7 @@ import TableCell from '../../../../admin-x-ds/global/TableCell';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
 import useRouting from '../../../../hooks/useRouting';
 import {Newsletter, useEditNewsletter} from '../../../../api/newsletters';
+import {modalRoutes} from '../../../providers/RoutingProvider';
 
 interface NewslettersListProps {
     newsletters: Newsletter[]
@@ -49,7 +50,7 @@ const NewsletterItem: React.FC<{newsletter: Newsletter, onlyOne: boolean}> = ({n
     );
 
     const showDetails = () => {
-        updateRoute(`newsletters/show/${newsletter.id}`);
+        updateRoute(modalRoutes.showNewsletter, {id: newsletter.id});
     };
 
     return (
