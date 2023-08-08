@@ -143,24 +143,45 @@ test.describe('Editor keyboard shortcuts', async () => {
         `);
     });
 
-        // test('header (h2)', async function () {
-        //     await focusEditor(page);
+    test('header cycle', async function () {
+        await focusEditor(page);
 
-        //     await page.keyboard.type('test');
+        await page.keyboard.type('test');
 
-        //     await page.keyboard.down('Shift');
-        //     await page.keyboard.press('ArrowLeft');
-        //     await page.keyboard.press('ArrowLeft');
-        //     await page.keyboard.press('ArrowLeft');
-        //     await page.keyboard.press('ArrowLeft');
-        //     await page.keyboard.up('Shift', {delay: 100});
+        await page.keyboard.press(`${ctrlOrCmdKey}+h`);
 
-        //     await page.keyboard.press('Meta+B', {delay: 100});
+        await assertHTML(page, html`
+            <h2 dir="ltr"><span data-lexical-text="true">test</span></h2>
+        `);
 
-        //     // no extra paragraph created
-        //     await assertHTML(page, html`
-        //         "<p dir="ltr"><strong data-lexical-text="true">B</strong></p>"
-        //     `);
-        // });
+        await page.keyboard.press(`${ctrlOrCmdKey}+h`);
+
+        await assertHTML(page, html`
+            <h3 dir="ltr"><span data-lexical-text="true">test</span></h3>
+        `);
+
+        await page.keyboard.press(`${ctrlOrCmdKey}+h`);
+
+        await assertHTML(page, html`
+            <h4 dir="ltr"><span data-lexical-text="true">test</span></h4>
+        `);
+
+        await page.keyboard.press(`${ctrlOrCmdKey}+h`);
+
+        await assertHTML(page, html`
+            <h5 dir="ltr"><span data-lexical-text="true">test</span></h5>
+        `);
+
+        await page.keyboard.press(`${ctrlOrCmdKey}+h`);
+
+        await assertHTML(page, html`
+            <h6 dir="ltr"><span data-lexical-text="true">test</span></h6>
+        `);
+
+        await page.keyboard.press(`${ctrlOrCmdKey}+h`);
+
+        await assertHTML(page, html`
+            <p dir="ltr"><span data-lexical-text="true">test</span></p>
+        `);
     });
 });

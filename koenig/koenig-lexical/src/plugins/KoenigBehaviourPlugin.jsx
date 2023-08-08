@@ -2,6 +2,7 @@ import React from 'react';
 import {$createAsideNode, $isAsideNode} from '../nodes/AsideNode';
 import {$createCodeBlockNode} from '../nodes/CodeBlockNode';
 import {$createEmbedNode} from '../nodes/EmbedNode';
+import {$createHeadingNode, $createQuoteNode, $isHeadingNode, $isQuoteNode} from '@lexical/rich-text';
 import {$createLinkNode} from '@lexical/link';
 import {
     $createNodeSelection,
@@ -35,7 +36,6 @@ import {
     PASTE_COMMAND,
     createCommand
 } from 'lexical';
-import {$createQuoteNode, $isQuoteNode} from '@lexical/rich-text';
 import {$insertAndSelectNode} from '../utils/$insertAndSelectNode';
 import {
     $isAtStartOfDocument,
@@ -795,6 +795,30 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                 $setBlocksType(selection, () => $createAsideNode());
                             } else if ($isAsideNode(firstNode)) {
                                 $setBlocksType(selection, () => $createParagraphNode());
+                            }
+                        }
+                    }
+
+                    if ((metaKey || ctrlKey) && code === 'KeyH') {
+                        // avoid hide behaviour
+                        event.preventDefault();
+
+                        const selection = $getSelection();
+                        if ($isRangeSelection(selection)) {
+                            const firstNode = selection.anchor.getNode().getTopLevelElement();
+
+                            if ($isParagraphNode(firstNode)) {
+                                $setBlocksType(selection, () => $createHeadingNode('h2'));
+                            } else if ($isHeadingNode(firstNode)) {
+                                const tag = firstNode.getTag();
+                                const level = parseInt(tag.slice(1), 10);
+                                const newLevel = level + 1;
+
+                                if (newLevel > 6) {
+                                    $setBlocksType(selection, () => $createParagraphNode());
+                                } else {
+                                    $setBlocksType(selection, () => $createHeadingNode(`h${newLevel}`));
+                                }
                             }
                         }
                     }
