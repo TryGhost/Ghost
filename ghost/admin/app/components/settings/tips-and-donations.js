@@ -6,7 +6,6 @@ import {currencies} from 'ghost-admin/utils/currency';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
-import {tracked} from '@glimmer/tracking';
 
 const CURRENCIES = currencies.map((currency) => {
     return {
