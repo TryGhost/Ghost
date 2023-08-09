@@ -36,14 +36,15 @@ export default class FeedbackLexicalSendButtonComponent extends Component {
             StaffAccessLevel: this.session.user.role?.description,
             UserAgent: navigator.userAgent,
             GhostVersion: this.config.version,
-            KoenigLexicalVersion: window['@tryghost/koenig-lexical'].version,
+            KoenigLexicalVersion: window['@tryghost/koenig-lexical']?.version,
             Feedback: this.args.feedbackMessage
         };
 
         let data = {
             ...ghostData,
             ...postData,
-            Source: source || 'Settings'
+            Source: source || 'Settings',
+            Origin: window.location.origin
         };
 
         let response = yield this.ajax.post(url, {data});
