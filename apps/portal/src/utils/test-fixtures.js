@@ -136,7 +136,7 @@ const baseMultiTierSite = getSiteData({
 export const site = {
     singleTier: {
         basic: baseSingleTierSite,
-        withoutPlans: {
+        inviteOnly: {
             ...baseSingleTierSite,
             portal_plans: []
         },
@@ -151,23 +151,6 @@ export const site = {
         withoutName: {
             ...baseSingleTierSite,
             portal_name: false
-        },
-        withoutStripe: {
-            ...baseSingleTierSite,
-            is_stripe_configured: false
-        },
-        onlyFreePlanWithoutStripe: {
-            ...baseSingleTierSite,
-            portal_plans: ['free'],
-            is_stripe_configured: false
-        },
-        membersInviteOnly: {
-            ...baseSingleTierSite,
-            members_signup_access: 'invite'
-        },
-        membersDisabled: {
-            ...baseSingleTierSite,
-            members_signup_access: 'none'
         }
     },
     multipleTiers: {

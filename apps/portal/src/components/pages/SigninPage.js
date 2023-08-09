@@ -5,8 +5,6 @@ import CloseButton from '../common/CloseButton';
 import AppContext from '../../AppContext';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {isSigninAllowed} from '../../utils/helpers';
-import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 
 export default class SigninPage extends React.Component {
     static contextType = AppContext;
@@ -118,23 +116,6 @@ export default class SigninPage extends React.Component {
     }
 
     renderForm() {
-        const {site, t} = this.context;
-
-        if (!isSigninAllowed({site})) {
-            return (
-                <section>
-                    <div className='gh-portal-section'>
-                        <p
-                            className='gh-portal-members-disabled-notification'
-                            data-testid="members-disabled-notification-text"
-                        >
-                            {t('Memberships unavailable, contact the owner for access.')}
-                        </p>
-                    </div>
-                </section>
-            );
-        }
-
         return (
             <section>
                 <div className='gh-portal-section'>
@@ -144,52 +125,32 @@ export default class SigninPage extends React.Component {
                         onKeyDown={(e, field) => this.onKeyDown(e, field)}
                     />
                 </div>
-                <footer className='gh-portal-signin-footer'>
-                    {this.renderSubmitButton()}
-                    {this.renderSignupMessage()}
-                </footer>
             </section>
         );
     }
 
-    renderSiteIcon() {
-        const iconStyle = {};
-        const {site} = this.context;
-        const siteIcon = site.icon;
+    renderSiteLogo() {
+        const siteLogo = this.context.site.icon;
 
-        if (siteIcon) {
-            iconStyle.backgroundImage = `url(${siteIcon})`;
+        const logoStyle = {};
+
+        if (siteLogo) {
+            logoStyle.backgroundImage = `url(${siteLogo})`;
             return (
-                <img className='gh-portal-signup-logo' src={siteIcon} alt={this.context.site.title} />
-            );
-        } else if (!isSigninAllowed({site})) {
-            return (
-                <InvitationIcon className='gh-portal-icon gh-portal-icon-invitation' />
+                <img className='gh-portal-signup-logo' src={siteLogo} alt={this.context.site.title} />
             );
         }
         return null;
     }
 
-    renderSiteTitle() {
-        const {site, t} = this.context;
-        const siteTitle = site.title;
-
-        if (!isSigninAllowed({site})) {
-            return (
-                <h1 className='gh-portal-main-title'>{siteTitle}</h1>
-            );
-        } else {
-            return (
-                <h1 className='gh-portal-main-title'>{t('Sign in')}</h1>
-            );
-        }
-    }
-
     renderFormHeader() {
+        // const siteTitle = this.context.site.title || 'Site Title';
+        const {t} = this.context;
+
         return (
             <header className='gh-portal-signin-header'>
-                {this.renderSiteIcon()}
-                {this.renderSiteTitle()}
+                {this.renderSiteLogo()}
+                <h1 className="gh-portal-main-title">{t('Sign in')}</h1>
             </header>
         );
     }
@@ -197,12 +158,19 @@ export default class SigninPage extends React.Component {
     render() {
         return (
             <>
+                {/* <div className='gh-portal-back-sitetitle'>
+                    <SiteTitleBackButton />
+                </div> */}
                 <CloseButton />
                 <div className='gh-portal-logged-out-form-container'>
                     <div className='gh-portal-content signin'>
                         {this.renderFormHeader()}
                         {this.renderForm()}
                     </div>
+                    <footer className='gh-portal-signin-footer'>
+                        {this.renderSubmitButton()}
+                        {this.renderSignupMessage()}
+                    </footer>
                 </div>
             </>
         );
