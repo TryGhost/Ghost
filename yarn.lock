@@ -18336,10 +18336,10 @@ husky@8.0.3:
   resolved "https://registry.yarnpkg.com/husky/-/husky-8.0.3.tgz#4936d7212e46d1dea28fef29bb3a108872cd9184"
   integrity sha512-+dQSyqPh4x1hlO1swXBiNb2HzTDN1I2IGLQx1GrBuiqFJfoMrnZWwVmatvSiO+Iz8fBUnf+lekwNo4c2LlXItg==
 
-i18next-parser@8.3.0:
-  version "8.3.0"
-  resolved "https://registry.yarnpkg.com/i18next-parser/-/i18next-parser-8.3.0.tgz#60bbe5464f2e19aff3949d8277f03b014d2bcfb2"
-  integrity sha512-5FAI1SYQ7nTxjUvUw/2r8FCEC08riT9ZB1thOIEf1EjRZZ+XCgFg5adzc3xY5DwDhGoKoUr6Got3H1AWm2tyOQ==
+i18next-parser@8.4.0:
+  version "8.4.0"
+  resolved "https://registry.yarnpkg.com/i18next-parser/-/i18next-parser-8.4.0.tgz#9712841f9c22ad5ac109e91e2def775fa46db392"
+  integrity sha512-4Ahcv0NoYHVBoPmSM7J91JhuIlk348h0z2mzzB+JxYqQlKIp5tOicWblGX0ALM1ChrQnq4ERSdxhgcb2oQKDgg==
   dependencies:
     "@babel/runtime" "^7.15.4"
     broccoli-plugin "^4.0.7"
