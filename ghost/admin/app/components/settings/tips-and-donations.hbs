@@ -73,7 +73,11 @@
                                 @class="gh-btn gh-btn-black gh-btn-icon" />
                         </div>
                     </GhFormGroup>
+
                 </div>
+                {{#if this.tipsAndDonationsError}}
+                    <p class="gh-setting-error"><span class="red">{{this.tipsAndDonationsError}}</span></p>
+                {{/if}}
             </GhFormGroup>
         </div>
         {{/liquid-if}}

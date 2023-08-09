@@ -162,3 +162,45 @@ export function getCurrencyOptions() {
         }
     ];
 }
+
+/*
+* Returns the minimum charge amount for a given currency,
+* based on Stripe's requirements. Values here are double the Stripe limits, to take conversions to the settlement currency into account.
+* @see https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts
+* @param {String} currency — Currency in the 3-letter ISO format (e.g. "USD", "EUR")
+* @retuns {Number} — Minimum amount in cents (e.g. 100 for $1.00)
+*/
+export function minimumAmountForCurrency(currency) {
+    switch (currency) {
+    case 'AED':
+        return 400;
+    case 'BGN':
+        return 200;
+    case 'CZK':
+        return 3000;
+    case 'DKK':
+        return 500;
+    case 'HKD':
+        return 800;
+    case 'HUF':
+        return 25000;
+    case 'JPY':
+        return 10000;
+    case 'MXN':
+        return 2000;
+    case 'MYR':
+        return 400;
+    case 'NOK':
+        return 600;
+    case 'PLN':
+        return 400;
+    case 'RON':
+        return 400;
+    case 'SEK':
+        return 600;
+    case 'THB':
+        return 2000;
+    default:
+        return 100;
+    }
+}
