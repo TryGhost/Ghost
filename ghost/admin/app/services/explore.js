@@ -79,6 +79,13 @@ export default class ExploreService extends Service {
         }, '*');
     }
 
+    sendUIUpdate(data) {
+        this.getExploreIframe().contentWindow.postMessage({
+            query: 'uiUpdate',
+            response: data
+        }, '*');
+    }
+
     // Controls explore window modal visibility and sync of the URL visible in browser
     // and the URL opened on the iframe. It is responsible to non user triggered iframe opening,
     // for example: by entering "/explore" route in the URL or using history navigation (back and forward)
