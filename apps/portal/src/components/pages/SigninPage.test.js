@@ -61,7 +61,7 @@ describe('SigninPage', () => {
     });
 
     describe('when members are disabled', () => {
-        test.only('renders an informative message', () => {
+        test('renders an informative message', () => {
             setup({
                 site: getSiteData({
                     membersSignupAccess: 'none'
