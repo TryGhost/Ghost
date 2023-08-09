@@ -678,7 +678,7 @@ class SignupPage extends React.Component {
                             className='gh-portal-members-disabled-notification'
                             data-testid="members-disabled-notification-text"
                         >
-                            {t('This site is not accepting new members at the moment.')}
+                            {t('Memberships unavailable, contact the owner for access.')}
                         </p>
                     </div>
                 </section>
@@ -731,19 +731,19 @@ class SignupPage extends React.Component {
         );
     }
 
-    renderSiteLogo() {
+    renderSiteIcon() {
         const {site, pageQuery} = this.context;
+        const siteIcon = site.icon;
 
-        const siteLogo = site.icon;
-
-        const logoStyle = {};
-
-        if (siteLogo) {
-            logoStyle.backgroundImage = `url(${siteLogo})`;
+        if (siteIcon) {
             return (
-                <img className='gh-portal-signup-logo' src={siteLogo} alt={site.title} />
+                <img className='gh-portal-signup-logo' src={siteIcon} alt={site.title} />
             );
         } else if (isInviteOnlySite({site, pageQuery})) {
+            return (
+                <InvitationIcon className='gh-portal-icon gh-portal-icon-invitation' />
+            );
+        } else if (!isSignupAllowed({site})) {
             return (
                 <InvitationIcon className='gh-portal-icon gh-portal-icon-invitation' />
             );
@@ -756,7 +756,7 @@ class SignupPage extends React.Component {
         const siteTitle = site.title || '';
         return (
             <header className='gh-portal-signup-header'>
-                {this.renderSiteLogo()}
+                {this.renderSiteIcon()}
                 <h1 className="gh-portal-main-title" data-testid='site-title-text'>{siteTitle}</h1>
             </header>
         );
