@@ -22307,9 +22307,10 @@ moment@2.24.0, moment@2.27.0, moment@2.29.1, moment@2.29.3, moment@2.29.4, "mome
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
   integrity sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
 
-monobundle@TryGhost/monobundle#2aca618f8880250fb99ad48d61f0ca7251f1e648:
+monobundle@TryGhost/monobundle#44fdf2c8e304e797a04858bfd7339b2a1fa47441:
   version "0.1.0"
-  resolved "https://codeload.github.com/TryGhost/monobundle/tar.gz/2aca618f8880250fb99ad48d61f0ca7251f1e648"
+  uid "44fdf2c8e304e797a04858bfd7339b2a1fa47441"
+  resolved "https://codeload.github.com/TryGhost/monobundle/tar.gz/44fdf2c8e304e797a04858bfd7339b2a1fa47441"
   dependencies:
     detect-indent "6.1.0"
     detect-newline "3.1.0"
@@ -29811,10 +29812,10 @@ vite-plugin-commonjs@0.8.2:
     magic-string "^0.30.1"
     vite-plugin-dynamic-import "^1.5.0"
 
-vite-plugin-css-injected-by-js@3.2.1:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/vite-plugin-css-injected-by-js/-/vite-plugin-css-injected-by-js-3.2.1.tgz#c23e10e28a1afb78414fa3c162ac8a253cd1a6a4"
-  integrity sha512-8UQWy7tcmgwkaUKYfbj/8GOeAD0RPG2tdetAGg7WikWC8IEtNrovs8RRuLjFqdRqORT1XxchBB5tPl6xO/H95g==
+vite-plugin-css-injected-by-js@3.3.0:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/vite-plugin-css-injected-by-js/-/vite-plugin-css-injected-by-js-3.3.0.tgz#c19480a9e42a95c5bced976a9dde1446f9bd91ff"
+  integrity sha512-xG+jyHNCmUqi/TXp6q88wTJGeAOrNLSyUUTp4qEQ9QZLGcHWQQsCsSSKa59rPMQr8sOzfzmWDd8enGqfH/dBew==
 
 vite-plugin-dynamic-import@^1.5.0:
   version "1.5.0"
