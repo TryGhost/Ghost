@@ -40,6 +40,13 @@ export default class GhExploreIframe extends Component {
         }
     }
 
+    @action
+    async handleDarkModeChange() {
+        if (this.explore.exploreWindowOpen) {
+            this.explore.sendUIUpdate({darkMode: this.feature.nightShift});
+        }
+    }
+
     // The iframe can send route updates to navigate to within Admin, as some routes
     // have to be rendered within the iframe and others require to break out of it.
     _handleRouteUpdate(data) {
