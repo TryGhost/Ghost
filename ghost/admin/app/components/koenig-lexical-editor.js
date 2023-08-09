@@ -324,8 +324,7 @@ export default class KoenigLexicalEditor extends Component {
             feature: {
                 signupCard: true,
                 collectionsCard: this.feature.get('collectionsCard'),
-                collections: this.feature.get('collections'),
-                headerV2: true
+                collections: this.feature.get('collections')
             },
             depreciated: {
                 headerV1: true // if false, shows header v1 in the menu
