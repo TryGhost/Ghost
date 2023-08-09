@@ -1,18 +1,30 @@
-import {render, fireEvent} from '../../utils/test-utils';
+import {render, fireEvent, getByTestId} from '../../utils/test-utils';
 import SigninPage from './SigninPage';
+import {getSiteData} from '../../utils/fixtures-generator';
 
-const setup = () => {
+const setup = (overrides) => {
     const {mockOnActionFn, ...utils} = render(
         <SigninPage />,
         {
             overrideContext: {
-                member: null
+                member: null,
+                ...overrides
             }
         }
     );
-    const emailInput = utils.getByLabelText(/email/i);
-    const submitButton = utils.queryByRole('button', {name: 'Continue'});
-    const signupButton = utils.queryByRole('button', {name: 'Sign up'});
+
+    let emailInput;
+    let submitButton;
+    let signupButton;
+
+    try {
+        emailInput = utils.getByLabelText(/email/i);
+        submitButton = utils.queryByRole('button', {name: 'Continue'});
+        signupButton = utils.queryByRole('button', {name: 'Sign up'});
+    } catch (err) {
+        // ignore
+    }
+
     return {
         emailInput,
         submitButton,
@@ -46,5 +58,18 @@ describe('SigninPage', () => {
 
         fireEvent.click(signupButton);
         expect(mockOnActionFn).toHaveBeenCalledWith('switchPage', {page: 'signup'});
+    });
+
+    describe('when members are disabled', () => {
+        test('renders an informative message', () => {
+            setup({
+                site: getSiteData({
+                    membersSignupAccess: 'none'
+                })
+            });
+
+            const message = getByTestId(document.body, 'members-disabled-notification-text');
+            expect(message).toBeInTheDocument();
+        });
     });
 });
