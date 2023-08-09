@@ -7,7 +7,7 @@ import NewsletterSelectionPage from './NewsletterSelectionPage';
 import ProductsSection from '../common/ProductsSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {getSiteProducts, getSitePrices, hasOnlyFreePlan, isInviteOnlySite, freeHasBenefitsOrDescription, hasOnlyFreeProduct, getFreeProductBenefits, getFreeTierDescription, hasFreeProductPrice, hasMultipleNewsletters, hasFreeTrialTier} from '../../utils/helpers';
+import {getSiteProducts, getSitePrices, hasOnlyFreePlan, isInviteOnlySite, freeHasBenefitsOrDescription, hasOnlyFreeProduct, getFreeProductBenefits, getFreeTierDescription, hasFreeProductPrice, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 
 export const SignupPageStyles = `
@@ -171,7 +171,7 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     margin-top: 0;
 }
 
-.gh-portal-invite-only-notification {
+.gh-portal-invite-only-notification, .gh-portal-members-disabled-notification {
     margin: 8px 32px 24px;
     padding: 0;
     text-align: center;
@@ -670,6 +670,21 @@ class SignupPage extends React.Component {
             );
         }
 
+        if (!isSignupAllowed({site})) {
+            return (
+                <section>
+                    <div className='gh-portal-section'>
+                        <p
+                            className='gh-portal-members-disabled-notification'
+                            data-testid="members-disabled-notification-text"
+                        >
+                            {t('Memberships unavailable, contact the owner for access.')}
+                        </p>
+                    </div>
+                </section>
+            );
+        }
+
         const freeBenefits = getFreeProductBenefits({site});
         const freeDescription = getFreeTierDescription({site});
         const showOnlyFree = pageQuery === 'free' && hasFreeProductPrice({site});
@@ -716,19 +731,19 @@ class SignupPage extends React.Component {
         );
     }
 
-    renderSiteLogo() {
+    renderSiteIcon() {
         const {site, pageQuery} = this.context;
+        const siteIcon = site.icon;
 
-        const siteLogo = site.icon;
-
-        const logoStyle = {};
-
-        if (siteLogo) {
-            logoStyle.backgroundImage = `url(${siteLogo})`;
+        if (siteIcon) {
             return (
-                <img className='gh-portal-signup-logo' src={siteLogo} alt={site.title} />
+                <img className='gh-portal-signup-logo' src={siteIcon} alt={site.title} />
             );
         } else if (isInviteOnlySite({site, pageQuery})) {
+            return (
+                <InvitationIcon className='gh-portal-icon gh-portal-icon-invitation' />
+            );
+        } else if (!isSignupAllowed({site})) {
             return (
                 <InvitationIcon className='gh-portal-icon gh-portal-icon-invitation' />
             );
@@ -741,7 +756,7 @@ class SignupPage extends React.Component {
         const siteTitle = site.title || '';
         return (
             <header className='gh-portal-signup-header'>
-                {this.renderSiteLogo()}
+                {this.renderSiteIcon()}
                 <h1 className="gh-portal-main-title" data-testid='site-title-text'>{siteTitle}</h1>
             </header>
         );
@@ -794,10 +809,6 @@ class SignupPage extends React.Component {
                     {this.renderFormHeader()}
                     {this.renderForm()}
                 </div>
-                {/* <footer className={'gh-portal-signup-footer gh-portal-logged-out-form-container ' + footerClass}>
-                    {this.renderSubmitButton()}
-                    {this.renderLoginMessage()}
-                </footer> */}
             </>
         );
     }
