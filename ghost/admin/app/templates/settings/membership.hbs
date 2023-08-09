@@ -177,11 +177,11 @@
         <div class="gh-expandable">
             <Settings::SignupFormEmbed />
             {{#if (feature "tipsAndDonations")}}
-                <Settings::TipsAndDonations />
+                <Settings::TipsAndDonations @openStripeConnect={{this.openStripeConnect}}/>
             {{/if}}
         </div>
     </section>
-    
+
     {{#if this.showPortalSettings}}
         <GhFullscreenModal
             @modal="portal-settings"

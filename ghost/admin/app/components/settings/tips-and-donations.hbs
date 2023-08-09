@@ -15,7 +15,7 @@
         {{/if}}
     </div>
     <div class="gh-expandable-content">
-        {{#liquid-if this.tipsAndDonationsOpen}}
+        {{#liquid-if (and this.tipsAndDonationsOpen this.membersUtils.isStripeEnabled) }}
         <div class="gh-setting-content-extended">
             <GhFormGroup>
                 <div class="flex items-center">
