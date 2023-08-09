@@ -10,7 +10,7 @@ require('./overrides');
 // Require assertions - adds custom should assertions
 require('./assertions');
 
-const Prettier = require('prettier');
+const Prettier = require('@prettier/sync');
 
 module.exports.html = function html(partials, ...params) {
     let output = '';

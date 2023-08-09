@@ -3,7 +3,7 @@ const {$getRoot} = require('lexical');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
 const {JSDOM} = require('jsdom');
-const Prettier = require('prettier');
+const Prettier = require('@prettier/sync');
 
 const {BookmarkNode, $createBookmarkNode, $isBookmarkNode} = require('../../');
 

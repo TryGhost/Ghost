@@ -48,7 +48,7 @@ describe('Cards', function () {
         const renderer = new Renderer({nodes});
         const renderedInput = await renderer.render(JSON.stringify(lexicalState), options);
 
-        const output = Prettier.format(renderedInput, {parser: 'html'});
+        const output = await Prettier.format(renderedInput, {parser: 'html'});
 
         const expected =
 `<figure class="kg-card kg-image-card kg-card-hascaption">
@@ -74,7 +74,7 @@ describe('Cards', function () {
         const renderer = new Renderer({nodes});
         const renderedInput = await renderer.render(JSON.stringify(lexicalState), options);
 
-        const output = Prettier.format(renderedInput, {parser: 'html'});
+        const output = await Prettier.format(renderedInput, {parser: 'html'});
 
         const expected =
 `<!--members-only-->
@@ -111,7 +111,7 @@ describe('Cards', function () {
         const renderer = new Renderer({nodes});
         const renderedInput = await renderer.render(JSON.stringify(lexicalState), options);
 
-        const output = Prettier.format(renderedInput, {parser: 'html'});
+        const output = await Prettier.format(renderedInput, {parser: 'html'});
 
         const expected =
 `<div style="color: red">

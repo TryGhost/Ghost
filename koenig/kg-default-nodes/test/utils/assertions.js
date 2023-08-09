@@ -1,4 +1,4 @@
-const Prettier = require('prettier');
+const Prettier = require('@prettier/sync');
 const chai = require('chai');
 const expect = chai.expect;
 const minify = require('html-minifier').minify;

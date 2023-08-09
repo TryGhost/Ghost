@@ -1,6 +1,6 @@
 import fs from 'fs';
 import jsdom from 'jsdom';
-import prettier from 'prettier';
+import prettier from '@prettier/sync';
 import startCase from 'lodash/startCase';
 import {E2E_PORT} from '../../playwright.config';
 import {expect} from '@playwright/test';
