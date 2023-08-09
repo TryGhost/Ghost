@@ -21273,10 +21273,10 @@ ltgt@^2.1.2:
   resolved "https://registry.yarnpkg.com/ltgt/-/ltgt-2.2.1.tgz#f35ca91c493f7b73da0e07495304f17b31f87ee5"
   integrity sha512-AI2r85+4MquTw9ZYqabu4nMwy9Oftlfa/e/52t9IjtfG+mGBbTNdAoZ3RQKLHR6r0wQnwZnPIEh/Ya6XTWAKNA==
 
-luxon@3.3.0, luxon@^3.0.0, luxon@^3.3.0:
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/luxon/-/luxon-3.3.0.tgz#d73ab5b5d2b49a461c47cedbc7e73309b4805b48"
-  integrity sha512-An0UCfG/rSiqtAIiBPO0Y9/zAnHUZxAMiCpTd5h2smgsj7GGmcenvrvww2cqNA8/4A5ZrD1gJpHN2mIHZQF+Mg==
+luxon@3.4.0, luxon@^3.0.0, luxon@^3.3.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/luxon/-/luxon-3.4.0.tgz#17cb754efecbf76994f05b2a3f1f91fad7ddfde7"
+  integrity sha512-7eDo4Pt7aGhoCheGFIuq4Xa2fJm4ZpmldpGhjTYBNUYNCN6TIEP6v7chwwwt3KRp7YR+rghbfvjyo3V5y9hgBw==
 
 luxon@^1.26.0:
   version "1.28.0"
@@ -22307,9 +22307,10 @@ moment@2.24.0, moment@2.27.0, moment@2.29.1, moment@2.29.3, moment@2.29.4, "mome
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
   integrity sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
 
-monobundle@TryGhost/monobundle#2aca618f8880250fb99ad48d61f0ca7251f1e648:
+monobundle@TryGhost/monobundle#44fdf2c8e304e797a04858bfd7339b2a1fa47441:
   version "0.1.0"
-  resolved "https://codeload.github.com/TryGhost/monobundle/tar.gz/2aca618f8880250fb99ad48d61f0ca7251f1e648"
+  uid "44fdf2c8e304e797a04858bfd7339b2a1fa47441"
+  resolved "https://codeload.github.com/TryGhost/monobundle/tar.gz/44fdf2c8e304e797a04858bfd7339b2a1fa47441"
   dependencies:
     detect-indent "6.1.0"
     detect-newline "3.1.0"
