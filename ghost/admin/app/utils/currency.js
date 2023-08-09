@@ -171,7 +171,9 @@ export function getCurrencyOptions() {
 * @retuns {Number} — Minimum amount in cents (e.g. 100 for $1.00)
 */
 export function minimumAmountForCurrency(currency) {
-    switch (currency) {
+    const isoCurrency = currency?.toUpperCase();
+
+    switch (isoCurrency) {
     case 'AED':
         return 400;
     case 'BGN':
