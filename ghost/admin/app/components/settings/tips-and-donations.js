@@ -2,10 +2,11 @@ import Component from '@glimmer/component';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import envConfig from 'ghost-admin/config/environment';
 import {action} from '@ember/object';
-import {currencies} from 'ghost-admin/utils/currency';
+import {currencies, getSymbol, minimumAmountForCurrency} from 'ghost-admin/utils/currency';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
+import {tracked} from '@glimmer/tracking';
 
 const CURRENCIES = currencies.map((currency) => {
     return {
@@ -20,6 +21,7 @@ export default class TipsAndDonations extends Component {
     @service membersUtils;
 
     @inject config;
+    @tracked tipsAndDonationsError = '';
 
     get allCurrencies() {
         return CURRENCIES;
@@ -58,7 +60,16 @@ export default class TipsAndDonations extends Component {
     setDonationsSuggestedAmount(event) {
         const amount = Math.abs(event.target.value);
         const amountInCents = Math.round(amount * 100);
+        const currency = this.settings.donationsCurrency;
+        const symbol = getSymbol(currency);
+        const minimumAmount = minimumAmountForCurrency(currency);
 
+        if (amountInCents !== 0 && amountInCents < minimumAmount) {
+            this.tipsAndDonationsError = `The suggested amount should be at least of ${symbol}${minimumAmount / 100}.`;
+            return;
+        }
+
+        this.tipsAndDonationsError = '';
         this.settings.donationsSuggestedAmount = amountInCents;
     }
 
