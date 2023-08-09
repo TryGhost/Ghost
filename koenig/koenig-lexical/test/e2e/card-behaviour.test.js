@@ -1211,6 +1211,25 @@ test.describe('Card behaviour', async () => {
             expect(await page.locator('[data-kg-card-selected="true"]')).not.toBeNull();
             expect(await page.locator('[data-kg-card-editing="true"]')).not.toBeNull();
         });
+
+        test('cursor position when deselecting empty card with nested editor', async function () {
+            // Focus/cursor position was not correct when a card with a nested editor was deselected+removed,
+            // an extra reset was occurring putting the cursor at the start of the document.
+            // See https://github.com/TryGhost/Product/issues/3430
+            await focusEditor(page);
+            await page.keyboard.type('Testing');
+            await page.keyboard.press('Enter');
+            await insertCard(page, {cardName: 'product'});
+            await page.keyboard.press('Meta+Enter');
+
+            // focus is on blank paragraph that's left after empty card is removed
+            await assertSelection(page, {
+                anchorOffset: 0,
+                anchorPath: [1],
+                focusOffset: 0,
+                focusPath: [1]
+            });
+        });
     });
 
     test.describe('ESCAPE', function () {

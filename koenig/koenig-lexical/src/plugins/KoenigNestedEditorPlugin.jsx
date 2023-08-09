@@ -100,13 +100,13 @@ function KoenigNestedEditorPlugin({
                     // return selection to the card when nested editor blurred
                     if (hasSettingsPanel && editor._parentEditor) {
                         editor._parentEditor.getEditorState().read(() => {
-                            if (!$getSelection()) {
-                                editor._parentEditor.update(() => {
+                            editor._parentEditor.update(() => {
+                                if (!$getSelection()) {
                                     const selection = $createNodeSelection();
                                     selection.add(selectedCardKey);
                                     $setSelection(selection);
-                                });
-                            }
+                                }
+                            }, {tag: 'history-merge'});
                         });
 
                         return true;

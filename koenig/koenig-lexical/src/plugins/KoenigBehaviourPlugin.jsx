@@ -382,6 +382,9 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                         $getRoot().append(paragraph);
                                         paragraph.select();
                                     } else {
+                                        // reselect card to ensure we have a selection for the next steps
+                                        $selectCard(editor, selectedCardKey);
+
                                         // select the next paragraph or card
                                         editor.dispatchCommand(KEY_ARROW_DOWN_COMMAND);
                                     }
