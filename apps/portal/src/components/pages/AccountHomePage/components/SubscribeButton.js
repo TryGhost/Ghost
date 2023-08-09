@@ -1,12 +1,13 @@
 import AppContext from '../../../../AppContext';
 import ActionButton from '../../../common/ActionButton';
-import {isSignupAllowed} from '../../../../utils/helpers';
+import {hasOnlyFreePlan} from '../../../../utils/helpers';
 import {useContext} from 'react';
 
 const SubscribeButton = () => {
     const {site, action, brandColor, onAction, t} = useContext(AppContext);
+    const {is_stripe_configured: isStripeConfigured} = site;
 
-    if (!isSignupAllowed({site})) {
+    if (!isStripeConfigured || hasOnlyFreePlan({site})) {
         return null;
     }
     const isRunning = ['checkoutPlan:running'].includes(action);

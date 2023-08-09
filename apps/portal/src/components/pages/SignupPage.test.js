@@ -1,6 +1,6 @@
 import SignupPage from './SignupPage';
 import {getFreeProduct, getProductData, getSiteData} from '../../utils/fixtures-generator';
-import {render, fireEvent, getByTestId} from '../../utils/test-utils';
+import {render, fireEvent} from '../../utils/test-utils';
 
 const setup = (overrides) => {
     const {mockOnActionFn, ...utils} = render(
@@ -12,25 +12,12 @@ const setup = (overrides) => {
             }
         }
     );
-
-    let emailInput;
-    let nameInput;
-    let submitButton;
-    let chooseButton;
-    let signinButton;
-    let freeTrialMessage;
-
-    try {
-        emailInput = utils.getByLabelText(/email/i);
-        nameInput = utils.getByLabelText(/name/i);
-        submitButton = utils.queryByRole('button', {name: 'Continue'});
-        chooseButton = utils.queryAllByRole('button', {name: 'Choose'});
-        signinButton = utils.queryByRole('button', {name: 'Sign in'});
-        freeTrialMessage = utils.queryByText(/After a free trial ends/i);
-    } catch (err) {
-        // ignore
-    }
-
+    const emailInput = utils.getByLabelText(/email/i);
+    const nameInput = utils.getByLabelText(/name/i);
+    const submitButton = utils.queryByRole('button', {name: 'Continue'});
+    const chooseButton = utils.queryAllByRole('button', {name: 'Choose'});
+    const signinButton = utils.queryByRole('button', {name: 'Sign in'});
+    const freeTrialMessage = utils.queryByText(/After a free trial ends/i);
     return {
         nameInput,
         emailInput,
@@ -101,18 +88,5 @@ describe('SignupPage', () => {
         });
 
         expect(freeTrialMessage).not.toBeInTheDocument();
-    });
-
-    describe('when members are disabled', () => {
-        test('renders an informative message', () => {
-            setup({
-                site: getSiteData({
-                    membersSignupAccess: 'none'
-                })
-            });
-
-            const message = getByTestId(document.body, 'members-disabled-notification-text');
-            expect(message).toBeInTheDocument();
-        });
     });
 });
