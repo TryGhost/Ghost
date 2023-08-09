@@ -64,7 +64,7 @@
         "storybook": "7.2.0",
         "stylelint": "15.10.1",
         "tailwindcss": "3.3.3",
-        "vite": "4.4.8",
+        "vite": "4.4.9",
         "vite-plugin-commonjs": "0.8.2",
         "vite-plugin-svgr": "3.2.0",
         "vitest": "0.34.1"
