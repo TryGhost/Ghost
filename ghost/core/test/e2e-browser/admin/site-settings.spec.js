@@ -1,5 +1,5 @@
 const {expect, test} = require('@playwright/test');
-const {createPostDraft, createTier} = require('../utils');
+const {createPostDraft, createTier, disconnectStripe, generateStripeIntegrationToken, setupStripe} = require('../utils');
 
 const changeSubscriptionAccess = async (page, access) => {
     // Go to settings page
@@ -53,9 +53,6 @@ test.describe('Site Settings', () => {
 
             // Check free trial message is not shown for invite only
             await expect(portalFrame.locator('.gh-portal-free-trial-notification')).not.toBeVisible();
-
-            // Check portal script loaded (just a negative test for the following test to test the test)
-            await checkPortalScriptLoaded(page, true);
         });
 
         test('Disabled subscription access', async ({page}) => {
@@ -66,10 +63,6 @@ test.describe('Site Settings', () => {
             // Go to the sigup page
             await page.goto('/#/portal/signup');
 
-            // Check Portal not loaded, and thus the signup page is not shown
-            await expect(page.locator('#ghost-portal-root div iframe')).toHaveCount(0);
-            await checkPortalScriptLoaded(page, false);
-
             // Check publishing flow is different and has membership features disabled
             await page.goto('/ghost');
             await createPostDraft(page, {
@@ -79,9 +72,63 @@ test.describe('Site Settings', () => {
             await page.locator('[data-test-button="publish-flow"]').click();
             await expect(page.locator('[data-test-setting="publish-type"] > button')).toHaveCount(0);
             await expect(page.locator('[data-test-setting="email-recipients"]')).toHaveCount(0);
-            // reset back to all
+        });
+    });
+
+    test.describe('Portal script', () => {
+        test('Portal loads if Memberships are enabled', async ({page}) => {
+            await page.goto('/ghost');
+
+            // Enable Memberships
+            await changeSubscriptionAccess(page, 'all');
+
+            // Go to the sigup page
+            await page.goto('/#/portal/signup');
+
+            // Portal should load
+            await expect(page.locator('#ghost-portal-root div iframe')).toHaveCount(1);
+            await checkPortalScriptLoaded(page, true);
+        });
+
+        test('Portal loads if Tips & Donations are enabled (Stripe connected)', async ({page}) => {
+            await page.goto('/ghost');
+
+            // Disable Memberships
+            await changeSubscriptionAccess(page, 'none');
+
+            // Go to the sigup page
+            await page.goto('/#/portal/signup');
+
+            // Portal should load
+            await expect(page.locator('#ghost-portal-root div iframe')).toHaveCount(1);
+            await checkPortalScriptLoaded(page, true);
+
+            // Reset
             await page.goto('/ghost');
             await changeSubscriptionAccess(page, 'all');
+        });
+
+        test('Portal does not load if both Memberships and Tips & Donations are disabled', async ({page}) => {
+            await page.goto('/ghost');
+
+            // Disable Memberships
+            await changeSubscriptionAccess(page, 'none');
+
+            // Disconnect stripe, which will disable Tips & Donations
+            await disconnectStripe(page);
+
+            // Go to the sigup page
+            await page.goto('/#/portal/signup');
+
+            // Portal should not load
+            await expect(page.locator('#ghost-portal-root div iframe')).toHaveCount(0);
+            await checkPortalScriptLoaded(page, false);
+
+            // Reset
+            await page.goto('/ghost');
+            await changeSubscriptionAccess(page, 'all');
+            const stripeToken = await generateStripeIntegrationToken();
+            await setupStripe(page, stripeToken);
         });
     });
 });
