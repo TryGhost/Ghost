@@ -9,7 +9,7 @@ import {ReactComponent as ButtonIcon3} from '../images/icons/button-icon-3.svg';
 import {ReactComponent as ButtonIcon4} from '../images/icons/button-icon-4.svg';
 import {ReactComponent as ButtonIcon5} from '../images/icons/button-icon-5.svg';
 import TriggerButtonStyle from './TriggerButton.styles';
-import {isInviteOnlySite, isSigninAllowed} from '../utils/helpers';
+import {isInviteOnlySite} from '../utils/helpers';
 import {hasMode} from '../utils/check-mode';
 
 const ICON_MAPPING = {
@@ -164,21 +164,12 @@ class TriggerButtonContent extends React.Component {
 
     onToggle() {
         const {showPopup, member, site} = this.context;
-
         if (showPopup) {
             this.context.onAction('closePopup');
-            return;
-        }
-
-        if (member) {
-            this.context.onAction('openPopup', {page: 'accountHome'});
-            return;
-        }
-
-        if (isSigninAllowed({site})) {
-            const page = isInviteOnlySite({site}) ? 'signin' : 'signup';
+        } else {
+            const loggedOutPage = isInviteOnlySite({site}) ? 'signin' : 'signup';
+            const page = member ? 'accountHome' : loggedOutPage;
             this.context.onAction('openPopup', {page});
-            return;
         }
     }
 
@@ -249,11 +240,10 @@ export default class TriggerButton extends React.Component {
     }
 
     render() {
-        const site = this.context.site;
-        const {portal_button: portalButton} = site;
+        const {portal_button: portalButton} = this.context.site;
         const {showPopup} = this.context;
 
-        if (!portalButton || !isSigninAllowed({site}) || hasMode(['offerPreview'])) {
+        if (!portalButton || hasMode(['offerPreview'])) {
             return null;
         }
 
