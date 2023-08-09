@@ -1,6 +1,6 @@
 /* eslint-env node */
 import pkg from './package.json';
-import babel from 'rollup-plugin-babel';
+import babel from '@rollup/plugin-babel';
 
 export default [
     // Node build.
