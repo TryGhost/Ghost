@@ -256,15 +256,8 @@ export default class KoenigLexicalEditor extends Component {
 
             const defaults = [
                 {label: 'Homepage', value: window.location.origin + '/'},
-                {label: 'Free signup', value: window.location.origin + '/#/portal/signup/free'}
+                {label: 'Free signup', value: '#/portal/signup/free'}
             ];
-
-            const offersLinks = offers.toArray().map((offer) => {
-                return {
-                    label: `Offer - ${offer.name}`,
-                    value: this.config.getSiteUrl(offer.code)
-                };
-            });
 
             const memberLinks = () => {
                 let links = [];
@@ -272,11 +265,11 @@ export default class KoenigLexicalEditor extends Component {
                     links = [
                         {
                             label: 'Paid signup',
-                            value: this.config.getSiteUrl('/#/portal/signup')
+                            value: '#/portal/signup'
                         },
                         {
                             label: 'Upgrade or change plan',
-                            value: this.config.getSiteUrl('/#/portal/account/plans')
+                            value: '#/portal/account/plans'
                         }];
                 }
 
@@ -289,7 +282,7 @@ export default class KoenigLexicalEditor extends Component {
                     if (this.settings.donationsEnabled) {
                         return [{
                             label: 'Tip or donation',
-                            value: this.config.getSiteUrl('/#/portal/support')
+                            value: '#/portal/support'
                         }];
                     }
                 }
@@ -297,7 +290,14 @@ export default class KoenigLexicalEditor extends Component {
                 return [];
             };
 
-            return [...defaults, ...offersLinks, ...memberLinks(), ...donationLink()];
+            const offersLinks = offers.toArray().map((offer) => {
+                return {
+                    label: `Offer - ${offer.name}`,
+                    value: `${offer.code}`
+                };
+            });
+
+            return [...defaults, ...memberLinks(), ...donationLink(), ...offersLinks];
         };
 
         const fetchLabels = async () => {

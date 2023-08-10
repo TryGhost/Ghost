@@ -73,26 +73,17 @@ export default class KoenigCardHeaderComponent extends Component {
             url: this.config.getSiteUrl('/')
         }, {
             name: 'Free signup',
-            url: this.config.getSiteUrl('/#/portal/signup/free')
+            url: '#/portal/signup/free'
         }]);
 
         if (this.membersUtils.paidMembersEnabled) {
             urls.push(...[{
                 name: 'Paid signup',
-                url: this.config.getSiteUrl('/#/portal/signup')
+                url: '#/portal/signup'
             }, {
                 name: 'Upgrade or change plan',
-                url: this.config.getSiteUrl('/#/portal/account/plans')
+                url: '#/portal/account/plans'
             }]);
-        }
-
-        if (this.offers) {
-            this.offers.forEach((offer) => {
-                urls.push(...[{
-                    name: `Offer - ${offer.name}`,
-                    url: this.config.getSiteUrl(offer.code)
-                }]);
-            });
         }
 
         // TODO: remove feature condition once Tips & Donations have been released
@@ -100,9 +91,18 @@ export default class KoenigCardHeaderComponent extends Component {
             if (this.settings.donationsEnabled) {
                 urls.push({
                     name: 'Tip or donation',
-                    url: this.config.getSiteUrl('/#/portal/support')
+                    url: '#/portal/support'
                 });
             }
+        }
+
+        if (this.offers) {
+            this.offers.forEach((offer) => {
+                urls.push(...[{
+                    name: `Offer - ${offer.name}`,
+                    url: `${offer.code}`
+                }]);
+            });
         }
 
         return urls;
