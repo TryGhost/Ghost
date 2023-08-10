@@ -115,6 +115,8 @@ jobs:
       base_commit: ${{ env.BASE_COMMIT }}
       is_canary_branch: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/arch') }}
       is_main: ${{ github.ref == 'refs/heads/main' }}
+      is_push_to_main: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      is_pull_request: ${{ github.event_name == 'pull_request' }}
 
   job_install_deps:
     name: Install Dependencies
@@ -350,13 +352,25 @@ jobs:
         if: contains(matrix.env.DB, 'mysql')
         run: echo "database__connection__password=root" >> $GITHUB_ENV
 
-      - name: E2E tests
+      - name: E2E tests (with retries)
+        if: ${{ needs.job_get_metadata.outputs.is_push_to_main == 'true' }}
         working-directory: ghost/core
         run: yarn test:ci:e2e
 
-      - name: Integration tests
+      - name: E2E tests (without retries)
+        if: ${{ needs.job_get_metadata.outputs.is_pull_request == 'true' }}
+        working-directory: ghost/core
+        run: yarn test:e2e -b
+
+      - name: Integration tests (with retries)
+        if: ${{ needs.job_get_metadata.outputs.is_push_to_main == 'true' }}
         working-directory: ghost/core
         run: yarn test:ci:integration
+
+      - name: Integration tests (without retries)
+        if: ${{ needs.job_get_metadata.outputs.is_pull_request == 'true' }}
+        working-directory: ghost/core
+        run: yarn test:integration -b
 
       # Get runtime in seconds for test suite
       - name: Record test duration
