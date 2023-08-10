@@ -50,12 +50,9 @@ const HistoryModal = NiceModal.create(() => {
             }}
         >
             <div className='-mb-8 mt-6'>
-                <List
-                    hint='End of history log'
-                >
+                <List hint='End of history log'>
                     <ListItem
                         avatar={
-                            // <Avatar bgColor="green" label="DV" labelColor="white"/>
                             <HistoryAvatar
                                 email='jono@ghost.org'
                                 name='Jono'
