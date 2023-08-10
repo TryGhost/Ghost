@@ -51,28 +51,26 @@ export const useBrowseActions = createInfiniteQuery<ActionsResponseType>({
             meta: Meta
         }>;
 
-        const actions = pages.flatMap(page => page.actions.map(
+        let actions = pages.flatMap(page => page.actions.map(
             ({context, ...action}) => ({...action, context: JSON.parse(context)})
         ));
 
-        actions.reverse().forEach((action, index) => {
-            const nextAction = actions[index + 1];
+        actions = actions.reverse();
 
-            let count = 1;
+        let count = 1;
+
+        actions.forEach((action, index) => {
+            const nextAction = actions[index + 1];
 
             // depending on the similarity, add additional properties to be used on the frontend for grouping
             // skip - used for hiding the event on the frontend
             // count - the number of similar events which is added to the last item
-            if (nextAction || (!nextAction && actions[index - 1].skip)) {
-                if (nextAction && action.resource_id === nextAction.resource_id && action.event === nextAction.event) {
-                    action.skip = true;
-                    count += 1;
-                } else {
-                    if (count > 1) {
-                        action.count = count;
-                        count = 1;
-                    }
-                }
+            if (nextAction && action.resource_id === nextAction.resource_id && action.event === nextAction.event) {
+                action.skip = true;
+                count += 1;
+            } else if (count > 1) {
+                action.count = count;
+                count = 1;
             }
         });
 

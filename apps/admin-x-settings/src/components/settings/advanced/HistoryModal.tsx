@@ -12,7 +12,7 @@ import ToggleGroup from '../../../admin-x-ds/global/form/ToggleGroup';
 import useRouting from '../../../hooks/useRouting';
 import {Action, getActionTitle, getContextResource, getLinkTarget, isBulkAction, useBrowseActions} from '../../../api/actions';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
-import {useState} from 'react';
+import {useCallback, useState} from 'react';
 
 const HistoryIcon: React.FC<{action: Action}> = ({action}) => {
     // TODO: Add info icon
@@ -136,6 +136,12 @@ const HistoryModal = NiceModal.create(() => {
         })
     });
 
+    const fetchNext = useCallback(() => {
+        if (!data?.isEnd) {
+            fetchNextPage();
+        }
+    }, [data?.isEnd, fetchNextPage]);
+
     return (
         <Modal
             afterClose={() => {
@@ -156,7 +162,7 @@ const HistoryModal = NiceModal.create(() => {
         >
             <div className='relative -mb-8 mt-6'>
                 <List hint={data?.isEnd ? 'End of history log' : undefined}>
-                    <InfiniteScrollListener offset={250} onTrigger={fetchNextPage} />
+                    <InfiniteScrollListener offset={250} onTrigger={fetchNext} />
                     {data?.actions.map(action => !action.skip && <ListItem
                         avatar={<HistoryAvatar action={action} />}
                         detail={[
@@ -167,7 +173,7 @@ const HistoryModal = NiceModal.create(() => {
                             <div className='text-sm'>
                                 {getActionTitle(action)}{isBulkAction(action) ? '' : ': '}
                                 {!isBulkAction(action) && <HistoryActionDescription action={action} />}
-                                {action.count ? <>{action.count} times</> : null}
+                                {action.count ? <> {action.count} times</> : null}
                                 <span> &mdash; by {action.actor?.name || action.actor?.slug}</span>
                             </div>
                         }
