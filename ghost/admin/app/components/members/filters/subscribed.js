@@ -6,13 +6,44 @@ export const SUBSCRIBED_FILTER = {
     columnLabel: 'Subscribed',
     relationOptions: MATCH_RELATION_OPTIONS,
     valueType: 'options',
+    buildNqlFilter: (flt) => {
+        const relation = flt.relation;
+        const value = flt.value;
+
+        return (relation === 'is' && value === 'true') || (relation === 'is-not' && value === 'false')
+            ? '(subscribed:true+email_disabled:0)'
+            : '(subscribed:false,email_disabled:1)';
+    },
+    parseNqlFilter: (flt) => {
+        const comparator = flt.$and || flt.$or;
+
+        if (!comparator || comparator.length !== 2) {
+            return;
+        }
+
+        if (comparator[0].subscribed === undefined || comparator[1].email_disabled === undefined) {
+            return;
+        }
+
+        const subscribed = comparator[0].subscribed;
+
+        return {
+            value: subscribed ? 'true' : 'false',
+            relation: 'is'
+        };
+    },
     options: [
         {label: 'Subscribed', name: 'true'},
         {label: 'Unsubscribed', name: 'false'}
     ],
-    getColumnValue: (member) => {
+    getColumnValue: (member, flt) => {
+        const relation = flt.relation;
+        const value = flt.value;
+
         return {
-            text: member.subscribed ? 'Subscribed' : 'Unsubscribed'
+            text: (relation === 'is' && value === 'true') || (relation === 'is-not' && value === 'false')
+                ? 'Subscribed'
+                : 'Unsubscribed'
         };
     }
 };
