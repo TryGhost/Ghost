@@ -8,7 +8,7 @@ test.describe('User profile', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
             browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
-            editUser: {method: 'PUT', path: `/users/${userToEdit.id}/`, response: {
+            editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
                 users: [{
                     ...userToEdit,
                     email: 'newadmin@test.com',
@@ -111,7 +111,7 @@ test.describe('User profile', async () => {
             ...globalDataRequests,
             browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
             uploadImage: {method: 'POST', path: '/images/upload/', response: {images: [{url: 'http://example.com/image.png', ref: null}]}},
-            editUser: {method: 'PUT', path: `/users/${userToEdit.id}/`, response: {
+            editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
                 users: [{
                     ...userToEdit,
                     profile_image: 'http://example.com/image.png',

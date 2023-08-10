@@ -85,6 +85,7 @@ export const useEditUser = createMutation<UsersResponseType, User>({
     method: 'PUT',
     path: user => `/users/${user.id}/`,
     body: user => ({users: [user]}),
+    searchParams: () => ({include: 'roles'}),
     updateQueries: {
         dataType,
         update: updateUsers

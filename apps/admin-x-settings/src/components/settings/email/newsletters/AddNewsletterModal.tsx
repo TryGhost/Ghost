@@ -1,6 +1,5 @@
 import Form from '../../../../admin-x-ds/global/form/Form';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
-import NewsletterDetailModal from './NewsletterDetailModal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import TextArea from '../../../../admin-x-ds/global/form/TextArea';
@@ -8,6 +7,7 @@ import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
+import {modalRoutes} from '../../../providers/RoutingProvider';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
 import {useAddNewsletter} from '../../../../api/newsletters';
@@ -37,9 +37,7 @@ const AddNewsletterModal: React.FC<AddNewsletterModalProps> = () => {
                 opt_in_existing: formState.optInExistingSubscribers
             });
 
-            NiceModal.show(NewsletterDetailModal, {
-                newsletter: response.newsletters[0]
-            });
+            updateRoute(modalRoutes.showNewsletter, {id: response.newsletters[0].id});
         },
         onValidate: () => {
             const newErrors: Record<string, string> = {};
@@ -65,7 +63,6 @@ const AddNewsletterModal: React.FC<AddNewsletterModalProps> = () => {
             toast.remove();
             if (await handleSave()) {
                 modal.remove();
-                updateRoute('newsletters');
             } else {
                 showToast({
                     type: 'pageError',
