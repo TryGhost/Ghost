@@ -40,6 +40,19 @@ export default class GhKoenigEditorReactComponent extends Component {
         this.mousedownY = event.clientY;
     }
 
+    @action
+    editorPaneDragover(event) {
+        event.preventDefault();
+    }
+
+    @action
+    editorPaneDrop(event) {
+        if (event.dataTransfer.files.length > 0) {
+            event.preventDefault();
+            this.editorAPI?.insertFiles(Array.from(event.dataTransfer.files));
+        }
+    }
+
     // Title actions -----------------------------------------------------------
 
     @action
