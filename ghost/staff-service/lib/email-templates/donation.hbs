@@ -14,11 +14,6 @@
           <div class="content" style="box-sizing: border-box; display: block; Margin: 0 auto; max-width: 600px; padding: 30px 20px;">
 
             <!-- START CENTERED CONTAINER -->
-            {{#> preview}}
-              {{#*inline "content"}}
-                {{donation.amount}} from {{donation.name}}
-              {{/inline}}
-            {{/preview}}
 
             <table class="main" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #ffffff; border-radius: 8px;">
 
@@ -30,9 +25,9 @@
                       <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;">
                         <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 20px; color: #15212A; font-weight: bold; line-height: 25px; margin: 0; margin-bottom: 15px;">Cha-ching!</p>
                         <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 32px;">You received a one-time payment from {{#if memberData}}
-                          <a style="color:{{accentColor}}" href="{{memberData.adminUrl}}">{{donation.name}} ({{donation.email}})</a>
+                          <a style="color:{{accentColor}}" href="{{memberData.adminUrl}}"><strong>{{donation.name}}</strong> ({{donation.email}})</a>
                         {{else}}
-                          {{donation.name}} ({{donation.email}})
+                          <strong>{{donation.name}}</strong> ({{donation.email}})
                         {{/if}}
                           :</p>
                         <table width="100" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; table-layout: fixed; width: 100%; min-width: 100%; box-sizing: border-box; background: #F9F9FA; border-radius: 7px;">
