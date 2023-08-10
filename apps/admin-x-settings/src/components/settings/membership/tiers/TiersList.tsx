@@ -1,12 +1,11 @@
 import Button from '../../../../admin-x-ds/global/Button';
 import Icon from '../../../../admin-x-ds/global/Icon';
-import NiceModal from '@ebay/nice-modal-react';
 import NoValueLabel from '../../../../admin-x-ds/global/NoValueLabel';
 import React from 'react';
-import TierDetailModal from './TierDetailModal';
 import useRouting from '../../../../hooks/useRouting';
 import {Tier, useEditTier} from '../../../../api/tiers';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
+import {modalRoutes} from '../../../providers/RoutingProvider';
 import {numberWithCommas} from '../../../../utils/helpers';
 
 interface TiersListProps {
@@ -21,6 +20,7 @@ interface TierCardProps {
 const cardContainerClasses = 'group flex min-h-[200px] flex-col items-start justify-between gap-4 self-stretch rounded-sm border border-grey-300 p-4 transition-all hover:border-grey-400';
 
 const TierCard: React.FC<TierCardProps> = ({tier}) => {
+    const {updateRoute} = useRouting();
     const {mutateAsync: updateTier} = useEditTier();
     const currency = tier?.currency || 'USD';
     const currencySymbol = currency ? getSymbol(currency) : '$';
@@ -28,7 +28,7 @@ const TierCard: React.FC<TierCardProps> = ({tier}) => {
     return (
         <div className={cardContainerClasses} data-testid='tier-card'>
             <div className='w-full grow cursor-pointer' onClick={() => {
-                NiceModal.show(TierDetailModal, {tier});
+                updateRoute(modalRoutes.showTier, {id: tier.id});
             }}>
                 <div className='text-[1.65rem] font-bold leading-tight tracking-tight text-pink'>{tier.name}</div>
                 <div className='mt-2 flex items-baseline'>

@@ -8,11 +8,13 @@ import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
 import UserDetailModal from './UserDetailModal';
+import useHandleRoute from '../../../hooks/useHandleRoute';
 import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import {User} from '../../../api/users';
 import {UserInvite, useAddInvite, useDeleteInvite} from '../../../api/invites';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
+import {modalRoutes} from '../../providers/RoutingProvider';
 import {showToast} from '../../../admin-x-ds/global/Toast';
 
 interface OwnerProps {
@@ -31,8 +33,10 @@ interface InviteListProps {
 }
 
 const Owner: React.FC<OwnerProps> = ({user}) => {
+    const {updateRoute} = useRouting();
+
     const showDetailModal = () => {
-        NiceModal.show(UserDetailModal, {user});
+        updateRoute(modalRoutes.showUser, {slug: user.slug});
     };
 
     if (!user) {
@@ -51,8 +55,10 @@ const Owner: React.FC<OwnerProps> = ({user}) => {
 };
 
 const UsersList: React.FC<UsersListProps> = ({users}) => {
+    const {updateRoute} = useRouting();
+
     const showDetailModal = (user: User) => {
-        NiceModal.show(UserDetailModal, {user});
+        updateRoute(modalRoutes.showUser, {slug: user.slug});
     };
 
     if (!users || !users.length) {
@@ -179,6 +185,7 @@ const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
 
 const Users: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
+        users,
         ownerUser,
         adminUsers,
         editorUsers,
@@ -186,7 +193,19 @@ const Users: React.FC<{ keywords: string[] }> = ({keywords}) => {
         contributorUsers,
         invites
     } = useStaffUsers();
+
     const {updateRoute} = useRouting();
+
+    useHandleRoute(modalRoutes.showUser, ({slug}) => {
+        const user = users.find(u => u.slug === slug);
+
+        if (!user) {
+            return;
+        }
+
+        NiceModal.show(UserDetailModal, {user});
+    }, [users]);
+
     const showInviteModal = () => {
         updateRoute('users/invite');
     };

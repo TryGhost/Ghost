@@ -132,6 +132,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
             if (saveState !== 'unsaved') {
                 toast.dismiss();
                 modal.remove();
+                updateRoute('tiers');
             }
         }}
     >

@@ -17,6 +17,7 @@ import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import ToggleGroup from '../../../../admin-x-ds/global/form/ToggleGroup';
 import useForm from '../../../../hooks/useForm';
+import useRouting from '../../../../hooks/useRouting';
 import validator from 'validator';
 import {Newsletter, useEditNewsletter} from '../../../../api/newsletters';
 import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
@@ -281,6 +282,7 @@ const NewsletterDetailModal: React.FC<NewsletterDetailModalProps> = ({newsletter
     const modal = useModal();
     const {siteData} = useGlobalData();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
+    const {updateRoute} = useRouting();
 
     const {formState, updateForm, handleSave, validate, errors, clearError} = useForm({
         initialState: newsletter,
@@ -329,6 +331,7 @@ const NewsletterDetailModal: React.FC<NewsletterDetailModalProps> = ({newsletter
     const sidebar = <Sidebar clearError={clearError} errors={errors} newsletter={formState} updateNewsletter={updateNewsletter} validate={validate} />;
 
     return <PreviewModalContent
+        afterClose={() => updateRoute('newsletters')}
         deviceSelector={false}
         okLabel='Save & close'
         preview={preview}
@@ -342,6 +345,7 @@ const NewsletterDetailModal: React.FC<NewsletterDetailModalProps> = ({newsletter
             toast.remove();
             if (await handleSave()) {
                 modal.remove();
+                updateRoute('newsletters');
             } else {
                 showToast({
                     type: 'pageError',

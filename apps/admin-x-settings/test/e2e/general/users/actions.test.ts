@@ -8,7 +8,7 @@ test.describe('User actions', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
             browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
-            editUser: {method: 'PUT', path: `/users/${userToEdit.id}/`, response: {
+            editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
                 users: [{
                     ...userToEdit,
                     status: 'inactive'
@@ -59,7 +59,7 @@ test.describe('User actions', async () => {
                     }
                 ]
             }},
-            editUser: {method: 'PUT', path: `/users/${userToEdit.id}/`, response: {
+            editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
                 users: [{
                     ...userToEdit,
                     status: 'active'
@@ -152,7 +152,7 @@ test.describe('User actions', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
             browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
-            editUser: {method: 'PUT', path: /^\/users\/\w{24}\/$/, response: responseFixtures.users},
+            editUser: {method: 'PUT', path: /^\/users\/\w{24}\/\?include=roles$/, response: responseFixtures.users},
             makeOwner: {method: 'PUT', path: '/users/owner/', response: makeOwnerResponse}
         }});
 

@@ -12,6 +12,7 @@ import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
+import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
 import {User, isAdminUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner, useUpdatePassword} from '../../../api/users';
@@ -419,6 +420,7 @@ const UserMenuTrigger = () => (
 );
 
 const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
+    const {updateRoute} = useRouting();
     const {ownerUser} = useStaffUsers();
     const [userData, setUserData] = useState(user);
     const [saveState, setSaveState] = useState('');
@@ -433,6 +435,15 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
     const {mutateAsync: updateUser} = useEditUser();
     const {mutateAsync: deleteUser} = useDeleteUser();
     const {mutateAsync: makeOwner} = useMakeOwner();
+
+    useEffect(() => {
+        if (saveState === 'saved') {
+            setTimeout(() => {
+                mainModal.remove();
+                updateRoute('users');
+            }, 300);
+        }
+    }, [mainModal, saveState, updateRoute]);
 
     const confirmSuspend = (_user: User) => {
         let warningText = 'This user will no longer be able to log in but their posts will be kept.';
@@ -583,9 +594,6 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
         okLabel = 'Saving...';
     } else if (saveState === 'saved') {
         okLabel = 'Saved';
-        setTimeout(() => {
-            mainModal.remove();
-        }, 300);
     }
 
     const fileUploadButtonClasses = 'absolute right-[104px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium z-10';
@@ -617,6 +625,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
 
     return (
         <Modal
+            afterClose={() => updateRoute('users')}
             okLabel={okLabel}
             size='lg'
             stickyFooter={true}

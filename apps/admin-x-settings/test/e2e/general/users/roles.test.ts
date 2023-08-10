@@ -45,7 +45,7 @@ test.describe('User roles', async () => {
             browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
             browseRoles: {method: 'GET', path: '/roles/?limit=all', response: responseFixtures.roles},
             browseAssignableRoles: {method: 'GET', path: '/roles/?limit=all&permissions=assign', response: responseFixtures.roles},
-            editUser: {method: 'PUT', path: `/users/${userToEdit.id}/`, response: {
+            editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
                 users: [{
                     ...userToEdit,
                     roles: [responseFixtures.roles.roles.find(role => role.name === 'Editor')!]
