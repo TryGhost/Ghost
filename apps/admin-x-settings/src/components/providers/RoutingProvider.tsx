@@ -1,6 +1,7 @@
 import AddNewsletterModal from '../settings/email/newsletters/AddNewsletterModal';
 import ChangeThemeModal from '../settings/site/ThemeModal';
 import DesignModal from '../settings/site/DesignModal';
+import HistoryModal from '../settings/advanced/HistoryModal';
 import InviteUserModal from '../settings/general/InviteUserModal';
 import NavigationModal from '../settings/site/NavigationModal';
 import NiceModal from '@ebay/nice-modal-react';
@@ -86,6 +87,8 @@ const handleNavigation = (scroll: boolean = true) => {
             NiceModal.show(StripeConnectModal);
         } else if (pathName === 'newsletters/add') {
             NiceModal.show(AddNewsletterModal);
+        } else if (pathName === 'history/view') {
+            NiceModal.show(HistoryModal);
         }
 
         if (scroll) {
