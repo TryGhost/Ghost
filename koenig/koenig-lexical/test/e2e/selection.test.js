@@ -1,5 +1,7 @@
-import {assertHTML, assertSelection, dragMouse, focusEditor, html, initialize} from '../utils/e2e';
+import {assertHTML, assertSelection, ctrlOrCmd, dragMouse, focusEditor, html, initialize} from '../utils/e2e';
 import {test} from '@playwright/test';
+
+const ctrlOrCmdKey = ctrlOrCmd();
 
 test.describe('Selection behaviour', async () => {
     let page;
@@ -16,10 +18,7 @@ test.describe('Selection behaviour', async () => {
         await page.close();
     });
 
-    // TODO: skipped because Playwright doesn't fire the `click` event when the
-    // mouse is released after a drag meaning it wasn't triggering the buggy behaviour.
-    // Unskip when this is fixed: https://github.com/microsoft/playwright/issues/20717
-    test.skip('can create range selection covering a card', async function () {
+    test('can create range selection covering a card', async function () {
         await focusEditor(page);
         await page.keyboard.type('First paragraph');
         await page.keyboard.press('Enter');
@@ -73,9 +72,9 @@ test.describe('Selection behaviour', async () => {
             await page.keyboard.type('---');
             await page.keyboard.type('Second paragraph');
 
-            await page.keyboard.down('Meta');
+            await page.keyboard.down(ctrlOrCmdKey);
             await page.keyboard.press('a');
-            await page.keyboard.up('Meta');
+            await page.keyboard.up(ctrlOrCmdKey);
 
             await assertSelection(page, {
                 anchorPath: [0, 0, 0],
@@ -90,22 +89,22 @@ test.describe('Selection behaviour', async () => {
             await page.keyboard.press('Enter');
             await page.keyboard.type('---');
 
-            await page.keyboard.down('Meta');
+            await page.keyboard.down(ctrlOrCmdKey);
             await page.keyboard.press('a');
-            await page.keyboard.up('Meta');
+            await page.keyboard.up(ctrlOrCmdKey);
 
             await assertSelection(page, {
-                anchorPath: [],
+                anchorPath: [0],
                 anchorOffset: 0,
-                focusPath: [],
-                focusOffset: 3
+                focusPath: [2],
+                focusOffset: 0
             });
         });
 
         // // not sure why this is returning 0 for the focus offset.. this test DOES work, but offset should be 3
         // // TODO: may be related to why we don't see text selection while first and last nodes are cards/decorators?
         // //  if we spy on window.selection() we can see that the selection is correct (offset = 3), just not in the test
-        // test('works with first and end nodes being cards', async function () {
+        // test.only('works with first and end nodes being cards', async function () {
         //     await focusEditor(page);
         //     await page.keyboard.type('``` ');
         //     await page.keyboard.type('Some code');

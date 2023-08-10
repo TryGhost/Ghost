@@ -18,6 +18,7 @@ import {
     $isParagraphNode,
     $isRangeSelection,
     $isTextNode,
+    $selectAll,
     $setSelection,
     COMMAND_PRIORITY_LOW,
     DELETE_LINE_COMMAND,
@@ -34,6 +35,7 @@ import {
     KEY_MODIFIER_COMMAND,
     KEY_TAB_COMMAND,
     PASTE_COMMAND,
+    SELECT_ALL_COMMAND,
     createCommand
 } from 'lexical';
 import {$insertAndSelectNode} from '../utils/$insertAndSelectNode';
@@ -225,6 +227,14 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     setIsEditingCard(true);
                 }
             }),
+            editor.registerCommand(
+                SELECT_ALL_COMMAND,
+                () => {
+                    $selectAll();
+                    return true;
+                },
+                COMMAND_PRIORITY_LOW
+            ),
             editor.registerCommand(
                 INSERT_CARD_COMMAND,
                 ({cardNode, openInEditMode}) => {
@@ -744,46 +754,6 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         }
                     }
 
-                    // TODO: does this need ctrlKey too for windows support?
-                    if (metaKey && code === 'KeyA') {
-                        const selection = $getSelection();
-                        if ($isRangeSelection(selection)) {
-                            const root = $getRoot();
-                            const firstNode = root.getFirstChildOrThrow();
-                            const lastNode = root.getLastChildOrThrow();
-
-                            if (firstNode && lastNode) {
-                                if (!$isDecoratorNode(firstNode) && !firstNode.isEmpty()) {
-                                    const firstChild = firstNode.getFirstChild();
-                                    if ($isTextNode(firstChild)) {
-                                        selection.anchor.set(firstChild.getKey(), 0, 'text');
-                                    }
-                                } else {
-                                    selection.anchor.set('root', 0, 'element');
-                                }
-
-                                if (!$isDecoratorNode(lastNode) && !lastNode.isEmpty()) {
-                                    const lastChild = lastNode.getLastChild();
-                                    if ($isTextNode(lastChild)) {
-                                        selection.focus.set(
-                                            lastChild.getKey(),
-                                            lastChild.getTextContentSize(),
-                                            'text',
-                                        );
-                                    }
-                                } else {
-                                    selection.focus.set(
-                                        'root',
-                                        lastNode.getIndexWithinParent() + 1,
-                                        'element',
-                                    );
-                                }
-                                event.preventDefault();
-                                return true;
-                            }
-                        }
-                    }
-
                     if (ctrlKey && code === 'KeyQ') {
                         // avoid quit behaviour
                         event.preventDefault();
@@ -856,7 +826,6 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                             }
                         }
                     }
-
                     return false;
                 },
                 COMMAND_PRIORITY_LOW
