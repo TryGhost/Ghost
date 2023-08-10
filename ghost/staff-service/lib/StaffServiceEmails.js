@@ -253,7 +253,7 @@ class StaffServiceEmails {
         const users = await this.models.User.getEmailAlertUsers('donation');
         const formattedAmount = this.getFormattedAmount({currency: donationPaymentEvent.currency, amount: donationPaymentEvent.amount / 100});
 
-        const subject = `💸 Received a donation of ${formattedAmount} from ${donationPaymentEvent.name ?? donationPaymentEvent.email}`;
+        const subject = `💰 One-time payment received: ${formattedAmount} from ${donationPaymentEvent.name ?? donationPaymentEvent.email}`;
         const memberData = donationPaymentEvent.memberId ? this.getMemberData({
             id: donationPaymentEvent.memberId,
             name: donationPaymentEvent.name ?? null,
