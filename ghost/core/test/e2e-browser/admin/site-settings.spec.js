@@ -60,7 +60,7 @@ test.describe('Site Settings', () => {
 
             await changeSubscriptionAccess(page, 'none');
 
-            // Go to the sigup page
+            // Go to the signup page
             await page.goto('/#/portal/signup');
 
             // Check publishing flow is different and has membership features disabled
@@ -82,7 +82,7 @@ test.describe('Site Settings', () => {
             // Enable Memberships
             await changeSubscriptionAccess(page, 'all');
 
-            // Go to the sigup page
+            // Go to the signup page
             await page.goto('/#/portal/signup');
 
             // Portal should load
@@ -96,7 +96,7 @@ test.describe('Site Settings', () => {
             // Disable Memberships
             await changeSubscriptionAccess(page, 'none');
 
-            // Go to the sigup page
+            // Go to the signup page
             await page.goto('/#/portal/signup');
 
             // Portal should load
@@ -109,24 +109,26 @@ test.describe('Site Settings', () => {
         });
 
         test('Portal does not load if both Memberships and Tips & Donations are disabled', async ({page}) => {
+            // Disconnect stripe first, which will disable Tips & Donations
             await page.goto('/ghost');
-
-            // Disable Memberships
-            await changeSubscriptionAccess(page, 'none');
-
-            // Disconnect stripe, which will disable Tips & Donations
             await disconnectStripe(page);
 
-            // Go to the sigup page
+            // Disable Memberships
+            await page.goto('/ghost');
+            await changeSubscriptionAccess(page, 'none');
+
+            // Go to the signup page
             await page.goto('/#/portal/signup');
 
             // Portal should not load
             await expect(page.locator('#ghost-portal-root div iframe')).toHaveCount(0);
             await checkPortalScriptLoaded(page, false);
 
-            // Reset
+            // Reset subscription access & re-connect Stripe
             await page.goto('/ghost');
             await changeSubscriptionAccess(page, 'all');
+
+            await page.goto('/ghost');
             const stripeToken = await generateStripeIntegrationToken();
             await setupStripe(page, stripeToken);
         });
