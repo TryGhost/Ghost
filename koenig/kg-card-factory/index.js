@@ -1,1 +1,1 @@
-module.exports = require('./lib/card-factory');
+module.exports = require('./lib/CardFactory');

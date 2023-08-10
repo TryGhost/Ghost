@@ -1,6 +1,7 @@
+/* eslint-disable ghost/filenames/match-exported-class */
 import {generateDecoratorNode} from '../../generate-decorator-node';
-import {parseCodeBlockNode} from './CodeBlockParser';
-import {renderCodeBlockNode} from './CodeBlockRenderer';
+import {parseCodeBlockNode} from './codeblock-parser';
+import {renderCodeBlockNode} from './codeblock-renderer';
 
 export class CodeBlockNode extends generateDecoratorNode({nodeType: 'codeblock',
     properties: [

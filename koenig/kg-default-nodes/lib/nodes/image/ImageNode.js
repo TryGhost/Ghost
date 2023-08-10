@@ -1,6 +1,7 @@
+/* eslint-disable ghost/filenames/match-exported-class */
 import {generateDecoratorNode} from '../../generate-decorator-node';
-import {parseImageNode} from './ImageParser';
-import {renderImageNode} from './ImageRenderer';
+import {parseImageNode} from './image-parser';
+import {renderImageNode} from './image-renderer';
 export class ImageNode extends generateDecoratorNode({nodeType: 'image',
     properties: [
         {name: 'src', default: '', urlType: 'url'},

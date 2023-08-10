@@ -1,5 +1,6 @@
+/* eslint-disable ghost/filenames/match-exported-class */
 import {generateDecoratorNode} from '../../generate-decorator-node';
-import {renderEmailCtaNode} from './EmailCtaRenderer';
+import {renderEmailCtaNode} from './email-cta-renderer';
 
 export class EmailCtaNode extends generateDecoratorNode({nodeType: 'email-cta',
     properties: [

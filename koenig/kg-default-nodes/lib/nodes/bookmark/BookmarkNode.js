@@ -1,6 +1,7 @@
+/* eslint-disable ghost/filenames/match-exported-class */
 import {generateDecoratorNode} from '../../generate-decorator-node';
-import {parseBookmarkNode} from './BookmarkParser';
-import {renderBookmarkNode} from './BookmarkRenderer';
+import {parseBookmarkNode} from './bookmark-parser';
+import {renderBookmarkNode} from './bookmark-renderer';
 
 export class BookmarkNode extends generateDecoratorNode({nodeType: 'bookmark',
     properties: [

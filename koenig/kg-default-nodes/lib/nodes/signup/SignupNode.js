@@ -1,5 +1,6 @@
-import {signupParser} from './SignupParser';
-import {renderSignupCardToDOM} from './SignupRenderer';
+/* eslint-disable ghost/filenames/match-exported-class */
+import {signupParser} from './signup-parser';
+import {renderSignupCardToDOM} from './signup-renderer';
 import {generateDecoratorNode} from '../../generate-decorator-node';
 
 export class SignupNode extends generateDecoratorNode({nodeType: 'signup',

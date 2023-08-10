@@ -6,7 +6,7 @@ const {
 } = require('lexical');
 const {$isLinkNode} = require('@lexical/link');
 const {$isKoenigCard} = require('@tryghost/kg-default-nodes');
-const TextContent = require('./utils/text-content');
+const TextContent = require('./utils/TextContent');
 const {elementTransformers} = require('./transformers');
 
 function $convertToHtmlString(options = {}) {

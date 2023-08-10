@@ -1,6 +1,7 @@
+/* eslint-disable ghost/filenames/match-exported-class */
 import {generateDecoratorNode} from '../../generate-decorator-node';
-import {parsePaywallNode} from './PaywallParser';
-import {renderPaywallNode} from './PaywallRenderer';
+import {parsePaywallNode} from './paywall-parser';
+import {renderPaywallNode} from './paywall-renderer';
 
 export class PaywallNode extends generateDecoratorNode({nodeType: 'paywall'}) {
     static importDOM() {

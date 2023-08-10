@@ -1,6 +1,7 @@
+/* eslint-disable ghost/filenames/match-exported-class */
 import {generateDecoratorNode} from '../../generate-decorator-node';
 // import {parseCollectionNode} from './CollectionParser';
-import {renderCollectionNode} from './CollectionRenderer';
+import {renderCollectionNode} from './collection-renderer';
 
 export class CollectionNode extends generateDecoratorNode({nodeType: 'collection',
     properties: [

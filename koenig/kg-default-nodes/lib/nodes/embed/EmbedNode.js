@@ -1,6 +1,7 @@
+/* eslint-disable ghost/filenames/match-exported-class */
 import {generateDecoratorNode} from '../../generate-decorator-node';
-import {parseEmbedNode} from './EmbedParser';
-import {renderEmbedNode} from './EmbedRenderer';
+import {parseEmbedNode} from './embed-parser';
+import {renderEmbedNode} from './embed-renderer';
 
 export class EmbedNode extends generateDecoratorNode({nodeType: 'embed',
     properties: [

@@ -24,7 +24,6 @@ import * as collection from './nodes/collection/CollectionNode';
 // re-export everything for easier importing
 export * from './KoenigDecoratorNode';
 export * from './nodes/image/ImageNode';
-export * from './nodes/image/ImageParser';
 export * from './nodes/codeblock/CodeBlockNode';
 export * from './nodes/markdown/MarkdownNode';
 export * from './nodes/video/VideoNode';

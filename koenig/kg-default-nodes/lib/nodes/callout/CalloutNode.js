@@ -1,6 +1,7 @@
+/* eslint-disable ghost/filenames/match-exported-class */
 import {generateDecoratorNode} from '../../generate-decorator-node';
-import {renderCalloutNode} from './CalloutRenderer';
-import {parseCalloutNode} from './CalloutParser';
+import {renderCalloutNode} from './callout-renderer';
+import {parseCalloutNode} from './callout-parser';
 
 export class CalloutNode extends generateDecoratorNode({nodeType: 'callout',
     properties: [

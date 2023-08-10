@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const {mobiledocToLexical} = require('../');
 
 const MOBILEDOC_VERSION = '0.3.1';

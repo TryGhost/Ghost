@@ -1,3 +1,4 @@
+/* eslint-disable ghost/filenames/match-exported-class */
 import {ElementNode} from 'lexical';
 import {AsideParser} from './AsideParser';
 

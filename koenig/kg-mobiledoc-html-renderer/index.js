@@ -1,1 +1,1 @@
-module.exports = require('./lib/mobiledoc-html-renderer');
+module.exports = require('./lib/MobiledocHtmlRenderer');

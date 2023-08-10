@@ -1,6 +1,7 @@
+/* eslint-disable ghost/filenames/match-exported-class */
 import {generateDecoratorNode} from '../../generate-decorator-node';
-import {renderFileNode} from './FileRenderer';
-import {parseFileNode} from './FileParser';
+import {renderFileNode} from './file-renderer';
+import {parseFileNode} from './file-parser';
 import {bytesToSize} from '../../utils/size-byte-converter';
 
 export class FileNode extends generateDecoratorNode({nodeType: 'file',
@@ -47,4 +48,3 @@ export function $isFileNode(node) {
 export const $createFileNode = (dataset) => {
     return new FileNode(dataset);
 };
-

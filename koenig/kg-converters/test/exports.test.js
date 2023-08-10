@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 
 describe('Exports', function () {
     it('includes both converter functions', function () {
@@ -6,9 +6,9 @@ describe('Exports', function () {
 
         assert.ok(converters);
         assert.ok(converters.lexicalToMobiledoc);
-        assert.strictEqual(typeof converters.lexicalToMobiledoc, 'function');
+        assert.equal(typeof converters.lexicalToMobiledoc, 'function');
         assert.ok(converters.mobiledocToLexical);
-        assert.strictEqual(typeof converters.mobiledocToLexical, 'function');
+        assert.equal(typeof converters.mobiledocToLexical, 'function');
     });
 
     it('lexicalToMobiledoc runs without error', function () {

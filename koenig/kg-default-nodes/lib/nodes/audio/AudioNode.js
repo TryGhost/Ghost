@@ -1,6 +1,7 @@
+/* eslint-disable ghost/filenames/match-exported-class */
 import {generateDecoratorNode} from '../../generate-decorator-node';
-import {parseAudioNode} from './AudioParser';
-import {renderAudioNode} from './AudioRenderer';
+import {parseAudioNode} from './audio-parser';
+import {renderAudioNode} from './audio-renderer';
 
 export class AudioNode extends generateDecoratorNode({nodeType: 'audio',
     properties: [

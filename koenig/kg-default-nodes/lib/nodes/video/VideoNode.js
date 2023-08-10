@@ -1,6 +1,7 @@
+/* eslint-disable ghost/filenames/match-exported-class */
 import {generateDecoratorNode} from '../../generate-decorator-node';
-import {parseVideoNode} from './VideoParser';
-import {renderVideoNode} from './VideoRenderer';
+import {parseVideoNode} from './video-parser';
+import {renderVideoNode} from './video-renderer';
 export class VideoNode extends generateDecoratorNode({nodeType: 'video',
     properties: [
         {name: 'src', default: '', urlType: 'url'},
