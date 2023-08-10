@@ -254,6 +254,11 @@ class StaffServiceEmails {
         const formattedAmount = this.getFormattedAmount({currency: donationPaymentEvent.currency, amount: donationPaymentEvent.amount / 100});
 
         const subject = `💸 Received a donation of ${formattedAmount} from ${donationPaymentEvent.name ?? donationPaymentEvent.email}`;
+        const memberData = donationPaymentEvent.memberId ? this.getMemberData({
+            id: donationPaymentEvent.memberId,
+            name: donationPaymentEvent.name ?? null,
+            email: donationPaymentEvent.email
+        }) : null;
 
         for (const user of users) {
             const to = user.email;
@@ -270,7 +275,9 @@ class StaffServiceEmails {
                     name: donationPaymentEvent.name ?? donationPaymentEvent.email,
                     email: donationPaymentEvent.email,
                     amount: formattedAmount
-                }
+                },
+                memberData,
+                accentColor: this.settingsCache.get('accent_color')
             };
 
             const {html, text} = await this.renderEmailTemplate('donation', templateData);
@@ -304,7 +311,7 @@ class StaffServiceEmails {
             adminUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/members/${member.id}`),
             initials: this.extractInitials(name),
             location: this.getGeolocationData(member.geolocation),
-            createdAt: moment(member.created_at).format('D MMM YYYY')
+            createdAt: member.created_at ? moment(member.created_at).format('D MMM YYYY') : null
         };
     }
 
