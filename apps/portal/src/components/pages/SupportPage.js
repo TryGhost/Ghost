@@ -19,7 +19,7 @@ const SupportPage = () => {
                 const response = await api.member.checkoutDonation({successUrl, cancelUrl});
 
                 if (response.url) {
-                    window.location.assign(response.url);
+                    window.location.replace(response.url);
                 }
             } catch (err) {
                 const errorMessage = err.message || 'There was an error processing your payment. Please try again.';
