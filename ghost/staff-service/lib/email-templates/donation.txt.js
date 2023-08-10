@@ -1,9 +1,9 @@
 module.exports = function (data) {
     // Be careful when you indent the email, because whitespaces are visible in emails!
     return `
-Congratulations!
+Cha-ching!
 
-You received a donation of ${data.donation.amount} from "${data.donation.name}".
+You received a one-time payment from of ${data.donation.amount} from "${data.donation.name}".
 
 ---
 
