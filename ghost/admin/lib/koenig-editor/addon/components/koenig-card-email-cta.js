@@ -111,7 +111,7 @@ export default class KoenigCardEmailCtaComponent extends Component {
             this.offers.forEach((offer) => {
                 urls.push(...[{
                     name: `Offer - ${offer.name}`,
-                    url: `${offer.code}`
+                    url: this.config.getSiteUrl(offer.code)
                 }]);
             });
         }

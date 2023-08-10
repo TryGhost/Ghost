@@ -711,11 +711,11 @@ a[data-flickr-embed] img {
     display: none;
 }
 
-.kg-bookmark-publisher {
+.kg-bookmark-author {
     line-height: 1.5em;
 }
 
-.kg-bookmark-author {
+.kg-bookmark-publisher {
     overflow: hidden;
     max-width: 240px;
     line-height: 1.5em;
@@ -723,7 +723,7 @@ a[data-flickr-embed] img {
     white-space: nowrap;
 }
 
-.kg-bookmark-author:before {
+.kg-bookmark-publisher:before {
     content: "•";
     margin: 0 6px;
 }
@@ -1521,6 +1521,29 @@ a[data-flickr-embed] img {
     table.body figcaption,
     table.body figcaption a {
         font-size: 13px !important;
+    }
+
+    table.body .kg-header-card.kg-v2 span {
+        font-size: inherit !important;
+    }
+
+    table.body .kg-header-card.kg-v2 .kg-header-card-content {
+        padding-top: 64px !important;
+        padding-bottom: 64px !important;
+    }
+
+    table.body .kg-header-card.kg-v2 .kg-header-card-image + .kg-header-card-content {
+        padding-top: 52px !important;
+        padding-bottom: 52px !important;
+    }
+
+    table.body .kg-header-card.kg-v2 .kg-header-card-heading {
+        font-size: 2.2em !important;
+        line-height: 1.1 !important;
+    }
+
+    table.body .kg-header-card.kg-v2 .kg-header-card-subheading {
+        line-height: 1.3em !important;
     }
 
 }

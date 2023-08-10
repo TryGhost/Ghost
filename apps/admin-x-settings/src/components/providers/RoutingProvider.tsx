@@ -5,25 +5,38 @@ import InviteUserModal from '../settings/general/InviteUserModal';
 import NavigationModal from '../settings/site/NavigationModal';
 import NiceModal from '@ebay/nice-modal-react';
 import PortalModal from '../settings/membership/portal/PortalModal';
-import React, {createContext, useCallback, useEffect, useState} from 'react';
+import React, {createContext, useCallback, useEffect, useRef, useState} from 'react';
 import StripeConnectModal from '../settings/membership/stripe/StripeConnectModal';
 import TierDetailModal from '../settings/membership/tiers/TierDetailModal';
 
-type RoutingContextProps = {
+export type RouteParams = {[key: string]: string}
+
+export type RoutingContextData = {
     route: string;
     scrolledRoute: string;
     yScroll: number;
-    updateRoute: (newPath: string) => void;
+    updateRoute: (newPath: string, params?: RouteParams) => void;
     updateScrolled: (newPath: string) => void;
+    addRouteChangeListener: (listener: RouteChangeListener) => (() => void);
 };
 
-export const RouteContext = createContext<RoutingContextProps>({
+export const RouteContext = createContext<RoutingContextData>({
     route: '',
     scrolledRoute: '',
     yScroll: 0,
     updateRoute: () => {},
-    updateScrolled: () => {}
+    updateScrolled: () => {},
+    addRouteChangeListener: () => (() => {})
 });
+
+// These routes need to be handled by a SettingGroup (or other component) with the
+// useHandleRoute hook. The idea is that those components will open a modal after
+// loading any data required for the route
+export const modalRoutes = {
+    showUser: 'users/show/:slug',
+    showNewsletter: 'newsletters/show/:id',
+    showTier: 'tiers/show/:id'
+};
 
 function getHashPath(urlPath: string | undefined) {
     if (!urlPath) {
@@ -84,29 +97,55 @@ const handleNavigation = (scroll: boolean = true) => {
     return '';
 };
 
+const matchRoute = (pathname: string, routeDefinition: string) => {
+    const regex = new RegExp(routeDefinition.replace(/:(\w+)/, '(?<$1>[^/]+)'));
+
+    return pathname.match(regex)?.groups;
+};
+
+const callRouteChangeListeners = (newPath: string, listeners: RouteChangeListener[]) => {
+    listeners.forEach((listener) => {
+        const params = matchRoute(newPath, listener.route);
+
+        if (params) {
+            listener.callback(params);
+        }
+    });
+};
+
 type RouteProviderProps = {
     children: React.ReactNode;
 };
+
+type RouteChangeListener = {
+    route: string;
+    callback: (params: RouteParams) => void;
+}
 
 const RoutingProvider: React.FC<RouteProviderProps> = ({children}) => {
     const [route, setRoute] = useState<string>('');
     const [yScroll, setYScroll] = useState(0);
     const [scrolledRoute, setScrolledRoute] = useState<string>('');
+    const routeChangeListeners = useRef<RouteChangeListener[]>([]);
 
-    const updateRoute = useCallback(
-        (newPath: string) => {
-            if (newPath) {
-                if (newPath === route) {
-                    scrollToSectionGroup(newPath);
-                } else {
-                    window.location.hash = `/settings-x/${newPath}`;
-                }
+    const updateRoute = useCallback((newPath: string, params?: RouteParams) => {
+        if (params) {
+            newPath = Object.entries(params).reduce(
+                (path, [name, value]) => path.replace(`:${name}`, value),
+                newPath
+            );
+        }
+
+        if (newPath) {
+            if (newPath === route) {
+                scrollToSectionGroup(newPath);
             } else {
-                window.location.hash = `/settings-x`;
+                window.location.hash = `/settings-x/${newPath}`;
             }
-        },
-        [route]
-    );
+        } else {
+            window.location.hash = `/settings-x`;
+        }
+    }, [route]);
 
     const updateScrolled = useCallback((newPath: string) => {
         setScrolledRoute(newPath);
@@ -116,6 +155,7 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({children}) => {
         const handleHashChange = () => {
             const matchedRoute = handleNavigation();
             setRoute(matchedRoute);
+            callRouteChangeListeners(matchedRoute, routeChangeListeners.current);
         };
 
         const handleScroll = () => {
@@ -127,6 +167,7 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({children}) => {
         const element = document.getElementById('admin-x-root');
         const matchedRoute = handleNavigation();
         setRoute(matchedRoute);
+        callRouteChangeListeners(matchedRoute, routeChangeListeners.current);
         element!.addEventListener('scroll', handleScroll);
 
         window.addEventListener('hashchange', handleHashChange);
@@ -135,7 +176,17 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({children}) => {
             element!.removeEventListener('scroll', handleScroll);
             window.removeEventListener('hashchange', handleHashChange);
         };
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const addRouteChangeListener = useCallback((listener: RouteChangeListener) => {
+        if (route && !routeChangeListeners.current.some(current => current.route === listener.route)) {
+            callRouteChangeListeners(route, [listener]);
+        }
+
+        routeChangeListeners.current = [...routeChangeListeners.current, listener];
+
+        return () => routeChangeListeners.current = routeChangeListeners.current.filter(current => current !== listener);
+    }, [route]);
 
     return (
         <RouteContext.Provider
@@ -144,7 +195,8 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({children}) => {
                 scrolledRoute,
                 yScroll,
                 updateRoute,
-                updateScrolled
+                updateScrolled,
+                addRouteChangeListener
             }}
         >
             {children}

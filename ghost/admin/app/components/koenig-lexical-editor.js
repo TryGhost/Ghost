@@ -293,7 +293,7 @@ export default class KoenigLexicalEditor extends Component {
             const offersLinks = offers.toArray().map((offer) => {
                 return {
                     label: `Offer - ${offer.name}`,
-                    value: `${offer.code}`
+                    value: this.config.getSiteUrl(offer.code)
                 };
             });
 
