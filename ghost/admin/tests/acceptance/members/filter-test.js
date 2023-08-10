@@ -160,11 +160,11 @@ describe('Acceptance: Members filtering', function () {
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows after delete')
                 .to.equal(7);
         });
-        
+
         it('can filter by offer redeemed', async function () {
             // add some offers to test the selection dropdown
             const tier = this.server.create('tier');
-            
+
             // create 3 offers
             const offer = this.server.create('offer', {tier: {id: tier.id}, createdAt: moment.utc().subtract(1, 'day').valueOf()});
             this.server.create('offer', {tier: {id: tier.id}, createdAt: moment.utc().subtract(2, 'day').valueOf()});
@@ -196,7 +196,7 @@ describe('Acceptance: Members filtering', function () {
             // only one redeemed offer so only 1 member should be shown
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows').to.equal(1);
         });
-            
+
         it('can filter by specific newsletter subscription', async function () {
             // add some members to filters
             const newsletter = this.server.create('newsletter', {status: 'active', slug: 'test-newsletter'});
@@ -232,13 +232,14 @@ describe('Acceptance: Members filtering', function () {
 
         it('can filter by newsletter subscription', async function () {
             // add some members to filter
-            this.server.createList('member', 3, {subscribed: true});
-            this.server.createList('member', 4, {subscribed: false});
+            this.server.createList('member', 3, {subscribed: true, email_disabled: 0});
+            this.server.createList('member', 4, {subscribed: false, email_disabled: 0});
+            this.server.createList('member', 1, {subscribed: true, email_disabled: 1});
 
             await visit('/members');
 
             expect(findAll('[data-test-list="members-list-item"]').length, '# of initial member rows')
-                .to.equal(7);
+                .to.equal(8);
 
             await click('[data-test-button="members-filter-actions"]');
 
@@ -265,18 +266,18 @@ describe('Acceptance: Members filtering', function () {
             // can change filter
             await fillIn(`${filterSelector} [data-test-select="members-filter-value"]`, 'false');
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - false')
-                .to.equal(4);
+                .to.equal(5);
             expect(find('[data-test-table-column="subscribed"]')).to.exist;
 
             // can delete filter
             await click('[data-test-delete-members-filter="0"]');
 
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows after delete')
-                .to.equal(7);
+                .to.equal(8);
 
             // Can set filter by path
             await visit('/');
-            await visit('/members?filter=' + encodeURIComponent('subscribed:true'));
+            await visit('/members?filter=' + encodeURIComponent('(subscribed:true+email_disabled:0)'));
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - true - from URL')
                 .to.equal(3);
             await click('[data-test-button="members-filter-actions"]');
@@ -284,9 +285,9 @@ describe('Acceptance: Members filtering', function () {
 
             // Can set filter by path
             await visit('/');
-            await visit('/members?filter=' + encodeURIComponent('subscribed:false'));
+            await visit('/members?filter=' + encodeURIComponent('(subscribed:false,email_disabled:1)'));
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - false - from URL')
-                .to.equal(4);
+                .to.equal(5);
             await click('[data-test-button="members-filter-actions"]');
             expect(find(`${filterSelector} [data-test-select="members-filter-value"]`)).to.have.value('false');
         });
