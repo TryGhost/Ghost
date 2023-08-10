@@ -213,6 +213,7 @@ export default class AdminXSettings extends Component {
     @service session;
     @service store;
     @service settings;
+    @service router;
 
     @inject config;
 
@@ -232,6 +233,10 @@ export default class AdminXSettings extends Component {
         // don't rethrow, app should attempt to gracefully recover
     }
 
+    externalNavigate = ({route, models = []}) => {
+        this.router.transitionTo(route, ...models);
+    };
+
     ReactComponent = () => {
         return (
             <div className={['admin-x-settings-container-', this.args.className].filter(Boolean).join(' ')}>
@@ -240,6 +245,7 @@ export default class AdminXSettings extends Component {
                         <AdminXApp
                             ghostVersion={config.APP.version}
                             officialThemes={officialThemes}
+                            externalNavigate={this.externalNavigate}
                         />
                     </Suspense>
                 </ErrorHandler>

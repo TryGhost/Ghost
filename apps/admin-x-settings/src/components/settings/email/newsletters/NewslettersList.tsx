@@ -50,7 +50,7 @@ const NewsletterItem: React.FC<{newsletter: Newsletter, onlyOne: boolean}> = ({n
     );
 
     const showDetails = () => {
-        updateRoute(modalRoutes.showNewsletter, {id: newsletter.id});
+        updateRoute({route: modalRoutes.showNewsletter, params: {id: newsletter.id}});
     };
 
     return (

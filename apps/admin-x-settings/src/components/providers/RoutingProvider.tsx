@@ -12,11 +12,23 @@ import TierDetailModal from '../settings/membership/tiers/TierDetailModal';
 
 export type RouteParams = {[key: string]: string}
 
+export type ExternalLink = {
+    isExternal: true;
+    route: string;
+    models?: string[] | null
+};
+
+export type InternalLink = {
+    isExternal?: false;
+    route: string;
+    params?: RouteParams;
+}
+
 export type RoutingContextData = {
     route: string;
     scrolledRoute: string;
     yScroll: number;
-    updateRoute: (newPath: string, params?: RouteParams) => void;
+    updateRoute: (to: string | InternalLink | ExternalLink) => void;
     updateScrolled: (newPath: string) => void;
     addRouteChangeListener: (listener: RouteChangeListener) => (() => void);
 };
@@ -36,7 +48,8 @@ export const RouteContext = createContext<RoutingContextData>({
 export const modalRoutes = {
     showUser: 'users/show/:slug',
     showNewsletter: 'newsletters/show/:id',
-    showTier: 'tiers/show/:id'
+    showTier: 'tiers/show/:id',
+    showIntegration: 'integrations/show/:id'
 };
 
 function getHashPath(urlPath: string | undefined) {
@@ -117,6 +130,7 @@ const callRouteChangeListeners = (newPath: string, listeners: RouteChangeListene
 };
 
 type RouteProviderProps = {
+    externalNavigate: (link: ExternalLink) => void;
     children: React.ReactNode;
 };
 
@@ -125,15 +139,24 @@ type RouteChangeListener = {
     callback: (params: RouteParams) => void;
 }
 
-const RoutingProvider: React.FC<RouteProviderProps> = ({children}) => {
+const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, children}) => {
     const [route, setRoute] = useState<string>('');
     const [yScroll, setYScroll] = useState(0);
     const [scrolledRoute, setScrolledRoute] = useState<string>('');
     const routeChangeListeners = useRef<RouteChangeListener[]>([]);
 
-    const updateRoute = useCallback((newPath: string, params?: RouteParams) => {
-        if (params) {
-            newPath = Object.entries(params).reduce(
+    const updateRoute = useCallback((to: string | InternalLink | ExternalLink) => {
+        const options = typeof to === 'string' ? {route: to} : to;
+
+        if (options.isExternal) {
+            externalNavigate(options);
+            return;
+        }
+
+        let newPath = options.route;
+
+        if (options.params) {
+            newPath = Object.entries(options.params).reduce(
                 (path, [name, value]) => path.replace(`:${name}`, value),
                 newPath
             );
@@ -148,7 +171,7 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({children}) => {
         } else {
             window.location.hash = `/settings-x`;
         }
-    }, [route]);
+    }, [externalNavigate, route]);
 
     const updateScrolled = useCallback((newPath: string) => {
         setScrolledRoute(newPath);
