@@ -18,7 +18,8 @@ const GA_FEATURES = [
     'themeErrorsNotification',
     'outboundLinkTagging',
     'announcementBar',
-    'signupForm'
+    'signupForm',
+    'tipsAndDonations'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -40,7 +41,6 @@ const ALPHA_FEATURES = [
     'adminXSettings',
     'mailEvents',
     'collectionsCard',
-    'tipsAndDonations',
     'importMemberTier',
     'convertToLexical'
 ];
