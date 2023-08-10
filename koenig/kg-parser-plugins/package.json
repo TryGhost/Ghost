@@ -32,7 +32,7 @@
   "devDependencies": {
     "@babel/core": "7.22.10",
     "@babel/preset-env": "7.22.10",
-    "@rollup/plugin-babel": "5.3.1",
+    "@rollup/plugin-babel": "6.0.3",
     "@tryghost/mobiledoc-kit": "0.11.2-ghost.4",
     "c8": "7.13.0",
     "jsdom": "22.1.0",
