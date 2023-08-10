@@ -26,7 +26,7 @@ const SupportPage = () => {
                 if (err.type && err.type === 'DisabledFeatureError') {
                     setDisabledFeatureError('This site is not accepting payments at the moment.');
                 } else {
-                    setError('Something went wrong. Please try again later.');
+                    setError('Something went wrong, please try again later.');
                 }
 
                 setLoading(false);
