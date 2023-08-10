@@ -46,7 +46,7 @@ export function ToolbarMenu({children, hide, arrowStyles, ...props}) {
             {/* Arrow block. Used div instead of pseudo-element. Arrow requires dynamic values for position,
              and Tailwind can't handle this. They recommended CSS-in-JS or style attr for such cases (https://v2.tailwindcss.com/docs/just-in-time-mode) */}
             <li
-                className="absolute top-[36px] left-[calc(50%-8px)] w-0 border-x-8 border-t-8 border-x-transparent border-t-black dark:border-t-grey-950"
+                className="absolute left-[calc(50%-8px)] top-[36px] w-0 border-x-8 border-t-8 border-x-transparent border-t-black dark:border-t-grey-950"
                 style={arrowStyles}
             ></li>
         </ul>

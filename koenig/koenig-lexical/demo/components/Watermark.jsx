@@ -13,7 +13,7 @@ function EditorLink({editorType}) {
 const Watermark = ({editorType}) => {
     if (!editorType) {
         return (
-            <a className="absolute bottom-4 left-6 z-20 flex items-center rounded bg-white py-1 pr-2 pl-1 font-mono text-sm tracking-tight text-black" href="https://github.com/TryGhost/Koenig/tree/main/packages/koenig-lexical" rel="nofollow ugc noopener noreferrer" target="_blank">
+            <a className="absolute bottom-4 left-6 z-20 flex items-center rounded bg-white py-1 pl-1 pr-2 font-mono text-sm tracking-tight text-black" href="https://github.com/TryGhost/Koenig/tree/main/packages/koenig-lexical" rel="nofollow ugc noopener noreferrer" target="_blank">
                 <GhostFavicon className="mr-2 h-6 w-6" />
                 <span className="pr-1 font-bold tracking-wide">Koenig</span>
             editor
@@ -40,7 +40,7 @@ const Watermark = ({editorType}) => {
 
     return (
         <>
-            <div className="group absolute bottom-4 left-6 z-20 flex items-center rounded bg-white py-1 pr-2 pl-1 font-mono text-sm tracking-tight text-black">
+            <div className="group absolute bottom-4 left-6 z-20 flex items-center rounded bg-white py-1 pl-1 pr-2 font-mono text-sm tracking-tight text-black">
                 <GhostFavicon className="mr-2 h-6 w-6" />
                 <span className="pr-1 font-bold tracking-wide">Koenig</span>
                 <span className="group-hover:font-bold">{editorType}

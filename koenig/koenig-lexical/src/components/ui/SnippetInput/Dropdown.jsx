@@ -54,7 +54,7 @@ export const Dropdown = ({
 const DropdownSection = ({list = [], onClick, activeMenuItem}) => {
     return (
         <li role="separator">
-            <span className="tracking-loose block border-t border-grey-200 px-3 pt-3 pb-2 text-xs font-medium uppercase text-grey dark:border-grey-900 dark:text-grey-800">Replace existing</span>
+            <span className="tracking-loose block border-t border-grey-200 px-3 pb-2 pt-3 text-xs font-medium uppercase text-grey dark:border-grey-900 dark:text-grey-800">Replace existing</span>
             <ul role="menu">
                 {
                     list.map((item, index) => (
@@ -88,7 +88,7 @@ const DropdownItem = ({onClick, name, active, index}) => {
         <li className="mb-1">
             <button
                 ref={buttonRef}
-                className="flex w-full cursor-pointer items-center justify-between py-2 px-3 text-left text-sm hover:bg-grey-100 focus:bg-grey-100 dark:hover:bg-black dark:focus:bg-black"
+                className="flex w-full cursor-pointer items-center justify-between px-3 py-2 text-left text-sm hover:bg-grey-100 focus:bg-grey-100 dark:hover:bg-black dark:focus:bg-black"
                 type="button"
                 onClick={() => onClick(name)}
             >

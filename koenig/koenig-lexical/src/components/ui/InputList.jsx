@@ -21,7 +21,7 @@ function Item({dataTestId, item, selected, onChange}) {
     return (
         <li className={`${selectionClass} cursor-pointer px-4 py-2 text-left hover:bg-grey-100 dark:hover:bg-black`} data-testid={`${dataTestId}-listOption`} onMouseDownCapture={event => handleOptionMouseDown(event, item.value)}>
             <span className="block text-sm font-semibold leading-tight text-black dark:text-white" data-testid={`${dataTestId}-listOption-${item.label}`}>{item.label}</span>
-            <span className="block overflow-hidden text-ellipsis whitespace-nowrap text-xs leading-tight text-grey-700 dark:text-grey-600" data-testid={`${dataTestId}-listOption-${item.value}`}>
+            <span className="block truncate text-xs leading-tight text-grey-700 dark:text-grey-600" data-testid={`${dataTestId}-listOption-${item.value}`}>
                 {item.value}
             </span>
         </li>

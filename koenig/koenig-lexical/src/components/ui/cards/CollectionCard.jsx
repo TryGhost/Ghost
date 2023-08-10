@@ -53,11 +53,11 @@ function PostExcerpt({excerpt, layout, columns, isLoading}) {
     return (
         <div className={clsx(
             'overflow-y-hidden font-normal leading-snug text-grey-900 dark:text-grey-600',
-            layout === 'list' && 'mt-2 max-h-[62px] text-md line-clamp-3',
-            (layout === 'grid' && columns === 1) && 'mt-3 max-h-[75px] text-lg line-clamp-3',
-            (layout === 'grid' && columns === 2) && 'mt-3 max-h-[66px] text-[1.6rem] line-clamp-3',
-            (layout === 'grid' && columns === 3) && 'mt-2 max-h-[42px] text-md line-clamp-2',
-            (layout === 'grid' && columns === 4) && 'mt-2 max-h-[42px] text-md line-clamp-2',
+            layout === 'list' && 'mt-2 line-clamp-3 max-h-[62px] text-md',
+            (layout === 'grid' && columns === 1) && 'mt-3 line-clamp-3 max-h-[75px] text-lg',
+            (layout === 'grid' && columns === 2) && 'mt-3 line-clamp-3 max-h-[66px] text-[1.6rem]',
+            (layout === 'grid' && columns === 3) && 'mt-2 line-clamp-2 max-h-[42px] text-md',
+            (layout === 'grid' && columns === 4) && 'mt-2 line-clamp-2 max-h-[42px] text-md',
             isLoading && 'w-1/2 animate-pulse rounded-full bg-grey-200 dark:bg-grey-950'
         )}>
             {isLoading ? 

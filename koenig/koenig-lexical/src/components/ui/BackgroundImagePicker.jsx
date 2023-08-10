@@ -55,7 +55,7 @@ export function BackgroundImagePicker({onFileChange,
                                             <div className="group relative mb-4 w-full rounded">
                                                 <div className="absolute inset-0 rounded bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover:opacity-100">
                                                 </div>
-                                                <div className="absolute top-5 right-5 flex opacity-0 transition-all group-hover:opacity-100">
+                                                <div className="absolute right-5 top-5 flex opacity-0 transition-all group-hover:opacity-100">
                                                     <button className="pointer-events-auto flex h-8 w-9 cursor-pointer items-center justify-center rounded bg-white/90 transition-all hover:bg-white" type="button" onClick={handleClearBackgroundImage}>
                                                         <TrashIcon className="h-5 w-5 fill-grey-900 stroke-[3px] transition-all ease-linear group-hover:scale-105" />
                                                     </button>

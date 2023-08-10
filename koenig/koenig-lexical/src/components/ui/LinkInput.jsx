@@ -49,7 +49,7 @@ export function LinkInput({href, update, cancel, arrowStyles}) {
     }, [onEscape]);
 
     return (
-        <div ref={containerRef} className="relative m-0 flex h-[36px] min-w-[240px] items-center justify-evenly rounded bg-black py-0 px-1 font-sans text-sm font-medium dark:bg-grey-950">
+        <div ref={containerRef} className="relative m-0 flex h-[36px] min-w-[240px] items-center justify-evenly rounded bg-black px-1 py-0 font-sans text-sm font-medium dark:bg-grey-950">
             <input
                 ref={inputRef}
                 className="mb-[1px] h-auto w-full rounded bg-black pl-3 pr-9 leading-loose text-white selection:bg-grey/40 dark:bg-grey-950"
@@ -84,7 +84,7 @@ export function LinkInput({href, update, cancel, arrowStyles}) {
             {/* Arrow block. Used div instead of pseudo-element. Arrow requires dynamic values for position,
              and Tailwind can't handle this. They recommended CSS-in-JS or style attr for such cases (https://v2.tailwindcss.com/docs/just-in-time-mode) */}
             <div
-                className="absolute top-[36px] left-[calc(50%-8px)] w-0 border-x-8 border-t-8 border-x-transparent border-t-black dark:border-t-grey-950"
+                className="absolute left-[calc(50%-8px)] top-[36px] w-0 border-x-8 border-t-8 border-x-transparent border-t-black dark:border-t-grey-950"
                 style={arrowStyles}
             ></div>
         </div>

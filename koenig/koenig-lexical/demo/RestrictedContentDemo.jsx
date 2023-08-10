@@ -95,7 +95,7 @@ function RestrictedContentDemo() {
             >
                 <div className="relative h-full grow">
                     <div ref={containerRef} className="h-full overflow-auto" onClick={focusEditor}>
-                        <div className="mx-auto max-w-[740px] py-[15vmin] px-6 lg:px-0">
+                        <div className="mx-auto max-w-[740px] px-6 py-[15vmin] lg:px-0">
                             <KoenigComposableEditor
                                 cursorDidExitAtTop={focusTitle}
                                 registerAPI={setEditorAPI}

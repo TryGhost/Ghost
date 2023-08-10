@@ -85,7 +85,7 @@ export function MediaUploader({
             )}
 
             {!isLoading && (
-                <div className="absolute top-2 right-2 flex space-x-2 opacity-0 transition-all group-hover:opacity-100">
+                <div className="absolute right-2 top-2 flex space-x-2 opacity-0 transition-all group-hover:opacity-100">
                     {additionalActions}
                     { isPinturaEnabled && <IconButton Icon={EditIcon} onClick={() => openImageEditor({
                         image: src,

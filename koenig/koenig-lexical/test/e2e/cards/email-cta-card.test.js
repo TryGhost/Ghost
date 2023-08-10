@@ -142,8 +142,7 @@ test.describe('Email card', async () => {
                 <div class="relative border-transparent caret-grey-800 hover:shadow-[0_0_0_1px] hover:shadow-green hover:-mx-3 hover:px-3"
                     data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="email-cta">
                     <div class="w-full pb-6">
-                        <div class="pt-1 pb-7 font-sans text-xs font-semibold uppercase leading-8 tracking-tight text-grey
-                        dark:text-grey-800">Free members</div>
+                        <div class="pb-7 pt-1 font-sans text-xs font-semibold uppercase leading-8 tracking-tight text-grey dark:text-grey-800">Free members</div>
                         <div
                             class="koenig-lexical kg-inherit-styles w-full bg-transparent whitespace-normal font-serif text-xl text-grey-900 dark:text-grey-200 text-center mx-auto [&amp;:has(.placeholder)]:w-fit [&amp;:has(.placeholder)]:text-left">
                             <div data-kg="editor">

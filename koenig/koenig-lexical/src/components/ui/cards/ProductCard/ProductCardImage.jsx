@@ -71,7 +71,7 @@ export function ProductCardImage({
                             {
                                 isEditing && (
                                     <>
-                                        <div className="absolute top-5 right-5 flex opacity-0 transition-all group-hover:opacity-100">
+                                        <div className="absolute right-5 top-5 flex opacity-0 transition-all group-hover:opacity-100">
                                             <IconButton dataTestId="replace-product-image" Icon={DeleteIcon} onClick={onRemove} />
                                         </div>
                                     </>
@@ -81,7 +81,7 @@ export function ProductCardImage({
                             {
                                 isEditing && isPinturaEnabled && (
                                     <>
-                                        <div className="absolute top-5 right-16 flex opacity-0 transition-all group-hover:opacity-100">
+                                        <div className="absolute right-16 top-5 flex opacity-0 transition-all group-hover:opacity-100">
                                             <IconButton dataTestId="replace-product-image" Icon={EditIcon} onClick={() => openImageEditor({
                                                 image: imgSrc,
                                                 handleSave: (editedImage) => {

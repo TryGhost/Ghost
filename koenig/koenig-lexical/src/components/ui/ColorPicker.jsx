@@ -159,7 +159,7 @@ export function ColorIndicator({value, swatches, onSwatchChange, onTogglePicker,
                 <div className='absolute inset-0 rounded-full bg-[conic-gradient(hsl(360,100%,50%),hsl(315,100%,50%),hsl(270,100%,50%),hsl(225,100%,50%),hsl(180,100%,50%),hsl(135,100%,50%),hsl(90,100%,50%),hsl(45,100%,50%),hsl(0,100%,50%))]' />
                 {value && !selectedSwatch && (
                     <div className="absolute inset-[3px] overflow-hidden rounded-full border border-white dark:border-grey-950" style={{backgroundColor}}>
-                        {value === 'transparent' && <div className="absolute top-[3px] left-[3px] z-10 w-[136%] origin-left rotate-45 border-b border-b-red" />}
+                        {value === 'transparent' && <div className="absolute left-[3px] top-[3px] z-10 w-[136%] origin-left rotate-45 border-b border-b-red" />}
                     </div>
                 )}
             </button>
