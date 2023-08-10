@@ -5,6 +5,8 @@
         class="gh-koenig-editor-pane flex flex-column mih-100"
         {{on "mousedown" this.trackMousedown}}
         {{on "mouseup" this.focusEditor}}
+        {{on "dragover" this.editorPaneDragover}}
+        {{on "drop" this.editorPaneDrop}}
     >
         <GhEditorFeatureImage
             @image={{@featureImage}}
