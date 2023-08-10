@@ -244,7 +244,7 @@ export default class KoenigLexicalEditor extends Component {
             const collectionPostsEndpoint = this.ghostPaths.url.api('posts');
             const {posts} = await this.ajax.request(collectionPostsEndpoint, {
                 data: {
-                    collection: collectionSlug, 
+                    collection: collectionSlug,
                     limit: 12
                 }
             });
