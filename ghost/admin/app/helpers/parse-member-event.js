@@ -10,7 +10,7 @@ export default class ParseMemberEventHelper extends Helper {
     @service membersUtils;
 
     compute([event, hasMultipleNewsletters]) {
-        const subject = event.data.member.name || event.data.member.email;
+        const subject = event.data.member ? (event.data.member.name || event.data.member.email) : (event.data.name || event.data.email || '');
         const icon = this.getIcon(event);
         const action = this.getAction(event, hasMultipleNewsletters);
         const info = this.getInfo(event);
@@ -110,6 +110,10 @@ export default class ParseMemberEventHelper extends Helper {
             }
         }
 
+        if (event.type === 'donation_event') {
+            icon = 'subscriptions';
+        }
+
         return 'event-' + icon;
     }
 
@@ -203,6 +207,10 @@ export default class ParseMemberEventHelper extends Helper {
             }
             return 'less like this';
         }
+
+        if (event.type === 'donation_event') {
+            return `Made a one-time payment`;
+        }
     }
 
     /**
@@ -222,7 +230,7 @@ export default class ParseMemberEventHelper extends Helper {
      * Clickable object, shown between action and info, or in a separate column in some views
      */
     getObject(event) {
-        if (event.type === 'signup_event' || event.type === 'subscription_event') {
+        if (event.type === 'signup_event' || event.type === 'subscription_event' || event.type === 'donation_event') {
             if (event.data.attribution?.title) {
                 return event.data.attribution.title;
             }
@@ -278,6 +286,12 @@ export default class ParseMemberEventHelper extends Helper {
             return 'Free';
         }
 
+        if (event.type === 'donation_event') {
+            const symbol = getSymbol(event.data.currency);
+            const formattedAmount = symbol + getNonDecimal(event.data.amount, event.data.currency);
+            return formattedAmount;
+        }
+
         return;
     }
 
@@ -304,7 +318,7 @@ export default class ParseMemberEventHelper extends Helper {
             }
         }
 
-        if (['signup_event', 'subscription_event'].includes(event.type)) {
+        if (['signup_event', 'subscription_event', 'donation_event'].includes(event.type)) {
             if (event.data.attribution && event.data.attribution.url) {
                 return event.data.attribution.url;
             }

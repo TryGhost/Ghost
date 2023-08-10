@@ -17,6 +17,7 @@ function replaceCustomFilterTransformer(filter) {
 
 module.exports = class EventRepository {
     constructor({
+        DonationPaymentEvent,
         EmailRecipient,
         MemberSubscribeEvent,
         MemberPaymentEvent,
@@ -32,6 +33,7 @@ module.exports = class EventRepository {
         labsService,
         memberAttributionService
     }) {
+        this._DonationPaymentEvent = DonationPaymentEvent;
         this._MemberSubscribeEvent = MemberSubscribeEvent;
         this._MemberPaidSubscriptionEvent = MemberPaidSubscriptionEvent;
         this._MemberPaymentEvent = MemberPaymentEvent;
@@ -65,7 +67,8 @@ module.exports = class EventRepository {
             {type: 'click_event', action: 'getClickEvents'},
             {type: 'aggregated_click_event', action: 'getAggregatedClickEvents'},
             {type: 'signup_event', action: 'getSignupEvents'},
-            {type: 'subscription_event', action: 'getSubscriptionEvents'}
+            {type: 'subscription_event', action: 'getSubscriptionEvents'},
+            {type: 'donation_event', action: 'getDonationEvents'}
         ];
 
         // Some events are not filterable by post_id
@@ -339,6 +342,59 @@ module.exports = class EventRepository {
             delete json.postAttribution?.plaintext;
             return {
                 type: 'signup_event',
+                data: {
+                    ...json,
+                    attribution: this._memberAttributionService.getEventAttribution(model)
+                }
+            };
+        });
+
+        return {
+            data,
+            meta
+        };
+    }
+
+    async getDonationEvents(options = {}, filter) {
+        options = {
+            ...options,
+            withRelated: [
+                'member',
+                'postAttribution',
+                'userAttribution',
+                'tagAttribution'
+            ],
+            filter: 'member_id:-null+custom:true',
+            mongoTransformer: chainTransformers(
+                // First set the filter manually
+                replaceCustomFilterTransformer(filter),
+
+                // Map the used keys in that filter
+                ...mapKeys({
+                    'data.created_at': 'created_at',
+                    'data.member_id': 'member_id'
+                }),
+
+                (f) => {
+                    // Special one: when data.post_id is used, replace it with two filters: attribution_id:x+attribution_type:post
+                    return expandFilters(f, [{
+                        key: 'data.post_id',
+                        replacement: 'attribution_id',
+                        expansion: {attribution_type: 'post'}
+                    }]);
+                }
+            )
+        };
+
+        const {data: models, meta} = await this._DonationPaymentEvent.findPage(options);
+
+        const data = models.map((model) => {
+            const json = model.toJSON(options);
+            delete json.postAttribution?.mobiledoc;
+            delete json.postAttribution?.lexical;
+            delete json.postAttribution?.plaintext;
+            return {
+                type: 'donation_event',
                 data: {
                     ...json,
                     attribution: this._memberAttributionService.getEventAttribution(model)
