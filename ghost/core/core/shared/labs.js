@@ -40,7 +40,6 @@ const ALPHA_FEATURES = [
     'adminXSettings',
     'mailEvents',
     'collectionsCard',
-    'headerUpgrade',
     'tipsAndDonations',
     'importMemberTier',
     'convertToLexical'
