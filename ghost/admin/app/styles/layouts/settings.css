@@ -2519,10 +2519,6 @@ p.theme-validation-details {
     font-size: 1.25rem;
 }
 
-.gh-setting-members-tierscontainer .gh-expandable:not(:first-of-type) {
-    margin-top: 20px;
-}
-
 .gh-setting-members-portal-mock {
     display: flex;
     position: relative;
