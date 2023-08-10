@@ -19,14 +19,15 @@ export class HeaderNode extends BaseHeaderNode {
     __headerTextEditorInitialState;
     __subheaderTextEditorInitialState;
 
-    // TODO: remove this once we have version 2 finalised because the default header node will be v2
+    // We keep Header v1 here for testing and backwards compatibility
+    // we keep it hidden in the Menu in Ghost but visible in the Demo to ensure it remains tested till we full deprecate it in the future
     static kgMenu = [
         {
-            label: 'Header',
+            label: 'Header1',
             desc: 'Add a header',
             Icon: HeaderCardIcon,
             insertCommand: INSERT_HEADER_COMMAND,
-            matches: ['header', 'heading'],
+            matches: ['v1_header', 'v1_heading'],
             priority: 17,
             insertParams: () => ({
                 version: 1
@@ -36,18 +37,15 @@ export class HeaderNode extends BaseHeaderNode {
             }
         },
         {
-            label: 'Header v2',
-            desc: '[WIP] Add a header card (v2)',
+            label: 'Header',
+            desc: 'Add a header',
             Icon: HeaderCardIcon,
             insertCommand: INSERT_HEADER_COMMAND,
-            matches: ['header2', 'heading2'],
+            matches: ['header', 'heading'],
             priority: 18,
             insertParams: () => ({
                 version: 2
-            }),
-            isHidden: ({config}) => {
-                return !config?.feature?.headerV2;
-            }
+            })
         }
     ];
 

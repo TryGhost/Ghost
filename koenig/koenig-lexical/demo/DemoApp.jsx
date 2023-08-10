@@ -43,11 +43,10 @@ const cardConfig = {
     siteDescription: `There's a whole lot to discover in this editor. Let us help you settle in.`,
     membersEnabled: true,
     feature: {
-        headerV2: true,
         collections: true,
         collectionsCard: true
     },
-    // todo: figure out how to dynamically set this for testing to ensure we keep v1 tested
+    // we keep header v1 visible in the demo to ensure it remains tested till we full deprecate it in the future
     depreciated: {
         headerV1: false // if false, shows header v1 in the menu
     }

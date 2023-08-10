@@ -8,15 +8,15 @@ const __dirname = path.dirname(__filename);
 async function createHeaderCard({page, version = 1}) {
     await focusEditor(page);
     if (version === 1) {
-        await page.keyboard.type('/header');
-        await page.waitForSelector('[data-kg-card-menu-item="Header"][data-kg-cardmenu-selected="true"]');
+        await page.keyboard.type('/v1_header');
+        await page.waitForSelector('[data-kg-card-menu-item="Header1"][data-kg-cardmenu-selected="true"]');
         await page.keyboard.press('Enter');
         await page.waitForSelector('[data-kg-card="header"]');
     }
 
     if (version === 2) {
-        await page.keyboard.type('/header2');
-        await page.waitForSelector('[data-kg-card-menu-item="Header v2"][data-kg-cardmenu-selected="true"]');
+        await page.keyboard.type('/header');
+        await page.waitForSelector('[data-kg-card-menu-item="Header"][data-kg-cardmenu-selected="true"]');
         await page.keyboard.press('Enter');
         await page.waitForSelector('[data-kg-card="header"]');
     }
