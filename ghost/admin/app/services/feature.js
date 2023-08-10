@@ -75,7 +75,6 @@ export default class FeatureService extends Service {
     @feature('adminXSettings') adminXSettings;
     @feature('mailEvents') mailEvents;
     @feature('collectionsCard') collectionsCard;
-    @feature('headerUpgrade') headerUpgrade;
     @feature('importMemberTier') importMemberTier;
     @feature('tipsAndDonations') tipsAndDonations;
     @feature('convertToLexical') convertToLexical;
