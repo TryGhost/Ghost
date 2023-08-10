@@ -4,12 +4,18 @@ import {getSupportAddress} from '../../../utils/helpers';
 
 import AccountFooter from './components/AccountFooter';
 import AccountMain from './components/AccountMain';
+import {isSigninAllowed} from '../../../utils/helpers';
 
 export default class AccountHomePage extends React.Component {
     static contextType = AppContext;
 
     componentDidMount() {
-        const {member} = this.context;
+        const {member, site} = this.context;
+
+        if (!isSigninAllowed({site})) {
+            this.context.onAction('signout');
+        }
+
         if (!member) {
             this.context.onAction('switchPage', {
                 page: 'signin',
@@ -29,6 +35,9 @@ export default class AccountHomePage extends React.Component {
         const {member, site, t} = this.context;
         const supportAddress = getSupportAddress({site});
         if (!member) {
+            return null;
+        }
+        if (!isSigninAllowed({site})) {
             return null;
         }
         return (
