@@ -86,7 +86,10 @@ const HistoryActionDescription: React.FC<{action: Action}> = ({action}) => {
         const linkTarget = getLinkTarget(action);
 
         if (linkTarget) {
-            return <a href='#' onClick={() => updateRoute(linkTarget)}>{action.resource?.title || action.resource?.name}</a>;
+            return <a className='font-bold' href='#' onClick={(e) => {
+                e.preventDefault();
+                updateRoute(linkTarget);
+            }}>{action.resource?.title || action.resource?.name}</a>;
         } else {
             return <>{action.resource?.title || action.resource?.name || action.context.primary_name}</>;
         }
