@@ -37,6 +37,7 @@ module.exports = function MembersAPI({
         getSubject
     },
     models: {
+        DonationPaymentEvent,
         EmailRecipient,
         StripeCustomer,
         StripeCustomerSubscription,
@@ -107,6 +108,7 @@ module.exports = function MembersAPI({
     });
 
     const eventRepository = new EventRepository({
+        DonationPaymentEvent,
         EmailRecipient,
         MemberSubscribeEvent,
         MemberPaidSubscriptionEvent,

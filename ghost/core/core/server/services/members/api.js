@@ -182,6 +182,7 @@ function createApiInstance(config) {
             }
         },
         models: {
+            DonationPaymentEvent: models.DonationPaymentEvent,
             EmailRecipient: models.EmailRecipient,
             StripeCustomer: models.MemberStripeCustomer,
             StripeCustomerSubscription: models.StripeCustomerSubscription,
