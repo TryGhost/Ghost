@@ -24,9 +24,9 @@ const SupportPage = () => {
                 }
             } catch (err) {
                 if (err.type && err.type === 'DisabledFeatureError') {
-                    setDisabledFeatureError('Your support means a lot. Unfortunately, we are not accepting payments at the moment.');
+                    setDisabledFeatureError('This site is not accepting payments at the moment.');
                 } else {
-                    setError('We\'re unable to process your payment right now. Please try again later.');
+                    setError('Something went wrong. Please try again later.');
                 }
 
                 setLoading(false);
