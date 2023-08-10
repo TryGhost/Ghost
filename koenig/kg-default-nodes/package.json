@@ -31,8 +31,8 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.19.1",
     "@babel/plugin-syntax-import-assertions": "^7.20.0",
-    "@lexical/headless": "^0.11.0",
-    "@lexical/html": "^0.11.0",
+    "@lexical/headless": "^0.12.0",
+    "@lexical/html": "^0.12.0",
     "@prettier/sync": "^0.3.0",
     "@rollup/plugin-babel": "6.0.3",
     "c8": "8.0.1",
@@ -48,7 +48,7 @@
     "@tryghost/kg-markdown-html-renderer": "^6.0.9",
     "html-minifier": "^4.0.0",
     "jsdom": "^22.0.0",
-    "lexical": "^0.11.0",
+    "lexical": "^0.12.0",
     "lodash": "^4.17.21",
     "luxon": "^3.3.0"
   }
