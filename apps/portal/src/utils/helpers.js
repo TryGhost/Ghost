@@ -238,6 +238,14 @@ export function isInviteOnlySite({site = {}, pageQuery = ''}) {
     return prices.length === 0 || (site && site.members_signup_access === 'invite');
 }
 
+export function isSigninAllowed({site}) {
+    return site?.members_signup_access === 'all' || site?.members_signup_access === 'invite';
+}
+
+export function isSignupAllowed({site}) {
+    return site?.members_signup_access === 'all' && (site?.is_stripe_configured || hasOnlyFreePlan({site}));
+}
+
 export function hasMultipleProducts({site}) {
     const products = getAvailableProducts({site});
 
