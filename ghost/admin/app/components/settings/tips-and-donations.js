@@ -68,12 +68,12 @@ export default class TipsAndDonations extends Component {
         const minAmount = minimumAmountForCurrency(currency);
 
         if (amountInCents !== 0 && amountInCents < (minAmount * 100)) {
-            this.tipsAndDonationsError = `The suggested amount cannot be less than ${symbol}${minAmount}.`;
+            this.tipsAndDonationsError = `Non-zero amount must be at least ${symbol}${minAmount}.`;
             return;
         }
 
         if (amountInCents !== 0 && amountInCents > (MAX_AMOUNT * 100)) {
-            this.tipsAndDonationsError = `The suggested amount cannot be more than ${symbol}${MAX_AMOUNT}.`;
+            this.tipsAndDonationsError = `Suggested amount cannot be more than ${symbol}${MAX_AMOUNT}.`;
             return;
         }
 
