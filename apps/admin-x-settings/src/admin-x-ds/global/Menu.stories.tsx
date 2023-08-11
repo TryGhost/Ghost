@@ -22,12 +22,6 @@ const items = [
     }}
 ];
 
-const longItems = [
-    {id: 'item-1', label: 'This is a really, really long item that nobody should be using but oh well'},
-    {id: 'item-2', label: 'Item 2'},
-    {id: 'item-3', label: 'Item 3'}
-];
-
 export const Default: Story = {
     args: {
         trigger: <Button color='green' label="Click"></Button>,
@@ -52,12 +46,4 @@ export const Right: Story = {
             <div style={{maxWidth: '100px', margin: '0 auto'}}><ThisStory /></div>
         )
     ]
-};
-
-export const LongLabels: Story = {
-    args: {
-        trigger: <Button color='green' label="Click"></Button>,
-        items: longItems,
-        position: 'right'
-    }
 };
