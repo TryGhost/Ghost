@@ -18,6 +18,7 @@ class StripeMocker {
     coupons = [];
     prices = [];
     products = [];
+    checkoutSessions = [];
 
     nockInterceptors = [];
 
@@ -39,6 +40,7 @@ class StripeMocker {
         this.coupons = [];
         this.prices = [];
         this.products = [];
+        this.checkoutSessions = [];
 
         // Fix for now, because of importing order breaking some things when they are not initialized
         members = require('../../core/server/services/members');
@@ -227,6 +229,17 @@ class StripeMocker {
             }
         }
 
+        if (resource === 'checkout') {
+            if (!id) {
+                // Add default fields
+                decoded = {
+                    object: 'checkout.session',
+                    ...decoded,
+                    url: 'https://checkout.stripe.com/c/pay/fake-data'
+                };
+            }
+        }
+
         if (resource === 'subscriptions') {
             // Convert price to price object
             if (Array.isArray(decoded.items)) {
@@ -379,6 +392,10 @@ class StripeMocker {
 
                 if (resource === 'products') {
                     return this.#postData(this.products, id, body, resource);
+                }
+
+                if (resource === 'checkout' && id === 'sessions') {
+                    return this.#postData(this.checkoutSessions, null, body, resource);
                 }
 
                 return [500];

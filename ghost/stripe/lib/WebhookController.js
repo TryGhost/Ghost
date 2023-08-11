@@ -115,9 +115,9 @@ module.exports = class WebhookController {
                 // Track a one time payment event
                 const amount = invoice.amount_paid;
 
-                const member = await this.deps.memberRepository.get({
+                const member = invoice.customer ? (await this.deps.memberRepository.get({
                     customer_id: invoice.customer
-                });
+                })) : null;
 
                 const data = DonationPaymentEvent.create({
                     name: member?.get('name') ?? invoice.customer_name,
