@@ -14,6 +14,6 @@ module.exports = function renderEntries(req, res) {
     return function renderEntriesClosure(result) {
         // Format data 2
         // Render
-        return renderer(req, res, formatResponse.entries(result));
+        return renderer(req, res, formatResponse.entries(result, false, res.locals));
     };
 };

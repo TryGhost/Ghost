@@ -5,6 +5,7 @@ describe('Checks', function () {
     it('methods', function () {
         Object.keys(checks).should.eql([
             'isPost',
+            'isPage',
             'isTag',
             'isUser',
             'isNav'
@@ -15,6 +16,14 @@ describe('Checks', function () {
         checks.isPost({title: 'Test'}).should.eql(false);
         checks.isPost({title: 'Test', slug: 'test'}).should.eql(false);
         checks.isPost({title: 'Test', slug: 'test', html: ''}).should.eql(true);
+    });
+
+    it('isPage', function () {
+        checks.isPage(undefined).should.eql(false);
+        checks.isPage({}).should.eql(false);
+        checks.isPage({title: 'Test'}).should.eql(false);
+        checks.isPage({title: 'Test', show_title_and_feature_image: false}).should.eql(true);
+        checks.isPage({title: 'Test', show_title_and_feature_image: true}).should.eql(true);
     });
 
     it('isTag', function () {
