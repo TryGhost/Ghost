@@ -2519,6 +2519,11 @@ p.theme-validation-details {
     font-size: 1.25rem;
 }
 
+.gh-stripe-connect-link {
+    color:#635bff;
+    font-weight:500;
+}
+
 .gh-setting-members-portal-mock {
     display: flex;
     position: relative;

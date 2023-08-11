@@ -2,16 +2,37 @@
     <div class="gh-expandable-header">
         <div>
             <h4 class="gh-expandable-title">Tips or donations</h4>
-            <p class="gh-expandable-description">Give your audience a one-time way to support your work, no membership required</p>
+            {{#if (feature "tipsAndDonations")}}
+                <p class="gh-expandable-description">Give your audience a one-time way to support your work, no membership required.
+                    {{#if this.membersUtils.isStripeEnabled}}
+                    {{else}}
+                        <button {{on "click" this.openStripeConnect}} class="gh-stripe-connect-link">Connect with Stripe</button>
+                    {{/if}}
+                </p>
+            {{else}}
+                <p class="gh-expandable-description">Give your audience a one-time way to support your work, no membership required</p>
+            {{/if}}
         </div>
-        {{#if this.membersUtils.isStripeEnabled}}
-            <button type="button" class="gh-btn" {{on "click" (toggle-action "tipsAndDonationsOpen" this)}}>
-                <span>{{if this.tipsAndDonationsOpen "Close" "Expand"}}</span>
-            </button>
+        {{#if (feature "tipsAndDonations")}}
+            {{#if this.membersUtils.isStripeEnabled}}
+                <button type="button" class="gh-btn" {{on "click" (toggle-action "tipsAndDonationsOpen" this)}}>
+                    <span>{{if this.tipsAndDonationsOpen "Close" "Expand"}}</span>
+                </button>
+            {{else}}
+                <button type="button" class="gh-btn" disabled={{true}} {{on "click" (toggle-action "tipsAndDonationsOpen" this)}}>
+                    <span>{{if this.tipsAndDonationsOpen "Close" "Expand"}}</span>
+                </button>
+            {{/if}}
         {{else}}
-            <button type="button" class="stripe-connect {{if (or (not this.session.user.isAdmin) this.isConnectDisallowed) "disabled"}}" {{on "click" this.openStripeConnect}}>
-                <span></span>
-            </button>
+            {{#if this.membersUtils.isStripeEnabled}}
+                <button type="button" class="gh-btn" {{on "click" (toggle-action "tipsAndDonationsOpen" this)}}>
+                    <span>{{if this.tipsAndDonationsOpen "Close" "Expand"}}</span>
+                </button>
+            {{else}}
+                <button type="button" class="stripe-connect {{if (or (not this.session.user.isAdmin) this.isConnectDisallowed) "disabled"}}" {{on "click" this.openStripeConnect}}>
+                    <span></span>
+                </button>
+            {{/if}}
         {{/if}}
     </div>
     <div class="gh-expandable-content">
