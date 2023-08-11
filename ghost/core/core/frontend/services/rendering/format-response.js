@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const hbs = require('../theme-engine/engine');
 const {prepareContextResource} = require('../proxy');
+const {isPage} = require('../data/checks');
 
 /**
  * @description Formats API response into handlebars/theme format.
@@ -22,7 +23,7 @@ function formatPageResponse(result, pageAsPost = false, locals = {}) {
     // when a custom routed page is loaded it can have an associated page object,
     // in that case we want to make sure @page is still available and matches the
     // selected page properties
-    if (result.data?.page?.[0]) {
+    if (isPage(result.data?.page?.[0])) {
         const page = result.data?.page?.[0];
 
         // build up @page data for use in templates
