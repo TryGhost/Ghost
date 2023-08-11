@@ -1,60 +1,33 @@
-import React, {useState} from 'react';
-import clsx from 'clsx';
+import React, {useRef} from 'react';
+import {usePopover} from '../providers/PopoverProvider';
 
 export type PopoverPosition = 'left' | 'right';
 
 interface PopoverProps {
-    trigger?: React.ReactNode;
+    trigger: React.ReactNode;
+    children: React.ReactNode;
     position?: PopoverPosition;
-    unstyled?: boolean;
-    className?: string;
-    children?: React.ReactNode;
 }
 
 const Popover: React.FC<PopoverProps> = ({
     trigger,
-    position = 'left',
-    unstyled = false,
-    className,
-    children
+    children,
+    position = 'left'
 }) => {
-    const [isOpen, setIsOpen] = useState(false);
+    const {openPopover} = usePopover();
+    const triggerRef = useRef<HTMLDivElement | null>(null);
 
-    const togglePopover = () => {
-        setIsOpen(!isOpen);
-    };
-
-    const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (e.target === e.currentTarget) {
-            setIsOpen(false);
+    const handleTriggerClick = () => {
+        if (triggerRef.current) {
+            const {x, y, width, height} = triggerRef.current.getBoundingClientRect();
+            const finalX = (position === 'left') ? x : x - width;
+            openPopover(finalX, y + height, children);
         }
     };
 
-    if (!unstyled) {
-        className = clsx(
-            'absolute z-50 mt-2 origin-top-right rounded bg-white shadow-md ring-1 ring-[rgba(0,0,0,0.01)] focus:outline-none',
-            position === 'left' ? 'left-0' : 'right-0',
-            isOpen ? 'block' : 'hidden',
-            className
-        );
-    }
-
-    const backdropClasses = clsx(
-        'fixed inset-0 z-40',
-        isOpen ? 'block' : 'hidden'
-    );
-
     return (
-        <div className='relative inline-block'>
-            <div className={backdropClasses} data-testid="menu-overlay" onClick={handleBackdropClick}></div>
-            {/* Trigger */}
-            <div className='relative z-30' onClick={togglePopover}>
-                {trigger}
-            </div>
-            {/* Popover */}
-            <div className={className} role="menu">
-                {children}
-            </div>
+        <div ref={triggerRef} onClick={handleTriggerClick}>
+            {trigger}
         </div>
     );
 };

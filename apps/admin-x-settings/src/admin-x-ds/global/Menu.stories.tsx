@@ -3,12 +3,19 @@ import type {Meta, StoryObj} from '@storybook/react';
 
 import Button from './Button';
 import Menu from './Menu';
+import PopoverContents from './PopoverContents';
+import {PopoverProvider} from '../providers/PopoverProvider';
 
 const meta = {
     title: 'Global / Menu',
     component: Menu,
     tags: ['autodocs'],
-    decorators: [(_story: () => ReactNode) => (<div style={{maxWidth: '100px', margin: '0 auto', padding: '100px 0 200px'}}>{_story()}</div>)]
+    decorators: [(_story: () => ReactNode) => (
+        <PopoverProvider>
+            {_story()}
+            <PopoverContents />
+        </PopoverProvider>
+    )]
 } satisfies Meta<typeof Menu>;
 
 export default meta;
@@ -24,7 +31,7 @@ const items = [
 
 export const Default: Story = {
     args: {
-        trigger: <Button color='green' label="Click"></Button>,
+        trigger: <Button color='black' label="Click"></Button>,
         items: items,
         position: 'left'
     },
@@ -37,7 +44,7 @@ export const Default: Story = {
 
 export const Right: Story = {
     args: {
-        trigger: <Button color='green' label="Click"></Button>,
+        trigger: <Button color='black' label="Click"></Button>,
         items: items,
         position: 'right'
     },

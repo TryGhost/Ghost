@@ -1,6 +1,5 @@
 import Avatar from '../../../admin-x-ds/global/Avatar';
 import Button from '../../../admin-x-ds/global/Button';
-import Form from '../../../admin-x-ds/global/form/Form';
 import Icon from '../../../admin-x-ds/global/Icon';
 import List from '../../../admin-x-ds/global/List';
 import ListItem from '../../../admin-x-ds/global/ListItem';
@@ -37,22 +36,20 @@ const HistoryAvatar: React.FC<HistoryAvatarProps> = ({
 
 const HistoryFilter: React.FC = () => {
     return (
-        <Popover position='right' trigger={<Button label='Filter' />}>
-            <div className='w-[240px] p-3'>
-                <Form>
-                    <ToggleGroup>
-                        <Toggle direction='rtl' label='Added' />
-                        <Toggle direction='rtl' label='Edited' />
-                        <Toggle direction='rtl' label='Deleted' />
-                    </ToggleGroup>
-                    <ToggleGroup>
-                        <Toggle direction='rtl' label='Posts' />
-                        <Toggle direction='rtl' label='Pages' />
-                        <Toggle direction='rtl' label='Tags' />
-                        <Toggle direction='rtl' label='Tiers & offers' />
-                        <Toggle direction='rtl' label='Settings & staff' />
-                    </ToggleGroup>
-                </Form>
+        <Popover trigger={<Button label='Filter' link />}>
+            <div className='flex w-[220px] flex-col gap-8 p-5'>
+                <ToggleGroup>
+                    <Toggle direction='rtl' label='Added' labelClasses='text-sm' />
+                    <Toggle direction='rtl' label='Edited' labelClasses='text-sm' />
+                    <Toggle direction='rtl' label='Deleted' labelClasses='text-sm' />
+                </ToggleGroup>
+                <ToggleGroup>
+                    <Toggle direction='rtl' label='Posts' labelClasses='text-sm' />
+                    <Toggle direction='rtl' label='Pages' labelClasses='text-sm' />
+                    <Toggle direction='rtl' label='Tags' labelClasses='text-sm' />
+                    <Toggle direction='rtl' label='Tiers & offers' labelClasses='text-sm' />
+                    <Toggle direction='rtl' label='Settings & staff' labelClasses='text-sm' />
+                </ToggleGroup>
             </div>
         </Popover>
     );
