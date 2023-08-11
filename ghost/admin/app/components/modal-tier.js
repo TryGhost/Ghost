@@ -214,7 +214,7 @@ export default class ModalTierPrice extends ModalBase {
             const yearlyAmount = this.stripeYearlyAmount;
             const monthlyAmount = this.stripeMonthlyAmount;
             const symbol = getSymbol(this.currency);
-            const minimumAmount = minimumAmountForCurrency(this.currency) / 100;
+            const minimumAmount = minimumAmountForCurrency(this.currency);
 
             if (!yearlyAmount || (yearlyAmount < minimumAmount) || !monthlyAmount || (monthlyAmount < minimumAmount)) {
                 throw new TypeError(`Subscription amount cannot be less than ${symbol}${minimumAmount}`);
@@ -268,8 +268,14 @@ export default class ModalTierPrice extends ModalBase {
             const yearlyAmount = this.stripeYearlyAmount;
             const monthlyAmount = this.stripeMonthlyAmount;
             const symbol = getSymbol(this.currency);
-            if (!yearlyAmount || yearlyAmount < 1 || !monthlyAmount || monthlyAmount < 1) {
-                throw new TypeError(`Subscription amount must be at least ${symbol}1.00`);
+            const minimumAmount = minimumAmountForCurrency(this.currency);
+
+            if (!yearlyAmount || (yearlyAmount < minimumAmount) || !monthlyAmount || (monthlyAmount < minimumAmount)) {
+                throw new TypeError(`Subscription amount cannot be less than ${symbol}${minimumAmount}`);
+            }
+
+            if (yearlyAmount > MAX_AMOUNT || monthlyAmount > MAX_AMOUNT) {
+                throw new TypeError(`Subscription amount cannot be more than ${symbol}${MAX_AMOUNT}`);
             }
         } catch (err) {
             this.stripePlanError = err.message;
