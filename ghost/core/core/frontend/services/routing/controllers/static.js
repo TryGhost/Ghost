@@ -65,7 +65,7 @@ module.exports = function staticController(req, res, next) {
             // This flag solves the confusion about whether the output contains a post or page object by duplicating the objects
             // This is not ideal, but will solve some long standing pain points with dynamic routing until we can overhaul it
             const duplicatePagesAsPosts = true;
-            renderer.renderer(req, res, renderer.formatResponse.entries(response, duplicatePagesAsPosts));
+            renderer.renderer(req, res, renderer.formatResponse.entries(response, duplicatePagesAsPosts, res.locals));
         })
         .catch(renderer.handleError(next));
 };
