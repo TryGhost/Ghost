@@ -168,41 +168,41 @@ export function getCurrencyOptions() {
 * based on Stripe's requirements. Values here are double the Stripe limits, to take conversions to the settlement currency into account.
 * @see https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts
 * @param {String} currency — Currency in the 3-letter ISO format (e.g. "USD", "EUR")
-* @retuns {Number} — Minimum amount in cents (e.g. 100 for $1.00)
+* @retuns {Number} — Minimum amount
 */
 export function minimumAmountForCurrency(currency) {
     const isoCurrency = currency?.toUpperCase();
 
     switch (isoCurrency) {
     case 'AED':
-        return 400;
+        return 4;
     case 'BGN':
-        return 200;
+        return 2;
     case 'CZK':
-        return 3000;
+        return 30;
     case 'DKK':
-        return 500;
+        return 5;
     case 'HKD':
-        return 800;
+        return 8;
     case 'HUF':
-        return 25000;
+        return 250;
     case 'JPY':
-        return 10000;
-    case 'MXN':
-        return 2000;
-    case 'MYR':
-        return 400;
-    case 'NOK':
-        return 600;
-    case 'PLN':
-        return 400;
-    case 'RON':
-        return 400;
-    case 'SEK':
-        return 600;
-    case 'THB':
-        return 2000;
-    default:
         return 100;
+    case 'MXN':
+        return 20;
+    case 'MYR':
+        return 4;
+    case 'NOK':
+        return 6;
+    case 'PLN':
+        return 4;
+    case 'RON':
+        return 4;
+    case 'SEK':
+        return 6;
+    case 'THB':
+        return 20;
+    default:
+        return 1;
     }
 }
