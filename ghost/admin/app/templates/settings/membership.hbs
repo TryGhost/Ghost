@@ -152,7 +152,7 @@
                                 <p class="gh-expandable-description">Set prices and paid member sign up settings.
                                     {{#if this.membersUtils.isStripeEnabled}}
                                     {{else}}
-                                         <button {{on "click" this.openStripeConnect}} class="gh-stripe-connect-link">Connect with Stripe</button>
+                                         <button type="button" {{on "click" this.openStripeConnect}} class="gh-stripe-connect-link">Connect with Stripe</button>
                                     {{/if}}</p>
                             {{else}}
                                 <p class="gh-expandable-description">Set prices and paid member sign up settings</p>

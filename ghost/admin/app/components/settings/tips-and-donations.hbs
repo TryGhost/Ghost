@@ -6,7 +6,7 @@
                 <p class="gh-expandable-description">Give your audience a one-time way to support your work, no membership required.
                     {{#if this.membersUtils.isStripeEnabled}}
                     {{else}}
-                        <button {{on "click" this.openStripeConnect}} class="gh-stripe-connect-link">Connect with Stripe</button>
+                        <button type="button" {{on "click" this.openStripeConnect}} class="gh-stripe-connect-link">Connect with Stripe</button>
                     {{/if}}
                 </p>
             {{else}}
