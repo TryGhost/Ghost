@@ -34,7 +34,9 @@
                     </li>
                     {{#if (gh-user-can-admin this.session.user)}}
                     <li class="relative">
-                        <LinkTo @route="explore" title="Ghost Explore" data-test-nav="explore">{{svg-jar "globe-simple"}} Explore</LinkTo>
+                        <a href="javascript:void(0)" class={{if this.explore.exploreWindowOpen "active"}} {{on "click" (fn this.toggleExploreWindow "")}} data-test-nav="explore">
+                            {{svg-jar "globe-simple"}} Explore
+                        </a>
                     </li>
                     {{/if}}
                 </ul>

@@ -27,6 +27,7 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     @service whatsNew;
     @service membersStats;
     @service settings;
+    @service explore;
 
     @inject config;
 
@@ -106,6 +107,11 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     @action
     toggleBillingModal() {
         this.billing.openBillingWindow(this.router.currentURL);
+    }
+
+    @action
+    toggleExploreWindow() {
+        this.explore.openExploreWindow();
     }
 
     @task(function* () {
