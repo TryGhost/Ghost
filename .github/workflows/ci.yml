@@ -780,7 +780,7 @@ jobs:
     ]
     name: Canary
     runs-on: ubuntu-latest
-    if: ${{ always() && needs.job_get_metadata.outputs.is_canary_branch == 'true' && !(contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'failure') || contains(needs.*.result, 'skipped')) }}
+    if: always() && needs.job_get_metadata.outputs.is_canary_branch == 'true' && needs.job_required_tests.result == 'success' && needs.job_get_metadata.result == 'success'
     steps:
       - name: Output needs (for debugging)
         run: echo "${{ toJson(needs) }}"

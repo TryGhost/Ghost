@@ -151,5 +151,22 @@ describe('Unit - services/routing/helpers/format-response', function () {
             formatted.featured_multiple[0].feature_image_caption.should.be.an.instanceof(SafeString);
             formatted.featured_multiple[1].feature_image_caption.should.be.an.instanceof(SafeString);
         });
+
+        it('should set @page when data.page is present (e.g. custom routing)', function () {
+            const data = {
+                posts,
+                data: {
+                    page: [pages[1]]
+                }
+            };
+            const locals = {};
+
+            const formatted = helpers.formatResponse.entries(data, true, locals);
+            formatted.page.should.not.have.property('show_title_and_feature_image');
+
+            locals.should.be.an.Object().with.properties('_templateOptions');
+            locals._templateOptions.data.should.be.an.Object().with.properties('page');
+            locals._templateOptions.data.page.show_title_and_feature_image.should.be.false();
+        });
     });
 });

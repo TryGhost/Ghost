@@ -15,6 +15,9 @@ const CURRENCIES = currencies.map((currency) => {
     };
 });
 
+// Stripe doesn't allow amounts over 10,000 as a preset amount
+const MAX_AMOUNT = 10_000;
+
 export default class TipsAndDonations extends Component {
     @service settings;
     @service session;
@@ -62,10 +65,15 @@ export default class TipsAndDonations extends Component {
         const amountInCents = Math.round(amount * 100);
         const currency = this.settings.donationsCurrency;
         const symbol = getSymbol(currency);
-        const minimumAmount = minimumAmountForCurrency(currency);
+        const minAmount = minimumAmountForCurrency(currency);
 
-        if (amountInCents !== 0 && amountInCents < minimumAmount) {
-            this.tipsAndDonationsError = `The suggested amount cannot be less than ${symbol}${minimumAmount / 100}.`;
+        if (amountInCents !== 0 && amountInCents < (minAmount * 100)) {
+            this.tipsAndDonationsError = `Non-zero amount must be at least ${symbol}${minAmount}.`;
+            return;
+        }
+
+        if (amountInCents !== 0 && amountInCents > (MAX_AMOUNT * 100)) {
+            this.tipsAndDonationsError = `Suggested amount cannot be more than ${symbol}${MAX_AMOUNT}.`;
             return;
         }
 

@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.58.0",
+  "version": "5.59.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -201,7 +201,7 @@
     "keypair": "1.0.4",
     "knex": "2.4.2",
     "knex-migrator": "5.1.5",
-    "lib0": "0.2.78",
+    "lib0": "0.2.80",
     "lodash": "4.17.21",
     "luxon": "3.4.0",
     "moment": "2.24.0",
@@ -230,7 +230,7 @@
   "devDependencies": {
     "@actions/core": "1.10.0",
     "@playwright/test": "1.37.0",
-    "@tryghost/express-test": "0.13.6",
+    "@tryghost/express-test": "0.13.7",
     "@tryghost/webhook-mock-receiver": "0.2.6",
     "@types/common-tags": "1.8.1",
     "c8": "7.14.0",
