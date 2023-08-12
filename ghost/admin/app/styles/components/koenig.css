@@ -331,7 +331,10 @@
 .koenig-editor__editor div + p { /* Mobiledoc cards can be addressed by their wrapper div element */
     margin: 2.8rem 0 0;
 }
-
+.koenig-editor__editor div + p img {
+    display: block;
+    margin: 0 auto;
+}
 /* Paragraph right after title */
 .koenig-editor__editor p:first-child {
     margin-top: 0rem;
