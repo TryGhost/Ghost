@@ -3,9 +3,6 @@ import type {Meta, StoryObj} from '@storybook/react';
 // import BoilerPlate from './Boilerplate';
 import Button from './Button';
 import Popover from './Popover';
-import PopoverContents from './PopoverContents';
-import {PopoverProvider} from '../providers/PopoverProvider';
-import {ReactNode} from 'react';
 
 const meta = {
     title: 'Global / Popover',
@@ -17,13 +14,7 @@ const meta = {
                 type: 'text'
             }
         }
-    },
-    decorators: [(_story: () => ReactNode) => (
-        <PopoverProvider>
-            {_story()}
-            <PopoverContents />
-        </PopoverProvider>
-    )]
+    }
 } satisfies Meta<typeof Popover>;
 
 export default meta;

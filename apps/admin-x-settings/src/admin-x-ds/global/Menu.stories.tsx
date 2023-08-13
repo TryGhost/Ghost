@@ -1,21 +1,12 @@
-import {ReactNode} from 'react';
 import type {Meta, StoryObj} from '@storybook/react';
 
 import Button from './Button';
 import Menu from './Menu';
-import PopoverContents from './PopoverContents';
-import {PopoverProvider} from '../providers/PopoverProvider';
 
 const meta = {
     title: 'Global / Menu',
     component: Menu,
-    tags: ['autodocs'],
-    decorators: [(_story: () => ReactNode) => (
-        <PopoverProvider>
-            {_story()}
-            <PopoverContents />
-        </PopoverProvider>
-    )]
+    tags: ['autodocs']
 } satisfies Meta<typeof Menu>;
 
 export default meta;
