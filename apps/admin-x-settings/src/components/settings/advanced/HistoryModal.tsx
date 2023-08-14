@@ -96,7 +96,7 @@ const HistoryActionDescription: React.FC<{action: Action}> = ({action}) => {
 
         return <>
             {group.slice(0, 1).toUpperCase()}{group.slice(1)}
-            {group !== key && <span className='text-xs'><code className='mb-1 bg-white text-grey-800'>({key})</code></span>}
+            {group !== key && <span className='text-xs'> <code className='mb-1 bg-white text-grey-800'>({key})</code></span>}
         </>;
     } else if (action.resource?.title || action.resource?.name || action.context.primary_name) {
         const linkTarget = getLinkTarget(action);
