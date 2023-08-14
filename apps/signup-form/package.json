@@ -52,7 +52,7 @@
         "@types/react": "18.2.20",
         "@types/react-dom": "18.2.7",
         "@vitejs/plugin-react": "4.0.4",
-        "autoprefixer": "10.4.14",
+        "autoprefixer": "10.4.15",
         "concurrently": "8.2.0",
         "eslint-plugin-react-hooks": "4.6.0",
         "eslint-plugin-react-refresh": "0.4.3",
