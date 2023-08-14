@@ -902,7 +902,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     }
 
                     // delete selected card if we have one
-                    if (selectedCardKey) {
+                    if (!isNested && selectedCardKey) {
                         event.preventDefault();
                         editor.dispatchCommand(DELETE_CARD_COMMAND, {cardKey: selectedCardKey, direction: 'forward'});
                         return true;

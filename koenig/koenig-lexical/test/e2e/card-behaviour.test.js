@@ -1590,6 +1590,20 @@ test.describe('Card behaviour', async () => {
     });
 
     test.describe('inner editors', function () {
+        test('can use the delete key to remove text', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('/image https://example.com/image.jpg');
+            await page.waitForSelector('[data-kg-card-menu-item="Image"][data-kg-cardmenu-selected="true"]');
+            await page.keyboard.press('Enter');
+            await page.waitForSelector('[data-kg-card="image"]');
+            await page.keyboard.type('Caption value');
+            await page.keyboard.press('ArrowLeft');
+            // await page.keyboard.press('Fn+Backspace'); // note: this is the delete key for macs, but playwright doesn't recognize "Fn" even when running on a mac :(
+            await page.keyboard.press('Delete');
+
+            await expect(page.locator('[data-kg-card="image"] figcaption [data-kg="editor"]')).toHaveText('Caption valu');
+        });
+
         test.describe('codemirror', function () {
             // Skipped because CodeMirror does not pick up the copy/paste properly inside Playwright - manual testing is working
             test.skip('can copy/paste', async function () {
