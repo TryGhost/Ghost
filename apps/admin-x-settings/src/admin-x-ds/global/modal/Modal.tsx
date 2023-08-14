@@ -28,6 +28,7 @@ export interface ModalProps {
     noPadding?: boolean;
     onOk?: () => void;
     onCancel?: () => void;
+    topRightContent?: 'close' | React.ReactNode;
     afterClose?: () => void;
     children?: React.ReactNode;
     backDrop?: boolean;
@@ -51,6 +52,7 @@ const Modal: React.FC<ModalProps> = ({
     onOk,
     okColor = 'black',
     onCancel,
+    topRightContent,
     afterClose,
     children,
     backDrop = true,
@@ -240,7 +242,18 @@ const Modal: React.FC<ModalProps> = ({
             <section className={modalClasses} data-testid={testId} style={modalStyles}>
                 <div className={contentClasses}>
                     <div className='h-full'>
-                        {title && <Heading level={3}>{title}</Heading>}
+                        {topRightContent === 'close' ?
+                            (<>
+                                {title && <Heading level={3}>{title}</Heading>}
+                                <div className='absolute right-6 top-6'>
+                                    <Button className='-m-2 cursor-pointer p-2 opacity-50 hover:opacity-100' icon='close' size='sm' unstyled onClick={removeModal} />
+                                </div>
+                            </>)
+                            :
+                            (<div className='flex items-center justify-between gap-5'>
+                                {title && <Heading level={3}>{title}</Heading>}
+                                {topRightContent}
+                            </div>)}
                         {children}
                     </div>
                 </div>

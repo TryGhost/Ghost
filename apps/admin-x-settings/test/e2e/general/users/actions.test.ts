@@ -30,7 +30,7 @@ test.describe('User actions', async () => {
         const modal = page.getByTestId('user-detail-modal');
 
         await modal.getByRole('button', {name: 'Actions'}).click();
-        await modal.getByRole('button', {name: 'Suspend user'}).click();
+        await page.getByTestId('popover-content').getByRole('button', {name: 'Suspend user'}).click();
 
         const confirmation = page.getByTestId('confirmation-modal');
         await confirmation.getByRole('button', {name: 'Suspend'}).click();
@@ -83,7 +83,7 @@ test.describe('User actions', async () => {
         await expect(modal).toHaveText(/Suspended/);
 
         await modal.getByRole('button', {name: 'Actions'}).click();
-        await modal.getByRole('button', {name: 'Un-suspend user'}).click();
+        await page.getByTestId('popover-content').getByRole('button', {name: 'Un-suspend user'}).click();
 
         const confirmation = page.getByTestId('confirmation-modal');
         await confirmation.getByRole('button', {name: 'Un-suspend'}).click();
@@ -121,7 +121,7 @@ test.describe('User actions', async () => {
         const modal = page.getByTestId('user-detail-modal');
 
         await modal.getByRole('button', {name: 'Actions'}).click();
-        await modal.getByRole('button', {name: 'Delete user'}).click();
+        await page.getByTestId('popover-content').getByRole('button', {name: 'Delete user'}).click();
 
         const confirmation = page.getByTestId('confirmation-modal');
         await confirmation.getByRole('button', {name: 'Delete user'}).click();
@@ -171,7 +171,8 @@ test.describe('User actions', async () => {
         await listItem.getByRole('button', {name: 'Edit'}).click();
 
         await modal.getByRole('button', {name: 'Actions'}).click();
-        await expect(modal.getByRole('button', {name: 'Make owner'})).toHaveCount(0);
+        await expect(page.getByTestId('popover-content').getByRole('button', {name: 'Make owner'})).toHaveCount(0);
+        await page.getByTestId('popover-overlay').click();
 
         await modal.getByRole('button', {name: 'Close'}).click();
 
@@ -183,7 +184,7 @@ test.describe('User actions', async () => {
         await listItem.getByRole('button', {name: 'Edit'}).click();
 
         await modal.getByRole('button', {name: 'Actions'}).click();
-        await modal.getByRole('button', {name: 'Make owner'}).click();
+        await page.getByTestId('popover-content').getByRole('button', {name: 'Make owner'}).click();
 
         const confirmation = page.getByTestId('confirmation-modal');
         await confirmation.getByRole('button', {name: 'Yep — I\'m sure'}).click();

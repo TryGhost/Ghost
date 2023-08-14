@@ -37,7 +37,7 @@ const AddNewsletterModal: React.FC<AddNewsletterModalProps> = () => {
                 opt_in_existing: formState.optInExistingSubscribers
             });
 
-            updateRoute(modalRoutes.showNewsletter, {id: response.newsletters[0].id});
+            updateRoute({route: modalRoutes.showNewsletter, params: {id: response.newsletters[0].id}});
         },
         onValidate: () => {
             const newErrors: Record<string, string> = {};

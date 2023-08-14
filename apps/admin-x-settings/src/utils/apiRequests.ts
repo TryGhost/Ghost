@@ -1,5 +1,6 @@
-import {QueryClient, UseQueryOptions, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import {QueryClient, UseInfiniteQueryOptions, UseQueryOptions, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {getGhostPaths} from './helpers';
+import {useMemo} from 'react';
 import {useServices} from '../components/providers/ServiceProvider';
 
 export interface Meta {
@@ -79,7 +80,7 @@ export const useFetchApi = () => {
 
 const {apiRoot} = getGhostPaths();
 
-const apiUrl = (path: string, searchParams: { [key: string]: string } = {}) => {
+const apiUrl = (path: string, searchParams: Record<string, string> = {}) => {
     const url = new URL(`${apiRoot}${path}`, window.location.origin);
     url.search = new URLSearchParams(searchParams).toString();
     return url.toString();
@@ -93,11 +94,11 @@ const parameterizedPath = (path: string, params: string | string[]) => {
 interface QueryOptions<ResponseData> {
     dataType: string
     path: string
-    defaultSearchParams?: { [key: string]: string };
+    defaultSearchParams?: Record<string, string>;
     returnData?: (originalData: unknown) => ResponseData;
 }
 
-type QueryHookOptions<ResponseData> = UseQueryOptions<ResponseData> & { searchParams?: { [key: string]: string } };
+type QueryHookOptions<ResponseData> = UseQueryOptions<ResponseData> & { searchParams?: Record<string, string> };
 
 export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) => ({searchParams, ...query}: QueryHookOptions<ResponseData> = {}) => {
     const url = apiUrl(options.path, searchParams || options.defaultSearchParams);
@@ -109,9 +110,40 @@ export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) =
         ...query
     });
 
+    const data = useMemo(() => (
+        (result.data && options.returnData) ? options.returnData(result.data) : result.data)
+    , [result]);
+
     return {
         ...result,
-        data: (result.data && options.returnData) ? options.returnData(result.data) : result.data
+        data
+    };
+};
+
+type InfiniteQueryOptions<ResponseData> = Omit<QueryOptions<ResponseData>, 'returnData'> & {
+    returnData: NonNullable<QueryOptions<ResponseData>['returnData']>
+}
+
+type InfiniteQueryHookOptions<ResponseData> = UseInfiniteQueryOptions<ResponseData> & {
+    searchParams?: Record<string, string>;
+    getNextPageParams: (data: ResponseData, params: Record<string, string>) => Record<string, string>;
+};
+
+export const createInfiniteQuery = <ResponseData>(options: InfiniteQueryOptions<ResponseData>) => ({searchParams, getNextPageParams, ...query}: InfiniteQueryHookOptions<ResponseData>) => {
+    const fetchApi = useFetchApi();
+
+    const result = useInfiniteQuery<ResponseData>({
+        queryKey: [options.dataType, apiUrl(options.path, searchParams || options.defaultSearchParams)],
+        queryFn: ({pageParam}) => fetchApi(apiUrl(options.path, pageParam || searchParams || options.defaultSearchParams)),
+        getNextPageParam: data => getNextPageParams(data, searchParams || options.defaultSearchParams || {}),
+        ...query
+    });
+
+    const data = useMemo(() => result.data && options.returnData(result.data), [result]);
+
+    return {
+        ...result,
+        data
     };
 };
 
@@ -132,7 +164,7 @@ const mutate = <ResponseData, Payload>({fetchApi, path, payload, searchParams, o
     fetchApi: ReturnType<typeof useFetchApi>;
     path: string;
     payload?: Payload;
-    searchParams?: { [key: string]: string };
+    searchParams?: Record<string, string>;
     options: MutationOptions<ResponseData, Payload>
 }) => {
     const {defaultSearchParams, body, ...requestOptions} = options;
