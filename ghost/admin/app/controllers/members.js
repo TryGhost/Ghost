@@ -216,8 +216,20 @@ export default class MembersController extends Controller {
         });
     }
 
+    refineFilterParam(filterParam) {
+        const regex = new RegExp(`\\(([^)]*[,+\\-]?email_disabled[^)]*)\\)(?![+\\-]|:\\'[^']*\\'|:\\"[^"]*\\")`, 'g');
+        return filterParam.replace(regex, '$1');
+    }
+
     getApiQueryObject({params, extraFilters = []} = {}) {
         let {label, paidParam, searchParam, filterParam} = params ? params : this;
+
+        // NOTE: this is a temporary fix to help where the API isn't handling the parentheses correctly
+        // It's potentially a deeper issue with NQL. This should be removed once the API is fixed.
+        // refs https://ghost.slack.com/archives/C05EQPTMEP7/p1692025845788769
+        if (filterParam) {
+            filterParam = this.refineFilterParam(filterParam);
+        }
 
         let filters = [];
 
