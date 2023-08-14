@@ -1,5 +1,5 @@
 import Component from '@glimmer/component';
-import ConfirmPreview from '../../components/modals/confirm-preview';
+import ConfirmUnsavedChangesModal from '../../components/modals/confirm-unsaved-changes';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import envConfig from 'ghost-admin/config/environment';
 import {action} from '@ember/object';
@@ -87,44 +87,21 @@ export default class TipsAndDonations extends Component {
     }
 
     @action
-    async showPreview() {
+    async showPreview(event) {
+        event.preventDefault();
+
+        const preview = () => window.open(`${this.siteUrl}/#/portal/support`, '_blank');
         const changedAttributes = this.settings.changedAttributes();
 
         if (changedAttributes && Object.keys(changedAttributes).length > 0) {
-            const shouldSave = await this.modals.open(ConfirmPreview);
+            const shouldClose = await this.modals.open(ConfirmUnsavedChangesModal);
 
-            if (shouldSave) {
-                this.saveSettingsTask.perform();
-                this.previewDonationCheckout();
+            if (shouldClose) {
+                this.settings.rollbackAttributes();
+                preview();
             }
         } else {
-            this.previewDonationCheckout();
-        }
-    }
-
-    previewDonationCheckout() {
-        const win = window.open(`${this.siteUrl}/#/portal/support`, '_blank');
-        if (win) {
-            win.focus();
-        }
-    }
-
-    @task
-    *saveSettingsTask() {
-        try {
-            if (this.settings.errors.length !== 0) {
-                return;
-            }
-
-            yield this.settings.save();
-
-            // ensure task button switches to success state
-            return true;
-        } catch (error) {
-            if (error) {
-                this.notifications.showAPIError(error);
-                throw error;
-            }
+            preview();
         }
     }
 
