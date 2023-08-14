@@ -4,6 +4,7 @@ import ListItem from '../../../admin-x-ds/global/ListItem';
 import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
+import useRouting from '../../../hooks/useRouting';
 
 const Integration: React.FC<{title: string, detail:string, action:() => void}> = ({
     title,
@@ -15,18 +16,41 @@ const Integration: React.FC<{title: string, detail:string, action:() => void}> =
         detail={detail}
         title={title}
         hideActions
+        onClick={action}
     />;
 };
 
 const BuiltInIntegrations: React.FC = () => {
+    const {updateRoute} = useRouting();
+    const openModal = (modal: string) => {
+        updateRoute(modal);
+    };
+
     return (
         <List>
-            <Integration action={() => {}} detail='Automation for your apps' title='Zapier' />
-            <Integration action={() => {}} detail='A messaging app for teams' title='Slack' />
-            <Integration action={() => {}} detail='Google Accelerated Mobile Pages' title='AMP' />
-            <Integration action={() => {}} detail='Beautiful, free photos' title='Unsplash' />
-            <Integration action={() => {}} detail='Launch your member referral program' title='FirstPromoter' />
-            <Integration action={() => {}} detail='Advanced image editing' title='Pintura' />
+            <Integration action={() => {
+                openModal('integrations/zapier');
+            }} detail='Automation for your apps' title='Zapier' />
+
+            <Integration action={() => {
+                openModal('integrations/slack');
+            }} detail='A messaging app for teams' title='Slack' />
+
+            <Integration action={() => {
+                openModal('integrations/amp');
+            }} detail='Google Accelerated Mobile Pages' title='AMP' />
+
+            <Integration action={() => {
+                openModal('integrations/unsplash');
+            }} detail='Beautiful, free photos' title='Unsplash' />
+
+            <Integration action={() => {
+                openModal('integrations/firstpromoter');
+            }} detail='Launch your member referral program' title='FirstPromoter' />
+
+            <Integration action={() => {
+                openModal('integrations/pintura');
+            }} detail='Advanced image editing' title='Pintura' />
         </List>
     );
 };
