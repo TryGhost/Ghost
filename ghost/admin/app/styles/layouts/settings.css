@@ -3208,6 +3208,21 @@ p.theme-validation-details {
     border-left: none !important;
 }
 
+.gh-tips-and-donations-link-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1.4rem;
+    height: 38px;
+    background: var(--whitegrey-l2);
+    border-radius: 4px;
+    border: 1px solid var(--whitegrey);
+    color: var(--darkgrey);
+    font-weight: 500;
+    width: 100%;
+}
+
 /* History log
 /* ---------------------------------------------------------- */
 .gh-history-filter-li {
