@@ -372,6 +372,7 @@ describe('EmailCtaNode', function () {
                             </tbody>
                         </table>
                     </div>
+                    <p></p>
                     <hr>
                 </div>
             `);
@@ -409,6 +410,7 @@ describe('EmailCtaNode', function () {
                             </tbody>
                         </table>
                     </div>
+                    <p></p>
                 </div>
             `);
         }));
@@ -444,6 +446,7 @@ describe('EmailCtaNode', function () {
                             </tbody>
                         </table>
                     </div>
+                    <p></p>
                 </div>
             `);
         }));
@@ -481,6 +484,7 @@ describe('EmailCtaNode', function () {
                             </tbody>
                         </table>
                     </div>
+                    <p></p>
                     <hr>
                 </div>
             `);
