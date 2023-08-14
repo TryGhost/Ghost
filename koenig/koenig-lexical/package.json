@@ -96,7 +96,7 @@
     "@storybook/react-vite": "7.2.3",
     "@storybook/test-runner": "^0.13.0",
     "@tailwindcss/line-clamp": "0.4.4",
-    "@testing-library/jest-dom": "5.17.0",
+    "@testing-library/jest-dom": "6.0.0",
     "@testing-library/react": "14.0.0",
     "@types/react": "18.2.20",
     "@types/react-dom": "18.2.7",
