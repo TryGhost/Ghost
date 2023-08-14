@@ -34,7 +34,6 @@ const useSettingGroup = (): SettingGroupHook => {
         initialState: settings || [],
         onSave: async () => {
             await editSettings?.(changedSettings());
-            setEditing(false);
         }
     });
 
@@ -92,7 +91,11 @@ const useSettingGroup = (): SettingGroupHook => {
         saveState,
         focusRef,
         siteData,
-        handleSave,
+        handleSave: () => {
+            const result = handleSave();
+            setEditing(false);
+            return result;
+        },
         handleCancel,
         updateSetting,
         handleEditingChange
