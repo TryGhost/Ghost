@@ -1774,7 +1774,7 @@ p.theme-validation-details {
 /* ---------------------------------------------------- */
 
 .gh-nav-contextual {
-    flex: 0 0 360px;
+    flex: 0 0 clamp(320px, 17.09vw + 86.5px, 360px);
 }
 
 .gh-nav-header {
@@ -2114,6 +2114,10 @@ p.theme-validation-details {
     display: flex;
     flex-direction: column;
     height: 100%;
+}
+
+.gh-design.gh-canvas {
+    padding: 0 clamp(24px, 10.26vw + -116.1px, 48px);
 }
 
 .gh-preview-page-selector,
