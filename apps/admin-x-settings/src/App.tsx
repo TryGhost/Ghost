@@ -2,7 +2,7 @@ import ExitSettingsButton from './components/ExitSettingsButton';
 import GlobalDataProvider from './components/providers/GlobalDataProvider';
 import Heading from './admin-x-ds/global/Heading';
 import NiceModal from '@ebay/nice-modal-react';
-import RoutingProvider from './components/providers/RoutingProvider';
+import RoutingProvider, {ExternalLink} from './components/providers/RoutingProvider';
 import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
 import {GlobalDirtyStateProvider} from './hooks/useGlobalDirtyState';
@@ -13,6 +13,7 @@ import {Toaster} from 'react-hot-toast';
 interface AppProps {
     ghostVersion: string;
     officialThemes: OfficialTheme[];
+    externalNavigate: (link: ExternalLink) => void;
 }
 
 const queryClient = new QueryClient({
@@ -25,12 +26,12 @@ const queryClient = new QueryClient({
     }
 });
 
-function App({ghostVersion, officialThemes}: AppProps) {
+function App({ghostVersion, officialThemes, externalNavigate}: AppProps) {
     return (
         <QueryClientProvider client={queryClient}>
             <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes}>
                 <GlobalDataProvider>
-                    <RoutingProvider>
+                    <RoutingProvider externalNavigate={externalNavigate}>
                         <GlobalDirtyStateProvider>
                             <div className="admin-x-settings h-[100vh] w-full overflow-y-auto" id="admin-x-root" style={{
                                 height: '100vh',

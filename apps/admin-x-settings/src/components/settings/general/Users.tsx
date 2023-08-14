@@ -36,7 +36,7 @@ const Owner: React.FC<OwnerProps> = ({user}) => {
     const {updateRoute} = useRouting();
 
     const showDetailModal = () => {
-        updateRoute(modalRoutes.showUser, {slug: user.slug});
+        updateRoute({route: modalRoutes.showUser, params: {slug: user.slug}});
     };
 
     if (!user) {
@@ -58,7 +58,7 @@ const UsersList: React.FC<UsersListProps> = ({users}) => {
     const {updateRoute} = useRouting();
 
     const showDetailModal = (user: User) => {
-        updateRoute(modalRoutes.showUser, {slug: user.slug});
+        updateRoute({route: modalRoutes.showUser, params: {slug: user.slug}});
     };
 
     if (!users || !users.length) {
