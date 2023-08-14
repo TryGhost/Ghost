@@ -217,6 +217,20 @@ export default class MembersController extends Controller {
     }
 
     refineFilterParam(filterParam) {
+        // We have some crazy regex below, here's a breakdown of what it does:
+        // \\(             - Matches an opening parenthesis "("
+        // [^)]*          - Matches zero or more characters that are NOT a closing parenthesis ")"
+        // [,+\\-]?       - Matches an optional comma, plus, or minus sign
+        // email_disabled - Matches the exact string "email_disabled"
+        // [^)]*          - Matches zero or more characters that are NOT a closing parenthesis ")"
+        // \\)             - Matches a closing parenthesis ")"
+        // (?!
+        //  [+\\-]        - Negative lookahead: Asserts what directly follows is neither a plus "+" nor a minus "-"
+        //  |             - OR
+        //  :\\'[^']*\\'  - Negative lookahead: Asserts what follows is not a colon ":" followed by a string in single quotes
+        //  |             - OR
+        //  :\\"[^"]*\\"  - Negative lookahead: Asserts what follows is not a colon ":" followed by a string in double quotes
+        // )
         const regex = new RegExp(`\\(([^)]*[,+\\-]?email_disabled[^)]*)\\)(?![+\\-]|:\\'[^']*\\'|:\\"[^"]*\\")`, 'g');
         return filterParam.replace(regex, '$1');
     }
