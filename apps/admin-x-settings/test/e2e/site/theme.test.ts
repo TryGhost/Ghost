@@ -108,16 +108,14 @@ test.describe('Theme settings', async () => {
         // Download the active theme
 
         await casper.getByRole('button', {name: 'Menu'}).click();
-        await casper.getByRole('button', {name: 'Download'}).click();
+        await page.getByTestId('popover-content').getByRole('button', {name: 'Download'}).click();
 
         await expect(page.locator('iframe#iframeDownload')).toHaveAttribute('src', /\/api\/admin\/themes\/casper\/download/);
-
-        await page.locator('[data-testid="menu-overlay"]:visible').click();
 
         // Delete the inactive theme
 
         await edition.getByRole('button', {name: 'Menu'}).click();
-        await edition.getByRole('button', {name: 'Delete'}).click();
+        await page.getByTestId('popover-content').getByRole('button', {name: 'Delete'}).click();
 
         const confirmation = page.getByTestId('confirmation-modal');
         await confirmation.getByRole('button', {name: 'Delete'}).click();

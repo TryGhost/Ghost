@@ -8,19 +8,21 @@ interface PopoverProps {
     trigger: React.ReactNode;
     children: React.ReactNode;
     position?: PopoverPosition;
+    closeOnItemClick?: boolean;
 }
 
-const getOffsetParent = (element: HTMLDivElement | null) => {
+const getOffsetPosition = (element: HTMLDivElement | null) => {
     // innerZoomElementWrapper fixes weird behaviour in Storybook - the preview container
     // uses transform which changes how position:fixed works and means getBoundingClientRect
     // won't return the right position
-    return element?.closest('.innerZoomElementWrapper') || document.body;
+    return element?.closest('.innerZoomElementWrapper')?.getBoundingClientRect() || {x: 0, y: 0};
 };
 
 const Popover: React.FC<PopoverProps> = ({
     trigger,
     children,
-    position = 'left'
+    position = 'left',
+    closeOnItemClick
 }) => {
     const [open, setOpen] = useState(false);
     const [positionX, setPositionX] = useState(0);
@@ -29,7 +31,7 @@ const Popover: React.FC<PopoverProps> = ({
 
     const handleTriggerClick = () => {
         if (!open && triggerRef.current) {
-            const parentRect = getOffsetParent(triggerRef.current).getBoundingClientRect();
+            const parentRect = getOffsetPosition(triggerRef.current);
             let {x, y, width, height} = triggerRef.current.getBoundingClientRect();
             x -= parentRect.x;
             y -= parentRect.y;
@@ -54,6 +56,12 @@ const Popover: React.FC<PopoverProps> = ({
         }
     };
 
+    const handleContentClick = () => {
+        if (closeOnItemClick) {
+            setOpen(false);
+        }
+    };
+
     let className = '';
 
     className = clsx(
@@ -71,9 +79,9 @@ const Popover: React.FC<PopoverProps> = ({
             <div ref={triggerRef} onClick={handleTriggerClick}>
                 {trigger}
             </div>
-            {open && createPortal(<div className='fixed z-[9999] inline-block'>
-                <div className={backdropClasses} data-testid="menu-overlay" onClick={handleBackdropClick}></div>
-                <div className={className} style={style}>
+            {open && createPortal(<div className='fixed z-[9999] inline-block' onClick={handleContentClick}>
+                <div className={backdropClasses} data-testid="popover-overlay" onClick={handleBackdropClick}></div>
+                <div className={className} data-testid='popover-content' style={style}>
                     {children}
                 </div>
             </div>, triggerRef.current?.closest('.admin-x-settings') || document.body)}

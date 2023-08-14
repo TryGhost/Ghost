@@ -671,7 +671,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
                             handleImageUpload('cover_image', file);
                         }}
                     >Upload cover image</ImageUpload>
-                    <div className="absolute bottom-12 right-12">
+                    <div className="absolute bottom-12 right-12 z-10">
                         <Menu items={menuItems} position='left' trigger={<UserMenuTrigger />}></Menu>
                     </div>
                     <div className='relative flex items-center gap-4 px-12 pb-7 pt-60'>
