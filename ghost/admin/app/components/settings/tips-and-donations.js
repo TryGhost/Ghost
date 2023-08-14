@@ -134,7 +134,7 @@ export default class TipsAndDonations extends Component {
 
         if (link) {
             copyTextToClipboard(link);
-            yield timeout(this.isTesting ? 50 : 500);
+            yield timeout(this.isTesting ? 50 : 3000);
         }
 
         return true;

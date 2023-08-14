@@ -77,7 +77,7 @@
 
                     <GhFormGroup class="no-margin">
                         <label for="tips-and-donations-link" class="fw6 mb1">Shareable link — <a href="#" {{on "click" this.showPreview}}>Preview</a></label>
-                        <div class="gh-input-group">
+                        <div class="gh-portal-page-url-container">
                             <GhTextInput
                                 data-test-input="tips-and-donations-link"
                                 @id="gh-tips-and-donations-link"
@@ -86,12 +86,17 @@
                                 @value="{{this.siteUrl}}/#/portal/support"
                                 @placeholder="{{this.siteUrl}}/#/portal/support"
                             />
-                                <GhTaskButton
-                                data-test-button="tips-and-donations-copy-link"
-                                @buttonText="Copy link"
-                                @task={{this.copyTipsAndDonationsLink}}
-                                @successText="Copied"
-                                @class="gh-btn gh-btn-black gh-btn-icon" />
+                            <button
+                                type="button" {{on "click" (fn (perform this.copyTipsAndDonationsLink))}}
+                                class="gh-portal-setting-copy"
+                                data-test-button="copy-url-attr"
+                            >
+                                {{#if (and this.copyTipsAndDonationsLink.isRunning)}}
+                                    {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
+                                {{else}}
+                                    <span data-tooltip="Copy">{{svg-jar "copy" class="w4 v-mid fill-darkgrey"}}</span>
+                                {{/if}}
+                            </button>
                         </div>
                     </GhFormGroup>
 
