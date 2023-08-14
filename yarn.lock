@@ -21692,10 +21692,10 @@ lexical@^0.12.0:
   resolved "https://registry.yarnpkg.com/lexical/-/lexical-0.12.0.tgz#b715fb061f6394814761a07ba5b4fd4c2aa3f9cd"
   integrity sha512-ixp8+5D9UJueZSjh9a7Z0eiiKm8MZmf//+mr0rZSCXermhdIcn1lglDGbff1KGwO1ONnFlycWJV12m8Zvtgggg==
 
-lib0@0.2.80, lib0@^0.2.42, lib0@^0.2.74:
-  version "0.2.80"
-  resolved "https://registry.yarnpkg.com/lib0/-/lib0-0.2.80.tgz#97f560c1240b947b825f9923fdfa45c1b4bd7cb8"
-  integrity sha512-1yVb13p19DrgbL7M/zQmRe/5tQrm37QlCHOssk+G8Q9qnZBh6Azfk876zhaxmKqyMnFGbQqBjH+CV0zkpr+TTw==
+lib0@0.2.81, lib0@^0.2.42, lib0@^0.2.74:
+  version "0.2.81"
+  resolved "https://registry.yarnpkg.com/lib0/-/lib0-0.2.81.tgz#ceaa30317ffdde1c386a0c3cac7ce20b0c969431"
+  integrity sha512-BX/mji6F698AsG4sWOGYmb6XX4uRBlPsPbC6cvFPf/gUlP4hRlYQrZEOsfj7PMbd26lufCjLxCXyEUtyESmjgA==
   dependencies:
     isomorphic.js "^0.2.4"
 
