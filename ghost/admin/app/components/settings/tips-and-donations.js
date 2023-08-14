@@ -1,4 +1,5 @@
 import Component from '@glimmer/component';
+import ConfirmPreview from '../../components/modals/confirm-preview';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import envConfig from 'ghost-admin/config/environment';
 import {action} from '@ember/object';
@@ -22,6 +23,7 @@ export default class TipsAndDonations extends Component {
     @service settings;
     @service session;
     @service membersUtils;
+    @service modals;
 
     @inject config;
     @tracked tipsAndDonationsError = '';
@@ -40,6 +42,11 @@ export default class TipsAndDonations extends Component {
 
     get siteUrl() {
         return this.config.blogUrl;
+    }
+
+    get isConnectDisallowed() {
+        const siteUrl = this.config.blogUrl;
+        return envConfig.environment !== 'development' && !/^https:/.test(siteUrl);
     }
 
     @task
@@ -91,8 +98,26 @@ export default class TipsAndDonations extends Component {
         this.showStripeConnect = false;
     }
 
-    get isConnectDisallowed() {
-        const siteUrl = this.config.blogUrl;
-        return envConfig.environment !== 'development' && !/^https:/.test(siteUrl);
+    previewDonationCheckout() {
+        const win = window.open(`${this.siteUrl}/#/portal/support`, '_blank');
+        if (win) {
+            win.focus();
+        }
+    }
+
+    @action
+    async showPreview() {
+        const changedAttributes = this.settings.changedAttributes();
+
+        if (changedAttributes && Object.keys(changedAttributes).length > 0) {
+            const shouldSave = await this.modals.open(ConfirmPreview);
+
+            if (shouldSave) {
+                this.settings.save();
+                this.previewDonationCheckout();
+            }
+        } else {
+            this.previewDonationCheckout();
+        }
     }
 }
