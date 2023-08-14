@@ -49,18 +49,6 @@ export default class TipsAndDonations extends Component {
         return envConfig.environment !== 'development' && !/^https:/.test(siteUrl);
     }
 
-    @task
-    *copyTipsAndDonationsLink() {
-        const link = document.getElementById('gh-tips-and-donations-link')?.value;
-
-        if (link) {
-            copyTextToClipboard(link);
-            yield timeout(this.isTesting ? 50 : 500);
-        }
-
-        return true;
-    }
-
     @action
     setDonationsCurrency(event) {
         this.settings.donationsCurrency = event.value;
@@ -98,13 +86,6 @@ export default class TipsAndDonations extends Component {
         this.showStripeConnect = false;
     }
 
-    previewDonationCheckout() {
-        const win = window.open(`${this.siteUrl}/#/portal/support`, '_blank');
-        if (win) {
-            win.focus();
-        }
-    }
-
     @action
     async showPreview() {
         const changedAttributes = this.settings.changedAttributes();
@@ -113,11 +94,49 @@ export default class TipsAndDonations extends Component {
             const shouldSave = await this.modals.open(ConfirmPreview);
 
             if (shouldSave) {
-                this.settings.save();
+                this.saveSettingsTask.perform();
                 this.previewDonationCheckout();
             }
         } else {
             this.previewDonationCheckout();
         }
+    }
+
+    previewDonationCheckout() {
+        const win = window.open(`${this.siteUrl}/#/portal/support`, '_blank');
+        if (win) {
+            win.focus();
+        }
+    }
+
+    @task
+    *saveSettingsTask() {
+        try {
+            if (this.settings.errors.length !== 0) {
+                return;
+            }
+
+            yield this.settings.save();
+
+            // ensure task button switches to success state
+            return true;
+        } catch (error) {
+            if (error) {
+                this.notifications.showAPIError(error);
+                throw error;
+            }
+        }
+    }
+
+    @task
+    *copyTipsAndDonationsLink() {
+        const link = document.getElementById('gh-tips-and-donations-link')?.value;
+
+        if (link) {
+            copyTextToClipboard(link);
+            yield timeout(this.isTesting ? 50 : 500);
+        }
+
+        return true;
     }
 }
