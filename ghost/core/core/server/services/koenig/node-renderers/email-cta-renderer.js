@@ -44,7 +44,8 @@ export function renderEmailCtaNode(node, options = {}) {
                     </tbody>
                 </table>
             </div>
-        `;
+            <p></p>
+        `; // the inline <p> element is so we get a line break if there's no separators/hr used
 
         const cleanedButton = wrapReplacementStrings(removeSpaces(buttonTemplate));
         element.innerHTML = element.innerHTML + cleanedButton;
