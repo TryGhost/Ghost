@@ -257,4 +257,24 @@ test.describe('Code Block card', async () => {
             </div>
         `, {ignoreCardContents: false, ignoreCardToolbarContents: true});
     });
+
+    test('goes into display mode when losing focus', async function () {
+        await focusEditor(page);
+        await page.keyboard.type('```javascript ');
+        await page.waitForSelector('[data-kg-card="codeblock"] .cm-editor');
+
+        await page.keyboard.type('Here are some words');
+        await page.getByTestId('post-title').fill('post title'); // move focus outside of the editor
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="codeblock">
+                    <div>
+                        <pre><code>Here are some words</code></pre>
+                        <div><span>javascript</span></div>
+                    </div>
+                </div>
+            </div>
+        `);
+    });
 });

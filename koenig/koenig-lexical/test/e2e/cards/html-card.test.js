@@ -111,4 +111,35 @@ test.describe('Html card', async () => {
         await page.keyboard.press('Escape');
         await expect(page.getByText('Here are some words')).toBeVisible();
     });
+
+    test('goes into display mode when losing focus', async function () {
+        await focusEditor(page);
+        // insert new card
+        await page.keyboard.type('/html');
+        await page.waitForSelector('[data-kg-card-menu-item="HTML"][data-kg-cardmenu-selected="true"]');
+        await page.keyboard.press('Enter');
+        await expect(await page.locator('[data-kg-card="html"][data-kg-card-editing="true"]')).toBeVisible();
+        // waiting for html editor
+        await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
+
+        // Types slower. Codemirror can be slow and needs some time to place the cursor after entering text.
+        await page.keyboard.type('Here are some words');
+        await page.getByTestId('post-title').fill('post title'); // move focus outside of the editor
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div><svg></svg></div>
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="html">
+                    <div>
+                        <div class="min-h-[3.5vh] whitespace-normal">
+                            Here are some words
+                        </div>
+                        <div class="absolute inset-0 z-50 mt-0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p><br /></p>
+        `);
+    });
 });

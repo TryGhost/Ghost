@@ -38,12 +38,12 @@ export function CodeBlockNodeComponent({nodeKey, captionEditor, captionEditorIni
     const onBlur = (event) => {
         // ignore if clicking on the language selection input
         const relatedTarget = event?.relatedTarget;
-        if (relatedTarget.ariaLabel === 'Code card language') {
+        if (relatedTarget?.ariaLabel === 'Code card language') {
             return;
         }
         // deselect if clicking outside the card
         //  this check results in deferring to the Cmd+Enter handling in KoenigBehaviourPlugin when the cause of the blur
-        if (relatedTarget.className !== 'kg-prose') {
+        if (relatedTarget?.className !== 'kg-prose') {
             editor.dispatchCommand(DESELECT_CARD_COMMAND, {cardKey: nodeKey});
         }
     };
