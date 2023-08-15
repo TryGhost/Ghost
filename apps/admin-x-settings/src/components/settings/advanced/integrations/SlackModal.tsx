@@ -28,7 +28,7 @@ const SlackModal = NiceModal.create(() => {
                 <Form marginBottom={false} title='Slack configuration' grouped>
                     <TextField
                         hint={<>
-                            Automatically send newly published posts to a channel in Slack or any Slack-compatible service like Discord or Mattermost. Set up a new incoming webhook here <strong className='text-red'>[&larr; this should be set]</strong>, and grab the URL.
+                            Automatically send newly published posts to a channel in Slack or any Slack-compatible service like Discord or Mattermost. Set up a new incoming webhook here <strong className='text-red'>[&larr; link to be set]</strong>, and grab the URL.
                         </>}
                         placeholder='https://hooks.slack.com/services/...'
                         title='Webhook URL'
