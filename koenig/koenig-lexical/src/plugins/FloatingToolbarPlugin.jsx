@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import {$getSelection, $isParagraphNode, $isRangeSelection, $isTextNode, COMMAND_PRIORITY_LOW, FORMAT_TEXT_COMMAND, KEY_MODIFIER_COMMAND} from 'lexical';
 import {$getSelectionRangeRect} from '../utils/$getSelectionRangeRect';
 import {$isLinkNode} from '@lexical/link';
@@ -71,29 +71,14 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled, hiddenF
         });
     }, [editor, toolbarItemType]);
 
-    useEffect(() => {
-        // Add a listener if the text toolbar is active. It helps to prevent events bubbling
-        // when a user is interacting with inputs in the link/snippets toolbar
-        if (!!toolbarItemType && toolbarItemType !== toolbarItemTypes.text) {
-            return;
-        }
-        document.addEventListener('selectionchange', setToolbarType);
-        return () => {
-            document.removeEventListener('selectionchange', setToolbarType);
-        };
-    }, [setToolbarType, toolbarItemType]);
-
     React.useEffect(() => {
+        // we need to attach the listener to the editor because it intercepts some events (like keyboard selection)
         return editor.registerUpdateListener(() => {
             editor.getEditorState().read(() => {
-                const selection = $getSelection();
-                // save selection range rect to calculate toolbar arrow position
-                if (toolbarItemType) {
-                    setSelectionRangeRect($getSelectionRangeRect({selection, editor}));
-                }
+                setToolbarType();
             });
         });
-    }, [editor, toolbarItemType]);
+    }, [editor, setToolbarType, toolbarItemType]);
 
     React.useEffect(() => {
         editor.registerCommand(
