@@ -206,8 +206,8 @@ export function CodeEditor({code, language, updateCode, updateLanguage, onBlur})
 
 export function CodeBlock({code, darkMode, language}) {
     const preClass = darkMode
-        ? `rounded border border-grey-950 bg-grey-950 px-2 py-[6px] font-mono text-[1.6rem] leading-9 text-grey-400`
-        : `rounded border border-grey-200 bg-grey-100 px-2 py-[6px] font-mono text-[1.6rem] leading-9 text-grey-900`;
+        ? `rounded border border-grey-950 bg-grey-950 px-2 py-[6px] font-mono text-[1.6rem] leading-9 text-grey-400 whitespace-pre-wrap`
+        : `rounded border border-grey-200 bg-grey-100 px-2 py-[6px] font-mono text-[1.6rem] leading-9 text-grey-900 whitespace-pre-wrap`;
     return (
         <div className="not-kg-prose">
             <pre className={preClass}>
