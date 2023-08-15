@@ -70,7 +70,7 @@ const UsersList: React.FC<UsersListProps> = ({users}) => {
     }
 
     return (
-        <List>
+        <List titleSeparator={false}>
             {users.map((user) => {
                 let title = user.name || '';
                 if (user.status === 'inactive') {
