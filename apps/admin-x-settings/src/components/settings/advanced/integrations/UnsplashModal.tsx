@@ -4,9 +4,21 @@ import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import {ReactComponent as Icon} from '../../../../assets/icons/unsplash.svg';
+import {Setting, getSettingValues, useEditSettings} from '../../../../api/settings';
+import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const UnsplashModal = NiceModal.create(() => {
     const modal = NiceModal.useModal();
+    const {settings} = useGlobalData();
+    const [unsplashEnabled] = getSettingValues(settings, ['unsplash']) as [boolean];
+    const {mutateAsync: editSettings} = useEditSettings();
+
+    const handleToggleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const updates: Setting[] = [
+            {key: 'unsplash', value: (e.target.checked)}
+        ];
+        await editSettings(updates);
+    };
 
     return (
         <Modal
@@ -26,9 +38,11 @@ const UnsplashModal = NiceModal.create(() => {
             <div className='mt-7'>
                 <Form marginBottom={false} grouped>
                     <Toggle
+                        checked={unsplashEnabled}
                         direction='rtl'
                         hint={<>Enable <a className='text-green' href="https://unsplash.com" rel="noopener noreferrer" target="_blank">Unsplash</a> image integration for your posts</>}
                         label='Enable Unsplash'
+                        onChange={handleToggleChange}
                     />
                 </Form>
             </div>
