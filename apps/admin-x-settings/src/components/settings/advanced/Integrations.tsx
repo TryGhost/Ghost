@@ -1,17 +1,20 @@
 import Button from '../../../admin-x-ds/global/Button';
+import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
 import List from '../../../admin-x-ds/global/List';
 import ListItem from '../../../admin-x-ds/global/ListItem';
+import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
 import useRouting from '../../../hooks/useRouting';
 import {ReactComponent as AmpIcon} from '../../../assets/icons/amp.svg';
 import {ReactComponent as FirstPromoterIcon} from '../../../assets/icons/firstpromoter.svg';
-import {Integration, useBrowseIntegrations} from '../../../api/integrations';
+import {Integration, useBrowseIntegrations, useCreateIntegration, useDeleteIntegration, useEditIntegration} from '../../../api/integrations';
 import {ReactComponent as PinturaIcon} from '../../../assets/icons/pintura.svg';
 import {ReactComponent as SlackIcon} from '../../../assets/icons/slack.svg';
 import {ReactComponent as UnsplashIcon} from '../../../assets/icons/unsplash.svg';
 import {ReactComponent as ZapierIcon} from '../../../assets/icons/zapier.svg';
+import {useCreateWebhook, useDeleteWebhook, useEditWebhook} from '../../../api/webhooks';
 
 const IntegrationItem: React.FC<{icon?: React.ReactNode, title: string, detail:string, action:() => void}> = ({
     icon,
@@ -89,10 +92,33 @@ const BuiltInIntegrations: React.FC = () => {
 };
 
 const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integrations}) => {
+    const {mutateAsync: createIntegration} = useCreateIntegration();
+    const {mutateAsync: editIntegration} = useEditIntegration();
+    const {mutateAsync: deleteIntegration} = useDeleteIntegration();
+    const {mutateAsync: createWebhook} = useCreateWebhook();
+    const {mutateAsync: editWebhook} = useEditWebhook();
+    const {mutateAsync: deleteWebhook} = useDeleteWebhook();
+
     return (
         <List>
             {integrations.map(integration => (
-                <IntegrationItem action={() => {}} detail={integration.description || 'No description'} title={integration.name} />)
+                <IntegrationItem action={() => {
+                    NiceModal.show(ConfirmationModal, {
+                        title: 'TEST API actions',
+                        prompt: <>
+                            Webhooks (will not update until you close and reopen this modal)
+                            <pre><code>{JSON.stringify(integration.webhooks)}</code></pre>
+
+                            <Button label='Create integration' onClick={() => createIntegration({name: 'Test'})} />
+                            <Button label='Update integration' onClick={() => editIntegration({...integration, name: integration.name + '*'})} />
+                            <Button label='Delete integration' onClick={() => deleteIntegration(integration.id)} />
+                            <Button label='Create webhook' onClick={() => createWebhook({integration_id: integration.id, event: 'post.edited', name: 'Test', target_url: 'https://test.com'})} />
+                            <Button label='Update webhook' onClick={() => editWebhook({...integration.webhooks[0], name: integration.webhooks[0].name + '*'})} />
+                            <Button label='Delete webhook' onClick={() => deleteWebhook(integration.webhooks[0].id)} />
+                        </>,
+                        onOk: modal => modal?.remove()
+                    });
+                }} detail={integration.description || 'No description'} title={integration.name} />)
             )}
         </List>
     );
