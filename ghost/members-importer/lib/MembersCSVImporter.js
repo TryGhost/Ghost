@@ -27,22 +27,27 @@ const DEFAULT_CSV_HEADER_MAPPING = {
     import_tier: 'import_tier'
 };
 
+/**
+ * @typedef {Object} MembersCSVImporterOptions
+ * @property {string} storagePath - The path to store CSV's in before importing
+ * @property {Function} getTimezone - function returning currently configured timezone
+ * @property {() => Object} getMembersRepository - member model access instance for data access and manipulation
+ * @property {() => Promise<import('@tryghost/tiers/lib/Tier')>} getDefaultTier - async function returning default Member Tier
+ * @property {() => Promise<import('@tryghost/tiers/lib/Tier')>} getTierByName - async function returning Member Tier by name
+ * @property {Function} sendEmail - function sending an email
+ * @property {(string) => boolean} isSet - Method checking if specific feature is enabled
+ * @property {({job, offloaded, name}) => void} addJob - Method registering an async job
+ * @property {Object} knex - An instance of the Ghost Database connection
+ * @property {Function} urlFor - function generating urls
+ * @property {Object} context
+ * @property {Object} stripeUtils - An instance of MembersCSVImporterStripeUtils
+ */
+
 module.exports = class MembersCSVImporter {
     /**
-     * @param {Object} options
-     * @param {string} options.storagePath - The path to store CSV's in before importing
-     * @param {Function} options.getTimezone - function returning currently configured timezone
-     * @param {() => Object} options.getMembersRepository - member model access instance for data access and manipulation
-     * @param {() => Promise<import('@tryghost/tiers/lib/Tier')>} options.getDefaultTier - async function returning default Member Tier
-     * @param {() => Promise<import('@tryghost/tiers/lib/Tier')>} options.getTierByName - async function returning Member Tier by name
-     * @param {Function} options.sendEmail - function sending an email
-     * @param {(string) => boolean} options.isSet - Method checking if specific feature is enabled
-     * @param {({job, offloaded, name}) => void} options.addJob - Method registering an async job
-     * @param {Object} options.knex - An instance of the Ghost Database connection
-     * @param {Function} options.urlFor - function generating urls
-     * @param {Object} options.context
+     * @param {MembersCSVImporterOptions} options
      */
-    constructor({storagePath, getTimezone, getMembersRepository, getDefaultTier, getTierByName, sendEmail, isSet, addJob, knex, urlFor, context}) {
+    constructor({storagePath, getTimezone, getMembersRepository, getDefaultTier, getTierByName, sendEmail, isSet, addJob, knex, urlFor, context, stripeUtils}) {
         this._storagePath = storagePath;
         this._getTimezone = getTimezone;
         this._getMembersRepository = getMembersRepository;
@@ -54,6 +59,7 @@ module.exports = class MembersCSVImporter {
         this._knex = knex;
         this._urlFor = urlFor;
         this._context = context;
+        this._stripeUtils = stripeUtils;
         this._tierIdCache = new Map();
     }
 
@@ -124,7 +130,7 @@ module.exports = class MembersCSVImporter {
         // Keep track of any Stripe prices created as a result of an import tier being specified so that they
         // can be archived after the import has completed - This ensures the created Stripe prices cannot be re-used
         // for future subscriptions
-        const archiveStripePriceTasks = [];
+        const archivableStripePriceIds = [];
 
         const result = await rows.reduce(async (resultPromise, row) => {
             const resultAccumulator = await resultPromise;
@@ -208,13 +214,13 @@ module.exports = class MembersCSVImporter {
 
                     if (stripeCustomerId) {
                         if (row.import_tier) {
-                            const {isNewStripePrice, archiveStripePrice} = await membersRepository.forceStripeSubscriptionToProduct({
+                            const {isNewStripePrice, stripePriceId} = await this._stripeUtils.forceStripeSubscriptionToProduct({
                                 customer_id: stripeCustomerId,
                                 product_id: importTierId
                             }, options);
 
                             if (isNewStripePrice) {
-                                archiveStripePriceTasks.push(archiveStripePrice);
+                                archivableStripePriceIds.push(stripePriceId);
                             }
                         }
 
@@ -264,7 +270,7 @@ module.exports = class MembersCSVImporter {
         }));
 
         await Promise.all(
-            archiveStripePriceTasks.map(task => task())
+            archivableStripePriceIds.map(stripePriceId => this._stripeUtils.archivePrice(stripePriceId))
         );
 
         return {
@@ -421,7 +427,7 @@ module.exports = class MembersCSVImporter {
     }
 
     /**
-     * Retrieve the ID for a tier by querying by its name, and cache the result
+     * Retrieve the ID of a tier, querying by its name, and cache the result
      *
      * @param {string} name
      * @returns {Promise<string|null>}

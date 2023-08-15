@@ -8,16 +8,17 @@ const assert = require('assert/strict');
 const fs = require('fs-extra');
 const path = require('path');
 const sinon = require('sinon');
-const MembersCSVImporter = require('..');
+const MembersCSVImporter = require('../lib/MembersCSVImporter');
 
 const csvPath = path.join(__dirname, '/fixtures/');
 
-describe('Importer', function () {
+describe('MembersCSVImporter', function () {
     let fsWriteSpy;
     let memberCreateStub;
     let knexStub;
     let sendEmailStub;
     let membersRepositoryStub;
+    let stripeUtilsStub;
     let defaultTierId;
 
     const defaultAllowedFields = {
@@ -62,18 +63,19 @@ describe('Importer', function () {
             create: memberCreateStub,
             update: sinon.stub().resolves(null),
             linkStripeCustomer: sinon.stub().resolves(null),
-            getCustomerIdByEmail: sinon.stub().resolves('cus_mock_123456'),
-            forceStripeSubscriptionToProduct: sinon.stub().resolves({})
+            getCustomerIdByEmail: sinon.stub().resolves('cus_mock_123456')
         };
-
         knexStub = {
             transaction: sinon.stub().resolves({
                 rollback: () => {},
                 commit: () => {}
             })
         };
-
         sendEmailStub = sinon.stub();
+        stripeUtilsStub = {
+            forceStripeSubscriptionToProduct: sinon.stub().resolves({}),
+            archivePrice: sinon.stub().resolves()
+        };
 
         return new MembersCSVImporter({
             storagePath: csvPath,
@@ -90,6 +92,7 @@ describe('Importer', function () {
             knex: knexStub,
             urlFor: sinon.stub(),
             context: {importer: true},
+            stripeUtils: stripeUtilsStub,
             ...deps
         });
     };
@@ -537,9 +540,9 @@ describe('Importer', function () {
             assert.equal(result.total, 1);
             assert.equal(result.imported, 1);
             assert.equal(result.errors.length, 0);
-            assert.ok(membersRepositoryStub.forceStripeSubscriptionToProduct.calledOnce);
+            assert.ok(stripeUtilsStub.forceStripeSubscriptionToProduct.calledOnce);
             assert.deepEqual(
-                membersRepositoryStub.forceStripeSubscriptionToProduct.getCall(0).args[0],
+                stripeUtilsStub.forceStripeSubscriptionToProduct.getCall(0).args[0],
                 {
                     customer_id: 'cus_MdR9tqW6bAreiq',
                     product_id: tier.id.toString()
@@ -559,29 +562,14 @@ describe('Importer', function () {
             getTierByNameStub.withArgs(tier.name).resolves(tier);
 
             const newStripePriceId = 'price_123';
-            const archivStripePriceStub = sinon.stub().resolves(null);
 
             const importer = buildMockImporterInstance({
-                getTierByName: getTierByNameStub,
-                getMembersRepository: () => {
-                    const repo = {
-                        get: sinon.stub().resolves(null),
-                        create: sinon.stub().resolves({id: `member123`}),
-                        linkStripeCustomer: sinon.stub().resolves(null),
-                        forceStripeSubscriptionToProduct: sinon.stub().resolves({})
-                    };
+                getTierByName: getTierByNameStub
+            });
 
-                    repo.forceStripeSubscriptionToProduct.withArgs({
-                        customer_id: 'cus_MdR9tqW6bAreiq',
-                        product_id: tier.id.toString()
-                    }).resolves({
-                        stripePriceId: newStripePriceId,
-                        isNewStripePrice: true,
-                        archiveStripePrice: archivStripePriceStub
-                    });
-
-                    return repo;
-                }
+            stripeUtilsStub.forceStripeSubscriptionToProduct.resolves({
+                isNewStripePrice: true,
+                stripePriceId: newStripePriceId
             });
 
             const result = await importer.perform(`${csvPath}/paid-member-import-tier.csv`);
@@ -589,7 +577,8 @@ describe('Importer', function () {
             assert.equal(result.total, 1);
             assert.equal(result.imported, 1);
             assert.equal(result.errors.length, 0);
-            assert.ok(archivStripePriceStub.calledOnce);
+            assert.ok(stripeUtilsStub.archivePrice.calledOnce);
+            assert.ok(stripeUtilsStub.archivePrice.calledWith(newStripePriceId));
         });
     });
 });
