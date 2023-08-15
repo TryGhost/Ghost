@@ -1,9 +1,12 @@
+import KoenigComposerContext from '../../context/KoenigComposerContext';
 import Picker from '@emoji-mart/react';
 import Portal from './Portal';
 import React from 'react';
 import data from '@emoji-mart/data';
+
 const EmojiPickerPortal = ({onEmojiClick, buttonRef}) => {
     const [position, setPosition] = React.useState(null);
+    const {darkMode} = React.useContext(KoenigComposerContext);
 
     const shiftPixels = 35; // how many pixels we want to move it up when it's at the bottom of the screen
     const handleScroll = React.useCallback(() => {
@@ -58,6 +61,7 @@ const EmojiPickerPortal = ({onEmojiClick, buttonRef}) => {
                         navPosition='bottom'
                         noResultsEmoji='cry'
                         previewPosition='none'
+                        theme={darkMode ? 'dark' : 'light'}
                         onEmojiSelect={onEmojiClick}
                     />
                 </div>
