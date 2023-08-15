@@ -1,4 +1,4 @@
-import {Meta, createQuery} from '../utils/apiRequests';
+import {Meta, createMutation, createQuery} from '../utils/apiRequests';
 
 // Types
 
@@ -52,31 +52,53 @@ export interface IntegrationsResponseType {
 
 const dataType = 'IntegrationsResponseType';
 
+export const integrationsDataType = dataType;
+
 export const useBrowseIntegrations = createQuery<IntegrationsResponseType>({
     dataType,
     path: '/integrations/',
     defaultSearchParams: {include: 'api_keys,webhooks'}
 });
 
-// export const useEditIntegration = createMutation<IntegrationsResponseType, Integration>({
-//     method: 'PUT',
-//     path: integration => `/integrations/${integration.id}/`,
-//     body: integration => ({integrations: [integration]}),
-//     searchParams: () => ({include: 'roles'}),
-//     updateQueries: {
-//         dataType,
-//         update: () => {} // TODO
-//     }
-// });
+export const useCreateIntegration = createMutation<IntegrationsResponseType, Partial<Integration>>({
+    method: 'POST',
+    path: () => '/integrations/',
+    body: integration => ({integrations: [integration]}),
+    searchParams: () => ({include: 'api_keys,webhooks'}),
+    updateQueries: {
+        dataType,
+        update: (newData, currentData) => ({
+            ...(currentData as IntegrationsResponseType),
+            integrations: (currentData as IntegrationsResponseType).integrations.concat(newData.integrations)
+        })
+    }
+});
 
-// export const useDeleteIntegration = createMutation<DeleteIntegrationResponse, string>({
-//     method: 'DELETE',
-//     path: id => `/integrations/${id}/`,
-//     updateQueries: {
-//         dataType,
-//         update: (_, currentData, id) => ({
-//             ...(currentData as IntegrationsResponseType),
-//             integrations: (currentData as IntegrationsResponseType).integrations.filter(user => user.id !== id)
-//         })
-//     }
-// });
+export const useEditIntegration = createMutation<IntegrationsResponseType, Integration>({
+    method: 'PUT',
+    path: integration => `/integrations/${integration.id}/`,
+    body: integration => ({integrations: [integration]}),
+    searchParams: () => ({include: 'api_keys,webhooks'}),
+    updateQueries: {
+        dataType,
+        update: (newData, currentData) => ({
+            ...(currentData as IntegrationsResponseType),
+            integrations: (currentData as IntegrationsResponseType).integrations.map((integration) => {
+                const newIntegration = newData.integrations.find(({id}) => id === integration.id);
+                return newIntegration || integration;
+            })
+        })
+    }
+});
+
+export const useDeleteIntegration = createMutation<unknown, string>({
+    method: 'DELETE',
+    path: id => `/integrations/${id}/`,
+    updateQueries: {
+        dataType,
+        update: (_, currentData, id) => ({
+            ...(currentData as IntegrationsResponseType),
+            integrations: (currentData as IntegrationsResponseType).integrations.filter(user => user.id !== id)
+        })
+    }
+});
