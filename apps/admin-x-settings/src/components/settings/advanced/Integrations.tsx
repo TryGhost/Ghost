@@ -7,12 +7,13 @@ import TabView from '../../../admin-x-ds/global/TabView';
 import useRouting from '../../../hooks/useRouting';
 import {ReactComponent as AmpIcon} from '../../../assets/icons/amp.svg';
 import {ReactComponent as FirstPromoterIcon} from '../../../assets/icons/firstpromoter.svg';
+import {Integration, useBrowseIntegrations} from '../../../api/integrations';
 import {ReactComponent as PinturaIcon} from '../../../assets/icons/pintura.svg';
 import {ReactComponent as SlackIcon} from '../../../assets/icons/slack.svg';
 import {ReactComponent as UnsplashIcon} from '../../../assets/icons/unsplash.svg';
 import {ReactComponent as ZapierIcon} from '../../../assets/icons/zapier.svg';
 
-const Integration: React.FC<{icon?: React.ReactNode, title: string, detail:string, action:() => void}> = ({
+const IntegrationItem: React.FC<{icon?: React.ReactNode, title: string, detail:string, action:() => void}> = ({
     icon,
     title,
     detail,
@@ -36,7 +37,7 @@ const BuiltInIntegrations: React.FC = () => {
 
     return (
         <List titleSeparator={false}>
-            <Integration
+            <IntegrationItem
                 action={() => {
                     openModal('integrations/zapier');
                 }}
@@ -44,7 +45,7 @@ const BuiltInIntegrations: React.FC = () => {
                 icon={<ZapierIcon className='h-8 w-8' />}
                 title='Zapier' />
 
-            <Integration
+            <IntegrationItem
                 action={() => {
                     openModal('integrations/slack');
                 }}
@@ -52,7 +53,7 @@ const BuiltInIntegrations: React.FC = () => {
                 icon={<SlackIcon className='h-8 w-8' />}
                 title='Slack' />
 
-            <Integration
+            <IntegrationItem
                 action={() => {
                     openModal('integrations/amp');
                 }}
@@ -60,7 +61,7 @@ const BuiltInIntegrations: React.FC = () => {
                 icon={<AmpIcon className='h-8 w-8' />}
                 title='AMP' />
 
-            <Integration
+            <IntegrationItem
                 action={() => {
                     openModal('integrations/unsplash');
                 }}
@@ -68,7 +69,7 @@ const BuiltInIntegrations: React.FC = () => {
                 icon={<UnsplashIcon className='h-8 w-8' />}
                 title='Unsplash' />
 
-            <Integration
+            <IntegrationItem
                 action={() => {
                     openModal('integrations/firstpromoter');
                 }}
@@ -76,7 +77,7 @@ const BuiltInIntegrations: React.FC = () => {
                 icon={<FirstPromoterIcon className='h-8 w-8' />}
                 title='FirstPromoter' />
 
-            <Integration
+            <IntegrationItem
                 action={() => {
                     openModal('integrations/pintura');
                 }}
@@ -87,16 +88,19 @@ const BuiltInIntegrations: React.FC = () => {
     );
 };
 
-const CustomIntegrations: React.FC = () => {
+const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integrations}) => {
     return (
         <List>
-            <Integration action={() => {}} detail='Here we go' title='A custom integration' />
+            {integrations.map(integration => (
+                <IntegrationItem action={() => {}} detail={integration.description || 'No description'} title={integration.name} />)
+            )}
         </List>
     );
 };
 
 const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [selectedTab, setSelectedTab] = useState<'built-in' | 'custom'>('built-in');
+    const {data: {integrations} = {integrations: []}} = useBrowseIntegrations();
 
     const tabs = [
         {
@@ -107,7 +111,7 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
         {
             id: 'custom',
             title: 'Custom',
-            contents: <CustomIntegrations />
+            contents: <CustomIntegrations integrations={integrations.filter(integration => integration.type === 'custom')} />
         }
     ] as const;
 
