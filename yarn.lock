@@ -10251,10 +10251,10 @@ body@^5.1.0:
     raw-body "~1.1.0"
     safe-json-parse "~1.0.1"
 
-bookshelf-relations@2.5.1:
-  version "2.5.1"
-  resolved "https://registry.yarnpkg.com/bookshelf-relations/-/bookshelf-relations-2.5.1.tgz#7e3ae0dec200170fe7ccc45cfb74e6ed75143c77"
-  integrity sha512-PH4DXw6RboAdPhwr4/Q2q734x7EmgPHeHnwjl+DnefmPJpf96gF05cQ/n9It7CPwlR9QS3ExvOYnr5MGHKcYow==
+bookshelf-relations@2.6.0:
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/bookshelf-relations/-/bookshelf-relations-2.6.0.tgz#a67fc95893bc045b59a06f9c694450982d88b7db"
+  integrity sha512-AnMlXAHcnu+JXhiStfJ/IsSW44tK65S63qPIOOCpyyAI9CkXrMr8pMLCVQEVb2tLv5GkJQOiiSE+J7icBmY76w==
   dependencies:
     "@tryghost/debug" "^0.1.13"
     "@tryghost/errors" "^1.2.3"
