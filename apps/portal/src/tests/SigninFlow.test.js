@@ -23,23 +23,27 @@ const setup = async ({site, member = null}) => {
     const utils = appRender(
         <App api={ghostApi} />
     );
-
     const triggerButtonFrame = await utils.findByTitle(/portal-trigger/i);
-    const popupFrame = utils.queryByTitle(/portal-popup/i);
-    const popupIframeDocument = popupFrame.contentDocument;
-    const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
-    const nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
-    const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
-    const signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
-    const siteTitle = within(popupIframeDocument).queryByText(site.title);
-    const freePlanTitle = within(popupIframeDocument).queryByText('Free');
-    const monthlyPlanTitle = within(popupIframeDocument).queryByText('Monthly');
-    const yearlyPlanTitle = within(popupIframeDocument).queryByText('Yearly');
-    const fullAccessTitle = within(popupIframeDocument).queryByText('Full access');
+    
+    const overlay = utils.queryByTitle(/portal-overlay/i);
+    const emailInput = within(overlay).queryByLabelText(/email/i);
+    const nameInput = within(overlay).queryByLabelText(/name/i);
+    const submitButton = within(overlay).queryByRole('button', {name: 'Continue'});
+    const signinButton = within(overlay).queryByRole('button', {name: 'Sign in'});
+    const siteTitle = within(overlay).queryByText(site.title);
+    const freePlanTitle = within(overlay).queryByText('Free');
+    const monthlyPlanTitle = within(overlay).queryByText('Monthly');
+    const yearlyPlanTitle = within(overlay).queryByText('Yearly');
+    const fullAccessTitle = within(overlay).queryByText('Full access');
+    
+    const getIframeDocument = async () => {
+        const iframe = await within(utils.baseElement).findByTitle(/portal-popup/i);
+        return iframe.contentDocument;
+    };
+
     return {
         ghostApi,
-        popupIframeDocument,
-        popupFrame,
+        overlay,
         triggerButtonFrame,
         siteTitle,
         emailInput,
@@ -50,7 +54,8 @@ const setup = async ({site, member = null}) => {
         monthlyPlanTitle,
         yearlyPlanTitle,
         fullAccessTitle,
-        ...utils
+        ...utils,
+        getIframeDocument
     };
 };
 
@@ -76,22 +81,28 @@ const multiTierSetup = async ({site, member = null}) => {
     );
     const freeTierDescription = site.products?.find(p => p.type === 'free')?.description;
     const triggerButtonFrame = await utils.findByTitle(/portal-trigger/i);
-    const popupFrame = utils.queryByTitle(/portal-popup/i);
-    const popupIframeDocument = popupFrame.contentDocument;
-    const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
-    const nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
-    const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
-    const signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
-    const siteTitle = within(popupIframeDocument).queryByText(site.title);
-    const freePlanTitle = within(popupIframeDocument).queryAllByText(/free$/i);
-    const freePlanDescription = within(popupIframeDocument).queryAllByText(freeTierDescription);
-    const monthlyPlanTitle = within(popupIframeDocument).queryByText('Monthly');
-    const yearlyPlanTitle = within(popupIframeDocument).queryByText('Yearly');
-    const fullAccessTitle = within(popupIframeDocument).queryByText('Full access');
+    
+    const overlay = utils.queryByTitle(/portal-overlay/i);
+
+    const emailInput = within(overlay).queryByLabelText(/email/i);
+    const nameInput = within(overlay).queryByLabelText(/name/i);
+    const submitButton = within(overlay).queryByRole('button', {name: 'Continue'});
+    const signinButton = within(overlay).queryByRole('button', {name: 'Sign in'});
+    const siteTitle = within(overlay).queryByText(site.title);
+    const freePlanTitle = within(overlay).queryAllByText(/free$/i);
+    const freePlanDescription = within(overlay).queryAllByText(freeTierDescription);
+    const monthlyPlanTitle = within(overlay).queryByText('Monthly');
+    const yearlyPlanTitle = within(overlay).queryByText('Yearly');
+    const fullAccessTitle = within(overlay).queryByText('Full access');
+
+    const getIframeDocument = async () => {
+        const iframe = await within(utils.baseElement).findByTitle(/portal-popup/i);
+        return iframe.contentDocument;
+    };
+
     return {
         ghostApi,
-        popupIframeDocument,
-        popupFrame,
+        overlay,
         triggerButtonFrame,
         siteTitle,
         emailInput,
@@ -103,7 +114,8 @@ const multiTierSetup = async ({site, member = null}) => {
         yearlyPlanTitle,
         fullAccessTitle,
         freePlanDescription,
-        ...utils
+        ...utils,
+        getIframeDocument
     };
 };
 
@@ -123,12 +135,11 @@ describe('Signin', () => {
         });
         test('with default settings', async () => {
             const {
-                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, submitButton,popupIframeDocument
+                ghostApi, overlay, triggerButtonFrame, emailInput, nameInput, submitButton, getIframeDocument
             } = await setup({
                 site: FixtureSite.singleTier.basic
             });
-
-            expect(popupFrame).toBeInTheDocument();
+            expect(overlay).toBeInTheDocument();
             expect(triggerButtonFrame).toBeInTheDocument();
             expect(emailInput).toBeInTheDocument();
             expect(nameInput).not.toBeInTheDocument();
@@ -138,23 +149,24 @@ describe('Signin', () => {
 
             expect(emailInput).toHaveValue('jamie@example.com');
 
-            fireEvent.click(submitButton);
+            fireEvent.click(submitButton);  
+            
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 emailType: 'signin'
             });
-
-            const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
-            expect(magicLink).toBeInTheDocument();
+                
+            const iframeDocument = await getIframeDocument();
+            const magicLink = await within(iframeDocument).findByText(/Now check your email/i);
+            expect(magicLink).toBeInTheDocument();            
         });
 
         test('without name field', async () => {
-            const {ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, submitButton,
-                popupIframeDocument} = await setup({
+            const {ghostApi, overlay, triggerButtonFrame, emailInput, nameInput, submitButton, getIframeDocument} = await setup({
                 site: FixtureSite.singleTier.withoutName
             });
 
-            expect(popupFrame).toBeInTheDocument();
+            expect(overlay).toBeInTheDocument();
             expect(triggerButtonFrame).toBeInTheDocument();
             expect(emailInput).toBeInTheDocument();
             expect(nameInput).not.toBeInTheDocument();
@@ -170,17 +182,18 @@ describe('Signin', () => {
                 emailType: 'signin'
             });
 
-            const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
+            const iframeDocument = await getIframeDocument();
+            const magicLink = await within(iframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
         });
 
         test('with only free plan', async () => {
-            let {ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, submitButton,
-                popupIframeDocument} = await setup({
+            let {ghostApi, overlay, triggerButtonFrame, emailInput, nameInput, submitButton,
+                getIframeDocument} = await setup({
                 site: FixtureSite.singleTier.onlyFreePlan
             });
 
-            expect(popupFrame).toBeInTheDocument();
+            expect(overlay).toBeInTheDocument();
             expect(triggerButtonFrame).toBeInTheDocument();
             expect(emailInput).toBeInTheDocument();
             expect(nameInput).not.toBeInTheDocument();
@@ -196,7 +209,8 @@ describe('Signin', () => {
                 emailType: 'signin'
             });
 
-            const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
+            const iframeDocument = await getIframeDocument();
+            const magicLink = await within(iframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
         });
     });
@@ -215,12 +229,12 @@ describe('Signin', () => {
             window.location = realLocation;
         });
         test('with default settings', async () => {
-            const {ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, submitButton,
-                popupIframeDocument} = await multiTierSetup({
+            const {ghostApi, overlay, triggerButtonFrame, emailInput, nameInput, submitButton,
+                getIframeDocument} = await multiTierSetup({
                 site: FixtureSite.multipleTiers.basic
             });
 
-            expect(popupFrame).toBeInTheDocument();
+            expect(overlay).toBeInTheDocument();
             expect(triggerButtonFrame).toBeInTheDocument();
             expect(emailInput).toBeInTheDocument();
             expect(nameInput).not.toBeInTheDocument();
@@ -236,17 +250,19 @@ describe('Signin', () => {
                 emailType: 'signin'
             });
 
-            const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
+            const iframeDocument = await getIframeDocument();
+
+            const magicLink = await within(iframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
         });
 
         test('without name field', async () => {
-            const {ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, submitButton,
-                popupIframeDocument} = await multiTierSetup({
+            const {ghostApi, overlay, triggerButtonFrame, emailInput, nameInput, submitButton,
+                getIframeDocument} = await multiTierSetup({
                 site: FixtureSite.multipleTiers.withoutName
             });
 
-            expect(popupFrame).toBeInTheDocument();
+            expect(overlay).toBeInTheDocument();
             expect(triggerButtonFrame).toBeInTheDocument();
             expect(emailInput).toBeInTheDocument();
             expect(nameInput).not.toBeInTheDocument();
@@ -262,17 +278,19 @@ describe('Signin', () => {
                 emailType: 'signin'
             });
 
-            const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
+            const iframeDocument = await getIframeDocument();
+
+            const magicLink = await within(iframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
         });
 
         test('with only free plan available', async () => {
-            let {ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, submitButton,
-                popupIframeDocument} = await multiTierSetup({
+            let {ghostApi, overlay, triggerButtonFrame, emailInput, nameInput, submitButton,
+                getIframeDocument} = await multiTierSetup({
                 site: FixtureSite.multipleTiers.onlyFreePlan
             });
 
-            expect(popupFrame).toBeInTheDocument();
+            expect(overlay).toBeInTheDocument();
             expect(triggerButtonFrame).toBeInTheDocument();
             expect(emailInput).toBeInTheDocument();
             expect(nameInput).not.toBeInTheDocument();
@@ -288,7 +306,9 @@ describe('Signin', () => {
                 emailType: 'signin'
             });
 
-            const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
+            const iframeDocument = await getIframeDocument();
+
+            const magicLink = await within(iframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
         });
     });

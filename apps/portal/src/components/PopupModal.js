@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import Frame from './Frame';
 import {hasMode} from '../utils/check-mode';
 import AppContext from '../AppContext';
@@ -224,6 +224,33 @@ class PopupContent extends React.Component {
     }
 }
 
+const PopupContainer = ({useOverlay, children}) => {
+    const {member, site, brandColor} = useContext(AppContext);
+    const containerStyles = StylesWrapper({member});        
+    
+    if (hasMode(['preview'])) {
+        containerStyles.modalContainer.zIndex = '3999997';
+    }
+    
+    const pageContentStyles = `
+        :root {
+            --brandcolor: ${brandColor}
+        }
+    ` + getFrameStyles({site});
+    
+    return (<div style={containerStyles.modalContainer}>        
+        {useOverlay && <div style={containerStyles.frame.common} title="portal-overlay">
+            <style dangerouslySetInnerHTML={{__html: pageContentStyles}} />
+            {children}                
+        </div>}        
+        {!useOverlay && <Frame style={containerStyles.frame.common} title="portal-popup" head={(<>
+            <style dangerouslySetInnerHTML={{__html: pageContentStyles}} />
+            <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" /></>)} dataTestId='portal-popup-frame'>
+            {children}
+        </Frame>}        
+    </div>);
+};
+
 export default class PopupModal extends React.Component {
     static contextType = AppContext;
 
@@ -253,36 +280,12 @@ export default class PopupModal extends React.Component {
         }
     }
 
-    renderFrameStyles() {
-        const {site} = this.context;
-        const FrameStyle = getFrameStyles({site});
-        const styles = `
-            :root {
-                --brandcolor: ${this.context.brandColor}
-            }
-        ` + FrameStyle;
-        return (
-            <>
-                <style dangerouslySetInnerHTML={{__html: styles}} />
-                <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-            </>
-        );
-    }
-
     renderFrameContainer() {
-        const {member, site, customSiteUrl} = this.context;
-        const Styles = StylesWrapper({member});
+        const {site, customSiteUrl, page} = this.context;
         const isMobile = window.innerWidth < 480;
 
-        const frameStyle = {
-            ...Styles.frame.common
-        };
-
         let className = 'gh-portal-popup-background';
-        if (hasMode(['preview'])) {
-            Styles.modalContainer.zIndex = '3999997';
-        }
-
+        
         if (hasMode(['preview'], {customSiteUrl}) && !site.disableBackground) {
             className += ' preview';
         }
@@ -291,14 +294,10 @@ export default class PopupModal extends React.Component {
             className += ' dev';
         }
 
-        return (
-            <div style={Styles.modalContainer}>
-                <Frame style={frameStyle} title="portal-popup" head={this.renderFrameStyles()} dataTestId='portal-popup-frame'>
-                    <div className={className} onClick = {e => this.handlePopupClose(e)}></div>
-                    <PopupContent isMobile={isMobile} />
-                </Frame>
-            </div>
-        );
+        return (<PopupContainer useOverlay={page === 'signin'}>
+            <div className={className} onClick={e => this.handlePopupClose(e)}></div>
+            <PopupContent isMobile={isMobile} />
+        </PopupContainer>);        
     }
 
     render() {

@@ -357,9 +357,9 @@ describe('Portal Data attributes:', () => {
             expect(triggerButtonFrame).toBeInTheDocument();
             const portalElement = document.querySelector('[data-portal]');
             fireEvent.click(portalElement);
-            popupFrame = await utils.findByTitle(/portal-popup/i);
+            popupFrame = await utils.findByTitle(/portal-overlay/i);
             expect(popupFrame).toBeInTheDocument();
-            const loginTitle = within(popupFrame.contentDocument).queryByText(/sign in/i);
+            const loginTitle = within(popupFrame).queryByText(/sign in/i);
             expect(loginTitle).toBeInTheDocument();
         });
     });
