@@ -12,7 +12,7 @@ const UnsplashModal = NiceModal.create(() => {
     const {updateRoute} = useRouting();
     const modal = NiceModal.useModal();
     const {settings} = useGlobalData();
-    const [unsplashEnabled] = getSettingValues(settings, ['unsplash']) as [boolean];
+    const [unsplashEnabled] = getSettingValues<boolean>(settings, ['unsplash']);
     const {mutateAsync: editSettings} = useEditSettings();
 
     const handleToggleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
