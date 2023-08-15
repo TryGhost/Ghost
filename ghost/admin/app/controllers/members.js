@@ -238,9 +238,9 @@ export default class MembersController extends Controller {
     getApiQueryObject({params, extraFilters = []} = {}) {
         let {label, paidParam, searchParam, filterParam} = params ? params : this;
 
-        // NOTE: this is a temporary fix to help where the API isn't handling the parentheses correctly
+        // NOTE: this is a temporary fix to help where the API/NQL isn't handling the parentheses correctly
         // It's potentially a deeper issue with NQL. This should be removed once the API is fixed.
-        // refs https://ghost.slack.com/archives/C05EQPTMEP7/p1692025845788769
+        // This could be related https://github.com/TryGhost/NQL/issues/16
         if (filterParam) {
             filterParam = this.refineFilterParam(filterParam);
         }
