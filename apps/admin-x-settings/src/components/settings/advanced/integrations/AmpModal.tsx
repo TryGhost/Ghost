@@ -9,7 +9,6 @@ import {useState} from 'react';
 
 const AmpModal = NiceModal.create(() => {
     const modal = NiceModal.useModal();
-
     const [enabled, setEnabled] = useState(false);
 
     return (

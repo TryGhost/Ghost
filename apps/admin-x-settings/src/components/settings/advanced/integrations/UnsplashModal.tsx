@@ -27,7 +27,7 @@ const UnsplashModal = NiceModal.create(() => {
                 <Form marginBottom={false} grouped>
                     <Toggle
                         direction='rtl'
-                        hint={<>Enable <a href="https://unsplash" rel="noopener noreferrer" target="_blank">Unsplash</a> image integration for your posts</>}
+                        hint={<>Enable <a className='text-green' href="https://unsplash.com" rel="noopener noreferrer" target="_blank">Unsplash</a> image integration for your posts</>}
                         label='Enable Unsplash'
                     />
                 </Form>
