@@ -41,6 +41,7 @@ export class ImageNode extends BaseImageNode {
         insertParams: {
             triggerFileDialog: false
         },
+        isHidden: ({config}) => !config?.unsplash,
         matches: ['unsplash', 'uns'],
         queryParams: ['src'],
         priority: 3
