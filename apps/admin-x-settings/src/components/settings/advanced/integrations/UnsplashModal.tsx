@@ -3,11 +3,13 @@ import IntegrationHeader from './IntegrationHeader';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
+import useRouting from '../../../../hooks/useRouting';
 import {ReactComponent as Icon} from '../../../../assets/icons/unsplash.svg';
 import {Setting, getSettingValues, useEditSettings} from '../../../../api/settings';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const UnsplashModal = NiceModal.create(() => {
+    const {updateRoute} = useRouting();
     const modal = NiceModal.useModal();
     const {settings} = useGlobalData();
     const [unsplashEnabled] = getSettingValues(settings, ['unsplash']) as [boolean];
@@ -22,12 +24,16 @@ const UnsplashModal = NiceModal.create(() => {
 
     return (
         <Modal
+            afterClose={() => {
+                updateRoute('integrations');
+            }}
             cancelLabel=''
             okColor='black'
             okLabel='Close'
             title=''
             onOk={() => {
                 modal.remove();
+                updateRoute('integrations');
             }}
         >
             <IntegrationHeader
