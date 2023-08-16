@@ -2493,7 +2493,7 @@
     "@embroider/shared-internals" "^0.50.2"
     semver "^7.3.5"
 
-"@embroider/addon-shim@^1.5.0", "@embroider/addon-shim@^1.8.3", "@embroider/addon-shim@^1.8.4":
+"@embroider/addon-shim@^1.8.3", "@embroider/addon-shim@^1.8.4":
   version "1.8.4"
   resolved "https://registry.yarnpkg.com/@embroider/addon-shim/-/addon-shim-1.8.4.tgz#0e7f32c5506bf0f3eb0840506e31c36c7053763c"
   integrity sha512-sFhfWC0vI18KxVenmswQ/ShIvBg4juL8ubI+Q3NTSdkCTeaPQ/DIOUF6oR5DCQ8eO/TkIaw+kdG3FkTY6yNJqA==
@@ -14885,12 +14885,12 @@ ember-inflector@^3.0.1:
   dependencies:
     ember-cli-babel "^6.6.0"
 
-ember-keyboard@8.2.0:
-  version "8.2.0"
-  resolved "https://registry.yarnpkg.com/ember-keyboard/-/ember-keyboard-8.2.0.tgz#d11fa7f0443606b7c1850bbd8253274a00046e11"
-  integrity sha512-h2kuS2irtIyvNbAMkGDlDTB4TPXwgmC6Nu9bIuGWoCjkGdgJbUg0VegfyRJ1TlxbIHlAelbqVpE8UhfgY5wEag==
+ember-keyboard@8.2.1:
+  version "8.2.1"
+  resolved "https://registry.yarnpkg.com/ember-keyboard/-/ember-keyboard-8.2.1.tgz#945a8a71068d81c06ad26851008ef81061db2a59"
+  integrity sha512-wT9xpt3GKsiodGZoifKU4OyeRjXWlmKV9ZHHsp6wJBwMFpl4wWPjTNdINxivk2qg/WFNIh8nUiwuG4+soWXPdw==
   dependencies:
-    "@embroider/addon-shim" "^1.5.0"
+    "@embroider/addon-shim" "^1.8.4"
     ember-destroyable-polyfill "^2.0.3"
     ember-modifier "^2.1.2 || ^3.1.0 || ^4.0.0"
     ember-modifier-manager-polyfill "^1.2.0"
