@@ -1,3 +1,4 @@
+import AddIntegrationModal from '../settings/advanced/integrations/AddIntegrationModal';
 import AddNewsletterModal from '../settings/email/newsletters/AddNewsletterModal';
 import AmpModal from '../settings/advanced/integrations/AmpModal';
 import ChangeThemeModal from '../settings/site/ThemeModal';
@@ -120,6 +121,8 @@ const handleNavigation = (scroll: boolean = true) => {
             NiceModal.show(FirstpromoterModal);
         } else if (pathName === 'integrations/pintura') {
             NiceModal.show(PinturaModal);
+        } else if (pathName === 'integrations/add') {
+            NiceModal.show(AddIntegrationModal);
         }
 
         if (scroll) {

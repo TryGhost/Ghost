@@ -151,6 +151,7 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
 const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [selectedTab, setSelectedTab] = useState<'built-in' | 'custom'>('built-in');
     const {data: {integrations} = {integrations: []}} = useBrowseIntegrations();
+    const {updateRoute} = useRouting();
 
     const tabs = [
         {
@@ -167,7 +168,7 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const buttons = (
         <Button color='green' label='Add custom integration' link={true} onClick={() => {
-            // showInviteModal();
+            updateRoute('integrations/add');
         }} />
     );
 
