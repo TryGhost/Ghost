@@ -23,8 +23,6 @@ const FirstpromoterModal = NiceModal.create(() => {
     const [firstPromoterEnabled] = getSettingValues<boolean>(settings, ['firstpromoter']);
     const [firstPromoterId] = getSettingValues<string>(settings, ['firstpromoter_id']);
 
-    // {"settings":[{"key":"firstpromoter","value":true},{"key":"firstpromoter_id","value":"555255252"}]}
-
     useEffect(() => {
         setEnabled(firstPromoterEnabled || false);
         setAccountId(firstPromoterId || '');
@@ -53,6 +51,7 @@ const FirstpromoterModal = NiceModal.create(() => {
             cancelLabel=''
             okColor='black'
             okLabel='Save'
+            testId='firstpromoter-modal'
             title=''
             onOk={async () => {
                 await handleSave();
