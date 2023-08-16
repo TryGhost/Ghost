@@ -29,6 +29,6 @@
     "@tryghost/metrics": "1.0.24",
     "form-data": "4.0.0",
     "lodash": "4.17.21",
-    "mailgun.js": "9.2.0"
+    "mailgun.js": "9.2.1"
   }
 }
