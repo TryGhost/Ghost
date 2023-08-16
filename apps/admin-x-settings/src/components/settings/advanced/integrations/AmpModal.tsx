@@ -59,7 +59,7 @@ const AmpModal = NiceModal.create(() => {
                     <Toggle
                         checked={enabled}
                         direction='rtl'
-                        hint={<>Enable Google Accelerated Mobile Pages <strong className='text-red'>[&larr; link to be set]</strong> for your posts</>}
+                        hint={<>Enable <a className='text-green' href="https://amp.dev" rel="noopener noreferrer" target='_blank'>Google Accelerated Mobile Pages</a> for your posts</>}
                         label='Enable AMP'
                         onChange={(e) => {
                             setEnabled(e.target.checked);
