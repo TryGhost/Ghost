@@ -4,21 +4,49 @@ import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
+import useRouting from '../../../../hooks/useRouting';
 import {ReactComponent as Icon} from '../../../../assets/icons/amp.svg';
-import {useState} from 'react';
+import {Setting, getSettingValues, useEditSettings} from '../../../../api/settings';
+import {useEffect, useState} from 'react';
+import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const AmpModal = NiceModal.create(() => {
+    const {updateRoute} = useRouting();
+    const {settings} = useGlobalData();
+    const [ampEnabled] = getSettingValues<boolean>(settings, ['amp']);
+    const [ampId] = getSettingValues<string>(settings, ['amp_gtag_id']);
     const modal = NiceModal.useModal();
     const [enabled, setEnabled] = useState(false);
+    const [trackingId, setTrackingId] = useState('');
+    const {mutateAsync: editSettings} = useEditSettings();
+
+    useEffect(() => {
+        setEnabled(ampEnabled || false);
+        setTrackingId(ampId || '');
+    }, [ampEnabled, ampId]);
+
+    const handleSave = async () => {
+        const updates: Setting[] = [
+            {key: 'amp', value: enabled},
+            {key: 'amp_gtag_id', value: trackingId}
+        ];
+        await editSettings(updates);
+    };
 
     return (
         <Modal
+            afterClose={() => {
+                updateRoute('integrations');
+            }}
             cancelLabel=''
             okColor='black'
             okLabel='Save'
+            testId='amp-modal'
             title=''
-            onOk={() => {
+            onOk={async () => {
+                await handleSave();
                 modal.remove();
+                updateRoute('integrations');
             }}
         >
             <IntegrationHeader
@@ -29,6 +57,7 @@ const AmpModal = NiceModal.create(() => {
             <div className='mt-7'>
                 <Form marginBottom={false} title='AMP configuration' grouped>
                     <Toggle
+                        checked={enabled}
                         direction='rtl'
                         hint={<>Enable Google Accelerated Mobile Pages <strong className='text-red'>[&larr; link to be set]</strong> for your posts</>}
                         label='Enable AMP'
@@ -41,6 +70,10 @@ const AmpModal = NiceModal.create(() => {
                             hint='Tracks AMP traffic in Google Analytics'
                             placeholder='UA-XXXXXXX-X'
                             title='Google Analytics Tracking ID'
+                            value={trackingId}
+                            onChange={(e) => {
+                                setTrackingId(e.target.value);
+                            }}
                         />
                     )}
                 </Form>
