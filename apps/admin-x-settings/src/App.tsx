@@ -9,10 +9,12 @@ import {GlobalDirtyStateProvider} from './hooks/useGlobalDirtyState';
 import {OfficialTheme, ServicesProvider} from './components/providers/ServiceProvider';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {Toaster} from 'react-hot-toast';
+import {ZapierTemplate} from './components/settings/advanced/integrations/ZapierModal';
 
 interface AppProps {
     ghostVersion: string;
     officialThemes: OfficialTheme[];
+    zapierTemplates: ZapierTemplate[];
     externalNavigate: (link: ExternalLink) => void;
 }
 
@@ -26,10 +28,10 @@ const queryClient = new QueryClient({
     }
 });
 
-function App({ghostVersion, officialThemes, externalNavigate}: AppProps) {
+function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate}: AppProps) {
     return (
         <QueryClientProvider client={queryClient}>
-            <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes}>
+            <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes} zapierTemplates={zapierTemplates}>
                 <GlobalDataProvider>
                     <RoutingProvider externalNavigate={externalNavigate}>
                         <GlobalDirtyStateProvider>
