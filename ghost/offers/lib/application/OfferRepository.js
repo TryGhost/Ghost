@@ -194,11 +194,21 @@ class OfferRepository {
      */
     async createFromCoupon(coupon, params, options) {
         const {productId, currency, interval, active} = params;
-        const code = coupon.name && coupon.name.split(' ').map(word => word.toLowerCase()).join('-');
+        let code = coupon.name && coupon.name.split(' ').map(word => word.toLowerCase()).join('-');
+        let name = coupon.name;
+
+        // If name or coupon already exists, we'll append the Stripe id to the name and code
+        if (await this.existsByName(name, options)) {
+            name = `${name} (${coupon.id})`;
+        }
+
+        if (await this.existsByCode(code, options)) {
+            code = `${code}-${coupon.id}`;
+        }
 
         const data = {
             active,
-            name: coupon.name,
+            name,
             code,
             product_id: productId,
             stripe_coupon_id: coupon.id,
@@ -217,7 +227,7 @@ class OfferRepository {
             data.discount_amount = coupon.amount_off;
         }
 
-        await this.OfferModel.add(data, options);
+        return await this.OfferModel.add(data, options);
     }
 
     /**
