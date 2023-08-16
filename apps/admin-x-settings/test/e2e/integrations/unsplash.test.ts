@@ -11,11 +11,11 @@ test.describe('Unsplash integration', async () => {
         }});
 
         await page.goto('/');
-        const section = await page.getByTestId('integrations'); // add await here
-        const unsplashElement = await section.getByText('Unsplash').last();
+        const section = page.getByTestId('integrations');
+        const unsplashElement = section.getByText('Unsplash').last();
         await unsplashElement.hover();
         await page.getByRole('button', {name: 'Configure'}).click();
-        const unsplashModal = await page.getByTestId('unsplash-modal');
+        const unsplashModal = page.getByTestId('unsplash-modal');
         await page.getByRole('button', {name: 'Close'}).click();
         expect(unsplashModal).not.toBeVisible();
     });
@@ -29,13 +29,13 @@ test.describe('Unsplash integration', async () => {
         }});
 
         await page.goto('/');
-        const section = await page.getByTestId('integrations'); // add await here
-        const unsplashElement = await section.getByText('Unsplash').last();
+        const section = page.getByTestId('integrations');
+        const unsplashElement = section.getByText('Unsplash').last();
         await unsplashElement.hover();
         await page.getByRole('button', {name: 'Configure'}).click();
-        const unsplashModal = await page.getByTestId('unsplash-modal');
+        const unsplashModal = page.getByTestId('unsplash-modal');
         
-        const unsplashToggle = await unsplashModal.getByRole('switch');
+        const unsplashToggle = unsplashModal.getByRole('switch');
         await unsplashToggle.click();
 
         expect(lastApiRequests.editSettings?.body).toEqual({
