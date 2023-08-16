@@ -1,7 +1,7 @@
 {
     "{{amount}} days free": "{{amount}}日間無料",
     "{{amount}} off": "{{amount}}オフ",
-    "{{amount}} off for first {{number}} months.": "最初の{{number}}ヶ月間{{amount}オフ}",
+    "{{amount}} off for first {{number}} months.": "最初の{{number}}ヶ月間{{amount}}オフ",
     "{{amount}} off for first {{period}}.": "最初の{{period}}{{amount}}オフ",
     "{{amount}} off forever.": "永久に{{amount}}オフ",
     "{{discount}}% discount": "{{discount}}% 割引",
