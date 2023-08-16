@@ -548,7 +548,7 @@ class SignupPage extends React.Component {
         }
 
         let label = t('Continue');
-        const showOnlyFree = pageQuery === 'free' && hasFreeProductPrice({site});
+        const showOnlyFree = pageQuery === 'free';
 
         if (hasOnlyFreePlan({site}) || showOnlyFree) {
             label = t('Sign up');
@@ -687,7 +687,7 @@ class SignupPage extends React.Component {
 
         const freeBenefits = getFreeProductBenefits({site});
         const freeDescription = getFreeTierDescription({site});
-        const showOnlyFree = pageQuery === 'free' && hasFreeProductPrice({site});
+        const showOnlyFree = pageQuery === 'free';
         const hasOnlyFree = hasOnlyFreeProduct({site}) || showOnlyFree;
         const sticky = !showOnlyFree && (freeBenefits.length || freeDescription);
 
