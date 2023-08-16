@@ -15,28 +15,50 @@ import {ReactComponent as SlackIcon} from '../../../assets/icons/slack.svg';
 import {ReactComponent as UnsplashIcon} from '../../../assets/icons/unsplash.svg';
 import {ReactComponent as ZapierIcon} from '../../../assets/icons/zapier.svg';
 import {useCreateWebhook, useDeleteWebhook, useEditWebhook} from '../../../api/webhooks';
+import {useGlobalData} from '../../providers/GlobalDataProvider';
 
-const IntegrationItem: React.FC<{icon?: React.ReactNode, title: string, detail:string, action:() => void}> = ({
+const IntegrationItem: React.FC<{icon?: React.ReactNode, title: string, detail: string, action: () => void; disabled?: boolean; testId?: string}> = ({
     icon,
     title,
     detail,
-    action
+    action,
+    disabled,
+    testId
 }) => {
+    const {updateRoute} = useRouting();
+
+    const handleClick = () => {
+        if (disabled) {
+            updateRoute({route: 'pro'});
+        } else {
+            action();
+        }
+    };
+
     return <ListItem
-        action={<Button color='green' label='Configure' link onClick={action} />}
+        action={disabled ?
+            <Button icon='lock-locked' label='Upgrade' link onClick={handleClick} /> :
+            <Button color='green' label='Configure' link onClick={handleClick} />
+        }
         avatar={icon}
+        className={disabled ? 'opacity-50 saturate-0' : ''}
         detail={detail}
+        hideActions={!disabled}
+        testId={testId}
         title={title}
-        hideActions
-        onClick={action}
+        onClick={handleClick}
     />;
 };
 
 const BuiltInIntegrations: React.FC = () => {
+    const {config} = useGlobalData();
     const {updateRoute} = useRouting();
+
     const openModal = (modal: string) => {
         updateRoute(modal);
     };
+
+    const zapierDisabled = config.hostSettings?.limits?.customIntegrations?.disabled;
 
     return (
         <List titleSeparator={false}>
@@ -45,7 +67,9 @@ const BuiltInIntegrations: React.FC = () => {
                     openModal('integrations/zapier');
                 }}
                 detail='Automation for your apps'
+                disabled={zapierDisabled}
                 icon={<ZapierIcon className='h-8 w-8' />}
+                testId='zapier-integration'
                 title='Zapier' />
 
             <IntegrationItem
