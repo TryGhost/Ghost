@@ -17,12 +17,13 @@ import {ReactComponent as ZapierIcon} from '../../../assets/icons/zapier.svg';
 import {useCreateWebhook, useDeleteWebhook, useEditWebhook} from '../../../api/webhooks';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
-const IntegrationItem: React.FC<{icon?: React.ReactNode, title: string, detail: string, action: () => void; disabled?: boolean}> = ({
+const IntegrationItem: React.FC<{icon?: React.ReactNode, title: string, detail: string, action: () => void; disabled?: boolean; testId?: string}> = ({
     icon,
     title,
     detail,
     action,
-    disabled
+    disabled,
+    testId
 }) => {
     const {updateRoute} = useRouting();
 
@@ -43,6 +44,7 @@ const IntegrationItem: React.FC<{icon?: React.ReactNode, title: string, detail: 
         className={disabled ? 'opacity-50 saturate-0' : ''}
         detail={detail}
         hideActions={!disabled}
+        testId={testId}
         title={title}
         onClick={handleClick}
     />;
@@ -67,6 +69,7 @@ const BuiltInIntegrations: React.FC = () => {
                 detail='Automation for your apps'
                 disabled={zapierDisabled}
                 icon={<ZapierIcon className='h-8 w-8' />}
+                testId='zapier-integration'
                 title='Zapier' />
 
             <IntegrationItem

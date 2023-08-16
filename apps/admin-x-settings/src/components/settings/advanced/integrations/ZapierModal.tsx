@@ -1,5 +1,6 @@
 import APIKeys from './APIKeys';
 import Button from '../../../../admin-x-ds/global/Button';
+import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import IntegrationHeader from './IntegrationHeader';
 import List from '../../../../admin-x-ds/global/List';
 import ListItem from '../../../../admin-x-ds/global/ListItem';
@@ -11,8 +12,9 @@ import {ReactComponent as Icon} from '../../../../assets/icons/zapier.svg';
 import {ReactComponent as Logo} from '../../../../assets/images/zapier-logo.svg';
 import {getGhostPaths} from '../../../../utils/helpers';
 import {useBrowseIntegrations} from '../../../../api/integrations';
-import {useEffect} from 'react';
+import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
+import {useRefreshAPIKey} from '../../../../api/apiKeys';
 import {useServices} from '../../../providers/ServiceProvider';
 
 export interface ZapierTemplate {
@@ -30,8 +32,12 @@ const ZapierModal = NiceModal.create(() => {
     const {config} = useGlobalData();
     const {adminRoot} = getGhostPaths();
 
+    const {mutateAsync: refreshAPIKey} = useRefreshAPIKey();
+    const [regenerated, setRegenerated] = useState(false);
+
     const zapierDisabled = config.hostSettings?.limits?.customIntegrations?.disabled;
     const integration = integrations.find(({slug}) => slug === 'zapier');
+    const adminApiKey = integration?.api_keys.find(key => key.type === 'admin');
 
     useEffect(() => {
         if (zapierDisabled) {
@@ -39,11 +45,31 @@ const ZapierModal = NiceModal.create(() => {
         }
     }, [zapierDisabled, updateRoute]);
 
+    const handleRegenerate = () => {
+        if (!integration || !adminApiKey) {
+            return;
+        }
+
+        setRegenerated(false);
+
+        NiceModal.show(ConfirmationModal, {
+            title: 'Regenerate Admin API Key',
+            prompt: 'You will need to locate the Ghost App within your Zapier account and click on "Reconnect" to enter the new Admin API Key.',
+            okLabel: 'Regenerate Admin API Key',
+            onOk: async (confirmModal) => {
+                await refreshAPIKey({integrationId: integration.id, apiKeyId: adminApiKey.id});
+                setRegenerated(true);
+                confirmModal?.remove();
+            }
+        });
+    };
+
     return (
         <Modal
             cancelLabel=''
             okColor='black'
             okLabel='Close'
+            testId='zapier-modal'
             title=''
             onOk={() => {
                 modal.remove();
@@ -52,7 +78,12 @@ const ZapierModal = NiceModal.create(() => {
             <IntegrationHeader
                 detail='Automation for your favorite apps'
                 extra={<APIKeys keys={[
-                    {label: 'Admin API key', text: integration?.api_keys.find(key => key.type === 'admin')?.secret, onRegenerate: () => {}},
+                    {
+                        label: 'Admin API key',
+                        text: adminApiKey?.secret,
+                        hint: regenerated ? <div className='text-green'>Admin API Key was successfully regenerated</div> : undefined,
+                        onRegenerate: handleRegenerate
+                    },
                     {label: 'API URL', text: window.location.origin + getGhostPaths().subdir}
                 ]} />}
                 icon={<Icon className='h-14 w-14' />}
