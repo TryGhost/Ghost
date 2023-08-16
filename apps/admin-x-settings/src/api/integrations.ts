@@ -4,7 +4,7 @@ import {Meta, createMutation, createQuery} from '../utils/apiRequests';
 
 export type IntegrationApiKey = {
     id: string;
-    type: string;
+    type: 'admin' | 'content';
     secret: string;
     role_id: string;
     integration_id: string;
