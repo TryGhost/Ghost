@@ -30,6 +30,7 @@ const UnsplashModal = NiceModal.create(() => {
             cancelLabel=''
             okColor='black'
             okLabel='Close'
+            testId='unsplash-modal'
             title=''
             onOk={() => {
                 modal.remove();
