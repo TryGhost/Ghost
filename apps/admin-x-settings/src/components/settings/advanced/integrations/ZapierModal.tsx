@@ -8,6 +8,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import useRouting from '../../../../hooks/useRouting';
 import {ReactComponent as ArrowRightIcon} from '../../../../admin-x-ds/assets/icons/arrow-right.svg';
 import {ReactComponent as Icon} from '../../../../assets/icons/zapier.svg';
+import {ReactComponent as Logo} from '../../../../assets/images/zapier-logo.svg';
 import {getGhostPaths} from '../../../../utils/helpers';
 import {useBrowseIntegrations} from '../../../../api/integrations';
 import {useEffect} from 'react';
@@ -73,6 +74,17 @@ const ZapierModal = NiceModal.create(() => {
                     />
                 ))}
             </List>
+
+            <div className='mt-6 flex'>
+                <Button
+                    href='https://zapier.com/apps/ghost/integrations?utm_medium=partner_api&utm_source=widget&utm_campaign=Widget'
+                    label={<>View more Ghost integrations powered by <Logo className='relative top-[-1px] ml-1 h-6' /></>}
+                    rel='noopener noreferrer'
+                    tag='a'
+                    target='_blank'
+                    link
+                />
+            </div>
         </Modal>
     );
 });
