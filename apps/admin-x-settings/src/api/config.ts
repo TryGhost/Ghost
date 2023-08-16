@@ -13,9 +13,16 @@ export type Config = {
     };
     labs: Record<string, boolean>;
     stripeDirect: boolean;
+    hostSettings?: {
+        limits?: {
+            customIntegrations?: {
+                disabled: boolean;
+            }
+        }
+    }
 
     // Config is relatively fluid, so we only type used properties above and still support arbitrary property access when needed
-    [key: string]: JSONValue;
+    [key: string]: JSONValue | undefined;
 };
 
 export interface ConfigResponseType {

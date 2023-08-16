@@ -1,4 +1,5 @@
 export interface IGhostPaths {
+    subdir: string;
     adminRoot: string;
     assetRoot: string;
     apiRoot: string;
@@ -10,7 +11,7 @@ export function getGhostPaths(): IGhostPaths {
     let adminRoot = `${subdir}/ghost/`;
     let assetRoot = `${subdir}/ghost/assets/`;
     let apiRoot = `${subdir}/ghost/api/admin`;
-    return {adminRoot, assetRoot, apiRoot};
+    return {subdir, adminRoot, assetRoot, apiRoot};
 }
 
 export function getLocalTime(timeZone: string) {
