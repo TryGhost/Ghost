@@ -2,7 +2,8 @@ const sinon = require('sinon');
 const OfferRepository = require('../../../lib/application/OfferRepository');
 
 const Offer = {
-    add: sinon.stub()
+    add: sinon.stub(),
+    findOne: sinon.stub()
 };
 
 describe('OfferRepository', function () {
