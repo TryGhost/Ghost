@@ -4,16 +4,20 @@ import IntegrationHeader from './IntegrationHeader';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
+import useRouting from '../../../../hooks/useRouting';
 import {ReactComponent as Icon} from '../../../../assets/icons/slack.svg';
 
 const SlackModal = NiceModal.create(() => {
+    const {updateRoute} = useRouting();
     const modal = NiceModal.useModal();
 
     return (
         <Modal
-            cancelLabel=''
+            afterClose={() => {
+                updateRoute('integrations');
+            }}
             okColor='black'
-            okLabel='Save'
+            okLabel='Save & close'
             title=''
             onOk={() => {
                 modal.remove();

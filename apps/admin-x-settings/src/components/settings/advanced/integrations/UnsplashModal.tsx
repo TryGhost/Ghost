@@ -27,9 +27,8 @@ const UnsplashModal = NiceModal.create(() => {
             afterClose={() => {
                 updateRoute('integrations');
             }}
-            cancelLabel=''
             okColor='black'
-            okLabel='Close'
+            okLabel='Save & close'
             testId='unsplash-modal'
             title=''
             onOk={() => {

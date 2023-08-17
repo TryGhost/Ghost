@@ -5,15 +5,20 @@ import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import pinturaScreenshot from '../../../../assets/images/pintura-screenshot.png';
+import useRouting from '../../../../hooks/useRouting';
 import {ReactComponent as Icon} from '../../../../assets/icons/pintura.svg';
 import {useState} from 'react';
 
 const PinturaModal = NiceModal.create(() => {
+    const {updateRoute} = useRouting();
     const modal = NiceModal.useModal();
     const [enabled, setEnabled] = useState(false);
 
     return (
         <Modal
+            afterClose={() => {
+                updateRoute('integrations');
+            }}
             cancelLabel=''
             okColor='black'
             okLabel='Save'

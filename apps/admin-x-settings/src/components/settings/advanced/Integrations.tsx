@@ -148,23 +148,29 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
     return (
         <List>
             {integrations.map(integration => (
-                <IntegrationItem action={() => {
-                    NiceModal.show(ConfirmationModal, {
-                        title: 'TEST API actions',
-                        prompt: <>
+                <IntegrationItem
+                    action={() => {
+                        NiceModal.show(ConfirmationModal, {
+                            title: 'TEST API actions',
+                            prompt: <>
                             Webhooks (will not update until you close and reopen this modal)
-                            <pre><code>{JSON.stringify(integration.webhooks)}</code></pre>
+                                <pre><code>{JSON.stringify(integration.webhooks)}</code></pre>
 
-                            <Button label='Create integration' onClick={() => createIntegration({name: 'Test'})} />
-                            <Button label='Update integration' onClick={() => editIntegration({...integration, name: integration.name + '*'})} />
-                            <Button label='Delete integration' onClick={() => deleteIntegration(integration.id)} />
-                            <Button label='Create webhook' onClick={() => createWebhook({integration_id: integration.id, event: 'post.edited', name: 'Test', target_url: 'https://test.com'})} />
-                            <Button label='Update webhook' onClick={() => editWebhook({...integration.webhooks[0], name: integration.webhooks[0].name + '*'})} />
-                            <Button label='Delete webhook' onClick={() => deleteWebhook(integration.webhooks[0].id)} />
-                        </>,
-                        onOk: modal => modal?.remove()
-                    });
-                }} detail={integration.description || 'No description'} icon={<Icon className='w-8' name='integration' />} title={integration.name} />)
+                                <Button label='Create integration' onClick={() => createIntegration({name: 'Test'})} />
+                                <Button label='Update integration' onClick={() => editIntegration({...integration, name: integration.name + '*'})} />
+                                <Button label='Delete integration' onClick={() => deleteIntegration(integration.id)} />
+                                <Button label='Create webhook' onClick={() => createWebhook({integration_id: integration.id, event: 'post.edited', name: 'Test', target_url: 'https://test.com'})} />
+                                <Button label='Update webhook' onClick={() => editWebhook({...integration.webhooks[0], name: integration.webhooks[0].name + '*'})} />
+                                <Button label='Delete webhook' onClick={() => deleteWebhook(integration.webhooks[0].id)} />
+                            </>,
+                            onOk: modal => modal?.remove()
+                        });
+                    }}
+                    detail={integration.description || 'No description'}
+                    icon={<Icon className='w-8' name='integration' />}
+                    title={integration.name}
+                    custom
+                />)
             )}
 
             <IntegrationItem
@@ -172,6 +178,7 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
                 detail='This is just a static placeholder to open the custom modal'
                 icon={<Icon className='w-8' name='integration' />} // Should be custom icon when uploaded
                 title='Custom integration modal'
+                custom
             />
         </List>
     );
