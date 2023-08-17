@@ -13,6 +13,8 @@ import {APIKey, useRefreshAPIKey} from '../../../../api/apiKeys';
 import {Integration, useEditIntegration} from '../../../../api/integrations';
 import {getGhostPaths} from '../../../../utils/helpers';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
+import {showToast} from '../../../../admin-x-ds/global/Toast';
+import {toast} from 'react-hot-toast';
 
 interface CustomIntegrationModalProps {
     integration: Integration
@@ -26,10 +28,19 @@ const CustomIntegrationModal: React.FC<CustomIntegrationModalProps> = ({integrat
     const {mutateAsync: refreshAPIKey} = useRefreshAPIKey();
     const {mutateAsync: uploadImage} = useUploadImage();
 
-    const {formState, updateForm, handleSave, saveState} = useForm({
+    const {formState, updateForm, handleSave, saveState, errors, clearError, validate} = useForm({
         initialState: integration,
         onSave: async () => {
             await editIntegration(formState);
+        },
+        onValidate: () => {
+            const newErrors: Record<string, string> = {};
+
+            if (!formState.name) {
+                newErrors.name = 'Please enter a name';
+            }
+
+            return newErrors;
         }
     });
 
@@ -76,9 +87,15 @@ const CustomIntegrationModal: React.FC<CustomIntegrationModalProps> = ({integrat
         title={formState.name}
         stickyFooter
         onOk={async () => {
+            toast.remove();
             if (await handleSave()) {
                 modal.remove();
                 updateRoute('integrations');
+            } else {
+                showToast({
+                    type: 'pageError',
+                    message: 'Can\'t save integration! One or more fields have errors, please doublecheck you filled all mandatory fields'
+                });
             }
         }}
     >
@@ -100,7 +117,15 @@ const CustomIntegrationModal: React.FC<CustomIntegrationModalProps> = ({integrat
             </div>
             <div className='flex grow flex-col'>
                 <Form>
-                    <TextField title='Title' value={formState.name} onChange={e => updateForm(state => ({...state, name: e.target.value}))} />
+                    <TextField
+                        error={Boolean(errors.name)}
+                        hint={errors.name}
+                        title='Title'
+                        value={formState.name}
+                        onBlur={validate}
+                        onChange={e => updateForm(state => ({...state, name: e.target.value}))}
+                        onKeyDown={() => clearError('name')}
+                    />
                     <TextField title='Description' value={formState.description} onChange={e => updateForm(state => ({...state, description: e.target.value}))} />
                     <div>
                         <APIKeys keys={[
