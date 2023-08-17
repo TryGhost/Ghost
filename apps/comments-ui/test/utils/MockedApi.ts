@@ -202,6 +202,21 @@ export class MockedApi {
             });
         });
 
+        // GET a single comment
+        await page.route(`${path}/members/api/comments/*/`, async (route) => {
+            const url = new URL(route.request().url());
+            const commentId = url.pathname.split('/').reverse()[1];
+
+            await route.fulfill({
+                status: 200,
+                body: JSON.stringify(this.browseComments({
+                    limit: 1,
+                    filter: `id:'${commentId}'`,
+                    page: 1
+                }))
+            });
+        });
+
         await page.route(`${path}/members/api/comments/*/replies/*`, async (route) => {
             const url = new URL(route.request().url());
 

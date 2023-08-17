@@ -297,25 +297,6 @@ test.describe('Options', async () => {
             expect(titleColor).toBe('rgba(255, 255, 255, 0.85)');
         });
 
-        test('Uses dark text in light mode', async ({page}) => {
-            const mockedApi = new MockedApi({});
-            mockedApi.addComment();
-
-            const {frame} = await initialize({
-                mockedApi,
-                page,
-                publication: 'Publisher Weekly',
-                colorScheme: 'light'
-            });
-
-            const title = await frame.locator('[data-testid="cta-box"] h1');
-            const titleColor = await title.evaluate((node) => {
-                const style = window.getComputedStyle(node);
-                return style.getPropertyValue('color');
-            });
-            expect(titleColor).toBe('rgb(0, 0, 0)');
-        });
-
         test('Uses light mode by default', async ({page}) => {
             const mockedApi = new MockedApi({});
             mockedApi.addComment();
@@ -354,6 +335,27 @@ test.describe('Options', async () => {
             });
             expect(titleColor).toBe('rgba(255, 255, 255, 0.85)');
         });
+
+        test('Uses dark text in light mode', async ({page}) => {
+            const mockedApi = new MockedApi({});
+            mockedApi.addComment();
+
+            const {frame} = await initialize({
+                mockedApi,
+                page,
+                publication: 'Publisher Weekly',
+                colorScheme: 'light',
+                bodyStyle: 'color: #fff;'
+            });
+
+            const title = await frame.locator('[data-testid="cta-box"] h1');
+            const titleColor = await title.evaluate((node) => {
+                const style = window.getComputedStyle(node);
+                return style.getPropertyValue('color');
+            });
+            expect(titleColor).toBe('rgb(0, 0, 0)');
+        });
+
     });
 });
 
