@@ -276,7 +276,7 @@ describe('CollectionsService', function () {
 
             let updatedCollection = await collectionsService.edit({
                 id: collection.id,
-                filter: 'id:post-3-featured'
+                filter: 'featured:true+published_at:>2023-05-20'
             });
 
             assert.equal(updatedCollection?.posts.length, 1, 'Collection should have one post');
