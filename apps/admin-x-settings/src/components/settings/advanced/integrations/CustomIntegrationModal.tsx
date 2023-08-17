@@ -1,10 +1,17 @@
 import APIKeys from './APIKeys';
+import Button from '../../../../admin-x-ds/global/Button';
+import ButtonGroup from '../../../../admin-x-ds/global/ButtonGroup';
 import Form from '../../../../admin-x-ds/global/form/Form';
 import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
+import Table from '../../../../admin-x-ds/global/Table';
+import TableCell from '../../../../admin-x-ds/global/TableCell';
+import TableHead from '../../../../admin-x-ds/global/TableHead';
+import TableRow from '../../../../admin-x-ds/global/TableRow';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
+import WebhookModal from './WebhookModal';
 import useRouting from '../../../../hooks/useRouting';
 import {getGhostPaths} from '../../../../utils/helpers';
 
@@ -26,9 +33,10 @@ const CustomIntegrationModal: React.FC<CustomIntegrationModalProps> = () => {
         size='md'
         testId='custom-integration-modal'
         title={integrationTitle}
+        stickyFooter
         onOk={async () => {}}
     >
-        <div className='mt-5 flex w-full gap-7'>
+        <div className='mt-7 flex w-full gap-7'>
             <div>
                 <ImageUpload
                     height='120px'
@@ -44,7 +52,7 @@ const CustomIntegrationModal: React.FC<CustomIntegrationModalProps> = () => {
             <div className='flex grow flex-col'>
                 <Form>
                     <TextField title='Title' />
-                    <TextField title='Detail' />
+                    <TextField title='Description' />
                     <div>
                         <APIKeys keys={[
                             {
@@ -70,7 +78,59 @@ const CustomIntegrationModal: React.FC<CustomIntegrationModalProps> = () => {
         </div>
 
         <div>
-            Webhooks
+            <Table>
+                <TableRow bgOnHover={false}>
+                    <TableHead>1 webhook</TableHead>
+                    <TableHead>Last triggered</TableHead>
+                    <TableHead />
+                </TableRow>
+                <TableRow
+                    action={
+                        <ButtonGroup
+                            buttons={[
+                                {
+                                    label: 'Edit',
+                                    link: true,
+                                    color: 'black'
+                                },
+                                {
+                                    label: 'Delete',
+                                    link: true,
+                                    color: 'red'
+                                }
+                            ]}
+                        />
+                    }
+                    hideActions
+                >
+                    <TableCell className='w-1/2'>
+                        <div className='text-sm font-semibold'>Rebuild on post published</div>
+                        <div className='grid grid-cols-[max-content_1fr] gap-x-1 text-xs leading-snug'>
+                            <span className='text-grey-600'>Event:</span>
+                            <span>Post published</span>
+                            <span className='text-grey-600'>URL:</span>
+                            <span>https://example.com</span>
+                        </div>
+                    </TableCell>
+                    <TableCell className='w-1/2 text-sm'>
+                        Tue Aug 15 2023 13:03:33
+                    </TableCell>
+                </TableRow>
+                <TableRow bgOnHover={false} separator={false}>
+                    <TableCell colSpan={3}>
+                        <Button
+                            color='green'
+                            icon='add'
+                            iconColorClass='text-green'
+                            label='Add webhook'
+                            size='sm'
+                            link
+                            onClick={() => {
+                                NiceModal.show(WebhookModal);
+                            }} />
+                    </TableCell>
+                </TableRow>
+            </Table>
         </div>
 
     </Modal>;
