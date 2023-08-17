@@ -50,7 +50,7 @@ export const RouteContext = createContext<RoutingContextData>({
 });
 
 // These routes need to be handled by a SettingGroup (or other component) with the
-// useHandleRoute hook. The idea is that those components will open a modal after
+// useDetailModalRoute hook. The idea is that those components will open a modal after
 // loading any data required for the route
 export const modalRoutes = {
     showUser: 'users/show/:slug',

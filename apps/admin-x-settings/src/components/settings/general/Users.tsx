@@ -8,7 +8,7 @@ import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
 import UserDetailModal from './UserDetailModal';
-import useHandleRoute from '../../../hooks/useHandleRoute';
+import useDetailModalRoute from '../../../hooks/useDetailModalRoute';
 import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import {User} from '../../../api/users';
@@ -191,21 +191,17 @@ const Users: React.FC<{ keywords: string[] }> = ({keywords}) => {
         editorUsers,
         authorUsers,
         contributorUsers,
-        invites,
-        isLoading
+        invites
     } = useStaffUsers();
 
     const {updateRoute} = useRouting();
 
-    useHandleRoute(modalRoutes.showUser, ({slug}) => {
-        const user = users.find(u => u.slug === slug);
-
-        if (!user) {
-            return;
-        }
-
-        NiceModal.show(UserDetailModal, {user});
-    }, [isLoading]);
+    useDetailModalRoute({
+        route: modalRoutes.showUser,
+        items: users,
+        field: 'slug',
+        showModal: user => NiceModal.show(UserDetailModal, {user})
+    });
 
     const showInviteModal = () => {
         updateRoute('users/invite');

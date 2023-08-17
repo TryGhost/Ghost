@@ -7,7 +7,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
-import useHandleRoute from '../../../hooks/useHandleRoute';
+import useDetailModalRoute from '../../../hooks/useDetailModalRoute';
 import useRouting from '../../../hooks/useRouting';
 import {ReactComponent as AmpIcon} from '../../../assets/icons/amp.svg';
 import {ReactComponent as FirstPromoterIcon} from '../../../assets/icons/firstpromoter.svg';
@@ -168,16 +168,14 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
 
 const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [selectedTab, setSelectedTab] = useState<'built-in' | 'custom'>('built-in');
-    const {data: {integrations} = {integrations: []}, isLoading} = useBrowseIntegrations();
+    const {data: {integrations} = {integrations: []}} = useBrowseIntegrations();
     const {updateRoute} = useRouting();
 
-    useHandleRoute(modalRoutes.showIntegration, ({id}) => {
-        const integration = integrations.find(i => i.id === id);
-
-        if (integration) {
-            NiceModal.show(CustomIntegrationModal, {integration});
-        }
-    }, [isLoading]);
+    useDetailModalRoute({
+        route: modalRoutes.showIntegration,
+        items: integrations,
+        showModal: integration => NiceModal.show(CustomIntegrationModal, {integration})
+    });
 
     const tabs = [
         {
