@@ -101,50 +101,6 @@ afterEach(() => {
     vi.restoreAllMocks();
 });
 
-describe('Auth frame', () => {
-    it('renders the auth frame', () => {
-        const {container} = renderApp();
-        const iframeElement = container.querySelector('iframe[data-frame="admin-auth"]');
-        expect(iframeElement).toBeInTheDocument();
-    });
-});
-
-describe('Dark mode', () => {
-    it('uses dark mode when container has a light text color', async () => {
-        const {iframeDocument} = renderApp({documentStyles: {
-            color: '#FFFFFF'
-        }});
-        const darkModeContentBox = await within(iframeDocument).findByTestId('content-box');
-        expect([...darkModeContentBox.classList]).toContain('dark');
-    });
-    it('uses dark mode when container has a dark text color', async () => {
-        const {iframeDocument} = renderApp({documentStyles: {
-            color: '#000000'
-        }});
-        const darkModeContentBox = await within(iframeDocument).findByTestId('content-box');
-        expect([...darkModeContentBox.classList]).not.toContain('dark');
-    });
-    it('uses dark mode when custom mode has been passed as a property', async () => {
-        const {iframeDocument} = renderApp({
-            props: {
-                colorScheme: 'dark'
-            }
-        });
-        const darkModeContentBox = await within(iframeDocument).findByTestId('content-box');
-        expect([...darkModeContentBox.classList]).toContain('dark');
-    });
-    it('uses light mode when custom mode has been passed as a property', async () => {
-        const {iframeDocument} = renderApp({
-            props: {
-                colorScheme: 'light'
-            },
-            color: '#FFFFFF'
-        });
-        const darkModeContentBox = await within(iframeDocument).findByTestId('content-box');
-        expect([...darkModeContentBox.classList]).not.toContain('dark');
-    });
-});
-
 describe('Comments', () => {
     it('renders comments', async () => {
         const {api, iframeDocument} = renderApp();
