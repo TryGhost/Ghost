@@ -18,13 +18,24 @@ import {ReactComponent as ZapierIcon} from '../../../assets/icons/zapier.svg';
 import {useCreateWebhook, useDeleteWebhook, useEditWebhook} from '../../../api/webhooks';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
-const IntegrationItem: React.FC<{icon?: React.ReactNode, title: string, detail: string, action: () => void; disabled?: boolean; testId?: string}> = ({
+interface IntegrationItemProps {
+    icon?: React.ReactNode,
+    title: string,
+    detail: string,
+    action: () => void;
+    disabled?: boolean;
+    testId?: string;
+    custom?: boolean;
+}
+
+const IntegrationItem: React.FC<IntegrationItemProps> = ({
     icon,
     title,
     detail,
     action,
     disabled,
-    testId
+    testId,
+    custom = false
 }) => {
     const {updateRoute} = useRouting();
 
@@ -36,11 +47,16 @@ const IntegrationItem: React.FC<{icon?: React.ReactNode, title: string, detail: 
         }
     };
 
-    return <ListItem
-        action={disabled ?
+    const buttons = custom ?
+        <Button color='red' label='Delete' link onClick={() => {}} />
+        :
+        (disabled ?
             <Button icon='lock-locked' label='Upgrade' link onClick={handleClick} /> :
             <Button color='green' label='Configure' link onClick={handleClick} />
-        }
+        );
+
+    return <ListItem
+        action={buttons}
         avatar={icon}
         className={disabled ? 'opacity-50 saturate-0' : ''}
         detail={detail}

@@ -1,6 +1,5 @@
 import APIKeys from './APIKeys';
 import Button from '../../../../admin-x-ds/global/Button';
-import ButtonGroup from '../../../../admin-x-ds/global/ButtonGroup';
 import Form from '../../../../admin-x-ds/global/form/Form';
 import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
@@ -86,22 +85,12 @@ const CustomIntegrationModal: React.FC<CustomIntegrationModalProps> = () => {
                 </TableRow>
                 <TableRow
                     action={
-                        <ButtonGroup
-                            buttons={[
-                                {
-                                    label: 'Edit',
-                                    link: true,
-                                    color: 'black'
-                                },
-                                {
-                                    label: 'Delete',
-                                    link: true,
-                                    color: 'red'
-                                }
-                            ]}
-                        />
+                        <Button color='red' label='Delete' link onClick={() => {}} />
                     }
                     hideActions
+                    onClick={() => {
+                        NiceModal.show(WebhookModal);
+                    }}
                 >
                     <TableCell className='w-1/2'>
                         <div className='text-sm font-semibold'>Rebuild on post published</div>

@@ -19,12 +19,12 @@ const APIKeyField: React.FC<APIKeyFieldProps> = ({label, text = '', hint, onRege
 
     return <>
         <div className='p-0 py-1 pr-4 text-sm text-grey-600'>{label}</div>
-        <div className='group relative overflow-hidden rounded p-1 text-sm hover:bg-grey-100'>
+        <div className='group relative overflow-hidden rounded p-1 text-sm hover:bg-grey-50'>
             {text}
             {hint}
-            <div className='invisible absolute right-0 top-[50%] flex translate-y-[-50%] gap-1 text-sm group-hover:visible'>
-                {onRegenerate && <Button color='grey' label='Regenerate' size='sm' onClick={onRegenerate} />}
-                <Button color='black' label={copied ? 'Copied' : 'Copy'} size='sm' onClick={copyText} />
+            <div className='invisible absolute right-0 top-[50%] flex translate-y-[-50%] gap-1 bg-white pl-1 text-sm group-hover:visible'>
+                {onRegenerate && <Button color='outline' label='Regenerate' size='sm' onClick={onRegenerate} />}
+                <Button color='outline' label={copied ? 'Copied' : 'Copy'} size='sm' onClick={copyText} />
             </div>
         </div>
     </>;
