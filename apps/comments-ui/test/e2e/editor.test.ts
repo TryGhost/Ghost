@@ -1,5 +1,5 @@
-import {Locator, expect, test} from '@playwright/test';
 import {MockedApi, getHeight, getModifierKey, initialize, selectText, setClipboard} from '../utils/e2e';
+import {expect, test} from '@playwright/test';
 
 test.describe('Editor', async () => {
     test('Can comment on a post', async ({page}) => {
