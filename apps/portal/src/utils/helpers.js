@@ -415,7 +415,7 @@ export function hasBenefits({prices, site}) {
 
 export function getSiteProducts({site, pageQuery}) {
     const products = getAvailableProducts({site});
-    const showOnlyFree = pageQuery === 'free' && hasFreeProductPrice({site});
+    const showOnlyFree = pageQuery === 'free';
     if (showOnlyFree) {
         return [];
     }

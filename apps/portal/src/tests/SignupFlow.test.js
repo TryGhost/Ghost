@@ -643,6 +643,22 @@ describe('Signup', () => {
             const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
             expect(magicLink).toBeInTheDocument();
         });
+
+        test('should not show free plan if it is hidden', async () => {
+            let {
+                popupFrame, triggerButtonFrame, emailInput, nameInput,
+                siteTitle, freePlanTitle
+            } = await multiTierSetup({
+                site: FixtureSite.multipleTiers.onlyPaidPlans
+            });
+
+            expect(popupFrame).toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(siteTitle).toBeInTheDocument();
+            expect(emailInput).toBeInTheDocument();
+            expect(nameInput).toBeInTheDocument();
+            expect(freePlanTitle.length).toBe(0);
+        });
     });
 
     describe('as paid member on multi tier site', () => {

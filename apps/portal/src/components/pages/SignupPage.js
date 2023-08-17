@@ -7,7 +7,7 @@ import NewsletterSelectionPage from './NewsletterSelectionPage';
 import ProductsSection from '../common/ProductsSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {getSiteProducts, getSitePrices, hasOnlyFreePlan, isInviteOnlySite, freeHasBenefitsOrDescription, hasOnlyFreeProduct, getFreeProductBenefits, getFreeTierDescription, hasFreeProductPrice, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed} from '../../utils/helpers';
+import {getSiteProducts, getSitePrices, hasOnlyFreePlan, isInviteOnlySite, freeHasBenefitsOrDescription, hasOnlyFreeProduct, getFreeProductBenefits, getFreeTierDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 
 export const SignupPageStyles = `
@@ -548,7 +548,7 @@ class SignupPage extends React.Component {
         }
 
         let label = t('Continue');
-        const showOnlyFree = pageQuery === 'free' && hasFreeProductPrice({site});
+        const showOnlyFree = pageQuery === 'free';
 
         if (hasOnlyFreePlan({site}) || showOnlyFree) {
             label = t('Sign up');
@@ -687,7 +687,7 @@ class SignupPage extends React.Component {
 
         const freeBenefits = getFreeProductBenefits({site});
         const freeDescription = getFreeTierDescription({site});
-        const showOnlyFree = pageQuery === 'free' && hasFreeProductPrice({site});
+        const showOnlyFree = pageQuery === 'free';
         const hasOnlyFree = hasOnlyFreeProduct({site}) || showOnlyFree;
         const sticky = !showOnlyFree && (freeBenefits.length || freeDescription);
 
