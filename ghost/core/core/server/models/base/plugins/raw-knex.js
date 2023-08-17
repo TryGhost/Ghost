@@ -1,7 +1,6 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('models:base:raw-knex');
 const plugins = require('@tryghost/bookshelf-plugins');
-const Promise = require('bluebird');
 
 const schema = require('../../../data/schema');
 
@@ -166,7 +165,7 @@ module.exports = function (Bookshelf) {
                         })();
                     });
 
-                    return Promise.props(props)
+                    return Promise.all([props])
                         .then((relationsToAttach) => {
                             debug('attach relations', modelName);
 
