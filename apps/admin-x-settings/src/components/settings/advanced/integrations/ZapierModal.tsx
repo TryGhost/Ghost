@@ -37,7 +37,7 @@ const ZapierModal = NiceModal.create(() => {
 
     const zapierDisabled = config.hostSettings?.limits?.customIntegrations?.disabled;
     const integration = integrations.find(({slug}) => slug === 'zapier');
-    const adminApiKey = integration?.api_keys.find(key => key.type === 'admin');
+    const adminApiKey = integration?.api_keys?.find(key => key.type === 'admin');
 
     useEffect(() => {
         if (zapierDisabled) {
