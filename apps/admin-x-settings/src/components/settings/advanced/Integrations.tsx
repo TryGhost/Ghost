@@ -1,5 +1,6 @@
 import Button from '../../../admin-x-ds/global/Button';
 import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
+import Icon from '../../../admin-x-ds/global/Icon';
 import List from '../../../admin-x-ds/global/List';
 import ListItem from '../../../admin-x-ds/global/ListItem';
 import NiceModal from '@ebay/nice-modal-react';
@@ -122,6 +123,11 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
     const {mutateAsync: createWebhook} = useCreateWebhook();
     const {mutateAsync: editWebhook} = useEditWebhook();
     const {mutateAsync: deleteWebhook} = useDeleteWebhook();
+    const {updateRoute} = useRouting();
+
+    const openCustomIntegrationModal = () => {
+        updateRoute('integrations/show/custom/:id');
+    };
 
     return (
         <List>
@@ -142,8 +148,15 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
                         </>,
                         onOk: modal => modal?.remove()
                     });
-                }} detail={integration.description || 'No description'} title={integration.name} />)
+                }} detail={integration.description || 'No description'} icon={<Icon className='w-8' name='integration' />} title={integration.name} />)
             )}
+
+            <IntegrationItem
+                action={openCustomIntegrationModal}
+                detail='This is just a static placeholder to open the custom modal'
+                icon={<Icon className='w-8' name='integration' />} // Should be custom icon when uploaded
+                title='Custom integration modal'
+            />
         </List>
     );
 };
