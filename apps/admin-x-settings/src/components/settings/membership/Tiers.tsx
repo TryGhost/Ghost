@@ -15,7 +15,7 @@ import {useGlobalData} from '../../providers/GlobalDataProvider';
 const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [selectedTab, setSelectedTab] = useState('active-tiers');
     const {settings, config} = useGlobalData();
-    const {data: {tiers} = {}} = useBrowseTiers();
+    const {data: {tiers} = {}, isLoading} = useBrowseTiers();
     const activeTiers = getActiveTiers(tiers || []);
     const archivedTiers = getArchivedTiers(tiers || []);
     const {updateRoute} = useRouting();
@@ -26,7 +26,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
         if (tier) {
             NiceModal.show(TierDetailModal, {tier});
         }
-    }, [tiers]);
+    }, [isLoading]);
 
     const openConnectModal = () => {
         updateRoute('stripe-connect');

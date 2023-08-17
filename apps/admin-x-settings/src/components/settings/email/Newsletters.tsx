@@ -16,7 +16,7 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
         updateRoute('newsletters/add');
     };
     const [selectedTab, setSelectedTab] = useState('active-newsletters');
-    const {data: {newsletters} = {}} = useBrowseNewsletters();
+    const {data: {newsletters} = {}, isLoading} = useBrowseNewsletters();
 
     useHandleRoute(modalRoutes.showNewsletter, ({id}) => {
         const newsletter = newsletters?.find(u => u.id === id);
@@ -26,7 +26,7 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
         }
 
         NiceModal.show(NewsletterDetailModal, {newsletter});
-    }, [newsletters]);
+    }, [isLoading]);
 
     const buttons = (
         <Button color='green' label='Add newsletter' link={true} onClick={() => {

@@ -191,7 +191,8 @@ const Users: React.FC<{ keywords: string[] }> = ({keywords}) => {
         editorUsers,
         authorUsers,
         contributorUsers,
-        invites
+        invites,
+        isLoading
     } = useStaffUsers();
 
     const {updateRoute} = useRouting();
@@ -204,7 +205,7 @@ const Users: React.FC<{ keywords: string[] }> = ({keywords}) => {
         }
 
         NiceModal.show(UserDetailModal, {user});
-    }, [users]);
+    }, [isLoading]);
 
     const showInviteModal = () => {
         updateRoute('users/invite');

@@ -1,70 +1,117 @@
 import APIKeys from './APIKeys';
-import Button from '../../../../admin-x-ds/global/Button';
+import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import Form from '../../../../admin-x-ds/global/form/Form';
 import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
-import NiceModal from '@ebay/nice-modal-react';
-import React from 'react';
-import Table from '../../../../admin-x-ds/global/Table';
-import TableCell from '../../../../admin-x-ds/global/TableCell';
-import TableHead from '../../../../admin-x-ds/global/TableHead';
-import TableRow from '../../../../admin-x-ds/global/TableRow';
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import React, {useEffect, useState} from 'react';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
-import WebhookModal from './WebhookModal';
+import WebhooksTable from './WebhooksTable';
+import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
+import {APIKey, useRefreshAPIKey} from '../../../../api/apiKeys';
+import {Integration, useEditIntegration} from '../../../../api/integrations';
 import {getGhostPaths} from '../../../../utils/helpers';
+import {getImageUrl, useUploadImage} from '../../../../api/images';
 
-interface CustomIntegrationModalProps {}
+interface CustomIntegrationModalProps {
+    integration: Integration
+}
 
-const CustomIntegrationModal: React.FC<CustomIntegrationModalProps> = () => {
-    // const modal = useModal();
+const CustomIntegrationModal: React.FC<CustomIntegrationModalProps> = ({integration}) => {
+    const modal = useModal();
     const {updateRoute} = useRouting();
 
-    const integrationTitle = 'A custom integration';
-    const regenerated = false;
+    const {mutateAsync: editIntegration} = useEditIntegration();
+    const {mutateAsync: refreshAPIKey} = useRefreshAPIKey();
+    const {mutateAsync: uploadImage} = useUploadImage();
+
+    const {formState, updateForm, handleSave, saveState} = useForm({
+        initialState: integration,
+        onSave: async () => {
+            await editIntegration(formState);
+        }
+    });
+
+    const adminApiKey = integration.api_keys?.find(key => key.type === 'admin');
+    const contentApiKey = integration.api_keys?.find(key => key.type === 'content');
+
+    const [adminKeyRegenerated, setAdminKeyRegenerated] = useState(false);
+    const [contentKeyRegenerated, setContentKeyRegenerated] = useState(false);
+
+    useEffect(() => {
+        if (integration.type !== 'custom') {
+            modal.remove();
+            updateRoute('integrations');
+        }
+    }, [integration.type, modal, updateRoute]);
+
+    const handleRegenerate = (apiKey: APIKey, setRegenerated: (value: boolean) => void) => {
+        setRegenerated(false);
+
+        NiceModal.show(ConfirmationModal, {
+            title: 'Regenerate Admin API Key',
+            prompt: 'You will need to locate the Ghost App within your Zapier account and click on "Reconnect" to enter the new Admin API Key.',
+            okLabel: 'Regenerate Admin API Key',
+            onOk: async (confirmModal) => {
+                await refreshAPIKey({integrationId: integration.id, apiKeyId: apiKey.id});
+                setRegenerated(true);
+                confirmModal?.remove();
+            }
+        });
+    };
 
     return <Modal
         afterClose={() => {
             updateRoute('integrations');
         }}
+        dirty={saveState === 'unsaved'}
         okColor='black'
         okLabel='Save & close'
         size='md'
         testId='custom-integration-modal'
-        title={integrationTitle}
+        title={formState.name}
         stickyFooter
-        onOk={async () => {}}
+        onOk={async () => {
+            if (await handleSave()) {
+                modal.remove();
+                updateRoute('integrations');
+            }
+        }}
     >
         <div className='mt-7 flex w-full gap-7'>
             <div>
                 <ImageUpload
                     height='120px'
                     id='custom-integration-icon'
+                    imageURL={formState.icon_image || undefined}
                     width='120px'
-                    onDelete={() => {}}
-                    onImageClick={() => {}}
-                    onUpload={() => {}}
+                    onDelete={() => updateForm(state => ({...state, icon_image: null}))}
+                    onUpload={async (file) => {
+                        const imageUrl = getImageUrl(await uploadImage({file}));
+                        updateForm(state => ({...state, icon_image: imageUrl}));
+                    }}
                 >
                     Upload icon
                 </ImageUpload>
             </div>
             <div className='flex grow flex-col'>
                 <Form>
-                    <TextField title='Title' />
-                    <TextField title='Description' />
+                    <TextField title='Title' value={formState.name} onChange={e => updateForm(state => ({...state, name: e.target.value}))} />
+                    <TextField title='Description' value={formState.description} onChange={e => updateForm(state => ({...state, description: e.target.value}))} />
                     <div>
                         <APIKeys keys={[
                             {
                                 label: 'Content API key',
-                                text: '[content key here]',
-                                hint: regenerated ? <div className='text-green'>Content API Key was successfully regenerated</div> : undefined
-                            // onRegenerate: handleRegenerate
+                                text: contentApiKey?.secret,
+                                hint: contentKeyRegenerated ? <div className='text-green'>Content API Key was successfully regenerated</div> : undefined,
+                                onRegenerate: () => contentApiKey && handleRegenerate(contentApiKey, setContentKeyRegenerated)
                             },
                             {
                                 label: 'Admin API key',
-                                text: '[api key here]',
-                                hint: regenerated ? <div className='text-green'>Admin API Key was successfully regenerated</div> : undefined
-                            // onRegenerate: handleRegenerate
+                                text: adminApiKey?.secret,
+                                hint: adminKeyRegenerated ? <div className='text-green'>Admin API Key was successfully regenerated</div> : undefined,
+                                onRegenerate: () => adminApiKey && handleRegenerate(adminApiKey, setAdminKeyRegenerated)
                             },
                             {
                                 label: 'API URL',
@@ -77,51 +124,8 @@ const CustomIntegrationModal: React.FC<CustomIntegrationModalProps> = () => {
         </div>
 
         <div>
-            <Table>
-                <TableRow bgOnHover={false}>
-                    <TableHead>1 webhook</TableHead>
-                    <TableHead>Last triggered</TableHead>
-                    <TableHead />
-                </TableRow>
-                <TableRow
-                    action={
-                        <Button color='red' label='Delete' link onClick={() => {}} />
-                    }
-                    hideActions
-                    onClick={() => {
-                        NiceModal.show(WebhookModal);
-                    }}
-                >
-                    <TableCell className='w-1/2'>
-                        <div className='text-sm font-semibold'>Rebuild on post published</div>
-                        <div className='grid grid-cols-[max-content_1fr] gap-x-1 text-xs leading-snug'>
-                            <span className='text-grey-600'>Event:</span>
-                            <span>Post published</span>
-                            <span className='text-grey-600'>URL:</span>
-                            <span>https://example.com</span>
-                        </div>
-                    </TableCell>
-                    <TableCell className='w-1/2 text-sm'>
-                        Tue Aug 15 2023 13:03:33
-                    </TableCell>
-                </TableRow>
-                <TableRow bgOnHover={false} separator={false}>
-                    <TableCell colSpan={3}>
-                        <Button
-                            color='green'
-                            icon='add'
-                            iconColorClass='text-green'
-                            label='Add webhook'
-                            size='sm'
-                            link
-                            onClick={() => {
-                                NiceModal.show(WebhookModal);
-                            }} />
-                    </TableCell>
-                </TableRow>
-            </Table>
+            <WebhooksTable integration={integration} />
         </div>
-
     </Modal>;
 };
 
