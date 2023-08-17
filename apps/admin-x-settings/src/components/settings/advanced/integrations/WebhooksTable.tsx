@@ -1,4 +1,5 @@
 import Button from '../../../../admin-x-ds/global/Button';
+import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import Table from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
@@ -14,17 +15,26 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
     const {mutateAsync: deleteWebhook} = useDeleteWebhook();
     const modal = useModal();
 
-    const handleDelete = async (id: string) => {
-        await deleteWebhook(id);
-        modal.show({
-            integration: {
-                ...integration,
-                webhooks: integration.webhooks?.filter(webhook => webhook.id !== id)
+    const handleDelete = (id: string) => {
+        NiceModal.show(ConfirmationModal, {
+            title: 'Are you sure?',
+            prompt: 'Deleting this webhook may prevent the integration from functioning.',
+            okColor: 'red',
+            okLabel: 'Delete Webhook',
+            onOk: async (confirmModal) => {
+                await deleteWebhook(id);
+                confirmModal?.remove();
+                modal.show({
+                    integration: {
+                        ...integration,
+                        webhooks: integration.webhooks?.filter(webhook => webhook.id !== id)
+                    }
+                });
+                showToast({
+                    message: 'Webhook deleted',
+                    type: 'success'
+                });
             }
-        });
-        showToast({
-            message: 'Webhook deleted',
-            type: 'success'
         });
     };
 

@@ -1,4 +1,5 @@
 import Button from '../../../admin-x-ds/global/Button';
+import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
 import CustomIntegrationModal from './integrations/CustomIntegrationModal';
 import Icon from '../../../admin-x-ds/global/Icon';
 import List from '../../../admin-x-ds/global/List';
@@ -153,11 +154,20 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
                     }
                     title={integration.name}
                     custom
-                    onDelete={async () => {
-                        await deleteIntegration(integration.id);
-                        showToast({
-                            message: 'Integration deleted',
-                            type: 'success'
+                    onDelete={() => {
+                        NiceModal.show(ConfirmationModal, {
+                            title: 'Are you sure?',
+                            prompt: 'Deleting this integration will remove all webhooks and api keys associated with it.',
+                            okColor: 'red',
+                            okLabel: 'Delete Integration',
+                            onOk: async (confirmModal) => {
+                                await deleteIntegration(integration.id);
+                                confirmModal?.remove();
+                                showToast({
+                                    message: 'Integration deleted',
+                                    type: 'success'
+                                });
+                            }
                         });
                     }}
                 />)
