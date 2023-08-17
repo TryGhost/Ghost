@@ -6,14 +6,15 @@ import Select from '../../../../admin-x-ds/global/form/Select';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import useForm from '../../../../hooks/useForm';
 import webhookEventOptions from './webhookEventOptions';
-import {Webhook, useCreateWebhook, useEditWebhook} from '../../../../api/webhooks';
+import {Webhook, WebhooksResponseType, useCreateWebhook, useEditWebhook} from '../../../../api/webhooks';
 
 interface WebhookModalProps {
     webhook?: Webhook
     integrationId: string
+    onSaved: (response: WebhooksResponseType) => void
 }
 
-const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => {
+const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId, onSaved}) => {
     const modal = useModal();
     const {mutateAsync: createWebhook} = useCreateWebhook();
     const {mutateAsync: editWebhook} = useEditWebhook();
@@ -22,9 +23,9 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
         initialState: webhook || {},
         onSave: async () => {
             if (formState.id) {
-                await editWebhook(formState as Webhook);
+                onSaved(await editWebhook(formState as Webhook));
             } else {
-                await createWebhook({...formState, integration_id: integrationId});
+                onSaved(await createWebhook({...formState, integration_id: integrationId}));
             }
             modal.remove();
         }

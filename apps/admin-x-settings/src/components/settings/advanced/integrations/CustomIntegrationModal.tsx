@@ -33,9 +33,8 @@ const CustomIntegrationModal: React.FC<CustomIntegrationModalProps> = ({integrat
         }
     });
 
-    // NiceModal doesn't re-render in response to props updates, so we need to manage updated state here
-    const adminApiKey = formState.api_keys?.find(key => key.type === 'admin');
-    const contentApiKey = formState.api_keys?.find(key => key.type === 'content');
+    const adminApiKey = integration.api_keys?.find(key => key.type === 'admin');
+    const contentApiKey = integration.api_keys?.find(key => key.type === 'content');
 
     const [adminKeyRegenerated, setAdminKeyRegenerated] = useState(false);
     const [contentKeyRegenerated, setContentKeyRegenerated] = useState(false);
@@ -58,10 +57,7 @@ const CustomIntegrationModal: React.FC<CustomIntegrationModalProps> = ({integrat
             okLabel: `Regenerate ${name} API Key`,
             onOk: async (confirmModal) => {
                 const data = await refreshAPIKey({integrationId: integration.id, apiKeyId: apiKey.id});
-                updateForm(state => ({
-                    ...state,
-                    api_keys: data.integrations[0].api_keys
-                }));
+                modal.show({integration: data.integrations[0]});
                 setRegenerated(true);
                 confirmModal?.remove();
             }

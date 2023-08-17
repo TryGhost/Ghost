@@ -1,5 +1,5 @@
 import Button from '../../../../admin-x-ds/global/Button';
-import NiceModal from '@ebay/nice-modal-react';
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import Table from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
 import TableHead from '../../../../admin-x-ds/global/TableHead';
@@ -12,9 +12,16 @@ import {useDeleteWebhook} from '../../../../api/webhooks';
 
 const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
     const {mutateAsync: deleteWebhook} = useDeleteWebhook();
+    const modal = useModal();
 
     const handleDelete = async (id: string) => {
         await deleteWebhook(id);
+        modal.show({
+            integration: {
+                ...integration,
+                webhooks: integration.webhooks?.filter(webhook => webhook.id !== id)
+            }
+        });
         showToast({
             message: 'Webhook deleted',
             type: 'success'
@@ -30,11 +37,24 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
         {integration.webhooks?.map(webhook => (
             <TableRow
                 action={
-                    <Button color='red' label='Delete' link onClick={() => handleDelete(webhook.id)} />
+                    <Button color='red' label='Delete' link onClick={(e) => {
+                        e?.stopPropagation();
+                        handleDelete(webhook.id);
+                    }} />
                 }
                 hideActions
                 onClick={() => {
-                    NiceModal.show(WebhookModal, {webhook, integrationId: integration.id});
+                    NiceModal.show(WebhookModal, {
+                        webhook,
+                        integrationId:
+                        integration.id,
+                        onSaved: ({webhooks: [updated]}) => modal.show({
+                            integration: {
+                                ...integration,
+                                webhooks: integration.webhooks?.map(current => (current.id === updated.id ? updated : current))
+                            }
+                        })
+                    });
                 }}
             >
                 <TableCell className='w-1/2'>
@@ -69,7 +89,15 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
                     size='sm'
                     link
                     onClick={() => {
-                        NiceModal.show(WebhookModal, {integrationId: integration.id});
+                        NiceModal.show(WebhookModal, {
+                            integrationId: integration.id,
+                            onSaved: ({webhooks: [added]}) => modal.show({
+                                integration: {
+                                    ...integration,
+                                    webhooks: (integration.webhooks || []).concat(added)
+                                }
+                            })
+                        });
                     }} />
             </TableCell>
         </TableRow>
