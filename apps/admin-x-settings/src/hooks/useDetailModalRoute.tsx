@@ -15,8 +15,8 @@ const useDetailModalRoute = <Item extends {[key in Field]: string}, Field extend
     const itemIds = items.map(item => item[field]).join(',');
 
     useEffect(() => {
-        const unsubscribe = addRouteChangeListener({route, callback: ({id}) => {
-            const item = items.find(it => it[field] === id);
+        const unsubscribe = addRouteChangeListener({route, callback: (params) => {
+            const item = items.find(it => it[field] === params[field]);
 
             if (item) {
                 showModal(item);
