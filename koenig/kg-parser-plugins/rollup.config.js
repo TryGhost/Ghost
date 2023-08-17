@@ -28,6 +28,7 @@ export default [
         },
         plugins: [
             babel({
+                babelHelpers: 'bundled',
                 presets: [
                     ['@babel/preset-env', {
                         modules: false,
