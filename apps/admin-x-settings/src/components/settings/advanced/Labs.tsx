@@ -79,7 +79,7 @@ const AlphaFeatures: React.FC = () => {
                         <Button color='green' label='Download current redirects' link />
                     </div>
                 }
-                detail={<>Configure redirects for old or moved content, more info in the <a className='text-green' href="https://ghost.org/tutorials/implementing-redirects/" rel="noopener noreferrer" target="_blank">docs</a></>}
+                detail={<>Configure redirects for old or moved content, <br /> more info in the <a className='text-green' href="https://ghost.org/tutorials/implementing-redirects/" rel="noopener noreferrer" target="_blank">docs</a></>}
                 title='Redirects'
             />
             <LabItem
