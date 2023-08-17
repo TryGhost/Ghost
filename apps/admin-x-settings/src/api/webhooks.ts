@@ -37,7 +37,7 @@ export const useCreateWebhook = createMutation<WebhooksResponseType, Partial<Web
                 const webhook = newData.webhooks[0];
 
                 if (webhook.integration_id === integration.id) {
-                    return {...integration, webhooks: [...integration.webhooks, webhook]};
+                    return {...integration, webhooks: [...(integration.webhooks || []), webhook]};
                 }
 
                 return integration;
@@ -56,7 +56,7 @@ export const useEditWebhook = createMutation<WebhooksResponseType, Webhook>({
             ...(currentData as IntegrationsResponseType),
             integrations: (currentData as IntegrationsResponseType).integrations.map(integration => ({
                 ...integration,
-                webhooks: integration.webhooks.map(webhook => (
+                webhooks: integration.webhooks?.map(webhook => (
                     webhook.id === newData.webhooks[0].id ? newData.webhooks[0] : webhook
                 ))
             }))
@@ -73,7 +73,7 @@ export const useDeleteWebhook = createMutation<unknown, string>({
             ...(currentData as IntegrationsResponseType),
             integrations: (currentData as IntegrationsResponseType).integrations.map(integration => ({
                 ...integration,
-                webhooks: integration.webhooks.filter(webhook => webhook.id !== id)
+                webhooks: integration.webhooks?.filter(webhook => webhook.id !== id)
             }))
         })
     }
