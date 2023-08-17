@@ -66,6 +66,9 @@ const ZapierModal = NiceModal.create(() => {
 
     return (
         <Modal
+            afterClose={() => {
+                updateRoute('integrations');
+            }}
             cancelLabel=''
             okColor='black'
             okLabel='Close'
@@ -93,15 +96,16 @@ const ZapierModal = NiceModal.create(() => {
             <List className='mt-6'>
                 {zapierTemplates.map(template => (
                     <ListItem
-                        action={<Button color='green' href={template.url} label='Use this Zap' tag='a' target='_blank' link />}
+                        action={<Button className='whitespace-nowrap text-sm font-semibold text-[#FF4A00]' href={template.url} label='Use this Zap' tag='a' target='_blank' link unstyled />}
                         avatar={<>
-                            <img className='h-10 w-10 object-contain' role='presentation' src={`${adminRoot}${template.ghostImage}`} />
-                            <ArrowRightIcon className='h-4 w-4' />
-                            <img className='h-10 w-10 object-contain' role='presentation' src={`${adminRoot}${template.appImage}`} />
+                            <img className='h-8 w-8 object-contain' role='presentation' src={`${adminRoot}${template.ghostImage}`} />
+                            <ArrowRightIcon className='h-3 w-3' />
+                            <img className='h-8 w-8 object-contain' role='presentation' src={`${adminRoot}${template.appImage}`} />
                         </>}
                         bgOnHover={false}
                         className='flex items-center gap-3 py-2'
-                        title={template.title}
+                        title={<span className='text-sm'>{template.title}</span>}
+                        hideActions
                     />
                 ))}
             </List>

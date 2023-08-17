@@ -1,5 +1,6 @@
 import Button from '../../../admin-x-ds/global/Button';
 import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
+import Icon from '../../../admin-x-ds/global/Icon';
 import List from '../../../admin-x-ds/global/List';
 import ListItem from '../../../admin-x-ds/global/ListItem';
 import NiceModal from '@ebay/nice-modal-react';
@@ -17,13 +18,24 @@ import {ReactComponent as ZapierIcon} from '../../../assets/icons/zapier.svg';
 import {useCreateWebhook, useDeleteWebhook, useEditWebhook} from '../../../api/webhooks';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
-const IntegrationItem: React.FC<{icon?: React.ReactNode, title: string, detail: string, action: () => void; disabled?: boolean; testId?: string}> = ({
+interface IntegrationItemProps {
+    icon?: React.ReactNode,
+    title: string,
+    detail: string,
+    action: () => void;
+    disabled?: boolean;
+    testId?: string;
+    custom?: boolean;
+}
+
+const IntegrationItem: React.FC<IntegrationItemProps> = ({
     icon,
     title,
     detail,
     action,
     disabled,
-    testId
+    testId,
+    custom = false
 }) => {
     const {updateRoute} = useRouting();
 
@@ -35,11 +47,16 @@ const IntegrationItem: React.FC<{icon?: React.ReactNode, title: string, detail: 
         }
     };
 
-    return <ListItem
-        action={disabled ?
+    const buttons = custom ?
+        <Button color='red' label='Delete' link onClick={() => {}} />
+        :
+        (disabled ?
             <Button icon='lock-locked' label='Upgrade' link onClick={handleClick} /> :
             <Button color='green' label='Configure' link onClick={handleClick} />
-        }
+        );
+
+    return <ListItem
+        action={buttons}
         avatar={icon}
         className={disabled ? 'opacity-50 saturate-0' : ''}
         detail={detail}
@@ -122,28 +139,47 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
     const {mutateAsync: createWebhook} = useCreateWebhook();
     const {mutateAsync: editWebhook} = useEditWebhook();
     const {mutateAsync: deleteWebhook} = useDeleteWebhook();
+    const {updateRoute} = useRouting();
+
+    const openCustomIntegrationModal = () => {
+        updateRoute('integrations/show/custom/:id');
+    };
 
     return (
         <List>
             {integrations.map(integration => (
-                <IntegrationItem action={() => {
-                    NiceModal.show(ConfirmationModal, {
-                        title: 'TEST API actions',
-                        prompt: <>
+                <IntegrationItem
+                    action={() => {
+                        NiceModal.show(ConfirmationModal, {
+                            title: 'TEST API actions',
+                            prompt: <>
                             Webhooks (will not update until you close and reopen this modal)
-                            <pre><code>{JSON.stringify(integration.webhooks)}</code></pre>
+                                <pre><code>{JSON.stringify(integration.webhooks)}</code></pre>
 
-                            <Button label='Create integration' onClick={() => createIntegration({name: 'Test'})} />
-                            <Button label='Update integration' onClick={() => editIntegration({...integration, name: integration.name + '*'})} />
-                            <Button label='Delete integration' onClick={() => deleteIntegration(integration.id)} />
-                            <Button label='Create webhook' onClick={() => createWebhook({integration_id: integration.id, event: 'post.edited', name: 'Test', target_url: 'https://test.com'})} />
-                            <Button label='Update webhook' onClick={() => editWebhook({...integration.webhooks[0], name: integration.webhooks[0].name + '*'})} />
-                            <Button label='Delete webhook' onClick={() => deleteWebhook(integration.webhooks[0].id)} />
-                        </>,
-                        onOk: modal => modal?.remove()
-                    });
-                }} detail={integration.description || 'No description'} title={integration.name} />)
+                                <Button label='Create integration' onClick={() => createIntegration({name: 'Test'})} />
+                                <Button label='Update integration' onClick={() => editIntegration({...integration, name: integration.name + '*'})} />
+                                <Button label='Delete integration' onClick={() => deleteIntegration(integration.id)} />
+                                <Button label='Create webhook' onClick={() => createWebhook({integration_id: integration.id, event: 'post.edited', name: 'Test', target_url: 'https://test.com'})} />
+                                <Button label='Update webhook' onClick={() => editWebhook({...integration.webhooks[0], name: integration.webhooks[0].name + '*'})} />
+                                <Button label='Delete webhook' onClick={() => deleteWebhook(integration.webhooks[0].id)} />
+                            </>,
+                            onOk: modal => modal?.remove()
+                        });
+                    }}
+                    detail={integration.description || 'No description'}
+                    icon={<Icon className='w-8' name='integration' />}
+                    title={integration.name}
+                    custom
+                />)
             )}
+
+            <IntegrationItem
+                action={openCustomIntegrationModal}
+                detail='This is just a static placeholder to open the custom modal'
+                icon={<Icon className='w-8' name='integration' />} // Should be custom icon when uploaded
+                title='Custom integration modal'
+                custom
+            />
         </List>
     );
 };
@@ -151,6 +187,7 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
 const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [selectedTab, setSelectedTab] = useState<'built-in' | 'custom'>('built-in');
     const {data: {integrations} = {integrations: []}} = useBrowseIntegrations();
+    const {updateRoute} = useRouting();
 
     const tabs = [
         {
@@ -167,7 +204,7 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const buttons = (
         <Button color='green' label='Add custom integration' link={true} onClick={() => {
-            // showInviteModal();
+            updateRoute('integrations/add');
         }} />
     );
 
