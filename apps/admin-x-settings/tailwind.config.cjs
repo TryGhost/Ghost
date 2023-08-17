@@ -160,6 +160,14 @@ module.exports = {
                     '100%': {
                         transform: 'translateY(0px)'
                     }
+                },
+                modalInReverse: {
+                    '0%': {
+                        transform: 'translateY(-32px)'
+                    },
+                    '100%': {
+                        transform: 'translateY(0px)'
+                    }
                 }
             },
             animation: {
@@ -170,7 +178,8 @@ module.exports = {
                 'fade-out': 'fadeOut 0.15s ease forwards',
                 'setting-highlight-fade-out': 'fadeOut 0.2s 1.4s ease forwards',
                 'modal-backdrop-in': 'fadeIn 0.15s ease forwards',
-                'modal-in': 'modalIn 0.25s ease forwards'
+                'modal-in': 'modalIn 0.25s ease forwards',
+                'modal-in-reverse': 'modalInReverse 0.25s ease forwards'
             },
             spacing: {
                 px: '1px',

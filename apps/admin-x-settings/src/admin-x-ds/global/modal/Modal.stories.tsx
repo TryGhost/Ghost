@@ -186,3 +186,16 @@ export const Dirty: Story = {
         children: <p>Simulates if there were unsaved changes of a form. Click on Cancel</p>
     }
 };
+
+export const FormSheet: Story = {
+    args: {
+        onOk: () => {
+            alert('Clicked OK!');
+        },
+        onCancel: undefined,
+        size: 'sm',
+        title: 'Form sheet',
+        formSheet: true,
+        children: <p>Slightly differently styled modal that can be used to display small forms <em>inside other modals</em>. Use it sparingly!</p>
+    }
+};

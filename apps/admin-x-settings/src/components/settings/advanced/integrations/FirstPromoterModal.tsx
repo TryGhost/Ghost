@@ -13,7 +13,7 @@ import {useGlobalData} from '../../../providers/GlobalDataProvider';
 const FirstpromoterModal = NiceModal.create(() => {
     const {updateRoute} = useRouting();
     const modal = NiceModal.useModal();
-    
+
     const {settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
 
@@ -48,9 +48,8 @@ const FirstpromoterModal = NiceModal.create(() => {
             afterClose={() => {
                 updateRoute('integrations');
             }}
-            cancelLabel=''
             okColor='black'
-            okLabel='Save'
+            okLabel='Save & close'
             testId='firstpromoter-modal'
             title=''
             onOk={async () => {

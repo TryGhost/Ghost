@@ -38,9 +38,8 @@ const AmpModal = NiceModal.create(() => {
             afterClose={() => {
                 updateRoute('integrations');
             }}
-            cancelLabel=''
             okColor='black'
-            okLabel='Save'
+            okLabel='Save & close'
             testId='amp-modal'
             title=''
             onOk={async () => {

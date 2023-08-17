@@ -3,6 +3,7 @@ import type {Meta, StoryObj} from '@storybook/react';
 
 import Table from './Table';
 import TableCell from './TableCell';
+import TableHead from './TableHead';
 import TableRow from './TableRow';
 
 const meta = {
@@ -13,6 +14,10 @@ const meta = {
 
 const tableRows = (
     <>
+        <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Email</TableHead>
+        </TableRow>
         <TableRow>
             <TableCell>Jamie Larson</TableCell>
             <TableCell>jamie@example.com</TableCell>

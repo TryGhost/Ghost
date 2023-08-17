@@ -1,6 +1,8 @@
+import AddIntegrationModal from '../settings/advanced/integrations/AddIntegrationModal';
 import AddNewsletterModal from '../settings/email/newsletters/AddNewsletterModal';
 import AmpModal from '../settings/advanced/integrations/AmpModal';
 import ChangeThemeModal from '../settings/site/ThemeModal';
+import CustomIntegrationModal from '../settings/advanced/integrations/CustomIntegrationModal';
 import DesignModal from '../settings/site/DesignModal';
 import FirstpromoterModal from '../settings/advanced/integrations/FirstPromoterModal';
 import HistoryModal from '../settings/advanced/HistoryModal';
@@ -120,6 +122,10 @@ const handleNavigation = (scroll: boolean = true) => {
             NiceModal.show(FirstpromoterModal);
         } else if (pathName === 'integrations/pintura') {
             NiceModal.show(PinturaModal);
+        } else if (pathName === 'integrations/add') {
+            NiceModal.show(AddIntegrationModal);
+        } else if (pathName === 'integrations/show/custom/:id') { // TODO: move this to modalRoutes
+            NiceModal.show(CustomIntegrationModal);
         }
 
         if (scroll) {

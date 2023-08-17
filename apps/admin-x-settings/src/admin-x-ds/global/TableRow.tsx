@@ -28,7 +28,7 @@ const TableRow: React.FC<TableRowProps> = ({id, action, hideActions, className, 
         'group',
         bgOnHover && 'hover:bg-gradient-to-r hover:from-white hover:to-grey-50',
         onClick && 'cursor-pointer',
-        separator ? 'border-b border-grey-100 last-of-type:border-b-transparent hover:border-grey-200' : 'border-y border-transparent hover:border-grey-200 first-of-type:hover:border-t-transparent',
+        separator ? 'border-b border-grey-100 last-of-type:border-b-transparent hover:border-grey-200' : 'border-y border-transparent first-of-type:hover:border-t-transparent',
         className
     );
 
