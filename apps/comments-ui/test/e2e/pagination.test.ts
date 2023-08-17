@@ -113,5 +113,24 @@ test.describe('Pagination', async () => {
         await expect(frame.getByText('This is reply 3')).toBeVisible();
         await expect(frame.getByText('This is reply 4')).toBeVisible();
     });
+
+    test('Can handle comments with deleted member', async ({page}) => {
+        const mockedApi = new MockedApi({});
+
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>',
+            member: null
+        });
+
+        const {frame} = await initialize({
+            mockedApi,
+            page,
+            publication: 'Publisher Weekly'
+        });
+
+        await expect(frame.getByTestId('comment-component')).toHaveCount(1);
+
+        await expect(frame.getByText('This is comment 1')).toBeVisible();
+    });
 });
 
