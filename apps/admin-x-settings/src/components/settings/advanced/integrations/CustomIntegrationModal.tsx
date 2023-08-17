@@ -33,8 +33,9 @@ const CustomIntegrationModal: React.FC<CustomIntegrationModalProps> = ({integrat
         }
     });
 
-    const adminApiKey = integration.api_keys?.find(key => key.type === 'admin');
-    const contentApiKey = integration.api_keys?.find(key => key.type === 'content');
+    // NiceModal doesn't re-render in response to props updates, so we need to manage updated state here
+    const adminApiKey = formState.api_keys?.find(key => key.type === 'admin');
+    const contentApiKey = formState.api_keys?.find(key => key.type === 'content');
 
     const [adminKeyRegenerated, setAdminKeyRegenerated] = useState(false);
     const [contentKeyRegenerated, setContentKeyRegenerated] = useState(false);
@@ -49,12 +50,18 @@ const CustomIntegrationModal: React.FC<CustomIntegrationModalProps> = ({integrat
     const handleRegenerate = (apiKey: APIKey, setRegenerated: (value: boolean) => void) => {
         setRegenerated(false);
 
+        const name = apiKey.type === 'content' ? 'Content' : 'Admin';
+
         NiceModal.show(ConfirmationModal, {
-            title: 'Regenerate Admin API Key',
-            prompt: 'You will need to locate the Ghost App within your Zapier account and click on "Reconnect" to enter the new Admin API Key.',
-            okLabel: 'Regenerate Admin API Key',
+            title: `Regenerate ${name} API Key`,
+            prompt: `You can regenerate ${name} API Key any time, but any scripts or applications using it will need to be updated.`,
+            okLabel: `Regenerate ${name} API Key`,
             onOk: async (confirmModal) => {
-                await refreshAPIKey({integrationId: integration.id, apiKeyId: apiKey.id});
+                const data = await refreshAPIKey({integrationId: integration.id, apiKeyId: apiKey.id});
+                updateForm(state => ({
+                    ...state,
+                    api_keys: data.integrations[0].api_keys
+                }));
                 setRegenerated(true);
                 confirmModal?.remove();
             }
