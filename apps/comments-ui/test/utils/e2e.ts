@@ -1,9 +1,16 @@
 import {E2E_PORT} from '../../playwright.config';
 import {Locator, Page} from '@playwright/test';
 import {MockedApi} from './MockedApi';
+import {expect} from '@playwright/test';
 
 export const MOCKED_SITE_URL = 'https://localhost:1234';
 export {MockedApi};
+
+export async function waitEditorFocused(editor: Locator) {
+    // Wait for focused
+    const internalEditor = editor.getByTestId('editor');
+    await expect(internalEditor).toBeFocused();
+}
 
 function escapeHtml(unsafe: string) {
     return unsafe

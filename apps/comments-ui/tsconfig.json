@@ -15,9 +15,6 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
 
-    /* Temporary */
-    "allowJs": true,
-
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,

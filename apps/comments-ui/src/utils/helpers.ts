@@ -1,30 +1,4 @@
-import {Comment, PopupNotification} from '../AppContext';
-
-export const createPopupNotification = ({type, status, autoHide, duration = 2600, closeable, state, message, meta = {}}: {
-    type: string,
-    status: string,
-    autoHide: boolean,
-    duration?: number,
-    closeable: boolean,
-    state: any,
-    message: string,
-    meta?: any
-}): PopupNotification => {
-    let count = 0;
-    if (state && state.popupNotification) {
-        count = (state.popupNotification.count || 0) + 1;
-    }
-    return {
-        type,
-        status,
-        autoHide,
-        closeable,
-        duration,
-        meta,
-        message,
-        count
-    };
-};
+import {Comment} from '../AppContext';
 
 export function formatNumber(number: number): string {
     if (number !== 0 && !number) {
