@@ -1,5 +1,6 @@
 import Button from '../../../admin-x-ds/global/Button';
 import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
+import CustomIntegrationModal from './integrations/CustomIntegrationModal';
 import Icon from '../../../admin-x-ds/global/Icon';
 import List from '../../../admin-x-ds/global/List';
 import ListItem from '../../../admin-x-ds/global/ListItem';
@@ -7,15 +8,17 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
+import useDetailModalRoute from '../../../hooks/useDetailModalRoute';
 import useRouting from '../../../hooks/useRouting';
 import {ReactComponent as AmpIcon} from '../../../assets/icons/amp.svg';
 import {ReactComponent as FirstPromoterIcon} from '../../../assets/icons/firstpromoter.svg';
-import {Integration, useBrowseIntegrations, useCreateIntegration, useDeleteIntegration, useEditIntegration} from '../../../api/integrations';
+import {Integration, useBrowseIntegrations, useDeleteIntegration} from '../../../api/integrations';
 import {ReactComponent as PinturaIcon} from '../../../assets/icons/pintura.svg';
 import {ReactComponent as SlackIcon} from '../../../assets/icons/slack.svg';
 import {ReactComponent as UnsplashIcon} from '../../../assets/icons/unsplash.svg';
 import {ReactComponent as ZapierIcon} from '../../../assets/icons/zapier.svg';
-import {useCreateWebhook, useDeleteWebhook, useEditWebhook} from '../../../api/webhooks';
+import {modalRoutes} from '../../providers/RoutingProvider';
+import {showToast} from '../../../admin-x-ds/global/Toast';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 interface IntegrationItemProps {
@@ -23,6 +26,7 @@ interface IntegrationItemProps {
     title: string,
     detail: string,
     action: () => void;
+    onDelete?: () => void;
     disabled?: boolean;
     testId?: string;
     custom?: boolean;
@@ -33,6 +37,7 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
     title,
     detail,
     action,
+    onDelete,
     disabled,
     testId,
     custom = false
@@ -48,7 +53,7 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
     };
 
     const buttons = custom ?
-        <Button color='red' label='Delete' link onClick={() => {}} />
+        <Button color='red' label='Delete' link onClick={onDelete} />
         :
         (disabled ?
             <Button icon='lock-locked' label='Upgrade' link onClick={handleClick} /> :
@@ -133,53 +138,40 @@ const BuiltInIntegrations: React.FC = () => {
 };
 
 const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integrations}) => {
-    const {mutateAsync: createIntegration} = useCreateIntegration();
-    const {mutateAsync: editIntegration} = useEditIntegration();
-    const {mutateAsync: deleteIntegration} = useDeleteIntegration();
-    const {mutateAsync: createWebhook} = useCreateWebhook();
-    const {mutateAsync: editWebhook} = useEditWebhook();
-    const {mutateAsync: deleteWebhook} = useDeleteWebhook();
     const {updateRoute} = useRouting();
-
-    const openCustomIntegrationModal = () => {
-        updateRoute('integrations/show/custom/:id');
-    };
+    const {mutateAsync: deleteIntegration} = useDeleteIntegration();
 
     return (
         <List>
             {integrations.map(integration => (
                 <IntegrationItem
-                    action={() => {
-                        NiceModal.show(ConfirmationModal, {
-                            title: 'TEST API actions',
-                            prompt: <>
-                            Webhooks (will not update until you close and reopen this modal)
-                                <pre><code>{JSON.stringify(integration.webhooks)}</code></pre>
-
-                                <Button label='Create integration' onClick={() => createIntegration({name: 'Test'})} />
-                                <Button label='Update integration' onClick={() => editIntegration({...integration, name: integration.name + '*'})} />
-                                <Button label='Delete integration' onClick={() => deleteIntegration(integration.id)} />
-                                <Button label='Create webhook' onClick={() => createWebhook({integration_id: integration.id, event: 'post.edited', name: 'Test', target_url: 'https://test.com'})} />
-                                <Button label='Update webhook' onClick={() => editWebhook({...integration.webhooks[0], name: integration.webhooks[0].name + '*'})} />
-                                <Button label='Delete webhook' onClick={() => deleteWebhook(integration.webhooks[0].id)} />
-                            </>,
-                            onOk: modal => modal?.remove()
-                        });
-                    }}
+                    action={() => updateRoute({route: modalRoutes.showIntegration, params: {id: integration.id}})}
                     detail={integration.description || 'No description'}
-                    icon={<Icon className='w-8' name='integration' />}
+                    icon={
+                        integration.icon_image ?
+                            <img className='h-8 w-8 object-cover' role='presentation' src={integration.icon_image} /> :
+                            <Icon className='w-8' name='integration' />
+                    }
                     title={integration.name}
                     custom
+                    onDelete={() => {
+                        NiceModal.show(ConfirmationModal, {
+                            title: 'Are you sure?',
+                            prompt: 'Deleting this integration will remove all webhooks and api keys associated with it.',
+                            okColor: 'red',
+                            okLabel: 'Delete Integration',
+                            onOk: async (confirmModal) => {
+                                await deleteIntegration(integration.id);
+                                confirmModal?.remove();
+                                showToast({
+                                    message: 'Integration deleted',
+                                    type: 'success'
+                                });
+                            }
+                        });
+                    }}
                 />)
             )}
-
-            <IntegrationItem
-                action={openCustomIntegrationModal}
-                detail='This is just a static placeholder to open the custom modal'
-                icon={<Icon className='w-8' name='integration' />} // Should be custom icon when uploaded
-                title='Custom integration modal'
-                custom
-            />
         </List>
     );
 };
@@ -188,6 +180,12 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [selectedTab, setSelectedTab] = useState<'built-in' | 'custom'>('built-in');
     const {data: {integrations} = {integrations: []}} = useBrowseIntegrations();
     const {updateRoute} = useRouting();
+
+    useDetailModalRoute({
+        route: modalRoutes.showIntegration,
+        items: integrations,
+        showModal: integration => NiceModal.show(CustomIntegrationModal, {integration})
+    });
 
     const tabs = [
         {
@@ -205,6 +203,7 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const buttons = (
         <Button color='green' label='Add custom integration' link={true} onClick={() => {
             updateRoute('integrations/add');
+            setSelectedTab('custom');
         }} />
     );
 
