@@ -12,12 +12,15 @@ export default (function viteConfig({mode}) {
     const env = loadEnv(mode, process.cwd());
     process.env = {...process.env, ...env};
 
-    return defineConfig({
-        plugins: [
-            svgr(),
-            react(),
+    const plugins = [
+        svgr(),
+        react()
+    ];
 
-            // Keep sentryVitePlugin as the last plugin
+    // Keep sentryVitePlugin as the last plugin
+    // only include when we have the required details to keep local dev less noisy
+    if (process.env.VITE_SENTRY_ORG) {
+        plugins.push(
             sentryVitePlugin({
                 org: process.env.VITE_SENTRY_ORG,
                 project: process.env.VITE_SENTRY_PROJECT,
@@ -32,9 +35,15 @@ export default (function viteConfig({mode}) {
                 // and therefore our commonJS dependencies such as `kg-markdown-html-renderer` are not yet transpiled
                 release: {
                     inject: false
-                }
+                },
+
+                telemetry: false
             })
-        ],
+        );
+    }
+
+    return defineConfig({
+        plugins,
         define: {
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
             'process.env.VITEST_SEGFAULT_RETRY': 3,
