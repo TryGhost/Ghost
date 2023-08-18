@@ -8,16 +8,17 @@ const assert = require('assert/strict');
 const fs = require('fs-extra');
 const path = require('path');
 const sinon = require('sinon');
-const MembersCSVImporter = require('..');
+const MembersCSVImporter = require('../lib/MembersCSVImporter');
 
 const csvPath = path.join(__dirname, '/fixtures/');
 
-describe('Importer', function () {
+describe('MembersCSVImporter', function () {
     let fsWriteSpy;
     let memberCreateStub;
     let knexStub;
     let sendEmailStub;
     let membersRepositoryStub;
+    let stripeUtilsStub;
     let defaultTierId;
 
     const defaultAllowedFields = {
@@ -28,7 +29,8 @@ describe('Importer', function () {
         created_at: 'created_at',
         complimentary_plan: 'complimentary_plan',
         stripe_customer_id: 'stripe_customer_id',
-        labels: 'labels'
+        labels: 'labels',
+        import_tier: 'import_tier'
     };
 
     beforeEach(function () {
@@ -45,7 +47,7 @@ describe('Importer', function () {
         sinon.restore();
     });
 
-    const buildMockImporterInstance = () => {
+    const buildMockImporterInstance = (deps = {}) => {
         defaultTierId = new ObjectID();
         const defaultTierDummy = new Tier({
             id: defaultTierId
@@ -63,15 +65,17 @@ describe('Importer', function () {
             linkStripeCustomer: sinon.stub().resolves(null),
             getCustomerIdByEmail: sinon.stub().resolves('cus_mock_123456')
         };
-
         knexStub = {
             transaction: sinon.stub().resolves({
                 rollback: () => {},
                 commit: () => {}
             })
         };
-
         sendEmailStub = sinon.stub();
+        stripeUtilsStub = {
+            forceStripeSubscriptionToProduct: sinon.stub().resolves({}),
+            archivePrice: sinon.stub().resolves()
+        };
 
         return new MembersCSVImporter({
             storagePath: csvPath,
@@ -87,7 +91,9 @@ describe('Importer', function () {
             addJob: sinon.stub(),
             knex: knexStub,
             urlFor: sinon.stub(),
-            context: {importer: true}
+            context: {importer: true},
+            stripeUtils: stripeUtilsStub,
+            ...deps
         });
     };
 
@@ -295,7 +301,7 @@ describe('Importer', function () {
         it('performs import on a single csv file', async function () {
             const importer = buildMockImporterInstance();
 
-            const result = await importer.perform(`${csvPath}/single-column-with-header.csv`, defaultAllowedFields);
+            const result = await importer.perform(`${csvPath}/single-column-with-header.csv`);
 
             assert.equal(membersRepositoryStub.create.args[0][0].email, 'jbloggs@example.com');
             assert.deepEqual(membersRepositoryStub.create.args[0][0].labels, []);
@@ -383,7 +389,7 @@ describe('Importer', function () {
                 .withArgs({email: 'jbloggs@example.com'})
                 .resolves(member);
 
-            await importer.perform(`${csvPath}/subscribed-to-emails-header.csv`, defaultAllowedFields);
+            await importer.perform(`${csvPath}/subscribed-to-emails-header.csv`);
 
             assert.deepEqual(membersRepositoryStub.update.args[0][0].newsletters, newsletters);
         });
@@ -404,7 +410,7 @@ describe('Importer', function () {
                 .withArgs({email: 'jbloggs@example.com'})
                 .resolves(member);
 
-            await importer.perform(`${csvPath}/subscribed-to-emails-header.csv`, defaultAllowedFields);
+            await importer.perform(`${csvPath}/subscribed-to-emails-header.csv`);
 
             assert.deepEqual(membersRepositoryStub.update.args[0][0].subscribed, false);
         });
@@ -435,10 +441,144 @@ describe('Importer', function () {
                 .withArgs({email: 'test@example.com'})
                 .resolves(member);
 
-            await importer.perform(`${csvPath}/subscribed-to-emails-header.csv`, defaultAllowedFields);
+            await importer.perform(`${csvPath}/subscribed-to-emails-header.csv`);
 
             assert.equal(membersRepositoryStub.update.args[0][0].subscribed, false);
             assert.equal(membersRepositoryStub.update.args[0][0].newsletters, undefined);
+        });
+
+        it('does not import a free member with an import tier', async function () {
+            const tier = {
+                id: {
+                    toString: () => 'abc123'
+                },
+                name: 'Premium Tier'
+            };
+            const getTierByNameStub = sinon.stub();
+
+            getTierByNameStub.withArgs(tier.name).resolves(tier);
+
+            const importer = buildMockImporterInstance({
+                getTierByName: getTierByNameStub
+            });
+
+            const result = await importer.perform(`${csvPath}/free-member-import-tier.csv`);
+
+            assert.equal(result.total, 1);
+            assert.equal(result.imported, 0);
+            assert.equal(result.errors.length, 1);
+            assert.equal(result.errors[0].error, 'You cannot import a free member with a specified tier.');
+        });
+
+        it('imports a comped member with an import tier', async function () {
+            const tier = {
+                id: {
+                    toString: () => 'abc123'
+                },
+                name: 'Premium Tier'
+            };
+            const getTierByNameStub = sinon.stub();
+
+            getTierByNameStub.withArgs(tier.name).resolves(tier);
+
+            const importer = buildMockImporterInstance({
+                getTierByName: getTierByNameStub
+            });
+
+            const result = await importer.perform(`${csvPath}/comped-member-import-tier.csv`);
+
+            assert.equal(result.total, 1);
+            assert.equal(result.imported, 1);
+            assert.equal(result.errors.length, 0);
+            assert.ok(membersRepositoryStub.update.calledOnce);
+            assert.deepEqual(
+                membersRepositoryStub.update.getCall(0).args[0],
+                {products: [{id: tier.id.toString()}]}
+            );
+        });
+
+        it('does not import a comped member with an invalid import tier', async function () {
+            const tier = {
+                id: {
+                    toString: () => 'abc123'
+                },
+                name: 'Premium Tier'
+            };
+            const getTierByNameStub = sinon.stub();
+
+            getTierByNameStub.withArgs(tier.name).resolves(tier);
+
+            const importer = buildMockImporterInstance({
+                getTierByName: getTierByNameStub
+            });
+
+            const result = await importer.perform(`${csvPath}/comped-member-invalid-import-tier.csv`);
+
+            assert.equal(result.total, 1);
+            assert.equal(result.imported, 0);
+            assert.equal(result.errors.length, 1);
+            assert.equal(result.errors[0].error, '"Invalid Tier" is not a valid tier.');
+        });
+
+        it('imports a paid member with an import tier', async function () {
+            const tier = {
+                id: {
+                    toString: () => 'abc123'
+                },
+                name: 'Premium Tier'
+            };
+            const getTierByNameStub = sinon.stub();
+
+            getTierByNameStub.withArgs(tier.name).resolves(tier);
+
+            const importer = buildMockImporterInstance({
+                getTierByName: getTierByNameStub
+            });
+
+            const result = await importer.perform(`${csvPath}/paid-member-import-tier.csv`);
+
+            assert.equal(result.total, 1);
+            assert.equal(result.imported, 1);
+            assert.equal(result.errors.length, 0);
+            assert.ok(stripeUtilsStub.forceStripeSubscriptionToProduct.calledOnce);
+            assert.deepEqual(
+                stripeUtilsStub.forceStripeSubscriptionToProduct.getCall(0).args[0],
+                {
+                    customer_id: 'cus_MdR9tqW6bAreiq',
+                    product_id: tier.id.toString()
+                }
+            );
+        });
+
+        it('archives any Stripe prices created due to an import tier being specified', async function () {
+            const tier = {
+                id: {
+                    toString: () => 'abc123'
+                },
+                name: 'Premium Tier'
+            };
+            const getTierByNameStub = sinon.stub();
+
+            getTierByNameStub.withArgs(tier.name).resolves(tier);
+
+            const newStripePriceId = 'price_123';
+
+            const importer = buildMockImporterInstance({
+                getTierByName: getTierByNameStub
+            });
+
+            stripeUtilsStub.forceStripeSubscriptionToProduct.resolves({
+                isNewStripePrice: true,
+                stripePriceId: newStripePriceId
+            });
+
+            const result = await importer.perform(`${csvPath}/paid-member-import-tier.csv`);
+
+            assert.equal(result.total, 1);
+            assert.equal(result.imported, 1);
+            assert.equal(result.errors.length, 0);
+            assert.ok(stripeUtilsStub.archivePrice.calledOnce);
+            assert.ok(stripeUtilsStub.archivePrice.calledWith(newStripePriceId));
         });
     });
 });
