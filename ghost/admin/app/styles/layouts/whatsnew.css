@@ -843,6 +843,10 @@
     justify-content: flex-start;
 }
 
+.gh-whats-new .kg-button-card.kg-align-right {
+    justify-content: flex-end;
+}
+
 .gh-whats-new .kg-button-card a.kg-btn {
     display: flex;
     position: static;
