@@ -48,6 +48,7 @@ const Sidebar: React.FC = () => {
                 <SettingNavItem navid='portal' title="Portal" onClick={handleSectionClick} />
                 <SettingNavItem navid='access' title="Access" onClick={handleSectionClick} />
                 <SettingNavItem navid='tiers' title="Tiers" onClick={handleSectionClick} />
+                <SettingNavItem navid='tips-or-donations' title="Tips or donations" onClick={handleSectionClick} />
                 <SettingNavItem navid='analytics' title="Analytics" onClick={handleSectionClick} />
             </SettingNavSection>
 
