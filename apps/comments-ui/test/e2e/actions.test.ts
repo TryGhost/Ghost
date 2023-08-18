@@ -1,4 +1,4 @@
-import {MockedApi, initialize} from '../utils/e2e';
+import {MockedApi, initialize, waitEditorFocused} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Actions', async () => {
@@ -90,6 +90,11 @@ test.describe('Actions', async () => {
         await replyButton.click();
         const editor = frame.getByTestId('form-editor');
         await expect(editor).toBeVisible();
+
+        await page.pause();
+
+        // Wait for focused
+        await waitEditorFocused(editor);
 
         // Type some text
         await page.keyboard.type('This is a reply 123');
