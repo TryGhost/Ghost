@@ -25,6 +25,7 @@ test.describe('Pintura integration', async () => {
         await expect(pinturaModal.getByText('Upload Pintura script')).not.toBeVisible();
         await expect(pinturaModal.getByText('Upload Pintura styles')).not.toBeVisible();
 
+        // we want it true, so click again
         await pinturaToggle.click();
 
         await page.getByRole('button', {name: 'Save'}).click();
@@ -56,10 +57,12 @@ test.describe('Pintura integration', async () => {
         await pinturaToggle.click();
         const jsFileChooserPromise = page.waitForEvent('filechooser');
 
-        const jsUploadButton = await pinturaModal.getByRole('button', {name: 'Upload'}).first();
+        const jsUploadButton = pinturaModal.getByRole('button', {name: 'Upload'}).first();
         await jsUploadButton.click();
         const jsFileChooser = await jsFileChooserPromise;
         await jsFileChooser.setFiles(`${__dirname}/../../../utils/files/pintura-umd.js`);
+
+        await expect(jsUploadButton).toBeEnabled();
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
                 {key: 'pintura_js_url', value: 'http://example.com/pintura-umd.js'}
@@ -87,10 +90,11 @@ test.describe('Pintura integration', async () => {
         await pinturaToggle.click();
         const cssFileChooserPromise = page.waitForEvent('filechooser');
 
-        const cssUploadButton = await pinturaModal.getByRole('button', {name: 'Upload'}).last();
+        const cssUploadButton = pinturaModal.getByRole('button', {name: 'Upload'}).last();
         await cssUploadButton.click();
         const cssFileChooser = await cssFileChooserPromise;
         await cssFileChooser.setFiles(`${__dirname}/../../../utils/files/pintura.css`);
+        await expect(cssUploadButton).toBeEnabled();
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
                 {key: 'pintura_css_url', value: 'http://example.com/pintura.css'}
