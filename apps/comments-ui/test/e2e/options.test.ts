@@ -6,13 +6,13 @@ function rgbToHsl(r: number, g: number, b: number) {
     g /= 255;
     b /= 255;
 
-    var max = Math.max(r, g, b), min = Math.min(r, g, b);
-    var h, s, l = (max + min) / 2;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
 
     if (max === min) {
         h = s = 0; // achromatic
     } else {
-        var d = max - min;
+        const d = max - min;
         s = Math.round(l > 0.5 ? d / (2 - max - min) : d / (max + min) * 10) / 10;
 
         switch (max) {
