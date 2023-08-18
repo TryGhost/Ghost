@@ -83,6 +83,7 @@ const PinturaModal = NiceModal.create(() => {
             cancelLabel=''
             okColor='black'
             okLabel='Save'
+            testId='pintura-modal'
             title=''
             onOk={async () => {
                 modal.remove();
