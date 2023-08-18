@@ -193,7 +193,6 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             key: 'ok-modal',
             label: okLabel,
             color: okColor,
-            className: 'min-w-[80px]',
             onClick: onOk,
             disabled: buttonsDisabled
         });
