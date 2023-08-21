@@ -37,6 +37,7 @@ export interface ModalProps {
     scrolling?: boolean;
     dirty?: boolean;
     animate?: boolean;
+    formSheet?: boolean;
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -60,7 +61,8 @@ const Modal: React.FC<ModalProps> = ({
     stickyFooter = false,
     scrolling = true,
     dirty = false,
-    animate = true
+    animate = true,
+    formSheet = false
 }) => {
     const modal = useModal();
     const {setGlobalDirtyState} = useGlobalDirtyState();
@@ -126,8 +128,10 @@ const Modal: React.FC<ModalProps> = ({
     }
 
     let modalClasses = clsx(
-        'relative z-50 mx-auto flex max-h-[100%] w-full flex-col justify-between overflow-x-hidden rounded bg-white shadow-xl',
-        animate && 'animate-modal-in',
+        'relative z-50 mx-auto flex max-h-[100%] w-full flex-col justify-between overflow-x-hidden rounded bg-white',
+        formSheet ? 'shadow-md' : 'shadow-xl',
+        (animate && !formSheet) && 'animate-modal-in',
+        formSheet && 'animate-modal-in-reverse',
         scrolling ? 'overflow-y-auto' : 'overflow-y-hidden'
     );
 
@@ -237,7 +241,8 @@ const Modal: React.FC<ModalProps> = ({
         <div className={backdropClasses} id='modal-backdrop' onClick={handleBackdropClick}>
             <div className={clsx(
                 'pointer-events-none fixed inset-0 z-0',
-                backDrop && 'bg-[rgba(98,109,121,0.2)] backdrop-blur-[3px]'
+                (backDrop && !formSheet) && 'bg-[rgba(98,109,121,0.2)] backdrop-blur-[3px]',
+                formSheet && 'bg-[rgba(98,109,121,0.05)]'
             )}></div>
             <section className={modalClasses} data-testid={testId} style={modalStyles}>
                 <div className={contentClasses}>

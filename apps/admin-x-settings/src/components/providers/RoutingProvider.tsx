@@ -1,3 +1,4 @@
+import AddIntegrationModal from '../settings/advanced/integrations/AddIntegrationModal';
 import AddNewsletterModal from '../settings/email/newsletters/AddNewsletterModal';
 import AmpModal from '../settings/advanced/integrations/AmpModal';
 import ChangeThemeModal from '../settings/site/ThemeModal';
@@ -49,7 +50,7 @@ export const RouteContext = createContext<RoutingContextData>({
 });
 
 // These routes need to be handled by a SettingGroup (or other component) with the
-// useHandleRoute hook. The idea is that those components will open a modal after
+// useDetailModalRoute hook. The idea is that those components will open a modal after
 // loading any data required for the route
 export const modalRoutes = {
     showUser: 'users/show/:slug',
@@ -120,6 +121,8 @@ const handleNavigation = (scroll: boolean = true) => {
             NiceModal.show(FirstpromoterModal);
         } else if (pathName === 'integrations/pintura') {
             NiceModal.show(PinturaModal);
+        } else if (pathName === 'integrations/add') {
+            NiceModal.show(AddIntegrationModal);
         }
 
         if (scroll) {

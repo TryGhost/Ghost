@@ -27,8 +27,8 @@ export type Integration = {
     description: string;
     created_at: string;
     updated_at: string;
-    api_keys: APIKey[];
-    webhooks: IntegrationWebhook[];
+    api_keys?: APIKey[];
+    webhooks?: IntegrationWebhook[];
 }
 
 export interface IntegrationsResponseType {

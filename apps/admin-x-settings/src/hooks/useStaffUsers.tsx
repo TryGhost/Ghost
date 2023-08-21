@@ -12,6 +12,7 @@ export type UsersHook = {
     authorUsers: User[];
     contributorUsers: User[];
     currentUser: User|null;
+    isLoading: boolean;
 };
 
 function getUsersByRole(users: User[], role: string): User[] {
@@ -28,9 +29,9 @@ function getOwnerUser(users: User[]): User {
 
 const useStaffUsers = (): UsersHook => {
     const {currentUser} = useGlobalData();
-    const {data: {users} = {users: []}} = useBrowseUsers();
-    const {data: {invites} = {invites: []}} = useBrowseInvites();
-    const {data: {roles} = {}} = useBrowseRoles();
+    const {data: {users} = {users: []}, isLoading: usersLoading} = useBrowseUsers();
+    const {data: {invites} = {invites: []}, isLoading: invitesLoading} = useBrowseInvites();
+    const {data: {roles} = {}, isLoading: rolesLoading} = useBrowseRoles();
 
     const ownerUser = getOwnerUser(users);
     const adminUsers = getUsersByRole(users, 'Administrator');
@@ -55,7 +56,8 @@ const useStaffUsers = (): UsersHook => {
         authorUsers,
         contributorUsers,
         currentUser,
-        invites: mappedInvites
+        invites: mappedInvites,
+        isLoading: usersLoading || invitesLoading || rolesLoading
     };
 };
 

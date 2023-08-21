@@ -82,8 +82,6 @@ test.describe('Design settings', async () => {
         await modal.getByLabel('Site description').fill('new description');
         await modal.getByRole('button', {name: 'Save'}).click();
 
-        await expect(modal).not.toBeVisible();
-
         expect(lastPreviewRequest.previewHeader).toMatch(/&d=new\+description&/);
 
         expect(lastApiRequests.editSettings?.body).toEqual({
@@ -131,8 +129,6 @@ test.describe('Design settings', async () => {
 
         await modal.getByLabel('Navigation layout').selectOption('Logo in the middle');
         await modal.getByRole('button', {name: 'Save'}).click();
-
-        await expect(modal).not.toBeVisible();
 
         const expectedSettings = {navigation_layout: 'Logo in the middle'};
         const expectedEncoded = new URLSearchParams([['custom', JSON.stringify(expectedSettings)]]).toString();

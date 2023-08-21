@@ -136,6 +136,30 @@ describe('Portal Data links:', () => {
             const signupTitle = within(popupFrame.contentDocument).queryByText(/already a member/i);
             expect(signupTitle).toBeInTheDocument();
         });
+
+        test('opens portal signup page with free plan even if free plan is hidden', async () => {
+            window.location.hash = '#/portal/signup/free';
+            let {
+                popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: FixtureSite.multipleTiers.onlyPaidPlans,
+                member: null
+            });
+            expect(triggerButtonFrame).toBeInTheDocument();
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            const popupIframeDocument = popupFrame.contentDocument;
+            const emailInput = within(popupIframeDocument).getByLabelText(/email/i);
+            const nameInput = within(popupIframeDocument).getByLabelText(/name/i);
+            const submitButton = within(popupIframeDocument).getByRole('button', {name: 'Sign up'});
+            const signinButton = within(popupIframeDocument).getByRole('button', {name: 'Sign in'});
+            expect(popupFrame).toBeInTheDocument();
+            expect(emailInput).toBeInTheDocument();
+            expect(nameInput).toBeInTheDocument();
+            expect(submitButton).toBeInTheDocument();
+            expect(signinButton).toBeInTheDocument();
+            const signupTitle = within(popupFrame.contentDocument).queryByText(/already a member/i);
+            expect(signupTitle).toBeInTheDocument();
+        });
     });
 
     describe('#/portal/account', () => {
