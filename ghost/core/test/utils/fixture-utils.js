@@ -487,6 +487,13 @@ const fixtures = {
         return models.Product.add(hiddenTier, context.internal);
     },
 
+    insertExtraTiers: async function insertExtraTiers() {
+        const extraTier = DataGenerator.forKnex.createProduct({});
+        const extraTier2 = DataGenerator.forKnex.createProduct({slug: 'silver', name: 'Silver'});
+        await models.Product.add(extraTier, context.internal);
+        await models.Product.add(extraTier2, context.internal);
+    },
+
     insertProducts: async function insertProducts() {
         let coreProductFixtures = fixtureManager.findModelFixtures('Product').entries;
         await Promise.all(coreProductFixtures.map(async (product) => {
@@ -821,6 +828,9 @@ const toDoList = {
     },
     custom_theme_settings: function insertCustomThemeSettings() {
         return fixtures.insertCustomThemeSettings();
+    },
+    'tiers:extra': function insertExtraTiers() {
+        return fixtures.insertExtraTiers();
     },
     'tiers:archived': function insertArchivedTiers() {
         return fixtures.insertArchivedTiers();
