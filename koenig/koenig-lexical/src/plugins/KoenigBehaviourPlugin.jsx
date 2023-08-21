@@ -61,17 +61,10 @@ export const PASTE_LINK_COMMAND = createCommand('PASTE_LINK_COMMAND');
 
 const RANGE_TO_ELEMENT_BOUNDARY_THRESHOLD_PX = 10;
 
-function $selectCard(editor, nodeKey, focusEditor = true) {
+function $selectCard(nodeKey) {
     const selection = $createNodeSelection();
     selection.add(nodeKey);
     $setSelection(selection);
-
-    // selecting a decorator node does not change the
-    // window selection (there's no caret) so we need
-    // to manually move focus to the editor element
-    if (focusEditor) {
-        editor.getRootElement().focus();
-    }
 }
 
 // remove empty cards when they are deselected
@@ -255,7 +248,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             ),
             editor.registerCommand(
                 SELECT_CARD_COMMAND,
-                ({cardKey, focusEditor}) => {
+                ({cardKey}) => {
                     // already selected, delete if empty as we're exiting edit mode
                     if (selectedCardKey === cardKey && isEditingCard) {
                         const cardNode = $getNodeByKey(cardKey);
@@ -269,7 +262,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         $deselectCard(editor, selectedCardKey);
                     }
 
-                    $selectCard(editor, cardKey, focusEditor);
+                    $selectCard(cardKey);
 
                     setSelectedCardKey(cardKey);
                     setIsEditingCard(false);
@@ -282,7 +275,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     if (selectedCardKey && selectedCardKey !== cardKey) {
                         $deselectCard(editor, selectedCardKey);
                     }
-                    $selectCard(editor, cardKey, focusEditor);
+                    $selectCard(cardKey);
 
                     setSelectedCardKey(cardKey);
 
@@ -383,7 +376,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                         paragraph.select();
                                     } else {
                                         // reselect card to ensure we have a selection for the next steps
-                                        $selectCard(editor, selectedCardKey);
+                                        $selectCard(selectedCardKey);
 
                                         // select the next paragraph or card
                                         editor.dispatchCommand(KEY_ARROW_DOWN_COMMAND);
@@ -393,7 +386,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                 } else {
                                     // re-create the node selection because the focus will place the cursor at
                                     // the beginning of the doc
-                                    $selectCard(editor, selectedCardKey);
+                                    $selectCard(selectedCardKey);
                                 }
 
                                 setIsEditingCard(false);
@@ -454,7 +447,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                     // if we're in a nested editor, we need to move selection back to the parent editor
                     if (event?._fromCaptionEditor) {
-                        $selectCard(editor, selectedCardKey);
+                        $selectCard(selectedCardKey);
                     }
 
                     // avoid processing card behaviours when an inner element has focus (e.g. nested editors)
@@ -538,7 +531,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                     // if we're in a nested editor, we need to move selection back to the parent editor
                     if (event?._fromCaptionEditor) {
-                        $selectCard(editor, selectedCardKey);
+                        $selectCard(selectedCardKey);
                     }
 
                     // avoid processing card behaviours when an inner element has focus (e.g. nested editors)
@@ -608,7 +601,6 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                                     if (Math.abs(rangeRect.bottom - elemRect.bottom) < RANGE_TO_ELEMENT_BOUNDARY_THRESHOLD_PX) {
                                         const nextSibling = topLevelElement.getNextSibling();
-                                        // console.log(`nextSibling`,nextSibling)
                                         if ($isDecoratorNode(nextSibling)) {
                                             $selectDecoratorNode(nextSibling);
                                             return true;
@@ -1056,11 +1048,16 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             editor.registerCommand(
                 KEY_ESCAPE_COMMAND,
                 (event) => {
-                    event.preventDefault();
-
                     if (selectedCardKey && isEditingCard) {
                         (editor._parentEditor || editor).dispatchCommand(SELECT_CARD_COMMAND, {cardKey: selectedCardKey});
                     }
+                    
+                    if (editor._parentEditor) {
+                        editor._parentEditor.getRootElement().focus();
+                    }
+
+                    event.preventDefault();
+                    return true;
                 },
                 COMMAND_PRIORITY_LOW
             ),

@@ -34,6 +34,7 @@ export function SnippetActionToolbar({onClose, ...props}) {
             }
 
             onClose?.();
+            editor.getRootElement().focus(); // don't force focus to be handled in each implementation
         });
     };
 
