@@ -108,6 +108,10 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onCancel={handleCancel}
             onEditingChange={handleEditingChange}
             onSave={async () => {
+                // this is a special case where we need to set the region to the default if it's not set,
+                // since when the Mailgun Region is not changed, the value doesn't get set in the updateSetting
+                // resulting in a null value being sent to the API
+                // this should not fire if the user has changed the region
                 if (!mailgunRegion) {
                     await editSettings([{key: 'mailgun_base_url', value: MAILGUN_REGIONS[0].value}]);
                 }
