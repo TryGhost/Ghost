@@ -158,6 +158,7 @@ export default function MarkdownEditor({
         }
 
         toggleButtonClass();
+        codemirror.focus();
     }
 
     function toggleButtonClass() {
@@ -178,6 +179,7 @@ export default function MarkdownEditor({
 
     function closeHelpDialog() {
         setHelpDialogOpen(false);
+        markdownEditor.current.codemirror.focus();
     }
 
     function getListOfHiddenIcons() {
