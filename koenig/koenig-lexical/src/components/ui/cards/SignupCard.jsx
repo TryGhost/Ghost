@@ -16,6 +16,7 @@ import {ReactComponent as ImgWideIcon} from '../../../assets/icons/kg-img-wide.s
 import {ReactComponent as LayoutSplitIcon} from '../../../assets/icons/kg-layout-split.svg';
 import {ReactComponent as LeftAlignIcon} from '../../../assets/icons/kg-align-left.svg';
 import {MediaUploader} from '../MediaUploader';
+import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
 import {ReactComponent as ShrinkIcon} from '../../../assets/icons/kg-shrink.svg';
 import {SubscribeForm} from '../SubscribeForm';
 import {getAccentColor} from '../../../utils/getAccentColor';
@@ -350,7 +351,7 @@ export function SignupCard({alignment,
                 </div>
 
                 {/* Read-only overlay */}
-                {!isEditing && <div className="absolute top-0 z-10 !m-0 h-full w-full cursor-default p-0"></div>}
+                {!isEditing && <ReadOnlyOverlay />}
             </div>
 
             {isEditing &&

@@ -5,6 +5,7 @@ import {Button} from '../Button';
 import {InputSetting, InputUrlSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {ProductCardImage} from './ProductCard/ProductCardImage';
 import {RatingButton} from './ProductCard/RatingButton';
+import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
 import {isEditorEmpty} from '../../../utils/isEditorEmpty';
 
 export function ProductCard({
@@ -130,9 +131,8 @@ export function ProductCard({
                     )}
                 </SettingsPanel>
             )}
-
-            {/* Read-only overlay */}
-            {!isEditing && <div className="absolute top-0 z-10 !m-0 h-full w-full cursor-default p-0"></div>}
+            
+            {!isEditing && <ReadOnlyOverlay />}
         </>
     );
 }

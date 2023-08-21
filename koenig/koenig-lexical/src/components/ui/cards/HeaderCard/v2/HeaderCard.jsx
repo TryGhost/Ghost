@@ -17,6 +17,7 @@ import {ReactComponent as ImgWideIcon} from '../../../../../assets/icons/kg-img-
 import {ReactComponent as LayoutSplitIcon} from '../../../../../assets/icons/kg-layout-split.svg';
 import {ReactComponent as LeftAlignIcon} from '../../../../../assets/icons/kg-align-left.svg';
 import {MediaUploader} from '../../../MediaUploader';
+import {ReadOnlyOverlay} from '../../../ReadOnlyOverlay';
 import {ReactComponent as ShrinkIcon} from '../../../../../assets/icons/kg-shrink.svg';
 import {getAccentColor} from '../../../../../utils/getAccentColor';
 import {isEditorEmpty} from '../../../../../utils/isEditorEmpty';
@@ -360,7 +361,7 @@ export function HeaderCard({alignment,
                 </div>
 
                 {/* Read-only overlay */}
-                {!isEditing && <div className="absolute top-0 z-10 !m-0 h-full w-full cursor-default p-0"></div>}
+                {!isEditing && <ReadOnlyOverlay />}
             </div>
 
             {isEditing && (

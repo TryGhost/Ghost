@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import {BackgroundImagePicker} from '../../../BackgroundImagePicker';
 import {Button} from '../../../Button';
 import {ButtonGroupSetting, ColorOptionSetting, InputSetting, InputUrlSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../../../SettingsPanel';
+import {ReadOnlyOverlay} from '../../../ReadOnlyOverlay';
 import {isEditorEmpty} from '../../../../../utils/isEditorEmpty';
 
 export const HEADER_COLORS = {
@@ -164,7 +165,7 @@ export function HeaderCard({isEditing,
                 }
 
                 {/* Read-only overlay */}
-                {!isEditing && <div className="absolute top-0 z-10 !m-0 h-full w-full cursor-default p-0"></div>}
+                {!isEditing && <ReadOnlyOverlay />}
             </div>
 
             {isEditing && (

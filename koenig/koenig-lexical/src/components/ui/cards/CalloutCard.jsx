@@ -4,6 +4,7 @@ import KoenigNestedEditor from '../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {ColorOptionSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel';
+import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
 
 export const CALLOUT_COLORS = {
     grey: 'bg-grey/10 border-transparent',
@@ -163,7 +164,7 @@ export function CalloutCard({
                         />
                     </SettingsPanel>
                 ) : (
-                    <div className="absolute top-0 z-10 !m-0 h-full w-full cursor-default p-0"></div>
+                    <ReadOnlyOverlay />
                 )
             }
         </>

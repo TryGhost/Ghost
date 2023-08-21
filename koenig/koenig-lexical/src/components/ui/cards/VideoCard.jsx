@@ -9,6 +9,7 @@ import {MediaPlaceholder} from '../MediaPlaceholder';
 import {MediaPlayer} from '../MediaPlayer';
 import {ReactComponent as PlayIcon} from '../../../assets/icons/kg-play.svg';
 import {ProgressBar} from '../ProgressBar';
+import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
 import {openFileSelection} from '../../../utils/openFileSelection';
 
 function PopulatedVideoCard({
@@ -66,6 +67,8 @@ function PopulatedVideoCard({
                 <div className={`absolute bottom-0 flex h-20 w-full justify-end bg-gradient-to-b from-black/0 to-black/50 ${cardWidth === 'full' ? 'px-7 py-4' : 'px-4'}`}>
                     <MediaPlayer duration={totalDuration} theme='light' />
                 </div>
+                {/* This prevents interacting with the buttons that don't do anything, causing focus loss */}
+                <ReadOnlyOverlay />
             </div>
             {
                 videoUploader.isLoading && (

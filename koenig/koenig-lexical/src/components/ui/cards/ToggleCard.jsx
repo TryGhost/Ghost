@@ -2,6 +2,7 @@ import KoenigNestedEditor from '../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {ReactComponent as ArrowDownIcon} from '../../../assets/icons/kg-toggle-arrow.svg';
+import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
 
 export function ToggleCard({
     contentEditor,
@@ -43,7 +44,7 @@ export function ToggleCard({
                     />
                 </div>
             </div>
-            {!isEditing && <div className="absolute top-0 z-10 m-0 h-full w-full cursor-default p-0"></div>}
+            {!isEditing && <ReadOnlyOverlay />}
         </>
     );
 }

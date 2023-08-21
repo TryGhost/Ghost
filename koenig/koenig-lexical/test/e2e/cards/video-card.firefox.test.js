@@ -82,8 +82,9 @@ test.describe('Video card', async () => {
                                 <div></div>
                                 <button type="button"></button>
                               </div>
-                            </div>
+                            </div>                          
                           </div>
+                          <div></div>
                         </div>
                         <figcaption>
                           <div>
@@ -453,6 +454,7 @@ test.describe('Video card', async () => {
                               </div>
                             </div>
                           </div>
+                          <div></div>
                         </div>
                         <figcaption>
                           <div>
