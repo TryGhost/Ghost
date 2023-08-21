@@ -7,6 +7,7 @@ import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupConten
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {getSettingValues} from '../../../api/settings';
+import {useEditSettings} from '../../../api/settings';
 
 const MAILGUN_REGIONS = [
     {label: '🇺🇸 US', value: 'https://api.mailgun.net/v3'},
@@ -23,6 +24,7 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
         updateSetting,
         handleEditingChange
     } = useSettingGroup();
+    const {mutateAsync: editSettings} = useEditSettings();
 
     const [mailgunRegion, mailgunDomain, mailgunApiKey] = getSettingValues(localSettings, [
         'mailgun_base_url', 'mailgun_domain', 'mailgun_api_key'
@@ -57,7 +59,6 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const apiKeysHint = (
         <>Find your Mailgun API keys <Link href="https://app.mailgun.com/app/account/security/api_keys" rel="noopener noreferrer" target="_blank">here</Link></>
     );
-
     const inputs = (
         <SettingGroupContent>
             <div className='grid grid-cols-[120px_auto] gap-x-3 gap-y-6'>
@@ -106,7 +107,12 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
             title='Mailgun'
             onCancel={handleCancel}
             onEditingChange={handleEditingChange}
-            onSave={handleSave}
+            onSave={async () => {
+                if (!mailgunRegion) {
+                    await editSettings([{key: 'mailgun_base_url', value: MAILGUN_REGIONS[0].value}]);
+                }
+                handleSave();
+            }}
         >
             {isEditing ? inputs : values}
         </SettingGroup>
