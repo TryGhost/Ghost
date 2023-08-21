@@ -33,7 +33,7 @@
                             <div class="gh-nav-design-settings" data-test-nav-group={{group.key}}>
                                 <Settings::Design::ThemeSettingsForm
                                     @themeSettings={{group.settings}}
-                                    @updatePreview={{perform this.themeManagement.updatePreviewHtmlTask}}
+                                    @onChange={{this.handleThemeSettingChange}}
                                 />
                             </div>
                         {{/liquid-if}}
