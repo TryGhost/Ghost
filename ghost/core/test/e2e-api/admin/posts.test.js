@@ -1,4 +1,5 @@
 const should = require('should');
+const assert = require('assert/strict');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
 const {anyArray, anyContentVersion, anyEtag, anyErrorId, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyStringNumber, anyUuid, stringMatching} = matchers;
 const models = require('../../../core/server/models');
@@ -24,6 +25,24 @@ const matchPostShallowIncludes = {
     updated_at: anyISODateTime,
     published_at: anyISODateTime,
     post_revisions: anyArray
+};
+
+const buildMatchPostShallowIncludes = (tiersCount = 2) => {
+    return {
+        id: anyObjectId,
+        uuid: anyUuid,
+        comment_id: anyString,
+        url: anyString,
+        authors: anyArray,
+        primary_author: anyObject,
+        tags: anyArray,
+        primary_tag: anyObject,
+        tiers: Array(tiersCount).fill(tierSnapshot),
+        created_at: anyISODateTime,
+        updated_at: anyISODateTime,
+        published_at: anyISODateTime,
+        post_revisions: anyArray
+    };
 };
 
 function testCleanedSnapshot(text, ignoreReplacements) {
@@ -88,6 +107,7 @@ describe('Posts API', function () {
     let agent;
 
     before(async function () {
+        mockManager.mockLabsEnabled('collections', true);
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts');
         await agent.loginAsOwner();
@@ -118,6 +138,35 @@ describe('Posts API', function () {
             })
             .matchBodySnapshot({
                 posts: new Array(2).fill(matchPostShallowIncludes)
+            });
+    });
+
+    it('Can browse filtering by a collection', async function () {
+        await agent.get('posts/?collection=featured')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                posts: new Array(2).fill(matchPostShallowIncludes)
+            });
+    });
+
+    it('Can browse filtering by collection using paging parameters', async function () {
+        await agent
+            .get(`posts/?collection=latest&limit=1&page=6`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                posts: Array(1).fill(buildMatchPostShallowIncludes(2))
+            })
+            .expect((res) => {
+                // the total of posts with any status is 13
+                assert.equal(res.body.meta.pagination.total, 13);
             });
     });
 
@@ -212,7 +261,7 @@ describe('Posts API', function () {
                 .body({posts: [post]})
                 .expectStatus(201)
                 .matchBodySnapshot({
-                    posts: [Object.assign(matchPostShallowIncludes, {published_at: null})]
+                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
@@ -235,7 +284,7 @@ describe('Posts API', function () {
                 .body({posts: [post]})
                 .expectStatus(201)
                 .matchBodySnapshot({
-                    posts: [Object.assign(matchPostShallowIncludes, {published_at: null})]
+                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
@@ -324,7 +373,7 @@ describe('Posts API', function () {
                 }]})
                 .expectStatus(201)
                 .matchBodySnapshot({
-                    posts: [Object.assign(matchPostShallowIncludes, {published_at: null})]
+                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
@@ -339,7 +388,7 @@ describe('Posts API', function () {
                 .body({posts: [Object.assign({}, postResponse, {mobiledoc: updatedMobiledoc})]})
                 .expectStatus(200)
                 .matchBodySnapshot({
-                    posts: [Object.assign(matchPostShallowIncludes, {published_at: null})]
+                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
@@ -378,7 +427,7 @@ describe('Posts API', function () {
                 }]})
                 .expectStatus(201)
                 .matchBodySnapshot({
-                    posts: [Object.assign(matchPostShallowIncludes, {published_at: null})]
+                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
@@ -393,7 +442,7 @@ describe('Posts API', function () {
                 .body({posts: [Object.assign({}, postResponse, {lexical: updatedLexical})]})
                 .expectStatus(200)
                 .matchBodySnapshot({
-                    posts: [Object.assign(matchPostShallowIncludes, {published_at: null})]
+                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
@@ -418,6 +467,103 @@ describe('Posts API', function () {
                 .fetchAll();
 
             mobiledocRevisions.length.should.equal(0);
+        });
+
+        it('Can add and remove collections', async function () {
+            const {body: postBody} = await agent
+                .post('/posts/')
+                .body({
+                    posts: [{
+                        title: 'Collection update test'
+                    }]
+                })
+                .expectStatus(201)
+                .matchBodySnapshot({
+                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('posts')
+                });
+
+            const [postResponse] = postBody.posts;
+
+            const {body: {
+                collections: [collectionToAdd]
+            }} = await agent
+                .post('/collections/')
+                .body({
+                    collections: [{
+                        title: 'Collection to add.'
+                    }]
+                });
+
+            const {body: {
+                collections: [collectionToRemove]
+            }} = await agent
+                .post('/collections/')
+                .body({
+                    collections: [{
+                        title: 'Collection to remove.'
+                    }]
+                });
+
+            const collectionPostMatcher = {
+                id: anyObjectId
+            };
+            const collectionMatcher = {
+                id: anyObjectId,
+                created_at: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/),
+                updated_at: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/),
+                posts: [{
+                    id: anyObjectId
+                }]
+            };
+            const buildCollectionMatcher = (postsCount) => {
+                return {
+                    id: anyObjectId,
+                    created_at: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/),
+                    updated_at: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/),
+                    posts: Array(postsCount).fill(collectionPostMatcher)
+                };
+            };
+
+            await agent.put(`/posts/${postResponse.id}/`)
+                .body({posts: [Object.assign({}, postResponse, {collections: [collectionToRemove.id]})]})
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    posts: [
+                        Object.assign({}, matchPostShallowIncludes, {published_at: null}, {collections: [
+                            // collectionToRemove
+                            collectionMatcher,
+                            // automatic "latest" collection which cannot be removed
+                            buildCollectionMatcher(18)
+                        ]})]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    'x-cache-invalidate': stringMatching(/\/p\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/)
+                });
+
+            await agent.put(`/posts/${postResponse.id}/`)
+                .body({posts: [Object.assign({}, postResponse, {collections: [collectionToAdd.id]})]})
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    posts: [
+                        Object.assign({}, matchPostShallowIncludes, {published_at: null}, {collections: [
+                            // collectionToAdd
+                            collectionMatcher,
+                            // automatic "latest" collection which cannot be removed
+                            buildCollectionMatcher(18)
+                        ]})]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    'x-cache-invalidate': stringMatching(/\/p\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/)
+                });
         });
     });
 
@@ -473,12 +619,48 @@ describe('Posts API', function () {
                 .post(`/posts/${postResponse.id}/copy?formats=mobiledoc,lexical`)
                 .expectStatus(201)
                 .matchBodySnapshot({
-                    posts: [Object.assign(matchPostShallowIncludes, {published_at: null})]
+                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag,
                     location: anyLocationFor('posts')
+                });
+        });
+    });
+
+    describe('Convert', function () {
+        it('can convert a mobiledoc post to lexical', async function () { 
+            const mobiledoc = createMobiledoc('This is some great content.');
+            const expectedLexical = createLexical('This is some great content.');
+            const postData = {
+                title: 'Test Post',
+                status: 'published',
+                mobiledoc: mobiledoc,
+                lexical: null
+            };
+
+            const {body} = await agent
+                .post('/posts/?formats=mobiledoc,lexical,html', {
+                    headers: {
+                        'content-type': 'application/json'
+                    }
+                })
+                .body({posts: [postData]})
+                .expectStatus(201);
+
+            const [postResponse] = body.posts;
+
+            await agent
+                .put(`/posts/${postResponse.id}/?formats=mobiledoc,lexical,html&convert_to_lexical=true`)
+                .body({posts: [Object.assign({}, postResponse)]})
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    posts: [Object.assign({}, matchPostShallowIncludes, {lexical: expectedLexical, mobiledoc: null})]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
                 });
         });
     });

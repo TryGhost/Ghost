@@ -1,11 +1,13 @@
+const DomainEvents = require('@tryghost/domain-events');
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
-const assert = require('assert');
+const assert = require('assert/strict');
 
 describe('Posts Bulk API', function () {
     let agent;
 
     before(async function () {
+        mockManager.mockLabsEnabled('collections');
         agent = await agentProvider.getAdminAPIAgent();
 
         // Note that we generate lots of fixtures here to test the bulk deletion correctly
@@ -27,6 +29,10 @@ describe('Posts Bulk API', function () {
 
             assert(amount > 0, 'Expect at least one post to be affected for this test to work');
 
+            let featuredCollection = await models.Collection.findPage({filter: 'slug:featured', limit: 1, withRelated: ['posts']});
+            let featuredCollectionPostsAmount = featuredCollection.data[0].toJSON().posts.length;
+            assert(featuredCollectionPostsAmount > 0, 'Expect to have multiple featured collection posts');
+
             const response = await agent
                 .put('/posts/bulk/?filter=' + encodeURIComponent(filter))
                 .body({
@@ -37,11 +43,17 @@ describe('Posts Bulk API', function () {
                 .expectStatus(200)
                 .matchBodySnapshot();
 
+            await DomainEvents.allSettled();
+
             assert.equal(response.body.bulk.meta.stats.successful, amount, `Expect all matching posts (${amount}) to be changed`);
 
             // Fetch all posts and check if they are featured
             const posts = await models.Post.findAll({filter, status: 'all'});
             assert.equal(posts.length, amount, `Expect all matching posts (${amount}) to be changed`);
+
+            featuredCollection = await models.Collection.findPage({filter: 'slug:featured', limit: 1, withRelated: ['posts']});
+            featuredCollectionPostsAmount = featuredCollection.data[0].toJSON().posts.length;
+            assert.equal(featuredCollectionPostsAmount, amount, 'Expect to have same amount featured collection posts as changed');
 
             for (const post of posts) {
                 assert(post.get('featured') === true, `Expect post ${post.id} to be featured`);
@@ -57,6 +69,10 @@ describe('Posts Bulk API', function () {
 
             assert(amount > 0, 'Expect at least one post to be affected for this test to work');
 
+            let featuredCollection = await models.Collection.findPage({filter: 'slug:featured', limit: 1, withRelated: ['posts']});
+            let featuredCollectionPostsAmount = featuredCollection.data[0].toJSON().posts.length;
+            assert(featuredCollectionPostsAmount > 0, 'Expect to have multiple featured collection posts');
+
             const response = await agent
                 .put('/posts/bulk/?filter=' + encodeURIComponent(filter))
                 .body({
@@ -67,11 +83,17 @@ describe('Posts Bulk API', function () {
                 .expectStatus(200)
                 .matchBodySnapshot();
 
+            await DomainEvents.allSettled();
+
             assert.equal(response.body.bulk.meta.stats.successful, amount, `Expect all matching posts (${amount}) to be changed`);
 
             // Fetch all posts and check if they are featured
             const posts = await models.Post.findAll({filter, status: 'all'});
             assert.equal(posts.length, amount, `Expect all matching posts (${amount}) to be changed`);
+
+            featuredCollection = await models.Collection.findPage({filter: 'slug:featured', limit: 1, withRelated: ['posts']});
+            featuredCollectionPostsAmount = featuredCollection.data[0].toJSON().posts.length;
+            assert.equal(featuredCollectionPostsAmount, 0, 'Expect to have no featured collection posts');
 
             for (const post of posts) {
                 assert(post.get('featured') === false, `Expect post ${post.id} to be unfeatured`);
@@ -291,6 +313,13 @@ describe('Posts Bulk API', function () {
             const amount = changedPosts.meta.pagination.total;
 
             assert(amount > 0, 'Expect at least one post to be affected for this test to work');
+
+            await agent
+                .get('posts/?collection=latest')
+                .expectStatus(200)
+                .expect((res) => {
+                    assert(res.body.posts.length > 0, 'Expect latest collection to have some posts');
+                });
 
             const response = await agent
                 .delete('/posts/?filter=' + encodeURIComponent(filter))

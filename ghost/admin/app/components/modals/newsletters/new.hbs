@@ -35,7 +35,7 @@
                     <label for="opt-in-existing" class="modal-fullsettings-title">Opt-in existing subscribers</label>
                     <p>
                     {{#if this.optInExisting}}
-                        {{#let (members-count-fetcher query=(hash filter="newsletters.status:active")) as |countFetcher|}}
+                        {{#let (members-count-fetcher query=(hash filter="newsletters.status:active+email_disabled:0")) as |countFetcher|}}
                             This newsletter will be available to <strong>all members</strong>. Your {{#if countFetcher.count}}<strong>{{countFetcher.count}}</strong>{{/if}} existing subscriber{{#if (gt countFetcher.count 1)}}s{{/if}} will also be opted-in to receive it.
                         {{/let}}
                     {{else}}

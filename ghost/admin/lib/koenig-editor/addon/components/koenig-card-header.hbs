@@ -18,7 +18,6 @@
     @moveCursorToNextSection={{@moveCursorToNextSection}}
     @editor={{@editor}}
     {{did-insert this.registerElement}}
-    as |card|
 >
     {{#if @isEditing}}
         <div class="kg-header-card kg-size-{{@payload.size}} kg-style-{{@payload.style}}" style="{{if (eq @payload.style "image") this.backgroundImageStyle}}">
@@ -151,16 +150,24 @@
             <div class="kg-settings-panel-control">
                 <label class="kg-settings-panel-control-label" for="header-url-input">URL</label>
                 <div class="kg-settings-panel-control-input">
-                    <input
-                        type="text"
-                        class="gh-input"
-                        id="header-url-input"
-                        name="header-url"
-                        value={{@payload.buttonUrl}}
-                        placeholder="Add URL"
-                        {{on "input" this.setButtonUrl}}
-                        {{on-key "Enter" (fn this.focusElement "#header-url-input")}}
+                    <GhInputWithSelect
+                        @value={{@payload.buttonUrl}}
+                        @options={{this.suggestedUrls}}
+                        @valueField="url"
+                        @searchField="url"
+                        @placeholder=""
+                        @searchMessage={{null}}
+                        @onInput={{this.setButtonUrl}}
+                        @openOnFocus={{true}}
+                        @closeWhenEmpty={{true}}
+                        @triggerClass="header-url-input"
+                        @triggerId="header-url-input"
+                        @renderInPlace={{false}} {{!-- avoid dropdown inheriting editor styles --}}
+                        as |suggestion|
                     >
+                        <span class="kg-settings-link-title" title="{{suggestion.name}}">{{suggestion.name}}</span>
+                        <span class="kg-settings-link-url" {{on "mouseenter" this.enterLinkURL}} {{on "mouseleave" this.leaveLinkURL}}><span>{{suggestion.url}}</span></span>
+                    </GhInputWithSelect>
                 </div>
             </div>
             {{/if}}

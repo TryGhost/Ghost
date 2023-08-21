@@ -1,5 +1,5 @@
 const nock = require('nock');
-const assert = require('assert');
+const assert = require('assert/strict');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyISODateTime, anyErrorId} = matchers;
 

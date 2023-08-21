@@ -133,6 +133,7 @@ const enableLabs = async (page) => {
     await page.locator('.gh-setting-group').filter({hasText: 'Labs'}).click();
     const alphaList = page.locator('.gh-main-section').filter({hasText: 'Alpha Features'});
     await alphaList.locator('label[for="labs-webmentions"]').click();
+    await alphaList.locator('label[for="labs-tipsAndDonations"]').click();
 };
 
 /**
@@ -365,6 +366,9 @@ const completeStripeSubscription = async (page) => {
     await fillInputIfExists(page, '#billingAddressLine1', '123 Test St');
     await fillInputIfExists(page, '#billingAddressLine2', 'Apt 1');
     await fillInputIfExists(page, '#billingLocality', 'Testville');
+
+    // Wait for submit button complete
+    await page.waitForSelector('[data-testid="hosted-payment-submit-button"].SubmitButton--complete', {state: 'attached'});
 
     await page.getByTestId('hosted-payment-submit-button').click();
 

@@ -24,7 +24,19 @@ const labs = require('../../../../../../../shared/labs');
 module.exports = async (model, frame, options = {}) => {
     const {tiers: tiersData} = options || {};
 
-    const jsonModel = model.toJSON(frame.options);
+    // NOTE: `model` is now overloaded and may be a bookshelf model or a POJO
+    let jsonModel = model;
+    if (typeof model.toJSON === 'function') {
+        jsonModel = model.toJSON(frame.options);
+    } else {
+        // This is to satisfy the interface which extraAttrs needs
+        model = {
+            id: jsonModel.id,
+            get(attr) {
+                return jsonModel[attr];
+            }
+        };
+    }
 
     // Map email_recipient_filter to email_segment
     jsonModel.email_segment = jsonModel.email_recipient_filter;
@@ -33,6 +45,16 @@ module.exports = async (model, frame, options = {}) => {
     url.forPost(model.id, jsonModel, frame);
 
     extraAttrs.forPost(frame.options, model, jsonModel);
+
+    const defaultFormats = ['html'];
+    const formatsToKeep = frame.options.formats || frame.options.columns || defaultFormats;
+
+    // Iterate over all known formats, and if they are not in the keep list, remove them
+    _.each(['mobiledoc', 'lexical', 'html', 'plaintext'], function (format) {
+        if (formatsToKeep.indexOf(format) === -1) {
+            delete jsonModel[format];
+        }
+    });
 
     // Attach tiers to custom nql visibility filter
     if (jsonModel.visibility) {

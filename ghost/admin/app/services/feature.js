@@ -64,19 +64,20 @@ export default class FeatureService extends Service {
     @feature('lexicalMultiplayer') lexicalMultiplayer;
     @feature('audienceFeedback') audienceFeedback;
     @feature('webmentions') webmentions;
-    @feature('emailErrors') emailErrors;
     @feature('websockets') websockets;
     @feature('stripeAutomaticTax') stripeAutomaticTax;
-    @feature('makingItRain') makingItRain;
+    @feature('emailCustomization') emailCustomization;
     @feature('i18n') i18n;
-    @feature('postHistory') postHistory;
-    @feature('postDiffing') postDiffing;
     @feature('announcementBar') announcementBar;
-    @feature('imageEditor') imageEditor;
     @feature('signupCard') signupCard;
     @feature('signupForm') signupForm;
     @feature('collections') collections;
     @feature('adminXSettings') adminXSettings;
+    @feature('mailEvents') mailEvents;
+    @feature('collectionsCard') collectionsCard;
+    @feature('importMemberTier') importMemberTier;
+    @feature('tipsAndDonations') tipsAndDonations;
+    @feature('convertToLexical') convertToLexical;
 
     _user = null;
 

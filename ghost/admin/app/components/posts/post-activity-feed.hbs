@@ -45,8 +45,18 @@
                     {{#let (parse-member-event event) as |parsedEvent|}}
                         <div class="gh-dashboard-list-item">
                             <div class="gh-dashboard-list-item-sub">
-                                <GhMemberAvatar @member={{parsedEvent.member}} @containerClass="w6 h6 mr3 flex-shrink-0" />
-                                <LinkTo class="gh-dashboard-list-text" @route="member" @model="{{parsedEvent.memberId}}" @query={{hash postAnalytics=@post.id}}>{{parsedEvent.subject}}</LinkTo>
+                                {{#if parsedEvent.member}}
+                                    <GhMemberAvatar @member={{parsedEvent.member}} @containerClass="w6 h6 mr3 flex-shrink-0" />
+                                    <LinkTo class="gh-dashboard-list-text" @route="member" @model="{{parsedEvent.memberId}}" @query={{hash postAnalytics=@post.id}}>{{parsedEvent.subject}}</LinkTo>
+                                {{else}}
+                                    {{#if parsedEvent.email}}
+                                        <GhMemberAvatar @name={{parsedEvent.subject}} @containerClass="w6 h6 mr3 flex-shrink-0" />
+                                        <a class="gh-dashboard-list-text" href="mailto:{{parsedEvent.email}}" target="_blank" rel="noopener noreferrer" title="{{parsedEvent.email}}">{{parsedEvent.subject}}</a>
+                                    {{else}}
+                                        <GhMemberAvatar @name={{parsedEvent.subject}} @containerClass="w6 h6 mr3 flex-shrink-0" />
+                                        <span class="gh-dashboard-list-text">{{parsedEvent.subject}}</span>
+                                    {{/if}}
+                                {{/if}}
                             </div>
                             <div class="gh-dashboard-list-item-sub">
                                 {{svg-jar parsedEvent.icon }}

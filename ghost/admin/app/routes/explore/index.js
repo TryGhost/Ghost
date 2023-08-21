@@ -21,8 +21,9 @@ export default class ExploreIndexRoute extends AuthenticatedRoute {
         }
 
         // Ensure the explore window is set to open
-        if (transition.to?.localName === 'index' && !this.explore.exploreWindowOpen) {
-            this.explore.openExploreWindow(this.router.currentURL);
+        if (transition.to?.localName === 'index') {
+            this.explore.isIframeTransition = true;
+            this.explore.openExploreWindow();
         }
     }
 

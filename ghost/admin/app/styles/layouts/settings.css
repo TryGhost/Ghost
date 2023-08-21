@@ -193,7 +193,8 @@
 }
 
 .gh-setting-title {
-    margin-bottom: 2px;
+    display: block;
+    margin-bottom: 12px;
     font-size: 1.5rem;
     letter-spacing: 0;
     line-height: 1.15em;
@@ -206,17 +207,25 @@
     font-weight: 500;
 }
 
+.gh-setting-title.mb0 {
+    margin-bottom: 0;
+}
+
 .gh-setting-desc {
     line-height: 1.4em;
     color: var(--middarkgrey);
     letter-spacing: 0.3px;
     font-size: 1.3rem;
     font-weight: 400;
-    margin: 4px 0 12px;
+    margin: 8px 0 12px;
 }
 
 .gh-setting-desc.mb0 {
     margin-bottom: 0;
+}
+
+.gh-setting-title + .gh-setting-desc {
+    margin-top: -4px;
 }
 
 .gh-setting-error {
@@ -225,6 +234,15 @@
     color: var(--red);
     font-weight: 300;
     letter-spacing: 0.3px;
+}
+
+:is(.gh-setting-title, .gh-setting-desc) + .gh-setting-error {
+    margin-top: -4px;
+    font-size: 1.3rem;
+}
+
+.gh-setting-title + .gh-setting-error {
+    margin-top: 8px;
 }
 
 .gh-setting-action {
@@ -1756,7 +1774,7 @@ p.theme-validation-details {
 /* ---------------------------------------------------- */
 
 .gh-nav-contextual {
-    flex: 0 0 360px;
+    flex: 0 0 clamp(320px, 17.09vw + 86.5px, 360px);
 }
 
 .gh-nav-header {
@@ -2092,14 +2110,14 @@ p.theme-validation-details {
     border-color: color-mod(var(--lightgrey) l(-5%) s(-10%));
 }
 
-.gh-theme-setting-title {
-    margin-bottom: 1rem;
-}
-
 .gh-design {
     display: flex;
     flex-direction: column;
     height: 100%;
+}
+
+.gh-design.gh-canvas {
+    padding: 0 clamp(24px, 10.26vw + -116.1px, 48px);
 }
 
 .gh-preview-page-selector,
@@ -2505,8 +2523,9 @@ p.theme-validation-details {
     font-size: 1.25rem;
 }
 
-.gh-setting-members-tierscontainer .gh-expandable:not(:first-of-type) {
-    margin-top: 20px;
+.gh-stripe-connect-link {
+    color:#635bff;
+    font-weight:500;
 }
 
 .gh-setting-members-portal-mock {
@@ -3073,6 +3092,137 @@ p.theme-validation-details {
     color: var(--midgrey);
 }
 
+/* Signup form modal */
+.gh-signup-form-embed {
+    margin: 6vw 0;
+}
+
+.fullwidth-modal {
+    max-width: 100%;
+}
+
+.epm-modal .modal-signup-form-embed {
+    display: grid;
+    grid-template-columns: 5fr 3fr;
+    max-width: 1120px;
+    max-height: 520px;
+    margin: 32px;
+    padding: 0;
+}
+
+@media (max-width: 960px) {
+    .epm-modal .modal-signup-form-embed {
+        grid-template-columns: 1fr;
+    }
+}
+
+.modal-signup-form-embed-preview {
+    position: relative;
+    margin: 1.6rem;
+    margin-right: 0;
+    overflow: hidden;
+    border: 1px solid var(--whitegrey);
+}
+
+@media (max-width: 960px) {
+    .modal-signup-form-embed-preview {
+        display: none;
+    }
+}
+
+.gh-signup-form-iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    border: 0;
+    opacity: 1;
+    z-index: 0;
+    transition: none;
+}
+
+.gh-signup-form-iframe.gh-iframe-hidden {
+    opacity: 0;
+    z-index: 1;
+    transition: 0.3s opacity;
+    pointer-events: none;
+}
+
+.modal-signup-form-embed-main {
+    padding: 32px;
+    height: 100%;
+}
+
+.modal-signup-form-embed-main .modal-body {
+    height: 320px;
+    margin: 0 -32px;
+    padding: 0 32px;
+    overflow-y: auto;
+}
+
+.modal-signup-form-embed-main .form-group {
+    margin-bottom: 0;
+}
+
+.gh-signup-form-container .gh-stack-item {
+    margin-bottom: 1.6rem;
+}
+
+.gh-signup-form-container .gh-stack-item:last-child {
+    margin-bottom: 0;
+}
+
+.gh-signup-form-embed-code-input {
+    min-height: 72px;
+    background: var(--whitegrey-l2);
+    font-family: var(--font-family-mono);
+    font-size: 1.35rem;
+}
+
+.gh-signup-form-embed-code-input:focus {
+    background: var(--whitegrey-l2);
+    border-color: var(--lightgrey-l1) !important;
+    box-shadow: none;
+}
+
+/* Tips & donations
+/* ---------------------------------------------------------- */
+.gh-tips-and-donations-suggested-amount {
+    max-width: 200px;
+    margin-right: 24px;
+}
+
+.gh-tips-and-donations-suggested-amount .gh-input {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.gh-tips-and-donations-currency {
+    width: 120px;
+}
+
+.gh-tips-and-donations-currency select {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-left: none !important;
+}
+
+.gh-tips-and-donations-link-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1.4rem;
+    height: 38px;
+    background: var(--whitegrey-l2);
+    border-radius: 4px;
+    border: 1px solid var(--whitegrey);
+    color: var(--darkgrey);
+    font-weight: 500;
+    width: 100%;
+}
+
 /* History log
 /* ---------------------------------------------------------- */
 .gh-history-filter-li {
@@ -3153,7 +3303,6 @@ p.theme-validation-details {
     color: var(--darkgrey);
     white-space: nowrap;
     margin-top: 2px;
-    font-weight: 500;
 }
 
 .gh-history-description a {
@@ -3750,42 +3899,4 @@ p.theme-validation-details {
     display: inline;
     padding: 0;
     height: auto;
-}
-
-/* Signup form */
-
-.gh-signup-form-embed-code {
-    display: flex;
-}
-
-.gh-signup-form-embed-code button {
-    flex-shrink: 0;
-    /* Overlap the input to keep the button radius */
-    margin-left: -5px;
-}
-
-.gh-signup-form-embed-code input {
-    min-width: 0; /* Make sure this input can shrink inside a flex container */
-    font-family: Consolas,Liberation Mono,Menlo,Courier,monospace;
-    font-size: .9em;
-}
-
-.gh-signup-form-iframe {
-    width: 100%;
-    border: 0;
-}
-
-@media (min-width: 800px) {
-    .gh-signup-form-container {
-        display: flex;
-        gap: 20px;
-        width: 100%;
-    }
-
-    .gh-signup-form-container > * {
-        flex-basis: 0;
-        flex-shrink: 0;
-        min-width: 0;
-        flex-grow: 1;
-    }
 }

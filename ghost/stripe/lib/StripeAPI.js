@@ -1,8 +1,17 @@
+// @ts-ignore
 const {VersionMismatchError} = require('@tryghost/errors');
+// @ts-ignore
 const debug = require('@tryghost/debug')('stripe');
 const Stripe = require('stripe').Stripe;
+// @ts-ignore
 const LeakyBucket = require('leaky-bucket');
+
+/* Stripe has the following rate limits:
+*  - For most APIs, 100 read requests per second in live mode, 25 read requests per second in test mode
+*  - For search, 20 requests per second in both live and test modes
+*/
 const EXPECTED_API_EFFICIENCY = 0.95;
+const EXPECTED_SEARCH_API_EFFICIENCY = 0.15;
 
 const STRIPE_API_VERSION = '2020-08-27';
 
@@ -70,6 +79,7 @@ module.exports = class StripeAPI {
         } else {
             this._rateLimitBucket = new LeakyBucket(EXPECTED_API_EFFICIENCY * 100, 1);
         }
+        this._searchRateLimitBucket = new LeakyBucket(EXPECTED_SEARCH_API_EFFICIENCY * 100, 1);
         this._configured = true;
     }
 
@@ -114,9 +124,10 @@ module.exports = class StripeAPI {
      * @param {boolean} options.active
      * @param {string} options.nickname
      * @param {string} options.currency
-     * @param {number} options.amount
+     * @param {number} [options.amount]
+     * @param {{enabled: boolean;maximum?: number;minimum?: number;preset?: number;}} [options.custom_unit_amount]
      * @param {'recurring'|'one-time'} options.type
-     * @param {Stripe.Price.Recurring.Interval|null} options.interval
+     * @param {Stripe.Price.Recurring.Interval|null} [options.interval]
      *
      * @returns {Promise<IPrice>}
      */
@@ -128,7 +139,9 @@ module.exports = class StripeAPI {
             unit_amount: options.amount,
             active: options.active,
             nickname: options.nickname,
-            recurring: options.type === 'recurring' ? {
+            // @ts-ignore
+            custom_unit_amount: options.custom_unit_amount, // missing in .d.ts definitions in the Stripe node version we use, but should be supported in Stripe API at this version (:
+            recurring: options.type === 'recurring' && options.interval ? {
                 interval: options.interval
             } : undefined
         });
@@ -139,7 +152,7 @@ module.exports = class StripeAPI {
     /**
      * @param {string} id
      * @param {object} options
-     * @param {boolean} options.active
+     * @param {boolean} [options.active]
      * @param {string} [options.nickname]
      *
      * @returns {Promise<IPrice>}
@@ -220,6 +233,60 @@ module.exports = class StripeAPI {
         });
 
         return customer;
+    }
+
+    /**
+     * Finds a Stripe Customer ID based on the provided email address. Returns null if no customer is found.
+     * @param {string} email
+     * @see https://stripe.com/docs/api/customers/search
+     *
+     * @returns {Promise<string|null>} Stripe Customer ID, if found
+     */
+    async getCustomerIdByEmail(email) {
+        await this._searchRateLimitBucket.throttle();
+        try {
+            const result = await this._stripe.customers.search({
+                query: `email:"${email}"`,
+                limit: 10,
+                expand: ['data.subscriptions']
+            });
+            const customers = result.data;
+
+            // No customer found, return null
+            if (customers.length === 0) {
+                return;
+            }
+
+            // Return the only customer found
+            if (customers.length === 1) {
+                return customers[0].id;
+            }
+
+            // Multiple customers found, return the one with the most recent subscription
+            if (customers.length > 1) {
+                let latestCustomer = customers[0];
+                let latestSubscriptionTime = 0;
+
+                for (let customer of customers) {
+                    // skip customers with no subscriptions
+                    if (!customer.subscriptions || !customer.subscriptions.data || customer.subscriptions.data.length === 0) {
+                        continue;
+                    }
+
+                    // find the customer with the most recent subscription
+                    for (let subscription of customer.subscriptions.data) {
+                        if (subscription.current_period_end && subscription.current_period_end > latestSubscriptionTime) {
+                            latestSubscriptionTime = subscription.current_period_end;
+                            latestCustomer = customer;
+                        }
+                    }
+                }
+
+                return latestCustomer.id;
+            }
+        } catch (err) {
+            debug(`getCustomerByEmail(${email}) -> ${err.type}:${err.message}`);
+        }
     }
 
     /**
@@ -367,7 +434,7 @@ module.exports = class StripeAPI {
         const metadata = options.metadata || undefined;
         const customerId = customer ? customer.id : undefined;
         const customerEmail = customer ? customer.email : options.customerEmail;
- 
+
         await this._rateLimitBucket.throttle();
         let discounts;
         if (options.coupon) {
@@ -421,8 +488,57 @@ module.exports = class StripeAPI {
             stripeSessionOptions.customer_email = customerEmail;
         }
 
+        // @ts-ignore
         const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
 
+        return session;
+    }
+
+    /**
+     * @param {object} options
+     * @param {Object.<String, any>} options.metadata
+     * @param {string} options.successUrl
+     * @param {string} options.cancelUrl
+     * @param {string} [options.customer]
+     * @param {string} [options.customerEmail]
+     *
+     * @returns {Promise<import('stripe').Stripe.Checkout.Session>}
+     */
+    async createDonationCheckoutSession({priceId, successUrl, cancelUrl, metadata, customer, customerEmail}) {
+        await this._rateLimitBucket.throttle();
+
+        /**
+         * @type {Stripe.Checkout.SessionCreateParams}
+         */
+        const stripeSessionOptions = {
+            mode: 'payment',
+            success_url: successUrl || this._config.checkoutSessionSuccessUrl,
+            cancel_url: cancelUrl || this._config.checkoutSessionCancelUrl,
+            automatic_tax: {
+                enabled: this._config.enableAutomaticTax
+            },
+            metadata,
+            customer: customer ? customer.id : undefined,
+            customer_email: !customer && customerEmail ? customerEmail : undefined,
+            submit_type: 'pay',
+            invoice_creation: {
+                enabled: true,
+                invoice_data: {
+                    // Make sure we pass the data through to the invoice
+                    metadata: {
+                        ghost_donation: true,
+                        ...metadata
+                    }
+                }
+            },
+            line_items: [{
+                price: priceId,
+                quantity: 1
+            }]
+        };
+
+        // @ts-ignore
+        const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
         return session;
     }
 

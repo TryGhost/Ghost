@@ -98,6 +98,10 @@ class SettingsHelpers {
     getNoReplyAddress() {
         return `noreply@${this.getDefaultEmailDomain()}`;
     }
+
+    areDonationsEnabled() {
+        return this.isStripeConnected();
+    }
 }
 
 module.exports = SettingsHelpers;

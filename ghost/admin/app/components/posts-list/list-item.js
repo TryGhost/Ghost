@@ -11,6 +11,8 @@ export default class PostsListItemClicks extends Component {
 
     @tracked isHovered = false;
 
+    editorRoute = this.feature.get('convertToLexical') ? 'lexical-editor.edit' : 'editor.edit';
+
     get post() {
         return this.args.post;
     }

@@ -10,26 +10,55 @@ module.exports = {
     docName: 'collections',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'limit',
             'order',
-            'page'
+            'page',
+            'filter',
+            'include'
         ],
-        // @NOTE: should have permissions when moving out of Alpha
-        permissions: false,
+        validation: {
+            options: {
+                include: {
+                    values: ['count.posts']
+                }
+            }
+        },
+        permissions: true,
         query(frame) {
-            return collectionsService.api.browse(frame.options);
+            return collectionsService.api.getAll(frame.options);
         }
     },
 
     read: {
-        data: [
-            'id'
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'include'
         ],
-        // @NOTE: should have permissions when moving out of Alpha
-        permissions: false,
+        data: [
+            'id',
+            'slug'
+        ],
+        validation: {
+            options: {
+                include: {
+                    values: ['count.posts']
+                }
+            }
+        },
+        permissions: true,
         async query(frame) {
-            const model = await collectionsService.api.read(frame.data.id, frame.options);
+            let model;
+            if (frame.data.id) {
+                model = await collectionsService.api.getById(frame.data.id);
+            } else {
+                model = await collectionsService.api.getBySlug(frame.data.slug);
+            }
 
             if (!model) {
                 throw new errors.NotFoundError({
@@ -46,15 +75,16 @@ module.exports = {
         headers: {
             cacheInvalidate: true
         },
-        // @NOTE: should have permissions when moving out of Alpha
-        permissions: false,
+        permissions: true,
         async query(frame) {
-            return await collectionsService.api.add(frame.data.collections[0], frame.options);
+            return await collectionsService.api.createCollection(frame.data.collections[0]);
         }
     },
 
     edit: {
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'id'
         ],
@@ -65,12 +95,11 @@ module.exports = {
                 }
             }
         },
-        // @NOTE: should have permissions when moving out of Alpha
-        permissions: false,
+        permissions: true,
         async query(frame) {
             const model = await collectionsService.api.edit(Object.assign(frame.data.collections[0], {
                 id: frame.options.id
-            }), frame.options);
+            }));
 
             if (!model) {
                 throw new errors.NotFoundError({
@@ -106,8 +135,7 @@ module.exports = {
                 }
             }
         },
-        // @NOTE: should have permissions when moving out of Alpha
-        permissions: false,
+        permissions: true,
         async query(frame) {
             return await collectionsService.api.destroy(frame.options.id);
         }

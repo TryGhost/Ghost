@@ -265,107 +265,130 @@
                                     </div>
                                 </div>
                                 {{#if this.user.isAdmin}}
-                                {{#if (feature 'webmentions')}}
-                                    <div class="user-setting-toggle">
-                                        <div>
-                                            <label for="user-email">Mentions</label>
-                                            <p>Every time another site links to your work.</p>
+                                    {{#if (feature 'webmentions')}}
+                                        <div class="user-setting-toggle">
+                                            <div>
+                                                <label for="user-email">Mentions</label>
+                                                <p>Every time another site links to your work.</p>
+                                            </div>
+                                            <div class="for-switch small">
+                                                <label class="switch" for="mention-notifications" data-test-label="mention-notifications">
+                                                    <input
+                                                        id="mention-notifications"
+                                                        type="checkbox"
+                                                        checked={{this.user.mentionNotifications}}
+                                                        class="gh-input"
+                                                        {{on "change" this.toggleMentionNotifications}}
+                                                        data-test-checkbox="mention-notifications"
+                                                    >
+                                                    <span class="input-toggle-component"></span>
+                                                </label>
+                                            </div>
                                         </div>
-                                        <div class="for-switch small">
-                                            <label class="switch" for="mention-notifications" data-test-label="mention-notifications">
-                                                <input
-                                                    id="mention-notifications"
-                                                    type="checkbox"
-                                                    checked={{this.user.mentionNotifications}}
-                                                    class="gh-input"
-                                                    {{on "change" this.toggleMentionNotifications}}
-                                                    data-test-checkbox="mention-notifications"
-                                                >
-                                                <span class="input-toggle-component"></span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                {{/if}}
-                                {{#if this.canToggleMemberAlerts}}
-                                    <div class="user-setting-toggle">
-                                        <div>
-                                            <label for="user-email">New signups</label>
-                                            <p>Every time a new free member signs up</p>
-                                        </div>
-                                        <div class="for-switch small">
-                                            <label class="switch" for="free-signup-notifications" data-test-label="free-signup-notifications">
-                                                <input
-                                                    id="free-signup-notifications"
-                                                    type="checkbox"
-                                                    checked={{this.user.freeMemberSignupNotification}}
-                                                    class="gh-input"
-                                                    {{on "change" (fn this.toggleMemberEmailAlerts 'free-signup')}}
-                                                    data-test-checkbox="free-signup-notifications"
-                                                >
-                                                <span class="input-toggle-component"></span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    {{#if this.membersUtils.paidMembersEnabled}}
-                                    <div class="user-setting-toggle">
-                                        <div>
-                                            <label for="user-email">New paid members</label>
-                                            <p>Every time a member starts a new paid subscription</p>
-                                        </div>
-                                        <div class="for-switch small">
-                                            <label class="switch" for="paid-started-notifications" data-test-label="paid-started-notifications">
-                                                <input
-                                                    id="paid-started-notifications"
-                                                    type="checkbox"
-                                                    checked={{this.user.paidSubscriptionStartedNotification}}
-                                                    class="gh-input"
-                                                    {{on "change" (fn this.toggleMemberEmailAlerts 'paid-started')}}
-                                                    data-test-checkbox="paid-started-notifications"
-                                                >
-                                                <span class="input-toggle-component"></span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="user-setting-toggle">
-                                        <div>
-                                            <label for="user-email">Paid member cancellations</label>
-                                            <p>Every time a member cancels their paid subscription</p>
-                                        </div>
-                                        <div class="for-switch small">
-                                            <label class="switch" for="paid-canceled-notifications" data-test-label="paid-canceled-notifications">
-                                                <input
-                                                    id="paid-canceled-notifications"
-                                                    type="checkbox"
-                                                    checked={{this.user.paidSubscriptionCanceledNotification}}
-                                                    class="gh-input"
-                                                    {{on "change" (fn this.toggleMemberEmailAlerts 'paid-canceled')}}
-                                                    data-test-checkbox="paid-canceled-notifications"
-                                                >
-                                                <span class="input-toggle-component"></span>
-                                            </label>
-                                        </div>
-                                    </div>
                                     {{/if}}
-                                    <div class="user-setting-toggle">
-                                        <div>
-                                            <label for="user-email">Milestones</label>
-                                            <p>Occasional summaries of your audience & revenue growth</p>
+                                    {{#if this.canToggleMemberAlerts}}
+                                        <div class="user-setting-toggle">
+                                            <div>
+                                                <label for="user-email">New signups</label>
+                                                <p>Every time a new free member signs up</p>
+                                            </div>
+                                            <div class="for-switch small">
+                                                <label class="switch" for="free-signup-notifications" data-test-label="free-signup-notifications">
+                                                    <input
+                                                        id="free-signup-notifications"
+                                                        type="checkbox"
+                                                        checked={{this.user.freeMemberSignupNotification}}
+                                                        class="gh-input"
+                                                        {{on "change" (fn this.toggleMemberEmailAlerts 'free-signup')}}
+                                                        data-test-checkbox="free-signup-notifications"
+                                                    >
+                                                    <span class="input-toggle-component"></span>
+                                                </label>
+                                            </div>
                                         </div>
-                                        <div class="for-switch small">
-                                            <label class="switch" for="milestone-notifications" data-test-label="milestone-notifications">
-                                                <input
-                                                    id="milestone-notifications"
-                                                    type="checkbox"
-                                                    checked={{this.user.milestoneNotifications}}
-                                                    class="gh-input"
-                                                    {{on "change" this.toggleMilestoneNotifications}}
-                                                    data-test-checkbox="milestone-notifications"
-                                                >
-                                                <span class="input-toggle-component"></span>
-                                            </label>
+                                        {{#if this.membersUtils.paidMembersEnabled}}
+                                            <div class="user-setting-toggle">
+                                                <div>
+                                                    <label for="user-email">New paid members</label>
+                                                    <p>Every time a member starts a new paid subscription</p>
+                                                </div>
+                                                <div class="for-switch small">
+                                                    <label class="switch" for="paid-started-notifications" data-test-label="paid-started-notifications">
+                                                        <input
+                                                            id="paid-started-notifications"
+                                                            type="checkbox"
+                                                            checked={{this.user.paidSubscriptionStartedNotification}}
+                                                            class="gh-input"
+                                                            {{on "change" (fn this.toggleMemberEmailAlerts 'paid-started')}}
+                                                            data-test-checkbox="paid-started-notifications"
+                                                        >
+                                                        <span class="input-toggle-component"></span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="user-setting-toggle">
+                                                <div>
+                                                    <label for="user-email">Paid member cancellations</label>
+                                                    <p>Every time a member cancels their paid subscription</p>
+                                                </div>
+                                                <div class="for-switch small">
+                                                    <label class="switch" for="paid-canceled-notifications" data-test-label="paid-canceled-notifications">
+                                                        <input
+                                                            id="paid-canceled-notifications"
+                                                            type="checkbox"
+                                                            checked={{this.user.paidSubscriptionCanceledNotification}}
+                                                            class="gh-input"
+                                                            {{on "change" (fn this.toggleMemberEmailAlerts 'paid-canceled')}}
+                                                            data-test-checkbox="paid-canceled-notifications"
+                                                        >
+                                                        <span class="input-toggle-component"></span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        {{/if}}
+                                        {{#if this.membersUtils.isStripeEnabled}}
+                                            {{#if (feature 'tipsAndDonations')}}
+                                                <div class="user-setting-toggle">
+                                                    <div>
+                                                        <label for="user-email">Tips &amp; donations</label>
+                                                        <p>Every time you receive a one-time payment from your audience</p>
+                                                    </div>
+                                                    <div class="for-switch small">
+                                                        <label class="switch" for="donation-notifications" data-test-label="donation-notifications">
+                                                            <input
+                                                                id="donation-notifications"
+                                                                type="checkbox"
+                                                                checked={{this.user.donationNotifications}}
+                                                                class="gh-input"
+                                                                {{on "change" this.toggleDonationNotifications}}
+                                                                data-test-checkbox="donation-notifications"
+                                                            >
+                                                            <span class="input-toggle-component"></span>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            {{/if}}
+                                        {{/if}}
+                                        <div class="user-setting-toggle">
+                                            <div>
+                                                <label for="user-email">Milestones</label>
+                                                <p>Occasional summaries of your audience & revenue growth</p>
+                                            </div>
+                                            <div class="for-switch small">
+                                                <label class="switch" for="milestone-notifications" data-test-label="milestone-notifications">
+                                                    <input
+                                                        id="milestone-notifications"
+                                                        type="checkbox"
+                                                        checked={{this.user.milestoneNotifications}}
+                                                        class="gh-input"
+                                                        {{on "change" this.toggleMilestoneNotifications}}
+                                                        data-test-checkbox="milestone-notifications"
+                                                    >
+                                                    <span class="input-toggle-component"></span>
+                                                </label>
+                                            </div>
                                         </div>
-                                    </div>
-                                {{/if}}
+                                    {{/if}}
                                 {{/if}}
                             </GhFormGroup>
                         </div>

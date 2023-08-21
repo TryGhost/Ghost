@@ -25,10 +25,13 @@ describe('Exporter', function () {
                 'actions',
                 'api_keys',
                 'brute',
+                'collections',
+                'collections_posts',
                 'comments',
                 'comment_likes',
                 'comment_reports',
                 'custom_theme_settings',
+                'donation_payment_events',
                 'email_batches',
                 'email_recipient_failures',
                 'email_recipients',
@@ -89,7 +92,8 @@ describe('Exporter', function () {
                 'tokens',
                 'users',
                 'webhooks',
-                'milestones'
+                'milestones',
+                'temp_mail_events'
             ];
 
             should.exist(exportData);
@@ -117,7 +121,8 @@ describe('Exporter', function () {
                 'members_email_change_events',
                 'members_status_events',
                 'members_paid_subscription_events',
-                'members_subscribe_events'
+                'members_subscribe_events',
+                'temp_mail_events'
             ];
 
             excludedTables.forEach((tableName) => {

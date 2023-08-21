@@ -1,10 +1,9 @@
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
-const Promise = require('bluebird');
 const moment = require('moment-timezone');
 const ObjectId = require('bson-objectid').default;
-const assert = require('assert');
+const assert = require('assert/strict');
 const _ = require('lodash');
 const validator = require('@tryghost/validator');
 

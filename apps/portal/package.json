@@ -1,0 +1,102 @@
+{
+  "name": "@tryghost/portal",
+  "version": "2.34.2",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/TryGhost/Ghost.git"
+  },
+  "author": "Ghost Foundation",
+  "files": [
+    "umd/",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "dev": "concurrently \"yarn preview -l silent\" \"yarn build:watch\"",
+    "build": "vite build",
+    "build:watch": "vite build --watch",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:ci": "yarn test --coverage",
+    "test:unit": "yarn test:ci",
+    "lint": "eslint src --ext .js --cache",
+    "preship": "yarn lint",
+    "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn version; fi",
+    "postship": "git push ${GHOST_UPSTREAM:-origin} --follow-tags && npm publish",
+    "prepublishOnly": "yarn build"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "jest": true
+    },
+    "parserOptions": {
+      "sourceType": "module",
+      "ecmaVersion": 2022
+    },
+    "extends": [
+      "plugin:ghost/browser",
+      "plugin:i18next/recommended",
+      "plugin:react/recommended",
+      "plugin:react/jsx-runtime"
+    ],
+    "plugins": [
+      "ghost",
+      "i18next"
+    ],
+    "rules": {
+      "react/prop-types": "off"
+    },
+    "settings": {
+      "react": {
+        "version": "detect"
+      }
+    }
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "jest": {
+    "coverageReporters": [
+      "cobertura",
+      "text-summary",
+      "html"
+    ]
+  },
+  "devDependencies": {
+    "@babel/eslint-parser": "7.22.10",
+    "@doist/react-interpolate": "0.4.1",
+    "@sentry/react": "7.64.0",
+    "@sentry/tracing": "7.64.0",
+    "@testing-library/jest-dom": "5.16.5",
+    "@testing-library/react": "12.1.5",
+    "@tryghost/i18n": "0.0.0",
+    "@vitejs/plugin-react": "4.0.4",
+    "@vitest/coverage-v8": "0.33.0",
+    "@vitest/ui": "0.33.0",
+    "concurrently": "8.2.0",
+    "cross-fetch": "4.0.0",
+    "eslint-plugin-i18next": "6.0.3",
+    "jsdom": "22.1.0",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "vite": "4.4.9",
+    "vite-plugin-css-injected-by-js": "3.3.0",
+    "vite-plugin-svgr": "3.2.0",
+    "vitest": "0.34.1"
+  }
+}

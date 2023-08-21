@@ -377,6 +377,15 @@ describe('DB API', function () {
         yearlyPrice.get('stripe_price_id').should.equal('price_d04baebb73');
         yearlyPrice.get('stripe_product_id').should.equal('prod_d2c1708c21');
     });
+
+    it('Can not import a ZIP-file with symlinks', async function () {
+        await request.post(localUtils.API.getApiQuery('db/'))
+            .set('Origin', config.get('url'))
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .attach('importfile', path.join(__dirname, '/../../../utils/fixtures/import/symlinks.zip'))
+            .expect(415);
+    });
 });
 
 // The following tests will create a new clean database for every test

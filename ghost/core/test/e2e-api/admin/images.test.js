@@ -2,7 +2,7 @@ const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-frame
 const FormData = require('form-data');
 const p = require('path');
 const {promises: fs} = require('fs');
-const assert = require('assert');
+const assert = require('assert/strict');
 const config = require('../../../core/shared/config');
 const urlUtils = require('../../../core/shared/url-utils');
 const imageTransform = require('@tryghost/image-transform');
@@ -59,7 +59,7 @@ const uploadImageCheck = async ({path, filename, contentType, expectedFileName, 
     expectedFileName = expectedFileName || filename;
 
     assert.match(body.images[0].url, new RegExp(`${urlUtils.urlFor('home', true)}content/images/\\d+/\\d+/${expectedFileName}`));
-    assert.equal(body.images[0].ref, ref);
+    assert.equal(body.images[0].ref, ref === undefined ? null : ref);
 
     const relativePath = body.images[0].url.replace(urlUtils.urlFor('home', true), '/');
     const filePath = config.getContentPath('images') + relativePath.replace('/content/images/', '');

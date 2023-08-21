@@ -10,6 +10,7 @@ class PaymentsService {
      * @param {import('bookshelf').Model} deps.Offer
      * @param {import('@tryghost/members-offers/lib/application/OffersAPI')} deps.offersAPI
      * @param {import('@tryghost/members-stripe-service/lib/StripeAPI')} deps.stripeAPIService
+     * @param {{get(key: string): any}} deps.settingsCache
      */
     constructor(deps) {
         /** @private */
@@ -24,6 +25,8 @@ class PaymentsService {
         this.offersAPI = deps.offersAPI;
         /** @private */
         this.stripeAPIService = deps.stripeAPIService;
+        /** @private */
+        this.settingsCache = deps.settingsCache;
 
         DomainEvents.subscribe(OfferCreatedEvent, async (event) => {
             await this.getCouponForOffer(event.data.offer.id);
@@ -57,14 +60,13 @@ class PaymentsService {
      * @param {Offer} [params.offer]
      * @param {Member} [params.member]
      * @param {Object.<string, any>} [params.metadata]
-     * @param {object} params.options
-     * @param {string} params.options.successUrl
-     * @param {string} params.options.cancelUrl
-     * @param {string} [params.options.email]
+     * @param {string} params.successUrl
+     * @param {string} params.cancelUrl
+     * @param {string} [params.email]
      *
      * @returns {Promise<URL>}
      */
-    async getPaymentLink({tier, cadence, offer, member, metadata, options}) {
+    async getPaymentLink({tier, cadence, offer, member, metadata, successUrl, cancelUrl, email}) {
         let coupon = null;
         let trialDays = null;
         if (offer) {
@@ -87,12 +89,10 @@ class PaymentsService {
 
         const price = await this.getPriceForTierCadence(tier, cadence);
 
-        const email = options.email || null;
-
         const data = {
             metadata,
-            successUrl: options.successUrl,
-            cancelUrl: options.cancelUrl,
+            successUrl: successUrl,
+            cancelUrl: cancelUrl,
             trialDays: trialDays ?? tier.trialDays,
             coupon: coupon?.id
         };
@@ -108,6 +108,36 @@ class PaymentsService {
 
         const session = await this.stripeAPIService.createCheckoutSession(price.id, customer, data);
 
+        return session.url;
+    }
+
+    /**
+     * @param {object} params
+     * @param {Member} [params.member]
+     * @param {Object.<string, any>} [params.metadata]
+     * @param {string} params.successUrl
+     * @param {string} params.cancelUrl
+     * @param {boolean} [params.isAuthenticated]
+     * @param {string} [params.email]
+     *
+     * @returns {Promise<URL>}
+     */
+    async getDonationPaymentLink({member, metadata, successUrl, cancelUrl, email, isAuthenticated}) {
+        let customer = null;
+        if (member && isAuthenticated) {
+            customer = await this.getCustomerForMember(member);
+        }
+
+        const data = {
+            priceId: (await this.getPriceForDonations()).id,
+            metadata,
+            successUrl: successUrl,
+            cancelUrl: cancelUrl,
+            customer,
+            customerEmail: !customer && email ? email : null
+        };
+
+        const session = await this.stripeAPIService.createDonationCheckoutSession(data);
         return session.url;
     }
 
@@ -207,6 +237,154 @@ class PaymentsService {
     }
 
     /**
+     * @returns {Promise<{id: string}>}
+     */
+    async getProductForDonations({name}) {
+        const existingDonationPrices = await this.StripePriceModel
+            .where({
+                type: 'donation'
+            })
+            .query()
+            .select('stripe_product_id');
+
+        for (const row of existingDonationPrices) {
+            const product = await this.StripeProductModel
+                .where({
+                    stripe_product_id: row.stripe_product_id
+                })
+                .query()
+                .select('stripe_product_id')
+                .first();
+
+            if (product) {
+                // Check active in Stripe
+                try {
+                    const stripeProduct = await this.stripeAPIService.getProduct(row.stripe_product_id);
+                    if (stripeProduct.active) {
+                        return {id: stripeProduct.id};
+                    }
+                } catch (err) {
+                    logging.warn(err);
+                }
+            }
+        }
+
+        const product = await this.createProductForDonations({name});
+
+        return {
+            id: product.id
+        };
+    }
+
+    /**
+     * @returns {Promise<{id: string}>}
+     */
+    async getPriceForDonations() {
+        const nickname = 'Support ' + this.settingsCache.get('title');
+        const currency = this.settingsCache.get('donations_currency');
+        const suggestedAmount = this.settingsCache.get('donations_suggested_amount');
+
+        // Stripe requires a minimum charge amount
+        // @see https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts
+        const amount = suggestedAmount && suggestedAmount >= 100 ? suggestedAmount : 0;
+
+        const price = await this.StripePriceModel
+            .where({
+                type: 'donation',
+                active: true,
+                amount,
+                currency
+            })
+            .query()
+            .select('stripe_price_id', 'stripe_product_id', 'id', 'nickname')
+            .first();
+
+        if (price) {
+            if (price.nickname !== nickname) {
+                // Rename it in Stripe (in case the publication name changed)
+                try {
+                    await this.stripeAPIService.updatePrice(price.stripe_price_id, {
+                        nickname
+                    });
+
+                    // Update product too
+                    await this.stripeAPIService.updateProduct(price.stripe_product_id, {
+                        name: nickname
+                    });
+
+                    await this.StripePriceModel.edit({
+                        nickname
+                    }, {id: price.id});
+                } catch (err) {
+                    logging.warn(err);
+                }
+            }
+            return {
+                id: price.stripe_price_id
+            };
+        }
+
+        const newPrice = await this.createPriceForDonations({
+            nickname,
+            currency,
+            amount
+        });
+        return {
+            id: newPrice.id
+        };
+    }
+
+    /**
+     * @returns {Promise<import('stripe').default.Price>}
+     */
+    async createPriceForDonations({currency, amount, nickname}) {
+        const product = await this.getProductForDonations({name: nickname});
+
+        const preset = amount ? amount : undefined;
+
+        // Create the price in Stripe
+        const price = await this.stripeAPIService.createPrice({
+            currency,
+            product: product.id,
+            custom_unit_amount: {
+                enabled: true,
+                preset
+            },
+            nickname,
+            type: 'one-time',
+            active: true
+        });
+
+        // Save it to the database
+        await this.StripePriceModel.add({
+            stripe_price_id: price.id,
+            stripe_product_id: product.id,
+            active: price.active,
+            nickname: price.nickname,
+            currency: price.currency,
+            amount,
+            type: 'donation',
+            interval: null
+        });
+        return price;
+    }
+
+    /**
+     * @returns {Promise<import('stripe').default.Product>}
+     */
+    async createProductForDonations({name}) {
+        const product = await this.stripeAPIService.createProduct({
+            name
+        });
+
+        await this.StripeProductModel.add({
+            product_id: null,
+            stripe_product_id: product.id
+        });
+        return product;
+    }
+
+    /**
      * @param {import('@tryghost/tiers').Tier} tier
      * @param {'month'|'year'} cadence
      * @returns {Promise<{id: string}>}
@@ -220,7 +398,8 @@ class PaymentsService {
             currency,
             interval: cadence,
             amount,
-            active: true
+            active: true,
+            type: 'recurring'
         }).query().select('id', 'stripe_price_id');
 
         for (const row of rows) {

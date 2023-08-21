@@ -15,6 +15,7 @@ import {tracked} from '@glimmer/tracking';
 export default class KoenigCardEmailCtaComponent extends Component {
     @service feature;
     @service store;
+    @service settings;
     @service membersUtils;
     @service ui;
 
@@ -83,17 +84,27 @@ export default class KoenigCardEmailCtaComponent extends Component {
             url: this.config.getSiteUrl('/')
         }, {
             name: 'Free signup',
-            url: this.config.getSiteUrl('/#/portal/signup/free')
+            url: '#/portal/signup/free'
         }]);
 
         if (this.membersUtils.paidMembersEnabled) {
             urls.push(...[{
                 name: 'Paid signup',
-                url: this.config.getSiteUrl('/#/portal/signup')
+                url: '#/portal/signup'
             }, {
                 name: 'Upgrade or change plan',
-                url: this.config.getSiteUrl('/#/portal/account/plans')
+                url: '#/portal/account/plans'
             }]);
+        }
+
+        // TODO: remove feature condition once Tips & Donations have been released
+        if (this.feature.tipsAndDonations) {
+            if (this.settings.donationsEnabled) {
+                urls.push({
+                    name: 'Tip or donation',
+                    url: '#/portal/support'
+                });
+            }
         }
 
         if (this.offers) {

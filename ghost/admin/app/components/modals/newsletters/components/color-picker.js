@@ -74,10 +74,6 @@ export default class ColorPicker extends Component {
         // Make sure the current color is present
         if (this.customColorSelected) {
             return 'background: ' + this.currentColor + ' !important;';
-        } else {
-            if (this.lastSelectedCustomColor && this.didSelectCustomColor) {
-                return 'background: ' + this.lastSelectedCustomColor + ' !important;';
-            }
         }
         return '';
     }
@@ -97,9 +93,6 @@ export default class ColorPicker extends Component {
     }
 
     get colorInputValue() {
-        if (this.lastSelectedCustomColor) {
-            return this.lastSelectedCustomColor;
-        }
         if (!this.currentColorObject.value || !this.currentColorObject.value.startsWith('#')) {
             return '#999999';
         }

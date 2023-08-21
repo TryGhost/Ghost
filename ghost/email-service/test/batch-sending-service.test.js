@@ -1,16 +1,19 @@
 const {createModel, createModelClass, createDb, sleep} = require('./utils');
 const BatchSendingService = require('../lib/BatchSendingService');
 const sinon = require('sinon');
-const assert = require('assert');
+const assert = require('assert/strict');
 const logging = require('@tryghost/logging');
 const nql = require('@tryghost/nql');
 const errors = require('@tryghost/errors');
 
 describe('Batch Sending Service', function () {
     let errorLog;
+    let warnLog;
 
     beforeEach(function () {
         errorLog = sinon.stub(logging, 'error');
+        warnLog = sinon.stub(logging, 'warn');
+        sinon.stub(logging, 'info');
     });
 
     afterEach(function () {
@@ -884,6 +887,7 @@ describe('Batch Sending Service', function () {
         it('Truncates recipients if more than the maximum are returned in a batch', async function () {
             const EmailBatch = createModelClass({
                 findOne: {
+                    id: '123_batch_id',
                     status: 'pending',
                     member_segment: null
                 }
@@ -895,6 +899,7 @@ describe('Batch Sending Service', function () {
                     {
                         member_id: '123',
                         member_uuid: '123',
+                        batch_id: '123_batch_id',
                         member_email: 'example@example.com',
                         member_name: 'Test User',
                         loaded: ['member'],
@@ -909,6 +914,7 @@ describe('Batch Sending Service', function () {
                     {
                         member_id: '124',
                         member_uuid: '124',
+                        batch_id: '123_batch_id',
                         member_email: 'example2@example.com',
                         member_name: 'Test User 2',
                         loaded: ['member'],
@@ -923,6 +929,7 @@ describe('Batch Sending Service', function () {
                     {
                         member_id: '125',
                         member_uuid: '125',
+                        batch_id: '123_batch_id',
                         member_email: 'example3@example.com',
                         member_name: 'Test User 3',
                         loaded: ['member'],
@@ -934,10 +941,11 @@ describe('Batch Sending Service', function () {
                             products: []
                         })
                     },
-                    // NOTE: one recipient with a duplicate data
+                    // NOTE: one recipient from a different batch
                     {
                         member_id: '125',
                         member_uuid: '125',
+                        batch_id: '124_ANOTHER_batch_id',
                         member_email: 'example3@example.com',
                         member_name: 'Test User 3',
                         loaded: ['member'],
@@ -965,20 +973,23 @@ describe('Batch Sending Service', function () {
 
             const result = await service.sendBatch({
                 email: createModel({}),
-                batch: createModel({}),
+                batch: createModel({
+                    id: '123_batch_id'
+                }),
                 post: createModel({}),
                 newsletter: createModel({})
             });
 
             assert.equal(result, true);
-            sinon.assert.calledThrice(errorLog);
-            const firstLoggedError = errorLog.firstCall.args[0];
-            const secondLoggedError = errorLog.secondCall.args[0];
-            const thirdLoggedError = errorLog.thirdCall.args[0];
 
-            assert.match(firstLoggedError, /Batch [a-f0-9]{24} has 4 members, but the sending service only supports 2 members per batch/);
-            assert.match(secondLoggedError, /Email batch [a-f0-9]{24} has 4 members, which exceeds the maximum of 2. Filtering to unique members/);
-            assert.match(thirdLoggedError, /Email batch [a-f0-9]{24} has 3 members, which exceeds the maximum of 2. Truncating to 2/);
+            sinon.assert.calledOnce(warnLog);
+            const firstLoggedWarn = warnLog.firstCall.args[0];
+            assert.match(firstLoggedWarn, /Email batch 123_batch_id has 4 members, which exceeds the maximum of 2 members per batch. Filtering by batch_id: 123_batch_id/);
+
+            sinon.assert.calledOnce(errorLog);
+            const firstLoggedError = errorLog.firstCall.args[0];
+
+            assert.match(firstLoggedError, /Email batch 123_batch_id has 3 members, which exceeds the maximum of 2. Truncating to 2/);
 
             sinon.assert.calledOnce(sendingService.send);
             const {members} = sendingService.send.firstCall.args[0];

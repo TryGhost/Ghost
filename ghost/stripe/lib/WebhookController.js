@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
+const {DonationPaymentEvent} = require('@tryghost/donations');
 
 module.exports = class WebhookController {
     /**
@@ -10,6 +11,8 @@ module.exports = class WebhookController {
      * @param {any} deps.eventRepository
      * @param {any} deps.memberRepository
      * @param {any} deps.productRepository
+     * @param {import('@tryghost/donations').DonationRepository} deps.donationRepository
+     * @param {any} deps.staffServiceEmails
      * @param {any} deps.sendSignupEmail
      */
     constructor(deps) {
@@ -102,10 +105,41 @@ module.exports = class WebhookController {
     }
 
     /**
+     * @param {import('stripe').Stripe.Invoice} invoice
      * @private
      */
     async invoiceEvent(invoice) {
         if (!invoice.subscription) {
+            // Check if this is a one time payment, related to a donation
+            if (invoice.metadata.ghost_donation && invoice.paid) {
+                // Track a one time payment event
+                const amount = invoice.amount_paid;
+
+                const member = invoice.customer ? (await this.deps.memberRepository.get({
+                    customer_id: invoice.customer
+                })) : null;
+
+                const data = DonationPaymentEvent.create({
+                    name: member?.get('name') ?? invoice.customer_name,
+                    email: member?.get('email') ?? invoice.customer_email,
+                    memberId: member?.id ?? null,
+                    amount,
+                    currency: invoice.currency,
+
+                    // Attribution data
+                    attributionId: invoice.metadata.attribution_id ?? null,
+                    attributionUrl: invoice.metadata.attribution_url ?? null,
+                    attributionType: invoice.metadata.attribution_type ?? null,
+                    referrerSource: invoice.metadata.referrer_source ?? null,
+                    referrerMedium: invoice.metadata.referrer_medium ?? null,
+                    referrerUrl: invoice.metadata.referrer_url ?? null
+                });
+
+                await this.deps.donationRepository.save(data);
+                await this.deps.staffServiceEmails.notifyDonationReceived({
+                    donationPaymentEvent: data
+                });
+            }
             return;
         }
         const subscription = await this.api.getSubscription(invoice.subscription, {

@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/ember';
 import ConfirmEditorLeaveModal from '../components/modals/editor/confirm-leave';
 import Controller, {inject as controller} from '@ember/controller';
 import DeletePostModal from '../components/modals/delete-post';
@@ -15,6 +16,7 @@ import {GENERIC_ERROR_MESSAGE} from '../services/notifications';
 import {action, computed} from '@ember/object';
 import {alias, mapBy} from '@ember/object/computed';
 import {capitalize} from '@ember/string';
+import {captureMessage} from '@sentry/ember';
 import {dropTask, enqueueTask, restartableTask, task, taskGroup, timeout} from 'ember-concurrency';
 import {htmlSafe} from '@ember/template';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -22,6 +24,7 @@ import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
 import {isHostLimitError, isServerUnreachableError, isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {isInvalidError} from 'ember-ajax/errors';
+import {mobiledocToLexical} from '@tryghost/kg-converters';
 import {inject as service} from '@ember/service';
 
 const DEFAULT_TITLE = '(Untitled)';
@@ -125,7 +128,7 @@ export default class LexicalEditorController extends Controller {
     fromAnalytics = false;
 
     // koenig related properties
-    wordcount = null;
+    wordCount = 0;
 
     /* private properties ----------------------------------------------------*/
 
@@ -171,17 +174,23 @@ export default class LexicalEditorController extends Controller {
         return this.store.peekAll('snippet');
     }
 
-    @computed('_snippets.@each.{name,isNew}')
+    @computed('_snippets.@each.{name,isNew,mobiledoc,lexical}')
     get snippets() {
         const snippets = this._snippets
             .reject(snippet => snippet.get('isNew'))
             .sort((a, b) => a.name.localeCompare(b.name))
             .filter(item => item.lexical !== null);
+
         return snippets.map((item) => {
-            item.value = item.lexical;
+            item.value = JSON.stringify(item.lexical);
 
             return item;
         });
+    }
+
+    @computed
+    get collections() {
+        return this.store.peekAll('collection');
     }
 
     @computed('session.user.{isAdmin,isEditor}')
@@ -302,8 +311,8 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
-    updateWordCount(counts) {
-        this.set('wordCount', counts);
+    updateWordCount(count) {
+        this.set('wordCount', count);
     }
 
     @action
@@ -360,9 +369,10 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
-    saveSnippet(snippet) {
-        const snippetData = {name: snippet.name, lexical: snippet.value, mobiledoc: '{}'};
-        let snippetRecord = this.store.createRecord('snippet', snippetData);
+    saveNewSnippet(snippet) {
+        const snippetData = {name: snippet.name, lexical: JSON.parse(snippet.value), mobiledoc: {}};
+        const snippetRecord = this.store.createRecord('snippet', snippetData);
+
         return snippetRecord.save().then(() => {
             this.notifications.closeAlerts('snippet.save');
             this.notifications.showNotification(
@@ -388,9 +398,9 @@ export default class LexicalEditorController extends Controller {
         const existingSnippet = this.snippets.find(snippet => snippet.name.toLowerCase() === snippetNameLC);
 
         if (existingSnippet) {
-            await this.confirmUpdateSnippet(existingSnippet, {lexical: data.value, mobiledoc: '{}'});
+            await this.confirmUpdateSnippet(existingSnippet, {lexical: JSON.parse(data.value)});
         } else {
-            await this.saveSnippet(data);
+            await this.saveNewSnippet(data);
         }
     }
 
@@ -667,10 +677,36 @@ export default class LexicalEditorController extends Controller {
             this.post.set('emailOnly', options.emailOnly);
         }
 
+        const startTime = Date.now();
+
         try {
             yield post.save(options);
+
+            // log if a save is slow
+            if (this.config.sentry_dsn && (Date.now() - startTime > 2000)) {
+                captureMessage('Successful Lexical save took > 2s', (scope) => {
+                    scope.setTag('save_time', Math.ceil((Date.now() - startTime) / 1000));
+                    scope.setTag('post_type', post.isPage ? 'page' : 'post');
+                    scope.setTag('save_revision', options.adapterOptions?.saveRevision);
+                    scope.setTag('email_segment', options.adapterOptions?.emailSegment);
+                    scope.setTag('save_revision', options.adapterOptions?.saveRevision);
+                    scope.setTag('convert_to_lexical', options.adapterOptions?.convertToLexical);
+                });
+            }
         } catch (error) {
             this.post.set('emailOnly', previousEmailOnlyValue);
+
+            if (this.config.sentry_dsn && (Date.now() - startTime > 2000)) {
+                captureMessage('Failed Mobiledoc save took > 2s', (scope) => {
+                    scope.setTag('save_time', Math.ceil((Date.now() - startTime) / 1000));
+                    scope.setTag('post_type', post.isPage ? 'page' : 'post');
+                    scope.setTag('save_revision', options.adapterOptions?.saveRevision);
+                    scope.setTag('email_segment', options.adapterOptions?.emailSegment);
+                    scope.setTag('save_revision', options.adapterOptions?.saveRevision);
+                    scope.setTag('convert_to_lexical', options.adapterOptions?.convertToLexical);
+                });
+            }
+
             if (isServerUnreachableError(error)) {
                 const [prevStatus, newStatus] = this.post.changedAttributes().status || [this.post.status, this.post.status];
                 this._showErrorAlert(prevStatus, newStatus, error);
@@ -771,10 +807,76 @@ export default class LexicalEditorController extends Controller {
         }
     }
 
-    // load supplementel data such as the members count in the background
+    // load supplemental data such as snippets and collections in the background
     @restartableTask
     *backgroundLoaderTask() {
         yield this.store.query('snippet', {limit: 'all'});
+        if (this.post.displayName === 'page' && this.feature.get('collections') && this.feature.get('collectionsCard')) {
+            yield this.store.query('collection', {limit: 'all'});
+        }
+        this.syncMobiledocSnippets();
+    }
+
+    @action
+    async syncMobiledocSnippets() {
+        const snippets = this.store.peekAll('snippet');
+
+        // very early in the beta we had a bug where lexical snippets were saved with double-encoded JSON
+        // we fix that here by re-saving any snippets that are still in that state
+        const snippetFixSaves = [];
+        snippets.forEach((snippet) => {
+            if (typeof snippet.lexical === 'string') {
+                try {
+                    snippet.lexical = JSON.parse(snippet.lexical);
+                    snippet.mobiledoc = {};
+                    snippetFixSaves.push(snippet.save());
+                } catch (e) {
+                    snippet.lexical = null;
+                    snippetFixSaves.push(snippet.save());
+
+                    console.error(e); // eslint-disable-line no-console
+
+                    if (this.config.sentry_dsn) {
+                        Sentry.captureException(e, {
+                            tags: {
+                                lexical: true
+                            }
+                        });
+                    }
+                }
+            }
+        });
+        await Promise.all(snippetFixSaves);
+
+        snippets.forEach((snippet) => {
+            if (!snippet.lexical || snippet.lexical.syncedAt && moment.utc(snippet.lexical.syncedAt).isBefore(snippet.updatedAtUTC)) {
+                const serializedLexical = mobiledocToLexical(JSON.stringify(snippet.mobiledoc));
+
+                // we get a full Lexical doc from the converter but Lexical only
+                // stores an array of nodes in it's copy/paste dataset that we use for snippets
+                const lexical = JSON.parse(serializedLexical);
+                let nodes = lexical.root.children;
+
+                // for a single-paragraph text selection Lexical only stores the
+                // text children in the nodes array
+                if (nodes.length === 1 && nodes[0].type === 'paragraph') {
+                    nodes = nodes[0].children;
+                }
+
+                const lexicalData = {
+                    namespace: 'KoenigEditor',
+                    nodes
+                };
+
+                // set syncedAt so we can check if mobiledoc has been updated in next sync
+                lexicalData.syncedAt = moment.utc().toISOString();
+
+                snippet.lexical = lexicalData;
+
+                // kick off a background save, we already have .lexical updated which is what we need
+                snippet.save();
+            }
+        });
     }
 
     /* Public methods --------------------------------------------------------*/
@@ -870,7 +972,7 @@ export default class LexicalEditorController extends Controller {
                 this.cancelAutosave();
                 this.autosaveTask.cancelAll();
             }
-            await this.autosaveTask.perform({leavingEditor: true});
+            await this.autosaveTask.perform({leavingEditor: true, backgroundSave: false});
             return transition.retry();
         }
 
@@ -992,7 +1094,9 @@ export default class LexicalEditorController extends Controller {
 
         while (config.environment !== 'test' && true) {
             yield timeout(REVISIONSAVE_TIMEOUT);
-            this.autosaveTask.perform({saveRevision: true});
+            this.autosaveTask.perform({
+                saveRevision: this._canAutosave
+            });
         }
     }).drop())
         _revisionSaveTask;

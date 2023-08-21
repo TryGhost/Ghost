@@ -1,0 +1,72 @@
+{
+    "name": "@tryghost/signup-form",
+    "version": "0.1.3",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/TryGhost/Ghost/tree/main/packages/signup-form"
+    },
+    "author": "Ghost Foundation",
+    "files": [
+        "LICENSE",
+        "README.md",
+        "umd/"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
+    },
+    "scripts": {
+        "dev": "concurrently \"vite --port 6173\" \"vite preview -l silent\" \"vite build --watch\"",
+        "preview": "concurrently \"vite preview -l silent\" \"vite build --watch\"",
+        "dev:test": "vite build && vite preview --port 6175",
+        "build": "tsc && vite build",
+        "lint": "yarn run lint:js",
+        "lint:js": "eslint --ext .js,.ts,.cjs,.tsx --cache src test",
+        "test:unit": "yarn build",
+        "test:e2e": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' VITE_TEST=true playwright test",
+        "test:slowmo": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=100 yarn test:e2e --headed",
+        "test:e2e:full": "ALL_BROWSERS=1 yarn test:e2e",
+        "storybook": "storybook dev -p 6006",
+        "build-storybook": "storybook build",
+        "preship": "yarn lint",
+        "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn version; fi",
+        "postship": "git push ${GHOST_UPSTREAM:-origin} --follow-tags && npm publish",
+        "prepublishOnly": "yarn build"
+    },
+    "dependencies": {
+        "react": "18.2.0",
+        "react-dom": "18.2.0"
+    },
+    "devDependencies": {
+        "@playwright/test": "1.37.0",
+        "@storybook/addon-essentials": "7.3.1",
+        "@storybook/addon-interactions": "7.3.1",
+        "@storybook/addon-links": "7.3.1",
+        "@storybook/addon-styling": "1.3.6",
+        "@storybook/blocks": "7.3.1",
+        "@storybook/react": "7.3.1",
+        "@storybook/react-vite": "7.3.1",
+        "@storybook/testing-library": "0.2.0",
+        "@tailwindcss/line-clamp": "0.4.4",
+        "@types/react": "18.2.20",
+        "@types/react-dom": "18.2.7",
+        "@vitejs/plugin-react": "4.0.4",
+        "autoprefixer": "10.4.15",
+        "concurrently": "8.2.0",
+        "eslint-plugin-react-hooks": "4.6.0",
+        "eslint-plugin-react-refresh": "0.4.3",
+        "eslint-plugin-tailwindcss": "3.13.0",
+        "postcss": "8.4.28",
+        "postcss-import": "15.1.0",
+        "prop-types": "15.8.1",
+        "rollup-plugin-node-builtins": "2.1.2",
+        "storybook": "7.3.1",
+        "stylelint": "15.10.1",
+        "tailwindcss": "3.3.3",
+        "vite": "4.4.9",
+        "vite-plugin-commonjs": "0.8.2",
+        "vite-plugin-svgr": "3.2.0",
+        "vitest": "0.34.1"
+    }
+}

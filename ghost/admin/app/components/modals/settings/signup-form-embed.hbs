@@ -1,0 +1,83 @@
+<div class="modal-content modal-signup-form-embed" data-test-modal="signup-form-embed">
+    <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-signup-form-embed-preview">
+        <Settings::SignupForm::Preview
+            @html={{this.previewCode}}
+            @style={{this.style}}
+        />
+    </div>
+
+    <div class="modal-signup-form-embed-main">
+        <header class="modal-header">
+            <h1>Embed signup form</h1>
+        </header>
+
+        <div class="modal-body">
+            <GhFormGroup class="gh-signup-form-container">
+                <div class="gh-stack-item row">
+                    <label class="modal-fullsettings-title">
+                        Layout
+                    </label>
+                        <Settings::SignupForm::StyleSelect
+                        @value={{this.style}}
+                        @onChange={{this.setStyle}}
+                    />
+                </div>
+
+                {{#unless (eq this.style 'minimal')}}
+                    <div class="gh-stack-item row">
+                        <label class="modal-fullsettings-title">
+                            Background color
+                        </label>
+                        <Modals::Newsletters::Components::ColorPicker
+                            @color={{this.backgroundColor}}
+                            @presetColors={{this.backgroundPresetColors}}
+                            @onColorChange={{this.setBackgroundColor}}
+                        />
+                    </div>
+                {{/unless}}
+
+                <div class="gh-stack-item">
+                    <label class="modal-fullsettings-title">
+                        Labels at signup
+                    </label>
+                    <GhMemberLabelInput
+                        @onChange={{this.setLabels}}
+                        @allowEdit={{false}}
+                        @labels={{this.labels}}
+                        @triggerId="label-input"
+                        @placeholder="Select"
+                        @renderInPlace={{false}}
+                    />
+                </div>
+
+                <div class="gh-stack-item">
+                    <div class="flex-grow-1">
+                        <label class="modal-fullsettings-title">
+                            Embed code
+                        </label>
+                        <GhTextarea
+                            @id="gh-signup-form-embed-code-input"
+                            @class="gh-input gh-signup-form-embed-code-input"
+                            @value={{this.generatedCode}}
+                            readonly
+                            {{on "mouseup" this.copyTextOnMouseUp}}
+                        />
+                        <p>Paste this code onto any website where you'd like your signup to appear.</p>
+                    </div>
+                </div>
+            </GhFormGroup>
+
+        </div>
+
+        <div class="modal-footer">
+            <GhTaskButton
+                @buttonText="Copy code"
+                @task={{this.copyText}}
+                @successText="Copied"
+                @class="gh-btn gh-btn-black gh-btn-icon"
+            />
+        </div>
+    </div>
+</div>

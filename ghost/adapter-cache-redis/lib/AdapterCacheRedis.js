@@ -54,6 +54,9 @@ class AdapterCacheRedis extends BaseCacheAdapter {
     }
 
     #getPrimaryRedisNode() {
+        if (this.redisClient.constructor.name !== 'Cluster') {
+            return this.redisClient;
+        }
         const slot = calculateSlot(this.keyPrefix);
         const [ip, port] = this.redisClient.slots[slot][0].split(':');
         for (const node of this.redisClient.nodes()) {
@@ -78,6 +81,14 @@ class AdapterCacheRedis extends BaseCacheAdapter {
                 resolve(keys);
             });
         });
+    }
+
+    async #getKeys() {
+        const primaryNode = this.#getPrimaryRedisNode();
+        if (primaryNode === null) {
+            return [];
+        }
+        return await this.#scanNodeForKeys(primaryNode);
     }
 
     /**
@@ -129,10 +140,18 @@ class AdapterCacheRedis extends BaseCacheAdapter {
         }
     }
 
+    /**
+     * Reset the cache by deleting everything from redis
+     */
     async reset() {
-        // NOTE: dangerous in shared environment, and not used in production code anyway!
-        // return await this.cache.reset();
-        logging.error('Cache reset has not been implemented with shared cache environment in mind');
+        try {
+            const keys = await this.#getKeys();
+            for (const key of keys) {
+                await this.cache.del(key);
+            }
+        } catch (err) {
+            logging.error(err);
+        }
     }
 
     /**
@@ -141,12 +160,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      */
     async keys() {
         try {
-            const primaryNode = this.#getPrimaryRedisNode();
-            if (primaryNode === null) {
-                return [];
-            }
-            const rawKeys = await this.#scanNodeForKeys(primaryNode);
-            return rawKeys.map((key) => {
+            return (await this.#getKeys()).map((key) => {
                 return this._removeKeyPrefix(key);
             });
         } catch (err) {

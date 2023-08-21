@@ -85,6 +85,7 @@ const createModelClass = (options = {}) => {
             return Promise.resolve({
                 models,
                 map: models.map.bind(models),
+                filter: models.filter.bind(models),
                 length: models.length
             });
         },

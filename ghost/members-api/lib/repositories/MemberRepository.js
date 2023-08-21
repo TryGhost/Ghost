@@ -224,6 +224,7 @@ module.exports = class MemberRepository {
      * @param {Object} [data.stripeCustomer]
      * @param {string} [data.offerId]
      * @param {import('@tryghost/member-attribution/lib/Attribution').AttributionResource} [data.attribution]
+     * @param {boolean} [data.email_disabled]
      * @param {*} options
      * @returns
      */
@@ -247,7 +248,7 @@ module.exports = class MemberRepository {
             });
         }
 
-        const memberData = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation', 'created_at', 'products', 'newsletters']);
+        const memberData = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation', 'created_at', 'products', 'newsletters', 'email_disabled']);
 
         // Throw error if email is invalid using latest validator
         if (!validator.isEmail(memberData.email, {legacy: false})) {
@@ -256,6 +257,8 @@ module.exports = class MemberRepository {
                 property: 'email'
             });
         }
+
+        memberData.email_disabled = !!memberData.email_disabled;
 
         if (memberData.products && memberData.products.length > 1) {
             throw new errors.BadRequestError({message: tpl(messages.moreThanOneProduct)});
@@ -415,7 +418,8 @@ module.exports = class MemberRepository {
             'enable_comment_notifications',
             'last_seen_at',
             'last_commented_at',
-            'expertise'
+            'expertise',
+            'email_disabled'
         ]);
 
         // Trim whitespaces from expertise
@@ -829,6 +833,10 @@ module.exports = class MemberRepository {
         }
     }
 
+    async getCustomerIdByEmail(email) {
+        return this._stripeAPIService.getCustomerIdByEmail(email);
+    }
+
     async getSubscriptionByStripeID(id, options) {
         const subscription = await this._StripeCustomerSubscription.findOne({
             subscription_id: id
@@ -932,7 +940,8 @@ module.exports = class MemberRepository {
             logging.error(e);
         }
 
-        let stripeCouponId = subscription.discount && subscription.discount.coupon ? subscription.discount.coupon.id : null;
+        const stripeCoupon = subscription.discount?.coupon;
+        const stripeCouponId = stripeCoupon ? subscription.discount.coupon.id : null;
 
         // For trial offers, offer id is passed from metadata as there is no stripe coupon
         let offerId = data.offerId || null;
@@ -944,7 +953,21 @@ module.exports = class MemberRepository {
             if (offer) {
                 offerId = offer.id;
             } else {
-                logging.error(`Received an unknown stripe coupon id (${stripeCouponId}) for subscription - ${subscription.id}.`);
+                try {
+                    // Create an offer in our database
+                    const productId = ghostProduct.get('id');
+                    const currency = subscriptionPriceData.currency;
+                    const interval = _.get(subscriptionPriceData, 'recurring.interval', '');
+                    offer = await this._offerRepository.createFromCoupon(
+                        stripeCoupon,
+                        {productId, currency, interval, active: false},
+                        {transacting: options.transacting}
+                    );
+                    offerId = offer?.id;
+                } catch (e) {
+                    logging.error(`Error when creating an offer from stripe coupon id (${stripeCouponId}) for subscription - ${subscription.id}.`);
+                    logging.error(e);
+                }
             }
         } else if (offerId) {
             offer = await this._offerRepository.getById(offerId, {transacting: options.transacting});

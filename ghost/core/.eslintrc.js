@@ -13,9 +13,7 @@ module.exports = {
         // @TODO: remove this rule once it's turned into "error" in the base plugin
         'no-shadow': 'error',
         'no-var': 'error',
-        'one-var': ['error', 'never'],
-        'ghost/ghost-custom/ghost-error-usage': [1],
-        'ghost/ghost-custom/no-native-error': [1]
+        'one-var': ['error', 'never']
     },
     overrides: [
         {
@@ -32,7 +30,7 @@ module.exports = {
                 'core/server/data/migrations/versions/3.*/*'
             ],
             rules: {
-                'ghost/filenames/match-regex': ['error', '^(?:\\d{2}|\\d{4}(?:-\\d{2}){4})(?:-[a-zA-Z]+){2,}$', true]
+                'ghost/filenames/match-regex': ['error', '^(?:\\d{4}(?:-\\d{2}){4,5}|\\d{2})(?:-[a-zA-Z]+){2,}$', true]
             }
         },
         {

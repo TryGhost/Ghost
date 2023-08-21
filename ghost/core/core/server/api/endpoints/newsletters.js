@@ -1,5 +1,5 @@
 const models = require('../../models');
-const allowedIncludes = ['count.posts', 'count.members'];
+const allowedIncludes = ['count.posts', 'count.members', 'count.active_members'];
 
 const newslettersService = require('../../services/newsletters');
 
@@ -7,6 +7,9 @@ module.exports = {
     docName: 'newsletters',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'filter',
@@ -29,6 +32,9 @@ module.exports = {
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'fields',
@@ -102,6 +108,9 @@ module.exports = {
     },
 
     verifyPropertyUpdate: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: {
             method: 'edit'
         },

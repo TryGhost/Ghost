@@ -1,42 +1,49 @@
 const i18next = require('i18next');
 
 const SUPPORTED_LOCALES = [
-    'af',
-    'bg',
-    'ca',
-    'cs',
-    'da',
-    'de',
-    'en',
-    'eo',
-    'es',
-    'fr',
-    'hu',
-    'id',
-    'it',
-    'ko',
-    'mn',
-    'nl',
-    'no',
-    'pl',
-    'pt',
-    'pt-BR',
-    'ro',
-    'ru',
-    'si',
-    'sl',
-    'sr',
-    'sv',
-    'tr',
-    'uk',
-    'uz',
-    'vi',
-    'zh'
+    'af', // Afrikaans
+    'bg', // Bulgarian
+    'ca', // Catalan
+    'cs', // Czech
+    'da', // Danish
+    'de', // German
+    'en', // English
+    'eo', // Esperanto
+    'es', // Spanish
+    'fi', // Finnish
+    'fr', // French
+    'hr', // Croatian
+    'hu', // Hungarian
+    'id', // Indonesian
+    'it', // Italian
+    'ko', // Korean
+    'ja', // Japanese
+    'mn', // Mongolian
+    'ms', // Malay
+    'nl', // Dutch
+    'no', // Norwegian
+    'nn', // Norwegian Nynorsk
+    'pl', // Polish
+    'pt', // Portuguese
+    'pt-BR', // Portuguese (Brazil)
+    'ro', // Romanian
+    'ru', // Russian
+    'si', // Sinhala
+    'sl', // Slovenian
+    'sq', // Albanian
+    'sr', // Serbian
+    'sv', // Swedish
+    'tr', // Turkish
+    'uk', // Ukrainian
+    'uz', // Uzbek
+    'vi', // Vietnamese
+    'zh', // Chinese
+    'zh-Hant' // Traditional Chinese
 ];
 
 /**
  * @param {string} [lng]
- * @param {'ghost'|'portal'|'test'} ns
+ * @param {'ghost'|'portal'|'test'|'signup-form'} ns
  */
 module.exports = (lng = 'en', ns = 'portal') => {
     const i18nextInstance = i18next.createInstance();

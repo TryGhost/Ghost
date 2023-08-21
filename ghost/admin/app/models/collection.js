@@ -1,5 +1,7 @@
-import Model, {attr} from '@ember-data/model';
+import Model from '@ember-data/model';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
+import {attr} from '@ember-data/model';
+import {computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 export default Model.extend(ValidationEngine, {
@@ -16,6 +18,16 @@ export default Model.extend(ValidationEngine, {
     createdBy: attr('number'),
     updatedBy: attr('number'),
     count: attr('raw'),
+
+    posts: attr('raw'),
+
+    postIds: computed('posts', function () {
+        if (this.posts && this.posts.length) {
+            return this.posts.map(post => post.id);
+        } else {
+            return [];
+        }
+    }),
 
     feature: service()
 });

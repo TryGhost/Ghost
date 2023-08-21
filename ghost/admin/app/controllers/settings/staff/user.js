@@ -222,6 +222,11 @@ export default class UserController extends Controller {
     }
 
     @action
+    toggleDonationNotifications(event) {
+        this.user.donationNotifications = event.target.checked;
+    }
+
+    @action
     toggleMemberEmailAlerts(type, event) {
         if (type === 'free-signup') {
             this.user.freeMemberSignupNotification = event.target.checked;
@@ -326,8 +331,15 @@ export default class UserController extends Controller {
 
     @task
     *saveNewPasswordTask() {
-        yield this.user.saveNewPasswordTask.perform();
-        document.querySelector('#password-reset')?.reset();
+        try {
+            const user = yield this.user.saveNewPasswordTask.perform();
+            document.querySelector('#password-reset')?.reset();
+            return user;
+        } catch (error) {
+            if (error) {
+                this.notifications.showAPIError(error, {key: 'user.update'});
+            }
+        }
     }
 
     @action

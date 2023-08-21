@@ -123,6 +123,11 @@ const KoenigEditor = (props) => {
     return <_KoenigEditor {...props} />;
 };
 
+const WordCountPlugin = (props) => {
+    const {WordCountPlugin: _WordCountPlugin} = editorResource.read();
+    return <_WordCountPlugin {...props} />;
+};
+
 export default class KoenigLexicalEditor extends Component {
     @service ajax;
     @service feature;
@@ -130,6 +135,7 @@ export default class KoenigLexicalEditor extends Component {
     @service session;
     @service store;
     @service settings;
+    @service membersUtils;
 
     @inject config;
     offers = null;
@@ -151,7 +157,7 @@ export default class KoenigLexicalEditor extends Component {
     get pinturaConfig() {
         const jsUrl = this.getImageEditorJSUrl();
         const cssUrl = this.getImageEditorCSSUrl();
-        if (!this.feature.imageEditor || !jsUrl || !cssUrl) {
+        if (!this.feature.lexicalEditor || !jsUrl || !cssUrl) {
             return null;
         }
         return {
@@ -195,12 +201,14 @@ export default class KoenigLexicalEditor extends Component {
 
         if (this.config.sentry_dsn) {
             Sentry.captureException(error, {
-                tags: {
-                    lexical: true
+                tags: {lexical: true},
+                contexts: {
+                    koenig: {
+                        version: window['@tryghost/koenig-lexical']?.version
+                    }
                 }
             });
         }
-
         // don't rethrow, Lexical will attempt to gracefully recover
     }
 
@@ -232,13 +240,55 @@ export default class KoenigLexicalEditor extends Component {
             return response;
         };
 
+        const fetchCollectionPosts = async (collectionSlug) => {
+            const collectionPostsEndpoint = this.ghostPaths.url.api('posts');
+            const {posts} = await this.ajax.request(collectionPostsEndpoint, {
+                data: {
+                    collection: collectionSlug,
+                    limit: 12
+                }
+            });
+            return posts;
+        };
+
         const fetchAutocompleteLinks = async () => {
             const offers = await this.fetchOffersTask.perform();
 
             const defaults = [
                 {label: 'Homepage', value: window.location.origin + '/'},
-                {label: 'Free signup', value: window.location.origin + '/#/portal/signup/free'}
+                {label: 'Free signup', value: '#/portal/signup/free'}
             ];
+
+            const memberLinks = () => {
+                let links = [];
+                if (this.membersUtils.paidMembersEnabled) {
+                    links = [
+                        {
+                            label: 'Paid signup',
+                            value: '#/portal/signup'
+                        },
+                        {
+                            label: 'Upgrade or change plan',
+                            value: '#/portal/account/plans'
+                        }];
+                }
+
+                return links;
+            };
+
+            const donationLink = () => {
+                // TODO: remove feature condition once Tips & Donations have been released
+                if (this.feature.tipsAndDonations) {
+                    if (this.settings.donationsEnabled) {
+                        return [{
+                            label: 'Tip or donation',
+                            value: '#/portal/support'
+                        }];
+                    }
+                }
+
+                return [];
+            };
 
             const offersLinks = offers.toArray().map((offer) => {
                 return {
@@ -246,7 +296,8 @@ export default class KoenigLexicalEditor extends Component {
                     value: this.config.getSiteUrl(offer.code)
                 };
             });
-            return [...defaults, ...offersLinks];
+
+            return [...defaults, ...memberLinks(), ...donationLink(), ...offersLinks];
         };
 
         const fetchLabels = async () => {
@@ -255,23 +306,31 @@ export default class KoenigLexicalEditor extends Component {
             return labels.map(label => label.name);
         };
 
+        const unsplashConfig = {
+            defaultHeaders: {
+                Authorization: `Client-ID 8672af113b0a8573edae3aa3713886265d9bb741d707f6c01a486cde8c278980`,
+                'Accept-Version': 'v1',
+                'Content-Type': 'application/json',
+                'App-Pragma': 'no-cache',
+                'X-Unsplash-Cache': true
+            }
+        };
+
         const defaultCardConfig = {
-            unsplash: {
-                defaultHeaders: {
-                    Authorization: `Client-ID 8672af113b0a8573edae3aa3713886265d9bb741d707f6c01a486cde8c278980`,
-                    'Accept-Version': 'v1',
-                    'Content-Type': 'application/json',
-                    'App-Pragma': 'no-cache',
-                    'X-Unsplash-Cache': true
-                }
-            },
+            unsplash: this.settings.unsplash ? unsplashConfig : null,
             tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null,
-            fetchEmbed: fetchEmbed,
+            fetchEmbed,
+            fetchCollectionPosts,
             fetchAutocompleteLinks,
             fetchLabels,
             feature: {
-                signupCard: this.feature.get('signupCard')
+                collectionsCard: this.feature.get('collectionsCard'),
+                collections: this.feature.get('collections')
             },
+            depreciated: {
+                headerV1: true // if false, shows header v1 in the menu
+            },
+            membersEnabled: this.settings.get('membersSignupAccess') === 'all',
             siteTitle: this.settings.title,
             siteDescription: this.settings.description
         };
@@ -480,7 +539,7 @@ export default class KoenigLexicalEditor extends Component {
         const multiplayerUsername = this.session.user.name;
 
         return (
-            <div className={['koenig-react-editor', this.args.className].filter(Boolean).join(' ')}>
+            <div className={['koenig-react-editor', 'koenig-lexical', this.args.className].filter(Boolean).join(' ')}>
                 <ErrorHandler>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                         <KoenigComposer
@@ -492,6 +551,7 @@ export default class KoenigLexicalEditor extends Component {
                             multiplayerDocId={multiplayerDocId}
                             multiplayerEndpoint={multiplayerEndpoint}
                             onError={this.onError}
+                            darkMode={this.feature.nightShift}
                         >
                             <KoenigEditor
                                 cursorDidExitAtTop={this.args.cursorDidExitAtTop}
@@ -499,6 +559,7 @@ export default class KoenigLexicalEditor extends Component {
                                 onChange={this.args.onChange}
                                 registerAPI={this.args.registerAPI}
                             />
+                            <WordCountPlugin onChange={this.args.updateWordCount} />
                         </KoenigComposer>
                     </Suspense>
                 </ErrorHandler>

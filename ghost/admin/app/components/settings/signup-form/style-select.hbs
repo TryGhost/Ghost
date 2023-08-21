@@ -1,16 +1,5 @@
-<PowerSelect
-    @options={{this.options}}
-    @selected={{this.selectedOption}}
-    @onChange={{this.setRecipients}}
-    @triggerClass="gh-setting-dropdown"
-    @dropdownClass="gh-setting-dropdown-list"
-    as |option|
->
-    <div class="gh-setting-dropdown-content">
-        {{svg-jar option.icon class=(concat "w8 h8 mr2 fill-" (or option.icon_color "green"))}}
-        <div class="gh-radio-label">
-            {{option.name}}<br>
-            <div class="gh-radio-desc">{{option.description}}</div>
-        </div>
-    </div>
-</PowerSelect>
+<div class="gh-btn-group">
+    {{#each this.options as |option|}}
+        <button class="gh-btn {{if (eq this.selectedOption.value option.value) "gh-btn-group-selected"}}" type="button" {{on "click" (fn this.setRecipients option)}}><span>{{option.name}}</span></button>
+    {{/each}}
+</div>

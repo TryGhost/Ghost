@@ -9,19 +9,21 @@
     "dev": "echo \"Implement me!\"",
     "test:unit": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura mocha './test/**/*.test.js'",
     "test": "yarn test:unit",
-    "lint": "eslint . --ext .js --cache"
+    "lint:code": "eslint *.js lib/ --ext .js --cache",
+    "lint": "yarn lint:code && yarn lint:test",
+    "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache"
   },
   "files": [
     "index.js",
     "lib"
   ],
   "devDependencies": {
-    "@types/jsonwebtoken": "8.5.9",
-    "@types/nodemailer": "6.4.7",
-    "c8": "7.13.0",
+    "@types/jsonwebtoken": "9.0.2",
+    "@types/nodemailer": "6.4.9",
+    "c8": "7.14.0",
     "mocha": "10.2.0",
     "should": "13.2.3",
-    "sinon": "15.0.3"
+    "sinon": "15.2.0"
   },
   "dependencies": {
     "@tryghost/errors": "1.2.24",

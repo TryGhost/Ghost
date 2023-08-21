@@ -1,75 +1,12 @@
- <section class="gh-main-section">
-    <h4 class="gh-main-section-header small bn">Signup Form</h4>
-    <div class="gh-expandable">
-        <div class="gh-expandable-block">
-            <div class="gh-expandable-header">
-                <div>
-                    <h4 class="gh-expandable-title">Embeddable Sigup Form</h4>
-                    <p class="gh-expandable-description">Grow your audience from anywhere on the web</p>
-                </div>
-                <button type="button" class="gh-btn" {{on "click" (toggle "opened" this)}}>
-                    <span>{{if this.opened "Close" "Expand"}}</span>
-                </button>
-            </div>
-            <div class="gh-expandable-content">
-                {{#liquid-if this.opened}}
-                <div class="gh-setting-content-extended">
-                    <div class="gh-signup-form-container">
-                        <div>
-                            <div class="form-group max-width">
-                                <label class="fw6 f8">Embed style</label>
-                                <div class="gh-setting-richdd-container gh-setting-rich-dropdown">
-                                    <Settings::SignupForm::StyleSelect
-                                        @value={{this.style}}
-                                        @onChange={{this.setStyle}}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="form-group max-width">
-                                <label class="fw6 f8">Apply labels</label>
-                                <div class="gh-setting-richdd-container gh-setting-rich-dropdown">
-                                    <GhMemberLabelInput
-                                        @onChange={{this.setLabels}}
-                                        @allowEdit={{false}}
-                                        @labels={{this.labels}}
-                                        @triggerId="label-input"
-                                    />
-                                    <p>Members who sign up via the form will have these labels.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="form-group max-width">
-                        <label class="fw6 f8" for="gh-signup-form-embed-code-input">Embed code</label>
-                        <div class="gh-setting-richdd-container gh-setting-rich-dropdown">
-                            <div class="gh-signup-form-embed-code">
-                                <input id="gh-signup-form-embed-code-input" class="gh-input" type="text" readonly value={{this.generatedCode}}/>
-                                <GhTaskButton
-                                    @buttonText="Copy"
-                                    @task={{this.copyText}}
-                                    @successText="Copied"
-                                    @class="gh-btn gh-btn-black gh-btn-icon"
-                                />
-
-                            </div>
-                            <p>Copy and paste this HTML code somewhere inside the &lt;body&gt; tag of your site.</p>
-                        </div>
-                    </div>
-
-                    <div class="form-group max-width">
-                        <label class="fw6 f8">Preview</label>
-                        <div class="gh-setting-richdd-container gh-setting-rich-dropdown">
-                            <Settings::SignupForm::Preview
-                                @html={{this.generatedCode}}
-                            />
-                        </div>
-                    </div>
-                </div>
-                {{/liquid-if}}
-            </div>
+<div class="gh-expandable-block">
+    <div class="gh-expandable-header">
+        <div>
+            <h4 class="gh-expandable-title">Embeddable signup form</h4>
+            <p class="gh-expandable-description">Grow your audience from anywhere on the web</p>
         </div>
+        <button type="button" class="gh-btn" {{on "click" this.open}} disabled={{not (eq this.settings.membersSignupAccess "all")}}>
+            <span>Embed</span>
+        </button>
     </div>
-</section>
+</div>

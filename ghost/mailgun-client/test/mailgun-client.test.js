@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const nock = require('nock');
 const sinon = require('sinon');
 
@@ -43,8 +43,19 @@ describe('MailgunClient', function () {
         sinon.restore();
     });
 
-    it('exports a number for BATCH_SIZE', function () {
-        assert(typeof MailgunClient.BATCH_SIZE === 'number');
+    it('exports a number for configurable batch size', function () {
+        const configStub = sinon.stub(config, 'get');
+        configStub.withArgs('bulkEmail').returns({
+            mailgun: {
+                apiKey: 'apiKey',
+                domain: 'domain.com',
+                baseUrl: 'https://api.mailgun.net/v3'
+            },
+            batchSize: 1000
+        });
+
+        const mailgunClient = new MailgunClient({config, settings});
+        assert(typeof mailgunClient.getBatchSize() === 'number');
     });
 
     it('can connect via config', function () {
@@ -54,7 +65,8 @@ describe('MailgunClient', function () {
                 apiKey: 'apiKey',
                 domain: 'domain.com',
                 baseUrl: 'https://api.mailgun.net/v3'
-            }
+            },
+            batchSize: 1000
         });
 
         const mailgunClient = new MailgunClient({config, settings});
@@ -116,7 +128,8 @@ describe('MailgunClient', function () {
                 apiKey: 'apiKey',
                 domain: 'configdomain.com',
                 baseUrl: 'https://api.mailgun.net'
-            }
+            },
+            batchSize: 1000
         });
 
         const settingsStub = sinon.stub(settings, 'get');
@@ -150,7 +163,7 @@ describe('MailgunClient', function () {
             const mailgunClient = new MailgunClient({config, settings});
             const response = await mailgunClient.send({}, {}, []);
 
-            assert.strictEqual(response, null);
+            assert.equal(response, null);
         });
     });
 
@@ -170,7 +183,8 @@ describe('MailgunClient', function () {
                     apiKey: 'apiKey',
                     domain: 'domain.com',
                     baseUrl: 'https://api.mailgun.net/v3'
-                }
+                },
+                batchSize: 1000
             });
 
             const firstPageMock = nock('https://api.mailgun.net')
@@ -214,7 +228,8 @@ describe('MailgunClient', function () {
                     apiKey: 'apiKey',
                     domain: 'domain.com',
                     baseUrl: 'https://api.mailgun.net/v3'
-                }
+                },
+                batchSize: 1000
             });
 
             const firstPageMock = nock('https://api.mailgun.net')
@@ -259,7 +274,8 @@ describe('MailgunClient', function () {
                     apiKey: 'apiKey',
                     domain: 'domain.com',
                     baseUrl: 'https://api.mailgun.net/v3'
-                }
+                },
+                batchSize: 1000
             });
 
             const firstPageMock = nock('https://api.mailgun.net')
@@ -304,7 +320,8 @@ describe('MailgunClient', function () {
                     apiKey: 'apiKey',
                     domain: 'domain.com',
                     baseUrl: 'https://api.mailgun.net/v3'
-                }
+                },
+                batchSize: 1000
             });
 
             const firstPageMock = nock('https://api.mailgun.net')
@@ -349,7 +366,8 @@ describe('MailgunClient', function () {
                     apiKey: 'apiKey',
                     domain: 'domain.com',
                     baseUrl: 'https://api.eu.mailgun.net/v3'
-                }
+                },
+                batchSize: 1000
             });
 
             const firstPageMock = nock('https://api.eu.mailgun.net')
@@ -406,7 +424,7 @@ describe('MailgunClient', function () {
             const mailgunClient = new MailgunClient({config, settings});
             const result = mailgunClient.normalizeEvent(event);
 
-            assert.deepStrictEqual(result, {
+            assert.deepEqual(result, {
                 type: 'testEvent',
                 severity: 'testSeverity',
                 recipientEmail: 'testRecipient',
@@ -468,7 +486,7 @@ describe('MailgunClient', function () {
             const mailgunClient = new MailgunClient({config, settings});
             const result = mailgunClient.normalizeEvent(event);
 
-            assert.deepStrictEqual(result, {
+            assert.deepEqual(result, {
                 type: 'failed',
                 severity: 'permanent',
                 recipientEmail: 'testRecipient',
@@ -540,7 +558,7 @@ describe('MailgunClient', function () {
             const mailgunClient = new MailgunClient({config, settings});
             const result = mailgunClient.normalizeEvent(event);
 
-            assert.deepStrictEqual(result, {
+            assert.deepEqual(result, {
                 type: 'failed',
                 severity: 'permanent',
                 recipientEmail: 'testRecipient',

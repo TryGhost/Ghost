@@ -105,11 +105,10 @@ const deleteSuppression = async function (req, res) {
     try {
         const member = await membersService.ssr.getMemberDataFromSession(req, res);
         const options = {
-            id: member.id,
-            withRelated: ['newsletters']
+            id: member.id
         };
         await emailSuppressionList.removeEmail(member.email);
-        await membersService.api.members.update({subscribed: true}, options);
+        await membersService.api.members.update({email_disabled: false}, options);
 
         res.writeHead(204);
         res.end();
@@ -259,20 +258,28 @@ const createSessionFromMagicLink = async function (req, res, next) {
             }
         }
 
-        if (action === 'signin') {
-            const referrer = req.query.r;
-            const siteUrl = urlUtils.getSiteUrl();
+        // If a custom referrer/redirect was passed, redirect the user to that URL
+        const referrer = req.query.r;
+        const siteUrl = urlUtils.getSiteUrl();
 
-            if (referrer && referrer.startsWith(siteUrl)) {
-                const redirectUrl = new URL(referrer);
-                redirectUrl.searchParams.set('success', true);
+        if (referrer && referrer.startsWith(siteUrl)) {
+            const redirectUrl = new URL(referrer);
+
+            // Copy search params
+            searchParams.forEach((value, key) => {
+                redirectUrl.searchParams.set(key, value);
+            });
+            redirectUrl.searchParams.set('success', 'true');
+
+            if (action === 'signin') {
+                // Not sure if we can delete this, this is a legacy param
                 redirectUrl.searchParams.set('action', 'signin');
-                return res.redirect(redirectUrl.href);
             }
+            return res.redirect(redirectUrl.href);
         }
 
         // Do a standard 302 redirect to the homepage, with success=true
-        searchParams.set('success', true);
+        searchParams.set('success', 'true');
         res.redirect(`${urlUtils.getSubdir()}/?${searchParams.toString()}`);
     } catch (err) {
         logging.warn(err.message);
