@@ -72,7 +72,7 @@
     "@types/validator": "13.11.1",
     "@vitejs/plugin-react": "4.0.4",
     "autoprefixer": "10.4.15",
-    "concurrently": "8.2.0",
+    "concurrently": "8.2.1",
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.3",
     "eslint-plugin-tailwindcss": "3.13.0",

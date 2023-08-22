@@ -120,7 +120,7 @@
     "*.js": "eslint"
   },
   "devDependencies": {
-    "concurrently": "8.2.0",
+    "concurrently": "8.2.1",
     "eslint": "8.44.0",
     "eslint-plugin-ghost": "3.3.0",
     "eslint-plugin-react": "7.33.0",
