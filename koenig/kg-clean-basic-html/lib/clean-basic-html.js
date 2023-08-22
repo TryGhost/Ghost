@@ -48,6 +48,11 @@ export default function cleanBasicHtml(html = '', _options = {}) {
     if (cleanHtml) {
         let doc = options.createDocument(cleanHtml);
 
+        // don't analyze the document if it's empty (can result in storing <br> tags if allowed)
+        if (doc.body.textContent === '') {
+            return null;
+        }
+
         doc.body.querySelectorAll('*').forEach((element) => {
             // Treat Zero Width Non-Joiner characters as spaces
             if (!element.textContent.trim().replace(/\u200c+/g, '')) {
