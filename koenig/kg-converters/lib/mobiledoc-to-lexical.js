@@ -65,6 +65,7 @@ const MARKUP_TO_FORMAT = {
     em: 1 << 1,
     i: 1 << 1,
     s: 1 << 2,
+    u: 1 << 3,
     code: 1 << 4,
     sub: 1 << 5,
     sup: 1 << 6

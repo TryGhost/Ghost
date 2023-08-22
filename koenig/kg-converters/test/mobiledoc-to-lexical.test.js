@@ -271,6 +271,72 @@ describe('mobiledocToLexical', function () {
             }));
         });
 
+        it('converts a paragraph with underlined text', function () {
+            const result = mobiledocToLexical(JSON.stringify({
+                version: MOBILEDOC_VERSION,
+                ghostVersion: GHOST_VERSION,
+                atoms: [],
+                cards: [],
+                markups: [
+                    ['u']
+                ],
+                sections: [
+                    [1, 'p', [
+                        [0, [], 0, 'Hello, '],
+                        [0, [0], 1, 'world'],
+                        [0, [], 0, '!']
+                    ]]
+                ]
+            }));
+            assert.equal(result, JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Hello, ',
+                                    type: 'text',
+                                    version: 1
+                                },
+                                {
+                                    detail: 0,
+                                    format: 8,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'world',
+                                    type: 'text',
+                                    version: 1
+                                },
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: '!',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        }
+                    ],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+        });
+
         it('converts a paragraph with strong and italic text', function () {
             const result = mobiledocToLexical(JSON.stringify({
                 version: MOBILEDOC_VERSION,
