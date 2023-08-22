@@ -1279,92 +1279,50 @@ describe('mobiledocToLexical', function () {
             }));
         });
 
-        it('converts H1s', function () {
-            const result = mobiledocToLexical(JSON.stringify({
-                version: MOBILEDOC_VERSION,
-                ghostVersion: GHOST_VERSION,
-                atoms: [],
-                cards: [],
-                markups: [],
-                sections: [
-                    [1, 'h1', [[0, [], 0, 'Heading 1']]]
-                ]
-            }));
-
-            assert.equal(result, JSON.stringify({
-                root: {
-                    children: [
-                        {
-                            children: [
-                                {
-                                    detail: 0,
-                                    format: 0,
-                                    mode: 'normal',
-                                    style: '',
-                                    text: 'Heading 1',
-                                    type: 'text',
-                                    version: 1
-                                }
-                            ],
-                            direction: 'ltr',
-                            format: '',
-                            indent: 0,
-                            type: 'heading',
-                            tag: 'h1',
-                            version: 1
-                        }
-                    ],
-                    direction: 'ltr',
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            }));
-        });
-
-        it('converts H2s', function () {
-            const result = mobiledocToLexical(JSON.stringify({
-                version: MOBILEDOC_VERSION,
-                ghostVersion: GHOST_VERSION,
-                atoms: [],
-                cards: [],
-                markups: [],
-                sections: [
-                    [1, 'h2', [[0, [], 0, 'Heading 2']]]
-                ]
-            }));
-
-            assert.equal(result, JSON.stringify({
-                root: {
-                    children: [
-                        {
-                            children: [
-                                {
-                                    detail: 0,
-                                    format: 0,
-                                    mode: 'normal',
-                                    style: '',
-                                    text: 'Heading 2',
-                                    type: 'text',
-                                    version: 1
-                                }
-                            ],
-                            direction: 'ltr',
-                            format: '',
-                            indent: 0,
-                            type: 'heading',
-                            tag: 'h2',
-                            version: 1
-                        }
-                    ],
-                    direction: 'ltr',
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            }));
+        it('converts all headings', function () {
+            for (let i = 1; i < 7; i++) {
+                const result = mobiledocToLexical(JSON.stringify({
+                    version: MOBILEDOC_VERSION,
+                    ghostVersion: GHOST_VERSION,
+                    atoms: [],
+                    cards: [],
+                    markups: [],
+                    sections: [
+                        [1, `h${i}`, [[0, [], 0, `Heading ${i}`]]]
+                    ]
+                }));
+    
+                assert.equal(result, JSON.stringify({
+                    root: {
+                        children: [
+                            {
+                                children: [
+                                    {
+                                        detail: 0,
+                                        format: 0,
+                                        mode: 'normal',
+                                        style: '',
+                                        text: `Heading ${i}`,
+                                        type: 'text',
+                                        version: 1
+                                    }
+                                ],
+                                direction: 'ltr',
+                                format: '',
+                                indent: 0,
+                                type: 'heading',
+                                tag: `h${i}`,
+                                version: 1
+                            }
+                        ],
+                        direction: 'ltr',
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                }));
+            }
         });
 
         it('converts headings with links and formatting', function () {

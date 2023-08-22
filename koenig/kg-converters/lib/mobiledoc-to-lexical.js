@@ -35,7 +35,7 @@ const TAG_TO_LEXICAL_NODE = {
     },
     h6: {
         type: 'heading',
-        tag: 'h5'
+        tag: 'h6'
     },
     blockquote: {
         type: 'quote'
