@@ -60,32 +60,6 @@ describe('Collections API', function () {
         mockManager.restore();
     });
 
-    it('Can add a Collection', async function () {
-        const collection = {
-            title: 'Test Collection',
-            description: 'Test Collection Description'
-        };
-
-        const {body: {collections: [{id: collectionId}]}} = await agent
-            .post('/collections/')
-            .body({
-                collections: [collection]
-            })
-            .expectStatus(201)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('collections')
-            })
-            .matchBodySnapshot({
-                collections: [matchCollection]
-            });
-
-        await agent
-            .delete(`/collections/${collectionId}/`)
-            .expectStatus(204);
-    });
-
     describe('Browse', function () {
         it('Can browse Collections', async function () {
             await agent
@@ -120,90 +94,92 @@ describe('Collections API', function () {
         });
     });
 
-    it('Can read a Collection by id and slug', async function () {
-        const collection = {
-            title: 'Test Collection to Read'
-        };
+    describe('Read', function () {
+        it('Can read a Collection by id and slug', async function () {
+            const collection = {
+                title: 'Test Collection to Read'
+            };
 
-        const addResponse = await agent
-            .post('/collections/')
-            .body({
-                collections: [collection]
-            })
-            .expectStatus(201)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('collections')
-            })
-            .matchBodySnapshot({
-                collections: [matchCollection]
-            });
+            const addResponse = await agent
+                .post('/collections/')
+                .body({
+                    collections: [collection]
+                })
+                .expectStatus(201)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('collections')
+                })
+                .matchBodySnapshot({
+                    collections: [matchCollection]
+                });
 
-        const collectionId = addResponse.body.collections[0].id;
+            const collectionId = addResponse.body.collections[0].id;
 
-        const readResponse = await agent
-            .get(`/collections/${collectionId}/`)
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                collections: [matchCollection]
-            });
+            const readResponse = await agent
+                .get(`/collections/${collectionId}/`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [matchCollection]
+                });
 
-        assert.equal(readResponse.body.collections[0].title, 'Test Collection to Read');
+            assert.equal(readResponse.body.collections[0].title, 'Test Collection to Read');
 
-        const collectionSlug = addResponse.body.collections[0].slug;
-        const readBySlugResponse = await agent
-            .get(`/collections/slug/${collectionSlug}/`)
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                collections: [matchCollection]
-            });
+            const collectionSlug = addResponse.body.collections[0].slug;
+            const readBySlugResponse = await agent
+                .get(`/collections/slug/${collectionSlug}/`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [matchCollection]
+                });
 
-        assert.equal(readBySlugResponse.body.collections[0].title, 'Test Collection to Read');
+            assert.equal(readBySlugResponse.body.collections[0].title, 'Test Collection to Read');
 
-        await agent
-            .delete(`/collections/${collectionId}/`)
-            .expectStatus(204);
-    });
+            await agent
+                .delete(`/collections/${collectionId}/`)
+                .expectStatus(204);
+        });
 
-    it('Can read a Collection by id and slug and include the post counts', async function () {
-        const {body: {collections: [collection]}} = await agent.get(`/collections/slug/featured/?include=count.posts`)
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                collections: [{
-                    ...matchCollection,
-                    count: {
-                        posts: 2
-                    }
-                }]
-            });
+        it('Can read a Collection by id and slug and include the post counts', async function () {
+            const {body: {collections: [collection]}} = await agent.get(`/collections/slug/featured/?include=count.posts`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [{
+                        ...matchCollection,
+                        count: {
+                            posts: 2
+                        }
+                    }]
+                });
 
-        await agent.get(`/collections/${collection.id}/?include=count.posts`)
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                collections: [{
-                    ...matchCollection,
-                    count: {
-                        posts: 2
-                    }
-                }]
-            });
+            await agent.get(`/collections/${collection.id}/?include=count.posts`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [{
+                        ...matchCollection,
+                        count: {
+                            posts: 2
+                        }
+                    }]
+                });
+        });
     });
 
     describe('Edit', function () {
@@ -267,72 +243,102 @@ describe('Collections API', function () {
         });
     });
 
-    it('Can delete a Collection', async function () {
-        const collection = {
-            title: 'Test Collection to Delete'
-        };
+    describe('Add', function () {
+        it('Can add a Collection', async function () {
+            const collection = {
+                title: 'Test Collection',
+                description: 'Test Collection Description'
+            };
 
-        const addResponse = await agent
-            .post('/collections/')
-            .body({
-                collections: [collection]
-            })
-            .expectStatus(201)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('collections')
-            })
-            .matchBodySnapshot({
-                collections: [matchCollection]
-            });
+            const {body: {collections: [{id: collectionId}]}} = await agent
+                .post('/collections/')
+                .body({
+                    collections: [collection]
+                })
+                .expectStatus(201)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('collections')
+                })
+                .matchBodySnapshot({
+                    collections: [matchCollection]
+                });
 
-        const collectionId = addResponse.body.collections[0].id;
-
-        await agent
-            .delete(`/collections/${collectionId}/`)
-            .expectStatus(204)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot();
-
-        await agent
-            .get(`/collections/${collectionId}/`)
-            .expectStatus(404)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            });
+            await agent
+                .delete(`/collections/${collectionId}/`)
+                .expectStatus(204);
+        });
     });
 
-    it('Cannot delete a built in collection', async function () {
-        const builtInCollection = await agent
-            .get('/collections/?filter=slug:featured')
-            .expectStatus(200);
+    describe('Delete', function () {
+        it('Can delete a Collection', async function () {
+            const collection = {
+                title: 'Test Collection to Delete'
+            };
 
-        assert.ok(builtInCollection.body.collections);
-        assert.equal(builtInCollection.body.collections.length, 1);
+            const addResponse = await agent
+                .post('/collections/')
+                .body({
+                    collections: [collection]
+                })
+                .expectStatus(201)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('collections')
+                })
+                .matchBodySnapshot({
+                    collections: [matchCollection]
+                });
 
-        await agent
-            .delete(`/collections/${builtInCollection.body.collections[0].id}/`)
-            .expectStatus(405)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId,
-                    context: anyString
-                }]
-            });
+            const collectionId = addResponse.body.collections[0].id;
+
+            await agent
+                .delete(`/collections/${collectionId}/`)
+                .expectStatus(204)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot();
+
+            await agent
+                .get(`/collections/${collectionId}/`)
+                .expectStatus(404)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                });
+        });
+
+        it('Cannot delete a built in collection', async function () {
+            const builtInCollection = await agent
+                .get('/collections/?filter=slug:featured')
+                .expectStatus(200);
+
+            assert.ok(builtInCollection.body.collections);
+            assert.equal(builtInCollection.body.collections.length, 1);
+
+            await agent
+                .delete(`/collections/${builtInCollection.body.collections[0].id}/`)
+                .expectStatus(405)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId,
+                        context: anyString
+                    }]
+                });
+        });
     });
 
     describe('Automatic Collection Filtering', function () {
