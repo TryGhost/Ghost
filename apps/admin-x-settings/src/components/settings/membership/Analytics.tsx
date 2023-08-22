@@ -105,7 +105,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
         >
             {inputs}
             <div className='mt-1'>
-                <Button color='green' label='Export post analytics' link={true} onClick={exportPosts} />
+                <Button color='green' label='Export analytics' link={true} onClick={exportPosts} />
             </div>
         </SettingGroup>
     );
