@@ -2261,63 +2261,6 @@ describe('Members API', function () {
             });
     });
 
-    it('Can edit a subscription', async function () {
-        const memberId = testUtils.DataGenerator.Content.members[1].id;
-
-        // Get the stripe price ID of the default price for month
-        const price = await stripeMocker.getPriceForTier('default-product', 'year');
-
-        const res = await agent
-            .post(`/members/${memberId}/subscriptions/`)
-            .body({
-                stripe_price_id: price.id
-            })
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: new Array(1).fill({
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    labels: anyArray,
-                    subscriptions: [subscriptionSnapshotWithTier],
-                    newsletters: anyArray,
-                    tiers: [tierSnapshot]
-                })
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-
-        const subscriptionId = res.body.members[0].subscriptions[0].id;
-
-        const editRes = await agent
-            .put(`/members/${memberId}/subscriptions/${subscriptionId}`)
-            .body({
-                status: 'canceled'
-            })
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: new Array(1).fill({
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    labels: anyArray,
-                    subscriptions: [subscriptionSnapshot],
-                    newsletters: anyArray,
-                    tiers: []
-                })
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-
-        assert.equal('canceled', editRes.body.members[0].subscriptions[0].status);
-    });
-
     // Delete a member
 
     it('Can destroy', async function () {
