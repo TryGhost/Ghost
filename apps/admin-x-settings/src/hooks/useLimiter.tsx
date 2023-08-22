@@ -105,7 +105,7 @@ export const useLimiter = () => {
     return {
         isLimited: (limitName: string): boolean => limiter.isLimited(limitName),
         checkWouldGoOverLimit: (limitName: string): Promise<boolean> => limiter.checkWouldGoOverLimit(limitName),
-        errorIfWouldGoOverLimit: (limitName: string): Promise<void> => limiter.errorIfWouldGoOverLimit(limitName),
+        errorIfWouldGoOverLimit: (limitName: string, metadata: Record<string, unknown> = {}): Promise<void> => limiter.errorIfWouldGoOverLimit(limitName, metadata),
         errorIfIsOverLimit: (limitName: string): Promise<void> => limiter.errorIfIsOverLimit(limitName)
     };
 };

@@ -12,6 +12,7 @@ import TabView from '../../../admin-x-ds/global/TabView';
 import ThemeInstalledModal from './theme/ThemeInstalledModal';
 import ThemePreview from './theme/ThemePreview';
 import useRouting from '../../../hooks/useRouting';
+import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {OfficialTheme} from '../../providers/ServiceProvider';
 import {Theme, useBrowseThemes, useInstallTheme, useUploadTheme} from '../../../api/themes';
 
@@ -40,6 +41,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
 }) => {
     const {updateRoute} = useRouting();
     const {mutateAsync: uploadTheme} = useUploadTheme();
+    const limiter = useLimiter();
 
     const onClose = () => {
         updateRoute('design/edit');
@@ -53,6 +55,25 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         file: File;
         onActivate?: () => void
     }) => {
+        try {
+            // Sending a bad string to make sure it fails (empty string isn't valid)
+            await limiter?.errorIfWouldGoOverLimit('customThemes', {value: '.'});
+        } catch (error) {
+            if (error instanceof HostLimitError) {
+                NiceModal.show(ConfirmationModal, {
+                    title: 'Upgrade to enable custom themes',
+                    prompt: error.message || <>Your current plan only supports official themes. You can install them from the <a href="https://ghost.org/marketplace/">Ghost theme marketplace</a>.</>,
+                    okLabel: 'Upgrade',
+                    onOk: () => {
+                        updateRoute({isExternal: true, route: 'pro'});
+                    }
+                });
+                return;
+            }
+
+            throw error;
+        }
+
         const data = await uploadTheme({file});
         const uploadedTheme = data.themes[0];
 
