@@ -15,6 +15,6 @@ describe('Quotes', function () {
         const renderer = new Renderer({nodes: [AsideNode]});
         const html = await renderer.render(editorState);
 
-        html.should.eql(`<blockquote class='kg-blockquote-alt'>Aside with <strong>formatting</strong></blockquote>`);
+        html.should.eql(`<blockquote class="kg-blockquote-alt">Aside with <strong>formatting</strong></blockquote>`);
     });
 });

@@ -6,6 +6,6 @@ module.exports = {
             return null;
         }
 
-        return `<blockquote class='kg-blockquote-alt'>${exportChildren(node)}</blockquote>`;
+        return `<blockquote class="kg-blockquote-alt">${exportChildren(node)}</blockquote>`;
     }
 };
