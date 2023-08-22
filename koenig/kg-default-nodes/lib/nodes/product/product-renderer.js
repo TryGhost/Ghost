@@ -68,7 +68,7 @@ export function emailCardTemplate({data}) {
             ${data.productImageSrc ? `
                 <tr>
                     <td align="center" style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;">
-                        <img src="${data.productImageSrc}" ${data.productImageWidth ? `width="${data.productImageWidth}"` : ''} ${data.productImageHeight ? `height="${data.productImageHeight}"` : ''} style="height: auto; border: none; padding-bottom: 16px;" border="0">
+                        <img src="${data.productImageSrc}" ${data.productImageWidth ? `width="${data.productImageWidth}"` : ''} ${data.productImageHeight ? `height="${data.productImageHeight}"` : ''} style="height: auto; border: none; padding-bottom: 16px;" border="0"/>
                     </td>
                 </tr>
             ` : ''}
@@ -80,7 +80,7 @@ export function emailCardTemplate({data}) {
             ${data.productRatingEnabled ? `
                 <tr style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;">
                     <td valign="top">
-                        <img src="${`https://static.ghost.org/v4.0.0/images/star-rating-${data.productStarRating}.png`}" style="border: none; width: 96px;" border="0">
+                        <img src="${`https://static.ghost.org/v4.0.0/images/star-rating-${data.productStarRating}.png`}" style="border: none; width: 96px;" border="0" />
                     </td>
                 </tr>
             ` : ''}
