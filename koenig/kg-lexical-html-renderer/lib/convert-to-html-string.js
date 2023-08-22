@@ -2,6 +2,7 @@ const {
     $getRoot,
     $isElementNode,
     $isLineBreakNode,
+    $isParagraphNode,
     $isTextNode
 } = require('lexical');
 const {$isLinkNode} = require('@lexical/link');
@@ -21,6 +22,13 @@ function $convertToHtmlString(options = {}) {
         if (result !== null) {
             output.push(result);
         }
+    }
+
+    // Koenig keeps a blank paragraph at the end of a doc but we want to
+    // make sure it doesn't get rendered
+    const lastChild = children[children.length - 1];
+    if (lastChild && $isParagraphNode(lastChild) && lastChild.getTextContent().trim() === '') {
+        output.pop();
     }
 
     return output.join('\n');
