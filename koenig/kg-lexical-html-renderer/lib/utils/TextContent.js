@@ -79,6 +79,9 @@ class TextContent {
         if (node.getURL()) {
             a.setAttribute('href', node.getURL());            
         }
+        if (node.getRel()) {
+            a.setAttribute('rel', node.getRel());
+        }
         a.innerHTML = exportChildren(node, options);
 
         this.currentNode.append(a);
