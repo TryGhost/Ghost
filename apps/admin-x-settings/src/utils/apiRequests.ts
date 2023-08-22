@@ -72,6 +72,8 @@ export const useFetchApi = () => {
             throw new ApiError(response, data);
         } else if (response.status === 204) {
             return;
+        } else if (response.headers.get('content-type')?.includes('text/csv')) {
+            return await response.text();
         } else {
             return await response.json();
         }
