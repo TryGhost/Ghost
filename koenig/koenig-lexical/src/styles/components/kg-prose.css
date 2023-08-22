@@ -667,7 +667,7 @@
         > :where(
             div + div
         ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            margin: 3.2rem 0 0;
+            padding: 3.2rem 0 0;
         }
 
         > :where(
@@ -683,13 +683,13 @@
             ul + div,
             ol + div
         ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            margin: 3.2rem 0 0;
+            padding: 3.2rem 0 0;
         }
 
         :where(
             h1 + div
         ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            margin: 2.8rem 0 0;
+            padding: 2.8rem 0 0;
         }
 
         :where(
@@ -699,7 +699,7 @@
             h5 + div,
             h6 + div
         ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-            margin: 1.6rem 0 0;
+            padding: 1.6rem 0 0;
         }
 
         :where(

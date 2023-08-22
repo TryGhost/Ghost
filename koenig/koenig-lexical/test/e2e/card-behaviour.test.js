@@ -260,6 +260,41 @@ test.describe('Card behaviour', async () => {
         });
 
         //test.fixme('lazy click puts card in edit mode');
+        test('clicking in the space between cards selects the card under it', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('---');
+            await page.keyboard.type('```javascript ');
+            await page.waitForSelector('[data-kg-card="codeblock"] .cm-editor');
+            await page.keyboard.type('import React from "react"');
+            await page.keyboard.press('Meta+Enter');
+            await page.keyboard.press('ArrowUp');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule">
+                        <hr>
+                    </div>
+                </div>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="codeblock">
+                    </div>
+                </div>
+            `, {ignoreCardContents: true});
+            
+            await page.mouse.click(275, 275);
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
+                        <hr>
+                    </div>
+                </div>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="codeblock">
+                    </div>
+                </div>
+            `, {ignoreCardContents: true});
+        });
     });
 
     test.describe('LEFT', function () {
