@@ -7,6 +7,7 @@ import Table from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
 import useRouting from '../../../../hooks/useRouting';
+import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {Newsletter, useEditNewsletter} from '../../../../api/newsletters';
 import {modalRoutes} from '../../../providers/RoutingProvider';
 
@@ -17,6 +18,7 @@ interface NewslettersListProps {
 const NewsletterItem: React.FC<{newsletter: Newsletter, onlyOne: boolean}> = ({newsletter, onlyOne}) => {
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const {updateRoute} = useRouting();
+    const limiter = useLimiter();
 
     const action = newsletter.status === 'active' ? (
         <Button color='green' disabled={onlyOne} label='Archive' link onClick={() => {
@@ -34,7 +36,26 @@ const NewsletterItem: React.FC<{newsletter: Newsletter, onlyOne: boolean}> = ({n
             });
         }} />
     ) : (
-        <Button color='green' label='Activate' link onClick={() => {
+        <Button color='green' label='Activate' link onClick={async () => {
+            try {
+                await limiter?.errorIfWouldGoOverLimit('newsletters');
+            } catch (error) {
+                if (error instanceof HostLimitError) {
+                    NiceModal.show(ConfirmationModal, {
+                        formSheet: false,
+                        title: 'Upgrade your plan',
+                        prompt: error.message || `Your current plan doesn't support more newsletters.`,
+                        okLabel: 'Upgrade',
+                        onOk: () => {
+                            updateRoute({isExternal: true, route: 'pro'});
+                        }
+                    });
+                    return;
+                } else {
+                    throw error;
+                }
+            }
+
             NiceModal.show(ConfirmationModal, {
                 title: 'Reactivate newsletter',
                 prompt: <>
