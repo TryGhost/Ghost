@@ -54,6 +54,18 @@ type CollectionPostListItemDTO = {
     title: string;
     featured: boolean;
     featured_image?: string;
+    og_image?: string;
+    og_title?: string;
+    og_description?: string;
+    twitter_image?: string;
+    twitter_title?: string;
+    twitter_description?: string;
+    meta_title?: string;
+    meta_description?: string;
+    codeinjection_head?: string;
+    codeinjection_foot?: string;
+    canonical_url?: string;
+    accent_color?: string;
     created_at: Date;
     updated_at: Date;
     published_at: Date,
@@ -67,6 +79,18 @@ type ManualCollection = {
     description?: string;
     feature_image?: string;
     filter?: null;
+    og_image?: string;
+    og_title?: string;
+    og_description?: string;
+    twitter_image?: string;
+    twitter_title?: string;
+    twitter_description?: string;
+    meta_title?: string;
+    meta_description?: string;
+    codeinjection_head?: string;
+    codeinjection_foot?: string;
+    canonical_url?: string;
+    accent_color?: string;
     deletable?: boolean;
 };
 
@@ -77,6 +101,18 @@ type AutomaticCollection = {
     slug?: string;
     description?: string;
     feature_image?: string;
+    og_image?: string;
+    og_title?: string;
+    og_description?: string;
+    twitter_image?: string;
+    twitter_title?: string;
+    twitter_description?: string;
+    meta_title?: string;
+    meta_description?: string;
+    codeinjection_head?: string;
+    codeinjection_foot?: string;
+    canonical_url?: string;
+    accent_color?: string;
     deletable?: boolean;
 };
 
@@ -244,6 +280,9 @@ export class CollectionsService {
                 type: data.type,
                 filter: data.filter,
                 featureImage: data.feature_image,
+                ogImage: data.og_image,
+                ogTitle: data.og_title,
+
                 deletable: data.deletable
             });
 
