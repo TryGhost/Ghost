@@ -5,6 +5,7 @@ const {
     mockManager,
     matchers
 } = require('../../utils/e2e-framework');
+const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
 const {
     anyContentVersion,
     anyEtag,
@@ -485,6 +486,101 @@ describe('Collections API', function () {
                         ...matchPostShallowIncludes,
                         tags: new Array(2).fill(tagSnapshotMatcher)
                     })
+                });
+        });
+    });
+
+    describe('Collection Posts updates automatically', function () {
+        it('Updates collections when a Post is added/edited/deleted', async function () {
+            await agent
+                .get(`/collections/slug/featured/?include=count.posts`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [{
+                        ...matchCollection,
+                        count: {
+                            posts: 2
+                        }
+                    }]
+                });
+
+            const postToAdd = {
+                title: 'Collection update test',
+                featured: false
+            };
+
+            const {body: {posts: [post]}} = await agent
+                .post('/posts/')
+                .body({
+                    posts: [postToAdd]
+                })
+                .expectStatus(201);
+
+            await agent
+                .get(`/collections/slug/featured/?include=count.posts`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [{
+                        ...matchCollection,
+                        count: {
+                            posts: 2
+                        }
+                    }]
+                });
+
+            await agent
+                .put(`/posts/${post.id}/`)
+                .body({
+                    posts: [Object.assign({}, post, {featured: true})]
+                })
+                .expectStatus(200);
+
+            await DomainEvents.allSettled();
+
+            await agent
+                .get(`/collections/slug/featured/?include=count.posts`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [{
+                        ...matchCollection,
+                        count: {
+                            posts: 3
+                        }
+                    }]
+                });
+
+            await agent
+                .delete(`/posts/${post.id}/`)
+                .expectStatus(204);
+
+            await DomainEvents.allSettled();
+
+            await agent
+                .get(`/collections/slug/featured/?include=count.posts`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [{
+                        ...matchCollection,
+                        count: {
+                            posts: 2
+                        }
+                    }]
                 });
         });
     });
