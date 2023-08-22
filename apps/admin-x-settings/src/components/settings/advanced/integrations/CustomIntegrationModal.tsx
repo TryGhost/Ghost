@@ -126,7 +126,7 @@ const CustomIntegrationModal: React.FC<CustomIntegrationModalProps> = ({integrat
                         onChange={e => updateForm(state => ({...state, name: e.target.value}))}
                         onKeyDown={() => clearError('name')}
                     />
-                    <TextField title='Description' value={formState.description} onChange={e => updateForm(state => ({...state, description: e.target.value}))} />
+                    <TextField title='Description' value={formState.description || ''} onChange={e => updateForm(state => ({...state, description: e.target.value}))} />
                     <div>
                         <APIKeys keys={[
                             {

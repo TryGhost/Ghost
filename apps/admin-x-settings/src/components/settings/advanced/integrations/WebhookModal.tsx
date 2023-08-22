@@ -56,7 +56,7 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId, onSa
 
     return <Modal
         okColor='black'
-        okLabel='Add'
+        okLabel={webhook ? 'Update' : 'Add'}
         size='sm'
         testId='webhook-modal'
         title='Add webhook'
@@ -94,6 +94,8 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId, onSa
                     options={webhookEventOptions}
                     prompt='Select an event'
                     selectedOption={formState.event}
+                    title='Event'
+                    hideTitle
                     onSelect={(event) => {
                         updateForm(state => ({...state, event}));
                         clearError('event');

@@ -1,22 +1,8 @@
 import {APIKey} from './apiKeys';
 import {Meta, createMutation, createQuery} from '../utils/apiRequests';
+import {Webhook} from './webhooks';
 
 // Types
-
-export type IntegrationWebhook = {
-    id: string;
-    event: string;
-    target_url: string;
-    name: string;
-    secret: string | null;
-    api_version: string;
-    integration_id: string;
-    last_triggered_at: string | null;
-    last_triggered_status: string | null;
-    last_triggered_error: string | null;
-    created_at: string;
-    updated_at: string;
-}
 
 export type Integration = {
     id: string;
@@ -24,11 +10,11 @@ export type Integration = {
     name: string;
     slug: string;
     icon_image: string | null;
-    description: string;
+    description: string | null;
     created_at: string;
     updated_at: string;
     api_keys?: APIKey[];
-    webhooks?: IntegrationWebhook[];
+    webhooks?: Webhook[];
 }
 
 export interface IntegrationsResponseType {
