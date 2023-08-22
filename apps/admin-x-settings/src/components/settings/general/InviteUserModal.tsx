@@ -4,6 +4,7 @@ import Radio from '../../../admin-x-ds/global/form/Radio';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import useRouting from '../../../hooks/useRouting';
 import validator from 'validator';
+import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {showToast} from '../../../admin-x-ds/global/Toast';
 import {useAddInvite} from '../../../api/invites';
 import {useBrowseRoles} from '../../../api/roles';
@@ -16,6 +17,7 @@ const InviteUserModal = NiceModal.create(() => {
     const assignableRolesQuery = useBrowseRoles({
         searchParams: {limit: 'all', permissions: 'assign'}
     });
+    const limiter = useLimiter();
 
     const {updateRoute} = useRouting();
 
@@ -25,6 +27,7 @@ const InviteUserModal = NiceModal.create(() => {
     const [role, setRole] = useState<RoleType>('contributor');
     const [errors, setErrors] = useState<{
         email?: string;
+        role?: string;
     }>({});
 
     const {mutateAsync: addInvite} = useAddInvite();
@@ -70,6 +73,22 @@ const InviteUserModal = NiceModal.create(() => {
             });
             return;
         }
+
+        if (role !== 'contributor' && limiter?.isLimited('staff')) {
+            try {
+                await limiter.errorIfWouldGoOverLimit('staff');
+            } catch (error) {
+                if (error instanceof HostLimitError) {
+                    setErrors({
+                        role: error.message
+                    });
+                    return;
+                } else {
+                    throw error;
+                }
+            }
+        }
+
         setSaveState('saving');
         try {
             await addInvite({
@@ -153,6 +172,8 @@ const InviteUserModal = NiceModal.create(() => {
                 />
                 <div>
                     <Radio
+                        error={!!errors.role}
+                        hint={errors.role}
                         id='role'
                         options={allowedRoleOptions}
                         selectedOption={role}
