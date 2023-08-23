@@ -31,6 +31,17 @@ describe('i18n', function () {
         }
     });
 
+    it('is uses default export if available', async function () {
+        const translationFile = require(path.join(`../locales/`, 'nl', 'portal.json'));
+        translationFile.Name = undefined;
+        translationFile.default = {
+            Name: 'Naam'
+        };
+
+        const t = i18n('nl', 'portal').t;
+        assert.equal(t('Name'), 'Naam');
+    });
+
     describe('Can use Portal resources', function () {
         describe('Dutch', function () {
             let t;
