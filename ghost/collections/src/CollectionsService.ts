@@ -4,7 +4,8 @@ import {Knex} from "knex";
 import {
     PostsBulkUnpublishedEvent,
     PostsBulkFeaturedEvent,
-    PostsBulkUnfeaturedEvent
+    PostsBulkUnfeaturedEvent,
+    PostsBulkAddTagsEvent
 } from "@tryghost/post-events";
 import {Collection} from './Collection';
 import {CollectionRepository} from './CollectionRepository';
@@ -205,6 +206,11 @@ export class CollectionsService {
 
         this.DomainEvents.subscribe(TagDeletedEvent, async (event: TagDeletedEvent) => {
             logging.info(`TagDeletedEvent received for ${event.data.id}, updating all collections`);
+            await this.updateAllAutomaticCollections();
+        });
+
+        this.DomainEvents.subscribe(PostsBulkAddTagsEvent, async (event: PostsBulkAddTagsEvent) => {
+            logging.info(`PostsBulkAddTagsEvent received for ${event.data}, updating all collections`);
             await this.updateAllAutomaticCollections();
         });
     }
@@ -421,7 +427,26 @@ export class CollectionsService {
             }
 
             const collectionData = this.fromDTO(data);
-            await collection.edit(collectionData, this.uniqueChecker);
+
+            if (collectionData.title) {
+                collection.title = collectionData.title;
+            }
+
+            if (data.slug !== undefined) {
+                await collection.setSlug(data.slug, this.uniqueChecker);
+            }
+
+            if (data.description !== undefined) {
+                collection.description = data.description;
+            }
+
+            if (data.filter !== undefined) {
+                collection.filter = data.filter;
+            }
+
+            if (data.feature_image !== undefined) {
+                collection.featureImage = data.feature_image;
+            }
 
             if (collection.type === 'manual' && data.posts) {
                 for (const post of data.posts) {

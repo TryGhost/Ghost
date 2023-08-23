@@ -202,6 +202,55 @@ export class MockedApi {
             });
         });
 
+         // LIKE a single comment
+         await page.route(`${path}/members/api/comments/*/like/`, async (route) => {
+            const url = new URL(route.request().url());
+            const commentId = url.pathname.split('/').reverse()[2];
+
+            const comment = this.comments.find(c => c.id === commentId);
+            if (!comment) {
+                return await route.fulfill({
+                    status: 404,
+                    body: 'Comment not found'
+                });
+            }
+
+            if (route.request().method() === 'POST') {
+                comment.count.likes += 1;
+                comment.liked = true;
+            }
+
+            if (route.request().method() === 'DELETE') {
+                comment.count.likes -= 1;
+                comment.liked = false;
+            }
+
+            await route.fulfill({
+                status: 200,
+                body: JSON.stringify(this.browseComments({
+                    limit: 1,
+                    filter: `id:'${commentId}'`,
+                    page: 1
+                }))
+            });
+        });
+
+
+        // GET a single comment
+        await page.route(`${path}/members/api/comments/*/`, async (route) => {
+            const url = new URL(route.request().url());
+            const commentId = url.pathname.split('/').reverse()[1];
+
+            await route.fulfill({
+                status: 200,
+                body: JSON.stringify(this.browseComments({
+                    limit: 1,
+                    filter: `id:'${commentId}'`,
+                    page: 1
+                }))
+            });
+        });
+
         await page.route(`${path}/members/api/comments/*/replies/*`, async (route) => {
             const url = new URL(route.request().url());
 

@@ -120,6 +120,13 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
         MINIMAL_NODES: koenig.MINIMAL_TRANSFORMERS
     };
 
+    const handleSetHtml = (html: string) => {
+        // Koenig sends this event on load without changing the value, so this prevents forms from being marked as unsaved
+        if (html !== value) {
+            onChange?.(html);
+        }
+    };
+
     return (
         <koenig.KoenigComposer
             nodes={koenig[nodes || 'DEFAULT_NODES']}
@@ -135,7 +142,7 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
                 singleParagraph={true}
                 onBlur={onBlur}
             >
-                <koenig.HtmlOutputPlugin html={value} setHtml={onChange} />
+                <koenig.HtmlOutputPlugin html={value} setHtml={handleSetHtml} />
             </koenig.KoenigComposableEditor>
         </koenig.KoenigComposer>
     );

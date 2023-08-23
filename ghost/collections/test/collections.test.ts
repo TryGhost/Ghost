@@ -12,7 +12,8 @@ import {
     PostsBulkDestroyedEvent,
     PostsBulkUnpublishedEvent,
     PostsBulkFeaturedEvent,
-    PostsBulkUnfeaturedEvent
+    PostsBulkUnfeaturedEvent,
+    PostsBulkAddTagsEvent
 } from '@tryghost/post-events';
 import {PostsRepositoryInMemory} from './fixtures/PostsRepositoryInMemory';
 import {posts as postFixtures} from './fixtures/posts';
@@ -276,7 +277,7 @@ describe('CollectionsService', function () {
 
             let updatedCollection = await collectionsService.edit({
                 id: collection.id,
-                filter: 'id:post-3-featured'
+                filter: 'featured:true+published_at:>2023-05-20'
             });
 
             assert.equal(updatedCollection?.posts.length, 1, 'Collection should have one post');
@@ -390,6 +391,81 @@ describe('CollectionsService', function () {
 
                 assert.equal((await collectionsService.getById(automaticCollectionWithTag.id))?.posts.length, 0);
                 assert.equal((await collectionsService.getById(automaticCollectionWithoutTag.id))?.posts.length, 2);
+            });
+
+            it('Updates all collections when post tags are added in bulk', async function () {
+                const collectionsRepository = new CollectionsRepositoryInMemory();
+                postsRepository = await initPostsRepository([
+                    {
+                        id: 'post-1',
+                        url: 'http://localhost:2368/post-1/',
+                        title: 'Post 1',
+                        slug: 'post-1',
+                        featured: false,
+                        tags: [{slug: 'existing-tag'}],
+                        created_at: new Date('2023-03-15T07:19:07.447Z'),
+                        updated_at: new Date('2023-03-15T07:19:07.447Z'),
+                        published_at: new Date('2023-03-15T07:19:07.447Z')
+                    }, {
+                        id: 'post-2',
+                        url: 'http://localhost:2368/post-2/',
+                        title: 'Post 2',
+                        slug: 'post-2',
+                        featured: false,
+                        tags: [],
+                        created_at: new Date('2023-04-05T07:20:07.447Z'),
+                        updated_at: new Date('2023-04-05T07:20:07.447Z'),
+                        published_at: new Date('2023-04-05T07:20:07.447Z')
+                    }
+                ]);
+
+                collectionsService = new CollectionsService({
+                    collectionsRepository,
+                    postsRepository,
+                    DomainEvents,
+                    slugService: {
+                        async generate(input) {
+                            return input.replace(/\s+/g, '-').toLowerCase();
+                        }
+                    }
+                });
+
+                const automaticCollectionWithExistingTag = await collectionsService.createCollection({
+                    title: 'Automatic Collection with Tag',
+                    description: 'testing automatic collection with tag',
+                    type: 'automatic',
+                    filter: 'tags:existing-tag'
+                });
+
+                const automaticCollectionWithBulkAddedTag = await collectionsService.createCollection({
+                    title: 'Automatic Collection without Tag',
+                    description: 'testing automatic collection without tag',
+                    type: 'automatic',
+                    filter: 'tags:to-be-created'
+                });
+
+                assert.equal((await collectionsService.getById(automaticCollectionWithExistingTag.id))?.posts.length, 1);
+                assert.equal((await collectionsService.getById(automaticCollectionWithBulkAddedTag.id))?.posts.length, 0);
+
+                collectionsService.subscribeToEvents();
+
+                const posts = await postsRepository.getAll();
+
+                for (const post of posts) {
+                    post.tags.push({slug: 'to-be-created'});
+                    await postsRepository.save(post);
+                }
+
+                const postsBulkAddTagsEvent = PostsBulkAddTagsEvent.create([
+                    'post-1',
+                    'post-2'
+                ]);
+
+                DomainEvents.dispatch(postsBulkAddTagsEvent);
+                await DomainEvents.allSettled();
+
+                assert.equal((await collectionsService.getById(automaticCollectionWithExistingTag.id))?.posts.length, 1);
+                assert.equal((await collectionsService.getById(automaticCollectionWithBulkAddedTag.id))?.posts.length, 2);
             });
 
             it('Updates all collections when post is deleted', async function () {

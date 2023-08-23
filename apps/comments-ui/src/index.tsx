@@ -36,35 +36,6 @@ function getRootDiv(scriptTag: HTMLElement) {
     return elem;
 }
 
-function getSiteData(scriptTag: HTMLElement) {
-    /**
-     * @type {HTMLElement}
-     */
-    let dataset = scriptTag?.dataset;
-
-    if (!scriptTag && process.env.NODE_ENV === 'development') {
-        // Use queryparams in test mode
-        dataset = Object.fromEntries(new URLSearchParams(window.location.search).entries());
-    } else if (!scriptTag) {
-        return {};
-    }
-
-    const siteUrl = dataset.ghostComments;
-    const apiKey = dataset.key;
-    const apiUrl = dataset.api;
-    const adminUrl = dataset.admin;
-    const postId = dataset.postId;
-    const colorScheme = dataset.colorScheme;
-    const avatarSaturation = dataset.avatarSaturation ? parseInt(dataset.avatarSaturation) : undefined;
-    const accentColor = dataset.accentColor ?? '#000000';
-    const commentsEnabled = dataset.commentsEnabled;
-    const title = dataset.title === 'null' ? null : dataset.title;
-    const showCount = dataset.count === 'true';
-    const publication = dataset.publication ?? ''; // TODO: replace with dynamic data from script
-
-    return {siteUrl, apiKey, apiUrl, postId, adminUrl, colorScheme, avatarSaturation, accentColor, commentsEnabled, title, showCount, publication};
-}
-
 function handleTokenUrl() {
     const url = new URL(window.location.href);
     if (url.searchParams.get('token')) {
@@ -77,16 +48,12 @@ function init() {
     const scriptTag = getScriptTag();
     const root = getRootDiv(scriptTag);
 
-    // const customSiteUrl = getSiteUrl();
-    const {siteUrl: customSiteUrl, ...siteData} = getSiteData(scriptTag);
-    const siteUrl = customSiteUrl || window.location.origin;
-
     try {
         handleTokenUrl();
 
         ReactDOM.render(
             <React.StrictMode>
-                {<App customSiteUrl={customSiteUrl} siteUrl={siteUrl} {...siteData} />}
+                {<App scriptTag={scriptTag} />}
             </React.StrictMode>,
             root
         );
