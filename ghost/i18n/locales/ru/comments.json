@@ -1,5 +1,5 @@
 {
-    "Reply": "",
-    "Show {{amount}} previous comments": "",
-    "Show 1 previous comment": ""
+    "Reply": "Ответить",
+    "Show {{amount}} previous comments": "Показать еще {{amount}} комментариев",
+    "Show 1 previous comment": "Показать предыдущий комментарий"
 }
