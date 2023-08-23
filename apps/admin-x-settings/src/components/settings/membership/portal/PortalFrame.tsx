@@ -33,13 +33,13 @@ function getPortalPreviewUrl({settings, tiers, siteData, selectedTab}: {
     const isMonthlyChecked = portalPlans.includes('monthly') ? 'true' : 'false';
     const isYearlyChecked = portalPlans.includes('yearly') ? 'true' : 'false';
     const portalButton = getSettingValue(settings, 'portal_button') === true ? 'true' : 'false'; // Assuming a boolean
-    const portalName = getSettingValue(settings, 'portal_name') || '';
+    const portalName = getSettingValue(settings, 'portal_name') as boolean;
     const signupCheckboxRequired = getSettingValue(settings, 'portal_signup_checkbox_required') ? 'true' : 'false'; // Assuming a boolean
     const portalSignupTermsHtml = getSettingValue(settings, 'portal_signup_terms_html') || '';
     let page = selectedTab === 'account' ? 'accountHome' : 'signup';
 
     settingsParam.append('button', portalButton);
-    settingsParam.append('name', portalName?.toString() || '');
+    settingsParam.append('name', portalName ? 'true' : 'false');
     settingsParam.append('isFree', isFreeChecked);
     settingsParam.append('isMonthly', isMonthlyChecked);
     settingsParam.append('isYearly', isYearlyChecked);
