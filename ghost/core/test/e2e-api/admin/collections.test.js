@@ -1,11 +1,11 @@
 const assert = require('assert/strict');
+const DomainEvents = require('@tryghost/domain-events');
 const {
     agentProvider,
     fixtureManager,
     mockManager,
     matchers
 } = require('../../utils/e2e-framework');
-const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
 const {
     anyContentVersion,
     anyEtag,
@@ -579,6 +579,118 @@ describe('Collections API', function () {
                         ...matchCollection,
                         count: {
                             posts: 2
+                        }
+                    }]
+                });
+        });
+
+        it('Updates a collection with tag filter when tag is added to posts in bulk and when tag is removed', async function (){
+            const collection = {
+                title: 'Papaya madness',
+                type: 'automatic',
+                filter: 'tags:[\'papaya\']'
+            };
+
+            const {body: {collections: [{id: collectionId}]}} = await agent
+                .post('/collections/')
+                .body({
+                    collections: [collection]
+                })
+                .expectStatus(201)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('collections')
+                })
+                .matchBodySnapshot({
+                    collections: [matchCollection]
+                });
+
+            // should contain no posts
+            await agent
+                .get(`/collections/${collectionId}/?include=count.posts`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [{
+                        ...matchCollection,
+                        count: {
+                            posts: 0
+                        }
+                    }]
+                });
+
+            const tag = {
+                name: 'Papaya',
+                slug: 'papaya'
+            };
+
+            const {body: {tags: [{id: tagId}]}} = await agent
+                .post('/tags/')
+                .body({
+                    tags: [tag]
+                })
+                .expectStatus(201);
+
+            // add papaya tag to all posts
+            await agent
+                .put('/posts/bulk/?filter=' + encodeURIComponent('status:[published]'))
+                .body({
+                    bulk: {
+                        action: 'addTag',
+                        meta: {
+                            tags: [
+                                {
+                                    id: tagId
+                                }
+                            ]
+                        }
+                    }
+                })
+                .expectStatus(200)
+                .matchBodySnapshot();
+
+            await DomainEvents.allSettled();
+
+            // should contain posts with papaya tags
+            await agent
+                .get(`/collections/${collectionId}/?include=count.posts`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [{
+                        ...matchCollection,
+                        count: {
+                            posts: 11
+                        }
+                    }]
+                });
+
+            await agent
+                .delete(`/tags/${tagId}/`)
+                .expectStatus(204);
+
+            await DomainEvents.allSettled();
+
+            // should contain ZERO posts with papaya tags
+            await agent
+                .get(`/collections/${collectionId}/?include=count.posts`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [{
+                        ...matchCollection,
+                        count: {
+                            posts: 0
                         }
                     }]
                 });
