@@ -95,7 +95,7 @@
     "@storybook/react": "7.3.2",
     "@storybook/react-vite": "7.3.2",
     "@storybook/test-runner": "^0.13.0",
-    "@testing-library/jest-dom": "6.1.0",
+    "@testing-library/jest-dom": "6.1.1",
     "@testing-library/react": "14.0.0",
     "@types/react": "18.2.21",
     "@types/react-dom": "18.2.7",
