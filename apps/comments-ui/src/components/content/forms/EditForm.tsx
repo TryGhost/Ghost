@@ -11,10 +11,10 @@ type Props = {
 };
 
 const EditForm: React.FC<Props> = ({comment, parent, close}) => {
-    const {dispatchAction} = useAppContext();
+    const {dispatchAction, t} = useAppContext();
 
     const config = {
-        placeholder: 'Edit this comment',
+        placeholder: t('Edit this comment'),
         // warning: we cannot use autofocus on the edit field, because that sets
         // the cursor position at the beginning of the text field instead of the end
         autofocus: false,
@@ -56,7 +56,7 @@ const EditForm: React.FC<Props> = ({comment, parent, close}) => {
     }, [parent, comment, dispatchAction]);
 
     const submitProps = {
-        submitText: 'Save',
+        submitText: t('Save'),
         submitSize: 'small',
         submit
     };

@@ -6,7 +6,7 @@ type Props = {
     close: () => void;
 };
 const NotAuthorContextMenu: React.FC<Props> = ({comment, close}) => {
-    const {dispatchAction} = useAppContext();
+    const {dispatchAction, t} = useAppContext();
 
     const openModal = () => {
         dispatchAction('openPopup', {
@@ -19,7 +19,7 @@ const NotAuthorContextMenu: React.FC<Props> = ({comment, close}) => {
     return (
         <div className="flex flex-col">
             <button className="w-full text-left text-[14px]" type="button" onClick={openModal}>
-                <span>Report </span><span className="hidden sm:inline">comment</span>
+                <span className="hidden sm:inline">{t('Report comment')}</span><span className="sm:hidden">{t('Report')}</span>
             </button>
         </div>
     );

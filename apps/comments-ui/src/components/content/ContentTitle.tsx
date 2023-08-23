@@ -1,29 +1,34 @@
 import {formatNumber} from '../../utils/helpers';
+import {useAppContext} from '../../AppContext';
 
 type CountProps = {
     showCount: boolean,
     count: number
 };
 const Count: React.FC<CountProps> = ({showCount, count}) => {
+    const {t} = useAppContext();
+
     if (!showCount) {
         return null;
     }
 
     if (count === 1) {
         return (
-            <div className="text-[1.6rem] text-[rgba(0,0,0,0.5)] dark:text-[rgba(255,255,255,0.5)]" data-testid="count">1 comment</div>
+            <div className="text-[1.6rem] text-[rgba(0,0,0,0.5)] dark:text-[rgba(255,255,255,0.5)]" data-testid="count">{t('1 comment')}</div>
         );
     }
 
     return (
-        <div className="text-[1.6rem] text-[rgba(0,0,0,0.5)] dark:text-[rgba(255,255,255,0.5)]" data-testid="count">{formatNumber(count)} comments</div>
+        <div className="text-[1.6rem] text-[rgba(0,0,0,0.5)] dark:text-[rgba(255,255,255,0.5)]" data-testid="count">{t('{{amount}} comments', {amount: formatNumber(count)})}</div>
     );
 };
 
 const Title: React.FC<{title: string | null}> = ({title}) => {
+    const {t} = useAppContext();
+
     if (title === null) {
         return (
-            <><span className="hidden sm:inline">Member </span><span className="capitalize sm:normal-case">discussion</span></>
+            <><span className="sm:hidden">{t('Discussion')}</span><span className="hidden sm:inline">{t('Member discussion')}</span></>
         );
     }
 
