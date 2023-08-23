@@ -3,6 +3,7 @@ import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModa
 import Heading from '../../../admin-x-ds/global/Heading';
 import Icon from '../../../admin-x-ds/global/Icon';
 import ImageUpload from '../../../admin-x-ds/global/form/ImageUpload';
+import LimitModal from '../../../admin-x-ds/global/modal/LimitModal';
 import Menu, {MenuItem} from '../../../admin-x-ds/global/Menu';
 import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
@@ -453,13 +454,9 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
                 await limiter?.errorIfWouldGoOverLimit('staff');
             } catch (error) {
                 if (error instanceof HostLimitError) {
-                    NiceModal.show(ConfirmationModal, {
-                        title: 'Upgrade your plan',
-                        prompt: error.message || `Your current plan doesn't support more users.`,
-                        okLabel: 'Upgrade',
-                        onOk: () => {
-                            updateRoute({isExternal: true, route: 'pro'});
-                        }
+                    NiceModal.show(LimitModal, {
+                        formSheet: true,
+                        prompt: error.message || `Your current plan doesn't support more users.`
                     });
                     return;
                 } else {

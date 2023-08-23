@@ -3,11 +3,12 @@ import Breadcrumbs from '../../../admin-x-ds/global/Breadcrumbs';
 import Button from '../../../admin-x-ds/global/Button';
 import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
 import FileUpload from '../../../admin-x-ds/global/form/FileUpload';
+import LimitModal from '../../../admin-x-ds/global/modal/LimitModal';
 import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {NiceModalHandler, useModal} from '@ebay/nice-modal-react';
 import OfficialThemes from './theme/OfficialThemes';
 import PageHeader from '../../../admin-x-ds/global/layout/PageHeader';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import TabView from '../../../admin-x-ds/global/TabView';
 import ThemeInstalledModal from './theme/ThemeInstalledModal';
 import ThemePreview from './theme/ThemePreview';
@@ -43,6 +44,23 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     const {mutateAsync: uploadTheme} = useUploadTheme();
     const limiter = useLimiter();
 
+    const [uploadConfig, setUploadConfig] = useState<{enabled: boolean; error?: string}>();
+
+    useEffect(() => {
+        if (limiter) {
+            // Sending a bad string to make sure it fails (empty string isn't valid)
+            limiter.errorIfWouldGoOverLimit('customThemes', {value: '.'})
+                .then(() => setUploadConfig({enabled: true}))
+                .catch((error) => {
+                    if (error instanceof HostLimitError) {
+                        setUploadConfig({enabled: false, error: error.message});
+                    }
+                });
+        } else {
+            setUploadConfig({enabled: true});
+        }
+    }, [limiter]);
+
     const onClose = () => {
         updateRoute('design/edit');
         modal.remove();
@@ -55,25 +73,6 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         file: File;
         onActivate?: () => void
     }) => {
-        try {
-            // Sending a bad string to make sure it fails (empty string isn't valid)
-            await limiter?.errorIfWouldGoOverLimit('customThemes', {value: '.'});
-        } catch (error) {
-            if (error instanceof HostLimitError) {
-                NiceModal.show(ConfirmationModal, {
-                    title: 'Upgrade to enable custom themes',
-                    prompt: error.message || <>Your current plan only supports official themes. You can install them from the <a href="https://ghost.org/marketplace/">Ghost theme marketplace</a>.</>,
-                    okLabel: 'Upgrade',
-                    onOk: () => {
-                        updateRoute({isExternal: true, route: 'pro'});
-                    }
-                });
-                return;
-            }
-
-            throw error;
-        }
-
         const data = await uploadTheme({file});
         const uploadedTheme = data.themes[0];
 
@@ -136,38 +135,44 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                     setCurrentTab(id);
                 }} />
             <div className='flex items-center gap-3'>
-                <FileUpload id='theme-uplaod' onUpload={async (file: File) => {
-                    const themeFileName = file?.name.replace(/\.zip$/, '');
-                    const existingThemeNames = themes.map(t => t.name);
-                    if (existingThemeNames.includes(themeFileName)) {
-                        NiceModal.show(ConfirmationModal, {
-                            title: 'Overwrite theme',
-                            prompt: (
-                                <>
-                                    The theme <strong>{themeFileName}</strong> already exists.
-                                    Do you want to overwrite it?
-                                </>
-                            ),
-                            okLabel: 'Overwrite',
-                            cancelLabel: 'Cancel',
-                            okRunningLabel: 'Overwriting...',
-                            okColor: 'red',
-                            onOk: async (confirmModal) => {
-                                await handleThemeUpload({file, onActivate: onClose});
+                {uploadConfig && (
+                    uploadConfig.enabled ?
+                        <FileUpload id='theme-upload' onUpload={async (file: File) => {
+                            const themeFileName = file?.name.replace(/\.zip$/, '');
+                            const existingThemeNames = themes.map(t => t.name);
+                            if (existingThemeNames.includes(themeFileName)) {
+                                NiceModal.show(ConfirmationModal, {
+                                    title: 'Overwrite theme',
+                                    prompt: (
+                                        <>
+                                            The theme <strong>{themeFileName}</strong> already exists.
+                                            Do you want to overwrite it?
+                                        </>
+                                    ),
+                                    okLabel: 'Overwrite',
+                                    cancelLabel: 'Cancel',
+                                    okRunningLabel: 'Overwriting...',
+                                    okColor: 'red',
+                                    onOk: async (confirmModal) => {
+                                        await handleThemeUpload({file, onActivate: onClose});
+                                        setCurrentTab('installed');
+                                        confirmModal?.remove();
+                                    }
+                                });
+                            } else {
                                 setCurrentTab('installed');
-                                confirmModal?.remove();
+                                handleThemeUpload({file, onActivate: onClose});
                             }
-                        });
-                    } else {
-                        setCurrentTab('installed');
-                        handleThemeUpload({file, onActivate: onClose});
-                    }
-                }}>
-                    <Button color='black' label='Upload theme' tag='div' />
-                </FileUpload>
-                {/* <Button color='black' label='Save & Close' onClick={() => {
-                    modal.remove();
-                }} /> */}
+                        }}>
+                            <Button color='black' label='Upload theme' tag='div' />
+                        </FileUpload> :
+                        <Button color='black' label='Upload theme' onClick={() => {
+                            NiceModal.show(LimitModal, {
+                                title: 'Upgrade to enable custom themes',
+                                prompt: uploadConfig?.error || <>Your current plan only supports official themes. You can install them from the <a href="https://ghost.org/marketplace/">Ghost theme marketplace</a>.</>
+                            });
+                        }} />
+                )}
             </div>
         </div>;
 

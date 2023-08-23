@@ -1,5 +1,5 @@
-import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import Form from '../../../../admin-x-ds/global/form/Form';
+import LimitModal from '../../../../admin-x-ds/global/modal/LimitModal';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect} from 'react';
@@ -57,14 +57,8 @@ const AddNewsletterModal: React.FC<AddNewsletterModalProps> = () => {
     useEffect(() => {
         limiter?.errorIfWouldGoOverLimit('newsletters').catch((error) => {
             if (error instanceof HostLimitError) {
-                NiceModal.show(ConfirmationModal, {
-                    formSheet: false,
-                    title: 'Upgrade your plan',
-                    prompt: error.message || `Your current plan doesn't support more newsletters.`,
-                    okLabel: 'Upgrade',
-                    onOk: () => {
-                        updateRoute({isExternal: true, route: 'pro'});
-                    }
+                NiceModal.show(LimitModal, {
+                    prompt: error.message || `Your current plan doesn't support more newsletters.`
                 });
                 modal.remove();
                 updateRoute('newsletters');

@@ -1,5 +1,5 @@
-import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import Form from '../../../../admin-x-ds/global/form/Form';
+import LimitModal from '../../../../admin-x-ds/global/modal/LimitModal';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
@@ -22,13 +22,8 @@ const AddIntegrationModal: React.FC<AddIntegrationModalProps> = () => {
         if (limiter?.isLimited('customIntegrations')) {
             limiter.errorIfWouldGoOverLimit('customIntegrations').catch((error) => {
                 if (error instanceof HostLimitError) {
-                    NiceModal.show(ConfirmationModal, {
-                        title: 'Upgrade your plan',
-                        prompt: error.message || `Your current plan doesn't support more custom integrations.`,
-                        okLabel: 'Upgrade',
-                        onOk: () => {
-                            updateRoute({isExternal: true, route: 'pro'});
-                        }
+                    NiceModal.show(LimitModal, {
+                        prompt: error.message || `Your current plan doesn't support more custom integrations.`
                     });
                     modal.remove();
                     updateRoute('integrations');
