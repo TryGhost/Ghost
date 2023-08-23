@@ -46,6 +46,23 @@ const InviteUserModal = NiceModal.create(() => {
         }
     }, [saveState]);
 
+    useEffect(() => {
+        if (role !== 'contributor' && limiter?.isLimited('staff')) {
+            limiter.errorIfWouldGoOverLimit('staff').then(() => {
+                setErrors(e => ({...e, role: undefined}));
+            }).catch((error) => {
+                if (error instanceof HostLimitError) {
+                    setErrors(e => ({...e, role: error.message}));
+                    return;
+                } else {
+                    throw error;
+                }
+            });
+        } else {
+            setErrors(e => ({...e, role: undefined}));
+        }
+    }, [limiter, role]);
+
     if (!rolesQuery.data?.roles || !assignableRolesQuery.data?.roles) {
         return null;
     }
@@ -67,26 +84,15 @@ const InviteUserModal = NiceModal.create(() => {
             return;
         }
 
+        if (Object.values(errors).some(error => error)) {
+            return;
+        }
+
         if (!validator.isEmail(email)) {
             setErrors({
                 email: 'Please enter a valid email address.'
             });
             return;
-        }
-
-        if (role !== 'contributor' && limiter?.isLimited('staff')) {
-            try {
-                await limiter.errorIfWouldGoOverLimit('staff');
-            } catch (error) {
-                if (error instanceof HostLimitError) {
-                    setErrors({
-                        role: error.message
-                    });
-                    return;
-                } else {
-                    throw error;
-                }
-            }
         }
 
         setSaveState('saving');
