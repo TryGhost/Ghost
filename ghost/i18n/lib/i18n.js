@@ -43,7 +43,7 @@ const SUPPORTED_LOCALES = [
 
 /**
  * @param {string} [lng]
- * @param {'ghost'|'portal'|'test'|'signup-form'} ns
+ * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'} ns
  */
 module.exports = (lng = 'en', ns = 'portal') => {
     const i18nextInstance = i18next.createInstance();
@@ -64,8 +64,12 @@ module.exports = (lng = 'en', ns = 'portal') => {
         defaultNS: ns,
 
         resources: SUPPORTED_LOCALES.reduce((acc, locale) => {
+            const res = require(`../locales/${locale}/${ns}.json`);
+
+            // Note: due some random thing in TypeScript, 'requiring' a JSON file with a space in a key name, only adds it to the default export
+            // If changing this behaviour, please also check the comments and signup-form apps in another language (mainly sentences with a space in them)
             acc[locale] = {
-                [ns]: require(`../locales/${locale}/${ns}.json`)
+                [ns]: {...res, ...(res.default && typeof res.default === 'object' ? res.default : {})}
             };
             return acc;
         }, {})
