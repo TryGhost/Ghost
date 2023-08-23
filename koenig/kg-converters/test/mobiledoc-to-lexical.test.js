@@ -2219,6 +2219,38 @@ describe('mobiledocToLexical', function () {
                 }
             }));
         });
+
+        it('does not overwrite the type property', function () {
+            const result = mobiledocToLexical(JSON.stringify({
+                version: '0.3.2',
+                atoms: [],
+                cards: [
+                    ['image',{src: 'https://media.tenor.com/images/90daac539a399e176dd7c69def020b1f/tenor.gif',width: 398,height: 224,caption: '',type: 'gif',href: 'https://dailyposter.outpost.pub/gift_subscription#/'}]
+                ],
+                markups: [],
+                sections: [
+                    [10, 0]
+                ]
+            }));
+
+            assert.equal(result, JSON.stringify({
+                root: {
+                    children: [{
+                        type: 'image',
+                        src: 'https://media.tenor.com/images/90daac539a399e176dd7c69def020b1f/tenor.gif',
+                        width: 398,
+                        height: 224,
+                        caption: '',
+                        href: 'https://dailyposter.outpost.pub/gift_subscription#/'
+                    }],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+        });
     });
 
     describe('card specifics', function () {
