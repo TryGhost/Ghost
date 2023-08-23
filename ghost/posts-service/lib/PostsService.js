@@ -4,12 +4,13 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const ObjectId = require('bson-objectid').default;
 const pick = require('lodash/pick');
-const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
+const DomainEvents = require('@tryghost/domain-events');
 const {
     PostsBulkDestroyedEvent,
     PostsBulkUnpublishedEvent,
     PostsBulkFeaturedEvent,
-    PostsBulkUnfeaturedEvent
+    PostsBulkUnfeaturedEvent,
+    PostsBulkAddTagsEvent
 } = require('@tryghost/post-events');
 
 const messages = {
@@ -318,6 +319,9 @@ class PostsService {
 
         await options.transacting('posts_tags').insert(postTags);
         await this.models.Post.addActions('edited', postRows.map(p => p.id), options);
+
+        const event = PostsBulkAddTagsEvent.create(postTags.map(pt => pt.post_id));
+        DomainEvents.dispatch(event);
 
         return {
             successful: postRows.length,
