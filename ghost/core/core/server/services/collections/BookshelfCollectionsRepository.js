@@ -66,13 +66,17 @@ module.exports = class BookshelfCollectionsRepository {
 
     #modelToCollection(model) {
         const json = model.toJSON();
+        let filter = json.filter;
 
+        if (json.type === 'automatic' && typeof filter !== 'string') {
+            filter = '';
+        }
         return Collection.create({
             id: json.id,
             slug: json.slug,
             title: json.title,
             description: json.description,
-            filter: json.filter,
+            filter: filter,
             type: json.type,
             featureImage: json.feature_image,
             posts: json.collectionPosts.map(collectionPost => collectionPost.post_id),
