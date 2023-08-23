@@ -584,7 +584,7 @@ describe('Collections API', function () {
                 });
         });
 
-        it('Updates a collection with tag filter when tag is added to posts in bulk', async function (){
+        it('Updates a collection with tag filter when tag is added to posts in bulk and when tag is removed', async function (){
             const collection = {
                 title: 'Papaya madness',
                 type: 'automatic',
@@ -655,7 +655,7 @@ describe('Collections API', function () {
 
             await DomainEvents.allSettled();
 
-            // should contain published posts with papaya tags
+            // should contain posts with papaya tags
             await agent
                 .get(`/collections/${collectionId}/?include=count.posts`)
                 .expectStatus(200)
@@ -668,6 +668,29 @@ describe('Collections API', function () {
                         ...matchCollection,
                         count: {
                             posts: 11
+                        }
+                    }]
+                });
+
+            await agent
+                .delete(`/tags/${tagId}/`)
+                .expectStatus(204);
+
+            await DomainEvents.allSettled();
+
+            // should contain ZERO posts with papaya tags
+            await agent
+                .get(`/collections/${collectionId}/?include=count.posts`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [{
+                        ...matchCollection,
+                        count: {
+                            posts: 0
                         }
                     }]
                 });
