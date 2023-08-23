@@ -19,55 +19,53 @@ function getPortalPreviewUrl({settings, tiers, siteData, selectedTab}: {
     if (!siteData?.url) {
         return null;
     }
-
     let portalTiers = tiers.filter((t) => {
         return t.visibility === 'public' && t.type === 'paid';
     }).map(t => t.id);
 
     const baseUrl = siteData.url.replace(/\/$/, '');
-    const portalBase = '/#/portal/preview';
+    const portalBase = '/?v=modal-portal-settings#/portal/preview';
     const settingsParam = new URLSearchParams();
-
     const signupButtonText = getSettingValue(settings, 'portal_button_signup_text') || '';
-    let buttonIcon = getSettingValue(settings, 'portal_button_icon') as string;
-    if (!buttonIcon) {
-        buttonIcon = 'icon-1';
-    }
+    let buttonIcon = getSettingValue(settings, 'portal_button_icon') as string || 'icon-1';
     const portalPlans: string[] = JSON.parse(getSettingValue(settings, 'portal_plans') as string);
-    const isFreeChecked = portalPlans.includes('free');
-    const isMonthlyChecked = portalPlans.includes('monthly');
-    const isYearlyChecked = portalPlans.includes('yearly');
-    const portalButton = getSettingValue(settings, 'portal_button') || false;
-    const portalName = getSettingValue(settings, 'portal_name');
-    const portalButtonStyle = getSettingValue(settings, 'portal_button_style') as string;
-    const signupCheckboxRequired = getSettingValue(settings, 'portal_signup_checkbox_required') as boolean;
-    const portalSignupTermsHtml = getSettingValue(settings, 'portal_signup_terms_html') as string || '';
-    let page = 'signup';
-    if (selectedTab === 'account') {
-        page = 'accountHome';
-    }
+    const isFreeChecked = portalPlans.includes('free') ? 'true' : 'false';
+    const isMonthlyChecked = portalPlans.includes('monthly') ? 'true' : 'false';
+    const isYearlyChecked = portalPlans.includes('yearly') ? 'true' : 'false';
+    const portalButton = getSettingValue(settings, 'portal_button') === true ? 'true' : 'false'; // Assuming a boolean
+    const portalName = getSettingValue(settings, 'portal_name') as boolean;
+    const signupCheckboxRequired = getSettingValue(settings, 'portal_signup_checkbox_required') ? 'true' : 'false'; // Assuming a boolean
+    const portalSignupTermsHtml = getSettingValue(settings, 'portal_signup_terms_html') || '';
+    let page = selectedTab === 'account' ? 'accountHome' : 'signup';
 
-    settingsParam.append('button', `${portalButton}`);
-    settingsParam.append('name', `${portalName}`);
-    settingsParam.append('isFree', `${isFreeChecked}`);
-    settingsParam.append('isMonthly', `${isMonthlyChecked}`);
-    settingsParam.append('isYearly', `${isYearlyChecked}`);
+    settingsParam.append('button', portalButton);
+    settingsParam.append('name', portalName ? 'true' : 'false');
+    settingsParam.append('isFree', isFreeChecked);
+    settingsParam.append('isMonthly', isMonthlyChecked);
+    settingsParam.append('isYearly', isYearlyChecked);
     settingsParam.append('page', page);
     settingsParam.append('buttonIcon', encodeURIComponent(buttonIcon));
     settingsParam.append('signupButtonText', encodeURIComponent(signupButtonText));
-    settingsParam.append('membersSignupAccess', 'true');
+    settingsParam.append('membersSignupAccess', 'all');
     settingsParam.append('allowSelfSignup', 'true');
-    settingsParam.append('signupTermsHtml', portalSignupTermsHtml);
-    settingsParam.append('signupCheckboxRequired', `${signupCheckboxRequired}`);
+    settingsParam.append('signupTermsHtml', portalSignupTermsHtml.toString());
+    settingsParam.append('signupCheckboxRequired', signupCheckboxRequired);
 
-    if (portalTiers) {
-        const portalTiersList = portalTiers.join(',');
-        settingsParam.append('portalProducts', encodeURIComponent(portalTiersList));
+    if (portalTiers && portalTiers.length) {
+        settingsParam.append('portalProducts', encodeURIComponent(portalTiers.join(','))); // assuming that it might be more than 1
     }
 
-    settingsParam.append('accentColor', encodeURIComponent(`${getSettingValue(settings, 'accent_color')}`));
+    if (portalPlans && portalPlans.length) {
+        settingsParam.append('portalPrices', encodeURIComponent(portalPlans.join(',')));
+    }
 
-    if (getSettingValue(settings, 'portal_button_style')) {
+    const accentColor = getSettingValue(settings, 'accent_color');
+    if (accentColor !== undefined && accentColor !== null) {
+        settingsParam.append('accentColor', encodeURIComponent(accentColor));
+    }
+
+    const portalButtonStyle = getSettingValue(settings, 'portal_button_style');
+    if (portalButtonStyle) {
         settingsParam.append('buttonStyle', encodeURIComponent(portalButtonStyle));
     }
 
