@@ -165,6 +165,7 @@ function populateLexicalNodeWithMarkers(lexicalNode, markers, mobiledoc) {
     let openMarkups = []; // tracks which markup tags are open for the current marker
     let linkNode = undefined; // tracks current link node or undefined if no a tag is open
     let href = undefined; // tracks the href for the current link node or undefined if no a tag is open
+    let openLinkMarkup = false; // tracks whether the current node is a link node
 
     // loop over markers and convert each one to lexical
     for (let i = 0; i < markers.length; i++) {
@@ -193,7 +194,10 @@ function populateLexicalNodeWithMarkers(lexicalNode, markers, mobiledoc) {
             const markup = markups[markupIndex];
             // Extract the href from the markup if it's a link
             if (markup[0] === 'a') {
-                href = markup[1][1];
+                openLinkMarkup = true;
+                if (markup[1] && markup[1][0] === 'href') {
+                    href = markup[1][1];
+                }
             }
             // Add the markup to the list of open markups
             openMarkups.push(markup);
@@ -205,7 +209,7 @@ function populateLexicalNodeWithMarkers(lexicalNode, markers, mobiledoc) {
 
             // If there is an open link tag, add the text to the link node
             // Otherwise add the text to the parent node
-            if (href) { // link is open
+            if (openLinkMarkup) { // link is open
                 // Create an empty link node if it doesn't exist already
                 linkNode = linkNode !== undefined ? linkNode : createEmptyLexicalNode('a', {url: href});
 
@@ -228,6 +232,7 @@ function populateLexicalNodeWithMarkers(lexicalNode, markers, mobiledoc) {
             // Reset href and linkNode for the next markup
             if (markup && markup[0] === 'a') {
                 embedChildNode(lexicalNode, linkNode);
+                openLinkMarkup = false;
                 href = undefined;
                 linkNode = undefined;
             }

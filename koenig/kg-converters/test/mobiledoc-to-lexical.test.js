@@ -2062,6 +2062,56 @@ describe('mobiledocToLexical', function () {
                 }
             }));
         });
+
+        it('converts successfully when mobiledoc has missing values', function () {
+            const result = mobiledocToLexical(JSON.stringify({version: '0.3.1',
+                atoms: [],
+                cards: [],
+                markups: [
+                    ['a']
+                ],
+                sections: [
+                    [1,'p',[
+                        [0,[0],1,'Blah Blah']
+                    ]]
+                ],
+                ghostVersion: '3.0'}
+            ));
+
+            assert.equal(result, JSON.stringify({root: {
+                children: [{
+                    children: [{
+                        children: [{
+                            detail: 0,
+                            format: 0,
+                            mode: 'normal',
+                            style: '',
+                            text: 'Blah Blah',
+                            type: 'text',
+                            version: 1
+                        }],
+                        direction: 'ltr',
+                        format: '',
+                        indent: 0,
+                        type: 'link',
+                        rel: null,
+                        target: null,
+                        title: null,
+                        version: 1
+                    }],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'paragraph',
+                    version: 1
+                }],
+                direction: 'ltr',
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }}));
+        });
     });
 
     describe('cards', function () {
