@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/koenig-lexical",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "repository": "https://github.com/TryGhost/Koenig/tree/master/packages/koenig-lexical",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -59,8 +59,8 @@
     "@tryghost/color-utils": "^0.1.26",
     "@tryghost/helpers": "^1.1.81",
     "@tryghost/kg-clean-basic-html": "^3.0.27",
-    "@tryghost/kg-converters": "^0.0.11",
-    "@tryghost/kg-default-nodes": "^0.1.22",
+    "@tryghost/kg-converters": "^0.0.12",
+    "@tryghost/kg-default-nodes": "^0.1.23",
     "@tryghost/kg-markdown-html-renderer": "^6.0.10",
     "@tryghost/kg-simplemde": "^2.0.19",
     "@uiw/react-codemirror": "^4.19.6",
