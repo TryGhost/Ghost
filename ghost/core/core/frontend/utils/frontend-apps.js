@@ -24,6 +24,9 @@ function getDataAttributes(data) {
         return dataAttributes;
     }
     Object.entries(data).forEach(([key, value]) => {
+        if (value === undefined) {
+            return;
+        }
         dataAttributes += `data-${key}="${value}" `;
     });
 

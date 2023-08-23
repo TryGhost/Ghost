@@ -1,25 +1,18 @@
 import AuthFrame from './AuthFrame';
 import ContentBox from './components/ContentBox';
 import PopupBox from './components/PopupBox';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import i18nLib from '@tryghost/i18n';
 import setupGhostApi from './utils/api';
 import {ActionHandler, SyncActionHandler, isSyncAction} from './actions';
 import {AdminApi, setupAdminAPI} from './utils/adminApi';
-import {AppContext, AppContextType, CommentsOptions, DispatchActionType, EditableAppContext} from './AppContext';
+import {AppContext, DispatchActionType, EditableAppContext} from './AppContext';
 import {CommentsFrame} from './components/Frame';
 import {useOptions} from './utils/options';
 
 type AppProps = {
     scriptTag: HTMLElement;
 };
-
-function createContext(options: CommentsOptions, state: EditableAppContext): AppContextType {
-    return {
-        ...options,
-        ...state,
-        dispatchAction: (() => {}) as DispatchActionType
-    };
-}
 
 const App: React.FC<AppProps> = ({scriptTag}) => {
     const options = useOptions(scriptTag);
@@ -43,8 +36,6 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
     }, [options]);
 
     const [adminApi, setAdminApi] = useState<AdminApi|null>(null);
-
-    const context = createContext(options, state)
 
     const setState = useCallback((newState: Partial<EditableAppContext> | ((state: EditableAppContext) => Partial<EditableAppContext>)) => {
         setFullState((state) => {
@@ -81,7 +72,17 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
             return {};
         });
     }, [api, adminApi, options]); // Do not add state or context as a dependency here -> infinite render loop
-    context.dispatchAction = dispatchAction as DispatchActionType;
+
+    const i18n = useMemo(() => {
+        return i18nLib(options.locale, 'comments');
+    }, [options.locale]);
+
+    const context = {
+        ...options,
+        ...state,
+        t: i18n.t,
+        dispatchAction: dispatchAction as DispatchActionType
+    };
 
     const initAdminAuth = async () => {
         if (adminApi || !options.adminUrl) {
