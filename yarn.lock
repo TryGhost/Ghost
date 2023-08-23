@@ -16308,6 +16308,18 @@ express-hbs@2.4.0:
   optionalDependencies:
     js-beautify "^1.13.11"
 
+express-hbs@2.4.1:
+  version "2.4.1"
+  resolved "https://registry.yarnpkg.com/express-hbs/-/express-hbs-2.4.1.tgz#e9957c9611bc7f6580d8f0f680943eda349ee12b"
+  integrity sha512-a+gcjKVp44wGU+UxWUbVrKB0ZXLIPgo76lz4o/sodTMWuyhNywOOBbjw64xDprNB7NL4WKx8okOWtqKdjyiUUA==
+  dependencies:
+    bluebird "^3.5.3"
+    handlebars "^4.7.7"
+    lodash "^4.17.21"
+    readdirp "^3.6.0"
+  optionalDependencies:
+    js-beautify "^1.13.11"
+
 express-jwt@8.4.1:
   version "8.4.1"
   resolved "https://registry.yarnpkg.com/express-jwt/-/express-jwt-8.4.1.tgz#ba817c1ced7c6f1f7017fc2e6deac207011e8acb"
