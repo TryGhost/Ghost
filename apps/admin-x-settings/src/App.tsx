@@ -9,10 +9,12 @@ import {GlobalDirtyStateProvider} from './hooks/useGlobalDirtyState';
 import {OfficialTheme, ServicesProvider} from './components/providers/ServiceProvider';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {Toaster} from 'react-hot-toast';
+import {ZapierTemplate} from './components/settings/advanced/integrations/ZapierModal';
 
 interface AppProps {
     ghostVersion: string;
     officialThemes: OfficialTheme[];
+    zapierTemplates: ZapierTemplate[];
     externalNavigate: (link: ExternalLink) => void;
 }
 
@@ -26,10 +28,10 @@ const queryClient = new QueryClient({
     }
 });
 
-function App({ghostVersion, officialThemes, externalNavigate}: AppProps) {
+function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate}: AppProps) {
     return (
         <QueryClientProvider client={queryClient}>
-            <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes}>
+            <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes} zapierTemplates={zapierTemplates}>
                 <GlobalDataProvider>
                     <RoutingProvider externalNavigate={externalNavigate}>
                         <GlobalDirtyStateProvider>
@@ -57,7 +59,7 @@ function App({ghostVersion, officialThemes, externalNavigate}: AppProps) {
                                             </div>
                                         </div>
                                         <div className="relative flex-auto pt-[3vmin] md:ml-[300px] md:pt-[85px]">
-                                            <div className='pointer-events-none fixed inset-x-0 top-0 z-[5] h-[130px] bg-gradient-to-t from-transparent to-white to-60%'></div>
+                                            <div className='pointer-events-none fixed inset-x-0 top-0 z-[5] h-[80px] bg-gradient-to-t from-transparent to-white to-60%'></div>
                                             <Settings />
                                         </div>
                                     </div>

@@ -5,7 +5,7 @@ import StripeButton from '../../../admin-x-ds/settings/StripeButton';
 import TabView from '../../../admin-x-ds/global/TabView';
 import TierDetailModal from './tiers/TierDetailModal';
 import TiersList from './tiers/TiersList';
-import useHandleRoute from '../../../hooks/useHandleRoute';
+import useDetailModalRoute from '../../../hooks/useDetailModalRoute';
 import useRouting from '../../../hooks/useRouting';
 import {Tier, getActiveTiers, getArchivedTiers, useBrowseTiers} from '../../../api/tiers';
 import {checkStripeEnabled} from '../../../api/settings';
@@ -20,13 +20,11 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const archivedTiers = getArchivedTiers(tiers || []);
     const {updateRoute} = useRouting();
 
-    useHandleRoute(modalRoutes.showTier, ({id}) => {
-        const tier = tiers?.find(t => t.id === id);
-
-        if (tier) {
-            NiceModal.show(TierDetailModal, {tier});
-        }
-    }, [tiers]);
+    useDetailModalRoute({
+        route: modalRoutes.showTier,
+        items: tiers || [],
+        showModal: tier => NiceModal.show(TierDetailModal, {tier})
+    });
 
     const openConnectModal = () => {
         updateRoute('stripe-connect');

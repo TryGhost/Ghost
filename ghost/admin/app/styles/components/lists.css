@@ -48,7 +48,6 @@ ul.nostyle li {
 .gh-list-header {
     display: table-cell;
     vertical-align: middle;
-    border-bottom: var(--main-color-area-divider) 1px solid;
     font-size: 1.1rem;
     font-weight: 500;
     letter-spacing: 0.03em;
@@ -89,10 +88,6 @@ ul.nostyle li {
 
 .gh-list.small .gh-list-data {
     padding: 8px 20px;
-}
-
-.gh-list-row:nth-of-type(2) .gh-list-data {
-    border-top: none;
 }
 
 .gh-list-row .gh-list-data:first-child {

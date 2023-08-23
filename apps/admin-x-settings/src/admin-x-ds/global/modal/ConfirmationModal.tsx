@@ -33,6 +33,7 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
     return (
         <Modal
             backDropClick={false}
+            buttonsDisabled={taskState === 'running'}
             cancelLabel={cancelLabel}
             footer={customFooter}
             okColor={okColor}
@@ -40,6 +41,7 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
             size={540}
             testId='confirmation-modal'
             title={title}
+            formSheet
             onCancel={onCancel}
             onOk={async () => {
                 setTaskState('running');

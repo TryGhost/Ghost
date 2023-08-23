@@ -15,7 +15,7 @@
         </div>
         {{#if (feature "tipsAndDonations")}}
             {{#if this.membersUtils.isStripeEnabled}}
-                <button type="button" class="gh-btn" {{on "click" (toggle-action "tipsAndDonationsOpen" this)}}>
+                <button type="button" class="gh-btn" {{on "click" (toggle-action "tipsAndDonationsOpen" this)}} data-testid="expand-tips-and-donations">
                     <span>{{if this.tipsAndDonationsOpen "Close" "Expand"}}</span>
                 </button>
             {{else}}
@@ -48,6 +48,7 @@
                                     <input
                                         type="number"
                                         id="gh-tips-and-donations-amount"
+                                        data-testid="tips-and-donations-amount"
                                         class="gh-input"
                                         name="amount"
                                         min="0"

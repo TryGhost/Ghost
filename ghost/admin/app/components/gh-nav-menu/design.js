@@ -70,6 +70,12 @@ export default class DesignMenuComponent extends Component {
         this.openSection = null;
     }
 
+    @action
+    handleThemeSettingChange() {
+        this.customThemeSettings.rebuildSettingGroups();
+        this.themeManagement.updatePreviewHtmlTask.perform();
+    }
+
     openDefaultSection() {
         const noCustomSettings = isEmpty(this.customThemeSettings.settings);
 

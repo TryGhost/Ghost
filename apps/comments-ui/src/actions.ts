@@ -1,13 +1,14 @@
-import {AddComment, AppContextType, Comment} from './AppContext';
+import {AddComment, Comment, CommentsOptions, EditableAppContext} from './AppContext';
+import {AdminApi} from './utils/adminApi';
 import {GhostApi} from './utils/api';
 import {Page} from './pages';
 
-async function loadMoreComments({state, api}: {state: AppContextType, api: GhostApi}): Promise<Partial<AppContextType>> {
+async function loadMoreComments({state, api, options}: {state: EditableAppContext, api: GhostApi, options: CommentsOptions}): Promise<Partial<EditableAppContext>> {
     let page = 1;
     if (state.pagination && state.pagination.page) {
         page = state.pagination.page + 1;
     }
-    const data = await api.comments.browse({page, postId: state.postId});
+    const data = await api.comments.browse({page, postId: options.postId});
 
     // Note: we store the comments from new to old, and show them in reverse order
     return {
@@ -16,7 +17,7 @@ async function loadMoreComments({state, api}: {state: AppContextType, api: Ghost
     };
 }
 
-async function loadMoreReplies({state, api, data: {comment, limit}}: {state: AppContextType, api: GhostApi, data: {comment: any, limit?: number | 'all'}}): Promise<Partial<AppContextType>> {
+async function loadMoreReplies({state, api, data: {comment, limit}}: {state: EditableAppContext, api: GhostApi, data: {comment: any, limit?: number | 'all'}}): Promise<Partial<EditableAppContext>> {
     const data = await api.comments.replies({commentId: comment.id, afterReplyId: comment.replies[comment.replies.length - 1]?.id, limit});
 
     // Note: we store the comments from new to old, and show them in reverse order
@@ -33,7 +34,7 @@ async function loadMoreReplies({state, api, data: {comment, limit}}: {state: App
     };
 }
 
-async function addComment({state, api, data: comment}: {state: AppContextType, api: GhostApi, data: AddComment}) {
+async function addComment({state, api, data: comment}: {state: EditableAppContext, api: GhostApi, data: AddComment}) {
     const data = await api.comments.add({comment});
     comment = data.comments[0];
 
@@ -43,7 +44,7 @@ async function addComment({state, api, data: comment}: {state: AppContextType, a
     };
 }
 
-async function addReply({state, api, data: {reply, parent}}: {state: AppContextType, api: GhostApi, data: {reply: any, parent: any}}) {
+async function addReply({state, api, data: {reply, parent}}: {state: EditableAppContext, api: GhostApi, data: {reply: any, parent: any}}) {
     let comment = reply;
     comment.parent_id = parent.id;
 
@@ -73,7 +74,7 @@ async function addReply({state, api, data: {reply, parent}}: {state: AppContextT
     };
 }
 
-async function hideComment({state, adminApi, data: comment}: {state: AppContextType, adminApi: any, data: {id: string}}) {
+async function hideComment({state, adminApi, data: comment}: {state: EditableAppContext, adminApi: any, data: {id: string}}) {
     await adminApi.hideComment(comment.id);
 
     return {
@@ -106,7 +107,7 @@ async function hideComment({state, adminApi, data: comment}: {state: AppContextT
     };
 }
 
-async function showComment({state, api, adminApi, data: comment}: {state: AppContextType, api: GhostApi, adminApi: any, data: {id: string}}) {
+async function showComment({state, api, adminApi, data: comment}: {state: EditableAppContext, api: GhostApi, adminApi: any, data: {id: string}}) {
     await adminApi.showComment(comment.id);
 
     // We need to refetch the comment, to make sure we have an up to date HTML content
@@ -137,7 +138,7 @@ async function showComment({state, api, adminApi, data: comment}: {state: AppCon
     };
 }
 
-async function likeComment({state, api, data: comment}: {state: AppContextType, api: GhostApi, data: {id: string}}) {
+async function likeComment({state, api, data: comment}: {state: EditableAppContext, api: GhostApi, data: {id: string}}) {
     await api.comments.like({comment});
 
     return {
@@ -183,7 +184,7 @@ async function reportComment({api, data: comment}: {api: GhostApi, data: {id: st
     return {};
 }
 
-async function unlikeComment({state, api, data: comment}: {state: AppContextType, api: GhostApi, data: {id: string}}) {
+async function unlikeComment({state, api, data: comment}: {state: EditableAppContext, api: GhostApi, data: {id: string}}) {
     await api.comments.unlike({comment});
 
     return {
@@ -222,7 +223,7 @@ async function unlikeComment({state, api, data: comment}: {state: AppContextType
     };
 }
 
-async function deleteComment({state, api, data: comment}: {state: AppContextType, api: GhostApi, data: {id: string}}) {
+async function deleteComment({state, api, data: comment}: {state: EditableAppContext, api: GhostApi, data: {id: string}}) {
     await api.comments.edit({
         comment: {
             id: comment.id,
@@ -260,7 +261,7 @@ async function deleteComment({state, api, data: comment}: {state: AppContextType
     };
 }
 
-async function editComment({state, api, data: {comment, parent}}: {state: AppContextType, api: GhostApi, data: {comment: Partial<Comment> & {id: string}, parent?: Comment}}) {
+async function editComment({state, api, data: {comment, parent}}: {state: EditableAppContext, api: GhostApi, data: {comment: Partial<Comment> & {id: string}, parent?: Comment}}) {
     const data = await api.comments.edit({
         comment
     });
@@ -288,7 +289,7 @@ async function editComment({state, api, data: {comment, parent}}: {state: AppCon
     };
 }
 
-async function updateMember({data, state, api}: {data: {name: string, expertise: string}, state: AppContextType, api: GhostApi}) {
+async function updateMember({data, state, api}: {data: {name: string, expertise: string}, state: EditableAppContext, api: GhostApi}) {
     const {name, expertise} = data;
     const patchData: {name?: string, expertise?: string} = {};
 
@@ -336,13 +337,13 @@ function closePopup() {
     };
 }
 
-function increaseSecundaryFormCount({state}: {state: AppContextType}) {
+function increaseSecundaryFormCount({state}: {state: EditableAppContext}) {
     return {
         secundaryFormCount: state.secundaryFormCount + 1
     };
 }
 
-function decreaseSecundaryFormCount({state}: {state: AppContextType}) {
+function decreaseSecundaryFormCount({state}: {state: EditableAppContext}) {
     return {
         secundaryFormCount: state.secundaryFormCount - 1
     };
@@ -381,20 +382,20 @@ export function isSyncAction(action: string): action is SyncActionType {
 }
 
 /** Handle actions in the App, returns updated state */
-export async function ActionHandler({action, data, state, api, adminApi}: {action: ActionType, data: any, state: AppContextType, api: GhostApi, adminApi: any}) {
+export async function ActionHandler({action, data, state, api, adminApi, options}: {action: ActionType, data: any, state: EditableAppContext, options: CommentsOptions, api: GhostApi, adminApi: AdminApi}): Promise<Partial<EditableAppContext>> {
     const handler = Actions[action];
     if (handler) {
-        return await handler({data, state, api, adminApi} as any) || {};
+        return await handler({data, state, api, adminApi, options} as any) || {};
     }
     return {};
 }
 
 /** Handle actions in the App, returns updated state */
-export function SyncActionHandler({action, data, state, api, adminApi}: {action: SyncActionType, data: any, state: AppContextType, api: GhostApi, adminApi: any}) {
+export function SyncActionHandler({action, data, state, api, adminApi, options}: {action: SyncActionType, data: any, state: EditableAppContext, options: CommentsOptions, api: GhostApi, adminApi: AdminApi}): Partial<EditableAppContext> {
     const handler = SyncActions[action];
     if (handler) {
         // Do not await here
-        return handler({data, state, api, adminApi} as any) || {};
+        return handler({data, state, api, adminApi, options} as any) || {};
     }
     return {};
 }
