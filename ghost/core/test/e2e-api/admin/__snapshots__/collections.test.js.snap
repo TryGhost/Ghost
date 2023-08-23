@@ -1365,6 +1365,120 @@ Object {
 }
 `;
 
+exports[`Collections API Collection Posts updates automatically Updates a collection with tag filter when tag is added to posts in bulk 1: [body] 1`] = `
+Object {
+  "collections": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feature_image": null,
+      "filter": "tags:['papaya']",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "slug": "papaya-madness",
+      "title": "Papaya madness",
+      "type": "automatic",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Collections API Collection Posts updates automatically Updates a collection with tag filter when tag is added to posts in bulk 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "266",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/collections\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Collections API Collection Posts updates automatically Updates a collection with tag filter when tag is added to posts in bulk 3: [body] 1`] = `
+Object {
+  "collections": Array [
+    Object {
+      "count": Object {
+        "posts": 0,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feature_image": null,
+      "filter": "tags:['papaya']",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "slug": "papaya-madness",
+      "title": "Papaya madness",
+      "type": "automatic",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Collections API Collection Posts updates automatically Updates a collection with tag filter when tag is added to posts in bulk 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "286",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Collections API Collection Posts updates automatically Updates a collection with tag filter when tag is added to posts in bulk 5: [body] 1`] = `
+Object {
+  "bulk": Object {
+    "meta": Object {
+      "stats": Object {
+        "successful": 11,
+        "unsuccessful": 0,
+      },
+    },
+  },
+}
+`;
+
+exports[`Collections API Collection Posts updates automatically Updates a collection with tag filter when tag is added to posts in bulk 6: [body] 1`] = `
+Object {
+  "collections": Array [
+    Object {
+      "count": Object {
+        "posts": 11,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feature_image": null,
+      "filter": "tags:['papaya']",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "slug": "papaya-madness",
+      "title": "Papaya madness",
+      "type": "automatic",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Collections API Collection Posts updates automatically Updates a collection with tag filter when tag is added to posts in bulk 7: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "287",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Collections API Collection Posts updates automatically Updates collections when a Post is added/edited/deleted 1: [body] 1`] = `
 Object {
   "collections": Array [
