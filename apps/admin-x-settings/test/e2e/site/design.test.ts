@@ -80,6 +80,8 @@ test.describe('Design settings', async () => {
         await expect(modal.frameLocator('[data-testid="theme-preview"]').getByText('homepage preview')).toHaveCount(1);
 
         await modal.getByLabel('Site description').fill('new description');
+        // set timeout of 500ms to wait for the debounce
+        await page.waitForTimeout(500);
         await modal.getByRole('button', {name: 'Save'}).click();
 
         expect(lastPreviewRequest.previewHeader).toMatch(/&d=new\+description&/);
