@@ -5,6 +5,7 @@ import React from 'react';
 import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import {SettingValue} from '../../../../api/settings';
+import {debounce} from '../../../../utils/debounce';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
 
 export interface BrandSettingValues {
@@ -17,7 +18,7 @@ export interface BrandSettingValues {
 
 const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key: string, value: SettingValue) => void }> = ({values,updateSetting}) => {
     const {mutateAsync: uploadImage} = useUploadImage();
-
+    const updateSettingDebounced = debounce(updateSetting, 500);
     return (
         <div className='mt-7'>
             <SettingGroupContent>
@@ -40,7 +41,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                             maxLength={7}
                             type='color'
                             value={values.accentColor}
-                            onChange={event => updateSetting('accent_color', event.target.value)}
+                            onChange={event => updateSettingDebounced('accent_color', event.target.value)}
                         />
                     </div>
                 </div>
