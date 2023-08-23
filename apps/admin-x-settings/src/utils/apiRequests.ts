@@ -159,7 +159,7 @@ interface MutationOptions<ResponseData, Payload> extends Omit<QueryOptions<Respo
     body?: (payload: Payload) => FormData | object;
     searchParams?: (payload: Payload) => { [key: string]: string; };
     invalidateQueries?: { dataType: string; };
-    updateQueries?: { dataType: string; update: <CurrentData>(newData: ResponseData, currentData: CurrentData, payload: Payload) => unknown };
+    updateQueries?: { dataType: string; update: (newData: ResponseData, currentData: unknown, payload: Payload) => unknown };
 }
 
 const mutate = <ResponseData, Payload>({fetchApi, path, payload, searchParams, options}: {

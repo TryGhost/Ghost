@@ -60,7 +60,7 @@ export const useAddNewsletter = createMutation<NewslettersResponseType, Partial<
     searchParams: payload => ({opt_in_existing: payload.opt_in_existing.toString(), include: 'count.active_members,count.posts'}),
     updateQueries: {
         dataType,
-        update: (newData, currentData) => ({
+        update: (newData, currentData) => (currentData && {
             ...(currentData as NewslettersResponseType),
             newsletters: (currentData as NewslettersResponseType).newsletters.concat(newData.newsletters)
         })
@@ -78,7 +78,7 @@ export const useEditNewsletter = createMutation<NewslettersEditResponseType, New
     defaultSearchParams: {include: 'count.active_members,count.posts'},
     updateQueries: {
         dataType,
-        update: (newData, currentData) => ({
+        update: (newData, currentData) => (currentData && {
             ...(currentData as NewslettersResponseType),
             newsletters: (currentData as NewslettersResponseType).newsletters.map((newsletter) => {
                 const newNewsletter = newData.newsletters.find(({id}) => id === newsletter.id);
