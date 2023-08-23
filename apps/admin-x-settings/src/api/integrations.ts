@@ -41,7 +41,7 @@ export const useCreateIntegration = createMutation<IntegrationsResponseType, Par
     searchParams: () => ({include: 'api_keys,webhooks'}),
     updateQueries: {
         dataType,
-        update: (newData, currentData) => ({
+        update: (newData, currentData) => (currentData && {
             ...(currentData as IntegrationsResponseType),
             integrations: (currentData as IntegrationsResponseType).integrations.concat(newData.integrations)
         })
@@ -55,7 +55,7 @@ export const useEditIntegration = createMutation<IntegrationsResponseType, Integ
     searchParams: () => ({include: 'api_keys,webhooks'}),
     updateQueries: {
         dataType,
-        update: (newData, currentData) => ({
+        update: (newData, currentData) => (currentData && {
             ...(currentData as IntegrationsResponseType),
             integrations: (currentData as IntegrationsResponseType).integrations.map((integration) => {
                 const newIntegration = newData.integrations.find(({id}) => id === integration.id);
