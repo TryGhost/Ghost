@@ -1,4 +1,5 @@
 declare module '@tryghost/timezone-data'
+declare module '@tryghost/limit-service'
 
 declare module '*.svg' {
     import React = require('react');
