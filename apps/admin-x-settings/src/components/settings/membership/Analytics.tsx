@@ -27,21 +27,22 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
         handleEditingChange(true);
     };
 
-    const {data: postsData} = usePostsExports({
+    const {refetch: postsData} = usePostsExports({
         searchParams: {
             limit: '1000'
-        }
+        },
+        enabled: false
     });
 
     const exportPosts = async () => {
-        // it should download posts as csv
-        if (postsData) {
-            const blob = new Blob([postsData], {type: 'text/csv'});
+        const {data} = await postsData();
+        if (data) {
+            const blob = new Blob([data], {type: 'text/csv'});
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.setAttribute('hidden', '');
             a.setAttribute('href', url);
-            a.setAttribute('download', 'posts.csv');
+            a.setAttribute('download', `post-analytics.${new Date().toISOString().split('T')[0]}.csv`);
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
