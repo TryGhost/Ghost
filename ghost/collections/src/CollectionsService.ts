@@ -4,7 +4,8 @@ import {Knex} from "knex";
 import {
     PostsBulkUnpublishedEvent,
     PostsBulkFeaturedEvent,
-    PostsBulkUnfeaturedEvent
+    PostsBulkUnfeaturedEvent,
+    PostsBulkAddTagsEvent
 } from "@tryghost/post-events";
 import {Collection} from './Collection';
 import {CollectionRepository} from './CollectionRepository';
@@ -205,6 +206,11 @@ export class CollectionsService {
 
         this.DomainEvents.subscribe(TagDeletedEvent, async (event: TagDeletedEvent) => {
             logging.info(`TagDeletedEvent received for ${event.data.id}, updating all collections`);
+            await this.updateAllAutomaticCollections();
+        });
+
+        this.DomainEvents.subscribe(PostsBulkAddTagsEvent, async (event: PostsBulkAddTagsEvent) => {
+            logging.info(`PostsBulkAddTagsEvent received for ${event.data}, updating all collections`);
             await this.updateAllAutomaticCollections();
         });
     }
