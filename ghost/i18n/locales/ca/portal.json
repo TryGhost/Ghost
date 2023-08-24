@@ -142,6 +142,7 @@
     "You're not receiving emails": "No estàs rebent correus electrònics",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "No estas reben correus electrònics perquè has marcat recentment com SPAM o perque no s'han pogut entregar els missatges a la direcció de correu electrònic proporcionada.",
     "You've successfully signed in.": "Heu iniciat la sessió correctament.",
+    "You've successfully subscribed to": "",
     "Your account": "El teu copte",
     "Your input helps shape what gets published.": "La teva opinió ajuda a definir el que es publica.",
     "Your subscription will expire on {{expiryDate}}": "La vostra subscripció caducarà el {{expiryDate}}",

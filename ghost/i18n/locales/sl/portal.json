@@ -142,6 +142,7 @@
     "You're not receiving emails": "",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Ne prejemate e-poštnih sporočil, ker ste naše sporočilo nedavno označili kot neželeno pošto ali, ker sporočil ni bilo mogoče dostaviti na vaš e-poštni naslov.",
     "You've successfully signed in.": "",
+    "You've successfully subscribed to": "",
     "Your account": "Vaš račun",
     "Your input helps shape what gets published.": "Vaš prispevek se nam pomaga odločati, kaj objavimo.",
     "Your subscription will expire on {{expiryDate}}": "",

@@ -142,6 +142,7 @@
     "You're not receiving emails": "",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Nepřicházejí vám e-maily, protože jste buď označili nedávnou zprávu jako spam, nebo doručování zpráv na vámi zadaný e-mail nefunguje.",
     "You've successfully signed in.": "",
+    "You've successfully subscribed to": "",
     "Your account": "Váš účet",
     "Your input helps shape what gets published.": "Vaše připomínky pomáhají spoluvytvářet obsah webu.",
     "Your subscription will expire on {{expiryDate}}": "",

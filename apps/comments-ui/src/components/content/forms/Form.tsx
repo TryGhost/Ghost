@@ -22,6 +22,7 @@ type FormEditorProps = {
     submitSize: SubmitSize;
 };
 const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, close, reduced, isOpen, editor, submitText, submitSize}) => {
+    const {t} = useAppContext();
     let buttonIcon = null;
 
     if (progress === 'sending') {
@@ -114,10 +115,10 @@ const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, c
             </div>
             <div className="absolute bottom-[9px] right-[9px] flex space-x-4 transition-[opacity] duration-150">
                 {close &&
-                    <button className="ml-2.5 font-sans text-sm font-medium text-neutral-500 outline-0 dark:text-neutral-400" type="button" onClick={close}>Cancel</button>
+                    <button className="ml-2.5 font-sans text-sm font-medium text-neutral-500 outline-0 dark:text-neutral-400" type="button" onClick={close}>{t('Cancel')}</button>
                 }
                 <button
-                    className={`flex w-auto items-center justify-center sm:w-[128px] ${submitSize === 'medium' && 'sm:w-[100px]'} ${submitSize === 'small' && 'sm:w-[64px]'} h-[39px] rounded-[6px] border bg-neutral-900 px-3 py-2 text-center font-sans text-sm font-semibold text-white outline-0 transition-[opacity] duration-150 dark:bg-[rgba(255,255,255,0.9)] dark:text-neutral-800`}
+                    className={`flex w-auto items-center justify-center sm:min-w-[128px] ${submitSize === 'medium' && 'sm:min-w-[100px]'} ${submitSize === 'small' && 'sm:min-w-[64px]'} h-[39px] rounded-[6px] border bg-neutral-900 px-3 py-2 text-center font-sans text-sm font-semibold text-white outline-0 transition-[opacity] duration-150 dark:bg-[rgba(255,255,255,0.9)] dark:text-neutral-800`}
                     data-testid="submit-form-button"
                     type="button"
                     onClick={submitForm}

@@ -142,6 +142,7 @@
     "You're not receiving emails": "U ontvang nie e-posse nie",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "U ontvang nie e-posse nie, omdat u onlangs 'n boodskap as spam gemerk het, of omdat boodskappe nie na die e-pos adres wat u verskaf het gestuur kon word nie.",
     "You've successfully signed in.": "U het suksesvol aangemeld.",
+    "You've successfully subscribed to": "",
     "Your account": "U rekening",
     "Your input helps shape what gets published.": "U insette help om te bepaal wat gepubliseer word.",
     "Your subscription will expire on {{expiryDate}}": "U intekening sal verval op {{expiryDate}}",

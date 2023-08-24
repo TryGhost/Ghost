@@ -142,6 +142,7 @@
     "You're not receiving emails": "이메일을 받지 않고 계십니다",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "최근 메시지를 스팸으로 표시했거나 메시지를 제공된 이메일 주소로 전달할 수 없어 이메일을 받지 못하고 계십니다.",
     "You've successfully signed in.": "성공적으로 로그인되었습니다.",
+    "You've successfully subscribed to": "",
     "Your account": "계정",
     "Your input helps shape what gets published.": "회원님의 의견은 게시물을 제작하는 것에 큰 도움이 됩니다.",
     "Your subscription will expire on {{expiryDate}}": "회원님의 구독은 {{expiryDate}}에 만료됩니다",

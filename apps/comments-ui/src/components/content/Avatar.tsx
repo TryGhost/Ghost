@@ -21,7 +21,7 @@ type AvatarProps = {
     comment?: Comment;
 };
 export const Avatar: React.FC<AvatarProps> = ({comment}) => {
-    const {member, avatarSaturation} = useAppContext();
+    const {member, avatarSaturation, t} = useAppContext();
     const dimensionClasses = getDimensionClasses();
 
     const memberName = member?.name ?? comment?.member?.name;
@@ -66,13 +66,13 @@ export const Avatar: React.FC<AvatarProps> = ({comment}) => {
 
     const commentGetInitials = () => {
         if (comment && !comment.member) {
-            return getInitials('Deleted member');
+            return getInitials(t('Deleted member'));
         }
 
         const commentMember = (comment ? comment.member : member);
 
         if (!commentMember || !commentMember.name) {
-            return getInitials('Anonymous');
+            return getInitials(t('Anonymous'));
         }
         return getInitials(commentMember.name);
     };

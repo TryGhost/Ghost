@@ -142,6 +142,7 @@
     "You're not receiving emails": "Anda tidak menerima email.",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Anda tidak menerima email karena Anda telah menandai pesan terbaru sebagai spam, atau karena pesan tidak dapat dikirimkan ke alamat email yang Anda berikan.",
     "You've successfully signed in.": "Anda telah berhasil masuk.",
+    "You've successfully subscribed to": "",
     "Your account": "Akun Anda",
     "Your input helps shape what gets published.": "Masukan Anda membantu membentuk apa yang dipublikasikan.",
     "Your subscription will expire on {{expiryDate}}": "Langganan Anda akan berakhir pada {{expiryDate}}",

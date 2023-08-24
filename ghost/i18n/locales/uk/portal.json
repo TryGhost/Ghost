@@ -142,6 +142,7 @@
     "You're not receiving emails": "",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Не приходять листи, оскільки останній отриманий лист був тобою позначений як спам, або листи не можуть бути доставлені на твою адресу електронної пошти.",
     "You've successfully signed in.": "",
+    "You've successfully subscribed to": "",
     "Your account": "Твій обліковий запис",
     "Your input helps shape what gets published.": "Твій відгук допоможе вирішити що публікувати далі.",
     "Your subscription will expire on {{expiryDate}}": "",

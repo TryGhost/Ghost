@@ -142,6 +142,7 @@
     "You're not receiving emails": "No estás recibiendo correos electrónicos",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "No estás recibiendo correos electrónicos porque marcaste un mensaje reciente como spam o porque no se pudieron entregar los mensajes a la dirección de correo electrónico proporcionada.",
     "You've successfully signed in.": "Has iniciado sesión correctamente.",
+    "You've successfully subscribed to": "",
     "Your account": "Tu cuenta",
     "Your input helps shape what gets published.": "Tu opinión ayuda a definir lo que se publica.",
     "Your subscription will expire on {{expiryDate}}": "Su suscripción caducará el {{expiryDate}} ",

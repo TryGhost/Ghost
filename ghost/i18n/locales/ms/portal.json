@@ -142,6 +142,7 @@
     "You're not receiving emails": "Anda tidak menerima e-mel",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Anda tidak menerima e-mel kerana anda sama ada menandai mesej terkini sebagai spam, atau kerana mesej tidak dapat dihantar ke alamat e-mel yang diberikan.",
     "You've successfully signed in.": "Anda telah berjaya log masuk.",
+    "You've successfully subscribed to": "",
     "Your account": "Akaun anda",
     "Your input helps shape what gets published.": "Input anda membantu membentuk apa yang diterbitkan.",
     "Your subscription will expire on {{expiryDate}}": "Langganan anda akan tamat tempoh pada {{expiryDate}}",

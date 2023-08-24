@@ -142,6 +142,7 @@
     "You're not receiving emails": "Bạn không nhận được email",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Bạn không nhận được email vì bạn đã đánh dấu một email gần đây là thư rác, hoặc vì không thể gửi đến địa chỉ email bạn đã cung cấp.",
     "You've successfully signed in.": "Bạn đã đăng nhập.",
+    "You've successfully subscribed to": "",
     "Your account": "Tài khoản của bạn",
     "Your input helps shape what gets published.": "Thông tin của bạn giúp định hình nội dung được xuất bản.",
     "Your subscription will expire on {{expiryDate}}": "Gói của bạn sẽ hết hạn vào {{expiryDate}}",
