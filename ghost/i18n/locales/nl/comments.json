@@ -46,10 +46,14 @@
     "One week ago": "Een week geleden",
     "One year ago": "Een jaar geleden",
     "Reply": "Beantwoorden",
-    "Reply to comment": "Beantwoord de reactie",
+    "Reply to comment": "Beantwoord deze reactie",
     "Report": "Melden",
     "Report comment": "Meld reactie",
+    "Report this comment": "Meld deze reactie",
+    "Report this comment?": "Meld deze reactie?",
     "Save": "Opslaan",
+    "Sending": "Verzenden",
+    "Sent": "Verzonden",
     "Show": "Tonen",
     "Show {{amount}} more replies": "Toon {{amount}} extra antwoorden",
     "Show {{amount}} previous comments": "Toon {{amount}} vorige reacties",
@@ -62,5 +66,7 @@
     "This comment has been hidden.": "Deze reactie is verborgen.",
     "This comment has been removed.": "Deze reactie is verwijderd.",
     "Upgrade now": "Upgrade nu",
-    "Yesterday": "Gisteren"
+    "Yesterday": "Gisteren",
+    "You want to report this comment?": "Wil je deze reactie melden?",
+    "Your request will be sent to the owner of this site.": "Jouw melding zal worden verzonden naar de eigenaar van deze site."
 }

@@ -142,6 +142,7 @@
     "You're not receiving emails": "Ju nuk po merrni emaile",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Ju nuk po merrni email sepse ose keni shënuar një mesazh të fundit si të padëshiruar, ose sepse mesazhet nuk mund të dërgoheshin në adresën tuaj të emailit të dhënë.",
     "You've successfully signed in.": "Ju jeni identifikuar me sukses.",
+    "You've successfully subscribed to": "",
     "Your account": "Llogaria juar",
     "Your input helps shape what gets published.": "Të dhënat tuaja ndihmojnë në formimin e asaj që publikohet.",
     "Your subscription will expire on {{expiryDate}}": "Abonimi juaj do te skadoje ne {{expiryDate}}",

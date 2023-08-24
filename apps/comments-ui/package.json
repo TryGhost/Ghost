@@ -78,6 +78,7 @@
     "vite-plugin-css-injected-by-js": "3.3.0",
     "vite-plugin-svgr": "3.2.0",
     "vitest": "0.34.2",
-    "@tryghost/i18n": "0.0.0"
+    "@tryghost/i18n": "0.0.0",
+    "eslint-plugin-i18next": "6.0.3"
   }
 }

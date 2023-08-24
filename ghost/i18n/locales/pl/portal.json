@@ -142,6 +142,7 @@
     "You're not receiving emails": "",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Nie otrzymujesz powiadomień email, ponieważ oznaczyłeś ostatnią wiadomość jako spam lub nie udało się dostarczyć wiadomości na podany adres email.",
     "You've successfully signed in.": "",
+    "You've successfully subscribed to": "",
     "Your account": "Twoje konto",
     "Your input helps shape what gets published.": "Twoja ocena pomoże nam lepiej kształtować nasz publikacje.",
     "Your subscription will expire on {{expiryDate}}": "",

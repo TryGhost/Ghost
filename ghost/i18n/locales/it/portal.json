@@ -142,6 +142,7 @@
     "You're not receiving emails": "Non ricevi nessuna email",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Non ricevi email perché hai contrassegnato un messaggio recente come spam, o perché non è stato possibile recapitare i messaggi all'indirizzo email fornito.",
     "You've successfully signed in.": "Accesso effettuato.",
+    "You've successfully subscribed to": "",
     "Your account": "Il tuo account",
     "Your input helps shape what gets published.": "Il tuo contributo aiuta a dare forma a ciò che viene pubblicato.",
     "Your subscription will expire on {{expiryDate}}": "Il tuo abbonamento scadrà il {{expiryDate}}",

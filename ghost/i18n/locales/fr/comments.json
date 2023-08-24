@@ -49,7 +49,11 @@
     "Reply to comment": "",
     "Report": "",
     "Report comment": "",
+    "Report this comment": "",
+    "Report this comment?": "",
     "Save": "",
+    "Sending": "",
+    "Sent": "",
     "Show": "",
     "Show {{amount}} more replies": "",
     "Show {{amount}} previous comments": "",
@@ -62,5 +66,7 @@
     "This comment has been hidden.": "",
     "This comment has been removed.": "",
     "Upgrade now": "",
-    "Yesterday": ""
+    "Yesterday": "",
+    "You want to report this comment?": "",
+    "Your request will be sent to the owner of this site.": ""
 }
