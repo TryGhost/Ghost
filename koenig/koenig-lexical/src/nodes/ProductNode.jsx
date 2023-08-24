@@ -74,7 +74,7 @@ export class ProductNode extends BaseProductNode {
         if (this.__productDescriptionEditor) {
             this.__productDescriptionEditor.getEditorState().read(() => {
                 const html = $generateHtmlFromNodes(this.__productDescriptionEditor, null);
-                const cleanedHtml = cleanBasicHtml(html);
+                const cleanedHtml = cleanBasicHtml(html, {allowBr: true});
                 json.productDescription = cleanedHtml;
             });
         }
