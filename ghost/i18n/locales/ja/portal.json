@@ -142,6 +142,7 @@
     "You're not receiving emails": "メールを受信していません",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "最近のメッセージをスパムとして判定したか、提供されたメールアドレスに配信できなかったため、メールを受信していません。",
     "You've successfully signed in.": "ログインに成功しました",
+    "You've successfully subscribed to": "",
     "Your account": "あなたのアカウント",
     "Your input helps shape what gets published.": "あなたの感想を今後の内容の参考にさせていただきます。",
     "Your subscription will expire on {{expiryDate}}": "あなたの購読は{{expiryDate}}に期限切れになります。",

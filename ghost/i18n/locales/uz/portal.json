@@ -142,6 +142,7 @@
     "You're not receiving emails": "",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Siz e-pochta xabarlarini olmayapsiz, chunki siz oxirgi xabarni spam deb belgilagansiz yoki xabarlar taqdim etilgan elektron pochta manzilingizga yetkazilmagan.",
     "You've successfully signed in.": "",
+    "You've successfully subscribed to": "",
     "Your account": "Sizning hisobingiz",
     "Your input helps shape what gets published.": "",
     "Your subscription will expire on {{expiryDate}}": "",
