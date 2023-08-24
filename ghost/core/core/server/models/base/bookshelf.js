@@ -84,6 +84,14 @@ ghostBookshelf.plugin('bookshelf-relations', {
                     return Promise.resolve();
                 }
 
+                // If the order of the existing models matches the new order, we don't need to do anything
+                const existingModelIds = existing.models.map(model => model.id);
+                const targetModelIds = targets.models.map(model => model.id);
+
+                if (options.method !== 'insert' && _.isEqual(existingModelIds, targetModelIds)) {
+                    return Promise.resolve();
+                }
+
                 return Promise.all(targets.models.map((target, index) => {
                     queryOptions.query.where[existing.relatedData.otherKey] = target.id;
 
