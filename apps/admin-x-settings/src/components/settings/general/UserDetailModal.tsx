@@ -3,6 +3,7 @@ import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModa
 import Heading from '../../../admin-x-ds/global/Heading';
 import Icon from '../../../admin-x-ds/global/Icon';
 import ImageUpload from '../../../admin-x-ds/global/form/ImageUpload';
+import LimitModal from '../../../admin-x-ds/global/modal/LimitModal';
 import Menu, {MenuItem} from '../../../admin-x-ds/global/Menu';
 import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
@@ -15,6 +16,7 @@ import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
+import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {User, isAdminUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner, useUpdatePassword} from '../../../api/users';
 import {getImageUrl, useUploadImage} from '../../../api/images';
 import {showToast} from '../../../admin-x-ds/global/Toast';
@@ -435,6 +437,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
     const {mutateAsync: updateUser} = useEditUser();
     const {mutateAsync: deleteUser} = useDeleteUser();
     const {mutateAsync: makeOwner} = useMakeOwner();
+    const limiter = useLimiter();
 
     useEffect(() => {
         if (saveState === 'saved') {
@@ -445,7 +448,23 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
         }
     }, [mainModal, saveState, updateRoute]);
 
-    const confirmSuspend = (_user: User) => {
+    const confirmSuspend = async (_user: User) => {
+        if (_user.status === 'inactive' && _user.roles[0].name !== 'Contributor') {
+            try {
+                await limiter?.errorIfWouldGoOverLimit('staff');
+            } catch (error) {
+                if (error instanceof HostLimitError) {
+                    NiceModal.show(LimitModal, {
+                        formSheet: true,
+                        prompt: error.message || `Your current plan doesn't support more users.`
+                    });
+                    return;
+                } else {
+                    throw error;
+                }
+            }
+        }
+
         let warningText = 'This user will no longer be able to log in but their posts will be kept.';
         if (_user.status === 'inactive') {
             warningText = 'This user will be able to log in again and will have the same permissions they had previously.';

@@ -24,7 +24,7 @@ export const useRefreshAPIKey = createMutation<IntegrationsResponseType, {integr
     body: ({integrationId}) => ({integrations: [{id: integrationId}]}),
     updateQueries: {
         dataType: integrationsDataType,
-        update: (newData, currentData) => ({
+        update: (newData, currentData) => (currentData && {
             ...(currentData as IntegrationsResponseType),
             integrations: (currentData as IntegrationsResponseType).integrations.map((integration) => {
                 const newIntegration = newData.integrations.find(({id}) => id === integration.id);
