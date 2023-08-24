@@ -1,5 +1,4 @@
 import logging from '@tryghost/logging';
-import tpl from '@tryghost/tpl';
 import {Knex} from "knex";
 import {
     PostsBulkUnpublishedEvent,
@@ -10,24 +9,12 @@ import {
 import {Collection} from './Collection';
 import {CollectionRepository} from './CollectionRepository';
 import {CollectionPost} from './CollectionPost';
-import {MethodNotAllowedError} from '@tryghost/errors';
 import {PostDeletedEvent} from './events/PostDeletedEvent';
 import {PostAddedEvent} from './events/PostAddedEvent';
 import {PostEditedEvent} from './events/PostEditedEvent';
 import {PostsBulkDestroyedEvent} from '@tryghost/post-events';
 import {RepositoryUniqueChecker} from './RepositoryUniqueChecker';
 import {TagDeletedEvent} from './events/TagDeletedEvent';
-
-const messages = {
-    cannotDeleteBuiltInCollectionError: {
-        message: 'Cannot delete builtin collection',
-        context: 'The collection {id} is a builtin collection and cannot be deleted'
-    },
-    collectionNotFound: {
-        message: 'Collection not found',
-        context: 'Collection with id: {id} does not exist'
-    }
-};
 
 interface SlugService {
     generate(desired: string, options: {transaction: Knex.Transaction}): Promise<string>;
@@ -292,7 +279,7 @@ export class CollectionsService {
             const collections = await this.collectionsRepository.getAll({transaction});
 
             for (const collection of collections) {
-                if (collection.includesPost(postId)) {
+                if (collection.posts.includes(postId)) {
                     collection.removePost(postId);
                     await this.collectionsRepository.save(collection, {transaction});
                 }
@@ -306,7 +293,7 @@ export class CollectionsService {
 
             for (const collection of collections) {
                 for (const postId of postIds) {
-                    if (collection.includesPost(postId)) {
+                    if (collection.posts.includes(postId)) {
                         collection.removePost(postId);
                     }
                 }
@@ -340,12 +327,12 @@ export class CollectionsService {
             });
 
             for (const collection of collections) {
-                if (collection.includesPost(postEdit.id) && !collection.postMatchesFilter(postEdit.current)) {
+                if (collection.posts.includes(postEdit.id) && !collection.postMatchesFilter(postEdit.current)) {
                     collection.removePost(postEdit.id);
                     await this.collectionsRepository.save(collection, {transaction});
 
                     logging.info(`[Collections] Post ${postEdit.id} was updated and removed from collection ${collection.id} with filter ${collection.filter}`);
-                } else if (!collection.includesPost(postEdit.id) && collection.postMatchesFilter(postEdit.current)) {
+                } else if (!collection.posts.includes(postEdit.id) && collection.postMatchesFilter(postEdit.current)) {
                     const added = await collection.addPost(postEdit.current);
 
                     if (added) {
@@ -404,10 +391,10 @@ export class CollectionsService {
 
         for (const collection of collections) {
             for (const post of posts) {
-                if (collection.includesPost(post.id) && !collection.postMatchesFilter(post)) {
+                if (collection.posts.includes(post.id) && !collection.postMatchesFilter(post)) {
                     collection.removePost(post.id);
                     logging.info(`[Collections] Post ${post.id} was updated and removed from collection ${collection.id} with filter ${collection.filter}`);
-                } else if (!collection.includesPost(post.id) && collection.postMatchesFilter(post)) {
+                } else if (!collection.posts.includes(post.id) && collection.postMatchesFilter(post)) {
                     await collection.addPost(post);
                     logging.info(`[Collections] Post ${post.id} was unpublished and added to collection ${collection.id} with filter ${collection.filter}`);
                 }
@@ -521,16 +508,7 @@ export class CollectionsService {
         const collection = await this.getById(id);
 
         if (collection) {
-            if (collection.deletable === false) {
-                throw new MethodNotAllowedError({
-                    message: tpl(messages.cannotDeleteBuiltInCollectionError.message),
-                    context: tpl(messages.cannotDeleteBuiltInCollectionError.context, {
-                        id: collection.id
-                    })
-                });
-            }
-
-            collection.deleted = true;
+            collection.delete();
             await this.collectionsRepository.save(collection);
         }
 

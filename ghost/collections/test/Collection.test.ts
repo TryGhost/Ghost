@@ -20,13 +20,41 @@ describe('Collection', function () {
 
         assert.equal(collection.title, 'Test Collection');
         assert.ok(collection.createdAt instanceof Date);
-        assert.ok(collection.updatedAt instanceof Date);
+        assert.equal(collection.updatedAt, null);
         assert.ok((collection.deleted === false), 'deleted should be false');
     });
 
     it('Cannot create a collection without a title', async function () {
         assert.rejects(async () => {
             await Collection.create({});
+        });
+    });
+
+    it('Cannot create a collection with an invalid type', async function () {
+        assert.rejects(async () => {
+            await Collection.create({
+                title: 'Broken',
+                type: 'what??'
+            });
+        });
+    });
+
+    it('Cannot create a collection with an invalid filter', async function () {
+        assert.rejects(async () => {
+            await Collection.create({
+                title: 'Broken',
+                type: 'automatic',
+                filter: 'what-the-fuck'
+            });
+        });
+    });
+
+    it('Cannot create a collection with an invalid description', async function () {
+        assert.rejects(async () => {
+            await Collection.create({
+                title: 'Broken',
+                description: ('Description').repeat(2000)
+            });
         });
     });
 
@@ -45,10 +73,8 @@ describe('Collection', function () {
         assert.ok(json);
         assert.equal(json.id, collection.id);
         assert.equal(json.title, 'Serialize me');
-        assert.ok(collection.createdAt instanceof Date);
-        assert.ok(collection.updatedAt instanceof Date);
         assert.equal(Object.keys(json).length, 10, 'should only have 9 keys + 1 posts relation');
-        assert.deepEqual(Object.keys(json), [
+        assert.deepEqual(Object.keys(json).sort(), [
             'id',
             'title',
             'slug',
@@ -59,7 +85,7 @@ describe('Collection', function () {
             'createdAt',
             'updatedAt',
             'posts'
-        ]);
+        ].sort());
 
         assert.equal(json.posts.length, 2, 'should have 2 posts');
         const serializedPost = json.posts[0];
@@ -399,7 +425,9 @@ describe('Collection', function () {
 
         assert.equal(collection.deleted, false);
 
-        collection.deleted = true;
+        assert.throws(() => {
+            collection.delete();
+        });
 
         assert.equal(collection.deleted, false);
     });
@@ -412,7 +440,9 @@ describe('Collection', function () {
 
         assert.equal(collection.deleted, false);
 
-        collection.deleted = true;
+        assert.throws(() => {
+            collection.delete();
+        });
 
         assert.equal(collection.deleted, false);
     });
@@ -425,7 +455,7 @@ describe('Collection', function () {
 
         assert.equal(collection.deleted, false);
 
-        collection.deleted = true;
+        collection.delete();
 
         assert.equal(collection.deleted, true);
     });
