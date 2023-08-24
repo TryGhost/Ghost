@@ -352,6 +352,10 @@ describe('Posts Bulk API', function () {
             // Check if all posts were deleted
             const posts = await models.Post.findPage({filter, status: 'all'});
             assert.equal(posts.meta.pagination.total, 0, `Expect all matching posts (${amount}) to be deleted`);
+
+            let latestCollection = await models.Collection.findPage({filter: 'slug:latest', limit: 1, withRelated: ['posts']});
+            latestCollection = latestCollection.data[0].toJSON().posts.length;
+            assert.equal(latestCollection, 0, 'Expect to have no collection posts');
         });
     });
 });
