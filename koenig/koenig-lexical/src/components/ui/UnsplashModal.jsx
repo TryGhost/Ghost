@@ -27,6 +27,18 @@ const UnsplashModal = ({onClose, onImageInsert, unsplashConf}) => {
     }, [zoomedImg, scrollPos, lastScrollPos]);
 
     React.useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                onClose();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [onClose]);
+
+    React.useEffect(() => {
         const ref = galleryRef.current;
         if (!zoomedImg) {
             if (ref) {

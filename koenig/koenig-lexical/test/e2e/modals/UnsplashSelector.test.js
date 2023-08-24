@@ -154,5 +154,14 @@ test.describe('Modals', async () => {
         await expect(page.locator('[data-kg-unsplash-zoomed]')).not.toBeVisible();
     });
 
+    test('can close modal with escape key', async () => {
+        await focusEditor(page);
+        await page.click('[data-kg-plus-button]');
+        await page.click('button[data-kg-card-menu-item="Unsplash"]');
+        await expect(page.locator('[data-kg-modal="unsplash"]')).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(page.locator('[data-kg-modal="unsplash"]')).not.toBeVisible();
+    });
+
     //test.fixme('can infinite scroll');
 });
