@@ -9,7 +9,7 @@ import WordCount from './components/WordCount';
 import basicContent from './content/basic-content.json';
 import content from './content/content.json';
 import minimalContent from './content/minimal-content.json';
-import {$createNodeSelection, $getNearestNodeFromDOMNode, $getRoot, $isDecoratorNode, $setSelection} from 'lexical';
+import {$getRoot, $isDecoratorNode} from 'lexical';
 import {
     BASIC_NODES, BASIC_TRANSFORMERS, KoenigComposableEditor,
     KoenigComposer, KoenigEditor, MINIMAL_NODES, MINIMAL_TRANSFORMERS,
@@ -186,19 +186,6 @@ function DemoComposer({editorType, isMultiplayer, setWordCount}) {
                 //scroll to the bottom of the container
                 containerRef.current.scrollTop = containerRef.current.scrollHeight;
             }
-        }
-
-        // when clicking between cards, put focus on the next card
-        const clickedOnKoenigCard = (event.target.closest('[data-kg-card]') !== null) || event.target.hasAttribute('data-kg-card');
-        if (editorAPI && clickedOnDecorator && !clickedOnKoenigCard) {
-            let editor = editorAPI.editorInstance;
-            event.preventDefault();
-            editor.update(() => {
-                const node = $getNearestNodeFromDOMNode(event.target);
-                const nodeSelection = $createNodeSelection();
-                nodeSelection.add(node.getKey());
-                $setSelection(nodeSelection);
-            });
         }
     }
 

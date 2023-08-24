@@ -8,6 +8,7 @@ import {
     $createNodeSelection,
     $createParagraphNode,
     $createTextNode,
+    $getNearestNodeFromDOMNode,
     $getNodeByKey,
     $getRoot,
     $getSelection,
@@ -19,6 +20,7 @@ import {
     $isRangeSelection,
     $isTextNode,
     $setSelection,
+    CLICK_COMMAND,
     COMMAND_PRIORITY_LOW,
     DELETE_LINE_COMMAND,
     INSERT_PARAGRAPH_COMMAND,
@@ -1051,7 +1053,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     if (selectedCardKey && isEditingCard) {
                         (editor._parentEditor || editor).dispatchCommand(SELECT_CARD_COMMAND, {cardKey: selectedCardKey});
                     }
-                    
+
                     if (editor._parentEditor) {
                         editor._parentEditor.getRootElement().focus();
                     }
@@ -1130,6 +1132,23 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         const url = linkMatch[1];
                         const embedNode = $createEmbedNode({url});
                         editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode: embedNode, createdWithUrl: true});
+                        return true;
+                    }
+
+                    return false;
+                },
+                COMMAND_PRIORITY_LOW
+            ),
+            editor.registerCommand(
+                CLICK_COMMAND,
+                (event) => {
+                    if (event.target.matches('[data-lexical-decorator="true"]')) {
+                        // clicked on a decorator node, select it
+                        // - only occurs when the padding above a card is clicked as our
+                        //   cards have their own click handlers
+                        event.preventDefault();
+                        const cardNode = $getNearestNodeFromDOMNode(event.target);
+                        $selectCard(cardNode.getKey());
                         return true;
                     }
 
