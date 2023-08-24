@@ -16,3 +16,9 @@ export const useBrowsePosts = createQuery<PostsResponseType>({
     dataType,
     path: '/posts/'
 });
+
+// This endpoints returns a csv file
+export const usePostsExports = createQuery<string>({
+    dataType,
+    path: '/posts/export/'
+});

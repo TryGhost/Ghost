@@ -19,9 +19,12 @@ export interface SettingGroupHook {
     handleCancel: () => void;
     updateSetting: (key: string, value: SettingValue) => void;
     handleEditingChange: (newState: boolean) => void;
+    validate: () => boolean;
+    errors: Record<string, string>;
+    clearError: (key: string) => void;
 }
 
-const useSettingGroup = (): SettingGroupHook => {
+const useSettingGroup = ({onValidate}: {onValidate?: () => Record<string, string>} = {}): SettingGroupHook => {
     // create a ref to focus the input field
     const focusRef = useRef<HTMLInputElement>(null);
 
@@ -30,11 +33,12 @@ const useSettingGroup = (): SettingGroupHook => {
 
     const [isEditing, setEditing] = useState(false);
 
-    const {formState: localSettings, saveState, handleSave, updateForm, reset} = useForm<LocalSetting[]>({
+    const {formState: localSettings, saveState, handleSave, updateForm, reset, validate, errors, clearError} = useForm<LocalSetting[]>({
         initialState: settings || [],
         onSave: async () => {
             await editSettings?.(changedSettings());
-        }
+        },
+        onValidate
     });
 
     const {setGlobalDirtyState} = useGlobalDirtyState();
@@ -98,7 +102,10 @@ const useSettingGroup = (): SettingGroupHook => {
         },
         handleCancel,
         updateSetting,
-        handleEditingChange
+        handleEditingChange,
+        validate,
+        errors,
+        clearError
     };
 };
 

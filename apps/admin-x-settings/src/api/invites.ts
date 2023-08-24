@@ -38,7 +38,7 @@ export const useAddInvite = createMutation<InvitesResponseType, {email: string, 
     updateQueries: {
         dataType,
         // Assume that all invite queries should include this new one
-        update: (newData, currentData) => ({
+        update: (newData, currentData) => (currentData && {
             ...(currentData as InvitesResponseType),
             invites: [
                 ...((currentData as InvitesResponseType).invites),

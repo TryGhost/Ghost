@@ -31,7 +31,7 @@ export const useCreateWebhook = createMutation<WebhooksResponseType, Partial<Web
     body: webhook => ({webhooks: [webhook]}),
     updateQueries: {
         dataType: integrationsDataType,
-        update: (newData, currentData) => ({
+        update: (newData, currentData) => (currentData && {
             ...(currentData as IntegrationsResponseType),
             integrations: (currentData as IntegrationsResponseType).integrations.map((integration) => {
                 const webhook = newData.webhooks[0];
@@ -52,7 +52,7 @@ export const useEditWebhook = createMutation<WebhooksResponseType, Webhook>({
     body: webhook => ({webhooks: [webhook]}),
     updateQueries: {
         dataType: integrationsDataType,
-        update: (newData, currentData) => ({
+        update: (newData, currentData) => (currentData && {
             ...(currentData as IntegrationsResponseType),
             integrations: (currentData as IntegrationsResponseType).integrations.map(integration => ({
                 ...integration,

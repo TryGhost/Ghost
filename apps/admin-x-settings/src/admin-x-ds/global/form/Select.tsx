@@ -17,6 +17,7 @@ export interface SelectOptionGroup {
 
 export interface SelectProps {
     title?: string;
+    hideTitle?: boolean;
     size?: 'xs' | 'md';
     prompt?: string;
     options: SelectOption[] | SelectOptionGroup[];
@@ -35,6 +36,7 @@ export interface SelectProps {
 
 const Select: React.FC<SelectProps> = ({
     title,
+    hideTitle,
     size = 'md',
     prompt,
     options,
@@ -92,7 +94,7 @@ const Select: React.FC<SelectProps> = ({
 
     const select = (
         <>
-            {title && <Heading grey={selectedOption || !prompt ? true : false} htmlFor={id} useLabelTag={true}>{title}</Heading>}
+            {title && <Heading className={hideTitle ? 'sr-only' : ''} grey={selectedOption || !prompt ? true : false} htmlFor={id} useLabelTag={true}>{title}</Heading>}
             <div className={containerClasses}>
                 <select className={selectClasses} disabled={disabled} id={id} value={selectedOption} onChange={handleOptionChange}>
                     {prompt && <option className={optionClasses} value="" disabled selected>{prompt}</option>}

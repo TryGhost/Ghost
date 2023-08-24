@@ -72,6 +72,8 @@ export const useFetchApi = () => {
             throw new ApiError(response, data);
         } else if (response.status === 204) {
             return;
+        } else if (response.headers.get('content-type')?.includes('text/csv')) {
+            return await response.text();
         } else {
             return await response.json();
         }
@@ -157,7 +159,7 @@ interface MutationOptions<ResponseData, Payload> extends Omit<QueryOptions<Respo
     body?: (payload: Payload) => FormData | object;
     searchParams?: (payload: Payload) => { [key: string]: string; };
     invalidateQueries?: { dataType: string; };
-    updateQueries?: { dataType: string; update: <CurrentData>(newData: ResponseData, currentData: CurrentData, payload: Payload) => unknown };
+    updateQueries?: { dataType: string; update: (newData: ResponseData, currentData: unknown, payload: Payload) => unknown };
 }
 
 const mutate = <ResponseData, Payload>({fetchApi, path, payload, searchParams, options}: {
