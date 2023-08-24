@@ -50,7 +50,7 @@ module.exports = async function comments(options) {
     }
 
     const frontendKey = await getFrontendKey();
-    const {scriptUrl, stylesUrl} = getFrontendAppConfig('comments');
+    const {scriptUrl} = getFrontendAppConfig('comments');
 
     const data = {
         locale: labs.isSet('i18n') ? (settingsCache.get('locale') || 'en') : undefined,
@@ -58,7 +58,6 @@ module.exports = async function comments(options) {
         api: urlUtils.urlFor('api', {type: 'content'}, true),
         admin: urlUtils.urlFor('admin', true),
         key: frontendKey,
-        styles: stylesUrl,
         title: title,
         count: count,
         'post-id': this.id,
