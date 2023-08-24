@@ -82,7 +82,7 @@
     "yjs": "^13.5.50"
   },
   "devDependencies": {
-    "@babel/core": "7.22.10",
+    "@babel/core": "7.22.11",
     "@etchteam/storybook-addon-status": "^4.2.4",
     "@playwright/test": "^1.33.0",
     "@prettier/sync": "^0.3.0",
