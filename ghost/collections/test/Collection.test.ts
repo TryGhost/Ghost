@@ -20,7 +20,7 @@ describe('Collection', function () {
 
         assert.equal(collection.title, 'Test Collection');
         assert.ok(collection.createdAt instanceof Date);
-        assert.equal(collection.updatedAt, null);
+        assert.ok(collection.updatedAt instanceof Date);
         assert.ok((collection.deleted === false), 'deleted should be false');
     });
 
