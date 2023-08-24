@@ -135,14 +135,18 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 return;
             }
 
+            // clicks outside of editor should deselect cards
+            //  this more generic handling prevents the need to handle blur for codemirror cards (and likely others)
             if (containerElem.current && !containerElem.current.contains(event.target)) {
-                editor.update(() => {
+                editor.getEditorState().read(() => {
                     const selection = $getSelection();
-
                     if ($isNodeSelection(selection)) {
-                        $setSelection(null);
+                        const selectedNode = selection.getNodes()[0];
+                        if ($isKoenigCard(selectedNode)) {
+                            editor.dispatchCommand(DESELECT_CARD_COMMAND, {cardKey: selectedNode.getKey()});
+                        }
                     }
-                }, {tag: 'history-merge'});
+                });
             }
         };
 

@@ -263,8 +263,10 @@ test.describe('Code Block card', async () => {
         await page.keyboard.type('```javascript ');
         await page.waitForSelector('[data-kg-card="codeblock"] .cm-editor');
 
+        // Types slower. Codemirror can be slow and needs some time to place the cursor after entering text.
         await page.keyboard.type('Here are some words');
-        await page.getByTestId('post-title').fill('post title'); // move focus outside of the editor
+        await page.getByTestId('post-title').click();
+        await page.keyboard.type('post title'); // click outside of the editor
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">

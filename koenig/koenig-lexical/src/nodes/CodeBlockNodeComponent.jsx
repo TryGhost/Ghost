@@ -4,7 +4,6 @@ import React from 'react';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {CodeBlockCard} from '../components/ui/cards/CodeBlockCard';
-import {DESELECT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -35,19 +34,6 @@ export function CodeBlockNodeComponent({nodeKey, captionEditor, captionEditorIni
         setEditing(true);
     };
 
-    const onBlur = (event) => {
-        // ignore if clicking on the language selection input
-        const relatedTarget = event?.relatedTarget;
-        if (relatedTarget?.ariaLabel === 'Code card language') {
-            return;
-        }
-        // deselect if clicking outside the card
-        //  this check results in deferring to the Cmd+Enter handling in KoenigBehaviourPlugin when the cause of the blur
-        if (relatedTarget?.className !== 'kg-prose') {
-            editor.dispatchCommand(DESELECT_CARD_COMMAND, {cardKey: nodeKey});
-        }
-    };
-
     return (
         <>
             <CodeBlockCard
@@ -62,7 +48,6 @@ export function CodeBlockNodeComponent({nodeKey, captionEditor, captionEditorIni
                 nodeKey={nodeKey}
                 updateCode={updateCode}
                 updateLanguage={updateLanguage}
-                onBlur={onBlur}
             />
             <ActionToolbar
                 data-kg-card-toolbar="button"
