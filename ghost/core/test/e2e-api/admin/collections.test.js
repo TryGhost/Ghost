@@ -47,10 +47,10 @@ const matchPostShallowIncludes = {
     post_revisions: anyArray
 };
 
-async function trackDb(fn) {
+async function trackDb(fn, skip) {
     const db = require('../../../core/server/data/db');
     if (db?.knex?.client?.config?.client !== 'sqlite3') {
-        return;
+        return skip();
     }
     /** @type {import('sqlite3').Database} */
     const database = db.knex.client;
@@ -115,7 +115,7 @@ describe('Collections API', function () {
                             matchCollection
                         ]
                     });
-            });
+            }, this.skip.bind(this));
             const collectionRelatedQueries = queries.filter(query => query.sql.includes('collection'));
             assert(collectionRelatedQueries.length === 2);
         });
@@ -569,7 +569,7 @@ describe('Collections API', function () {
                     await DomainEvents.allSettled();
 
                     post = createdPost;
-                });
+                }, this.skip.bind(this));
 
                 const collectionRelatedQueries = queries.filter(query => query.sql.includes('collection'));
                 assert.equal(collectionRelatedQueries.length, 8);
@@ -601,7 +601,7 @@ describe('Collections API', function () {
                         .expectStatus(200);
 
                     await DomainEvents.allSettled();
-                });
+                }, this.skip.bind(this));
 
                 const collectionRelatedQueries = queries.filter(query => query.sql.includes('collection'));
                 assert.equal(collectionRelatedQueries.length, 14);
@@ -630,7 +630,7 @@ describe('Collections API', function () {
                         .expectStatus(204);
 
                     await DomainEvents.allSettled();
-                });
+                }, this.skip.bind(this));
                 const collectionRelatedQueries = queries.filter(query => query.sql.includes('collection'));
                 assert.equal(collectionRelatedQueries.length, 2);
             }
