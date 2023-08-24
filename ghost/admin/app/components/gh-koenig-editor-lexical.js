@@ -156,16 +156,6 @@ export default class GhKoenigEditorReactComponent extends Component {
                 // containerRef.current.scrollTop = containerRef.current.scrollHeight;
             }
         }
-        // when clicking between cards, put focus on the next card
-        const clickedOnDecorator = (event.target.closest('[data-lexical-decorator]') !== null) || event.target.hasAttribute('data-lexical-decorator');
-        const clickedOnKoenigCard = (event.target.closest('[data-kg-card]') !== null) || event.target.hasAttribute('data-kg-card');
-        if (clickedOnDecorator && !clickedOnKoenigCard) {
-            event.preventDefault();
-            console.log(`event`, event);
-            this.editorAPI.selectNearestCardFromClick(event);
-
-            this.editorAPI.printSelection();
-        }
     }
 
     // _setupEditor(koenig) {
