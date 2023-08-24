@@ -142,6 +142,7 @@
     "You're not receiving emails": "E-posta almıyorsunuz",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "E-postaları almıyorsun çünkü yakınlarda gönderilen bir mesajı spam olarak işaretledin ya da mesajlar verilen e-posta adresine teslim edilemedi.",
     "You've successfully signed in.": "Başarıyla oturum açtınız.",
+    "You've successfully subscribed to": "",
     "Your account": "Hesabın",
     "Your input helps shape what gets published.": "Yorumun yayımlanan içeriklerin şekillenmesine yardımcı olur.",
     "Your subscription will expire on {{expiryDate}}": "Aboneliğiniz {{expiryDate}} tarihinde sona erecek",

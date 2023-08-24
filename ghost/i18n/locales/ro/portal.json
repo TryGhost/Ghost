@@ -142,6 +142,7 @@
     "You're not receiving emails": "",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Nu primești emailuri deoarece fie ai marcat un mesaj recent ca spam, fie pentru că mesajele nu pot fi livrate la adresa ta de email furnizată.",
     "You've successfully signed in.": "",
+    "You've successfully subscribed to": "",
     "Your account": "Contul tău",
     "Your input helps shape what gets published.": "Contribuția ta ajută la conturarea a ceea ce se publică.",
     "Your subscription will expire on {{expiryDate}}": "",

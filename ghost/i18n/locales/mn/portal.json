@@ -142,6 +142,7 @@
     "You're not receiving emails": "",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Таны имэйл хүлээж авахгүй байгаа шалтгаан нь нэг бол та аль нэг имэйлийг спам гэж тэмдэглэсэн, эсвэл таны хаяг имэйл хүлээж авах боломжгүй байна.",
     "You've successfully signed in.": "",
+    "You've successfully subscribed to": "",
     "Your account": "Таны бүртгэл",
     "Your input helps shape what gets published.": "Таны санал дараа дараагийн нийтлэлийг илүү чанартай болгоход туслана",
     "Your subscription will expire on {{expiryDate}}": "",

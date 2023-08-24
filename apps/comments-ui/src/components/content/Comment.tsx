@@ -102,13 +102,13 @@ type UnpublishedCommentProps = {
     openEditMode: () => void;
 }
 const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEditMode}) => {
-    const {admin} = useAppContext();
+    const {admin, t} = useAppContext();
 
     let notPublishedMessage;
     if (admin && comment.status === 'hidden') {
-        notPublishedMessage = 'This comment has been hidden.';
+        notPublishedMessage = t('This comment has been hidden.');
     } else {
-        notPublishedMessage = 'This comment has been removed.';
+        notPublishedMessage = t('This comment has been removed.');
     }
 
     const avatar = (<BlankAvatar />);
@@ -145,12 +145,13 @@ const MemberExpertise: React.FC<{comment: Comment}> = ({comment}) => {
 };
 
 const EditedInfo: React.FC<{comment: Comment}> = ({comment}) => {
+    const {t} = useAppContext();
     if (!comment.edited_at) {
         return null;
     }
     return (
         <span>
-            <span className="mx-[0.3em]">·</span>Edited
+            <span className="mx-[0.3em]">·</span>{t('Edited')}
         </span>
     );
 };
@@ -192,7 +193,8 @@ const ReplyFormBox: React.FC<ReplyFormBoxProps> = ({comment, isInReplyMode, clos
 
 // TODO: move name detection to helper
 const AuthorName: React.FC<{comment: Comment}> = ({comment}) => {
-    const name = !comment.member ? 'Deleted member' : (comment.member.name ? comment.member.name : 'Anonymous');
+    const {t} = useAppContext();
+    const name = !comment.member ? t('Deleted member') : (comment.member.name ? comment.member.name : t('Anonymous'));
     return (
         <h4 className="text-[rgb(23,23,23] font-sans text-[17px] font-bold tracking-tight dark:text-[rgba(255,255,255,0.85)]">
             {name}

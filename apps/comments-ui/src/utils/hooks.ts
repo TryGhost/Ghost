@@ -52,7 +52,8 @@ export function usePopupOpen(type: string) {
  * Avoids a rerender of the relative time unless the date changed, and not the current timestamp changed
  */
 export function useRelativeTime(dateString: string) {
+    const {t} = useAppContext();
     return useMemo(() => {
-        return formatRelativeTime(dateString);
+        return formatRelativeTime(dateString, t);
     }, [dateString]);
 }

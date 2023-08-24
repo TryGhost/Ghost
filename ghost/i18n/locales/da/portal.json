@@ -142,6 +142,7 @@
     "You're not receiving emails": "Du modtager ikke e-mails",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Du modtager ikke e-mails fordi du enten har markeret en af de seneste mails som spam, eller fordi e-mails ikke kunne leveres til den oplyste e-mailadresse.",
     "You've successfully signed in.": "Du er logget ind.",
+    "You've successfully subscribed to": "",
     "Your account": "Din konto",
     "Your input helps shape what gets published.": "Dit input hjælper med at forme det der bliver publiceret.",
     "Your subscription will expire on {{expiryDate}}": "Dit abonnement udløber {{expiryDate}}",

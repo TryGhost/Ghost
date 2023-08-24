@@ -7,7 +7,7 @@ type Props = {
     toggleEdit: () => void;
 };
 const AuthorContextMenu: React.FC<Props> = ({comment, close, toggleEdit}) => {
-    const {dispatchAction} = useAppContext();
+    const {dispatchAction, t} = useAppContext();
 
     const deleteComment = () => {
         dispatchAction('deleteComment', comment);
@@ -17,10 +17,10 @@ const AuthorContextMenu: React.FC<Props> = ({comment, close, toggleEdit}) => {
     return (
         <div className="flex flex-col">
             <button className="mb-3 w-full text-left text-[14px]" data-testid="edit" type="button" onClick={toggleEdit}>
-                Edit
+                {t('Edit')}
             </button>
             <button className="w-full text-left text-[14px] text-red-600" type="button" onClick={deleteComment}>
-                Delete
+                {t('Delete')}
             </button>
         </div>
     );

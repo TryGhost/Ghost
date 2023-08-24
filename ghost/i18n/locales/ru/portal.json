@@ -142,6 +142,7 @@
     "You're not receiving emails": "",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Вы не получаете письма, так как либо вы пометили недавнее сообщение как спам, либо сообщения не могут быть доставлены на указанный вами email.",
     "You've successfully signed in.": "",
+    "You've successfully subscribed to": "",
     "Your account": "Ваш аккаунт",
     "Your input helps shape what gets published.": "Ваш отзыв поможет решить, что будет опубликовано дальше.",
     "Your subscription will expire on {{expiryDate}}": "",

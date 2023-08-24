@@ -55,7 +55,8 @@
     "@tiptap/pm": "2.0.4",
     "@tiptap/react": "2.0.4",
     "react": "17.0.2",
-    "react-dom": "17.0.2"
+    "react-dom": "17.0.2",
+    "react-string-replace": "1.1.1"
   },
   "devDependencies": {
     "@playwright/test": "1.37.0",
@@ -77,6 +78,7 @@
     "vite-plugin-css-injected-by-js": "3.3.0",
     "vite-plugin-svgr": "3.2.0",
     "vitest": "0.34.2",
-    "@tryghost/i18n": "0.0.0"
+    "@tryghost/i18n": "0.0.0",
+    "eslint-plugin-i18next": "6.0.3"
   }
 }

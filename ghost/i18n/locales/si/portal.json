@@ -142,6 +142,7 @@
     "You're not receiving emails": "ඔබට email ලැබෙන්නේ නැත",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "මෑතකදී ලැබුණු email පණිවිඩයක් spam ලෙස සටහන් කිරීම නිසා හෝ ඔබ ලබාදී ඇති email ලිපිනයට email පණිවිඩ යැවිය නොහැකි නිසාවෙන් ඔබට email ලැබෙන්නේ නැත.",
     "You've successfully signed in.": "ඔබ සාර්ථකව sign in වන ලදී.",
+    "You've successfully subscribed to": "",
     "Your account": "ඔබගේ ගිණුම",
     "Your input helps shape what gets published.": "ඔබගේ අදහස් ඉදිරියේදී සිදු කරන පළකිරීම් වැඩිදියුණු කිරීමට උදව් කරනු ඇත.",
     "Your subscription will expire on {{expiryDate}}": "ඔබගේ subscription එක {{expiryDate}} වැනි දින කල් ඉකුත් වනු ඇත",

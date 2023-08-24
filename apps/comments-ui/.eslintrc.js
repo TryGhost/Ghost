@@ -3,11 +3,13 @@ module.exports = {
     root: true,
     extends: [
         'plugin:ghost/ts',
-        'plugin:react/recommended'
+        'plugin:react/recommended',
+        'plugin:i18next/recommended'
     ],
     plugins: [
         'ghost',
-        'tailwindcss'
+        'tailwindcss',
+        'i18next'
     ],
     settings: {
         react: {

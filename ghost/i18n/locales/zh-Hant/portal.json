@@ -142,6 +142,7 @@
     "You're not receiving emails": "您無法接收郵件。",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "您無法接收郵件，可能是因為您最近將某個郵件標記為垃圾郵件，或者郵件無法發送到您提供的 email 地址。",
     "You've successfully signed in.": "您已成功登入。",
+    "You've successfully subscribed to": "",
     "Your account": "您的帳號",
     "Your input helps shape what gets published.": "您的建議有助於改善我們的內容。",
     "Your subscription will expire on {{expiryDate}}": "您的訂閱將於 {{expiryDate}} 到期",

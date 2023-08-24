@@ -142,6 +142,7 @@
     "You're not receiving emails": "Не получавате имейли",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Не получавате писма защото или пощенският адрес е невалиден, или писмата се класифицират като нежелана поща.",
     "You've successfully signed in.": "Влязохте успешно.",
+    "You've successfully subscribed to": "",
     "Your account": "Твоят профил",
     "Your input helps shape what gets published.": "Вашият принос помага да се оформи това, което се публикува.",
     "Your subscription will expire on {{expiryDate}}": "Абонаментът ви ще изтече на {{expiryDate}}",

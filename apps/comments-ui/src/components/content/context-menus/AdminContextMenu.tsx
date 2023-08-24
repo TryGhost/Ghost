@@ -5,7 +5,7 @@ type Props = {
     close: () => void;
 };
 const AdminContextMenu: React.FC<Props> = ({comment, close}) => {
-    const {dispatchAction} = useAppContext();
+    const {dispatchAction, t} = useAppContext();
 
     const hideComment = () => {
         dispatchAction('hideComment', comment);
@@ -24,11 +24,11 @@ const AdminContextMenu: React.FC<Props> = ({comment, close}) => {
             {
                 isHidden ?
                     <button className="w-full text-left text-[14px]" type="button" onClick={showComment}>
-                        <span>Show </span><span className="hidden sm:inline">comment</span>
+                        <span className="hidden sm:inline">{t('Show comment')}</span><span className="sm:hidden">{t('Show')}</span>
                     </button>
                     :
                     <button className="w-full text-left text-[14px]" type="button" onClick={hideComment}>
-                        <span>Hide </span><span className="hidden sm:inline">comment</span>
+                        <span className="hidden sm:inline">{t('Hide comment')}</span><span className="sm:hidden">{t('Hide')}</span>
                     </button>
             }
         </div>

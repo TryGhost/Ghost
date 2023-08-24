@@ -9,10 +9,10 @@ type Props = {
     commentsCount: number
 };
 const MainForm: React.FC<Props> = ({commentsCount}) => {
-    const {postId, dispatchAction} = useAppContext();
+    const {postId, dispatchAction, t} = useAppContext();
 
     const config = {
-        placeholder: (commentsCount === 0 ? 'Start the conversation' : 'Join the discussion'),
+        placeholder: (commentsCount === 0 ? t('Start the conversation') : t('Join the discussion')),
         autofocus: false
     };
 
@@ -84,7 +84,7 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
     const submitProps = {
         submitText: (
             <>
-                <span className="hidden sm:inline">Add </span><span className="capitalize sm:normal-case">comment</span>
+                <span className="hidden sm:inline">{t('Add comment')} </span><span className="sm:hidden">{t('Comment')}</span>
             </>
         ),
         submitSize: 'large',

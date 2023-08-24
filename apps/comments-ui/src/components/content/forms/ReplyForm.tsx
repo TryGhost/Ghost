@@ -11,11 +11,11 @@ type Props = {
     close: () => void;
 }
 const ReplyForm: React.FC<Props> = ({parent, close}) => {
-    const {postId, dispatchAction} = useAppContext();
+    const {postId, dispatchAction, t} = useAppContext();
     const [, setForm] = useRefCallback<HTMLDivElement>(scrollToElement);
 
     const config = {
-        placeholder: 'Reply to comment',
+        placeholder: t('Reply to comment'),
         autofocus: true
     };
 
@@ -38,7 +38,7 @@ const ReplyForm: React.FC<Props> = ({parent, close}) => {
     const submitProps = {
         submitText: (
             <>
-                <span className="hidden sm:inline">Add </span><span className="capitalize sm:normal-case">reply</span>
+                <span className="hidden sm:inline">{t('Add reply')}</span><span className="sm:hidden">{t('Reply')}</span>
             </>
         ),
         submitSize: 'medium',
