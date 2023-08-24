@@ -134,28 +134,28 @@ export default class GhKoenigEditorReactComponent extends Component {
 
     @action
     focusEditor(event) {
-        // if (event.target.classList.contains('gh-koenig-editor-pane')) {
-        //     let editorCanvas = this.editorAPI.editorInstance.getRootElement();
-        //     let {bottom} = editorCanvas.getBoundingClientRect();
+        if (event.target.classList.contains('gh-koenig-editor-pane')) {
+            let editorCanvas = this.editorAPI.editorInstance.getRootElement();
+            let {bottom} = editorCanvas.getBoundingClientRect();
 
-        //     // if a mousedown and subsequent mouseup occurs below the editor
-        //     // canvas, focus the editor and put the cursor at the end of the document
-        //     if (event.pageY > bottom && event.clientY > bottom) {
-        //         event.preventDefault();
+            // if a mousedown and subsequent mouseup occurs below the editor
+            // canvas, focus the editor and put the cursor at the end of the document
+            if (event.pageY > bottom && event.clientY > bottom) {
+                event.preventDefault();
 
-        //         // we should always have a visible cursor when focusing
-        //         // at the bottom so create an empty paragraph if last
-        //         // section is a card
-        //         if (this.editorAPI.lastNodeIsDecorator()) {
-        //             this.editorAPI.insertParagraphAtBottom();
-        //         }
-        //         // Focus the editor
-        //         this.editorAPI.focusEditor({position: 'bottom'});
+                // we should always have a visible cursor when focusing
+                // at the bottom so create an empty paragraph if last
+                // section is a card
+                if (this.editorAPI.lastNodeIsDecorator()) {
+                    this.editorAPI.insertParagraphAtBottom();
+                }
+                // Focus the editor
+                this.editorAPI.focusEditor({position: 'bottom'});
 
-        //         //scroll to the bottom of the container
-        //         // containerRef.current.scrollTop = containerRef.current.scrollHeight;
-        //     }
-        // }
+                //scroll to the bottom of the container
+                // containerRef.current.scrollTop = containerRef.current.scrollHeight;
+            }
+        }
         // when clicking between cards, put focus on the next card
         const clickedOnDecorator = (event.target.closest('[data-lexical-decorator]') !== null) || event.target.hasAttribute('data-lexical-decorator');
         const clickedOnKoenigCard = (event.target.closest('[data-kg-card]') !== null) || event.target.hasAttribute('data-kg-card');
@@ -163,6 +163,8 @@ export default class GhKoenigEditorReactComponent extends Component {
             event.preventDefault();
             console.log(`event`, event);
             this.editorAPI.selectNearestCardFromClick(event);
+
+            this.editorAPI.printSelection();
         }
     }
 
