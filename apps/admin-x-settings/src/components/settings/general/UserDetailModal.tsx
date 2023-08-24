@@ -424,13 +424,18 @@ const UserMenuTrigger = () => (
 const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
     const {updateRoute} = useRouting();
     const {ownerUser} = useStaffUsers();
-    const [userData, setUserData] = useState(user);
-    const [saveState, setSaveState] = useState('');
+    const [userData, _setUserData] = useState(user);
+    const [saveState, setSaveState] = useState<'' | 'unsaved' | 'saving' | 'saved'>('');
     const [errors, setErrors] = useState<{
         name?: string;
         email?: string;
         url?: string;
     }>({});
+
+    const setUserData = (newUserData: User | ((current: User) => User)) => {
+        _setUserData(newUserData);
+        setSaveState('unsaved');
+    };
 
     const mainModal = useModal();
     const {mutateAsync: uploadImage} = useUploadImage();
@@ -645,6 +650,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
     return (
         <Modal
             afterClose={() => updateRoute('users')}
+            dirty={saveState === 'unsaved'}
             okLabel={okLabel}
             size='lg'
             stickyFooter={true}
