@@ -61,7 +61,7 @@
     "@storybook/addon-essentials": "7.3.2",
     "@storybook/addon-interactions": "7.3.2",
     "@storybook/addon-links": "7.3.2",
-    "@storybook/addon-styling": "1.3.6",
+    "@storybook/addon-styling": "1.3.7",
     "@storybook/blocks": "7.3.2",
     "@storybook/react": "7.3.2",
     "@storybook/react-vite": "7.3.2",
