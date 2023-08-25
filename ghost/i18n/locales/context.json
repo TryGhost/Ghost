@@ -92,7 +92,7 @@
     "Plan upgrade was cancelled.": "Notification for when a plan upgrade was cancelled",
     "Please confirm your email address with this link:": "Descriptive text in signup emails, right before the button members click to confirm their address",
     "Please contact {{supportAddress}} to adjust your complimentary subscription.": "A message to comped members when trying to change their subscription, but no other paid plans are available.",
-    "Please enter a valid email address": "Err message when an email address is invalid",
+    "Please enter a valid email address": "Error message when an email address is invalid",
     "Please fill in required fields": "Error message when a required field is missing",
     "Price": "A label to indicate price of a tier",
     "Re-enable emails": "A button for members to turn-back-on emails, if they have been previously disabled as a result of delivery failures",
