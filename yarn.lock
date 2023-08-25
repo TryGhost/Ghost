@@ -5715,10 +5715,10 @@
     "@storybook/types" "7.3.2"
     ts-dedent "^2.0.0"
 
-"@storybook/addon-styling@1.3.6":
-  version "1.3.6"
-  resolved "https://registry.yarnpkg.com/@storybook/addon-styling/-/addon-styling-1.3.6.tgz#79353a40caeea6de63de4110caee9cbf12042275"
-  integrity sha512-g4e9vLnNlpjR3hHcyC8iCtgqcWQj6IPK+HZ8PdF92O95sa0nus+NG4meahEBwCsZm6CtYV/QMymFtLnp2NvAmg==
+"@storybook/addon-styling@1.3.7":
+  version "1.3.7"
+  resolved "https://registry.yarnpkg.com/@storybook/addon-styling/-/addon-styling-1.3.7.tgz#a440fafcbf2899fac28c3c778bec9f3c6fc02dd9"
+  integrity sha512-JSBZMOrSw/3rlq5YoEI7Qyq703KSNP0Jd+gxTWu3/tP6245mpjn2dXnR8FvqVxCi+FG4lt2kQyPzgsuwEw1SSA==
   dependencies:
     "@babel/template" "^7.20.7"
     "@babel/types" "^7.21.5"
