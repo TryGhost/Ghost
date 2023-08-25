@@ -101,7 +101,7 @@
     "@types/react-dom": "18.2.7",
     "@vitejs/plugin-react": "4.0.4",
     "@vitest/coverage-c8": "0.33.0",
-    "@vitest/ui": "0.34.2",
+    "@vitest/ui": "0.34.3",
     "autoprefixer": "10.4.15",
     "babel-loader": "9.1.3",
     "concurrently": "^8.0.0",
@@ -123,7 +123,7 @@
     "typescript": "5.2.2",
     "vite": "4.3.8",
     "vite-plugin-svgr": "^3.2.0",
-    "vitest": "0.34.2"
+    "vitest": "0.34.3"
   },
   "gitHead": "1b25c63a23285d60d8c938c95240c9f70fd705de"
 }
