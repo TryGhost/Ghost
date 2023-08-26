@@ -176,7 +176,7 @@ module.exports = function (Bookshelf) {
                 objects.forEach((object) => {
                     Object.keys(relationsToAttach).forEach((relation) => {
                         object[relation] = relationsToAttach[relation][object.id] || [];
-                    })
+                    });
 
                     object = Bookshelf.registry.models[modelName].prototype.toJSON.bind({
                         attributes: object,
