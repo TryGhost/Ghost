@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.59.4",
+  "version": "5.60.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -101,11 +101,11 @@
     "@tryghost/importer-revue": "0.0.0",
     "@tryghost/job-manager": "0.0.0",
     "@tryghost/kg-card-factory": "4.0.10",
-    "@tryghost/kg-converters": "0.0.9",
+    "@tryghost/kg-converters": "0.0.12",
     "@tryghost/kg-default-atoms": "4.0.3",
     "@tryghost/kg-default-cards": "9.1.4",
-    "@tryghost/kg-default-nodes": "0.1.20",
-    "@tryghost/kg-lexical-html-renderer": "0.3.16",
+    "@tryghost/kg-default-nodes": "0.1.24",
+    "@tryghost/kg-lexical-html-renderer": "0.3.20",
     "@tryghost/kg-mobiledoc-html-renderer": "6.0.10",
     "@tryghost/limit-service": "1.2.6",
     "@tryghost/link-redirects": "0.0.0",
@@ -224,7 +224,7 @@
     "yjs": "13.6.7"
   },
   "optionalDependencies": {
-    "@tryghost/html-to-mobiledoc": "2.0.26",
+    "@tryghost/html-to-mobiledoc": "2.0.29",
     "sqlite3": "5.1.6"
   },
   "devDependencies": {

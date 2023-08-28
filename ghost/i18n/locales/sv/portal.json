@@ -142,6 +142,7 @@
     "You're not receiving emails": "Du tar inte emot e-post",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Du får inte e-postmeddelanden eftersom du antingen markerade ett nyligt meddelande som skräppost, eller för att meddelanden inte kunde levereras till din angivna e-postadress.",
     "You've successfully signed in.": "Du är nu inloggad.",
+    "You've successfully subscribed to": "",
     "Your account": "Ditt konto",
     "Your input helps shape what gets published.": "Din åsikt hjälper till att forma vad som publiceras.",
     "Your subscription will expire on {{expiryDate}}": "Din prenumeration avslutas {{expiryDate}}",

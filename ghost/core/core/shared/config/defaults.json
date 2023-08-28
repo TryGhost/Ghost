@@ -195,8 +195,7 @@
     },
     "comments": {
         "url": "https://cdn.jsdelivr.net/ghost/comments-ui@~{version}/umd/comments-ui.min.js",
-        "styles": "https://cdn.jsdelivr.net/ghost/comments-ui@~{version}/umd/main.css",
-        "version": "0.12"
+        "version": "0.13"
     },
     "editor": {
         "url": "https://cdn.jsdelivr.net/ghost/koenig-lexical@~{version}/dist/koenig-lexical.umd.js",

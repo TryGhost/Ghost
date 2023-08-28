@@ -142,6 +142,7 @@
     "You're not receiving emails": "",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Vi ne ricevas retpoŝtojn ĉar vi aŭ markis lastatempan mesaĝon kiel trudmesaĝo, aŭ ĉar mesaĝoj ne povis liveri al via provizita retadreso.",
     "You've successfully signed in.": "",
+    "You've successfully subscribed to": "",
     "Your account": "Via konto",
     "Your input helps shape what gets published.": "Via enigo helpas formi kio estas aperigita.",
     "Your subscription will expire on {{expiryDate}}": "",

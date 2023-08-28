@@ -15,9 +15,26 @@ export type Config = {
     stripeDirect: boolean;
     hostSettings?: {
         limits?: {
+            // Partially typed, see https://github.com/TryGhost/SDK/tree/main/packages/limit-service
             customIntegrations?: {
                 disabled: boolean;
             }
+            staff?: {
+                max?: number
+                error?: string
+            }
+            members?: {
+                max?: number
+                error?: string
+            }
+            newsletters?: {
+                max?: number
+                error?: string
+            }
+        }
+        billing?: {
+            enabled?: boolean
+            url?: string
         }
     }
 
