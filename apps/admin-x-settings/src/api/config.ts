@@ -48,6 +48,8 @@ export interface ConfigResponseType {
 
 const dataType = 'ConfigResponseType';
 
+export const configDataType = dataType;
+
 export const useBrowseConfig = createQuery<ConfigResponseType>({
     dataType,
     path: '/config/'

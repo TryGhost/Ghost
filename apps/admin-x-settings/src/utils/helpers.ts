@@ -63,6 +63,10 @@ export function downloadFile(url: string) {
     iframe.setAttribute('src', url);
 }
 
+export function downloadFromEndpoint(path: string) {
+    downloadFile(`${getGhostPaths().apiRoot}${path}`);
+}
+
 export function numberWithCommas(x: number) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }

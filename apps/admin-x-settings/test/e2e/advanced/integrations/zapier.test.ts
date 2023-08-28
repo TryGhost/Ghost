@@ -83,7 +83,7 @@ test.describe('Zapier integration settings', async () => {
             ...globalDataRequests.browseConfig,
             response: {
                 config: {
-                    ...responseFixtures.config,
+                    ...responseFixtures.config.config,
                     hostSettings: {
                         limits: {
                             customIntegrations: {

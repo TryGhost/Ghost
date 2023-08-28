@@ -51,7 +51,7 @@ test.describe('Stripe settings', async () => {
             ...globalDataRequests,
             browseConfig: {method: 'GET', path: '/config/', response: {
                 config: {
-                    ...responseFixtures.config,
+                    ...responseFixtures.config.config,
                     stripeDirect: true
                 }
             }},
