@@ -66,7 +66,7 @@
     "@storybook/react": "7.3.2",
     "@storybook/react-vite": "7.3.2",
     "@storybook/testing-library": "0.2.0",
-    "@tailwindcss/forms": "0.5.5",
+    "@tailwindcss/forms": "0.5.6",
     "@tailwindcss/line-clamp": "0.4.4",
     "@types/react": "18.2.21",
     "@types/react-dom": "18.2.7",
