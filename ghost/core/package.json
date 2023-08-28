@@ -81,6 +81,7 @@
     "@tryghost/debug": "0.1.24",
     "@tryghost/domain-events": "0.0.0",
     "@tryghost/donations": "0.0.0",
+    "@tryghost/recommendations": "0.0.0",
     "@tryghost/dynamic-routing-events": "0.0.0",
     "@tryghost/email-analytics-provider-mailgun": "0.0.0",
     "@tryghost/email-analytics-service": "0.0.0",

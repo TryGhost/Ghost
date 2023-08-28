@@ -328,6 +328,7 @@ async function initServices({config}) {
     const collections = require('./server/services/collections');
     const mailEvents = require('./server/services/mail-events');
     const donationService = require('./server/services/donations');
+    const recommendationsService = require('./server/services/recommendations');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -367,7 +368,8 @@ async function initServices({config}) {
         collections.init(),
         mediaInliner.init(),
         mailEvents.init(),
-        donationService.init()
+        donationService.init(),
+        recommendationsService.init()
     ]);
     debug('End: Services');
 
