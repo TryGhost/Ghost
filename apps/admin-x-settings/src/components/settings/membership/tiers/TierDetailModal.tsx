@@ -15,7 +15,7 @@ import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import useSortableIndexedList from '../../../../hooks/useSortableIndexedList';
 import {Tier, useAddTier, useEditTier} from '../../../../api/tiers';
-import {currencies, currencyFromDecimal, currencyGroups, currencyToDecimal, getSymbol} from '../../../../utils/currency';
+import {currencies, currencyFromDecimal, currencySelectGroups, currencyToDecimal, getSymbol} from '../../../../utils/currency';
 import {getSettingValues} from '../../../../api/settings';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
@@ -163,13 +163,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                                 <div className='w-10'>
                                     <Select
                                         border={false}
-                                        options={Object.values(currencyGroups()).map(group => ({
-                                            label: '—',
-                                            options: group.map(({isoCode,name}) => ({
-                                                value: isoCode,
-                                                label: `${isoCode} - ${name}`
-                                            }))
-                                        }))}
+                                        options={currencySelectGroups()}
                                         selectClassName='font-medium'
                                         selectedOption={formState.currency}
                                         size='xs'
