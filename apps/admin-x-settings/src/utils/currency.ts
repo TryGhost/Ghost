@@ -206,7 +206,11 @@ export function minimumAmountForCurrency(currency: string) {
 // Stripe doesn't allow amounts over 10,000 as a preset amount
 const MAX_AMOUNT = 10_000;
 
-export function validateCurrencyAmount(cents: number, currency: string) {
+export function validateCurrencyAmount(cents: number | undefined, currency: string | undefined) {
+    if (!cents || !currency) {
+        return;
+    }
+
     const symbol = getSymbol(currency);
     const minAmount = minimumAmountForCurrency(currency);
 
