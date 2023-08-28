@@ -43,7 +43,7 @@ class PostsService {
      */
     async browsePosts(options) {
         let posts;
-        if (this.isSet('collections') && options.collection) {
+        if (options.collection) {
             let collection = await this.collectionsService.getById(options.collection);
 
             if (!collection) {
