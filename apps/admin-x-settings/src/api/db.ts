@@ -1,4 +1,5 @@
 import {createMutation} from '../utils/apiRequests';
+import {downloadFromEndpoint} from '../utils/helpers';
 
 export const useImportContent = createMutation<unknown, File>({
     method: 'POST',
@@ -14,3 +15,5 @@ export const useDeleteAllContent = createMutation<unknown, null>({
     method: 'DELETE',
     path: () => '/db/'
 });
+
+export const downloadAllContent = () => downloadFromEndpoint('/db/');
