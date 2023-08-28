@@ -21380,10 +21380,10 @@ ltgt@^2.1.2:
   resolved "https://registry.yarnpkg.com/ltgt/-/ltgt-2.2.1.tgz#f35ca91c493f7b73da0e07495304f17b31f87ee5"
   integrity sha512-AI2r85+4MquTw9ZYqabu4nMwy9Oftlfa/e/52t9IjtfG+mGBbTNdAoZ3RQKLHR6r0wQnwZnPIEh/Ya6XTWAKNA==
 
-luxon@3.4.1, luxon@^3.0.0, luxon@^3.3.0:
-  version "3.4.1"
-  resolved "https://registry.yarnpkg.com/luxon/-/luxon-3.4.1.tgz#9147374b2c539e7893f906c420e9b080b59c5457"
-  integrity sha512-2USspxOCXWGIKHwuQ9XElxPPYrDOJHDQ5DQ870CoD+CxJbBnRDIBCfhioUJJjct7BKOy80Ia8cVstIcIMb/0+Q==
+luxon@3.4.2, luxon@^3.0.0, luxon@^3.3.0:
+  version "3.4.2"
+  resolved "https://registry.yarnpkg.com/luxon/-/luxon-3.4.2.tgz#f5bcab779f3d6a943ee7c8621c2b416bc10abd24"
+  integrity sha512-uBoAVCVcajsrqy3pv7eo5jEUz1oeLmCcnMv8n4AJpT5hbpN9lUssAXibNElpbLce3Mhm9dyBzwYLs9zctM/0tA==
 
 luxon@^1.26.0:
   version "1.28.0"
