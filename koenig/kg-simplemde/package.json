@@ -47,5 +47,6 @@
     "codemirror": "5.65.15",
     "codemirror-spell-checker": "1.1.2",
     "marked": "0.3.19"
-  }
+  },
+  "gitHead": "d46b01ff5696e5a457abee67e0aabc62f2b8a191"
 }

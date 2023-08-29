@@ -39,7 +39,7 @@
     "lint": "yarn run lint:js && yarn run lint:css",
     "lint:css": "stylelint \"src/**/*.css\"",
     "lint:js": "eslint --ext .js,.cjs,.jsx --cache demo src test",
-    "prepublish": "node check-publish-env.js",
+    "preversion": "node check-publish-env.js",
     "prepare": "NODE_ENV=production yarn build",
     "storybook": "NODE_OPTIONS=--openssl-legacy-provider storybook dev -p 6006 -h 127.0.0.1",
     "build-storybook": "storybook build"
@@ -127,5 +127,5 @@
     "vite-plugin-svgr": "^3.2.0",
     "vitest": "0.34.3"
   },
-  "gitHead": "1b25c63a23285d60d8c938c95240c9f70fd705de"
+  "gitHead": "d46b01ff5696e5a457abee67e0aabc62f2b8a191"
 }

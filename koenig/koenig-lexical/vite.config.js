@@ -20,8 +20,7 @@ export default (function viteConfig({mode}) {
 
     // Keep sentryVitePlugin as the last plugin
     // only include when we have the required details to keep local dev less noisy
-    console.log(process.env);
-    if (process.env.VITE_SENTRY_AUTH_TOKEN) {
+    if (process.env.IS_SHIPPING) {
         plugins.push(
             sentryVitePlugin({
                 org: 'ghost-foundation',
