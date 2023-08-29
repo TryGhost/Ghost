@@ -329,6 +329,7 @@ async function initServices({config}) {
     const modelToDomainEventInterceptor = require('./server/services/model-to-domain-event-interceptor');
     const mailEvents = require('./server/services/mail-events');
     const donationService = require('./server/services/donations');
+    const recommendationsService = require('./server/services/recommendations');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -369,7 +370,8 @@ async function initServices({config}) {
         modelToDomainEventInterceptor.init(),
         mediaInliner.init(),
         mailEvents.init(),
-        donationService.init()
+        donationService.init(),
+        recommendationsService.init()
     ]);
     debug('End: Services');
 
