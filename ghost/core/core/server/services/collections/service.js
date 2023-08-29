@@ -36,7 +36,6 @@ class CollectionsServiceWrapper {
         }
         inited = true;
         this.api.subscribeToEvents();
-        require('./intercept-events')();
     }
 }
 
