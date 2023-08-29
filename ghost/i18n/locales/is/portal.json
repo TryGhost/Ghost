@@ -74,6 +74,7 @@
     "Less like this": "Minna af þessu tagi",
     "Make sure emails aren't accidentally ending up in the Spam or Promotions folders of your inbox. If they are, click on \"Mark as not spam\" and/or \"Move to inbox\".": "Gakktu úr skugga um að tölvupóstanir endi ekki í möppum fyrir ruslpósta eða kynningarefni. Ef svo er skaltu smella á \"Mark as not spam\" og/eða \"Move to inbox\"",
     "Manage": "Stjórna",
+    "Memberships unavailable, contact the owner for access.": "",
     "Monthly": "Mánaðarlega",
     "More like this": "Meira af þessu tagi",
     "Name": "Nafn",
@@ -86,8 +87,8 @@
     "Plan": "Áskriftarleið",
     "Plan checkout was cancelled.": "Hætt var við kaup á áskrift",
     "Plan upgrade was cancelled.": "Hætt var við breytingu á áskriftarleið",
-    "Please fill in required fields": "Vinsamlegast fyllið í nauðsynlega reiti",
     "Please contact {{supportAddress}} to adjust your complimentary subscription.": "Vinsamlegast hafið samband við {{supportAddress}} til að breyta kaupbætisáskrift.",
+    "Please fill in required fields": "Vinsamlegast fyllið í nauðsynlega reiti",
     "Price": "Verð",
     "Re-enable emails": "Fá tölvupósta að nýju",
     "Renews at {{price}}.": "Endurnýjast á verðinu {{price}}",
@@ -141,9 +142,10 @@
     "You're not receiving emails": "Þú færð ekki tölvupósta",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Þú færð ekki tölvupósta ýmist vegna þess að þú merktir síðustu skilaboð sem ruslpóst eða vegna þess að ekki er hægt að senda skilaboð á netfangið sem þú gafst upp.",
     "You've successfully signed in.": "Þér tókst að skrá þig inn",
+    "You've successfully subscribed to": "",
     "Your account": "Aðgangurinn þinn",
     "Your input helps shape what gets published.": "",
     "Your subscription will expire on {{expiryDate}}": "Áskrift þinni lýkur {{expiryDate}}",
     "Your subscription will renew on {{renewalDate}}": "Áskrift þín verður endurnýjuð {{expiryDate}}",
-    "Your subscription will start on {{subscriptionStart}}": "Áskrift þín hefst {{subscriptionStart}"
+    "Your subscription will start on {{subscriptionStart}}": "Áskrift þín hefst {{subscriptionStart}}"
 }
