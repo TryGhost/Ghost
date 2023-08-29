@@ -21,6 +21,7 @@ const Sidebar: React.FC = () => {
     };
 
     const hasTipsAndDonations = useFeatureFlag('tipsAndDonations');
+    const hasRecommendations = useFeatureFlag('recommendations');
 
     return (
         <div className="hidden md:!visible md:!block md:h-[calc(100vh-5vmin-84px)] md:w-[240px] md:overflow-y-scroll md:pt-[32px]">
@@ -45,6 +46,7 @@ const Sidebar: React.FC = () => {
                 {/* <SettingNavItem navid='theme' title="Theme" onClick={handleSectionClick} /> */}
                 <SettingNavItem navid='design' title="Branding and design" onClick={handleSectionClick} />
                 <SettingNavItem navid='navigation' title="Navigation" onClick={handleSectionClick} />
+                {hasRecommendations && <SettingNavItem navid='recommendations' title="Recommendations" onClick={handleSectionClick} />}
             </SettingNavSection>
 
             <SettingNavSection title="Membership">
