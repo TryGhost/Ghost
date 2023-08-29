@@ -326,6 +326,7 @@ async function initServices({config}) {
     const slackNotifications = require('./server/services/slack-notifications');
     const mediaInliner = require('./server/services/media-inliner');
     const collections = require('./server/services/collections');
+    const modelToDomainEventInterceptor = require('./server/services/model-to-domain-event-interceptor');
     const mailEvents = require('./server/services/mail-events');
     const donationService = require('./server/services/donations');
 
@@ -365,6 +366,7 @@ async function initServices({config}) {
         emailSuppressionList.init(),
         slackNotifications.init(),
         collections.init(),
+        modelToDomainEventInterceptor.init(),
         mediaInliner.init(),
         mailEvents.init(),
         donationService.init()
@@ -472,6 +474,14 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
     try {
         // Step 1 - require more fundamental components
+
+        // Load New Relic
+        debug('Begin: Load New Relic');
+        if (config.get('newRelic:enabled')) {
+            require('newrelic');
+        }
+        debug('End: Load New Relic');
+
         // Sentry must be initialized early, but requires config
         debug('Begin: Load sentry');
         require('./shared/sentry');
