@@ -17,13 +17,13 @@ const SUPPORTED_LOCALES = [
     'id', // Indonesian
     'is', // Icelandic
     'it', // Italian
-    'ko', // Korean
     'ja', // Japanese
+    'ko', // Korean
     'mn', // Mongolian
     'ms', // Malay
     'nl', // Dutch
-    'no', // Norwegian
     'nn', // Norwegian Nynorsk
+    'no', // Norwegian
     'pl', // Polish
     'pt', // Portuguese
     'pt-BR', // Portuguese (Brazil)
