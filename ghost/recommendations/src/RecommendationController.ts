@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {Recommendation} from "./Recommendation";
 import {RecommendationService} from "./RecommendationService";
 import errors from '@tryghost/errors';
@@ -9,6 +10,10 @@ type Frame = {
 };
 
 function validateString(object: any, key: string, {required = true} = {}): string|undefined {
+    if (typeof object !== 'object' || object === null) {
+        throw new errors.BadRequestError({message: `${key} must be an object`});
+    }
+
     if (object[key] !== undefined) {
         if (typeof object[key] !== "string") {
             throw new errors.BadRequestError({message: `${key} must be a string`});
@@ -20,6 +25,9 @@ function validateString(object: any, key: string, {required = true} = {}): strin
 }
 
 function validateBoolean(object: any, key: string, {required = true} = {}): boolean|undefined {
+    if (typeof object !== 'object' || object === null) {
+        throw new errors.BadRequestError({message: `${key} must be an object`});
+    }
     if (object[key] !== undefined) {
         if (typeof object[key] !== "boolean") {
             throw new errors.BadRequestError({message: `${key} must be a boolean`});
