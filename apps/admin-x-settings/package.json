@@ -57,7 +57,7 @@
     "validator": "7.2.0"
   },
   "devDependencies": {
-    "@playwright/test": "1.37.0",
+    "@playwright/test": "1.37.1",
     "@storybook/addon-essentials": "7.3.2",
     "@storybook/addon-interactions": "7.3.2",
     "@storybook/addon-links": "7.3.2",
