@@ -26,7 +26,7 @@ Object {
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "location": "http://127.0.0.1:2369/ghost/api/admin/recommendations/64edfa75934ab118f38b4c53/",
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/recommendations\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
@@ -58,7 +58,7 @@ Object {
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "location": "http://127.0.0.1:2369/ghost/api/admin/recommendations/64edfa75934ab118f38b4c52/",
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/recommendations\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }

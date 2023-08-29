@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
-const {anyObjectId, anyISODateTime, anyContentVersion, anyEtag} = matchers;
+const {anyObjectId, anyISODateTime, anyContentVersion, anyLocationFor, anyEtag} = matchers;
 const assert = require('assert/strict');
 const recommendationsService = require('../../../core/server/services/recommendations');
 
@@ -27,7 +27,8 @@ describe('Recommendations Admin API', function () {
             .expectStatus(201)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                etag: anyEtag
+                etag: anyEtag,
+                location: anyLocationFor('recommendations')
             })
             .matchBodySnapshot({
                 recommendations: [
@@ -64,7 +65,8 @@ describe('Recommendations Admin API', function () {
             .expectStatus(201)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                etag: anyEtag
+                etag: anyEtag,
+                location: anyLocationFor('recommendations')
             })
             .matchBodySnapshot({
                 recommendations: [
