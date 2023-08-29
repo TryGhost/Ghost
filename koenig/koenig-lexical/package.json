@@ -114,7 +114,7 @@
     "eslint-plugin-storybook": "^0.6.12",
     "eslint-plugin-tailwindcss": "3.13.0",
     "jsdom": "22.1.0",
-    "postcss": "8.4.28",
+    "postcss": "8.4.29",
     "postcss-import": "15.1.0",
     "prettier": "^3.0.1",
     "react-highlight": "^0.15.0",
