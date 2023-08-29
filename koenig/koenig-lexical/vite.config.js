@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import pkg from './package.json';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
@@ -19,11 +20,12 @@ export default (function viteConfig({mode}) {
 
     // Keep sentryVitePlugin as the last plugin
     // only include when we have the required details to keep local dev less noisy
-    if (process.env.VITE_SENTRY_ORG) {
+    console.log(process.env);
+    if (process.env.VITE_SENTRY_AUTH_TOKEN) {
         plugins.push(
             sentryVitePlugin({
-                org: process.env.VITE_SENTRY_ORG,
-                project: process.env.VITE_SENTRY_PROJECT,
+                org: 'ghost-foundation',
+                project: 'admin',
 
                 // Auth tokens can be obtained from https://sentry.io/settings/account/api/auth-tokens/
                 // and need `project:releases` and `org:read` scopes
