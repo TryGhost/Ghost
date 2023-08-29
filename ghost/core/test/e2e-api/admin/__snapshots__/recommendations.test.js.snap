@@ -4,7 +4,7 @@ exports[`Recommendations Admin API Can add a full recommendation 1: [body] 1`] =
 Object {
   "recommendations": Array [
     Object {
-      "created_at": "2023-08-29T09:46:57.506Z",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "excerpt": "Dogs are cute",
       "favicon": "https://dogpictures.com/favicon.ico",
       "featured_image": "https://dogpictures.com/dog.jpg",
@@ -26,7 +26,7 @@ Object {
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "location": "http://127.0.0.1:2369/ghost/api/admin/recommendations/64edbe91914078eafde22420/",
+  "location": "http://127.0.0.1:2369/ghost/api/admin/recommendations/64edfa75934ab118f38b4c53/",
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
@@ -36,7 +36,7 @@ exports[`Recommendations Admin API Can add a minimal recommendation 1: [body] 1`
 Object {
   "recommendations": Array [
     Object {
-      "created_at": "2023-08-29T09:46:57.479Z",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "excerpt": null,
       "favicon": null,
       "featured_image": null,
@@ -58,7 +58,7 @@ Object {
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "location": "http://127.0.0.1:2369/ghost/api/admin/recommendations/64edbe91914078eafde2241f/",
+  "location": "http://127.0.0.1:2369/ghost/api/admin/recommendations/64edfa75934ab118f38b4c52/",
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
@@ -100,7 +100,7 @@ exports[`Recommendations Admin API Can browse 1: [body] 1`] = `
 Object {
   "recommendations": Array [
     Object {
-      "created_at": "2023-08-29T09:46:57.506Z",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "excerpt": "Dogs are cute",
       "favicon": "https://dogpictures.com/favicon.ico",
       "featured_image": "https://dogpictures.com/dog.jpg",
@@ -145,7 +145,7 @@ exports[`Recommendations Admin API Can edit recommendation 1: [body] 1`] = `
 Object {
   "recommendations": Array [
     Object {
-      "created_at": "2023-08-29T09:46:57.479Z",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "excerpt": "Cats are cute",
       "favicon": "https://catpictures.com/favicon.ico",
       "featured_image": "https://catpictures.com/cat.jpg",

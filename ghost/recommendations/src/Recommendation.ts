@@ -21,5 +21,6 @@ export class Recommendation {
         this.url = data.url;
         this.oneClickSubscribe = data.oneClickSubscribe;
         this.createdAt = data.createdAt ?? new Date();
+        this.createdAt.setMilliseconds(0);
     }
 }
