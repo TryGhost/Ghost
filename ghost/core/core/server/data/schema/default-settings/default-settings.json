@@ -565,5 +565,15 @@
             },
             "type": "number"
         }
+    },
+    "recommendations": {
+        "recommendations_enabled": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true","false"]]
+            },
+            "type": "boolean"
+        }
     }
 }
