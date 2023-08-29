@@ -58,7 +58,7 @@ export function EmailCtaCard({
                 </div>
 
                 {/* Top divider */}
-                {showDividers && <hr className="-mt-4 mb-12 block border-t-grey-300 dark:border-t-grey-900" data-testid="top-divider" />}
+                {showDividers && <hr className="not-kg-prose -mt-4 mb-12 block border-t-grey-300 dark:border-t-grey-900" data-testid="top-divider" />}
 
                 {/* HTML content */}
                 <KoenigNestedEditor
@@ -80,7 +80,7 @@ export function EmailCtaCard({
                 }
 
                 {/* Bottom divider */}
-                {showDividers && <hr className="mb-0 mt-12 block border-t-grey-300 dark:border-t-grey-900" data-testid="bottom-divider" />}
+                {showDividers && <hr className="not-kg-prose mb-0 mt-12 block border-t-grey-300 dark:border-t-grey-900" data-testid="bottom-divider" />}
 
                 {/* Read-only overlay */}
                 {!isEditing && <ReadOnlyOverlay />}
