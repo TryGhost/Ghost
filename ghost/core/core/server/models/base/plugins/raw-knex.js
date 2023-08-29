@@ -166,8 +166,10 @@ module.exports = function (Bookshelf) {
                     });
 
                     return Promise.all(Object.values(props))
-                        .then((relationsToAttach) => {
+                        .then((relationsToAttachArray) => {
                             debug('attach relations', modelName);
+
+                            const relationsToAttach = _.zipObject(_.keys(props), relationsToAttachArray);
 
                             objects = _.map(objects, (object) => {
                                 _.each(Object.keys(relationsToAttach), (relation) => {
