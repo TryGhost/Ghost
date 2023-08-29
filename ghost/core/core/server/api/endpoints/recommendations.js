@@ -18,7 +18,7 @@ module.exports = {
     add: {
         statusCode: 201,
         headers: {
-            cacheInvalidate: false
+            cacheInvalidate: true
         },
         options: [],
         validation: {},
@@ -30,7 +30,7 @@ module.exports = {
 
     edit: {
         headers: {
-            cacheInvalidate: false
+            cacheInvalidate: true
         },
         options: [
             'id'
