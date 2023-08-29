@@ -22,6 +22,7 @@ import {
     $setSelection,
     CLICK_COMMAND,
     COMMAND_PRIORITY_LOW,
+    CUT_COMMAND,
     DELETE_LINE_COMMAND,
     INSERT_PARAGRAPH_COMMAND,
     KEY_ARROW_DOWN_COMMAND,
@@ -1153,6 +1154,18 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         event.preventDefault();
                         const cardNode = $getNearestNodeFromDOMNode(event.target);
                         $selectCard(cardNode.getKey());
+                        return true;
+                    }
+
+                    return false;
+                },
+                COMMAND_PRIORITY_LOW
+            ),
+            editor.registerCommand(
+                CUT_COMMAND,
+                (event) => {
+                    // prevent cut events inside card editors triggering lexical behaviour
+                    if (shouldIgnoreEvent(event)) {
                         return true;
                     }
 

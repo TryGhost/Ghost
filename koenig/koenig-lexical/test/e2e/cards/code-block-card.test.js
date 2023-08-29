@@ -279,4 +279,65 @@ test.describe('Code Block card', async () => {
             </div>
         `);
     });
+
+    test('can cut text', async function () {
+        await focusEditor(page);
+        await page.keyboard.type('```javascript');
+        await page.keyboard.press('Enter');
+        await page.waitForSelector('[data-kg-card="codeblock"] .cm-editor');
+
+        await page.keyboard.type('const test = true;', {delay: 80});
+
+        for (let i = 0; i < 8; i++) {
+            await page.keyboard.press('ArrowLeft');
+        }
+
+        // select "test" - highlight plugin marks it and causes issues with .closest('.cm-editor') in shouldIgnoreEvent()
+        // see https://github.com/TryGhost/Product/issues/3785
+        await page.keyboard.down('Shift');
+        for (let i = 0; i < 4; i++) {
+            await page.keyboard.press('ArrowLeft');
+        }
+        await page.keyboard.up('Shift');
+
+        await page.keyboard.press(`${ctrlOrCmd}+x`);
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="codeblock">
+                    <div>
+                        <div>
+                            <div>
+                                <div aria-live="polite"></div>
+                                <div tabindex="-1">
+                                    <div aria-hidden="true">
+                                        <div>
+                                            <div>9</div>
+                                            <div>1</div>
+                                        </div>
+                                    </div>
+                                    <div spellcheck="false" autocorrect="off" autocapitalize="off" translate="no"
+                                        contenteditable="true" role="textbox" aria-multiline="true"
+                                        data-language="javascript">
+                                        <div>
+                                            <span>const</span>
+                                            = true;
+                                        </div>
+                                    </div>
+                                    <div aria-hidden="true">
+                                        <div></div>
+                                    </div>
+                                    <div aria-hidden="true"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <input aria-label="Code card language" placeholder="Language..." type="text" value="javascript" />
+                    </div>
+                </div>
+            </div>
+        `, {ignoreCardContents: false});
+
+        // NOTE: for some reason CodeMirror+Playwright don't work well together and cut/copied content
+        // doesn't make it to the clipboard to enable testing that we can re-paste the cut content
+    });
 });

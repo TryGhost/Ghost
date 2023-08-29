@@ -15,7 +15,7 @@ export const shouldIgnoreEvent = (event) => {
         return false;
     }
 
-    const isFromCardEditor = target.matches('input, textarea') || !!target.closest('.cm-editor');
+    const isFromCardEditor = target.matches('input, textarea') || target.cmView || !!target.closest('.cm-editor');
 
     return isFromCardEditor;
 };
