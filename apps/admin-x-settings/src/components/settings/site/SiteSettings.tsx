@@ -3,6 +3,7 @@ import Navigation from './Navigation';
 import React from 'react';
 import Recommendations from './Recommendations';
 import SettingSection from '../../../admin-x-ds/settings/SettingSection';
+import useFeatureFlag from '../../../hooks/useFeatureFlag';
 // import Theme from './Theme';
 
 const searchKeywords = {
@@ -13,13 +14,14 @@ const searchKeywords = {
 };
 
 const SiteSettings: React.FC = () => {
+    const hasRecommendations = useFeatureFlag('recommendations');
     return (
         <>
             <SettingSection keywords={Object.values(searchKeywords).flat()} title="Site">
                 {/* <Theme keywords={searchKeywords.theme} /> */}
                 <DesignSetting keywords={searchKeywords.design} />
                 <Navigation keywords={searchKeywords.navigation} />
-                <Recommendations keywords={searchKeywords.navigation} />
+                {hasRecommendations && <Recommendations keywords={searchKeywords.navigation} />}
             </SettingSection>
         </>
     );
