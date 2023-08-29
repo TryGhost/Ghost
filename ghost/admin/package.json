@@ -29,7 +29,7 @@
     "node": "^16.14.0 || ^18.12.1"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "7.22.10",
+    "@babel/eslint-parser": "7.22.11",
     "@babel/plugin-proposal-class-properties": "7.18.6",
     "@babel/plugin-proposal-decorators": "7.22.10",
     "@ember/jquery": "2.0.0",
