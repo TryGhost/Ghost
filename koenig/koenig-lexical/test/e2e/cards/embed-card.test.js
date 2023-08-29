@@ -338,6 +338,33 @@ test.describe('Embed card', async () => {
             </div>
         `, {ignoreCardToolbarContents: true, ignoreInlineStyles: true});
     });
+
+    test('escape removes url input component', async function () {
+        await focusEditor(page);
+        await insertEmbedCard(page);
+
+        await page.keyboard.press('Escape');
+
+        await assertHTML(page, html`
+            <p><br /></p>
+        `, {ignoreCardContents: true});
+    });
+
+    test('escape removes url error component', async function () {
+        await focusEditor(page);
+        await insertEmbedCard(page);
+
+        await page.keyboard.type('badurl');
+        await page.keyboard.press('Enter');
+
+        await expect(await page.getByTestId('embed-url-error-message')).toContainText('There was an error when parsing the URL.');
+
+        await page.keyboard.press('Escape');
+
+        await assertHTML(page, html`
+            <p><br /></p>
+        `, {ignoreCardContents: true});
+    });
 });
 
 async function insertEmbedCard(page) {

@@ -3,7 +3,7 @@ import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import React from 'react';
 import {$createBookmarkNode} from './BookmarkNode';
 import {$createLinkNode} from '@lexical/link';
-import {$createParagraphNode, $createTextNode, $getNodeByKey} from 'lexical';
+import {$createParagraphNode, $createTextNode, $getNodeByKey, $isParagraphNode} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {EmbedCard} from '../components/ui/cards/EmbedCard';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
@@ -53,12 +53,20 @@ export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedTyp
         });
     }, [editor, nodeKey]);
 
-    const handleClose = () => {
+    const handleClose = useCallback(() => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.remove();
+            const nextSibling = node.getNextSibling();
+            if (nextSibling && $isParagraphNode(nextSibling) && nextSibling.getTextContentSize() === 0) {
+                node.remove();
+                nextSibling.selectEnd();
+            } else {
+                const paragraph = $createParagraphNode();
+                node.replace(paragraph);
+                paragraph.selectEnd();
+            }
         });
-    };
+    }, [editor, nodeKey]);
 
     const fetchMetadata = async (href) => {
         setLoading(true);

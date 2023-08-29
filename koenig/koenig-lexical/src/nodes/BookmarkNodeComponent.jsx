@@ -2,7 +2,7 @@ import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import React, {useCallback} from 'react';
 import {$createLinkNode} from '@lexical/link';
-import {$createParagraphNode, $createTextNode, $getNodeByKey} from 'lexical';
+import {$createParagraphNode, $createTextNode, $getNodeByKey, $isParagraphNode} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {BookmarkCard} from '../components/ui/cards/BookmarkCard';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
@@ -44,12 +44,20 @@ export function BookmarkNodeComponent({author, nodeKey, url, icon, title, descri
         });
     }, [editor, nodeKey, urlInputValue]);
 
-    const handleClose = () => {
+    const handleClose = useCallback(() => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.remove();
+            const nextSibling = node.getNextSibling();
+            if (nextSibling && $isParagraphNode(nextSibling) && nextSibling.getTextContentSize() === 0) {
+                node.remove();
+                nextSibling.selectEnd();
+            } else {
+                const paragraph = $createParagraphNode();
+                node.replace(paragraph);
+                paragraph.selectEnd();
+            }
         });
-    };
+    }, [editor, nodeKey]);
 
     const fetchMetadata = async (href) => {
         editor.getRootElement().focus({preventScroll: true}); // focus editor before causing the input element to dismount

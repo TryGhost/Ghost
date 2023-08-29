@@ -301,4 +301,31 @@ test.describe('Bookmark card', async () => {
             <p><br /></p>
         `, {ignoreCardToolbarContents: true, ignoreInnerSVG: true});
     });
+
+    test('escape removes url input component', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'bookmark'});
+
+        await page.keyboard.press('Escape');
+
+        await assertHTML(page, html`
+            <p><br /></p>
+        `, {ignoreCardContents: true});
+    });
+
+    test('escape removes url error component', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'bookmark'});
+
+        await page.keyboard.type('badurl');
+        await page.keyboard.press('Enter');
+
+        await expect(await page.getByTestId('bookmark-url-error-message')).toContainText('There was an error when parsing the URL.');
+
+        await page.keyboard.press('Escape');
+
+        await assertHTML(page, html`
+            <p><br /></p>
+        `, {ignoreCardContents: true});
+    });
 });
