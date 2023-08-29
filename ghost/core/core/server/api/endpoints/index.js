@@ -205,6 +205,10 @@ module.exports = {
         return apiFramework.pipeline(require('./mail-events'), localUtils);
     },
 
+    get recommendations() {
+        return apiFramework.pipeline(require('./recommendations'), localUtils);
+    },
+
     /**
      * Content API Controllers
      *

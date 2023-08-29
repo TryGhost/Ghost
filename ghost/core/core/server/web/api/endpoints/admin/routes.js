@@ -347,5 +347,11 @@ module.exports = function apiRoutes() {
     router.get('/links', mw.authAdminApi, http(api.links.browse));
     router.put('/links/bulk', mw.authAdminApi, http(api.links.bulkEdit));
 
+    // Recommendations
+    router.get('/recommendations', mw.authAdminApi, http(api.recommendations.browse));
+    router.post('/recommendations', mw.authAdminApi, http(api.recommendations.add));
+    router.put('/recommendations/:id', mw.authAdminApi, http(api.recommendations.edit));
+    router.del('/recommendations/:id', mw.authAdminApi, http(api.recommendations.destroy));
+
     return router;
 };
