@@ -18493,10 +18493,10 @@ husky@8.0.3:
   resolved "https://registry.yarnpkg.com/husky/-/husky-8.0.3.tgz#4936d7212e46d1dea28fef29bb3a108872cd9184"
   integrity sha512-+dQSyqPh4x1hlO1swXBiNb2HzTDN1I2IGLQx1GrBuiqFJfoMrnZWwVmatvSiO+Iz8fBUnf+lekwNo4c2LlXItg==
 
-i18next-parser@8.6.0:
-  version "8.6.0"
-  resolved "https://registry.yarnpkg.com/i18next-parser/-/i18next-parser-8.6.0.tgz#846e43ec514cfe3364f3fca8e66c5401339f96e1"
-  integrity sha512-RI7m6QEBRHnfVyy/q0uALAGOHRAJN7tfDS7zP1q9cwStjuqX/vjrnIFfR6bMn9gVdtlcDi5LP2jZ+3wG0Wojxw==
+i18next-parser@8.7.0:
+  version "8.7.0"
+  resolved "https://registry.yarnpkg.com/i18next-parser/-/i18next-parser-8.7.0.tgz#40165e9133e2166e825aa10d1c944d319423798e"
+  integrity sha512-rkt1Nb9RAmZa50YVJTSYdh+HiBOv/bNYEsDL9hYnnLG0xrF0ylATS2ovuZAUQ4Tamp6qjaLJNCobwwhbBTw0nQ==
   dependencies:
     broccoli-plugin "^4.0.7"
     cheerio "^1.0.0-rc.2"
