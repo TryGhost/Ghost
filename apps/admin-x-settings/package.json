@@ -77,7 +77,7 @@
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.3",
     "eslint-plugin-tailwindcss": "3.13.0",
-    "postcss": "8.4.28",
+    "postcss": "8.4.29",
     "postcss-import": "15.1.0",
     "prop-types": "15.8.1",
     "react-hot-toast": "2.4.1",
