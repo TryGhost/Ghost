@@ -76,8 +76,8 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
 
     const validators = {
         name: () => setError('name', formState.name ? undefined : 'You must specify a name'),
-        monthly_price: () => setError('monthly_price', validateCurrencyAmount(formState.monthly_price, formState.currency)),
-        yearly_price: () => setError('yearly_price', validateCurrencyAmount(formState.yearly_price, formState.currency))
+        monthly_price: () => formState.type !== 'free' && setError('monthly_price', validateCurrencyAmount(formState.monthly_price || 0, formState.currency, {allowZero: false})),
+        yearly_price: () => formState.type !== 'free' && setError('yearly_price', validateCurrencyAmount(formState.yearly_price || 0, formState.currency, {allowZero: false}))
     };
 
     const benefits = useSortableIndexedList({
