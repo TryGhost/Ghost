@@ -69,7 +69,7 @@ export const EmEnDashPlugin = () => {
                 }
                 
                 return;
-            }, {tag: 'history-merge'});
+            }, {tag: 'history-merge'}); // this makes it so the transform isn't added to the undo stack - breaks undo without this
         });
     }, [editor]);
 

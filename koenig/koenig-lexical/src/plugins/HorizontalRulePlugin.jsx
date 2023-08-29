@@ -91,7 +91,7 @@ export const HorizontalRulePlugin = () => {
                 }
 
                 line.selectNext();
-            }, {tag: 'history-merge'});
+            });
         });
     }, [editor]);
 

@@ -32,7 +32,7 @@ const UnsplashPlugin = ({nodeKey, isModalOpen = true}) => {
                 editor: node.__captionEditor,
                 initialHtml: `<p>${image.caption}</p>`
             });
-            node.__captionEditor.setEditorState(editorState, {tag: 'history-merge'});
+            node.__captionEditor.setEditorState(editorState);
             const nodeSelection = $createNodeSelection();
             nodeSelection.add(node.getKey());
             $setSelection(nodeSelection);

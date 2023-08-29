@@ -202,7 +202,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                         setSelectedCardKey(cardKey);
                         setIsEditingCard(false);
-                    }, {tag: 'history-merge'});
+                    }, {tag: 'history-merge'}); // don't include a history entry for selection change
                 }
 
                 if (!isCardSelected && selectedCardKey) {
@@ -211,7 +211,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                         setSelectedCardKey(null);
                         setIsEditingCard(false);
-                    }, {tag: 'history-merge'});
+                    }, {tag: 'history-merge'}); // don't include a history entry for selection change
                 }
 
                 // we have special-case cards that are inserted via markdown
@@ -220,7 +220,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 if (isCardSelected && cardNode.__openInEditMode) {
                     editor.update(() => {
                         cardNode.clearOpenInEditMode();
-                    }, {tag: 'history-merge'});
+                    }, {tag: 'history-merge'}); // don't include a history entry for clearing the open in edit mode prop
 
                     setIsEditingCard(true);
                 }

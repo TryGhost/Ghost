@@ -96,8 +96,8 @@ function KoenigNestedEditorPlugin({
             editor.registerCommand(
                 BLUR_COMMAND,
                 () => {
-                    // when the nested editor is selected, the parent editor loose selection
-                    // return selection to the card when nested editor blurred
+                    // when the nested editor is selected, the parent editor clears its selection so we need to
+                    //   return parent editor selection to the card when the nested editor loses focus
                     if (hasSettingsPanel && editor._parentEditor) {
                         editor._parentEditor.getEditorState().read(() => {
                             editor._parentEditor.update(() => {
@@ -106,7 +106,7 @@ function KoenigNestedEditorPlugin({
                                     selection.add(selectedCardKey);
                                     $setSelection(selection);
                                 }
-                            }, {tag: 'history-merge'});
+                            }, {tag: 'history-merge'}); // don't include an undo history entry for this change of selection
                         });
 
                         return true;
