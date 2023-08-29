@@ -163,7 +163,6 @@
     "@tryghost/zip": "1.1.37",
     "amperize": "0.6.1",
     "analytics-node": "6.2.0",
-    "bluebird": "3.7.2",
     "body-parser": "1.20.2",
     "bookshelf": "1.2.0",
     "bookshelf-relations": "2.6.0",
