@@ -65,7 +65,7 @@ export class RecommendationController {
 
         const recommendation = frame.data.recommendations[0];
 
-        const cleanedRecommendation: Omit<Recommendation, 'id'|'createdAt'> = {
+        const cleanedRecommendation: Omit<Recommendation, 'id'|'createdAt'|'updatedAt'> = {
             title: validateString(recommendation, "title") ?? '',
             url: validateString(recommendation, "url") ?? '',
 
