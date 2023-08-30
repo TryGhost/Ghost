@@ -64,8 +64,7 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
             prompt: `You can regenerate ${name} API Key any time, but any scripts or applications using it will need to be updated.`,
             okLabel: `Regenerate ${name} API Key`,
             onOk: async (confirmModal) => {
-                const data = await refreshAPIKey({integrationId: integration.id, apiKeyId: apiKey.id});
-                modal.show({integration: data.integrations[0]});
+                await refreshAPIKey({integrationId: integration.id, apiKeyId: apiKey.id});
                 setRegenerated(true);
                 confirmModal?.remove();
             }
