@@ -13,6 +13,7 @@ import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
+import useFeatureFlag from '../../../hooks/useFeatureFlag';
 import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
@@ -213,6 +214,8 @@ const Details: React.FC<UserDetailProps> = ({errors, validators, user, setUserDa
 };
 
 const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
+    const hasWebmentions = useFeatureFlag('webmentions');
+
     return (
         <SettingGroupContent>
             <Toggle
@@ -224,6 +227,15 @@ const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user, setUserData}
                     setUserData?.({...user, comment_notifications: e.target.checked});
                 }}
             />
+            {hasWebmentions && <Toggle
+                checked={user.mention_notifications}
+                direction='rtl'
+                hint='Every time another site links to your work'
+                label='Mentions'
+                onChange={(e) => {
+                    setUserData?.({...user, mention_notifications: e.target.checked});
+                }}
+            />}
             <Toggle
                 checked={user.free_member_signup_notification}
                 direction='rtl'
