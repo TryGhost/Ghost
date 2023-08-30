@@ -1,8 +1,10 @@
 import React, {useEffect, useRef, useState} from 'react';
-import useForm, {SaveState} from './useForm';
+import useForm, {ErrorMessages, SaveState} from './useForm';
 import useGlobalDirtyState from './useGlobalDirtyState';
 import {Setting, SettingValue, useEditSettings} from '../api/settings';
 import {SiteData} from '../api/site';
+import {showToast} from '../admin-x-ds/global/Toast';
+import {toast} from 'react-hot-toast';
 import {useGlobalData} from '../components/providers/GlobalDataProvider';
 
 interface LocalSetting extends Setting {
@@ -20,11 +22,11 @@ export interface SettingGroupHook {
     updateSetting: (key: string, value: SettingValue) => void;
     handleEditingChange: (newState: boolean) => void;
     validate: () => boolean;
-    errors: Record<string, string>;
+    errors: ErrorMessages;
     clearError: (key: string) => void;
 }
 
-const useSettingGroup = ({onValidate}: {onValidate?: () => Record<string, string>} = {}): SettingGroupHook => {
+const useSettingGroup = ({onValidate}: {onValidate?: () => ErrorMessages} = {}): SettingGroupHook => {
     // create a ref to focus the input field
     const focusRef = useRef<HTMLInputElement>(null);
 
@@ -95,9 +97,17 @@ const useSettingGroup = ({onValidate}: {onValidate?: () => Record<string, string
         saveState,
         focusRef,
         siteData,
-        handleSave: () => {
-            const result = handleSave();
-            setEditing(false);
+        handleSave: async () => {
+            toast.remove();
+            const result = await handleSave();
+            if (result) {
+                setEditing(false);
+            } else {
+                showToast({
+                    type: 'pageError',
+                    message: 'Can\'t save settings! One or more fields have errors, please doublecheck you filled all mandatory fields'
+                });
+            }
             return result;
         },
         handleCancel,
