@@ -7,22 +7,25 @@ import React from 'react';
 import Table from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
-import {Recommendation} from '../../../../api/recommendations';
+import {Recommendation, useDeleteRecommendation} from '../../../../api/recommendations';
 
 interface RecommendationListProps {
     recommendations: Recommendation[]
 }
 
 const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recommendation}) => {
+    const {mutateAsync: deleteRecommendation} = useDeleteRecommendation();
+
     const action = (
         <Button color='red' label='Remove' link onClick={() => {
             NiceModal.show(ConfirmationModal, {
                 title: 'Remove recommendation',
                 prompt: <>
-                    <p>Your recommendation <strong>Lenny Nesletter</strong> will no longer be visible to your audience.</p>
+                    <p>Your recommendation <strong>{recommendation.title}</strong> will no longer be visible to your audience.</p>
                 </>,
                 okLabel: 'Remove',
                 onOk: async (modal) => {
+                    await deleteRecommendation(recommendation);
                     modal?.remove();
                 }
             });
@@ -35,7 +38,7 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
         <TableRow action={action} hideActions>
             <TableCell onClick={showDetails}>
                 <div className='group flex items-center gap-3 hover:cursor-pointer'>
-                    <Avatar image={recommendation?.favicon} labelColor='white' />
+                    {recommendation.favicon && <Avatar image={recommendation.favicon} labelColor='white' />}
                     <div className={`flex grow flex-col`}>
                         <span className='mb-0.5 font-medium'>{recommendation.title}</span>
                         <span className='text-xs leading-snug text-grey-700'>{recommendation.reason || 'No reason'}</span>

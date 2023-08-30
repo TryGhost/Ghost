@@ -46,7 +46,7 @@ export class InMemoryRecommendationRepository implements RecommendationRepositor
             featuredImage: "https://www.thepragmaticprogrammer.com/image.png",
             favicon: "https://substackcdn.com/image/fetch/w_96,h_96,c_fill,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Ff3f2b2ad-681f-45e1-9496-db80f45e853d_403x403.png",
             url: "https://www.thepragmaticprogrammer.com/",
-            oneClickSubscribe: false
+            oneClickSubscribe: true
         })
     ];
 

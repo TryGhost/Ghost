@@ -1,4 +1,4 @@
-import {Meta, createQuery} from '../utils/apiRequests';
+import {Meta, createMutation, createQuery} from '../utils/apiRequests';
 
 export type Recommendation = {
     id: string
@@ -18,10 +18,26 @@ export interface RecommendationResponseType {
     recommendations: Recommendation[]
 }
 
+export interface RecommendationDeleteResponseType {}
+
 const dataType = 'RecommendationResponseType';
 
 export const useBrowseRecommendations = createQuery<RecommendationResponseType>({
     dataType,
     path: '/recommendations/',
     defaultSearchParams: {}
+});
+
+export const useDeleteRecommendation = createMutation<RecommendationDeleteResponseType, Recommendation>({
+    method: 'DELETE',
+    path: recommendation => `/recommendations/${recommendation.id}/`,
+    updateQueries: {
+        dataType,
+        update: (_: RecommendationDeleteResponseType, currentData, payload) => (currentData && {
+            ...(currentData as RecommendationResponseType),
+            recommendations: (currentData as RecommendationResponseType).recommendations.filter((r) => {
+                return r.id !== payload.id;
+            })
+        })
+    }
 });
