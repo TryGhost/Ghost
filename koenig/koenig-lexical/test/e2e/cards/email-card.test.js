@@ -132,9 +132,8 @@ test.describe('Email card', async () => {
         await insertEmailCard(page);
 
         // Remove all existing content
-        for (let i = 0; i < 'Hey {first_name, "there"},'.length; i++) {
-            await page.keyboard.press('Backspace');
-        }
+        await page.keyboard.press(`${ctrlOrCmd}+A`);
+        await page.keyboard.press('Backspace');
 
         // Shift focus away from email card
         await page.keyboard.press('ArrowDown');

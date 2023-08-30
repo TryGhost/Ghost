@@ -44,6 +44,20 @@ const EMPHASIS_TRANSFORMS = [{
     html: html`<p dir="ltr"><span class="line-through" data-lexical-text="true">Strikethrough</span></p>`
 }];
 
+const SPECIAL_MARKUP_TRANSFORMS = [{
+    text: '~~strikethrough~~',
+    html: html`<p dir="ltr"><span class="line-through" data-lexical-text="true">strikethrough</span></p>`
+}, {
+    text: '`code`',
+    html: html`<p dir="ltr"><code data-lexical-text="true"><span>code</span></code></p>`
+}, {
+    text: '^superscript^',
+    html: html`<p dir="ltr"><sup data-lexical-text="true"><span>superscript</span></sup></p>`
+}, {
+    text: '~subscript~',
+    html: html`<p dir="ltr"><sub data-lexical-text="true"><span>subscript</span></sub></p>`
+}];
+
 test.describe('Markdown', async () => {
     let page;
 
@@ -109,6 +123,18 @@ test.describe('Markdown', async () => {
                 await focusEditor(page);
                 await pasteText(page, testCase.text);
                 await assertHTML(page, testCase.html);
+            });
+        });
+    });
+
+    test.describe('backspace undoes special markdown', async function () {
+        SPECIAL_MARKUP_TRANSFORMS.forEach((testCase) => {
+            test(`${testCase.text}`, async function () {
+                await focusEditor(page);
+                await pasteText(page, testCase.text);
+                await assertHTML(page, testCase.html);
+                await page.keyboard.press('Backspace');
+                await assertHTML(page, html`<p dir="ltr"><span data-lexical-text="true">${testCase.text.slice(0,-1)}</span></p>`);
             });
         });
     });

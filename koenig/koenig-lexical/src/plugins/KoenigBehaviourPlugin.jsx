@@ -63,6 +63,12 @@ export const DELETE_CARD_COMMAND = createCommand('DELETE_CARD_COMMAND');
 export const PASTE_LINK_COMMAND = createCommand('PASTE_LINK_COMMAND');
 
 const RANGE_TO_ELEMENT_BOUNDARY_THRESHOLD_PX = 10;
+const SPECIAL_MARKUPS = {
+    code: '`',
+    superscript: '^',
+    subscript: '~',
+    strikethrough: '~~'
+};
 
 function $selectCard(nodeKey) {
     const selection = $createNodeSelection();
@@ -884,6 +890,33 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                 event.preventDefault();
                                 previousSibling.remove();
                                 return true;
+                            }
+
+                            const anchorNodeLength = anchorNode.getTextContentSize();
+                            const atEndOfElement = 
+                                selection.anchor.offset === anchorNodeLength &&
+                                selection.focus.offset === anchorNodeLength;
+
+                            // undo any markdown special formats when deleting at the end of a formatted text node
+                            if (atEndOfElement && $isTextNode(anchorNode)) {
+                                const textContent = anchorNode.getTextContent();
+
+                                for (const tag of Object.keys(SPECIAL_MARKUPS)) {
+                                    if (anchorNode.hasFormat(tag)) {
+                                        const markup = SPECIAL_MARKUPS[tag];
+                                        let newText = markup + textContent + markup;
+                                        newText = newText.slice(0,-1); // remove last markup character
+
+                                        // manually clear formatting and push offset to accommodate for the added markup
+                                        anchorNode.setFormat(0);
+                                        anchorNode.setTextContent(newText);
+                                        selection.anchor.offset = selection.anchor.offset + newText.length - textContent.length;
+                                        selection.focus.offset = selection.focus.offset + newText.length - textContent.length;
+
+                                        event.preventDefault();
+                                        return true;
+                                    }
+                                }
                             }
                         }
                     }
