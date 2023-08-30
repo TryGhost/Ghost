@@ -57,6 +57,7 @@ Object {
     ],
     "portal_signup_checkbox_required": false,
     "portal_signup_terms_html": null,
+    "recommendations_enabled": false,
     "secondary_navigation": Array [
       Object {
         "label": "Data & privacy",

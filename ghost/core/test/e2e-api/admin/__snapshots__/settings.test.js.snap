@@ -313,6 +313,10 @@ Object {
       "value": "0",
     },
     Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -715,6 +719,10 @@ Object {
       "value": "0",
     },
     Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -742,7 +750,7 @@ exports[`Settings API Edit Can edit a setting 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4145",
+  "content-length": "4193",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1063,6 +1071,10 @@ Object {
     Object {
       "key": "donations_suggested_amount",
       "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
     },
     Object {
       "key": "members_enabled",
@@ -1412,6 +1424,10 @@ Object {
     Object {
       "key": "donations_suggested_amount",
       "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
     },
     Object {
       "key": "members_enabled",
@@ -1766,6 +1782,10 @@ Object {
     Object {
       "key": "donations_suggested_amount",
       "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
     },
     Object {
       "key": "members_enabled",
@@ -2210,6 +2230,10 @@ Object {
       "value": "0",
     },
     Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -2622,6 +2646,10 @@ Object {
     Object {
       "key": "donations_suggested_amount",
       "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
     },
     Object {
       "key": "members_enabled",

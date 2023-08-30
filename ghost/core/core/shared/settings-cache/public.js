@@ -39,5 +39,6 @@ module.exports = {
     portal_plans: 'portal_plans',
     portal_name: 'portal_name',
     portal_button: 'portal_button',
-    comments_enabled: 'comments_enabled'
+    comments_enabled: 'comments_enabled',
+    recommendations_enabled: 'recommendations_enabled'
 };
