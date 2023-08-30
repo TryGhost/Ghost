@@ -10,6 +10,11 @@ describe('Recommendations Admin API', function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts');
         await agent.loginAsOwner();
+
+        // Clear placeholders
+        for (const recommendation of (await recommendationsService.repository.getAll())) {
+            await recommendationsService.repository.remove(recommendation.id);
+        }
     });
 
     afterEach(function () {

@@ -10,8 +10,9 @@ export class Recommendation {
     url: string
     oneClickSubscribe: boolean
     createdAt: Date
+    updatedAt: Date|null
 
-    constructor(data: {id?: string, title: string, reason: string|null, excerpt: string|null, featuredImage: string|null, favicon: string|null, url: string, oneClickSubscribe: boolean, createdAt?: Date}) {
+    constructor(data: {id?: string, title: string, reason: string|null, excerpt: string|null, featuredImage: string|null, favicon: string|null, url: string, oneClickSubscribe: boolean, createdAt?: Date, updatedAt?: Date|null}) {
         this.id = data.id ?? ObjectId().toString();
         this.title = data.title;
         this.reason = data.reason;
@@ -22,5 +23,7 @@ export class Recommendation {
         this.oneClickSubscribe = data.oneClickSubscribe;
         this.createdAt = data.createdAt ?? new Date();
         this.createdAt.setMilliseconds(0);
+        this.updatedAt = data.updatedAt ?? null;
+        this.updatedAt?.setMilliseconds(0);
     }
 }

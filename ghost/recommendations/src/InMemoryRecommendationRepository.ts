@@ -2,7 +2,17 @@ import {Recommendation} from "./Recommendation";
 import {RecommendationRepository} from "./RecommendationRepository";
 
 export class InMemoryRecommendationRepository implements RecommendationRepository {
-    recommendations: Recommendation[] = [];
+    recommendations: Recommendation[] = [
+        new Recommendation({
+            title: "The Pragmatic Programmer",
+            reason: "This is a great book for any developer, regardless of their experience level. It's a classic that's stood the test of time.",
+            excerpt: "The Pragmatic Programmer is one of those rare tech books you’ll read, re-read, and read again over the years. Whether you’re new to the field or an experienced practitioner, you’ll come away with fresh insights each and every time.",
+            featuredImage: "https://www.thepragmaticprogrammer.com/image.png",
+            favicon: "https://www.thepragmaticprogrammer.com/favicon.ico",
+            url: "https://www.thepragmaticprogrammer.com/",
+            oneClickSubscribe: false
+        })
+    ];
 
     async add(recommendation: Recommendation): Promise<Recommendation> {
         this.recommendations.push(recommendation);
