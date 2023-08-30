@@ -35,7 +35,7 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
         <TableRow action={action} hideActions>
             <TableCell onClick={showDetails}>
                 <div className='group flex items-center gap-3 hover:cursor-pointer'>
-                    <Avatar image='https://substackcdn.com/image/fetch/w_96,h_96,c_fill,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Ff3f2b2ad-681f-45e1-9496-db80f45e853d_403x403.png' labelColor='white' />
+                    <Avatar image={recommendation?.favicon} labelColor='white' />
                     <div className={`flex grow flex-col`}>
                         <span className='mb-0.5 font-medium'>{recommendation.title}</span>
                         <span className='text-xs leading-snug text-grey-700'>{recommendation.reason || 'No reason'}</span>
@@ -48,11 +48,11 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
 
 const RecommendationList: React.FC<RecommendationListProps> = ({recommendations}) => {
     if (recommendations.length) {
-        return <Table>
+        return <Table hint='Readers will see your recommendations in randomized order' hintSeparator>
             {recommendations.map(recommendation => <RecommendationItem key={recommendation.id} recommendation={recommendation} />)}
         </Table>;
     } else {
-        return <NoValueLabel icon='mail-block'>
+        return <NoValueLabel icon='thumbs-up'>
             No recommendations yet.
         </NoValueLabel>;
     }
