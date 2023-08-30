@@ -35,10 +35,9 @@ export const WithSwatches: Story = {
             {hex: '#ff0000', title: 'Red'},
             {hex: '#00ff00', title: 'Green'},
             {hex: '#0000ff', title: 'Blue'},
-            {accent: true, title: 'Accent'},
-            {transparent: true, title: 'Transparent'}
-        ],
-        getAccentColor: () => '#ff00ff'
+            {hex: '#642642', value: 'accent', title: 'Accent'},
+            {hex: '#00000000', value: 'transparent', title: 'Transparent'}
+        ]
     }
 };
 
@@ -48,10 +47,9 @@ export const SwatchSelected: Story = {
             {hex: '#ff0000', title: 'Red'},
             {hex: '#00ff00', title: 'Green'},
             {hex: '#0000ff', title: 'Blue'},
-            {accent: true, title: 'Accent'},
-            {transparent: true, title: 'Transparent'}
+            {hex: '#642642', value: 'accent', title: 'Accent'},
+            {hex: '#00000000', value: 'transparent', title: 'Transparent'}
         ],
-        getAccentColor: () => '#ff00ff',
         value: 'accent'
     }
 };
