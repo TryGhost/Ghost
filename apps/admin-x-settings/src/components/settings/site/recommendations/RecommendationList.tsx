@@ -51,11 +51,11 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
 
 const RecommendationList: React.FC<RecommendationListProps> = ({recommendations}) => {
     if (recommendations.length) {
-        return <Table>
+        return <Table hint='Readers will see your recommendations in randomized order' hintSeparator>
             {recommendations.map(recommendation => <RecommendationItem key={recommendation.id} recommendation={recommendation} />)}
         </Table>;
     } else {
-        return <NoValueLabel icon='mail-block'>
+        return <NoValueLabel icon='thumbs-up'>
             No recommendations yet.
         </NoValueLabel>;
     }
