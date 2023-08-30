@@ -1,8 +1,6 @@
-import AddRecommendationModal from './AddRecommendationModal';
 import Avatar from '../../../../admin-x-ds/global/Avatar';
 import Form from '../../../../admin-x-ds/global/form/Form';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import useForm from '../../../../hooks/useForm';
@@ -11,23 +9,23 @@ import {EditOrAddRecommendation, useAddRecommendation} from '../../../../api/rec
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
 
-interface AddRecommendationModalProps {
+interface EditRecommendationFormProps {
     recommendation: EditOrAddRecommendation,
+    save: (recommendation: EditOrAddRecommendation) => Promise<void>,
+    afterClose?: () => void
 }
 
-const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({recommendation}) => {
-    const modal = useModal();
+const EditRecommendationForm: React.FC<EditRecommendationFormProps> = ({recommendation, save, afterClose}) => {
     const {updateRoute} = useRouting();
     const {mutateAsync: addRecommendation} = useAddRecommendation();
+    const isNew = !recommendation.id;
 
     const {formState, updateForm, handleSave, errors, validate, clearError} = useForm({
         initialState: {
             ...recommendation
         },
         onSave: async () => {
-            await addRecommendation(formState);
-            modal.remove();
-            updateRoute('recommendations');
+            save(formState);
         },
         onValidate: () => {
             const newErrors: Record<string, string> = {};
@@ -36,29 +34,21 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
     });
 
     return <Modal
-        afterClose={() => {
-            // Closed without saving: reset route
-            updateRoute('recommendations');
-        }}
-        cancelLabel={'Back'}
-        dirty={true}
+        afterClose={afterClose}
+        animate={!isNew}
+        cancelLabel={isNew ? 'Back' : 'Cancel'}
+        dirty={isNew}
         okColor='black'
-        okLabel={'Add'}
+        okLabel={isNew ? 'Add' : 'Save'}
         size='sm'
         testId='add-recommendation-modal'
-        title={'Add recommendation'}
+        title={isNew ? 'Add recommendation' : 'Edit recommendation'}
         onCancel={() => {
-            // Switch modal without changing the route, but pass along any changes that were already made
-            modal.remove();
-            NiceModal.show(AddRecommendationModal, {
-                recommendation: {
-                    ...formState
-                }
-            });
+
         }}
         onOk={async () => {
             toast.remove();
-            if (await handleSave({force: true})) {
+            if (await handleSave()) {
                 // Already handled
             } else {
                 showToast({
@@ -73,7 +63,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
             marginTop
         >
             <div className='mb-4 flex items-center gap-3 rounded-sm border border-grey-300 p-3'>
-                {recommendation.favicon && recommendation.featured_image && <Avatar image={recommendation.favicon ?? recommendation.featured_image} labelColor='white' />}
+                <Avatar image='https://www.shesabeast.co/content/images/size/w256h256/2022/08/transparent-icon-black-copy-gray-bar.png' labelColor='white' />
                 <div className={`flex grow flex-col`}>
                     <span className='mb-0.5 font-medium'>{recommendation.title}</span>
                     <span className='text-xs leading-snug text-grey-700'>{recommendation.url}</span>
@@ -90,4 +80,4 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
     </Modal>;
 };
 
-export default NiceModal.create(AddRecommendationModalConfirm);
+export default EditRecommendationForm;

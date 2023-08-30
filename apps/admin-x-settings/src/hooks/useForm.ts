@@ -11,7 +11,10 @@ export type ErrorMessages = Record<string, string | undefined>
 export interface FormHook<State> {
     formState: State;
     saveState: SaveState;
-    handleSave: () => Promise<boolean>;
+    /**
+     * Validate and save the state. Use the `force` option to save even when there are no changes made (e.g., initial state should be saveable)
+     */
+    handleSave: (options?: {force?: boolean}) => Promise<boolean>;
     /**
      * Update the form state and mark the form as dirty. Should be used in input events
      */
@@ -59,12 +62,12 @@ const useForm = <State>({initialState, onSave, onValidate}: {
     };
 
     // function to save the changed settings via API
-    const handleSave = async () => {
+    const handleSave = async (options: {force?: boolean} = {}) => {
         if (!validate()) {
             return false;
         }
 
-        if (saveState !== 'unsaved') {
+        if (saveState !== 'unsaved' && !options.force) {
             return true;
         }
 

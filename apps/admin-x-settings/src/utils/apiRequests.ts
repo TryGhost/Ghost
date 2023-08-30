@@ -82,7 +82,7 @@ export const useFetchApi = () => {
 
 const {apiRoot} = getGhostPaths();
 
-const apiUrl = (path: string, searchParams: Record<string, string> = {}) => {
+export const apiUrl = (path: string, searchParams: Record<string, string> = {}) => {
     const url = new URL(`${apiRoot}${path}`, window.location.origin);
     url.search = new URLSearchParams(searchParams).toString();
     return url.toString();
@@ -100,9 +100,9 @@ interface QueryOptions<ResponseData> {
     returnData?: (originalData: unknown) => ResponseData;
 }
 
-type QueryHookOptions<ResponseData> = UseQueryOptions<ResponseData> & { searchParams?: Record<string, string> };
+type QueryHookOptions<ResponseData, SearchParamsType extends Record<string, string>> = UseQueryOptions<ResponseData> & { searchParams?: SearchParamsType };
 
-export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) => ({searchParams, ...query}: QueryHookOptions<ResponseData> = {}) => {
+export const createQuery = <ResponseData, SearchParamsType extends Record<string, string> = Record<string, string>>(options: QueryOptions<ResponseData>) => ({searchParams, ...query}: QueryHookOptions<ResponseData, SearchParamsType> = {}) => {
     const url = apiUrl(options.path, searchParams || options.defaultSearchParams);
     const fetchApi = useFetchApi();
 
