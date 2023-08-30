@@ -35,30 +35,30 @@
     align-items: flex-start;
     justify-content: center;
     height: 100%;
-    padding: 6.4vmax 4vmax;
+    padding: min(6.4vmax, 120px) min(4vmax, 80px);
     background-size: cover;
     background-position: center;
     text-align: left;
 }
 
 .kg-width-wide .kg-header-card-text {
-    padding: 10vmax 6.4vmax;
+    padding: min(10vmax, 220px) min(6.4vmax, 140px);
 }
 
 .kg-width-full .kg-header-card-text {
-    padding: 12vmax 0;
+    padding: min(12vmax, 260px) 0;
 }
 
 .kg-layout-split .kg-header-card-text {
-    padding: 12vmax 4vmax;
+    padding: min(12vmax, 260px) min(4vmax, 80px);
 }
 
 .kg-layout-split.kg-content-wide .kg-header-card-text {
-    padding: 10vmax 0 10vmax 4vmax;
+    padding: min(10vmax, 220px) 0 min(10vmax, 220px) min(4vmax, 80px);
 }
 
 .kg-layout-split.kg-content-wide.kg-swapped .kg-header-card-text {
-    padding: 10vmax 4vmax 10vmax 0;
+    padding: min(10vmax, 220px) min(4vmax, 80px) min(10vmax, 220px) 0;
 }
 
 .kg-swapped .kg-header-card-text {
@@ -160,7 +160,7 @@
 }
 
 .kg-header-card.kg-width-full h3.kg-header-card-subheading:not(.kg-layout-split h3.kg-header-card-subheading) {
-    max-width: 65vmax;
+    max-width: min(65vmax, 1200px);
     font-size: clamp(1.05em, 2vw, 2.6rem);
 }
 
@@ -227,12 +227,12 @@
     }
 
     .kg-width-wide .kg-header-card-text {
-        padding: 6.4vmax 4vmax;
+        padding: min(6.4vmax, 120px) min(4vmax, 80px);
     }
 
     .kg-layout-split.kg-content-wide .kg-header-card-text,
     .kg-layout-split.kg-content-wide.kg-swapped .kg-header-card-text {
-        padding: 9.6vmax 0;
+        padding: min(9.6vmax, 180px) 0;
     }
 
     .kg-header-card.kg-width-full h3.kg-header-card-subheading:not(.kg-layout-split h3.kg-header-card-subheading) {
