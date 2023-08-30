@@ -568,10 +568,10 @@
     },
     "recommendations": {
         "recommendations_enabled": {
-            "defaultValue": "true",
+            "defaultValue": "false",
             "validations": {
                 "isEmpty": false,
-                "isIn": [["true","false"]]
+                "isIn": [["true", "false"]]
             },
             "type": "boolean"
         }
