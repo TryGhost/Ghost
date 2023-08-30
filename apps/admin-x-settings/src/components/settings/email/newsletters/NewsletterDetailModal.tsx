@@ -21,8 +21,9 @@ import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useForm, {ErrorMessages} from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import validator from 'validator';
-import {Newsletter, useEditNewsletter} from '../../../../api/newsletters';
+import {Newsletter, useBrowseNewsletters, useEditNewsletter} from '../../../../api/newsletters';
 import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
+import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {fullEmailAddress} from '../../../../api/site';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
 import {getSettingValues} from '../../../../api/settings';
@@ -30,10 +31,6 @@ import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {toast} from 'react-hot-toast';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
-
-interface NewsletterDetailModalProps {
-    newsletter: Newsletter
-}
 
 const Sidebar: React.FC<{
     newsletter: Newsletter;
@@ -353,7 +350,7 @@ const Sidebar: React.FC<{
     );
 };
 
-const NewsletterDetailModal: React.FC<NewsletterDetailModalProps> = ({newsletter}) => {
+const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
     const modal = useModal();
     const {siteData} = useGlobalData();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
@@ -429,6 +426,17 @@ const NewsletterDetailModal: React.FC<NewsletterDetailModalProps> = ({newsletter
             }
         }}
     />;
+};
+
+const NewsletterDetailModal: React.FC<RoutingModalProps> = ({params}) => {
+    const {data: {newsletters} = {}} = useBrowseNewsletters();
+    const newsletter = newsletters?.find(({id}) => id === params?.id);
+
+    if (newsletter) {
+        return <NewsletterDetailModalContent newsletter={newsletter} />;
+    } else {
+        return null;
+    }
 };
 
 export default NiceModal.create(NewsletterDetailModal);

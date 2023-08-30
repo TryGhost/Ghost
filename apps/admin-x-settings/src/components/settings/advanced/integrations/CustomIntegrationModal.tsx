@@ -10,17 +10,14 @@ import WebhooksTable from './WebhooksTable';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import {APIKey, useRefreshAPIKey} from '../../../../api/apiKeys';
-import {Integration, useEditIntegration} from '../../../../api/integrations';
+import {Integration, useBrowseIntegrations, useEditIntegration} from '../../../../api/integrations';
+import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {getGhostPaths} from '../../../../utils/helpers';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
 
-interface CustomIntegrationModalProps {
-    integration: Integration
-}
-
-const CustomIntegrationModal: React.FC<CustomIntegrationModalProps> = ({integration}) => {
+const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({integration}) => {
     const modal = useModal();
     const {updateRoute} = useRouting();
 
@@ -155,6 +152,17 @@ const CustomIntegrationModal: React.FC<CustomIntegrationModalProps> = ({integrat
             <WebhooksTable integration={integration} />
         </div>
     </Modal>;
+};
+
+const CustomIntegrationModal: React.FC<RoutingModalProps> = ({params}) => {
+    const {data: {integrations} = {}} = useBrowseIntegrations();
+    const integration = integrations?.find(({id}) => id === params?.id);
+
+    if (integration) {
+        return <CustomIntegrationModalContent integration={integration} />;
+    } else {
+        return null;
+    }
 };
 
 export default NiceModal.create(CustomIntegrationModal);
