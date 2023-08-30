@@ -16,7 +16,7 @@ import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import ToggleGroup from '../../../../admin-x-ds/global/form/ToggleGroup';
-import useForm from '../../../../hooks/useForm';
+import useForm, {ErrorMessages} from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import validator from 'validator';
 import {Newsletter, useEditNewsletter} from '../../../../api/newsletters';
@@ -36,7 +36,7 @@ const Sidebar: React.FC<{
     newsletter: Newsletter;
     updateNewsletter: (fields: Partial<Newsletter>) => void;
     validate: () => void;
-    errors: Record<string, string>;
+    errors: ErrorMessages;
     clearError: (field: string) => void;
 }> = ({newsletter, updateNewsletter, validate, errors, clearError}) => {
     const {settings, siteData, config} = useGlobalData();

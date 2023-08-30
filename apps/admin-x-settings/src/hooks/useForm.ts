@@ -6,6 +6,8 @@ export type Dirtyable<Data> = Data & {
 
 export type SaveState = 'unsaved' | 'saving' | 'saved' | 'error' | '';
 
+export type ErrorMessages = Record<string, string | undefined>
+
 export interface FormHook<State> {
     formState: State;
     saveState: SaveState;
@@ -23,17 +25,17 @@ export interface FormHook<State> {
     validate: () => boolean;
     clearError: (field: string) => void;
     isValid: boolean;
-    errors: Record<string, string>;
+    errors: ErrorMessages;
 }
 
 const useForm = <State>({initialState, onSave, onValidate}: {
     initialState: State,
     onSave: () => void | Promise<void>
-    onValidate?: () => Record<string, string>
+    onValidate?: () => ErrorMessages
 }): FormHook<State> => {
     const [formState, setFormState] = useState(initialState);
     const [saveState, setSaveState] = useState<SaveState>('');
-    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [errors, setErrors] = useState<ErrorMessages>({});
 
     // Reset saved state after 2 seconds
     useEffect(() => {
@@ -44,7 +46,7 @@ const useForm = <State>({initialState, onSave, onValidate}: {
         }
     }, [saveState]);
 
-    const isValid = (errs: Record<string, string>) => Object.values(errs).filter(Boolean).length === 0;
+    const isValid = (errs: ErrorMessages) => Object.values(errs).filter(Boolean).length === 0;
 
     const validate = () => {
         if (!onValidate) {

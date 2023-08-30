@@ -3,16 +3,10 @@ import Heading from '../../../../admin-x-ds/global/Heading';
 import Icon from '../../../../admin-x-ds/global/Icon';
 import React, {useState} from 'react';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
-import {Tier} from '../../../../api/tiers';
+import {TierFormState} from './TierDetailModal';
+import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
 import {getSettingValues} from '../../../../api/settings';
-import {getSymbol} from '../../../../utils/currency';
 import {numberWithCommas} from '../../../../utils/helpers';
-
-export type TierFormState = Partial<Omit<Tier, 'monthly_price' | 'yearly_price' | 'trial_days'>> & {
-    monthly_price: string;
-    yearly_price: string;
-    trial_days: string;
-};
 
 interface TierDetailPreviewProps {
     tier: TierFormState;
@@ -81,8 +75,8 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier})
     const currencySymbol = currency ? getSymbol(currency) : '$';
     const benefits = tier?.benefits || [];
 
-    const monthlyPrice = parseFloat(tier?.monthly_price || '0');
-    const yearlyPrice = parseFloat(tier?.yearly_price || '0');
+    const monthlyPrice = currencyToDecimal(tier?.monthly_price || 0);
+    const yearlyPrice = currencyToDecimal(tier?.yearly_price || 0);
     const yearlyDiscount = tier?.monthly_price && tier?.yearly_price
         ? Math.ceil(((monthlyPrice * 12 - yearlyPrice) / (monthlyPrice * 12)) * 100)
         : 0;
