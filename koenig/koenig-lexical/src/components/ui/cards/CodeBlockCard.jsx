@@ -192,7 +192,7 @@ export function CodeEditor({code, language, updateCode, updateLanguage}) {
             />
             <input
                 aria-label="Code card language"
-                className={`z-999 absolute right-1.5 top-1.5 w-1/5 rounded border border-grey-300 p-1 font-sans text-[1.3rem] leading-4 text-grey-900 transition-opacity focus-visible:outline-none ${showLanguage ? 'opacity-100' : 'opacity-0'}`}
+                className={`z-999 absolute right-1.5 top-1.5 w-1/5 rounded border border-grey-300 px-2 py-1 font-sans text-[1.3rem] leading-4 text-grey-900 transition-opacity focus-visible:outline-none dark:border-grey-900 dark:text-grey-400 ${showLanguage ? 'opacity-100' : 'opacity-0'}`}
                 data-testid="code-card-language"
                 placeholder="Language..."
                 type="text"
