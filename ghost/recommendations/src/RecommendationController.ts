@@ -115,6 +115,7 @@ export class RecommendationController {
                     url: r.url,
                     one_click_subscribe: r.oneClickSubscribe,
                     created_at: r.createdAt,
+                    updated_at: r.updatedAt
                 };
             })
         }
