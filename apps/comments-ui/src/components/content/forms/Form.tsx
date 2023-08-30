@@ -27,7 +27,7 @@ const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, c
 
     if (progress === 'sending') {
         submitText = null;
-        buttonIcon = <SpinnerIcon className="h-[24px] w-[24px] fill-white dark:fill-black" />;
+        buttonIcon = <SpinnerIcon className="h-[24px] w-[24px] fill-white-no-conflict dark:fill-black" />;
     }
 
     const stopIfFocused = useCallback((event) => {

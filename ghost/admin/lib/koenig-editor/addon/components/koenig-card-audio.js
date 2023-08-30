@@ -70,7 +70,7 @@ export default class KoenigCardAudioComponent extends Component {
             items: [{
                 buttonClass: 'fw4 flex items-center white',
                 icon: 'koenig/kg-edit',
-                iconClass: 'fill-white',
+                iconClass: 'fill-white-no-conflict',
                 title: 'Edit',
                 text: '',
                 action: bind(this, this.args.editCard)
