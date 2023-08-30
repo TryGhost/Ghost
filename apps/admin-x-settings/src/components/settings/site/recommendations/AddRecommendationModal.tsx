@@ -17,7 +17,7 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = () => {
     // TODO: Add error message
     return <Modal
         afterClose={() => {
-            updateRoute('newsletters');
+            updateRoute('recommendations');
         }}
         okColor='black'
         okLabel='Next'
