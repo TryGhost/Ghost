@@ -263,7 +263,7 @@ function createEmptyLexicalNode(tagName, attributes = {}) {
     const nodeParams = TAG_TO_LEXICAL_NODE[tagName];
     const node = {
         children: [],
-        direction: null,
+        direction: 'ltr',
         format: '',
         indent: 0,
         ...nodeParams,

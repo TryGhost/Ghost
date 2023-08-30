@@ -46,7 +46,7 @@ describe('mobiledocToLexical', function () {
                 root: {
                     children: [{
                         children: [],
-                        direction: null,
+                        direction: 'ltr',
                         format: '',
                         indent: 0,
                         type: 'paragraph',
@@ -2099,7 +2099,7 @@ describe('mobiledocToLexical', function () {
                         title: null,
                         version: 1
                     }],
-                    direction: null,
+                    direction: 'ltr',
                     format: '',
                     indent: 0,
                     type: 'paragraph',
@@ -2335,7 +2335,7 @@ describe('mobiledocToLexical', function () {
                         card: 1
                     }, {
                         children: [],
-                        direction: null,
+                        direction: 'ltr',
                         format: '',
                         indent: 0,
                         type: 'paragraph',
