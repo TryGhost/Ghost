@@ -477,13 +477,6 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
     try {
         // Step 1 - require more fundamental components
 
-        // Load New Relic
-        debug('Begin: Load New Relic');
-        if (config.get('newRelic:enabled')) {
-            require('newrelic');
-        }
-        debug('End: Load New Relic');
-
         // Sentry must be initialized early, but requires config
         debug('Begin: Load sentry');
         require('./shared/sentry');
