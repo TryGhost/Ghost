@@ -16,12 +16,11 @@ declare global {
 
 /** Should usually be used via [ColorPickerField](?path=/docs/global-form-color-picker-field--docs) */
 const ColorPicker: React.FC<{
-    value?: string;
+    hexValue?: string;
     eyedropper?: boolean;
-    hasTransparentOption?: boolean;
-    onChange?: (newValue: string) => void;
-    getAccentColor?: () => string;
-}> = ({value, eyedropper, hasTransparentOption, onChange, getAccentColor}) => {
+    clearButtonValue?: string | null;
+    onChange?: (newValue: string | null) => void;
+}> = ({hexValue, eyedropper, clearButtonValue, onChange}) => {
     // HexColorInput doesn't support adding a ref on the input itself
     const inputWrapperRef = useRef<HTMLDivElement>(null);
 
@@ -83,20 +82,13 @@ const ColorPicker: React.FC<{
         inputWrapperRef.current?.querySelector('input')?.focus();
     }, []);
 
-    let hexValue = value;
-    if (value === 'accent') {
-        hexValue = getAccentColor?.() || '';
-    } else if (value === 'transparent') {
-        hexValue = '';
-    }
-
     const focusHexInputOnClick = useCallback(() => {
         inputWrapperRef.current?.querySelector('input')?.focus();
     }, []);
 
     return (
         <div className="mt-2" onMouseDown={stopPropagation} onTouchStart={stopPropagation}>
-            <HexColorPicker color={hexValue || '#ffffff'} onChange={onChange} onMouseDown={startUsingColorPicker} onTouchStart={startUsingColorPicker} />
+            <HexColorPicker className='w-full' color={hexValue || '#ffffff'} onChange={onChange} onMouseDown={startUsingColorPicker} onTouchStart={startUsingColorPicker} />
             <div className="mt-3 flex gap-2">
                 <div ref={inputWrapperRef} className='peer relative order-2 flex h-10 w-full items-center border-b border-grey-500 py-2 hover:border-grey-700 focus:border-black' onClick={focusHexInputOnClick}>
                     <span className='ml-1 mr-2 text-grey-700'>#</span>
@@ -112,7 +104,7 @@ const ColorPicker: React.FC<{
                     )}
                 </div>
 
-                {hasTransparentOption && <Button color='grey' value='Clear' onClick={() => onChange?.('transparent')} />}
+                {clearButtonValue !== undefined && <Button color='grey' value='Clear' onClick={() => onChange?.(clearButtonValue)} />}
             </div>
         </div>
     );

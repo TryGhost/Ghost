@@ -8,16 +8,16 @@ const ColorPickerContext = createContext<{colorPickers: Array<{ id: string; setE
     colorPickers: []
 });
 
-const ColorPickerField = ({testId, title, direction, value, hint, error, eyedropper, hasTransparentOption, onChange, swatches = []}: {
+const ColorPickerField = ({testId, title, direction, value, hint, error, eyedropper, clearButtonValue, onChange, swatches = []}: {
     testId?: string;
     title?: string;
     direction?: ToggleDirections;
     hint?: ReactNode;
     error?: boolean;
-    value?: string;
+    value?: string | null;
     eyedropper?: boolean;
-    hasTransparentOption?: boolean;
-    onChange?: (newValue: string) => void;
+    clearButtonValue?: string | null;
+    onChange?: (newValue: string | null) => void;
     swatches?: SwatchOption[];
 }) => {
     const [isExpanded, setExpanded] = useState(false);
@@ -75,10 +75,12 @@ const ColorPickerField = ({testId, title, direction, value, hint, error, eyedrop
         );
     }
 
+    let selectedSwatch = swatches.find(swatch => swatch.value === value);
+
     return (
         <div className="mt-2 flex-col" data-testid={testId} onClick={event => event.stopPropagation()}>
             {content}
-            {isExpanded && <ColorPicker eyedropper={eyedropper} hasTransparentOption={hasTransparentOption} value={value} onChange={onChange} />}
+            {isExpanded && <ColorPicker clearButtonValue={clearButtonValue} eyedropper={eyedropper} hexValue={selectedSwatch?.hex || value || undefined} onChange={onChange} />}
         </div>
     );
 };
