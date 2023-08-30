@@ -329,6 +329,7 @@ async function initServices({config}) {
     const modelToDomainEventInterceptor = require('./server/services/model-to-domain-event-interceptor');
     const mailEvents = require('./server/services/mail-events');
     const donationService = require('./server/services/donations');
+    const recommendationsService = require('./server/services/recommendations');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -369,7 +370,8 @@ async function initServices({config}) {
         modelToDomainEventInterceptor.init(),
         mediaInliner.init(),
         mailEvents.init(),
-        donationService.init()
+        donationService.init(),
+        recommendationsService.init()
     ]);
     debug('End: Services');
 
@@ -474,13 +476,6 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
     try {
         // Step 1 - require more fundamental components
-
-        // Load New Relic
-        debug('Begin: Load New Relic');
-        if (config.get('newRelic:enabled')) {
-            require('newrelic');
-        }
-        debug('End: Load New Relic');
 
         // Sentry must be initialized early, but requires config
         debug('Begin: Load sentry');

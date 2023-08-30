@@ -1,3 +1,5 @@
+import {SelectOptionGroup} from '../admin-x-ds/global/form/Select';
+
 type CurrencyOption = {
     isoCode: string;
     name: string;
@@ -132,6 +134,17 @@ export function currencyGroups() {
     };
 }
 
+export function currencySelectGroups({showName = false} = {}): SelectOptionGroup[] {
+    return Object.values(currencyGroups()).map((group, index) => ({
+        label: '—',
+        key: index.toString(),
+        options: group.map(({isoCode,name}) => ({
+            value: isoCode,
+            label: showName ? `${isoCode} - ${name}` : isoCode
+        }))
+    }));
+}
+
 export function getSymbol(currency: string): string {
     if (!currency) {
         return '';
@@ -146,4 +159,70 @@ export function currencyToDecimal(integerAmount: number): number {
 
 export function currencyFromDecimal(decimalAmount: number): number {
     return decimalAmount * 100;
+}
+
+/*
+* Returns the minimum charge amount for a given currency,
+* based on Stripe's requirements. Values here are double the Stripe limits, to take conversions to the settlement currency into account.
+* @see https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts
+*/
+export function minimumAmountForCurrency(currency: string) {
+    const isoCurrency = currency?.toUpperCase();
+
+    switch (isoCurrency) {
+    case 'AED':
+        return 4;
+    case 'BGN':
+        return 2;
+    case 'CZK':
+        return 30;
+    case 'DKK':
+        return 5;
+    case 'HKD':
+        return 8;
+    case 'HUF':
+        return 250;
+    case 'JPY':
+        return 100;
+    case 'MXN':
+        return 20;
+    case 'MYR':
+        return 4;
+    case 'NOK':
+        return 6;
+    case 'PLN':
+        return 4;
+    case 'RON':
+        return 4;
+    case 'SEK':
+        return 6;
+    case 'THB':
+        return 20;
+    default:
+        return 1;
+    }
+}
+
+// Stripe doesn't allow amounts over 10,000 as a preset amount
+const MAX_AMOUNT = 10_000;
+
+export function validateCurrencyAmount(cents: number | undefined, currency: string | undefined, {allowZero = true} = {}) {
+    if (cents === undefined || !currency) {
+        return;
+    }
+
+    const symbol = getSymbol(currency);
+    const minAmount = minimumAmountForCurrency(currency);
+
+    if (!allowZero && cents === 0) {
+        return `Amount must be at least ${symbol}${minAmount}.`;
+    }
+
+    if (cents !== 0 && cents < (minAmount * 100)) {
+        return `Non-zero amount must be at least ${symbol}${minAmount}.`;
+    }
+
+    if (cents !== 0 && cents > (MAX_AMOUNT * 100)) {
+        return `Suggested amount cannot be more than ${symbol}${MAX_AMOUNT}.`;
+    }
 }
