@@ -16,7 +16,7 @@ const messages = {
 
 // @TODO: This piece of middleware actually belongs to the frontend, not to the member app
 // Need to figure a way to separate these things (e.g. frontend actually talks to members API)
-const loadMemberSession = async function (req, res, next) {
+const loadMemberSession = async function loadMemberSession(req, res, next) {
     try {
         const member = await membersService.ssr.getMemberDataFromSession(req, res);
         Object.assign(req, {member});
@@ -32,7 +32,7 @@ const loadMemberSession = async function (req, res, next) {
  * Require member authentication, and make it possible to authenticate via uuid.
  * You can chain this after loadMemberSession to make it possible to authenticate via both the uuid and the session.
  */
-const authMemberByUuid = async function (req, res, next) {
+const authMemberByUuid = async function authMemberByUuid(req, res, next) {
     try {
         const uuid = req.query.uuid;
         if (!uuid) {
@@ -60,7 +60,7 @@ const authMemberByUuid = async function (req, res, next) {
     }
 };
 
-const getIdentityToken = async function (req, res) {
+const getIdentityToken = async function getIdentityToken(req, res) {
     try {
         const token = await membersService.ssr.getIdentityTokenForMemberFromSession(req, res);
         res.writeHead(200);
@@ -71,7 +71,7 @@ const getIdentityToken = async function (req, res) {
     }
 };
 
-const deleteSession = async function (req, res) {
+const deleteSession = async function deleteSession(req, res) {
     try {
         await membersService.ssr.deleteSession(req, res);
         res.writeHead(204);
@@ -87,7 +87,7 @@ const deleteSession = async function (req, res) {
     }
 };
 
-const getMemberData = async function (req, res) {
+const getMemberData = async function getMemberData(req, res) {
     try {
         const member = await membersService.ssr.getMemberDataFromSession(req, res);
         if (member) {
@@ -101,7 +101,7 @@ const getMemberData = async function (req, res) {
     }
 };
 
-const deleteSuppression = async function (req, res) {
+const deleteSuppression = async function deleteSuppression(req, res) {
     try {
         const member = await membersService.ssr.getMemberDataFromSession(req, res);
         const options = {
@@ -123,7 +123,7 @@ const deleteSuppression = async function (req, res) {
     }
 };
 
-const getMemberNewsletters = async function (req, res) {
+const getMemberNewsletters = async function getMemberNewsletters(req, res) {
     try {
         const memberUuid = req.query.uuid;
 
@@ -151,7 +151,7 @@ const getMemberNewsletters = async function (req, res) {
     }
 };
 
-const updateMemberNewsletters = async function (req, res) {
+const updateMemberNewsletters = async function updateMemberNewsletters(req, res) {
     try {
         const memberUuid = req.query.uuid;
         if (!memberUuid) {
@@ -182,7 +182,7 @@ const updateMemberNewsletters = async function (req, res) {
     }
 };
 
-const updateMemberData = async function (req, res) {
+const updateMemberData = async function updateMemberData(req, res) {
     try {
         const data = _.pick(req.body, 'name', 'expertise', 'subscribed', 'newsletters', 'enable_comment_notifications');
         const member = await membersService.ssr.getMemberDataFromSession(req, res);
@@ -209,7 +209,7 @@ const updateMemberData = async function (req, res) {
     }
 };
 
-const createSessionFromMagicLink = async function (req, res, next) {
+const createSessionFromMagicLink = async function createSessionFromMagicLink(req, res, next) {
     if (!req.url.includes('token=')) {
         return next();
     }

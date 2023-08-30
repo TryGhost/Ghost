@@ -8,7 +8,7 @@ const messages = {
     notImplemented: 'The server does not support the functionality required to fulfill the request.'
 };
 
-const notImplemented = function (req, res, next) {
+const notImplemented = function notImplemented(req, res, next) {
     // CASE: user is logged in, allow
     if (!req.api_key) {
         return next();

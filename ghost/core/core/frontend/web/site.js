@@ -129,7 +129,7 @@ module.exports = function setupSiteApp(routerConfig) {
     siteApp.use(shared.middleware.prettyUrls);
 
     // ### Caching
-    siteApp.use(function (req, res, next) {
+    siteApp.use(function frontendCaching(req, res, next) {
         // Site frontend is cacheable UNLESS request made by a member or site is in private mode
         if (req.member || res.isPrivateBlog) {
             return shared.middleware.cacheControl('private')(req, res, next);
@@ -138,7 +138,7 @@ module.exports = function setupSiteApp(routerConfig) {
         }
     });
 
-    siteApp.use(function (req, res, next) {
+    siteApp.use(function memberPageViewMiddleware(req, res, next) {
         if (req.member) {
             // This event needs memberLastSeenAt to avoid doing un-necessary database queries when updating `last_seen_at`
             DomainEvents.dispatch(MemberPageViewEvent.create({url: req.url, memberId: req.member.id, memberLastSeenAt: req.member.last_seen_at}, new Date()));
