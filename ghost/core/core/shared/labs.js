@@ -42,8 +42,8 @@ const ALPHA_FEATURES = [
     'collectionsCard',
     'tipsAndDonations',
     'importMemberTier',
-    'convertToLexical',
-    'recommendations'
+    'recommendations',
+    'lexicalIndicators'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
