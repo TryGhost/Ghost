@@ -181,7 +181,7 @@ class CacheManager {
         this.calculatedFields.forEach((field) => {
             this._updateCalculatedField(field)();
             field.dependents.forEach((dependent) => {
-                events.on(`settings.${dependent}.edited`, this._updateCalculatedField(field));
+                events.on(`${dependent}`, this._updateCalculatedField(field));
             });
         });
 

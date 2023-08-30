@@ -85,11 +85,13 @@ module.exports = {
     getCalculatedFields() {
         const fields = [];
 
-        fields.push(new CalculatedField({key: 'members_enabled', type: 'boolean', group: 'members', fn: settingsHelpers.isMembersEnabled.bind(settingsHelpers), dependents: ['members_signup_access']}));
-        fields.push(new CalculatedField({key: 'members_invite_only', type: 'boolean', group: 'members', fn: settingsHelpers.isMembersInviteOnly.bind(settingsHelpers), dependents: ['members_signup_access']}));
-        fields.push(new CalculatedField({key: 'paid_members_enabled', type: 'boolean', group: 'members', fn: settingsHelpers.arePaidMembersEnabled.bind(settingsHelpers), dependents: ['members_signup_access', 'stripe_secret_key', 'stripe_publishable_key', 'stripe_connect_secret_key', 'stripe_connect_publishable_key']}));
-        fields.push(new CalculatedField({key: 'firstpromoter_account', type: 'string', group: 'firstpromoter', fn: settingsHelpers.getFirstpromoterId.bind(settingsHelpers), dependents: ['firstpromoter', 'firstpromoter_id']}));
-        fields.push(new CalculatedField({key: 'donations_enabled', type: 'boolean', group: 'donations', fn: settingsHelpers.areDonationsEnabled.bind(settingsHelpers), dependents: ['stripe_secret_key', 'stripe_publishable_key', 'stripe_connect_secret_key', 'stripe_connect_publishable_key']}));
+        fields.push(new CalculatedField({key: 'members_enabled', type: 'boolean', group: 'members', fn: settingsHelpers.isMembersEnabled.bind(settingsHelpers), dependents: ['settings.members_signup_access.edited']}));
+        fields.push(new CalculatedField({key: 'members_invite_only', type: 'boolean', group: 'members', fn: settingsHelpers.isMembersInviteOnly.bind(settingsHelpers), dependents: ['settings.members_signup_access.edited']}));
+        fields.push(new CalculatedField({key: 'paid_members_enabled', type: 'boolean', group: 'members', fn: settingsHelpers.arePaidMembersEnabled.bind(settingsHelpers), dependents: ['settings.members_signup_access.edited', 'settings.stripe_secret_key.edited', 'settings.stripe_publishable_key.edited', 'settings.stripe_connect_secret_key.edited', 'settings.stripe_connect_publishable_key.edited']}));
+        fields.push(new CalculatedField({key: 'firstpromoter_account', type: 'string', group: 'firstpromoter', fn: settingsHelpers.getFirstpromoterId.bind(settingsHelpers), dependents: ['settings.firstpromoter.edited', 'settings.firstpromoter_id.edited']}));
+        fields.push(new CalculatedField({key: 'donations_enabled', type: 'boolean', group: 'donations', fn: settingsHelpers.areDonationsEnabled.bind(settingsHelpers), dependents: ['settings.stripe_secret_key.edited', 'settings.stripe_publishable_key.edited', 'settings.stripe_connect_secret_key.edited', 'settings.stripe_connect_publishable_key.edited']}));
+
+        fields.push(new CalculatedField({key: 'recommendations_enabled', type: 'boolean', group: 'recommendations', fn: settingsHelpers.areRecommendationsEnabled.bind(settingsHelpers), dependents: ['recommendations.added', 'recommendations.deleted']}));
 
         return fields;
     },
