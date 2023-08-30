@@ -34,7 +34,7 @@ const Table: React.FC<TableProps> = ({children, borderTop, hint, hintSeparator, 
                     </tbody>
                 </table>
                 {hint &&
-                <div className='mt-1'>
+                <div>
                     {hintSeparator && <Separator />}
                     <div className="flex justify-between">
                         <Hint>{hint}</Hint>
