@@ -1,5 +1,7 @@
 import Heading from './Heading';
+import Hint from './Hint';
 import React from 'react';
+import Separator from './Separator';
 import clsx from 'clsx';
 
 interface TableProps {
@@ -9,10 +11,12 @@ interface TableProps {
     pageTitle?: string;
     children?: React.ReactNode;
     borderTop?: boolean;
+    hint?: string;
+    hintSeparator?: boolean;
     className?: string;
 }
 
-const Table: React.FC<TableProps> = ({children, borderTop, pageTitle, className}) => {
+const Table: React.FC<TableProps> = ({children, borderTop, hint, hintSeparator, pageTitle, className}) => {
     const tableClasses = clsx(
         (borderTop || pageTitle) && 'border-t border-grey-300',
         'w-full',
@@ -22,12 +26,27 @@ const Table: React.FC<TableProps> = ({children, borderTop, pageTitle, className}
 
     return (
         <>
-            {pageTitle && <Heading>{pageTitle}</Heading>}
-            <table className={tableClasses}>
-                <tbody>
-                    {children}
-                </tbody>
-            </table>
+            <div>
+                {pageTitle && <Heading>{pageTitle}</Heading>}
+                <table className={tableClasses}>
+                    <tbody>
+                        {children}
+                    </tbody>
+                </table>
+                {hint &&
+                <div className='mt-1'>
+                    {hintSeparator && <Separator />}
+                    <div className="flex justify-between">
+                        <Hint>{hint}</Hint>
+                        {/* // TODO: Finish pagination component */}
+                        {/* <div className={`mt-1 flex items-center gap-2 text-xs text-grey-700`}>Showing 1-5 of 15 
+                            <button type='button'><Icon colorClass="text-green" name='chevron-left' size="xs" />
+                            </button>
+                            <button type="button"><Icon colorClass="text-green" name='chevron-right' size="xs" /></button>
+                        </div> */}
+                    </div>
+                </div>}
+            </div>
         </>
     );
 };

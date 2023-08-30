@@ -3,6 +3,7 @@ import React, {useState} from 'react';
 import RecommendationList from './recommendations/RecommendationList';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
+import useRouting from '../../../hooks/useRouting';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {useBrowseRecommendations} from '../../../api/recommendations';
 
@@ -13,9 +14,16 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     } = useSettingGroup();
     const {data: {recommendations} = {}} = useBrowseRecommendations();
     const [selectedTab, setSelectedTab] = useState('your-recommendations');
+  
+    const {updateRoute} = useRouting();
+    const openAddNewRecommendationModal = () => {
+        updateRoute('recommendations/add');
+    };
 
     const buttons = (
-        <Button color='green' label='Add recommendation' link={true} onClick={() => {}} />
+        <Button color='green' label='Add recommendation' link={true} onClick={() => {
+            openAddNewRecommendationModal();
+        }} />
     );
 
     const tabs = [
@@ -30,11 +38,11 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
             contents: (<RecommendationList recommendations={[]} />)
         }
     ];
-
+  
     return (
         <SettingGroup
             customButtons={buttons}
-            description="Recommend sites to your audience, and get recommended by others."
+            description="Share favorite sites with your audience"
             keywords={keywords}
             navid='recommendations'
             saveState={saveState}
