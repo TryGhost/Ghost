@@ -1,4 +1,6 @@
+const logger = require('@tryghost/logging');
 const Collection = require('@tryghost/collections').Collection;
+const sentry = require('../../../shared/sentry');
 /**
  * @typedef {import('@tryghost/collections/src/CollectionRepository')} CollectionRepository
  */
@@ -61,24 +63,35 @@ module.exports = class BookshelfCollectionsRepository {
             withRelated: ['collectionPosts']
         });
 
-        return await Promise.all(models.map(model => this.#modelToCollection(model)));
+        return (await Promise.all(models.map(model => this.#modelToCollection(model)))).filter(entity => !!entity);
     }
 
-    #modelToCollection(model) {
+    async #modelToCollection(model) {
         const json = model.toJSON();
+        let filter = json.filter;
 
-        return Collection.create({
-            id: json.id,
-            slug: json.slug,
-            title: json.title,
-            description: json.description,
-            filter: json.filter,
-            type: json.type,
-            featureImage: json.feature_image,
-            posts: json.collectionPosts.map(collectionPost => collectionPost.post_id),
-            createdAt: json.created_at,
-            updatedAt: json.updated_at
-        });
+        if (json.type === 'automatic' && typeof filter !== 'string') {
+            filter = '';
+        }
+
+        try {
+            return await Collection.create({
+                id: json.id,
+                slug: json.slug,
+                title: json.title,
+                description: json.description,
+                filter: filter,
+                type: json.type,
+                featureImage: json.feature_image,
+                posts: json.collectionPosts.map(collectionPost => collectionPost.post_id),
+                createdAt: json.created_at,
+                updatedAt: json.updated_at
+            });
+        } catch (err) {
+            logger.error(err);
+            sentry.captureException(err);
+            return null;
+        }
     }
 
     /**

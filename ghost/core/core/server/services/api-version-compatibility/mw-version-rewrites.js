@@ -8,7 +8,7 @@ const urlUtils = require('../../../shared/url-utils');
  * @param {import('express').Response} res
  * @param {import('express').NextFunction} next
  */
-module.exports = (req, res, next) => {
+module.exports = function mwVersionRewrites(req, res, next) {
     let {version} = legacyApiPathMatch(req.url);
 
     // If we don't match a valid version, carry on

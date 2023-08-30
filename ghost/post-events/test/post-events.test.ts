@@ -3,7 +3,8 @@ import {
     PostsBulkDestroyedEvent,
     PostsBulkUnpublishedEvent,
     PostsBulkFeaturedEvent,
-    PostsBulkUnfeaturedEvent
+    PostsBulkUnfeaturedEvent,
+    PostsBulkAddTagsEvent
 } from '../src/index';
 
 describe('Post Events', function () {
@@ -27,6 +28,12 @@ describe('Post Events', function () {
 
     it('Can instantiate PostsBulkUnfeaturedEvent', function () {
         const event = PostsBulkUnfeaturedEvent.create(['1', '2', '3']);
+        assert.ok(event);
+        assert.equal(event.data.length, 3);
+    });
+
+    it('Can instantiate PostsBulkAddTagsEvent', function () {
+        const event = PostsBulkAddTagsEvent.create(['1', '2', '3']);
         assert.ok(event);
         assert.equal(event.data.length, 3);
     });
