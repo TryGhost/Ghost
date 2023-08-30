@@ -199,7 +199,7 @@ function PopulatedAudioCard({
                 <div className="flex h-20 w-full flex-col justify-between px-4">
                     {(isEditing || title) && (
                         <TextInput
-                            className="font-sans text-lg font-bold text-black"
+                            className="bg-transparent font-sans text-lg font-bold text-current"
                             data-testid="audio-title"
                             name="title"
                             placeholder={placeholder}
