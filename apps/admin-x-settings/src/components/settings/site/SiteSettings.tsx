@@ -21,7 +21,7 @@ const SiteSettings: React.FC = () => {
                 {/* <Theme keywords={searchKeywords.theme} /> */}
                 <DesignSetting keywords={searchKeywords.design} />
                 <Navigation keywords={searchKeywords.navigation} />
-                {hasRecommendations && <Recommendations keywords={searchKeywords.navigation} />}
+                {hasRecommendations && <Recommendations keywords={searchKeywords.recommendations} />}
             </SettingSection>
         </>
     );
