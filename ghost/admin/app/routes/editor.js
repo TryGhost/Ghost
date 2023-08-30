@@ -10,6 +10,14 @@ export default AuthenticatedRoute.extend({
 
     classNames: ['editor'],
 
+    beforeModel(transition) {
+        // redirect to the beta editor so the post gets auto-migrated
+        if (this.feature.lexicalEditor) {
+            const {type, post_id: id} = transition.to.params;
+            return this.router.transitionTo('lexical-editor.edit', type, id);
+        }
+    },
+
     activate() {
         this._super(...arguments);
         this.ui.set('isFullScreen', true);
