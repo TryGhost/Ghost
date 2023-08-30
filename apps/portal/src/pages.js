@@ -16,6 +16,7 @@ import EmailReceivingFAQ from './components/pages/EmailReceivingFAQ';
 import SupportPage from './components/pages/SupportPage';
 import SupportSuccess from './components/pages/SupportSuccess';
 import SupportError from './components/pages/SupportError';
+import RecommendationsPage from './components/pages/RecommendationsPage';
 
 /** List of all available pages in Portal, mapped to their UI component
  * Any new page added to portal needs to be mapped here
@@ -38,7 +39,8 @@ const Pages = {
     emailReceivingFAQ: EmailReceivingFAQ,
     support: SupportPage,
     supportSuccess: SupportSuccess,
-    supportError: SupportError
+    supportError: SupportError,
+    recommendations: RecommendationsPage
 };
 
 /** Return page if valid, fallback to signup */
