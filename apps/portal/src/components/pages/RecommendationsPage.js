@@ -1,26 +1,6 @@
 import AppContext from '../../AppContext';
 import {useContext} from 'react';
 
-// Dummy data for design purposes. To be deleted when wired up with real data.
-const recommendations = [
-    {
-        title: 'Mountains by bike',
-        url: 'https://unsplash.com/photos/1527pjeb6jg',
-        reason: 'Incredible photography, captivating stories.',
-        excerpt: 'Explore mountains with me and my bike!',
-        featured_image: 'https://unsplash.com/photos/1527pjeb6jg',
-        favicon: 'https://unsplash.com/photos/1527pjeb6jg'
-    },
-    {
-        title: 'By the seaside',
-        url: 'https://unsplash.com/photos/V3l7m298DLg',
-        reason: 'Sea, sunsets, beers. What else do you need?',
-        excerpt: 'Enjoy the sea!',
-        featured_image: 'https://unsplash.com/photos/V3l7m298DLg',
-        favicon: 'https://unsplash.com/photos/V3l7m298DLg'
-    }
-];
-
 export const RecommendationsPageStyles = `
   .gh-portal-recommendation-item {
     display: flex;
@@ -48,6 +28,7 @@ const RecommendationItem = ({title, url, excerpt}) => {
 
 const RecommendationsPage = () => {
     const {site, t} = useContext(AppContext);
+    const recommendations = site.recommendations || [];
 
     return (
         <div className='gh-portal-content with-footer'>

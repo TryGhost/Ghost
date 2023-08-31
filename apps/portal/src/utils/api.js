@@ -17,6 +17,10 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         return '';
     }
 
+    function adminEndpointFor({resource, params = ''}) {
+        return `${siteUrl.replace(/\/$/, '')}/ghost/api/admin/${resource}/?${params}`;
+    }
+
     function makeRequest({url, method = 'GET', headers = {}, credentials = undefined, body = undefined}) {
         const options = {
             method,
@@ -110,6 +114,23 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                     return res.json();
                 } else {
                     throw new Error('Failed to fetch offer data');
+                }
+            });
+        },
+
+        recommendations() {
+            const url = adminEndpointFor({resource: 'recommendations'});
+            return makeRequest({
+                url,
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(function (res) {
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    throw new Error('Failed to fetch recommendations');
                 }
             });
         }
@@ -520,17 +541,20 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         let newsletters = [];
         let tiers = [];
         let settings = {};
+        let recommendations = [];
 
         try {
-            [{settings}, {tiers}, {newsletters}] = await Promise.all([
+            [{settings}, {tiers}, {newsletters}, {recommendations}] = await Promise.all([
                 api.site.settings(),
                 api.site.tiers(),
-                api.site.newsletters()
+                api.site.newsletters(),
+                api.site.recommendations()
             ]);
             site = {
                 ...settings,
                 newsletters,
-                tiers: transformApiTiersData({tiers})
+                tiers: transformApiTiersData({tiers}),
+                recommendations
             };
         } catch (e) {
             // Ignore
