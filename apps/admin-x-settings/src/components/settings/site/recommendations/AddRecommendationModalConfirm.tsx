@@ -93,7 +93,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
             marginTop
         >
             <div className='mb-4 flex items-center gap-3 rounded-sm border border-grey-300 p-3'>
-                {(recommendation.favicon || recommendation.featured_image) && <Avatar image={recommendation.favicon ?? recommendation.featured_image} labelColor='white' />}
+                {(recommendation.favicon || recommendation.featured_image) && <Avatar image={recommendation.favicon ?? recommendation.featured_image!} labelColor='white' />}
                 <div className={`flex grow flex-col`}>
                     <span className='mb-0.5 font-medium'>{recommendation.title}</span>
                     <span className='text-xs leading-snug text-grey-700'>{recommendation.url}</span>
