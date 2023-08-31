@@ -203,6 +203,13 @@ class OEmbedService {
             gotOpts.retry = 0;
         }
 
+        const pickFn = (sizes, pickDefault) => {
+            // Prioritize apple touch icon with sizes > 180
+            const appleTouchIcon = sizes.find(item => item.rel.includes('apple') && item.sizes && item.size.width >= 180);
+            const svgIcon = sizes.find(item => item.href.endsWith('svg'));
+            return appleTouchIcon || svgIcon || pickDefault(sizes);
+        };
+
         const metascraper = require('metascraper')([
             require('metascraper-url')(),
             require('metascraper-title')(),
@@ -211,7 +218,8 @@ class OEmbedService {
             require('metascraper-publisher')(),
             require('metascraper-image')(),
             require('metascraper-logo-favicon')({
-                gotOpts
+                gotOpts,
+                pickFn
             }),
             require('metascraper-logo')()
         ]);
