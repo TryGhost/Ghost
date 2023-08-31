@@ -60,8 +60,8 @@
   },
   "devDependencies": {
     "@playwright/test": "1.37.1",
-    "@testing-library/jest-dom": "5.16.5",
-    "@testing-library/react": "12.1.5",
+    "@testing-library/jest-dom": "6.1.2",
+    "@testing-library/react": "14.0.0",
     "@testing-library/user-event": "14.4.3",
     "@tryghost/i18n": "0.0.0",
     "@vitejs/plugin-react": "4.0.4",

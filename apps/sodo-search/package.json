@@ -82,8 +82,8 @@
     ]
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "5.16.5",
-    "@testing-library/react": "12.1.5",
+    "@testing-library/jest-dom": "6.1.2",
+    "@testing-library/react": "14.0.0",
     "@vitejs/plugin-react": "4.0.4",
     "nock": "13.1.2",
     "vite": "4.4.9",

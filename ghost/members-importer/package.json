@@ -18,7 +18,7 @@
     "lib"
   ],
   "devDependencies": {
-    "c8": "7.14.0",
+    "c8": "8.0.1",
     "fs-extra": "11.1.1",
     "mocha": "10.2.0",
     "should": "13.2.3",
