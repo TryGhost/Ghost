@@ -47,10 +47,7 @@
   },
   "renovate": {
     "extends": [
-      "github>tryghost/renovate-config:quiet",
-      "@tryghost:groupTestLint",
-      "@tryghost:groupCSS",
-      "@tryghost:groupBuildTools"
+      "github>tryghost/renovate-config:quiet"
     ],
     "rebaseWhen": "never",
     "ignoreDeps": [
@@ -71,12 +68,6 @@
       "ghost/admin/lib/koenig-editor/package.json"
     ],
     "packageRules": [
-      {
-        "packagePatterns": [
-          "metascraper"
-        ],
-        "groupName": "metascraper"
-      },
       {
         "groupName": "ember-basic-dropdown addons",
         "packagePatterns": [
