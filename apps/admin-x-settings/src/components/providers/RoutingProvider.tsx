@@ -1,5 +1,7 @@
 import AddIntegrationModal from '../settings/advanced/integrations/AddIntegrationModal';
 import AddNewsletterModal from '../settings/email/newsletters/AddNewsletterModal';
+import AddRecommendationModal from '../settings/site/recommendations/AddRecommendationModal';
+import AddRecommendationModalConfirm from '../settings/site/recommendations/AddRecommendationModalConfirm';
 import AmpModal from '../settings/advanced/integrations/AmpModal';
 import ChangeThemeModal from '../settings/site/ThemeModal';
 import DesignModal from '../settings/site/DesignModal';
@@ -123,6 +125,10 @@ const handleNavigation = (scroll: boolean = true) => {
             NiceModal.show(PinturaModal);
         } else if (pathName === 'integrations/add') {
             NiceModal.show(AddIntegrationModal);
+        } else if (pathName === 'recommendations/add') {
+            NiceModal.show(AddRecommendationModal);
+        } else if (pathName === 'recommendations/add-confirm') {
+            NiceModal.show(AddRecommendationModalConfirm);
         }
 
         if (scroll) {
