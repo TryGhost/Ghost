@@ -11,16 +11,6 @@ export const Dropdown = ({
     onKeyDown,
     activeMenuItem
 }) => {
-    const buttonRef = React.useRef(null);
-
-    React.useEffect(() => {
-        if (isCreateButtonActive) {
-            buttonRef.current?.focus();
-        } else {
-            buttonRef.current?.blur();
-        }
-    }, [isCreateButtonActive]);
-
     return (
         <ul
             className="absolute mt-[-1px] w-full max-w-[240px] rounded-b border border-grey-200 bg-white shadow dark:border-grey-900 dark:bg-grey-950"
@@ -30,8 +20,7 @@ export const Dropdown = ({
 
             <li className="mb-0 block">
                 <button
-                    ref={buttonRef}
-                    className="flex w-full cursor-pointer items-center justify-between px-3 py-2 text-left text-sm font-medium text-green hover:bg-grey-100 focus:bg-grey-100 dark:hover:bg-black dark:focus:bg-black"
+                    className={`flex w-full cursor-pointer items-center justify-between px-3 py-2 text-left text-sm font-medium text-green hover:bg-grey-100 dark:hover:bg-black ${isCreateButtonActive ? 'bg-grey-100 dark:bg-black' : ''}`}
                     type="button"
                     onClick={onCreateSnippet}
                 >
@@ -73,22 +62,11 @@ const DropdownSection = ({list = [], onClick, activeMenuItem}) => {
 };
 
 const DropdownItem = ({onClick, name, active, index}) => {
-    const buttonRef = React.useRef(null);
-
-    React.useEffect(() => {
-        const isFocused = active === index;
-        if (isFocused) {
-            buttonRef.current?.focus();
-        } else {
-            buttonRef.current?.blur();
-        }
-    }, [active, index]);
-
     return (
         <li className="mb-1">
             <button
-                ref={buttonRef}
-                className="flex w-full cursor-pointer items-center justify-between px-3 py-2 text-left text-sm hover:bg-grey-100 focus:bg-grey-100 dark:hover:bg-black dark:focus:bg-black"
+                // ref={buttonRef}
+                className={`flex w-full cursor-pointer items-center justify-between px-3 py-2 text-left text-sm hover:bg-grey-100 ${index === active ? 'bg-grey-100 dark:bg-black' : ''} dark:hover:bg-black`}
                 type="button"
                 onClick={() => onClick(name)}
             >

@@ -13,14 +13,24 @@ export function SnippetInput({
     arrowStyles
 }) {
     const snippetRef = useRef(null);
-    const [isCreateButtonActive, setIsCreateButtonActive] = useState(false);
+    const [isCreateButtonActive, setIsCreateButtonActive] = useState(true);
     const [activeMenuItem, setActiveMenuItem] = useState(-1);
-    const getSuggestedList = () => {
-        return snippets.filter(snippet => snippet.name.toLowerCase().indexOf(value.toLowerCase()) !== -1);
-    };
+    const [suggestedList, setSuggestedList] = useState([]);
 
-    const suggestedList = getSuggestedList();
+    // default to first snippet or create new button
+    React.useEffect(() => {
+        const newSuggestedList = snippets.filter(snippet => snippet.name.toLowerCase().includes(value.toLowerCase()));
+        if (newSuggestedList.length === 0) {
+            setIsCreateButtonActive(true);
+            setActiveMenuItem(-1);
+        } else {
+            setIsCreateButtonActive(false);
+            setActiveMenuItem(0);
+        }
+        setSuggestedList(newSuggestedList);
+    }, [value, snippets]);
 
+    // close snippets menu if clicked outside the input/dropdown
     React.useEffect(() => {
         const handleClickOutside = (event) => {
             if (snippetRef.current && !snippetRef.current.contains(event.target)) {
@@ -43,16 +53,20 @@ export function SnippetInput({
         if (event.key === 'ArrowDown' || event.key === 'Down') {
             event.stopPropagation();
             event.preventDefault();
-            setIsCreateButtonActive(true);
-        }
-    };
 
-    const handleDropdownKeyDown = (event) => {
-        if (event.key === 'ArrowDown' || event.key === 'Down') {
-            event.stopPropagation();
-            event.preventDefault();
+            if (suggestedList.length === 0) {
+                return;
+            }
+            
+            // handle first arrow down from input
+            if (activeMenuItem === -1 && !isCreateButtonActive) {
+                setIsCreateButtonActive(true);
+                return;
+            }
+
             const menuItemIndex = activeMenuItem + 1;
 
+            // handle looping back to top of list
             if (menuItemIndex > suggestedList.length - 1) {
                 setActiveMenuItem(-1);
                 setIsCreateButtonActive(true);
@@ -65,6 +79,10 @@ export function SnippetInput({
         if (event.key === 'ArrowUp' || event.key === 'Up') {
             event.stopPropagation();
             event.preventDefault();
+
+            if (suggestedList.length === 0) {
+                return;
+            }
 
             if (isCreateButtonActive) {
                 setActiveMenuItem(suggestedList.length - 1);
@@ -83,11 +101,18 @@ export function SnippetInput({
                 setIsCreateButtonActive(false);
             }
         }
-    };
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        onCreateSnippet();
+        if (event.key === 'Enter') {
+            if (isCreateButtonActive) {
+                event.stopPropagation();
+                event.preventDefault();
+                onCreateSnippet();
+            } else if (activeMenuItem > -1) {
+                event.stopPropagation();
+                event.preventDefault();
+                onUpdateSnippet(suggestedList[activeMenuItem].name);
+            }
+        }
     };
 
     return (
@@ -95,9 +120,7 @@ export function SnippetInput({
             ref={snippetRef}
             onClick={e => e.stopPropagation()} // prevents card from losing selected state
         >
-            <form onSubmit={handleSubmit}>
-                <Input arrowStyles={arrowStyles} value={value} onChange={onChange} onClear={onClose} onKeyDown={handleInputKeyDown} />
-            </form>
+            <Input arrowStyles={arrowStyles} value={value} onChange={onChange} onClear={onClose} onKeyDown={handleInputKeyDown} />
             {
                 !!value && (
                     <Dropdown
@@ -106,7 +129,6 @@ export function SnippetInput({
                         snippets={suggestedList}
                         value={value}
                         onCreateSnippet={onCreateSnippet}
-                        onKeyDown={handleDropdownKeyDown}
                         onUpdateSnippet={onUpdateSnippet}
                     />
                 )
