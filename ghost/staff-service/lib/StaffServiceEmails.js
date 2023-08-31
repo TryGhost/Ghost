@@ -2,7 +2,6 @@ const {promises: fs, readFileSync} = require('fs');
 const path = require('path');
 const moment = require('moment');
 const glob = require('glob');
-const staff = require('../../core/core/server/services/staff');
 
 class StaffServiceEmails {
     constructor({logging, models, mailer, settingsHelpers, settingsCache, urlUtils, labs}) {
