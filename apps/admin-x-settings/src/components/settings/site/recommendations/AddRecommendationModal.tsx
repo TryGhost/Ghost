@@ -12,15 +12,16 @@ import {toast} from 'react-hot-toast';
 import {useGetOembed} from '../../../../api/oembed';
 
 interface AddRecommendationModalProps {
-    recommendation?: EditOrAddRecommendation
+    recommendation?: EditOrAddRecommendation,
+    animate?: boolean
 }
 
-const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommendation}) => {
+const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommendation, animate}) => {
     const modal = useModal();
     const {updateRoute} = useRouting();
     const {query: queryOembed} = useGetOembed();
 
-    const {formState, updateForm, handleSave, errors, validate, clearError} = useForm({
+    const {formState, updateForm, handleSave, errors, validate, saveState, clearError} = useForm({
         initialState: recommendation ?? {
             title: '',
             url: '',
@@ -48,6 +49,7 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
             // Switch modal without changing the route (the second modal is not reachable by URL)
             modal.remove();
             NiceModal.show(AddRecommendationModalConfirm, {
+                animate: false,
                 recommendation: {
                     ...formState,
                     title: oembed.metadata.title ?? formState.title,
@@ -61,7 +63,12 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
             const newErrors: Record<string, string> = {};
 
             try {
-                new URL(formState.url);
+                const u = new URL(formState.url);
+
+                // Check domain includes a dot
+                if (!u.hostname.includes('.')) {
+                    newErrors.url = 'Please enter a valid URL';
+                }
             } catch (e) {
                 newErrors.url = 'Please enter a valid URL';
             }
@@ -70,24 +77,43 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
         }
     });
 
+    let okLabel = 'Next';
+
+    if (saveState === 'saving') {
+        okLabel = 'Checking...';
+    }
+
     return <Modal
         afterClose={() => {
             // Closed without saving: reset route
             updateRoute('recommendations');
         }}
+        animate={animate ?? true}
         okColor='black'
-        okLabel='Next'
+        okLabel={okLabel}
         size='sm'
         testId='add-recommendation-modal'
         title='Add recommendation'
         onOk={async () => {
+            if (saveState === 'saving') {
+                // Already saving
+                return;
+            }
+
             toast.remove();
-            if (await handleSave({force: true})) {
-                // Already handled
-            } else {
+            try {
+                if (await handleSave({force: true})) {
+                    // Already handled
+                } else {
+                    showToast({
+                        type: 'pageError',
+                        message: 'One or more fields have errors, please doublecheck you filled all mandatory fields'
+                    });
+                }
+            } catch (e) {
                 showToast({
                     type: 'pageError',
-                    message: 'One or more fields have errors, please doublecheck you filled all mandatory fields'
+                    message: 'Something went wrong while checking this URL, please try again'
                 });
             }
         }}
@@ -103,7 +129,16 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
                 title='URL'
                 value={formState.url}
                 onBlur={validate}
-                onChange={u => updateForm(state => ({...state, url: u}))}
+                onChange={u => updateForm((state) => {
+                    if (u.length && !u.startsWith('http://') && !u.startsWith('https://')) {
+                        u = 'https://' + u;
+                    }
+                    return {
+                        ...state,
+                        url: u
+                    };
+                })}
+                onKeyDown={() => clearError?.('url')}
             />
         </Form>
     </Modal>;

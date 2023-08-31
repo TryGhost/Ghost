@@ -13,14 +13,15 @@ import {toast} from 'react-hot-toast';
 
 interface AddRecommendationModalProps {
     recommendation: EditOrAddRecommendation,
+    animate?: boolean
 }
 
-const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({recommendation}) => {
+const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({recommendation, animate}) => {
     const modal = useModal();
     const {updateRoute} = useRouting();
     const {mutateAsync: addRecommendation} = useAddRecommendation();
 
-    const {formState, updateForm, handleSave, errors, validate, clearError} = useForm({
+    const {formState, updateForm, handleSave, saveState} = useForm({
         initialState: {
             ...recommendation
         },
@@ -35,28 +36,47 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
         }
     });
 
+    let okLabel = 'Add';
+
+    if (saveState === 'saving') {
+        okLabel = 'Adding...';
+    } else if (saveState === 'saved') {
+        okLabel = 'Added';
+    }
+
     return <Modal
         afterClose={() => {
             // Closed without saving: reset route
             updateRoute('recommendations');
         }}
+        animate={animate ?? true}
         cancelLabel={'Back'}
         dirty={true}
         okColor='black'
-        okLabel={'Add'}
+        okLabel={okLabel}
         size='sm'
         testId='add-recommendation-modal'
         title={'Add recommendation'}
         onCancel={() => {
+            if (saveState === 'saving') {
+                // Already saving
+                return;
+            }
             // Switch modal without changing the route, but pass along any changes that were already made
             modal.remove();
             NiceModal.show(AddRecommendationModal, {
+                animate: false,
                 recommendation: {
                     ...formState
                 }
             });
         }}
         onOk={async () => {
+            if (saveState === 'saving') {
+                // Already saving
+                return;
+            }
+
             toast.remove();
             if (await handleSave({force: true})) {
                 // Already handled
@@ -73,7 +93,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
             marginTop
         >
             <div className='mb-4 flex items-center gap-3 rounded-sm border border-grey-300 p-3'>
-                {recommendation.favicon && recommendation.featured_image && <Avatar image={recommendation.favicon ?? recommendation.featured_image} labelColor='white' />}
+                {(recommendation.favicon || recommendation.featured_image) && <Avatar image={recommendation.favicon ?? recommendation.featured_image} labelColor='white' />}
                 <div className={`flex grow flex-col`}>
                     <span className='mb-0.5 font-medium'>{recommendation.title}</span>
                     <span className='text-xs leading-snug text-grey-700'>{recommendation.url}</span>
