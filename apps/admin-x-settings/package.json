@@ -47,7 +47,7 @@
     "@dnd-kit/core": "6.0.8",
     "@dnd-kit/sortable": "7.0.2",
     "@ebay/nice-modal-react": "1.2.10",
-    "@tanstack/react-query": "4.29.25",
+    "@tanstack/react-query": "4.33.0",
     "@tryghost/limit-service": "^1.2.8",
     "@tryghost/timezone-data": "0.3.0",
     "@uiw/react-codemirror": "^4.21.9",
