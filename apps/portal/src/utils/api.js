@@ -17,10 +17,6 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         return '';
     }
 
-    function adminEndpointFor({resource, params = ''}) {
-        return `${siteUrl.replace(/\/$/, '')}/ghost/api/admin/${resource}/?${params}`;
-    }
-
     function makeRequest({url, method = 'GET', headers = {}, credentials = undefined, body = undefined}) {
         const options = {
             method,
@@ -119,7 +115,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         },
 
         recommendations() {
-            const url = adminEndpointFor({resource: 'recommendations'});
+            const url = contentEndpointFor({resource: 'recommendations'});
             return makeRequest({
                 url,
                 method: 'GET',
