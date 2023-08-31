@@ -47,8 +47,7 @@
   },
   "renovate": {
     "extends": [
-      "@tryghost:quietJS",
-      "@tryghost:disableTryGhostAutomerge",
+      "github>tryghost/renovate-config:quiet",
       "@tryghost:groupTestLint",
       "@tryghost:groupCSS",
       "@tryghost:groupBuildTools"
@@ -72,12 +71,6 @@
       "ghost/admin/lib/koenig-editor/package.json"
     ],
     "packageRules": [
-      {
-        "packagePatterns": [
-          "@tryghost"
-        ],
-        "groupName": "@tryghost"
-      },
       {
         "packagePatterns": [
           "metascraper"
