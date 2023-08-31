@@ -2,15 +2,17 @@ const {promises: fs, readFileSync} = require('fs');
 const path = require('path');
 const moment = require('moment');
 const glob = require('glob');
+const staff = require('../../core/core/server/services/staff');
 
 class StaffServiceEmails {
-    constructor({logging, models, mailer, settingsHelpers, settingsCache, urlUtils}) {
+    constructor({logging, models, mailer, settingsHelpers, settingsCache, urlUtils, labs}) {
         this.logging = logging;
         this.models = models;
         this.mailer = mailer;
         this.settingsHelpers = settingsHelpers;
         this.settingsCache = settingsCache;
         this.urlUtils = urlUtils;
+        this.labs = labs;
 
         this.Handlebars = require('handlebars');
         this.registerPartials();
@@ -33,6 +35,12 @@ class StaffServiceEmails {
                 attributionTitle = 'Homepage';
             }
 
+            let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`);
+
+            if (this.labs.isSet('adminXSettings')) {
+                staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings-x/users/show/${user.slug}`);
+            }
+
             const templateData = {
                 memberData,
                 attributionTitle,
@@ -44,7 +52,7 @@ class StaffServiceEmails {
                 accentColor: this.settingsCache.get('accent_color'),
                 fromEmail: this.fromEmailAddress,
                 toEmail: to,
-                staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`)
+                staffUrl: staffUrl
             };
 
             const {html, text} = await this.renderEmailTemplate('new-free-signup', templateData);
@@ -87,6 +95,12 @@ class StaffServiceEmails {
                 attributionTitle = 'Homepage';
             }
 
+            let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`);
+
+            if (this.labs.isSet('adminXSettings')) {
+                staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings-x/users/show/${user.slug}`);
+            }
+
             const templateData = {
                 memberData,
                 attributionTitle,
@@ -101,7 +115,7 @@ class StaffServiceEmails {
                 accentColor: this.settingsCache.get('accent_color'),
                 fromEmail: this.fromEmailAddress,
                 toEmail: to,
-                staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`)
+                staffUrl: staffUrl
             };
 
             const {html, text} = await this.renderEmailTemplate('new-paid-started', templateData);
@@ -138,6 +152,12 @@ class StaffServiceEmails {
                 cancellationReason: subscription.cancellationReason || ''
             };
 
+            let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`);
+
+            if (this.labs.isSet('adminXSettings')) {
+                staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings-x/users/show/${user.slug}`);
+            }
+
             const templateData = {
                 memberData,
                 tierData,
@@ -148,7 +168,7 @@ class StaffServiceEmails {
                 accentColor: this.settingsCache.get('accent_color'),
                 fromEmail: this.fromEmailAddress,
                 toEmail: to,
-                staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`)
+                staffUrl: staffUrl
             };
 
             const {html, text} = await this.renderEmailTemplate('new-paid-cancellation', templateData);
@@ -168,6 +188,12 @@ class StaffServiceEmails {
      * @param {string} recipient.slug
      */
     async getSharedData(recipient) {
+        let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${recipient.slug}`);
+
+        if (this.labs.isSet('adminXSettings')) {
+            staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings-x/users/show/${recipient.slug}`);
+        }
+
         return {
             siteTitle: this.settingsCache.get('title'),
             siteUrl: this.urlUtils.getSiteUrl(),
@@ -175,7 +201,7 @@ class StaffServiceEmails {
             accentColor: this.settingsCache.get('accent_color'),
             fromEmail: this.fromEmailAddress,
             toEmail: recipient.email,
-            staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${recipient.slug}`)
+            staffUrl: staffUrl
         };
     }
 
@@ -210,6 +236,10 @@ class StaffServiceEmails {
         for (const user of users) {
             const to = user.email;
 
+            let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`);
+            if (this.labs.isSet('adminXSettings')) {
+                staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings-x/users/show/${user.slug}`);
+            }
             const templateData = {
                 siteTitle: this.settingsCache.get('title'),
                 siteUrl: this.urlUtils.getSiteUrl(),
@@ -219,7 +249,7 @@ class StaffServiceEmails {
                 partial: `milestones/${milestone.value}`,
                 toEmail: to,
                 adminUrl: this.urlUtils.urlFor('admin', true),
-                staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`)
+                staffUrl: staffUrl
             };
 
             const {html, text} = await this.renderEmailTemplate('new-milestone-received', templateData);
@@ -263,6 +293,11 @@ class StaffServiceEmails {
         for (const user of users) {
             const to = user.email;
 
+            let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`);
+            if (this.labs.isSet('adminXSettings')) {
+                staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings-x/users/show/${user.slug}`);
+            }
+
             const templateData = {
                 siteTitle: this.settingsCache.get('title'),
                 siteUrl: this.urlUtils.getSiteUrl(),
@@ -270,7 +305,7 @@ class StaffServiceEmails {
                 fromEmail: this.fromEmailAddress,
                 toEmail: to,
                 adminUrl: this.urlUtils.urlFor('admin', true),
-                staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`),
+                staffUrl: staffUrl,
                 donation: {
                     name: donationPaymentEvent.name ?? donationPaymentEvent.email,
                     email: donationPaymentEvent.email,

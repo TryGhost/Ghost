@@ -22,7 +22,8 @@ class StaffService {
             mailer,
             settingsHelpers,
             settingsCache,
-            urlUtils
+            urlUtils,
+            labs
         });
     }
 
