@@ -45,6 +45,7 @@ class RecommendationServiceWrapper {
             service: this.service
         });
 
+        // eslint-disable-next-line no-console
         this.service.init().catch(console.error);
     }
 }
