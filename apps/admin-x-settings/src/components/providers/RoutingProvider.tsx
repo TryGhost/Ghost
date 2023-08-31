@@ -58,7 +58,8 @@ export const modalRoutes = {
     showUser: 'users/show/:slug',
     showNewsletter: 'newsletters/show/:id',
     showTier: 'tiers/show/:id',
-    showIntegration: 'integrations/show/:id'
+    showIntegration: 'integrations/show/:id',
+    editRecommendation: 'recommendations/:id'
 };
 
 function getHashPath(urlPath: string | undefined) {
