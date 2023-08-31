@@ -173,7 +173,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                     placeholder='1'
                                     rightPlaceholder={`${formState.currency}/month`}
                                     title='Monthly price'
-                                    value={formState.monthly_price?.toString() || ''}
+                                    valueInCents={formState.monthly_price || 0}
                                     hideTitle
                                     onBlur={() => validators.monthly_price()}
                                     onChange={price => updateForm(state => ({...state, monthly_price: price}))}
@@ -184,7 +184,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                     placeholder='10'
                                     rightPlaceholder={`${formState.currency}/year`}
                                     title='Yearly price'
-                                    value={formState.yearly_price?.toString() || ''}
+                                    valueInCents={formState.yearly_price || 0}
                                     hideTitle
                                     onBlur={() => validators.yearly_price()}
                                     onChange={price => updateForm(state => ({...state, yearly_price: price}))}

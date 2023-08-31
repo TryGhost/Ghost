@@ -1,30 +1,29 @@
-import AddRecommendationModal from './AddRecommendationModal';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationReasonForm from './RecommendationReasonForm';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
-import {EditOrAddRecommendation, useAddRecommendation} from '../../../../api/recommendations';
+import {Recommendation, useEditRecommendation} from '../../../../api/recommendations';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
 
 interface AddRecommendationModalProps {
-    recommendation: EditOrAddRecommendation,
+    recommendation: Recommendation,
     animate?: boolean
 }
 
-const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({recommendation, animate}) => {
+const EditRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({recommendation, animate}) => {
     const modal = useModal();
     const {updateRoute} = useRouting();
-    const {mutateAsync: addRecommendation} = useAddRecommendation();
+    const {mutateAsync: editRecommendation} = useEditRecommendation();
 
     const {formState, updateForm, handleSave, saveState} = useForm({
         initialState: {
             ...recommendation
         },
         onSave: async () => {
-            await addRecommendation(formState);
+            await editRecommendation(formState);
             modal.remove();
             updateRoute('recommendations');
         },
@@ -34,12 +33,12 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
         }
     });
 
-    let okLabel = 'Add';
+    let okLabel = 'Save';
 
     if (saveState === 'saving') {
-        okLabel = 'Adding...';
+        okLabel = 'Saving...';
     } else if (saveState === 'saved') {
-        okLabel = 'Added';
+        okLabel = 'Saved';
     }
 
     return <Modal
@@ -48,27 +47,12 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
             updateRoute('recommendations');
         }}
         animate={animate ?? true}
-        cancelLabel={'Back'}
-        dirty={true}
+        cancelLabel={'Cancel'}
         okColor='black'
         okLabel={okLabel}
         size='sm'
-        testId='add-recommendation-modal'
-        title={'Add recommendation'}
-        onCancel={() => {
-            if (saveState === 'saving') {
-                // Already saving
-                return;
-            }
-            // Switch modal without changing the route, but pass along any changes that were already made
-            modal.remove();
-            NiceModal.show(AddRecommendationModal, {
-                animate: false,
-                recommendation: {
-                    ...formState
-                }
-            });
-        }}
+        testId='edit-recommendation-modal'
+        title={'Edit recommendation'}
         onOk={async () => {
             if (saveState === 'saving') {
                 // Already saving
@@ -86,8 +70,8 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
             }
         }}
     >
-        <RecommendationReasonForm formState={formState} updateForm={updateForm} />
+        <RecommendationReasonForm formState={formState} updateForm={updateForm as any} />
     </Modal>;
 };
 
-export default NiceModal.create(AddRecommendationModalConfirm);
+export default NiceModal.create(EditRecommendationModalConfirm);

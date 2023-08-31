@@ -2,6 +2,7 @@ import Access from './Access';
 import Analytics from './Analytics';
 import Portal from './Portal';
 import React from 'react';
+import Recommendations from '../site/Recommendations';
 import SettingSection from '../../../admin-x-ds/settings/SettingSection';
 import Tiers from './Tiers';
 import TipsOrDonations from './TipsOrDonations';
@@ -12,11 +13,13 @@ const searchKeywords = {
     access: ['default', 'access', 'subscription', 'post', 'membership'],
     tiers: ['tiers', 'payment', 'paid'],
     tips: ['tip', 'donation', 'one time', 'payment'],
-    analytics: ['analytics', 'tracking', 'privacy', 'membership']
+    analytics: ['analytics', 'tracking', 'privacy', 'membership'],
+    recommendations: ['recommendation', 'recommend', 'blogroll']
 };
 
 const MembershipSettings: React.FC = () => {
     const hasTipsAndDonations = useFeatureFlag('tipsAndDonations');
+    const hasRecommendations = useFeatureFlag('recommendations');
 
     return (
         <SettingSection keywords={Object.values(searchKeywords).flat()} title='Membership'>
@@ -25,6 +28,7 @@ const MembershipSettings: React.FC = () => {
             <Tiers keywords={searchKeywords.tiers} />
             {hasTipsAndDonations && <TipsOrDonations keywords={searchKeywords.tips} />}
             <Analytics keywords={searchKeywords.analytics} />
+            {hasRecommendations && <Recommendations keywords={searchKeywords.recommendations} />}
         </SettingSection>
     );
 };

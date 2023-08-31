@@ -105,7 +105,7 @@ const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     />
                 )}
                 title='Suggested amount'
-                value={donationsSuggestedAmount}
+                valueInCents={parseInt(donationsSuggestedAmount)}
                 onBlur={validate}
                 onChange={cents => updateSetting('donations_suggested_amount', cents.toString())}
                 onKeyDown={() => clearError('donationsSuggestedAmount')}

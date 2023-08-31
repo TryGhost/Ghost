@@ -46,7 +46,7 @@ describe('Recommendations Admin API', function () {
 
         // Check everything is set correctly
         assert.equal(body.recommendations[0].title, 'Dog Pictures');
-        assert.equal(body.recommendations[0].url, 'https://dogpictures.com');
+        assert.equal(body.recommendations[0].url, 'https://dogpictures.com/');
         assert.equal(body.recommendations[0].reason, null);
         assert.equal(body.recommendations[0].excerpt, null);
         assert.equal(body.recommendations[0].featured_image, null);
@@ -84,7 +84,7 @@ describe('Recommendations Admin API', function () {
 
         // Check everything is set correctly
         assert.equal(body.recommendations[0].title, 'Dog Pictures');
-        assert.equal(body.recommendations[0].url, 'https://dogpictures.com');
+        assert.equal(body.recommendations[0].url, 'https://dogpictures.com/');
         assert.equal(body.recommendations[0].reason, 'Because dogs are cute');
         assert.equal(body.recommendations[0].excerpt, 'Dogs are cute');
         assert.equal(body.recommendations[0].featured_image, 'https://dogpictures.com/dog.jpg');
@@ -123,7 +123,7 @@ describe('Recommendations Admin API', function () {
         // Check everything is set correctly
         assert.equal(body.recommendations[0].id, id);
         assert.equal(body.recommendations[0].title, 'Cat Pictures');
-        assert.equal(body.recommendations[0].url, 'https://catpictures.com');
+        assert.equal(body.recommendations[0].url, 'https://catpictures.com/');
         assert.equal(body.recommendations[0].reason, 'Because cats are cute');
         assert.equal(body.recommendations[0].excerpt, 'Cats are cute');
         assert.equal(body.recommendations[0].featured_image, 'https://catpictures.com/cat.jpg');
