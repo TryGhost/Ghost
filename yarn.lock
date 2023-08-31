@@ -8917,10 +8917,10 @@
   resolved "https://registry.yarnpkg.com/@tyriar/fibonacci-heap/-/fibonacci-heap-2.0.9.tgz#df3dcbdb1b9182168601f6318366157ee16666e9"
   integrity sha512-bYuSNomfn4hu2tPiDN+JZtnzCpSpbJ/PNeulmocDy3xN2X5OkJL65zo6rPZp65cPPhLF9vfT/dgE+RtFRCSxOA==
 
-"@uiw/codemirror-extensions-basic-setup@4.21.9":
-  version "4.21.9"
-  resolved "https://registry.yarnpkg.com/@uiw/codemirror-extensions-basic-setup/-/codemirror-extensions-basic-setup-4.21.9.tgz#e886c6e6ad477bc0943691b9572958c81a2beab3"
-  integrity sha512-TQT6aF8brxZpFnk/K4fm/K/9k9eF3PMav/KKjHlYrGUT8BTNk/qL+ximLtIzvTUhmBFchjM1lrqSJdvpVom7/w==
+"@uiw/codemirror-extensions-basic-setup@4.21.12":
+  version "4.21.12"
+  resolved "https://registry.yarnpkg.com/@uiw/codemirror-extensions-basic-setup/-/codemirror-extensions-basic-setup-4.21.12.tgz#95d1f86727093a841eac3b9dfea640aa792ff98b"
+  integrity sha512-LNAr5ZmKjo9KpnoVhnAiXkRsI+l9JrIrUPc3+GjpbTi8k9QjEcs8y3MFvhA2le7bbf6q1gHh2UbLmn6le0cGjQ==
   dependencies:
     "@codemirror/autocomplete" "^6.0.0"
     "@codemirror/commands" "^6.0.0"
@@ -8931,15 +8931,15 @@
     "@codemirror/view" "^6.0.0"
 
 "@uiw/react-codemirror@^4.21.9":
-  version "4.21.9"
-  resolved "https://registry.yarnpkg.com/@uiw/react-codemirror/-/react-codemirror-4.21.9.tgz#74393955d159a7d452731e61957773ae053c65b8"
-  integrity sha512-aeLegPz2iCvqJjhzXp2WUMqpMZDqxsTnF3rX9kGRlfY6vQLsrjoctj0cQ29uxEtFYJChOVjtCOtnQUlyIuNAHQ==
+  version "4.21.12"
+  resolved "https://registry.yarnpkg.com/@uiw/react-codemirror/-/react-codemirror-4.21.12.tgz#5161afbcef00b6a739c737541170108e1649c2dc"
+  integrity sha512-dgPhw2QLcXMe004UU8b8P0Y6Zu+AKoGXbioLF2dY2/wLeMWSXCCbKo/BKJGj/skoO/lBJ4X+b+14OGuZ5Uyeaw==
   dependencies:
     "@babel/runtime" "^7.18.6"
     "@codemirror/commands" "^6.1.0"
     "@codemirror/state" "^6.1.1"
     "@codemirror/theme-one-dark" "^6.0.0"
-    "@uiw/codemirror-extensions-basic-setup" "4.21.9"
+    "@uiw/codemirror-extensions-basic-setup" "4.21.12"
     codemirror "^6.0.0"
 
 "@vitejs/plugin-react@4.0.4":
