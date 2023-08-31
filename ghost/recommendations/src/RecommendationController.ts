@@ -14,7 +14,7 @@ function validateString(object: any, key: string, {required = true} = {}): strin
         throw new errors.BadRequestError({message: `${key} must be an object`});
     }
 
-    if (object[key] !== undefined) {
+    if (object[key] !== undefined && object[key] !== null) {
         if (typeof object[key] !== "string") {
             throw new errors.BadRequestError({message: `${key} must be a string`});
         }
