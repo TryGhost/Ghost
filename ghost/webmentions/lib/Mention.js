@@ -21,11 +21,44 @@ module.exports = class Mention {
 
     /**
      * @param {string} html
+     * @param {string} contentType
      */
-    verify(html) {
-        const $ = cheerio.load(html);
-        const hasTargetUrl = $('a[href*="' + this.target.href + '"], img[src*="' + this.target.href + '"], video[src*="' + this.target.href + '"]').length > 0;
-        this.#verified = hasTargetUrl;
+    verify(html, contentType) {
+        const wasVerified = this.#verified;
+
+        if (contentType.includes('text/html')) {
+            try {
+                const $ = cheerio.load(html);
+                const hasTargetUrl = $('a[href*="' + this.target.href + '"], img[src*="' + this.target.href + '"], video[src*="' + this.target.href + '"]').length > 0;
+                this.#verified = hasTargetUrl;
+
+                if (wasVerified && !this.#verified) {
+                    // Delete the mention
+                    this.#deleted = true;
+                    this.#verified = true;
+                }
+            } catch (e) {
+                this.#verified = false;
+            }
+        }
+
+        if (contentType.includes('application/json')) {
+            try {
+                // Check valid JSON
+                JSON.parse(html);
+
+                // Check full text string is present in the json
+                this.#verified = !!html.includes(JSON.stringify(this.target.href));
+
+                if (wasVerified && !this.#verified) {
+                    // Delete the mention
+                    this.#deleted = true;
+                    this.#verified = true;
+                }
+            } catch (e) {
+                this.#verified = false;
+            }
+        }
     }
 
     /** @type {URL} */
@@ -275,11 +308,18 @@ module.exports = class Mention {
     }
 
     /**
+     * @returns {boolean}
+     */
+    isDeleted() {
+        return this.#deleted;
+    }
+
+    /**
      * @param {Mention} mention
      * @returns {boolean}
      */
     static isDeleted(mention) {
-        return mention.#deleted;
+        return mention.isDeleted();
     }
 };
 

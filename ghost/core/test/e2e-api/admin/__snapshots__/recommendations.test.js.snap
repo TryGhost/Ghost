@@ -13,7 +13,7 @@ Object {
       "reason": "Because dogs are cute",
       "title": "Dog Pictures",
       "updated_at": null,
-      "url": "https://dogpictures.com",
+      "url": "https://dogpictures.com/",
     },
   ],
 }
@@ -23,7 +23,7 @@ exports[`Recommendations Admin API Can add a full recommendation 2: [headers] 1`
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "353",
+  "content-length": "354",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -47,7 +47,7 @@ Object {
       "reason": null,
       "title": "Dog Pictures",
       "updated_at": null,
-      "url": "https://dogpictures.com",
+      "url": "https://dogpictures.com/",
     },
   ],
 }
@@ -57,7 +57,7 @@ exports[`Recommendations Admin API Can add a minimal recommendation 2: [headers]
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "262",
+  "content-length": "263",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -113,7 +113,7 @@ Object {
       "reason": "Because dogs are cute",
       "title": "Dog Pictures",
       "updated_at": null,
-      "url": "https://dogpictures.com",
+      "url": "https://dogpictures.com/",
     },
   ],
 }
@@ -123,7 +123,7 @@ exports[`Recommendations Admin API Can browse 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "353",
+  "content-length": "354",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -159,7 +159,7 @@ Object {
       "reason": "Because cats are cute",
       "title": "Cat Pictures",
       "updated_at": null,
-      "url": "https://catpictures.com",
+      "url": "https://catpictures.com/",
     },
   ],
 }
@@ -169,7 +169,7 @@ exports[`Recommendations Admin API Can edit recommendation 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "354",
+  "content-length": "355",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

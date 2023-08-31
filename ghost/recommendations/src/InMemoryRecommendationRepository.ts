@@ -9,7 +9,7 @@ export class InMemoryRecommendationRepository implements RecommendationRepositor
             excerpt: "The Pragmatic Programmer is one of those rare tech books you’ll read, re-read, and read again over the years. Whether you’re new to the field or an experienced practitioner, you’ll come away with fresh insights each and every time.",
             featuredImage: "https://www.thepragmaticprogrammer.com/image.png",
             favicon: "https://www.shesabeast.co/content/images/size/w256h256/2022/08/transparent-icon-black-copy-gray-bar.png",
-            url: "https://www.thepragmaticprogrammer.com/",
+            url: new URL("https://www.thepragmaticprogrammer.com/"),
             oneClickSubscribe: false
         }),
         new Recommendation({
@@ -18,7 +18,7 @@ export class InMemoryRecommendationRepository implements RecommendationRepositor
             excerpt: "The Pragmatic Programmer is one of those rare tech books you’ll read, re-read, and read again over the years. Whether you’re new to the field or an experienced practitioner, you’ll come away with fresh insights each and every time.",
             featuredImage: "https://www.thepragmaticprogrammer.com/image.png",
             favicon: "https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fbucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com%2Fpublic%2Fimages%2Fc7cde267-8f9e-47fa-9aef-5be03bad95ed%2Fapple-touch-icon-1024x1024.png",
-            url: "https://www.thepragmaticprogrammer.com/",
+            url: new URL("https://www.thepragmaticprogrammer.com/"),
             oneClickSubscribe: false
         }),
         new Recommendation({
@@ -27,7 +27,7 @@ export class InMemoryRecommendationRepository implements RecommendationRepositor
             excerpt: "The Pragmatic Programmer is one of those rare tech books you’ll read, re-read, and read again over the years. Whether you’re new to the field or an experienced practitioner, you’ll come away with fresh insights each and every time.",
             featuredImage: "https://www.thepragmaticprogrammer.com/image.png",
             favicon: "https://clickhole.com/wp-content/uploads/2020/05/cropped-clickhole-icon-180x180.png",
-            url: "https://www.thepragmaticprogrammer.com/",
+            url: new URL("https://www.thepragmaticprogrammer.com/"),
             oneClickSubscribe: false
         }),
         new Recommendation({
@@ -36,7 +36,7 @@ export class InMemoryRecommendationRepository implements RecommendationRepositor
             excerpt: "The Pragmatic Programmer is one of those rare tech books you’ll read, re-read, and read again over the years. Whether you’re new to the field or an experienced practitioner, you’ll come away with fresh insights each and every time.",
             featuredImage: "https://www.thepragmaticprogrammer.com/image.png",
             favicon: "https://www.theverge.com/icons/apple_touch_icon.png",
-            url: "https://www.thepragmaticprogrammer.com/",
+            url: new URL("https://www.thepragmaticprogrammer.com/"),
             oneClickSubscribe: false
         }),
         new Recommendation({
@@ -45,7 +45,7 @@ export class InMemoryRecommendationRepository implements RecommendationRepositor
             excerpt: "The Pragmatic Programmer is one of those rare tech books you’ll read, re-read, and read again over the years. Whether you’re new to the field or an experienced practitioner, you’ll come away with fresh insights each and every time.",
             featuredImage: "https://www.thepragmaticprogrammer.com/image.png",
             favicon: "https://substackcdn.com/image/fetch/w_96,h_96,c_fill,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Ff3f2b2ad-681f-45e1-9496-db80f45e853d_403x403.png",
-            url: "https://www.thepragmaticprogrammer.com/",
+            url: new URL("https://www.thepragmaticprogrammer.com/"),
             oneClickSubscribe: true
         })
     ];

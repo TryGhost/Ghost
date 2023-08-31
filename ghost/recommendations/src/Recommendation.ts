@@ -7,12 +7,12 @@ export class Recommendation {
     excerpt: string|null // Fetched from the site meta data
     featuredImage: string|null // Fetched from the site meta data
     favicon: string|null // Fetched from the site meta data
-    url: string
+    url: URL
     oneClickSubscribe: boolean
     createdAt: Date
     updatedAt: Date|null
 
-    constructor(data: {id?: string, title: string, reason: string|null, excerpt: string|null, featuredImage: string|null, favicon: string|null, url: string, oneClickSubscribe: boolean, createdAt?: Date, updatedAt?: Date|null}) {
+    constructor(data: {id?: string, title: string, reason: string|null, excerpt: string|null, featuredImage: string|null, favicon: string|null, url: URL, oneClickSubscribe: boolean, createdAt?: Date, updatedAt?: Date|null}) {
         this.id = data.id ?? ObjectId().toString();
         this.title = data.title;
         this.reason = data.reason;

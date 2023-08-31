@@ -28,6 +28,8 @@ module.exports = {
     /** @type {import('@tryghost/webmentions/lib/MentionsAPI')} */
     api: null,
     controller: new MentionController(),
+    /** @type {import('@tryghost/webmentions/lib/MentionSendingService')} */
+    sendingService: null,
     didInit: false,
     async init() {
         if (this.didInit) {
@@ -107,5 +109,7 @@ module.exports = {
             }
         });
         sendingService.listen(events);
+
+        this.sendingService = sendingService;
     }
 };

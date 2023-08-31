@@ -68,13 +68,14 @@ const Mention = require('./Mention');
 
 /**
  * @typedef {object} WebmentionMetadata
- * @prop {string} siteTitle
- * @prop {string} title
- * @prop {string} excerpt
- * @prop {string} author
- * @prop {URL} image
- * @prop {URL} favicon
+ * @prop {string|null} siteTitle
+ * @prop {string|null} title
+ * @prop {string|null} excerpt
+ * @prop {string|null} author
+ * @prop {URL|null} image
+ * @prop {URL|null} favicon
  * @prop {string} body
+ * @prop {string|undefined} contentType
  */
 
 /**
@@ -228,7 +229,7 @@ module.exports = class MentionsAPI {
 
         if (metadata?.body) {
             try {
-                mention.verify(metadata.body);
+                mention.verify(metadata.body, metadata.contentType);
             } catch (e) {
                 logging.error(e);
             }

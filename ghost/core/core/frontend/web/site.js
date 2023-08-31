@@ -98,6 +98,9 @@ module.exports = function setupSiteApp(routerConfig) {
         (req, res, next) => membersService.api.middleware.wellKnown(req, res, next)
     );
 
+    // Recommendations well-known
+    siteApp.use(mw.servePublicFile('built', '.well-known/recommendations.json', 'application/json', config.get('caching:publicAssets:maxAge'), {disableServerCache: true}));
+
     // setup middleware for internal apps
     // @TODO: refactor this to be a proper app middleware hook for internal apps
     config.get('apps:internal').forEach((appName) => {
