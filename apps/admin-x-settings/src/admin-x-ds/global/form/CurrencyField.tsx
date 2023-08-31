@@ -2,17 +2,25 @@ import React, {useState} from 'react';
 import TextField, {TextFieldProps} from './TextField';
 import {currencyFromDecimal, currencyToDecimal} from '../../../utils/currency';
 
-export type CurrencyFieldProps = Omit<TextFieldProps, 'type' | 'onChange'> & {
-    currency?: string
-    onChange?: (value: number) => void
+export type CurrencyFieldProps = Omit<TextFieldProps, 'type' | 'onChange' | 'value'> & {
+    valueInCents?: number;
+    currency?: string;
+    onChange?: (cents: number) => void;
 }
 
+/**
+ * A CurrencyField is a special type of [TextField](?path=/docs/global-form-textfield--docs) with
+ * some parsing to input currency values. While editing you can enter any number of decimals, but
+ * the value in `onChange` will be rounded and multiplied to get an integer number of cents.
+ *
+ * Available options are generally the same as TextField.
+ */
 const CurrencyField: React.FC<CurrencyFieldProps> = ({
-    value,
+    valueInCents,
     onChange,
     ...props
 }) => {
-    const [localValue, setLocalValue] = useState(currencyToDecimal(parseInt(value || '0')).toString());
+    const [localValue, setLocalValue] = useState(currencyToDecimal(valueInCents || 0).toString());
 
     // While the user is editing we allow more lenient input, e.g. "1.32.566" to make it easier to type and change
     const stripNonNumeric = (input: string) => input.replace(/[^\d.]+/g, '');

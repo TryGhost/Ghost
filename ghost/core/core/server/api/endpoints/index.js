@@ -259,5 +259,9 @@ module.exports = {
 
     get feedbackMembers() {
         return apiFramework.pipeline(require('./feedback-members'), localUtils, 'members');
+    },
+
+    get recommendationsPublic() {
+        return apiFramework.pipeline(require('./recommendations-public'), localUtils, 'content');
     }
 };

@@ -14,7 +14,7 @@ function validateString(object: any, key: string, {required = true} = {}): strin
         throw new errors.BadRequestError({message: `${key} must be an object`});
     }
 
-    if (object[key] !== undefined) {
+    if (object[key] !== undefined && object[key] !== null) {
         if (typeof object[key] !== "string") {
             throw new errors.BadRequestError({message: `${key} must be a string`});
         }
@@ -37,6 +37,18 @@ function validateBoolean(object: any, key: string, {required = true} = {}): bool
         throw new errors.BadRequestError({message: `${key} is required`});
     }
 }
+
+function validateURL(object: any, key: string, {required = true} = {}): URL|undefined {
+    const string = validateString(object, key, {required});
+    if (string !== undefined) {
+        try {
+            return new URL(string);
+        } catch (e) {
+            throw new errors.BadRequestError({message: `${key} must be a valid URL`});
+        }
+    }
+}
+
 
 export class RecommendationController {
     service: RecommendationService;
@@ -67,7 +79,7 @@ export class RecommendationController {
 
         const cleanedRecommendation: Omit<Recommendation, 'id'|'createdAt'|'updatedAt'> = {
             title: validateString(recommendation, "title") ?? '',
-            url: validateString(recommendation, "url") ?? '',
+            url: validateURL(recommendation, "url")!,
 
             // Optional fields
             oneClickSubscribe: validateBoolean(recommendation, "one_click_subscribe", {required: false}) ?? false,
@@ -89,7 +101,7 @@ export class RecommendationController {
         const recommendation = frame.data.recommendations[0];
         const cleanedRecommendation: Partial<Recommendation> = {
             title: validateString(recommendation, "title", {required: false}),
-            url: validateString(recommendation, "url", {required: false}),
+            url: validateURL(recommendation, "url", {required: false}),
             oneClickSubscribe: validateBoolean(recommendation, "one_click_subscribe", {required: false}),
             reason: validateString(recommendation, "reason", {required: false}),
             excerpt: validateString(recommendation, "excerpt", {required: false}),
@@ -112,7 +124,7 @@ export class RecommendationController {
                     excerpt: r.excerpt,
                     featured_image: r.featuredImage,
                     favicon: r.favicon,
-                    url: r.url,
+                    url: r.url.toString(),
                     one_click_subscribe: r.oneClickSubscribe,
                     created_at: r.createdAt,
                     updated_at: r.updatedAt

@@ -47,11 +47,7 @@
   },
   "renovate": {
     "extends": [
-      "@tryghost:quietJS",
-      "@tryghost:disableTryGhostAutomerge",
-      "@tryghost:groupTestLint",
-      "@tryghost:groupCSS",
-      "@tryghost:groupBuildTools"
+      "github>tryghost/renovate-config:quiet"
     ],
     "rebaseWhen": "never",
     "ignoreDeps": [
@@ -72,18 +68,6 @@
       "ghost/admin/lib/koenig-editor/package.json"
     ],
     "packageRules": [
-      {
-        "packagePatterns": [
-          "@tryghost"
-        ],
-        "groupName": "@tryghost"
-      },
-      {
-        "packagePatterns": [
-          "metascraper"
-        ],
-        "groupName": "metascraper"
-      },
       {
         "groupName": "ember-basic-dropdown addons",
         "packagePatterns": [

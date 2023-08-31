@@ -77,8 +77,8 @@ export default class FeatureService extends Service {
     @feature('collectionsCard') collectionsCard;
     @feature('importMemberTier') importMemberTier;
     @feature('tipsAndDonations') tipsAndDonations;
-    @feature('convertToLexical') convertToLexical;
     @feature('recommendations') recommendations;
+    @feature('lexicalIndicators') lexicalIndicators;
 
     _user = null;
 
