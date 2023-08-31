@@ -43,7 +43,7 @@
     ]
   },
   "dependencies": {
-    "@headlessui/react": "1.7.15",
+    "@headlessui/react": "1.7.17",
     "@tiptap/core": "2.1.7",
     "@tiptap/extension-blockquote": "2.1.7",
     "@tiptap/extension-document": "2.1.7",
