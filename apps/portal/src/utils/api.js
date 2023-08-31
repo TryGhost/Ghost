@@ -112,6 +112,23 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                     throw new Error('Failed to fetch offer data');
                 }
             });
+        },
+
+        recommendations() {
+            const url = contentEndpointFor({resource: 'recommendations'});
+            return makeRequest({
+                url,
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(function (res) {
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    throw new Error('Failed to fetch recommendations');
+                }
+            });
         }
     };
 
@@ -520,17 +537,20 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         let newsletters = [];
         let tiers = [];
         let settings = {};
+        let recommendations = [];
 
         try {
-            [{settings}, {tiers}, {newsletters}] = await Promise.all([
+            [{settings}, {tiers}, {newsletters}, {recommendations}] = await Promise.all([
                 api.site.settings(),
                 api.site.tiers(),
-                api.site.newsletters()
+                api.site.newsletters(),
+                api.site.recommendations()
             ]);
             site = {
                 ...settings,
                 newsletters,
-                tiers: transformApiTiersData({tiers})
+                tiers: transformApiTiersData({tiers}),
+                recommendations
             };
         } catch (e) {
             // Ignore
