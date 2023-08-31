@@ -308,11 +308,18 @@ module.exports = class Mention {
     }
 
     /**
+     * @returns {boolean}
+     */
+    isDeleted() {
+        return this.#deleted;
+    }
+
+    /**
      * @param {Mention} mention
      * @returns {boolean}
      */
     static isDeleted(mention) {
-        return mention.#deleted;
+        return mention.isDeleted();
     }
 };
 
