@@ -35,7 +35,7 @@
     "@tryghost/validator": "0.2.4",
     "bson-objectid": "2.0.4",
     "cheerio": "0.22.0",
-    "handlebars": "4.7.7",
+    "handlebars": "4.7.8",
     "juice": "9.1.0",
     "moment-timezone": "0.5.23"
   }
