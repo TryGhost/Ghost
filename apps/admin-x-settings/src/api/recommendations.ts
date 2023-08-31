@@ -47,7 +47,7 @@ export const useDeleteRecommendation = createMutation<RecommendationDeleteRespon
     }
 });
 
-export const useEditRecommendation = createMutation<RecommendationEditResponseType, Recommendation>({
+export const useEditRecommendation = createMutation<RecommendationEditResponseType, Partial<Recommendation> & {id: string}>({
     method: 'PUT',
     path: recommendation => `/recommendations/${recommendation.id}/`,
     body: recommendation => ({recommendations: [recommendation]}),
