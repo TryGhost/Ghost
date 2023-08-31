@@ -7651,13 +7651,6 @@
   dependencies:
     color "^3.2.1"
 
-"@tryghost/color-utils@^0.1.27":
-  version "0.1.27"
-  resolved "https://registry.yarnpkg.com/@tryghost/color-utils/-/color-utils-0.1.27.tgz#dee55f3c48130d3fc34aa7f0c1be171592e52469"
-  integrity sha512-4aWwiiD+MIWQ0sghMcQ1+g2mhhWWS4ux8RQPMsaAXy6SR4EHnPzsCBaKuWMKTCwJkGUNTduyCLDnaWySt4iMEw==
-  dependencies:
-    color "^3.2.1"
-
 "@tryghost/config-url-helpers@1.0.6":
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/@tryghost/config-url-helpers/-/config-url-helpers-1.0.6.tgz#0f5193b26305fda48236094be69f0b4b44ee2b92"
@@ -26866,7 +26859,7 @@ reachable-url@~1.7.1:
     got "~11.8.0"
     p-reflect "~2.1.0"
 
-react-colorful@^5.1.2, react-colorful@^5.6.1:
+react-colorful@^5.1.2:
   version "5.6.1"
   resolved "https://registry.yarnpkg.com/react-colorful/-/react-colorful-5.6.1.tgz#7dc2aed2d7c72fac89694e834d179e32f3da563b"
   integrity sha512-1exovf0uGTGyq5mXQT0zgQ80uvj2PCwvF8zY1RN9/vbJVSjSo3fsB/4L3ObbF7u70NduSiK4xu4Y6q1MHoUGEw==
