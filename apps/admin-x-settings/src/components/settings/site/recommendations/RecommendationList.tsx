@@ -7,13 +7,16 @@ import React from 'react';
 import Table from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
+import useRouting from '../../../../hooks/useRouting';
 import {Recommendation, useDeleteRecommendation} from '../../../../api/recommendations';
+import {modalRoutes} from '../../../providers/RoutingProvider';
 
 interface RecommendationListProps {
     recommendations: Recommendation[]
 }
 
 const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recommendation}) => {
+    const {updateRoute} = useRouting();
     const {mutateAsync: deleteRecommendation} = useDeleteRecommendation();
 
     const action = (
@@ -32,7 +35,9 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
         }} />
     );
 
-    const showDetails = () => {};
+    const showDetails = () => {
+        updateRoute({route: modalRoutes.editRecommendation, params: {id: recommendation.id}});
+    };
 
     return (
         <TableRow action={action} hideActions>
