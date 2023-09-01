@@ -31,6 +31,9 @@
   },
   "dependencies": {
     "@tryghost/tpl": "0.1.25",
-    "@tryghost/errors": "1.2.25"
+    "@tryghost/errors": "1.2.25",
+    "@tryghost/in-memory-repository": "0.0.0",
+    "@tryghost/bookshelf-repository": "0.0.0",
+    "@tryghost/logging": "2.4.5"
   }
 }

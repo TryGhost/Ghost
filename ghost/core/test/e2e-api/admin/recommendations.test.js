@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
-const {anyObjectId, anyISODateTime, anyContentVersion, anyLocationFor, anyEtag} = matchers;
+const {anyObjectId, anyErrorId, anyISODateTime, anyContentVersion, anyLocationFor, anyEtag} = matchers;
 const assert = require('assert/strict');
 const recommendationsService = require('../../../core/server/services/recommendations');
 
@@ -133,6 +133,34 @@ describe('Recommendations Admin API', function () {
         assert.equal(body.recommendations[0].one_click_subscribe, false);
     });
 
+    it('Cannot use invalid protocols when editing', async function () {
+        const id = (await recommendationsService.repository.getAll())[0].id;
+        await agent.put(`recommendations/${id}/`)
+            .body({
+                recommendations: [{
+                    title: 'Cat Pictures',
+                    url: 'https://catpictures.com',
+                    reason: 'Because cats are cute',
+                    excerpt: 'Cats are cute',
+                    featured_image: 'ftp://catpictures.com/cat.jpg',
+                    favicon: 'ftp://catpictures.com/favicon.ico',
+                    one_click_subscribe: false
+                }]
+            })
+            .expectStatus(422)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                errors: [
+                    {
+                        id: anyErrorId
+                    }
+                ]
+            });
+    });
+
     it('Can delete recommendation', async function () {
         const id = (await recommendationsService.repository.getAll())[0].id;
         await agent.delete(`recommendations/${id}/`)
@@ -155,7 +183,8 @@ describe('Recommendations Admin API', function () {
                 recommendations: [
                     {
                         id: anyObjectId,
-                        created_at: anyISODateTime
+                        created_at: anyISODateTime,
+                        updated_at: anyISODateTime
                     }
                 ]
             });
