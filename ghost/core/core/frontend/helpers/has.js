@@ -99,6 +99,22 @@ function evaluateStringMatch(expr, str, ci) {
     return expr === str;
 }
 
+function evaluateSlugList(expr, slug) {
+    const slugList = expr.split(',').map(v => v.trim().toLocaleLowerCase());
+  
+    return slugList.reduce((p, c) => {
+      return p || slug.toLocaleLowerCase() === c; 
+    }, false);
+}
+
+function handleSlug(data, attrs) {
+    if (!attrs.slug) {
+      return false;
+    }
+    
+    return evaluateSlugList(attrs.slug, data.slug) || false;
+}
+
 /**
  *
  * @param {String} type - either some or every - the lodash function to use
@@ -144,7 +160,7 @@ module.exports = function has(options) {
             return attrs.visibility && evaluateStringMatch(attrs.visibility, self.visibility, true) || false;
         },
         slug: function () {
-            return attrs.slug && evaluateStringMatch(attrs.slug, self.slug, true) || false;
+            return handleSlug(self, attrs);
         },
         id: function () {
             return attrs.id && evaluateStringMatch(attrs.id, self.id, true) || false;
