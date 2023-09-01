@@ -1,8 +1,6 @@
 const {flowRight} = require('lodash');
 const {mapKeyValues, mapQuery} = require('@tryghost/mongo-utils');
 const DomainEvents = require('@tryghost/domain-events');
-const OfferCodeChangeEvent = require('../domain/events/OfferCodeChangeEvent');
-const OfferCreatedEvent = require('../domain/events/OfferCreatedEvent');
 const Offer = require('../domain/models/Offer');
 const OfferStatus = require('../domain/models/OfferStatus');
 
@@ -202,19 +200,13 @@ class OfferRepository {
             active: offer.status.equals(OfferStatus.create('active'))
         };
 
-        if (offer.codeChanged) {
-            const event = OfferCodeChangeEvent.create({
-                offerId: offer.id,
-                previousCode: offer.oldCode,
-                currentCode: offer.code
-            });
-            DomainEvents.dispatch(event);
-        }
-
         if (offer.isNew) {
             await this.OfferModel.add(data, options);
-            const event = OfferCreatedEvent.create({offer});
+        } else {
+            await this.OfferModel.edit(data, {...options, id: data.id});
+        }
 
+        for (const event of offer.events) {
             if (options.transacting) {
                 // Only dispatch the event after the transaction has finished
                 // Because else the offer won't be committed to the database yet
@@ -224,8 +216,6 @@ class OfferRepository {
             } else {
                 DomainEvents.dispatch(event);
             }
-        } else {
-            await this.OfferModel.edit(data, {...options, id: data.id});
         }
     }
 }
