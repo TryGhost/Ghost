@@ -5,13 +5,15 @@ import React from 'react';
 import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import {EditOrAddRecommendation, Recommendation} from '../../../../api/recommendations';
+import {ErrorMessages} from '../../../../hooks/useForm';
 
 interface Props<T extends EditOrAddRecommendation> {
     formState: T,
+    errors: ErrorMessages,
     updateForm: (fn: (state: T) => T) => void
 }
 
-const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recommendation>> = ({formState, updateForm}) => {
+const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recommendation>> = ({formState, updateForm, errors}) => {
     return <Form
         marginBottom={false}
         marginTop
@@ -27,8 +29,11 @@ const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recomme
             </a>
         </div>
         <TextField
+            error={Boolean(errors.title)}
+            hint={errors.title}
             title="Title"
             value={formState.title ?? ''}
+            onChange={e => updateForm(state => ({...state, title: e.target.value}))}
         />
         <TextArea
             clearBg={true}
