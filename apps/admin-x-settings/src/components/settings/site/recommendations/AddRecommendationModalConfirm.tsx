@@ -42,14 +42,24 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
         okLabel = 'Added';
     }
 
+    let leftButtonProps = {
+        label: 'Back',
+        icon: 'arrow-left',
+        size: 'sm',
+        onClick: () => {
+            alert('Left button click');
+        }
+    };
+
     return <Modal
         afterClose={() => {
             // Closed without saving: reset route
             updateRoute('recommendations');
         }}
         animate={animate ?? true}
-        cancelLabel={'Back'}
+        cancelLabel={'Cancel'}
         dirty={true}
+        leftButtonProps={leftButtonProps}
         okColor='black'
         okLabel={okLabel}
         size='sm'
