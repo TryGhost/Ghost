@@ -86,6 +86,7 @@
 /* Split layout image */
 
 .kg-signup-card-content .kg-signup-card-image {
+    width: 100%;
     /* this will force the image to follow the signup card height */
     height: 0;
     min-height: 100%;
