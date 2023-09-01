@@ -4,6 +4,7 @@
 const DomainEvents = require('@tryghost/domain-events');
 const OfferCodeChangeEvent = require('./domain/events/OfferCodeChangeEvent');
 const OfferCreatedEvent = require('./domain/events/OfferCreatedEvent');
+const Offer = require('./domain/models/Offer');
 const OfferRepository = require('./application/OfferRepository');
 const OffersAPI = require('./application/OffersAPI');
 
@@ -73,6 +74,8 @@ class OffersModule {
     };
 
     static OfferRepository = OfferRepository;
+
+    static Offer = Offer;
 
     static OffersAPI = OffersAPI;
 }
