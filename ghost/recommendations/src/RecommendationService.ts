@@ -1,4 +1,4 @@
-import {Recommendation} from "./Recommendation";
+import {AddRecommendation, Recommendation} from "./Recommendation";
 import {RecommendationRepository} from "./RecommendationRepository";
 import {WellknownService} from "./WellknownService";
 import errors from "@tryghost/errors";
@@ -32,7 +32,7 @@ export class RecommendationService {
         await this.wellknownService.set(recommendations);
     }
 
-    sendMentionToRecommendation(recommendation: Recommendation) {
+    private sendMentionToRecommendation(recommendation: Recommendation) {
          this.mentionSendingService.sendAll({
             url: this.wellknownService.getURL(),
             links: [
@@ -41,7 +41,8 @@ export class RecommendationService {
         }).catch(console.error);
     }
 
-    async addRecommendation(recommendation: Recommendation) {
+    async addRecommendation(addRecommendation: AddRecommendation) {
+        const recommendation = Recommendation.create(addRecommendation);
         this.repository.save(recommendation);
         await this.updateWellknown();
 

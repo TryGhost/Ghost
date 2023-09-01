@@ -21,7 +21,9 @@ class RecommendationServiceWrapper {
 
         const config = require('../../../shared/config');
         const urlUtils = require('../../../shared/url-utils');
-        const {InMemoryRecommendationRepository, RecommendationService, RecommendationController, WellknownService} = require('@tryghost/recommendations');
+        const models = require('../../models');
+        const sentry = require('../../../shared/sentry');
+        const {BookshelfRecommendationRepository, RecommendationService, RecommendationController, WellknownService} = require('@tryghost/recommendations');
 
         const mentions = require('../mentions');
 
@@ -35,7 +37,9 @@ class RecommendationServiceWrapper {
             urlUtils
         });
 
-        this.repository = new InMemoryRecommendationRepository();
+        this.repository = new BookshelfRecommendationRepository(models.Recommendation, {
+            sentry
+        });
         this.service = new RecommendationService({
             repository: this.repository,
             wellknownService,
