@@ -9,9 +9,13 @@ type Frame = {
     user: any
 };
 
-function validateString(object: any, key: string, {required = true} = {}): string|undefined {
+function validateString(object: any, key: string, {required = true, nullable = false} = {}): string|undefined|null {
     if (typeof object !== 'object' || object === null) {
         throw new errors.BadRequestError({message: `${key} must be an object`});
+    }
+
+    if (nullable && object[key] === null) {
+        return null;
     }
 
     if (object[key] !== undefined && object[key] !== null) {
@@ -38,8 +42,11 @@ function validateBoolean(object: any, key: string, {required = true} = {}): bool
     }
 }
 
-function validateURL(object: any, key: string, {required = true} = {}): URL|undefined {
-    const string = validateString(object, key, {required});
+function validateURL(object: any, key: string, {required = true, nullable = false} = {}): URL|undefined|null {
+    const string = validateString(object, key, {required, nullable});
+    if (string === null) {
+        return null;
+    }
     if (string !== undefined) {
         try {
             return new URL(string);
@@ -83,10 +90,10 @@ export class RecommendationController {
 
             // Optional fields
             oneClickSubscribe: validateBoolean(recommendation, "one_click_subscribe", {required: false}) ?? false,
-            reason: validateString(recommendation, "reason", {required: false}) ?? null,
-            excerpt: validateString(recommendation, "excerpt", {required: false}) ?? null,
-            featuredImage: validateURL(recommendation, "featured_image", {required: false}) ?? null,
-            favicon: validateURL(recommendation, "favicon", {required: false}) ?? null,
+            reason: validateString(recommendation, "reason", {required: false, nullable: true}) ?? null,
+            excerpt: validateString(recommendation, "excerpt", {required: false, nullable: true}) ?? null,
+            featuredImage: validateURL(recommendation, "featured_image", {required: false, nullable: true}) ?? null,
+            favicon: validateURL(recommendation, "favicon", {required: false, nullable: true}) ?? null,
         };
 
         // Create a new recommendation
@@ -100,13 +107,13 @@ export class RecommendationController {
 
         const recommendation = frame.data.recommendations[0];
         const cleanedRecommendation: EditRecommendation = {
-            title: validateString(recommendation, "title", {required: false}),
-            url: validateURL(recommendation, "url", {required: false}),
+            title: validateString(recommendation, "title", {required: false}) ?? undefined,
+            url: validateURL(recommendation, "url", {required: false}) ?? undefined,
             oneClickSubscribe: validateBoolean(recommendation, "one_click_subscribe", {required: false}),
-            reason: validateString(recommendation, "reason", {required: false}),
-            excerpt: validateString(recommendation, "excerpt", {required: false}),
-            featuredImage: validateURL(recommendation, "featured_image", {required: false}),
-            favicon: validateURL(recommendation, "favicon", {required: false}),
+            reason: validateString(recommendation, "reason", {required: false, nullable: true}),
+            excerpt: validateString(recommendation, "excerpt", {required: false, nullable: true}),
+            featuredImage: validateURL(recommendation, "featured_image", {required: false, nullable: true}),
+            favicon: validateURL(recommendation, "favicon", {required: false, nullable: true}),
         };
 
         // Create a new recommendation

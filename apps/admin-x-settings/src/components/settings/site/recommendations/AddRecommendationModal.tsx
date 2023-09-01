@@ -122,7 +122,7 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
             marginTop
         >
             <URLTextField
-                baseUrl=''
+                autoFocus={true}
                 error={Boolean(errors.url)}
                 hint={errors.url || <>Need inspiration? <a className='text-green' href="https://www.ghost.org/explore" rel="noopener noreferrer" target='_blank'>Explore thousands of sites</a> to recommend</>}
                 placeholder='https://www.example.com'
@@ -130,9 +130,6 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
                 value={formState.url}
                 onBlur={validate}
                 onChange={u => updateForm((state) => {
-                    if (u.length && !u.startsWith('http://') && !u.startsWith('https://')) {
-                        u = 'https://' + u;
-                    }
                     return {
                         ...state,
                         url: u
