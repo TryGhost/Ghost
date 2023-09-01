@@ -2,7 +2,6 @@ const {flowRight} = require('lodash');
 const {mapKeyValues, mapQuery} = require('@tryghost/mongo-utils');
 const DomainEvents = require('@tryghost/domain-events');
 const Offer = require('../domain/models/Offer');
-const OfferStatus = require('../domain/models/OfferStatus');
 
 const statusTransformer = mapKeyValues({
     key: {
@@ -197,7 +196,7 @@ class OfferRepository {
             duration: offer.duration.value.type,
             duration_in_months: offer.duration.value.type === 'repeating' ? offer.duration.value.months : null,
             currency: offer.currency ? offer.currency.value : null,
-            active: offer.status.equals(OfferStatus.create('active'))
+            active: offer.status.value === 'active'
         };
 
         if (offer.isNew) {
