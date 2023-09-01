@@ -25,7 +25,7 @@ module.exports = function setupAdminApp() {
     adminApp.use('/assets', serveStatic(
         path.join(config.get('paths').adminAssets, 'assets'), {
             maxAge: (configMaxAge || configMaxAge === 0) ? configMaxAge : constants.ONE_YEAR_MS,
-            immutable: true, 
+            immutable: true,
             fallthrough: false
         }
     ));
@@ -59,7 +59,7 @@ module.exports = function setupAdminApp() {
     // Finally, routing
     adminApp.get('*', require('./controller'));
 
-    adminApp.use((err, req, res, next) => {
+    adminApp.use(function fourOhFourMw(err, req, res, next) {
         if (err.statusCode && err.statusCode === 404) {
             // Remove 404 errors for next middleware to inject
             next();

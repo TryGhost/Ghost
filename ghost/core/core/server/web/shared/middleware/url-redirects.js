@@ -87,7 +87,7 @@ _private.getFrontendRedirectUrl = ({requestedHost, requestedUrl, queryParameters
     }
 };
 
-_private.redirect = (req, res, next, redirectFn) => {
+_private.redirect = function urlRedirectsRedirect(req, res, next, redirectFn) {
     const redirectUrl = redirectFn({
         requestedHost: req.vhost ? req.vhost.host : req.get('host'),
         requestedUrl: url.parse(req.originalUrl || req.url).pathname,
@@ -104,11 +104,11 @@ _private.redirect = (req, res, next, redirectFn) => {
     next();
 };
 
-const frontendRedirect = (req, res, next) => {
+const frontendRedirect = function frontendRedirect(req, res, next) {
     _private.redirect(req, res, next, _private.getFrontendRedirectUrl);
 };
 
-const adminRedirect = (req, res, next) => {
+const adminRedirect = function adminRedirect(req, res, next) {
     _private.redirect(req, res, next, _private.getAdminRedirectUrl);
 };
 

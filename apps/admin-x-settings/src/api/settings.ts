@@ -25,7 +25,7 @@ export const useBrowseSettings = createQuery<SettingsResponseType>({
     dataType,
     path: '/settings/',
     defaultSearchParams: {
-        group: 'site,theme,private,members,portal,newsletter,email,amp,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura'
+        group: 'site,theme,private,members,portal,newsletter,email,amp,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura,donations'
     }
 });
 
@@ -63,12 +63,12 @@ export function getSettingValues<ValueType = SettingValue>(settings: Setting[] |
     return keys.map(key => settings?.find(setting => setting.key === key)?.value) as ValueType[];
 }
 
-export function getSettingValue(settings: Setting[] | null | undefined, key: string): SettingValue {
+export function getSettingValue<ValueType = SettingValue>(settings: Setting[] | null | undefined, key: string): ValueType | null {
     if (!settings) {
-        return '';
+        return null;
     }
     const setting = settings.find(d => d.key === key);
-    return setting?.value || null;
+    return setting?.value as ValueType || null;
 }
 
 export function checkStripeEnabled(settings: Setting[], config: Config) {

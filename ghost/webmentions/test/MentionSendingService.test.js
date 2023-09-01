@@ -55,7 +55,7 @@ describe('MentionSendingService', function () {
             const service = new MentionSendingService({
                 isEnabled: () => false
             });
-            const stub = sinon.stub(service, 'sendAll');
+            const stub = sinon.stub(service, 'sendForHTMLResource');
             await service.sendForPost({});
             sinon.assert.notCalled(stub);
         });
@@ -64,7 +64,7 @@ describe('MentionSendingService', function () {
             const service = new MentionSendingService({
                 isEnabled: () => true
             });
-            const stub = sinon.stub(service, 'sendAll');
+            const stub = sinon.stub(service, 'sendForHTMLResource');
             let options = {importing: true};
             await service.sendForPost({}, options);
             sinon.assert.notCalled(stub);
@@ -74,7 +74,7 @@ describe('MentionSendingService', function () {
             const service = new MentionSendingService({
                 isEnabled: () => true
             });
-            const stub = sinon.stub(service, 'sendAll');
+            const stub = sinon.stub(service, 'sendForHTMLResource');
             let options = {context: {internal: true}};
             await service.sendForPost({}, options);
             sinon.assert.notCalled(stub);
@@ -84,7 +84,7 @@ describe('MentionSendingService', function () {
             const service = new MentionSendingService({
                 isEnabled: () => true
             });
-            const stub = sinon.stub(service, 'sendAll');
+            const stub = sinon.stub(service, 'sendForHTMLResource');
             await service.sendForPost(createModel({
                 status: 'draft',
                 html: 'changed',
@@ -100,7 +100,7 @@ describe('MentionSendingService', function () {
             const service = new MentionSendingService({
                 isEnabled: () => true
             });
-            const stub = sinon.stub(service, 'sendAll');
+            const stub = sinon.stub(service, 'sendForHTMLResource');
             await service.sendForPost(createModel({
                 status: 'published',
                 html: 'same',
@@ -116,7 +116,7 @@ describe('MentionSendingService', function () {
             const service = new MentionSendingService({
                 isEnabled: () => true
             });
-            const stub = sinon.stub(service, 'sendAll');
+            const stub = sinon.stub(service, 'sendForHTMLResource');
             await service.sendForPost(createModel({
                 status: 'send',
                 html: 'changed',
@@ -134,7 +134,7 @@ describe('MentionSendingService', function () {
                 getPostUrl: () => 'https://site.com/post/',
                 jobService: jobService
             });
-            const stub = sinon.stub(service, 'sendAll');
+            const stub = sinon.stub(service, 'sendForHTMLResource');
             await service.sendForPost(createModel({
                 status: 'published',
                 html: 'same',
@@ -156,7 +156,7 @@ describe('MentionSendingService', function () {
                 getPostUrl: () => 'https://site.com/post/',
                 jobService: jobService
             });
-            const stub = sinon.stub(service, 'sendAll');
+            const stub = sinon.stub(service, 'sendForHTMLResource');
             await service.sendForPost(createModel({
                 status: 'published',
                 html: 'updated',
@@ -177,7 +177,7 @@ describe('MentionSendingService', function () {
                 isEnabled: () => true,
                 getPostUrl: () => 'https://site.com/post/'
             });
-            sinon.stub(service, 'sendAll').rejects(new Error('Internal error test'));
+            sinon.stub(service, 'sendForHTMLResource').rejects(new Error('Internal error test'));
             await service.sendForPost(createModel({
                 status: 'published',
                 html: 'same',
@@ -195,7 +195,7 @@ describe('MentionSendingService', function () {
                 getPostUrl: () => 'https://site.com/post/',
                 jobService: jobService
             });
-            const stub = sinon.stub(service, 'sendAll');
+            const stub = sinon.stub(service, 'sendForHTMLResource');
             await service.sendForPost(createModel({
                 status: 'published',
                 html: '',
@@ -208,7 +208,7 @@ describe('MentionSendingService', function () {
         });
     });
 
-    describe('sendAll', function () {
+    describe('sendForHTMLResource', function () {
         it('Sends to all links', async function () {
             this.retries(1);
             let counter = 0;
@@ -227,7 +227,7 @@ describe('MentionSendingService', function () {
                     getEndpoint: async () => new URL('https://example.org/webmentions-test')
                 }
             });
-            await service.sendAll({url: new URL('https://site.com'),
+            await service.sendForHTMLResource({url: new URL('https://site.com'),
                 html: `
                     <html>
                         <body>
@@ -263,7 +263,7 @@ describe('MentionSendingService', function () {
                     getEndpoint: async () => new URL('https://example.org/webmentions-test')
                 }
             });
-            await service.sendAll({url: new URL('https://site.com'),
+            await service.sendForHTMLResource({url: new URL('https://site.com'),
                 html: `
                     <html>
                         <body>
@@ -298,7 +298,7 @@ describe('MentionSendingService', function () {
                 },
                 jobService: jobService
             });
-            await service.sendAll({url: new URL('https://site.com'),
+            await service.sendForHTMLResource({url: new URL('https://site.com'),
                 html: `<a href="https://example.com">Example</a>`,
                 previousHtml: `<a href="https://typo.com">Example</a>`});
             assert.equal(scope.isDone(), true);
@@ -311,7 +311,7 @@ describe('MentionSendingService', function () {
                 isEnabled: () => true
             });
             const linksStub = sinon.stub(service, 'getLinks');
-            await service.sendAll({html: ``,previousHtml: ``});
+            await service.sendForHTMLResource({html: ``,previousHtml: ``});
             sinon.assert.notCalled(linksStub);
         });
     });

@@ -25,6 +25,6 @@
   },
   "dependencies": {
     "cheerio": "0.22.0",
-    "entities": "4.4.0"
+    "entities": "4.5.0"
   }
 }

@@ -792,6 +792,10 @@ export default class App extends React.Component {
             return {
                 page: 'supportError'
             };
+        } else if (path === 'recommendations') {
+            return {
+                page: 'recommendations'
+            };
         }
         return {};
     }

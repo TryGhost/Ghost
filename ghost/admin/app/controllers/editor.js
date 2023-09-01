@@ -149,7 +149,7 @@ export default class EditorController extends Controller {
     // cursor is in the slug field - that would previously trigger a simultaneous
     // slug update and save resulting in ember data errors and inconsistent save
     // results
-    @(taskGroup().enqueue())
+    @(taskGroup().keepLatest())
         saveTasks;
 
     @mapBy('post.tags', 'name')
