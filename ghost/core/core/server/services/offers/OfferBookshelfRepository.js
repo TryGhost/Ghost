@@ -1,7 +1,7 @@
 const {flowRight} = require('lodash');
 const {mapKeyValues, mapQuery} = require('@tryghost/mongo-utils');
 const DomainEvents = require('@tryghost/domain-events');
-const Offer = require('../domain/models/Offer');
+const {Offer} = require('@tryghost/members-offers');
 
 const statusTransformer = mapKeyValues({
     key: {
@@ -40,7 +40,7 @@ const mongoTransformer = flowRight(statusTransformer, rejectNonStatusTransformer
  * @prop {string} filter
  */
 
-class OfferRepository {
+class OfferBookshelfRepository {
     /**
      * @param {{forge: (data: object) => import('bookshelf').Model<Offer.OfferProps>}} OfferModel
      * @param {{forge: (data: object) => import('bookshelf').Model<any>}} OfferRedemptionModel
@@ -177,7 +177,7 @@ class OfferRepository {
     }
 
     /**
-     * @param {Offer} offer
+     * @param {import('@tryghost/members-offers').Offer} offer
      * @param {BaseOptions} [options]
      * @returns {Promise<void>}
      */
@@ -219,4 +219,4 @@ class OfferRepository {
     }
 }
 
-module.exports = OfferRepository;
+module.exports = OfferBookshelfRepository;
