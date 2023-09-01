@@ -954,7 +954,7 @@ export default class LexicalEditorController extends Controller {
         // Check if anything has changed since the last revision
         let postRevisions = post.get('postRevisions').toArray();
         let latestRevision = postRevisions[postRevisions.length - 1];
-        let hasChangedSinceLastRevision = post.get('lexical') !== latestRevision.get('lexical');
+        let hasChangedSinceLastRevision = !post.isNew && post.lexical !== latestRevision.lexical;
 
         let fromNewToEdit = this.router.currentRouteName === 'lexical-editor.new'
             && transition.targetName === 'lexical-editor.edit'
