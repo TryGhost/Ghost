@@ -45,7 +45,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
     let leftButtonProps = {
         label: 'Back',
         icon: 'arrow-left',
-        size: 'sm',
+        size: 'sm' as const,
         onClick: () => {
             alert('Left button click');
         }
