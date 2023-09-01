@@ -577,9 +577,9 @@ describe('getSchema', function () {
             '@type': 'Person',
             description: 'This is the author description!',
             image: {
-                '@type': "ImageObject",
+                '@type': 'ImageObject',
                 height: 500,
-                url: "http://mysite.com/author/image/url/me.jpg",
+                url: 'http://mysite.com/author/image/url/me.jpg',
                 width: 500
             },
             mainEntityOfPage: 'http://mysite.com/author/me/',
@@ -632,9 +632,9 @@ describe('getSchema', function () {
             '@type': 'Person',
             description: 'This is the author description!',
             image: {
-                '@type': "ImageObject",
+                '@type': 'ImageObject',
                 height: 500,
-                url: "http://mysite.com/author/image/url/me.jpg",
+                url: 'http://mysite.com/author/image/url/me.jpg',
                 width: 500
             },
             mainEntityOfPage: 'http://mysite.com/author/me/',
@@ -680,9 +680,9 @@ describe('getSchema', function () {
             '@type': 'Person',
             description: 'This is the author description!',
             image: {
-                '@type': "ImageObject",
+                '@type': 'ImageObject',
                 height: 500,
-                url: "http://mysite.com/author/cover/url/me.jpg",
+                url: 'http://mysite.com/author/cover/url/me.jpg',
                 width: 1024
             },
             mainEntityOfPage: 'http://mysite.com/author/me/',
