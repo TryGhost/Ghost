@@ -4,12 +4,13 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const ObjectId = require('bson-objectid').default;
 const pick = require('lodash/pick');
-const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
+const DomainEvents = require('@tryghost/domain-events');
 const {
     PostsBulkDestroyedEvent,
     PostsBulkUnpublishedEvent,
     PostsBulkFeaturedEvent,
-    PostsBulkUnfeaturedEvent
+    PostsBulkUnfeaturedEvent,
+    PostsBulkAddTagsEvent
 } = require('@tryghost/post-events');
 
 const messages = {
@@ -42,7 +43,7 @@ class PostsService {
      */
     async browsePosts(options) {
         let posts;
-        if (this.isSet('collections') && options.collection) {
+        if (options.collection) {
             let collection = await this.collectionsService.getById(options.collection);
 
             if (!collection) {
@@ -223,13 +224,22 @@ class PostsService {
 
     async bulkEdit(data, options) {
         if (data.action === 'unpublish') {
-            return await this.#updatePosts({status: 'draft'}, {filter: this.#mergeFilters('status:published', options.filter), context: options.context, actionName: 'unpublished'});
+            const updateResult = await this.#updatePosts({status: 'draft'}, {filter: this.#mergeFilters('status:published', options.filter), context: options.context, actionName: 'unpublished'});
+            DomainEvents.dispatch(PostsBulkUnpublishedEvent.create(updateResult.editIds));
+
+            return updateResult;
         }
         if (data.action === 'feature') {
-            return await this.#updatePosts({featured: true}, {filter: options.filter, context: options.context, actionName: 'featured'});
+            const updateResult = await this.#updatePosts({featured: true}, {filter: options.filter, context: options.context, actionName: 'featured'});
+            DomainEvents.dispatch(PostsBulkFeaturedEvent.create(updateResult.editIds));
+
+            return updateResult;
         }
         if (data.action === 'unfeature') {
-            return await this.#updatePosts({featured: false}, {filter: options.filter, context: options.context, actionName: 'unfeatured'});
+            const updateResult = await this.#updatePosts({featured: false}, {filter: options.filter, context: options.context, actionName: 'unfeatured'});
+            DomainEvents.dispatch(PostsBulkUnfeaturedEvent.create(updateResult.editIds));
+
+            return updateResult;
         }
         if (data.action === 'access') {
             if (!['public', 'members', 'paid', 'tiers'].includes(data.meta.visibility)) {
@@ -266,7 +276,11 @@ class PostsService {
                     });
                 }
             }
-            return await this.#bulkAddTags({tags: data.meta.tags}, {filter: options.filter, context: options.context});
+
+            const bulkResult = await this.#bulkAddTags({tags: data.meta.tags}, {filter: options.filter, context: options.context});
+            DomainEvents.dispatch(PostsBulkAddTagsEvent.create(bulkResult.editIds));
+
+            return bulkResult;
         }
         throw new errors.IncorrectUsageError({
             message: tpl(messages.unsupportedBulkAction)
@@ -280,6 +294,7 @@ class PostsService {
      * @param {string} options.filter - An NQL Filter
      * @param {object} options.context
      * @param {object} [options.transacting]
+     * @returns {Promise<{successful: number, unsuccessful: number, editIds: string[]}>}
      */
     async #bulkAddTags(data, options) {
         if (!options.transacting) {
@@ -320,12 +335,18 @@ class PostsService {
         await this.models.Post.addActions('edited', postRows.map(p => p.id), options);
 
         return {
+            editIds: postRows.map(p => p.id),
             successful: postRows.length,
             unsuccessful: 0
         };
     }
 
-    async bulkDestroy(options) {
+    /**
+     *
+     * @param {Object} options
+     * @returns Promise<{successful: number, unsuccessful: number, deleteIds: string[]}>
+     */
+    async #bulkDestroy(options) {
         if (!options.transacting) {
             return await this.models.Post.transaction(async (transacting) => {
                 return await this.bulkDestroy({
@@ -394,8 +415,14 @@ class PostsService {
         await this.models.Post.bulkDestroy(deleteEmailIds, 'emails', {transacting: options.transacting, throwErrors: true});
         const result = await this.models.Post.bulkDestroy(deleteIds, 'posts', {...options, throwErrors: true});
 
-        const event = PostsBulkDestroyedEvent.create(deleteIds);
-        DomainEvents.dispatch(event);
+        result.deleteIds = deleteIds;
+
+        return result;
+    }
+
+    async bulkDestroy(options) {
+        const result = await this.#bulkDestroy(options);
+        DomainEvents.dispatch(PostsBulkDestroyedEvent.create(result.deleteIds));
 
         return result;
     }
@@ -463,22 +490,7 @@ class PostsService {
             });
         }
 
-        if (options.actionName) {
-            let bulkActionEvent;
-            switch (options.actionName) {
-            case 'unpublished':
-                bulkActionEvent = PostsBulkUnpublishedEvent.create(editIds);
-                break;
-            case 'featured':
-                bulkActionEvent = PostsBulkFeaturedEvent.create(editIds);
-                break;
-            case 'unfeatured':
-                bulkActionEvent = PostsBulkUnfeaturedEvent.create(editIds);
-                break;
-            }
-
-            DomainEvents.dispatch(bulkActionEvent);
-        }
+        result.editIds = editIds;
 
         return result;
     }

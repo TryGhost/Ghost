@@ -176,6 +176,10 @@ export const site = {
             ...baseMultiTierSite,
             portal_plans: ['free']
         },
+        onlyPaidPlans: {
+            ...baseMultiTierSite,
+            portal_plans: ['monthly', 'yearly']
+        },
         withoutName: {
             ...baseMultiTierSite,
             portal_name: false

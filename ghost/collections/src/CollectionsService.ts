@@ -4,8 +4,10 @@ import {Knex} from "knex";
 import {
     PostsBulkUnpublishedEvent,
     PostsBulkFeaturedEvent,
-    PostsBulkUnfeaturedEvent
+    PostsBulkUnfeaturedEvent,
+    PostsBulkAddTagsEvent
 } from "@tryghost/post-events";
+import debugModule from '@tryghost/debug';
 import {Collection} from './Collection';
 import {CollectionRepository} from './CollectionRepository';
 import {CollectionPost} from './CollectionPost';
@@ -16,6 +18,8 @@ import {PostEditedEvent} from './events/PostEditedEvent';
 import {PostsBulkDestroyedEvent} from '@tryghost/post-events';
 import {RepositoryUniqueChecker} from './RepositoryUniqueChecker';
 import {TagDeletedEvent} from './events/TagDeletedEvent';
+
+const debug = debugModule('collections');
 
 const messages = {
     cannotDeleteBuiltInCollectionError: {
@@ -207,6 +211,11 @@ export class CollectionsService {
             logging.info(`TagDeletedEvent received for ${event.data.id}, updating all collections`);
             await this.updateAllAutomaticCollections();
         });
+
+        this.DomainEvents.subscribe(PostsBulkAddTagsEvent, async (event: PostsBulkAddTagsEvent) => {
+            logging.info(`PostsBulkAddTagsEvent received for ${event.data}, updating all collections`);
+            await this.updateAllAutomaticCollections();
+        });
     }
 
     async updateAllAutomaticCollections(): Promise<void> {
@@ -333,12 +342,13 @@ export class CollectionsService {
                 transaction
             });
 
+            let collectionsChangeLog = '';
             for (const collection of collections) {
                 if (collection.includesPost(postEdit.id) && !collection.postMatchesFilter(postEdit.current)) {
                     collection.removePost(postEdit.id);
                     await this.collectionsRepository.save(collection, {transaction});
 
-                    logging.info(`[Collections] Post ${postEdit.id} was updated and removed from collection ${collection.id} with filter ${collection.filter}`);
+                    collectionsChangeLog += `Post ${postEdit.id} was updated and removed from collection ${collection.slug} with filter ${collection.filter} \n`;
                 } else if (!collection.includesPost(postEdit.id) && collection.postMatchesFilter(postEdit.current)) {
                     const added = await collection.addPost(postEdit.current);
 
@@ -346,10 +356,14 @@ export class CollectionsService {
                         await this.collectionsRepository.save(collection, {transaction});
                     }
 
-                    logging.info(`[Collections] Post ${postEdit.id} was updated and added to collection ${collection.id} with filter ${collection.filter}`);
+                    collectionsChangeLog += `Post ${postEdit.id} was updated and added to collection ${collection.slug} with filter ${collection.filter}\n`
                 } else {
-                    logging.info(`[Collections] Post ${postEdit.id} was updated but did not update any collections`);
+                    debug(`Post ${postEdit.id} was updated but did not update any collections`);
                 }
+            }
+
+            if (collectionsChangeLog.length > 0) {
+                logging.info(collectionsChangeLog);
             }
         });
     }
@@ -396,18 +410,29 @@ export class CollectionsService {
             transaction: transaction
         });
 
+        let collectionsChangeLog = '';
         for (const collection of collections) {
+            let addedPostsCount = 0;
+            let removedPostsCount = 0;
+
             for (const post of posts) {
                 if (collection.includesPost(post.id) && !collection.postMatchesFilter(post)) {
                     collection.removePost(post.id);
-                    logging.info(`[Collections] Post ${post.id} was updated and removed from collection ${collection.id} with filter ${collection.filter}`);
+                    removedPostsCount += 1;
+                    debug(`Post ${post.id} was updated and removed from collection ${collection.id} with filter ${collection.filter}`);
                 } else if (!collection.includesPost(post.id) && collection.postMatchesFilter(post)) {
                     await collection.addPost(post);
-                    logging.info(`[Collections] Post ${post.id} was unpublished and added to collection ${collection.id} with filter ${collection.filter}`);
+                    addedPostsCount += 1;
+                    debug(`Post ${post.id} was unpublished and added to collection ${collection.id} with filter ${collection.filter}`);
                 }
             }
 
+            collectionsChangeLog += `Collection ${collection.slug} was updated with total ${posts.length} posts, added: ${addedPostsCount}, removed: ${removedPostsCount} \n`;
             await this.collectionsRepository.save(collection, {transaction});
+        }
+
+        if (collectionsChangeLog.length > 0) {
+            logging.info(collectionsChangeLog);
         }
     }
 
@@ -421,7 +446,26 @@ export class CollectionsService {
             }
 
             const collectionData = this.fromDTO(data);
-            await collection.edit(collectionData, this.uniqueChecker);
+
+            if (collectionData.title) {
+                collection.title = collectionData.title;
+            }
+
+            if (data.slug !== undefined) {
+                await collection.setSlug(data.slug, this.uniqueChecker);
+            }
+
+            if (data.description !== undefined) {
+                collection.description = data.description;
+            }
+
+            if (data.filter !== undefined) {
+                collection.filter = data.filter;
+            }
+
+            if (data.feature_image !== undefined) {
+                collection.featureImage = data.feature_image;
+            }
 
             if (collection.type === 'manual' && data.posts) {
                 for (const post of data.posts) {

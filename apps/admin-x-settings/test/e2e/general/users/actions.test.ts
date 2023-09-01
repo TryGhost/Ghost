@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures} from '../../../utils/e2e';
+import {globalDataRequests, limitRequests, mockApi, responseFixtures} from '../../../utils/e2e';
 
 test.describe('User actions', async () => {
     test('Supports suspending a user', async ({page}) => {
@@ -30,7 +30,7 @@ test.describe('User actions', async () => {
         const modal = page.getByTestId('user-detail-modal');
 
         await modal.getByRole('button', {name: 'Actions'}).click();
-        await modal.getByRole('button', {name: 'Suspend user'}).click();
+        await page.getByTestId('popover-content').getByRole('button', {name: 'Suspend user'}).click();
 
         const confirmation = page.getByTestId('confirmation-modal');
         await confirmation.getByRole('button', {name: 'Suspend'}).click();
@@ -83,7 +83,7 @@ test.describe('User actions', async () => {
         await expect(modal).toHaveText(/Suspended/);
 
         await modal.getByRole('button', {name: 'Actions'}).click();
-        await modal.getByRole('button', {name: 'Un-suspend user'}).click();
+        await page.getByTestId('popover-content').getByRole('button', {name: 'Un-suspend user'}).click();
 
         const confirmation = page.getByTestId('confirmation-modal');
         await confirmation.getByRole('button', {name: 'Un-suspend'}).click();
@@ -121,7 +121,7 @@ test.describe('User actions', async () => {
         const modal = page.getByTestId('user-detail-modal');
 
         await modal.getByRole('button', {name: 'Actions'}).click();
-        await modal.getByRole('button', {name: 'Delete user'}).click();
+        await page.getByTestId('popover-content').getByRole('button', {name: 'Delete user'}).click();
 
         const confirmation = page.getByTestId('confirmation-modal');
         await confirmation.getByRole('button', {name: 'Delete user'}).click();
@@ -171,7 +171,8 @@ test.describe('User actions', async () => {
         await listItem.getByRole('button', {name: 'Edit'}).click();
 
         await modal.getByRole('button', {name: 'Actions'}).click();
-        await expect(modal.getByRole('button', {name: 'Make owner'})).toHaveCount(0);
+        await expect(page.getByTestId('popover-content').getByRole('button', {name: 'Make owner'})).toHaveCount(0);
+        await page.getByTestId('popover-overlay').click();
 
         await modal.getByRole('button', {name: 'Close'}).click();
 
@@ -183,7 +184,7 @@ test.describe('User actions', async () => {
         await listItem.getByRole('button', {name: 'Edit'}).click();
 
         await modal.getByRole('button', {name: 'Actions'}).click();
-        await modal.getByRole('button', {name: 'Make owner'}).click();
+        await page.getByTestId('popover-content').getByRole('button', {name: 'Make owner'}).click();
 
         const confirmation = page.getByTestId('confirmation-modal');
         await confirmation.getByRole('button', {name: 'Yep — I\'m sure'}).click();
@@ -197,5 +198,59 @@ test.describe('User actions', async () => {
                 id: administrator.id
             }]
         });
+    });
+
+    test('Limits un-suspending a user when there are too many users', async ({page}) => {
+        const userToEdit = responseFixtures.users.users.find(user => user.email === 'author@test.com')!;
+
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            ...limitRequests,
+            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: {
+                users: [
+                    ...responseFixtures.users.users.filter(user => user.email !== 'author@test.com'),
+                    {
+                        ...userToEdit,
+                        status: 'inactive'
+                    }
+                ]
+            }},
+            browseConfig: {
+                ...globalDataRequests.browseConfig,
+                response: {
+                    config: {
+                        ...responseFixtures.config.config,
+                        hostSettings: {
+                            limits: {
+                                staff: {
+                                    max: 1,
+                                    error: 'Your plan does not support more staff'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('users');
+        const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+        await section.getByRole('tab', {name: 'Authors'}).click();
+
+        const listItem = activeTab.getByTestId('user-list-item').last();
+        await listItem.hover();
+        await listItem.getByRole('button', {name: 'Edit'}).click();
+
+        const modal = page.getByTestId('user-detail-modal');
+
+        await expect(modal).toHaveText(/Suspended/);
+
+        await modal.getByRole('button', {name: 'Actions'}).click();
+        await page.getByTestId('popover-content').getByRole('button', {name: 'Un-suspend user'}).click();
+
+        await expect(page.getByTestId('limit-modal')).toHaveText(/Your plan does not support more staff/);
     });
 });

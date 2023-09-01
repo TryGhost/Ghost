@@ -135,7 +135,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     useEffect(() => {
         if (scrollRef.current) {
             const rootElement = document.getElementById('admin-x-settings-content');
-            const rootRect = rootElement?.getBoundingClientRect();
+            const rootRect = rootElement?.getBoundingClientRect() || DOMRect.fromRect();
             const sectionRect = scrollRef.current.getBoundingClientRect();
             setCurrentRect({
                 top: sectionRect.top - rootRect!.top,

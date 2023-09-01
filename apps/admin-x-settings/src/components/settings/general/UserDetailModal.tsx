@@ -3,6 +3,7 @@ import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModa
 import Heading from '../../../admin-x-ds/global/Heading';
 import Icon from '../../../admin-x-ds/global/Icon';
 import ImageUpload from '../../../admin-x-ds/global/form/ImageUpload';
+import LimitModal from '../../../admin-x-ds/global/modal/LimitModal';
 import Menu, {MenuItem} from '../../../admin-x-ds/global/Menu';
 import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
@@ -12,9 +13,11 @@ import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
+import useFeatureFlag from '../../../hooks/useFeatureFlag';
 import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
+import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {User, isAdminUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner, useUpdatePassword} from '../../../api/users';
 import {getImageUrl, useUploadImage} from '../../../api/images';
 import {showToast} from '../../../admin-x-ds/global/Toast';
@@ -211,6 +214,8 @@ const Details: React.FC<UserDetailProps> = ({errors, validators, user, setUserDa
 };
 
 const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
+    const hasWebmentions = useFeatureFlag('webmentions');
+
     return (
         <SettingGroupContent>
             <Toggle
@@ -222,6 +227,15 @@ const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user, setUserData}
                     setUserData?.({...user, comment_notifications: e.target.checked});
                 }}
             />
+            {hasWebmentions && <Toggle
+                checked={user.mention_notifications}
+                direction='rtl'
+                hint='Every time another site links to your work'
+                label='Mentions'
+                onChange={(e) => {
+                    setUserData?.({...user, mention_notifications: e.target.checked});
+                }}
+            />}
             <Toggle
                 checked={user.free_member_signup_notification}
                 direction='rtl'
@@ -422,19 +436,25 @@ const UserMenuTrigger = () => (
 const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
     const {updateRoute} = useRouting();
     const {ownerUser} = useStaffUsers();
-    const [userData, setUserData] = useState(user);
-    const [saveState, setSaveState] = useState('');
+    const [userData, _setUserData] = useState(user);
+    const [saveState, setSaveState] = useState<'' | 'unsaved' | 'saving' | 'saved'>('');
     const [errors, setErrors] = useState<{
         name?: string;
         email?: string;
         url?: string;
     }>({});
 
+    const setUserData = (newUserData: User | ((current: User) => User)) => {
+        _setUserData(newUserData);
+        setSaveState('unsaved');
+    };
+
     const mainModal = useModal();
     const {mutateAsync: uploadImage} = useUploadImage();
     const {mutateAsync: updateUser} = useEditUser();
     const {mutateAsync: deleteUser} = useDeleteUser();
     const {mutateAsync: makeOwner} = useMakeOwner();
+    const limiter = useLimiter();
 
     useEffect(() => {
         if (saveState === 'saved') {
@@ -445,7 +465,23 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
         }
     }, [mainModal, saveState, updateRoute]);
 
-    const confirmSuspend = (_user: User) => {
+    const confirmSuspend = async (_user: User) => {
+        if (_user.status === 'inactive' && _user.roles[0].name !== 'Contributor') {
+            try {
+                await limiter?.errorIfWouldGoOverLimit('staff');
+            } catch (error) {
+                if (error instanceof HostLimitError) {
+                    NiceModal.show(LimitModal, {
+                        formSheet: true,
+                        prompt: error.message || `Your current plan doesn't support more users.`
+                    });
+                    return;
+                } else {
+                    throw error;
+                }
+            }
+        }
+
         let warningText = 'This user will no longer be able to log in but their posts will be kept.';
         if (_user.status === 'inactive') {
             warningText = 'This user will be able to log in again and will have the same permissions they had previously.';
@@ -626,6 +662,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
     return (
         <Modal
             afterClose={() => updateRoute('users')}
+            dirty={saveState === 'unsaved'}
             okLabel={okLabel}
             size='lg'
             stickyFooter={true}
@@ -671,7 +708,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
                             handleImageUpload('cover_image', file);
                         }}
                     >Upload cover image</ImageUpload>
-                    <div className="absolute bottom-12 right-12">
+                    <div className="absolute bottom-12 right-12 z-10">
                         <Menu items={menuItems} position='left' trigger={<UserMenuTrigger />}></Menu>
                     </div>
                     <div className='relative flex items-center gap-4 px-12 pb-7 pt-60'>

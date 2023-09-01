@@ -1,5 +1,6 @@
 import Button from '../../../../admin-x-ds/global/Button';
 import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
+import LimitModal from '../../../../admin-x-ds/global/modal/LimitModal';
 import NiceModal from '@ebay/nice-modal-react';
 import NoValueLabel from '../../../../admin-x-ds/global/NoValueLabel';
 import React from 'react';
@@ -7,6 +8,7 @@ import Table from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
 import useRouting from '../../../../hooks/useRouting';
+import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {Newsletter, useEditNewsletter} from '../../../../api/newsletters';
 import {modalRoutes} from '../../../providers/RoutingProvider';
 
@@ -17,6 +19,7 @@ interface NewslettersListProps {
 const NewsletterItem: React.FC<{newsletter: Newsletter, onlyOne: boolean}> = ({newsletter, onlyOne}) => {
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const {updateRoute} = useRouting();
+    const limiter = useLimiter();
 
     const action = newsletter.status === 'active' ? (
         <Button color='green' disabled={onlyOne} label='Archive' link onClick={() => {
@@ -34,7 +37,20 @@ const NewsletterItem: React.FC<{newsletter: Newsletter, onlyOne: boolean}> = ({n
             });
         }} />
     ) : (
-        <Button color='green' label='Activate' link onClick={() => {
+        <Button color='green' label='Activate' link onClick={async () => {
+            try {
+                await limiter?.errorIfWouldGoOverLimit('newsletters');
+            } catch (error) {
+                if (error instanceof HostLimitError) {
+                    NiceModal.show(LimitModal, {
+                        prompt: error.message || `Your current plan doesn't support more newsletters.`
+                    });
+                    return;
+                } else {
+                    throw error;
+                }
+            }
+
             NiceModal.show(ConfirmationModal, {
                 title: 'Reactivate newsletter',
                 prompt: <>
@@ -50,7 +66,7 @@ const NewsletterItem: React.FC<{newsletter: Newsletter, onlyOne: boolean}> = ({n
     );
 
     const showDetails = () => {
-        updateRoute(modalRoutes.showNewsletter, {id: newsletter.id});
+        updateRoute({route: modalRoutes.showNewsletter, params: {id: newsletter.id}});
     };
 
     return (

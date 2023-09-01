@@ -1,21 +1,43 @@
+import AddIntegrationModal from '../settings/advanced/integrations/AddIntegrationModal';
 import AddNewsletterModal from '../settings/email/newsletters/AddNewsletterModal';
+import AddRecommendationModal from '../settings/site/recommendations/AddRecommendationModal';
+import AddRecommendationModalConfirm from '../settings/site/recommendations/AddRecommendationModalConfirm';
+import AmpModal from '../settings/advanced/integrations/AmpModal';
 import ChangeThemeModal from '../settings/site/ThemeModal';
 import DesignModal from '../settings/site/DesignModal';
+import FirstpromoterModal from '../settings/advanced/integrations/FirstPromoterModal';
+import HistoryModal from '../settings/advanced/HistoryModal';
 import InviteUserModal from '../settings/general/InviteUserModal';
 import NavigationModal from '../settings/site/NavigationModal';
 import NiceModal from '@ebay/nice-modal-react';
+import PinturaModal from '../settings/advanced/integrations/PinturaModal';
 import PortalModal from '../settings/membership/portal/PortalModal';
 import React, {createContext, useCallback, useEffect, useRef, useState} from 'react';
+import SlackModal from '../settings/advanced/integrations/SlackModal';
 import StripeConnectModal from '../settings/membership/stripe/StripeConnectModal';
 import TierDetailModal from '../settings/membership/tiers/TierDetailModal';
+import UnsplashModal from '../settings/advanced/integrations/UnsplashModal';
+import ZapierModal from '../settings/advanced/integrations/ZapierModal';
 
 export type RouteParams = {[key: string]: string}
+
+export type ExternalLink = {
+    isExternal: true;
+    route: string;
+    models?: string[] | null
+};
+
+export type InternalLink = {
+    isExternal?: false;
+    route: string;
+    params?: RouteParams;
+}
 
 export type RoutingContextData = {
     route: string;
     scrolledRoute: string;
     yScroll: number;
-    updateRoute: (newPath: string, params?: RouteParams) => void;
+    updateRoute: (to: string | InternalLink | ExternalLink) => void;
     updateScrolled: (newPath: string) => void;
     addRouteChangeListener: (listener: RouteChangeListener) => (() => void);
 };
@@ -30,12 +52,14 @@ export const RouteContext = createContext<RoutingContextData>({
 });
 
 // These routes need to be handled by a SettingGroup (or other component) with the
-// useHandleRoute hook. The idea is that those components will open a modal after
+// useDetailModalRoute hook. The idea is that those components will open a modal after
 // loading any data required for the route
 export const modalRoutes = {
     showUser: 'users/show/:slug',
     showNewsletter: 'newsletters/show/:id',
-    showTier: 'tiers/show/:id'
+    showTier: 'tiers/show/:id',
+    showIntegration: 'integrations/show/:id',
+    editRecommendation: 'recommendations/:id'
 };
 
 function getHashPath(urlPath: string | undefined) {
@@ -86,6 +110,26 @@ const handleNavigation = (scroll: boolean = true) => {
             NiceModal.show(StripeConnectModal);
         } else if (pathName === 'newsletters/add') {
             NiceModal.show(AddNewsletterModal);
+        } else if (pathName === 'history/view') {
+            NiceModal.show(HistoryModal);
+        } else if (pathName === 'integrations/zapier') {
+            NiceModal.show(ZapierModal);
+        } else if (pathName === 'integrations/slack') {
+            NiceModal.show(SlackModal);
+        } else if (pathName === 'integrations/amp') {
+            NiceModal.show(AmpModal);
+        } else if (pathName === 'integrations/unsplash') {
+            NiceModal.show(UnsplashModal);
+        } else if (pathName === 'integrations/firstpromoter') {
+            NiceModal.show(FirstpromoterModal);
+        } else if (pathName === 'integrations/pintura') {
+            NiceModal.show(PinturaModal);
+        } else if (pathName === 'integrations/add') {
+            NiceModal.show(AddIntegrationModal);
+        } else if (pathName === 'recommendations/add') {
+            NiceModal.show(AddRecommendationModal);
+        } else if (pathName === 'recommendations/add-confirm') {
+            NiceModal.show(AddRecommendationModalConfirm);
         }
 
         if (scroll) {
@@ -114,6 +158,7 @@ const callRouteChangeListeners = (newPath: string, listeners: RouteChangeListene
 };
 
 type RouteProviderProps = {
+    externalNavigate: (link: ExternalLink) => void;
     children: React.ReactNode;
 };
 
@@ -122,15 +167,24 @@ type RouteChangeListener = {
     callback: (params: RouteParams) => void;
 }
 
-const RoutingProvider: React.FC<RouteProviderProps> = ({children}) => {
+const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, children}) => {
     const [route, setRoute] = useState<string>('');
     const [yScroll, setYScroll] = useState(0);
     const [scrolledRoute, setScrolledRoute] = useState<string>('');
     const routeChangeListeners = useRef<RouteChangeListener[]>([]);
 
-    const updateRoute = useCallback((newPath: string, params?: RouteParams) => {
-        if (params) {
-            newPath = Object.entries(params).reduce(
+    const updateRoute = useCallback((to: string | InternalLink | ExternalLink) => {
+        const options = typeof to === 'string' ? {route: to} : to;
+
+        if (options.isExternal) {
+            externalNavigate(options);
+            return;
+        }
+
+        let newPath = options.route;
+
+        if (options.params) {
+            newPath = Object.entries(options.params).reduce(
                 (path, [name, value]) => path.replace(`:${name}`, value),
                 newPath
             );
@@ -145,7 +199,7 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({children}) => {
         } else {
             window.location.hash = `/settings-x`;
         }
-    }, [route]);
+    }, [externalNavigate, route]);
 
     const updateScrolled = useCallback((newPath: string) => {
         setScrolledRoute(newPath);

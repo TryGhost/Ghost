@@ -8,7 +8,7 @@ import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
 import UserDetailModal from './UserDetailModal';
-import useHandleRoute from '../../../hooks/useHandleRoute';
+import useDetailModalRoute from '../../../hooks/useDetailModalRoute';
 import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import {User} from '../../../api/users';
@@ -36,7 +36,7 @@ const Owner: React.FC<OwnerProps> = ({user}) => {
     const {updateRoute} = useRouting();
 
     const showDetailModal = () => {
-        updateRoute(modalRoutes.showUser, {slug: user.slug});
+        updateRoute({route: modalRoutes.showUser, params: {slug: user.slug}});
     };
 
     if (!user) {
@@ -58,7 +58,7 @@ const UsersList: React.FC<UsersListProps> = ({users}) => {
     const {updateRoute} = useRouting();
 
     const showDetailModal = (user: User) => {
-        updateRoute(modalRoutes.showUser, {slug: user.slug});
+        updateRoute({route: modalRoutes.showUser, params: {slug: user.slug}});
     };
 
     if (!users || !users.length) {
@@ -70,7 +70,7 @@ const UsersList: React.FC<UsersListProps> = ({users}) => {
     }
 
     return (
-        <List>
+        <List titleSeparator={false}>
             {users.map((user) => {
                 let title = user.name || '';
                 if (user.status === 'inactive') {
@@ -196,15 +196,12 @@ const Users: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const {updateRoute} = useRouting();
 
-    useHandleRoute(modalRoutes.showUser, ({slug}) => {
-        const user = users.find(u => u.slug === slug);
-
-        if (!user) {
-            return;
-        }
-
-        NiceModal.show(UserDetailModal, {user});
-    }, [users]);
+    useDetailModalRoute({
+        route: modalRoutes.showUser,
+        items: users,
+        field: 'slug',
+        showModal: user => NiceModal.show(UserDetailModal, {user})
+    });
 
     const showInviteModal = () => {
         updateRoute('users/invite');

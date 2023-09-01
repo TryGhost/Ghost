@@ -18,7 +18,7 @@
     "lib"
   ],
   "devDependencies": {
-    "c8": "7.14.0",
+    "c8": "8.0.1",
     "mocha": "10.2.0"
   },
   "dependencies": {
@@ -30,15 +30,15 @@
     "cheerio": "0.22.0",
     "iconv-lite": "0.6.3",
     "lodash": "4.17.21",
-    "metascraper": "5.34.9",
-    "metascraper-author": "5.34.9",
-    "metascraper-description": "5.34.9",
-    "metascraper-image": "5.34.9",
-    "metascraper-logo": "5.34.9",
-    "metascraper-logo-favicon": "5.34.9",
-    "metascraper-publisher": "5.34.9",
-    "metascraper-title": "5.34.9",
-    "metascraper-url": "5.34.9",
+    "metascraper": "5.36.0",
+    "metascraper-author": "5.36.0",
+    "metascraper-description": "5.36.0",
+    "metascraper-image": "5.36.0",
+    "metascraper-logo": "5.37.0",
+    "metascraper-logo-favicon": "5.36.0",
+    "metascraper-publisher": "5.36.0",
+    "metascraper-title": "5.36.0",
+    "metascraper-url": "5.36.0",
     "tough-cookie": "4.1.3"
   }
 }

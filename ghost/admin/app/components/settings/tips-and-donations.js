@@ -1,4 +1,5 @@
 import Component from '@glimmer/component';
+import ConfirmUnsavedChangesModal from '../../components/modals/confirm-unsaved-changes';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import envConfig from 'ghost-admin/config/environment';
 import {action} from '@ember/object';
@@ -15,10 +16,14 @@ const CURRENCIES = currencies.map((currency) => {
     };
 });
 
+// Stripe doesn't allow amounts over 10,000 as a preset amount
+const MAX_AMOUNT = 10_000;
+
 export default class TipsAndDonations extends Component {
     @service settings;
     @service session;
     @service membersUtils;
+    @service modals;
 
     @inject config;
     @tracked tipsAndDonationsError = '';
@@ -39,16 +44,9 @@ export default class TipsAndDonations extends Component {
         return this.config.blogUrl;
     }
 
-    @task
-    *copyTipsAndDonationsLink() {
-        const link = document.getElementById('gh-tips-and-donations-link')?.value;
-
-        if (link) {
-            copyTextToClipboard(link);
-            yield timeout(this.isTesting ? 50 : 500);
-        }
-
-        return true;
+    get isConnectDisallowed() {
+        const siteUrl = this.config.blogUrl;
+        return envConfig.environment !== 'development' && !/^https:/.test(siteUrl);
     }
 
     @action
@@ -62,10 +60,15 @@ export default class TipsAndDonations extends Component {
         const amountInCents = Math.round(amount * 100);
         const currency = this.settings.donationsCurrency;
         const symbol = getSymbol(currency);
-        const minimumAmount = minimumAmountForCurrency(currency);
+        const minAmount = minimumAmountForCurrency(currency);
 
-        if (amountInCents !== 0 && amountInCents < minimumAmount) {
-            this.tipsAndDonationsError = `The suggested amount cannot be less than ${symbol}${minimumAmount / 100}.`;
+        if (amountInCents !== 0 && amountInCents < (minAmount * 100)) {
+            this.tipsAndDonationsError = `Non-zero amount must be at least ${symbol}${minAmount}.`;
+            return;
+        }
+
+        if (amountInCents !== 0 && amountInCents > (MAX_AMOUNT * 100)) {
+            this.tipsAndDonationsError = `Suggested amount cannot be more than ${symbol}${MAX_AMOUNT}.`;
             return;
         }
 
@@ -83,8 +86,34 @@ export default class TipsAndDonations extends Component {
         this.showStripeConnect = false;
     }
 
-    get isConnectDisallowed() {
-        const siteUrl = this.config.blogUrl;
-        return envConfig.environment !== 'development' && !/^https:/.test(siteUrl);
+    @action
+    async showPreview(event) {
+        event.preventDefault();
+
+        const preview = () => window.open(`${this.siteUrl}/#/portal/support`, '_blank');
+        const changedAttributes = this.settings.changedAttributes();
+
+        if (changedAttributes && Object.keys(changedAttributes).length > 0) {
+            const shouldClose = await this.modals.open(ConfirmUnsavedChangesModal);
+
+            if (shouldClose) {
+                this.settings.rollbackAttributes();
+                preview();
+            }
+        } else {
+            preview();
+        }
+    }
+
+    @task
+    *copyTipsAndDonationsLink() {
+        const link = document.getElementById('gh-tips-and-donations-link')?.value;
+
+        if (link) {
+            copyTextToClipboard(link);
+            yield timeout(this.isTesting ? 50 : 3000);
+        }
+
+        return true;
     }
 }

@@ -3,6 +3,10 @@ function isPost(jsonData) {
         Object.prototype.hasOwnProperty.call(jsonData, 'title') && Object.prototype.hasOwnProperty.call(jsonData, 'slug');
 }
 
+function isPage(jsonData = {}) {
+    return Object.prototype.hasOwnProperty.call(jsonData, 'show_title_and_feature_image');
+}
+
 function isTag(jsonData) {
     return Object.prototype.hasOwnProperty.call(jsonData, 'name') && Object.prototype.hasOwnProperty.call(jsonData, 'slug') &&
         Object.prototype.hasOwnProperty.call(jsonData, 'description') && Object.prototype.hasOwnProperty.call(jsonData, 'feature_image');
@@ -20,6 +24,7 @@ function isNav(jsonData) {
 
 module.exports = {
     isPost,
+    isPage,
     isTag,
     isUser,
     isNav

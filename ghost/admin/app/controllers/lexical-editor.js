@@ -16,6 +16,7 @@ import {GENERIC_ERROR_MESSAGE} from '../services/notifications';
 import {action, computed} from '@ember/object';
 import {alias, mapBy} from '@ember/object/computed';
 import {capitalize} from '@ember/string';
+import {captureMessage} from '@sentry/ember';
 import {dropTask, enqueueTask, restartableTask, task, taskGroup, timeout} from 'ember-concurrency';
 import {htmlSafe} from '@ember/template';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -152,7 +153,7 @@ export default class LexicalEditorController extends Controller {
     // cursor is in the slug field - that would previously trigger a simultaneous
     // slug update and save resulting in ember data errors and inconsistent save
     // results
-    @(taskGroup().enqueue())
+    @(taskGroup().keepLatest())
         saveTasks;
 
     @mapBy('post.tags', 'name')
@@ -676,10 +677,36 @@ export default class LexicalEditorController extends Controller {
             this.post.set('emailOnly', options.emailOnly);
         }
 
+        const startTime = Date.now();
+
         try {
             yield post.save(options);
+
+            // log if a save is slow
+            if (this.config.sentry_dsn && (Date.now() - startTime > 2000)) {
+                captureMessage('Successful Lexical save took > 2s', (scope) => {
+                    scope.setTag('save_time', Math.ceil((Date.now() - startTime) / 1000));
+                    scope.setTag('post_type', post.isPage ? 'page' : 'post');
+                    scope.setTag('save_revision', options.adapterOptions?.saveRevision);
+                    scope.setTag('email_segment', options.adapterOptions?.emailSegment);
+                    scope.setTag('save_revision', options.adapterOptions?.saveRevision);
+                    scope.setTag('convert_to_lexical', options.adapterOptions?.convertToLexical);
+                });
+            }
         } catch (error) {
             this.post.set('emailOnly', previousEmailOnlyValue);
+
+            if (this.config.sentry_dsn && (Date.now() - startTime > 2000)) {
+                captureMessage('Failed Mobiledoc save took > 2s', (scope) => {
+                    scope.setTag('save_time', Math.ceil((Date.now() - startTime) / 1000));
+                    scope.setTag('post_type', post.isPage ? 'page' : 'post');
+                    scope.setTag('save_revision', options.adapterOptions?.saveRevision);
+                    scope.setTag('email_segment', options.adapterOptions?.emailSegment);
+                    scope.setTag('save_revision', options.adapterOptions?.saveRevision);
+                    scope.setTag('convert_to_lexical', options.adapterOptions?.convertToLexical);
+                });
+            }
+
             if (isServerUnreachableError(error)) {
                 const [prevStatus, newStatus] = this.post.changedAttributes().status || [this.post.status, this.post.status];
                 this._showErrorAlert(prevStatus, newStatus, error);
@@ -927,7 +954,7 @@ export default class LexicalEditorController extends Controller {
         // Check if anything has changed since the last revision
         let postRevisions = post.get('postRevisions').toArray();
         let latestRevision = postRevisions[postRevisions.length - 1];
-        let hasChangedSinceLastRevision = post.get('lexical') !== latestRevision.get('lexical');
+        let hasChangedSinceLastRevision = !post.isNew && post.lexical !== latestRevision.lexical;
 
         let fromNewToEdit = this.router.currentRouteName === 'lexical-editor.new'
             && transition.targetName === 'lexical-editor.edit'

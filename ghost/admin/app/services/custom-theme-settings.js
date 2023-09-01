@@ -1,4 +1,5 @@
 import Service, {inject as service} from '@ember/service';
+import nql from '@tryghost/nql';
 import {isEmpty} from '@ember/utils';
 import {run} from '@ember/runloop';
 import {task} from 'ember-concurrency';
@@ -92,6 +93,10 @@ export default class CustomThemeSettingsServices extends Service {
         this.settings.forEach(setting => setting.rollbackAttributes());
     }
 
+    rebuildSettingGroups() {
+        this.settingGroups = this._buildSettingGroups(this.settings);
+    }
+
     _buildSettingGroups(settings) {
         if (!settings || !settings.length) {
             return [];
@@ -111,7 +116,15 @@ export default class CustomThemeSettingsServices extends Service {
         }
 
         this.KNOWN_GROUPS.forEach((knownGroup) => {
-            const groupSettings = settings.filter(setting => setting.group === knownGroup.key);
+            const groupSettings = settings
+                .filter(setting => setting.group === knownGroup.key)
+                .filter((setting) => {
+                    if (setting.visibility) {
+                        return nql(setting.visibility).queryJSON(this.keyValueObject);
+                    }
+
+                    return true;
+                });
 
             if (groupSettings.length) {
                 groups.push(Object.assign({}, knownGroup, {settings: groupSettings}));

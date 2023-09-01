@@ -306,16 +306,18 @@ export default class KoenigLexicalEditor extends Component {
             return labels.map(label => label.name);
         };
 
+        const unsplashConfig = {
+            defaultHeaders: {
+                Authorization: `Client-ID 8672af113b0a8573edae3aa3713886265d9bb741d707f6c01a486cde8c278980`,
+                'Accept-Version': 'v1',
+                'Content-Type': 'application/json',
+                'App-Pragma': 'no-cache',
+                'X-Unsplash-Cache': true
+            }
+        };
+
         const defaultCardConfig = {
-            unsplash: {
-                defaultHeaders: {
-                    Authorization: `Client-ID 8672af113b0a8573edae3aa3713886265d9bb741d707f6c01a486cde8c278980`,
-                    'Accept-Version': 'v1',
-                    'Content-Type': 'application/json',
-                    'App-Pragma': 'no-cache',
-                    'X-Unsplash-Cache': true
-                }
-            },
+            unsplash: this.settings.unsplash ? unsplashConfig : null,
             tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null,
             fetchEmbed,
             fetchCollectionPosts,

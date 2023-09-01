@@ -1,13 +1,14 @@
 const _ = require('lodash');
 const hbs = require('../theme-engine/engine');
 const {prepareContextResource} = require('../proxy');
+const {isPage} = require('../data/checks');
 
 /**
  * @description Formats API response into handlebars/theme format.
  *
  * @return {Object} containing page variables
  */
-function formatPageResponse(result, pageAsPost = false) {
+function formatPageResponse(result, pageAsPost = false, locals = {}) {
     const response = {};
 
     if (result.posts) {
@@ -17,6 +18,28 @@ function formatPageResponse(result, pageAsPost = false) {
 
     if (result.meta && result.meta.pagination) {
         response.pagination = result.meta.pagination;
+    }
+
+    // when a custom routed page is loaded it can have an associated page object,
+    // in that case we want to make sure @page is still available and matches the
+    // selected page properties
+    if (isPage(result.data?.page?.[0])) {
+        const page = result.data?.page?.[0];
+
+        // build up @page data for use in templates
+        // - done here rather than `update-local-template-options` middleware because
+        //   we need access to the rendered entry's data which isn't available in middleware
+        const pageData = {
+            show_title_and_feature_image: page.show_title_and_feature_image
+        };
+
+        // merge @page into local template options
+        const localTemplateOptions = hbs.getLocalTemplateOptions(locals);
+        hbs.updateLocalTemplateOptions(locals, _.merge({}, localTemplateOptions, {
+            data: {
+                page: pageData
+            }
+        }));
     }
 
     _.each(result.data, function (data, name) {

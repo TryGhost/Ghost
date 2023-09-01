@@ -5,6 +5,7 @@ import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupConten
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {getSettingValues} from '../../../api/settings';
+import {usePostsExports} from '../../../api/posts';
 
 const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -24,6 +25,28 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const handleToggleChange = (key: string, e: React.ChangeEvent<HTMLInputElement>) => {
         updateSetting(key, e.target.checked);
         handleEditingChange(true);
+    };
+
+    const {refetch: postsData} = usePostsExports({
+        searchParams: {
+            limit: '1000'
+        },
+        enabled: false
+    });
+
+    const exportPosts = async () => {
+        const {data} = await postsData();
+        if (data) {
+            const blob = new Blob([data], {type: 'text/csv'});
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', `post-analytics.${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
     };
 
     const inputs = (
@@ -83,7 +106,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
         >
             {inputs}
             <div className='mt-1'>
-                <Button color='green' label='Export analytics' link={true} />
+                <Button color='green' label='Export analytics' link={true} onClick={exportPosts} />
             </div>
         </SettingGroup>
     );

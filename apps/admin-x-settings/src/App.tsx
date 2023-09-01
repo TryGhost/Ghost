@@ -2,17 +2,20 @@ import ExitSettingsButton from './components/ExitSettingsButton';
 import GlobalDataProvider from './components/providers/GlobalDataProvider';
 import Heading from './admin-x-ds/global/Heading';
 import NiceModal from '@ebay/nice-modal-react';
-import RoutingProvider from './components/providers/RoutingProvider';
+import RoutingProvider, {ExternalLink} from './components/providers/RoutingProvider';
 import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
 import {GlobalDirtyStateProvider} from './hooks/useGlobalDirtyState';
 import {OfficialTheme, ServicesProvider} from './components/providers/ServiceProvider';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {Toaster} from 'react-hot-toast';
+import {ZapierTemplate} from './components/settings/advanced/integrations/ZapierModal';
 
 interface AppProps {
     ghostVersion: string;
     officialThemes: OfficialTheme[];
+    zapierTemplates: ZapierTemplate[];
+    externalNavigate: (link: ExternalLink) => void;
 }
 
 const queryClient = new QueryClient({
@@ -25,12 +28,12 @@ const queryClient = new QueryClient({
     }
 });
 
-function App({ghostVersion, officialThemes}: AppProps) {
+function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate}: AppProps) {
     return (
         <QueryClientProvider client={queryClient}>
-            <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes}>
+            <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes} zapierTemplates={zapierTemplates}>
                 <GlobalDataProvider>
-                    <RoutingProvider>
+                    <RoutingProvider externalNavigate={externalNavigate}>
                         <GlobalDirtyStateProvider>
                             <div className="admin-x-settings h-[100vh] w-full overflow-y-auto" id="admin-x-root" style={{
                                 height: '100vh',
@@ -56,7 +59,7 @@ function App({ghostVersion, officialThemes}: AppProps) {
                                             </div>
                                         </div>
                                         <div className="relative flex-auto pt-[3vmin] md:ml-[300px] md:pt-[85px]">
-                                            <div className='pointer-events-none fixed inset-x-0 top-0 z-[5] h-[130px] bg-gradient-to-t from-transparent to-white to-60%'></div>
+                                            <div className='pointer-events-none fixed inset-x-0 top-0 z-[5] h-[80px] bg-gradient-to-t from-transparent to-white to-60%'></div>
                                             <Settings />
                                         </div>
                                     </div>

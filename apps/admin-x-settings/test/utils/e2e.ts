@@ -1,16 +1,17 @@
-import {ConfigResponseType} from '../../src/utils/api/config';
-import {CustomThemeSettingsResponseType} from '../../src/utils/api/customThemeSettings';
-import {InvitesResponseType} from '../../src/utils/api/invites';
-import {LabelsResponseType} from '../../src/utils/api/labels';
-import {NewslettersResponseType} from '../../src/utils/api/newsletters';
-import {OffersResponseType} from '../../src/utils/api/offers';
+import {ActionsResponseType} from '../../src/api/actions';
+import {ConfigResponseType} from '../../src/api/config';
+import {CustomThemeSettingsResponseType} from '../../src/api/customThemeSettings';
+import {InvitesResponseType} from '../../src/api/invites';
+import {LabelsResponseType} from '../../src/api/labels';
+import {NewslettersResponseType} from '../../src/api/newsletters';
+import {OffersResponseType} from '../../src/api/offers';
 import {Page} from '@playwright/test';
-import {RolesResponseType} from '../../src/utils/api/roles';
-import {SettingsResponseType} from '../../src/utils/api/settings';
-import {SiteResponseType} from '../../src/utils/api/site';
-import {ThemesResponseType} from '../../src/utils/api/themes';
-import {TiersResponseType} from '../../src/utils/api/tiers';
-import {UsersResponseType} from '../../src/utils/api/users';
+import {RolesResponseType} from '../../src/api/roles';
+import {SettingsResponseType} from '../../src/api/settings';
+import {SiteResponseType} from '../../src/api/site';
+import {ThemesResponseType} from '../../src/api/themes';
+import {TiersResponseType} from '../../src/api/tiers';
+import {UsersResponseType} from '../../src/api/users';
 import {readFileSync} from 'fs';
 
 interface MockRequestConfig {
@@ -42,6 +43,7 @@ export const responseFixtures = {
     offers: JSON.parse(readFileSync(`${__dirname}/responses/offers.json`).toString()) as OffersResponseType,
     themes: JSON.parse(readFileSync(`${__dirname}/responses/themes.json`).toString()) as ThemesResponseType,
     newsletters: JSON.parse(readFileSync(`${__dirname}/responses/newsletters.json`).toString()) as NewslettersResponseType,
+    actions: JSON.parse(readFileSync(`${__dirname}/responses/actions.json`).toString()) as ActionsResponseType,
     latestPost: {posts: [{id: '1', url: `${siteFixture.site.url}/test-post/`}]}
 };
 
@@ -50,6 +52,13 @@ export const globalDataRequests = {
     browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
     browseSite: {method: 'GET', path: '/site/', response: responseFixtures.site},
     browseMe: {method: 'GET', path: '/users/me/', response: responseFixtures.me}
+};
+
+export const limitRequests = {
+    browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+    browseInvites: {method: 'GET', path: '/invites/', response: responseFixtures.invites},
+    browseRoles: {method: 'GET', path: '/roles/?limit=all', response: responseFixtures.roles},
+    browseNewslettersLimit: {method: 'GET', path: '/newsletters/?filter=status%3Aactive&limit=all', response: responseFixtures.newsletters}
 };
 
 export async function mockApi<Requests extends Record<string, MockRequestConfig>>({page, requests}: {page: Page, requests: Requests}) {

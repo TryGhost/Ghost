@@ -18,6 +18,51 @@ const messages = {
     slugMustBeUnique: 'Slug must be unique'
 };
 
+function validateFilter(filter: string | null, type: 'manual' | 'automatic', isAllowedEmpty = false) {
+    const allowedProperties = ['featured', 'published_at', 'tag', 'tags']
+    if (type === 'manual') {
+        if (filter !== null) {
+            throw new ValidationError({
+                message: tpl(messages.invalidFilterProvided.message),
+                context: tpl(messages.invalidFilterProvided.context)
+            });
+        }
+        return;
+    }
+
+    // type === 'automatic' now
+    if (filter === null) {
+        throw new ValidationError({
+            message: tpl(messages.invalidFilterProvided.message),
+            context: tpl(messages.invalidFilterProvided.context)
+        });
+    }
+
+    if (filter.trim() === '' && !isAllowedEmpty) {
+        throw new ValidationError({
+            message: tpl(messages.invalidFilterProvided.message),
+            context: tpl(messages.invalidFilterProvided.context)
+        });
+    }
+
+    try {
+        const parsedFilter = nql(filter);
+        const keysUsed: string[] = [];
+        nql.utils.mapQuery(parsedFilter.toJSON(), function (value: unknown, key: string) {
+            keysUsed.push(key);
+        });
+        if (keysUsed.some(key => !allowedProperties.includes(key))) {
+            throw new ValidationError({
+                message: tpl(messages.invalidFilterProvided.message)
+            });
+        }
+    } catch (err) {
+        throw new ValidationError({
+            message: tpl(messages.invalidFilterProvided.message)
+        });
+    }
+}
+
 export class Collection {
     id: string;
     title: string;
@@ -40,7 +85,17 @@ export class Collection {
     }
     description: string;
     type: 'manual' | 'automatic';
-    filter: string | null;
+    _filter: string | null;
+    get filter() {
+        return this._filter;
+    }
+    set filter(value) {
+        if (this.slug === 'latest' || this.slug === 'featured') {
+            return;
+        }
+        validateFilter(value, this.type);
+        this._filter = value;
+    }
     featureImage: string | null;
     createdAt: Date;
     updatedAt: Date;
@@ -62,37 +117,6 @@ export class Collection {
         if (this.deletable) {
             this._deleted = value;
         }
-    }
-
-    public async edit(data: Partial<Collection>, uniqueChecker: UniqueChecker) {
-        if (this.type === 'automatic' && this.slug !== 'latest' && (data.filter === null || data.filter === '')) {
-            throw new ValidationError({
-                message: tpl(messages.invalidFilterProvided.message),
-                context: tpl(messages.invalidFilterProvided.context)
-            });
-        }
-
-        if (data.title !== undefined) {
-            this.title = data.title;
-        }
-
-        if (data.slug !== undefined) {
-            await this.setSlug(data.slug, uniqueChecker);
-        }
-
-        if (data.description !== undefined) {
-            this.description = data.description;
-        }
-
-        if (data.filter !== undefined) {
-            this.filter = data.filter;
-        }
-
-        if (data.featureImage !== undefined) {
-            this.featureImage = data.featureImage;
-        }
-
-        return this;
     }
 
     postMatchesFilter(post: CollectionPost) {
@@ -148,7 +172,7 @@ export class Collection {
         this._slug = data.slug;
         this.description = data.description;
         this.type = data.type;
-        this.filter = data.filter;
+        this._filter = data.filter;
         this.featureImage = data.featureImage;
         this.createdAt = data.createdAt;
         this.updatedAt = data.updatedAt;
@@ -202,13 +226,9 @@ export class Collection {
             });
         }
 
-        if (data.type === 'automatic' && (data.slug !== 'latest') && !data.filter) {
-            // @NOTE: add filter validation here
-            throw new ValidationError({
-                message: tpl(messages.invalidFilterProvided.message),
-                context: tpl(messages.invalidFilterProvided.context)
-            });
-        }
+        const type = data.type === 'automatic' ? 'automatic' : 'manual';
+        const filter = typeof data.filter === 'string' ? data.filter : null;
+        validateFilter(filter, type, data.slug === 'latest');
 
         if (!data.title) {
             throw new ValidationError({
@@ -221,8 +241,8 @@ export class Collection {
             title: data.title,
             slug: data.slug,
             description: data.description || null,
-            type: data.type || 'manual',
-            filter: data.filter || null,
+            type: type,
+            filter: filter,
             featureImage: data.feature_image || null,
             createdAt: Collection.validateDateField(data.created_at, 'created_at'),
             updatedAt: Collection.validateDateField(data.updated_at, 'updated_at'),

@@ -17,6 +17,7 @@ interface ListItemProps {
     separator?: boolean;
 
     bgOnHover?: boolean;
+    paddingRight?: boolean;
     onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
     children?: React.ReactNode;
 }
@@ -32,6 +33,7 @@ const ListItem: React.FC<ListItemProps> = ({
     testId,
     separator = true,
     bgOnHover = true,
+    paddingRight = true,
     onClick,
     children
 }) => {
@@ -58,7 +60,7 @@ const ListItem: React.FC<ListItemProps> = ({
                 </div>
             }
             {action &&
-                <div className={`px-6 py-3 ${hideActions ? 'invisible group-hover:visible' : ''}`}>
+                <div className={`py-3 pl-6 ${paddingRight && 'pr-6'} ${hideActions ? 'invisible group-hover:visible' : ''}`}>
                     {action}
                 </div>
             }

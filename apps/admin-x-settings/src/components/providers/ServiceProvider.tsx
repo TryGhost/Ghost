@@ -1,5 +1,6 @@
 import React, {createContext, useContext} from 'react';
 import useSearchService, {SearchService} from '../../utils/search';
+import {ZapierTemplate} from '../settings/advanced/integrations/ZapierModal';
 
 export type OfficialTheme = {
     name: string;
@@ -13,28 +14,32 @@ export type OfficialTheme = {
 interface ServicesContextProps {
     ghostVersion: string
     officialThemes: OfficialTheme[];
+    zapierTemplates: ZapierTemplate[];
     search: SearchService
 }
 
 interface ServicesProviderProps {
     children: React.ReactNode;
     ghostVersion: string;
+    zapierTemplates: ZapierTemplate[];
     officialThemes: OfficialTheme[];
 }
 
 const ServicesContext = createContext<ServicesContextProps>({
     ghostVersion: '',
     officialThemes: [],
+    zapierTemplates: [],
     search: {filter: '', setFilter: () => {}, checkVisible: () => true}
 });
 
-const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion, officialThemes}) => {
+const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion, zapierTemplates, officialThemes}) => {
     const search = useSearchService();
 
     return (
         <ServicesContext.Provider value={{
             ghostVersion,
             officialThemes,
+            zapierTemplates,
             search
         }}>
             {children}

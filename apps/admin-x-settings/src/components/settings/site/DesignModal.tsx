@@ -213,9 +213,10 @@ const DesignModal: React.FC = () => {
             updateRoute('design');
         }}
         buttonsDisabled={saveState === 'saving'}
+        cancelLabel='Close'
         defaultTab='homepage'
         dirty={saveState === 'unsaved'}
-        okLabel={saveState === 'saved' ? 'Saved' : (saveState === 'saving' ? 'Saving...' : 'Save & close')}
+        okLabel={saveState === 'saved' ? 'Saved' : (saveState === 'saving' ? 'Saving...' : 'Save')}
         preview={previewContent}
         previewToolbarTabs={previewTabs}
         selectedURL={selectedPreviewTab}
@@ -226,8 +227,6 @@ const DesignModal: React.FC = () => {
         title='Design'
         onOk={async () => {
             await handleSave();
-            modal.remove();
-            updateRoute('design');
         }}
         onSelectURL={onSelectURL}
     />;

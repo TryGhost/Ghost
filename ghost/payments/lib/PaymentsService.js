@@ -117,13 +117,14 @@ class PaymentsService {
      * @param {Object.<string, any>} [params.metadata]
      * @param {string} params.successUrl
      * @param {string} params.cancelUrl
+     * @param {boolean} [params.isAuthenticated]
      * @param {string} [params.email]
      *
      * @returns {Promise<URL>}
      */
-    async getDonationPaymentLink({member, metadata, successUrl, cancelUrl, email}) {
+    async getDonationPaymentLink({member, metadata, successUrl, cancelUrl, email, isAuthenticated}) {
         let customer = null;
-        if (member) {
+        if (member && isAuthenticated) {
             customer = await this.getCustomerForMember(member);
         }
 

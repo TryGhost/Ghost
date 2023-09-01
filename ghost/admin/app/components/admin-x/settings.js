@@ -127,6 +127,53 @@ const officialThemes = [{
     image: 'assets/img/themes/Journal.png'
 }];
 
+const zapierTemplates = [{
+    ghostImage: 'assets/img/logos/orb-black-1.png',
+    appImage: 'assets/img/twitter.svg',
+    title: 'Share new posts to Twitter',
+    url: 'https://zapier.com/webintent/create-zap?template=50909'
+}, {
+    ghostImage: 'assets/img/logos/orb-black-2.png',
+    appImage: 'assets/img/slackicon.png',
+    title: 'Share scheduled posts with your team in Slack',
+    url: 'https://zapier.com/webintent/create-zap?template=359499'
+}, {
+    ghostImage: 'assets/img/logos/orb-black-3.png',
+    appImage: 'assets/img/patreon.svg',
+    title: 'Connect Patreon to your Ghost membership site',
+    url: 'https://zapier.com/webintent/create-zap?template=75801'
+}, {
+    ghostImage: 'assets/img/logos/orb-black-4.png',
+    appImage: 'assets/img/zero-bounce.png',
+    title: 'Protect email delivery with email verification',
+    url: 'https://zapier.com/webintent/create-zap?template=359415'
+}, {
+    ghostImage: 'assets/img/logos/orb-black-5.png',
+    appImage: 'assets/img/paypal.svg',
+    title: 'Add members for successful sales in PayPal',
+    url: 'https://zapier.com/webintent/create-zap?template=184423'
+}, {
+    ghostImage: 'assets/img/logos/orb-black-3.png',
+    appImage: 'assets/img/paypal.svg',
+    title: 'Unsubscribe members who cancel a subscription in PayPal',
+    url: 'https://zapier.com/webintent/create-zap?template=359348'
+}, {
+    ghostImage: 'assets/img/logos/orb-black-1.png',
+    appImage: 'assets/img/google-docs.svg',
+    title: 'Send new post drafts from Google Docs to Ghost',
+    url: 'https://zapier.com/webintent/create-zap?template=50924'
+}, {
+    ghostImage: 'assets/img/logos/orb-black-4.png',
+    appImage: 'assets/img/typeform.svg',
+    title: 'Survey new members using Typeform',
+    url: 'https://zapier.com/webintent/create-zap?template=359407'
+}, {
+    ghostImage: 'assets/img/logos/orb-black-1.png',
+    appImage: 'assets/img/mailchimp.svg',
+    title: 'Sync email subscribers in Ghost + Mailchimp',
+    url: 'https://zapier.com/webintent/create-zap?template=359342'
+}];
+
 class ErrorHandler extends React.Component {
     state = {
         hasError: false
@@ -213,6 +260,7 @@ export default class AdminXSettings extends Component {
     @service session;
     @service store;
     @service settings;
+    @service router;
 
     @inject config;
 
@@ -232,6 +280,10 @@ export default class AdminXSettings extends Component {
         // don't rethrow, app should attempt to gracefully recover
     }
 
+    externalNavigate = ({route, models = []}) => {
+        this.router.transitionTo(route, ...models);
+    };
+
     ReactComponent = () => {
         return (
             <div className={['admin-x-settings-container-', this.args.className].filter(Boolean).join(' ')}>
@@ -240,6 +292,8 @@ export default class AdminXSettings extends Component {
                         <AdminXApp
                             ghostVersion={config.APP.version}
                             officialThemes={officialThemes}
+                            zapierTemplates={zapierTemplates}
+                            externalNavigate={this.externalNavigate}
                         />
                     </Suspense>
                 </ErrorHandler>

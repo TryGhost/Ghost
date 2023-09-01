@@ -78,8 +78,10 @@ const Button: React.FC<ButtonProps> = ({
 
     styles += ` ${className}`;
 
+    const iconClasses = label && icon ? 'mr-1.5' : '';
+
     const buttonChildren = <>
-        {icon && <Icon colorClass={iconColorClass} name={icon} size={size === 'sm' ? 'sm' : 'md'} />}
+        {icon && <Icon className={iconClasses} colorClass={iconColorClass} name={icon} size={size === 'sm' ? 'sm' : 'md'} />}
         {(label && hideLabel) ? <span className="sr-only">{label}</span> : label}
     </>;
     const buttonElement = React.createElement(tag, {className: styles,
