@@ -148,7 +148,7 @@ module.exports = ({t, email, url}) => `
                 </tr>
                 <tr>
                   <td class="content-block" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; vertical-align: top; padding-bottom: 10px; padding-top: 10px; font-size: 11px; line-height: 16px; color: #738A94; text-align: center;">
-                    <span class="recipient-link" style="color: #738A94; font-size: 13px; text-align: center;">Sent to <a href="mailto:${email}" style="text-decoration: underline; color: #738A94; font-size: 13px; text-align: center;">${email}</a></span>
+                    <span class="recipient-link" style="color: #738A94; font-size: 13px; text-align: center;">${t('Sent to')} <a href="mailto:${email}" style="text-decoration: underline; color: #738A94; font-size: 13px; text-align: center;">${email}</a></span>
                   </td>
                 </tr>
               </table>
