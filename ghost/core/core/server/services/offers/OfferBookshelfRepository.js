@@ -91,7 +91,7 @@ class OfferBookshelfRepository {
      * @private
      * @param {import('bookshelf').Model<any>} model
      * @param {BaseOptions} options
-     * @returns {Promise<Offer>}
+     * @returns {Promise<import('@tryghost/members-offers').Offer>}
      */
     async mapToOffer(model, options) {
         const json = model.toJSON();
@@ -123,7 +123,7 @@ class OfferBookshelfRepository {
     /**
      * @param {string} id
      * @param {BaseOptions} [options]
-     * @returns {Promise<Offer>}
+     * @returns {Promise<import('@tryghost/members-offers').Offer>}
      */
     async getById(id, options) {
         const model = await this.OfferModel.findOne({id}, {
@@ -141,7 +141,7 @@ class OfferBookshelfRepository {
     /**
      * @param {string} id stripe_coupon_id
      * @param {BaseOptions} [options]
-     * @returns {Promise<Offer>}
+     * @returns {Promise<import('@tryghost/members-offers').Offer>}
      */
     async getByStripeCouponId(id, options) {
         const model = await this.OfferModel.findOne({stripe_coupon_id: id}, {
@@ -158,7 +158,7 @@ class OfferBookshelfRepository {
 
     /**
      * @param {ListOptions} options
-     * @returns {Promise<Offer[]>}
+     * @returns {Promise<import('@tryghost/members-offers').Offer[]>}
      */
     async getAll(options) {
         const models = await this.OfferModel.findAll({
