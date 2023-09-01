@@ -1,9 +1,15 @@
 import {Recommendation} from "./Recommendation";
 import {RecommendationRepository} from "./RecommendationRepository";
 import {WellknownService} from "./WellknownService";
+import errors from "@tryghost/errors";
+import tpl from "@tryghost/tpl";
 
 type MentionSendingService = {
     sendAll(options: {url: URL, links: URL[]}): Promise<void>
+}
+
+const messages = {
+    notFound: "Recommendation with id {id} not found"
 }
 
 export class RecommendationService {
@@ -36,27 +42,41 @@ export class RecommendationService {
     }
 
     async addRecommendation(recommendation: Recommendation) {
-        const r = this.repository.add(recommendation);
+        this.repository.save(recommendation);
         await this.updateWellknown();
 
         // Only send an update for the mentioned URL
         this.sendMentionToRecommendation(recommendation);
-        return r;
+        return recommendation;
     }
 
     async editRecommendation(id: string, recommendationEdit: Partial<Recommendation>) {
         // Check if it exists
         const existing = await this.repository.getById(id);
-        const e = await this.repository.edit(existing.id, recommendationEdit);
+        if (!existing) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.notFound, {id})
+            });
+        }
+
+        existing.edit(recommendationEdit);
+        await this.repository.save(existing);
 
         await this.updateWellknown();
-        this.sendMentionToRecommendation(e);
-        return e;
+        this.sendMentionToRecommendation(existing);
+        return existing;
     }
 
     async deleteRecommendation(id: string) {
         const existing = await this.repository.getById(id);
-        await this.repository.remove(existing.id);
+        if (!existing) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.notFound, {id})
+            });
+        }
+
+        existing.delete();
+        await this.repository.save(existing);
         await this.updateWellknown();
 
         // Send a mention (because it was deleted, according to the webmentions spec)

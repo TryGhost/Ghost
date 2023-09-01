@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {Recommendation} from "./Recommendation";
+import {AddRecommendation, EditRecommendation, Recommendation} from "./Recommendation";
 import {RecommendationService} from "./RecommendationService";
 import errors from '@tryghost/errors';
 
@@ -77,7 +77,7 @@ export class RecommendationController {
 
         const recommendation = frame.data.recommendations[0];
 
-        const cleanedRecommendation: Omit<Recommendation, 'id'|'createdAt'|'updatedAt'> = {
+        const cleanedRecommendation: AddRecommendation = {
             title: validateString(recommendation, "title") ?? '',
             url: validateURL(recommendation, "url")!,
 
@@ -93,13 +93,13 @@ export class RecommendationController {
         return new Recommendation(cleanedRecommendation);
     }
 
-    #getFrameRecommendationEdit(frame: Frame): Partial<Recommendation> {
+    #getFrameRecommendationEdit(frame: Frame): Partial<EditRecommendation> {
         if (!frame.data || !frame.data.recommendations || !frame.data.recommendations[0]) {
             throw new errors.BadRequestError();
         }
 
         const recommendation = frame.data.recommendations[0];
-        const cleanedRecommendation: Partial<Recommendation> = {
+        const cleanedRecommendation: EditRecommendation = {
             title: validateString(recommendation, "title", {required: false}),
             url: validateURL(recommendation, "url", {required: false}),
             oneClickSubscribe: validateBoolean(recommendation, "one_click_subscribe", {required: false}),

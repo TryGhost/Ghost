@@ -13,7 +13,8 @@ describe('Recommendations Admin API', function () {
 
         // Clear placeholders
         for (const recommendation of (await recommendationsService.repository.getAll())) {
-            await recommendationsService.repository.remove(recommendation.id);
+            recommendation.delete();
+            await recommendationsService.repository.save(recommendation);
         }
     });
 
@@ -115,7 +116,8 @@ describe('Recommendations Admin API', function () {
                 recommendations: [
                     {
                         id: anyObjectId,
-                        created_at: anyISODateTime
+                        created_at: anyISODateTime,
+                        updated_at: anyISODateTime
                     }
                 ]
             });
