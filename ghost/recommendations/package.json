@@ -22,7 +22,6 @@
     "build"
   ],
   "devDependencies": {
-    "@tryghost/errors": "1.2.24",
     "@types/node": "^20.5.7",
     "c8": "8.0.1",
     "mocha": "10.2.0",
@@ -30,5 +29,8 @@
     "ts-node": "10.9.1",
     "typescript": "5.2.2"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@tryghost/tpl": "0.1.25",
+    "@tryghost/errors": "1.2.25"
+  }
 }
