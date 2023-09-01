@@ -5,6 +5,8 @@ import {run} from '@ember/runloop';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
+const HIDDEN_SETTING_VALUE = null;
+
 export default class CustomThemeSettingsServices extends Service {
     @service store;
 
@@ -79,8 +81,21 @@ export default class CustomThemeSettingsServices extends Service {
             return this.settings;
         }
 
+        const settings = this.settings.map((setting) => {
+            const isVisible = this._isSettingVisible(setting);
+
+            setting.value = isVisible ? setting.value : HIDDEN_SETTING_VALUE;
+
+            // Ensure the setting value gets set back to its default value if it was previously hidden
+            if (isVisible && setting.value === HIDDEN_SETTING_VALUE && setting.default !== HIDDEN_SETTING_VALUE) {
+                setting.value = setting.default;
+            }
+
+            return setting;
+        });
+
         // save all records in a single request to `/custom_theme_settings`
-        const listRecord = this.store.createRecord('custom-theme-setting-list', {customThemeSettings: this.settings});
+        const listRecord = this.store.createRecord('custom-theme-setting-list', {customThemeSettings: settings});
         yield listRecord.save();
 
         // don't keep references to lists and their children around
@@ -118,13 +133,7 @@ export default class CustomThemeSettingsServices extends Service {
         this.KNOWN_GROUPS.forEach((knownGroup) => {
             const groupSettings = settings
                 .filter(setting => setting.group === knownGroup.key)
-                .filter((setting) => {
-                    if (setting.visibility) {
-                        return nql(setting.visibility).queryJSON(this.keyValueObject);
-                    }
-
-                    return true;
-                });
+                .filter(this._isSettingVisible.bind(this));
 
             if (groupSettings.length) {
                 groups.push(Object.assign({}, knownGroup, {settings: groupSettings}));
@@ -132,5 +141,13 @@ export default class CustomThemeSettingsServices extends Service {
         });
 
         return groups;
+    }
+
+    _isSettingVisible(setting) {
+        if (!setting.visibility) {
+            return true;
+        }
+
+        return nql(setting.visibility).queryJSON(this.keyValueObject);
     }
 }

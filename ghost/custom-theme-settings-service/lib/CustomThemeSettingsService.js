@@ -10,6 +10,8 @@ const messages = {
     invalidValueForSetting: 'Invalid value for \'{key}\'. The value must follow this format: {format}.'
 };
 
+const HIDDEN_SETTING_VALUE = null;
+
 module.exports = class CustomThemeSettingsService {
     /**
      * @param {Object} options
@@ -106,6 +108,12 @@ module.exports = class CustomThemeSettingsService {
 
         settings.forEach((setting) => {
             const definition = this._activeThemeSettings[setting.key];
+
+            // skip validation for hidden settings
+            if (definition.visibility && setting.value === HIDDEN_SETTING_VALUE) {
+                return;
+            }
+
             switch (definition.type) {
             case 'select':
                 if (!definition.options.includes(setting.value)) {

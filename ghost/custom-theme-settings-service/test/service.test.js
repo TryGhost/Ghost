@@ -875,5 +875,33 @@ describe('Service', function () {
                 }]
             ).should.be.resolved();
         });
+
+        it('does not validate hidden settings', async function () {
+            const HIDDEN_SETTING_VALUE = null;
+
+            const settingName = 'foo';
+            const settingDefinition = {
+                type: 'select',
+                options: ['Foo', 'Bar', 'Baz'],
+                default: 'Foo',
+                visibility: 'some_other_setting:bar'
+            };
+
+            await service.activateTheme('test', {
+                name: 'test',
+                customSettings: {
+                    [settingName]: settingDefinition
+                }
+            });
+
+            await service.updateSettings(
+                [{
+                    id: 1,
+                    key: settingName,
+                    value: HIDDEN_SETTING_VALUE,
+                    ...settingDefinition
+                }]
+            ).should.be.resolved();
+        });
     });
 });
