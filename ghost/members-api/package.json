@@ -22,10 +22,10 @@
   "devDependencies": {
     "@tryghost/member-attribution": "0.0.0",
     "@types/node-jose": "1.1.10",
-    "c8": "7.14.0",
+    "c8": "8.0.1",
     "jwk-to-pem": "2.0.5",
     "mocha": "10.2.0",
-    "nock": "13.3.1",
+    "nock": "13.3.3",
     "should": "13.2.3",
     "sinon": "15.2.0"
   },
