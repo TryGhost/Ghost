@@ -70,7 +70,7 @@ export class RecommendationController {
         return id;
     }
 
-    #getFrameRecommendation(frame: Frame): Recommendation {
+    #getFrameRecommendation(frame: Frame): AddRecommendation {
         if (!frame.data || !frame.data.recommendations || !frame.data.recommendations[0]) {
             throw new errors.BadRequestError();
         }
@@ -85,12 +85,12 @@ export class RecommendationController {
             oneClickSubscribe: validateBoolean(recommendation, "one_click_subscribe", {required: false}) ?? false,
             reason: validateString(recommendation, "reason", {required: false}) ?? null,
             excerpt: validateString(recommendation, "excerpt", {required: false}) ?? null,
-            featuredImage: validateString(recommendation, "featured_image", {required: false}) ?? null,
-            favicon: validateString(recommendation, "favicon", {required: false}) ?? null,
+            featuredImage: validateURL(recommendation, "featured_image", {required: false}) ?? null,
+            favicon: validateURL(recommendation, "favicon", {required: false}) ?? null,
         };
 
         // Create a new recommendation
-        return new Recommendation(cleanedRecommendation);
+        return cleanedRecommendation;
     }
 
     #getFrameRecommendationEdit(frame: Frame): Partial<EditRecommendation> {
@@ -105,8 +105,8 @@ export class RecommendationController {
             oneClickSubscribe: validateBoolean(recommendation, "one_click_subscribe", {required: false}),
             reason: validateString(recommendation, "reason", {required: false}),
             excerpt: validateString(recommendation, "excerpt", {required: false}),
-            featuredImage: validateString(recommendation, "featured_image", {required: false}),
-            favicon: validateString(recommendation, "favicon", {required: false}),
+            featuredImage: validateURL(recommendation, "featured_image", {required: false}),
+            favicon: validateURL(recommendation, "favicon", {required: false}),
         };
 
         // Create a new recommendation
@@ -122,8 +122,8 @@ export class RecommendationController {
                     title: r.title,
                     reason: r.reason,
                     excerpt: r.excerpt,
-                    featured_image: r.featuredImage,
-                    favicon: r.favicon,
+                    featured_image: r.featuredImage?.toString() ?? null,
+                    favicon: r.favicon?.toString() ?? null,
                     url: r.url.toString(),
                     one_click_subscribe: r.oneClickSubscribe,
                     created_at: r.createdAt,
