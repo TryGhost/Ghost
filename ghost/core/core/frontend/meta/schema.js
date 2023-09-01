@@ -152,7 +152,7 @@ function getAuthorSchema(metaData, data) {
         sameAs: trimSameAs(data, 'author'),
         name: escapeExpression(data.author.name),
         url: metaData.authorUrl,
-        image: schemaImageObject(metaData.authorImage),
+        image: schemaImageObject(metaData.authorImage) || schemaImageObject(metaData.coverImage),
         mainEntityOfPage: metaData.authorUrl,
         description: metaData.metaDescription ?
             escapeExpression(metaData.metaDescription) :
