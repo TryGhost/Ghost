@@ -137,9 +137,23 @@ const BuiltInIntegrations: React.FC = () => {
     );
 };
 
-const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integrations}) => {
+const CustomIntegrations: React.FC<{integrations: Integration[], disabled: boolean}> = ({integrations, disabled}) => {
     const {updateRoute} = useRouting();
     const {mutateAsync: deleteIntegration} = useDeleteIntegration();
+
+    if (disabled) {
+        return (
+            <List>
+                <IntegrationItem
+                    action={() => updateRoute('pro')}
+                    detail='Upgrade to Ghost Pro to add custom integrations'
+                    icon={<Icon className='w-8' name='lock-locked' />}
+                    title='Custom Integrations'
+                    disabled
+                />
+            </List>
+        );
+    }
 
     return (
         <List>
@@ -180,6 +194,9 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [selectedTab, setSelectedTab] = useState<'built-in' | 'custom'>('built-in');
     const {data: {integrations} = {integrations: []}} = useBrowseIntegrations();
     const {updateRoute} = useRouting();
+    const {config} = useGlobalData();
+
+    const customIntegrationsDisabled = config.hostSettings?.limits?.customIntegrations?.disabled || false;
 
     useDetailModalRoute({
         route: modalRoutes.showIntegration,
@@ -196,15 +213,20 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
         {
             id: 'custom',
             title: 'Custom',
-            contents: <CustomIntegrations integrations={integrations.filter(integration => integration.type === 'custom')} />
+            contents: <CustomIntegrations
+                disabled={customIntegrationsDisabled} 
+                integrations={integrations.filter(integration => integration.type === 'custom')} 
+            />
         }
     ] as const;
 
     const buttons = (
-        <Button color='green' label='Add custom integration' link={true} onClick={() => {
-            updateRoute('integrations/add');
-            setSelectedTab('custom');
-        }} />
+        !customIntegrationsDisabled && (
+            <Button color='green' label='Add custom integration' link={true} onClick={() => {
+                updateRoute('integrations/add');
+                setSelectedTab('custom');
+            }} />
+        )
     );
 
     return (
