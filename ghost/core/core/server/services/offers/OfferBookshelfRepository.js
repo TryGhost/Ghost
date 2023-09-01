@@ -2,6 +2,8 @@ const {flowRight} = require('lodash');
 const {mapKeyValues, mapQuery} = require('@tryghost/mongo-utils');
 const DomainEvents = require('@tryghost/domain-events');
 const {Offer} = require('@tryghost/members-offers');
+const sentry = require('../../../shared/sentry');
+const logger = require('@tryghost/logging');
 
 const statusTransformer = mapKeyValues({
     key: {
@@ -99,25 +101,31 @@ class OfferBookshelfRepository {
         const count = await this.OfferRedemptionModel.where({offer_id: json.id}).count('id', {
             transacting: options.transacting
         });
-        return Offer.create({
-            id: json.id,
-            name: json.name,
-            code: json.code,
-            display_title: json.portal_title,
-            display_description: json.portal_description,
-            type: json.discount_type === 'amount' ? 'fixed' : json.discount_type,
-            amount: json.discount_amount,
-            cadence: json.interval,
-            currency: json.currency,
-            duration: json.duration,
-            duration_in_months: json.duration_in_months,
-            redemptionCount: count,
-            status: json.active ? 'active' : 'archived',
-            tier: {
-                id: json.product.id,
-                name: json.product.name
-            }
-        }, null);
+        try {
+            return await Offer.create({
+                id: json.id,
+                name: json.name,
+                code: json.code,
+                display_title: json.portal_title,
+                display_description: json.portal_description,
+                type: json.discount_type === 'amount' ? 'fixed' : json.discount_type,
+                amount: json.discount_amount,
+                cadence: json.interval,
+                currency: json.currency,
+                duration: json.duration,
+                duration_in_months: json.duration_in_months,
+                redemptionCount: count,
+                status: json.active ? 'active' : 'archived',
+                tier: {
+                    id: json.product.id,
+                    name: json.product.name
+                }
+            }, null);
+        } catch (err) {
+            logger.error(err);
+            sentry.captureException(err);
+            return null;
+        }
     }
 
     /**
@@ -173,7 +181,7 @@ class OfferBookshelfRepository {
 
         const offers = models.map(model => this.mapToOffer(model, mapOptions));
 
-        return Promise.all(offers);
+        return (await Promise.all(offers)).filter(offer => offer !== null);
     }
 
     /**
