@@ -130,9 +130,13 @@ const handleNavigation = (scroll: boolean = true) => {
 };
 
 const matchRoute = (pathname: string, routeDefinition: string) => {
-    const regex = new RegExp(routeDefinition.replace(/:(\w+)/, '(?<$1>[^/]+)'));
+    const regex = new RegExp('^' + routeDefinition.replace(/:(\w+)/, '(?<$1>[^/]+)') + '$');
 
-    return pathname.match(regex)?.groups;
+    const match = pathname.match(regex);
+
+    if (match) {
+        return match.groups || {};
+    }
 };
 
 const callRouteChangeListeners = (newPath: string, listeners: RouteChangeListener[]) => {
