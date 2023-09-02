@@ -11,6 +11,8 @@ const OfferType = require('./OfferType');
 const OfferDuration = require('./OfferDuration');
 const OfferCurrency = require('./OfferCurrency');
 const OfferStatus = require('./OfferStatus');
+const OfferCreatedEvent = require('../events/OfferCreatedEvent');
+const OfferCodeChangeEvent = require('../events/OfferCodeChangeEvent');
 
 /**
  * @typedef {object} OfferProps
@@ -100,6 +102,7 @@ class OfferTier {
 }
 
 class Offer {
+    events = [];
     get id() {
         return this.props.id.toHexString();
     }
@@ -195,6 +198,13 @@ class Offer {
                 message: `Offer 'code' must be unique. Please change and try again.`
             });
         }
+
+        this.events.push(OfferCodeChangeEvent.create({
+            offerId: this.id,
+            previousCode: this.props.code,
+            currentCode: code
+        }));
+
         this.changed.code = this.props.code;
         this.props.code = code;
     }
@@ -232,6 +242,11 @@ class Offer {
             /** @type OfferCode */
             code: null
         };
+        if (options.isNew) {
+            this.events.push(OfferCreatedEvent.create({
+                offer: this
+            }));
+        }
     }
 
     /**

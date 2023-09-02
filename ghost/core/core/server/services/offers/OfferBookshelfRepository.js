@@ -1,10 +1,9 @@
 const {flowRight} = require('lodash');
 const {mapKeyValues, mapQuery} = require('@tryghost/mongo-utils');
 const DomainEvents = require('@tryghost/domain-events');
-const OfferCodeChangeEvent = require('../domain/events/OfferCodeChangeEvent');
-const OfferCreatedEvent = require('../domain/events/OfferCreatedEvent');
-const Offer = require('../domain/models/Offer');
-const OfferStatus = require('../domain/models/OfferStatus');
+const {Offer} = require('@tryghost/members-offers');
+const sentry = require('../../../shared/sentry');
+const logger = require('@tryghost/logging');
 
 const statusTransformer = mapKeyValues({
     key: {
@@ -43,7 +42,7 @@ const mongoTransformer = flowRight(statusTransformer, rejectNonStatusTransformer
  * @prop {string} filter
  */
 
-class OfferRepository {
+class OfferBookshelfRepository {
     /**
      * @param {{forge: (data: object) => import('bookshelf').Model<Offer.OfferProps>}} OfferModel
      * @param {{forge: (data: object) => import('bookshelf').Model<any>}} OfferRedemptionModel
@@ -94,7 +93,7 @@ class OfferRepository {
      * @private
      * @param {import('bookshelf').Model<any>} model
      * @param {BaseOptions} options
-     * @returns {Promise<Offer>}
+     * @returns {Promise<import('@tryghost/members-offers').Offer>}
      */
     async mapToOffer(model, options) {
         const json = model.toJSON();
@@ -102,31 +101,37 @@ class OfferRepository {
         const count = await this.OfferRedemptionModel.where({offer_id: json.id}).count('id', {
             transacting: options.transacting
         });
-        return Offer.create({
-            id: json.id,
-            name: json.name,
-            code: json.code,
-            display_title: json.portal_title,
-            display_description: json.portal_description,
-            type: json.discount_type === 'amount' ? 'fixed' : json.discount_type,
-            amount: json.discount_amount,
-            cadence: json.interval,
-            currency: json.currency,
-            duration: json.duration,
-            duration_in_months: json.duration_in_months,
-            redemptionCount: count,
-            status: json.active ? 'active' : 'archived',
-            tier: {
-                id: json.product.id,
-                name: json.product.name
-            }
-        }, null);
+        try {
+            return await Offer.create({
+                id: json.id,
+                name: json.name,
+                code: json.code,
+                display_title: json.portal_title,
+                display_description: json.portal_description,
+                type: json.discount_type === 'amount' ? 'fixed' : json.discount_type,
+                amount: json.discount_amount,
+                cadence: json.interval,
+                currency: json.currency,
+                duration: json.duration,
+                duration_in_months: json.duration_in_months,
+                redemptionCount: count,
+                status: json.active ? 'active' : 'archived',
+                tier: {
+                    id: json.product.id,
+                    name: json.product.name
+                }
+            }, null);
+        } catch (err) {
+            logger.error(err);
+            sentry.captureException(err);
+            return null;
+        }
     }
 
     /**
      * @param {string} id
      * @param {BaseOptions} [options]
-     * @returns {Promise<Offer>}
+     * @returns {Promise<import('@tryghost/members-offers').Offer>}
      */
     async getById(id, options) {
         const model = await this.OfferModel.findOne({id}, {
@@ -144,7 +149,7 @@ class OfferRepository {
     /**
      * @param {string} id stripe_coupon_id
      * @param {BaseOptions} [options]
-     * @returns {Promise<Offer>}
+     * @returns {Promise<import('@tryghost/members-offers').Offer>}
      */
     async getByStripeCouponId(id, options) {
         const model = await this.OfferModel.findOne({stripe_coupon_id: id}, {
@@ -161,7 +166,7 @@ class OfferRepository {
 
     /**
      * @param {ListOptions} options
-     * @returns {Promise<Offer[]>}
+     * @returns {Promise<import('@tryghost/members-offers').Offer[]>}
      */
     async getAll(options) {
         const models = await this.OfferModel.findAll({
@@ -176,11 +181,11 @@ class OfferRepository {
 
         const offers = models.map(model => this.mapToOffer(model, mapOptions));
 
-        return Promise.all(offers);
+        return (await Promise.all(offers)).filter(offer => offer !== null);
     }
 
     /**
-     * @param {Offer} offer
+     * @param {import('@tryghost/members-offers').Offer} offer
      * @param {BaseOptions} [options]
      * @returns {Promise<void>}
      */
@@ -199,22 +204,16 @@ class OfferRepository {
             duration: offer.duration.value.type,
             duration_in_months: offer.duration.value.type === 'repeating' ? offer.duration.value.months : null,
             currency: offer.currency ? offer.currency.value : null,
-            active: offer.status.equals(OfferStatus.create('active'))
+            active: offer.status.value === 'active'
         };
-
-        if (offer.codeChanged) {
-            const event = OfferCodeChangeEvent.create({
-                offerId: offer.id,
-                previousCode: offer.oldCode,
-                currentCode: offer.code
-            });
-            DomainEvents.dispatch(event);
-        }
 
         if (offer.isNew) {
             await this.OfferModel.add(data, options);
-            const event = OfferCreatedEvent.create({offer});
+        } else {
+            await this.OfferModel.edit(data, {...options, id: data.id});
+        }
 
+        for (const event of offer.events) {
             if (options.transacting) {
                 // Only dispatch the event after the transaction has finished
                 // Because else the offer won't be committed to the database yet
@@ -224,10 +223,8 @@ class OfferRepository {
             } else {
                 DomainEvents.dispatch(event);
             }
-        } else {
-            await this.OfferModel.edit(data, {...options, id: data.id});
         }
     }
 }
 
-module.exports = OfferRepository;
+module.exports = OfferBookshelfRepository;
