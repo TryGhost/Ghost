@@ -14,7 +14,7 @@ import NewsletterDetailModal from '../settings/email/newsletters/NewsletterDetai
 import NiceModal, {NiceModalHocProps} from '@ebay/nice-modal-react';
 import PinturaModal from '../settings/advanced/integrations/PinturaModal';
 import PortalModal from '../settings/membership/portal/PortalModal';
-import React, {createContext, useCallback, useEffect, useRef, useState} from 'react';
+import React, {createContext, useCallback, useEffect, useState} from 'react';
 import SlackModal from '../settings/advanced/integrations/SlackModal';
 import StripeConnectModal from '../settings/membership/stripe/StripeConnectModal';
 import TierDetailModal from '../settings/membership/tiers/TierDetailModal';
@@ -41,7 +41,6 @@ export type RoutingContextData = {
     yScroll: number;
     updateRoute: (to: string | InternalLink | ExternalLink) => void;
     updateScrolled: (newPath: string) => void;
-    addRouteChangeListener: (listener: RouteChangeListener) => (() => void);
 };
 
 export const RouteContext = createContext<RoutingContextData>({
@@ -49,8 +48,7 @@ export const RouteContext = createContext<RoutingContextData>({
     scrolledRoute: '',
     yScroll: 0,
     updateRoute: () => {},
-    updateScrolled: () => {},
-    addRouteChangeListener: () => (() => {})
+    updateScrolled: () => {}
 });
 
 export type RoutingModalProps = {
@@ -139,31 +137,15 @@ const matchRoute = (pathname: string, routeDefinition: string) => {
     }
 };
 
-const callRouteChangeListeners = (newPath: string, listeners: RouteChangeListener[]) => {
-    listeners.forEach((listener) => {
-        const params = matchRoute(newPath, listener.route);
-
-        if (params) {
-            listener.callback(params);
-        }
-    });
-};
-
 type RouteProviderProps = {
     externalNavigate: (link: ExternalLink) => void;
     children: React.ReactNode;
 };
 
-type RouteChangeListener = {
-    route: string;
-    callback: (params: RouteParams) => void;
-}
-
 const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, children}) => {
     const [route, setRoute] = useState<string>('');
     const [yScroll, setYScroll] = useState(0);
     const [scrolledRoute, setScrolledRoute] = useState<string>('');
-    const routeChangeListeners = useRef<RouteChangeListener[]>([]);
 
     const updateRoute = useCallback((to: string | InternalLink | ExternalLink) => {
         const options = typeof to === 'string' ? {route: to} : to;
@@ -194,7 +176,6 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, childr
         const handleHashChange = () => {
             const matchedRoute = handleNavigation();
             setRoute(matchedRoute);
-            callRouteChangeListeners(matchedRoute, routeChangeListeners.current);
         };
 
         const handleScroll = () => {
@@ -206,7 +187,6 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, childr
         const element = document.getElementById('admin-x-root');
         const matchedRoute = handleNavigation();
         setRoute(matchedRoute);
-        callRouteChangeListeners(matchedRoute, routeChangeListeners.current);
         element!.addEventListener('scroll', handleScroll);
 
         window.addEventListener('hashchange', handleHashChange);
@@ -217,16 +197,6 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, childr
         };
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const addRouteChangeListener = useCallback((listener: RouteChangeListener) => {
-        if (route && !routeChangeListeners.current.some(current => current.route === listener.route)) {
-            callRouteChangeListeners(route, [listener]);
-        }
-
-        routeChangeListeners.current = [...routeChangeListeners.current, listener];
-
-        return () => routeChangeListeners.current = routeChangeListeners.current.filter(current => current !== listener);
-    }, [route]);
-
     return (
         <RouteContext.Provider
             value={{
@@ -234,8 +204,7 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, childr
                 scrolledRoute,
                 yScroll,
                 updateRoute,
-                updateScrolled,
-                addRouteChangeListener
+                updateScrolled
             }}
         >
             {children}
