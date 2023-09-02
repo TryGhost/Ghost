@@ -18,7 +18,7 @@ const EditRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({
     const {updateRoute} = useRouting();
     const {mutateAsync: editRecommendation} = useEditRecommendation();
 
-    const {formState, updateForm, handleSave, saveState} = useForm({
+    const {formState, updateForm, handleSave, saveState, errors} = useForm({
         initialState: {
             ...recommendation
         },
@@ -29,6 +29,9 @@ const EditRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({
         },
         onValidate: () => {
             const newErrors: Record<string, string> = {};
+            if (!formState.title) {
+                newErrors.title = 'Title is required';
+            }
             return newErrors;
         }
     });
@@ -70,7 +73,7 @@ const EditRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({
             }
         }}
     >
-        <RecommendationReasonForm formState={formState} updateForm={updateForm as any} />
+        <RecommendationReasonForm errors={errors} formState={formState} updateForm={updateForm as any}/>
     </Modal>;
 };
 
