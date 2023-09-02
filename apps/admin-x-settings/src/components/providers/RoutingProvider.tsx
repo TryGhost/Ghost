@@ -1,11 +1,11 @@
 import AddIntegrationModal from '../settings/advanced/integrations/AddIntegrationModal';
 import AddNewsletterModal from '../settings/email/newsletters/AddNewsletterModal';
 import AddRecommendationModal from '../settings/site/recommendations/AddRecommendationModal';
-import AddRecommendationModalConfirm from '../settings/site/recommendations/AddRecommendationModalConfirm';
 import AmpModal from '../settings/advanced/integrations/AmpModal';
 import ChangeThemeModal from '../settings/site/ThemeModal';
 import CustomIntegrationModal from '../settings/advanced/integrations/CustomIntegrationModal';
 import DesignModal from '../settings/site/DesignModal';
+import EditRecommendationModal from '../settings/site/recommendations/EditRecommendationModal';
 import FirstpromoterModal from '../settings/advanced/integrations/FirstPromoterModal';
 import HistoryModal from '../settings/advanced/HistoryModal';
 import InviteUserModal from '../settings/general/InviteUserModal';
@@ -77,7 +77,9 @@ const modalPaths: {[key: string]: React.FC<NiceModalHocProps & RoutingModalProps
     'integrations/firstpromoter': FirstpromoterModal,
     'integrations/pintura': PinturaModal,
     'integrations/add': AddIntegrationModal,
-    'integrations/show/:id': CustomIntegrationModal
+    'integrations/show/:id': CustomIntegrationModal,
+    'recommendations/add': AddRecommendationModal,
+    'recommendations/:id': EditRecommendationModal
 };
 
 function getHashPath(urlPath: string | undefined) {
@@ -116,44 +118,6 @@ const handleNavigation = (scroll: boolean = true) => {
 
         if (path && modal) {
             NiceModal.show(modal, {params: matchRoute(pathName, path)});
-        }
-
-        if (pathName === 'design/edit/themes') {
-            NiceModal.show(ChangeThemeModal);
-        } else if (pathName === 'design/edit') {
-            NiceModal.show(DesignModal);
-        } else if (pathName === 'navigation/edit') {
-            NiceModal.show(NavigationModal);
-        } else if (pathName === 'users/invite') {
-            NiceModal.show(InviteUserModal);
-        } else if (pathName === 'portal/edit') {
-            NiceModal.show(PortalModal);
-        } else if (pathName === 'tiers/add') {
-            NiceModal.show(TierDetailModal);
-        } else if (pathName === 'stripe-connect') {
-            NiceModal.show(StripeConnectModal);
-        } else if (pathName === 'newsletters/add') {
-            NiceModal.show(AddNewsletterModal);
-        } else if (pathName === 'history/view') {
-            NiceModal.show(HistoryModal);
-        } else if (pathName === 'integrations/zapier') {
-            NiceModal.show(ZapierModal);
-        } else if (pathName === 'integrations/slack') {
-            NiceModal.show(SlackModal);
-        } else if (pathName === 'integrations/amp') {
-            NiceModal.show(AmpModal);
-        } else if (pathName === 'integrations/unsplash') {
-            NiceModal.show(UnsplashModal);
-        } else if (pathName === 'integrations/firstpromoter') {
-            NiceModal.show(FirstpromoterModal);
-        } else if (pathName === 'integrations/pintura') {
-            NiceModal.show(PinturaModal);
-        } else if (pathName === 'integrations/add') {
-            NiceModal.show(AddIntegrationModal);
-        } else if (pathName === 'recommendations/add') {
-            NiceModal.show(AddRecommendationModal);
-        } else if (pathName === 'recommendations/add-confirm') {
-            NiceModal.show(AddRecommendationModalConfirm);
         }
 
         if (scroll) {

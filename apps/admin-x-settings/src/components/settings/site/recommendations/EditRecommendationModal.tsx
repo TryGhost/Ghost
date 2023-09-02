@@ -4,7 +4,8 @@ import React from 'react';
 import RecommendationReasonForm from './RecommendationReasonForm';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
-import {Recommendation, useEditRecommendation} from '../../../../api/recommendations';
+import {Recommendation, useBrowseRecommendations, useEditRecommendation} from '../../../../api/recommendations';
+import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
 
@@ -77,4 +78,15 @@ const EditRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({
     </Modal>;
 };
 
-export default NiceModal.create(EditRecommendationModalConfirm);
+const EditRecommendationModal: React.FC<RoutingModalProps> = ({params}) => {
+    const {data: {recommendations} = {}} = useBrowseRecommendations();
+    const recommendation = recommendations?.find(({id}) => id === params?.id);
+
+    if (recommendation) {
+        return <EditRecommendationModalConfirm recommendation={recommendation} />;
+    } else {
+        return null;
+    }
+};
+
+export default NiceModal.create(EditRecommendationModal);
