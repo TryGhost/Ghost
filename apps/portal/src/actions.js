@@ -96,10 +96,11 @@ async function signin({data, api, state}) {
 
 async function signup({data, state, api}) {
     try {
-        const {recommendations_enabled: recommendationsEnabled} = state && state.site;
+        const {recommendations_enabled: recommendationsEnabled = false} = state.site;
+        const {recommendations = []} = state.site;
         let successUrl = undefined;
 
-        if (recommendationsEnabled) {
+        if (recommendationsEnabled && recommendations.length > 0) {
             const currentUrl = window.location.origin + window.location.pathname;
             successUrl = `${currentUrl}#/portal/recommendations`;
         }

@@ -102,7 +102,9 @@ const baseSingleTierSite = getSiteData({
     portalButtonIcon: 'icon-1',
     portalButtonSignupText: 'Subscribe now',
     portalButtonStyle: 'icon-and-text',
-    membersSupportAddress: 'support@example.com'
+    membersSupportAddress: 'support@example.com',
+    recommendationsEnabled: false,
+    recommendations: []
 });
 
 const baseMultiTierSite = getSiteData({
@@ -130,7 +132,9 @@ const baseMultiTierSite = getSiteData({
     portalButtonIcon: 'icon-1',
     portalButtonSignupText: 'Subscribe now',
     portalButtonStyle: 'icon-and-text',
-    membersSupportAddress: 'support@example.com'
+    membersSupportAddress: 'support@example.com',
+    recommendationsEnabled: false,
+    recommendations: []
 });
 
 export const site = {
@@ -168,6 +172,11 @@ export const site = {
         membersDisabled: {
             ...baseSingleTierSite,
             members_signup_access: 'none'
+        },
+        withRecommendations: {
+            ...baseSingleTierSite,
+            recommendations_enabled: true,
+            recommendations: [{title: 'Recommendation 1', url: 'https://recommendation-1.org'}, {title: 'Recommendation 2', url: 'https://recommendation-2.org'}]
         }
     },
     multipleTiers: {
@@ -183,6 +192,11 @@ export const site = {
         withoutName: {
             ...baseMultiTierSite,
             portal_name: false
+        },
+        withRecommendations: {
+            ...baseMultiTierSite,
+            recommendations_enabled: true,
+            recommendations: [{title: 'Recommendation 1', url: 'https://recommendation-1.org'}, {title: 'Recommendation 2', url: 'https://recommendation-2.org'}]
         }
     }
 };
