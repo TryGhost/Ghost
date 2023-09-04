@@ -2,6 +2,7 @@ import AddIntegrationModal from '../settings/advanced/integrations/AddIntegratio
 import AddNewsletterModal from '../settings/email/newsletters/AddNewsletterModal';
 import AddRecommendationModal from '../settings/site/recommendations/AddRecommendationModal';
 import AmpModal from '../settings/advanced/integrations/AmpModal';
+import AnnouncementBarModal from '../settings/site/AnnouncementBarModal';
 import ChangeThemeModal from '../settings/site/ThemeModal';
 import CustomIntegrationModal from '../settings/advanced/integrations/CustomIntegrationModal';
 import DesignModal from '../settings/site/DesignModal';
@@ -77,7 +78,8 @@ const modalPaths: {[key: string]: React.FC<NiceModalHocProps & RoutingModalProps
     'integrations/add': AddIntegrationModal,
     'integrations/show/:id': CustomIntegrationModal,
     'recommendations/add': AddRecommendationModal,
-    'recommendations/:id': EditRecommendationModal
+    'recommendations/:id': EditRecommendationModal,
+    'announcement-bar/edit': AnnouncementBarModal
 };
 
 function getHashPath(urlPath: string | undefined) {
