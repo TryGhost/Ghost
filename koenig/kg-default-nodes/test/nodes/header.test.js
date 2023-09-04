@@ -281,7 +281,7 @@ describe('HeaderNode', function () {
                 textColor: '#000000',
                 buttonColor: '#000000',
                 buttonTextColor: '#FFFFFF',
-                layout: 'wide',
+                layout: 'full',
                 swapped: false
             };
 
@@ -313,7 +313,7 @@ describe('HeaderNode', function () {
                 node.textColor.should.equal('#000000');
                 node.buttonColor.should.equal('#000000');
                 node.buttonTextColor.should.equal('#FFFFFF');
-                node.layout.should.equal('wide');
+                node.layout.should.equal('full');
                 node.swapped.should.be.false;
             }));
 
@@ -441,7 +441,7 @@ describe('HeaderNode', function () {
                 // Assuming outerHTML gets the full HTML string of the element
                 const renderedHtml = _.replace(element.outerHTML, /\s/g, '');
                 const expectedHtml = `
-                <div class="kg-card kg-header-card kg-v2 kg-width-wide " style=";" data-background-color="#F0F0F0">
+                <div class="kg-card kg-header-card kg-v2 kg-width-full kg-content-wide " style=";" data-background-color="#F0F0F0">
                 <picture><img class="kg-header-card-image" src="https://example.com/image.jpg" alt=""></picture>
                     <div class="kg-header-card-content">
                         <div class="kg-header-card-text kg-align-center">
@@ -482,7 +482,7 @@ describe('HeaderNode', function () {
                 const {element} = node.exportDOM(exportOptions);
                 const renderedHtml = _.replace(element.outerHTML, /\s/g, '');
                 const expectedHtml = `
-                <div class="kg-card kg-header-card kg-v2 kg-width-wide " style="background-color: #000000;" data-background-color="#000000">
+                <div class="kg-card kg-header-card kg-v2 kg-width-full kg-content-wide " style="background-color: #000000;" data-background-color="#000000">
                     <div class="kg-header-card-content">
                         <div class="kg-header-card-text kg-align-center">
                         <h2 id="hello-world" class="kg-header-card-heading" style="color: #FFFFFF;" data-text-color="#FFFFFF">hello world</h2>

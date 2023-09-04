@@ -445,7 +445,7 @@ test.describe('Header card V2', () => {
         await createHeaderCard({page, version: 2});
 
         await assertHTML(page, html`
-            <div data-lexical-decorator="true" contenteditable="false" data-kg-card-width="wide">
+            <div data-lexical-decorator="true" contenteditable="false" data-kg-card-width="full">
                 <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="header">
                 </div>
             </div>
