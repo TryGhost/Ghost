@@ -96,15 +96,25 @@ async function signin({data, api, state}) {
 
 async function signup({data, state, api}) {
     try {
+        const {recommendations_enabled: recommendationsEnabled = false} = state.site;
+        const {recommendations = []} = state.site;
+        let successUrl = undefined;
+
+        if (recommendationsEnabled && recommendations.length > 0) {
+            const currentUrl = window.location.origin + window.location.pathname;
+            successUrl = `${currentUrl}#/portal/recommendations`;
+        }
+
         let {plan, tierId, cadence, email, name, newsletters, offerId} = data;
+
         if (plan.toLowerCase() === 'free') {
-            await api.member.sendMagicLink({emailType: 'signup', ...data});
+            await api.member.sendMagicLink({emailType: 'signup', ...data, redirect: successUrl});
         } else {
             if (tierId && cadence) {
-                await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId});
+                await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId, successUrl});
             } else {
                 ({tierId, cadence} = getProductCadenceFromPrice({site: state?.site, priceId: plan}));
-                await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId});
+                await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId, successUrl});
             }
             return {
                 page: 'loading'

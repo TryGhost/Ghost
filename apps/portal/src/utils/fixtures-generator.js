@@ -40,7 +40,9 @@ export function getSiteData({
     portalButtonStyle: portal_button_style = 'icon-and-text',
     membersSupportAddress: members_support_address = 'support@example.com',
     newsletters = [],
-    commentsEnabled
+    commentsEnabled,
+    recommendations = [],
+    recommendationsEnabled
 } = {}) {
     return {
         title,
@@ -65,7 +67,9 @@ export function getSiteData({
         portal_button_style,
         members_support_address,
         comments_enabled: !!commentsEnabled,
-        newsletters
+        newsletters,
+        recommendations,
+        recommendations_enabled: !!recommendationsEnabled
     };
 }
 
