@@ -4,9 +4,7 @@ const serveStatic = require('../../../shared/express').static;
 
 const fs = require('fs-extra');
 const path = require('path');
-const moment = require('moment');
 const tpl = require('@tryghost/tpl');
-const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const constants = require('@tryghost/constants');
 const urlUtils = require('../../../shared/url-utils');
@@ -127,16 +125,11 @@ class LocalStorageBase extends StorageBase {
         const {storagePath, errorMessages} = this;
 
         return function serveStaticContent(req, res, next) {
-            const startedAtMoment = moment();
-
             return serveStatic(
                 storagePath,
                 {
                     maxAge: constants.ONE_YEAR_MS,
-                    fallthrough: false,
-                    onEnd: () => {
-                        logging.info('LocalStorageBase.serve', req.path, moment().diff(startedAtMoment, 'ms') + 'ms');
-                    }
+                    fallthrough: false
                 }
             )(req, res, (err) => {
                 if (err) {
