@@ -67,7 +67,7 @@ module.exports = class MentionSendingService {
             let previousHtml = post.previous('status') === 'published' ? post.previous('html') : null;
             if (html || previousHtml) {
                 await this.#jobService.addJob('sendWebmentions', async () => {
-                    await this.sendAll({
+                    await this.sendForHTMLResource({
                         url: new URL(this.#getPostUrl(post)),
                         html: html,
                         previousHtml: previousHtml
@@ -80,6 +80,10 @@ module.exports = class MentionSendingService {
         }
     }
 
+    /**
+     * @param {{source: URL, target: URL, endpoint: URL}} options
+     * @returns
+     */
     async send({source, target, endpoint}) {
         logging.info('[Webmention] Sending webmention from ' + source.href + ' to ' + target.href + ' via ' + endpoint.href);
 
@@ -113,7 +117,7 @@ module.exports = class MentionSendingService {
      * @param {string} resource.html
      * @param {string|null} [resource.previousHtml]
      */
-    async sendAll(resource) {
+    async sendForHTMLResource(resource) {
         const links = resource.html ? this.getLinks(resource.html) : [];
         if (resource.previousHtml) {
             // We also need to send webmentions for removed links
@@ -129,12 +133,25 @@ module.exports = class MentionSendingService {
             logging.info('[Webmention] Sending all webmentions for ' + resource.url.href);
         }
 
+        await this.sendAll({
+            url: resource.url,
+            links
+        });
+    }
+
+    /**
+     * Send a webmention call for the links in a resource.
+     * @param {object} resource
+     * @param {URL} resource.url
+     * @param {URL[]} resource.links
+     */
+    async sendAll({url, links}) {
         for (const target of links) {
             const endpoint = await this.#discoveryService.getEndpoint(target);
             if (endpoint) {
                 // Send webmention call
                 try {
-                    await this.send({source: resource.url, target, endpoint});
+                    await this.send({source: url, target, endpoint});
                 } catch (e) {
                     logging.error('[Webmention] Failed sending via ' + endpoint.href + ': ' + e.message);
                 }

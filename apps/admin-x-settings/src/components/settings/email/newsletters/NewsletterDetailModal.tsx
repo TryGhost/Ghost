@@ -1,4 +1,5 @@
 import ButtonGroup from '../../../../admin-x-ds/global/ButtonGroup';
+import ColorPickerField from '../../../../admin-x-ds/global/form/ColorPickerField';
 import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import Form from '../../../../admin-x-ds/global/form/Form';
 import Heading from '../../../../admin-x-ds/global/Heading';
@@ -16,33 +17,33 @@ import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import ToggleGroup from '../../../../admin-x-ds/global/form/ToggleGroup';
-import useForm from '../../../../hooks/useForm';
+import useFeatureFlag from '../../../../hooks/useFeatureFlag';
+import useForm, {ErrorMessages} from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import validator from 'validator';
-import {Newsletter, useEditNewsletter} from '../../../../api/newsletters';
+import {Newsletter, useBrowseNewsletters, useEditNewsletter} from '../../../../api/newsletters';
 import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
+import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {fullEmailAddress} from '../../../../api/site';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
 import {getSettingValues} from '../../../../api/settings';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
+import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {toast} from 'react-hot-toast';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
-
-interface NewsletterDetailModalProps {
-    newsletter: Newsletter
-}
 
 const Sidebar: React.FC<{
     newsletter: Newsletter;
     updateNewsletter: (fields: Partial<Newsletter>) => void;
     validate: () => void;
-    errors: Record<string, string>;
+    errors: ErrorMessages;
     clearError: (field: string) => void;
 }> = ({newsletter, updateNewsletter, validate, errors, clearError}) => {
     const {settings, siteData, config} = useGlobalData();
     const [membersSupportAddress] = getSettingValues<string>(settings, ['members_support_address']);
     const {mutateAsync: uploadImage} = useUploadImage();
     const [selectedTab, setSelectedTab] = useState('generalSettings');
+    const hasEmailCustomization = useFeatureFlag('emailCustomization');
 
     const replyToEmails = [
         {label: `Newsletter address (${fullEmailAddress(newsletter.sender_email || 'noreply', siteData)})`, value: 'newsletter'},
@@ -53,6 +54,16 @@ const Sidebar: React.FC<{
         {value: 'serif', label: 'Elegant serif', className: 'font-serif'},
         {value: 'sans_serif', label: 'Clean sans-serif'}
     ];
+
+    const backgroundColorIsDark = () => {
+        if (newsletter.background_color === 'dark') {
+            return true;
+        }
+        if (newsletter.background_color === 'light') {
+            return false;
+        }
+        return textColorForBackgroundColor(newsletter.background_color).hex().toLowerCase() === '#ffffff';
+    };
 
     const tabs: Tab[] = [
         {
@@ -146,6 +157,49 @@ const Sidebar: React.FC<{
                 </Form>
 
                 <Form className='mt-6' gap='sm' margins='lg' title='Body'>
+                    {hasEmailCustomization && <>
+                        <ColorPickerField
+                            direction='rtl'
+                            swatches={[
+                                {
+                                    hex: '#f0f0f0',
+                                    title: 'Light grey'
+                                },
+                                {
+                                    hex: '#ffffff',
+                                    value: 'light',
+                                    title: 'White'
+                                }
+                            ]}
+                            title='Background color'
+                            value={newsletter.background_color || 'light'}
+                            onChange={color => updateNewsletter({background_color: color!})}
+                        />
+                        <ColorPickerField
+                            clearButtonValue={null}
+                            direction='rtl'
+                            swatches={[
+                                {
+                                    hex: siteData.accent_color,
+                                    value: 'accent',
+                                    title: 'Accent'
+                                },
+                                {
+                                    hex: backgroundColorIsDark() ? '#ffffff' : '#000000',
+                                    value: 'auto',
+                                    title: 'Auto'
+                                },
+                                {
+                                    value: null,
+                                    title: 'Transparent',
+                                    hex: '#00000000'
+                                }
+                            ]}
+                            title='Border color'
+                            value={newsletter.border_color}
+                            onChange={color => updateNewsletter({border_color: color})}
+                        />
+                    </>}
                     <Toggle
                         checked={newsletter.show_post_title_section}
                         direction="rtl"
@@ -189,6 +243,24 @@ const Sidebar: React.FC<{
                         className="mb-1 !gap-0"
                         />
                     </div>
+                    {hasEmailCustomization && <ColorPickerField
+                        direction='rtl'
+                        swatches={[
+                            {
+                                value: 'accent',
+                                title: 'Accent',
+                                hex: siteData.accent_color
+                            },
+                            {
+                                value: null,
+                                title: 'Auto',
+                                hex: backgroundColorIsDark() ? '#ffffff' : '#000000'
+                            }
+                        ]}
+                        title='Heading color'
+                        value={newsletter.title_color}
+                        onChange={color => updateNewsletter({title_color: color})}
+                    />}
                     <Select
                         options={fontOptions}
                         selectedOption={newsletter.body_font_category}
@@ -278,7 +350,7 @@ const Sidebar: React.FC<{
     );
 };
 
-const NewsletterDetailModal: React.FC<NewsletterDetailModalProps> = ({newsletter}) => {
+const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
     const modal = useModal();
     const {siteData} = useGlobalData();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
@@ -354,6 +426,17 @@ const NewsletterDetailModal: React.FC<NewsletterDetailModalProps> = ({newsletter
             }
         }}
     />;
+};
+
+const NewsletterDetailModal: React.FC<RoutingModalProps> = ({params}) => {
+    const {data: {newsletters} = {}} = useBrowseNewsletters();
+    const newsletter = newsletters?.find(({id}) => id === params?.id);
+
+    if (newsletter) {
+        return <NewsletterDetailModalContent newsletter={newsletter} />;
+    } else {
+        return null;
+    }
 };
 
 export default NiceModal.create(NewsletterDetailModal);

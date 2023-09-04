@@ -1,4 +1,4 @@
-import {ExternalLink, InternalLink, modalRoutes} from '../components/providers/RoutingProvider';
+import {ExternalLink, InternalLink} from '../components/providers/RoutingProvider';
 import {InfiniteData} from '@tanstack/react-query';
 import {JSONObject} from './config';
 import {Meta, createInfiniteQuery} from '../utils/apiRequests';
@@ -95,13 +95,13 @@ export const getActorLinkTarget = (action: Action): InternalLink | ExternalLink 
             return;
         }
 
-        return {route: modalRoutes.showIntegration, params: {id: action.actor.id}};
+        return {route: `integrations/show/${action.actor.id}`};
     case 'user':
         if (!action.actor.slug) {
             return;
         }
 
-        return {route: modalRoutes.showUser, params: {slug: action.actor.slug}};
+        return {route: `users/show/${action.actor.slug}`};
     }
 
     return;
@@ -134,7 +134,7 @@ export const getLinkTarget = (action: Action): InternalLink | ExternalLink | und
                 return;
             }
 
-            return {route: modalRoutes.showIntegration, params: {id: action.resource.id}};
+            return {route: `integrations/show/${action.resource.id}`};
         case 'offer':
             if (!action.resource || !action.resource.id) {
                 return;
@@ -162,7 +162,7 @@ export const getLinkTarget = (action: Action): InternalLink | ExternalLink | und
                 return;
             }
 
-            return {route: modalRoutes.showUser, params: {slug: action.resource.slug}};
+            return {route: `users/show/${action.resource.slug}`};
         }
     }
 
