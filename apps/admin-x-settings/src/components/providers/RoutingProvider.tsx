@@ -4,12 +4,14 @@ import AddRecommendationModal from '../settings/site/recommendations/AddRecommen
 import AddRecommendationModalConfirm from '../settings/site/recommendations/AddRecommendationModalConfirm';
 import AmpModal from '../settings/advanced/integrations/AmpModal';
 import ChangeThemeModal from '../settings/site/ThemeModal';
+import CustomIntegrationModal from '../settings/advanced/integrations/CustomIntegrationModal';
 import DesignModal from '../settings/site/DesignModal';
 import FirstpromoterModal from '../settings/advanced/integrations/FirstPromoterModal';
 import HistoryModal from '../settings/advanced/HistoryModal';
 import InviteUserModal from '../settings/general/InviteUserModal';
 import NavigationModal from '../settings/site/NavigationModal';
-import NiceModal from '@ebay/nice-modal-react';
+import NewsletterDetailModal from '../settings/email/newsletters/NewsletterDetailModal';
+import NiceModal, {NiceModalHocProps} from '@ebay/nice-modal-react';
 import PinturaModal from '../settings/advanced/integrations/PinturaModal';
 import PortalModal from '../settings/membership/portal/PortalModal';
 import React, {createContext, useCallback, useEffect, useRef, useState} from 'react';
@@ -17,6 +19,7 @@ import SlackModal from '../settings/advanced/integrations/SlackModal';
 import StripeConnectModal from '../settings/membership/stripe/StripeConnectModal';
 import TierDetailModal from '../settings/membership/tiers/TierDetailModal';
 import UnsplashModal from '../settings/advanced/integrations/UnsplashModal';
+import UserDetailModal from '../settings/general/UserDetailModal';
 import ZapierModal from '../settings/advanced/integrations/ZapierModal';
 
 export type RouteParams = {[key: string]: string}
@@ -30,7 +33,6 @@ export type ExternalLink = {
 export type InternalLink = {
     isExternal?: false;
     route: string;
-    params?: RouteParams;
 }
 
 export type RoutingContextData = {
@@ -51,15 +53,31 @@ export const RouteContext = createContext<RoutingContextData>({
     addRouteChangeListener: () => (() => {})
 });
 
-// These routes need to be handled by a SettingGroup (or other component) with the
-// useDetailModalRoute hook. The idea is that those components will open a modal after
-// loading any data required for the route
-export const modalRoutes = {
-    showUser: 'users/show/:slug',
-    showNewsletter: 'newsletters/show/:id',
-    showTier: 'tiers/show/:id',
-    showIntegration: 'integrations/show/:id',
-    editRecommendation: 'recommendations/:id'
+export type RoutingModalProps = {
+    params?: Record<string, string>
+}
+
+const modalPaths: {[key: string]: React.FC<NiceModalHocProps & RoutingModalProps>} = {
+    'design/edit/themes': ChangeThemeModal,
+    'design/edit': DesignModal,
+    'navigation/edit': NavigationModal,
+    'users/invite': InviteUserModal,
+    'users/show/:slug': UserDetailModal,
+    'portal/edit': PortalModal,
+    'tiers/add': TierDetailModal,
+    'tiers/show/:id': TierDetailModal,
+    'stripe-connect': StripeConnectModal,
+    'newsletters/add': AddNewsletterModal,
+    'newsletters/show/:id': NewsletterDetailModal,
+    'history/view': HistoryModal,
+    'integrations/zapier': ZapierModal,
+    'integrations/slack': SlackModal,
+    'integrations/amp': AmpModal,
+    'integrations/unsplash': UnsplashModal,
+    'integrations/firstpromoter': FirstpromoterModal,
+    'integrations/pintura': PinturaModal,
+    'integrations/add': AddIntegrationModal,
+    'integrations/show/:id': CustomIntegrationModal
 };
 
 function getHashPath(urlPath: string | undefined) {
@@ -94,6 +112,12 @@ const handleNavigation = (scroll: boolean = true) => {
     const pathName = getHashPath(hash);
 
     if (pathName) {
+        const [path, modal] = Object.entries(modalPaths).find(([modalPath]) => matchRoute(pathName, modalPath)) || [];
+
+        if (path && modal) {
+            NiceModal.show(modal, {params: matchRoute(pathName, path)});
+        }
+
         if (pathName === 'design/edit/themes') {
             NiceModal.show(ChangeThemeModal);
         } else if (pathName === 'design/edit') {
@@ -181,14 +205,7 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, childr
             return;
         }
 
-        let newPath = options.route;
-
-        if (options.params) {
-            newPath = Object.entries(options.params).reduce(
-                (path, [name, value]) => path.replace(`:${name}`, value),
-                newPath
-            );
-        }
+        const newPath = options.route;
 
         if (newPath) {
             if (newPath === route) {

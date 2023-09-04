@@ -6,7 +6,6 @@ import React, {useEffect, useState} from 'react';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import useRouting from '../../../../hooks/useRouting';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
-import {modalRoutes} from '../../../providers/RoutingProvider';
 import {useCreateIntegration} from '../../../../api/integrations';
 
 interface AddIntegrationModalProps {}
@@ -44,7 +43,7 @@ const AddIntegrationModal: React.FC<AddIntegrationModalProps> = () => {
         onOk={async () => {
             const data = await createIntegration({name});
             modal.remove();
-            updateRoute({route: modalRoutes.showIntegration, params: {id: data.integrations[0].id}});
+            updateRoute({route: `integrations/show/${data.integrations[0].id}`});
         }}
     >
         <div className='mt-5'>
