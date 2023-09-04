@@ -9,7 +9,6 @@ import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
-import {modalRoutes} from '../../../providers/RoutingProvider';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
 import {useAddNewsletter} from '../../../../api/newsletters';
@@ -39,7 +38,7 @@ const AddNewsletterModal: React.FC<AddNewsletterModalProps> = () => {
                 opt_in_existing: formState.optInExistingSubscribers
             });
 
-            updateRoute({route: modalRoutes.showNewsletter, params: {id: response.newsletters[0].id}});
+            updateRoute({route: `newsletters/show/${response.newsletters[0].id}`});
         },
         onValidate: () => {
             const newErrors: Record<string, string> = {};

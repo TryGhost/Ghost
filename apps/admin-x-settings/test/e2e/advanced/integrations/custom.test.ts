@@ -46,7 +46,7 @@ test.describe('Custom integrations', async () => {
             name: 'My webhook',
             secret: null,
             api_version: 'v3',
-            integration_id: 'my-integration',
+            integration_id: integration.id,
             last_triggered_at: null,
             last_triggered_status: null,
             last_triggered_error: null,

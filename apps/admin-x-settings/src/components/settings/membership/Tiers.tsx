@@ -1,15 +1,11 @@
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import StripeButton from '../../../admin-x-ds/settings/StripeButton';
 import TabView from '../../../admin-x-ds/global/TabView';
-import TierDetailModal from './tiers/TierDetailModal';
 import TiersList from './tiers/TiersList';
-import useDetailModalRoute from '../../../hooks/useDetailModalRoute';
 import useRouting from '../../../hooks/useRouting';
 import {Tier, getActiveTiers, getArchivedTiers, useBrowseTiers} from '../../../api/tiers';
 import {checkStripeEnabled} from '../../../api/settings';
-import {modalRoutes} from '../../providers/RoutingProvider';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
@@ -19,12 +15,6 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const activeTiers = getActiveTiers(tiers || []);
     const archivedTiers = getArchivedTiers(tiers || []);
     const {updateRoute} = useRouting();
-
-    useDetailModalRoute({
-        route: modalRoutes.showTier,
-        items: tiers || [],
-        showModal: tier => NiceModal.show(TierDetailModal, {tier})
-    });
 
     const openConnectModal = () => {
         updateRoute('stripe-connect');

@@ -1,14 +1,10 @@
 import Button from '../../../admin-x-ds/global/Button';
-import EditRecommendationModal from './recommendations/EditRecommendationModal';
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import RecommendationList from './recommendations/RecommendationList';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
-import useDetailModalRoute from '../../../hooks/useDetailModalRoute';
 import useRouting from '../../../hooks/useRouting';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {modalRoutes} from '../../providers/RoutingProvider';
 import {useBrowseRecommendations} from '../../../api/recommendations';
 
 const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
@@ -18,12 +14,6 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     } = useSettingGroup();
     const {data: {recommendations} = {}} = useBrowseRecommendations();
     const [selectedTab, setSelectedTab] = useState('your-recommendations');
-
-    useDetailModalRoute({
-        route: modalRoutes.editRecommendation,
-        items: recommendations || [],
-        showModal: recommendation => NiceModal.show(EditRecommendationModal, {recommendation})
-    });
 
     const {updateRoute} = useRouting();
     const openAddNewRecommendationModal = () => {

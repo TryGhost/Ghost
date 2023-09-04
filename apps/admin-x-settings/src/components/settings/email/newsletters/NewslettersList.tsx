@@ -10,7 +10,6 @@ import TableRow from '../../../../admin-x-ds/global/TableRow';
 import useRouting from '../../../../hooks/useRouting';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {Newsletter, useEditNewsletter} from '../../../../api/newsletters';
-import {modalRoutes} from '../../../providers/RoutingProvider';
 
 interface NewslettersListProps {
     newsletters: Newsletter[]
@@ -66,7 +65,7 @@ const NewsletterItem: React.FC<{newsletter: Newsletter, onlyOne: boolean}> = ({n
     );
 
     const showDetails = () => {
-        updateRoute({route: modalRoutes.showNewsletter, params: {id: newsletter.id}});
+        updateRoute({route: `newsletters/show/${newsletter.id}`});
     };
 
     return (

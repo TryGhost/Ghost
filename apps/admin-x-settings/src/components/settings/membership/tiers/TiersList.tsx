@@ -5,7 +5,6 @@ import React from 'react';
 import useRouting from '../../../../hooks/useRouting';
 import {Tier, useEditTier} from '../../../../api/tiers';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
-import {modalRoutes} from '../../../providers/RoutingProvider';
 import {numberWithCommas} from '../../../../utils/helpers';
 
 interface TiersListProps {
@@ -28,7 +27,7 @@ const TierCard: React.FC<TierCardProps> = ({tier}) => {
     return (
         <div className={cardContainerClasses} data-testid='tier-card'>
             <div className='w-full grow cursor-pointer' onClick={() => {
-                updateRoute({route: modalRoutes.showTier, params: {id: tier.id}});
+                updateRoute({route: `tiers/show/${tier.id}`});
             }}>
                 <div className='text-[1.65rem] font-bold leading-tight tracking-tight text-pink'>{tier.name}</div>
                 <div className='mt-2 flex items-baseline'>

@@ -1,6 +1,6 @@
 import Button from '../../../../admin-x-ds/global/Button';
 import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import NiceModal from '@ebay/nice-modal-react';
 import Table from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
 import TableHead from '../../../../admin-x-ds/global/TableHead';
@@ -13,7 +13,6 @@ import {useDeleteWebhook} from '../../../../api/webhooks';
 
 const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
     const {mutateAsync: deleteWebhook} = useDeleteWebhook();
-    const modal = useModal();
 
     const handleDelete = (id: string) => {
         NiceModal.show(ConfirmationModal, {
@@ -24,12 +23,6 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
             onOk: async (confirmModal) => {
                 await deleteWebhook(id);
                 confirmModal?.remove();
-                modal.show({
-                    integration: {
-                        ...integration,
-                        webhooks: integration.webhooks?.filter(webhook => webhook.id !== id)
-                    }
-                });
                 showToast({
                     message: 'Webhook deleted',
                     type: 'success'
@@ -57,13 +50,7 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
                     NiceModal.show(WebhookModal, {
                         webhook,
                         integrationId:
-                        integration.id,
-                        onSaved: ({webhooks: [updated]}) => modal.show({
-                            integration: {
-                                ...integration,
-                                webhooks: integration.webhooks?.map(current => (current.id === updated.id ? updated : current))
-                            }
-                        })
+                        integration.id
                     });
                 }}
             >
@@ -100,13 +87,7 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
                     link
                     onClick={() => {
                         NiceModal.show(WebhookModal, {
-                            integrationId: integration.id,
-                            onSaved: ({webhooks: [added]}) => modal.show({
-                                integration: {
-                                    ...integration,
-                                    webhooks: (integration.webhooks || []).concat(added)
-                                }
-                            })
+                            integrationId: integration.id
                         });
                     }} />
             </TableCell>
