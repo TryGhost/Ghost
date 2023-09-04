@@ -1,5 +1,5 @@
 import AppContext from '../../AppContext';
-import {useContext} from 'react';
+import {useContext, useState, useEffect} from 'react';
 
 export const RecommendationsPageStyles = `
   .gh-portal-recommendation-item {
@@ -32,6 +32,24 @@ export const RecommendationsPageStyles = `
   }
 `;
 
+const shuffleRecommendations = (array) => {
+    let currentIndex = array.length;
+    let randomIndex;
+
+    // While there remain elements to shuffle...
+    while (currentIndex > 0) {
+        // Pick a remaining element...
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+
+        // And swap it with the current element.
+        [array[currentIndex], array[randomIndex]] = [
+            array[randomIndex], array[currentIndex]];
+    }
+
+    return array;
+};
+
 const RecommendationItem = ({title, url, reason, favicon}) => {
     const {t} = useContext(AppContext);
 
@@ -54,7 +72,27 @@ const RecommendationItem = ({title, url, reason, favicon}) => {
 const RecommendationsPage = () => {
     const {site, t} = useContext(AppContext);
     const {title, icon} = site;
-    const recommendations = site.recommendations || [];
+    const {recommendations_enabled: recommendationsEnabled = false} = site;
+    const {recommendations = []} = site;
+
+    // Show 5 recommendations by default
+    const [numToShow, setNumToShow] = useState(5);
+
+    // Show recommendations in a random order
+    const [shuffledRecommendations, setShuffledRecommendations] = useState([]);
+
+    useEffect(() => {
+        // Shuffle the array once when the component mounts
+        setShuffledRecommendations(shuffleRecommendations([...recommendations]));
+    }, [recommendations]);
+
+    const showAllRecommendations = () => {
+        setNumToShow(recommendations.length);
+    };
+
+    if (!recommendationsEnabled || recommendations.length < 1) {
+        return null;
+    }
 
     return (
         <div className='gh-portal-content with-footer'>
@@ -65,16 +103,18 @@ const RecommendationsPage = () => {
             <p className="gh-portal-recommendations-description">{t(`Here are a few other sites ${title} thinks you may enjoy.`)}</p>
 
             <div className="gh-portal-list">
-                {recommendations.map((recommendation, index) => (
+                {shuffledRecommendations.slice(0, numToShow).map((recommendation, index) => (
                     <RecommendationItem key={index} {...recommendation} />
                 ))}
             </div>
 
-            <footer className='gh-portal-action-footer'>
-                <button className='gh-portal-btn gh-portal-center' style={{width: '100%'}}>
-                    <span>{t('Show all')}</span>
-                </button>
-            </footer>
+            {numToShow < recommendations.length && (
+                <footer className='gh-portal-action-footer'>
+                    <button className='gh-portal-btn gh-portal-center' style={{width: '100%'}} onClick={showAllRecommendations}>
+                        <span>{t('Show all')}</span>
+                    </button>
+                </footer>
+            )}
         </div>
     );
 };
