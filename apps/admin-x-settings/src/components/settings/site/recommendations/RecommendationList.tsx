@@ -1,4 +1,3 @@
-import Avatar from '../../../../admin-x-ds/global/Avatar';
 import Button from '../../../../admin-x-ds/global/Button';
 import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import NiceModal from '@ebay/nice-modal-react';

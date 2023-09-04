@@ -1,4 +1,3 @@
-import Avatar from '../../../../admin-x-ds/global/Avatar';
 import Form from '../../../../admin-x-ds/global/form/Form';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import React from 'react';
