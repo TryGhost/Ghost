@@ -63,6 +63,11 @@ function getMockData() {
                         value: 'Gold'
                     }];
                 }
+                if (elem === 'input[data-members-newsletter]') {
+                    return [{
+                        value: 'some_newsletter'
+                    }];
+                }
             }
         }
     };
@@ -146,6 +151,7 @@ describe('Member Data attributes:', () => {
                 email: 'jamie@example.com',
                 emailType: 'signup',
                 labels: ['Gold'],
+                newsletters: [{id: 'some_newsletter'}],
                 name: 'Jamie Larsen',
                 autoRedirect: true,
                 urlHistory: [{
