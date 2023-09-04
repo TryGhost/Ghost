@@ -1,4 +1,3 @@
-import Avatar from '../../../../admin-x-ds/global/Avatar';
 import Button from '../../../../admin-x-ds/global/Button';
 import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import NiceModal from '@ebay/nice-modal-react';
@@ -42,10 +41,12 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
         <TableRow action={action} hideActions>
             <TableCell onClick={showDetails}>
                 <div className='group flex items-center gap-3 hover:cursor-pointer'>
-                    {recommendation.favicon && <Avatar image={recommendation.favicon} labelColor='white' />}
                     <div className={`flex grow flex-col`}>
-                        <span className='mb-0.5 font-medium'>{recommendation.title}</span>
-                        <span className='text-xs leading-snug text-grey-700'>{recommendation.reason || 'No reason'}</span>
+                        <div className="mb-1 flex items-center gap-2">
+                            {recommendation.favicon && <img alt={recommendation.title} className="h-5 w-5 rounded-sm" src={recommendation.favicon} />}
+                            <span className='line-clamp-1'>{recommendation.title}</span>
+                        </div>
+                        <span className='line-clamp-1 text-xs leading-snug text-grey-700'>{recommendation.reason || 'No reason added'}</span>
                     </div>
                 </div>
             </TableCell>

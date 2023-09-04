@@ -1,4 +1,3 @@
-import Avatar from '../../../../admin-x-ds/global/Avatar';
 import Form from '../../../../admin-x-ds/global/form/Form';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import React from 'react';
@@ -20,14 +19,15 @@ const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recomme
     >
         <div>
             <Heading className='mb-2 block text-2xs font-semibold uppercase tracking-wider text-grey-700'>Preview</Heading>
-            <a className='flex items-center gap-3 rounded-sm border border-grey-300 p-3' href={formState.url} rel="noopener noreferrer" target="_blank">
-                {(formState.favicon || formState.featured_image) && <Avatar image={formState.favicon ?? formState.featured_image!} labelColor='white' />}
-                <div className={`flex grow flex-col`}>
-                    <span className='word-wrap mb-0.5 font-medium'>{formState.title}</span>
-                    <span className='word-wrap text-xs leading-snug text-grey-700'>{formState.url}</span>
+            <a className='flex flex-col rounded-sm border border-grey-300 p-3' href={formState.url} rel="noopener noreferrer" target="_blank">
+                <div className="mb-1 flex items-center gap-2">
+                    {(formState.favicon || formState.featured_image) && <img alt={formState.title} className="h-5 w-5 rounded-sm" src={formState.favicon ?? formState.featured_image!} />}
+                    <span className='line-clamp-1 font-medium'>{formState.title}</span>
                 </div>
+                <span className='line-clamp-1 text-xs leading-snug text-grey-700'>{formState.url}</span>
             </a>
         </div>
+
         <TextField
             error={Boolean(errors.title)}
             hint={errors.title}
