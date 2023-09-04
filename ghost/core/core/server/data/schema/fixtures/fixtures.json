@@ -720,7 +720,7 @@
                 {
                     "id": 1,
                     "name": "Ghost",
-                    "email": "ghost@example.com",
+                    "email": "noreply@example.com",
                     "status": "inactive",
                     "free_member_signup_notification": true,
                     "paid_subscription_started_notification": true,
