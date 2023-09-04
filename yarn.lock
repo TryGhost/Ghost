@@ -16188,10 +16188,10 @@ ember-style-modifier@^0.7.0:
     ember-cli-babel "^7.26.11"
     ember-modifier "^3.2.7"
 
-ember-svg-jar@2.4.4:
-  version "2.4.4"
-  resolved "https://registry.yarnpkg.com/ember-svg-jar/-/ember-svg-jar-2.4.4.tgz#eaa6b11d678659dd39d0b1fe194664de0cc2d2ed"
-  integrity sha512-hzSMuyc6A4FbPBaT9JFYicInq+hVJCgS+1EeoK1zQSMEITiEEzjOGCrAd31GZh8L3g8GOLxpdNBpv982D4loyA==
+ember-svg-jar@2.4.5:
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/ember-svg-jar/-/ember-svg-jar-2.4.5.tgz#77718566b6064828c21fb509edff76a2a578a06e"
+  integrity sha512-crLQ6A44keR/xfDOwsfSKBcT210h7tRQqUutrNwMyQ00sN7t7T2xg8/+LDEcygu3umoLRoA09jlTzJw8bXmb/A==
   dependencies:
     "@embroider/macros" "^1.12.2"
     broccoli-caching-writer "^3.0.3"
