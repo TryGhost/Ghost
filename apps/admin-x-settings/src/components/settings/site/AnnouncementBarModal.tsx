@@ -17,13 +17,19 @@ type SidebarProps = {
     announcementTextHandler: (e: string) => void;
     accentColor?: string;
     announcementBackgroundColor?: string;
+    toggleColorSwatch: (e:string) => void;
+    toggleVisibility: (visibility: string, value: boolean) => void;
+    visibility: string[];
 };
 
 const Sidebar: React.FC<SidebarProps> = ({
     announcementContent, 
     announcementTextHandler,
     accentColor,
-    announcementBackgroundColor
+    announcementBackgroundColor,
+    toggleColorSwatch,
+    toggleVisibility,
+    visibility
 }) => {
     const {config} = useGlobalData();
 
@@ -43,22 +49,25 @@ const Sidebar: React.FC<SidebarProps> = ({
                 swatches={[
                     {
                         hex: '#08090c',
-                        title: 'Dark'
+                        title: 'Dark',
+                        value: 'dark'
                     },
                     {
                         hex: '#ffffff',
-                        title: 'Light'
+                        title: 'Light',
+                        value: 'light'
                     },
                     {
                         hex: accentColor || '#ffdd00',
-                        title: 'Accent'
+                        title: 'Accent',
+                        value: 'accent'
                     }
                 ]}
                 swatchSize='lg'
                 title='Background color'
                 value={announcementBackgroundColor}
                 onSwatchChange={(e) => {
-                    console.log(e);
+                    toggleColorSwatch(e);
                 }}
                 onTogglePicker={() => {}}
             />
@@ -66,18 +75,27 @@ const Sidebar: React.FC<SidebarProps> = ({
                 checkboxes={[
                     {
                         label: 'Logged out visitors',
-                        onChange: () => {},
-                        value: ''
+                        onChange: (e) => {
+                            toggleVisibility('visitors', e);
+                        },
+                        value: 'visitors',
+                        checked: visibility.includes('visitors')
                     },
                     {
                         label: 'Free members',
-                        onChange: () => {},
-                        value: ''
+                        onChange: (e) => {
+                            toggleVisibility('free_members', e);
+                        },
+                        value: 'free_members',
+                        checked: visibility.includes('free_members')
                     },
                     {
                         label: 'Paid members',
-                        onChange: () => {},
-                        value: ''
+                        onChange: (e) => {
+                            toggleVisibility('paid_members', e);
+                        },
+                        value: 'paid_members',
+                        checked: visibility.includes('paid_members')
                     }
                 ]}
                 title='Visibility'
@@ -94,8 +112,24 @@ const AnnouncementBarModal: React.FC = () => {
     const [announcementContent] = getSettingValues<string>(localSettings, ['announcement_content']);
     const [accentColor] = getSettingValues<string>(localSettings, ['accent_color']);
     const [announcementBackgroundColor] = getSettingValues<string>(localSettings, ['announcement_background']);
+    const [announcementVisibility] = getSettingValues<string[]>(localSettings, ['announcement_visibility']);
+    const visibilitySettings = JSON.parse(announcementVisibility?.toString() || '[]') as string[];
 
     const {updateRoute} = useRouting();
+
+    const toggleColorSwatch = (e: string | null) => {
+        updateSetting('announcement_background', e);
+    };
+
+    const toggleVisibility = (visibility: string, value: boolean) => {
+        const index = visibilitySettings.indexOf(visibility);
+        if (index === -1 && value) {
+            visibilitySettings.push(visibility);
+        } else {
+            visibilitySettings.splice(index, 1);
+        }
+        updateSetting('announcement_visibility', JSON.stringify(visibilitySettings));
+    };
 
     const sidebar = <Sidebar
         accentColor={accentColor}
@@ -104,6 +138,9 @@ const AnnouncementBarModal: React.FC = () => {
         announcementTextHandler={(e) => {
             updateSetting('announcement_content', e);
         }}
+        toggleColorSwatch={toggleColorSwatch}
+        toggleVisibility={toggleVisibility}
+        visibility={announcementVisibility as string[]}
     />;
 
     return <PreviewModalContent
