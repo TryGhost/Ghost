@@ -45,7 +45,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     ];
 
     const groupDescription = (
-        <>Share favorite sites with your audience after they subscribe. <Link href={recommendationsURL} target='_blank'>Preview</Link></>
+        <>Share favorite sites with your audience after they subscribe. {(recommendations && recommendations.length > 0) && <Link href={recommendationsURL} target='_blank'>Preview</Link>}</>
     );
 
     return (
