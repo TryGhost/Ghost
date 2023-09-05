@@ -6,11 +6,27 @@ import HtmlField from '../../../admin-x-ds/global/form/HtmlField';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import useRouting from '../../../hooks/useRouting';
+import useSettingGroup from '../../../hooks/useSettingGroup';
 import {PreviewModalContent} from '../../../admin-x-ds/global/modal/PreviewModal';
+import {getSettingValues} from '../../../api/settings';
+import {showToast} from '../../../admin-x-ds/global/Toast';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
-const Sidebar: React.FC = () => {
+type SidebarProps = {
+    announcementContent?: string;
+    announcementTextHandler: (e: string) => void;
+    accentColor?: string;
+    announcementBackgroundColor?: string;
+};
+
+const Sidebar: React.FC<SidebarProps> = ({
+    announcementContent, 
+    announcementTextHandler,
+    accentColor,
+    announcementBackgroundColor
+}) => {
     const {config} = useGlobalData();
+
     return (
         <Form>
             <HtmlField
@@ -18,6 +34,8 @@ const Sidebar: React.FC = () => {
                 nodes='MINIMAL_NODES'
                 placeholder='Highlight breaking news, offers or updates'
                 title='Announcement'
+                value={announcementContent}
+                onChange={announcementTextHandler}
             />
             <ColorIndicator
                 isExpanded={false}
@@ -32,13 +50,16 @@ const Sidebar: React.FC = () => {
                         title: 'Light'
                     },
                     {
-                        hex: '#ffdd00',
+                        hex: accentColor || '#ffdd00',
                         title: 'Accent'
                     }
                 ]}
                 swatchSize='lg'
                 title='Background color'
-                onSwatchChange={() => {}}
+                value={announcementBackgroundColor}
+                onSwatchChange={(e) => {
+                    console.log(e);
+                }}
                 onTogglePicker={() => {}}
             />
             <CheckboxGroup
@@ -66,13 +87,28 @@ const Sidebar: React.FC = () => {
 };
 
 const AnnouncementBarModal: React.FC = () => {
-    // const modal = useModal();
+    // API constraints - we are limited to "dark", "light" and "accent" colors
+    const modal = NiceModal.useModal();
+    // const {config} = useGlobalData();
+    const {localSettings, updateSetting, handleSave} = useSettingGroup();
+    const [announcementContent] = getSettingValues<string>(localSettings, ['announcement_content']);
+    const [accentColor] = getSettingValues<string>(localSettings, ['accent_color']);
+    const [announcementBackgroundColor] = getSettingValues<string>(localSettings, ['announcement_background']);
+
     const {updateRoute} = useRouting();
 
-    const sidebar = <Sidebar />;
+    const sidebar = <Sidebar
+        accentColor={accentColor}
+        announcementBackgroundColor={announcementBackgroundColor}
+        announcementContent={announcementContent}
+        announcementTextHandler={(e) => {
+            updateSetting('announcement_content', e);
+        }}
+    />;
 
     return <PreviewModalContent
         afterClose={() => {
+            modal.remove();
             updateRoute('announcement-bar');
         }}
         cancelLabel='Close'
@@ -85,7 +121,17 @@ const AnnouncementBarModal: React.FC = () => {
         testId='announcement-bar-modal'
         title='Announcement bar'
         titleHeadingLevel={5}
-        onOk={() => {}}
+        onOk={async () => {
+            if (await handleSave()) {
+                modal.remove();
+                updateRoute('announcement-bar');
+            } else {
+                showToast({
+                    type: 'pageError',
+                    message: 'An error occurred while saving your changes. Please try again.'
+                });
+            }
+        }}
     />;
 };
 
