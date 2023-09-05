@@ -36,7 +36,7 @@ export default class CustomThemeSettingsServices extends Service {
         const keyValue = {};
 
         this.settings.forEach((setting) => {
-            keyValue[setting.key] = setting.value;
+            keyValue[setting.key] = this._isSettingVisible(setting) ? setting.value : HIDDEN_SETTING_VALUE;
         });
 
         return keyValue;
@@ -148,6 +148,12 @@ export default class CustomThemeSettingsServices extends Service {
             return true;
         }
 
-        return nql(setting.visibility).queryJSON(this.keyValueObject);
+        const settingsMap = this.settings.reduce((map, {key, value}) => {
+            map[key] = value;
+
+            return map;
+        }, {});
+
+        return nql(setting.visibility).queryJSON(settingsMap);
     }
 }
