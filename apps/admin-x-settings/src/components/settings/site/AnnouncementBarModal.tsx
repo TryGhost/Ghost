@@ -19,7 +19,8 @@ type SidebarProps = {
     announcementBackgroundColor?: string;
     toggleColorSwatch: (e:string) => void;
     toggleVisibility: (visibility: string, value: boolean) => void;
-    visibility: string[];
+    visibility?: string[];
+    paidMembersEnabled?: boolean;
 };
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -29,9 +30,37 @@ const Sidebar: React.FC<SidebarProps> = ({
     announcementBackgroundColor,
     toggleColorSwatch,
     toggleVisibility,
-    visibility
+    visibility = [],
+    paidMembersEnabled
 }) => {
     const {config} = useGlobalData();
+
+    const visibilityCheckboxes = [
+        {
+            label: 'Logged out visitors',
+            onChange: (e:boolean) => {
+                toggleVisibility('visitors', e);
+            },
+            value: 'visitors',
+            checked: visibility.includes('visitors')
+        },
+        {
+            label: 'Free members',
+            onChange: (e:boolean) => {
+                toggleVisibility('free_members', e);
+            },
+            value: 'free_members',
+            checked: visibility.includes('free_members')
+        },
+        ...(paidMembersEnabled ? [{
+            label: 'Paid members',
+            onChange: (e: boolean) => {
+                toggleVisibility('paid_members', e);
+            },
+            value: 'paid_members',
+            checked: visibility.includes('paid_members')
+        }] : [])
+    ];
 
     return (
         <Form>
@@ -72,32 +101,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 onTogglePicker={() => {}}
             />
             <CheckboxGroup
-                checkboxes={[
-                    {
-                        label: 'Logged out visitors',
-                        onChange: (e) => {
-                            toggleVisibility('visitors', e);
-                        },
-                        value: 'visitors',
-                        checked: visibility.includes('visitors')
-                    },
-                    {
-                        label: 'Free members',
-                        onChange: (e) => {
-                            toggleVisibility('free_members', e);
-                        },
-                        value: 'free_members',
-                        checked: visibility.includes('free_members')
-                    },
-                    {
-                        label: 'Paid members',
-                        onChange: (e) => {
-                            toggleVisibility('paid_members', e);
-                        },
-                        value: 'paid_members',
-                        checked: visibility.includes('paid_members')
-                    }
-                ]}
+                checkboxes={visibilityCheckboxes}
                 title='Visibility'
             />
         </Form>
@@ -113,6 +117,7 @@ const AnnouncementBarModal: React.FC = () => {
     const [accentColor] = getSettingValues<string>(localSettings, ['accent_color']);
     const [announcementBackgroundColor] = getSettingValues<string>(localSettings, ['announcement_background']);
     const [announcementVisibility] = getSettingValues<string[]>(localSettings, ['announcement_visibility']);
+    const [paidMembersEnabled] = getSettingValues<boolean>(localSettings, ['paid_members_enabled']);
     const visibilitySettings = JSON.parse(announcementVisibility?.toString() || '[]') as string[];
 
     const {updateRoute} = useRouting();
@@ -138,6 +143,7 @@ const AnnouncementBarModal: React.FC = () => {
         announcementTextHandler={(e) => {
             updateSetting('announcement_content', e);
         }}
+        paidMembersEnabled={paidMembersEnabled}
         toggleColorSwatch={toggleColorSwatch}
         toggleVisibility={toggleVisibility}
         visibility={announcementVisibility as string[]}
