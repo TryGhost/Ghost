@@ -52,7 +52,7 @@ export const useLimiter = () => {
     const [LimitService, setLimitService] = useState<typeof import('@tryghost/limit-service') | null>(null);
 
     useEffect(() => {
-        limitServiceImport.then(setLimitService);
+        limitServiceImport.then(exports => setLimitService(() => exports.default));
     }, []);
 
     const {users, contributorUsers, invites, isLoading} = useStaffUsers();
@@ -76,7 +76,7 @@ export const useLimiter = () => {
     return useMemo(() => {
         const limits = config.hostSettings?.limits as LimiterLimits;
 
-        if (!limits || isLoading) {
+        if (!LimitService || !limits || isLoading) {
             return;
         }
 
