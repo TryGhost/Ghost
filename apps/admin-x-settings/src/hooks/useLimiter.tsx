@@ -1,9 +1,10 @@
-import LimitService from '@tryghost/limit-service';
 import useStaffUsers from './useStaffUsers';
 import {useBrowseMembers} from '../api/members';
 import {useBrowseNewsletters} from '../api/newsletters';
+import {useEffect, useMemo, useState} from 'react';
 import {useGlobalData} from '../components/providers/GlobalDataProvider';
-import {useMemo} from 'react';
+
+const limitServiceImport = import('@tryghost/limit-service');
 
 export class LimitError extends Error {
     public readonly errorType: string;
@@ -48,6 +49,11 @@ interface LimiterLimits {
 
 export const useLimiter = () => {
     const {config} = useGlobalData();
+    const [LimitService, setLimitService] = useState<typeof import('@tryghost/limit-service') | null>(null);
+
+    useEffect(() => {
+        limitServiceImport.then(setLimitService);
+    }, []);
 
     const {users, contributorUsers, invites, isLoading} = useStaffUsers();
     const {refetch: fetchMembers} = useBrowseMembers({
@@ -114,5 +120,5 @@ export const useLimiter = () => {
             errorIfWouldGoOverLimit: (limitName: string, metadata: Record<string, unknown> = {}): Promise<void> => limiter.errorIfWouldGoOverLimit(limitName, metadata),
             errorIfIsOverLimit: (limitName: string): Promise<void> => limiter.errorIfIsOverLimit(limitName)
         };
-    }, [config.hostSettings?.limits, contributorUsers, fetchMembers, fetchNewsletters, helpLink, invites, isLoading, users]);
+    }, [LimitService, config.hostSettings?.limits, contributorUsers, fetchMembers, fetchNewsletters, helpLink, invites, isLoading, users]);
 };
