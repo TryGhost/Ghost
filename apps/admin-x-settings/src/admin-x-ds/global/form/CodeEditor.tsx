@@ -1,10 +1,10 @@
-import CodeMirror, {ReactCodeMirrorProps, ReactCodeMirrorRef} from '@uiw/react-codemirror';
 import Heading from '../Heading';
 import Hint from '../Hint';
 import React, {forwardRef, useId} from 'react';
 import clsx from 'clsx';
 import {EditorView} from '@codemirror/view';
 import {Extension} from '@codemirror/state';
+import type {ReactCodeMirrorProps, ReactCodeMirrorRef} from '@uiw/react-codemirror';
 
 export interface CodeEditorProps extends Omit<ReactCodeMirrorProps, 'value' | 'onChange'> {
     title?: string;
@@ -26,6 +26,8 @@ const theme = EditorView.theme({
         backgroundColor: 'transparent'
     }
 });
+
+const CodeMirror = React.lazy(() => import('@uiw/react-codemirror'));
 
 const CodeEditor = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function CodeEditor({
     title,

@@ -5,6 +5,7 @@ import config from 'ghost-admin/config/environment';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
+import {tracked} from '@glimmer/tracking';
 
 // TODO: Long term move asset management directly in AdminX
 const officialThemes = [{
@@ -213,9 +214,9 @@ const fetchKoenig = function () {
         const url = new URL(urlTemplate.replace('{version}', urlVersion));
 
         if (url.protocol === 'http:') {
-            await import(`http://${url.host}${url.pathname}`);
+            window['@tryghost/admin-x-settings'] = await import(`http://${url.host}${url.pathname}`);
         } else {
-            await import(`https://${url.host}${url.pathname}`);
+            window['@tryghost/admin-x-settings'] = await import(`https://${url.host}${url.pathname}`);
         }
 
         return window['@tryghost/admin-x-settings'];
@@ -263,6 +264,27 @@ export default class AdminXSettings extends Component {
     @service router;
 
     @inject config;
+
+    @tracked display = 'none';
+
+    setup = () => {
+        const GhostAdmin = window.GhostAdmin || window.Ember.Namespace.NAMESPACES.find(ns => ns.name === 'ghost-admin');
+        const urlTemplate = GhostAdmin.__container__.lookup('config:main').adminX?.url;
+        // TODO: use proper config or something
+        const cssPath = urlTemplate.replace('admin-x-settings.js', 'index.css');
+
+        if (document.querySelector(`link[href="${cssPath}"]`)) {
+            this.display = 'block';
+        } else {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = cssPath;
+            link.onload = () => {
+                this.display = 'block';
+            };
+            document.head.appendChild(link);
+        }
+    };
 
     @action
     onError(error) {
