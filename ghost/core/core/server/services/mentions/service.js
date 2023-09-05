@@ -28,6 +28,7 @@ module.exports = {
     /** @type {import('@tryghost/webmentions/lib/MentionsAPI')} */
     api: null,
     controller: new MentionController(),
+    metadata: new WebmentionMetadata(),
     /** @type {import('@tryghost/webmentions/lib/MentionSendingService')} */
     sendingService: null,
     didInit: false,
@@ -40,7 +41,7 @@ module.exports = {
             MentionModel: models.Mention,
             DomainEvents
         });
-        const webmentionMetadata = new WebmentionMetadata();
+        const webmentionMetadata = this.metadata;
         const discoveryService = new MentionDiscoveryService({externalRequest});
         const resourceService = new ResourceService({
             urlUtils,

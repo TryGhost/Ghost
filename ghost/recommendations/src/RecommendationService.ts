@@ -43,7 +43,7 @@ export class RecommendationService {
 
     async addRecommendation(addRecommendation: AddRecommendation) {
         const recommendation = Recommendation.create(addRecommendation);
-        this.repository.save(recommendation);
+        await this.repository.save(recommendation);
         await this.updateWellknown();
 
         // Only send an update for the mentioned URL

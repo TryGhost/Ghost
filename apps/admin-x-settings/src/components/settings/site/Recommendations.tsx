@@ -1,4 +1,5 @@
 import Button from '../../../admin-x-ds/global/Button';
+import IncomingRecommendations from './recommendations/IncomingRecommendations';
 import Link from '../../../admin-x-ds/global/Link';
 import React, {useState} from 'react';
 import RecommendationList from './recommendations/RecommendationList';
@@ -35,13 +36,12 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
             id: 'your-recommendations',
             title: 'Your recommendations',
             contents: (<RecommendationList recommendations={recommendations ?? []} />)
+        },
+        {
+            id: 'recommending-you',
+            title: 'Recommending you',
+            contents: (<IncomingRecommendations />)
         }
-        // TODO: Show "Recommending you" tab once we hook it up
-        // {
-        //     id: 'recommending-you',
-        //     title: 'Recommending you',
-        //     contents: (<RecommendationList recommendations={[]} />)
-        // }
     ];
 
     const groupDescription = (
