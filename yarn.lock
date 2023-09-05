@@ -17361,12 +17361,11 @@ express-hbs@2.4.0:
   optionalDependencies:
     js-beautify "^1.13.11"
 
-express-hbs@2.4.1:
-  version "2.4.1"
-  resolved "https://registry.yarnpkg.com/express-hbs/-/express-hbs-2.4.1.tgz#e9957c9611bc7f6580d8f0f680943eda349ee12b"
-  integrity sha512-a+gcjKVp44wGU+UxWUbVrKB0ZXLIPgo76lz4o/sodTMWuyhNywOOBbjw64xDprNB7NL4WKx8okOWtqKdjyiUUA==
+express-hbs@2.4.2:
+  version "2.4.2"
+  resolved "https://registry.yarnpkg.com/express-hbs/-/express-hbs-2.4.2.tgz#9bc18a08d89eea2aaea94b2e5c38859e86a99019"
+  integrity sha512-lFtWrsAGprvzPrVlfNE6WGJnyE+o/UxsTpl2CWcJt1CRYaUwht9+BkfKOWqs+xG0zhhRAm/bsYEyQ4EwA+ovSw==
   dependencies:
-    bluebird "^3.5.3"
     handlebars "^4.7.7"
     lodash "^4.17.21"
     readdirp "^3.6.0"
