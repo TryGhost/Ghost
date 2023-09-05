@@ -2,12 +2,9 @@ import AppContext from '../../AppContext';
 import {useContext, useState, useEffect} from 'react';
 
 export const RecommendationsPageStyles = `
-  .gh-portal-recommendation-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-  }
+    .gh-portal-recommendation-item .gh-portal-list-detail {
+        padding: 4px 24px 4px 0px; 
+    }
 
   .gh-portal-recommendation-item-header {
     display: flex;
@@ -60,9 +57,9 @@ const RecommendationItem = ({title, url, reason, favicon}) => {
                     {favicon && <img className="gh-portal-recommendation-item-favicon" src={favicon} alt={title}/>}
                     <h3>{title}</h3>
                 </div>
-                <p>{reason}</p>
+                {reason && <p>{reason}</p>}
             </div>
-            <div className="gh-portal-lock-icon-container">
+            <div>
                 <a href={url} target="_blank" rel="noopener noreferrer" className="gh-portal-btn gh-portal-btn-list">{t('Visit')}</a>
             </div>
         </section>
