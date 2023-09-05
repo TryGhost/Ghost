@@ -73,11 +73,14 @@ class TextContent {
             return;
         }
 
+        // insert any queued line breaks
+        this._insertQueuedLineBreaks();
+
         const a = this.doc.createElement('a');
 
         // Only set the href if we have a URL, otherwise we get a link to the current page
         if (node.getURL()) {
-            a.setAttribute('href', node.getURL());            
+            a.setAttribute('href', node.getURL());
         }
         if (node.getRel()) {
             a.setAttribute('rel', node.getRel());
