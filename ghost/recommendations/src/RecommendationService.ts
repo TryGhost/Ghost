@@ -8,9 +8,9 @@ type MentionSendingService = {
     sendAll(options: {url: URL, links: URL[]}): Promise<void>
 }
 
-type SettingsService = {
-    read(key: string): string,
-    edit(settings: object[], options: { context?: object; }): Promise<void>
+type RecommendationEnablerService = {
+    getSetting(): string,
+    setSetting(value: string): Promise<void>
 }
 
 const messages = {
@@ -21,18 +21,18 @@ export class RecommendationService {
     repository: RecommendationRepository;
     wellknownService: WellknownService;
     mentionSendingService: MentionSendingService;
-    settingsService: SettingsService;
+    recommendationEnablerService: RecommendationEnablerService;
 
     constructor(deps: {
         repository: RecommendationRepository,
         wellknownService: WellknownService,
         mentionSendingService: MentionSendingService,
-        settingsService: SettingsService,
+        recommendationEnablerService: RecommendationEnablerService,
     }) {
         this.repository = deps.repository;
         this.wellknownService = deps.wellknownService;
         this.mentionSendingService = deps.mentionSendingService;
-        this.settingsService = deps.settingsService;
+        this.recommendationEnablerService = deps.recommendationEnablerService;
     }
 
     async init() {
@@ -46,13 +46,13 @@ export class RecommendationService {
 
     async updateRecommendationsEnabledSetting(recommendations: Recommendation[]) {
         const expectedSetting = (recommendations.length > 0).toString();
-        const currentSetting = this.settingsService.read('recommendations_enabled');
+        const currentSetting = this.recommendationEnablerService.getSetting();
 
         if (currentSetting && currentSetting === expectedSetting) {
             return;
         }
 
-        await this.settingsService.edit([{key: 'recommendations_enabled', value: expectedSetting}], {context: {}});
+        await this.recommendationEnablerService.setSetting(expectedSetting);
     }
 
     private sendMentionToRecommendation(recommendation: Recommendation) {

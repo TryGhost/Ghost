@@ -24,6 +24,7 @@ class RecommendationServiceWrapper {
         const models = require('../../models');
         const sentry = require('../../../shared/sentry');
         const settings = require('../settings');
+        const RecommendationEnablerService = require('./RecommendationEnablerService');
         const {
             BookshelfRecommendationRepository,
             RecommendationService,
@@ -44,13 +45,14 @@ class RecommendationServiceWrapper {
         });
 
         const settingsService = settings.getSettingsBREADServiceInstance();
+        const recommendationEnablerService = new RecommendationEnablerService({settingsService});
 
         this.repository = new BookshelfRecommendationRepository(models.Recommendation, {
             sentry
         });
         this.service = new RecommendationService({
             repository: this.repository,
-            settingsService,
+            recommendationEnablerService,
             wellknownService,
             mentionSendingService: mentions.sendingService
         });
