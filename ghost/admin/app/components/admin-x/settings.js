@@ -267,25 +267,6 @@ export default class AdminXSettings extends Component {
 
     @tracked display = 'none';
 
-    setup = () => {
-        const GhostAdmin = window.GhostAdmin || window.Ember.Namespace.NAMESPACES.find(ns => ns.name === 'ghost-admin');
-        const urlTemplate = GhostAdmin.__container__.lookup('config:main').adminX?.url;
-        // TODO: use proper config or something
-        const cssPath = urlTemplate.replace('admin-x-settings.js', 'index.css');
-
-        if (document.querySelector(`link[href="${cssPath}"]`)) {
-            this.display = 'block';
-        } else {
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = cssPath;
-            link.onload = () => {
-                this.display = 'block';
-            };
-            document.head.appendChild(link);
-        }
-    };
-
     @action
     onError(error) {
         // ensure we're still showing errors in development

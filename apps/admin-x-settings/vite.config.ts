@@ -1,3 +1,4 @@
+import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
 import pkg from './package.json';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
@@ -41,7 +42,8 @@ export default (function viteConfig() {
                     react: 'React',
                     'react-dom': 'ReactDOM'
                 }
-            })
+            }),
+            cssInjectedByJsPlugin()
         ],
         define: {
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
@@ -53,7 +55,6 @@ export default (function viteConfig() {
         build: {
             minify: false,
             sourcemap: true,
-            cssCodeSplit: true,
             lib: {
                 formats: ['es'],
                 entry: resolve(__dirname, 'src/index.tsx'),
