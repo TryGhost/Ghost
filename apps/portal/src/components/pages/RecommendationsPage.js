@@ -2,12 +2,9 @@ import AppContext from '../../AppContext';
 import {useContext, useState, useEffect} from 'react';
 
 export const RecommendationsPageStyles = `
-  .gh-portal-recommendation-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-  }
+    .gh-portal-recommendation-item .gh-portal-list-detail {
+        padding: 4px 24px 4px 0px; 
+    }
 
   .gh-portal-recommendation-item-header {
     display: flex;
@@ -18,6 +15,7 @@ export const RecommendationsPageStyles = `
   .gh-portal-recommendation-item-favicon {
     width: 20px;
     height: 20px;
+    border-radius: 3px;
   }
 
   .gh-portal-recommendations-header {
@@ -60,9 +58,9 @@ const RecommendationItem = ({title, url, reason, favicon}) => {
                     {favicon && <img className="gh-portal-recommendation-item-favicon" src={favicon} alt={title}/>}
                     <h3>{title}</h3>
                 </div>
-                <p>{reason}</p>
+                {reason && <p>{reason}</p>}
             </div>
-            <div className="gh-portal-lock-icon-container">
+            <div>
                 <a href={url} target="_blank" rel="noopener noreferrer" className="gh-portal-btn gh-portal-btn-list">{t('Visit')}</a>
             </div>
         </section>
@@ -98,7 +96,8 @@ const RecommendationsPage = () => {
         <div className='gh-portal-content with-footer'>
             <div className="gh-portal-recommendations-header">
                 {icon && <img className="gh-portal-signup-logo" alt={title} src={icon} />}
-                <h1 className="gh-portal-main-title">{t('Recommendations')}</h1>
+                {/* TODO: Make heading dynamic so it's "You‘re subscribed!" when it's during the signup flow, and "Recommendations" when triggered elsewhere */}
+                <h1 className="gh-portal-main-title">{t('You‘re subscribed!')}</h1>
             </div>
             <p className="gh-portal-recommendations-description">{t(`Here are a few other sites ${title} thinks you may enjoy.`)}</p>
 

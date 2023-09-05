@@ -60,6 +60,17 @@ class RecommendationServiceWrapper {
 
         // eslint-disable-next-line no-console
         this.service.init().catch(console.error);
+
+        // Add mapper to WebmentionMetadata
+        mentions.metadata.addMapper((url) => {
+            const p = '/.well-known/recommendations.json';
+            if (url.pathname.endsWith(p)) {
+                // Strip p
+                const newUrl = new URL(url.toString());
+                newUrl.pathname = newUrl.pathname.slice(0, -p.length);
+                return newUrl;
+            }
+        });
     }
 }
 
