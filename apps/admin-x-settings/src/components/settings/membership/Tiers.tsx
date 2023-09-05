@@ -11,13 +11,13 @@ import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const StripeConnectedButton: React.FC<{className?: string; onClick: () => void;}> = ({className, onClick}) => {
     className = clsx(
-        'group flex items-center justify-center gap-2 rounded border border-grey-300 px-3 py-1.5 text-sm font-semibold text-grey-900 transition-all hover:border-grey-500',
+        'group flex shrink-0 items-center justify-center whitespace-nowrap rounded border border-grey-300 px-3 py-1.5 text-sm font-semibold text-grey-900 transition-all hover:border-grey-500',
         className
     );
     return (
         <button className={className} type='button' onClick={onClick}>
             <span className="inline-flex h-2 w-2 rounded-full bg-green transition-all group-hover:bg-[#625BF6]"></span>
-            Connected to Stripe
+            <span className='ml-2'>Connected to Stripe</span>
         </button>
     );
 };
@@ -68,7 +68,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     return (
         <SettingGroup
             customButtons={checkStripeEnabled(settings, config) ?
-                <StripeConnectedButton className='hidden md:!visible md:!block' onClick={openConnectModal} />
+                <StripeConnectedButton className='hidden tablet:!visible tablet:!block' onClick={openConnectModal} />
                 :
                 <StripeButton onClick={openConnectModal}/>}
             description='Set prices and paid member sign up settings'
@@ -77,7 +77,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
             testId='tiers'
             title='Tiers'
         >
-            <div className='w-full md:hidden'>
+            <div className='w-full tablet:hidden'>
                 {checkStripeEnabled(settings, config) ?
                     <StripeConnectedButton className='w-full' onClick={openConnectModal} />
                     :
