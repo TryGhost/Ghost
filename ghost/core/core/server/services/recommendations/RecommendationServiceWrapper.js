@@ -23,7 +23,13 @@ class RecommendationServiceWrapper {
         const urlUtils = require('../../../shared/url-utils');
         const models = require('../../models');
         const sentry = require('../../../shared/sentry');
-        const {BookshelfRecommendationRepository, RecommendationService, RecommendationController, WellknownService} = require('@tryghost/recommendations');
+        const settings = require('../settings');
+        const {
+            BookshelfRecommendationRepository,
+            RecommendationService,
+            RecommendationController,
+            WellknownService
+        } = require('@tryghost/recommendations');
 
         const mentions = require('../mentions');
 
@@ -37,11 +43,14 @@ class RecommendationServiceWrapper {
             urlUtils
         });
 
+        const settingsService = settings.getSettingsBREADServiceInstance();
+
         this.repository = new BookshelfRecommendationRepository(models.Recommendation, {
             sentry
         });
         this.service = new RecommendationService({
             repository: this.repository,
+            settingsService,
             wellknownService,
             mentionSendingService: mentions.sendingService
         });
