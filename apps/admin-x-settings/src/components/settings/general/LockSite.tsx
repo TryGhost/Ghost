@@ -51,7 +51,7 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     const hint = (
-        <>A private RSS feed is available at <Link href="http://localhost:2368/51aa059ba6eb50c24c14047d4255ac/rss">http://localhost:2368/51aa059ba6eb50c24c14047d4255ac/rss</Link></>
+        <>A private RSS feed is available at <Link className='break-all' href="http://localhost:2368/51aa059ba6eb50c24c14047d4255ac/rss">http://localhost:2368/51aa059ba6eb50c24c14047d4255ac/rss</Link></>
     );
 
     const inputs = (
