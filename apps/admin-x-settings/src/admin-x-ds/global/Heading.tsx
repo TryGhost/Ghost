@@ -1,7 +1,7 @@
 import React from 'react';
 import Separator from './Separator';
 
-type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
+export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
 interface HeadingBaseProps {
     level?: HeadingLevel;
