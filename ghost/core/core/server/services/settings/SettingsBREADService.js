@@ -147,7 +147,7 @@ class SettingsBREADService {
      * @param {Object[]} settings
      * @param {Object} options
      * @param {Object} [options.context]
-     * @param {Object} [stripeConnectData]
+     * @param {Object|null} [stripeConnectData]
      * @returns
      */
     async edit(settings, options, stripeConnectData) {
