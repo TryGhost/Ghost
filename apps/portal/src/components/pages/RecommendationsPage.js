@@ -1,5 +1,6 @@
 import AppContext from '../../AppContext';
 import {useContext, useState, useEffect} from 'react';
+import CloseButton from '../common/CloseButton';
 
 export const RecommendationsPageStyles = `
     .gh-portal-recommendation-item .gh-portal-list-detail {
@@ -94,6 +95,7 @@ const RecommendationsPage = () => {
 
     return (
         <div className='gh-portal-content with-footer'>
+            <CloseButton />
             <div className="gh-portal-recommendations-header">
                 {icon && <img className="gh-portal-signup-logo" alt={title} src={icon} />}
                 {/* TODO: Make heading dynamic so it's "You‘re subscribed!" when it's during the signup flow, and "Recommendations" when triggered elsewhere */}
