@@ -8,6 +8,7 @@ import React from 'react';
 import useRouting from '../../../hooks/useRouting';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {PreviewModalContent} from '../../../admin-x-ds/global/modal/PreviewModal';
+import {getHomepageUrl} from '../../../api/site';
 import {getSettingValues} from '../../../api/settings';
 import {showToast} from '../../../admin-x-ds/global/Toast';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
@@ -109,9 +110,9 @@ const Sidebar: React.FC<SidebarProps> = ({
 };
 
 const AnnouncementBarModal: React.FC = () => {
-    // API constraints - we are limited to "dark", "light" and "accent" colors
+    const {siteData} = useGlobalData();
+    const homePageURL = getHomepageUrl(siteData!);
     const modal = NiceModal.useModal();
-    // const {config} = useGlobalData();
     const {localSettings, updateSetting, handleSave} = useSettingGroup();
     const [announcementContent] = getSettingValues<string>(localSettings, ['announcement_content']);
     const [accentColor] = getSettingValues<string>(localSettings, ['accent_color']);
@@ -158,7 +159,7 @@ const AnnouncementBarModal: React.FC = () => {
         deviceSelector={false}
         dirty={false}
         okLabel='Save'
-        preview={<AnnouncementBarPreview />}
+        preview={<AnnouncementBarPreview announcementBackgroundColor={announcementBackgroundColor} announcementContent={announcementContent} homepageUrl={homePageURL} />}
         previewBgColor='greygradient'
         sidebar={sidebar}
         testId='announcement-bar-modal'
