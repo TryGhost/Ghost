@@ -15,6 +15,7 @@ export const RecommendationsPageStyles = `
   .gh-portal-recommendation-item-favicon {
     width: 20px;
     height: 20px;
+    border-radius: 3px;
   }
 
   .gh-portal-recommendations-header {
@@ -95,7 +96,8 @@ const RecommendationsPage = () => {
         <div className='gh-portal-content with-footer'>
             <div className="gh-portal-recommendations-header">
                 {icon && <img className="gh-portal-signup-logo" alt={title} src={icon} />}
-                <h1 className="gh-portal-main-title">{t('Recommendations')}</h1>
+                {/* TODO: Make heading dynamic so it's "You‘re subscribed!" when it's during the signup flow, and "Recommendations" when triggered elsewhere */}
+                <h1 className="gh-portal-main-title">{t('You‘re subscribed!')}</h1>
             </div>
             <p className="gh-portal-recommendations-description">{t(`Here are a few other sites ${title} thinks you may enjoy.`)}</p>
 
