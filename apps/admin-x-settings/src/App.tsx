@@ -42,15 +42,15 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate}: 
                             >
                                 <Toaster />
                                 <NiceModal.Provider>
-                                    <div className='fixed left-6 top-4 z-20'>
+                                    <div className='relative left-6 top-4 z-20 tablet:fixed'>
                                         <ExitSettingsButton />
                                     </div>
 
                                     {/* Main container */}
-                                    <div className="mx-auto flex max-w-[1080px] flex-col px-[5vmin] py-[12vmin] md:flex-row md:items-start md:gap-x-10 md:py-[8vmin]" id="admin-x-settings-content">
+                                    <div className="mx-auto flex max-w-[1080px] flex-col px-[5vmin] py-[12vmin] tablet:flex-row tablet:items-start tablet:gap-x-10 tablet:py-[8vmin]" id="admin-x-settings-content">
 
                                         {/* Sidebar */}
-                                        <div className="relative z-20 min-w-[260px] grow-0 md:fixed md:top-[8vmin] md:basis-[260px]">
+                                        <div className="relative z-20 min-w-[260px] grow-0 tablet:fixed tablet:top-[8vmin] tablet:basis-[260px]">
                                             <div className='h-[84px]'>
                                                 <Heading>Settings</Heading>
                                             </div>
@@ -58,7 +58,7 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate}: 
                                                 <Sidebar />
                                             </div>
                                         </div>
-                                        <div className="relative flex-auto pt-[3vmin] md:ml-[300px] md:pt-[85px]">
+                                        <div className="relative flex-auto pt-[3vmin] tablet:ml-[300px] tablet:pt-[85px]">
                                             <div className='pointer-events-none fixed inset-x-0 top-0 z-[5] h-[80px] bg-gradient-to-t from-transparent to-white to-60%'></div>
                                             <Settings />
                                         </div>

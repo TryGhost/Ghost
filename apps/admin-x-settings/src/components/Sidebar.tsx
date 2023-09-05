@@ -25,7 +25,7 @@ const Sidebar: React.FC = () => {
     const hasRecommendations = useFeatureFlag('recommendations');
 
     return (
-        <div className="hidden md:!visible md:!block md:h-[calc(100vh-5vmin-84px)] md:w-[240px] md:overflow-y-scroll md:pt-[32px]">
+        <div className="hidden tablet:!visible tablet:!block tablet:h-[calc(100vh-5vmin-84px)] tablet:w-[240px] tablet:overflow-y-scroll tablet:pt-[32px]">
             <div className='relative mb-10'>
                 <Icon className='absolute top-2' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
                 <TextField autoComplete="off" className='border-b border-grey-500 px-3 py-1.5 pl-[24px] text-sm' placeholder="Search" title="Search" value={filter} hideTitle unstyled onChange={e => setFilter(e.target.value)} />
