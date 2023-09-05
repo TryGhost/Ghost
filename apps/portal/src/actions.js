@@ -102,7 +102,7 @@ async function signup({data, state, api}) {
 
         if (recommendationsEnabled && recommendations.length > 0) {
             const currentUrl = window.location.origin + window.location.pathname;
-            successUrl = `${currentUrl}#/portal/recommendations`;
+            successUrl = `${currentUrl}#/portal/welcome`;
         }
 
         let {plan, tierId, cadence, email, name, newsletters, offerId} = data;

@@ -3,7 +3,7 @@ import {useContext, useState, useEffect} from 'react';
 
 export const RecommendationsPageStyles = `
     .gh-portal-recommendation-item .gh-portal-list-detail {
-        padding: 4px 24px 4px 0px; 
+        padding: 4px 24px 4px 0px;
     }
 
   .gh-portal-recommendation-item-header {
@@ -30,17 +30,16 @@ export const RecommendationsPageStyles = `
   }
 `;
 
+// Fisher-Yates shuffle
+// @see https://stackoverflow.com/a/2450976/3015595
 const shuffleRecommendations = (array) => {
     let currentIndex = array.length;
     let randomIndex;
 
-    // While there remain elements to shuffle...
     while (currentIndex > 0) {
-        // Pick a remaining element...
         randomIndex = Math.floor(Math.random() * currentIndex);
         currentIndex -= 1;
 
-        // And swap it with the current element.
         [array[currentIndex], array[randomIndex]] = [
             array[randomIndex], array[currentIndex]];
     }
@@ -68,7 +67,7 @@ const RecommendationItem = ({title, url, reason, favicon}) => {
 };
 
 const RecommendationsPage = () => {
-    const {site, t} = useContext(AppContext);
+    const {site, pageData, t} = useContext(AppContext);
     const {title, icon} = site;
     const {recommendations_enabled: recommendationsEnabled = false} = site;
     const {recommendations = []} = site;
@@ -80,13 +79,15 @@ const RecommendationsPage = () => {
     const [shuffledRecommendations, setShuffledRecommendations] = useState([]);
 
     useEffect(() => {
-        // Shuffle the array once when the component mounts
         setShuffledRecommendations(shuffleRecommendations([...recommendations]));
     }, [recommendations]);
 
     const showAllRecommendations = () => {
         setNumToShow(recommendations.length);
     };
+
+    const heading = pageData && pageData.signup ? t('You\'re subscribed!') : t('Recommendations');
+    const subheading = t(`Here are a few other sites {{siteTitle}} thinks you may enjoy.`, {siteTitle: title});
 
     if (!recommendationsEnabled || recommendations.length < 1) {
         return null;
@@ -96,10 +97,9 @@ const RecommendationsPage = () => {
         <div className='gh-portal-content with-footer'>
             <div className="gh-portal-recommendations-header">
                 {icon && <img className="gh-portal-signup-logo" alt={title} src={icon} />}
-                {/* TODO: Make heading dynamic so it's "You‘re subscribed!" when it's during the signup flow, and "Recommendations" when triggered elsewhere */}
-                <h1 className="gh-portal-main-title">{t('You‘re subscribed!')}</h1>
+                <h1 className="gh-portal-main-title">{heading}</h1>
             </div>
-            <p className="gh-portal-recommendations-description">{t(`Here are a few other sites ${title} thinks you may enjoy.`)}</p>
+            <p className="gh-portal-recommendations-description">{subheading}</p>
 
             <div className="gh-portal-list">
                 {shuffledRecommendations.slice(0, numToShow).map((recommendation, index) => (
