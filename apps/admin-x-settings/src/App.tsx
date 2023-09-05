@@ -42,7 +42,7 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate}: 
                             >
                                 <Toaster />
                                 <NiceModal.Provider>
-                                    <div className='relative left-6 top-4 z-20 tablet:fixed'>
+                                    <div className='relative z-20 px-6 py-4 tablet:fixed'>
                                         <ExitSettingsButton />
                                     </div>
 
