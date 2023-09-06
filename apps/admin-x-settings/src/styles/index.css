@@ -37,7 +37,7 @@
     }
 
     h5 {
-        @apply text-lg leading-tight;
+        @apply text-lg leading-supertight;
     }
 
     h6 {

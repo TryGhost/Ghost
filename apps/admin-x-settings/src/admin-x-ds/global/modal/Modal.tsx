@@ -29,6 +29,7 @@ export interface ModalProps {
     onOk?: () => void;
     onCancel?: () => void;
     topRightContent?: 'close' | React.ReactNode;
+    hideXOnMobile?: boolean;
     afterClose?: () => void;
     children?: React.ReactNode;
     backDrop?: boolean;
@@ -54,6 +55,7 @@ const Modal: React.FC<ModalProps> = ({
     okColor = 'black',
     onCancel,
     topRightContent,
+    hideXOnMobile = false,
     afterClose,
     children,
     backDrop = true,
@@ -253,7 +255,7 @@ const Modal: React.FC<ModalProps> = ({
                         {!topRightContent || topRightContent === 'close' ?
                             (<>
                                 {title && <Heading level={3}>{title}</Heading>}
-                                <div className={`${topRightContent !== 'close' && 'md:!invisible md:!hidden'} absolute right-6 top-6`}>
+                                <div className={`${topRightContent !== 'close' && 'md:!invisible md:!hidden'} ${hideXOnMobile && 'hidden'} absolute right-6 top-6`}>
                                     <Button className='-m-2 cursor-pointer p-2 opacity-50 hover:opacity-100' icon='close' size='sm' unstyled onClick={removeModal} />
                                 </div>
                             </>)
