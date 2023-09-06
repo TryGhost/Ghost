@@ -1,11 +1,10 @@
-import CodeMirror from '@uiw/react-codemirror';
+import CodeMirror, {ReactCodeMirrorProps, ReactCodeMirrorRef} from '@uiw/react-codemirror';
 import Heading from '../Heading';
 import Hint from '../Hint';
 import React, {forwardRef, useEffect, useId} from 'react';
 import clsx from 'clsx';
 import {EditorView} from '@codemirror/view';
 import {Extension} from '@codemirror/state';
-import type {ReactCodeMirrorProps, ReactCodeMirrorRef} from '@uiw/react-codemirror';
 
 export interface CodeEditorProps extends Omit<ReactCodeMirrorProps, 'value' | 'onChange' | 'extensions'> {
     title?: string;
@@ -29,7 +28,7 @@ const theme = EditorView.theme({
 });
 
 // Meant to be imported asynchronously to avoid including CodeMirror in the main bundle
-const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function CodeEditor({
+const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function CodeEditorView({
     title,
     value,
     height = '200px',
