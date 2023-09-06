@@ -38,12 +38,14 @@ export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}
         email: email,
         emailType: emailType,
         labels: labels,
-        newsletters: newsletters,
         name: name,
         autoRedirect: (autoRedirect === 'true')
     };
     if (urlHistory) {
         reqBody.urlHistory = urlHistory;
+    }
+    if (newsletterInputs.length > 0) {
+        reqBody.newsletters = newsletters;
     }
 
     fetch(`${siteUrl}/members/api/send-magic-link/`, {

@@ -6,7 +6,7 @@ import * as helpers from '../utils/helpers';
 import {formSubmitHandler, planClickHandler} from '../data-attributes';
 
 // Mock data
-function getMockData() {
+function getMockData({newsletterQuerySelectorResult = null} = {}) {
     const site = FixturesSite.singleTier.basic;
     const member = null;
 
@@ -63,10 +63,8 @@ function getMockData() {
                         value: 'Gold'
                     }];
                 }
-                if (elem === 'input[data-members-newsletter]') {
-                    return [{
-                        value: 'some_newsletter'
-                    }];
+                if (elem === 'input[data-members-newsletter]' && newsletterQuerySelectorResult) {
+                    return newsletterQuerySelectorResult;
                 }
             }
         }
@@ -151,7 +149,6 @@ describe('Member Data attributes:', () => {
                 email: 'jamie@example.com',
                 emailType: 'signup',
                 labels: ['Gold'],
-                newsletters: [{id: 'some_newsletter'}],
                 name: 'Jamie Larsen',
                 autoRedirect: true,
                 urlHistory: [{
@@ -240,6 +237,61 @@ describe('Member Data attributes:', () => {
                 },
                 method: 'POST'
             });
+        });
+    });
+
+    describe('data-members-newsletter', () => {
+        test('includes specified newsletters in request', () => {
+            const {event, form, errorEl, siteUrl, submitHandler} = getMockData({
+                newsletterQuerySelectorResult: [{
+                    value: 'some_newsletter'
+                }]
+            });
+
+            formSubmitHandler({event, form, errorEl, siteUrl, submitHandler});
+
+            expect(window.fetch).toHaveBeenCalledTimes(1);
+            const expectedBody = JSON.stringify({
+                email: 'jamie@example.com',
+                emailType: 'signup',
+                labels: ['Gold'],
+                name: 'Jamie Larsen',
+                autoRedirect: true,
+                urlHistory: [{
+                    path: '/blog/',
+                    refMedium: null,
+                    refSource: 'ghost-explore',
+                    refUrl: 'https://example.com/blog/',
+                    time: 1611234567890
+                }],
+                newsletters: [{id: 'some_newsletter'}]
+            });
+            expect(window.fetch).toHaveBeenCalledWith('https://portal.localhost/members/api/send-magic-link/', {body: expectedBody, headers: {'Content-Type': 'application/json'}, method: 'POST'});
+        });
+
+        test('does not include newsletters in request if there are no newsletter inputs', () => {
+            const {event, form, errorEl, siteUrl, submitHandler} = getMockData({
+                newsletterQuerySelectorResult: []
+            });
+
+            formSubmitHandler({event, form, errorEl, siteUrl, submitHandler});
+
+            expect(window.fetch).toHaveBeenCalledTimes(1);
+            const expectedBody = JSON.stringify({
+                email: 'jamie@example.com',
+                emailType: 'signup',
+                labels: ['Gold'],
+                name: 'Jamie Larsen',
+                autoRedirect: true,
+                urlHistory: [{
+                    path: '/blog/',
+                    refMedium: null,
+                    refSource: 'ghost-explore',
+                    refUrl: 'https://example.com/blog/',
+                    time: 1611234567890
+                }]
+            });
+            expect(window.fetch).toHaveBeenCalledWith('https://portal.localhost/members/api/send-magic-link/', {body: expectedBody, headers: {'Content-Type': 'application/json'}, method: 'POST'});
         });
     });
 });
