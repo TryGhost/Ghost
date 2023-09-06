@@ -53,7 +53,7 @@ export default (function viteConfig() {
             port: 4174
         },
         build: {
-            minify: false,
+            minify: true,
             sourcemap: true,
             lib: {
                 formats: ['es'],
