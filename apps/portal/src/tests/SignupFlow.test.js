@@ -827,7 +827,7 @@ describe('Signup', () => {
                     emailType: 'signup',
                     name: 'Jamie Larsen',
                     plan: 'free',
-                    redirect: `${currentUrl}#/portal/recommendations`
+                    redirect: `${currentUrl}#/portal/welcome`
                 });
             });
         });
@@ -887,9 +887,10 @@ describe('Signup', () => {
                     plan: singleTierProduct.yearlyPrice.id,
                     tierId: singleTierProduct.id,
                     cadence: 'year',
-                    successUrl: `${currentUrl}#/portal/recommendations`
+                    successUrl: `${currentUrl}#/portal/welcome`
                 });
             });
         });
     });
 });
+
