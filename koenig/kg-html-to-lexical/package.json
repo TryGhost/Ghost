@@ -1,0 +1,47 @@
+{
+  "name": "@tryghost/kg-html-to-lexical",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/kg-html-to-lexical",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "scripts": {
+    "dev": "tsc --watch --preserveWatchOutput --sourceMap",
+    "build": "tsc",
+    "prepare": "tsc",
+    "pretest": "tsc",
+    "test:unit": "NODE_ENV=testing c8 --src build --all --check-coverage --100 --reporter text --reporter cobertura mocha -r ts-node/register './test/**/*.test.ts'",
+    "test": "yarn test:types && yarn test:unit",
+    "test:types": "tsc --noEmit",
+    "lint:code": "eslint src/ --ext .ts --cache",
+    "lint": "yarn lint:code && yarn lint:test",
+    "lint:test": "eslint -c test/.eslintrc.js test/ --ext .ts --cache"
+  },
+  "files": [
+    "build",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^21.1.2",
+    "@types/mocha": "^10.0.1",
+    "c8": "8.0.1",
+    "mocha": "10.2.0",
+    "sinon": "15.2.0",
+    "ts-node": "10.9.1",
+    "typescript": "5.2.2"
+  },
+  "dependencies": {
+    "@lexical/headless": "^0.12.0",
+    "@lexical/html": "^0.12.0",
+    "@lexical/link": "^0.12.0",
+    "@lexical/list": "^0.12.0",
+    "@tryghost/kg-default-nodes": "^0.1.26",
+    "jsdom": "^22.1.0",
+    "lexical": "^0.12.0"
+  }
+}
