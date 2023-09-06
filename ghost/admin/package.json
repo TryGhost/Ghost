@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.61.1",
+  "version": "5.61.2",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -44,9 +44,9 @@
     "@tryghost/color-utils": "0.1.24",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "1.1.77",
-    "@tryghost/kg-clean-basic-html": "3.0.29",
+    "@tryghost/kg-clean-basic-html": "3.0.30",
     "@tryghost/kg-converters": "0.0.13",
-    "@tryghost/kg-parser-plugins": "3.0.30",
+    "@tryghost/kg-parser-plugins": "3.0.31",
     "@tryghost/kg-simplemde": "1.11.2",
     "@tryghost/limit-service": "1.2.6",
     "@tryghost/members-csv": "0.0.0",
@@ -151,7 +151,7 @@
     "reframe.js": "4.0.1",
     "semver": "7.5.4",
     "testem": "3.10.1",
-    "tracked-built-ins": "3.1.1",
+    "tracked-built-ins": "3.2.0",
     "util": "0.12.5",
     "validator": "7.2.0",
     "walk-sync": "3.0.0"

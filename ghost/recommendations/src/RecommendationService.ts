@@ -8,6 +8,11 @@ type MentionSendingService = {
     sendAll(options: {url: URL, links: URL[]}): Promise<void>
 }
 
+type RecommendationEnablerService = {
+    getSetting(): string,
+    setSetting(value: string): Promise<void>
+}
+
 const messages = {
     notFound: "Recommendation with id {id} not found"
 }
@@ -16,20 +21,38 @@ export class RecommendationService {
     repository: RecommendationRepository;
     wellknownService: WellknownService;
     mentionSendingService: MentionSendingService;
+    recommendationEnablerService: RecommendationEnablerService;
 
-    constructor(deps: {repository: RecommendationRepository, wellknownService: WellknownService, mentionSendingService: MentionSendingService}) {
+    constructor(deps: {
+        repository: RecommendationRepository,
+        wellknownService: WellknownService,
+        mentionSendingService: MentionSendingService,
+        recommendationEnablerService: RecommendationEnablerService,
+    }) {
         this.repository = deps.repository;
         this.wellknownService = deps.wellknownService;
         this.mentionSendingService = deps.mentionSendingService;
+        this.recommendationEnablerService = deps.recommendationEnablerService;
     }
 
     async init() {
-        await this.updateWellknown();
+        const recommendations = await this.listRecommendations();
+        await this.updateWellknown(recommendations);
     }
 
-    async updateWellknown() {
-        const recommendations = await this.listRecommendations();
+    async updateWellknown(recommendations: Recommendation[]) {
         await this.wellknownService.set(recommendations);
+    }
+
+    async updateRecommendationsEnabledSetting(recommendations: Recommendation[]) {
+        const expectedSetting = (recommendations.length > 0).toString();
+        const currentSetting = this.recommendationEnablerService.getSetting();
+
+        if (currentSetting && currentSetting === expectedSetting) {
+            return;
+        }
+
+        await this.recommendationEnablerService.setSetting(expectedSetting);
     }
 
     private sendMentionToRecommendation(recommendation: Recommendation) {
@@ -43,8 +66,11 @@ export class RecommendationService {
 
     async addRecommendation(addRecommendation: AddRecommendation) {
         const recommendation = Recommendation.create(addRecommendation);
-        this.repository.save(recommendation);
-        await this.updateWellknown();
+        await this.repository.save(recommendation);
+
+        const recommendations = await this.listRecommendations();
+        await this.updateWellknown(recommendations);
+        await this.updateRecommendationsEnabledSetting(recommendations);
 
         // Only send an update for the mentioned URL
         this.sendMentionToRecommendation(recommendation);
@@ -63,7 +89,9 @@ export class RecommendationService {
         existing.edit(recommendationEdit);
         await this.repository.save(existing);
 
-        await this.updateWellknown();
+        const recommendations = await this.listRecommendations();
+        await this.updateWellknown(recommendations);
+
         this.sendMentionToRecommendation(existing);
         return existing;
     }
@@ -78,7 +106,10 @@ export class RecommendationService {
 
         existing.delete();
         await this.repository.save(existing);
-        await this.updateWellknown();
+
+        const recommendations = await this.listRecommendations();
+        await this.updateWellknown(recommendations);
+        await this.updateRecommendationsEnabledSetting(recommendations);
 
         // Send a mention (because it was deleted, according to the webmentions spec)
         this.sendMentionToRecommendation(existing);

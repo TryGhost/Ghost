@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.61.1",
+  "version": "5.61.2",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -104,8 +104,8 @@
     "@tryghost/kg-converters": "0.0.13",
     "@tryghost/kg-default-atoms": "4.0.3",
     "@tryghost/kg-default-cards": "9.1.4",
-    "@tryghost/kg-default-nodes": "0.1.25",
-    "@tryghost/kg-lexical-html-renderer": "0.3.21",
+    "@tryghost/kg-default-nodes": "0.1.26",
+    "@tryghost/kg-lexical-html-renderer": "0.3.22",
     "@tryghost/kg-mobiledoc-html-renderer": "6.0.10",
     "@tryghost/limit-service": "1.2.6",
     "@tryghost/link-redirects": "0.0.0",
@@ -179,7 +179,7 @@
     "downsize": "0.0.8",
     "express": "4.18.2",
     "express-brute": "1.0.1",
-    "express-hbs": "2.4.1",
+    "express-hbs": "2.4.2",
     "express-jwt": "8.4.1",
     "express-lazy-router": "1.0.6",
     "express-query-boolean": "2.0.0",
@@ -225,7 +225,7 @@
     "yjs": "13.6.7"
   },
   "optionalDependencies": {
-    "@tryghost/html-to-mobiledoc": "2.0.30",
+    "@tryghost/html-to-mobiledoc": "2.0.31",
     "sqlite3": "5.1.6"
   },
   "devDependencies": {
