@@ -13,6 +13,12 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
             }}
             ghostVersion='5.x'
             officialThemes={[{
+                name: 'Source',
+                category: 'News',
+                previewUrl: 'https://source.ghost.io/',
+                ref: 'default',
+                image: 'assets/img/themes/Source.png'
+            }, {
                 name: 'Casper',
                 category: 'Blog',
                 previewUrl: 'https://demo.ghost.io/',

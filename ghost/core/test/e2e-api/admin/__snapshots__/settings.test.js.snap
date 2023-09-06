@@ -98,7 +98,7 @@ Object {
     },
     Object {
       "key": "active_theme",
-      "value": "casper",
+      "value": "source",
     },
     Object {
       "key": "is_private",
@@ -367,7 +367,7 @@ Object {
   "settings": Array [
     Object {
       "key": "active_theme",
-      "value": "casper",
+      "value": "source",
     },
   ],
 }
@@ -508,7 +508,7 @@ Object {
     },
     Object {
       "key": "active_theme",
-      "value": "casper",
+      "value": "source",
     },
     Object {
       "key": "is_private",
@@ -866,7 +866,7 @@ Object {
     },
     Object {
       "key": "active_theme",
-      "value": "casper",
+      "value": "source",
     },
     Object {
       "key": "is_private",
@@ -1223,7 +1223,7 @@ Object {
     },
     Object {
       "key": "active_theme",
-      "value": "casper",
+      "value": "source",
     },
     Object {
       "key": "is_private",
@@ -1585,7 +1585,7 @@ Object {
     },
     Object {
       "key": "active_theme",
-      "value": "casper",
+      "value": "source",
     },
     Object {
       "key": "is_private",
@@ -2035,7 +2035,7 @@ Object {
     },
     Object {
       "key": "active_theme",
-      "value": "casper",
+      "value": "source",
     },
     Object {
       "key": "is_private",
@@ -2457,7 +2457,7 @@ Object {
     },
     Object {
       "key": "active_theme",
-      "value": "casper",
+      "value": "source",
     },
     Object {
       "key": "is_private",

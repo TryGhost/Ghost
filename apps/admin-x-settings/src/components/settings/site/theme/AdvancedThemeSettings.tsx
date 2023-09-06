@@ -7,7 +7,7 @@ import ModalPage from '../../../../admin-x-ds/global/modal/ModalPage';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import useHandleError from '../../../../utils/api/handleError';
-import {Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, useActivateTheme, useDeleteTheme} from '../../../../api/themes';
+import {Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, isLegacyTheme, useActivateTheme, useDeleteTheme} from '../../../../api/themes';
 import {downloadFile, getGhostPaths} from '../../../../utils/helpers';
 
 interface ThemeActionProps {
@@ -23,6 +23,8 @@ function getThemeLabel(theme: Theme): React.ReactNode {
 
     if (isDefaultTheme(theme)) {
         label += ' (default)';
+    } else if (isLegacyTheme(theme)) {
+        label += ' (legacy)';
     } else if (theme.package?.name !== theme.name) {
         label =
             <span className='text-sm md:text-base'>

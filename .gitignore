@@ -97,6 +97,7 @@ typings/
 /ghost/core/content/adapters/storage/**/*
 /ghost/core/content/adapters/scheduling/**/*
 /ghost/core/content/themes/casper
+/ghost/core/content/themes/source
 !/ghost/core/README.md
 !/ghost/core/content/**/README.md
 

@@ -75,12 +75,12 @@ const prepareContentFolder = (options) => {
     fs.ensureDirSync(path.join(contentFolderForTests, 'settings'));
 
     if (options.copyThemes) {
-        // Copy all themes into the new test content folder. Default active theme is always casper. If you want to use a different theme, you have to set the active theme (e.g. stub)
+        // Copy all themes into the new test content folder. Default active theme is always source. If you want to use a different theme, you have to set the active theme (e.g. stub)
         fs.copySync(path.join(__dirname, 'fixtures', 'themes'), path.join(contentFolderForTests, 'themes'));
     }
 
-    // Copy theme even if frontend is disabled, as admin can use casper when viewing themes section
-    fs.copySync(path.join(__dirname, 'fixtures', 'themes', 'casper'), path.join(contentFolderForTests, 'themes', 'casper'));
+    // Copy theme even if frontend is disabled, as admin can use source when viewing themes section
+    fs.copySync(path.join(__dirname, 'fixtures', 'themes', 'source'), path.join(contentFolderForTests, 'themes', 'source'));
 
     if (options.redirectsFile) {
         redirects.setupFile(contentFolderForTests, options.redirectsFileExt);

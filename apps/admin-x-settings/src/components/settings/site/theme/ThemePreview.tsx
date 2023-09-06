@@ -7,8 +7,15 @@ import MobileChrome from '../../../../admin-x-ds/global/chrome/MobileChrome';
 import NiceModal from '@ebay/nice-modal-react';
 import PageHeader from '../../../../admin-x-ds/global/layout/PageHeader';
 import React, {useState} from 'react';
+import Select, {SelectOption} from '../../../../admin-x-ds/global/form/Select';
 import {OfficialTheme} from '../../../providers/ServiceProvider';
 import {Theme} from '../../../../api/themes';
+
+const sourceDemos = [
+    {label: 'News', value: 'news', url: 'https://source.ghost.io'},
+    {label: 'Magazine', value: 'magazine', url: 'https://source-magazine.ghost.io'},
+    {label: 'Newsletter', value: 'newsletter', url: 'https://source-newsletter.ghost.io'}
+];
 
 const ThemePreview: React.FC<{
     selectedTheme?: OfficialTheme;
@@ -26,6 +33,7 @@ const ThemePreview: React.FC<{
     onInstall
 }) => {
     const [previewMode, setPreviewMode] = useState('desktop');
+    const [currentSourceDemo, setCurrentSourceDemo] = useState<SelectOption>(sourceDemos[0]);
 
     if (!selectedTheme) {
         return null;
@@ -68,6 +76,7 @@ const ThemePreview: React.FC<{
         <div className='flex items-center gap-2'>
             <Breadcrumbs
                 activeItemClassName='hidden md:!block md:!visible'
+                containerClassName='whitespace-nowrap'
                 itemClassName='hidden md:!block md:!visible'
                 items={[
                     {label: 'Design', onClick: onClose},
@@ -78,6 +87,24 @@ const ThemePreview: React.FC<{
                 backIcon
                 onBack={onBack}
             />
+            {selectedTheme.name === 'Source' ?
+                <>
+                    <span className='hidden md:!visible md:!block'>–</span>
+                    <Select
+                        border={false}
+                        containerClassName='text-sm font-bold'
+                        controlClasses={{menu: 'w-24'}}
+                        fullWidth={false}
+                        options={sourceDemos}
+                        selectedOption={currentSourceDemo}
+                        onSelect={(option) => {
+                            if (option) {
+                                setCurrentSourceDemo(option);
+                            }
+                        }}
+                    />
+                </> : null
+            }
         </div>;
 
     const right =
@@ -118,13 +145,19 @@ const ThemePreview: React.FC<{
             <div className='flex h-[calc(100%-74px)] grow flex-col items-center justify-center bg-grey-50 dark:bg-black'>
                 {previewMode === 'desktop' ?
                     <DesktopChrome>
-                        <iframe className='h-full w-full'
-                            src={selectedTheme?.previewUrl} title='Theme preview' />
+                        <iframe
+                            className='h-full w-full'
+                            src={selectedTheme.name !== 'Source' ? selectedTheme?.previewUrl : sourceDemos.find(demo => demo.label === currentSourceDemo.label)?.url}
+                            title='Theme preview'
+                        />
                     </DesktopChrome>
                     :
                     <MobileChrome>
-                        <iframe className='h-full w-full'
-                            src={selectedTheme?.previewUrl} title='Theme preview' />
+                        <iframe
+                            className='h-full w-full'
+                            src={selectedTheme.name !== 'Source' ? selectedTheme?.previewUrl : sourceDemos.find(demo => demo.label === currentSourceDemo.label)?.url}
+                            title='Theme preview'
+                        />
                     </MobileChrome>
                 }
             </div>

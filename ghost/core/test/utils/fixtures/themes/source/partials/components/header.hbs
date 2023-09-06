@@ -1,0 +1,23 @@
+{{#match headerStyle "!=" "Off"}}
+
+    {{#match headerStyle "Highlight"}}
+        {{#match posts.length ">=" 7}}
+            {{> "components/header-content"}}
+        {{/match}}
+    {{else match headerStyle "Magazine"}}
+        {{#match posts.length ">=" 7}}
+            {{> "components/header-content"}}
+        {{/match}}
+    {{else}}
+        {{#match headerStyle "Landing"}}
+            {{#if @site.members_enabled}}
+                {{#unless @member}}
+                    {{> "components/header-content"}}
+                {{/unless}}
+            {{/if}}
+        {{else}}
+            {{> "components/header-content"}}
+        {{/match}}
+    {{/match}}
+
+{{/match}}
