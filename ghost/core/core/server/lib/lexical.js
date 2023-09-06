@@ -1,4 +1,5 @@
 const path = require('path');
+const errors = require('@tryghost/errors');
 const urlUtils = require('../../shared/url-utils');
 const config = require('../../shared/config');
 const storage = require('../adapters/storage');
@@ -78,5 +79,19 @@ module.exports = {
         }
 
         return urlTransformMap;
+    },
+
+    get htmlToLexicalConverter() {
+        try {
+            return require('@tryghost/kg-html-to-lexical').htmlToLexical;
+        } catch (err) {
+            throw new errors.InternalServerError({
+                message: 'Unable to convert from source HTML to Lexical',
+                context: 'The html-to-lexical package was not installed',
+                help: 'Please review any errors from the install process by checking the Ghost logs',
+                code: 'HTML_TO_LEXICAL_INSTALLATION',
+                err: err
+            });
+        }
     }
 };

@@ -552,6 +552,16 @@ Post = ghostBookshelf.Model.extend({
         let tagsToSave;
         const ops = [];
 
+        // normally we don't allow both mobiledoc & lexical through at the API level but there's
+        // an exception for ?source=html which always sets both when the lexical editor is enabled.
+        // That's necessary because at the input serializer layer we don't have access to the
+        // actual model to check if this would result in a change of format
+        if (this.previous('mobiledoc') && this.get('lexical')) {
+            this.set('lexical', null);
+        } else if (this.get('mobiledoc') && this.get('lexical')) {
+            this.set('mobiledoc', null);
+        }
+
         // CASE: disallow published -> scheduled
         // @TODO: remove when we have versioning based on updated_at
         if (newStatus !== olderStatus && newStatus === 'scheduled' && olderStatus === 'published') {
@@ -653,7 +663,7 @@ Post = ghostBookshelf.Model.extend({
 
         // If we're force re-rendering we want to make sure that all image cards
         // have original dimensions stored in the payload for use by card renderers
-        if (options.force_rerender) {
+        if (options.force_rerender && this.get('mobiledoc')) {
             this.set('mobiledoc', await mobiledocLib.populateImageSizes(this.get('mobiledoc')));
         }
 
