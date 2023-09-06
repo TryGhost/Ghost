@@ -70,7 +70,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
             customButtons={checkStripeEnabled(settings, config) ?
                 <StripeConnectedButton className='hidden tablet:!visible tablet:!block' onClick={openConnectModal} />
                 :
-                <StripeButton onClick={openConnectModal}/>}
+                <StripeButton className='hidden tablet:!visible tablet:!block' onClick={openConnectModal}/>}
             description='Set prices and paid member sign up settings'
             keywords={keywords}
             navid='tiers'
