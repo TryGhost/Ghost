@@ -19,7 +19,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
     const {updateRoute} = useRouting();
     const {mutateAsync: addRecommendation} = useAddRecommendation();
 
-    const {formState, updateForm, handleSave, saveState} = useForm({
+    const {formState, updateForm, handleSave, saveState, errors} = useForm({
         initialState: {
             ...recommendation
         },
@@ -30,6 +30,9 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
         },
         onValidate: () => {
             const newErrors: Record<string, string> = {};
+            if (!formState.title) {
+                newErrors.title = 'Title is required';
+            }
             return newErrors;
         }
     });
@@ -42,14 +45,37 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
         okLabel = 'Added';
     }
 
+    let leftButtonProps = {
+        label: 'Back',
+        icon: 'arrow-left',
+        size: 'sm' as const,
+        onClick: () => {
+            if (saveState === 'saving') {
+                // Already saving
+                return;
+            }
+
+            // Switch modal without changing the route, but pass along any changes that were already made
+            modal.remove();
+            NiceModal.show(AddRecommendationModal, {
+                animate: false,
+                recommendation: {
+                    ...formState
+                }
+            });
+        }
+    };
+
     return <Modal
         afterClose={() => {
             // Closed without saving: reset route
             updateRoute('recommendations');
         }}
         animate={animate ?? true}
-        cancelLabel={'Back'}
+        backDropClick={false}
+        cancelLabel={'Cancel'}
         dirty={true}
+        leftButtonProps={leftButtonProps}
         okColor='black'
         okLabel={okLabel}
         size='sm'
@@ -60,14 +86,8 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
                 // Already saving
                 return;
             }
-            // Switch modal without changing the route, but pass along any changes that were already made
             modal.remove();
-            NiceModal.show(AddRecommendationModal, {
-                animate: false,
-                recommendation: {
-                    ...formState
-                }
-            });
+            updateRoute('recommendations');
         }}
         onOk={async () => {
             if (saveState === 'saving') {
@@ -86,7 +106,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
             }
         }}
     >
-        <RecommendationReasonForm formState={formState} updateForm={updateForm} />
+        <RecommendationReasonForm errors={errors} formState={formState} updateForm={updateForm}/>
     </Modal>;
 };
 

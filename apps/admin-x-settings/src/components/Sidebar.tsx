@@ -46,7 +46,7 @@ const Sidebar: React.FC = () => {
                 {/* <SettingNavItem navid='theme' title="Theme" onClick={handleSectionClick} /> */}
                 <SettingNavItem navid='design' title="Branding and design" onClick={handleSectionClick} />
                 <SettingNavItem navid='navigation' title="Navigation" onClick={handleSectionClick} />
-                {hasRecommendations && <SettingNavItem navid='recommendations' title="Recommendations" onClick={handleSectionClick} />}
+                <SettingNavItem navid='announcement-bar' title="Announcement bar" onClick={handleSectionClick} />
             </SettingNavSection>
 
             <SettingNavSection title="Membership">
@@ -55,6 +55,7 @@ const Sidebar: React.FC = () => {
                 <SettingNavItem navid='tiers' title="Tiers" onClick={handleSectionClick} />
                 {hasTipsAndDonations && <SettingNavItem navid='tips-or-donations' title="Tips or donations" onClick={handleSectionClick} />}
                 <SettingNavItem navid='analytics' title="Analytics" onClick={handleSectionClick} />
+                {hasRecommendations && <SettingNavItem navid='recommendations' title="Recommendations" onClick={handleSectionClick} />}
             </SettingNavSection>
 
             <SettingNavSection title="Email newsletters">

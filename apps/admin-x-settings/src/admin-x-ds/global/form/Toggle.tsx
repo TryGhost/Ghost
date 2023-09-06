@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import {Heading6StylesGrey} from '../Heading';
 
 type ToggleSizes = 'sm' | 'md' | 'lg';
-type ToggleDirections = 'ltr' | 'rtl';
+export type ToggleDirections = 'ltr' | 'rtl';
 
 interface ToggleProps {
     checked?: boolean;

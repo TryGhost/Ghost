@@ -4,7 +4,8 @@ import React from 'react';
 import RecommendationReasonForm from './RecommendationReasonForm';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
-import {Recommendation, useEditRecommendation} from '../../../../api/recommendations';
+import {Recommendation, useBrowseRecommendations, useEditRecommendation} from '../../../../api/recommendations';
+import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
 
@@ -18,7 +19,7 @@ const EditRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({
     const {updateRoute} = useRouting();
     const {mutateAsync: editRecommendation} = useEditRecommendation();
 
-    const {formState, updateForm, handleSave, saveState} = useForm({
+    const {formState, updateForm, handleSave, saveState, errors} = useForm({
         initialState: {
             ...recommendation
         },
@@ -29,6 +30,9 @@ const EditRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({
         },
         onValidate: () => {
             const newErrors: Record<string, string> = {};
+            if (!formState.title) {
+                newErrors.title = 'Title is required';
+            }
             return newErrors;
         }
     });
@@ -47,6 +51,7 @@ const EditRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({
             updateRoute('recommendations');
         }}
         animate={animate ?? true}
+        backDropClick={false}
         cancelLabel={'Cancel'}
         okColor='black'
         okLabel={okLabel}
@@ -70,8 +75,19 @@ const EditRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({
             }
         }}
     >
-        <RecommendationReasonForm formState={formState} updateForm={updateForm as any} />
+        <RecommendationReasonForm errors={errors} formState={formState} updateForm={updateForm as any}/>
     </Modal>;
 };
 
-export default NiceModal.create(EditRecommendationModalConfirm);
+const EditRecommendationModal: React.FC<RoutingModalProps> = ({params}) => {
+    const {data: {recommendations} = {}} = useBrowseRecommendations();
+    const recommendation = recommendations?.find(({id}) => id === params?.id);
+
+    if (recommendation) {
+        return <EditRecommendationModalConfirm recommendation={recommendation} />;
+    } else {
+        return null;
+    }
+};
+
+export default NiceModal.create(EditRecommendationModal);

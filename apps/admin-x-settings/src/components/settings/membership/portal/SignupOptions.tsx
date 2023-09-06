@@ -1,7 +1,7 @@
 import CheckboxGroup from '../../../../admin-x-ds/global/form/CheckboxGroup';
 import Form from '../../../../admin-x-ds/global/form/Form';
 import HtmlField from '../../../../admin-x-ds/global/form/HtmlField';
-import React, {useEffect, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import {CheckboxProps} from '../../../../admin-x-ds/global/form/Checkbox';
 import {Setting, SettingValue, checkStripeEnabled, getSettingValues} from '../../../../api/settings';
@@ -30,13 +30,18 @@ const SignupOptions: React.FC<{
         return div.innerText.length;
     }, [portalSignupTermsHtml]);
 
+    const handleError = useCallback((key: string, error: string | undefined) => {
+        setError(key, error);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     useEffect(() => {
         if (signupTermsLength > signupTermsMaxLength) {
-            setError('portal_signup_terms_html', 'Signup notice is too long');
+            handleError('portal_signup_terms_html', 'Signup notice is too long');
         } else {
-            setError('portal_signup_terms_html', undefined);
+            handleError('portal_signup_terms_html', undefined);
         }
-    }, [signupTermsLength, setError]);
+    }, [signupTermsLength, handleError]);
 
     const togglePlan = (plan: string) => {
         const index = portalPlans.indexOf(plan);

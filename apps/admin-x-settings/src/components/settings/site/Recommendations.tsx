@@ -1,29 +1,22 @@
 import Button from '../../../admin-x-ds/global/Button';
-import EditRecommendationModal from './recommendations/EditRecommendationModal';
-import NiceModal from '@ebay/nice-modal-react';
+import IncomingRecommendations from './recommendations/IncomingRecommendations';
+import Link from '../../../admin-x-ds/global/Link';
 import React, {useState} from 'react';
 import RecommendationList from './recommendations/RecommendationList';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
-import useDetailModalRoute from '../../../hooks/useDetailModalRoute';
 import useRouting from '../../../hooks/useRouting';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {modalRoutes} from '../../providers/RoutingProvider';
 import {useBrowseRecommendations} from '../../../api/recommendations';
 
 const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
         saveState,
+        siteData,
         handleSave
     } = useSettingGroup();
     const {data: {recommendations} = {}} = useBrowseRecommendations();
     const [selectedTab, setSelectedTab] = useState('your-recommendations');
-
-    useDetailModalRoute({
-        route: modalRoutes.editRecommendation,
-        items: recommendations || [],
-        showModal: recommendation => NiceModal.show(EditRecommendationModal, {recommendation})
-    });
 
     const {updateRoute} = useRouting();
     const openAddNewRecommendationModal = () => {
@@ -36,6 +29,8 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
         }} />
     );
 
+    const recommendationsURL = `${siteData?.url.replace(/\/$/, '')}/#/portal/recommendations`;
+
     const tabs = [
         {
             id: 'your-recommendations',
@@ -45,14 +40,18 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
         {
             id: 'recommending-you',
             title: 'Recommending you',
-            contents: (<RecommendationList recommendations={[]} />)
+            contents: (<IncomingRecommendations />)
         }
     ];
+
+    const groupDescription = (
+        <>Share favorite sites with your audience after they subscribe. {(recommendations && recommendations.length > 0) && <Link href={recommendationsURL} target='_blank'>Preview</Link>}</>
+    );
 
     return (
         <SettingGroup
             customButtons={buttons}
-            description="Share favorite sites with your audience"
+            description={groupDescription}
             keywords={keywords}
             navid='recommendations'
             saveState={saveState}

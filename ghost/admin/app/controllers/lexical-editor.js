@@ -153,7 +153,7 @@ export default class LexicalEditorController extends Controller {
     // cursor is in the slug field - that would previously trigger a simultaneous
     // slug update and save resulting in ember data errors and inconsistent save
     // results
-    @(taskGroup().keepLatest())
+    @(taskGroup().enqueue())
         saveTasks;
 
     @mapBy('post.tags', 'name')
@@ -931,14 +931,20 @@ export default class LexicalEditorController extends Controller {
             return;
         }
 
-        // clean up blank cards when leaving the editor if we have a draft post
-        // - blank cards could be left around due to autosave triggering whilst
-        //   a blank card is present then the user attempting to leave
-        // - will mark the post as dirty so it gets saved when transitioning
-        // TODO: not yet implemented in react editor
-        // if (this._koenig && post.isDraft) {
-        //     this._koenig.cleanup();
-        // }
+        // wait for any save to finish before continuing to avoid any issues
+        // with attempting a new save whilst another has requests in-flight
+        if (this.saveTask.isRunning) {
+            transition.abort();
+            await this.saveTask.last;
+            return transition.retry();
+        }
+        // extra handling for PSM-triggered save tasks that aren't captured above
+        // NOTE: we don't wait on `_savePostTask` as it's only used as a child task
+        if (this.savePostTask.isRunning) {
+            transition.abort();
+            await this.savePostTask.last;
+            return transition.retry();
+        }
 
         // user can enter the slug name and then leave the post page,
         // in such case we should wait until the slug would be saved on backend
@@ -948,13 +954,22 @@ export default class LexicalEditorController extends Controller {
             return transition.retry();
         }
 
+        // clean up blank cards when leaving the editor if we have a draft post
+        // - blank cards could be left around due to autosave triggering whilst
+        //   a blank card is present then the user attempting to leave
+        // - will mark the post as dirty so it gets saved when transitioning
+        // TODO: not yet implemented in lexical editor
+        // if (this._koenig && post.isDraft) {
+        //     this._koenig.cleanup();
+        // }
+
         let hasDirtyAttributes = this.hasDirtyAttributes;
         let state = post.getProperties('isDeleted', 'isSaving', 'hasDirtyAttributes', 'isNew');
 
         // Check if anything has changed since the last revision
         let postRevisions = post.get('postRevisions').toArray();
         let latestRevision = postRevisions[postRevisions.length - 1];
-        let hasChangedSinceLastRevision = post.get('lexical') !== latestRevision.get('lexical');
+        let hasChangedSinceLastRevision = !post.isNew && post.lexical !== latestRevision.lexical;
 
         let fromNewToEdit = this.router.currentRouteName === 'lexical-editor.new'
             && transition.targetName === 'lexical-editor.edit'
@@ -1009,7 +1024,7 @@ export default class LexicalEditorController extends Controller {
                 return;
             } else {
                 this._leaveConfirmed = true;
-                transition.retry();
+                return transition.retry();
             }
         }
 

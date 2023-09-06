@@ -18,6 +18,7 @@ import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
+import {RoutingModalProps} from '../../providers/RoutingProvider';
 import {User, isAdminUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner, useUpdatePassword} from '../../../api/users';
 import {getImageUrl, useUploadImage} from '../../../api/images';
 import {showToast} from '../../../admin-x-ds/global/Toast';
@@ -422,10 +423,6 @@ const Password: React.FC<UserDetailProps> = ({user}) => {
     );
 };
 
-interface UserDetailModalProps {
-    user: User;
-}
-
 const UserMenuTrigger = () => (
     <button className='flex h-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] px-3 opacity-80 hover:opacity-100' type='button'>
         <Icon colorClass='text-white' name='ellipsis' size='md' />
@@ -433,7 +430,7 @@ const UserMenuTrigger = () => (
     </button>
 );
 
-const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
+const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     const {updateRoute} = useRouting();
     const {ownerUser} = useStaffUsers();
     const [userData, _setUserData] = useState(user);
@@ -746,6 +743,17 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
             </div>
         </Modal>
     );
+};
+
+const UserDetailModal: React.FC<RoutingModalProps> = ({params}) => {
+    const {users} = useStaffUsers();
+    const user = users.find(({slug}) => slug === params?.slug);
+
+    if (user) {
+        return <UserDetailModalContent user={user} />;
+    } else {
+        return null;
+    }
 };
 
 export default NiceModal.create(UserDetailModal);

@@ -2,19 +2,15 @@ import Avatar from '../../../admin-x-ds/global/Avatar';
 import Button from '../../../admin-x-ds/global/Button';
 import List from '../../../admin-x-ds/global/List';
 import ListItem from '../../../admin-x-ds/global/ListItem';
-import NiceModal from '@ebay/nice-modal-react';
 import NoValueLabel from '../../../admin-x-ds/global/NoValueLabel';
 import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
-import UserDetailModal from './UserDetailModal';
-import useDetailModalRoute from '../../../hooks/useDetailModalRoute';
 import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import {User} from '../../../api/users';
 import {UserInvite, useAddInvite, useDeleteInvite} from '../../../api/invites';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
-import {modalRoutes} from '../../providers/RoutingProvider';
 import {showToast} from '../../../admin-x-ds/global/Toast';
 
 interface OwnerProps {
@@ -36,7 +32,7 @@ const Owner: React.FC<OwnerProps> = ({user}) => {
     const {updateRoute} = useRouting();
 
     const showDetailModal = () => {
-        updateRoute({route: modalRoutes.showUser, params: {slug: user.slug}});
+        updateRoute({route: `users/show/${user.slug}`});
     };
 
     if (!user) {
@@ -58,7 +54,7 @@ const UsersList: React.FC<UsersListProps> = ({users}) => {
     const {updateRoute} = useRouting();
 
     const showDetailModal = (user: User) => {
-        updateRoute({route: modalRoutes.showUser, params: {slug: user.slug}});
+        updateRoute({route: `users/show/${user.slug}`});
     };
 
     if (!users || !users.length) {
@@ -185,7 +181,6 @@ const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
 
 const Users: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
-        users,
         ownerUser,
         adminUsers,
         editorUsers,
@@ -195,13 +190,6 @@ const Users: React.FC<{ keywords: string[] }> = ({keywords}) => {
     } = useStaffUsers();
 
     const {updateRoute} = useRouting();
-
-    useDetailModalRoute({
-        route: modalRoutes.showUser,
-        items: users,
-        field: 'slug',
-        showModal: user => NiceModal.show(UserDetailModal, {user})
-    });
 
     const showInviteModal = () => {
         updateRoute('users/invite');

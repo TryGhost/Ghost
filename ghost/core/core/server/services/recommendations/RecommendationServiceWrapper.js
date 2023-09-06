@@ -21,7 +21,16 @@ class RecommendationServiceWrapper {
 
         const config = require('../../../shared/config');
         const urlUtils = require('../../../shared/url-utils');
-        const {InMemoryRecommendationRepository, RecommendationService, RecommendationController, WellknownService} = require('@tryghost/recommendations');
+        const models = require('../../models');
+        const sentry = require('../../../shared/sentry');
+        const settings = require('../settings');
+        const RecommendationEnablerService = require('./RecommendationEnablerService');
+        const {
+            BookshelfRecommendationRepository,
+            RecommendationService,
+            RecommendationController,
+            WellknownService
+        } = require('@tryghost/recommendations');
 
         const mentions = require('../mentions');
 
@@ -35,9 +44,15 @@ class RecommendationServiceWrapper {
             urlUtils
         });
 
-        this.repository = new InMemoryRecommendationRepository();
+        const settingsService = settings.getSettingsBREADServiceInstance();
+        const recommendationEnablerService = new RecommendationEnablerService({settingsService});
+
+        this.repository = new BookshelfRecommendationRepository(models.Recommendation, {
+            sentry
+        });
         this.service = new RecommendationService({
             repository: this.repository,
+            recommendationEnablerService,
             wellknownService,
             mentionSendingService: mentions.sendingService
         });
@@ -47,6 +62,17 @@ class RecommendationServiceWrapper {
 
         // eslint-disable-next-line no-console
         this.service.init().catch(console.error);
+
+        // Add mapper to WebmentionMetadata
+        mentions.metadata.addMapper((url) => {
+            const p = '/.well-known/recommendations.json';
+            if (url.pathname.endsWith(p)) {
+                // Strip p
+                const newUrl = new URL(url.toString());
+                newUrl.pathname = newUrl.pathname.slice(0, -p.length);
+                return newUrl;
+            }
+        });
     }
 }
 
