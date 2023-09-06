@@ -31,6 +31,7 @@ content/settings/**
 !content/settings/README.md
 content/themes/**
 !content/themes/casper/**
+!content/themes/casper_[0-9]-[0-9]/**
 content/themes/casper/yarn.lock
 node_modules/**
 core/server/lib/members/static/auth/node_modules/**
