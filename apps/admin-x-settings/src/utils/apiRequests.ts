@@ -82,7 +82,7 @@ export const useFetchApi = () => {
 
 const {apiRoot} = getGhostPaths();
 
-const apiUrl = (path: string, searchParams: Record<string, string> = {}) => {
+export const apiUrl = (path: string, searchParams: Record<string, string> = {}) => {
     const url = new URL(`${apiRoot}${path}`, window.location.origin);
     url.search = new URLSearchParams(searchParams).toString();
     return url.toString();

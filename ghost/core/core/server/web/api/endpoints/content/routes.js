@@ -42,5 +42,8 @@ module.exports = function apiRoutes() {
     router.get('/collections/:id', mw.authenticatePublic, http(api.collectionsPublic.readById));
     router.get('/collections/slug/:slug', mw.authenticatePublic, http(api.collectionsPublic.readBySlug));
 
+    // ## Recommendations
+    router.get('/recommendations', mw.authenticatePublic, http(api.recommendationsPublic.browse));
+
     return router;
 };

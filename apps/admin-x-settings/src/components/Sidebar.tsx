@@ -3,6 +3,7 @@ import React from 'react';
 import SettingNavItem from '../admin-x-ds/settings/SettingNavItem';
 import SettingNavSection from '../admin-x-ds/settings/SettingNavSection';
 import TextField from '../admin-x-ds/global/form/TextField';
+import useFeatureFlag from '../hooks/useFeatureFlag';
 import useRouting from '../hooks/useRouting';
 import {getSettingValues} from '../api/settings';
 import {useGlobalData} from './providers/GlobalDataProvider';
@@ -18,6 +19,9 @@ const Sidebar: React.FC = () => {
     const handleSectionClick = (e: React.MouseEvent<HTMLButtonElement>) => {
         updateRoute(e.currentTarget.name);
     };
+
+    const hasTipsAndDonations = useFeatureFlag('tipsAndDonations');
+    const hasRecommendations = useFeatureFlag('recommendations');
 
     return (
         <div className="hidden md:!visible md:!block md:h-[calc(100vh-5vmin-84px)] md:w-[240px] md:overflow-y-scroll md:pt-[32px]">
@@ -42,14 +46,16 @@ const Sidebar: React.FC = () => {
                 {/* <SettingNavItem navid='theme' title="Theme" onClick={handleSectionClick} /> */}
                 <SettingNavItem navid='design' title="Branding and design" onClick={handleSectionClick} />
                 <SettingNavItem navid='navigation' title="Navigation" onClick={handleSectionClick} />
+                <SettingNavItem navid='announcement-bar' title="Announcement bar" onClick={handleSectionClick} />
             </SettingNavSection>
 
             <SettingNavSection title="Membership">
                 <SettingNavItem navid='portal' title="Portal" onClick={handleSectionClick} />
                 <SettingNavItem navid='access' title="Access" onClick={handleSectionClick} />
                 <SettingNavItem navid='tiers' title="Tiers" onClick={handleSectionClick} />
-                <SettingNavItem navid='tips-or-donations' title="Tips or donations" onClick={handleSectionClick} />
+                {hasTipsAndDonations && <SettingNavItem navid='tips-or-donations' title="Tips or donations" onClick={handleSectionClick} />}
                 <SettingNavItem navid='analytics' title="Analytics" onClick={handleSectionClick} />
+                {hasRecommendations && <SettingNavItem navid='recommendations' title="Recommendations" onClick={handleSectionClick} />}
             </SettingNavSection>
 
             <SettingNavSection title="Email newsletters">

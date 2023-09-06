@@ -451,7 +451,7 @@ export default class App extends React.Component {
         }
         if (path && linkRegex.test(path)) {
             const [,pagePath] = path.match(linkRegex);
-            const {page, pageQuery} = this.getPageFromLinkPath(pagePath) || {};
+            const {page, pageQuery, pageData} = this.getPageFromLinkPath(pagePath) || {};
             const lastPage = ['accountPlan', 'accountProfile'].includes(page) ? 'accountHome' : null;
             const showPopup = (
                 ['monthly', 'yearly'].includes(pageQuery) ||
@@ -463,6 +463,7 @@ export default class App extends React.Component {
                 showPopup,
                 ...(page ? {page} : {}),
                 ...(pageQuery ? {pageQuery} : {}),
+                ...(pageData ? {pageData} : {}),
                 ...(lastPage ? {lastPage} : {})
             };
         }
@@ -791,6 +792,17 @@ export default class App extends React.Component {
         } else if (path === 'support/error') {
             return {
                 page: 'supportError'
+            };
+        } else if (path === 'recommendations') {
+            return {
+                page: 'recommendations'
+            };
+        } else if (path === 'welcome') {
+            return {
+                page: 'recommendations',
+                pageData: {
+                    signup: true
+                }
             };
         }
         return {};

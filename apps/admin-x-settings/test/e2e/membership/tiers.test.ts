@@ -28,7 +28,7 @@ test.describe('Tier settings', async () => {
 
         await expect(page.getByTestId('toast')).toHaveText(/One or more fields have errors/);
         await expect(modal).toHaveText(/You must specify a name/);
-        await expect(modal).toHaveText(/Subscription amount must be at least \$1\.00/);
+        await expect(modal).toHaveText(/Amount must be at least \$1/);
 
         await modal.getByLabel('Name').fill('Plus tier');
         await modal.getByLabel('Monthly price').fill('8');

@@ -24,6 +24,7 @@ export type TextFieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
     unstyled?: boolean;
     disabled?: boolean;
     border?: boolean;
+    autoFocus?: boolean;
 }
 
 const TextField: React.FC<TextFieldProps> = ({

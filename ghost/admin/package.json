@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.60.0",
+  "version": "5.61.2",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -29,7 +29,7 @@
     "node": "^16.14.0 || ^18.12.1"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "7.22.10",
+    "@babel/eslint-parser": "7.22.11",
     "@babel/plugin-proposal-class-properties": "7.18.6",
     "@babel/plugin-proposal-decorators": "7.22.10",
     "@ember/jquery": "2.0.0",
@@ -40,13 +40,13 @@
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "3.0.0",
     "@joeattardi/emoji-button": "4.6.4",
-    "@sentry/ember": "7.64.0",
+    "@sentry/ember": "7.66.0",
     "@tryghost/color-utils": "0.1.24",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "1.1.77",
-    "@tryghost/kg-clean-basic-html": "3.0.28",
-    "@tryghost/kg-converters": "0.0.12",
-    "@tryghost/kg-parser-plugins": "3.0.29",
+    "@tryghost/kg-clean-basic-html": "3.0.30",
+    "@tryghost/kg-converters": "0.0.13",
+    "@tryghost/kg-parser-plugins": "3.0.31",
     "@tryghost/kg-simplemde": "1.11.2",
     "@tryghost/limit-service": "1.2.6",
     "@tryghost/members-csv": "0.0.0",
@@ -64,7 +64,7 @@
     "broccoli-funnel": "3.0.8",
     "broccoli-merge-trees": "4.2.0",
     "broccoli-terser-sourcemap": "4.1.0",
-    "chai": "4.3.7",
+    "chai": "4.3.8",
     "chai-dom": "1.11.0",
     "codemirror": "5.48.2",
     "cssnano": "4.1.10",
@@ -75,7 +75,7 @@
     "ember-classic-decorator": "3.0.1",
     "ember-cli": "3.24.0",
     "ember-cli-app-version": "5.0.0",
-    "ember-cli-babel": "7.26.11",
+    "ember-cli-babel": "8.0.0",
     "ember-cli-chart": "3.7.2",
     "ember-cli-code-coverage": "1.0.3",
     "ember-cli-dependency-checker": "3.3.2",
@@ -115,7 +115,7 @@
     "ember-simple-auth": "5.0.0",
     "ember-sinon": "5.0.0",
     "ember-source": "3.24.0",
-    "ember-svg-jar": "2.4.4",
+    "ember-svg-jar": "2.4.5",
     "ember-template-lint": "5.11.0",
     "ember-test-selectors": "6.0.0",
     "ember-tooltips": "3.6.0",
@@ -151,7 +151,7 @@
     "reframe.js": "4.0.1",
     "semver": "7.5.4",
     "testem": "3.10.1",
-    "tracked-built-ins": "3.1.1",
+    "tracked-built-ins": "3.2.0",
     "util": "0.12.5",
     "validator": "7.2.0",
     "walk-sync": "3.0.0"
@@ -178,7 +178,7 @@
     "*.js": "eslint"
   },
   "dependencies": {
-    "jose": "4.14.4",
+    "jose": "4.14.6",
     "path-browserify": "1.0.1",
     "webpack": "5.88.2"
   }

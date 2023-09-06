@@ -13,10 +13,12 @@ import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
+import useFeatureFlag from '../../../hooks/useFeatureFlag';
 import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
+import {RoutingModalProps} from '../../providers/RoutingProvider';
 import {User, isAdminUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner, useUpdatePassword} from '../../../api/users';
 import {getImageUrl, useUploadImage} from '../../../api/images';
 import {showToast} from '../../../admin-x-ds/global/Toast';
@@ -213,6 +215,8 @@ const Details: React.FC<UserDetailProps> = ({errors, validators, user, setUserDa
 };
 
 const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
+    const hasWebmentions = useFeatureFlag('webmentions');
+
     return (
         <SettingGroupContent>
             <Toggle
@@ -224,6 +228,15 @@ const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user, setUserData}
                     setUserData?.({...user, comment_notifications: e.target.checked});
                 }}
             />
+            {hasWebmentions && <Toggle
+                checked={user.mention_notifications}
+                direction='rtl'
+                hint='Every time another site links to your work'
+                label='Mentions'
+                onChange={(e) => {
+                    setUserData?.({...user, mention_notifications: e.target.checked});
+                }}
+            />}
             <Toggle
                 checked={user.free_member_signup_notification}
                 direction='rtl'
@@ -410,10 +423,6 @@ const Password: React.FC<UserDetailProps> = ({user}) => {
     );
 };
 
-interface UserDetailModalProps {
-    user: User;
-}
-
 const UserMenuTrigger = () => (
     <button className='flex h-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] px-3 opacity-80 hover:opacity-100' type='button'>
         <Icon colorClass='text-white' name='ellipsis' size='md' />
@@ -421,7 +430,7 @@ const UserMenuTrigger = () => (
     </button>
 );
 
-const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
+const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     const {updateRoute} = useRouting();
     const {ownerUser} = useStaffUsers();
     const [userData, _setUserData] = useState(user);
@@ -734,6 +743,17 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
             </div>
         </Modal>
     );
+};
+
+const UserDetailModal: React.FC<RoutingModalProps> = ({params}) => {
+    const {users} = useStaffUsers();
+    const user = users.find(({slug}) => slug === params?.slug);
+
+    if (user) {
+        return <UserDetailModalContent user={user} />;
+    } else {
+        return null;
+    }
 };
 
 export default NiceModal.create(UserDetailModal);
