@@ -876,7 +876,7 @@ describe('Service', function () {
             ).should.be.resolved();
         });
 
-        it('does not validate hidden settings', async function () {
+        it('does not expose hidden settings in the public cache', async function () {
             const HIDDEN_SETTING_VALUE = null;
 
             const settingName = 'foo';
@@ -896,12 +896,15 @@ describe('Service', function () {
 
             await service.updateSettings(
                 [{
-                    id: 1,
                     key: settingName,
-                    value: HIDDEN_SETTING_VALUE,
+                    value: 'Foo',
                     ...settingDefinition
                 }]
-            ).should.be.resolved();
+            );
+
+            cache.getAll().should.deepEqual({
+                [settingName]: HIDDEN_SETTING_VALUE
+            });
         });
     });
 });

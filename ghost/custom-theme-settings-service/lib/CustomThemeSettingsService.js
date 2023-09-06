@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const BREAD = require('./CustomThemeSettingsBREADService');
+const nql = require('@tryghost/nql');
 const tpl = require('@tryghost/tpl');
 const {ValidationError} = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('custom-theme-settings-service');
@@ -108,12 +109,6 @@ module.exports = class CustomThemeSettingsService {
 
         settings.forEach((setting) => {
             const definition = this._activeThemeSettings[setting.key];
-
-            // skip validation for hidden settings
-            if (definition.visibility && setting.value === HIDDEN_SETTING_VALUE) {
-                return;
-            }
-
             switch (definition.type) {
             case 'select':
                 if (!definition.options.includes(setting.value)) {
@@ -158,11 +153,15 @@ module.exports = class CustomThemeSettingsService {
             this._activeThemeSettings[setting.key].value = setting.value;
         }
 
+        const settingsObjects = this.listSettings();
+
         // update the public cache
-        this._valueCache.populate(this.listSettings());
+        this._valueCache.populate(
+            this._computeCachedSettings(settingsObjects)
+        );
 
         // return full setting objects
-        return this.listSettings();
+        return settingsObjects;
     }
 
     // Private -----------------------------------------------------------------
@@ -241,7 +240,9 @@ module.exports = class CustomThemeSettingsService {
             return;
         }
 
-        this._valueCache.populate(settings);
+        this._valueCache.populate(
+            this._computeCachedSettings(settings)
+        );
     }
 
     /**
@@ -271,5 +272,27 @@ module.exports = class CustomThemeSettingsService {
         }
 
         this._activeThemeSettings = activeThemeSettings;
+    }
+
+    /**
+     * Compute the settings to cache, taking into account visibility rules
+     *
+     * @param {Object[]} settings - list of setting objects
+     * @returns {Object[]} - list of setting objects with visibility rules applied
+     * @private
+     */
+    _computeCachedSettings(settings) {
+        const settingsMap = settings.reduce((map, {key, value}) => ({...map, [key]: value}), {});
+
+        return settings.map((setting) => {
+            return {
+                ...setting,
+                // If a setting is not visible, set the value to HIDDEN_SETTING_VALUE so that it is not exposed in the cache
+                // (meaning it also won't be exposed in the theme when rendering)
+                value: setting.visibility && nql(setting.visibility).queryJSON(settingsMap) === false
+                    ? HIDDEN_SETTING_VALUE
+                    : setting.value
+            };
+        });
     }
 };

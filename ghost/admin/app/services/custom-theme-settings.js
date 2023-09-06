@@ -66,6 +66,8 @@ export default class CustomThemeSettingsServices extends Service {
         this.settings = settings;
         this.settingGroups = this._buildSettingGroups(settings);
 
+        this.updateSettingsVisibility();
+
         this._hasLoaded = true;
 
         return this.settings;
@@ -95,27 +97,10 @@ export default class CustomThemeSettingsServices extends Service {
         this.settings.forEach(setting => setting.rollbackAttributes());
     }
 
-    rebuildSettings() {
-        // Rebuild settings to take into account visibility rules
-        this.settings = this.settings.map((setting) => {
-            const isVisible = this._isSettingVisible(setting);
-
-            setting.value = isVisible ? setting.value : HIDDEN_SETTING_VALUE;
-
-            // Ensure the setting value gets set back to its default value if it was previously hidden
-            if (isVisible && setting.value === HIDDEN_SETTING_VALUE && setting.default !== HIDDEN_SETTING_VALUE) {
-                setting.value = setting.default;
-
-                if (setting.type === 'boolean') {
-                    setting.value = setting.value === 'true';
-                }
-            }
-
-            return setting;
+    updateSettingsVisibility() {
+        this.settings.forEach((setting) => {
+            setting.visible = this._isSettingVisible(setting);
         });
-
-        // Rebuild setting groups to take into account visibility rules
-        this.settingGroups = this._buildSettingGroups(this.settings);
     }
 
     _buildSettingGroups(settings) {
@@ -137,9 +122,7 @@ export default class CustomThemeSettingsServices extends Service {
         }
 
         this.KNOWN_GROUPS.forEach((knownGroup) => {
-            const groupSettings = settings
-                .filter(setting => setting.group === knownGroup.key)
-                .filter(this._isSettingVisible.bind(this));
+            const groupSettings = settings.filter(setting => setting.group === knownGroup.key);
 
             if (groupSettings.length) {
                 groups.push(Object.assign({}, knownGroup, {settings: groupSettings}));
@@ -154,11 +137,7 @@ export default class CustomThemeSettingsServices extends Service {
             return true;
         }
 
-        const settingsMap = this.settings.reduce((map, {key, value}) => {
-            map[key] = value;
-
-            return map;
-        }, {});
+        const settingsMap = this.settings.reduce((map, {key, value}) => ({...map, [key]: value}), {});
 
         return nql(setting.visibility).queryJSON(settingsMap);
     }
