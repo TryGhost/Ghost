@@ -18,7 +18,8 @@ const messages = {
     productNotFound: 'Could not find Product {id}',
     bulkActionRequiresFilter: 'Cannot perform {action} without a filter or all=true',
     tierArchived: 'Cannot use archived Tiers',
-    invalidEmail: 'Invalid Email'
+    invalidEmail: 'Invalid Email',
+    invalidNewsLetterId: 'Cannot subscribe to invalid newsletter {id}'
 };
 
 /**
@@ -248,7 +249,7 @@ module.exports = class MemberRepository {
             });
         }
 
-        const memberData = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation', 'created_at', 'products', 'newsletters', 'email_disabled']);
+        const memberData = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation', 'created_at', 'products', 'newsletters', 'email_disabled', 'type']);
 
         // Throw error if email is invalid using latest validator
         if (!validator.isEmail(memberData.email, {legacy: false})) {
@@ -281,7 +282,29 @@ module.exports = class MemberRepository {
             memberStatusData.status = 'comped';
         }
 
-        // Subscribe member to default newsletters
+        //checks for custom signUp forms
+        if (memberData.type === 'subscribe' && memberData.newsletters) {
+            const allValidNewsletters = await this._newslettersService.browse({limit: 'all'});
+            const allValidNewslettersIds = allValidNewsletters.map(newsletter => newsletter.id);
+
+            if (memberData.newsletters) {
+                const subscribedNewsletterIds = memberData.newsletters.map(newsletter => newsletter.id);
+                const invalidIds = subscribedNewsletterIds.filter(id => !allValidNewslettersIds.includes(id));
+                if (invalidIds.length > 0) {
+                    throw new errors.BadRequestError({message: tpl(messages.invalidNewsLetterId, {id: invalidIds})});
+                } else if (memberData.newsletters.length > 0) {
+                    const activeNewsLetters = memberData.newsletters.filter((memberNewsletter) => {
+                        const subscribedNewsletter = allValidNewsletters.find(newsletter => newsletter.id === memberNewsletter.id);
+                        return subscribedNewsletter.status === 'active';
+                    });
+                    if (activeNewsLetters.length === 0){
+                        memberData.newsletters = null; //switch to default behavior
+                    }
+                }
+            }
+        }
+
+        // Subscribe members to default newsletters
         if (memberData.subscribed !== false && !memberData.newsletters) {
             const browseOptions = _.pick(options, 'transacting');
             memberData.newsletters = await this.getSubscribeOnSignupNewsletters(browseOptions);
