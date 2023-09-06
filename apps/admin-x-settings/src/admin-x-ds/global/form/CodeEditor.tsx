@@ -1,6 +1,15 @@
-import React from 'react';
+import React, {Suspense} from 'react';
+import type {CodeEditorProps} from './CodeEditorView.tsx';
 
-// Imports asynchronously to avoid including CodeMirror in the main bundle
-const CodeEditor = React.lazy(() => import('./CodeEditorView.tsx'));
+// Imported asynchronously to avoid including CodeMirror in the main bundle
+const CodeEditorView = React.lazy(() => import('./CodeEditorView.tsx'));
+
+const CodeEditor = (props: CodeEditorProps) => {
+    return (
+        <Suspense fallback={null}>
+            <CodeEditorView {...props} />
+        </Suspense>
+    );
+};
 
 export default CodeEditor;
