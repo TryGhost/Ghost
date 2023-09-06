@@ -72,7 +72,7 @@ export default class DesignMenuComponent extends Component {
 
     @action
     handleThemeSettingChange() {
-        this.customThemeSettings.rebuildSettingGroups();
+        this.customThemeSettings.rebuildSettings();
         this.themeManagement.updatePreviewHtmlTask.perform();
     }
 

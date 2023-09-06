@@ -81,21 +81,8 @@ export default class CustomThemeSettingsServices extends Service {
             return this.settings;
         }
 
-        const settings = this.settings.map((setting) => {
-            const isVisible = this._isSettingVisible(setting);
-
-            setting.value = isVisible ? setting.value : HIDDEN_SETTING_VALUE;
-
-            // Ensure the setting value gets set back to its default value if it was previously hidden
-            if (isVisible && setting.value === HIDDEN_SETTING_VALUE && setting.default !== HIDDEN_SETTING_VALUE) {
-                setting.value = setting.default;
-            }
-
-            return setting;
-        });
-
         // save all records in a single request to `/custom_theme_settings`
-        const listRecord = this.store.createRecord('custom-theme-setting-list', {customThemeSettings: settings});
+        const listRecord = this.store.createRecord('custom-theme-setting-list', {customThemeSettings: this.settings});
         yield listRecord.save();
 
         // don't keep references to lists and their children around
@@ -108,7 +95,26 @@ export default class CustomThemeSettingsServices extends Service {
         this.settings.forEach(setting => setting.rollbackAttributes());
     }
 
-    rebuildSettingGroups() {
+    rebuildSettings() {
+        // Rebuild settings to take into account visibility rules
+        this.settings = this.settings.map((setting) => {
+            const isVisible = this._isSettingVisible(setting);
+
+            setting.value = isVisible ? setting.value : HIDDEN_SETTING_VALUE;
+
+            // Ensure the setting value gets set back to its default value if it was previously hidden
+            if (isVisible && setting.value === HIDDEN_SETTING_VALUE && setting.default !== HIDDEN_SETTING_VALUE) {
+                setting.value = setting.default;
+
+                if (setting.type === 'boolean') {
+                    setting.value = setting.value === 'true';
+                }
+            }
+
+            return setting;
+        });
+
+        // Rebuild setting groups to take into account visibility rules
         this.settingGroups = this._buildSettingGroups(this.settings);
     }
 
