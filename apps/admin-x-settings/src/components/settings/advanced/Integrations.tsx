@@ -207,7 +207,7 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
             testId='integrations'
             title="Integrations"
         >
-            <div className='rounded border border-green px-4 py-2 md:hidden'>
+            <div className='flex justify-center rounded border border-green px-4 py-2 md:hidden'>
                 <Button color='green' label='Add custom integration' link onClick={() => {
                     updateRoute('integrations/add');
                     setSelectedTab('custom');

@@ -31,7 +31,7 @@ const HistoryIcon: React.FC<{action: Action}> = ({action}) => {
 
 const HistoryAvatar: React.FC<{action: Action}> = ({action}) => {
     return (
-        <div className='relative'>
+        <div className='relative shrink-0'>
             <Avatar
                 bgColor={generateAvatarColor(action.actor?.name || action.actor?.slug || '')}
                 image={action.actor?.image}
