@@ -4,10 +4,11 @@ import ColorIndicator from '../../../admin-x-ds/global/form/ColorIndicator';
 import Form from '../../../admin-x-ds/global/form/Form';
 import HtmlField from '../../../admin-x-ds/global/form/HtmlField';
 import NiceModal from '@ebay/nice-modal-react';
-import React from 'react';
+import React, {useRef} from 'react';
 import useRouting from '../../../hooks/useRouting';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {PreviewModalContent} from '../../../admin-x-ds/global/modal/PreviewModal';
+import {debounce} from '../../../utils/debounce';
 import {getHomepageUrl} from '../../../api/site';
 import {getSettingValues} from '../../../api/settings';
 import {showToast} from '../../../admin-x-ds/global/Toast';
@@ -120,7 +121,6 @@ const AnnouncementBarModal: React.FC = () => {
     const [announcementVisibility] = getSettingValues<string[]>(localSettings, ['announcement_visibility']);
     const [paidMembersEnabled] = getSettingValues<boolean>(localSettings, ['paid_members_enabled']);
     const visibilitySettings = JSON.parse(announcementVisibility?.toString() || '[]') as string[];
-
     const {updateRoute} = useRouting();
 
     const toggleColorSwatch = (e: string | null) => {
@@ -137,12 +137,18 @@ const AnnouncementBarModal: React.FC = () => {
         updateSetting('announcement_visibility', JSON.stringify(visibilitySettings));
     };
 
+    const updateAnnouncementContextDebounced = useRef(
+        debounce((value: string) => {
+            updateSetting('announcement_content', value);
+        }, 500)
+    );
+
     const sidebar = <Sidebar
         accentColor={accentColor}
         announcementBackgroundColor={announcementBackgroundColor}
         announcementContent={announcementContent}
         announcementTextHandler={(e) => {
-            updateSetting('announcement_content', e);
+            updateAnnouncementContextDebounced.current(e);
         }}
         paidMembersEnabled={paidMembersEnabled}
         toggleColorSwatch={toggleColorSwatch}

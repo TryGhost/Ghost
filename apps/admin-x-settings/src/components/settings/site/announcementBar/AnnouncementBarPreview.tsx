@@ -4,7 +4,7 @@ const getPreviewData = (announcementBackgroundColor?:string, announcementContext
     const params = new URLSearchParams();
     params.append('announcement_bg', announcementBackgroundColor || 'accent');
     params.append('announcement', announcementContext || '');
-    params.append('announcement_vis', 'visitors, free_members, paid_members');
+    params.append('announcement_vis', 'paid_members');
     return params.toString();
 };
 
