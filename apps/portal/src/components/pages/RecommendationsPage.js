@@ -48,8 +48,9 @@ const shuffleRecommendations = (array) => {
     return array;
 };
 
-const RecommendationItem = ({title, url, reason, favicon}) => {
+const RecommendationItem = (recommendation) => {
     const {t} = useContext(AppContext);
+    const {title, url, reason, favicon, one_click_subscribe: oneClickSubscribe} = recommendation;
 
     return (
         <section className="gh-portal-recommendation-item">
@@ -61,7 +62,7 @@ const RecommendationItem = ({title, url, reason, favicon}) => {
                 {reason && <p>{reason}</p>}
             </div>
             <div>
-                <a href={url} target="_blank" rel="noopener noreferrer" className="gh-portal-btn gh-portal-btn-list">{t('Visit')}</a>
+                <a href={url} target="_blank" rel="noopener noreferrer" className="gh-portal-btn gh-portal-btn-list">{oneClickSubscribe ? t('Subscribe') : t('Visit')}</a>
             </div>
         </section>
     );

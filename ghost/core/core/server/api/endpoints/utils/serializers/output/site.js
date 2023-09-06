@@ -11,10 +11,12 @@ module.exports = {
                 'description',
                 'logo',
                 'icon',
+                'cover_image',
                 'accent_color',
                 'locale',
                 'url',
                 'version',
+                'allow_self_signup',
                 'sentry_dsn',
                 'sentry_env'
             ])

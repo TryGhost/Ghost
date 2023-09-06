@@ -5,6 +5,7 @@ Object {
   "meta": Object {},
   "settings": Object {
     "accent_color": "#FF1A75",
+    "allow_self_signup": true,
     "codeinjection_foot": null,
     "codeinjection_head": null,
     "comments_enabled": "off",
