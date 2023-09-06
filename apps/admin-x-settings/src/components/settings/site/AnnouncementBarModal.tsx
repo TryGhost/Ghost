@@ -98,7 +98,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                 title='Background color'
                 value={announcementBackgroundColor}
                 onSwatchChange={(e) => {
-                    toggleColorSwatch(e);
+                    if (e !== null) {
+                        toggleColorSwatch(e);
+                    }
                 }}
                 onTogglePicker={() => {}}
             />
