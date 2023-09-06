@@ -78,7 +78,7 @@ const Button: React.FC<ButtonProps> = ({
 
     styles += ` ${className}`;
 
-    const iconClasses = label && icon ? 'mr-1.5' : '';
+    const iconClasses = label && icon && !hideLabel ? 'mr-1.5' : '';
 
     const buttonChildren = <>
         {icon && <Icon className={iconClasses} colorClass={iconColorClass} name={icon} size={size === 'sm' ? 'sm' : 'md'} />}
