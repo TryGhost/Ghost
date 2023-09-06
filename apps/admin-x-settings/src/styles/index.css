@@ -21,23 +21,23 @@
     }
 
     h1 {
-        @apply text-5xl leading-supertight;
+        @apply text-4xl leading-supertight;
     }
 
     h2 {
-        @apply text-3xl;
-    }
-
-    h3 {
         @apply text-2xl;
     }
 
-    h4 {
+    h3 {
         @apply text-xl;
     }
 
+    h4 {
+        @apply text-lg;
+    }
+
     h5 {
-        @apply text-lg leading-supertight;
+        @apply text-md leading-supertight;
     }
 
     h6 {

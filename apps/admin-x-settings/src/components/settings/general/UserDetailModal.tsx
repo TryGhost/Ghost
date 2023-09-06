@@ -629,7 +629,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         okLabel = 'Saved';
     }
 
-    const fileUploadButtonClasses = 'absolute right-[104px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium z-10';
+    const fileUploadButtonClasses = 'absolute left-12 md:right-[104px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium z-10';
 
     const suspendedText = userData.status === 'inactive' ? ' (Suspended)' : '';
 
@@ -706,11 +706,11 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                         }}
                     >Upload cover image</ImageUpload>
                     <div className="absolute bottom-12 right-12 z-10">
-                        <Menu items={menuItems} position='left' trigger={<UserMenuTrigger />}></Menu>
+                        <Menu items={menuItems} position='right' trigger={<UserMenuTrigger />}></Menu>
                     </div>
-                    <div className='relative flex items-center gap-4 px-12 pb-7 pt-60'>
+                    <div className='relative flex flex-col items-start gap-4 px-12 pb-60 pt-10 md:flex-row md:items-center md:pb-7 md:pt-60'>
                         <ImageUpload
-                            deleteButtonClassName='invisible absolute -right-2 -top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible'
+                            deleteButtonClassName='md:invisible absolute -right-2 -top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible'
                             deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
                             fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
                             id='avatar'
@@ -734,7 +734,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                         </div>
                     </div>
                 </div>
-                <div className='mt-10 grid grid-cols-2 gap-x-12 gap-y-20'>
+                <div className='mt-10 grid grid-cols-1 gap-x-12 gap-y-20 md:grid-cols-2'>
                     <Basic errors={errors} setUserData={setUserData} user={userData} validators={validators} />
                     <Details errors={errors} setUserData={setUserData} user={userData} validators={validators} />
                     <EmailNotifications setUserData={setUserData} user={userData} />

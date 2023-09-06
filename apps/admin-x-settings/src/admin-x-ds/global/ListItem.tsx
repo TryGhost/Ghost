@@ -60,7 +60,7 @@ const ListItem: React.FC<ListItemProps> = ({
                 </div>
             }
             {action &&
-                <div className={`py-3 pl-6 ${paddingRight && 'pr-6'} ${hideActions ? 'invisible group-hover:visible' : ''}`}>
+                <div className={`py-3 pl-6 ${paddingRight && 'pr-6'} ${hideActions ? 'group-hover:visible md:invisible' : ''}`}>
                     {action}
                 </div>
             }
