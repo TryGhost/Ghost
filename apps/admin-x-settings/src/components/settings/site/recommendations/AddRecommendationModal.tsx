@@ -38,12 +38,14 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
                 type: 'mention'
             });
 
-            if (!oembed) {
-                showToast({
-                    type: 'pageError',
-                    message: 'Could not fetch metadata for this URL, please try again later'
-                });
-                return;
+            let defaultTitle = formState.title;
+            if (!defaultTitle) {
+                try {
+                    defaultTitle = new URL(formState.url).hostname.replace('www.', '');
+                } catch (e) {
+                    // Ignore
+                    defaultTitle = formState.url;
+                }
             }
 
             // Switch modal without changing the route (the second modal is not reachable by URL)
@@ -52,10 +54,10 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
                 animate: false,
                 recommendation: {
                     ...formState,
-                    title: oembed.metadata.title ?? formState.title,
-                    excerpt: oembed.metadata.description ?? formState.excerpt,
-                    featured_image: oembed.metadata.thumbnail ?? formState.featured_image,
-                    favicon: oembed.metadata.icon ?? formState.favicon
+                    title: oembed?.metadata?.title ?? defaultTitle,
+                    excerpt: oembed?.metadata?.description ?? formState.excerpt ?? null,
+                    featured_image: oembed?.metadata?.thumbnail ?? formState.featured_image ?? null,
+                    favicon: oembed?.metadata?.icon ?? formState.favicon ?? null
                 }
             });
         },
