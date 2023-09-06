@@ -51,6 +51,7 @@ const EditRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({
             updateRoute('recommendations');
         }}
         animate={animate ?? true}
+        backDropClick={false}
         cancelLabel={'Cancel'}
         okColor='black'
         okLabel={okLabel}

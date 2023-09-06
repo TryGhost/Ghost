@@ -91,6 +91,7 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
             updateRoute('recommendations');
         }}
         animate={animate ?? true}
+        backDropClick={false}
         okColor='black'
         okLabel={okLabel}
         size='sm'
