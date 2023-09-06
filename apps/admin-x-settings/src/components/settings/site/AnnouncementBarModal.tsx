@@ -4,14 +4,16 @@ import ColorIndicator from '../../../admin-x-ds/global/form/ColorIndicator';
 import Form from '../../../admin-x-ds/global/form/Form';
 import HtmlField from '../../../admin-x-ds/global/form/HtmlField';
 import NiceModal from '@ebay/nice-modal-react';
-import React, {useRef} from 'react';
+import React, {useRef, useState} from 'react';
 import useRouting from '../../../hooks/useRouting';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {PreviewModalContent} from '../../../admin-x-ds/global/modal/PreviewModal';
+import {Tab} from '../../../admin-x-ds/global/TabView';
 import {debounce} from '../../../utils/debounce';
 import {getHomepageUrl} from '../../../api/site';
 import {getSettingValues} from '../../../api/settings';
 import {showToast} from '../../../admin-x-ds/global/Toast';
+import {useBrowsePosts} from '../../../api/posts';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 type SidebarProps = {
@@ -114,7 +116,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
 const AnnouncementBarModal: React.FC = () => {
     const {siteData} = useGlobalData();
-    const homePageURL = getHomepageUrl(siteData!);
+    // const homePageURL = getHomepageUrl(siteData!);
     const modal = NiceModal.useModal();
     const {localSettings, updateSetting, handleSave} = useSettingGroup();
     const [announcementContent] = getSettingValues<string>(localSettings, ['announcement_content']);
@@ -124,6 +126,7 @@ const AnnouncementBarModal: React.FC = () => {
     const [paidMembersEnabled] = getSettingValues<boolean>(localSettings, ['paid_members_enabled']);
     const visibilitySettings = JSON.parse(announcementVisibility?.toString() || '[]') as string[];
     const {updateRoute} = useRouting();
+    const [selectedPreviewTab, setSelectedPreviewTab] = useState('homepage');
 
     const toggleColorSwatch = (e: string | null) => {
         updateSetting('announcement_background', e);
@@ -158,6 +161,47 @@ const AnnouncementBarModal: React.FC = () => {
         visibility={announcementVisibility as string[]}
     />;
 
+    const {data: {posts: [latestPost]} = {posts: []}} = useBrowsePosts({
+        searchParams: {
+            filter: 'status:published',
+            order: 'published_at DESC',
+            limit: '1',
+            fields: 'id,url'
+        }
+    });
+
+    let previewTabs: Tab[] = [];
+    if (latestPost) {
+        previewTabs = [
+            {id: 'homepage', title: 'Homepage'},
+            {id: 'post', title: 'Post'}
+        ];
+    }
+
+    const onSelectURL = (id: string) => {
+        if (previewTabs.length) {
+            setSelectedPreviewTab(id);
+        }
+    };
+
+    // const onTabChange = (id: string) => {
+    //     if (id === 'post' && latestPost) {
+    //         setSelectedPreviewTab('post');
+    //     } else {
+    //         setSelectedPreviewTab('homepage');
+    //     }
+    // };
+
+    let selectedTabURL = getHomepageUrl(siteData!);
+    switch (selectedPreviewTab) {
+    case 'homepage':
+        selectedTabURL = getHomepageUrl(siteData!);
+        break;
+    case 'post':
+        selectedTabURL = latestPost!.url;
+        break;
+    }
+
     return <PreviewModalContent
         afterClose={() => {
             modal.remove();
@@ -167,8 +211,10 @@ const AnnouncementBarModal: React.FC = () => {
         deviceSelector={false}
         dirty={false}
         okLabel='Save'
-        preview={<AnnouncementBarPreview announcementBackgroundColor={announcementBackgroundColor} announcementContent={announcementContent} homepageUrl={homePageURL} />}
+        preview={<AnnouncementBarPreview announcementBackgroundColor={announcementBackgroundColor} announcementContent={announcementContent} url={selectedTabURL} />}
         previewBgColor='greygradient'
+        previewToolbarTabs={previewTabs}
+        selectedURL={selectedPreviewTab}
         sidebar={sidebar}
         testId='announcement-bar-modal'
         title='Announcement bar'
@@ -184,6 +230,7 @@ const AnnouncementBarModal: React.FC = () => {
                 });
             }
         }}
+        onSelectURL={onSelectURL}
     />;
 };
 

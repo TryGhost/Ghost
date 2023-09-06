@@ -11,19 +11,19 @@ const getPreviewData = (announcementBackgroundColor?:string, announcementContext
 type AnnouncementBarSettings = {
     announcementBackgroundColor?: string;
     announcementContent?: string;
-    homepageUrl: string;
+    url: string;
 };
 
-const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcementBackgroundColor, announcementContent, homepageUrl}) => {
+const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcementBackgroundColor, announcementContent, url}) => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
 
     useEffect(() => {
-        if (!homepageUrl) {
+        if (!url) {
             return;
         }
 
         // Fetch theme preview HTML
-        fetch(homepageUrl, {
+        fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'text/html;charset=utf-8',
@@ -64,7 +64,7 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcement
             .catch(() => {
                 // handle error in fetching data
             });
-    }, [announcementBackgroundColor, announcementContent, homepageUrl]);
+    }, [announcementBackgroundColor, announcementContent, url]);
 
     return (
         <>
