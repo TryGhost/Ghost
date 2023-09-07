@@ -97,28 +97,31 @@ const ZapierModal = NiceModal.create(() => {
                 {zapierTemplates.map(template => (
                     <ListItem
                         action={<Button className='whitespace-nowrap text-sm font-semibold text-[#FF4A00]' href={template.url} label='Use this Zap' tag='a' target='_blank' link unstyled />}
-                        avatar={<>
-                            <img className='h-8 w-8 object-contain' role='presentation' src={`${adminRoot}${template.ghostImage}`} />
-                            <ArrowRightIcon className='h-3 w-3' />
-                            <img className='h-8 w-8 object-contain' role='presentation' src={`${adminRoot}${template.appImage}`} />
-                        </>}
                         bgOnHover={false}
                         className='flex items-center gap-3 py-2'
-                        title={<span className='text-sm'>{template.title}</span>}
+                        title={
+                            <div className='flex flex-col gap-4 md:flex-row md:items-center'>
+                                <div className='flex shrink-0 flex-nowrap items-center gap-2'>
+                                    <img className='h-8 w-8 object-contain' role='presentation' src={`${adminRoot}${template.ghostImage}`} />
+                                    <ArrowRightIcon className='h-3 w-3' />
+                                    <img className='h-8 w-8 object-contain' role='presentation' src={`${adminRoot}${template.appImage}`} />
+                                </div>
+                                <span className='text-sm'>{template.title}</span>
+                            </div>
+                        }
                         hideActions
                     />
                 ))}
             </List>
 
-            <div className='mt-6 flex'>
-                <Button
+            <div className='mt-6'>
+                <a
+                    className='mt-6 self-baseline text-sm font-bold'
                     href='https://zapier.com/apps/ghost/integrations?utm_medium=partner_api&utm_source=widget&utm_campaign=Widget'
-                    label={<>View more Ghost integrations powered by <Logo className='relative top-[-1px] ml-1 h-6' /></>}
                     rel='noopener noreferrer'
-                    tag='a'
-                    target='_blank'
-                    link
-                />
+                    target='_blank'>
+                    View more Ghost integrations powered by <span><Logo className='relative top-[-2px] inline-block h-6' /></span>
+                </a>
             </div>
         </Modal>
     );

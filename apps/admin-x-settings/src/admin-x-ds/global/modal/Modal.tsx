@@ -29,6 +29,7 @@ export interface ModalProps {
     onOk?: () => void;
     onCancel?: () => void;
     topRightContent?: 'close' | React.ReactNode;
+    hideXOnMobile?: boolean;
     afterClose?: () => void;
     children?: React.ReactNode;
     backDrop?: boolean;
@@ -54,6 +55,7 @@ const Modal: React.FC<ModalProps> = ({
     okColor = 'black',
     onCancel,
     topRightContent,
+    hideXOnMobile = false,
     afterClose,
     children,
     backDrop = true,
@@ -144,31 +146,31 @@ const Modal: React.FC<ModalProps> = ({
     switch (size) {
     case 'sm':
         modalClasses += ' max-w-[480px] ';
-        backdropClasses += ' p-[8vmin]';
+        backdropClasses += ' p-4 md:p-[8vmin]';
         paddingClasses = 'p-8';
         break;
 
     case 'md':
         modalClasses += ' max-w-[720px] ';
-        backdropClasses += ' p-[8vmin]';
+        backdropClasses += ' p-4 md:p-[8vmin]';
         paddingClasses = 'p-8';
         break;
 
     case 'lg':
         modalClasses += ' max-w-[1020px] ';
-        backdropClasses += ' p-[4vmin]';
+        backdropClasses += ' p-4 md:p-[4vmin]';
         paddingClasses = 'p-8';
         break;
 
     case 'xl':
         modalClasses += ' max-w-[1240px] ';
-        backdropClasses += ' p-[3vmin]';
+        backdropClasses += ' p-4 md:p-[3vmin]';
         paddingClasses = 'p-10';
         break;
 
     case 'full':
         modalClasses += ' h-full ';
-        backdropClasses += ' p-[3vmin]';
+        backdropClasses += ' p-4 md:p-[3vmin]';
         paddingClasses = 'p-10';
         break;
 
@@ -178,7 +180,7 @@ const Modal: React.FC<ModalProps> = ({
         break;
 
     default:
-        backdropClasses += ' p-[8vmin]';
+        backdropClasses += ' p-4 md:p-[8vmin]';
         paddingClasses = 'p-8';
         break;
     }
@@ -186,6 +188,9 @@ const Modal: React.FC<ModalProps> = ({
     if (!padding) {
         paddingClasses = 'p-0';
     }
+
+    // Set bottom padding for backdrop when the menu is on
+    backdropClasses += ' max-[800px]:!pb-20';
 
     let footerClasses = clsx(
         `${paddingClasses} ${stickyFooter ? 'py-6' : 'pt-0'}`,
@@ -204,7 +209,7 @@ const Modal: React.FC<ModalProps> = ({
     };
 
     const modalStyles = (typeof size === 'number') ? {
-        width: size + 'px'
+        maxWidth: size + 'px'
     } : {};
 
     let footerContent;
@@ -247,10 +252,10 @@ const Modal: React.FC<ModalProps> = ({
             <section className={modalClasses} data-testid={testId} style={modalStyles}>
                 <div className={contentClasses}>
                     <div className='h-full'>
-                        {topRightContent === 'close' ?
+                        {!topRightContent || topRightContent === 'close' ?
                             (<>
                                 {title && <Heading level={3}>{title}</Heading>}
-                                <div className='absolute right-6 top-6'>
+                                <div className={`${topRightContent !== 'close' && 'md:!invisible md:!hidden'} ${hideXOnMobile && 'hidden'} absolute right-6 top-6`}>
                                     <Button className='-m-2 cursor-pointer p-2 opacity-50 hover:opacity-100' icon='close' size='sm' unstyled onClick={removeModal} />
                                 </div>
                             </>)

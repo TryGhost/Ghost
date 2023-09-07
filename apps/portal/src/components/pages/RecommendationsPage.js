@@ -1,6 +1,7 @@
 import AppContext from '../../AppContext';
 import {useContext, useState, useEffect} from 'react';
 import CloseButton from '../common/CloseButton';
+import {clearURLParams} from '../../utils/notifications';
 
 export const RecommendationsPageStyles = `
     .gh-portal-recommendation-item .gh-portal-list-detail {
@@ -48,15 +49,29 @@ const shuffleRecommendations = (array) => {
     return array;
 };
 
+const RecommendationIcon = ({title, favicon, featuredImage}) => {
+    const [icon, setIcon] = useState(favicon || featuredImage);
+
+    const hideIcon = () => {
+        setIcon(null);
+    };
+
+    if (!icon) {
+        return null;
+    }
+
+    return (<img className="gh-portal-recommendation-item-favicon" src={icon} alt={title} onError={hideIcon} />);
+};
+
 const RecommendationItem = (recommendation) => {
     const {t} = useContext(AppContext);
-    const {title, url, reason, favicon, one_click_subscribe: oneClickSubscribe} = recommendation;
+    const {title, url, reason, favicon, one_click_subscribe: oneClickSubscribe, featured_image: featuredImage} = recommendation;
 
     return (
         <section className="gh-portal-recommendation-item">
             <div className="gh-portal-list-detail gh-portal-list-big">
                 <div className="gh-portal-recommendation-item-header">
-                    {favicon && <img className="gh-portal-recommendation-item-favicon" src={favicon} alt={title}/>}
+                    <RecommendationIcon title={title} favicon={favicon} featuredImage={featuredImage} />
                     <h3>{title}</h3>
                 </div>
                 {reason && <p>{reason}</p>}
@@ -87,6 +102,16 @@ const RecommendationsPage = () => {
     const showAllRecommendations = () => {
         setNumToShow(recommendations.length);
     };
+
+    useEffect(() => {
+        return () => {
+            if (pageData.signup) {
+                const deleteParams = [];
+                deleteParams.push('action', 'success');
+                clearURLParams(deleteParams);
+            }
+        };
+    }, []);
 
     const heading = pageData && pageData.signup ? t('You\'re subscribed!') : t('Recommendations');
     const subheading = t(`Here are a few other sites {{siteTitle}} thinks you may enjoy.`, {siteTitle: title});
