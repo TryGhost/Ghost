@@ -51,7 +51,7 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate}: 
 
                                         {/* Sidebar */}
                                         <div className="sticky top-[-42px] z-20 min-w-[260px] grow-0 md:top-[-52px] tablet:fixed tablet:top-[8vmin] tablet:basis-[260px]">
-                                            <div className='h-[84px] bg-white tablet:bg-transparent'>
+                                            <div className='-mx-6 h-[84px] bg-white px-6 tablet:m-0 tablet:bg-transparent tablet:p-0'>
                                                 <Heading>Settings</Heading>
                                             </div>
                                             <div className="relative mt-[-32px] w-full overflow-x-hidden after:absolute after:inset-x-0 after:top-0 after:hidden after:h-[40px] after:bg-gradient-to-b after:from-white after:to-transparent after:content-[''] tablet:w-[260px] tablet:after:!visible tablet:after:!block">
