@@ -17,6 +17,7 @@ const Sidebar: React.FC = () => {
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
 
     const handleSectionClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+        setFilter('');
         updateRoute(e.currentTarget.name);
     };
 
