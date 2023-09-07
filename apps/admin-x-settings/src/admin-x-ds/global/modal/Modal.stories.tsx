@@ -118,7 +118,7 @@ export const CompletePage: Story = {
     args: {
         size: 'full',
         footer: <></>,
-        noPadding: true,
+        padding: false,
         children: <>
             <ModalPage heading='Hey there full page'>
                 <p>This is a full page in a modal</p>

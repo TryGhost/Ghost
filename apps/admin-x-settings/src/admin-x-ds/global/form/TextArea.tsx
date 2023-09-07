@@ -5,6 +5,7 @@ import Hint from '../Hint';
 import clsx from 'clsx';
 
 type ResizeOptions = 'both' | 'vertical' | 'horizontal' | 'none';
+type FontStyles = 'sans' | 'mono';
 
 interface TextAreaProps {
     inputRef?: React.RefObject<HTMLTextAreaElement>;
@@ -17,6 +18,8 @@ interface TextAreaProps {
     placeholder?: string;
     hint?: React.ReactNode;
     clearBg?: boolean;
+    fontStyle?: FontStyles;
+    className?: string;
     onChange?: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
 }
 
@@ -31,6 +34,8 @@ const TextArea: React.FC<TextAreaProps> = ({
     placeholder,
     hint,
     clearBg = true,
+    fontStyle = 'sans',
+    className,
     onChange,
     ...props
 }) => {
@@ -40,7 +45,9 @@ const TextArea: React.FC<TextAreaProps> = ({
         'peer order-2 rounded-sm border px-3 py-2',
         clearBg ? 'bg-transparent' : 'bg-grey-75',
         error ? 'border-red' : 'border-grey-500 hover:border-grey-700 focus:border-grey-800',
-        title && 'mt-2'
+        title && 'mt-2',
+        fontStyle === 'mono' && 'font-mono text-sm',
+        className
     );
 
     switch (resize) {
