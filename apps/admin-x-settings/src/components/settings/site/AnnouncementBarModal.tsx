@@ -159,6 +159,8 @@ const AnnouncementBarModal: React.FC = () => {
         onBlur={() => {
             if (announcementContentState) {
                 updateSetting('announcement_content', announcementContentState);
+            } else {
+                updateSetting('announcement_content', null);
             }
         }}
     />;

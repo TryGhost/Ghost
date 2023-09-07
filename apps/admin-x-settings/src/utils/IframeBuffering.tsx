@@ -20,26 +20,13 @@ export const injectCss = (data: string) => {
 type IframeBufferingProps = {
     url: string;
     dataModifier?: (data: string) => string;
-    fetchConfig?: {
-        method?: string;
-        headers?: HeadersInit;
-        mode?: RequestMode;
-        credentials?: RequestCredentials;
-    };
+    xPreview?: string;
 };
 
 const IframeBuffering: React.FC<IframeBufferingProps> = ({
     url,
     dataModifier,
-    fetchConfig = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'text/html;charset=utf-8',
-            Accept: 'text/plain',
-            mode: 'cors',
-            credentials: 'include'
-        }
-    }
+    xPreview
 }) => {
     const visibleIframeRef = useRef<HTMLIFrameElement>(null);
     const bufferIframeRef = useRef<HTMLIFrameElement>(null);
@@ -61,7 +48,16 @@ const IframeBuffering: React.FC<IframeBufferingProps> = ({
             return;
         }
 
-        fetch(url, fetchConfig)
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/html;charset=utf-8',
+                'x-ghost-preview': xPreview || '',
+                Accept: 'text/plain',
+                mode: 'cors',
+                credentials: 'include'
+            }
+        })
             .then(response => response.text())
             .then((data) => {
                 if (dataModifier) {
@@ -77,7 +73,7 @@ const IframeBuffering: React.FC<IframeBufferingProps> = ({
                 }
             })
             .catch(() => { /* handle error in fetching data */ });
-    }, [url, dataModifier, fetchConfig]);
+    }, [url, dataModifier, xPreview]);
 
     return (
         <>

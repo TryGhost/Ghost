@@ -1,5 +1,5 @@
 import IframeBuffering, {injectCss} from '../../../../utils/IframeBuffering';
-import React, {useRef} from 'react';
+import React, {useMemo, useState} from 'react';
 
 const getPreviewData = (announcementBackgroundColor?: string, announcementContent?: string) => {
     const params = new URLSearchParams();
@@ -15,29 +15,29 @@ type AnnouncementBarSettings = {
     url: string;
 };
 
-const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcementBackgroundColor, announcementContent, url}) => {
-    const previousPreviewDataRef = useRef<string>('');
-    const hasPreviewDataChanged = getPreviewData(announcementBackgroundColor, announcementContent) !== previousPreviewDataRef.current;
-    if (hasPreviewDataChanged) {
-        previousPreviewDataRef.current = getPreviewData(announcementBackgroundColor, announcementContent);
+const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = React.memo(({announcementBackgroundColor, announcementContent, url}) => {
+    AnnouncementBarPreview.displayName = 'AnnouncementBarPreview';
+
+    if (!url) {
+        return null;
     }
+
+    const xPreview = getPreviewData(announcementBackgroundColor, announcementContent);
 
     return (
         <IframeBuffering
             dataModifier={injectCss}
-            fetchConfig={{
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'text/html;charset=utf-8',
-                    'x-ghost-preview': getPreviewData(announcementBackgroundColor, announcementContent),
-                    Accept: 'text/plain',
-                    mode: 'cors',
-                    credentials: 'include'
-                }
-            }}
-            url={hasPreviewDataChanged ? url : ''} 
+            url={url}
+            xPreview={xPreview}
         />
     );
-};
+}, (prevProps, nextProps) => {
+    // This function determines if the component should rerender. If the function returns true, then it won't rerender.
+    // In this case, we only want to rerender if xPreview has changed.
+    const prevXPreview = getPreviewData(prevProps.announcementBackgroundColor, prevProps.announcementContent);
+    const nextXPreview = getPreviewData(nextProps.announcementBackgroundColor, nextProps.announcementContent);
+    
+    return prevXPreview === nextXPreview;
+});
 
 export default AnnouncementBarPreview;
