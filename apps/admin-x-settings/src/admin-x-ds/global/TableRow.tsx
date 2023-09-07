@@ -25,7 +25,7 @@ const TableRow: React.FC<TableRowProps> = ({id, action, hideActions, className, 
 
     separator = (separator === undefined) ? true : separator;
     const tableRowClasses = clsx(
-        'group',
+        'group/table-row',
         bgOnHover && 'hover:bg-gradient-to-r hover:from-white hover:to-grey-50',
         onClick && 'cursor-pointer',
         separator ? 'border-b border-grey-100 last-of-type:border-b-transparent hover:border-grey-200' : 'border-y border-transparent first-of-type:hover:border-t-transparent',
