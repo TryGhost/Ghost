@@ -34,6 +34,15 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = React.memo(({a
     // In this case, we only want to rerender if xPreview has changed.
     const prevXPreview = getPreviewData(prevProps.announcementBackgroundColor, prevProps.announcementContent);
     const nextXPreview = getPreviewData(nextProps.announcementBackgroundColor, nextProps.announcementContent);
+
+    // we can also rerender if the url has changed
+
+    const prevUrl = prevProps.url;
+    const nextUrl = nextProps.url;
+
+    if (prevUrl !== nextUrl) {
+        return false;
+    }
     
     return prevXPreview === nextXPreview;
 });
