@@ -50,11 +50,11 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate}: 
                                     <div className="mx-auto flex max-w-[1080px] flex-col px-[5vmin] py-[12vmin] tablet:flex-row tablet:items-start tablet:gap-x-10 tablet:py-[8vmin]" id="admin-x-settings-content">
 
                                         {/* Sidebar */}
-                                        <div className="relative z-20 min-w-[260px] grow-0 tablet:fixed tablet:top-[8vmin] tablet:basis-[260px]">
+                                        <div className="sticky top-[-42px] z-20 min-w-[260px] grow-0 md:top-[-52px] tablet:fixed tablet:top-[8vmin] tablet:basis-[260px]">
                                             <div className='h-[84px]'>
                                                 <Heading>Settings</Heading>
                                             </div>
-                                            <div className="relative mt-[-32px] w-[260px] overflow-x-hidden after:absolute after:inset-x-0 after:top-0 after:block after:h-[40px] after:bg-gradient-to-b after:from-white after:to-transparent after:content-['']">
+                                            <div className="relative mt-[-32px] w-full overflow-x-hidden after:absolute after:inset-x-0 after:top-0 after:hidden after:h-[40px] after:bg-gradient-to-b after:from-white after:to-transparent after:content-[''] tablet:w-[260px] tablet:after:!visible tablet:after:!block">
                                                 <Sidebar />
                                             </div>
                                         </div>
