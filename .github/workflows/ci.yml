@@ -38,7 +38,7 @@ jobs:
       pull-requests: read
     steps:
       - name: Checkout current commit
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ env.HEAD_COMMIT }}
           fetch-depth: 2
@@ -49,14 +49,12 @@ jobs:
           NUMBER_OF_COMMITS=$(printf "%s\n" '${{ toJson(github.event.commits.*.id) }}' | jq length)
           echo "There are $NUMBER_OF_COMMITS commits in this push."
           echo "BASE_COMMIT=$(git rev-parse HEAD~$NUMBER_OF_COMMITS)" >> $GITHUB_ENV
-
       - name: Get metadata (pull_request)
         if: github.event_name == 'pull_request'
         run: |
           BASE_COMMIT=$(curl --location --request GET 'https://api.github.com/repos/TryGhost/Ghost/pulls/${{ github.event.pull_request.number }}' --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' | jq -r .base.sha)
           echo "Setting BASE_COMMIT to $BASE_COMMIT"
           echo "BASE_COMMIT=$BASE_COMMIT" >> $GITHUB_ENV
-
       - name: Determine added packages
         uses: dorny/paths-filter@v2.11.1
         id: added
@@ -64,7 +62,6 @@ jobs:
           filters: |
             new-package:
               - added: 'ghost/**/package.json'
-
       - name: Determine changed packages
         uses: AurorNZ/paths-filter@v3.0.1
         id: changed
@@ -123,7 +120,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: 'Checkout current commit'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ env.HEAD_COMMIT }}
 
@@ -141,7 +138,6 @@ jobs:
           echo "dep-cache-${{ env.hash }}" >> "$GITHUB_ENV"
           echo "dep-cache" >> "$GITHUB_ENV"
           echo "$EOF" >> "$GITHUB_ENV"
-
       - name: Nx cache
         uses: actions/cache@v3
         id: cache_nx
@@ -188,7 +184,7 @@ jobs:
     if: needs.job_get_metadata.outputs.changed_any_code == 'true'
     name: Lint
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 100
       - uses: actions/setup-node@v3
@@ -227,7 +223,7 @@ jobs:
       CI: true
       COVERAGE: true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         with:
           node-version: "18.12.1"
@@ -266,7 +262,7 @@ jobs:
         node: [ '16.14.0', '18.12.1' ]
     name: Unit tests (Node ${{ matrix.node }})
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 100
       - uses: actions/setup-node@v3
@@ -315,7 +311,7 @@ jobs:
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
     name: Database tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         env:
           FORCE_COLOR: 0
@@ -364,7 +360,6 @@ jobs:
           startTime="$(cat ${{ runner.temp }}/startTime)"
           endTime="$(date +%s)"
           echo "test_time=$(($endTime-$startTime))" >> $GITHUB_ENV
-
       - uses: actions/upload-artifact@v3
         if: startsWith(matrix.node, '18') && contains(matrix.env.DB, 'mysql')
         with:
@@ -373,7 +368,6 @@ jobs:
             ghost/*/coverage-e2e/cobertura-coverage.xml
             ghost/*/coverage-integration/cobertura-coverage.xml
             ghost/*/coverage-regression/cobertura-coverage.xml
-
       # Continue on error if TailScale service is down
       - name: Tailscale Action
         timeout-minutes: 2
@@ -408,7 +402,6 @@ jobs:
                 "password": "${{ secrets.ELASTICSEARCH_PASSWORD }}"
               }
             }
-
       - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
@@ -436,7 +429,7 @@ jobs:
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
     name: Regression tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         env:
           FORCE_COLOR: 0
@@ -487,7 +480,7 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         env:
           FORCE_COLOR: 0
@@ -540,7 +533,7 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         env:
           FORCE_COLOR: 0
@@ -593,7 +586,7 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         env:
           FORCE_COLOR: 0
@@ -644,7 +637,7 @@ jobs:
     if: needs.job_get_metadata.outputs.changed_core == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: true
@@ -675,24 +668,20 @@ jobs:
         run: |
           DIR=$(mktemp -d)
           ghost install local -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
-
       - name: Latest Release
         run: |
           DIR=$(mktemp -d)
           ghost install local -d $DIR
           ghost update -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
-
       - name: Update from latest v4
         run: |
           DIR=$(mktemp -d)
           ghost install v4 --local -d $DIR
           ghost update -f -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
-
       - name: Print debug logs
         if: failure()
         run: |
           [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
-
       - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
@@ -709,7 +698,7 @@ jobs:
     ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Restore Admin coverage
         if: contains(needs.job_admin-tests.result, 'success')
@@ -721,7 +710,6 @@ jobs:
         if: contains(needs.job_admin-tests.result, 'success')
         run: |
           rsync -av --remove-source-files admin/* ghost/admin
-
       - name: Upload Admin test coverage
         uses: codecov/codecov-action@v3
         with:
@@ -738,7 +726,6 @@ jobs:
         if: contains(needs.job_database-tests.result, 'success')
         run: |
           rsync -av --remove-source-files core/* ghost/core
-
       - name: Upload E2E test coverage
         if: contains(needs.job_database-tests.result, 'success')
         uses: codecov/codecov-action@v3
@@ -772,7 +759,6 @@ jobs:
         if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
         run: |
           echo "One of the dependent jobs have failed or been cancelled. You may need to re-run it." && exit 1
-
   canary:
     needs: [
       job_get_metadata,
@@ -788,7 +774,6 @@ jobs:
       - name: Set env variables
         run: |
           echo "CANARY_BUILD_INPUTS={\"version\":\"canary\",\"environment\":\"staging\"}" >> $GITHUB_ENV
-
       - name: Invoke build
         uses: aurelien-baudet/workflow-dispatch@v2
         with:
