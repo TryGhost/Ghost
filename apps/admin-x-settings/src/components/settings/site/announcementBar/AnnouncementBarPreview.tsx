@@ -1,5 +1,5 @@
 import IframeBuffering, {injectCss} from '../../../../utils/IframeBuffering';
-import React, {useMemo, useState} from 'react';
+import React from 'react';
 
 const getPreviewData = (announcementBackgroundColor?: string, announcementContent?: string) => {
     const params = new URLSearchParams();
@@ -16,8 +16,6 @@ type AnnouncementBarSettings = {
 };
 
 const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = React.memo(({announcementBackgroundColor, announcementContent, url}) => {
-    AnnouncementBarPreview.displayName = 'AnnouncementBarPreview';
-
     if (!url) {
         return null;
     }
@@ -39,5 +37,5 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = React.memo(({a
     
     return prevXPreview === nextXPreview;
 });
-
+AnnouncementBarPreview.displayName = 'AnnouncementBarPreview';
 export default AnnouncementBarPreview;
