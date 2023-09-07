@@ -56,6 +56,34 @@ function validateURL(object: any, key: string, {required = true, nullable = fals
     }
 }
 
+function validateInteger(object: any, key: string, {required = true, nullable = false} = {}): number|undefined|null {
+    if (typeof object !== 'object' || object === null) {
+        throw new errors.BadRequestError({message: `${key} must be an object`});
+    }
+
+    if (nullable && object[key] === null) {
+        return null;
+    }
+
+    if (object[key] !== undefined && object[key] !== null) {
+        if (typeof object[key] === "string") {
+            // Try to cast to a number
+            const parsed = parseInt(object[key]);
+            if (isNaN(parsed) || !isFinite(parsed)) {
+                throw new errors.BadRequestError({message: `${key} must be a number`});
+            }
+            return parsed;
+        }
+
+        if (typeof object[key] !== "number") {
+            throw new errors.BadRequestError({message: `${key} must be a number`});
+        }
+        return object[key];
+    } else if (required) {
+        throw new errors.BadRequestError({message: `${key} is required`});
+    }
+}
+
 
 export class RecommendationController {
     service: RecommendationService;
@@ -76,6 +104,24 @@ export class RecommendationController {
 
         return id;
     }
+
+    #getFramePage(frame: Frame): number {
+        const page = validateInteger(frame.options, "page", {required: false, nullable: true}) ?? 1;
+        if (page < 1) {
+            throw new errors.BadRequestError({message: "page must be greater or equal to 1"});
+        }
+
+        return page;
+    }
+
+    #getFrameLimit(frame: Frame, defaultLimit = 15): number {
+        const limit = validateInteger(frame.options, "limit", {required: false, nullable: true}) ?? defaultLimit;
+        if (limit < 1) {
+            throw new errors.BadRequestError({message: "limit must be greater or equal to 1"});
+        }
+        return limit;
+    }
+
 
     #getFrameRecommendation(frame: Frame): AddRecommendation {
         if (!frame.data || !frame.data.recommendations || !frame.data.recommendations[0]) {
@@ -121,7 +167,7 @@ export class RecommendationController {
     }
 
 
-    #returnRecommendations(...recommendations: Recommendation[]) {
+    #returnRecommendations(recommendations: Recommendation[], meta?: any) {
         return {
             data: recommendations.map(r => {
                 return {
@@ -136,14 +182,15 @@ export class RecommendationController {
                     created_at: r.createdAt,
                     updated_at: r.updatedAt
                 };
-            })
+            }),
+            meta
         }
     }
 
     async addRecommendation(frame: Frame) {
         const recommendation = this.#getFrameRecommendation(frame);
         return this.#returnRecommendations(
-            await this.service.addRecommendation(recommendation)
+            [await this.service.addRecommendation(recommendation)]
         );
     }
 
@@ -152,7 +199,7 @@ export class RecommendationController {
         const recommendationEdit = this.#getFrameRecommendationEdit(frame);
 
         return this.#returnRecommendations(
-            await this.service.editRecommendation(id, recommendationEdit)
+            [await this.service.editRecommendation(id, recommendationEdit)]
         );
     }
 
@@ -161,9 +208,33 @@ export class RecommendationController {
         await this.service.deleteRecommendation(id);
     }
 
-    async listRecommendations() {
+    async listRecommendations(frame: Frame) {
+        const page = this.#getFramePage(frame);
+        const limit = this.#getFrameLimit(frame, 5);
+        const order = [
+            {
+                field: "createdAt" as const,
+                direction: "desc" as const
+            }
+        ];
+
+        const count = await this.service.countRecommendations({});
+        const data = (await this.service.listRecommendations({page, limit, order}));
+
+        const pages = Math.ceil(count / limit);
+
         return this.#returnRecommendations(
-            ...(await this.service.listRecommendations())
+            data,
+            {
+                pagination: {
+                    page,
+                    limit,
+                    total: count,
+                    pages,
+                    prev: page > 1 ? page - 1 : null,
+                    next: page < pages ? page + 1 : null
+                }
+            }
         );
     }
 }
