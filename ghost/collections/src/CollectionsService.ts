@@ -1,5 +1,6 @@
 import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
+import isEqual from 'lodash/isEqual';
 import {Knex} from "knex";
 import {
     PostsBulkUnpublishedEvent,
@@ -183,6 +184,10 @@ export class CollectionsService {
         });
 
         this.DomainEvents.subscribe(PostEditedEvent, async (event: PostEditedEvent) => {
+            if(this.hasPostEditRelevantChanges(event.data) === false) {
+                return;
+            }
+
             logging.info(`PostEditedEvent received, updating post ${event.data.id} in matching collections`);
             await this.updatePostInMatchingCollections(event.data);
         });
@@ -216,6 +221,24 @@ export class CollectionsService {
             logging.info(`PostsBulkAddTagsEvent received for ${event.data}, updating all collections`);
             await this.updateAllAutomaticCollections();
         });
+    }
+
+    private hasPostEditRelevantChanges(postEditEvent: PostEditedEvent['data']): boolean {
+        console.log(postEditEvent);
+        const current = {
+            id: postEditEvent.current.id,
+            featured: postEditEvent.current.featured,
+            published_at: postEditEvent.current.published_at,
+            tags: postEditEvent.current.tags
+        };
+        const previous = {
+            id: postEditEvent.previous.id,
+            featured: postEditEvent.previous.featured,
+            published_at: postEditEvent.previous.published_at,
+            tags: postEditEvent.previous.tags
+        }
+
+        return !isEqual(current, previous);
     }
 
     async updateAllAutomaticCollections(): Promise<void> {

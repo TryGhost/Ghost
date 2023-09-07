@@ -1,4 +1,5 @@
 import assert from 'assert/strict';
+import sinon from 'sinon';
 import DomainEvents from '@tryghost/domain-events';
 import {
     CollectionsService,
@@ -655,6 +656,31 @@ describe('CollectionsService', function () {
                 assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 3);
                 assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 2);
                 assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 2);
+            });
+
+            it('Does nothing when the PostEditedEvent contains no relevant changes', async function () {
+                collectionsService.subscribeToEvents();
+                const updatePostInMatchingCollectionsSpy = sinon.spy(collectionsService, 'updatePostInMatchingCollections');
+                const postEditEvent = PostEditedEvent.create({
+                    id: 'something',
+                    current: {
+                        id: 'unique-post-id',
+                        status: 'scheduled',
+                        featured: true,
+                        tags: ['they', 'do', 'not', 'change']
+                    },
+                    previous: {
+                        id: 'unique-post-id',
+                        status: 'published',
+                        featured: true,
+                        tags: ['they', 'do', 'not', 'change']
+                    }
+                });
+
+                DomainEvents.dispatch(postEditEvent);
+                await DomainEvents.allSettled();
+
+                assert.equal(updatePostInMatchingCollectionsSpy.callCount, 0, 'updatePostInMatchingCollections method should not have been called');
             });
         });
     });

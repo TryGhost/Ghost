@@ -34,7 +34,8 @@
         "@tryghost/nql-filter-expansions": "0.0.0",
         "@tryghost/post-events": "0.0.0",
         "@tryghost/tpl": "0.1.25",
-        "bson-objectid": "2.0.4"
+        "bson-objectid": "2.0.4",
+        "lodash": "4.17.21"
     },
     "c8": {
         "exclude": [
