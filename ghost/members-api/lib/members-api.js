@@ -264,7 +264,7 @@ module.exports = function MembersAPI({
             }
         }
 
-        const newMember = await users.create({name, email, labels, newsletters, attribution, geolocation, type});
+        const newMember = await users.create({name, email, labels, newsletters, attribution, geolocation});
 
         await MemberLoginEvent.add({member_id: newMember.id});
         return getMemberIdentityData(email);

@@ -249,7 +249,7 @@ module.exports = class MemberRepository {
             });
         }
 
-        const memberData = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation', 'created_at', 'products', 'newsletters', 'email_disabled', 'type']);
+        const memberData = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation', 'created_at', 'products', 'newsletters', 'email_disabled']);
 
         // Throw error if email is invalid using latest validator
         if (!validator.isEmail(memberData.email, {legacy: false})) {
@@ -283,7 +283,7 @@ module.exports = class MemberRepository {
         }
 
         //checks for custom signUp forms
-        if (memberData.type === 'subscribe' && memberData.newsletters && memberData.newsletters.length > 0) {
+        if (memberData.newsletters && memberData.newsletters.length > 0) {
             const savedNewsletter = await this._newslettersService.browse({filter: `id:'${memberData.newsletters[0].id}'`});
             if (savedNewsletter.length === 0) {
                 throw new errors.BadRequestError({message: tpl(messages.invalidNewsletterId, {id: memberData.newsletters[0].id})});
