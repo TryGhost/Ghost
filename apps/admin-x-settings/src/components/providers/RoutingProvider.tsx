@@ -1,28 +1,6 @@
-import AddIntegrationModal from '../settings/advanced/integrations/AddIntegrationModal';
-import AddNewsletterModal from '../settings/email/newsletters/AddNewsletterModal';
-import AddRecommendationModal from '../settings/site/recommendations/AddRecommendationModal';
-import AmpModal from '../settings/advanced/integrations/AmpModal';
-import AnnouncementBarModal from '../settings/site/AnnouncementBarModal';
-import ChangeThemeModal from '../settings/site/ThemeModal';
-import CustomIntegrationModal from '../settings/advanced/integrations/CustomIntegrationModal';
-import DesignModal from '../settings/site/DesignModal';
-import EditRecommendationModal from '../settings/site/recommendations/EditRecommendationModal';
-import EmbedSignupFormModal from '../settings/membership/EmbedSignupFormModal';
-import FirstpromoterModal from '../settings/advanced/integrations/FirstPromoterModal';
-import HistoryModal from '../settings/advanced/HistoryModal';
-import InviteUserModal from '../settings/general/InviteUserModal';
-import NavigationModal from '../settings/site/NavigationModal';
-import NewsletterDetailModal from '../settings/email/newsletters/NewsletterDetailModal';
 import NiceModal, {NiceModalHocProps} from '@ebay/nice-modal-react';
-import PinturaModal from '../settings/advanced/integrations/PinturaModal';
-import PortalModal from '../settings/membership/portal/PortalModal';
+
 import React, {createContext, useCallback, useEffect, useState} from 'react';
-import SlackModal from '../settings/advanced/integrations/SlackModal';
-import StripeConnectModal from '../settings/membership/stripe/StripeConnectModal';
-import TierDetailModal from '../settings/membership/tiers/TierDetailModal';
-import UnsplashModal from '../settings/advanced/integrations/UnsplashModal';
-import UserDetailModal from '../settings/general/UserDetailModal';
-import ZapierModal from '../settings/advanced/integrations/ZapierModal';
 
 export type RouteParams = {[key: string]: string}
 
@@ -57,7 +35,31 @@ export type RoutingModalProps = {
     params?: Record<string, string>
 }
 
-const modalPaths: {[key: string]: React.FC<NiceModalHocProps & RoutingModalProps>} = {
+const AddIntegrationModal = () => import('../settings/advanced/integrations/AddIntegrationModal');
+const AddNewsletterModal = () => import('../settings/email/newsletters/AddNewsletterModal');
+const AddRecommendationModal = () => import('../settings/site/recommendations/AddRecommendationModal');
+const AmpModal = () => import('../settings/advanced/integrations/AmpModal');
+const ChangeThemeModal = () => import('../settings/site/ThemeModal');
+const CustomIntegrationModal = () => import('../settings/advanced/integrations/CustomIntegrationModal');
+const DesignModal = () => import('../settings/site/DesignModal');
+const EditRecommendationModal = () => import('../settings/site/recommendations/EditRecommendationModal');
+const FirstpromoterModal = () => import('../settings/advanced/integrations/FirstPromoterModal');
+const HistoryModal = () => import('../settings/advanced/HistoryModal');
+const InviteUserModal = () => import('../settings/general/InviteUserModal');
+const NavigationModal = () => import('../settings/site/NavigationModal');
+const NewsletterDetailModal = () => import('../settings/email/newsletters/NewsletterDetailModal');
+const PinturaModal = () => import('../settings/advanced/integrations/PinturaModal');
+const PortalModal = () => import('../settings/membership/portal/PortalModal');
+const SlackModal = () => import('../settings/advanced/integrations/SlackModal');
+const StripeConnectModal = () => import('../settings/membership/stripe/StripeConnectModal');
+const TierDetailModal = () => import('../settings/membership/tiers/TierDetailModal');
+const UnsplashModal = () => import('../settings/advanced/integrations/UnsplashModal');
+const UserDetailModal = () => import('../settings/general/UserDetailModal');
+const ZapierModal = () => import('../settings/advanced/integrations/ZapierModal');
+const AnnouncementBarModal = () => import('../settings/site/AnnouncementBarModal');
+const EmbedSignupFormModal = () => import('../settings/membership/EmbedSignupFormModal');
+
+const modalPaths: {[key: string]: () => Promise<{default: React.FC<NiceModalHocProps & RoutingModalProps>}>} = {
     'design/edit/themes': ChangeThemeModal,
     'design/edit': DesignModal,
     'navigation/edit': NavigationModal,
@@ -119,7 +121,7 @@ const handleNavigation = (scroll: boolean = true) => {
         const [path, modal] = Object.entries(modalPaths).find(([modalPath]) => matchRoute(pathName, modalPath)) || [];
 
         if (path && modal) {
-            NiceModal.show(modal, {params: matchRoute(pathName, path)});
+            modal().then(({default: component}) => NiceModal.show(component, {params: matchRoute(pathName, path)}));
         }
 
         if (scroll) {

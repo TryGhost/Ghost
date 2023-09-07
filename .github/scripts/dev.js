@@ -71,9 +71,9 @@ if (DASH_DASH_ARGS.includes('admin-x') || DASH_DASH_ARGS.includes('adminx') || D
         //    https://localhost:41740 {
         //        reverse_proxy http://localhost:4174
         //    }
-        COMMAND_GHOST.env['adminX__url'] = 'https://localhost:41740/admin-x-settings.umd.js';
+        COMMAND_GHOST.env['adminX__url'] = 'https://localhost:41740/admin-x-settings.js';
     } else {
-        COMMAND_GHOST.env['adminX__url'] = 'http://localhost:4174/admin-x-settings.umd.js';
+        COMMAND_GHOST.env['adminX__url'] = 'http://localhost:4174/admin-x-settings.js';
     }
 }
 

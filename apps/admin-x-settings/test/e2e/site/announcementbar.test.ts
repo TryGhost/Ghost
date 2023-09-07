@@ -19,19 +19,19 @@ test.describe('Announcement Bar', async () => {
         });
 
         await page.goto('/');
-    
+
         const section = page.getByTestId('announcement-bar');
-    
+
         await section.getByRole('button', {name: 'Customize'}).click();
-    
+
         const modal = page.getByTestId('announcement-bar-modal');
-    
+
         // // Homepage and post preview
-    
+
         await expect(modal.frameLocator('[data-testid="announcement-bar-preview"]').getByText('homepage preview')).toHaveCount(1);
-    
+
         await modal.getByTestId('design-toolbar').getByRole('tab', {name: 'Post'}).click();
-    
+
         await expect(modal.frameLocator('[data-testid="announcement-bar-preview"]').getByText('post preview')).toHaveCount(1);
     });
 
@@ -51,9 +51,9 @@ test.describe('Announcement Bar', async () => {
     //     await page.goto('/');
 
     //     const section = page.getByTestId('announcement-bar');
-    
+
     //     await section.getByRole('button', {name: 'Customize'}).click();
-    
+
     //     const modal = page.getByTestId('announcement-bar-modal');
 
     //     await expect(modal.frameLocator('[data-testid="announcement-bar-preview"]').getByText('homepage preview')).toHaveCount(1);
@@ -73,26 +73,26 @@ test.describe('Announcement Bar', async () => {
 
         await section.getByRole('button', {name: 'Customize'}).click();
 
-        const labelElement = await page.$('label:text("Background color")');
+        const labelElement = page.locator('label:text("Background color")');
 
-        expect(labelElement).not.toBeNull();
+        await expect(labelElement).toHaveCount(1);
 
         const modal = page.getByTestId('announcement-bar-modal');
 
         // Check the titles of the buttons.
         // Get the parent div of the label
-        const parentDiv = await labelElement?.$('xpath=..');
+        const parentDiv = labelElement.locator('..');
 
         // Then get the div that follows the label within the parent div
-        const buttonContainer = await parentDiv?.$('div');
+        const buttonContainer = parentDiv.locator('div');
 
-        const darkButton = await buttonContainer?.$('button[title="Dark"]');
-        const lightButton = await buttonContainer?.$('button[title="Light"]');
-        const accentButton = await buttonContainer?.$('button[title="Accent"]');
+        const darkButton = buttonContainer.locator('button[title="Dark"]');
+        const lightButton = buttonContainer.locator('button[title="Light"]');
+        const accentButton = buttonContainer.locator('button[title="Accent"]');
 
-        expect(darkButton).not.toBeNull();
-        expect(lightButton).not.toBeNull();
-        expect(accentButton).not.toBeNull();
+        await expect(darkButton).toHaveCount(1);
+        await expect(lightButton).toHaveCount(1);
+        await expect(accentButton).toHaveCount(1);
 
         await lightButton?.click();
 
@@ -119,9 +119,9 @@ test.describe('Announcement Bar', async () => {
 
         await section.getByRole('button', {name: 'Customize'}).click();
 
-        const labelElement = await page.$('h6:text("Visibility")');
+        const labelElement = page.locator('h6:text("Visibility")');
 
-        expect(labelElement).not.toBeNull();
+        await expect(labelElement).toHaveCount(1);
 
         const modal = page.getByTestId('announcement-bar-modal');
 
