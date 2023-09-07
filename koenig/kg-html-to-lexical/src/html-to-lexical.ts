@@ -24,7 +24,7 @@ const defaultNodes = [
     ...DEFAULT_NODES
 ];
 
-export function htmlToLexical(html: string, options: htmlToLexicalOptions): SerializedEditorState {
+export function htmlToLexical(html: string, options?: htmlToLexicalOptions): SerializedEditorState {
     const defaultEditorConfig = {
         nodes: defaultNodes
     };
