@@ -11,7 +11,7 @@ const TableHead: React.FC<HTMLProps<HTMLTableCellElement>> = ({className, childr
 
     return (
         <td className={tableCellClasses} {...props}>
-            <Heading level={6}>{children}</Heading>
+            <Heading className='whitespace-nowrap' level={6}>{children}</Heading>
         </td>
     );
 };
