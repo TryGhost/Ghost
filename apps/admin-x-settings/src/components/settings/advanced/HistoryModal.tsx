@@ -68,7 +68,7 @@ const HistoryFilter: React.FC<{
     toggleResourceType: (resource: string, included: boolean) => void;
 }> = ({excludedEvents, excludedResources, toggleEventType, toggleResourceType}) => {
     return (
-        <Popover trigger={<Button label='Filter' link />}>
+        <Popover position='right' trigger={<Button label='Filter' link />}>
             <div className='flex w-[220px] flex-col gap-8 p-5'>
                 <ToggleGroup>
                     <HistoryFilterToggle excludedItems={excludedEvents} item='added' label='Added' toggleItem={toggleEventType} />
