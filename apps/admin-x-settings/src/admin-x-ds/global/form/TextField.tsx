@@ -55,7 +55,7 @@ const TextField: React.FC<TextFieldProps> = ({
     const enabledBorderClasses = border && 'border-grey-500 hover:border-grey-700 focus:border-black';
 
     const textFieldClasses = !unstyled && clsx(
-        'peer order-2 h-10 w-full py-2',
+        'peer order-2 h-8 w-full py-1 text-sm md:h-10 md:py-2 md:text-base',
         border && 'border-b',
         !border && '-mb-1.5',
         clearBg ? 'bg-transparent' : 'bg-grey-75 px-[10px]',
@@ -87,7 +87,7 @@ const TextField: React.FC<TextFieldProps> = ({
             'order-3',
             border && 'border-b',
             !border && '-mb-1.5',
-            (typeof (rightPlaceholder) === 'string') ? 'h-10 py-2 text-right text-grey-500' : 'h-10',
+            (typeof (rightPlaceholder) === 'string') ? 'h-8 py-1 text-right text-sm text-grey-500 md:h-10 md:py-2 md:text-base' : 'h-10',
             error && border ? `border-red` : `${disabled ? disabledBorderClasses : rightPHEnabledBorderClasses}`
         );
 
