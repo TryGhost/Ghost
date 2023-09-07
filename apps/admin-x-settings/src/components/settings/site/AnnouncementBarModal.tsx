@@ -28,7 +28,7 @@ type SidebarProps = {
 };
 
 const Sidebar: React.FC<SidebarProps> = ({
-    announcementContent, 
+    announcementContent,
     announcementTextHandler,
     accentColor,
     announcementBackgroundColor,

@@ -42,7 +42,7 @@ const ListItem: React.FC<ListItemProps> = ({
     };
 
     const listItemClasses = clsx(
-        'group flex items-center justify-between',
+        'group/list-item flex items-center justify-between',
         bgOnHover && 'hover:bg-gradient-to-r hover:from-white hover:to-grey-50',
         separator ? 'border-b border-grey-100 last-of-type:border-b-transparent hover:border-grey-200' : 'border-y border-transparent hover:border-grey-200 first-of-type:hover:border-t-transparent',
         className
@@ -60,7 +60,7 @@ const ListItem: React.FC<ListItemProps> = ({
                 </div>
             }
             {action &&
-                <div className={`py-3 pl-6 ${paddingRight && 'pr-6'} ${hideActions ? 'invisible group-hover:visible' : ''}`}>
+                <div className={`visible py-3 md:pl-6 ${paddingRight && 'md:pr-6'} ${hideActions ? 'group-hover/list-item:visible md:invisible' : ''}`}>
                     {action}
                 </div>
             }

@@ -14,7 +14,7 @@ const IntegrationHeader: React.FC<IntegrationHeaderProps> = ({
     extra
 }) => {
     return (
-        <div className='flex w-full gap-4'>
+        <div className='flex w-full flex-col gap-4 md:flex-row'>
             <div className='h-14 w-14'>{icon}</div>
             <div className='flex min-w-0 flex-1 flex-col'>
                 <h3>{title}</h3>

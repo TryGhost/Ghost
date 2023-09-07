@@ -192,7 +192,7 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     ] as const;
 
     const buttons = (
-        <Button color='green' label='Add custom integration' link={true} onClick={() => {
+        <Button className='hidden md:!visible md:!block' color='green' label='Add custom integration' link={true} onClick={() => {
             updateRoute('integrations/add');
             setSelectedTab('custom');
         }} />
@@ -207,6 +207,12 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
             testId='integrations'
             title="Integrations"
         >
+            <div className='flex justify-center rounded border border-green px-4 py-2 md:hidden'>
+                <Button color='green' label='Add custom integration' link onClick={() => {
+                    updateRoute('integrations/add');
+                    setSelectedTab('custom');
+                }} />
+            </div>
             <TabView<'built-in' | 'custom'> selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
         </SettingGroup>
     );

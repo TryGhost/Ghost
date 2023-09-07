@@ -71,7 +71,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
         if (!deleteButtonUnstyled) {
             deleteButtonClassName = clsx(
-                'invisible absolute right-4 top-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible',
+                'absolute right-4 top-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible md:invisible',
                 deleteButtonClassName
             );
         }

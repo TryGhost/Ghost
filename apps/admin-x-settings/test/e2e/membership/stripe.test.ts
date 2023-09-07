@@ -35,7 +35,8 @@ test.describe('Stripe settings', async () => {
 
         await expect(modal).toHaveCount(0);
 
-        await expect(section.getByText('Connected to Stripe')).toHaveCount(1);
+        // There's a mobile version of the same button in the DOM
+        await expect(section.getByText('Connected to Stripe')).toHaveCount(2);
 
         // We actually do two settings update requests here, this just checks the last one
         expect(lastApiRequests.editSettings?.body).toEqual({
@@ -74,7 +75,8 @@ test.describe('Stripe settings', async () => {
 
         await expect(modal).toHaveCount(0);
 
-        await expect(section.getByText('Connected to Stripe')).toHaveCount(1);
+        // There's a mobile version of the same button in the DOM
+        await expect(section.getByText('Connected to Stripe')).toHaveCount(2);
 
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [{
