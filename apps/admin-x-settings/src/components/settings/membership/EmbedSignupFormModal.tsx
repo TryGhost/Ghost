@@ -11,7 +11,7 @@ import useRouting from '../../../hooks/useRouting';
 
 const Preview: React.FC = () => {
     return (
-        <div className='rounded-md bg-grey-100 text-grey-600'>
+        <div className='hidden rounded-md bg-grey-100 text-grey-600 tablet:!visible tablet:!block'>
             preview
         </div>
     );
@@ -111,7 +111,7 @@ const EmbedSignupFormModal = NiceModal.create(() => {
             title=''
             topRightContent='close'
         >
-            <div className='grid grid-cols-[5.5fr_2.5fr] gap-6 pb-8'>
+            <div className='grid grid-cols-1 gap-6 pb-8 md:grid-cols-[5.5fr_2.5fr]'>
                 <Preview />
                 <Sidebar />
             </div>
