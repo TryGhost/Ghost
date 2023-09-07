@@ -16,10 +16,16 @@ export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}
     let name = (nameInput && nameInput.value) || undefined;
     let emailType = undefined;
     let labels = [];
+    let newsletters = [];
 
     let labelInputs = event.target.querySelectorAll('input[data-members-label]') || [];
     for (let i = 0; i < labelInputs.length; ++i) {
         labels.push(labelInputs[i].value);
+    }
+
+    let newsletterInputs = event.target.querySelectorAll('input[data-members-newsletter]') || [];
+    for (let i = 0; i < newsletterInputs.length; ++i) {
+        newsletters.push({id: newsletterInputs[i].value});
     }
 
     if (form.dataset.membersForm) {
@@ -37,6 +43,9 @@ export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}
     };
     if (urlHistory) {
         reqBody.urlHistory = urlHistory;
+    }
+    if (newsletterInputs.length > 0) {
+        reqBody.newsletters = newsletters;
     }
 
     fetch(`${siteUrl}/members/api/send-magic-link/`, {
