@@ -289,7 +289,7 @@ module.exports = class MemberRepository {
             const subscribedNewsletterIds = memberData.newsletters.map(newsletter => newsletter.id);
             const invalidIds = subscribedNewsletterIds.filter(id => !allValidNewslettersIds.includes(id));
             if (invalidIds.length > 0) {
-                throw new errors.BadRequestError({message: tpl(messages.invalidNewsLetterId, {id: invalidIds})});
+                throw new errors.BadRequestError({message: tpl(messages.invalidNewsletterId, {id: invalidIds})});
             }
             const activeNewsLetters = memberData.newsletters.filter((memberNewsletter) => {
                 const subscribedNewsletter = allValidNewsletters.find(newsletter => newsletter.id === memberNewsletter.id);
