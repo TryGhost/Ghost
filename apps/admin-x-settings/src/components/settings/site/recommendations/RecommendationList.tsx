@@ -3,6 +3,7 @@ import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationM
 import NiceModal from '@ebay/nice-modal-react';
 import NoValueLabel from '../../../../admin-x-ds/global/NoValueLabel';
 import React from 'react';
+import RecommendationIcon from './RecommendationIcon';
 import Table from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
@@ -43,7 +44,7 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
                 <div className='group flex items-center gap-3 hover:cursor-pointer'>
                     <div className={`flex grow flex-col`}>
                         <div className="mb-1 flex items-center gap-2">
-                            {recommendation.favicon && <img alt={recommendation.title} className="h-5 w-5 rounded-sm" src={recommendation.favicon} />}
+                            <RecommendationIcon {...recommendation} />
                             <span className='line-clamp-1'>{recommendation.title}</span>
                         </div>
                         <span className='line-clamp-1 text-xs leading-snug text-grey-700'>{recommendation.reason || 'No reason added'}</span>
