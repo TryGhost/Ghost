@@ -18,21 +18,19 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
     const {mutateAsync: deleteRecommendation} = useDeleteRecommendation();
 
     const action = (
-        <div className="flex items-center justify-end">
-            <Button color='red' label='Remove' link onClick={() => {
-                NiceModal.show(ConfirmationModal, {
-                    title: 'Remove recommendation',
-                    prompt: <>
-                        <p>Your recommendation <strong>{recommendation.title}</strong> will no longer be visible to your audience.</p>
-                    </>,
-                    okLabel: 'Remove',
-                    onOk: async (modal) => {
-                        await deleteRecommendation(recommendation);
-                        modal?.remove();
-                    }
-                });
-            }} />
-        </div>
+        <Button color='red' label='Remove' link onClick={() => {
+            NiceModal.show(ConfirmationModal, {
+                title: 'Remove recommendation',
+                prompt: <>
+                    <p>Your recommendation <strong>{recommendation.title}</strong> will no longer be visible to your audience.</p>
+                </>,
+                okLabel: 'Remove',
+                onOk: async (modal) => {
+                    await deleteRecommendation(recommendation);
+                    modal?.remove();
+                }
+            });
+        }} />
     );
 
     const showDetails = () => {
