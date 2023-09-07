@@ -43,7 +43,7 @@ const Owner: React.FC<OwnerProps> = ({user}) => {
         <div className='group flex gap-3 hover:cursor-pointer' data-testid='owner-user' onClick={showDetailModal}>
             <Avatar bgColor={generateAvatarColor((user.name ? user.name : user.email))} image={user.profile_image} label={getInitials(user.name)} labelColor='white' size='lg' />
             <div className='flex flex-col'>
-                <span>{user.name} &mdash; <strong>Owner</strong> <button className='invisible ml-2 inline-block text-sm font-bold text-green group-hover:visible' type='button'>Edit</button></span>
+                <span>{user.name} &mdash; <strong>Owner</strong> <button className='ml-2 inline-block text-sm font-bold text-green group-hover:visible md:invisible' type='button'>Edit</button></span>
                 <span className='text-xs text-grey-700'>{user.email}</span>
             </div>
         </div>

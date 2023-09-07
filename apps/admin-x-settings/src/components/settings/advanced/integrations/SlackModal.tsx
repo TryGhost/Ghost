@@ -90,7 +90,7 @@ const SlackModal = NiceModal.create(() => {
                         onChange={e => updateSetting('slack_url', e.target.value)}
                         onKeyDown={() => clearError('slackUrl')}
                     />
-                    <div className='flex w-full items-center gap-2'>
+                    <div className='flex w-full flex-col gap-2 md:flex-row md:items-center'>
                         <TextField
                             containerClassName='flex-grow'
                             hint='The username to display messages from'
