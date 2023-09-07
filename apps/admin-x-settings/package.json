@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/admin-x-settings",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -47,7 +47,7 @@
     "@dnd-kit/core": "6.0.8",
     "@dnd-kit/sortable": "7.0.2",
     "@ebay/nice-modal-react": "1.2.10",
-    "@tanstack/react-query": "4.33.0",
+    "@tanstack/react-query": "4.35.0",
     "@tryghost/color-utils": "0.1.24",
     "@tryghost/limit-service": "^1.2.8",
     "@tryghost/timezone-data": "0.3.0",
@@ -89,6 +89,7 @@
     "stylelint": "15.10.3",
     "tailwindcss": "3.3.3",
     "vite": "4.4.9",
+    "vite-plugin-css-injected-by-js": "^3.3.0",
     "vite-plugin-svgr": "3.2.0",
     "vitest": "0.34.3"
   }

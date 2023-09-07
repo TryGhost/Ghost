@@ -274,7 +274,7 @@ const ChangeThemeModal = NiceModal.create(() => {
             }}
             cancelLabel=''
             footer={false}
-            noPadding={true}
+            padding={false}
             size='full'
             testId='theme-modal'
             title=''
