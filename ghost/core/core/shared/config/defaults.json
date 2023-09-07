@@ -202,7 +202,7 @@
         "version": "0.4"
     },
     "adminX": {
-        "url": "https://cdn.jsdelivr.net/ghost/admin-x-settings@~{version}/dist/admin-x-settings.umd.js",
+        "url": "https://cdn.jsdelivr.net/ghost/admin-x-settings@~{version}/dist/admin-x-settings.js",
         "version": "0.0"
     },
     "signupForm": {
