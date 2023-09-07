@@ -36,8 +36,10 @@ const TableRow: React.FC<TableRowProps> = ({id, action, hideActions, className, 
         <tr className={tableRowClasses} data-testid={testId} id={id} onClick={handleClick}>
             {children}
             {action &&
-                <td className={`visible block px-6 py-3 text-center ${hideActions ? 'group-hover/table-row:visible md:invisible' : ''}`}>
-                    {action}
+                <td className={`px-6 py-3`}>
+                    <div className={`flex items-center justify-end ${hideActions ? 'invisible group-hover/table-row:visible' : ''}`}>
+                        {action}
+                    </div>
                 </td>
             }
         </tr>
