@@ -134,35 +134,19 @@ const Sidebar: React.FC<SidebarProps> = ({selectedLayout,
 };
 
 const EmbedSignupFormModal = NiceModal.create(() => {
-    const {updateRoute} = useRouting();
-    const {config} = useGlobalData();
-    const {localSettings, siteData} = useSettingGroup();
-    const [accentColor] = getSettingValues<string>(localSettings, ['accent_color']);
-    const [title] = getSettingValues<string>(localSettings, ['title']);
-    const [locale] = getSettingValues<string>(localSettings, ['locale']);
-    const [labs] = getSettingValues<string>(localSettings, ['labs']);
-
-    const handleColorToggle = (e:string) => {
-        setSelectedColor(e);
-    };
+    let i18nEnabled = false;
 
     const [selectedColor, setSelectedColor] = useState<string>('#08090c');
     const [selectedLabels, setSelectedLabels] = useState<SelectedLabelTypes[]>([]);
     const [selectedLayout, setSelectedLayout] = useState<string>('all-in-one');
-    const {data: labels} = useBrowseLabels();
-    const addSelectedLabel = (selected: MultiValue<MultiSelectOption>) => {
-        if (selected?.length) {
-            const chosenLabels = selected?.map(({value}) => ({label: value, value: value}));
-            setSelectedLabels(chosenLabels);
-        } else {
-            setSelectedLabels([]);
-        }
-    };
-
     const [embedScript, setEmbedScript] = useState<string>('');
     const [isCopied, setIsCopied] = useState(false);
 
-    let i18nEnabled = false;
+    const {updateRoute} = useRouting();
+    const {config} = useGlobalData();
+    const {localSettings, siteData} = useSettingGroup();
+    const [accentColor, title, description, locale, labs, icon] = getSettingValues<string>(localSettings, ['accent_color', 'title', 'description', 'locale', 'labs', 'icon']);
+    const {data: labels} = useBrowseLabels();
 
     if (labs) {
         i18nEnabled = JSON.parse(labs).i18n;
@@ -184,7 +168,9 @@ const EmbedSignupFormModal = NiceModal.create(() => {
             settings: {
                 accentColor: accentColor || '#d74780',
                 title: title || '',
-                locale: locale || 'en'
+                locale: locale || 'en',
+                icon: icon || '',
+                description: description || ''
             },
             labels: selectedLabels.map(({label}) => ({name: label})),
             backgroundColor: selectedColor || '#08090c',
@@ -194,7 +180,7 @@ const EmbedSignupFormModal = NiceModal.create(() => {
         });
 
         setEmbedScript(code);
-    }, [siteData, accentColor, selectedLabels, config, title, selectedColor, selectedLayout, locale, i18nEnabled]);
+    }, [siteData, accentColor, selectedLabels, config, title, selectedColor, selectedLayout, locale, i18nEnabled, icon, description]);
 
     const handleCopyClick = async () => {
         try {
@@ -204,6 +190,19 @@ const EmbedSignupFormModal = NiceModal.create(() => {
         } catch (err) {
             // eslint-disable-next-line no-console
             console.error('Failed to copy text: ', err);
+        }
+    };
+
+    const handleColorToggle = (e:string) => {
+        setSelectedColor(e);
+    };
+    
+    const addSelectedLabel = (selected: MultiValue<MultiSelectOption>) => {
+        if (selected?.length) {
+            const chosenLabels = selected?.map(({value}) => ({label: value, value: value}));
+            setSelectedLabels(chosenLabels);
+        } else {
+            setSelectedLabels([]);
         }
     };
 
