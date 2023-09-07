@@ -49,15 +49,29 @@ const shuffleRecommendations = (array) => {
     return array;
 };
 
+const RecommendationIcon = ({title, favicon, featuredImage}) => {
+    const [icon, setIcon] = useState(favicon || featuredImage);
+
+    const hideIcon = () => {
+        setIcon(null);
+    };
+
+    if (!icon) {
+        return null;
+    }
+
+    return (<img className="gh-portal-recommendation-item-favicon" src={icon} alt={title} onError={hideIcon} />);
+};
+
 const RecommendationItem = (recommendation) => {
     const {t} = useContext(AppContext);
-    const {title, url, reason, favicon, one_click_subscribe: oneClickSubscribe} = recommendation;
+    const {title, url, reason, favicon, one_click_subscribe: oneClickSubscribe, featured_image: featuredImage} = recommendation;
 
     return (
         <section className="gh-portal-recommendation-item">
             <div className="gh-portal-list-detail gh-portal-list-big">
                 <div className="gh-portal-recommendation-item-header">
-                    {favicon && <img className="gh-portal-recommendation-item-favicon" src={favicon} alt={title}/>}
+                    <RecommendationIcon title={title} favicon={favicon} featuredImage={featuredImage} />
                     <h3>{title}</h3>
                 </div>
                 {reason && <p>{reason}</p>}
