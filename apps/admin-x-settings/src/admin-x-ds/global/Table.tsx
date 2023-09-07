@@ -11,20 +11,12 @@ interface TableProps {
      * If the table is the primary content on a page (e.g. Members table) then you can set a pagetitle to be consistent
      */
     pageTitle?: string;
-
-    /**
-     * When set to undefined, a loading indicator will be shown and the height of the table will be cached temporarily
-     */
     children?: React.ReactNode;
     borderTop?: boolean;
     hint?: string;
     hintSeparator?: boolean;
     className?: string;
     isLoading?: boolean;
-
-    /**
-     * Result of createPaginatedQuery / usePagination
-     */
     pagination?: PaginationData;
 }
 
