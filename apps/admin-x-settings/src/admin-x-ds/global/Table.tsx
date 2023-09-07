@@ -1,5 +1,6 @@
 import Heading from './Heading';
 import Hint from './Hint';
+import Pagination from './Pagination';
 import React from 'react';
 import Separator from './Separator';
 import clsx from 'clsx';
@@ -44,6 +45,7 @@ const Table: React.FC<TableProps> = ({children, borderTop, hint, hintSeparator, 
                             </button>
                             <button type="button"><Icon colorClass="text-green" name='chevron-right' size="xs" /></button>
                         </div> */}
+                        <Pagination itemsPerPage={5} itemsTotal={15}/>
                     </div>
                 </div>}
             </div>
