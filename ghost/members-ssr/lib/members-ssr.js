@@ -201,51 +201,43 @@ class MembersSSR {
      * @returns {Promise<Member>} The member the session was created for
      */
     async exchangeTokenForSession(req, res) {
-        try {
-            if (!req.url) {
-                return Promise.reject(new BadRequestError({
-                    message: 'Expected token param containing JWT'
-                }));
-            }
+        if (!req.url) {
+            return Promise.reject(new BadRequestError({
+                message: 'Expected token param containing JWT'
+            }));
+        }
 
-            const {query} = parseUrl(req.url, true);
-            if (!query || !query.token) {
-                return Promise.reject(new BadRequestError({
-                    message: 'Expected token param containing JWT'
-                }));
-            }
+        const {query} = parseUrl(req.url, true);
+        if (!query || !query.token) {
+            return Promise.reject(new BadRequestError({
+                message: 'Expected token param containing JWT'
+            }));
+        }
 
-            const token = Array.isArray(query.token) ? query.token[0] : query.token;
-            const member = await this._getMemberDataFromToken(token);
+        const token = Array.isArray(query.token) ? query.token[0] : query.token;
+        const member = await this._getMemberDataFromToken(token);
 
-            if (!member) {
-                // The member doesn't exist any longer (could be a sign in token for a member that was deleted)
-                return Promise.reject(new BadRequestError({
-                    message: 'Invalid token'
-                }));
-            }
+        if (!member) {
+            // The member doesn't exist any longer (could be a sign in token for a member that was deleted)
+            return Promise.reject(new BadRequestError({
+                message: 'Invalid token'
+            }));
+        }
 
-            // perform and store geoip lookup for members when they log in
-            if (!member.geolocation) {
-                try {
-                    await this._setMemberGeolocationFromIp(member.email, req.ip);
-                } catch (err) {
-                    // no-op, we don't want to stop anything working due to
-                    // geolocation lookup failing
-                    debug(`Geolocation lookup failed: ${err.message}`);
-                }
-            }
-
-            this._setSessionCookie(req, res, member.email);
-
-            return member;
-        } catch (err) {
-            if (err.errorType === 'BadRequestError') {
-                return Promise.reject(new BadRequestError({
-                    message: err.message
-                }));
+        // perform and store geoip lookup for members when they log in
+        if (!member.geolocation) {
+            try {
+                await this._setMemberGeolocationFromIp(member.email, req.ip);
+            } catch (err) {
+                // no-op, we don't want to stop anything working due to
+                // geolocation lookup failing
+                debug(`Geolocation lookup failed: ${err.message}`);
             }
         }
+
+        this._setSessionCookie(req, res, member.email);
+
+        return member;
     }
 
     /**

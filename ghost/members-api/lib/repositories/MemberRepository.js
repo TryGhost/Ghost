@@ -283,19 +283,12 @@ module.exports = class MemberRepository {
         }
 
         //checks for custom signUp forms
-        if (memberData.type === 'subscribe' && memberData.newsletters) {
-            const allValidNewsletters = await this._newslettersService.browse({limit: 'all'});
-            const allValidNewslettersIds = allValidNewsletters.map(newsletter => newsletter.id);
-            const subscribedNewsletterIds = memberData.newsletters.map(newsletter => newsletter.id);
-            const invalidIds = subscribedNewsletterIds.filter(id => !allValidNewslettersIds.includes(id));
-            if (invalidIds.length > 0) {
-                throw new errors.BadRequestError({message: tpl(messages.invalidNewsletterId, {id: invalidIds})});
+        if (memberData.type === 'subscribe' && memberData.newsletters && memberData.newsletters.length > 0) {
+            const savedNewsletter = await this._newslettersService.browse({filter: `id:'${memberData.newsletters[0].id}'`});
+            if (savedNewsletter.length === 0) {
+                throw new errors.BadRequestError({message: tpl(messages.invalidNewsletterId, {id: memberData.newsletters[0].id})});
             }
-            const activeNewsLetters = memberData.newsletters.filter((memberNewsletter) => {
-                const subscribedNewsletter = allValidNewsletters.find(newsletter => newsletter.id === memberNewsletter.id);
-                return subscribedNewsletter.status === 'active';
-            });
-            if (memberData.newsletters.length > 0 && activeNewsLetters.length === 0){
+            if (savedNewsletter[0].status !== 'active') {
                 memberData.newsletters = null; //switch to default behavior
             }
         }
