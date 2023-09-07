@@ -792,7 +792,7 @@ jobs:
       - name: Invoke build
         uses: aurelien-baudet/workflow-dispatch@v2
         with:
-          token: ${{ secrets.CANARY_DOCKER_BUILD }}
+          token: ${{ secrets.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 }}
           workflow: .github/workflows/deploy.yml
           ref: 'refs/heads/main'
           repo: TryGhost/Ghost-Moya
