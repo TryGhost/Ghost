@@ -288,9 +288,6 @@ module.exports = class MemberRepository {
             if (savedNewsletter.length === 0) {
                 throw new errors.BadRequestError({message: tpl(messages.invalidNewsletterId, {id: memberData.newsletters[0].id})});
             }
-            if (savedNewsletter[0].status !== 'active') {
-                memberData.newsletters = null; //switch to default behavior
-            }
         }
 
         // Subscribe members to default newsletters
