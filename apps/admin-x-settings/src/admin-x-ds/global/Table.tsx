@@ -27,7 +27,7 @@ const Table: React.FC<TableProps> = ({children, borderTop, hint, hintSeparator, 
 
     return (
         <>
-            <div>
+            <div className='w-full overflow-x-scroll'>
                 {pageTitle && <Heading>{pageTitle}</Heading>}
                 <table className={tableClasses}>
                     <tbody>
@@ -40,7 +40,7 @@ const Table: React.FC<TableProps> = ({children, borderTop, hint, hintSeparator, 
                     <div className="flex justify-between">
                         <Hint>{hint}</Hint>
                         {/* // TODO: Finish pagination component */}
-                        {/* <div className={`mt-1 flex items-center gap-2 text-xs text-grey-700`}>Showing 1-5 of 15 
+                        {/* <div className={`mt-1 flex items-center gap-2 text-xs text-grey-700`}>Showing 1-5 of 15
                             <button type='button'><Icon colorClass="text-green" name='chevron-left' size="xs" />
                             </button>
                             <button type="button"><Icon colorClass="text-green" name='chevron-right' size="xs" /></button>
