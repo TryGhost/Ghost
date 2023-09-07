@@ -139,6 +139,8 @@ const EmbedSignupFormModal = NiceModal.create(() => {
     const {localSettings, siteData} = useSettingGroup();
     const [accentColor] = getSettingValues<string>(localSettings, ['accent_color']);
     const [title] = getSettingValues<string>(localSettings, ['title']);
+    const [locale] = getSettingValues<string>(localSettings, ['locale']);
+    const [labs] = getSettingValues<string>(localSettings, ['labs']);
 
     const handleColorToggle = (e:string) => {
         setSelectedColor(e);
@@ -160,6 +162,12 @@ const EmbedSignupFormModal = NiceModal.create(() => {
     const [embedScript, setEmbedScript] = useState<string>('');
     const [isCopied, setIsCopied] = useState(false);
 
+    let i18nEnabled = false;
+
+    if (labs) {
+        i18nEnabled = JSON.parse(labs).i18n;
+    }
+
     useEffect(() => {
         if (!siteData) {
             return;
@@ -175,15 +183,18 @@ const EmbedSignupFormModal = NiceModal.create(() => {
             },
             settings: {
                 accentColor: accentColor || '#d74780',
-                title: title || ''
+                title: title || '',
+                locale: locale || 'en'
             },
             labels: selectedLabels.map(({label}) => ({name: label})),
             backgroundColor: selectedColor || '#08090c',
-            layout: selectedLayout
+            layout: selectedLayout,
+            i18nEnabled
+            
         });
 
         setEmbedScript(code);
-    }, [siteData, accentColor, selectedLabels, config, title, selectedColor, selectedLayout]);
+    }, [siteData, accentColor, selectedLabels, config, title, selectedColor, selectedLayout, locale, i18nEnabled]);
 
     const handleCopyClick = async () => {
         try {
