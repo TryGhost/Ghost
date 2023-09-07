@@ -282,7 +282,7 @@ const createSessionFromMagicLink = async function createSessionFromMagicLink(req
         searchParams.set('success', 'true');
         res.redirect(`${urlUtils.getSubdir()}/?${searchParams.toString()}`);
     } catch (err) {
-        logging.warn(err.message);
+        logging.error(err.message);
 
         // Do a standard 302 redirect to the homepage, with success=false
         searchParams.set('success', false);

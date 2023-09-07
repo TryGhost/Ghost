@@ -1,7 +1,6 @@
 const {parse: parseUrl} = require('url');
 const createCookies = require('cookies');
 const debug = require('@tryghost/debug')('members-ssr');
-const logging = require('@tryghost/logging');
 
 const {
     BadRequestError,
@@ -242,7 +241,6 @@ class MembersSSR {
             return member;
         } catch (err) {
             if (err.errorType === 'BadRequestError') {
-                logging.error(err);
                 return Promise.reject(new BadRequestError({
                     message: err.message
                 }));
