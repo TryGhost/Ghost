@@ -779,8 +779,17 @@ jobs:
       job_required_tests
     ]
     name: Canary
+on:
+  workflow_run:
+    workflows: ["job-required-tests", "job-get-metadata"]
+    types:
+      - completed
+
+jobs:
+  build:
     runs-on: ubuntu-latest
-    if: always() && needs.job_get_metadata.outputs.is_canary_branch == 'true' && needs.job_required_tests.result == 'success' && needs.job_get_metadata.result == 'success'
+    if: ${{ github.event.workflow_run.event == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.workflow == 'job-required-tests' && github.event.workflow_run.workflow == 'job-get-metadata' && github.event.workflow_run.head_branch == 'main' }}
+
     steps:
       - name: Output needs (for debugging)
         run: echo "${{ toJson(needs) }}"
@@ -799,3 +808,4 @@ jobs:
           inputs: ${{ env.CANARY_BUILD_INPUTS }}
           wait-for-completion-timeout: 25m
           wait-for-completion-interval: 30s
+
