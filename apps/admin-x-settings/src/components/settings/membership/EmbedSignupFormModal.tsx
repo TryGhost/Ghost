@@ -3,11 +3,16 @@ import ColorIndicator from '../../../admin-x-ds/global/form/ColorIndicator';
 import Form from '../../../admin-x-ds/global/form/Form';
 import Heading from '../../../admin-x-ds/global/Heading';
 import Modal from '../../../admin-x-ds/global/modal/Modal';
-import MultiSelect from '../../../admin-x-ds/global/form/MultiSelect';
+import MultiSelect, {MultiSelectOption} from '../../../admin-x-ds/global/form/MultiSelect';
 import NiceModal from '@ebay/nice-modal-react';
 import Radio from '../../../admin-x-ds/global/form/Radio';
+import React, {useState} from 'react';
 import TextArea from '../../../admin-x-ds/global/form/TextArea';
 import useRouting from '../../../hooks/useRouting';
+import useSettingGroup from '../../../hooks/useSettingGroup';
+import {Label, useBrowseLabels} from '../../../api/labels';
+import {MultiValue} from 'react-select';
+import {getSettingValues} from '../../../api/settings';
 
 const Preview: React.FC = () => {
     return (
@@ -17,7 +22,28 @@ const Preview: React.FC = () => {
     );
 };
 
-const Sidebar: React.FC = () => {
+type SelectedLabelTypes = {
+    label: string;
+    value: string;
+};
+
+type SidebarProps = {
+    selectedColor?: string;
+    accentColor?: string;
+    handleColorToggle: (e: string) => void;
+    labels?: Label[];
+    handleLabelClick: (selected: MultiValue<MultiSelectOption>) => void;
+    selectedLabels?: SelectedLabelTypes[];
+};
+
+const Sidebar: React.FC<SidebarProps> = ({accentColor, handleColorToggle, selectedColor, labels, selectedLabels, handleLabelClick}) => {
+    // convert label array to options array
+    const labelOptions = labels ? labels.map((l) => {
+        return {
+            label: l?.name,
+            value: l?.name
+        };
+    }).filter(Boolean) : [];
     return (
         <div className='flex h-full flex-col justify-between'>
             <div>
@@ -51,35 +77,27 @@ const Sidebar: React.FC = () => {
                                 title: 'Light'
                             },
                             {
-                                hex: '#ffdd00',
+                                hex: (accentColor || '#d74780'),
                                 title: 'Accent'
                             }
                         ]}
                         swatchSize='lg'
                         title='Background color'
-                        onSwatchChange={() => {}}
+                        value={selectedColor}
+                        onSwatchChange={(e) => {
+                            if (e) {
+                                handleColorToggle(e);
+                            }
+                        }}
                         onTogglePicker={() => {}}
                     />
                     <MultiSelect
                         hint='Will be applied to all members signing up via this form'
-                        options={[
-                            {
-                                label: 'Steph',
-                                value: 'steph'
-                            },
-                            {
-                                label: 'Klay',
-                                value: 'klay'
-                            },
-                            {
-                                label: 'Loons',
-                                value: 'loons'
-                            }
-                        ]}
+                        options={labelOptions}
                         placeholder='Pick one or more labels (optional)'
                         title='Labels at signup'
-                        values={[]}
-                        onChange={() => {}}
+                        values={selectedLabels || []}
+                        onChange={handleLabelClick}
                     />
                     <TextArea
                         className='text-grey-800'
@@ -98,6 +116,29 @@ const Sidebar: React.FC = () => {
 
 const EmbedSignupFormModal = NiceModal.create(() => {
     const {updateRoute} = useRouting();
+    // const {config} = useGlobalData();
+    const {localSettings} = useSettingGroup();
+    const [accentColor] = getSettingValues<string>(localSettings, ['accent_color']);
+
+    const handleColorToggle = (e:string) => {
+        setSelectedColor(e);
+    };
+
+    const [selectedColor, setSelectedColor] = useState<string>('');
+    const [selectedLabels, setSelectedLabels] = useState<SelectedLabelTypes[]>([]);
+    const {data: labels} = useBrowseLabels();
+    // const siteUrl = config.blogUrl;
+    // const scriptUrl = config.signupForm.url.replace('{version}', config.signupForm.version);
+
+    // const [scriptCode, setScriptCode] = useState<string>(`<div style="${escapeHtml(style)}"><script src="${encodeURI(scriptUrl)}"${dataOptionsString} async></script></div>`);
+    const addSelectedLabel = (selected: MultiValue<MultiSelectOption>) => {
+        if (selected?.length) {
+            const chosenLabels = selected?.map(({value}) => ({label: value, value: value}));
+            setSelectedLabels(chosenLabels);
+        } else {
+            setSelectedLabels([]);
+        }
+    };
 
     return (
         <Modal
@@ -113,7 +154,14 @@ const EmbedSignupFormModal = NiceModal.create(() => {
         >
             <div className='grid grid-cols-[5.5fr_2.5fr] gap-6 pb-8'>
                 <Preview />
-                <Sidebar />
+                <Sidebar
+                    accentColor={accentColor}
+                    handleColorToggle={handleColorToggle}
+                    handleLabelClick={addSelectedLabel}
+                    labels={labels?.labels || []}
+                    selectedColor={selectedColor}
+                    selectedLabels={selectedLabels}
+                />
             </div>
         </Modal>
     );

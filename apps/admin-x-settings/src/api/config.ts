@@ -11,6 +11,10 @@ export type Config = {
         url: string
         version: string
     };
+    signupForm: {
+        url: string,
+        version: string
+    }
     labs: Record<string, boolean>;
     stripeDirect: boolean;
     hostSettings?: {
