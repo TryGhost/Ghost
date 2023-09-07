@@ -20,6 +20,7 @@ interface RequestOptions {
     headers?: {
         'Content-Type'?: string;
     };
+    credentials?: 'include' | 'omit' | 'same-origin';
 }
 
 export class ApiError extends Error {

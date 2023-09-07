@@ -57,6 +57,7 @@ const UnsplashModal = () => import('../settings/advanced/integrations/UnsplashMo
 const UserDetailModal = () => import('../settings/general/UserDetailModal');
 const ZapierModal = () => import('../settings/advanced/integrations/ZapierModal');
 const AnnouncementBarModal = () => import('../settings/site/AnnouncementBarModal');
+const EmbedSignupFormModal = () => import('../settings/membership/EmbedSignupFormModal');
 
 const modalPaths: {[key: string]: () => Promise<{default: React.FC<NiceModalHocProps & RoutingModalProps>}>} = {
     'design/edit/themes': ChangeThemeModal,
@@ -81,7 +82,8 @@ const modalPaths: {[key: string]: () => Promise<{default: React.FC<NiceModalHocP
     'integrations/show/:id': CustomIntegrationModal,
     'recommendations/add': AddRecommendationModal,
     'recommendations/:id': EditRecommendationModal,
-    'announcement-bar/edit': AnnouncementBarModal
+    'announcement-bar/edit': AnnouncementBarModal,
+    'embed-signup-form/show': EmbedSignupFormModal
 };
 
 function getHashPath(urlPath: string | undefined) {

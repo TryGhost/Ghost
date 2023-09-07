@@ -25,7 +25,7 @@ export interface ModalProps {
     leftButtonProps?: ButtonProps;
     buttonsDisabled?: boolean;
     footer?: boolean | React.ReactNode;
-    noPadding?: boolean;
+    padding?: boolean;
     onOk?: () => void;
     onCancel?: () => void;
     topRightContent?: 'close' | React.ReactNode;
@@ -49,7 +49,7 @@ const Modal: React.FC<ModalProps> = ({
     footer,
     leftButtonProps,
     buttonsDisabled,
-    noPadding = false,
+    padding = true,
     onOk,
     okColor = 'black',
     onCancel,
@@ -139,61 +139,61 @@ const Modal: React.FC<ModalProps> = ({
         'fixed inset-0 z-40 h-[100vh] w-[100vw]'
     );
 
-    let padding = '';
+    let paddingClasses = '';
 
     switch (size) {
     case 'sm':
         modalClasses += ' max-w-[480px] ';
         backdropClasses += ' p-[8vmin]';
-        padding = 'p-8';
+        paddingClasses = 'p-8';
         break;
 
     case 'md':
         modalClasses += ' max-w-[720px] ';
         backdropClasses += ' p-[8vmin]';
-        padding = 'p-8';
+        paddingClasses = 'p-8';
         break;
 
     case 'lg':
         modalClasses += ' max-w-[1020px] ';
         backdropClasses += ' p-[4vmin]';
-        padding = 'p-8';
+        paddingClasses = 'p-8';
         break;
 
     case 'xl':
         modalClasses += ' max-w-[1240px] ';
         backdropClasses += ' p-[3vmin]';
-        padding = 'p-10';
+        paddingClasses = 'p-10';
         break;
 
     case 'full':
         modalClasses += ' h-full ';
         backdropClasses += ' p-[3vmin]';
-        padding = 'p-10';
+        paddingClasses = 'p-10';
         break;
 
     case 'bleed':
         modalClasses += ' h-full ';
-        padding = 'p-10';
+        paddingClasses = 'p-10';
         break;
 
     default:
         backdropClasses += ' p-[8vmin]';
-        padding = 'p-8';
+        paddingClasses = 'p-8';
         break;
     }
 
-    if (noPadding) {
-        padding = 'p-0';
+    if (!padding) {
+        paddingClasses = 'p-0';
     }
 
     let footerClasses = clsx(
-        `${padding} ${stickyFooter ? 'py-6' : 'pt-0'}`,
+        `${paddingClasses} ${stickyFooter ? 'py-6' : 'pt-0'}`,
         'flex w-full items-center justify-between'
     );
 
     let contentClasses = clsx(
-        padding,
+        paddingClasses,
         ((size === 'full' || size === 'bleed') && 'grow')
     );
 
