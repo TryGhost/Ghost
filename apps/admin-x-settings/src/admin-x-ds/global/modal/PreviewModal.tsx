@@ -14,7 +14,7 @@ import {confirmIfDirty} from '../../../utils/modals';
 
 export interface PreviewModalProps {
     testId?: string;
-    title?: string;
+    title?: React.ReactNode;
     titleHeadingLevel?: HeadingLevel;
     size?: ModalSize;
     sidebar?: boolean | React.ReactNode;

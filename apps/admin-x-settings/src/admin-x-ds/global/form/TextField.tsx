@@ -55,7 +55,7 @@ const TextField: React.FC<TextFieldProps> = ({
     const enabledBorderClasses = border && 'border-grey-500 hover:border-grey-700 focus:border-black';
 
     const textFieldClasses = !unstyled && clsx(
-        'peer order-2 h-10 w-full py-2',
+        'peer order-2 h-8 w-full py-1 md:h-10 md:py-2',
         border && 'border-b',
         !border && '-mb-1.5',
         clearBg ? 'bg-transparent' : 'bg-grey-75 px-[10px]',
@@ -87,7 +87,7 @@ const TextField: React.FC<TextFieldProps> = ({
             'order-3',
             border && 'border-b',
             !border && '-mb-1.5',
-            (typeof (rightPlaceholder) === 'string') ? 'h-10 py-2 text-right text-grey-500' : 'h-10',
+            (typeof (rightPlaceholder) === 'string') ? 'h-8 py-1 text-right text-grey-500 md:h-10 md:py-2' : 'h-8 md:h-10',
             error && border ? `border-red` : `${disabled ? disabledBorderClasses : rightPHEnabledBorderClasses}`
         );
 
@@ -108,7 +108,7 @@ const TextField: React.FC<TextFieldProps> = ({
 
     if (title || hint) {
         return (
-            <div className={`flex flex-col ${containerClassName}`}>
+            <div className={`flex flex-col text-sm md:text-base ${containerClassName}`}>
                 {field}
                 {title && <Heading className={hideTitle ? 'sr-only' : 'order-1 !text-grey-700 peer-focus:!text-black'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
                 {hint && <Hint className={hintClassName} color={error ? 'red' : ''}>{hint}</Hint>}

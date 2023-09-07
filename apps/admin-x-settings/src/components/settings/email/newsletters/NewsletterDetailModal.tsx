@@ -338,8 +338,8 @@ const Sidebar: React.FC<{
                         <Toggle
                             checked={newsletter.show_badge}
                             direction='rtl'
-                            hint='Show you’re a part of the indie publishing movement with a small badge in the footer'
-                            label='Promote independent publishing'
+                            hint={<span className='text-2xs leading-3 md:text-xs md:leading-tight'>Show you’re a part of the indie publishing movement with a small badge in the footer</span>}
+                            label={<span className='text-sm md:text-base'>Promote independent publishing</span>}
                             labelStyle='value'
                             onChange={e => updateNewsletter({show_badge: e.target.checked})}
                         />

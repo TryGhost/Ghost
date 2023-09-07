@@ -18,7 +18,7 @@ export interface ModalProps {
     size?: ModalSize;
 
     testId?: string;
-    title?: string;
+    title?: React.ReactNode;
     okLabel?: string;
     okColor?: ButtonColor;
     cancelLabel?: string;
