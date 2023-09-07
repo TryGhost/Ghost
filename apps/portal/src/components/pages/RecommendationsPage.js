@@ -1,6 +1,7 @@
 import AppContext from '../../AppContext';
 import {useContext, useState, useEffect} from 'react';
 import CloseButton from '../common/CloseButton';
+import {clearURLParams} from '../../utils/notifications';
 
 export const RecommendationsPageStyles = `
     .gh-portal-recommendation-item .gh-portal-list-detail {
@@ -87,6 +88,16 @@ const RecommendationsPage = () => {
     const showAllRecommendations = () => {
         setNumToShow(recommendations.length);
     };
+
+    useEffect(() => {
+        return () => {
+            if (pageData.signup) {
+                const deleteParams = [];
+                deleteParams.push('action', 'success');
+                clearURLParams(deleteParams);
+            }
+        };
+    }, []);
 
     const heading = pageData && pageData.signup ? t('You\'re subscribed!') : t('Recommendations');
     const subheading = t(`Here are a few other sites {{siteTitle}} thinks you may enjoy.`, {siteTitle: title});
