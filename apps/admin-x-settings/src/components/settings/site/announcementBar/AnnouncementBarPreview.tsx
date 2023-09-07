@@ -1,9 +1,9 @@
 import React, {useEffect, useRef} from 'react';
 
-const getPreviewData = (announcementBackgroundColor?:string, announcementContext?: string) => {
+const getPreviewData = (announcementBackgroundColor?: string, announcementContent?: string) => {
     const params = new URLSearchParams();
     params.append('announcement_bg', announcementBackgroundColor || 'accent');
-    params.append('announcement', announcementContext || '');
+    params.append('announcement', announcementContent || '');
     params.append('announcement_vis', 'paid_members');
     return params.toString();
 };
@@ -15,7 +15,20 @@ type AnnouncementBarSettings = {
 };
 
 const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcementBackgroundColor, announcementContent, url}) => {
-    const iframeRef = useRef<HTMLIFrameElement>(null);
+    const visibleIframeRef = useRef<HTMLIFrameElement>(null);
+    const bufferIframeRef = useRef<HTMLIFrameElement>(null);
+
+    const swapIframeContent = () => {
+        if (visibleIframeRef.current && bufferIframeRef.current) {
+            const tmpDoc = visibleIframeRef.current.contentDocument?.documentElement.innerHTML;
+            visibleIframeRef.current.contentDocument?.open();
+            visibleIframeRef.current.contentDocument?.write(bufferIframeRef.current.contentDocument?.documentElement.innerHTML || '');
+            visibleIframeRef.current.contentDocument?.close();
+            bufferIframeRef.current.contentDocument?.open();
+            bufferIframeRef.current.contentDocument?.write(tmpDoc || '');
+            bufferIframeRef.current.contentDocument?.close();
+        }
+    };
 
     useEffect(() => {
         if (!url) {
@@ -38,7 +51,7 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcement
         })
             .then(response => response.text())
             .then((data) => {
-                // inject extra CSS to disable navigation and prevent clicks
+            // inject extra CSS to disable navigation and prevent clicks
                 const injectedCss = `html { pointer-events: none; }`;
 
                 const domParser = new DOMParser();
@@ -52,30 +65,38 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcement
                 const doctype = htmlDoc.doctype ? new XMLSerializer().serializeToString(htmlDoc.doctype) : '';
                 let finalDoc = doctype + htmlDoc.documentElement.outerHTML;
 
-                // Send the data to the iframe's window using postMessage
-                // Inject the received content into the iframe
-                const iframe = iframeRef.current;
-                if (iframe) {
-                    iframe.contentDocument?.open();
-                    iframe.contentDocument?.write(finalDoc);
-                    iframe.contentDocument?.close();
+                // Inject the received content into the buffer iframe
+                const bufferIframe = bufferIframeRef.current;
+                if (bufferIframe) {
+                    bufferIframe.contentDocument?.open();
+                    bufferIframe.contentDocument?.write(finalDoc);
+                    bufferIframe.contentDocument?.close();
+
+                    // Once the buffer iframe loads the content, swap it with the visible iframe
+                    bufferIframe.onload = swapIframeContent;
                 }
             })
             .catch(() => {
-                // handle error in fetching data
+            // handle error in fetching data
             });
     }, [announcementBackgroundColor, announcementContent, url]);
 
     return (
         <>
             <iframe
-                ref={iframeRef}
+                ref={visibleIframeRef}
                 data-testid='announcement-bar-preview'
                 height='100%'
                 title='Announcement Bar Preview'
                 width='100%'
-            >
-            </iframe>
+            ></iframe>
+            <iframe
+                ref={bufferIframeRef}
+                height='100%'
+                style={{display: 'none'}} // hide the buffer iframe
+                title='Buffer Iframe'
+                width='100%'
+            ></iframe>
         </>
     );
 };
