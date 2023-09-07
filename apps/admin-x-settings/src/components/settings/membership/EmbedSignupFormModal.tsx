@@ -6,13 +6,15 @@ import Modal from '../../../admin-x-ds/global/modal/Modal';
 import MultiSelect, {MultiSelectOption} from '../../../admin-x-ds/global/form/MultiSelect';
 import NiceModal from '@ebay/nice-modal-react';
 import Radio from '../../../admin-x-ds/global/form/Radio';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import TextArea from '../../../admin-x-ds/global/form/TextArea';
 import useRouting from '../../../hooks/useRouting';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {Label, useBrowseLabels} from '../../../api/labels';
 import {MultiValue} from 'react-select';
+import {generateCode} from '../../../utils/generateEmbedCode';
 import {getSettingValues} from '../../../api/settings';
+import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const Preview: React.FC = () => {
     return (
@@ -34,10 +36,24 @@ type SidebarProps = {
     labels?: Label[];
     handleLabelClick: (selected: MultiValue<MultiSelectOption>) => void;
     selectedLabels?: SelectedLabelTypes[];
+    embedScript: string;
+    handleLayoutSelect: React.Dispatch<React.SetStateAction<string>>;
+    selectedLayout : string;
+    handleCopyClick: () => void;
+    isCopied: boolean;
 };
 
-const Sidebar: React.FC<SidebarProps> = ({accentColor, handleColorToggle, selectedColor, labels, selectedLabels, handleLabelClick}) => {
-    // convert label array to options array
+const Sidebar: React.FC<SidebarProps> = ({selectedLayout, 
+    accentColor, 
+    handleColorToggle, 
+    selectedColor, 
+    labels, 
+    selectedLabels, 
+    handleLabelClick, 
+    embedScript, 
+    handleLayoutSelect,
+    handleCopyClick,
+    isCopied}) => {
     const labelOptions = labels ? labels.map((l) => {
         return {
             label: l?.name,
@@ -54,16 +70,18 @@ const Sidebar: React.FC<SidebarProps> = ({accentColor, handleColorToggle, select
                         options={[
                             {
                                 label: 'Branded',
-                                value: 'branded'
+                                value: 'all-in-one'
                             },
                             {
                                 label: 'Minimal',
                                 value: 'minimal'
                             }
                         ]}
-                        selectedOption='branded'
+                        selectedOption={selectedLayout}
                         title='Layout'
-                        onSelect={() => {}}
+                        onSelect={(value) => {
+                            handleLayoutSelect(value);
+                        }}
                     />
                     <ColorIndicator
                         isExpanded={false}
@@ -105,38 +123,76 @@ const Sidebar: React.FC<SidebarProps> = ({accentColor, handleColorToggle, select
                         fontStyle='mono'
                         hint={`Paste this code onto any website where you'd like your signup to appear.`}
                         title='Embed code'
-                        value={`<div style="height: 40vmin;min-height: 360px"><script src="https://cdn.jsdelivr.net/ghost/signup-form@~0.1/umd/signup-form.min.js" data-background-color="#F1F3F4" data-text-color="#000000" data-button-color="#d74780" data-button-text-color="#FFFFFF" data-title="Zimo&#039;s Secret Volcano Lair" data-description="You Know, I Have One Simple Request, And That Is To Have Sharks With Frickin&#039; Laser Beams Attached To Their Heads!" data-site="http://localhost:2368" async></script></div>`}
+                        value={`${embedScript}`}
+                        onChange={() => {}}
                     />
                 </Form>
             </div>
-            <Button className='self-end' color='black' label='Copy code' />
+            <Button className='self-end' color={isCopied ? 'green' : 'black'} label={isCopied ? 'Copied!' : 'Copy code'} onClick={handleCopyClick} />
         </div>
     );
 };
 
 const EmbedSignupFormModal = NiceModal.create(() => {
     const {updateRoute} = useRouting();
-    // const {config} = useGlobalData();
-    const {localSettings} = useSettingGroup();
+    const {config} = useGlobalData();
+    const {localSettings, siteData} = useSettingGroup();
     const [accentColor] = getSettingValues<string>(localSettings, ['accent_color']);
+    const [title] = getSettingValues<string>(localSettings, ['title']);
 
     const handleColorToggle = (e:string) => {
         setSelectedColor(e);
     };
 
-    const [selectedColor, setSelectedColor] = useState<string>('');
+    const [selectedColor, setSelectedColor] = useState<string>('#08090c');
     const [selectedLabels, setSelectedLabels] = useState<SelectedLabelTypes[]>([]);
+    const [selectedLayout, setSelectedLayout] = useState<string>('all-in-one');
     const {data: labels} = useBrowseLabels();
-    // const siteUrl = config.blogUrl;
-    // const scriptUrl = config.signupForm.url.replace('{version}', config.signupForm.version);
-
-    // const [scriptCode, setScriptCode] = useState<string>(`<div style="${escapeHtml(style)}"><script src="${encodeURI(scriptUrl)}"${dataOptionsString} async></script></div>`);
     const addSelectedLabel = (selected: MultiValue<MultiSelectOption>) => {
         if (selected?.length) {
             const chosenLabels = selected?.map(({value}) => ({label: value, value: value}));
             setSelectedLabels(chosenLabels);
         } else {
             setSelectedLabels([]);
+        }
+    };
+
+    const [embedScript, setEmbedScript] = useState<string>('');
+    const [isCopied, setIsCopied] = useState(false);
+
+    useEffect(() => {
+        if (!siteData) {
+            return;
+        }
+        const code = generateCode({
+            preview: true,
+            config: {
+                blogUrl: siteData.url,
+                signupForm: {
+                    url: config?.signupForm?.url,
+                    version: config?.signupForm?.version
+                }
+            },
+            settings: {
+                accentColor: accentColor || '#d74780',
+                title: title || ''
+            },
+            labels: selectedLabels.map(({label}) => ({name: label})),
+            backgroundColor: selectedColor || '#08090c',
+            layout: selectedLayout
+        });
+
+        setEmbedScript(code);
+    }, [siteData, accentColor, selectedLabels, config, title, selectedColor, selectedLayout]);
+
+    const handleCopyClick = async () => {
+        try {
+            await navigator.clipboard.writeText(embedScript);
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 2000); // reset after 2 seconds
+        } catch (err) {
+            // eslint-disable-next-line no-console
+            console.error('Failed to copy text: ', err);
         }
     };
 
@@ -153,14 +209,19 @@ const EmbedSignupFormModal = NiceModal.create(() => {
             topRightContent='close'
         >
             <div className='grid grid-cols-[5.5fr_2.5fr] gap-6 pb-8'>
-                <Preview />
+                <Preview/>
                 <Sidebar
                     accentColor={accentColor}
+                    embedScript={embedScript}
                     handleColorToggle={handleColorToggle}
+                    handleCopyClick={handleCopyClick}
                     handleLabelClick={addSelectedLabel}
+                    handleLayoutSelect={setSelectedLayout}
+                    isCopied={isCopied}
                     labels={labels?.labels || []}
                     selectedColor={selectedColor}
                     selectedLabels={selectedLabels}
+                    selectedLayout={selectedLayout}
                 />
             </div>
         </Modal>

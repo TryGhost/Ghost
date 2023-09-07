@@ -15,6 +15,7 @@ export type Config = {
         url: string,
         version: string
     }
+    blogUrl: string;
     labs: Record<string, boolean>;
     stripeDirect: boolean;
     hostSettings?: {
