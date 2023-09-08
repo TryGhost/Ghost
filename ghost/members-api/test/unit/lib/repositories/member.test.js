@@ -337,17 +337,27 @@ describe('MemberRepository', function () {
             };
         });
 
-        it('subscribes a member to a specified newsletter', async function () {
-            const newsletter = {
+        it('subscribes a member to the specified newsletters', async function () {
+            const newsletters = [{
                 id: 'abc123',
                 status: 'active'
-            };
+            },
+            {
+                id: 'def456',
+                status: 'active'
+            },
+            {
+                id: 'ghi789',
+                status: 'active'
+            }];
 
+            const newsletterIds = newsletters.map(newsletter => newsletter.id);
             newslettersServiceStub.browse
                 .withArgs({
-                    filter: `id:'${newsletter.id}'`
+                    filter: `id:[${newsletterIds}]`,
+                    columns: ['id', 'status']
                 })
-                .resolves([newsletter]);
+                .resolves(newsletters);
 
             const repo = new MemberRepository({
                 Member: memberModelStub,
@@ -364,14 +374,18 @@ describe('MemberRepository', function () {
                 email: 'jamie@example.com',
                 email_disabled: false,
                 newsletters: [
-                    {id: newsletter.id}
+                    {id: newsletters[0].id},
+                    {id: newsletters[1].id},
+                    {id: newsletters[2].id}
                 ]
             });
 
             newslettersServiceStub.browse.calledOnce.should.be.true();
             memberModelStub.add.calledOnce.should.be.true();
             memberModelStub.add.args[0][0].newsletters.should.eql([
-                {id: newsletter.id}
+                {id: newsletters[0].id},
+                {id: newsletters[1].id},
+                {id: newsletters[2].id}
             ]);
         });
 
@@ -380,7 +394,8 @@ describe('MemberRepository', function () {
 
             newslettersServiceStub.browse
                 .withArgs({
-                    filter: `id:'${INVALID_NEWSLETTER_ID}'`
+                    filter: `id:[${INVALID_NEWSLETTER_ID}]`,
+                    columns: ['id', 'status']
                 })
                 .resolves([]);
 
@@ -412,7 +427,8 @@ describe('MemberRepository', function () {
 
             newslettersServiceStub.browse
                 .withArgs({
-                    filter: `id:'${newsletter.id}'`
+                    filter: `id:[${newsletter.id}]`,
+                    columns: ['id', 'status']
                 })
                 .resolves([newsletter]);
 
