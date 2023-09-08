@@ -244,7 +244,8 @@ describe('Member Data attributes:', () => {
         test('includes specified newsletters in request', () => {
             const {event, form, errorEl, siteUrl, submitHandler} = getMockData({
                 newsletterQuerySelectorResult: [{
-                    value: 'some_newsletter'
+                    value: 'some_newsletter',
+                    checked: true
                 }]
             });
 

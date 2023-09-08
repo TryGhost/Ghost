@@ -25,7 +25,9 @@ export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}
 
     let newsletterInputs = event.target.querySelectorAll('input[data-members-newsletter]') || [];
     for (let i = 0; i < newsletterInputs.length; ++i) {
-        newsletters.push({id: newsletterInputs[i].value});
+        if (newsletterInputs[i].checked || newsletterInputs[i].selected) {
+            newsletters.push({id: newsletterInputs[i].value});
+        }
     }
 
     if (form.dataset.membersForm) {
