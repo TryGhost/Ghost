@@ -23,7 +23,7 @@ export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}
         labels.push(labelInputs[i].value);
     }
 
-    let newsletterInputs = event.target.querySelectorAll('input[data-members-newsletter]') || [];
+    let newsletterInputs = event.target.querySelectorAll('input[type=hidden][data-members-newsletter], input[type=checkbox][data-members-newsletter]:checked, input[type=radio][data-members-newsletter]:selected') || [];
     for (let i = 0; i < newsletterInputs.length; ++i) {
         newsletters.push({id: newsletterInputs[i].value});
     }
