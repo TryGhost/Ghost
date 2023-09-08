@@ -114,8 +114,9 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        recommendations() {
-            const url = contentEndpointFor({resource: 'recommendations'});
+        recommendations({limit}) {
+            let url = contentEndpointFor({resource: 'recommendations'});
+            url = url.replace('limit=all', `limit=${limit}`);
             return makeRequest({
                 url,
                 method: 'GET',
@@ -537,20 +538,17 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         let newsletters = [];
         let tiers = [];
         let settings = {};
-        let recommendations = [];
 
         try {
-            [{settings}, {tiers}, {newsletters}, {recommendations}] = await Promise.all([
+            [{settings}, {tiers}, {newsletters}] = await Promise.all([
                 api.site.settings(),
                 api.site.tiers(),
-                api.site.newsletters(),
-                api.site.recommendations()
+                api.site.newsletters()
             ]);
             site = {
                 ...settings,
                 newsletters,
-                tiers: transformApiTiersData({tiers}),
-                recommendations
+                tiers: transformApiTiersData({tiers})
             };
         } catch (e) {
             // Ignore

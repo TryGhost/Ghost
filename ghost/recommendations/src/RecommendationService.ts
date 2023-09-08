@@ -1,3 +1,4 @@
+import {OrderOption} from "@tryghost/bookshelf-repository";
 import {AddRecommendation, Recommendation} from "./Recommendation";
 import {RecommendationRepository} from "./RecommendationRepository";
 import {WellknownService} from "./WellknownService";
@@ -115,7 +116,14 @@ export class RecommendationService {
         this.sendMentionToRecommendation(existing);
     }
 
-    async listRecommendations() {
-        return await this.repository.getAll()
+    async listRecommendations({page, limit, filter, order}: { page: number; limit: number | 'all', filter?: string, order?: OrderOption<Recommendation> } = {page: 1, limit: 'all'}) {
+        if (limit === 'all') {
+            return await this.repository.getAll({filter, order})
+        }
+        return await this.repository.getPage({page, limit, filter, order})
+    }
+
+    async countRecommendations({filter}: { filter?: string }) {
+        return await this.repository.getCount({filter})
     }
 }

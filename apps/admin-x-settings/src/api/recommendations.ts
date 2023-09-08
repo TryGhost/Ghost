@@ -1,4 +1,4 @@
-import {Meta, createMutation, createQuery} from '../utils/apiRequests';
+import {Meta, createMutation, createPaginatedQuery} from '../utils/apiRequests';
 
 export type Recommendation = {
     id: string
@@ -27,7 +27,7 @@ export interface RecommendationDeleteResponseType {}
 
 const dataType = 'RecommendationResponseType';
 
-export const useBrowseRecommendations = createQuery<RecommendationResponseType>({
+export const useBrowseRecommendations = createPaginatedQuery<RecommendationResponseType>({
     dataType,
     path: '/recommendations/',
     defaultSearchParams: {}
@@ -36,14 +36,9 @@ export const useBrowseRecommendations = createQuery<RecommendationResponseType>(
 export const useDeleteRecommendation = createMutation<RecommendationDeleteResponseType, Recommendation>({
     method: 'DELETE',
     path: recommendation => `/recommendations/${recommendation.id}/`,
-    updateQueries: {
-        dataType,
-        update: (_: RecommendationDeleteResponseType, currentData, payload) => (currentData && {
-            ...(currentData as RecommendationResponseType),
-            recommendations: (currentData as RecommendationResponseType).recommendations.filter((r) => {
-                return r.id !== payload.id;
-            })
-        })
+    // Clear all queries because pagination needs to be re-checked
+    invalidateQueries: {
+        dataType
     }
 });
 
@@ -67,11 +62,9 @@ export const useAddRecommendation = createMutation<RecommendationResponseType, P
     method: 'POST',
     path: () => '/recommendations/',
     body: ({...recommendation}) => ({recommendations: [recommendation]}),
-    updateQueries: {
-        dataType,
-        update: (newData, currentData) => (currentData && {
-            ...(currentData as RecommendationResponseType),
-            recommendations: (currentData as RecommendationResponseType).recommendations.concat(newData.recommendations)
-        })
+
+    // Clear all queries because pagination needs to be re-checked
+    invalidateQueries: {
+        dataType
     }
 });

@@ -1,4 +1,4 @@
-import {Meta, createQuery} from '../utils/apiRequests';
+import {Meta, createPaginatedQuery} from '../utils/apiRequests';
 
 export type Mention = {
     id: string;
@@ -21,7 +21,7 @@ export interface MentionsResponseType {
 
 const dataType = 'MentionsResponseType';
 
-export const useBrowseMentions = createQuery<MentionsResponseType>({
+export const useBrowseMentions = createPaginatedQuery<MentionsResponseType>({
     dataType,
     path: '/mentions/'
 });

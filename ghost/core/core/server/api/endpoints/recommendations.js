@@ -7,11 +7,14 @@ module.exports = {
         headers: {
             cacheInvalidate: false
         },
-        options: [],
+        options: [
+            'limit',
+            'page'
+        ],
         permissions: true,
         validation: {},
-        async query() {
-            return await recommendations.controller.listRecommendations();
+        async query(frame) {
+            return await recommendations.controller.listRecommendations(frame);
         }
     },
 

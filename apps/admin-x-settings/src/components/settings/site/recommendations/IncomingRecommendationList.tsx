@@ -5,9 +5,12 @@ import Table from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
 import {Mention} from '../../../../api/mentions';
+import {PaginationData} from '../../../../hooks/usePagination';
 
 interface IncomingRecommendationListProps {
-    mentions: Mention[]
+    mentions: Mention[],
+    pagination: PaginationData,
+    isLoading: boolean
 }
 
 const IncomingRecommendationItem: React.FC<{mention: Mention}> = ({mention}) => {
@@ -35,9 +38,9 @@ const IncomingRecommendationItem: React.FC<{mention: Mention}> = ({mention}) => 
     );
 };
 
-const IncomingRecommendationList: React.FC<IncomingRecommendationListProps> = ({mentions}) => {
-    if (mentions.length) {
-        return <Table>
+const IncomingRecommendationList: React.FC<IncomingRecommendationListProps> = ({mentions, pagination, isLoading}) => {
+    if (isLoading || mentions.length) {
+        return <Table isLoading={isLoading} pagination={pagination}>
             {mentions.map(mention => <IncomingRecommendationItem key={mention.id} mention={mention} />)}
         </Table>;
     } else {
