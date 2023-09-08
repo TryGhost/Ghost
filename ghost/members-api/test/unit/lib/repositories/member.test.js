@@ -337,7 +337,7 @@ describe('MemberRepository', function () {
             };
         });
 
-        it('subscribes a member to a specified newsletter', async function () {
+        it('subscribes a member to the specified newsletters', async function () {
             const newsletters = [{
                 id: 'abc123',
                 status: 'active'
