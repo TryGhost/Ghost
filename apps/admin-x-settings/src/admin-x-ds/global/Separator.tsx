@@ -4,7 +4,7 @@ interface SeparatorProps {
     className?: string;
 }
 
-const Separator: React.FC<SeparatorProps> = ({className = 'border-grey-200'}) => {
+const Separator: React.FC<SeparatorProps> = ({className = 'border-grey-200 dark:border-grey-800'}) => {
     return <hr className={className} />;
 };
 

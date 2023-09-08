@@ -63,8 +63,8 @@ const Select: React.FC<SelectProps> = ({
     let containerClasses = '';
     if (!unstyled) {
         containerClasses = clsx(
-            'relative w-full after:pointer-events-none',
-            `after:absolute after:block after:h-2 after:w-2 after:rotate-45 after:border-[1px] after:border-l-0 after:border-t-0 after:border-grey-900 after:content-['']`,
+            'relative w-full after:pointer-events-none dark:text-white',
+            `after:absolute after:block after:h-2 after:w-2 after:rotate-45 after:border-[1px] after:border-l-0 after:border-t-0 after:border-grey-900 after:content-[''] dark:after:border-grey-500`,
             size === 'xs' ? 'after:top-[6px]' : 'after:top-[14px]',
             clearBg ? 'after:right-0' : 'after:right-4',
             disabled && 'opacity-40'
@@ -82,7 +82,7 @@ const Select: React.FC<SelectProps> = ({
             'w-full appearance-none outline-none',
             border && 'border-b',
             !clearBg && 'bg-grey-75 px-[10px]',
-            error ? 'border-red' : 'border-grey-500 focus:border-black',
+            error ? '!border-red' : 'border-grey-500 focus:border-black dark:border-grey-800 dark:focus:border-grey-500',
             disabled ? 'cursor-auto' : 'cursor-pointer hover:border-grey-700',
             (title && !clearBg) && 'mt-2'
         );

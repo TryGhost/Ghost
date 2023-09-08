@@ -64,7 +64,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         );
 
         fileUploadClassName = clsx(
-            'flex cursor-pointer items-center justify-center rounded border border-grey-100 bg-grey-75 p-3 text-sm font-semibold text-grey-800 hover:text-black',
+            'flex cursor-pointer items-center justify-center rounded border border-grey-100 bg-grey-75 p-3 text-sm font-semibold text-grey-800 hover:text-black dark:border-grey-900 dark:bg-grey-900 dark:text-grey-400',
             fileUploadClassName
 
         );

@@ -59,7 +59,7 @@ const Labs: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <TabView<'labs-migration-options' | 'labs-alpha-features' | 'labs-beta-features'> selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
                 :
                 <div className='absolute inset-0 z-0 overflow-hidden opacity-70'>
-                    <img className='absolute -right-6 -top-6' src={LabsBubbles} />
+                    <img className='absolute -right-6 -top-6 dark:opacity-10' src={LabsBubbles} />
                 </div>
             }
         </SettingGroup>

@@ -62,3 +62,7 @@ html, body, #root {
     height: 100%;
     letter-spacing: unset;
 }
+
+.dark {
+    color: #FAFAFB;
+}

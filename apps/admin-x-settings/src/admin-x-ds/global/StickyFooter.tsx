@@ -11,8 +11,8 @@ interface StickyFooterProps {
 
 const StickyFooter: React.FC<StickyFooterProps> = ({
     shiftY,
-    footerBgColorClass = 'bg-white',
-    contentBgColorClass = 'bg-white',
+    footerBgColorClass = 'bg-white dark:bg-black',
+    contentBgColorClass = 'bg-white dark:bg-black',
     height = 96,
     children
 }) => {

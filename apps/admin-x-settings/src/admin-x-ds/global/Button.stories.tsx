@@ -37,6 +37,13 @@ export const Black: Story = {
     }
 };
 
+export const Grey: Story = {
+    args: {
+        label: 'Button',
+        color: 'grey'
+    }
+};
+
 export const Green: Story = {
     args: {
         label: 'Button',

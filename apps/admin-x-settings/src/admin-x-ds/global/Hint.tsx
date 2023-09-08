@@ -1,8 +1,9 @@
 import React from 'react';
+import clsx from 'clsx';
 
 interface HintProps {
     children?: React.ReactNode;
-    color?: string;
+    color?: 'red' | 'green' | 'default' | '';
     className?: string;
 }
 
@@ -11,8 +12,24 @@ const Hint: React.FC<HintProps> = ({children, color, className, ...props}) => {
         return null;
     }
 
+    let colorClassName = 'text-grey-700 dark:text-grey-600';
+    switch (color) {
+    case 'red':
+        colorClassName = 'text-red dark:text-red-500';
+        break;
+    case 'green':
+        colorClassName = 'text-green dark:text-green-500';
+        break;
+    }
+
+    className = clsx(
+        'mt-1 inline-block text-xs',
+        colorClassName,
+        className
+    );
+
     return (
-        <span className={`mt-1 inline-block text-xs ${color ? `text-${color}` : `text-grey-700`} ${className}`} {...props}>{children}</span>
+        <span className={className} {...props}>{children}</span>
     );
 };
 

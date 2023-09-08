@@ -78,9 +78,9 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     if (saveState === 'unsaved') {
         styles += ' border-green';
     } else if (isEditing){
-        styles += ' border-grey-300';
+        styles += ' border-grey-300 dark:border-grey-800';
     } else {
-        styles += ' border-grey-200';
+        styles += ' border-grey-200 dark:border-grey-900';
     }
 
     let viewButtons: ButtonProps[] = [];
@@ -167,7 +167,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
         border && 'border p-5 md:p-7',
         !checkVisible(keywords) ? 'hidden' : 'flex',
         highlight && 'before:pointer-events-none before:absolute before:inset-[1px] before:animate-setting-highlight-fade-out before:rounded before:shadow-[0_0_0_3px_rgba(48,207,67,0.45)]',
-        !isEditing && 'is-not-editing group',
+        !isEditing && 'is-not-editing group/setting-group',
         styles
     );
 

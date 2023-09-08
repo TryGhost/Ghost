@@ -297,6 +297,7 @@ export default class AdminXSettings extends Component {
                             officialThemes={officialThemes}
                             zapierTemplates={zapierTemplates}
                             externalNavigate={this.externalNavigate}
+                            darkMode={this.feature.nightShift}
                         />
                     </Suspense>
                 </ErrorHandler>

@@ -16,7 +16,7 @@ const SettingNavItem: React.FC<Props> = ({
     const {scrolledRoute} = useRouting();
 
     const classNames = clsx(
-        'block px-0 py-1 text-sm',
+        'block px-0 py-1 text-sm dark:text-white',
         (scrolledRoute === navid) && 'font-bold'
     );
 

@@ -51,17 +51,17 @@ const TextField: React.FC<TextFieldProps> = ({
 }) => {
     const id = useId();
 
-    const disabledBorderClasses = border && 'border-grey-300';
-    const enabledBorderClasses = border && 'border-grey-500 hover:border-grey-700 focus:border-black';
+    const disabledBorderClasses = border && 'border-grey-300 dark:border-grey-900';
+    const enabledBorderClasses = border && 'border-grey-500 hover:border-grey-700 focus:border-black dark:border-grey-800 dark:hover:border-grey-700 dark:focus:border-grey-500';
 
     const textFieldClasses = !unstyled && clsx(
-        'peer order-2 h-8 w-full py-1 text-sm md:h-10 md:py-2 md:text-base',
+        'peer order-2 h-8 w-full py-1 text-sm placeholder:text-grey-500 dark:text-white dark:placeholder:text-grey-800 md:h-10 md:py-2 md:text-base',
         border && 'border-b',
         !border && '-mb-1.5',
         clearBg ? 'bg-transparent' : 'bg-grey-75 px-[10px]',
         error && border ? `border-red` : `${disabled ? disabledBorderClasses : enabledBorderClasses}`,
         (title && !hideTitle && !clearBg) && `mt-2`,
-        (disabled ? 'cursor-not-allowed text-grey-700' : ''),
+        (disabled ? 'cursor-not-allowed text-grey-700 opacity-60 dark:text-grey-800' : ''),
         rightPlaceholder && 'w-0 grow',
         className
     );
@@ -82,7 +82,7 @@ const TextField: React.FC<TextFieldProps> = ({
         {...props} />;
 
     if (rightPlaceholder) {
-        const rightPHEnabledBorderClasses = 'border-grey-500 peer-hover:border-grey-700 peer-focus:border-black';
+        const rightPHEnabledBorderClasses = 'border-grey-500 dark:border-grey-800 peer-hover:border-grey-700 peer-focus:border-black dark:peer-focus:border-grey-500';
         const rightPHClasses = !unstyled && clsx(
             'order-3',
             border && 'border-b',
@@ -115,8 +115,8 @@ const TextField: React.FC<TextFieldProps> = ({
         return (
             <div className={containerClassName}>
                 {field}
-                {title && <Heading className={hideTitle ? 'sr-only' : 'order-1 !text-grey-700 peer-focus:!text-black'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
-                {hint && <Hint className={hintClassName} color={error ? 'red' : ''}>{hint}</Hint>}
+                {title && <Heading className={hideTitle ? 'sr-only' : 'order-1 !text-grey-700 peer-focus:!text-black dark:!text-grey-300 dark:peer-focus:!text-white'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
+                {hint && <Hint className={hintClassName} color={error ? 'red' : 'default'}>{hint}</Hint>}
             </div>
         );
     } else {
