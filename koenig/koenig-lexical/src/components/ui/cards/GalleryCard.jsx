@@ -15,7 +15,7 @@ function GalleryRow({index, images, deleteImage, isDragging}) {
                     idx === images.length - 1 ? 'last' :
                         'middle';
 
-        return <GalleryImage key={image.fileName} deleteImage={deleteImage} image={image} isDragging={isDragging} position={position} />;
+        return <GalleryImage key={image.src} deleteImage={deleteImage} image={image} isDragging={isDragging} position={position} />;
     });
 
     return (

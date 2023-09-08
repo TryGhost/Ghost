@@ -343,16 +343,16 @@ export function ctrlOrCmd() {
 }
 
 // note: we always use lowercase for the cardName but we use start case for the menu item attribute
-export async function insertCard(page, {cardName}) {
+export async function insertCard(page, {cardName, nth = 0}) {
     let card = startCase(cardName);
     await page.keyboard.type(`/${cardName}`);
     await expect(page.locator(`[data-kg-card-menu-item="${card}" i][data-kg-cardmenu-selected="true"]`)).toBeVisible();
     await page.keyboard.press('Enter');
     // hr is the one case we don't match the card name to the data attribute
     if (card === 'Divider') {
-        await expect(page.locator(`[data-kg-card="horizontalrule"]`)).toBeVisible();
+        await expect(page.locator(`[data-kg-card="horizontalrule"]`).nth(nth)).toBeVisible();
     } else {
-        await expect(page.locator(`[data-kg-card="${cardName}" i]`)).toBeVisible();
+        await expect(page.locator(`[data-kg-card="${cardName}" i]`).nth(nth)).toBeVisible();
     }
 }
 

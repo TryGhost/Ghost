@@ -397,4 +397,31 @@ test.describe('Gallery card', async () => {
             <p><br /></p>
         `, {ignoreCardToolbarContents: true, ignoreInnerSVG: true});
     });
+
+    // Skipped test because I couldn't get the drag to initiate with the image
+    // rather than the whole gallery.
+    //
+    // test('can drag image card out of gallery card', async function () {
+    //     await test.step('insert and upload images to gallery card', async () => {
+    //         const filePaths = Array.from(Array(2).keys()).map(n => path.relative(process.cwd(), __dirname + `/../fixtures/large-image-${n}.png`));
+    //         const fileChooserPromise = page.waitForEvent('filechooser');
+
+    //         await focusEditor(page);
+    //         await insertCard(page, {cardName: 'gallery'});
+    //         await page.click('[name="placeholder-button"]');
+
+    //         const fileChooser = await fileChooserPromise;
+    //         await fileChooser.setFiles(filePaths);
+
+    //         await expect(page.locator('[data-testid="gallery-image"]')).toHaveCount(2);
+    //     });
+
+    //     const firstImageBBox = await page.locator('[data-testid="gallery-image"]').nth(0).boundingBox();
+    //     const paragraphBBox = await page.locator('p:not(figure p)').boundingBox();
+
+    //     await dragMouse(page, firstImageBBox, paragraphBBox, 'middle', 'start', true, 100, 100);
+
+    //     await assertHTML(page, `
+    //     `, {ignoreCardContents: true});
+    // });
 });

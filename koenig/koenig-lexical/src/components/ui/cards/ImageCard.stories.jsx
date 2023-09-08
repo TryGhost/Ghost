@@ -65,7 +65,7 @@ Empty.args = {
         isLoading: false,
         progress: 100
     },
-    imageDragHandler: {
+    imageFileDragHandler: {
         isDraggedOver: false
     }
 };
@@ -83,7 +83,7 @@ Uploading.args = {
         progress: 50,
         isLoading: true
     },
-    imageDragHandler: {
+    imageFileDragHandler: {
         isDraggedOver: false
     }
 };
@@ -100,7 +100,7 @@ Populated.args = {
         isLoading: false,
         progress: 100
     },
-    imageDragHandler: {
+    imageFileDragHandler: {
         isDraggedOver: false
     }
 };
@@ -115,7 +115,7 @@ Errors.args = {
     imageUploader: {
         errors: [{message: 'The file type you uploaded is not supported. Please use .GIF, .JPG, .JPEG, .PNG, .SVG, .SVGZ, .WEBP'}]
     },
-    imageDragHandler: {
+    imageFileDragHandler: {
         isDraggedOver: false
     }
 };
@@ -130,7 +130,7 @@ DraggedOver.args = {
     imageUploader: {
         errors: [{message: 'The file type you uploaded is not supported. Please use .GIF, .JPG, .JPEG, .PNG, .SVG, .SVGZ, .WEBP'}]
     },
-    imageDragHandler: {
+    imageFileDragHandler: {
         isDraggedOver: true
     }
 };

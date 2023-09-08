@@ -1,8 +1,10 @@
 import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
+import useCardDragAndDrop from '../hooks/useCardDragAndDrop';
 import useFileDragAndDrop from '../hooks/useFileDragAndDrop';
 import usePinturaEditor from '../hooks/usePinturaEditor';
+import {$createGalleryNode} from './GalleryNode';
 import {$createNodeSelection, $getNodeByKey, $setSelection} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar';
 import {ImageCard} from '../components/ui/cards/ImageCard';
@@ -26,8 +28,38 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
     const imageUploader = fileUploader.useFileUpload('image');
-    const imageDragHandler = useFileDragAndDrop({handleDrop: handleImageDrop});
-    const {isEnabled: isPinturaEnabled, openEditor: openImageEditor} = usePinturaEditor({config: cardConfig.pinturaConfig});
+    const imageFileDragHandler = useFileDragAndDrop({handleDrop: handleImageDrop});
+
+    // stable fn refs to avoid excessive re-inits of the drag/drop handler effects
+    // which can cause unexpected side-effects with event handling
+    const canDropImageCard = React.useCallback((draggable) => {
+        return draggable.type === 'card'
+            && draggable.cardName === 'image'
+            && draggable.nodeKey !== nodeKey;
+    }, [nodeKey]);
+    const onDropImageCard = React.useCallback((draggable) => {
+        const {type, cardName, nodeKey: draggedNodeKey, dataset} = draggable;
+
+        if (type === 'card' && cardName === 'image' && draggedNodeKey && dataset) {
+            editor.update(() => {
+                const targetImageNode = $getNodeByKey(nodeKey);
+                const droppedImageNode = $getNodeByKey(draggedNodeKey);
+                const galleryNode = $createGalleryNode();
+
+                galleryNode.addImages([targetImageNode.getDataset(), dataset]);
+
+                targetImageNode.replace(galleryNode);
+                droppedImageNode.remove();
+            });
+        }
+    }, [editor, nodeKey]);
+    const imageCardDragHandler = useCardDragAndDrop({
+        canDrop: canDropImageCard,
+        onDrop: onDropImageCard
+    });
+
+    const {isEnabled: isPinturaEnabled, openEditor: openImageEditor}
+        = usePinturaEditor({config: cardConfig.pinturaConfig});
 
     React.useEffect(() => {
         if (!src?.startsWith('data:') || imageUploader.isLoading) {
@@ -145,7 +177,8 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
                 captionEditorInitialState={captionEditorInitialState}
                 cardWidth={cardWidth}
                 fileInputRef={fileInputRef}
-                imageDragHandler={imageDragHandler}
+                imageCardDragHandler={imageCardDragHandler}
+                imageFileDragHandler={imageFileDragHandler}
                 imageUploader={imageUploader}
                 isSelected={isSelected}
                 previewSrc={previewSrc}

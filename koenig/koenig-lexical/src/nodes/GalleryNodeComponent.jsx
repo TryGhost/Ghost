@@ -5,24 +5,12 @@ import useGalleryReorder from '../hooks/useGalleryReorder';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar';
 import {GalleryCard} from '../components/ui/cards/GalleryCard';
+import {MAX_IMAGES, recalculateImageRows} from './GalleryNode';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
 import {getImageDimensions} from '../utils/getImageDimensions';
-import {pick} from 'lodash-es';
 import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-
-const MAX_IMAGES = 9;
-const MAX_PER_ROW = 3;
-
-// ensure we don't save client-side only properties such as preview blob urls to the server
-const ALLOWED_IMAGE_PROPS = ['row', 'src', 'width', 'height', 'alt', 'caption', 'fileName'];
-
-function recalculateImageRows(images) {
-    images.forEach((image, idx) => {
-        image.row = Math.ceil((idx + 1) / MAX_PER_ROW) - 1;
-    });
-}
 
 export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorInitialState}) {
     const [editor] = useLexicalComposerContext();
@@ -55,9 +43,7 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
     function setNodeImages(newImages) {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            const datasetImages = newImages.map(image => pick(image, ALLOWED_IMAGE_PROPS));
-            recalculateImageRows(datasetImages);
-            node.images = datasetImages;
+            node.setImages(newImages);
         });
     }
 

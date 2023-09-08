@@ -4,11 +4,13 @@ import {
     createDataTransfer,
     createSnippet,
     ctrlOrCmd,
+    dragMouse,
     enterUntilScrolled,
     expectUnchangedScrollPosition,
     focusEditor,
     html,
     initialize,
+    insertCard,
     isMac,
     pasteHtml,
     pasteText
@@ -1056,6 +1058,47 @@ test.describe('Image card', async () => {
             await page.click('[data-testid="alt-toggle-button"]');
             await expect(page.getByTestId('image-caption-editor')).toHaveText('This is a caption');
         });
+    });
+
+    test('can drag image card onto image card to create gallery', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
+        await focusEditor(page);
+
+        const [fileChooser1] = await Promise.all([
+            page.waitForEvent('filechooser'),
+            await insertCard(page, {cardName: 'image', nth: 0})
+        ]);
+        await fileChooser1.setFiles([filePath]);
+
+        await page.keyboard.press('Enter');
+
+        const [fileChooser2] = await Promise.all([
+            page.waitForEvent('filechooser'),
+            await insertCard(page, {cardName: 'image', nth: 1})
+        ]);
+        await fileChooser2.setFiles([filePath]);
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="image"></div>
+            </div>
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="image"></div>
+            </div>
+            <p><br /></p>
+        `, {ignoreCardContents: true});
+
+        const imageCard1BBox = await page.locator('[data-kg-card="image"]').nth(0).boundingBox();
+        const imageCard2BBox = await page.locator('[data-kg-card="image"]').nth(1).boundingBox();
+
+        await dragMouse(page, imageCard2BBox, imageCard1BBox, 'middle', 'middle', true, 100, 100);
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false" data-kg-card-width="wide">
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="gallery"></div>
+            </div>
+            <p><br /></p>
+        `, {ignoreCardContents: true});
     });
 });
 

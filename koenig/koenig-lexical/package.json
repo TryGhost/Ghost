@@ -84,6 +84,7 @@
   },
   "devDependencies": {
     "@babel/core": "7.22.15",
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@etchteam/storybook-addon-status": "^4.2.4",
     "@playwright/test": "^1.33.0",
     "@prettier/sync": "^0.3.0",

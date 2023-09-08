@@ -2,11 +2,11 @@ import ImageUploadForm from '../ImageUploadForm';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {CardCaptionEditor} from '../CardCaptionEditor';
-import {MediaPlaceholder} from '../MediaPlaceholder';
+import {CardText, MediaPlaceholder} from '../MediaPlaceholder';
 import {ProgressBar} from '../ProgressBar';
 import {openFileSelection} from '../../../utils/openFileSelection';
 
-function PopulatedImageCard({src, alt, previewSrc, imageUploader}) {
+function PopulatedImageCard({src, alt, previewSrc, imageUploader, imageCardDragHandler}) {
     const progressStyle = {
         width: `${imageUploader.progress?.toFixed(0)}%`
     };
@@ -14,7 +14,7 @@ function PopulatedImageCard({src, alt, previewSrc, imageUploader}) {
     const progressAlt = imageUploader.progress.toFixed(0) < 100 ? `upload in progress, ${imageUploader.progress}` : '';
 
     return (
-        <div className="not-kg-prose">
+        <div ref={imageCardDragHandler?.setRef} className="not-kg-prose relative">
             <img
                 alt={alt ? alt : progressAlt}
                 className={`mx-auto block ${previewSrc ? 'opacity-40' : ''}`}
@@ -27,11 +27,16 @@ function PopulatedImageCard({src, alt, previewSrc, imageUploader}) {
                 </div>
                 : <></>
             }
+            {imageCardDragHandler?.isDraggedOver ? (
+                <div className={`absolute inset-0 flex items-center justify-center border border-grey/20 bg-black/80 dark:border-grey/10 dark:bg-grey-950`}>
+                    <CardText text="Drop to convert to a gallery" />
+                </div>
+            ) : null}
         </div>
     );
 }
 
-function EmptyImageCard({onFileChange, setFileInputRef, imageDragHandler, errors}) {
+function EmptyImageCard({onFileChange, setFileInputRef, imageFileDragHandler, errors}) {
     const fileInputRef = React.useRef(null);
 
     const onFileInputRef = (element) => {
@@ -46,8 +51,8 @@ function EmptyImageCard({onFileChange, setFileInputRef, imageDragHandler, errors
                 errors={errors}
                 filePicker={() => openFileSelection({fileInputRef})}
                 icon='image'
-                isDraggedOver={imageDragHandler.isDraggedOver}
-                placeholderRef={imageDragHandler.setRef}
+                isDraggedOver={imageFileDragHandler?.isDraggedOver}
+                placeholderRef={imageFileDragHandler?.setRef}
             />
             <ImageUploadForm
                 fileInputRef={onFileInputRef}
@@ -65,12 +70,14 @@ const ImageHolder = ({
     imageUploader,
     onFileChange,
     setFileInputRef,
-    imageDragHandler
+    imageCardDragHandler,
+    imageFileDragHandler
 }) => {
     if (previewSrc || src) {
         return (
             <PopulatedImageCard
                 alt={altText}
+                imageCardDragHandler={imageCardDragHandler}
                 imageUploader={imageUploader}
                 previewSrc={previewSrc}
                 src={src}
@@ -80,7 +87,7 @@ const ImageHolder = ({
         return (
             <EmptyImageCard
                 errors={imageUploader.errors}
-                imageDragHandler={imageDragHandler}
+                imageFileDragHandler={imageFileDragHandler}
                 setFileInputRef={setFileInputRef}
                 onFileChange={onFileChange}
             />
@@ -101,7 +108,8 @@ export function ImageCard({
     cardWidth,
     previewSrc,
     imageUploader,
-    imageDragHandler
+    imageCardDragHandler,
+    imageFileDragHandler
 }) {
     const figureRef = React.useRef(null);
 
@@ -121,7 +129,8 @@ export function ImageCard({
             <figure ref={figureRef} data-kg-card-width={cardWidth}>
                 <ImageHolder
                     altText={altText}
-                    imageDragHandler={imageDragHandler}
+                    imageCardDragHandler={imageCardDragHandler}
+                    imageFileDragHandler={imageFileDragHandler}
                     imageUploader={imageUploader}
                     previewSrc={previewSrc}
                     setFileInputRef={setFileInputRef}
@@ -151,21 +160,23 @@ ImageHolder.propTypes = {
     imageUploader: PropTypes.object,
     onFileChange: PropTypes.func,
     setFileInputRef: PropTypes.func,
-    imageDragHandler: PropTypes.object
+    imageFileDragHandler: PropTypes.object,
+    imageCardDragHandler: PropTypes.object
 };
 
 PopulatedImageCard.propTypes = {
     src: PropTypes.string,
     alt: PropTypes.string,
     previewSrc: PropTypes.string,
-    imageUploader: PropTypes.object
+    imageUploader: PropTypes.object,
+    imageCardDragHandler: PropTypes.object
 };
 
 EmptyImageCard.propTypes = {
     onFileChange: PropTypes.func,
     setFileInputRef: PropTypes.func,
-    imageDragHandler: PropTypes.object,
-    errors: PropTypes.array
+    errors: PropTypes.array,
+    imageFileDragHandler: PropTypes.object
 };
 
 ImageCard.propTypes = {
@@ -181,5 +192,6 @@ ImageCard.propTypes = {
     cardWidth: PropTypes.string,
     previewSrc: PropTypes.string,
     imageUploader: PropTypes.object,
-    imageDragHandler: PropTypes.object
+    imageFileDragHandler: PropTypes.object,
+    imageCardDragHandler: PropTypes.object
 };

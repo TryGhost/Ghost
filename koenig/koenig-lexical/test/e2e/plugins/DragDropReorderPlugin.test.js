@@ -1,5 +1,5 @@
 import path from 'path';
-import {assertHTML, dragMouse, focusEditor, html, initialize} from '../../utils/e2e';
+import {assertHTML, dragMouse, focusEditor, html, initialize, insertCard} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
@@ -232,8 +232,5 @@ test.describe('Drag Drop Reorder Plugin', async function () {
 });
 
 async function insertDivider(page) {
-    await page.keyboard.type('/divider');
-    await expect(page.locator(`[data-kg-card-menu-item="Divider"][data-kg-cardmenu-selected="true"]`)).toBeVisible();
-    await page.keyboard.press('Enter');
-    await expect(page.locator(`[data-kg-card="horizontalrule"]`)).toBeVisible();
+    await insertCard(page, {cardName: 'divider'});
 }

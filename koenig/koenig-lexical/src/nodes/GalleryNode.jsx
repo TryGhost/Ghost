@@ -5,9 +5,22 @@ import {ReactComponent as GalleryCardIcon} from '../assets/icons/kg-card-type-ga
 import {GalleryNodeComponent} from './GalleryNodeComponent';
 import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
 import {createCommand} from 'lexical';
+import {pick} from 'lodash-es';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 
 export const INSERT_GALLERY_COMMAND = createCommand();
+
+export const MAX_IMAGES = 9;
+export const MAX_PER_ROW = 3;
+
+// ensure we don't save client-side only properties such as preview blob urls to the server
+export const ALLOWED_IMAGE_PROPS = ['row', 'src', 'width', 'height', 'alt', 'caption', 'fileName'];
+
+export function recalculateImageRows(images) {
+    images.forEach((image, idx) => {
+        image.row = Math.ceil((idx + 1) / MAX_PER_ROW) - 1;
+    });
+}
 
 export class GalleryNode extends BaseGalleryNode {
     __captionEditor;
@@ -79,6 +92,25 @@ export class GalleryNode extends BaseGalleryNode {
             </KoenigCardWrapper>
         );
     }
+
+    // TODO: move to kg-default-nodes?
+    setImages(images) {
+        const datasetImages = images
+            .slice(0, MAX_IMAGES - 1)
+            .map(image => pick(image, ALLOWED_IMAGE_PROPS));
+
+        recalculateImageRows(datasetImages);
+        this.images = datasetImages;
+    }
+
+    addImages(images) {
+        const datasetImages = [...this.images, ...images]
+            .slice(0, MAX_IMAGES - 1)
+            .map(image => pick(image, ALLOWED_IMAGE_PROPS));
+
+        recalculateImageRows(datasetImages);
+        this.images = datasetImages;
+    }
 }
 
 export const $createGalleryNode = (dataset) => {
@@ -88,4 +120,3 @@ export const $createGalleryNode = (dataset) => {
 export function $isGalleryNode(node) {
     return node instanceof GalleryNode;
 }
-

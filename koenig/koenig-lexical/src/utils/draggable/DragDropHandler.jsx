@@ -376,7 +376,7 @@ export class DragDropHandler {
         const isOverDroppable = overDroppableElem;
 
         if (isLeavingContainer) {
-            this._currentOverContainer.onDragLeaveContainer();
+            this._currentOverContainer.onDragLeaveContainer(this.draggableInfo);
             this._currentOverContainer = null;
             this._currentOverContainerElem = null;
             this._hideDropIndicator();
@@ -385,7 +385,7 @@ export class DragDropHandler {
         if (isOverContainer) {
             const container = this.containers.find(c => c.element === overContainerElem);
             if (!this._currentOverContainer) {
-                container.onDragEnterContainer();
+                container.onDragEnterContainer(this.draggableInfo);
             }
 
             this._currentOverContainer = container;
