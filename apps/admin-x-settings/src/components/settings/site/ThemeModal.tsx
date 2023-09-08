@@ -291,6 +291,7 @@ const ChangeThemeModal = NiceModal.create(() => {
             afterClose={() => {
                 updateRoute('design/edit');
             }}
+            animate={false}
             cancelLabel=''
             footer={false}
             padding={false}
