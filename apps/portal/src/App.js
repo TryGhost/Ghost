@@ -864,6 +864,7 @@ export default class App extends React.Component {
         const contextPage = this.getContextPage({site, page, member});
         const contextMember = this.getContextMember({page: contextPage, member, customSiteUrl});
         return {
+            api: this.GhostApi,
             site,
             action,
             brandColor: this.getAccentColor(),

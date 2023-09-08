@@ -50,4 +50,20 @@ export class BookshelfRecommendationRepository extends BookshelfRepository<strin
             return null;
         }
     }
+
+    entityFieldToColumn(field: keyof Recommendation): string {
+       const mapping = {
+            id: 'id',
+            title: 'title',
+            reason: 'reason',
+            excerpt: 'excerpt',
+            featuredImage: 'featured_image',
+            favicon: 'favicon',
+            url: 'url',
+            oneClickSubscribe: 'one_click_subscribe',
+            createdAt: 'created_at',
+            updatedAt: 'updated_at',
+        } as Record<keyof Recommendation, string>;
+        return mapping[field];
+    }
 }

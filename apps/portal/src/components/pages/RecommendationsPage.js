@@ -2,6 +2,7 @@ import AppContext from '../../AppContext';
 import {useContext, useState, useEffect} from 'react';
 import CloseButton from '../common/CloseButton';
 import {clearURLParams} from '../../utils/notifications';
+import LoadingPage from './LoadingPage';
 
 export const RecommendationsPageStyles = `
     .gh-portal-recommendation-item .gh-portal-list-detail {
@@ -84,20 +85,24 @@ const RecommendationItem = (recommendation) => {
 };
 
 const RecommendationsPage = () => {
-    const {site, pageData, t} = useContext(AppContext);
+    const {api, site, pageData, t} = useContext(AppContext);
     const {title, icon} = site;
     const {recommendations_enabled: recommendationsEnabled = false} = site;
-    const {recommendations = []} = site;
+    const [recommendations, setRecommendations] = useState(null);
+
+    useEffect(() => {
+        api.site.recommendations({limit: 100}).then((data) => {
+            setRecommendations(
+                shuffleRecommendations(data.recommendations
+                ));
+        }).catch((err) => {
+            // eslint-disable-next-line no-console
+            console.error(err);
+        });
+    }, []);
 
     // Show 5 recommendations by default
     const [numToShow, setNumToShow] = useState(5);
-
-    // Show recommendations in a random order
-    const [shuffledRecommendations, setShuffledRecommendations] = useState([]);
-
-    useEffect(() => {
-        setShuffledRecommendations(shuffleRecommendations([...recommendations]));
-    }, [recommendations]);
 
     const showAllRecommendations = () => {
         setNumToShow(recommendations.length);
@@ -116,8 +121,12 @@ const RecommendationsPage = () => {
     const heading = pageData && pageData.signup ? t('You\'re subscribed!') : t('Recommendations');
     const subheading = t(`Here are a few other sites {{siteTitle}} thinks you may enjoy.`, {siteTitle: title});
 
-    if (!recommendationsEnabled || recommendations.length < 1) {
+    if (!recommendationsEnabled) {
         return null;
+    }
+
+    if (recommendations === null) {
+        return <LoadingPage/>;
     }
 
     return (
@@ -130,7 +139,7 @@ const RecommendationsPage = () => {
             <p className="gh-portal-recommendations-description">{subheading}</p>
 
             <div className="gh-portal-list">
-                {shuffledRecommendations.slice(0, numToShow).map((recommendation, index) => (
+                {recommendations.slice(0, numToShow).map((recommendation, index) => (
                     <RecommendationItem key={index} {...recommendation} />
                 ))}
             </div>

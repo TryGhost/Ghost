@@ -4,6 +4,8 @@ import Pagination from './Pagination';
 import React from 'react';
 import Separator from './Separator';
 import clsx from 'clsx';
+import {CenteredLoadingIndicator} from './LoadingIndicator';
+import {PaginationData} from '../../hooks/usePagination';
 
 interface TableProps {
     /**
@@ -15,9 +17,19 @@ interface TableProps {
     hint?: string;
     hintSeparator?: boolean;
     className?: string;
+    isLoading?: boolean;
+    pagination?: PaginationData;
 }
 
-const Table: React.FC<TableProps> = ({children, borderTop, hint, hintSeparator, pageTitle, className}) => {
+const OptionalPagination = ({pagination}: {pagination?: PaginationData}) => {
+    if (!pagination) {
+        return null;
+    }
+
+    return <Pagination {...pagination}/>;
+};
+
+const Table: React.FC<TableProps> = ({children, borderTop, hint, hintSeparator, pageTitle, className, pagination, isLoading}) => {
     const tableClasses = clsx(
         (borderTop || pageTitle) && 'border-t border-grey-300',
         'w-full',
@@ -25,27 +37,50 @@ const Table: React.FC<TableProps> = ({children, borderTop, hint, hintSeparator, 
         className
     );
 
+    // We want to avoid layout jumps when we load a new page of the table, or when data is invalidated
+    const table = React.useRef<HTMLTableElement>(null);
+    const [tableHeight, setTableHeight] = React.useState<number | undefined>(undefined);
+
+    React.useEffect(() => {
+        // Add resize observer to table
+        if (table.current) {
+            const resizeObserver = new ResizeObserver((entries) => {
+                const height = entries[0].target.clientHeight;
+                setTableHeight(height);
+            });
+            resizeObserver.observe(table.current);
+            return () => {
+                resizeObserver.disconnect();
+            };
+        }
+    }, [isLoading]);
+
+    const loadingStyle = React.useMemo(() => {
+        if (tableHeight === undefined) {
+            return undefined;
+        }
+
+        return {
+            height: tableHeight
+        };
+    }, [tableHeight]);
+
     return (
         <>
             <div className='w-full overflow-x-scroll'>
                 {pageTitle && <Heading>{pageTitle}</Heading>}
-                <table className={tableClasses}>
+                {!isLoading && <table ref={table} className={tableClasses}>
                     <tbody>
                         {children}
                     </tbody>
-                </table>
-                {hint &&
+                </table>}
+                {isLoading && <CenteredLoadingIndicator delay={200} style={loadingStyle} />}
+                {(hint || pagination) &&
                 <div className="-mt-px">
-                    {hintSeparator && <Separator />}
+                    {(hintSeparator || pagination) && <Separator />}
                     <div className="flex justify-between">
-                        <Hint>{hint}</Hint>
-                        {/* // TODO: Finish pagination component */}
-                        {/* <div className={`mt-1 flex items-center gap-2 text-xs text-grey-700`}>Showing 1-5 of 15
-                            <button type='button'><Icon colorClass="text-green" name='chevron-left' size="xs" />
-                            </button>
-                            <button type="button"><Icon colorClass="text-green" name='chevron-right' size="xs" /></button>
-                        </div> */}
-                        <Pagination itemsPerPage={5} itemsTotal={15}/>
+                        <Hint>{hint ?? ' '}</Hint>
+                        <OptionalPagination pagination={pagination} />
                     </div>
                 </div>}
             </div>

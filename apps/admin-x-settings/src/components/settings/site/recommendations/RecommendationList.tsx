@@ -8,10 +8,13 @@ import Table from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
 import useRouting from '../../../../hooks/useRouting';
+import {PaginationData} from '../../../../hooks/usePagination';
 import {Recommendation, useDeleteRecommendation} from '../../../../api/recommendations';
 
 interface RecommendationListProps {
-    recommendations: Recommendation[]
+    recommendations: Recommendation[],
+    pagination: PaginationData,
+    isLoading: boolean
 }
 
 const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recommendation}) => {
@@ -57,10 +60,10 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
     );
 };
 
-const RecommendationList: React.FC<RecommendationListProps> = ({recommendations}) => {
-    if (recommendations.length) {
-        return <Table hint='Readers will see your recommendations in randomized order' hintSeparator>
-            {recommendations.map(recommendation => <RecommendationItem key={recommendation.id} recommendation={recommendation} />)}
+const RecommendationList: React.FC<RecommendationListProps> = ({recommendations, pagination, isLoading}) => {
+    if (isLoading || recommendations.length) {
+        return <Table hint='Readers will see your recommendations in randomized order' isLoading={isLoading} pagination={pagination} hintSeparator>
+            {recommendations && recommendations.map(recommendation => <RecommendationItem key={recommendation.id} recommendation={recommendation} />)}
         </Table>;
     } else {
         return <NoValueLabel icon='thumbs-up'>
