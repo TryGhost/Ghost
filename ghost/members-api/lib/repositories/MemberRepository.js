@@ -18,8 +18,7 @@ const messages = {
     productNotFound: 'Could not find Product {id}',
     bulkActionRequiresFilter: 'Cannot perform {action} without a filter or all=true',
     tierArchived: 'Cannot use archived Tiers',
-    invalidEmail: 'Invalid Email',
-    invalidNewsletterId: 'Cannot subscribe to invalid newsletter {ids}'
+    invalidEmail: 'Invalid Email'
 };
 
 /**
@@ -280,23 +279,6 @@ module.exports = class MemberRepository {
 
         if (memberData.products && memberData.products.length === 1) {
             memberStatusData.status = 'comped';
-        }
-
-        //checks for custom signUp forms
-        if (memberData.newsletters && memberData.newsletters.length > 0) {
-            const newsletterIds = memberData.newsletters.map(newsletter => newsletter.id);
-            const newsletters = await this._newslettersService.browse({
-                filter: `id:[${newsletterIds}]`,
-                columns: ['id','status']
-            });
-            if (newsletters.length !== newsletterIds.length) {
-                const validNewsletterIds = newsletters.map(newsletter => newsletter.id);
-                const invalidIds = newsletterIds.filter(id => !validNewsletterIds.includes(id));
-                throw new errors.BadRequestError({message: tpl(messages.invalidNewsletterId, {ids: invalidIds})});
-            }
-            memberData.newsletters = newsletters
-                .filter(newsletter => newsletter.status === 'active')
-                .map(newsletter => ({id: newsletter.id}));
         }
 
         // Subscribe members to default newsletters
