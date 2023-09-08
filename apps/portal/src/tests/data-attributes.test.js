@@ -63,7 +63,7 @@ function getMockData({newsletterQuerySelectorResult = null} = {}) {
                         value: 'Gold'
                     }];
                 }
-                if (elem === 'input[data-members-newsletter]' && newsletterQuerySelectorResult) {
+                if (elem === 'input[type=checkbox][data-members-newsletter]:checked' && newsletterQuerySelectorResult) {
                     return newsletterQuerySelectorResult;
                 }
             }
@@ -244,8 +244,7 @@ describe('Member Data attributes:', () => {
         test('includes specified newsletters in request', () => {
             const {event, form, errorEl, siteUrl, submitHandler} = getMockData({
                 newsletterQuerySelectorResult: [{
-                    value: 'some_newsletter',
-                    checked: true
+                    value: 'some_newsletter'
                 }]
             });
 
