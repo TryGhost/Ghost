@@ -178,7 +178,7 @@ export class CollectionsService {
             try {
                 await this.removePostFromAllCollections(event.id);
             } catch (err) {
-                logging.error({err});
+                logging.error({err, message: 'Error handling PostDeletedEvent'});
             }
         });
 
@@ -187,7 +187,7 @@ export class CollectionsService {
             try {
                 await this.addPostToMatchingCollections(event.data);
             } catch (err) {
-                logging.error({err});
+                logging.error({err, message: 'Error handling PostAddedEvent'});
             }
         });
 
@@ -200,7 +200,7 @@ export class CollectionsService {
             try {
                 await this.updatePostInMatchingCollections(event.data);
             } catch (err) {
-                logging.error({err});
+                logging.error({err, message: 'Error handling PostEditedEvent'});
             }
         });
 
@@ -209,7 +209,7 @@ export class CollectionsService {
             try {
                 await this.removePostsFromAllCollections(event.data);
             } catch (err) {
-                logging.error({err});
+                logging.error({err, message: 'Error handling PostsBulkDestroyedEvent'});
             }
         });
 
@@ -218,7 +218,7 @@ export class CollectionsService {
             try {
                 await this.updateUnpublishedPosts(event.data);
             } catch (err) {
-                logging.error({err});
+                logging.error({err, message: 'Error handling PostsBulkUnpublishedEvent'});
             }
         });
 
@@ -227,7 +227,7 @@ export class CollectionsService {
             try {
                 await this.updateFeaturedPosts(event.data);
             } catch (err) {
-                logging.error({err});
+                logging.error({err, message: 'Error handling PostsBulkFeaturedEvent'});
             }
         });
 
@@ -236,7 +236,7 @@ export class CollectionsService {
             try {
                 await this.updateFeaturedPosts(event.data);
             } catch (err) {
-                logging.error({err});
+                logging.error({err, message: 'Error handling PostsBulkUnfeaturedEvent'});
             }
         });
 
@@ -245,7 +245,7 @@ export class CollectionsService {
             try {
                 await this.updateAllAutomaticCollections();
             } catch (err) {
-                logging.error({err});
+                logging.error({err, message: 'Error handling TagDeletedEvent'});
             }
         });
 
@@ -254,7 +254,7 @@ export class CollectionsService {
             try {
                 await this.updateAllAutomaticCollections();
             } catch (err) {
-                logging.error({err});
+                logging.error({err, message: 'Error handling PostsBulkAddTagsEvent'});
             }
         });
     }
