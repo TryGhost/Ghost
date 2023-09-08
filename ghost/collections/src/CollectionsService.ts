@@ -174,47 +174,83 @@ export class CollectionsService {
     subscribeToEvents() {
         this.DomainEvents.subscribe(PostDeletedEvent, async (event: PostDeletedEvent) => {
             logging.info(`PostDeletedEvent received, removing post ${event.id} from all collections`);
-            await this.removePostFromAllCollections(event.id);
+            try {
+                await this.removePostFromAllCollections(event.id);
+            } catch (err) {
+                logging.error({err});
+            }
         });
 
         this.DomainEvents.subscribe(PostAddedEvent, async (event: PostAddedEvent) => {
             logging.info(`PostAddedEvent received, adding post ${event.data.id} to matching collections`);
-            await this.addPostToMatchingCollections(event.data);
+            try {
+                await this.addPostToMatchingCollections(event.data);
+            } catch (err) {
+                logging.error({err});
+            }
         });
 
         this.DomainEvents.subscribe(PostEditedEvent, async (event: PostEditedEvent) => {
             logging.info(`PostEditedEvent received, updating post ${event.data.id} in matching collections`);
-            await this.updatePostInMatchingCollections(event.data);
+            try {
+                await this.updatePostInMatchingCollections(event.data);
+            } catch (err) {
+                logging.error({err});
+            }
         });
 
         this.DomainEvents.subscribe(PostsBulkDestroyedEvent, async (event: PostsBulkDestroyedEvent) => {
             logging.info(`BulkDestroyEvent received, removing posts ${event.data} from all collections`);
-            await this.removePostsFromAllCollections(event.data);
+            try {
+                await this.removePostsFromAllCollections(event.data);
+            } catch (err) {
+                logging.error({err});
+            }
         });
 
         this.DomainEvents.subscribe(PostsBulkUnpublishedEvent, async (event: PostsBulkUnpublishedEvent) => {
             logging.info(`PostsBulkUnpublishedEvent received, updating collection posts ${event.data}`);
-            await this.updateUnpublishedPosts(event.data);
+            try {
+                await this.updateUnpublishedPosts(event.data);
+            } catch (err) {
+                logging.error({err});
+            }
         });
 
         this.DomainEvents.subscribe(PostsBulkFeaturedEvent, async (event: PostsBulkFeaturedEvent) => {
             logging.info(`PostsBulkFeaturedEvent received, updating collection posts ${event.data}`);
-            await this.updateFeaturedPosts(event.data);
+            try {
+                await this.updateFeaturedPosts(event.data);
+            } catch (err) {
+                logging.error({err});
+            }
         });
 
         this.DomainEvents.subscribe(PostsBulkUnfeaturedEvent, async (event: PostsBulkUnfeaturedEvent) => {
             logging.info(`PostsBulkUnfeaturedEvent received, updating collection posts ${event.data}`);
-            await this.updateFeaturedPosts(event.data);
+            try {
+                await this.updateFeaturedPosts(event.data);
+            } catch (err) {
+                logging.error({err});
+            }
         });
 
         this.DomainEvents.subscribe(TagDeletedEvent, async (event: TagDeletedEvent) => {
             logging.info(`TagDeletedEvent received for ${event.data.id}, updating all collections`);
-            await this.updateAllAutomaticCollections();
+            try {
+                await this.updateAllAutomaticCollections();
+            } catch (err) {
+                logging.error({err});
+            }
         });
 
         this.DomainEvents.subscribe(PostsBulkAddTagsEvent, async (event: PostsBulkAddTagsEvent) => {
             logging.info(`PostsBulkAddTagsEvent received for ${event.data}, updating all collections`);
-            await this.updateAllAutomaticCollections();
+            try {
+                await this.updateAllAutomaticCollections();
+            } catch (err) {
+                logging.error({err});
+            }
         });
     }
 
