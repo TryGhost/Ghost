@@ -25,7 +25,7 @@
     "sinon": "15.0.4"
   },
   "dependencies": {
-    "@tryghost/errors": "^1.2.1",
+    "@tryghost/errors": "^1.2.26",
     "fs-extra": "^11.0.0"
   },
   "optionalDependencies": {
