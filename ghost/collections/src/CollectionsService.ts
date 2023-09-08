@@ -224,7 +224,6 @@ export class CollectionsService {
     }
 
     private hasPostEditRelevantChanges(postEditEvent: PostEditedEvent['data']): boolean {
-        console.log(postEditEvent);
         const current = {
             id: postEditEvent.current.id,
             featured: postEditEvent.current.featured,
