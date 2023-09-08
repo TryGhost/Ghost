@@ -1,6 +1,6 @@
 import Access from './Access';
 import Analytics from './Analytics';
-import EmbedSignupForm from './EmbedSignupForm';
+import EmbedSignupForm from './embedSignup/EmbedSignupForm';
 import Portal from './Portal';
 import React from 'react';
 import Recommendations from '../site/Recommendations';
