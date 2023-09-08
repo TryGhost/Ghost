@@ -78,7 +78,7 @@ const Table: React.FC<TableProps> = ({children, borderTop, hint, hintSeparator, 
                 {(hint || pagination) &&
                 <div className="-mt-px">
                     {(hintSeparator || pagination) && <Separator />}
-                    <div className="flex justify-between">
+                    <div className="flex flex-col-reverse items-start justify-between gap-1 pt-2 md:flex-row md:items-center md:gap-0 md:pt-0 ">
                         <Hint>{hint ?? ' '}</Hint>
                         <OptionalPagination pagination={pagination} />
                     </div>
