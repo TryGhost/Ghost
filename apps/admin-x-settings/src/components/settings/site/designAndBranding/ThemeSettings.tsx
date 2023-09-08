@@ -1,3 +1,4 @@
+import ColorPickerField from '../../../../admin-x-ds/global/form/ColorPickerField';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import Hint from '../../../../admin-x-ds/global/Hint';
 import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
@@ -52,12 +53,12 @@ const ThemeSetting: React.FC<{
         );
     case 'color':
         return (
-            <TextField
+            <ColorPickerField
+                direction='rtl'
                 hint={setting.description}
                 title={humanizeSettingKey(setting.key)}
-                type='color'
                 value={setting.value || ''}
-                onChange={event => setSetting(event.target.value)}
+                onChange={value => setSetting(value)}
             />
         );
     case 'image':
