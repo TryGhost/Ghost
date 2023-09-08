@@ -284,19 +284,19 @@ module.exports = class MemberRepository {
 
         //checks for custom signUp forms
         if (memberData.newsletters && memberData.newsletters.length > 0) {
-            const memberNewsletterIds = memberData.newsletters.map(newsletter => newsletter.id);
-            const validNewsletters = await this._newslettersService.browse({
-                filter: `id:[${memberNewsletterIds}]`,
+            const newsletterIds = memberData.newsletters.map(newsletter => newsletter.id);
+            const newsletters = await this._newslettersService.browse({
+                filter: `id:[${newsletterIds}]`,
                 columns: ['id','status']
             });
-            if (validNewsletters.length !== memberData.newsletters.length) {
-                const validNewsletterIds = validNewsletters.map(newsletter => newsletter.id);
-                const invalidIds = memberNewsletterIds.filter(id => !validNewsletterIds.includes(id));
+            if (newsletters.length !== memberData.newsletters.length) {
+                const validNewsletterIds = newsletters.map(newsletter => newsletter.id);
+                const invalidIds = newsletterIds.filter(id => !validNewsletterIds.includes(id));
                 throw new errors.BadRequestError({message: tpl(messages.invalidNewsletterId, {id: invalidIds})});
             }
-        memberData.newsletters = validNewsletters
-            .filter(newsletter => newsletter.status === 'active')
-            .map(newsletter => ({ id: newsletter.id }))
+            memberData.newsletters = newsletters
+                .filter(newsletter => newsletter.status === 'active')
+                .map(newsletter => ({id: newsletter.id}));
         }
 
         // Subscribe members to default newsletters

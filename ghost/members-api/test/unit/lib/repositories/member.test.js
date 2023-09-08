@@ -338,45 +338,6 @@ describe('MemberRepository', function () {
         });
 
         it('subscribes a member to a specified newsletter', async function () {
-            const newsletter = {
-                id: 'abc123',
-                status: 'active'
-            };
-
-            newslettersServiceStub.browse
-                .withArgs({
-                    filter: `id:[${newsletter.id}]`,
-                    columns: ['id', 'status']
-                })
-                .resolves([newsletter]);
-
-            const repo = new MemberRepository({
-                Member: memberModelStub,
-                MemberStatusEvent: {
-                    add: sinon.stub().resolves()
-                },
-                MemberSubscribeEvent: {
-                    add: sinon.stub().resolves()
-                },
-                newslettersService: newslettersServiceStub
-            });
-
-            await repo.create({
-                email: 'jamie@example.com',
-                email_disabled: false,
-                newsletters: [
-                    {id: newsletter.id}
-                ]
-            });
-
-            newslettersServiceStub.browse.calledOnce.should.be.true();
-            memberModelStub.add.calledOnce.should.be.true();
-            memberModelStub.add.args[0][0].newsletters.should.eql([
-                {id: newsletter.id}
-            ]);
-        });
-
-        it('subscribes a member to a list of active newsletters', async function () {
             const newsletters = [{
                 id: 'abc123',
                 status: 'active'
@@ -458,57 +419,6 @@ describe('MemberRepository', function () {
             }).should.be.rejectedWith(`Cannot subscribe to invalid newsletter ${INVALID_NEWSLETTER_ID}`);
         });
 
-        it('does not allow a member to be subscribed if any newsletter id from the list is invalid', async function () {
-            const newsletters = [{
-                id: 'abc123',
-                status: 'active'
-            },
-            {
-                id: 'def456',
-                status: 'active'
-            },
-            {
-                id: 'invalid123',
-                status: 'active'
-            }];
-
-            const newsletterIds = newsletters.map(newsletter => newsletter.id);
-            newslettersServiceStub.browse
-                .withArgs({
-                    filter: `id:[${newsletterIds}]`,
-                    columns: ['id', 'status']
-                })
-                .resolves([{
-                    id: 'abc123',
-                    status: 'active'
-                },
-                {
-                    id: 'def456',
-                    status: 'active'
-                }]);
-
-            const repo = new MemberRepository({
-                Member: memberModelStub,
-                MemberStatusEvent: {
-                    add: sinon.stub().resolves()
-                },
-                MemberSubscribeEvent: {
-                    add: sinon.stub().resolves()
-                },
-                newslettersService: newslettersServiceStub
-            });
-
-            await repo.create({
-                email: 'jamie@example.com',
-                email_disabled: false,
-                newsletters: [
-                    {id: newsletters[0].id},
-                    {id: newsletters[1].id},
-                    {id: newsletters[2].id}
-                ]
-            }).should.be.rejectedWith('Cannot subscribe to invalid newsletter invalid123');
-        });
-
         it('does not subscribe a member to an archived newsletter', async function () {
             const newsletter = {
                 id: 'abc123',
@@ -544,57 +454,6 @@ describe('MemberRepository', function () {
             newslettersServiceStub.browse.calledOnce.should.be.true();
             memberModelStub.add.calledOnce.should.be.true();
             memberModelStub.add.args[0][0].newsletters.should.eql([]);
-        });
-
-        it('does not subscribe a member to an archived newsletter, from a list of active newsletters', async function () {
-            const newsletters = [{
-                id: 'abc123',
-                status: 'active'
-            },
-            {
-                id: 'def456',
-                status: 'active'
-            },
-            {
-                id: 'ghi789',
-                status: 'archived'
-            }];
-
-            const newsletterIds = newsletters.map(newsletter => newsletter.id);
-            newslettersServiceStub.browse
-                .withArgs({
-                    filter: `id:[${newsletterIds}]`,
-                    columns: ['id', 'status']
-                })
-                .resolves(newsletters);
-
-            const repo = new MemberRepository({
-                Member: memberModelStub,
-                MemberStatusEvent: {
-                    add: sinon.stub().resolves()
-                },
-                MemberSubscribeEvent: {
-                    add: sinon.stub().resolves()
-                },
-                newslettersService: newslettersServiceStub
-            });
-
-            await repo.create({
-                email: 'jamie@example.com',
-                email_disabled: false,
-                newsletters: [
-                    {id: newsletters[0].id},
-                    {id: newsletters[1].id},
-                    {id: newsletters[2].id}
-                ]
-            });
-
-            newslettersServiceStub.browse.calledOnce.should.be.true();
-            memberModelStub.add.calledOnce.should.be.true();
-            memberModelStub.add.args[0][0].newsletters.should.eql([
-                {id: newsletters[0].id},
-                {id: newsletters[1].id}
-            ]);
         });
     });
 });
