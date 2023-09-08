@@ -3,6 +3,14 @@ const {
 } = require('@tryghost/collections');
 const BookshelfCollectionsRepository = require('./BookshelfCollectionsRepository');
 
+function getEnabled(config, labs) {
+    if (config.get('hostSettings:collections:enabled') === false) {
+        return false;
+    }
+
+    return labs.isSet('collections');
+}
+
 let inited = false;
 class CollectionsServiceWrapper {
     /** @type {CollectionsService} */
@@ -33,8 +41,10 @@ class CollectionsServiceWrapper {
     async init() {
         const config = require('../../../shared/config');
         const labs = require('../../../shared/labs');
-        // host setting OR labs "collections" flag has to be enabled to run collections service
-        if (!config.get('hostSettings:collections:enabled') && !(labs.isSet('collections'))) {
+
+        const enabled = getEnabled(config, labs);
+        // If labs isn't set then we don't run collections
+        if (!enabled) {
             return;
         }
 
