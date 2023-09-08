@@ -52,10 +52,10 @@ export abstract class BookshelfRepository<IDType, T extends Entity<IDType>> {
 
         const existing = await this.Model.findOne({id: entity.id}, {require: false});
         if (existing) {
-            existing.set(this.toPrimitive(entity))
+            existing.set(this.toPrimitive(entity));
             await existing.save({}, {autoRefresh: false, method: 'update'});
         } else {
-            await this.Model.add(this.toPrimitive(entity))
+            await this.Model.add(this.toPrimitive(entity));
         }
     }
 
@@ -78,7 +78,7 @@ export abstract class BookshelfRepository<IDType, T extends Entity<IDType>> {
             order: this.#orderToString(order),
             limit,
             page
-        })
+        });
         return (await Promise.all(models.map(model => this.modelToEntity(model)))).filter(entity => !!entity) as T[];
     }
 
