@@ -42,24 +42,24 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate}: 
                             >
                                 <Toaster />
                                 <NiceModal.Provider>
-                                    <div className='fixed left-6 top-4 z-20'>
+                                    <div className='relative z-20 px-6 py-4 tablet:fixed'>
                                         <ExitSettingsButton />
                                     </div>
 
                                     {/* Main container */}
-                                    <div className="mx-auto flex max-w-[1080px] flex-col px-[5vmin] py-[12vmin] md:flex-row md:items-start md:gap-x-10 md:py-[8vmin]" id="admin-x-settings-content">
+                                    <div className="mx-auto flex max-w-[1080px] flex-col px-[5vmin] py-[12vmin] tablet:flex-row tablet:items-start tablet:gap-x-10 tablet:py-[8vmin]" id="admin-x-settings-content">
 
                                         {/* Sidebar */}
-                                        <div className="relative z-20 min-w-[260px] grow-0 md:fixed md:top-[8vmin] md:basis-[260px]">
-                                            <div className='h-[84px]'>
+                                        <div className="sticky top-[-42px] z-20 min-w-[260px] grow-0 md:top-[-52px] tablet:fixed tablet:top-[8vmin] tablet:basis-[260px]">
+                                            <div className='-mx-6 h-[84px] bg-white px-6 tablet:m-0 tablet:bg-transparent tablet:p-0'>
                                                 <Heading>Settings</Heading>
                                             </div>
-                                            <div className="relative mt-[-32px] w-[260px] overflow-x-hidden after:absolute after:inset-x-0 after:top-0 after:block after:h-[40px] after:bg-gradient-to-b after:from-white after:to-transparent after:content-['']">
+                                            <div className="relative mt-[-32px] w-full overflow-x-hidden after:absolute after:inset-x-0 after:top-0 after:hidden after:h-[40px] after:bg-gradient-to-b after:from-white after:to-transparent after:content-[''] tablet:w-[260px] tablet:after:!visible tablet:after:!block">
                                                 <Sidebar />
                                             </div>
                                         </div>
-                                        <div className="relative flex-auto pt-[3vmin] md:ml-[300px] md:pt-[85px]">
-                                            <div className='pointer-events-none fixed inset-x-0 top-0 z-[5] h-[80px] bg-gradient-to-t from-transparent to-white to-60%'></div>
+                                        <div className="relative flex-auto pt-[3vmin] tablet:ml-[300px] tablet:pt-[85px]">
+                                            <div className='pointer-events-none fixed inset-x-0 top-0 z-[5] hidden h-[80px] bg-gradient-to-t from-transparent to-white to-60% tablet:!visible tablet:!block'></div>
                                             <Settings />
                                         </div>
                                     </div>

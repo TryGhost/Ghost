@@ -48,7 +48,7 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     const inputFields = (
-        <div className="mx-[52px]">
+        <div className="md:mx-[52px]">
             <div className="mb-4 flex items-center gap-2">
                 <div>
                     <FacebookLogo className='h-10 w-10' />

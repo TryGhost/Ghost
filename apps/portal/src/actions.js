@@ -97,6 +97,7 @@ async function signin({data, api, state}) {
 async function signup({data, state, api}) {
     try {
         let {plan, tierId, cadence, email, name, newsletters, offerId} = data;
+
         if (plan.toLowerCase() === 'free') {
             await api.member.sendMagicLink({emailType: 'signup', ...data});
         } else {

@@ -5,6 +5,7 @@ Object {
   "meta": Object {},
   "settings": Object {
     "accent_color": "#FF1A75",
+    "allow_self_signup": true,
     "codeinjection_foot": null,
     "codeinjection_head": null,
     "comments_enabled": "off",
@@ -57,6 +58,7 @@ Object {
     ],
     "portal_signup_checkbox_required": false,
     "portal_signup_terms_html": null,
+    "recommendations_enabled": false,
     "secondary_navigation": Array [
       Object {
         "label": "Data & privacy",

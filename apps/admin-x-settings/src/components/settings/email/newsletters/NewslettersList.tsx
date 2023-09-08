@@ -10,7 +10,6 @@ import TableRow from '../../../../admin-x-ds/global/TableRow';
 import useRouting from '../../../../hooks/useRouting';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {Newsletter, useEditNewsletter} from '../../../../api/newsletters';
-import {modalRoutes} from '../../../providers/RoutingProvider';
 
 interface NewslettersListProps {
     newsletters: Newsletter[]
@@ -66,7 +65,7 @@ const NewsletterItem: React.FC<{newsletter: Newsletter, onlyOne: boolean}> = ({n
     );
 
     const showDetails = () => {
-        updateRoute({route: modalRoutes.showNewsletter, params: {id: newsletter.id}});
+        updateRoute({route: `newsletters/show/${newsletter.id}`});
     };
 
     return (
@@ -77,13 +76,13 @@ const NewsletterItem: React.FC<{newsletter: Newsletter, onlyOne: boolean}> = ({n
                     <span className='whitespace-nowrap text-xs text-grey-700'>{newsletter.description || 'No description'}</span>
                 </div>
             </TableCell>
-            <TableCell onClick={showDetails}>
+            <TableCell className='hidden md:!visible md:!table-cell' onClick={showDetails}>
                 <div className={`flex grow flex-col`}>
                     <span>{newsletter.count?.active_members}</span>
                     <span className='whitespace-nowrap text-xs text-grey-700'>Subscribers</span>
                 </div>
             </TableCell>
-            <TableCell onClick={showDetails}>
+            <TableCell className='hidden md:!visible md:!table-cell' onClick={showDetails}>
                 <div className={`flex grow flex-col`}>
                     <span>{newsletter.count?.posts}</span>
                     <span className='whitespace-nowrap text-xs text-grey-700'>Posts sent</span>

@@ -1,6 +1,6 @@
 import ButtonGroup from '../ButtonGroup';
 import DesktopChrome from '../chrome/DesktopChrome';
-import Heading from '../Heading';
+import Heading, {HeadingLevel} from '../Heading';
 import MobileChrome from '../chrome/MobileChrome';
 import Modal, {ModalSize} from './Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
@@ -15,6 +15,7 @@ import {confirmIfDirty} from '../../../utils/modals';
 export interface PreviewModalProps {
     testId?: string;
     title?: string;
+    titleHeadingLevel?: HeadingLevel;
     size?: ModalSize;
     sidebar?: boolean | React.ReactNode;
     preview?: React.ReactNode;
@@ -48,6 +49,7 @@ export interface PreviewModalProps {
 export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     testId,
     title,
+    titleHeadingLevel = 4,
     size = 'full',
     sidebar = '',
     preview,
@@ -203,20 +205,21 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             afterClose={afterClose}
             animate={false}
             footer={false}
-            noPadding={true}
+            padding={false}
             size={size}
             testId={testId}
             title=''
+            hideXOnMobile
         >
             <div className='flex h-full grow'>
-                <div className={`flex grow flex-col ${previewBgColor === 'grey' ? 'bg-grey-50' : 'bg-white'}`}>
+                <div className={`hidden grow flex-col md:!visible md:!flex ${previewBgColor === 'grey' ? 'bg-grey-50' : 'bg-white'}`}>
                     {preview}
                 </div>
                 {sidebar &&
-                    <div className='relative flex h-full basis-[400px] flex-col border-l border-grey-100'>
+                    <div className='relative flex h-full w-full flex-col border-l border-grey-100 md:w-auto md:basis-[400px]'>
                         {sidebarHeader ? sidebarHeader : (
-                            <div className='flex max-h-[74px] items-start justify-between gap-3 px-7 py-5'>
-                                <Heading className='mt-1' level={4}>{title}</Heading>
+                            <div className='flex max-h-[74px] items-center justify-between gap-3 px-7 py-5'>
+                                <Heading level={titleHeadingLevel}>{title}</Heading>
                                 {sidebarButtons ? sidebarButtons : <ButtonGroup buttons={buttons} /> }
                             </div>
                         )}

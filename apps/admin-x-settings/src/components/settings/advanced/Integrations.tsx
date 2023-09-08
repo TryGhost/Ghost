@@ -1,6 +1,5 @@
 import Button from '../../../admin-x-ds/global/Button';
 import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
-import CustomIntegrationModal from './integrations/CustomIntegrationModal';
 import Icon from '../../../admin-x-ds/global/Icon';
 import List from '../../../admin-x-ds/global/List';
 import ListItem from '../../../admin-x-ds/global/ListItem';
@@ -8,7 +7,6 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
-import useDetailModalRoute from '../../../hooks/useDetailModalRoute';
 import useRouting from '../../../hooks/useRouting';
 import {ReactComponent as AmpIcon} from '../../../assets/icons/amp.svg';
 import {ReactComponent as FirstPromoterIcon} from '../../../assets/icons/firstpromoter.svg';
@@ -17,7 +15,6 @@ import {ReactComponent as PinturaIcon} from '../../../assets/icons/pintura.svg';
 import {ReactComponent as SlackIcon} from '../../../assets/icons/slack.svg';
 import {ReactComponent as UnsplashIcon} from '../../../assets/icons/unsplash.svg';
 import {ReactComponent as ZapierIcon} from '../../../assets/icons/zapier.svg';
-import {modalRoutes} from '../../providers/RoutingProvider';
 import {showToast} from '../../../admin-x-ds/global/Toast';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
@@ -145,7 +142,7 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
         <List>
             {integrations.map(integration => (
                 <IntegrationItem
-                    action={() => updateRoute({route: modalRoutes.showIntegration, params: {id: integration.id}})}
+                    action={() => updateRoute({route: `integrations/show/${integration.id}`})}
                     detail={integration.description || 'No description'}
                     icon={
                         integration.icon_image ?
@@ -181,12 +178,6 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {data: {integrations} = {integrations: []}} = useBrowseIntegrations();
     const {updateRoute} = useRouting();
 
-    useDetailModalRoute({
-        route: modalRoutes.showIntegration,
-        items: integrations,
-        showModal: integration => NiceModal.show(CustomIntegrationModal, {integration})
-    });
-
     const tabs = [
         {
             id: 'built-in',
@@ -201,7 +192,7 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     ] as const;
 
     const buttons = (
-        <Button color='green' label='Add custom integration' link={true} onClick={() => {
+        <Button className='hidden md:!visible md:!block' color='green' label='Add custom integration' link={true} onClick={() => {
             updateRoute('integrations/add');
             setSelectedTab('custom');
         }} />
@@ -216,6 +207,12 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
             testId='integrations'
             title="Integrations"
         >
+            <div className='flex justify-center rounded border border-green px-4 py-2 md:hidden'>
+                <Button color='green' label='Add custom integration' link onClick={() => {
+                    updateRoute('integrations/add');
+                    setSelectedTab('custom');
+                }} />
+            </div>
             <TabView<'built-in' | 'custom'> selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
         </SettingGroup>
     );

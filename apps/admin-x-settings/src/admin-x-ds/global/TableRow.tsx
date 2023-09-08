@@ -25,7 +25,7 @@ const TableRow: React.FC<TableRowProps> = ({id, action, hideActions, className, 
 
     separator = (separator === undefined) ? true : separator;
     const tableRowClasses = clsx(
-        'group',
+        'group/table-row',
         bgOnHover && 'hover:bg-gradient-to-r hover:from-white hover:to-grey-50',
         onClick && 'cursor-pointer',
         separator ? 'border-b border-grey-100 last-of-type:border-b-transparent hover:border-grey-200' : 'border-y border-transparent first-of-type:hover:border-t-transparent',
@@ -36,8 +36,10 @@ const TableRow: React.FC<TableRowProps> = ({id, action, hideActions, className, 
         <tr className={tableRowClasses} data-testid={testId} id={id} onClick={handleClick}>
             {children}
             {action &&
-                <td className={`px-6 py-3 text-center ${hideActions ? 'invisible group-hover:visible' : ''}`}>
-                    {action}
+                <td className={`px-6 py-3`}>
+                    <div className={`visible flex items-center justify-end ${hideActions ? 'group-hover/table-row:visible md:invisible' : ''}`}>
+                        {action}
+                    </div>
                 </td>
             }
         </tr>

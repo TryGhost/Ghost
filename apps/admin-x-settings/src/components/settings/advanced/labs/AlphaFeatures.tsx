@@ -44,10 +44,6 @@ const features = [{
     description: 'Enables processing of mail events',
     flag: 'mailEvents'
 },{
-    title: 'Convert to Lexical',
-    description: 'Convert mobiledoc posts to lexical upon opening in the editor.',
-    flag: 'convertToLexical'
-},{
     title: 'Import Member Tier',
     description: 'Enables tier to be specified when importing members',
     flag: 'importMemberTier'
@@ -55,6 +51,10 @@ const features = [{
     title: 'Tips & donations',
     description: 'Enables publishers to collect one-time payments',
     flag: 'tipsAndDonations'
+},{
+    title: 'Recommendations',
+    description: 'Enables publishers to recommend sites to their audience',
+    flag: 'recommendations'
 }];
 
 const AlphaFeatures: React.FC = () => {

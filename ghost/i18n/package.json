@@ -26,11 +26,11 @@
     "locales"
   ],
   "devDependencies": {
-    "c8": "7.14.0",
-    "i18next-parser": "8.6.0",
+    "c8": "8.0.1",
+    "i18next-parser": "8.7.0",
     "mocha": "10.2.0"
   },
   "dependencies": {
-    "i18next": "23.2.11"
+    "i18next": "23.4.6"
   }
 }

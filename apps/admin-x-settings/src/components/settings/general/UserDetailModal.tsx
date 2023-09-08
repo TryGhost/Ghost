@@ -13,10 +13,12 @@ import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
+import useFeatureFlag from '../../../hooks/useFeatureFlag';
 import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
+import {RoutingModalProps} from '../../providers/RoutingProvider';
 import {User, isAdminUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner, useUpdatePassword} from '../../../api/users';
 import {getImageUrl, useUploadImage} from '../../../api/images';
 import {showToast} from '../../../admin-x-ds/global/Toast';
@@ -213,6 +215,8 @@ const Details: React.FC<UserDetailProps> = ({errors, validators, user, setUserDa
 };
 
 const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
+    const hasWebmentions = useFeatureFlag('webmentions');
+
     return (
         <SettingGroupContent>
             <Toggle
@@ -224,6 +228,15 @@ const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user, setUserData}
                     setUserData?.({...user, comment_notifications: e.target.checked});
                 }}
             />
+            {hasWebmentions && <Toggle
+                checked={user.mention_notifications}
+                direction='rtl'
+                hint='Every time another site links to your work'
+                label='Mentions'
+                onChange={(e) => {
+                    setUserData?.({...user, mention_notifications: e.target.checked});
+                }}
+            />}
             <Toggle
                 checked={user.free_member_signup_notification}
                 direction='rtl'
@@ -410,10 +423,6 @@ const Password: React.FC<UserDetailProps> = ({user}) => {
     );
 };
 
-interface UserDetailModalProps {
-    user: User;
-}
-
 const UserMenuTrigger = () => (
     <button className='flex h-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] px-3 opacity-80 hover:opacity-100' type='button'>
         <Icon colorClass='text-white' name='ellipsis' size='md' />
@@ -421,7 +430,7 @@ const UserMenuTrigger = () => (
     </button>
 );
 
-const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
+const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     const {updateRoute} = useRouting();
     const {ownerUser} = useStaffUsers();
     const [userData, _setUserData] = useState(user);
@@ -620,7 +629,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
         okLabel = 'Saved';
     }
 
-    const fileUploadButtonClasses = 'absolute right-[104px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium z-10';
+    const fileUploadButtonClasses = 'absolute left-12 md:left-auto md:right-[104px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium z-10';
 
     const suspendedText = userData.status === 'inactive' ? ' (Suspended)' : '';
 
@@ -697,11 +706,11 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
                         }}
                     >Upload cover image</ImageUpload>
                     <div className="absolute bottom-12 right-12 z-10">
-                        <Menu items={menuItems} position='left' trigger={<UserMenuTrigger />}></Menu>
+                        <Menu items={menuItems} position='right' trigger={<UserMenuTrigger />}></Menu>
                     </div>
-                    <div className='relative flex items-center gap-4 px-12 pb-7 pt-60'>
+                    <div className='relative flex flex-col items-start gap-4 px-12 pb-60 pt-10 md:flex-row md:items-center md:pb-7 md:pt-60'>
                         <ImageUpload
-                            deleteButtonClassName='invisible absolute -right-2 -top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible'
+                            deleteButtonClassName='md:invisible absolute -right-2 -top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible'
                             deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
                             fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
                             id='avatar'
@@ -725,7 +734,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
                         </div>
                     </div>
                 </div>
-                <div className='mt-10 grid grid-cols-2 gap-x-12 gap-y-20'>
+                <div className='mt-10 grid grid-cols-1 gap-x-12 gap-y-20 md:grid-cols-2'>
                     <Basic errors={errors} setUserData={setUserData} user={userData} validators={validators} />
                     <Details errors={errors} setUserData={setUserData} user={userData} validators={validators} />
                     <EmailNotifications setUserData={setUserData} user={userData} />
@@ -734,6 +743,17 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
             </div>
         </Modal>
     );
+};
+
+const UserDetailModal: React.FC<RoutingModalProps> = ({params}) => {
+    const {users} = useStaffUsers();
+    const user = users.find(({slug}) => slug === params?.slug);
+
+    if (user) {
+        return <UserDetailModalContent user={user} />;
+    } else {
+        return null;
+    }
 };
 
 export default NiceModal.create(UserDetailModal);

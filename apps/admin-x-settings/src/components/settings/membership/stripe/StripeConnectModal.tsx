@@ -193,13 +193,13 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
                     <img alt='Ghost Logo' className='absolute left-10 h-16 w-16' src={GhostLogo} />
                     <img alt='Stripe Logo' className='absolute right-10 h-16 w-16 rounded-2xl shadow-[-1.5px_0_0_1.5px_#fff]' src={StripeLogo} />
                 </div>
-                <Heading level={3}>You are connected with Stripe!{stripeConnectLivemode ? null : ' (Test mode)'}</Heading>
+                <Heading className='text-center' level={3}>You are connected with Stripe!{stripeConnectLivemode ? null : ' (Test mode)'}</Heading>
                 <div className='mt-1'>Connected to <strong>Dummy</strong></div>
             </div>
             <div className='flex flex-col items-center'>
                 <Heading level={6}>Read next</Heading>
-                <a className='w-100 mt-5 flex items-stretch justify-between border border-grey-200 transition-all hover:border-grey-400' href="https://ghost.org/resources/managing-your-stripe-account/?ref=admin" rel="noopener noreferrer" target="_blank">
-                    <div className='p-4'>
+                <a className='w-100 mt-5 flex flex-col items-stretch justify-between border border-grey-200 transition-all hover:border-grey-400 md:flex-row' href="https://ghost.org/resources/managing-your-stripe-account/?ref=admin" rel="noopener noreferrer" target="_blank">
+                    <div className='order-2 p-4 md:order-1'>
                         <div className='font-bold'>How to setup and manage your Stripe account</div>
                         <div className='mt-1 text-sm text-grey-800'>Learn how to configure your Stripe account to work with Ghost, from custom branding to payment receipt emails.</div>
                         <div className='mt-3 flex items-center gap-1 text-sm text-grey-800'>
@@ -209,7 +209,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
                             <span>by Kym Ellis</span>
                         </div>
                     </div>
-                    <div className='flex w-[200px] shrink-0 items-center justify-center overflow-hidden'>
+                    <div className='order-1 hidden w-[200px] shrink-0 items-center justify-center overflow-hidden md:!visible md:order-2 md:!flex'>
                         <img alt="Bookmark Thumb" className='min-h-full min-w-full shrink-0' src={BookmarkThumb} />
                     </div>
                 </a>
@@ -292,6 +292,7 @@ const StripeConnectModal: React.FC = () => {
         size={stripeConnectAccountId ? 740 : 520}
         testId='stripe-modal'
         title=''
+        hideXOnMobile
     >
         {contents}
     </Modal>;

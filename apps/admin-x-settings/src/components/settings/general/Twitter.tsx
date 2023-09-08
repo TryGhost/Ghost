@@ -52,11 +52,11 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     const inputFields = (
-        <div className="flex gap-3">
+        <div className="flex flex-col gap-3 md:flex-row">
             <div className="pt-1">
                 <TwitterLogo className='-mb-1 h-10 w-10' />
             </div>
-            <div className="mr-[52px] w-full">
+            <div className="w-full md:mr-[52px]">
                 <div className="mb-2">
                     <span className="mr-1 font-semibold text-grey-900">{siteTitle}</span>
                     <span className="text-grey-700">&#183; 2h</span>

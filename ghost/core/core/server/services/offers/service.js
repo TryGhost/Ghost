@@ -4,6 +4,7 @@ const OffersModule = require('@tryghost/members-offers');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
 const models = require('../../models');
+const OfferBookshelfRepository = require('./OfferBookshelfRepository');
 
 let redirectManager;
 
@@ -15,10 +16,13 @@ module.exports = {
                 return urlUtils.urlJoin(urlUtils.getSubdir(), pathname);
             }
         });
+        const repository = new OfferBookshelfRepository(
+            models.Offer,
+            models.OfferRedemption
+        );
         const offersModule = OffersModule.create({
-            OfferModel: models.Offer,
-            OfferRedemptionModel: models.OfferRedemption,
-            redirectManager
+            redirectManager,
+            repository
         });
 
         this.api = offersModule.api;
