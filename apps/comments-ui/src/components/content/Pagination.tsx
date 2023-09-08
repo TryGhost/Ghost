@@ -18,7 +18,7 @@ const Pagination = () => {
         return null;
     }
 
-    const text = left === 1 ? t('Show 1 previous comment') :  t('Show {{amount}} previous comments', {amount: formatNumber(left)})
+    const text = left === 1 ? t('Show 1 previous comment') : t('Show {{amount}} previous comments', {amount: formatNumber(left)});
 
     return (
         <button className="text-md group mb-10 flex w-full items-center px-0 pb-2 pt-0 text-left font-sans font-semibold text-neutral-700 dark:text-white" data-testid="pagination-component" type="button" onClick={loadMore}>

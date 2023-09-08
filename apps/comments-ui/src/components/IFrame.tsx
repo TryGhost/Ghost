@@ -37,7 +37,7 @@ export default class IFrame extends Component<any> {
 
             if (this.props.onResize) {
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                (new ResizeObserver(_ => {
+                (new ResizeObserver((_) => {
                     window.requestAnimationFrame(() => {
                         this.props.onResize(this.iframeRoot);
                     });

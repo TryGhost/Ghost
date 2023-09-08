@@ -1,13 +1,13 @@
 import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
 import isEqual from 'lodash/isEqual';
-import {Knex} from "knex";
+import {Knex} from 'knex';
 import {
     PostsBulkUnpublishedEvent,
     PostsBulkFeaturedEvent,
     PostsBulkUnfeaturedEvent,
     PostsBulkAddTagsEvent
-} from "@tryghost/post-events";
+} from '@tryghost/post-events';
 import debugModule from '@tryghost/debug';
 import {Collection} from './Collection';
 import {CollectionRepository} from './CollectionRepository';
@@ -194,7 +194,7 @@ export class CollectionsService {
         });
 
         this.DomainEvents.subscribe(PostEditedEvent, async (event: PostEditedEvent) => {
-            if(this.hasPostEditRelevantChanges(event.data) === false) {
+            if (this.hasPostEditRelevantChanges(event.data) === false) {
                 return;
             }
 
@@ -280,7 +280,7 @@ export class CollectionsService {
             featured: postEditEvent.previous.featured,
             published_at: postEditEvent.previous.published_at,
             tags: postEditEvent.previous.tags
-        }
+        };
 
         return !isEqual(current, previous);
     }
@@ -289,7 +289,7 @@ export class CollectionsService {
         return await this.collectionsRepository.createTransaction(async (transaction) => {
             const collections = await this.collectionsRepository.getAll({
                 transaction
-            })
+            });
 
             for (const collection of collections) {
                 if (collection.type === 'automatic' && collection.filter) {
@@ -423,7 +423,7 @@ export class CollectionsService {
                         await this.collectionsRepository.save(collection, {transaction});
                     }
 
-                    collectionsChangeLog += `Post ${postEdit.id} was updated and added to collection ${collection.slug} with filter ${collection.filter}\n`
+                    collectionsChangeLog += `Post ${postEdit.id} was updated and added to collection ${collection.slug} with filter ${collection.filter}\n`;
                 } else {
                     debug(`Post ${postEdit.id} was updated but did not update any collections`);
                 }
@@ -443,7 +443,7 @@ export class CollectionsService {
             });
 
             // only process collections that have a filter that includes published_at
-            collections = collections.filter((collection) => collection.filter?.includes('published_at'));
+            collections = collections.filter(collection => collection.filter?.includes('published_at'));
 
             if (!collections.length) {
                 return;
@@ -461,7 +461,7 @@ export class CollectionsService {
             });
 
             // only process collections that have a filter that includes featured
-            collections = collections.filter((collection) => collection.filter?.includes('featured'));
+            collections = collections.filter(collection => collection.filter?.includes('featured'));
 
             if (!collections.length) {
                 return;

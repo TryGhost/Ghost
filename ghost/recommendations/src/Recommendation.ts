@@ -1,5 +1,5 @@
-import ObjectId from "bson-objectid";
-import errors from "@tryghost/errors";
+import ObjectId from 'bson-objectid';
+import errors from '@tryghost/errors';
 
 export type AddRecommendation = {
     title: string
@@ -16,16 +16,16 @@ type RecommendationConstructorData = AddRecommendation & {id: string, createdAt:
 export type RecommendationCreateData = AddRecommendation & {id?: string, createdAt?: Date, updatedAt?: Date|null}
 
 export class Recommendation {
-    id: string
-    title: string
-    reason: string|null
-    excerpt: string|null // Fetched from the site meta data
-    featuredImage: URL|null // Fetched from the site meta data
-    favicon: URL|null // Fetched from the site meta data
-    url: URL
-    oneClickSubscribe: boolean
-    createdAt: Date
-    updatedAt: Date|null
+    id: string;
+    title: string;
+    reason: string|null;
+    excerpt: string|null; // Fetched from the site meta data
+    featuredImage: URL|null; // Fetched from the site meta data
+    favicon: URL|null; // Fetched from the site meta data
+    url: URL;
+    oneClickSubscribe: boolean;
+    createdAt: Date;
+    updatedAt: Date|null;
 
     #deleted: boolean;
 
@@ -50,14 +50,14 @@ export class Recommendation {
     static validate(properties: AddRecommendation) {
         if (properties.url.protocol !== 'http:' && properties.url.protocol !== 'https:') {
             throw new errors.ValidationError({
-                message: 'url must be a valid URL',
+                message: 'url must be a valid URL'
             });
         }
 
         if (properties.featuredImage !== null) {
             if (properties.featuredImage.protocol !== 'http:' && properties.featuredImage.protocol !== 'https:') {
                 throw new errors.ValidationError({
-                    message: 'Featured image must be a valid URL',
+                    message: 'Featured image must be a valid URL'
                 });
             }
         }
@@ -65,32 +65,32 @@ export class Recommendation {
         if (properties.favicon !== null) {
             if (properties.favicon.protocol !== 'http:' && properties.favicon.protocol !== 'https:') {
                 throw new errors.ValidationError({
-                    message: 'Favicon must be a valid URL',
+                    message: 'Favicon must be a valid URL'
                 });
             }
         }
 
         if (properties.title.length === 0) {
             throw new errors.ValidationError({
-                message: 'Title must not be empty',
+                message: 'Title must not be empty'
             });
         }
 
         if (properties.title.length > 2000) {
             throw new errors.ValidationError({
-                message: 'Title must be less than 2000 characters',
+                message: 'Title must be less than 2000 characters'
             });
         }
 
         if (properties.reason && properties.reason.length > 2000) {
             throw new errors.ValidationError({
-                message: 'Reason must be less than 2000 characters',
+                message: 'Reason must be less than 2000 characters'
             });
         }
 
         if (properties.excerpt && properties.excerpt.length > 2000) {
             throw new errors.ValidationError({
-                message: 'Excerpt must be less than 2000 characters',
+                message: 'Excerpt must be less than 2000 characters'
             });
         }
     }
@@ -117,7 +117,7 @@ export class Recommendation {
             url: data.url,
             oneClickSubscribe: data.oneClickSubscribe,
             createdAt: data.createdAt ?? new Date(),
-            updatedAt: data.updatedAt ?? null,
+            updatedAt: data.updatedAt ?? null
         };
 
         this.validate(d);

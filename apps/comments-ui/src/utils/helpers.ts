@@ -69,7 +69,7 @@ export function formatRelativeTime(dateString: string, t: TranslationFunction): 
     }
 
     // Diff in months
-    diff = diff * 7 / 30
+    diff = diff * 7 / 30;
     if (diff < 12) {
         if (Math.floor(diff) === 1) {
             // Special case, we should compare based on dates in the future instead

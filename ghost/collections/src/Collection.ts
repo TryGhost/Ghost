@@ -19,7 +19,7 @@ const messages = {
 };
 
 function validateFilter(filter: string | null, type: 'manual' | 'automatic', isAllowedEmpty = false) {
-    const allowedProperties = ['featured', 'published_at', 'tag', 'tags']
+    const allowedProperties = ['featured', 'published_at', 'tag', 'tags'];
     if (type === 'manual') {
         if (filter !== null) {
             throw new ValidationError({

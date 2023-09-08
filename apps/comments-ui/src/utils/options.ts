@@ -3,7 +3,7 @@ import {CommentsOptions} from '../AppContext';
 
 export function useOptions(scriptTag: HTMLElement) {
     const buildOptions = React.useCallback(() => {
-         /**
+        /**
          * @type {HTMLElement}
          */
         const dataset = scriptTag.dataset;
