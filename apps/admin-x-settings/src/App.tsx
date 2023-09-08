@@ -5,6 +5,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import RoutingProvider, {ExternalLink} from './components/providers/RoutingProvider';
 import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
+import clsx from 'clsx';
 import {GlobalDirtyStateProvider} from './hooks/useGlobalDirtyState';
 import {OfficialTheme, ServicesProvider} from './components/providers/ServiceProvider';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
@@ -16,6 +17,7 @@ interface AppProps {
     officialThemes: OfficialTheme[];
     zapierTemplates: ZapierTemplate[];
     externalNavigate: (link: ExternalLink) => void;
+    darkMode?: boolean;
 }
 
 const queryClient = new QueryClient({
@@ -28,14 +30,19 @@ const queryClient = new QueryClient({
     }
 });
 
-function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate}: AppProps) {
+function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, darkMode = false}: AppProps) {
+    const appClassName = clsx(
+        'admin-x-settings h-[100vh] w-full overflow-y-auto',
+        darkMode && 'dark'
+    );
+
     return (
         <QueryClientProvider client={queryClient}>
             <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes} zapierTemplates={zapierTemplates}>
                 <GlobalDataProvider>
                     <RoutingProvider externalNavigate={externalNavigate}>
                         <GlobalDirtyStateProvider>
-                            <div className="admin-x-settings h-[100vh] w-full overflow-y-auto" id="admin-x-root" style={{
+                            <div className={appClassName} id="admin-x-root" style={{
                                 height: '100vh',
                                 width: '100%'
                             }}
