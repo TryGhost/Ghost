@@ -46,6 +46,14 @@ export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}
     }
     if (newsletterInputs.length > 0) {
         reqBody.newsletters = newsletters;
+    } else {
+        // If there was only check-able newsletter inputs in the form, but none were checked, set reqBody.newsletters
+        // to an empty array so that the member is not signed up to the default newsletters
+        const checkableNewsletterInputs = event.target.querySelectorAll('input[type=checkbox][data-members-newsletter]') || [];
+
+        if (checkableNewsletterInputs.length > 0) {
+            reqBody.newsletters = [];
+        }
     }
 
     fetch(`${siteUrl}/members/api/send-magic-link/`, {
