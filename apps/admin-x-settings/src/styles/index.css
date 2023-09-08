@@ -63,6 +63,6 @@ html, body, #root {
     letter-spacing: unset;
 }
 
-.dark h1 {
-    color: var(--white);
+.dark {
+    color: #FAFAFB;
 }

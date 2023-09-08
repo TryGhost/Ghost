@@ -78,9 +78,9 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     if (saveState === 'unsaved') {
         styles += ' border-green';
     } else if (isEditing){
-        styles += ' border-grey-300';
+        styles += ' border-grey-300 dark:border-grey-800';
     } else {
-        styles += ' border-grey-200';
+        styles += ' border-grey-200 dark:border-grey-900';
     }
 
     let viewButtons: ButtonProps[] = [];
