@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {AddRecommendation, EditRecommendation, Recommendation} from "./Recommendation";
-import {RecommendationService} from "./RecommendationService";
+import {AddRecommendation, EditRecommendation, Recommendation} from './Recommendation';
+import {RecommendationService} from './RecommendationService';
 import errors from '@tryghost/errors';
 
 type Frame = {
@@ -19,7 +19,7 @@ function validateString(object: any, key: string, {required = true, nullable = f
     }
 
     if (object[key] !== undefined && object[key] !== null) {
-        if (typeof object[key] !== "string") {
+        if (typeof object[key] !== 'string') {
             throw new errors.BadRequestError({message: `${key} must be a string`});
         }
         return object[key];
@@ -33,7 +33,7 @@ function validateBoolean(object: any, key: string, {required = true} = {}): bool
         throw new errors.BadRequestError({message: `${key} must be an object`});
     }
     if (object[key] !== undefined) {
-        if (typeof object[key] !== "boolean") {
+        if (typeof object[key] !== 'boolean') {
             throw new errors.BadRequestError({message: `${key} must be a boolean`});
         }
         return object[key];
@@ -66,7 +66,7 @@ function validateInteger(object: any, key: string, {required = true, nullable = 
     }
 
     if (object[key] !== undefined && object[key] !== null) {
-        if (typeof object[key] === "string") {
+        if (typeof object[key] === 'string') {
             // Try to cast to a number
             const parsed = parseInt(object[key]);
             if (isNaN(parsed) || !isFinite(parsed)) {
@@ -75,7 +75,7 @@ function validateInteger(object: any, key: string, {required = true, nullable = 
             return parsed;
         }
 
-        if (typeof object[key] !== "number") {
+        if (typeof object[key] !== 'number') {
             throw new errors.BadRequestError({message: `${key} must be a number`});
         }
         return object[key];
@@ -83,7 +83,6 @@ function validateInteger(object: any, key: string, {required = true, nullable = 
         throw new errors.BadRequestError({message: `${key} is required`});
     }
 }
-
 
 export class RecommendationController {
     service: RecommendationService;
@@ -106,22 +105,21 @@ export class RecommendationController {
     }
 
     #getFramePage(frame: Frame): number {
-        const page = validateInteger(frame.options, "page", {required: false, nullable: true}) ?? 1;
+        const page = validateInteger(frame.options, 'page', {required: false, nullable: true}) ?? 1;
         if (page < 1) {
-            throw new errors.BadRequestError({message: "page must be greater or equal to 1"});
+            throw new errors.BadRequestError({message: 'page must be greater or equal to 1'});
         }
 
         return page;
     }
 
     #getFrameLimit(frame: Frame, defaultLimit = 15): number {
-        const limit = validateInteger(frame.options, "limit", {required: false, nullable: true}) ?? defaultLimit;
+        const limit = validateInteger(frame.options, 'limit', {required: false, nullable: true}) ?? defaultLimit;
         if (limit < 1) {
-            throw new errors.BadRequestError({message: "limit must be greater or equal to 1"});
+            throw new errors.BadRequestError({message: 'limit must be greater or equal to 1'});
         }
         return limit;
     }
-
 
     #getFrameRecommendation(frame: Frame): AddRecommendation {
         if (!frame.data || !frame.data.recommendations || !frame.data.recommendations[0]) {
@@ -131,15 +129,15 @@ export class RecommendationController {
         const recommendation = frame.data.recommendations[0];
 
         const cleanedRecommendation: AddRecommendation = {
-            title: validateString(recommendation, "title") ?? '',
-            url: validateURL(recommendation, "url")!,
+            title: validateString(recommendation, 'title') ?? '',
+            url: validateURL(recommendation, 'url')!,
 
             // Optional fields
-            oneClickSubscribe: validateBoolean(recommendation, "one_click_subscribe", {required: false}) ?? false,
-            reason: validateString(recommendation, "reason", {required: false, nullable: true}) ?? null,
-            excerpt: validateString(recommendation, "excerpt", {required: false, nullable: true}) ?? null,
-            featuredImage: validateURL(recommendation, "featured_image", {required: false, nullable: true}) ?? null,
-            favicon: validateURL(recommendation, "favicon", {required: false, nullable: true}) ?? null,
+            oneClickSubscribe: validateBoolean(recommendation, 'one_click_subscribe', {required: false}) ?? false,
+            reason: validateString(recommendation, 'reason', {required: false, nullable: true}) ?? null,
+            excerpt: validateString(recommendation, 'excerpt', {required: false, nullable: true}) ?? null,
+            featuredImage: validateURL(recommendation, 'featured_image', {required: false, nullable: true}) ?? null,
+            favicon: validateURL(recommendation, 'favicon', {required: false, nullable: true}) ?? null
         };
 
         // Create a new recommendation
@@ -153,23 +151,22 @@ export class RecommendationController {
 
         const recommendation = frame.data.recommendations[0];
         const cleanedRecommendation: EditRecommendation = {
-            title: validateString(recommendation, "title", {required: false}) ?? undefined,
-            url: validateURL(recommendation, "url", {required: false}) ?? undefined,
-            oneClickSubscribe: validateBoolean(recommendation, "one_click_subscribe", {required: false}),
-            reason: validateString(recommendation, "reason", {required: false, nullable: true}),
-            excerpt: validateString(recommendation, "excerpt", {required: false, nullable: true}),
-            featuredImage: validateURL(recommendation, "featured_image", {required: false, nullable: true}),
-            favicon: validateURL(recommendation, "favicon", {required: false, nullable: true}),
+            title: validateString(recommendation, 'title', {required: false}) ?? undefined,
+            url: validateURL(recommendation, 'url', {required: false}) ?? undefined,
+            oneClickSubscribe: validateBoolean(recommendation, 'one_click_subscribe', {required: false}),
+            reason: validateString(recommendation, 'reason', {required: false, nullable: true}),
+            excerpt: validateString(recommendation, 'excerpt', {required: false, nullable: true}),
+            featuredImage: validateURL(recommendation, 'featured_image', {required: false, nullable: true}),
+            favicon: validateURL(recommendation, 'favicon', {required: false, nullable: true})
         };
 
         // Create a new recommendation
         return cleanedRecommendation;
     }
 
-
     #returnRecommendations(recommendations: Recommendation[], meta?: any) {
         return {
-            data: recommendations.map(r => {
+            data: recommendations.map((r) => {
                 return {
                     id: r.id,
                     title: r.title,
@@ -184,7 +181,7 @@ export class RecommendationController {
                 };
             }),
             meta
-        }
+        };
     }
 
     #buildPagination({page, limit, count}: {page: number, limit: number, count: number}) {
@@ -197,7 +194,7 @@ export class RecommendationController {
             pages,
             prev: page > 1 ? page - 1 : null,
             next: page < pages ? page + 1 : null
-        }
+        };
     }
 
     async addRecommendation(frame: Frame) {
@@ -226,8 +223,8 @@ export class RecommendationController {
         const limit = this.#getFrameLimit(frame, 5);
         const order = [
             {
-                field: "createdAt" as const,
-                direction: "desc" as const
+                field: 'createdAt' as const,
+                direction: 'desc' as const
             }
         ];
 
