@@ -151,7 +151,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         value={formState.description || ''}
                         onChange={e => updateForm(state => ({...state, description: e.target.value}))}
                     />
-                    {!isFreeTier && <div className='flex gap-10'>
+                    {!isFreeTier && <div className='flex flex-col gap-10 md:flex-row'>
                         <div className='basis-1/2'>
                             <div className='mb-1 flex h-6 items-center justify-between'>
                                 <Heading level={6}>Prices</Heading>
@@ -253,7 +253,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                     </div>
                 </Form>
             </div>
-            <div className='sticky top-[94px] shrink-0 basis-[380px]'>
+            <div className='sticky top-[94px] hidden shrink-0 basis-[380px] min-[920px]:!visible min-[920px]:!block'>
                 <TierDetailPreview isFreeTier={isFreeTier} tier={formState} />
             </div>
         </div>
