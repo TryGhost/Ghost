@@ -1,5 +1,6 @@
 import Button from '../../../../admin-x-ds/global/Button';
 import ColorIndicator from '../../../../admin-x-ds/global/form/ColorIndicator';
+import ColorPicker from '../../../../admin-x-ds/global/form/ColorPicker';
 import Form from '../../../../admin-x-ds/global/form/Form';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import MultiSelect, {MultiSelectOption} from '../../../../admin-x-ds/global/form/MultiSelect';
@@ -26,6 +27,8 @@ type SidebarProps = {
     selectedLayout : string;
     handleCopyClick: () => void;
     isCopied: boolean;
+    setCustomColor?: React.Dispatch<React.SetStateAction<{active: boolean}>>;
+    customColor?: {active: boolean};
 };
 
 const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout, 
@@ -38,6 +41,8 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
     embedScript, 
     handleLayoutSelect,
     handleCopyClick,
+    customColor,
+    setCustomColor,
     isCopied}) => {
     const labelOptions = labels ? labels.map((l) => {
         return {
@@ -90,13 +95,34 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
                             title='Background color'
                             value={selectedColor}
                             onSwatchChange={(e) => {
-                                if (e) {
+                                if (e && setCustomColor) {
+                                    handleColorToggle(e);
+                                    setCustomColor({active: false});
+                                }
+                            }}
+                            onTogglePicker={() => {
+                                if (setCustomColor) {
+                                    setCustomColor({active: true});
+                                }
+                            }}
+                        />
+                    }
+
+                    {
+                        selectedLayout === 'all-in-one' && customColor?.active &&
+                        <ColorPicker 
+                            clearButtonValue={'#d74780'}
+                            eyedropper={false}
+                            hexValue={selectedColor || '#d74780'}
+                            onChange={(e) => {
+                                if (setCustomColor && e) {
+                                    setCustomColor({active: true});
                                     handleColorToggle(e);
                                 }
                             }}
-                            onTogglePicker={() => {}}
                         />
                     }
+
                     <MultiSelect
                         hint='Will be applied to all members signing up via this form'
                         options={labelOptions}

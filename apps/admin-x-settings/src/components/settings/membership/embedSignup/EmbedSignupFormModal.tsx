@@ -26,6 +26,7 @@ const EmbedSignupFormModal = NiceModal.create(() => {
     const {localSettings, siteData} = useSettingGroup();
     const [accentColor, title, description, locale, labs, icon] = getSettingValues<string>(localSettings, ['accent_color', 'title', 'description', 'locale', 'labs', 'icon']);
     const {data: labels} = useBrowseLabels();
+    const [customColor, setCustomColor] = useState<{active: boolean}>({active: false});
 
     if (labs) {
         i18nEnabled = JSON.parse(labs).i18n;
@@ -103,6 +104,7 @@ const EmbedSignupFormModal = NiceModal.create(() => {
                 />
                 <EmbedSignupSidebar
                     accentColor={accentColor}
+                    customColor={customColor}
                     embedScript={embedScript}
                     handleColorToggle={handleColorToggle}
                     handleCopyClick={handleCopyClick}
@@ -113,6 +115,7 @@ const EmbedSignupFormModal = NiceModal.create(() => {
                     selectedColor={selectedColor}
                     selectedLabels={selectedLabels}
                     selectedLayout={selectedLayout}
+                    setCustomColor={setCustomColor}
                 />
             </div>
         </Modal>
