@@ -15,10 +15,10 @@ const Pagination: React.FC<PaginationProps> = ({page, limit, total, prevPage, ne
     /* If there is less than X items total, where X is the number of items per page that we want to show */
     if (total && limit < total) {
         return (
-            <div className={`flex items-center gap-2 text-xs text-grey-700`}>Showing {startIndex}-{endIndex} of {total}
-                <button type='button' onClick={prevPage}><Icon className={`h-[10px] w-[10px] [&>path]:stroke-[3px] ${!hasPrev ? 'cursor-default opacity-50' : 'cursor-pointer'}`} colorClass="text-green" name='chevron-left' />
+            <div className={`mt-1 flex items-center gap-2 text-xs text-grey-700`}>Showing {startIndex}-{endIndex} of {total}
+                <button type='button' onClick={prevPage}><Icon className={`h-[10px] w-[10px] [&>path]:stroke-[3px] ${!hasPrev ? 'cursor-default opacity-50' : 'hover:text-green-700 cursor-pointer'}`} colorClass="text-green" name='chevron-left' />
                 </button>
-                <button type="button" onClick={nextPage}><Icon className={`h-[10px] w-[10px] [&>path]:stroke-[3px] ${!hasNext ? 'cursor-default opacity-50' : 'cursor-pointer'}`} colorClass="text-green" name='chevron-right' /></button>
+                <button type="button" onClick={nextPage}><Icon className={`h-[10px] w-[10px] [&>path]:stroke-[3px] ${!hasNext ? 'cursor-default opacity-50' : 'hover:text-green-700 cursor-pointer'}`} colorClass="text-green" name='chevron-right' /></button>
             </div>
         );
 
