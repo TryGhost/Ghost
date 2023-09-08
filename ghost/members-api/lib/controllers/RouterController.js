@@ -16,7 +16,8 @@ const messages = {
     memberNotFound: 'No member exists with this e-mail address.',
     memberNotFoundSignUp: 'No member exists with this e-mail address. Please sign up first.',
     invalidType: 'Invalid checkout type.',
-    notConfigured: 'This site is not accepting payments at the moment.'
+    notConfigured: 'This site is not accepting payments at the moment.',
+    invalidNewsletterId: 'Cannot subscribe to invalid newsletter {ids}'
 };
 
 module.exports = class RouterController {
@@ -35,6 +36,7 @@ module.exports = class RouterController {
      * @param {any} deps.tokenService
      * @param {any} deps.sendEmailWithMagicLink
      * @param {{isSet(name: string): boolean}} deps.labsService
+     * @param {any} deps.newslettersService
      */
     constructor({
         offersAPI,
@@ -48,7 +50,8 @@ module.exports = class RouterController {
         tokenService,
         memberAttributionService,
         sendEmailWithMagicLink,
-        labsService
+        labsService,
+        newslettersService
     }) {
         this._offersAPI = offersAPI;
         this._paymentsService = paymentsService;
@@ -62,6 +65,7 @@ module.exports = class RouterController {
         this._sendEmailWithMagicLink = sendEmailWithMagicLink;
         this._memberAttributionService = memberAttributionService;
         this.labsService = labsService;
+        this._newslettersService = newslettersService;
     }
 
     async ensureStripe(_req, res, next) {
@@ -476,12 +480,37 @@ module.exports = class RouterController {
                     });
                 }
 
+                // Validate requested newsletters
+                let {newsletters: requestedNewsletters} = req.body;
+
+                if (requestedNewsletters && requestedNewsletters.length > 0) {
+                    const newsletterIds = requestedNewsletters.map(newsletter => newsletter.id);
+                    const newsletters = await this._newslettersService.browse({
+                        filter: `id:[${newsletterIds}]`,
+                        columns: ['id','status']
+                    });
+
+                    if (newsletters.length !== newsletterIds.length) {
+                        const validNewsletterIds = newsletters.map(newsletter => newsletter.id);
+                        const invalidNewsletterIds = newsletterIds.filter(id => !validNewsletterIds.includes(id));
+
+                        throw new errors.BadRequestError({
+                            message: tpl(messages.invalidNewsletterId, {ids: invalidNewsletterIds})
+                        });
+                    }
+
+                    requestedNewsletters = newsletters
+                        .filter(newsletter => newsletter.status === 'active')
+                        .map(newsletter => ({id: newsletter.id}));
+                }
+
                 // Someone tries to signup with a user that already exists
                 // -> doesn't really matter: we'll send a login link
-                const tokenData = _.pick(req.body, ['labels', 'name', 'newsletters']);
+                const tokenData = _.pick(req.body, ['labels', 'name']);
                 if (req.ip) {
                     tokenData.reqIp = req.ip;
                 }
+                tokenData.newsletters = requestedNewsletters;
                 // Save attribution data in the tokenData
                 tokenData.attribution = await this._memberAttributionService.getAttribution(req.body.urlHistory);
 
