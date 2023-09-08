@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/image-transform",
-  "version": "1.2.8",
+  "version": "1.2.9",
   "repository": "https://github.com/TryGhost/SDK/tree/main/packages/image-transform",
   "author": "Ghost Foundation",
   "license": "MIT",
