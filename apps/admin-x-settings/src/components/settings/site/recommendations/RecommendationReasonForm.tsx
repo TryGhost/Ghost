@@ -19,7 +19,7 @@ const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recomme
         marginTop
     >
         <div>
-            <Heading className='mb-2 block text-2xs font-semibold uppercase tracking-wider text-grey-700'>Preview</Heading>
+            <Heading className='mb-2 block text-2xs font-semibold uppercase tracking-wider' grey={true} level={6}>Preview</Heading>
             <a className='flex flex-col rounded-sm border border-grey-300 p-3' href={formState.url} rel="noopener noreferrer" target="_blank">
                 <div className="mb-1 flex items-center gap-2">
                     <RecommendationIcon {...formState} />
