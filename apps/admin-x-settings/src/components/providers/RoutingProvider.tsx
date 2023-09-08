@@ -7,7 +7,7 @@ import ChangeThemeModal from '../settings/site/ThemeModal';
 import CustomIntegrationModal from '../settings/advanced/integrations/CustomIntegrationModal';
 import DesignModal from '../settings/site/DesignModal';
 import EditRecommendationModal from '../settings/site/recommendations/EditRecommendationModal';
-import EmbedSignupFormModal from '../settings/membership/EmbedSignupFormModal';
+import EmbedSignupFormModal from '../settings/membership/embedSignup/EmbedSignupFormModal';
 import FirstpromoterModal from '../settings/advanced/integrations/FirstPromoterModal';
 import HistoryModal from '../settings/advanced/HistoryModal';
 import InviteUserModal from '../settings/general/InviteUserModal';
