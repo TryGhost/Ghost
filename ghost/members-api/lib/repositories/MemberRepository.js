@@ -19,7 +19,7 @@ const messages = {
     bulkActionRequiresFilter: 'Cannot perform {action} without a filter or all=true',
     tierArchived: 'Cannot use archived Tiers',
     invalidEmail: 'Invalid Email',
-    invalidNewsletterId: 'Cannot subscribe to invalid newsletter {id}'
+    invalidNewsletterId: 'Cannot subscribe to invalid newsletter {ids}'
 };
 
 /**
@@ -289,10 +289,10 @@ module.exports = class MemberRepository {
                 filter: `id:[${newsletterIds}]`,
                 columns: ['id','status']
             });
-            if (newsletters.length !== memberData.newsletters.length) {
+            if (newsletters.length !== newsletterIds.length) {
                 const validNewsletterIds = newsletters.map(newsletter => newsletter.id);
                 const invalidIds = newsletterIds.filter(id => !validNewsletterIds.includes(id));
-                throw new errors.BadRequestError({message: tpl(messages.invalidNewsletterId, {id: invalidIds})});
+                throw new errors.BadRequestError({message: tpl(messages.invalidNewsletterId, {ids: invalidIds})});
             }
             memberData.newsletters = newsletters
                 .filter(newsletter => newsletter.status === 'active')
