@@ -59,11 +59,14 @@ const ThemePreview: React.FC<{
     const left =
         <div className='flex items-center gap-2'>
             <Breadcrumbs
+                activeItemClassName='hidden md:!block md:!visible'
+                itemClassName='hidden md:!block md:!visible'
                 items={[
                     {label: 'Design', onClick: onClose},
                     {label: 'Change theme', onClick: onBack},
                     {label: selectedTheme.name}
                 ]}
+                separatorClassName='hidden md:!block md:!visible'
                 backIcon
                 onBack={onBack}
             />
