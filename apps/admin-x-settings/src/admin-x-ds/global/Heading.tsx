@@ -78,6 +78,7 @@ const Heading: React.FC<Heading1to5Props | Heading6Props | HeadingLabelProps> = 
 
     className = clsx(
         styles,
+        'dark:text-white',
         className
     );
 
