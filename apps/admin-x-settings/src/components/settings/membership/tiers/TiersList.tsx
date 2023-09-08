@@ -16,7 +16,7 @@ interface TierCardProps {
     tier: Tier;
 }
 
-const cardContainerClasses = 'tablet:group flex min-[900px]:min-h-[200px] flex-col items-start justify-between gap-4 self-stretch rounded-sm border border-grey-300 p-4 transition-all hover:border-grey-400';
+const cardContainerClasses = 'group/tiercard flex min-[900px]:min-h-[200px] flex-col items-start justify-between gap-4 self-stretch rounded-sm border border-grey-300 p-4 transition-all hover:border-grey-400 dark:border-grey-900 dark:hover:border-grey-700';
 
 const TierCard: React.FC<TierCardProps> = ({tier}) => {
     const {updateRoute} = useRouting();
@@ -41,11 +41,11 @@ const TierCard: React.FC<TierCardProps> = ({tier}) => {
             </div>
             {tier.monthly_price && (
                 tier.active ?
-                    <Button className='group group-hover:opacity-100 tablet:opacity-0' color='red' label='Archive' link onClick={() => {
+                    <Button className='group group-hover/tiercard:opacity-100 tablet:opacity-0' color='red' label='Archive' link onClick={() => {
                         updateTier({...tier, active: false});
                     }}/>
                     :
-                    <Button className='group group-hover:opacity-100 tablet:opacity-0' color='green' label='Activate' link onClick={() => {
+                    <Button className='group group-hover/tiercard:opacity-100 tablet:opacity-0' color='green' label='Activate' link onClick={() => {
                         updateTier({...tier, active: true});
                     }}/>
             )}

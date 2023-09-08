@@ -33,6 +33,7 @@ export const Default: Story = {
 export const Disabled: Story = {
     args: {
         placeholder: `Here's a disabled field`,
+        value: 'Hello disabled field',
         title: 'Disabled',
         disabled: true
     }

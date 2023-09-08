@@ -5,6 +5,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import RoutingProvider, {ExternalLink} from './components/providers/RoutingProvider';
 import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
+import clsx from 'clsx';
 import {GlobalDirtyStateProvider} from './hooks/useGlobalDirtyState';
 import {OfficialTheme, ServicesProvider} from './components/providers/ServiceProvider';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
@@ -16,6 +17,7 @@ interface AppProps {
     officialThemes: OfficialTheme[];
     zapierTemplates: ZapierTemplate[];
     externalNavigate: (link: ExternalLink) => void;
+    darkMode?: boolean;
 }
 
 const queryClient = new QueryClient({
@@ -28,14 +30,19 @@ const queryClient = new QueryClient({
     }
 });
 
-function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate}: AppProps) {
+function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, darkMode = false}: AppProps) {
+    const appClassName = clsx(
+        'admin-x-settings h-[100vh] w-full overflow-y-auto',
+        darkMode && 'dark'
+    );
+
     return (
         <QueryClientProvider client={queryClient}>
             <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes} zapierTemplates={zapierTemplates}>
                 <GlobalDataProvider>
                     <RoutingProvider externalNavigate={externalNavigate}>
                         <GlobalDirtyStateProvider>
-                            <div className="admin-x-settings h-[100vh] w-full overflow-y-auto" id="admin-x-root" style={{
+                            <div className={appClassName} id="admin-x-root" style={{
                                 height: '100vh',
                                 width: '100%'
                             }}
@@ -54,12 +61,12 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate}: 
                                             <div className='-mx-6 h-[84px] bg-white px-6 tablet:m-0 tablet:bg-transparent tablet:p-0'>
                                                 <Heading>Settings</Heading>
                                             </div>
-                                            <div className="relative mt-[-32px] w-full overflow-x-hidden after:absolute after:inset-x-0 after:top-0 after:hidden after:h-[40px] after:bg-gradient-to-b after:from-white after:to-transparent after:content-[''] tablet:w-[260px] tablet:after:!visible tablet:after:!block">
+                                            <div className="relative mt-[-32px] w-full overflow-x-hidden after:absolute after:inset-x-0 after:top-0 after:hidden after:h-[40px] after:bg-gradient-to-b after:from-white after:to-transparent after:content-[''] dark:after:from-black tablet:w-[260px] tablet:after:!visible tablet:after:!block">
                                                 <Sidebar />
                                             </div>
                                         </div>
                                         <div className="relative flex-auto pt-[3vmin] tablet:ml-[300px] tablet:pt-[85px]">
-                                            <div className='pointer-events-none fixed inset-x-0 top-0 z-[5] hidden h-[80px] bg-gradient-to-t from-transparent to-white to-60% tablet:!visible tablet:!block'></div>
+                                            <div className='pointer-events-none fixed inset-x-0 top-0 z-[5] hidden h-[80px] bg-gradient-to-t from-transparent to-white to-60% dark:to-black tablet:!visible tablet:!block'></div>
                                             <Settings />
                                         </div>
                                     </div>

@@ -130,7 +130,7 @@ const Modal: React.FC<ModalProps> = ({
     }
 
     let modalClasses = clsx(
-        'relative z-50 mx-auto flex max-h-[100%] w-full flex-col justify-between overflow-x-hidden rounded bg-white',
+        'relative z-50 mx-auto flex max-h-[100%] w-full flex-col justify-between overflow-x-hidden rounded bg-white dark:bg-black',
         formSheet ? 'shadow-md' : 'shadow-xl',
         (animate && !formSheet) && 'animate-modal-in',
         formSheet && 'animate-modal-in-reverse',
@@ -256,7 +256,7 @@ const Modal: React.FC<ModalProps> = ({
                             (<>
                                 {title && <Heading level={3}>{title}</Heading>}
                                 <div className={`${topRightContent !== 'close' && 'md:!invisible md:!hidden'} ${hideXOnMobile && 'hidden'} absolute right-6 top-6`}>
-                                    <Button className='-m-2 cursor-pointer p-2 opacity-50 hover:opacity-100' icon='close' size='sm' unstyled onClick={removeModal} />
+                                    <Button className='-m-2 cursor-pointer p-2 opacity-50 hover:opacity-100' icon='close' iconColorClass='text-black dark:text-white' size='sm' unstyled onClick={removeModal} />
                                 </div>
                             </>)
                             :
