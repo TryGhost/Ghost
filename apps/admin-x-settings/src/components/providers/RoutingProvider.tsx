@@ -57,7 +57,7 @@ const UnsplashModal = () => import('../settings/advanced/integrations/UnsplashMo
 const UserDetailModal = () => import('../settings/general/UserDetailModal');
 const ZapierModal = () => import('../settings/advanced/integrations/ZapierModal');
 const AnnouncementBarModal = () => import('../settings/site/AnnouncementBarModal');
-const EmbedSignupFormModal = () => import('../settings/membership/EmbedSignupFormModal');
+const EmbedSignupFormModal = () => import('../settings/membership/embedSignup/EmbedSignupFormModal');
 
 const modalPaths: {[key: string]: () => Promise<{default: React.FC<NiceModalHocProps & RoutingModalProps>}>} = {
     'design/edit/themes': ChangeThemeModal,
