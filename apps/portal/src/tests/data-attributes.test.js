@@ -63,7 +63,7 @@ function getMockData({newsletterQuerySelectorResult = null} = {}) {
                         value: 'Gold'
                     }];
                 }
-                if (elem === 'input[type=checkbox][data-members-newsletter]:checked' && newsletterQuerySelectorResult) {
+                if (elem === 'input[type=hidden][data-members-newsletter], input[type=checkbox][data-members-newsletter]:checked, input[type=radio][data-members-newsletter]:selected' && newsletterQuerySelectorResult) {
                     return newsletterQuerySelectorResult;
                 }
             }
