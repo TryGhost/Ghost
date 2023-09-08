@@ -61,7 +61,7 @@ const TextField: React.FC<TextFieldProps> = ({
         clearBg ? 'bg-transparent' : 'bg-grey-75 px-[10px]',
         error && border ? `border-red` : `${disabled ? disabledBorderClasses : enabledBorderClasses}`,
         (title && !hideTitle && !clearBg) && `mt-2`,
-        (disabled ? 'text-grey-700' : ''),
+        (disabled ? 'cursor-not-allowed text-grey-700' : ''),
         rightPlaceholder && 'w-0 grow',
         className
     );
@@ -106,9 +106,14 @@ const TextField: React.FC<TextFieldProps> = ({
         hintClassName
     );
 
+    containerClassName = clsx(
+        'flex flex-col',
+        containerClassName
+    );
+
     if (title || hint) {
         return (
-            <div className={`flex flex-col ${containerClassName}`}>
+            <div className={containerClassName}>
                 {field}
                 {title && <Heading className={hideTitle ? 'sr-only' : 'order-1 !text-grey-700 peer-focus:!text-black'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
                 {hint && <Hint className={hintClassName} color={error ? 'red' : ''}>{hint}</Hint>}

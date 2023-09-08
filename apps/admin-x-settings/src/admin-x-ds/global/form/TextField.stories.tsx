@@ -30,6 +30,14 @@ export const Default: Story = {
     }
 };
 
+export const Disabled: Story = {
+    args: {
+        placeholder: `Here's a disabled field`,
+        title: 'Disabled',
+        disabled: true
+    }
+};
+
 export const ClearBackground: Story = {
     args: {
         placeholder: 'Enter something',
