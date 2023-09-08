@@ -294,13 +294,9 @@ module.exports = class MemberRepository {
                 const invalidIds = memberNewsletterIds.filter(id => !validNewsletterIds.includes(id));
                 throw new errors.BadRequestError({message: tpl(messages.invalidNewsletterId, {id: invalidIds})});
             }
-            const activeNewsletters = validNewsletters.reduce((activeNewslettersIds, newsletter) => {
-                if (newsletter.status === 'active') {
-                    activeNewslettersIds.push({id: newsletter.id});
-                }
-                return activeNewslettersIds;
-            }, []);
-            memberData.newsletters = activeNewsletters;
+        memberData.newsletters = validNewsletters
+            .filter(newsletter => newsletter.status === 'active')
+            .map(newsletter => ({ id: newsletter.id }))
         }
 
         // Subscribe members to default newsletters
