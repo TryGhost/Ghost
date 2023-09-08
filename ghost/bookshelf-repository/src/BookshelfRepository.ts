@@ -13,6 +13,7 @@ export type ModelClass<T> = {
     findOne: (data: {id: T}, options?: {require?: boolean}) => Promise<ModelInstance<T> | null>;
     findAll: (options: {filter?: string; order?: string, page?: number, limit?: number | 'all'}) => Promise<ModelInstance<T>[]>;
     add: (data: object) => Promise<ModelInstance<T>>;
+    getFilteredCollection: (options: {filter?: string}) => {count(): Promise<number>};
 }
 
 export type ModelInstance<T> = {
@@ -71,7 +72,7 @@ export abstract class BookshelfRepository<IDType, T extends Entity<IDType>> {
         return (await Promise.all(models.map(model => this.modelToEntity(model)))).filter(entity => !!entity) as T[];
     }
 
-    async getPage({filter, order, page, limit}: { filter?: string; order?: OrderOption<T>; page: number; limit: number | 'all' }): Promise<T[]> {
+    async getPage({filter, order, page, limit}: { filter?: string; order?: OrderOption<T>; page: number; limit: number }): Promise<T[]> {
         const models = await this.Model.findAll({
             filter,
             order: this.#orderToString(order),
@@ -82,7 +83,7 @@ export abstract class BookshelfRepository<IDType, T extends Entity<IDType>> {
     }
 
     async getCount({filter}: { filter?: string } = {}): Promise<number> {
-        const collection = (this.Model as any).getFilteredCollection({filter});
+        const collection = this.Model.getFilteredCollection({filter});
         return await collection.count();
     }
 }

@@ -117,6 +117,9 @@ export class RecommendationService {
     }
 
     async listRecommendations({page, limit, filter, order}: { page: number; limit: number | 'all', filter?: string, order?: OrderOption<Recommendation> } = {page: 1, limit: 'all'}) {
+        if (limit === 'all') {
+            return await this.repository.getAll({filter, order})
+        }
         return await this.repository.getPage({page, limit, filter, order})
     }
 

@@ -9,16 +9,13 @@ module.exports = {
         },
         options: [
             'limit',
-            'fields',
-            'filter',
             'order',
-            'debug',
             'page'
         ],
         permissions: true,
         validation: {},
-        async query() {
-            return await recommendations.controller.listRecommendations();
+        async query(frame) {
+            return await recommendations.controller.listRecommendations(frame);
         }
     }
 };

@@ -187,6 +187,19 @@ export class RecommendationController {
         }
     }
 
+    #buildPagination({page, limit, count}: {page: number, limit: number, count: number}) {
+        const pages = Math.ceil(count / limit);
+
+        return {
+            page,
+            limit,
+            total: count,
+            pages,
+            prev: page > 1 ? page - 1 : null,
+            next: page < pages ? page + 1 : null
+        }
+    }
+
     async addRecommendation(frame: Frame) {
         const recommendation = this.#getFrameRecommendation(frame);
         return this.#returnRecommendations(
@@ -221,19 +234,10 @@ export class RecommendationController {
         const count = await this.service.countRecommendations({});
         const data = (await this.service.listRecommendations({page, limit, order}));
 
-        const pages = Math.ceil(count / limit);
-
         return this.#returnRecommendations(
             data,
             {
-                pagination: {
-                    page,
-                    limit,
-                    total: count,
-                    pages,
-                    prev: page > 1 ? page - 1 : null,
-                    next: page < pages ? page + 1 : null
-                }
+                pagination: this.#buildPagination({page, limit, count})
             }
         );
     }

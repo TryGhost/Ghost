@@ -4,6 +4,7 @@ import Pagination from './Pagination';
 import React from 'react';
 import Separator from './Separator';
 import clsx from 'clsx';
+import {CenteredLoadingIndicator} from './LoadingIndicator';
 import {PaginationData} from '../../hooks/usePagination';
 
 interface TableProps {
@@ -73,12 +74,12 @@ const Table: React.FC<TableProps> = ({children, borderTop, hint, hintSeparator, 
                         {children}
                     </tbody>
                 </table>}
-                {isLoading && <div className='flex h-64 items-center justify-center' style={loadingStyle}>Loading...</div>}
-                {hint &&
+                {isLoading && <CenteredLoadingIndicator delay={200} style={loadingStyle} />}
+                {(hint || pagination) &&
                 <div className="-mt-px">
-                    {hintSeparator && <Separator />}
+                    {(hintSeparator || pagination) && <Separator />}
                     <div className="flex justify-between">
-                        <Hint>{hint}</Hint>
+                        <Hint>{hint ?? ' '}</Hint>
                         <OptionalPagination pagination={pagination} />
                     </div>
                 </div>}
