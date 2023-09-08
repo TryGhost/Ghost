@@ -1,3 +1,4 @@
+import ColorPickerField from '../../../../admin-x-ds/global/form/ColorPickerField';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import Hint from '../../../../admin-x-ds/global/Hint';
 import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
@@ -43,22 +44,13 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                         updateDescriptionDebouncedRef.current(event.target.value);
                     }}
                 />
-                <div className='flex items-center justify-between gap-3'>
-                    <Heading grey={true} level={6}>Accent color</Heading>
-                    <div className='relative max-w-[70px]'>
-                        {/* <span className='absolute left-1 top-[9px] text-grey-600'>#</span> */}
-                        <TextField
-                            key='accent-color'
-                            className='text-right'
-                            clearBg={true}
-                            maxLength={7}
-                            type='color'
-                            value={values.accentColor}
-                            // we debounce this because the color picker fires a lot of events.
-                            onChange={event => updateSettingDebounced('accent_color', event.target.value)}
-                        />
-                    </div>
-                </div>
+                <ColorPickerField
+                    direction='rtl'
+                    title={<Heading className='mt-[3px]' grey={true} level={6}>Accent color</Heading>}
+                    value={values.accentColor}
+                    // we debounce this because the color picker fires a lot of events.
+                    onChange={value => updateSettingDebounced('accent_color', value)}
+                />
                 <div className={`flex justify-between ${values.icon ? 'items-start ' : 'items-end'}`}>
                     <div>
                         <Heading grey={(values.icon ? true : false)} level={6}>Publication icon</Heading>
