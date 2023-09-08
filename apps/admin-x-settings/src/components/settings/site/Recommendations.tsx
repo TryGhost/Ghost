@@ -25,7 +25,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const buttons = (
-        <Button color='green' label='Add recommendation' link={true} onClick={() => {
+        <Button className='hidden md:!visible md:!block' color='green' label='Add recommendation' link={true} onClick={() => {
             openAddNewRecommendationModal();
         }} />
     );
@@ -60,6 +60,11 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
             title="Recommendations"
             onSave={handleSave}
         >
+            <div className='flex justify-center rounded border border-green px-4 py-2 md:hidden'>
+                <Button color='green' label='Add recommendation' link onClick={() => {
+                    openAddNewRecommendationModal();
+                }} />
+            </div>
             <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
         </SettingGroup>
     );
