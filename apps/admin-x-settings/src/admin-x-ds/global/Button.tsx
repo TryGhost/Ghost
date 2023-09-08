@@ -65,7 +65,7 @@ const Button: React.FC<ButtonProps> = ({
             styles += link ? ' text-white hover:text-white dark:text-black dark:hover:text-grey-800' : ` bg-white dark:bg-black text-black dark:text-white`;
             break;
         case 'outline':
-            styles += link ? ' text-black dark:text-white hover:text-grey-800' : ` border border-grey-300 bg-transparent text-black ${!disabled && 'hover:!border-black'}`;
+            styles += link ? ' text-black dark:text-white hover:text-grey-800' : `text-black border border-grey-300 bg-transparent dark:border-grey-800 dark:text-white ${!disabled && 'hover:!border-black dark:hover:!border-white'}`;
             break;
         default:
             styles += link ? ' text-black dark:text-white hover:text-grey-800' : ` text-black dark:text-white dark:hover:bg-grey-900 ${!disabled && 'hover:bg-grey-200'}`;
