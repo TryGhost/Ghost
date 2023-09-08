@@ -39,7 +39,7 @@ type HeadingLabelProps = {
     grey?: boolean } & HeadingBaseProps & React.LabelHTMLAttributes<HTMLLabelElement>
 
 export const Heading6Styles = 'text-2xs font-semibold uppercase tracking-wider';
-export const Heading6StylesGrey = 'text-2xs font-semibold uppercase tracking-wider text-grey-800';
+export const Heading6StylesGrey = 'text-2xs font-semibold uppercase tracking-wider text-grey-800 dark:text-grey-500';
 
 const Heading: React.FC<Heading1to5Props | Heading6Props | HeadingLabelProps> = ({
     level = 1,
