@@ -26,7 +26,7 @@
     "sinon": "15.0.4"
   },
   "dependencies": {
-    "@tryghost/errors": "^1.2.1",
+    "@tryghost/errors": "^1.2.26",
     "lodash": "^4.17.21",
     "luxon": "^1.26.0"
   }
