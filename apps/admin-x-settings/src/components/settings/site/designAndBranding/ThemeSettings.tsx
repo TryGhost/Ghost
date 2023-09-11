@@ -8,6 +8,7 @@ import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupCon
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import {CustomThemeSetting} from '../../../../api/customThemeSettings';
+import {debounce} from '../../../../utils/debounce';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
 import {humanizeSettingKey} from '../../../../api/settings';
 
@@ -22,6 +23,8 @@ const ThemeSetting: React.FC<{
         setSetting(imageUrl);
     };
 
+    const updateSettingDebounced = debounce(setSetting, 500);
+
     switch (setting.type) {
     case 'text':
         return (
@@ -35,6 +38,7 @@ const ThemeSetting: React.FC<{
     case 'boolean':
         return (
             <Toggle
+                checked={setting.value}
                 direction="rtl"
                 hint={setting.description}
                 label={humanizeSettingKey(setting.key)}
@@ -58,7 +62,7 @@ const ThemeSetting: React.FC<{
                 hint={setting.description}
                 title={humanizeSettingKey(setting.key)}
                 value={setting.value || ''}
-                onChange={value => setSetting(value)}
+                onChange={value => updateSettingDebounced(value)}
             />
         );
     case 'image':

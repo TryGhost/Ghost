@@ -1,3 +1,5 @@
+import {Knex} from 'knex';
+
 type Entity<T> = {
     id: T;
     deleted: boolean;
@@ -11,9 +13,12 @@ type Order<T> = {
 export type ModelClass<T> = {
     destroy: (data: {id: T}) => Promise<void>;
     findOne: (data: {id: T}, options?: {require?: boolean}) => Promise<ModelInstance<T> | null>;
-    findAll: (options: {filter?: string; order?: string, page?: number, limit?: number | 'all'}) => Promise<ModelInstance<T>[]>;
     add: (data: object) => Promise<ModelInstance<T>>;
-    getFilteredCollection: (options: {filter?: string}) => {count(): Promise<number>};
+    getFilteredCollection: (options: {filter?: string}) => {
+        count(): Promise<number>,
+        query: (f: (q: Knex.QueryBuilder) => void) => void,
+        fetchAll: () => Promise<ModelInstance<T>[]>
+    };
 }
 
 export type ModelInstance<T> = {
@@ -64,22 +69,44 @@ export abstract class BookshelfRepository<IDType, T extends Entity<IDType>> {
         return model ? this.modelToEntity(model) : null;
     }
 
-    async getAll({filter, order}: { filter?: string; order?: OrderOption<T> } = {}): Promise<T[]> {
-        const models = await this.Model.findAll({
-            filter,
-            order: this.#orderToString(order)
-        }) as ModelInstance<IDType>[];
+    async #fetchAll({filter, order, page, limit}: { filter?: string; order?: OrderOption<T>; page?: number; limit?: number }): Promise<T[]> {
+        const collection = this.Model.getFilteredCollection({filter});
+        const orderString = this.#orderToString(order);
+
+        if ((limit && page) || orderString) {
+            collection
+                .query((q) => {
+                    if (limit && page) {
+                        q.limit(limit);
+                        q.offset(limit * (page - 1));
+                    }
+
+                    if (orderString) {
+                        q.orderByRaw(
+                            orderString
+                        );
+                    }
+                });
+        }
+
+        const models = await collection.fetchAll();
         return (await Promise.all(models.map(model => this.modelToEntity(model)))).filter(entity => !!entity) as T[];
     }
 
-    async getPage({filter, order, page, limit}: { filter?: string; order?: OrderOption<T>; page: number; limit: number }): Promise<T[]> {
-        const models = await this.Model.findAll({
+    async getAll({filter, order}: { filter?: string; order?: OrderOption<T> } = {}): Promise<T[]> {
+        return this.#fetchAll({
             filter,
-            order: this.#orderToString(order),
-            limit,
-            page
+            order
         });
-        return (await Promise.all(models.map(model => this.modelToEntity(model)))).filter(entity => !!entity) as T[];
+    }
+
+    async getPage({filter, order, page, limit}: { filter?: string; order?: OrderOption<T>; page: number; limit: number }): Promise<T[]> {
+        return this.#fetchAll({
+            filter,
+            order,
+            page,
+            limit
+        });
     }
 
     async getCount({filter}: { filter?: string } = {}): Promise<number> {

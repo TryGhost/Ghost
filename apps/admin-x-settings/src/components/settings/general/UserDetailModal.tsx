@@ -11,6 +11,7 @@ import Radio from '../../../admin-x-ds/global/form/Radio';
 import React, {useEffect, useRef, useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
+import TextArea from '../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import useFeatureFlag from '../../../hooks/useFeatureFlag';
@@ -190,10 +191,10 @@ const DetailsInputs: React.FC<UserDetailProps> = ({errors, validators, user, set
                     setUserData?.({...user, twitter: e.target.value});
                 }}
             />
-            <TextField
-                hint="Recommended: 200 characters."
+            <TextArea
+                hint={<>Recommended: 200 characters. You&lsquo;ve used <span className='font-bold'>{user.bio?.length || 0}</span></>}
                 title="Bio"
-                value={user.bio}
+                value={user.bio || ''}
                 onChange={(e) => {
                     setUserData?.({...user, bio: e.target.value});
                 }}
@@ -674,7 +675,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                 if (error) {
                     showToast({
                         type: 'pageError',
-                        message: 'Can\'t save user! One or more fields have errors, please doublecheck you filled all mandatory fields'
+                        message: 'Can\'t save user, please double check that you\'ve filled in all mandatory fields.'
                     });
                     setSaveState('');
                     return;
