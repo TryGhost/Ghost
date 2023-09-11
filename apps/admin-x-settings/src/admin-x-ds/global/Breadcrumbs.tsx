@@ -47,7 +47,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
     return (
         <div className={containerClassName}>
             {backIcon &&
-            <Button className='mr-6' icon='arrow-left' size='sm' link onClick={onBack} />
+            <Button className='mr-6' icon='arrow-left' iconColorClass='dark:text-white' size='sm' link onClick={onBack} />
             }
             {items.map((item) => {
                 const bcItem = (i === allItems - 1 ?
@@ -56,7 +56,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
                     <>
                         <button
                             key={`bc-${i}`}
-                            className={`${itemClassName} ${item.onClick && '-mx-1 cursor-pointer rounded-sm px-1 py-px hover:bg-grey-100'}`}
+                            className={`${itemClassName} ${item.onClick && '-mx-1 cursor-pointer rounded-sm px-1 py-px hover:bg-grey-100 dark:hover:bg-grey-900'}`}
                             type="button"
                             onClick={item.onClick}
                         >

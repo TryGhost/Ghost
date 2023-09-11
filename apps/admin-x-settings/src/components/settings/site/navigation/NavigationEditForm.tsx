@@ -14,7 +14,7 @@ const NavigationEditForm: React.FC<{
             itemSeparator={false}
             renderItem={item => (
                 <NavigationItemEditor
-                    action={<Button className='self-center' icon="trash" size='sm' onClick={() => navigation.removeItem(item.id)} />}
+                    action={<Button className='self-center' icon="trash" iconColorClass='dark:text-white' size='sm' onClick={() => navigation.removeItem(item.id)} />}
                     baseUrl={baseUrl}
                     clearError={key => navigation.clearError(item.id, key)}
                     item={item}

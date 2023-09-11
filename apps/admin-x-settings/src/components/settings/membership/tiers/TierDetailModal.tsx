@@ -230,7 +230,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         />
                     </div>
                     <div className="relative mt-0.5 flex items-center gap-3">
-                        <Icon name='check' size='sm' />
+                        <Icon className='dark:text-white' name='check' size='sm' />
                         <TextField
                             className='grow'
                             containerClassName='w-100'

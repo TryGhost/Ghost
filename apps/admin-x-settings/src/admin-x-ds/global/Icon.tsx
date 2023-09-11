@@ -68,7 +68,7 @@ interface IconProps {
  * - all icons must have all it's children color value set `currentColor`
  * - all strokes must be paths and _NOT_ outlined objects. Stroke width should be set to 1.5px
  */
-const Icon: React.FC<IconProps> = ({name, size = 'md', colorClass = 'text-black', className = ''}) => {
+const Icon: React.FC<IconProps> = ({name, size = 'md', colorClass = '', className = ''}) => {
     const {SvgComponent} = useDynamicSVGImport(name);
 
     let styles = '';

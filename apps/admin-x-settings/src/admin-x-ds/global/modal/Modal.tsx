@@ -247,7 +247,7 @@ const Modal: React.FC<ModalProps> = ({
             <div className={clsx(
                 'pointer-events-none fixed inset-0 z-0',
                 (backDrop && !formSheet) && 'bg-[rgba(98,109,121,0.2)] backdrop-blur-[3px]',
-                formSheet && 'bg-[rgba(98,109,121,0.05)]'
+                formSheet && 'bg-[rgba(98,109,121,0.08)]'
             )}></div>
             <section className={modalClasses} data-testid={testId} style={modalStyles}>
                 <div className={contentClasses}>
