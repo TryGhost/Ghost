@@ -1,10 +1,13 @@
-import React, {useEffect, useRef} from 'react';
+import IframeBuffering from '../../../../utils/IframeBuffering';
+import React, {memo} from 'react';
 
-const getPreviewData = (announcementBackgroundColor?:string, announcementContext?: string) => {
+const getPreviewData = (announcementBackgroundColor?: string, announcementContent?: string, visibility?: string[]) => {
     const params = new URLSearchParams();
     params.append('announcement_bg', announcementBackgroundColor || 'accent');
-    params.append('announcement', announcementContext || '');
-    params.append('announcement_vis', 'paid_members');
+    params.append('announcement', announcementContent || '');
+    if (visibility && visibility.length > 0) {
+        params.append('announcement_vis', visibility?.join(',') || '');
+    }
     return params.toString();
 };
 
@@ -12,24 +15,23 @@ type AnnouncementBarSettings = {
     announcementBackgroundColor?: string;
     announcementContent?: string;
     url: string;
+    visibility?: string[];
 };
 
-const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcementBackgroundColor, announcementContent, url}) => {
-    const iframeRef = useRef<HTMLIFrameElement>(null);
-
-    useEffect(() => {
+const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcementBackgroundColor, announcementContent, url, visibility}) => {
+    const injectContentIntoIframe = (iframe: HTMLIFrameElement) => {
         if (!url) {
             return;
         }
 
-        // Fetch theme preview HTML
         fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'text/html;charset=utf-8',
                 'x-ghost-preview': getPreviewData(
                     announcementBackgroundColor,
-                    announcementContent
+                    announcementContent,
+                    visibility
                 ),
                 Accept: 'text/plain',
                 mode: 'cors',
@@ -54,30 +56,59 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcement
 
                 // Send the data to the iframe's window using postMessage
                 // Inject the received content into the iframe
-                const iframe = iframeRef.current;
-                if (iframe) {
-                    iframe.contentDocument?.open();
-                    iframe.contentDocument?.write(finalDoc);
-                    iframe.contentDocument?.close();
-                }
+                iframe.contentDocument?.open();
+                iframe.contentDocument?.write(finalDoc);
+                iframe.contentDocument?.close();
             })
             .catch(() => {
                 // handle error in fetching data
             });
-    }, [announcementBackgroundColor, announcementContent, url]);
+    };
 
     return (
-        <>
-            <iframe
-                ref={iframeRef}
-                data-testid='announcement-bar-preview'
+        <div className='h-screen w-screen overflow-hidden'>
+            <IframeBuffering
+                className="absolute left-0 top-0 h-full w-full"
+                generateContent={injectContentIntoIframe}
                 height='100%'
-                title='Announcement Bar Preview'
+                parentClassName="relative h-full w-full"
+                testId='announcement-bar-preview-iframe'
                 width='100%'
-            >
-            </iframe>
-        </>
+            />
+        </div>
     );
 };
 
-export default AnnouncementBarPreview;
+export default memo(AnnouncementBarPreview, (prevProps, nextProps) => {
+    // Check if announcementBackgroundColor changed
+    if (prevProps.announcementBackgroundColor !== nextProps.announcementBackgroundColor) {
+        return false;
+    }
+    
+    // Check if announcementContent changed
+    if (prevProps.announcementContent !== nextProps.announcementContent) {
+        return false;
+    }
+
+    // Check if url changed
+    if (prevProps.url !== nextProps.url) {
+        return false;
+    }
+
+    // Check if visibility array changed in size or content
+    if (prevProps.visibility?.length !== nextProps.visibility?.length) {
+        return false;
+    }
+
+    if (prevProps.visibility && nextProps.visibility) {
+        for (let i = 0; i < prevProps.visibility.length; i++) {
+            if (prevProps.visibility[i] !== nextProps.visibility[i]) {
+                return false;
+            }
+        }
+    }
+
+    // If we've reached this point, all props are the same
+    return true;
+});
+
