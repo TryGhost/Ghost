@@ -1,10 +1,12 @@
 import React, {useEffect, useRef} from 'react';
 
-const getPreviewData = (announcementBackgroundColor?:string, announcementContext?: string) => {
+const getPreviewData = (announcementBackgroundColor?:string, announcementContext?: string, visibility?: string[]) => {
     const params = new URLSearchParams();
     params.append('announcement_bg', announcementBackgroundColor || 'accent');
     params.append('announcement', announcementContext || '');
-    params.append('announcement_vis', 'paid_members');
+    if (visibility && visibility.length > 0) {
+        params.append('announcement_vis', visibility?.join(',') || '');
+    }
     return params.toString();
 };
 
@@ -12,9 +14,10 @@ type AnnouncementBarSettings = {
     announcementBackgroundColor?: string;
     announcementContent?: string;
     url: string;
+    visibility?: string[];
 };
 
-const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcementBackgroundColor, announcementContent, url}) => {
+const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcementBackgroundColor, announcementContent, url, visibility}) => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
 
     useEffect(() => {
@@ -29,7 +32,8 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcement
                 'Content-Type': 'text/html;charset=utf-8',
                 'x-ghost-preview': getPreviewData(
                     announcementBackgroundColor,
-                    announcementContent
+                    announcementContent,
+                    visibility
                 ),
                 Accept: 'text/plain',
                 mode: 'cors',
@@ -64,7 +68,7 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcement
             .catch(() => {
                 // handle error in fetching data
             });
-    }, [announcementBackgroundColor, announcementContent, url]);
+    }, [announcementBackgroundColor, announcementContent, url, visibility]);
 
     return (
         <>

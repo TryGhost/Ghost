@@ -211,7 +211,12 @@ const AnnouncementBarModal: React.FC = () => {
         deviceSelector={false}
         dirty={false}
         okLabel='Save'
-        preview={<AnnouncementBarPreview announcementBackgroundColor={announcementBackgroundColor} announcementContent={announcementContent} url={selectedTabURL} />}
+        preview={<AnnouncementBarPreview
+            announcementBackgroundColor={announcementBackgroundColor}
+            announcementContent={announcementContent}
+            url={selectedTabURL}
+            visibility={visibilitySettings} 
+        />}
         previewBgColor='greygradient'
         previewToolbarTabs={previewTabs}
         selectedURL={selectedPreviewTab}
