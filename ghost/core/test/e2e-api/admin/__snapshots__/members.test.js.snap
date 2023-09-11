@@ -1,330 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Members API - member attribution Can read member attributed to a page 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "attribution": Object {
-        "id": "618ba1ffbe2896088840a6e9",
-        "referrer_medium": null,
-        "referrer_source": null,
-        "referrer_url": null,
-        "title": "This is a static page",
-        "type": "page",
-        "url": "http://127.0.0.1:2369/static-page-test/",
-      },
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member-attributed-to-page@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "email_suppression": Object {
-        "info": null,
-        "suppressed": false,
-      },
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": null,
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "tiers": Array [],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API - member attribution Can read member attributed to a page 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2486",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API - member attribution Can read member attributed to a post 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "attribution": Object {
-        "id": "618ba1ffbe2896088840a6df",
-        "referrer_medium": null,
-        "referrer_source": null,
-        "referrer_url": null,
-        "title": "HTML Ipsum",
-        "type": "post",
-        "url": "http://127.0.0.1:2369/html-ipsum/",
-      },
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member-attributed-to-post@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "email_suppression": Object {
-        "info": null,
-        "suppressed": false,
-      },
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": null,
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "tiers": Array [],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API - member attribution Can read member attributed to a post 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2469",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API - member attribution Can read member attributed to a tag 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "attribution": Object {
-        "id": "618ba1febe2896088840a6db",
-        "referrer_medium": null,
-        "referrer_source": null,
-        "referrer_url": null,
-        "title": "kitchen sink",
-        "type": "tag",
-        "url": "http://127.0.0.1:2369/tag/kitchen-sink/",
-      },
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member-attributed-to-tag@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "email_suppression": Object {
-        "info": null,
-        "suppressed": false,
-      },
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": null,
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "tiers": Array [],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API - member attribution Can read member attributed to a tag 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2475",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API - member attribution Can read member attributed to an author 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "attribution": Object {
-        "id": "1",
-        "referrer_medium": null,
-        "referrer_source": null,
-        "referrer_url": null,
-        "title": "Joe Bloggs",
-        "type": "author",
-        "url": "http://127.0.0.1:2369/author/joe-bloggs/",
-      },
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member-attributed-to-author@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "email_suppression": Object {
-        "info": null,
-        "suppressed": false,
-      },
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": null,
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "tiers": Array [],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API - member attribution Can read member attributed to an author 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2457",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API - member attribution Can read member attributed to an url 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "attribution": Object {
-        "id": null,
-        "referrer_medium": null,
-        "referrer_source": null,
-        "referrer_url": null,
-        "title": "/a-static-page/",
-        "type": "url",
-        "url": "http://127.0.0.1:2369/a-static-page/",
-      },
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member-attributed-to-url@test.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "email_suppression": Object {
-        "info": null,
-        "suppressed": false,
-      },
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": null,
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Any<Array>,
-      "tiers": Array [],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API - member attribution Can read member attributed to an url 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2453",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API - member attribution Returns sign up attributions of all types in activity feed 1: [body] 1`] = `
-Object {
-  "events": Array [
-    Object {
-      "data": Any<Object>,
-      "type": Any<String>,
-    },
-    Object {
-      "data": Any<Object>,
-      "type": Any<String>,
-    },
-    Object {
-      "data": Any<Object>,
-      "type": Any<String>,
-    },
-    Object {
-      "data": Any<Object>,
-      "type": Any<String>,
-    },
-    Object {
-      "data": Any<Object>,
-      "type": Any<String>,
-    },
-  ],
-  "meta": Object {
-    "pagination": Object {
-      "limit": 10,
-      "next": null,
-      "page": null,
-      "pages": 1,
-      "prev": null,
-      "total": 5,
-    },
-  },
-}
-`;
-
-exports[`Members API - member attribution Returns sign up attributions of all types in activity feed 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "9568",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
 exports[`Members API Add should fail when passing incorrect email_type query parameter 1: [body] 1`] = `
 Object {
   "errors": Array [
@@ -494,258 +169,6 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "1596",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Bulk operations Can bulk delete a label from members 1: [body] 1`] = `
-Object {
-  "bulk": Object {
-    "meta": Object {
-      "errors": Array [],
-      "stats": Object {
-        "successful": 2,
-        "unsuccessful": 0,
-      },
-      "unsuccessfulData": Array [],
-    },
-  },
-}
-`;
-
-exports[`Members API Bulk operations Can bulk delete a label from members 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "95",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Bulk operations Can bulk delete a label from members 3: [body] 1`] = `
-Object {
-  "bulk": Object {
-    "meta": Object {
-      "errors": Array [],
-      "stats": Object {
-        "successful": 1,
-        "unsuccessful": 0,
-      },
-      "unsuccessfulData": Array [],
-    },
-  },
-}
-`;
-
-exports[`Members API Bulk operations Can bulk delete a label from members 4: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "95",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Bulk operations Can bulk delete a label from members with filters 1: [body] 1`] = `
-Object {
-  "bulk": Object {
-    "meta": Object {
-      "errors": Array [],
-      "stats": Object {
-        "successful": 1,
-        "unsuccessful": 0,
-      },
-      "unsuccessfulData": Array [],
-    },
-  },
-}
-`;
-
-exports[`Members API Bulk operations Can bulk delete a label from members with filters 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "95",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Bulk operations Can bulk delete members 1: [body] 1`] = `
-Object {
-  "meta": Object {
-    "errors": Array [],
-    "stats": Object {
-      "successful": 8,
-      "unsuccessful": 0,
-    },
-    "unsuccessfulIds": Array [],
-  },
-}
-`;
-
-exports[`Members API Bulk operations Can bulk unsubscribe members from specific newsletter 1: [body] 1`] = `
-Object {
-  "bulk": Object {
-    "meta": Object {
-      "errors": Array [],
-      "stats": Object {
-        "successful": 4,
-        "unsuccessful": 0,
-      },
-      "unsuccessfulData": Array [],
-    },
-  },
-}
-`;
-
-exports[`Members API Bulk operations Can bulk unsubscribe members with deprecated subscribed filter (actual) 1: [body] 1`] = `
-Object {
-  "bulk": Object {
-    "meta": Object {
-      "errors": Array [],
-      "stats": Object {
-        "successful": 6,
-        "unsuccessful": 0,
-      },
-      "unsuccessfulData": Array [],
-    },
-  },
-}
-`;
-
-exports[`Members API Bulk operations Can bulk unsubscribe members with deprecated subscribed filter (actual) 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "95",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Bulk operations Can bulk unsubscribe members with deprecated subscribed filter 1: [body] 1`] = `
-Object {
-  "bulk": Object {
-    "meta": Object {
-      "errors": Array [],
-      "stats": Object {
-        "successful": 2,
-        "unsuccessful": 0,
-      },
-      "unsuccessfulData": Array [],
-    },
-  },
-}
-`;
-
-exports[`Members API Bulk operations Can bulk unsubscribe members with deprecated subscribed filter 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "95",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Bulk operations Can bulk unsubscribe members with filter 1: [body] 1`] = `
-Object {
-  "bulk": Object {
-    "meta": Object {
-      "errors": Array [],
-      "stats": Object {
-        "successful": 1,
-        "unsuccessful": 0,
-      },
-      "unsuccessfulData": Array [],
-    },
-  },
-}
-`;
-
-exports[`Members API Bulk operations Can bulk unsubscribe members with filter 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "95",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Bulk operations Can bulk unsubscribe members with filter 3: [body] 1`] = `
-Object {
-  "bulk": Object {
-    "meta": Object {
-      "errors": Array [],
-      "stats": Object {
-        "successful": 1,
-        "unsuccessful": 0,
-      },
-      "unsuccessfulData": Array [],
-    },
-  },
-}
-`;
-
-exports[`Members API Bulk operations Can bulk unsubscribe members with filter 4: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "95",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Bulk operations Doesn't delete labels apart from the passed label id 1: [body] 1`] = `
-Object {
-  "bulk": Object {
-    "meta": Object {
-      "errors": Array [],
-      "stats": Object {
-        "successful": 1,
-        "unsuccessful": 0,
-      },
-      "unsuccessfulData": Array [],
-    },
-  },
-}
-`;
-
-exports[`Members API Bulk operations Doesn't delete labels apart from the passed label id 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "95",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1007,7 +430,42 @@ Object {
       "labels": Any<Array>,
       "last_seen_at": null,
       "name": "Mr Egg",
-      "newsletters": Any<Array>,
+      "newsletters": Array [
+        Object {
+          "background_color": "light",
+          "body_font_category": "serif",
+          "border_color": null,
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "description": null,
+          "feedback_enabled": false,
+          "footer_content": null,
+          "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Daily newsletter",
+          "sender_email": "jamie@example.com",
+          "sender_name": "Jamie",
+          "sender_reply_to": "newsletter",
+          "show_badge": true,
+          "show_comment_cta": true,
+          "show_feature_image": true,
+          "show_header_icon": true,
+          "show_header_name": true,
+          "show_header_title": true,
+          "show_latest_posts": false,
+          "show_post_title_section": true,
+          "show_subscription_details": false,
+          "slug": "daily-newsletter",
+          "sort_order": 1,
+          "status": "active",
+          "subscribe_on_signup": false,
+          "title_alignment": "center",
+          "title_color": null,
+          "title_font_category": "serif",
+          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+          "visibility": "members",
+        },
+      ],
       "note": null,
       "status": "paid",
       "subscribed": true,
@@ -1149,7 +607,42 @@ Object {
       "labels": Any<Array>,
       "last_seen_at": null,
       "name": "Mr Egg",
-      "newsletters": Any<Array>,
+      "newsletters": Array [
+        Object {
+          "background_color": "light",
+          "body_font_category": "serif",
+          "border_color": null,
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "description": null,
+          "feedback_enabled": false,
+          "footer_content": null,
+          "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "name": "Daily newsletter",
+          "sender_email": "jamie@example.com",
+          "sender_name": "Jamie",
+          "sender_reply_to": "newsletter",
+          "show_badge": true,
+          "show_comment_cta": true,
+          "show_feature_image": true,
+          "show_header_icon": true,
+          "show_header_name": true,
+          "show_header_title": true,
+          "show_latest_posts": false,
+          "show_post_title_section": true,
+          "show_subscription_details": false,
+          "slug": "daily-newsletter",
+          "sort_order": 1,
+          "status": "active",
+          "subscribe_on_signup": false,
+          "title_alignment": "center",
+          "title_color": null,
+          "title_font_category": "serif",
+          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+          "visibility": "members",
+        },
+      ],
       "note": null,
       "status": "paid",
       "subscribed": true,
@@ -2835,251 +2328,6 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "246",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Can edit a subscription 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "attribution": Object {
-        "id": "618ba1ffbe2896088840a6e1",
-        "referrer_medium": null,
-        "referrer_source": "Direct",
-        "referrer_url": null,
-        "title": "Ghostly Kitchen Sink",
-        "type": "post",
-        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
-      },
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member2@test.com",
-      "email_count": 0,
-      "email_open_rate": 50,
-      "email_opened_count": 0,
-      "email_suppression": Object {
-        "info": null,
-        "suppressed": false,
-      },
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": null,
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": true,
-      "subscriptions": Array [
-        Object {
-          "attribution": Object {
-            "id": null,
-            "referrer_medium": null,
-            "referrer_source": null,
-            "referrer_url": null,
-            "title": null,
-            "type": null,
-            "url": null,
-          },
-          "cancel_at_period_end": false,
-          "cancellation_reason": null,
-          "current_period_end": Any<String>,
-          "customer": Object {
-            "email": "member2@test.com",
-            "id": Any<String>,
-            "name": null,
-          },
-          "default_payment_card_last4": null,
-          "id": Any<String>,
-          "offer": null,
-          "plan": Object {
-            "amount": 5000,
-            "currency": "USD",
-            "id": Any<String>,
-            "interval": "year",
-            "nickname": "Yearly",
-          },
-          "price": Object {
-            "amount": 5000,
-            "currency": "USD",
-            "id": Any<String>,
-            "interval": "year",
-            "nickname": "Yearly",
-            "price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            "tier": Object {
-              "id": Any<String>,
-              "name": "Default Product",
-              "tier_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            },
-            "type": "recurring",
-          },
-          "start_date": Any<String>,
-          "status": "active",
-          "tier": Object {
-            "active": true,
-            "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-            "currency": "usd",
-            "description": null,
-            "expiry_at": null,
-            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            "monthly_price": 500,
-            "monthly_price_id": Any<String>,
-            "name": "Default Product",
-            "slug": "default-product",
-            "trial_days": 0,
-            "type": "paid",
-            "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-            "visibility": "public",
-            "welcome_page_url": "/welcome-paid",
-            "yearly_price": 5000,
-            "yearly_price_id": Any<String>,
-          },
-          "trial_end_at": null,
-          "trial_start_at": null,
-        },
-      ],
-      "tiers": Array [
-        Object {
-          "active": true,
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "currency": "usd",
-          "description": null,
-          "expiry_at": null,
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "monthly_price": 500,
-          "monthly_price_id": Any<String>,
-          "name": "Default Product",
-          "slug": "default-product",
-          "trial_days": 0,
-          "type": "paid",
-          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "visibility": "public",
-          "welcome_page_url": "/welcome-paid",
-          "yearly_price": 5000,
-          "yearly_price_id": Any<String>,
-        },
-      ],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API Can edit a subscription 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3387",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API Can edit a subscription 3: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "attribution": Object {
-        "id": "618ba1ffbe2896088840a6e1",
-        "referrer_medium": null,
-        "referrer_source": "Direct",
-        "referrer_url": null,
-        "title": "Ghostly Kitchen Sink",
-        "type": "post",
-        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
-      },
-      "avatar_image": null,
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "member2@test.com",
-      "email_count": 0,
-      "email_open_rate": 50,
-      "email_opened_count": 0,
-      "email_suppression": Object {
-        "info": null,
-        "suppressed": false,
-      },
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": null,
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "free",
-      "subscribed": true,
-      "subscriptions": Array [
-        Object {
-          "attribution": Object {
-            "id": null,
-            "referrer_medium": null,
-            "referrer_source": null,
-            "referrer_url": null,
-            "title": null,
-            "type": null,
-            "url": null,
-          },
-          "cancel_at_period_end": false,
-          "cancellation_reason": null,
-          "current_period_end": Any<String>,
-          "customer": Object {
-            "email": "member2@test.com",
-            "id": Any<String>,
-            "name": null,
-          },
-          "default_payment_card_last4": null,
-          "id": Any<String>,
-          "offer": null,
-          "plan": Object {
-            "amount": 5000,
-            "currency": "USD",
-            "id": Any<String>,
-            "interval": "year",
-            "nickname": "Yearly",
-          },
-          "price": Object {
-            "amount": 5000,
-            "currency": "USD",
-            "id": Any<String>,
-            "interval": "year",
-            "nickname": "Yearly",
-            "price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            "tier": Object {
-              "id": Any<String>,
-              "name": "Default Product",
-              "tier_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            },
-            "type": "recurring",
-          },
-          "start_date": Any<String>,
-          "status": "canceled",
-          "trial_end_at": null,
-          "trial_start_at": null,
-        },
-      ],
-      "tiers": Array [],
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API Can edit a subscription 4: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2487",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -6071,7 +5319,7 @@ Object {
       "labels": Any<Array>,
       "last_seen_at": null,
       "name": "new name",
-      "newsletters": Any<Array>,
+      "newsletters": Array [],
       "note": null,
       "status": "free",
       "subscribed": false,
@@ -6089,37 +5337,6 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "853",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API without Stripe Add should fail when comped flag is passed in but Stripe is not enabled 1: [body] 1`] = `
-Object {
-  "errors": Array [
-    Object {
-      "code": null,
-      "context": "Missing Stripe connection. Attempting to import members with Stripe data when there is no Stripe account connected.",
-      "details": null,
-      "ghostErrorCode": null,
-      "help": "You need to connect to Stripe to import Stripe customers. ",
-      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "Validation error, cannot save member.",
-      "property": "comped",
-      "type": "ValidationError",
-    },
-  ],
-}
-`;
-
-exports[`Members API without Stripe Add should fail when comped flag is passed in but Stripe is not enabled 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "398",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
