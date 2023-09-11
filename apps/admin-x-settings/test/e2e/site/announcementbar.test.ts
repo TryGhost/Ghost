@@ -24,15 +24,41 @@ test.describe('Announcement Bar', async () => {
 
         await section.getByRole('button', {name: 'Customize'}).click();
 
+        // // Homepage and post preview
+        await page.waitForSelector('[data-testid="announcement-bar-preview-iframe"]');
+        const iframeCount = await page.$$eval('[data-testid="announcement-bar-preview-iframe"] > iframe', frames => frames.length);
+
+        expect(iframeCount).toEqual(2);
+
         const modal = page.getByTestId('announcement-bar-modal');
 
-        // // Homepage and post preview
+        await page.waitForSelector('[data-testid="announcement-bar-preview-iframe"]');
 
-        await expect(modal.frameLocator('[data-testid="announcement-bar-preview"]').getByText('homepage preview')).toHaveCount(1);
+        // Get the iframes inside the modal
+        const iframesHandleHome = await page.$$('[data-testid="announcement-bar-preview-iframe"] > iframe');
+
+        const homeiframeHandler = iframesHandleHome[1]; // index 1 since that's the visible iframe
+        const frameHome = await homeiframeHandler.contentFrame();
+        const textExistsInFirstIframe = await frameHome?.$eval('body', (body, textToSearch) => {
+            return body.innerText.includes(textToSearch);
+        }, 'homepage preview');
+
+        expect(textExistsInFirstIframe).toBeTruthy();
 
         await modal.getByTestId('design-toolbar').getByRole('tab', {name: 'Post'}).click();
 
-        await expect(modal.frameLocator('[data-testid="announcement-bar-preview"]').getByText('post preview')).toHaveCount(1);
+        await page.waitForSelector('[data-testid="announcement-bar-preview-iframe"]');
+
+        const iframesHandlePost = await page.$$('[data-testid="announcement-bar-preview-iframe"] > iframe');
+
+        const postiframeHandler = iframesHandlePost[0]; // index 0 since that's the visible iframe
+        const framePost = await postiframeHandler.contentFrame();
+
+        const textExistsInSecondIframe = await framePost?.$eval('body', (body, textToSearch) => {
+            return body.innerText.includes(textToSearch);
+        }, 'post preview');
+
+        expect(textExistsInSecondIframe).toBeTruthy();
     });
 
     // TODO - lexical isn't loading in the preview
