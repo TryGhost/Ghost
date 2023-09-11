@@ -131,36 +131,36 @@ export default class KoenigCardImage extends Component {
             toolbarItems = [{
                 title: 'Link',
                 icon: 'koenig/kg-link',
-                iconClass: this.payload.href ? 'fill-green-l2' : 'fill-white-no-conflict',
+                iconClass: this.payload.href ? 'fill-green-l2' : 'fill-white',
                 action: run.bind(this, this._editLink)
             }];
         } else {
             toolbarItems = [{
                 title: 'Regular',
                 icon: 'koenig/kg-img-regular',
-                iconClass: !cardWidth ? 'fill-green-l2' : 'fill-white-no-conflict',
+                iconClass: !cardWidth ? 'fill-green-l2' : 'fill-white',
                 action: run.bind(this, this._changeCardWidth, '')
             }, {
                 title: 'Wide',
                 icon: 'koenig/kg-img-wide',
-                iconClass: cardWidth === 'wide' ? 'fill-green-l2' : 'fill-white-no-conflict',
+                iconClass: cardWidth === 'wide' ? 'fill-green-l2' : 'fill-white',
                 action: run.bind(this, this._changeCardWidth, 'wide')
             }, {
                 title: 'Full',
                 icon: 'koenig/kg-img-full',
-                iconClass: cardWidth === 'full' ? 'fill-green-l2' : 'fill-white-no-conflict',
+                iconClass: cardWidth === 'full' ? 'fill-green-l2' : 'fill-white',
                 action: run.bind(this, this._changeCardWidth, 'full')
             }, {
                 divider: true
             }, {
                 title: 'Link',
                 icon: 'koenig/kg-link',
-                iconClass: this.payload.href ? 'fill-green-l2' : 'fill-white-no-conflict',
+                iconClass: this.payload.href ? 'fill-green-l2' : 'fill-white',
                 action: run.bind(this, this._editLink)
             }, {
                 title: 'Replace image',
                 icon: 'koenig/kg-replace',
-                iconClass: 'fill-white-no-conflict',
+                iconClass: 'fill-white',
                 action: this.triggerFileDialog
             }];
         }

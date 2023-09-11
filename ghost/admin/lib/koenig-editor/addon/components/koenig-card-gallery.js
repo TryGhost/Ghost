@@ -66,7 +66,7 @@ export default class KoenigCardGallery extends Component {
             items: [{
                 title: 'Add images',
                 icon: 'koenig/kg-add',
-                iconClass: 'fill-white-no-conflict',
+                iconClass: 'fill-white',
                 action: this.triggerFileDialog
             }]
         };
