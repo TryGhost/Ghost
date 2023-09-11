@@ -152,8 +152,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
         if (previewBgColor === 'grey') {
             previewBgClass = 'bg-grey-50 dark:bg-black';
         } else if (previewBgColor === 'greygradient') {
-            previewBgClass = 'bg-gradient-to-tr from-white to-[#f9f9fa]';
-            previewBgClass = 'bg-gradient-to-tr from-grey-950 to-black';
+            previewBgClass = 'bg-gradient-to-tr from-white to-[#f9f9fa] dark:from-grey-950 dark:to-black';
         }
 
         const containerClasses = clsx(
