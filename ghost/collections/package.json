@@ -21,11 +21,12 @@
     ],
     "devDependencies": {
         "@tryghost/domain-events": "0.0.0",
-        "c8": "7.14.0",
+        "c8": "8.0.1",
         "mocha": "10.2.0",
         "sinon": "15.2.0"
     },
     "dependencies": {
+        "@tryghost/debug": "0.1.26",
         "@tryghost/errors": "1.2.25",
         "@tryghost/in-memory-repository": "0.0.0",
         "@tryghost/logging": "2.4.5",

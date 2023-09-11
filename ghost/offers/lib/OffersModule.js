@@ -4,14 +4,14 @@
 const DomainEvents = require('@tryghost/domain-events');
 const OfferCodeChangeEvent = require('./domain/events/OfferCodeChangeEvent');
 const OfferCreatedEvent = require('./domain/events/OfferCreatedEvent');
-const OfferRepository = require('./application/OfferRepository');
+const Offer = require('./domain/models/Offer');
 const OffersAPI = require('./application/OffersAPI');
 
 class OffersModule {
     /**
      * @param {OffersAPI} offersAPI
      * @param {import('@tryghost/express-dynamic-redirects')} redirectManager
-     * @param {OfferRepository} repository
+     * @param {any} repository
      */
     constructor(offersAPI, redirectManager, repository) {
         this.api = offersAPI;
@@ -56,15 +56,13 @@ class OffersModule {
     /**
      * @param {object} deps
      * @param {import('@tryghost/express-dynamic-redirects')} deps.redirectManager
-     * @param {any} deps.OfferModel
-     * @param {any} deps.OfferRedemptionModel
+     * @param {any} deps.repository
      *
      * @returns {OffersModule}
      */
     static create(deps) {
-        const repository = new OfferRepository(deps.OfferModel, deps.OfferRedemptionModel);
-        const offersAPI = new OffersAPI(repository);
-        return new OffersModule(offersAPI, deps.redirectManager, repository);
+        const offersAPI = new OffersAPI(deps.repository);
+        return new OffersModule(offersAPI, deps.redirectManager, deps.repository);
     }
 
     static events = {
@@ -72,7 +70,7 @@ class OffersModule {
         OfferCodeChangeEvent
     };
 
-    static OfferRepository = OfferRepository;
+    static Offer = Offer;
 
     static OffersAPI = OffersAPI;
 }

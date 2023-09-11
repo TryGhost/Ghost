@@ -238,6 +238,10 @@ export function isInviteOnlySite({site = {}, pageQuery = ''}) {
     return prices.length === 0 || (site && site.members_signup_access === 'invite');
 }
 
+export function hasRecommendations({site}) {
+    return site?.recommendations_enabled === true;
+}
+
 export function isSigninAllowed({site}) {
     return site?.members_signup_access === 'all' || site?.members_signup_access === 'invite';
 }

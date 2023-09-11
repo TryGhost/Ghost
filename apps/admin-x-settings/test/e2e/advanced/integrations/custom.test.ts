@@ -1,7 +1,7 @@
 import {Integration, IntegrationsResponseType} from '../../../../src/api/integrations';
 import {Webhook, WebhooksResponseType} from '../../../../src/api/webhooks';
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi} from '../../../utils/e2e';
+import {globalDataRequests, limitRequests, mockApi, responseFixtures} from '../../../utils/e2e';
 
 test.describe('Custom integrations', async () => {
     test('Supports creating an integration and adding webhooks', async ({page}) => {
@@ -46,7 +46,7 @@ test.describe('Custom integrations', async () => {
             name: 'My webhook',
             secret: null,
             api_version: 'v3',
-            integration_id: 'my-integration',
+            integration_id: integration.id,
             last_triggered_at: null,
             last_triggered_status: null,
             last_triggered_error: null,
@@ -185,5 +185,35 @@ test.describe('Custom integrations', async () => {
         await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Delete integration'}).click();
 
         await expect(integrationsSection).not.toHaveText(/My integration/);
+    });
+
+    test('Limits creating custom integrations', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            ...limitRequests,
+            browseConfig: {
+                ...globalDataRequests.browseConfig,
+                response: {
+                    config: {
+                        ...responseFixtures.config.config,
+                        hostSettings: {
+                            limits: {
+                                customIntegrations: {
+                                    disabled: true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }});
+
+        await page.goto('/');
+
+        const integrationsSection = page.getByTestId('integrations');
+
+        await integrationsSection.getByRole('button', {name: 'Add custom integration'}).click();
+
+        await expect(page.getByTestId('limit-modal')).toHaveText(/Your plan does not support custom integrations/);
     });
 });

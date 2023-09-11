@@ -25,7 +25,7 @@ const init = () => {
     });
 };
 
-module.exports.errorHandler = (err, req, res, next) => {
+module.exports.errorHandler = function apiVersionCompatibilityErrorHandler(err, req, res, next) {
     return versionMismatchHandler(serviceInstance)(err, req, res, next);
 };
 
@@ -38,7 +38,7 @@ module.exports.errorHandler = (err, req, res, next) => {
  * @param {import('express').Response} res
  * @param {import('express').NextFunction} next
  */
-module.exports.contentVersion = (req, res, next) => {
+module.exports.contentVersion = function apiVersionCompatibilityContentVersion(req, res, next) {
     res.header('Content-Version', `v${ghostVersion.safe}`);
     res.vary('Accept-Version');
 

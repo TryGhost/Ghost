@@ -70,7 +70,7 @@ describe('Acceptance: Lexical editor', function () {
         expect(currentURL()).to.equal(`/editor-beta/post/${post.id}`);
     });
 
-    it('redirects lexical editor to mobiledoc editor when post.mobiledoc is present', async function () {
+    it('does not redirect to mobiledoc editor when post.mobiledoc is present', async function () {
         const post = this.server.create('post', {
             mobiledoc: JSON.stringify(BLANK_DOC)
         });
@@ -78,6 +78,6 @@ describe('Acceptance: Lexical editor', function () {
         await loginAsRole('Administrator', this.server);
         await visit(`/editor-beta/post/${post.id}`);
 
-        expect(currentURL()).to.equal(`/editor/post/${post.id}`);
+        expect(currentURL()).to.equal(`/editor-beta/post/${post.id}`);
     });
 });

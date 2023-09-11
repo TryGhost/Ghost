@@ -87,7 +87,7 @@ export const useInstallTheme = createMutation<ThemesInstallResponseType, string>
     updateQueries: {
         dataType,
         // Assume that all invite queries should include this new one
-        update: (newData, currentData) => ({
+        update: (newData, currentData) => (currentData && {
             ...(currentData as ThemesResponseType),
             themes: [
                 ...((currentData as ThemesResponseType).themes),
@@ -108,7 +108,7 @@ export const useUploadTheme = createMutation<ThemesInstallResponseType, {file: F
     updateQueries: {
         dataType,
         // Assume that all invite queries should include this new one
-        update: (newData, currentData) => ({
+        update: (newData, currentData) => (currentData && {
             ...(currentData as ThemesResponseType),
             themes: [
                 ...((currentData as ThemesResponseType).themes),
