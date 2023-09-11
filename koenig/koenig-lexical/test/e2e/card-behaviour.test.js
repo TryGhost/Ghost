@@ -1405,13 +1405,14 @@ test.describe('Card behaviour', async () => {
             await page.keyboard.press('ArrowDown');
             await page.keyboard.up('Shift');
 
+            // offsets are based on the root node offset
             await assertSelection(page, {
-                anchorPath: [0, 0, 0],
+                anchorPath: [],
                 anchorOffset: 0,
-                focusPath: [2, 0, 0],
-                focusOffset: 6
+                focusPath: [],
+                focusOffset: 2
             });
-
+            // this is a range selection, so the card is not explicitly selected
             await expect(page.locator('[data-kg-card-selected="true"]')).not.toBeVisible();
         });
 
@@ -1435,13 +1436,14 @@ test.describe('Card behaviour', async () => {
             await page.keyboard.press('ArrowUp');
             await page.keyboard.up('Shift');
 
+            // offsets are based on the root node offset
             await assertSelection(page, {
-                anchorPath: [2, 0, 0],
-                anchorOffset: 6,
-                focusPath: [0, 0, 0],
-                focusOffset: 0
+                anchorPath: [],
+                anchorOffset: 3,
+                focusPath: [],
+                focusOffset: 1
             });
-
+            // this is a range selection, so the card is not explicitly selected
             await expect(page.locator('[data-kg-card-selected="true"]')).not.toBeVisible();
         });
     });
