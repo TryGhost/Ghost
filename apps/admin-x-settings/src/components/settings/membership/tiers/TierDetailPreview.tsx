@@ -82,15 +82,15 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier})
         : 0;
 
     return (
-        <div className="mt-1">
+        <div>
             <div className="flex items-baseline justify-between">
                 <Heading className="pb-2" level={6} grey>{isFreeTier ? 'Free membership preview' : 'Tier preview'}</Heading>
                 {!isFreeTier && <div className="flex gap-1">
-                    <Button className={`${showingYearly === true ? 'text-grey-500' : 'text-grey-900'}`} label="Monthly" link onClick={() => setShowingYearly(false)} />
-                    <Button className={`ml-2 ${showingYearly === true ? 'text-grey-900' : 'text-grey-500'}`} label="Yearly" link onClick={() => setShowingYearly(true)} />
+                    <Button className={`${showingYearly === true ? 'text-grey-500' : 'text-grey-900 dark:text-white'}`} label="Monthly" link unstyled onClick={() => setShowingYearly(false)} />
+                    <Button className={`ml-2 ${showingYearly === true ? 'text-grey-900 dark:text-white' : 'text-grey-500'}`} label="Yearly" link unstyled onClick={() => setShowingYearly(true)} />
                 </div>}
             </div>
-            <div className='border border-grey-200'>
+            <div className='rounded-sm border border-grey-200 bg-white dark:border-transparent'>
                 <div className="flex-column relative flex min-h-[200px] w-full max-w-[420px] scale-90 items-start justify-stretch rounded bg-white p-4">
                     <div className="min-h-[56px] w-full">
                         <h4 className={`-mt-1 mb-0 w-full break-words text-lg font-semibold leading-tight text-pink ${!name && 'opacity-30'}`}>{name || 'Bronze'}</h4>
