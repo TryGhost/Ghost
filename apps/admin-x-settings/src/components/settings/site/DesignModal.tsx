@@ -75,7 +75,7 @@ const Sidebar: React.FC<{
                             <div className='font-semibold'>Change theme</div>
                             <div className='font-sm text-grey-700'>Current theme: {activeTheme?.name}</div>
                         </div>
-                        <Icon className='mr-2 transition-all group-hover:translate-x-2' name='chevron-right' size='sm' />
+                        <Icon className='mr-2 transition-all group-hover:translate-x-2 dark:text-white' name='chevron-right' size='sm' />
                     </button>
                 </div>
             </StickyFooter>

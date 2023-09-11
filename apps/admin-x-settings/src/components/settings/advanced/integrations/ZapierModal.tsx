@@ -102,7 +102,7 @@ const ZapierModal = NiceModal.create(() => {
                         title={
                             <div className='flex flex-col gap-4 md:flex-row md:items-center'>
                                 <div className='flex shrink-0 flex-nowrap items-center gap-2'>
-                                    <img className='h-8 w-8 object-contain' role='presentation' src={`${adminRoot}${template.ghostImage}`} />
+                                    <img className='h-8 w-8 object-contain dark:invert' role='presentation' src={`${adminRoot}${template.ghostImage}`} />
                                     <ArrowRightIcon className='h-3 w-3' />
                                     <img className='h-8 w-8 object-contain' role='presentation' src={`${adminRoot}${template.appImage}`} />
                                 </div>

@@ -78,7 +78,7 @@ const ThemePreview: React.FC<{
                 buttons={[
                     {
                         icon: 'laptop',
-                        iconColorClass: (previewMode === 'desktop' ? 'text-black' : 'text-grey-500'),
+                        iconColorClass: (previewMode === 'desktop' ? 'text-black dark:text-green' : 'text-grey-500 dark:text-grey-600'),
                         link: true,
                         size: 'sm',
                         onClick: () => {
@@ -87,7 +87,7 @@ const ThemePreview: React.FC<{
                     },
                     {
                         icon: 'mobile',
-                        iconColorClass: (previewMode === 'mobile' ? 'text-black' : 'text-grey-500'),
+                        iconColorClass: (previewMode === 'mobile' ? 'text-black dark:text-green' : 'text-grey-500 dark:text-grey-600'),
                         link: true,
                         size: 'sm',
                         onClick: () => {
@@ -106,8 +106,8 @@ const ThemePreview: React.FC<{
 
     return (
         <div className='absolute inset-0 z-[100]'>
-            <PageHeader containerClassName='bg-grey-50 z-[100]' left={left} right={right} sticky={false} />
-            <div className='flex h-[calc(100%-74px)] grow flex-col items-center justify-center bg-grey-50'>
+            <PageHeader containerClassName='bg-grey-50 dark:bg-black z-[100]' left={left} right={right} sticky={false} />
+            <div className='flex h-[calc(100%-74px)] grow flex-col items-center justify-center bg-grey-50 dark:bg-black'>
                 {previewMode === 'desktop' ?
                     <DesktopChrome>
                         <iframe className='h-full w-full'

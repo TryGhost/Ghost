@@ -43,7 +43,7 @@ const TextArea: React.FC<TextAreaProps> = ({
 
     let styles = clsx(
         'peer order-2 rounded-sm border px-3 py-2 dark:text-white',
-        clearBg ? 'bg-transparent' : 'bg-grey-75 dark:bg-grey-900',
+        clearBg ? 'bg-transparent' : 'bg-grey-75 dark:bg-grey-950',
         error ? 'border-red' : 'border-grey-500 placeholder:text-grey-500 hover:border-grey-700 focus:border-grey-800 dark:border-grey-800 dark:placeholder:text-grey-800 dark:hover:border-grey-700 dark:focus:border-grey-500',
         title && 'mt-2',
         fontStyle === 'mono' && 'font-mono text-sm',
