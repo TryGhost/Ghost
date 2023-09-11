@@ -35,6 +35,7 @@ const ThemeSetting: React.FC<{
     case 'boolean':
         return (
             <Toggle
+                checked={setting.value}
                 direction="rtl"
                 hint={setting.description}
                 label={humanizeSettingKey(setting.key)}

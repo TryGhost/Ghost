@@ -3,7 +3,7 @@ import MarketplaceBgImage from '../../../../assets/images/footer-marketplace-bg.
 import ModalPage from '../../../../admin-x-ds/global/modal/ModalPage';
 import React from 'react';
 import {OfficialTheme, useOfficialThemes} from '../../../providers/ServiceProvider';
-import {getGhostPaths} from '../../../../utils/helpers';
+import {getGhostPaths, resolveAsset} from '../../../../utils/helpers';
 
 const OfficialThemes: React.FC<{
     onSelectTheme?: (theme: OfficialTheme) => void;
@@ -26,7 +26,7 @@ const OfficialThemes: React.FC<{
                                 <img
                                     alt={`${theme.name} Theme`}
                                     className='h-full w-full object-contain'
-                                    src={`${adminRoot}${theme.image}`}
+                                    src={resolveAsset(theme.image, adminRoot)}
                                 />
                             </div>
                             <div className='mt-3'>
