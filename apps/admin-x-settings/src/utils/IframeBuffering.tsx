@@ -6,9 +6,10 @@ type IframeBufferingProps = {
   parentClassName?: string;
   height?: string;
   width?: string;
+  testId?: string;
 };
 
-const IframeBuffering: React.FC<IframeBufferingProps> = ({generateContent, className, height, width, parentClassName}) => {
+const IframeBuffering: React.FC<IframeBufferingProps> = ({generateContent, className, height, width, parentClassName, testId}) => {
     const [visibleIframeIndex, setVisibleIframeIndex] = useState(0);
     const iframes = [useRef<HTMLIFrameElement>(null), useRef<HTMLIFrameElement>(null)];
     useEffect(() => {
@@ -29,7 +30,7 @@ const IframeBuffering: React.FC<IframeBufferingProps> = ({generateContent, class
     }, [generateContent]);
 
     return (
-        <div className={parentClassName}>
+        <div className={parentClassName} data-testId={testId}>
             <iframe
                 ref={iframes[0]}
                 className={`${className} ${visibleIframeIndex !== 0 ? 'z-10 opacity-0' : 'z-20 opacity-100'}`}

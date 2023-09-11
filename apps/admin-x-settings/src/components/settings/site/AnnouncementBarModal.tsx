@@ -118,7 +118,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 
 const AnnouncementBarModal: React.FC = () => {
     const {siteData} = useGlobalData();
-    // const homePageURL = getHomepageUrl(siteData!);
     const modal = NiceModal.useModal();
     const {localSettings, updateSetting, handleSave} = useSettingGroup();
     const [announcementContent] = getSettingValues<string>(localSettings, ['announcement_content']);

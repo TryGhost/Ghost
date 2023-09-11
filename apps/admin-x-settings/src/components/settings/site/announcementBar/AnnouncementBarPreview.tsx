@@ -72,6 +72,7 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcement
                 generateContent={injectContentIntoIframe}
                 height='100%'
                 parentClassName="relative h-full w-full"
+                testId='announcement-bar-preview-iframe'
                 width='100%'
             />
         </div>
