@@ -201,7 +201,8 @@ describe('Recommendations Admin API', function () {
                 favicon: null,
                 featuredImage: null,
                 excerpt: null,
-                oneClickSubscribe: false
+                oneClickSubscribe: false,
+                createdAt: new Date(i * 5000) // Reliable ordering
             });
 
             await recommendationsService.repository.save(recommendation);
