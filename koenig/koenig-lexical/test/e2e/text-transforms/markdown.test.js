@@ -49,7 +49,7 @@ const SPECIAL_MARKUP_TRANSFORMS = [{
     html: html`<p dir="ltr"><span class="line-through" data-lexical-text="true">strikethrough</span></p>`
 }, {
     text: '`code`',
-    html: html`<p dir="ltr"><code data-lexical-text="true"><span>code</span></code></p>`
+    html: html`<p dir="ltr"><code spellcheck="false" data-lexical-text="true"><span>code</span></code></p>`
 }, {
     text: '^superscript^',
     html: html`<p dir="ltr"><sup data-lexical-text="true"><span>superscript</span></sup></p>`

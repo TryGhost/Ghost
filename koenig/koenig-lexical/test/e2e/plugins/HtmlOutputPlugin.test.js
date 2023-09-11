@@ -34,7 +34,7 @@ test.describe('Html Output Plugin', async function () {
         await focusEditor(page);
 
         // check that default content renders to html
-        await expect(await page.getByTestId('html-output').textContent()).toEqual('<p dir="ltr"><span>check </span><a href="https://ghost.org/changelog/markdown/"><span>ghost.org/changelog/markdown/</span></a></p>');
+        await expect(await page.getByTestId('html-output').textContent()).toEqual('<p dir="ltr"><span style="white-space: pre-wrap;">check </span><a href="https://ghost.org/changelog/markdown/"><span style="white-space: pre-wrap;">ghost.org/changelog/markdown/</span></a></p>');
 
         // remove content
         await page.keyboard.press(`${ctrl}+KeyA`);
@@ -44,19 +44,19 @@ test.describe('Html Output Plugin', async function () {
             <p><br /></p>
         `);
 
-        // past link
+        // paste link
         await pasteText(page, '<a href="https://ghost.org/changelog/markdown/">ghost.org/changelog/markdown/</a>', 'text/html');
 
         // check that link pasted successfully
         await assertHTML(page, html`
             <p>
                 <a href="https://ghost.org/changelog/markdown/" dir="ltr">
-                    <span data-lexical-text="true">ghost.org/changelog/markdown/</span>
+                    <span style="white-space: pre-wrap;" data-lexical-text="true">ghost.org/changelog/markdown/</span>
                 </a>
             </p>
         `);
 
         // check that link renders to html
-        await expect(await page.getByTestId('html-output').textContent()).toEqual('<p dir="ltr"><a href="https://ghost.org/changelog/markdown/"><span>ghost.org/changelog/markdown/</span></a></p>');
+        await expect(await page.getByTestId('html-output').textContent()).toEqual('<p dir="ltr"><a href="https://ghost.org/changelog/markdown/"><span style="white-space: pre-wrap;">ghost.org/changelog/markdown/</span></a></p>');
     });
 });

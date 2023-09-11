@@ -76,7 +76,7 @@ test.describe('Email card', async () => {
                             <div contenteditable="true" role="textbox" spellcheck="true" data-lexical-editor="true">
                                 <p dir="ltr">
                                   <span data-lexical-text="true">Hey</span>
-                                  <code data-lexical-text="true">
+                                  <code spellcheck="false" data-lexical-text="true">
                                     <span>{first_name, "there"}</span>
                                   </code>
                                     <span data-lexical-text="true">,</span>

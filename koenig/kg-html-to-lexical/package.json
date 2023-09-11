@@ -36,12 +36,12 @@
     "typescript": "5.2.2"
   },
   "dependencies": {
-    "@lexical/headless": "^0.12.0",
-    "@lexical/html": "^0.12.0",
-    "@lexical/link": "^0.12.0",
-    "@lexical/list": "^0.12.0",
+    "@lexical/headless": "^0.12.2",
+    "@lexical/html": "^0.12.2",
+    "@lexical/link": "^0.12.2",
+    "@lexical/list": "^0.12.2",
     "@tryghost/kg-default-nodes": "^0.1.26",
     "jsdom": "^22.1.0",
-    "lexical": "^0.12.0"
+    "lexical": "^0.12.2"
   }
 }
