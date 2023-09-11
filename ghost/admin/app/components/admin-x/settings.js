@@ -195,34 +195,34 @@ class ErrorHandler extends React.Component {
     }
 }
 
-const fetchKoenig = function () {
+export const importSettings = async () => {
+    if (window['@tryghost/admin-x-settings']) {
+        return window['@tryghost/admin-x-settings'];
+    }
+
+    // the manual specification of the protocol in the import template string is
+    // required to work around ember-auto-import complaining about an unknown dynamic import
+    // during the build step
+    const GhostAdmin = window.GhostAdmin || window.Ember.Namespace.NAMESPACES.find(ns => ns.name === 'ghost-admin');
+    const urlTemplate = GhostAdmin.__container__.lookup('config:main').adminX?.url;
+    const urlVersion = GhostAdmin.__container__.lookup('config:main').adminX?.version;
+
+    const url = new URL(urlTemplate.replace('{version}', urlVersion));
+
+    if (url.protocol === 'http:') {
+        window['@tryghost/admin-x-settings'] = await import(`http://${url.host}${url.pathname}`);
+    } else {
+        window['@tryghost/admin-x-settings'] = await import(`https://${url.host}${url.pathname}`);
+    }
+
+    return window['@tryghost/admin-x-settings'];
+};
+
+const fetchSettings = function () {
     let status = 'pending';
     let response;
 
-    const fetchPackage = async () => {
-        if (window['@tryghost/admin-x-settings']) {
-            return window['@tryghost/admin-x-settings'];
-        }
-
-        // the manual specification of the protocol in the import template string is
-        // required to work around ember-auto-import complaining about an unknown dynamic import
-        // during the build step
-        const GhostAdmin = window.GhostAdmin || window.Ember.Namespace.NAMESPACES.find(ns => ns.name === 'ghost-admin');
-        const urlTemplate = GhostAdmin.__container__.lookup('config:main').adminX?.url;
-        const urlVersion = GhostAdmin.__container__.lookup('config:main').adminX?.version;
-
-        const url = new URL(urlTemplate.replace('{version}', urlVersion));
-
-        if (url.protocol === 'http:') {
-            window['@tryghost/admin-x-settings'] = await import(`http://${url.host}${url.pathname}`);
-        } else {
-            window['@tryghost/admin-x-settings'] = await import(`https://${url.host}${url.pathname}`);
-        }
-
-        return window['@tryghost/admin-x-settings'];
-    };
-
-    const suspender = fetchPackage().then(
+    const suspender = importSettings().then(
         (res) => {
             status = 'success';
             response = res;
@@ -245,13 +245,6 @@ const fetchKoenig = function () {
     };
 
     return {read};
-};
-
-const editorResource = fetchKoenig();
-
-const AdminXApp = (props) => {
-    const {AdminXApp: _AdminXApp} = editorResource.read();
-    return <_AdminXApp {...props} />;
 };
 
 export default class AdminXSettings extends Component {
@@ -287,12 +280,19 @@ export default class AdminXSettings extends Component {
         this.router.transitionTo(route, ...models);
     };
 
+    editorResource = fetchSettings();
+
+    AdminXApp = (props) => {
+        const {AdminXApp: _AdminXApp} = this.editorResource.read();
+        return <_AdminXApp {...props} />;
+    };
+
     ReactComponent = () => {
         return (
             <div className={['admin-x-settings-container-', this.args.className].filter(Boolean).join(' ')}>
                 <ErrorHandler>
                     <Suspense fallback={<p className="admin-x-settings-container--loading">Loading settings...</p>}>
-                        <AdminXApp
+                        <this.AdminXApp
                             ghostVersion={config.APP.version}
                             officialThemes={officialThemes}
                             zapierTemplates={zapierTemplates}
