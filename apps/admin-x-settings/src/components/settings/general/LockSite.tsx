@@ -40,8 +40,8 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             <span>Your site is password protected</span>
                         </div>
                     ) : (
-                        <div className='flex items-center gap-1 text-grey-900'>
-                            <Icon colorClass='text-black' name='lock-unlocked' size='sm' />
+                        <div className='flex items-center gap-1 text-grey-900 dark:text-grey-400'>
+                            <Icon colorClass='text-black dark:text-white' name='lock-unlocked' size='sm' />
                             <span>Your site is not password protected</span>
                         </div>
                     )
