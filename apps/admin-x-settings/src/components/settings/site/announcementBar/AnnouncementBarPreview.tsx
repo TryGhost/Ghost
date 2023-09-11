@@ -66,7 +66,7 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcement
     };
 
     return (
-        <div className='h-screen w-screen overflow-hidden' data-testId='announcement-bar-preview'>
+        <div className='h-screen w-screen overflow-hidden'>
             <IframeBuffering
                 className="absolute left-0 top-0 h-full w-full"
                 generateContent={injectContentIntoIframe}
