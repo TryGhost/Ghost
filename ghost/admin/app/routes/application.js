@@ -1,9 +1,12 @@
 import AuthConfiguration from 'ember-simple-auth/configuration';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import Route from '@ember/routing/route';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {InitSentryForEmber} from '@sentry/ember';
+import {importSettings} from '../components/admin-x/settings';
 import {inject} from 'ghost-admin/decorators/inject';
 import {
     isAjaxError,
@@ -25,6 +28,11 @@ let shortcuts = {};
 
 shortcuts.esc = {action: 'closeMenus', scope: 'default'};
 shortcuts[`${ctrlOrCmd}+s`] = {action: 'save', scope: 'all'};
+
+// make globals available for any pulled in UMD components
+// - avoids external components needing to bundle React and running into multiple version errors
+window.React = React;
+window.ReactDOM = ReactDOM;
 
 export default Route.extend(ShortcutsRoute, {
     ajax: service(),
@@ -191,6 +199,9 @@ export default Route.extend(ShortcutsRoute, {
             // enforce opening the BMA in a force upgrade state
             this.billing.openBillingWindow(this.router.currentURL, '/pro');
         }
+
+        // Preload settings to avoid a delay when opening
+        setTimeout(importSettings, 1000);
     }
 
 });
