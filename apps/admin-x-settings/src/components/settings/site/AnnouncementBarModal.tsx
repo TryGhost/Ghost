@@ -202,6 +202,7 @@ const AnnouncementBarModal: React.FC = () => {
         announcementBackgroundColor={announcementBackgroundColor} 
         announcementContent={announcementContent} 
         url={selectedTabURL} 
+        visibility={visibilitySettings}
     />;
 
     return <PreviewModalContent
