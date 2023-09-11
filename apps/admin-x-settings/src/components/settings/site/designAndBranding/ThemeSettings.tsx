@@ -8,6 +8,7 @@ import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupCon
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import {CustomThemeSetting} from '../../../../api/customThemeSettings';
+import {debounce} from '../../../../utils/debounce';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
 import {humanizeSettingKey} from '../../../../api/settings';
 
@@ -21,6 +22,8 @@ const ThemeSetting: React.FC<{
         const imageUrl = getImageUrl(await uploadImage({file}));
         setSetting(imageUrl);
     };
+
+    const updateSettingDebounced = debounce(setSetting, 500);
 
     switch (setting.type) {
     case 'text':
@@ -59,7 +62,7 @@ const ThemeSetting: React.FC<{
                 hint={setting.description}
                 title={humanizeSettingKey(setting.key)}
                 value={setting.value || ''}
-                onChange={value => setSetting(value)}
+                onChange={value => updateSettingDebounced(value)}
             />
         );
     case 'image':
