@@ -30,7 +30,7 @@ const ImportModalContent = () => {
             });
         }}
     >
-        <div className="cursor-pointer bg-grey-100 p-10 text-center">
+        <div className="cursor-pointer bg-grey-75 p-10 text-center dark:bg-grey-950">
             {uploading ? 'Uploading ...' : 'Select a JSON or zip file'}
         </div>
     </FileUpload>;
