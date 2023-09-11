@@ -39,8 +39,8 @@ function emailTemplate(node, document) {
                         <div class="kg-bookmark-description">${description}</div>
                         <div class="kg-bookmark-metadata">
                             ${icon ? `<img class="kg-bookmark-icon" src="${icon}" alt="">` : ''}
-                            ${publisher ? `<span class="kg-bookmark-publisher" src="${publisher}">${publisher}</span>` : ''}
-                            ${author ? `<span class="kg-bookmark-author" src="${author}">${author}</span>` : ''}
+                            ${publisher ? `<span class="kg-bookmark-author" src="${publisher}">${publisher}</span>` : ''}
+                            ${author ? `<span class="kg-bookmark-publisher" src="${author}">${author}</span>` : ''}
                         </div>
                     </div>
                     ${thumbnail ? `<div class="kg-bookmark-thumbnail" style="background-image: url('${thumbnail}')">
