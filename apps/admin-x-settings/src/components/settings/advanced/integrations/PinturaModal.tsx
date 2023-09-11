@@ -22,7 +22,7 @@ const PinturaModal = NiceModal.create(() => {
         css: false
     });
 
-    const {settings} = useGlobalData();
+    const {settings, config} = useGlobalData();
     const [pinturaEnabled] = getSettingValues<boolean>(settings, ['pintura']);
     const {mutateAsync: editSettings} = useEditSettings();
     const {mutateAsync: uploadFile} = useUploadFile();
@@ -121,7 +121,7 @@ const PinturaModal = NiceModal.create(() => {
                             setEnabled(e.target.checked);
                         }}
                     />
-                    {enabled && (
+                    {enabled && !config.pintura && (
                         <>
                             <div className='flex flex-col justify-between gap-1 md:flex-row md:items-center'>
                                 <div>
