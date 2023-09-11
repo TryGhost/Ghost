@@ -1,8 +1,9 @@
 import AppContext from '../../AppContext';
-import {useContext, useState, useEffect} from 'react';
+import {useContext, useState, useEffect, useCallback} from 'react';
 import CloseButton from '../common/CloseButton';
 import {clearURLParams} from '../../utils/notifications';
 import LoadingPage from './LoadingPage';
+import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark-fill.svg';
 
 export const RecommendationsPageStyles = `
     .gh-portal-recommendation-item .gh-portal-list-detail {
@@ -13,6 +14,7 @@ export const RecommendationsPageStyles = `
     display: flex;
     align-items: center;
     gap: 8px;
+    cursor: pointer;
   }
 
   .gh-portal-recommendation-item-favicon {
@@ -64,21 +66,73 @@ const RecommendationIcon = ({title, favicon, featuredImage}) => {
     return (<img className="gh-portal-recommendation-item-favicon" src={icon} alt={title} onError={hideIcon} />);
 };
 
+const prepareTab = () => {
+    return window.open('', '_blank');
+};
+
+const openTab = (tab, url) => {
+    if (tab) {
+        tab.location.href = url;
+        tab.focus();
+    } else {
+        // Probably failed to create a tab
+        window.location.href = url;
+    }
+};
+
 const RecommendationItem = (recommendation) => {
-    const {t} = useContext(AppContext);
+    const {t, onAction, member} = useContext(AppContext);
     const {title, url, reason, favicon, one_click_subscribe: oneClickSubscribe, featured_image: featuredImage} = recommendation;
+    const allowOneClickSubscribe = member && oneClickSubscribe;
+    const [subscribed, setSubscribed] = useState(false);
+
+    const visitHandler = useCallback(() => {
+        // Open url in a new tab
+        const tab = window.open(url, '_blank');
+        tab?.focus();
+    }, [url]);
+
+    const oneClickSubscribeHandler = useCallback(async () => {
+        // We need to open a tab immediately, otherwise it is not possible to open a tab in case of errors later
+        // after the async operation is done (browser blocks it outside of user interaction)
+        const tab = prepareTab();
+
+        try {
+            await onAction('oneClickSubscribe', {
+                siteUrl: url,
+                throwErrors: true
+            });
+            setSubscribed(true);
+            tab.close();
+        } catch (_) {
+            // Open portal signup page
+            const signupUrl = new URL('#/portal/signup', url);
+
+            // Trigger a visit
+            openTab(tab, signupUrl);
+        }
+    }, [setSubscribed, url]);
+
+    const clickHandler = useCallback((e) => {
+        if (allowOneClickSubscribe) {
+            oneClickSubscribeHandler(e);
+        } else {
+            visitHandler(e);
+        }
+    }, [allowOneClickSubscribe, oneClickSubscribeHandler, visitHandler]);
 
     return (
         <section className="gh-portal-recommendation-item">
             <div className="gh-portal-list-detail gh-portal-list-big">
-                <div className="gh-portal-recommendation-item-header">
+                <div className="gh-portal-recommendation-item-header" onClick={visitHandler}>
                     <RecommendationIcon title={title} favicon={favicon} featuredImage={featuredImage} />
                     <h3>{title}</h3>
                 </div>
                 {reason && <p>{reason}</p>}
             </div>
             <div>
-                <a href={url} target="_blank" rel="noopener noreferrer" className="gh-portal-btn gh-portal-btn-list">{oneClickSubscribe ? t('Subscribe') : t('Visit')}</a>
+                {subscribed && <CheckmarkIcon className='gh-portal-checkmark-icon' alt='' />}
+                {!subscribed && <button type="button" className="gh-portal-btn gh-portal-btn-list" onClick={clickHandler}>{allowOneClickSubscribe ? t('Subscribe') : t('Visit')}</button>}
             </div>
         </section>
     );
@@ -93,8 +147,8 @@ const RecommendationsPage = () => {
     useEffect(() => {
         api.site.recommendations({limit: 100}).then((data) => {
             setRecommendations(
-                shuffleRecommendations(data.recommendations
-                ));
+                shuffleRecommendations(data.recommendations)
+            );
         }).catch((err) => {
             // eslint-disable-next-line no-console
             console.error(err);
