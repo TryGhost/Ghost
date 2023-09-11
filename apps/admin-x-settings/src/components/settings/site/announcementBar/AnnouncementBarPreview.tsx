@@ -68,6 +68,7 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcement
     return (
         <div className='h-screen w-screen overflow-hidden'>
             <IframeBuffering
+                addDelay={true}
                 className="absolute left-0 top-0 h-full w-full"
                 generateContent={injectContentIntoIframe}
                 height='100%'
@@ -78,6 +79,21 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcement
         </div>
     );
 };
+
+function arraysAreEqual(arr1: string[], arr2: string[]) {
+    if (!arr1 || !arr2) {
+        return arr1 === arr2;
+    } // handles null or undefined values
+    if (arr1.length !== arr2.length) {
+        return false;
+    }
+    for (let i = 0; i < arr1.length; i++) {
+        if (arr1[i] !== arr2[i]) {
+            return false;
+        }
+    }
+    return true;
+}
 
 export default memo(AnnouncementBarPreview, (prevProps, nextProps) => {
     // Check if announcementBackgroundColor changed
@@ -96,7 +112,7 @@ export default memo(AnnouncementBarPreview, (prevProps, nextProps) => {
     }
 
     // Check if visibility array changed in size or content
-    if (prevProps.visibility !== nextProps.visibility) {
+    if (!arraysAreEqual(prevProps.visibility || [], nextProps.visibility || [])) {
         return false;
     }
 
