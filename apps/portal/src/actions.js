@@ -1,3 +1,4 @@
+import setupGhostApi from './utils/api';
 import {HumanReadableError} from './utils/errors';
 import {createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl} from './utils/helpers';
 
@@ -474,6 +475,41 @@ async function updateProfile({data, state, api}) {
     };
 }
 
+async function oneClickSubscribe({data: {siteUrl}, state}) {
+    const externalSiteApi = setupGhostApi({siteUrl: siteUrl, apiUrl: 'not-defined', contentApiKey: 'not-defined'});
+    const {t, member} = state;
+
+    const referrerUrl = window.location.href;
+    const referrerSource = window.location.hostname.replace(/^www\./, '');
+
+    await externalSiteApi.member.sendMagicLink({
+        emailType: 'signup',
+        name: member.name,
+        email: member.email,
+        autoRedirect: false,
+        customUrlHistory: [
+            {
+                time: Date.now(),
+                referrerSource,
+                referrerMedium: 'Ghost Recommendations',
+                referrerUrl
+            }
+        ]
+    });
+
+    return {
+        popupNotification: createPopupNotification({
+            type: 'subscribe:success',
+            autoHide: true,
+            closeable: true,
+            duration: 10000,
+            status: 'success',
+            state,
+            message: t(`To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!`)
+        })
+    };
+}
+
 const Actions = {
     togglePopup,
     openPopup,
@@ -496,7 +532,8 @@ const Actions = {
     checkoutPlan,
     updateNewsletterPreference,
     showPopupNotification,
-    removeEmailFromSuppressionList
+    removeEmailFromSuppressionList,
+    oneClickSubscribe
 };
 
 /** Handle actions in the App, returns updated state */
