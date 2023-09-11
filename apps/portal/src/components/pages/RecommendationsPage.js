@@ -78,7 +78,7 @@ const RecommendationItem = (recommendation) => {
                 {reason && <p>{reason}</p>}
             </div>
             <div>
-                <a href={url} target="_blank" rel="noopener noreferrer" className="gh-portal-btn gh-portal-btn-list">{oneClickSubscribe ? t('Subscribe') : t('Visit')}</a>
+                <a href={url} target="_blank" rel="noopener noreferrer" className="gh-portal-btn gh-portal-btn-list">{oneClickSubscribe ? t('Subscribe') : t('Check it out')}</a>
             </div>
         </section>
     );
@@ -118,8 +118,8 @@ const RecommendationsPage = () => {
         };
     }, []);
 
-    const heading = pageData && pageData.signup ? t('You\'re subscribed!') : t('Recommendations');
-    const subheading = t(`Here are a few other sites {{siteTitle}} thinks you may enjoy.`, {siteTitle: title});
+    const heading = pageData && pageData.signup ? t('Welcome to {siteTitle}') : t('Recommendations');
+    const subheading = pageData && pageData.signup ? t('Thanks for subscribing. Here are a few other sites you may enjoy. ') : t('Here are a few other sites you may enjoy.');
 
     if (!recommendationsEnabled) {
         return null;
