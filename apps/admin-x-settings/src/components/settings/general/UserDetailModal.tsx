@@ -675,7 +675,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                 if (error) {
                     showToast({
                         type: 'pageError',
-                        message: 'Can\'t save user! One or more fields have errors, please doublecheck you filled all mandatory fields'
+                        message: 'Can\'t save user, please double check that you\'ve filled in all mandatory fields.'
                     });
                     setSaveState('');
                     return;

@@ -67,7 +67,7 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
             } else {
                 showToast({
                     type: 'pageError',
-                    message: 'Can\'t save webhook! One or more fields have errors, please doublecheck you filled all mandatory fields'
+                    message: 'Can\'t save webhook, please double check that you\'ve filled in all mandatory fields.'
                 });
             }
         }}
