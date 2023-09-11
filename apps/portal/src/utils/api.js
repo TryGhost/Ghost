@@ -231,7 +231,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect}) {
+        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, customUrlHistory, autoRedirect = true}) {
             const url = endpointFor({type: 'members', resource: 'send-magic-link'});
             const body = {
                 name,
@@ -241,9 +241,10 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 emailType,
                 labels,
                 requestSrc: 'portal',
-                redirect
+                redirect,
+                autoRedirect
             };
-            const urlHistory = getUrlHistory();
+            const urlHistory = customUrlHistory ?? getUrlHistory();
             if (urlHistory) {
                 body.urlHistory = urlHistory;
             }

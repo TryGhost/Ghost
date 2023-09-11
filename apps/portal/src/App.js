@@ -625,6 +625,13 @@ export default class App extends React.Component {
                 }, 2000);
             }
         } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error(`[Portal] Failed to dispatch action: ${action}`, error);
+
+            if (data && data.throwErrors) {
+                throw error;
+            }
+
             const popupNotification = createPopupNotification({
                 type: `${action}:failed`,
                 autoHide: true, closeable: true, status: 'error', state: this.state,
