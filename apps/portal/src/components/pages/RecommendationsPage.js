@@ -1,6 +1,8 @@
 import AppContext from '../../AppContext';
 import {useContext, useState, useEffect} from 'react';
 import CloseButton from '../common/CloseButton';
+import {clearURLParams} from '../../utils/notifications';
+import LoadingPage from './LoadingPage';
 
 export const RecommendationsPageStyles = `
     .gh-portal-recommendation-item .gh-portal-list-detail {
@@ -48,50 +50,83 @@ const shuffleRecommendations = (array) => {
     return array;
 };
 
-const RecommendationItem = ({title, url, reason, favicon}) => {
+const RecommendationIcon = ({title, favicon, featuredImage}) => {
+    const [icon, setIcon] = useState(favicon || featuredImage);
+
+    const hideIcon = () => {
+        setIcon(null);
+    };
+
+    if (!icon) {
+        return null;
+    }
+
+    return (<img className="gh-portal-recommendation-item-favicon" src={icon} alt={title} onError={hideIcon} />);
+};
+
+const RecommendationItem = (recommendation) => {
     const {t} = useContext(AppContext);
+    const {title, url, reason, favicon, one_click_subscribe: oneClickSubscribe, featured_image: featuredImage} = recommendation;
 
     return (
         <section className="gh-portal-recommendation-item">
             <div className="gh-portal-list-detail gh-portal-list-big">
                 <div className="gh-portal-recommendation-item-header">
-                    {favicon && <img className="gh-portal-recommendation-item-favicon" src={favicon} alt={title}/>}
+                    <RecommendationIcon title={title} favicon={favicon} featuredImage={featuredImage} />
                     <h3>{title}</h3>
                 </div>
                 {reason && <p>{reason}</p>}
             </div>
             <div>
-                <a href={url} target="_blank" rel="noopener noreferrer" className="gh-portal-btn gh-portal-btn-list">{t('Visit')}</a>
+                <a href={url} target="_blank" rel="noopener noreferrer" className="gh-portal-btn gh-portal-btn-list">{oneClickSubscribe ? t('Subscribe') : t('Visit')}</a>
             </div>
         </section>
     );
 };
 
 const RecommendationsPage = () => {
-    const {site, pageData, t} = useContext(AppContext);
+    const {api, site, pageData, t} = useContext(AppContext);
     const {title, icon} = site;
     const {recommendations_enabled: recommendationsEnabled = false} = site;
-    const {recommendations = []} = site;
+    const [recommendations, setRecommendations] = useState(null);
+
+    useEffect(() => {
+        api.site.recommendations({limit: 100}).then((data) => {
+            setRecommendations(
+                shuffleRecommendations(data.recommendations
+                ));
+        }).catch((err) => {
+            // eslint-disable-next-line no-console
+            console.error(err);
+        });
+    }, []);
 
     // Show 5 recommendations by default
     const [numToShow, setNumToShow] = useState(5);
-
-    // Show recommendations in a random order
-    const [shuffledRecommendations, setShuffledRecommendations] = useState([]);
-
-    useEffect(() => {
-        setShuffledRecommendations(shuffleRecommendations([...recommendations]));
-    }, [recommendations]);
 
     const showAllRecommendations = () => {
         setNumToShow(recommendations.length);
     };
 
+    useEffect(() => {
+        return () => {
+            if (pageData.signup) {
+                const deleteParams = [];
+                deleteParams.push('action', 'success');
+                clearURLParams(deleteParams);
+            }
+        };
+    }, []);
+
     const heading = pageData && pageData.signup ? t('You\'re subscribed!') : t('Recommendations');
     const subheading = t(`Here are a few other sites {{siteTitle}} thinks you may enjoy.`, {siteTitle: title});
 
-    if (!recommendationsEnabled || recommendations.length < 1) {
+    if (!recommendationsEnabled) {
         return null;
+    }
+
+    if (recommendations === null) {
+        return <LoadingPage/>;
     }
 
     return (
@@ -104,7 +139,7 @@ const RecommendationsPage = () => {
             <p className="gh-portal-recommendations-description">{subheading}</p>
 
             <div className="gh-portal-list">
-                {shuffledRecommendations.slice(0, numToShow).map((recommendation, index) => (
+                {recommendations.slice(0, numToShow).map((recommendation, index) => (
                     <RecommendationItem key={index} {...recommendation} />
                 ))}
             </div>

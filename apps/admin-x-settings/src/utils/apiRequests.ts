@@ -1,6 +1,7 @@
 import {QueryClient, UseInfiniteQueryOptions, UseQueryOptions, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {getGhostPaths} from './helpers';
 import {useMemo} from 'react';
+import {usePage, usePagination} from '../hooks/usePagination';
 import {useServices} from '../components/providers/ServiceProvider';
 
 export interface Meta {
@@ -20,6 +21,7 @@ interface RequestOptions {
     headers?: {
         'Content-Type'?: string;
     };
+    credentials?: 'include' | 'omit' | 'same-origin';
 }
 
 export class ApiError extends Error {
@@ -119,6 +121,41 @@ export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) =
     return {
         ...result,
         data
+    };
+};
+
+export const createPaginatedQuery = <ResponseData extends {meta?: Meta}>(options: QueryOptions<ResponseData>) => ({searchParams, ...query}: QueryHookOptions<ResponseData> = {}) => {
+    const {page, setPage} = usePage();
+    const limit = (searchParams?.limit || options.defaultSearchParams?.limit) ? parseInt(searchParams?.limit || options.defaultSearchParams?.limit || '15') : 15;
+
+    const paginatedSearchParams = searchParams || options.defaultSearchParams || {};
+    paginatedSearchParams.page = page.toString();
+
+    const url = apiUrl(options.path, paginatedSearchParams);
+    const fetchApi = useFetchApi();
+
+    const result = useQuery<ResponseData>({
+        queryKey: [options.dataType, url],
+        queryFn: () => fetchApi(url),
+        ...query
+    });
+
+    const data = useMemo(() => (
+        (result.data && options.returnData) ? options.returnData(result.data) : result.data)
+    , [result]);
+
+    const pagination = usePagination({
+        page,
+        setPage,
+        limit,
+        // Don't pass the meta data if we are fetching, because then it is probably out of date and this causes issues
+        meta: result.isFetching ? undefined : data?.meta
+    });
+
+    return {
+        ...result,
+        data,
+        pagination
     };
 };
 

@@ -28,7 +28,7 @@ type SidebarProps = {
 };
 
 const Sidebar: React.FC<SidebarProps> = ({
-    announcementContent, 
+    announcementContent,
     announcementTextHandler,
     accentColor,
     announcementBackgroundColor,
@@ -219,7 +219,7 @@ const AnnouncementBarModal: React.FC = () => {
         selectedURL={selectedPreviewTab}
         sidebar={sidebar}
         testId='announcement-bar-modal'
-        title='Announcement bar'
+        title='Announcement'
         titleHeadingLevel={5}
         onOk={async () => {
             if (await handleSave()) {

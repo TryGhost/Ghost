@@ -114,26 +114,31 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
 
     const left =
         <Breadcrumbs
+            activeItemClassName='hidden md:!block md:!visible'
+            itemClassName='hidden md:!block md:!visible'
             items={[
                 {label: 'Design', onClick: onClose},
                 {label: 'Change theme'}
             ]}
+            separatorClassName='hidden md:!block md:!visible'
             backIcon
             onBack={onClose}
         />;
 
     const right =
         <div className='flex items-center gap-14'>
-            <TabView
-                border={false}
-                selectedTab={currentTab}
-                tabs={[
-                    {id: 'official', title: 'Official themes'},
-                    {id: 'installed', title: 'Installed'}
-                ]}
-                onTabChange={(id: string) => {
-                    setCurrentTab(id);
-                }} />
+            <div className='hidden md:!visible md:!block'>
+                <TabView
+                    border={false}
+                    selectedTab={currentTab}
+                    tabs={[
+                        {id: 'official', title: 'Official themes'},
+                        {id: 'installed', title: 'Installed'}
+                    ]}
+                    onTabChange={(id: string) => {
+                        setCurrentTab(id);
+                    }} />
+            </div>
             <div className='flex items-center gap-3'>
                 {uploadConfig && (
                     uploadConfig.enabled ?
@@ -176,7 +181,21 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
             </div>
         </div>;
 
-    return <PageHeader containerClassName='bg-white' left={left} right={right} />;
+    return (<>
+        <PageHeader containerClassName='bg-white' left={left} right={right} />
+        <div className='px-[8vmin] md:hidden'>
+            <TabView
+                border={false}
+                selectedTab={currentTab}
+                tabs={[
+                    {id: 'official', title: 'Official themes'},
+                    {id: 'installed', title: 'Installed'}
+                ]}
+                onTabChange={(id: string) => {
+                    setCurrentTab(id);
+                }} />
+        </div>
+    </>);
 };
 
 const ThemeModalContent: React.FC<ThemeModalContentProps> = ({
@@ -272,9 +291,10 @@ const ChangeThemeModal = NiceModal.create(() => {
             afterClose={() => {
                 updateRoute('design/edit');
             }}
+            animate={false}
             cancelLabel=''
             footer={false}
-            noPadding={true}
+            padding={false}
             size='full'
             testId='theme-modal'
             title=''
@@ -307,11 +327,13 @@ const ChangeThemeModal = NiceModal.create(() => {
                         setSelectedTheme={setSelectedTheme}
                         themes={themes}
                     />
-                    <ThemeModalContent
-                        currentTab={currentTab}
-                        themes={themes}
-                        onSelectTheme={onSelectTheme}
-                    />
+                    {!selectedTheme &&
+                        <ThemeModalContent
+                            currentTab={currentTab}
+                            themes={themes}
+                            onSelectTheme={onSelectTheme}
+                        />
+                    }
                 </div>
             </div>
         </Modal>

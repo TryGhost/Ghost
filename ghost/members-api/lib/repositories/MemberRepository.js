@@ -281,7 +281,7 @@ module.exports = class MemberRepository {
             memberStatusData.status = 'comped';
         }
 
-        // Subscribe member to default newsletters
+        // Subscribe members to default newsletters
         if (memberData.subscribed !== false && !memberData.newsletters) {
             const browseOptions = _.pick(options, 'transacting');
             memberData.newsletters = await this.getSubscribeOnSignupNewsletters(browseOptions);

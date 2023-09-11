@@ -24,14 +24,14 @@ function getThemeLabel(theme: Theme): React.ReactNode {
         label += ' (default)';
     } else if (theme.package?.name !== theme.name) {
         label =
-            <>
+            <span className='text-sm md:text-base'>
                 {label} <span className='text-grey-600'>({theme.name})</span>
-            </>;
+            </span>;
     }
 
     if (isActiveTheme(theme)) {
         label =
-            <span className="font-bold">
+            <span className="text-sm font-bold md:text-base">
                 {label} &mdash; <span className='text-green'> Active</span>
             </span>;
     }

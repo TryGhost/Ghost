@@ -205,20 +205,21 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             afterClose={afterClose}
             animate={false}
             footer={false}
-            noPadding={true}
+            padding={false}
             size={size}
             testId={testId}
             title=''
+            hideXOnMobile
         >
             <div className='flex h-full grow'>
-                <div className={`flex grow flex-col ${previewBgColor === 'grey' ? 'bg-grey-50' : 'bg-white'}`}>
+                <div className={`hidden grow flex-col md:!visible md:!flex ${previewBgColor === 'grey' ? 'bg-grey-50' : 'bg-white'}`}>
                     {preview}
                 </div>
                 {sidebar &&
-                    <div className='relative flex h-full basis-[400px] flex-col border-l border-grey-100'>
+                    <div className='relative flex h-full w-full flex-col border-l border-grey-100 md:w-auto md:basis-[400px]'>
                         {sidebarHeader ? sidebarHeader : (
-                            <div className='flex max-h-[74px] items-start justify-between gap-3 px-7 py-5'>
-                                <Heading className='mt-1' level={titleHeadingLevel}>{title}</Heading>
+                            <div className='flex max-h-[74px] items-center justify-between gap-3 px-7 py-5'>
+                                <Heading level={titleHeadingLevel}>{title}</Heading>
                                 {sidebarButtons ? sidebarButtons : <ButtonGroup buttons={buttons} /> }
                             </div>
                         )}

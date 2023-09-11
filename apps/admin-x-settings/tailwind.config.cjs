@@ -3,6 +3,7 @@ module.exports = {
     corePlugins: {
         preflight: false // we're providing our own scoped CSS reset
     },
+    darkMode: 'class',
     important: '.admin-x-settings',
     content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
     theme: {
@@ -10,7 +11,8 @@ module.exports = {
             sm: '480px',
             md: '640px',
             lg: '1024px',
-            xl: '1280px'
+            xl: '1280px',
+            tablet: '800px'
         },
         colors: {
             transparent: 'transparent',
@@ -29,7 +31,8 @@ module.exports = {
                 600: '#95A1AD',
                 700: '#7C8B9A',
                 800: '#626D79',
-                900: '#394047'
+                900: '#394047',
+                950: '#222427'
             },
             green: {
                 DEFAULT: '#30CF43',

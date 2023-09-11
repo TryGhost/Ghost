@@ -11,8 +11,9 @@ type Order<T> = {
 export type ModelClass<T> = {
     destroy: (data: {id: T}) => Promise<void>;
     findOne: (data: {id: T}, options?: {require?: boolean}) => Promise<ModelInstance<T> | null>;
-    findAll: (options: {filter?: string; order?: OrderOption}) => Promise<ModelInstance<T>[]>;
+    findAll: (options: {filter?: string; order?: string, page?: number, limit?: number | 'all'}) => Promise<ModelInstance<T>[]>;
     add: (data: object) => Promise<ModelInstance<T>>;
+    getFilteredCollection: (options: {filter?: string}) => {count(): Promise<number>};
 }
 
 export type ModelInstance<T> = {
@@ -23,7 +24,7 @@ export type ModelInstance<T> = {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type OrderOption<T extends Entity<any> = any> = Order<T>[];
+export type OrderOption<T extends Entity<any> = any> = Order<T>[];
 
 export abstract class BookshelfRepository<IDType, T extends Entity<IDType>> {
     protected Model: ModelClass<IDType>;
@@ -33,7 +34,15 @@ export abstract class BookshelfRepository<IDType, T extends Entity<IDType>> {
     }
 
     protected abstract toPrimitive(entity: T): object;
+    protected abstract entityFieldToColumn(field: keyof T): string;
     protected abstract modelToEntity(model: ModelInstance<IDType>): Promise<T|null> | T | null;
+
+    #orderToString(order?: OrderOption<T>) {
+        if (!order || order.length === 0) {
+            return;
+        }
+        return order.map(({field, direction}) => `${this.entityFieldToColumn(field)} ${direction}`).join(',');
+    }
 
     async save(entity: T): Promise<void> {
         if (entity.deleted) {
@@ -43,10 +52,10 @@ export abstract class BookshelfRepository<IDType, T extends Entity<IDType>> {
 
         const existing = await this.Model.findOne({id: entity.id}, {require: false});
         if (existing) {
-            existing.set(this.toPrimitive(entity))
+            existing.set(this.toPrimitive(entity));
             await existing.save({}, {autoRefresh: false, method: 'update'});
         } else {
-            await this.Model.add(this.toPrimitive(entity))
+            await this.Model.add(this.toPrimitive(entity));
         }
     }
 
@@ -56,7 +65,25 @@ export abstract class BookshelfRepository<IDType, T extends Entity<IDType>> {
     }
 
     async getAll({filter, order}: { filter?: string; order?: OrderOption<T> } = {}): Promise<T[]> {
-        const models = await this.Model.findAll({filter, order}) as ModelInstance<IDType>[];
+        const models = await this.Model.findAll({
+            filter,
+            order: this.#orderToString(order)
+        }) as ModelInstance<IDType>[];
         return (await Promise.all(models.map(model => this.modelToEntity(model)))).filter(entity => !!entity) as T[];
+    }
+
+    async getPage({filter, order, page, limit}: { filter?: string; order?: OrderOption<T>; page: number; limit: number }): Promise<T[]> {
+        const models = await this.Model.findAll({
+            filter,
+            order: this.#orderToString(order),
+            limit,
+            page
+        });
+        return (await Promise.all(models.map(model => this.modelToEntity(model)))).filter(entity => !!entity) as T[];
+    }
+
+    async getCount({filter}: { filter?: string } = {}): Promise<number> {
+        const collection = this.Model.getFilteredCollection({filter});
+        return await collection.count();
     }
 }

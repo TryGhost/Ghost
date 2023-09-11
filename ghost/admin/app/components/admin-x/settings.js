@@ -5,6 +5,7 @@ import config from 'ghost-admin/config/environment';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
+import {tracked} from '@glimmer/tracking';
 
 // TODO: Long term move asset management directly in AdminX
 const officialThemes = [{
@@ -213,9 +214,9 @@ const fetchKoenig = function () {
         const url = new URL(urlTemplate.replace('{version}', urlVersion));
 
         if (url.protocol === 'http:') {
-            await import(`http://${url.host}${url.pathname}`);
+            window['@tryghost/admin-x-settings'] = await import(`http://${url.host}${url.pathname}`);
         } else {
-            await import(`https://${url.host}${url.pathname}`);
+            window['@tryghost/admin-x-settings'] = await import(`https://${url.host}${url.pathname}`);
         }
 
         return window['@tryghost/admin-x-settings'];
@@ -264,6 +265,8 @@ export default class AdminXSettings extends Component {
 
     @inject config;
 
+    @tracked display = 'none';
+
     @action
     onError(error) {
         // ensure we're still showing errors in development
@@ -294,6 +297,7 @@ export default class AdminXSettings extends Component {
                             officialThemes={officialThemes}
                             zapierTemplates={zapierTemplates}
                             externalNavigate={this.externalNavigate}
+                            darkMode={this.feature.nightShift}
                         />
                     </Suspense>
                 </ErrorHandler>

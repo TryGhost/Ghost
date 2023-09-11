@@ -1,5 +1,5 @@
-import {Recommendation} from "./Recommendation";
-import {RecommendationRepository} from "./RecommendationRepository";
+import {Recommendation} from './Recommendation';
+import {RecommendationRepository} from './RecommendationRepository';
 import {BookshelfRepository, ModelClass, ModelInstance} from '@tryghost/bookshelf-repository';
 import logger from '@tryghost/logging';
 
@@ -7,7 +7,7 @@ type Sentry = {
     captureException(err: unknown): void;
 }
 
-export class BookshelfRecommendationRepository extends BookshelfRepository<string, Recommendation>  implements RecommendationRepository {
+export class BookshelfRecommendationRepository extends BookshelfRepository<string, Recommendation> implements RecommendationRepository {
     sentry?: Sentry;
 
     constructor(Model: ModelClass<string>, deps: {sentry?: Sentry} = {}) {
@@ -26,8 +26,8 @@ export class BookshelfRecommendationRepository extends BookshelfRepository<strin
             url: entity.url.toString(),
             one_click_subscribe: entity.oneClickSubscribe,
             created_at: entity.createdAt,
-            updated_at: entity.updatedAt,
-        }
+            updated_at: entity.updatedAt
+        };
     }
 
     modelToEntity(model: ModelInstance<string>): Recommendation | null {
@@ -42,12 +42,28 @@ export class BookshelfRecommendationRepository extends BookshelfRepository<strin
                 url: new URL(model.get('url') as string),
                 oneClickSubscribe: model.get('one_click_subscribe') as boolean,
                 createdAt: model.get('created_at') as Date,
-                updatedAt: model.get('updated_at') as Date | null,
-            })
+                updatedAt: model.get('updated_at') as Date | null
+            });
         } catch (err) {
             logger.error(err);
             this.sentry?.captureException(err);
             return null;
         }
+    }
+
+    entityFieldToColumn(field: keyof Recommendation): string {
+        const mapping = {
+            id: 'id',
+            title: 'title',
+            reason: 'reason',
+            excerpt: 'excerpt',
+            featuredImage: 'featured_image',
+            favicon: 'favicon',
+            url: 'url',
+            oneClickSubscribe: 'one_click_subscribe',
+            createdAt: 'created_at',
+            updatedAt: 'updated_at'
+        } as Record<keyof Recommendation, string>;
+        return mapping[field];
     }
 }
