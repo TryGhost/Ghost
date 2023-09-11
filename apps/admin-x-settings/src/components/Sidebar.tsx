@@ -13,7 +13,7 @@ const Sidebar: React.FC = () => {
     const {filter, setFilter} = useSearch();
     const {updateRoute} = useRouting();
 
-    const {settings} = useGlobalData();
+    const {settings, config} = useGlobalData();
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
 
     const handleSectionClick = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -66,7 +66,7 @@ const Sidebar: React.FC = () => {
                         <>
                             <SettingNavItem navid='newsletters' title="Newsletters" onClick={handleSectionClick} />
                             <SettingNavItem navid='default-recipients' title="Default recipients" onClick={handleSectionClick} />
-                            <SettingNavItem navid='mailgun' title="Mailgun settings" onClick={handleSectionClick} />
+                            {!config.mailgunIsConfigured && <SettingNavItem navid='mailgun' title="Mailgun settings" onClick={handleSectionClick} />}
                         </>
                     )}
                 </SettingNavSection>
