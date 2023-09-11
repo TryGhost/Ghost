@@ -15,7 +15,8 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
         siteData,
         handleSave
     } = useSettingGroup();
-    const {data: {recommendations} = {}} = useBrowseRecommendations();
+
+    const {pagination, data: {recommendations} = {}, isLoading} = useBrowseRecommendations();
     const [selectedTab, setSelectedTab] = useState('your-recommendations');
 
     const {updateRoute} = useRouting();
@@ -24,7 +25,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const buttons = (
-        <Button color='green' label='Add recommendation' link={true} onClick={() => {
+        <Button className='hidden md:!visible md:!block' color='green' label='Add recommendation' link={true} onClick={() => {
             openAddNewRecommendationModal();
         }} />
     );
@@ -35,7 +36,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
         {
             id: 'your-recommendations',
             title: 'Your recommendations',
-            contents: (<RecommendationList recommendations={recommendations ?? []} />)
+            contents: (<RecommendationList isLoading={isLoading} pagination={pagination} recommendations={recommendations ?? []}/>)
         },
         {
             id: 'recommending-you',
@@ -45,7 +46,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     ];
 
     const groupDescription = (
-        <>Share favorite sites with your audience after they subscribe. {(recommendations && recommendations.length > 0) && <Link href={recommendationsURL} target='_blank'>Preview</Link>}</>
+        <>Share favorite sites with your audience after they subscribe. {(pagination && pagination.total && pagination.total > 0) && <Link href={recommendationsURL} target='_blank'>Preview</Link>}</>
     );
 
     return (
@@ -59,6 +60,11 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
             title="Recommendations"
             onSave={handleSave}
         >
+            <div className='flex justify-center rounded border border-green px-4 py-2 md:hidden'>
+                <Button color='green' label='Add recommendation' link onClick={() => {
+                    openAddNewRecommendationModal();
+                }} />
+            </div>
             <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
         </SettingGroup>
     );

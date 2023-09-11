@@ -1,5 +1,6 @@
 import assert from 'assert';
 import {BookshelfRepository, ModelClass, ModelInstance} from '../src/index';
+import {Knex} from 'knex';
 
 type SimpleEntity = {
     id: string;
@@ -28,10 +29,18 @@ class SimpleBookshelfRepository extends BookshelfRepository<string, SimpleEntity
             birthday: entity.birthday
         };
     }
+
+    protected entityFieldToColumn(field: keyof SimpleEntity): string {
+        return field as string;
+    }
 }
 
 class Model implements ModelClass<string> {
     items: ModelInstance<string>[] = [];
+
+    orderRaw?: string;
+    limit?: number;
+    offset?: number;
 
     constructor() {
         this.items = [];
@@ -49,20 +58,23 @@ class Model implements ModelClass<string> {
         }
         return Promise.resolve(item ?? null);
     }
-    findAll(options: {filter?: string | undefined; order?: {field: string | number | symbol; direction: 'desc' | 'asc';}[] | undefined;}): Promise<ModelInstance<string>[]> {
+
+    fetchAll(): Promise<ModelInstance<string>[]> {
         const sorted = this.items.slice().sort((a, b) => {
-            for (const order of options.order ?? []) {
-                const aValue = a.get(order.field as string) as number;
-                const bValue = b.get(order.field as string) as number;
+            for (const order of this.orderRaw?.split(',') ?? []) {
+                const [field, direction] = order.split(' ');
+
+                const aValue = a.get(field as string) as number;
+                const bValue = b.get(field as string) as number;
                 if (aValue < bValue) {
-                    return order.direction === 'asc' ? -1 : 1;
+                    return direction === 'asc' ? -1 : 1;
                 } else if (aValue > bValue) {
-                    return order.direction === 'asc' ? 1 : -1;
+                    return direction === 'asc' ? 1 : -1;
                 }
             }
             return 0;
         });
-        return Promise.resolve(sorted);
+        return Promise.resolve(sorted.slice(this.offset ?? 0, (this.offset ?? 0) + (this.limit ?? sorted.length)));
     }
 
     add(data: object): Promise<ModelInstance<string>> {
@@ -85,6 +97,32 @@ class Model implements ModelClass<string> {
         };
         this.items.push(item);
         return Promise.resolve(item);
+    }
+
+    getFilteredCollection() {
+        return this;
+    }
+
+    count() {
+        return Promise.resolve(this.items.length);
+    }
+
+    // eslint-disable-next-line no-unused-vars
+    query(f: (q: Knex.QueryBuilder) => void) {
+        return f({
+            limit: (limit: number) => {
+                this.limit = limit;
+                return this;
+            },
+            offset: (offset: number) => {
+                this.offset = offset;
+                return this;
+            },
+            orderByRaw: (order: string) => {
+                this.orderRaw = order;
+                return this;
+            }
+        } as any as Knex.QueryBuilder);
     }
 }
 
@@ -198,5 +236,113 @@ describe('BookshelfRepository', function () {
         assert(result[0].age === 30);
         assert(result[1].age === 24);
         assert(result[2].age === 5);
+    });
+
+    it('Can retrieve page', async function () {
+        const repository = new SimpleBookshelfRepository(new Model());
+        const entities = [{
+            id: '1',
+            deleted: false,
+            name: 'Kym',
+            age: 24,
+            birthday: new Date('2000-01-01').toISOString()
+        }, {
+            id: '2',
+            deleted: false,
+            name: 'John',
+            age: 30,
+            birthday: new Date('2000-01-01').toISOString()
+        }, {
+            id: '3',
+            deleted: false,
+            name: 'Kevin',
+            age: 5,
+            birthday: new Date('2000-01-01').toISOString()
+        }];
+
+        for (const entity of entities) {
+            await repository.save(entity);
+        }
+
+        const result = await repository.getPage({
+            order: [{
+                field: 'age',
+                direction: 'desc'
+            }],
+            limit: 5,
+            page: 1
+        });
+
+        assert(result);
+        assert(result.length === 3);
+        assert(result[0].age === 30);
+        assert(result[1].age === 24);
+        assert(result[2].age === 5);
+    });
+
+    it('Can retrieve page without order', async function () {
+        const repository = new SimpleBookshelfRepository(new Model());
+        const entities = [{
+            id: '1',
+            deleted: false,
+            name: 'Kym',
+            age: 24,
+            birthday: new Date('2000-01-01').toISOString()
+        }, {
+            id: '2',
+            deleted: false,
+            name: 'John',
+            age: 30,
+            birthday: new Date('2000-01-01').toISOString()
+        }, {
+            id: '3',
+            deleted: false,
+            name: 'Kevin',
+            age: 5,
+            birthday: new Date('2000-01-01').toISOString()
+        }];
+
+        for (const entity of entities) {
+            await repository.save(entity);
+        }
+
+        const result = await repository.getPage({
+            order: [],
+            limit: 5,
+            page: 1
+        });
+
+        assert(result);
+        assert(result.length === 3);
+    });
+
+    it('Can retrieve count', async function () {
+        const repository = new SimpleBookshelfRepository(new Model());
+        const entities = [{
+            id: '1',
+            deleted: false,
+            name: 'Kym',
+            age: 24,
+            birthday: new Date('2000-01-01').toISOString()
+        }, {
+            id: '2',
+            deleted: false,
+            name: 'John',
+            age: 30,
+            birthday: new Date('2000-01-01').toISOString()
+        }, {
+            id: '3',
+            deleted: false,
+            name: 'Kevin',
+            age: 5,
+            birthday: new Date('2000-01-01').toISOString()
+        }];
+
+        for (const entity of entities) {
+            await repository.save(entity);
+        }
+
+        const result = await repository.getCount({});
+        assert(result === 3);
     });
 });

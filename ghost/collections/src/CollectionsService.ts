@@ -1,12 +1,13 @@
 import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
-import {Knex} from "knex";
+import isEqual from 'lodash/isEqual';
+import {Knex} from 'knex';
 import {
     PostsBulkUnpublishedEvent,
     PostsBulkFeaturedEvent,
     PostsBulkUnfeaturedEvent,
     PostsBulkAddTagsEvent
-} from "@tryghost/post-events";
+} from '@tryghost/post-events';
 import debugModule from '@tryghost/debug';
 import {Collection} from './Collection';
 import {CollectionRepository} from './CollectionRepository';
@@ -174,55 +175,121 @@ export class CollectionsService {
     subscribeToEvents() {
         this.DomainEvents.subscribe(PostDeletedEvent, async (event: PostDeletedEvent) => {
             logging.info(`PostDeletedEvent received, removing post ${event.id} from all collections`);
-            await this.removePostFromAllCollections(event.id);
+            try {
+                await this.removePostFromAllCollections(event.id);
+                /* c8 ignore next 3 */
+            } catch (err) {
+                logging.error({err, message: 'Error handling PostDeletedEvent'});
+            }
         });
 
         this.DomainEvents.subscribe(PostAddedEvent, async (event: PostAddedEvent) => {
             logging.info(`PostAddedEvent received, adding post ${event.data.id} to matching collections`);
-            await this.addPostToMatchingCollections(event.data);
+            try {
+                await this.addPostToMatchingCollections(event.data);
+                /* c8 ignore next 3 */
+            } catch (err) {
+                logging.error({err, message: 'Error handling PostAddedEvent'});
+            }
         });
 
         this.DomainEvents.subscribe(PostEditedEvent, async (event: PostEditedEvent) => {
+            if (this.hasPostEditRelevantChanges(event.data) === false) {
+                return;
+            }
+
             logging.info(`PostEditedEvent received, updating post ${event.data.id} in matching collections`);
-            await this.updatePostInMatchingCollections(event.data);
+            try {
+                await this.updatePostInMatchingCollections(event.data);
+                /* c8 ignore next 3 */
+            } catch (err) {
+                logging.error({err, message: 'Error handling PostEditedEvent'});
+            }
         });
 
         this.DomainEvents.subscribe(PostsBulkDestroyedEvent, async (event: PostsBulkDestroyedEvent) => {
             logging.info(`BulkDestroyEvent received, removing posts ${event.data} from all collections`);
-            await this.removePostsFromAllCollections(event.data);
+            try {
+                await this.removePostsFromAllCollections(event.data);
+                /* c8 ignore next 3 */
+            } catch (err) {
+                logging.error({err, message: 'Error handling PostsBulkDestroyedEvent'});
+            }
         });
 
         this.DomainEvents.subscribe(PostsBulkUnpublishedEvent, async (event: PostsBulkUnpublishedEvent) => {
             logging.info(`PostsBulkUnpublishedEvent received, updating collection posts ${event.data}`);
-            await this.updateUnpublishedPosts(event.data);
+            try {
+                await this.updateUnpublishedPosts(event.data);
+                /* c8 ignore next 3 */
+            } catch (err) {
+                logging.error({err, message: 'Error handling PostsBulkUnpublishedEvent'});
+            }
         });
 
         this.DomainEvents.subscribe(PostsBulkFeaturedEvent, async (event: PostsBulkFeaturedEvent) => {
             logging.info(`PostsBulkFeaturedEvent received, updating collection posts ${event.data}`);
-            await this.updateFeaturedPosts(event.data);
+            try {
+                await this.updateFeaturedPosts(event.data);
+                /* c8 ignore next 3 */
+            } catch (err) {
+                logging.error({err, message: 'Error handling PostsBulkFeaturedEvent'});
+            }
         });
 
         this.DomainEvents.subscribe(PostsBulkUnfeaturedEvent, async (event: PostsBulkUnfeaturedEvent) => {
             logging.info(`PostsBulkUnfeaturedEvent received, updating collection posts ${event.data}`);
-            await this.updateFeaturedPosts(event.data);
+            try {
+                await this.updateFeaturedPosts(event.data);
+                /* c8 ignore next 3 */
+            } catch (err) {
+                logging.error({err, message: 'Error handling PostsBulkUnfeaturedEvent'});
+            }
         });
 
         this.DomainEvents.subscribe(TagDeletedEvent, async (event: TagDeletedEvent) => {
             logging.info(`TagDeletedEvent received for ${event.data.id}, updating all collections`);
-            await this.updateAllAutomaticCollections();
+            try {
+                await this.updateAllAutomaticCollections();
+                /* c8 ignore next 3 */
+            } catch (err) {
+                logging.error({err, message: 'Error handling TagDeletedEvent'});
+            }
         });
 
         this.DomainEvents.subscribe(PostsBulkAddTagsEvent, async (event: PostsBulkAddTagsEvent) => {
             logging.info(`PostsBulkAddTagsEvent received for ${event.data}, updating all collections`);
-            await this.updateAllAutomaticCollections();
+            try {
+                await this.updateAllAutomaticCollections();
+                /* c8 ignore next 3 */
+            } catch (err) {
+                logging.error({err, message: 'Error handling PostsBulkAddTagsEvent'});
+            }
         });
+    }
+
+    private hasPostEditRelevantChanges(postEditEvent: PostEditedEvent['data']): boolean {
+        const current = {
+            id: postEditEvent.current.id,
+            featured: postEditEvent.current.featured,
+            published_at: postEditEvent.current.published_at,
+            tags: postEditEvent.current.tags
+        };
+        const previous = {
+            id: postEditEvent.previous.id,
+            featured: postEditEvent.previous.featured,
+            published_at: postEditEvent.previous.published_at,
+            tags: postEditEvent.previous.tags
+        };
+
+        return !isEqual(current, previous);
     }
 
     async updateAllAutomaticCollections(): Promise<void> {
         return await this.collectionsRepository.createTransaction(async (transaction) => {
             const collections = await this.collectionsRepository.getAll({
                 transaction
-            })
+            });
 
             for (const collection of collections) {
                 if (collection.type === 'automatic' && collection.filter) {
@@ -356,7 +423,7 @@ export class CollectionsService {
                         await this.collectionsRepository.save(collection, {transaction});
                     }
 
-                    collectionsChangeLog += `Post ${postEdit.id} was updated and added to collection ${collection.slug} with filter ${collection.filter}\n`
+                    collectionsChangeLog += `Post ${postEdit.id} was updated and added to collection ${collection.slug} with filter ${collection.filter}\n`;
                 } else {
                     debug(`Post ${postEdit.id} was updated but did not update any collections`);
                 }
@@ -376,7 +443,7 @@ export class CollectionsService {
             });
 
             // only process collections that have a filter that includes published_at
-            collections = collections.filter((collection) => collection.filter?.includes('published_at'));
+            collections = collections.filter(collection => collection.filter?.includes('published_at'));
 
             if (!collections.length) {
                 return;
@@ -394,7 +461,7 @@ export class CollectionsService {
             });
 
             // only process collections that have a filter that includes featured
-            collections = collections.filter((collection) => collection.filter?.includes('featured'));
+            collections = collections.filter(collection => collection.filter?.includes('featured'));
 
             if (!collections.length) {
                 return;

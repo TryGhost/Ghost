@@ -1,3 +1,4 @@
+import ColorPickerField from '../../../../admin-x-ds/global/form/ColorPickerField';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import Hint from '../../../../admin-x-ds/global/Hint';
 import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
@@ -7,6 +8,7 @@ import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupCon
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import {CustomThemeSetting} from '../../../../api/customThemeSettings';
+import {debounce} from '../../../../utils/debounce';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
 import {humanizeSettingKey} from '../../../../api/settings';
 
@@ -21,6 +23,8 @@ const ThemeSetting: React.FC<{
         setSetting(imageUrl);
     };
 
+    const updateSettingDebounced = debounce(setSetting, 500);
+
     switch (setting.type) {
     case 'text':
         return (
@@ -34,6 +38,7 @@ const ThemeSetting: React.FC<{
     case 'boolean':
         return (
             <Toggle
+                checked={setting.value}
                 direction="rtl"
                 hint={setting.description}
                 label={humanizeSettingKey(setting.key)}
@@ -52,12 +57,12 @@ const ThemeSetting: React.FC<{
         );
     case 'color':
         return (
-            <TextField
+            <ColorPickerField
+                direction='rtl'
                 hint={setting.description}
                 title={humanizeSettingKey(setting.key)}
-                type='color'
                 value={setting.value || ''}
-                onChange={event => setSetting(event.target.value)}
+                onChange={value => updateSettingDebounced(value)}
             />
         );
     case 'image':

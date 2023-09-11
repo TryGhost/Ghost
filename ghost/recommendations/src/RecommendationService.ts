@@ -1,8 +1,9 @@
-import {AddRecommendation, Recommendation} from "./Recommendation";
-import {RecommendationRepository} from "./RecommendationRepository";
-import {WellknownService} from "./WellknownService";
-import errors from "@tryghost/errors";
-import tpl from "@tryghost/tpl";
+import {OrderOption} from '@tryghost/bookshelf-repository';
+import {AddRecommendation, Recommendation} from './Recommendation';
+import {RecommendationRepository} from './RecommendationRepository';
+import {WellknownService} from './WellknownService';
+import errors from '@tryghost/errors';
+import tpl from '@tryghost/tpl';
 
 type MentionSendingService = {
     sendAll(options: {url: URL, links: URL[]}): Promise<void>
@@ -14,8 +15,8 @@ type RecommendationEnablerService = {
 }
 
 const messages = {
-    notFound: "Recommendation with id {id} not found"
-}
+    notFound: 'Recommendation with id {id} not found'
+};
 
 export class RecommendationService {
     repository: RecommendationRepository;
@@ -56,12 +57,12 @@ export class RecommendationService {
     }
 
     private sendMentionToRecommendation(recommendation: Recommendation) {
-         this.mentionSendingService.sendAll({
+        this.mentionSendingService.sendAll({
             url: this.wellknownService.getURL(),
             links: [
                 recommendation.url
             ]
-        }).catch(console.error);
+        }).catch(console.error); // eslint-disable-line no-console
     }
 
     async addRecommendation(addRecommendation: AddRecommendation) {
@@ -115,7 +116,14 @@ export class RecommendationService {
         this.sendMentionToRecommendation(existing);
     }
 
-    async listRecommendations() {
-        return await this.repository.getAll()
+    async listRecommendations({page, limit, filter, order}: { page: number; limit: number | 'all', filter?: string, order?: OrderOption<Recommendation> } = {page: 1, limit: 'all'}) {
+        if (limit === 'all') {
+            return await this.repository.getAll({filter, order});
+        }
+        return await this.repository.getPage({page, limit, filter, order});
+    }
+
+    async countRecommendations({filter}: { filter?: string }) {
+        return await this.repository.getCount({filter});
     }
 }

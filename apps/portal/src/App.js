@@ -426,6 +426,18 @@ export default class App extends React.Component {
                 }
             };
         }
+
+        if (hasRecommendations({site}) && qParams.get('action') === 'signup' && qParams.get('success') === 'true') {
+            // After a successful signup, we show the recommendations if they are enabled
+            return {
+                showPopup: true,
+                page: 'recommendations',
+                pageData: {
+                    signup: true
+                }
+            };
+        }
+
         const [path, hashQueryString] = window.location.hash.substr(1).split('?');
         const hashQuery = new URLSearchParams(hashQueryString ?? '');
         const productMonthlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
@@ -801,13 +813,6 @@ export default class App extends React.Component {
                     signup: false
                 }
             };
-        } else if (path === 'welcome' && hasRecommendations({site})) {
-            return {
-                page: 'recommendations',
-                pageData: {
-                    signup: true
-                }
-            };
         }
         return {};
     }
@@ -859,6 +864,7 @@ export default class App extends React.Component {
         const contextPage = this.getContextPage({site, page, member});
         const contextMember = this.getContextMember({page: contextPage, member, customSiteUrl});
         return {
+            api: this.GhostApi,
             site,
             action,
             brandColor: this.getAccentColor(),

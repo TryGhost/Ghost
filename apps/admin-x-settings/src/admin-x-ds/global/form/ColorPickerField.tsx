@@ -10,7 +10,7 @@ const ColorPickerContext = createContext<{colorPickers: Array<{ id: string; setE
 
 const ColorPickerField = ({testId, title, direction, value, hint, error, eyedropper, clearButtonValue, onChange, swatches = []}: {
     testId?: string;
-    title?: string;
+    title?: ReactNode;
     direction?: ToggleDirections;
     hint?: ReactNode;
     error?: boolean;

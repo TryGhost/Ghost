@@ -11,6 +11,7 @@ import Radio from '../../../admin-x-ds/global/form/Radio';
 import React, {useEffect, useRef, useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
+import TextArea from '../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import useFeatureFlag from '../../../hooks/useFeatureFlag';
@@ -57,8 +58,8 @@ const RoleSelector: React.FC<UserDetailProps> = ({user, setUserData}) => {
         return (
             <>
                 <Heading level={6}>Role</Heading>
-                <div className='flex h-[295px] flex-col items-center justify-center gap-3 bg-grey-75 px-10 py-20 text-center text-sm text-grey-800'>
-                    <Icon colorClass='text-grey-800' name='crown' size='lg' />
+                <div className='flex h-[295px] flex-col items-center justify-center gap-3 bg-grey-75 px-10 py-20 text-center text-sm text-grey-800 dark:bg-grey-950 dark:text-white'>
+                    <Icon colorClass='text-grey-800 dark:text-white' name='crown' size='lg' />
                     This user is the owner of the site. To change their role, you need to transfer the ownership first.
                 </div>
             </>
@@ -190,10 +191,10 @@ const DetailsInputs: React.FC<UserDetailProps> = ({errors, validators, user, set
                     setUserData?.({...user, twitter: e.target.value});
                 }}
             />
-            <TextField
-                hint="Recommended: 200 characters."
+            <TextArea
+                hint={<>Recommended: 200 characters. You&lsquo;ve used <span className='font-bold'>{user.bio?.length || 0}</span></>}
                 title="Bio"
-                value={user.bio}
+                value={user.bio || ''}
                 onChange={(e) => {
                     setUserData?.({...user, bio: e.target.value});
                 }}
@@ -629,7 +630,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         okLabel = 'Saved';
     }
 
-    const fileUploadButtonClasses = 'absolute right-[104px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium z-10';
+    const fileUploadButtonClasses = 'absolute left-12 md:left-auto md:right-[104px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium z-10';
 
     const suspendedText = userData.status === 'inactive' ? ' (Suspended)' : '';
 
@@ -674,7 +675,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                 if (error) {
                     showToast({
                         type: 'pageError',
-                        message: 'Can\'t save user! One or more fields have errors, please doublecheck you filled all mandatory fields'
+                        message: 'Can\'t save user, please double check that you\'ve filled in all mandatory fields.'
                     });
                     setSaveState('');
                     return;
@@ -706,11 +707,11 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                         }}
                     >Upload cover image</ImageUpload>
                     <div className="absolute bottom-12 right-12 z-10">
-                        <Menu items={menuItems} position='left' trigger={<UserMenuTrigger />}></Menu>
+                        <Menu items={menuItems} position='right' trigger={<UserMenuTrigger />}></Menu>
                     </div>
-                    <div className='relative flex items-center gap-4 px-12 pb-7 pt-60'>
+                    <div className='relative flex flex-col items-start gap-4 px-12 pb-60 pt-10 md:flex-row md:items-center md:pb-7 md:pt-60'>
                         <ImageUpload
-                            deleteButtonClassName='invisible absolute -right-2 -top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible'
+                            deleteButtonClassName='md:invisible absolute -right-2 -top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible'
                             deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
                             fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
                             id='avatar'
@@ -734,7 +735,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                         </div>
                     </div>
                 </div>
-                <div className='mt-10 grid grid-cols-2 gap-x-12 gap-y-20'>
+                <div className='mt-10 grid grid-cols-1 gap-x-12 gap-y-20 md:grid-cols-2'>
                     <Basic errors={errors} setUserData={setUserData} user={userData} validators={validators} />
                     <Details errors={errors} setUserData={setUserData} user={userData} validators={validators} />
                     <EmailNotifications setUserData={setUserData} user={userData} />
