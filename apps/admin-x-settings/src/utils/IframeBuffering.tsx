@@ -7,9 +7,10 @@ type IframeBufferingProps = {
   height?: string;
   width?: string;
   testId?: string;
+  addDelay?: boolean;
 };
 
-const IframeBuffering: React.FC<IframeBufferingProps> = ({generateContent, className, height, width, parentClassName, testId}) => {
+const IframeBuffering: React.FC<IframeBufferingProps> = ({generateContent, className, height, width, parentClassName, testId, addDelay = false}) => {
     const [visibleIframeIndex, setVisibleIframeIndex] = useState(0);
     const iframes = [useRef<HTMLIFrameElement>(null), useRef<HTMLIFrameElement>(null)];
 
@@ -24,9 +25,13 @@ const IframeBuffering: React.FC<IframeBufferingProps> = ({generateContent, class
             // Attach a load listener to the iframe
             const onLoad = () => {
                 // Once content is loaded, introduce a delay before swapping visibility
-                setTimeout(() => {
+                if (addDelay) {
+                    setTimeout(() => {
+                        setVisibleIframeIndex(invisibleIframeIndex);
+                    }, 500); // 500ms delay
+                } else {
                     setVisibleIframeIndex(invisibleIframeIndex);
-                }, 500); // 500ms delay
+                }
             };
 
             iframe.addEventListener('load', onLoad);
