@@ -73,6 +73,10 @@ const newsletterSnapshot = {
     updated_at: anyISODateTime
 };
 
+const attributionSnapshot = {
+    id: null
+};
+
 const subscriptionSnapshot = {
     id: anyString,
     start_date: anyString,
@@ -122,6 +126,7 @@ function buildMemberWithIncludesSnapshot(options) {
         uuid: anyUuid,
         created_at: anyISODateTime,
         updated_at: anyISODateTime,
+        attribution: attributionSnapshot,
         newsletters: new Array(options.newsletters).fill(newsletterSnapshot),
         subscriptions: anyArray,
         labels: anyArray
@@ -457,7 +462,7 @@ describe('Members API - member attribution', function () {
     });
 });
 
-describe('Members API', function () {
+describe.only('Members API', function () {
     let newsletters;
     let emailMockReceiver;
 
@@ -2007,7 +2012,7 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     labels: anyArray,
                     subscriptions: [subscriptionSnapshotWithTier],
-                    newsletters: anyArray,
+                    newsletters: new Array(1).fill(newsletterSnapshot),
                     tiers: [tierSnapshot]
                 })
             })
@@ -2028,7 +2033,7 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     labels: anyArray,
                     subscriptions: [subscriptionSnapshotWithTier],
-                    newsletters: anyArray,
+                    newsletters: new Array(1).fill(newsletterSnapshot),
                     tiers: [tierSnapshot]
                 })
             })
@@ -2562,7 +2567,7 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     subscriptions: anyArray,
                     labels: anyArray,
-                    newsletters: anyArray
+                    newsletters: new Array(0)
                 }]
             })
             .matchHeaderSnapshot({
