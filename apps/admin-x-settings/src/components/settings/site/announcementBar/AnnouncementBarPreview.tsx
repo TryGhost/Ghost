@@ -1,5 +1,5 @@
-import IframeBuffering, {injectCss} from '../../../../utils/IframeBuffering';
-import React from 'react';
+import IframeBuffering from '../../../../utils/IframeBuffering';
+import React, {memo} from 'react';
 
 const getPreviewData = (announcementBackgroundColor?: string, announcementContent?: string, visibility?: string[]) => {
     const params = new URLSearchParams();
@@ -18,36 +18,96 @@ type AnnouncementBarSettings = {
     visibility?: string[];
 };
 
-const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = React.memo(({announcementBackgroundColor, announcementContent, url, visibility}) => {
-    if (!url) {
-        return null;
-    }
+const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcementBackgroundColor, announcementContent, url, visibility}) => {
+    const injectContentIntoIframe = (iframe: HTMLIFrameElement) => {
+        if (!url) {
+            return;
+        }
 
-    const xPreview = getPreviewData(announcementBackgroundColor, announcementContent, visibility);
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/html;charset=utf-8',
+                'x-ghost-preview': getPreviewData(
+                    announcementBackgroundColor,
+                    announcementContent,
+                    visibility
+                ),
+                Accept: 'text/plain',
+                mode: 'cors',
+                credentials: 'include'
+            }
+        })
+            .then(response => response.text())
+            .then((data) => {
+                // inject extra CSS to disable navigation and prevent clicks
+                const injectedCss = `html { pointer-events: none; }`;
+
+                const domParser = new DOMParser();
+                const htmlDoc = domParser.parseFromString(data, 'text/html');
+
+                const stylesheet = htmlDoc.querySelector('style') as HTMLStyleElement;
+                const originalCSS = stylesheet.innerHTML;
+                stylesheet.innerHTML = `${originalCSS}\n\n${injectedCss}`;
+
+                // replace the iframe contents with the doctored preview html
+                const doctype = htmlDoc.doctype ? new XMLSerializer().serializeToString(htmlDoc.doctype) : '';
+                let finalDoc = doctype + htmlDoc.documentElement.outerHTML;
+
+                // Send the data to the iframe's window using postMessage
+                // Inject the received content into the iframe
+                iframe.contentDocument?.open();
+                iframe.contentDocument?.write(finalDoc);
+                iframe.contentDocument?.close();
+            })
+            .catch(() => {
+                // handle error in fetching data
+            });
+    };
 
     return (
-        <IframeBuffering
-            dataModifier={injectCss}
-            url={url}
-            xPreview={xPreview}
-        />
+        <div className='h-screen w-screen overflow-hidden'>
+            <IframeBuffering
+                className="absolute left-0 top-0 h-full w-full"
+                generateContent={injectContentIntoIframe}
+                height='100%'
+                parentClassName="relative h-full w-full"
+                width='100%'
+            />
+        </div>
     );
-}, (prevProps, nextProps) => {
-    // This function determines if the component should rerender. If the function returns true, then it won't rerender.
-    // In this case, we only want to rerender if xPreview has changed.
-    const prevXPreview = getPreviewData(prevProps.announcementBackgroundColor, prevProps.announcementContent, prevProps.visibility);
-    const nextXPreview = getPreviewData(nextProps.announcementBackgroundColor, nextProps.announcementContent, nextProps.visibility);
+};
 
-    // we can also rerender if the url has changed
-
-    const prevUrl = prevProps.url;
-    const nextUrl = nextProps.url;
-
-    if (prevUrl !== nextUrl) {
+export default memo(AnnouncementBarPreview, (prevProps, nextProps) => {
+    // Check if announcementBackgroundColor changed
+    if (prevProps.announcementBackgroundColor !== nextProps.announcementBackgroundColor) {
         return false;
     }
     
-    return prevXPreview === nextXPreview;
+    // Check if announcementContent changed
+    if (prevProps.announcementContent !== nextProps.announcementContent) {
+        return false;
+    }
+
+    // Check if url changed
+    if (prevProps.url !== nextProps.url) {
+        return false;
+    }
+
+    // Check if visibility array changed in size or content
+    if (prevProps.visibility?.length !== nextProps.visibility?.length) {
+        return false;
+    }
+
+    if (prevProps.visibility && nextProps.visibility) {
+        for (let i = 0; i < prevProps.visibility.length; i++) {
+            if (prevProps.visibility[i] !== nextProps.visibility[i]) {
+                return false;
+            }
+        }
+    }
+
+    // If we've reached this point, all props are the same
+    return true;
 });
-AnnouncementBarPreview.displayName = 'AnnouncementBarPreview';
-export default AnnouncementBarPreview;
+

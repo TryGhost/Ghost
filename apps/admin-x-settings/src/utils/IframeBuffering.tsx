@@ -1,85 +1,53 @@
-import React, {useEffect, useRef} from 'react';
-
-export const injectCss = (data: string) => {
-    const injectedCss = `html { pointer-events: none; }`;
-
-    const domParser = new DOMParser();
-    const htmlDoc = domParser.parseFromString(data, 'text/html');
-
-    const stylesheet = htmlDoc.querySelector('style') as HTMLStyleElement;
-    const originalCSS = stylesheet.innerHTML;
-    stylesheet.innerHTML = `${originalCSS}\n\n${injectedCss}`;
-
-    // replace the iframe contents with the doctored preview html
-    const doctype = htmlDoc.doctype ? new XMLSerializer().serializeToString(htmlDoc.doctype) : '';
-    let finalDoc = doctype + htmlDoc.documentElement.outerHTML;
-
-    return finalDoc;
-};
+import React, {useEffect, useRef, useState} from 'react';
 
 type IframeBufferingProps = {
-    url: string;
-    dataModifier?: (data: string) => string;
-    xPreview?: string;
+  generateContent: (iframe: HTMLIFrameElement) => void;
+  className?: string;
+  parentClassName?: string;
+  height?: string;
+  width?: string;
 };
 
-const IframeBuffering: React.FC<IframeBufferingProps> = ({
-    url,
-    dataModifier,
-    xPreview
-}) => {
-    const visibleIframeRef = useRef<HTMLIFrameElement>(null);
-    const bufferIframeRef = useRef<HTMLIFrameElement>(null);
-
-    const swapIframeContent = () => {
-        if (visibleIframeRef.current && bufferIframeRef.current) {
-            const tmpDoc = visibleIframeRef.current.contentDocument?.documentElement.innerHTML;
-            visibleIframeRef.current.contentDocument?.open();
-            visibleIframeRef.current.contentDocument?.write(bufferIframeRef.current.contentDocument?.documentElement.innerHTML || '');
-            visibleIframeRef.current.contentDocument?.close();
-            bufferIframeRef.current.contentDocument?.open();
-            bufferIframeRef.current.contentDocument?.write(tmpDoc || '');
-            bufferIframeRef.current.contentDocument?.close();
-        }
-    };
-
+const IframeBuffering: React.FC<IframeBufferingProps> = ({generateContent, className, height, width, parentClassName}) => {
+    const [visibleIframeIndex, setVisibleIframeIndex] = useState(0);
+    const iframes = [useRef<HTMLIFrameElement>(null), useRef<HTMLIFrameElement>(null)];
     useEffect(() => {
-        if (!url) {
-            return;
+        const invisibleIframeIndex = visibleIframeIndex === 0 ? 1 : 0;
+        const iframe = iframes[invisibleIframeIndex].current;
+        if (iframe) {
+            generateContent(iframe);
         }
 
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'text/html;charset=utf-8',
-                'x-ghost-preview': xPreview || '',
-                Accept: 'text/plain',
-                mode: 'cors',
-                credentials: 'include'
-            }
-        })
-            .then(response => response.text())
-            .then((data) => {
-                if (dataModifier) {
-                    data = dataModifier(data);
-                }
+        const timer = setTimeout(() => {
+            setVisibleIframeIndex(invisibleIframeIndex);
+        }, 100);
 
-                const bufferIframe = bufferIframeRef.current;
-                if (bufferIframe) {
-                    bufferIframe.contentDocument?.open();
-                    bufferIframe.contentDocument?.write(data);
-                    bufferIframe.contentDocument?.close();
-                    bufferIframe.onload = swapIframeContent;
-                }
-            })
-            .catch(() => { /* handle error in fetching data */ });
-    }, [url, dataModifier, xPreview]);
+        return () => {
+            clearTimeout(timer);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [generateContent]);
 
     return (
-        <>
-            <iframe ref={visibleIframeRef} height='100%' title='Visible Iframe' width='100%'></iframe>
-            <iframe ref={bufferIframeRef} height='100%' style={{display: 'none'}} title='Buffer Iframe' width='100%'></iframe>
-        </>
+        <div className={parentClassName}>
+            <iframe
+                ref={iframes[0]}
+                className={`${className} ${visibleIframeIndex !== 0 ? 'z-10 opacity-0' : 'z-20 opacity-100'}`}
+                frameBorder="0"
+                height={height}
+                title="Buffered Preview 1"
+                width={width}
+            ></iframe>
+
+            <iframe
+                ref={iframes[1]}
+                className={`${className} ${visibleIframeIndex !== 1 ? 'z-10 opacity-0' : 'z-20 opacity-100'}`}
+                frameBorder="0"
+                height={height}
+                title="Buffered Preview 2"
+                width={width}
+            ></iframe>
+        </div>
     );
 };
 

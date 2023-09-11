@@ -4,7 +4,7 @@ import ColorIndicator from '../../../admin-x-ds/global/form/ColorIndicator';
 import Form from '../../../admin-x-ds/global/form/Form';
 import HtmlField from '../../../admin-x-ds/global/form/HtmlField';
 import NiceModal from '@ebay/nice-modal-react';
-import React, {useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import useRouting from '../../../hooks/useRouting';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {PreviewModalContent} from '../../../admin-x-ds/global/modal/PreviewModal';
@@ -145,12 +145,16 @@ const AnnouncementBarModal: React.FC = () => {
         updateSetting('announcement_visibility', JSON.stringify(visibilitySettings));
     };
 
+    const announcementTextHandler = useCallback((e:string) => {
+        setAnnouncementContentState(e);
+    }, []);
+
     const sidebar = <Sidebar
         accentColor={accentColor}
         announcementBackgroundColor={announcementBackgroundColor}
         announcementContent={announcementContent}
         announcementTextHandler={(e) => {
-            setAnnouncementContentState(e);
+            announcementTextHandler(e);
         }}
         paidMembersEnabled={paidMembersEnabled}
         toggleColorSwatch={toggleColorSwatch}
