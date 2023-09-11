@@ -96,16 +96,8 @@ export default memo(AnnouncementBarPreview, (prevProps, nextProps) => {
     }
 
     // Check if visibility array changed in size or content
-    if (prevProps.visibility?.length !== nextProps.visibility?.length) {
+    if (prevProps.visibility !== nextProps.visibility) {
         return false;
-    }
-
-    if (prevProps.visibility && nextProps.visibility) {
-        for (let i = 0; i < prevProps.visibility.length; i++) {
-            if (prevProps.visibility[i] !== nextProps.visibility[i]) {
-                return false;
-            }
-        }
     }
 
     // If we've reached this point, all props are the same
