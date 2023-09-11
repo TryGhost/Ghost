@@ -1,5 +1,6 @@
 import assert from 'assert';
 import {BookshelfRepository, ModelClass, ModelInstance} from '../src/index';
+import {Knex} from 'knex';
 
 type SimpleEntity = {
     id: string;
@@ -37,6 +38,10 @@ class SimpleBookshelfRepository extends BookshelfRepository<string, SimpleEntity
 class Model implements ModelClass<string> {
     items: ModelInstance<string>[] = [];
 
+    orderRaw?: string;
+    limit?: number;
+    offset?: number;
+
     constructor() {
         this.items = [];
     }
@@ -53,9 +58,10 @@ class Model implements ModelClass<string> {
         }
         return Promise.resolve(item ?? null);
     }
-    findAll(options: {filter?: string | undefined; order?: string | undefined; page?: number; limit?: number | 'all'}): Promise<ModelInstance<string>[]> {
+
+    fetchAll(): Promise<ModelInstance<string>[]> {
         const sorted = this.items.slice().sort((a, b) => {
-            for (const order of options.order?.split(',') ?? []) {
+            for (const order of this.orderRaw?.split(',') ?? []) {
                 const [field, direction] = order.split(' ');
 
                 const aValue = a.get(field as string) as number;
@@ -68,7 +74,7 @@ class Model implements ModelClass<string> {
             }
             return 0;
         });
-        return Promise.resolve(sorted);
+        return Promise.resolve(sorted.slice(this.offset ?? 0, (this.offset ?? 0) + (this.limit ?? sorted.length)));
     }
 
     add(data: object): Promise<ModelInstance<string>> {
@@ -99,6 +105,24 @@ class Model implements ModelClass<string> {
 
     count() {
         return Promise.resolve(this.items.length);
+    }
+
+    // eslint-disable-next-line no-unused-vars
+    query(f: (q: Knex.QueryBuilder) => void) {
+        return f({
+            limit: (limit: number) => {
+                this.limit = limit;
+                return this;
+            },
+            offset: (offset: number) => {
+                this.offset = offset;
+                return this;
+            },
+            orderByRaw: (order: string) => {
+                this.orderRaw = order;
+                return this;
+            }
+        } as any as Knex.QueryBuilder);
     }
 }
 

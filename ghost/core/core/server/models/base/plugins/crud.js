@@ -44,12 +44,6 @@ module.exports = function (Bookshelf) {
                 });
             }
 
-            if (options.page && options.limit) {
-                itemCollection
-                    .query('limit', options.limit)
-                    .query('offset', options.limit * (options.page - 1));
-            }
-
             const result = await itemCollection.fetchAll(options);
             if (options.withRelated) {
                 _.each(result.models, function each(item) {
