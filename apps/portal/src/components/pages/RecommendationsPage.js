@@ -90,13 +90,17 @@ const openTab = (url) => {
 };
 
 const RecommendationItem = (recommendation) => {
-    const {t, onAction, member} = useContext(AppContext);
+    const {t, onAction, member, site} = useContext(AppContext);
     const {title, url, reason, favicon, one_click_subscribe: oneClickSubscribe, featured_image: featuredImage} = recommendation;
     const allowOneClickSubscribe = member && oneClickSubscribe;
     const [subscribed, setSubscribed] = useState(false);
     const [loading, setLoading] = useState(false);
+    const outboundLinkTagging = site.outbound_link_tagging ?? false;
 
     const refUrl = useMemo(() => {
+        if (!outboundLinkTagging) {
+            return url;
+        }
         try {
             const ref = new URL(url);
 
@@ -109,7 +113,7 @@ const RecommendationItem = (recommendation) => {
         } catch (_) {
             return url;
         }
-    }, [url]);
+    }, [url, outboundLinkTagging]);
 
     const visitHandler = useCallback(() => {
         // Open url in a new tab

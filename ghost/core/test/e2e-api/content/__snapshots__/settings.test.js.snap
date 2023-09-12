@@ -47,6 +47,7 @@ Object {
     "og_description": null,
     "og_image": null,
     "og_title": null,
+    "outbound_link_tagging": true,
     "paid_members_enabled": true,
     "portal_button": true,
     "portal_button_icon": null,
