@@ -27,12 +27,17 @@
 }
 
 .kg-action-bar-divider {
-    background: var(--lightgrey);
+    background: color-mod(var(--lightgrey) l(+5%));;
 }
 
 .kg-action-bar .fill-white g,
 .kg-action-bar .fill-white path {
     fill: var(--darkgrey);
+}
+
+.kg-action-bar .fill-white-no-conflict g,
+.kg-action-bar .fill-white-no-conflict path {
+    fill: #fff;
 }
 
 
