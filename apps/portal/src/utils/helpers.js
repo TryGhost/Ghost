@@ -259,6 +259,11 @@ export function hasMultipleProducts({site}) {
     return false;
 }
 
+export function getRefDomain() {
+    const referrerSource = window.location.hostname.replace(/^www\./, '');
+    return referrerSource;
+}
+
 export function hasMultipleProductsFeature({site}) {
     const {portal_products: portalProducts} = site || {};
     return !!portalProducts;

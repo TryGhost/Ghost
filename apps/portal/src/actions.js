@@ -1,6 +1,6 @@
 import setupGhostApi from './utils/api';
 import {HumanReadableError} from './utils/errors';
-import {createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl} from './utils/helpers';
+import {createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl, getRefDomain} from './utils/helpers';
 
 function switchPage({data, state}) {
     return {
@@ -480,7 +480,7 @@ async function oneClickSubscribe({data: {siteUrl}, state}) {
     const {t, member} = state;
 
     const referrerUrl = window.location.href;
-    const referrerSource = window.location.hostname.replace(/^www\./, '');
+    const referrerSource = getRefDomain();
 
     await externalSiteApi.member.sendMagicLink({
         emailType: 'signup',
