@@ -98,12 +98,14 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 {
                     heading: `URL of your publication's Facebook Page`,
                     key: 'facebook',
-                    value: facebookUrl
+                    value: facebookUrl,
+                    hideEmptyValue: true
                 },
                 {
                     heading: 'URL of your TWITTER PROFILE',
                     key: 'twitter',
-                    value: twitterUrl
+                    value: twitterUrl,
+                    hideEmptyValue: true
                 }
             ]}
         />
