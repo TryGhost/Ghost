@@ -1,6 +1,7 @@
 const logger = require('@tryghost/logging');
 const Collection = require('@tryghost/collections').Collection;
 const sentry = require('../../../shared/sentry');
+const {default: ObjectID} = require('bson-objectid');
 /**
  * @typedef {import('@tryghost/collections/src/CollectionRepository')} CollectionRepository
  */
@@ -10,8 +11,10 @@ const sentry = require('../../../shared/sentry');
  */
 module.exports = class BookshelfCollectionsRepository {
     #model;
-    constructor(model) {
+    #relationModel;
+    constructor(model, relationModel) {
         this.#model = model;
+        this.#relationModel = relationModel;
     }
 
     async createTransaction(cb) {
@@ -105,6 +108,14 @@ module.exports = class BookshelfCollectionsRepository {
             await this.#model.destroy({id: collection.id});
             return;
         }
+        if (!options.transaction) {
+            return this.createTransaction((transaction) => {
+                return this.save(collection, {
+                    ...options,
+                    transaction
+                });
+            });
+        }
         const data = {
             id: collection.id,
             slug: collection.slug,
@@ -113,7 +124,6 @@ module.exports = class BookshelfCollectionsRepository {
             filter: collection.filter,
             type: collection.type,
             feature_image: collection.featureImage || null,
-            posts: collection.posts.map(postId => ({id: postId})),
             created_at: collection.createdAt,
             updated_at: collection.updatedAt
         };
@@ -122,7 +132,8 @@ module.exports = class BookshelfCollectionsRepository {
             {id: data.id},
             {
                 require: false,
-                transacting: options.transaction
+                transacting: options.transaction,
+                withRelated: ['collectionPosts']
             }
         );
 
@@ -130,11 +141,59 @@ module.exports = class BookshelfCollectionsRepository {
             await this.#model.add(data, {
                 transacting: options.transaction
             });
+            const thingsToInsert = collection.posts.map((postId, index) => {
+                return {
+                    id: (new ObjectID).toHexString(),
+                    sort_order: collection.type === 'manual' ? index : 0,
+                    collection_id: collection.id,
+                    post_id: postId
+                };
+            });
+            if (thingsToInsert.length > 0) {
+                await this.#relationModel.query().insert(thingsToInsert).transacting(options.transaction);
+            }
         } else {
-            return this.#model.edit(data, {
+            await this.#model.edit(data, {
                 id: data.id,
                 transacting: options.transaction
             });
+
+            const things = collection.posts.map((postId, index) => {
+                return {
+                    id: (new ObjectID).toHexString(),
+                    sort_order: collection.type === 'manual' ? index : 0,
+                    collection_id: collection.id,
+                    post_id: postId
+                };
+            });
+
+            const thingsToDelete = [];
+
+            if (collection.type === 'manual') {
+                await this.#relationModel.query().delete().where('collection_id', collection.id).transacting(options.transaction);
+            } else {
+                const existingRelations = existing.toJSON().collectionPosts;
+
+                for (const existingRelation of existingRelations) {
+                    const found = things.find((thing) => {
+                        return thing.post_id === existingRelation.post_id;
+                    });
+                    if (found) {
+                        found.id = null;
+                    } else {
+                        thingsToDelete.push(existingRelation.id);
+                    }
+                }
+            }
+
+            const thingsToInsert = things.filter(thing => thing.id !== null);
+
+            if (thingsToInsert.length > 0) {
+                await this.#relationModel.query().insert(thingsToInsert).transacting(options.transaction);
+            }
+            if (thingsToDelete.length > 0) {
+                await this.#relationModel.query().delete().whereIn('id', thingsToDelete).transacting(options.transaction);
+            }
         }
     }
 };
