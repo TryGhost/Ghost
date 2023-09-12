@@ -111,13 +111,17 @@ const Metadata: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onEditingChange={handleEditingChange}
             onSave={handleSave}
         >
-            <SearchEnginePreview
-                description={metaDescription ? metaDescription : siteDescription}
-                icon={siteData?.icon}
-                title={metaTitle ? metaTitle : siteTitle}
-                url={siteData?.url}
-            />
-            {isEditing ? inputFields : null}
+            {isEditing &&
+            <>
+                <SearchEnginePreview
+                    description={metaDescription ? metaDescription : siteDescription}
+                    icon={siteData?.icon}
+                    title={metaTitle ? metaTitle : siteTitle}
+                    url={siteData?.url}
+                />
+                {inputFields}
+            </>
+            }
         </SettingGroup>
     );
 };

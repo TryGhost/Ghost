@@ -2,14 +2,19 @@ import React, {ReactNode} from 'react';
 
 import Heading from '../global/Heading';
 
-export interface ISettingValue {
-    key: string,
-    heading?: string,
-    value: ReactNode,
-    hint?: ReactNode
+export interface SettingValueProps {
+    key: string;
+    heading?: string;
+    value: ReactNode;
+    hint?: ReactNode;
+    hideEmptyValue?: boolean;
 }
 
-const SettingValue: React.FC<ISettingValue> = ({heading, value, hint, ...props}) => {
+const SettingValue: React.FC<SettingValueProps> = ({heading, value, hint, hideEmptyValue, ...props}) => {
+    if (!value && hideEmptyValue) {
+        return <></>;
+    }
+
     return (
         <div className='flex flex-col' {...props}>
             {heading && <Heading grey={true} level={6}>{heading}</Heading>}

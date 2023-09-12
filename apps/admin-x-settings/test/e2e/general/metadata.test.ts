@@ -15,9 +15,6 @@ test.describe('Metadata settings', async () => {
 
         const section = page.getByTestId('metadata');
 
-        await expect(section.getByText('Test Site')).toHaveCount(1);
-        await expect(section.getByText('Thoughts, stories and ideas.')).toHaveCount(1);
-
         await section.getByRole('button', {name: 'Edit'}).click();
 
         await section.getByLabel('Meta title').fill('Alternative title');
@@ -26,9 +23,6 @@ test.describe('Metadata settings', async () => {
         await section.getByRole('button', {name: 'Save'}).click();
 
         await expect(section.getByLabel('Meta title')).toHaveCount(0);
-
-        await expect(section.getByText('Alternative title')).toHaveCount(1);
-        await expect(section.getByText('Alternative description')).toHaveCount(1);
 
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [

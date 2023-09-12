@@ -161,7 +161,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
         }
 
         const containerClasses = clsx(
-            'min-w-100 absolute inset-y-0 left-0 right-[400px] flex grow flex-col overflow-y-scroll',
+            'min-w-100 absolute inset-y-0 left-0 right-[400px] flex grow flex-col overflow-y-auto',
             previewBgClass
         );
 

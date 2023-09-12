@@ -49,7 +49,7 @@ test.describe('Analytics settings', async () => {
 
         const section = page.getByTestId('analytics');
 
-        await section.getByRole('button', {name: 'Export analytics'}).click();
+        await section.getByRole('button', {name: 'Export post analytics'}).click();
 
         const hasDownloadUrl = lastApiRequests.postsExport?.url?.includes('/posts/export/?limit=1000');
         expect(hasDownloadUrl).toBe(true);

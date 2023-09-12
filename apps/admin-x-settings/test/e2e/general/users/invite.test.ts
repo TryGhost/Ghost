@@ -40,9 +40,6 @@ test.describe('User invitations', async () => {
 
         await expect(page.getByTestId('toast')).toHaveText(/Invitation successfully sent to newuser@test\.com/);
 
-        // Currently clicking the backdrop is the only way to close this modal
-        await page.locator('#modal-backdrop').click({position: {x: 0, y: 0}});
-
         await section.getByRole('tab', {name: 'Invited'}).click();
 
         const listItem = section.getByTestId('user-invite').last();
