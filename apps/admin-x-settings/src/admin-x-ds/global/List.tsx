@@ -47,7 +47,7 @@ const List: React.FC<ListProps> = ({
         <>
             {pageTitle && <Heading>{pageTitle}</Heading>}
             <section className={listClasses}>
-                <ListHeading actions={actions} title={title} titleSeparator={!pageTitle && titleSeparator && !borderTop} titleSize={titleSize} />
+                {title && <ListHeading actions={actions} title={title} titleSeparator={!pageTitle && titleSeparator && !borderTop} titleSize={titleSize} />}
                 <div className='flex flex-col'>
                     {children}
                 </div>

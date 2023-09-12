@@ -432,8 +432,8 @@ const Password: React.FC<UserDetailProps> = ({user}) => {
 
 const UserMenuTrigger = () => (
     <button className='flex h-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] px-3 opacity-80 hover:opacity-100' type='button'>
-        <Icon colorClass='text-white' name='ellipsis' size='md' />
         <span className='sr-only'>Actions</span>
+        <Icon colorClass='text-white' name='ellipsis' size='md' />
     </button>
 );
 

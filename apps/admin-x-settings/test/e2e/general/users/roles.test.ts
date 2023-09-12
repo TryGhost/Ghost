@@ -72,7 +72,7 @@ test.describe('User roles', async () => {
 
         await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
 
-        await expect(activeTab).toHaveText(/No users found/);
+        await expect(activeTab).toHaveText(/No authors found./);
 
         await section.getByRole('tab', {name: 'Editors'}).click();
 

@@ -31,7 +31,7 @@ test.describe('User invitations', async () => {
 
         const section = page.getByTestId('users');
 
-        await section.getByRole('button', {name: 'Invite users'}).click();
+        await section.getByRole('button', {name: 'Invite people'}).click();
 
         const modal = page.getByTestId('invite-user-modal');
         await modal.getByLabel('Email address').fill('newuser@test.com');
@@ -144,7 +144,7 @@ test.describe('User invitations', async () => {
 
         const section = page.getByTestId('users');
 
-        await section.getByRole('button', {name: 'Invite users'}).click();
+        await section.getByRole('button', {name: 'Invite people'}).click();
 
         const modal = page.getByTestId('invite-user-modal');
 

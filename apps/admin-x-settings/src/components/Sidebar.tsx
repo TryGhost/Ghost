@@ -48,7 +48,7 @@ const Sidebar: React.FC = () => {
                     <SettingNavItem navid='facebook' title="Facebook card" onClick={handleSectionClick} />
                     <SettingNavItem navid='social-accounts' title="Social accounts" onClick={handleSectionClick} />
                     <SettingNavItem navid='locksite' title="Make this site private" onClick={handleSectionClick} />
-                    <SettingNavItem navid='users' title="Users and permissions" onClick={handleSectionClick} />
+                    <SettingNavItem navid='users' title="Staff" onClick={handleSectionClick} />
                 </SettingNavSection>
 
                 <SettingNavSection title="Site">
@@ -68,7 +68,7 @@ const Sidebar: React.FC = () => {
                     <SettingNavItem navid='analytics' title="Analytics" onClick={handleSectionClick} />
                 </SettingNavSection>
 
-                <SettingNavSection title="Email newsletters">
+                <SettingNavSection title="Email newsletter">
                     <SettingNavItem navid='enable-newsletters' title="Newsletter sending" onClick={handleSectionClick} />
                     {newslettersEnabled !== 'disabled' && (
                         <>

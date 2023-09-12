@@ -4,6 +4,7 @@ import Icon from '../../../admin-x-ds/global/Icon';
 import List from '../../../admin-x-ds/global/List';
 import ListItem from '../../../admin-x-ds/global/ListItem';
 import NiceModal from '@ebay/nice-modal-react';
+import NoValueLabel from '../../../admin-x-ds/global/NoValueLabel';
 import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
@@ -138,39 +139,45 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
     const {updateRoute} = useRouting();
     const {mutateAsync: deleteIntegration} = useDeleteIntegration();
 
-    return (
-        <List>
-            {integrations.map(integration => (
-                <IntegrationItem
-                    action={() => updateRoute({route: `integrations/show/${integration.id}`})}
-                    detail={integration.description || 'No description'}
-                    icon={
-                        integration.icon_image ?
-                            <img className='h-8 w-8 object-cover' role='presentation' src={integration.icon_image} /> :
-                            <Icon className='w-8' name='integration' />
-                    }
-                    title={integration.name}
-                    custom
-                    onDelete={() => {
-                        NiceModal.show(ConfirmationModal, {
-                            title: 'Are you sure?',
-                            prompt: 'Deleting this integration will remove all webhooks and api keys associated with it.',
-                            okColor: 'red',
-                            okLabel: 'Delete Integration',
-                            onOk: async (confirmModal) => {
-                                await deleteIntegration(integration.id);
-                                confirmModal?.remove();
-                                showToast({
-                                    message: 'Integration deleted',
-                                    type: 'success'
-                                });
-                            }
-                        });
-                    }}
-                />)
-            )}
-        </List>
-    );
+    if (integrations.length) {
+        return (
+            <List borderTop={false}>
+                {integrations.map(integration => (
+                    <IntegrationItem
+                        action={() => updateRoute({route: `integrations/show/${integration.id}`})}
+                        detail={integration.description || 'No description'}
+                        icon={
+                            integration.icon_image ?
+                                <img className='h-8 w-8 object-cover' role='presentation' src={integration.icon_image} /> :
+                                <Icon className='w-8' name='integration' />
+                        }
+                        title={integration.name}
+                        custom
+                        onDelete={() => {
+                            NiceModal.show(ConfirmationModal, {
+                                title: 'Are you sure?',
+                                prompt: 'Deleting this integration will remove all webhooks and api keys associated with it.',
+                                okColor: 'red',
+                                okLabel: 'Delete Integration',
+                                onOk: async (confirmModal) => {
+                                    await deleteIntegration(integration.id);
+                                    confirmModal?.remove();
+                                    showToast({
+                                        message: 'Integration deleted',
+                                        type: 'success'
+                                    });
+                                }
+                            });
+                        }}
+                    />)
+                )}
+            </List>
+        );
+    } else {
+        return <NoValueLabel icon='integration'>
+        No custom integration.
+        </NoValueLabel>;
+    }
 };
 
 const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {

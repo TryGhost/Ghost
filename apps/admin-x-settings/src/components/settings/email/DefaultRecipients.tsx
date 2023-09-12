@@ -172,7 +172,7 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
             {(selectedOption === 'segment') && (
                 <MultiSelect
                     options={segmentOptionGroups.filter(group => group.options.length > 0)}
-                    title='Select tiers'
+                    title='Filter'
                     values={selectedSegments}
                     clearBg
                     onChange={setSelectedSegments}
