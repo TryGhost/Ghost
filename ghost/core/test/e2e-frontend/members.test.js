@@ -488,6 +488,44 @@ describe('Front-end members behavior', function () {
                     });
             });
 
+            it('can fetch member data', async function () {
+                const res = await request.get('/members/api/member')
+                    .expect(200);
+
+                const memberData = res.body;
+                should.exist(memberData);
+
+                // @NOTE: this should be a snapshot test not code
+                memberData.should.have.properties([
+                    'uuid',
+                    'email',
+                    'name',
+                    'firstname',
+                    'expertise',
+                    'avatar_image',
+                    'subscribed',
+                    'subscriptions',
+                    'paid',
+                    'created_at',
+                    'enable_comment_notifications',
+                    'newsletters',
+                    'email_suppression'
+                ]);
+                Object.keys(memberData).should.have.length(13);
+                memberData.should.not.have.property('id');
+                memberData.newsletters.should.have.length(1);
+
+                // @NOTE: this should be a snapshot test not code
+                Object.keys(memberData.newsletters[0]).should.have.length(5);
+                memberData.newsletters[0].should.have.properties([
+                    'id',
+                    'name',
+                    'description',
+                    'status',
+                    'sort_order'
+                ]);
+            });
+
             it('can read public post content', async function () {
                 await request
                     .get('/free-to-see/')
