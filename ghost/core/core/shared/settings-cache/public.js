@@ -41,5 +41,6 @@ module.exports = {
     portal_name: 'portal_name',
     portal_button: 'portal_button',
     comments_enabled: 'comments_enabled',
-    recommendations_enabled: 'recommendations_enabled'
+    recommendations_enabled: 'recommendations_enabled',
+    outbound_link_tagging: 'outbound_link_tagging'
 };
