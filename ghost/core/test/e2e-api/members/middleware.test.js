@@ -23,10 +23,7 @@ const memberMatcherUnserialised = (newslettersCount) => {
         uuid: anyUuid,
         newsletters: new Array(newslettersCount).fill(
             {
-                id: anyObjectId,
-                uuid: anyUuid,
-                created_at: anyISODateTime,
-                updated_at: anyISODateTime
+                id: anyObjectId
             }
         )
     };
