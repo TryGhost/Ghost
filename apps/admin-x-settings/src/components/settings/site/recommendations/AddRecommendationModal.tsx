@@ -145,7 +145,9 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
                 });
             }
         }}
-    ><Form
+    >
+        <p className="mt-4">This isn’t a closed network. You can recommend any site your audience will find valuable, not just those published on Ghost.</p>
+        <Form
             marginBottom={false}
             marginTop
         >
