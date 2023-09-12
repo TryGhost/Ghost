@@ -67,10 +67,7 @@ async function getNewsletters() {
 }
 
 const newsletterSnapshot = {
-    id: anyObjectId,
-    uuid: anyUuid,
-    created_at: anyISODateTime,
-    updated_at: anyISODateTime
+    id: anyObjectId
 };
 
 const attributionSnapshot = {
