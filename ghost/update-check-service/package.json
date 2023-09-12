@@ -22,7 +22,7 @@
     "mocha": "10.2.0",
     "should": "13.2.3",
     "sinon": "15.2.0",
-    "uuid": "9.0.0"
+    "uuid": "9.0.1"
   },
   "dependencies": {
     "@tryghost/debug": "0.1.24",
