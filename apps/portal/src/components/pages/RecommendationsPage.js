@@ -66,16 +66,12 @@ const RecommendationIcon = ({title, favicon, featuredImage}) => {
     return (<img className="gh-portal-recommendation-item-favicon" src={icon} alt={title} onError={hideIcon} />);
 };
 
-const prepareTab = () => {
-    return window.open('', '_blank');
-};
-
-const openTab = (tab, url) => {
+const openTab = (url) => {
+    const tab = window.open(url, '_blank');
     if (tab) {
-        tab.location.href = url;
         tab.focus();
     } else {
-        // Probably failed to create a tab
+        // Safari fix after async operation / failed to create a new tab
         window.location.href = url;
     }
 };
@@ -88,28 +84,22 @@ const RecommendationItem = (recommendation) => {
 
     const visitHandler = useCallback(() => {
         // Open url in a new tab
-        const tab = window.open(url, '_blank');
-        tab?.focus();
+        openTab(url);
     }, [url]);
 
     const oneClickSubscribeHandler = useCallback(async () => {
-        // We need to open a tab immediately, otherwise it is not possible to open a tab in case of errors later
-        // after the async operation is done (browser blocks it outside of user interaction)
-        const tab = prepareTab();
-
         try {
             await onAction('oneClickSubscribe', {
                 siteUrl: url,
                 throwErrors: true
             });
             setSubscribed(true);
-            tab.close();
         } catch (_) {
             // Open portal signup page
             const signupUrl = new URL('#/portal/signup', url);
 
             // Trigger a visit
-            openTab(tab, signupUrl);
+            openTab(signupUrl);
         }
     }, [setSubscribed, url]);
 
