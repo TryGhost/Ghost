@@ -188,7 +188,8 @@ module.exports = function MembersAPI({
         tokenService,
         sendEmailWithMagicLink,
         memberAttributionService,
-        labsService
+        labsService,
+        newslettersService
     });
 
     const wellKnownController = new WellKnownController({

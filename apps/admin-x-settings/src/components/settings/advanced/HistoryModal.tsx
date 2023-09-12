@@ -31,7 +31,7 @@ const HistoryIcon: React.FC<{action: Action}> = ({action}) => {
 
 const HistoryAvatar: React.FC<{action: Action}> = ({action}) => {
     return (
-        <div className='relative'>
+        <div className='relative shrink-0'>
             <Avatar
                 bgColor={generateAvatarColor(action.actor?.name || action.actor?.slug || '')}
                 image={action.actor?.image}
@@ -39,7 +39,7 @@ const HistoryAvatar: React.FC<{action: Action}> = ({action}) => {
                 labelColor='white'
                 size='md'
             />
-            <div className='absolute -bottom-1 -right-1 flex items-center justify-center rounded-full border border-grey-100 bg-white p-1 shadow-sm'>
+            <div className='absolute -bottom-1 -right-1 flex items-center justify-center rounded-full border border-grey-100 bg-white p-1 shadow-sm dark:border-grey-900 dark:bg-black'>
                 <HistoryIcon action={action} />
             </div>
         </div>
@@ -68,7 +68,7 @@ const HistoryFilter: React.FC<{
     toggleResourceType: (resource: string, included: boolean) => void;
 }> = ({excludedEvents, excludedResources, toggleEventType, toggleResourceType}) => {
     return (
-        <Popover trigger={<Button label='Filter' link />}>
+        <Popover position='right' trigger={<Button label='Filter' link />}>
             <div className='flex w-[220px] flex-col gap-8 p-5'>
                 <ToggleGroup>
                     <HistoryFilterToggle excludedItems={excludedEvents} item='added' label='Added' toggleItem={toggleEventType} />
@@ -96,7 +96,7 @@ const HistoryActionDescription: React.FC<{action: Action}> = ({action}) => {
 
         return <>
             {group.slice(0, 1).toUpperCase()}{group.slice(1)}
-            {group !== key && <span className='text-xs'> <code className='mb-1 bg-white text-grey-800'>({key})</code></span>}
+            {group !== key && <span className='text-xs'> <code className='mb-1 bg-white text-grey-800 dark:bg-grey-900 dark:text-white'>({key})</code></span>}
         </>;
     } else if (action.resource?.title || action.resource?.name || action.context.primary_name) {
         const linkTarget = getLinkTarget(action);

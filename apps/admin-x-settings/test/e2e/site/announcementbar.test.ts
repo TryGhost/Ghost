@@ -19,20 +19,46 @@ test.describe('Announcement Bar', async () => {
         });
 
         await page.goto('/');
-    
+
         const section = page.getByTestId('announcement-bar');
-    
+
         await section.getByRole('button', {name: 'Customize'}).click();
-    
-        const modal = page.getByTestId('announcement-bar-modal');
-    
+
         // // Homepage and post preview
-    
-        await expect(modal.frameLocator('[data-testid="announcement-bar-preview"]').getByText('homepage preview')).toHaveCount(1);
-    
+        await page.waitForSelector('[data-testid="announcement-bar-preview-iframe"]');
+        const iframeCount = await page.$$eval('[data-testid="announcement-bar-preview-iframe"] > iframe', frames => frames.length);
+
+        expect(iframeCount).toEqual(2);
+
+        const modal = page.getByTestId('announcement-bar-modal');
+
+        await page.waitForSelector('[data-testid="announcement-bar-preview-iframe"]');
+
+        // Get the iframes inside the modal
+        const iframesHandleHome = await page.$$('[data-testid="announcement-bar-preview-iframe"] > iframe');
+
+        const homeiframeHandler = iframesHandleHome[1]; // index 1 since that's the visible iframe
+        const frameHome = await homeiframeHandler.contentFrame();
+        const textExistsInFirstIframe = await frameHome?.$eval('body', (body, textToSearch) => {
+            return body.innerText.includes(textToSearch);
+        }, 'homepage preview');
+
+        expect(textExistsInFirstIframe).toBeTruthy();
+
         await modal.getByTestId('design-toolbar').getByRole('tab', {name: 'Post'}).click();
-    
-        await expect(modal.frameLocator('[data-testid="announcement-bar-preview"]').getByText('post preview')).toHaveCount(1);
+
+        await page.waitForSelector('[data-testid="announcement-bar-preview-iframe"]');
+
+        const iframesHandlePost = await page.$$('[data-testid="announcement-bar-preview-iframe"] > iframe');
+
+        const postiframeHandler = iframesHandlePost[0]; // index 0 since that's the visible iframe
+        const framePost = await postiframeHandler.contentFrame();
+
+        const textExistsInSecondIframe = await framePost?.$eval('body', (body, textToSearch) => {
+            return body.innerText.includes(textToSearch);
+        }, 'post preview');
+
+        expect(textExistsInSecondIframe).toBeTruthy();
     });
 
     // TODO - lexical isn't loading in the preview
@@ -51,9 +77,9 @@ test.describe('Announcement Bar', async () => {
     //     await page.goto('/');
 
     //     const section = page.getByTestId('announcement-bar');
-    
+
     //     await section.getByRole('button', {name: 'Customize'}).click();
-    
+
     //     const modal = page.getByTestId('announcement-bar-modal');
 
     //     await expect(modal.frameLocator('[data-testid="announcement-bar-preview"]').getByText('homepage preview')).toHaveCount(1);
@@ -73,26 +99,26 @@ test.describe('Announcement Bar', async () => {
 
         await section.getByRole('button', {name: 'Customize'}).click();
 
-        const labelElement = await page.$('label:text("Background color")');
+        const labelElement = page.locator('label:text("Background color")');
 
-        expect(labelElement).not.toBeNull();
+        await expect(labelElement).toHaveCount(1);
 
         const modal = page.getByTestId('announcement-bar-modal');
 
         // Check the titles of the buttons.
         // Get the parent div of the label
-        const parentDiv = await labelElement?.$('xpath=..');
+        const parentDiv = labelElement.locator('..');
 
         // Then get the div that follows the label within the parent div
-        const buttonContainer = await parentDiv?.$('div');
+        const buttonContainer = parentDiv.locator('div');
 
-        const darkButton = await buttonContainer?.$('button[title="Dark"]');
-        const lightButton = await buttonContainer?.$('button[title="Light"]');
-        const accentButton = await buttonContainer?.$('button[title="Accent"]');
+        const darkButton = buttonContainer.locator('button[title="Dark"]');
+        const lightButton = buttonContainer.locator('button[title="Light"]');
+        const accentButton = buttonContainer.locator('button[title="Accent"]');
 
-        expect(darkButton).not.toBeNull();
-        expect(lightButton).not.toBeNull();
-        expect(accentButton).not.toBeNull();
+        await expect(darkButton).toHaveCount(1);
+        await expect(lightButton).toHaveCount(1);
+        await expect(accentButton).toHaveCount(1);
 
         await lightButton?.click();
 
@@ -119,9 +145,9 @@ test.describe('Announcement Bar', async () => {
 
         await section.getByRole('button', {name: 'Customize'}).click();
 
-        const labelElement = await page.$('h6:text("Visibility")');
+        const labelElement = page.locator('h6:text("Visibility")');
 
-        expect(labelElement).not.toBeNull();
+        await expect(labelElement).toHaveCount(1);
 
         const modal = page.getByTestId('announcement-bar-modal');
 

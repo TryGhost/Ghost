@@ -15,6 +15,7 @@ import {PreviewModalContent} from '../../../admin-x-ds/global/modal/PreviewModal
 import {Setting, SettingValue, getSettingValues, useEditSettings} from '../../../api/settings';
 import {getHomepageUrl} from '../../../api/site';
 import {useBrowsePosts} from '../../../api/posts';
+import {useBrowseThemes} from '../../../api/themes';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const Sidebar: React.FC<{
@@ -36,6 +37,9 @@ const Sidebar: React.FC<{
 }) => {
     const {updateRoute} = useRouting();
     const [selectedTab, setSelectedTab] = useState('brand');
+    const {data: {themes} = {}} = useBrowseThemes();
+
+    const activeTheme = themes?.find(theme => theme.active);
 
     const tabs: Tab[] = [
         {
@@ -67,8 +71,11 @@ const Sidebar: React.FC<{
                         modal.remove();
                         updateRoute('design/edit/themes');
                     }}>
-                        Change theme
-                        <Icon className='mr-2 transition-all group-hover:translate-x-2' name='chevron-right' size='sm' />
+                        <div className='text-left'>
+                            <div className='font-semibold'>Change theme</div>
+                            <div className='font-sm text-grey-700'>Current theme: {activeTheme?.name}</div>
+                        </div>
+                        <Icon className='mr-2 transition-all group-hover:translate-x-2 dark:text-white' name='chevron-right' size='sm' />
                     </button>
                 </div>
             </StickyFooter>
@@ -222,6 +229,7 @@ const DesignModal: React.FC = () => {
         selectedURL={selectedPreviewTab}
         sidebar={sidebarContent}
         sidebarPadding={false}
+        siteLink={getHomepageUrl(siteData!)}
         size='full'
         testId='design-modal'
         title='Design'

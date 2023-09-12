@@ -1,5 +1,6 @@
 import React from 'react';
 import Separator from './Separator';
+import clsx from 'clsx';
 
 export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -38,10 +39,10 @@ type HeadingLabelProps = {
     grey?: boolean } & HeadingBaseProps & React.LabelHTMLAttributes<HTMLLabelElement>
 
 export const Heading6Styles = 'text-2xs font-semibold uppercase tracking-wider';
-export const Heading6StylesGrey = 'text-2xs font-semibold uppercase tracking-wider text-grey-800';
+export const Heading6StylesGrey = 'text-2xs font-semibold uppercase tracking-wider text-grey-800 dark:text-grey-500';
 
 const Heading: React.FC<Heading1to5Props | Heading6Props | HeadingLabelProps> = ({
-    level,
+    level = 1,
     children,
     styles = '',
     grey = true,
@@ -50,14 +51,38 @@ const Heading: React.FC<Heading1to5Props | Heading6Props | HeadingLabelProps> = 
     className = '',
     ...props
 }) => {
-    if (!level) {
-        level = 1;
-    }
-
     const newElement = `${useLabelTag ? 'label' : `h${level}`}`;
     styles += (level === 6 || useLabelTag) ? (` block ${grey ? Heading6StylesGrey : Heading6Styles}`) : ' ';
 
-    const Element = React.createElement(newElement, {className: styles + ' ' + className, key: 'heading-elem', ...props}, children);
+    if (!useLabelTag) {
+        switch (level) {
+        case 1:
+            styles += ' md:text-5xl';
+            break;
+        case 2:
+            styles += ' md:text-3xl';
+            break;
+        case 3:
+            styles += ' md:text-2xl';
+            break;
+        case 4:
+            styles += ' md:text-xl';
+            break;
+        case 5:
+            styles += ' md:text-lg';
+            break;
+        default:
+            break;
+        }
+    }
+
+    className = clsx(
+        styles,
+        !grey && 'dark:text-white',
+        className
+    );
+
+    const Element = React.createElement(newElement, {className: className, key: 'heading-elem', ...props}, children);
 
     if (separator) {
         let gap = (!level || level === 1) ? 2 : 1;

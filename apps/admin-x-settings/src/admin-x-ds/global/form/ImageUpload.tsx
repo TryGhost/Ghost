@@ -64,14 +64,14 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         );
 
         fileUploadClassName = clsx(
-            'flex cursor-pointer items-center justify-center rounded border border-grey-100 bg-grey-75 p-3 text-sm font-semibold text-grey-800 hover:text-black',
+            'flex cursor-pointer items-center justify-center rounded border border-grey-100 bg-grey-75 p-3 text-sm font-semibold text-grey-800 hover:text-black dark:border-grey-900 dark:bg-grey-900 dark:text-grey-400',
             fileUploadClassName
 
         );
 
         if (!deleteButtonUnstyled) {
             deleteButtonClassName = clsx(
-                'invisible absolute right-4 top-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible',
+                'absolute right-4 top-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible md:invisible',
                 deleteButtonClassName
             );
         }
@@ -123,7 +123,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                     height: (unstyled ? '' : height)
                 }
             } unstyled={unstyled} onUpload={onUpload}>
-                <span>{children}</span>
+                <span className='text-center'>{children}</span>
             </FileUpload>
         );
     }

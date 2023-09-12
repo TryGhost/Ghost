@@ -90,18 +90,18 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
             } else {
                 showToast({
                     type: 'pageError',
-                    message: 'Can\'t save integration! One or more fields have errors, please doublecheck you filled all mandatory fields'
+                    message: 'Can\'t save integration, please double check that you\'ve filled in all mandatory fields.'
                 });
             }
         }}
     >
-        <div className='mt-7 flex w-full gap-7'>
+        <div className='mt-7 flex w-full flex-col gap-7 md:flex-row'>
             <div>
                 <ImageUpload
-                    height='120px'
+                    height='100px'
                     id='custom-integration-icon'
                     imageURL={formState.icon_image || undefined}
-                    width='120px'
+                    width='100px'
                     onDelete={() => updateForm(state => ({...state, icon_image: null}))}
                     onUpload={async (file) => {
                         const imageUrl = getImageUrl(await uploadImage({file}));

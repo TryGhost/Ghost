@@ -9,6 +9,7 @@ import useRouting from '../../../../hooks/useRouting';
 import {EditOrAddRecommendation} from '../../../../api/recommendations';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
+import {useExternalGhostSite} from '../../../../api/external-ghost-site';
 import {useGetOembed} from '../../../../api/oembed';
 
 interface AddRecommendationModalProps {
@@ -20,6 +21,7 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
     const modal = useModal();
     const {updateRoute} = useRouting();
     const {query: queryOembed} = useGetOembed();
+    const {query: queryExternalGhostSite} = useExternalGhostSite();
 
     const {formState, updateForm, handleSave, errors, validate, saveState, clearError} = useForm({
         initialState: recommendation ?? {
@@ -32,33 +34,56 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
             one_click_subscribe: false
         },
         onSave: async () => {
-            // Todo: Fetch metadata and pass it along
-            const oembed = await queryOembed({
-                url: formState.url,
-                type: 'mention'
-            });
+            let validatedUrl: URL | null = null;
+            try {
+                validatedUrl = new URL(formState.url);
+            } catch (e) {
+                // Ignore
+            }
 
+            // First check if it s a Ghost site or not
+            let externalGhostSite = validatedUrl && validatedUrl.protocol === 'https:' ? (await queryExternalGhostSite('https://' + validatedUrl.host)) : null;
             let defaultTitle = formState.title;
             if (!defaultTitle) {
-                try {
-                    defaultTitle = new URL(formState.url).hostname.replace('www.', '');
-                } catch (e) {
+                if (validatedUrl) {
+                    defaultTitle = validatedUrl.hostname.replace('www.', '');
+                } else {
                     // Ignore
                     defaultTitle = formState.url;
                 }
+            }
+
+            const updatedRecommendation = {
+                ...formState,
+                title: defaultTitle
+            };
+
+            if (externalGhostSite) {
+                // For Ghost sites, we use the data from the API
+                updatedRecommendation.title = externalGhostSite.site.title || defaultTitle;
+                updatedRecommendation.excerpt = externalGhostSite.site.description ?? formState.excerpt ?? null;
+                updatedRecommendation.featured_image = externalGhostSite.site.cover_image?.toString() ?? formState.featured_image ?? null;
+                updatedRecommendation.favicon = externalGhostSite.site.icon?.toString() ?? externalGhostSite.site.logo?.toString() ?? formState.favicon ?? null;
+                updatedRecommendation.one_click_subscribe = externalGhostSite.site.allow_self_signup;
+                updatedRecommendation.url = externalGhostSite.site.url.toString();
+            } else {
+                // For non-Ghost sites, we use the Oemebd API to fetch metadata
+                const oembed = await queryOembed({
+                    url: formState.url,
+                    type: 'mention'
+                });
+                updatedRecommendation.title = oembed?.metadata?.title ?? defaultTitle;
+                updatedRecommendation.excerpt = oembed?.metadata?.description ?? formState.excerpt ?? null;
+                updatedRecommendation.featured_image = oembed?.metadata?.thumbnail ?? formState.featured_image ?? null;
+                updatedRecommendation.favicon = oembed?.metadata?.icon ?? formState.favicon ?? null;
+                updatedRecommendation.one_click_subscribe = false;
             }
 
             // Switch modal without changing the route (the second modal is not reachable by URL)
             modal.remove();
             NiceModal.show(AddRecommendationModalConfirm, {
                 animate: false,
-                recommendation: {
-                    ...formState,
-                    title: oembed?.metadata?.title ?? defaultTitle,
-                    excerpt: oembed?.metadata?.description ?? formState.excerpt ?? null,
-                    featured_image: oembed?.metadata?.thumbnail ?? formState.featured_image ?? null,
-                    favicon: oembed?.metadata?.icon ?? formState.favicon ?? null
-                }
+                recommendation: updatedRecommendation
             });
         },
         onValidate: () => {
@@ -110,7 +135,7 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
                 } else {
                     showToast({
                         type: 'pageError',
-                        message: 'One or more fields have errors, please doublecheck you filled all mandatory fields'
+                        message: 'One or more fields have errors, please double check that you\'ve filled in all mandatory fields.'
                     });
                 }
             } catch (e) {
@@ -120,7 +145,9 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
                 });
             }
         }}
-    ><Form
+    >
+        <p className="mt-4">This isn’t a closed network. You can recommend any site your audience will find valuable, not just those published on Ghost.</p>
+        <Form
             marginBottom={false}
             marginTop
         >

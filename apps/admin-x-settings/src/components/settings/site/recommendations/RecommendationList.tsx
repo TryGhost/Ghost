@@ -3,14 +3,18 @@ import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationM
 import NiceModal from '@ebay/nice-modal-react';
 import NoValueLabel from '../../../../admin-x-ds/global/NoValueLabel';
 import React from 'react';
+import RecommendationIcon from './RecommendationIcon';
 import Table from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
 import useRouting from '../../../../hooks/useRouting';
+import {PaginationData} from '../../../../hooks/usePagination';
 import {Recommendation, useDeleteRecommendation} from '../../../../api/recommendations';
 
 interface RecommendationListProps {
-    recommendations: Recommendation[]
+    recommendations: Recommendation[],
+    pagination: PaginationData,
+    isLoading: boolean
 }
 
 const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recommendation}) => {
@@ -18,19 +22,21 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
     const {mutateAsync: deleteRecommendation} = useDeleteRecommendation();
 
     const action = (
-        <Button color='red' label='Remove' link onClick={() => {
-            NiceModal.show(ConfirmationModal, {
-                title: 'Remove recommendation',
-                prompt: <>
-                    <p>Your recommendation <strong>{recommendation.title}</strong> will no longer be visible to your audience.</p>
-                </>,
-                okLabel: 'Remove',
-                onOk: async (modal) => {
-                    await deleteRecommendation(recommendation);
-                    modal?.remove();
-                }
-            });
-        }} />
+        <div className="flex items-center justify-end">
+            <Button color='red' label='Remove' link onClick={() => {
+                NiceModal.show(ConfirmationModal, {
+                    title: 'Remove recommendation',
+                    prompt: <>
+                        <p>Your recommendation <strong>{recommendation.title}</strong> will no longer be visible to your audience.</p>
+                    </>,
+                    okLabel: 'Remove',
+                    onOk: async (modal) => {
+                        await deleteRecommendation(recommendation);
+                        modal?.remove();
+                    }
+                });
+            }} />
+        </div>
     );
 
     const showDetails = () => {
@@ -43,21 +49,30 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
                 <div className='group flex items-center gap-3 hover:cursor-pointer'>
                     <div className={`flex grow flex-col`}>
                         <div className="mb-1 flex items-center gap-2">
-                            {recommendation.favicon && <img alt={recommendation.title} className="h-5 w-5 rounded-sm" src={recommendation.favicon} />}
+                            <RecommendationIcon {...recommendation} />
                             <span className='line-clamp-1'>{recommendation.title}</span>
                         </div>
                         <span className='line-clamp-1 text-xs leading-snug text-grey-700'>{recommendation.reason || 'No reason added'}</span>
                     </div>
                 </div>
             </TableCell>
+            <TableCell className='hidden md:!visible md:!table-cell' onClick={showDetails}>
+                <div className={`flex grow flex-col`}>
+                    {/* If it's 0 */}
+                    {/* <span className="text-grey-500">-</span> */}
+                    {/* If it's more than 0 */}
+                    <span>12</span>
+                    <span className='whitespace-nowrap text-xs text-grey-700'>Subscribers from you</span>
+                </div>
+            </TableCell>
         </TableRow>
     );
 };
 
-const RecommendationList: React.FC<RecommendationListProps> = ({recommendations}) => {
-    if (recommendations.length) {
-        return <Table hint='Readers will see your recommendations in randomized order' hintSeparator>
-            {recommendations.map(recommendation => <RecommendationItem key={recommendation.id} recommendation={recommendation} />)}
+const RecommendationList: React.FC<RecommendationListProps> = ({recommendations, pagination, isLoading}) => {
+    if (isLoading || recommendations.length) {
+        return <Table hint='Readers will see your recommendations in randomized order' isLoading={isLoading} pagination={pagination} hintSeparator>
+            {recommendations && recommendations.map(recommendation => <RecommendationItem key={recommendation.id} recommendation={recommendation} />)}
         </Table>;
     } else {
         return <NoValueLabel icon='thumbs-up'>

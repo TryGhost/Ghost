@@ -1,3 +1,5 @@
+/* eslint-disable no-shadow */
+
 import AuthFrame from './AuthFrame';
 import ContentBox from './components/ContentBox';
 import PopupBox from './components/PopupBox';
@@ -32,7 +34,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
             siteUrl: options.siteUrl,
             apiUrl: options.apiUrl!,
             apiKey: options.apiKey!
-        })
+        });
     }, [options]);
 
     const [adminApi, setAdminApi] = useState<AdminApi|null>(null);
@@ -45,7 +47,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
             return {
                 ...state,
                 ...newState
-            }
+            };
         });
     }, [setFullState]);
 
@@ -55,7 +57,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
             // because updates to state may be asynchronous
             // so calling dispatchAction('counterUp') multiple times, may yield unexpected results if we don't use a callback function
             setState((state) => {
-                return SyncActionHandler({action, data, state, api, adminApi: adminApi!, options})
+                return SyncActionHandler({action, data, state, api, adminApi: adminApi!, options});
             });
             return;
         }
@@ -66,7 +68,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         setState((state) => {
             ActionHandler({action, data, state, api, adminApi: adminApi!, options}).then((updatedState) => {
                 setState({...updatedState});
-            }).catch(console.error);
+            }).catch(console.error); // eslint-disable-line no-console
 
             // No immediate changes
             return {};
@@ -125,7 +127,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
             pagination: data.meta.pagination,
             count: count
         };
-    }
+    };
 
     /** Initialize comments setup on load, fetch data and setup state*/
     const initSetup = async () => {

@@ -76,13 +76,13 @@ const NewsletterItem: React.FC<{newsletter: Newsletter, onlyOne: boolean}> = ({n
                     <span className='whitespace-nowrap text-xs text-grey-700'>{newsletter.description || 'No description'}</span>
                 </div>
             </TableCell>
-            <TableCell onClick={showDetails}>
+            <TableCell className='hidden md:!visible md:!table-cell' onClick={showDetails}>
                 <div className={`flex grow flex-col`}>
                     <span>{newsletter.count?.active_members}</span>
                     <span className='whitespace-nowrap text-xs text-grey-700'>Subscribers</span>
                 </div>
             </TableCell>
-            <TableCell onClick={showDetails}>
+            <TableCell className='hidden md:!visible md:!table-cell' onClick={showDetails}>
                 <div className={`flex grow flex-col`}>
                     <span>{newsletter.count?.posts}</span>
                     <span className='whitespace-nowrap text-xs text-grey-700'>Posts sent</span>

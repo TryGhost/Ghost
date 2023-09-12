@@ -43,7 +43,7 @@ const SlackModal = NiceModal.create(() => {
         } else {
             showToast({
                 type: 'pageError',
-                message: 'Can\'t save Slack settings! One or more fields have errors, please doublecheck you filled all mandatory fields'
+                message: 'Can\'t save Slack settings, please double check that you\'ve filled in all mandatory fields.'
             });
         }
     };
@@ -66,7 +66,7 @@ const SlackModal = NiceModal.create(() => {
                 } else {
                     showToast({
                         type: 'pageError',
-                        message: 'Can\'t save Slack settings! One or more fields have errors, please doublecheck you filled all mandatory fields'
+                        message: 'Can\'t save Slack settings, please double check that you\'ve filled in all mandatory fields.'
                     });
                 }
             }}
@@ -90,7 +90,7 @@ const SlackModal = NiceModal.create(() => {
                         onChange={e => updateSetting('slack_url', e.target.value)}
                         onKeyDown={() => clearError('slackUrl')}
                     />
-                    <div className='flex w-full items-center gap-2'>
+                    <div className='flex w-full flex-col gap-2 md:flex-row md:items-center'>
                         <TextField
                             containerClassName='flex-grow'
                             hint='The username to display messages from'

@@ -20,6 +20,7 @@ interface OwnerProps {
 
 interface UsersListProps {
     users: User[];
+    groupname?: string;
     updateUser?: (user: User) => void;
 }
 
@@ -43,14 +44,14 @@ const Owner: React.FC<OwnerProps> = ({user}) => {
         <div className='group flex gap-3 hover:cursor-pointer' data-testid='owner-user' onClick={showDetailModal}>
             <Avatar bgColor={generateAvatarColor((user.name ? user.name : user.email))} image={user.profile_image} label={getInitials(user.name)} labelColor='white' size='lg' />
             <div className='flex flex-col'>
-                <span>{user.name} &mdash; <strong>Owner</strong> <button className='invisible ml-2 inline-block text-sm font-bold text-green group-hover:visible' type='button'>Edit</button></span>
+                <span>{user.name} &mdash; <strong>Owner</strong> <button className='ml-2 inline-block text-sm font-bold text-green group-hover:visible md:invisible' type='button'>View profile</button></span>
                 <span className='text-xs text-grey-700'>{user.email}</span>
             </div>
         </div>
     );
 };
 
-const UsersList: React.FC<UsersListProps> = ({users}) => {
+const UsersList: React.FC<UsersListProps> = ({users, groupname}) => {
     const {updateRoute} = useRouting();
 
     const showDetailModal = (user: User) => {
@@ -60,7 +61,7 @@ const UsersList: React.FC<UsersListProps> = ({users}) => {
     if (!users || !users.length) {
         return (
             <NoValueLabel icon='single-user-block'>
-                No users found.
+                No {groupname} found.
             </NoValueLabel>
         );
     }
@@ -149,7 +150,7 @@ const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
     if (!users || !users.length) {
         return (
             <NoValueLabel icon='single-user-block'>
-                No users found.
+                No invitations found.
             </NoValueLabel>
         );
     }
@@ -196,7 +197,7 @@ const Users: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const buttons = (
-        <Button color='green' label='Invite users' link={true} onClick={() => {
+        <Button color='green' label='Invite people' link={true} onClick={() => {
             showInviteModal();
         }} />
     );
@@ -207,22 +208,22 @@ const Users: React.FC<{ keywords: string[] }> = ({keywords}) => {
         {
             id: 'users-admins',
             title: 'Administrators',
-            contents: (<UsersList users={adminUsers} />)
+            contents: (<UsersList groupname='administrators' users={adminUsers} />)
         },
         {
             id: 'users-editors',
             title: 'Editors',
-            contents: (<UsersList users={editorUsers} />)
+            contents: (<UsersList groupname='editors' users={editorUsers} />)
         },
         {
             id: 'users-authors',
             title: 'Authors',
-            contents: (<UsersList users={authorUsers} />)
+            contents: (<UsersList groupname='authors' users={authorUsers} />)
         },
         {
             id: 'users-contributors',
             title: 'Contributors',
-            contents: (<UsersList users={contributorUsers} />)
+            contents: (<UsersList groupname='contributors' users={contributorUsers} />)
         },
         {
             id: 'users-invited',
@@ -237,7 +238,7 @@ const Users: React.FC<{ keywords: string[] }> = ({keywords}) => {
             keywords={keywords}
             navid='users'
             testId='users'
-            title='Users and permissions'
+            title='Staff'
         >
             <Owner user={ownerUser} />
             <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />

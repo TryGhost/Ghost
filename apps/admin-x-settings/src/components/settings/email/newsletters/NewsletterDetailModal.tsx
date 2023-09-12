@@ -271,39 +271,39 @@ const Sidebar: React.FC<{
                         checked={newsletter.show_feature_image}
                         direction="rtl"
                         label='Feature image'
-                        labelStyle='value'
+                        labelStyle='heading'
                         onChange={e => updateNewsletter({show_feature_image: e.target.checked})}
                     />
                 </Form>
 
                 <Form className='mt-6' gap='sm' margins='lg' title='Footer'>
-                    <ToggleGroup>
+                    <ToggleGroup gap='lg'>
                         <Toggle
                             checked={newsletter.feedback_enabled}
                             direction="rtl"
                             label='Ask your readers for feedback'
-                            labelStyle='value'
+                            labelStyle='heading'
                             onChange={e => updateNewsletter({feedback_enabled: e.target.checked})}
                         />
                         <Toggle
                             checked={newsletter.show_comment_cta}
                             direction="rtl"
                             label='Add a link to your comments'
-                            labelStyle='value'
+                            labelStyle='heading'
                             onChange={e => updateNewsletter({show_comment_cta: e.target.checked})}
                         />
                         <Toggle
                             checked={newsletter.show_latest_posts}
                             direction="rtl"
                             label='Share your latest posts'
-                            labelStyle='value'
+                            labelStyle='heading'
                             onChange={e => updateNewsletter({show_latest_posts: e.target.checked})}
                         />
                         <Toggle
                             checked={newsletter.show_subscription_details}
                             direction="rtl"
                             label='Show subscription details'
-                            labelStyle='value'
+                            labelStyle='heading'
                             onChange={e => updateNewsletter({show_subscription_details: e.target.checked})}
                         />
                     </ToggleGroup>
@@ -338,8 +338,12 @@ const Sidebar: React.FC<{
                         <Toggle
                             checked={newsletter.show_badge}
                             direction='rtl'
-                            hint='Show you’re a part of the indie publishing movement with a small badge in the footer'
-                            label='Promote independent publishing'
+                            label={
+                                <div className='flex flex-col gap-0.5'>
+                                    <span className='text-sm md:text-base'>Promote independent publishing</span>
+                                    <span className='text-[11px] leading-tight text-grey-700 md:text-xs md:leading-tight'>Show you’re a part of the indie publishing movement with a small badge in the footer</span>
+                                </div>
+                            }
                             labelStyle='value'
                             onChange={e => updateNewsletter({show_badge: e.target.checked})}
                         />
@@ -421,7 +425,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter}> = ({newsl
             } else {
                 showToast({
                     type: 'pageError',
-                    message: 'Can\'t save newsletter! One or more fields have errors, please doublecheck you filled all mandatory fields'
+                    message: 'Can\'t save newsletter, please double check that you\'ve filled in all mandatory fields.'
                 });
             }
         }}

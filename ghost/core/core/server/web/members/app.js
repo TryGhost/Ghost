@@ -88,6 +88,13 @@ module.exports = function setupMembersApp() {
         announcementRouter()
     );
 
+    // Allow external systems to read public settings via the members api
+    // Without CORS issues and without a required integration token
+    // 1. Detect if a site is Running Ghost
+    // 2. For recommendations to know when we can offer 'one-click-subscribe' to know if members are enabled
+    // Why not content API? Domain can be different from recommended domain + CORS issues
+    membersApp.get('/api/site', http(api.site.read));
+
     // API error handling
     membersApp.use('/api', errorHandler.resourceNotFound);
     membersApp.use('/api', errorHandler.handleJSONResponse(sentry));

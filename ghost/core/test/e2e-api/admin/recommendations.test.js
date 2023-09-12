@@ -2,6 +2,7 @@ const {agentProvider, fixtureManager, mockManager, matchers} = require('../../ut
 const {anyObjectId, anyErrorId, anyISODateTime, anyContentVersion, anyLocationFor, anyEtag} = matchers;
 const assert = require('assert/strict');
 const recommendationsService = require('../../../core/server/services/recommendations');
+const {Recommendation} = require('@tryghost/recommendations');
 
 describe('Recommendations Admin API', function () {
     let agent;
@@ -188,5 +189,76 @@ describe('Recommendations Admin API', function () {
                     }
                 ]
             });
+    });
+
+    it('Can request pages', async function () {
+        // Add 15 recommendations using the repository
+        for (let i = 0; i < 15; i++) {
+            const recommendation = Recommendation.create({
+                title: `Recommendation ${i}`,
+                reason: `Reason ${i}`,
+                url: new URL(`https://recommendation${i}.com`),
+                favicon: null,
+                featuredImage: null,
+                excerpt: null,
+                oneClickSubscribe: false,
+                createdAt: new Date(i * 5000) // Reliable ordering
+            });
+
+            await recommendationsService.repository.save(recommendation);
+        }
+
+        const {body: page1} = await agent.get('recommendations/?page=1&limit=10')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                recommendations: new Array(10).fill({
+                    id: anyObjectId,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime
+                })
+            });
+
+        assert.equal(page1.meta.pagination.page, 1);
+        assert.equal(page1.meta.pagination.limit, 10);
+        assert.equal(page1.meta.pagination.pages, 2);
+        assert.equal(page1.meta.pagination.next, 2);
+        assert.equal(page1.meta.pagination.prev, null);
+        assert.equal(page1.meta.pagination.total, 16);
+
+        const {body: page2} = await agent.get('recommendations/?page=2&limit=10')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                recommendations: new Array(6).fill({
+                    id: anyObjectId,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime
+                })
+            });
+
+        assert.equal(page2.meta.pagination.page, 2);
+        assert.equal(page2.meta.pagination.limit, 10);
+        assert.equal(page2.meta.pagination.pages, 2);
+        assert.equal(page2.meta.pagination.next, null);
+        assert.equal(page2.meta.pagination.prev, 1);
+        assert.equal(page2.meta.pagination.total, 16);
+    });
+
+    it('Uses default limit of 5', async function () {
+        const {body: page1} = await agent.get('recommendations/')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+
+        assert.equal(page1.meta.pagination.limit, 5);
     });
 });

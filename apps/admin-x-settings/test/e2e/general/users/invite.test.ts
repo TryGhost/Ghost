@@ -31,7 +31,7 @@ test.describe('User invitations', async () => {
 
         const section = page.getByTestId('users');
 
-        await section.getByRole('button', {name: 'Invite users'}).click();
+        await section.getByRole('button', {name: 'Invite people'}).click();
 
         const modal = page.getByTestId('invite-user-modal');
         await modal.getByLabel('Email address').fill('newuser@test.com');
@@ -39,9 +39,6 @@ test.describe('User invitations', async () => {
         await modal.getByRole('button', {name: 'Send invitation now'}).click();
 
         await expect(page.getByTestId('toast')).toHaveText(/Invitation successfully sent to newuser@test\.com/);
-
-        // Currently clicking the backdrop is the only way to close this modal
-        await page.locator('#modal-backdrop').click({position: {x: 0, y: 0}});
 
         await section.getByRole('tab', {name: 'Invited'}).click();
 
@@ -147,7 +144,7 @@ test.describe('User invitations', async () => {
 
         const section = page.getByTestId('users');
 
-        await section.getByRole('button', {name: 'Invite users'}).click();
+        await section.getByRole('button', {name: 'Invite people'}).click();
 
         const modal = page.getByTestId('invite-user-modal');
 

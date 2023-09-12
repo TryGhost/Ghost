@@ -67,7 +67,7 @@ const Toggle: React.FC<ToggleProps> = ({
     let toggleBgClass;
     switch (toggleBg) {
     case 'stripetest':
-        toggleBgClass = 'checked:bg-[#EC6803]';
+        toggleBgClass = 'checked:bg-[#EC6803] dark:checked:bg-[#EC6803]';
         break;
 
     case 'green':
@@ -75,28 +75,28 @@ const Toggle: React.FC<ToggleProps> = ({
         break;
 
     default:
-        toggleBgClass = 'checked:bg-black';
+        toggleBgClass = 'checked:bg-black dark:checked:bg-green';
         break;
     }
 
     return (
         <div>
-            <div className={`group flex items-start gap-2 ${direction === 'rtl' && 'justify-between'} ${separator && 'pb-2'}`}>
+            <div className={`group flex items-start gap-2 dark:text-white ${direction === 'rtl' && 'justify-between'} ${separator && 'pb-2'}`}>
                 <input checked={checked}
-                    className={`${toggleBgClass} appearance-none rounded-full bg-grey-300 transition after:absolute after:ml-0.5 after:mt-0.5 after:rounded-full after:border-none after:bg-white after:transition-[background-color_0.2s,transform_0.2s] after:content-[''] checked:after:absolute checked:after:rounded-full checked:after:border-none checked:after:bg-white checked:after:transition-[background-color_0.2s,transform_0.2s] checked:after:content-[''] hover:cursor-pointer group-hover:opacity-80 ${sizeStyles} ${direction === 'rtl' && ' order-2'}`}
+                    className={`${toggleBgClass} appearance-none rounded-full bg-grey-300 transition after:absolute after:ml-0.5 after:mt-0.5 after:rounded-full after:border-none after:bg-white after:transition-[background-color_0.2s,transform_0.2s] after:content-[''] checked:after:absolute checked:after:rounded-full checked:after:border-none checked:after:bg-white checked:after:transition-[background-color_0.2s,transform_0.2s] checked:after:content-[''] hover:cursor-pointer group-hover:opacity-80 dark:bg-grey-800 ${sizeStyles} ${direction === 'rtl' && ' order-2'}`}
                     id={id}
                     role="switch"
                     type="checkbox"
                     onChange={onChange} />
                 {label &&
-                    <label className={`flex flex-col hover:cursor-pointer ${direction === 'rtl' && 'order-1'} ${labelStyles}`} htmlFor={id}>
+                    <label className={`flex grow flex-col hover:cursor-pointer ${direction === 'rtl' && 'order-1'} ${labelStyles}`} htmlFor={id}>
                         {
                             labelStyle === 'heading' ?
                                 <span className={`${Heading6StylesGrey} mt-1`}>{label}</span>
                                 :
                                 <span>{label}</span>
                         }
-                        {hint && <span className={`text-xs ${error ? 'text-red' : 'text-grey-700'}`}>{hint}</span>}
+                        {hint && <span className={`text-xs ${error ? 'text-red' : 'text-grey-700 dark:text-grey-600'}`}>{hint}</span>}
                     </label>
                 }
             </div>

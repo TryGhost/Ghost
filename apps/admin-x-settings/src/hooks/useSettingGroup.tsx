@@ -105,7 +105,7 @@ const useSettingGroup = ({onValidate}: {onValidate?: () => ErrorMessages} = {}):
             } else {
                 showToast({
                     type: 'pageError',
-                    message: 'Can\'t save settings! One or more fields have errors, please doublecheck you filled all mandatory fields'
+                    message: 'Can\'t save settings! One or more fields have errors, please double check that you\'ve filled in all mandatory fields.'
                 });
             }
             return result;

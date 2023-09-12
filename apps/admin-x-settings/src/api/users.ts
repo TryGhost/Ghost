@@ -10,7 +10,7 @@ export type User = {
     email: string;
     profile_image: string;
     cover_image: string|null;
-    bio: string;
+    bio: string|null;
     website: string;
     location: string;
     facebook: string;
