@@ -63,7 +63,7 @@ const Form: React.FC<FormProps> = ({
     }
 
     let titleClasses = clsx(
-        grouped ? 'mb-2' : 'mb-3'
+        grouped ? 'mb-3' : 'mb-4'
     );
 
     if (grouped || title) {

@@ -120,7 +120,7 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, validators, user, setUs
             />
             <TextField
                 error={!!errors?.email}
-                hint={errors?.email || ''}
+                hint={errors?.email || 'Used for notifications'}
                 title="Email"
                 value={user.email}
                 onBlur={(e) => {
@@ -159,6 +159,7 @@ const DetailsInputs: React.FC<UserDetailProps> = ({errors, validators, user, set
                 }}
             />
             <TextField
+                hint="Where in the world do you live?"
                 title="Location"
                 value={user.location}
                 onChange={(e) => {
@@ -167,7 +168,8 @@ const DetailsInputs: React.FC<UserDetailProps> = ({errors, validators, user, set
             />
             <TextField
                 error={!!errors?.url}
-                hint={errors?.url || ''}
+                hint={errors?.url || 'Have a website or blog other than this one? Link it!'}
+                placeholder='https://example.com'
                 title="Website"
                 value={user.website}
                 onBlur={(e) => {
@@ -178,6 +180,8 @@ const DetailsInputs: React.FC<UserDetailProps> = ({errors, validators, user, set
                 }}
             />
             <TextField
+                hint='URL of your personal Facebook Profile'
+                placeholder='https://www.facebook.com/ghost'
                 title="Facebook profile"
                 value={user.facebook}
                 onChange={(e) => {
@@ -185,6 +189,8 @@ const DetailsInputs: React.FC<UserDetailProps> = ({errors, validators, user, set
                 }}
             />
             <TextField
+                hint='URL of your personal Twitter profile'
+                placeholder='https://twitter.com/ghost'
                 title="Twitter profile"
                 value={user.twitter}
                 onChange={(e) => {
