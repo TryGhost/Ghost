@@ -7730,7 +7730,7 @@
     focus-trap "^6.7.2"
     postcss-preset-env "^7.3.1"
 
-"@tryghost/errors@1.2.21", "@tryghost/errors@1.2.24", "@tryghost/errors@1.2.25", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.24", "@tryghost/errors@^1.2.26", "@tryghost/errors@^1.2.3":
+"@tryghost/errors@1.2.24", "@tryghost/errors@1.2.25", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.24", "@tryghost/errors@^1.2.26", "@tryghost/errors@^1.2.3":
   version "1.2.24"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.24.tgz#5daceff6cdee9421297849474fd885857c4bfe3f"
   integrity sha512-5iRF8dl2wirb/1gQA2dv8MtxK204vnjbWvmb3fULNZoVlmuHY1ZUgwRJRquClfUEFyl2qGmNDuoxGoTvur8JKA==
