@@ -106,7 +106,7 @@ const Metadata: React.FC<{ keywords: string[] }> = ({keywords}) => {
             navid='metadata'
             saveState={saveState}
             testId='metadata'
-            title='Metadata'
+            title='Meta data'
             onCancel={handleCancel}
             onEditingChange={handleEditingChange}
             onSave={handleSave}
