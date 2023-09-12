@@ -70,8 +70,8 @@ describe('Posts Bulk API', function () {
 
             assert(amount > 0, 'Expect at least one post to be affected for this test to work');
 
-            featuredCollection = await models.Collection.findPage({filter: 'slug:featured', limit: 1, withRelated: ['collectionPosts']});
-            featuredCollectionPostsAmount = featuredCollection.data[0].toJSON().collectionPosts.length;
+            let featuredCollection = await models.Collection.findPage({filter: 'slug:featured', limit: 1, withRelated: ['collectionPosts']});
+            let featuredCollectionPostsAmount = featuredCollection.data[0].toJSON().collectionPosts.length;
             assert(featuredCollectionPostsAmount > 0, 'Expect to have multiple featured collection posts');
 
             const response = await agent
