@@ -4,6 +4,7 @@ import CloseButton from '../common/CloseButton';
 import {clearURLParams} from '../../utils/notifications';
 import LoadingPage from './LoadingPage';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark-fill.svg';
+import {ReactComponent as ArrowIcon} from '../../images/icons/arrow-top-right.svg';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
 import {getRefDomain} from '../../utils/helpers';
 
@@ -13,38 +14,52 @@ export const RecommendationsPageStyles = `
     }
 
     .gh-portal-recommendation-item-header {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        cursor: pointer;
-    }
-
-    .gh-portal-recommendations-loading-container {
-        display: block;
-        position: relative;
-        width: 38px;
-        height: 38px;
-    }
-
-    .gh-portal-recommendations-loading-container .gh-portal-loadingicon {
-        top: 3.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
     }
 
     .gh-portal-recommendation-item-favicon {
-        width: 20px;
-        height: 20px;
-        border-radius: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
     }
 
     .gh-portal-recommendations-header {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
     }
 
     .gh-portal-recommendations-description {
-        text-align: center;
+    text-align: center;
+    }
+
+    .gh-portal-recommendation-item .gh-portal-list-detail {
+    transition: 0.2s ease-in-out opacity;
+    }
+
+    .gh-portal-recommendation-item:hover .gh-portal-list-detail {
+    cursor: pointer;
+    opacity: 0.8;
+    }
+
+    .gh-portal-recommendation-arrow-icon {
+    height: 12px;
+    opacity: 0;
+    margin-left: -6px;
+    transition: 0.2s ease-in opacity;
+    }
+
+    .gh-portal-recommendation-arrow-icon path {
+    stroke-width: 3px;
+    stroke: #555;
+    }
+
+    .gh-portal-recommendation-item .gh-portal-list-detail:hover .gh-portal-recommendation-arrow-icon {
+    opacity: 0.8;
     }
 `;
 
@@ -151,17 +166,19 @@ const RecommendationItem = (recommendation) => {
 
     return (
         <section className="gh-portal-recommendation-item">
-            <div className="gh-portal-list-detail gh-portal-list-big">
-                <div className="gh-portal-recommendation-item-header" onClick={visitHandler}>
+            <div className="gh-portal-list-detail gh-portal-list-big" onClick={visitHandler}>
+                <div className="gh-portal-recommendation-item-header">
                     <RecommendationIcon title={title} favicon={favicon} featuredImage={featuredImage} />
                     <h3>{title}</h3>
+                    <ArrowIcon className="gh-portal-recommendation-arrow-icon" />
                 </div>
                 {reason && <p>{reason}</p>}
             </div>
             <div>
                 {subscribed && <CheckmarkIcon className='gh-portal-checkmark-icon' alt='' />}
                 {!subscribed && loading && <span className='gh-portal-recommendations-loading-container'><LoaderIcon className={'gh-portal-loadingicon dark'} /></span>}
-                {!subscribed && !loading && <button type="button" className="gh-portal-btn gh-portal-btn-list" onClick={clickHandler}>{allowOneClickSubscribe ? t('Subscribe') : t('Visit')}</button>}
+                {/* {!subscribed && !loading && <button type="button" className="gh-portal-btn gh-portal-btn-list" onClick={clickHandler}>{allowOneClickSubscribe ? t('Subscribe') : t('Visit')}</button>} */}
+                {!subscribed && allowOneClickSubscribe && <button type="button" className="gh-portal-btn gh-portal-btn-list" onClick={clickHandler}>{t('Subscribe')}</button>}
             </div>
         </section>
     );
@@ -201,8 +218,8 @@ const RecommendationsPage = () => {
         };
     }, []);
 
-    const heading = pageData && pageData.signup ? t('You\'re subscribed!') : t('Recommendations');
-    const subheading = t(`Here are a few other sites {{siteTitle}} thinks you may enjoy.`, {siteTitle: title});
+    const heading = pageData && pageData.signup ? t('Welcome to {{siteTitle}}', {siteTitle: title}) : t('Recommendations');
+    const subheading = pageData && pageData.signup ? t('Thanks for subscribing. Here are a few other sites you may enjoy. ') : t('Here are a few other sites you may enjoy.');
 
     if (!recommendationsEnabled) {
         return null;
