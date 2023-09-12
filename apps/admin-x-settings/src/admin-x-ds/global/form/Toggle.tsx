@@ -89,7 +89,7 @@ const Toggle: React.FC<ToggleProps> = ({
                     type="checkbox"
                     onChange={onChange} />
                 {label &&
-                    <label className={`flex flex-col hover:cursor-pointer ${direction === 'rtl' && 'order-1'} ${labelStyles}`} htmlFor={id}>
+                    <label className={`flex grow flex-col hover:cursor-pointer ${direction === 'rtl' && 'order-1'} ${labelStyles}`} htmlFor={id}>
                         {
                             labelStyle === 'heading' ?
                                 <span className={`${Heading6StylesGrey} mt-1`}>{label}</span>
