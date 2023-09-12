@@ -1,6 +1,7 @@
 import ButtonGroup from '../ButtonGroup';
 import DesktopChrome from '../chrome/DesktopChrome';
 import Heading, {HeadingLevel} from '../Heading';
+import Icon from '../Icon';
 import MobileChrome from '../chrome/MobileChrome';
 import Modal, {ModalSize} from './Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
@@ -28,6 +29,7 @@ export interface PreviewModalProps {
     leftToolbar?: boolean;
     rightToolbar?: boolean;
     deviceSelector?: boolean;
+    siteLink?: string;
     previewToolbarURLs?: SelectOption[];
     previewBgColor?: 'grey' | 'white' | 'greygradient';
     selectedURL?: string;
@@ -61,6 +63,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     leftToolbar = true,
     rightToolbar = true,
     deviceSelector = true,
+    siteLink,
     previewToolbarURLs,
     previewBgColor = 'grey',
     selectedURL,
@@ -119,32 +122,34 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
 
         const selectedIconColorClass = 'text-black dark:text-green';
         const unSelectedIconColorClass = 'text-grey-500 dark:text-grey-600';
+        const rightButtons:ButtonProps[] = [
+            {
+                icon: 'laptop',
+                label: 'Desktop',
+                hideLabel: true,
+                link: true,
+                size: 'sm',
+                iconColorClass: (view === 'desktop' ? selectedIconColorClass : unSelectedIconColorClass),
+                onClick: onSelectDesktopView || (() => {
+                    setView('desktop');
+                })
+            },
+            {
+                icon: 'mobile',
+                label: 'Mobile',
+                hideLabel: true,
+                link: true,
+                size: 'sm',
+                iconColorClass: (view === 'mobile' ? selectedIconColorClass : unSelectedIconColorClass),
+                onClick: onSelectMobileView || (() => {
+                    setView('mobile');
+                })
+            }
+        ];
+
         const toolbarRight = deviceSelector && (
             <ButtonGroup
-                buttons={[
-                    {
-                        icon: 'laptop',
-                        label: 'Desktop',
-                        hideLabel: true,
-                        link: true,
-                        size: 'sm',
-                        iconColorClass: (view === 'desktop' ? selectedIconColorClass : unSelectedIconColorClass),
-                        onClick: onSelectDesktopView || (() => {
-                            setView('desktop');
-                        })
-                    },
-                    {
-                        icon: 'mobile',
-                        label: 'Mobile',
-                        hideLabel: true,
-                        link: true,
-                        size: 'sm',
-                        iconColorClass: (view === 'mobile' ? selectedIconColorClass : unSelectedIconColorClass),
-                        onClick: onSelectMobileView || (() => {
-                            setView('mobile');
-                        })
-                    }
-                ]}
+                buttons={rightButtons}
             />
         );
 
@@ -160,6 +165,15 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             previewBgClass
         );
 
+        let viewSiteButton;
+        if (siteLink) {
+            viewSiteButton = (
+                <div className='ml-3 border-l border-grey-400 dark:border-grey-800'>
+                    <a className='ml-3 flex items-center gap-1 text-sm' href={siteLink} rel="noopener noreferrer" target="_blank">View site <Icon name='arrow-top-right' size='xs' /></a>
+                </div>
+            );
+        }
+
         preview = (
             <div className={containerClasses}>
                 {previewToolbar && <header className="relative flex h-[74px] shrink-0 items-center justify-center px-3 py-5" data-testid="design-toolbar">
@@ -168,6 +182,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                     </div>}
                     {rightToolbar && <div className='absolute right-5 flex h-full items-center'>
                         {toolbarRight}
+                        {viewSiteButton}
                     </div>}
                 </header>}
                 <div className='flex grow items-center justify-center text-sm text-grey-400'>
