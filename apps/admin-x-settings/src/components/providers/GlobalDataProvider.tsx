@@ -1,3 +1,4 @@
+import SpinningOrb from '../../assets/videos/logo-loader.mp4';
 import {Config, useBrowseConfig} from '../../api/config';
 import {ReactNode, createContext, useContext} from 'react';
 import {Setting, useBrowseSettings} from '../../api/settings';
@@ -34,8 +35,20 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
 
     if (requests.some(request => request.isLoading)) {
         return (
-            <div className="flex h-full flex-col items-center justify-center">
-                <div className="text-center text-2xl font-bold">Loading...</div>
+            <div style={{
+                width: '100vw',
+                height: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingBottom: '8vh'
+            }}>
+                <video autoPlay={true} height="100" preload="metadata" style={{
+                    width: '100px',
+                    height: '100px'
+                }} width="100" loop muted playsInline>
+                    <source src={SpinningOrb} type="video/mp4" />
+                </video>
             </div>
         );
     }

@@ -288,10 +288,28 @@ export default class AdminXSettings extends Component {
     };
 
     ReactComponent = () => {
+        const fallback = (
+            <div className="admin-x-settings-container--loading" style={{
+                width: '100vw',
+                height: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingBottom: '8vh'
+            }}>
+                <video width="100" height="100" loop autoplay muted playsinline preload="metadata" style={{
+                    width: '100px',
+                    height: '100px'
+                }}>
+                    <source src="assets/videos/logo-loader.mp4" type="video/mp4" />
+                    <div class="gh-loading-spinner"></div>
+                </video>
+            </div>
+        );
         return (
             <div className={['admin-x-settings-container-', this.args.className].filter(Boolean).join(' ')}>
                 <ErrorHandler>
-                    <Suspense fallback={<p className="admin-x-settings-container--loading">Loading settings...</p>}>
+                    <Suspense fallback={fallback}>
                         <this.AdminXApp
                             ghostVersion={config.APP.version}
                             officialThemes={officialThemes}

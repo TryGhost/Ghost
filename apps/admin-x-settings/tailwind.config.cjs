@@ -171,6 +171,14 @@ module.exports = {
                     '100%': {
                         transform: 'translateY(0px)'
                     }
+                },
+                spin: {
+                    '0%': {
+                        transform: 'rotate(0deg)'
+                    },
+                    '100%': {
+                        transform: 'rotate(360deg)'
+                    }
                 }
             },
             animation: {
@@ -182,7 +190,8 @@ module.exports = {
                 'setting-highlight-fade-out': 'fadeOut 0.2s 1.4s ease forwards',
                 'modal-backdrop-in': 'fadeIn 0.15s ease forwards',
                 'modal-in': 'modalIn 0.25s ease forwards',
-                'modal-in-reverse': 'modalInReverse 0.25s ease forwards'
+                'modal-in-reverse': 'modalInReverse 0.25s ease forwards',
+                spin: 'spin 1s linear infinite'
             },
             spacing: {
                 px: '1px',
