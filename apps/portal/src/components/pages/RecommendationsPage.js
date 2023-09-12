@@ -1,10 +1,11 @@
 import AppContext from '../../AppContext';
-import {useContext, useState, useEffect, useCallback} from 'react';
+import {useContext, useState, useEffect, useCallback, useMemo} from 'react';
 import CloseButton from '../common/CloseButton';
 import {clearURLParams} from '../../utils/notifications';
 import LoadingPage from './LoadingPage';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark-fill.svg';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
+import {getRefDomain} from '../../utils/helpers';
 
 export const RecommendationsPageStyles = `
     .gh-portal-recommendation-item .gh-portal-list-detail {
@@ -95,10 +96,25 @@ const RecommendationItem = (recommendation) => {
     const [subscribed, setSubscribed] = useState(false);
     const [loading, setLoading] = useState(false);
 
+    const refUrl = useMemo(() => {
+        try {
+            const ref = new URL(url);
+
+            if (ref.searchParams.has('ref') || ref.searchParams.has('utm_source') || ref.searchParams.has('source')) {
+                // Don't overwrite + keep existing source attribution
+                return url;
+            }
+            ref.searchParams.set('ref', getRefDomain());
+            return ref.toString();
+        } catch (_) {
+            return url;
+        }
+    }, [url]);
+
     const visitHandler = useCallback(() => {
         // Open url in a new tab
-        openTab(url);
-    }, [url]);
+        openTab(refUrl);
+    }, [refUrl]);
 
     const oneClickSubscribeHandler = useCallback(async () => {
         try {
@@ -110,13 +126,13 @@ const RecommendationItem = (recommendation) => {
             setSubscribed(true);
         } catch (_) {
             // Open portal signup page
-            const signupUrl = new URL('#/portal/signup', url);
+            const signupUrl = new URL('#/portal/signup', refUrl);
 
             // Trigger a visit
             openTab(signupUrl);
         }
         setLoading(false);
-    }, [setSubscribed, url]);
+    }, [setSubscribed, url, refUrl]);
 
     const clickHandler = useCallback((e) => {
         if (loading) {
