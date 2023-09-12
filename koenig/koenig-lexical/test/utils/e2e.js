@@ -412,3 +412,9 @@ export async function createDataTransfer(page, data = []) {
         return dt;
     }, filesData);
 }
+
+export async function getEditorState(page) {
+    return await page.evaluate(() => {
+        return window.lexicalEditor.getEditorState().toJSON();
+    });
+}

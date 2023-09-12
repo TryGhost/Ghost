@@ -1,5 +1,5 @@
 import path from 'path';
-import {assertHTML, createDataTransfer, ctrlOrCmd, focusEditor, html, initialize, insertCard} from '../../utils/e2e';
+import {assertHTML, createDataTransfer, ctrlOrCmd, focusEditor, getEditorState, html, initialize, insertCard} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
@@ -424,4 +424,29 @@ test.describe('Gallery card', async () => {
     //     await assertHTML(page, `
     //     `, {ignoreCardContents: true});
     // });
+
+    test('exports all 9 images', async function () {
+        // necessary to check the saved data because the gallery card state is not
+        // directly synchronized with the editor state at time of testing
+        // (it keeps it's own state for easier handling of loading states, etc.)
+
+        await test.step('insert and upload images to gallery card', async () => {
+            const filePaths = Array.from(Array(9).keys()).map(n => path.relative(process.cwd(), __dirname + `/../fixtures/large-image-${n}.png`));
+            const fileChooserPromise = page.waitForEvent('filechooser');
+
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'gallery'});
+            await page.click('[name="placeholder-button"]');
+
+            const fileChooser = await fileChooserPromise;
+            await fileChooser.setFiles(filePaths);
+
+            await expect(page.locator('[data-testid="gallery-image"]')).toHaveCount(9);
+        });
+
+        const editorState = await getEditorState(page);
+
+        expect(editorState.root.children[0].type).toEqual('gallery');
+        expect(editorState.root.children[0].images).toHaveLength(9);
+    });
 });

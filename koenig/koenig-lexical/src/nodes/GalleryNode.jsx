@@ -96,7 +96,7 @@ export class GalleryNode extends BaseGalleryNode {
     // TODO: move to kg-default-nodes?
     setImages(images) {
         const datasetImages = images
-            .slice(0, MAX_IMAGES - 1)
+            .slice(0, MAX_IMAGES)
             .map(image => pick(image, ALLOWED_IMAGE_PROPS));
 
         recalculateImageRows(datasetImages);
@@ -105,7 +105,7 @@ export class GalleryNode extends BaseGalleryNode {
 
     addImages(images) {
         const datasetImages = [...this.images, ...images]
-            .slice(0, MAX_IMAGES - 1)
+            .slice(0, MAX_IMAGES)
             .map(image => pick(image, ALLOWED_IMAGE_PROPS));
 
         recalculateImageRows(datasetImages);

@@ -805,6 +805,105 @@ describe('GalleryNode', function () {
             output.should.match(/height="1800"/);
         }));
 
+        it('renders all 9 images in a 3x3 grid', editorTest(function () {
+            const galleryNode = $createGalleryNode({
+                type: 'gallery',
+                version: 1,
+                images: [
+                    {
+                        row: 0,
+                        src: '/content/images/2018/08/NatGeo01-1.jpg',
+                        width: 3200,
+                        height: 1600,
+                        fileName: 'NatGeo01-1.jpg'
+                    },
+                    {
+                        row: 0,
+                        src: '/content/images/2018/08/NatGeo01-2.jpg',
+                        width: 3200,
+                        height: 1600,
+                        fileName: 'NatGeo01-2.jpg'
+                    },
+                    {
+                        row: 0,
+                        src: '/content/images/2018/08/NatGeo01-3.jpg',
+                        width: 3200,
+                        height: 1600,
+                        fileName: 'NatGeo01-3.jpg'
+                    },
+                    {
+                        row: 1,
+                        src: '/content/images/2018/08/NatGeo01-4.jpg',
+                        width: 3200,
+                        height: 1600,
+                        fileName: 'NatGeo01-4.jpg'
+                    },
+                    {
+                        row: 1,
+                        src: '/content/images/2018/08/NatGeo01-5.jpg',
+                        width: 3200,
+                        height: 1600,
+                        fileName: 'NatGeo01-5.jpg'
+                    },
+                    {
+                        row: 1,
+                        src: '/content/images/2018/08/NatGeo01-6.jpg',
+                        width: 3200,
+                        height: 1600,
+                        fileName: 'NatGeo01-6.jpg'
+                    },
+                    {
+                        row: 2,
+                        src: '/content/images/2018/08/NatGeo01-7.jpg',
+                        width: 3200,
+                        height: 1600,
+                        fileName: 'NatGeo01-7.jpg'
+                    },
+                    {
+                        row: 2,
+                        src: '/content/images/2018/08/NatGeo01-8.jpg',
+                        width: 3200,
+                        height: 1600,
+                        fileName: 'NatGeo01-8.jpg'
+                    },
+                    {
+                        row: 2,
+                        src: '/content/images/2018/08/NatGeo01-9.jpg',
+                        width: 3200,
+                        height: 1600,
+                        fileName: 'NatGeo01-9.jpg'
+                    }
+                ],
+                caption: ''
+            });
+
+            // skip srcset
+            delete exportOptions.imageOptimization.contentImageSizes;
+            const {element} = galleryNode.exportDOM(exportOptions);
+
+            element.outerHTML.should.prettifyTo(html`
+                <figure class="kg-card kg-gallery-card kg-width-wide">
+                    <div class="kg-gallery-container">
+                        <div class="kg-gallery-row">
+                            <div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo01-1.jpg" width="2000" height="1000" loading="lazy" alt="" /></div>
+                            <div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo01-2.jpg" width="2000" height="1000" loading="lazy" alt="" /></div>
+                            <div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo01-3.jpg" width="2000" height="1000" loading="lazy" alt="" /></div>
+                        </div>
+                        <div class="kg-gallery-row">
+                            <div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo01-4.jpg" width="2000" height="1000" loading="lazy" alt="" /></div>
+                            <div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo01-5.jpg" width="2000" height="1000" loading="lazy" alt="" /></div>
+                            <div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo01-6.jpg" width="2000" height="1000" loading="lazy" alt="" /></div>
+                        </div>
+                        <div class="kg-gallery-row">
+                            <div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo01-7.jpg" width="2000" height="1000" loading="lazy" alt="" /></div>
+                            <div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo01-8.jpg" width="2000" height="1000" loading="lazy" alt="" /></div>
+                            <div class="kg-gallery-image"><img src="/content/images/2018/08/NatGeo01-9.jpg" width="2000" height="1000" loading="lazy" alt="" /></div>
+                        </div>
+                    </div>
+                </figure>
+            `);
+        }));
+
         describe('srcset', function () {
             it('is included when image src is relative or Unsplash', editorTest(function () {
                 const galleryNode = $createGalleryNode({
