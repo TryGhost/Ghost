@@ -4,35 +4,47 @@ import CloseButton from '../common/CloseButton';
 import {clearURLParams} from '../../utils/notifications';
 import LoadingPage from './LoadingPage';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark-fill.svg';
+import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
 
 export const RecommendationsPageStyles = `
     .gh-portal-recommendation-item .gh-portal-list-detail {
         padding: 4px 24px 4px 0px;
     }
 
-  .gh-portal-recommendation-item-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-  }
+    .gh-portal-recommendation-item-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+    }
 
-  .gh-portal-recommendation-item-favicon {
-    width: 20px;
-    height: 20px;
-    border-radius: 3px;
-  }
+    .gh-portal-recommendations-loading-container {
+        display: block;
+        position: relative;
+        width: 38px;
+        height: 38px;
+    }
 
-  .gh-portal-recommendations-header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 20px;
-  }
+    .gh-portal-recommendations-loading-container .gh-portal-loadingicon {
+        top: 3.5px;
+    }
 
-  .gh-portal-recommendations-description {
-    text-align: center;
-  }
+    .gh-portal-recommendation-item-favicon {
+        width: 20px;
+        height: 20px;
+        border-radius: 3px;
+    }
+
+    .gh-portal-recommendations-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .gh-portal-recommendations-description {
+        text-align: center;
+    }
 `;
 
 // Fisher-Yates shuffle
@@ -81,6 +93,7 @@ const RecommendationItem = (recommendation) => {
     const {title, url, reason, favicon, one_click_subscribe: oneClickSubscribe, featured_image: featuredImage} = recommendation;
     const allowOneClickSubscribe = member && oneClickSubscribe;
     const [subscribed, setSubscribed] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const visitHandler = useCallback(() => {
         // Open url in a new tab
@@ -89,6 +102,7 @@ const RecommendationItem = (recommendation) => {
 
     const oneClickSubscribeHandler = useCallback(async () => {
         try {
+            setLoading(true);
             await onAction('oneClickSubscribe', {
                 siteUrl: url,
                 throwErrors: true
@@ -101,15 +115,19 @@ const RecommendationItem = (recommendation) => {
             // Trigger a visit
             openTab(signupUrl);
         }
+        setLoading(false);
     }, [setSubscribed, url]);
 
     const clickHandler = useCallback((e) => {
+        if (loading) {
+            return;
+        }
         if (allowOneClickSubscribe) {
             oneClickSubscribeHandler(e);
         } else {
             visitHandler(e);
         }
-    }, [allowOneClickSubscribe, oneClickSubscribeHandler, visitHandler]);
+    }, [loading, allowOneClickSubscribe, oneClickSubscribeHandler, visitHandler]);
 
     return (
         <section className="gh-portal-recommendation-item">
@@ -122,7 +140,8 @@ const RecommendationItem = (recommendation) => {
             </div>
             <div>
                 {subscribed && <CheckmarkIcon className='gh-portal-checkmark-icon' alt='' />}
-                {!subscribed && <button type="button" className="gh-portal-btn gh-portal-btn-list" onClick={clickHandler}>{allowOneClickSubscribe ? t('Subscribe') : t('Visit')}</button>}
+                {!subscribed && loading && <span className='gh-portal-recommendations-loading-container'><LoaderIcon className={'gh-portal-loadingicon dark'} /></span>}
+                {!subscribed && !loading && <button type="button" className="gh-portal-btn gh-portal-btn-list" onClick={clickHandler}>{allowOneClickSubscribe ? t('Subscribe') : t('Visit')}</button>}
             </div>
         </section>
     );
