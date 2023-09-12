@@ -35,7 +35,7 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
 
     if (requests.some(request => request.isLoading)) {
         return (
-            <div style={{
+            <div className='gh-loading-orb-container' style={{
                 width: '100vw',
                 height: '100vh',
                 display: 'flex',
@@ -43,7 +43,7 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
                 justifyContent: 'center',
                 paddingBottom: '8vh'
             }}>
-                <video autoPlay={true} height="100" preload="metadata" style={{
+                <video autoPlay={true} className='gh-loading-orb' height="100" preload="metadata" style={{
                     width: '100px',
                     height: '100px'
                 }} width="100" loop muted playsInline>
