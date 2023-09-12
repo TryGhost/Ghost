@@ -67,7 +67,7 @@ const Table: React.FC<TableProps> = ({children, borderTop, hint, hintSeparator, 
 
     return (
         <>
-            <div className='w-full overflow-x-scroll'>
+            <div className='w-full overflow-x-auto'>
                 {pageTitle && <Heading>{pageTitle}</Heading>}
                 {!isLoading && <table ref={table} className={tableClasses}>
                     <tbody>

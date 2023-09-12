@@ -1,7 +1,7 @@
 import React from 'react';
 
 import SettingValue from './SettingValue';
-import {ISettingValue} from './SettingValue';
+import {SettingValueProps} from './SettingValue';
 
 interface ISettingGroupContent {
     columns?: 1 | 2;
@@ -9,7 +9,7 @@ interface ISettingGroupContent {
     /**
      * Use this array to display setting values with standard formatting in the content area of a setting group
      */
-    values?: Array<ISettingValue>;
+    values?: Array<SettingValueProps>;
     children?: React.ReactNode;
     className?: string;
 }

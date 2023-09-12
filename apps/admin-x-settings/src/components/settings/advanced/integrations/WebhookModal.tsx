@@ -112,7 +112,7 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
                     onKeyDown={() => clearError('target_url')}
                 />
                 <TextField
-                    placeholder='Psst...'
+                    placeholder='https://example.com'
                     title='Secret'
                     value={formState.secret || undefined}
                     onChange={e => updateForm(state => ({...state, secret: e.target.value}))}

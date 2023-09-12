@@ -74,3 +74,12 @@ html, body, #root {
 .dark .gh-loading-orb {
     filter: invert(100%);
 }
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome */
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
