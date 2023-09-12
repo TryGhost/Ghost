@@ -117,7 +117,8 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             />;
         }
 
-        const unSelectedIconColorClass = 'text-grey-500';
+        const selectedIconColorClass = 'text-black dark:text-green';
+        const unSelectedIconColorClass = 'text-grey-500 dark:text-grey-600';
         const toolbarRight = deviceSelector && (
             <ButtonGroup
                 buttons={[
@@ -127,7 +128,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                         hideLabel: true,
                         link: true,
                         size: 'sm',
-                        iconColorClass: (view === 'desktop' ? 'text-black' : unSelectedIconColorClass),
+                        iconColorClass: (view === 'desktop' ? selectedIconColorClass : unSelectedIconColorClass),
                         onClick: onSelectDesktopView || (() => {
                             setView('desktop');
                         })
@@ -138,7 +139,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                         hideLabel: true,
                         link: true,
                         size: 'sm',
-                        iconColorClass: (view === 'mobile' ? 'text-black' : unSelectedIconColorClass),
+                        iconColorClass: (view === 'mobile' ? selectedIconColorClass : unSelectedIconColorClass),
                         onClick: onSelectMobileView || (() => {
                             setView('mobile');
                         })
@@ -149,9 +150,9 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
 
         let previewBgClass = '';
         if (previewBgColor === 'grey') {
-            previewBgClass = 'bg-grey-50';
+            previewBgClass = 'bg-grey-50 dark:bg-black';
         } else if (previewBgColor === 'greygradient') {
-            previewBgClass = 'bg-gradient-to-tr from-white to-[#f9f9fa]';
+            previewBgClass = 'bg-gradient-to-tr from-white to-[#f9f9fa] dark:from-grey-950 dark:to-black';
         }
 
         const containerClasses = clsx(
@@ -216,7 +217,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                     {preview}
                 </div>
                 {sidebar &&
-                    <div className='relative flex h-full w-full flex-col border-l border-grey-100 md:w-auto md:basis-[400px]'>
+                    <div className='relative flex h-full w-full flex-col border-l border-grey-100 dark:border-grey-900 md:w-auto md:basis-[400px]'>
                         {sidebarHeader ? sidebarHeader : (
                             <div className='flex max-h-[74px] items-center justify-between gap-3 px-7 py-5'>
                                 <Heading level={titleHeadingLevel}>{title}</Heading>

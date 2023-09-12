@@ -11,6 +11,7 @@ import Radio from '../../../admin-x-ds/global/form/Radio';
 import React, {useEffect, useRef, useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
+import TextArea from '../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import useFeatureFlag from '../../../hooks/useFeatureFlag';
@@ -57,8 +58,8 @@ const RoleSelector: React.FC<UserDetailProps> = ({user, setUserData}) => {
         return (
             <>
                 <Heading level={6}>Role</Heading>
-                <div className='flex h-[295px] flex-col items-center justify-center gap-3 bg-grey-75 px-10 py-20 text-center text-sm text-grey-800'>
-                    <Icon colorClass='text-grey-800' name='crown' size='lg' />
+                <div className='flex h-[295px] flex-col items-center justify-center gap-3 bg-grey-75 px-10 py-20 text-center text-sm text-grey-800 dark:bg-grey-950 dark:text-white'>
+                    <Icon colorClass='text-grey-800 dark:text-white' name='crown' size='lg' />
                     This user is the owner of the site. To change their role, you need to transfer the ownership first.
                 </div>
             </>
@@ -190,10 +191,10 @@ const DetailsInputs: React.FC<UserDetailProps> = ({errors, validators, user, set
                     setUserData?.({...user, twitter: e.target.value});
                 }}
             />
-            <TextField
-                hint="Recommended: 200 characters."
+            <TextArea
+                hint={<>Recommended: 200 characters. You&lsquo;ve used <span className='font-bold'>{user.bio?.length || 0}</span></>}
                 title="Bio"
-                value={user.bio}
+                value={user.bio || ''}
                 onChange={(e) => {
                     setUserData?.({...user, bio: e.target.value});
                 }}
@@ -674,7 +675,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                 if (error) {
                     showToast({
                         type: 'pageError',
-                        message: 'Can\'t save user! One or more fields have errors, please doublecheck you filled all mandatory fields'
+                        message: 'Can\'t save user, please double check that you\'ve filled in all mandatory fields.'
                     });
                     setSaveState('');
                     return;

@@ -153,6 +153,13 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, childr
     const [yScroll, setYScroll] = useState(0);
     const [scrolledRoute, setScrolledRoute] = useState<string>('');
 
+    useEffect(() => {
+        // Preload all the modals after initial render to avoid a delay when opening them
+        setTimeout(() => {
+            Object.values(modalPaths).forEach(modal => modal());
+        }, 1000);
+    }, []);
+
     const updateRoute = useCallback((to: string | InternalLink | ExternalLink) => {
         const options = typeof to === 'string' ? {route: to} : to;
 

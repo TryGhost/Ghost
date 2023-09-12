@@ -45,7 +45,7 @@ module.exports = function (Bookshelf) {
             case 'findOne':
                 return baseOptions.concat(extraOptions, ['columns', 'require', 'mongoTransformer']);
             case 'findAll':
-                return baseOptions.concat(extraOptions, ['filter', 'columns', 'mongoTransformer', 'page', 'limit']);
+                return baseOptions.concat(extraOptions, ['filter', 'columns', 'mongoTransformer']);
             case 'findPage':
                 return baseOptions.concat(extraOptions, ['filter', 'order', 'autoOrder', 'page', 'limit', 'columns', 'mongoTransformer']);
             default:

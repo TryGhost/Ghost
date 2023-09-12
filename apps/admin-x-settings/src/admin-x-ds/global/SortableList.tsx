@@ -34,7 +34,7 @@ const DefaultContainer: React.FC<SortableItemContainerProps> = ({
     <div
         ref={setRef}
         className={clsx(
-            'group flex w-full items-center gap-3 bg-white py-1',
+            'group flex w-full items-center gap-3 bg-white py-1 dark:bg-black',
             separator && 'border-b border-grey-200',
             isDragging && 'opacity-75'
         )}

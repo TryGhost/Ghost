@@ -182,7 +182,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         </div>;
 
     return (<>
-        <PageHeader containerClassName='bg-white' left={left} right={right} />
+        <PageHeader containerClassName='bg-white dark:bg-black' left={left} right={right} />
         <div className='px-[8vmin] md:hidden'>
             <TabView
                 border={false}

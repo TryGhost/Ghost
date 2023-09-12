@@ -121,7 +121,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
             if (Object.values(validators).filter(validator => validator()).length) {
                 showToast({
                     type: 'pageError',
-                    message: 'Can\'t save tier! One or more fields have errors, please doublecheck you filled all mandatory fields'
+                    message: 'Can\'t save tier, please double check that you\'ve filled in all mandatory fields.'
                 });
                 return;
             }
@@ -230,7 +230,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         />
                     </div>
                     <div className="relative mt-0.5 flex items-center gap-3">
-                        <Icon name='check' size='sm' />
+                        <Icon className='dark:text-white' name='check' size='sm' />
                         <TextField
                             className='grow'
                             containerClassName='w-100'

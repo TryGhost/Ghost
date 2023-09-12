@@ -10,7 +10,7 @@ import useRouting from '../../../../hooks/useRouting';
 import {ReactComponent as ArrowRightIcon} from '../../../../admin-x-ds/assets/icons/arrow-right.svg';
 import {ReactComponent as Icon} from '../../../../assets/icons/zapier.svg';
 import {ReactComponent as Logo} from '../../../../assets/images/zapier-logo.svg';
-import {getGhostPaths} from '../../../../utils/helpers';
+import {getGhostPaths, resolveAsset} from '../../../../utils/helpers';
 import {useBrowseIntegrations} from '../../../../api/integrations';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
@@ -102,9 +102,9 @@ const ZapierModal = NiceModal.create(() => {
                         title={
                             <div className='flex flex-col gap-4 md:flex-row md:items-center'>
                                 <div className='flex shrink-0 flex-nowrap items-center gap-2'>
-                                    <img className='h-8 w-8 object-contain' role='presentation' src={`${adminRoot}${template.ghostImage}`} />
+                                    <img className='h-8 w-8 object-contain dark:invert' role='presentation' src={resolveAsset(template.ghostImage, adminRoot)} />
                                     <ArrowRightIcon className='h-3 w-3' />
-                                    <img className='h-8 w-8 object-contain' role='presentation' src={`${adminRoot}${template.appImage}`} />
+                                    <img className='h-8 w-8 object-contain' role='presentation' src={resolveAsset(template.appImage, adminRoot)} />
                                 </div>
                                 <span className='text-sm'>{template.title}</span>
                             </div>
