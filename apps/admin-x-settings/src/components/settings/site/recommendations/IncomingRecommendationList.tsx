@@ -34,6 +34,15 @@ const IncomingRecommendationItem: React.FC<{mention: Mention}> = ({mention}) => 
                     </div>
                 </div>
             </TableCell>
+            <TableCell className='hidden md:!visible md:!table-cell' onClick={showDetails}>
+                <div className={`flex grow flex-col`}>
+                    {/* If it's 0 */}
+                    {/* <span className="text-grey-500">-</span> */}
+                    {/* If it's more than 0 */}
+                    <span>12</span>
+                    <span className='whitespace-nowrap text-xs text-grey-700'>Subscribers gained</span>
+                </div>
+            </TableCell>
         </TableRow>
     );
 };
