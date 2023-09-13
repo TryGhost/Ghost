@@ -1,18 +1,20 @@
-<div class="gh-stack-item {{if (eq @index 0) "gh-setting-first" "gh-setting"}}">
+<div class="gh-stack-item {{if (eq @index 0) "gh-setting-first" "gh-setting"}} gh-setting-boolean">
     <div class="flex-grow-1">
-        <div class="flex justify-between items-center relative">
-            <span class="gh-setting-title mb0" for={{this.checkboxId}}>
-                {{humanize-setting-key @setting.key}}
-            </span>
-            <div class="for-switch x-small">
+        <div class="flex justify-between items-start relative">
+            <div class="flex flex-column" style="margin-right: 20px;">
+                <span class="gh-setting-title {{if @setting.description '' 'mb0'}}" for={{this.checkboxId}}>
+                    {{humanize-setting-key @setting.key}}
+                </span>
+                {{#if @setting.description}}
+                    <div class="gh-setting-desc">{{truncate @setting.description 100}}</div>
+                {{/if}}
+            </div>
+            <div class="for-switch x-small" style="{{unless @setting.description 'margin-top: -6px;' ''}}">
                 <label for={{this.checkboxId}} class="switch">
                     <input type="checkbox" class="gh-input" id={{this.checkboxId}} checked={{@setting.value}} {{on "input" this.toggleValue}}>
                     <span class="input-toggle-component mt1"></span>
                 </label>
             </div>
         </div>
-        {{#if @setting.description}}
-            <div class="gh-setting-desc" style="margin-top: 1px">{{truncate @setting.description 100}}</div>
-        {{/if}}
     </div>
 </div>
