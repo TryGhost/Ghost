@@ -12,7 +12,7 @@ class CollectionsServiceWrapper {
         const DomainEvents = require('@tryghost/domain-events');
         const postsRepository = require('./PostsRepository').getInstance();
         const models = require('../../models');
-        const collectionsRepositoryInMemory = new BookshelfCollectionsRepository(models.Collection);
+        const collectionsRepositoryInMemory = new BookshelfCollectionsRepository(models.Collection, models.CollectionPost);
 
         const collectionsService = new CollectionsService({
             collectionsRepository: collectionsRepositoryInMemory,
