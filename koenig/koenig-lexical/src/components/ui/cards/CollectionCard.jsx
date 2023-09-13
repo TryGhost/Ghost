@@ -8,6 +8,7 @@ import {DateTime} from 'luxon';
 import {ReactComponent as GridLayoutIcon} from '../../../assets/icons/kg-layout-grid.svg';
 import {ReactComponent as ImgPlaceholderIcon} from '../../../assets/icons/kg-img-placeholder.svg';
 import {ReactComponent as ListLayoutIcon} from '../../../assets/icons/kg-layout-list.svg';
+import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
 import {isEditorEmpty} from '../../../utils/isEditorEmpty';
 
 function PostImage({image, layout, columns, isLoading}) {
@@ -298,6 +299,7 @@ export function CollectionCard({
                     }
                 </SettingsPanel>
             )}
+            {!isEditing && <ReadOnlyOverlay />}
         </>
     );
 }
