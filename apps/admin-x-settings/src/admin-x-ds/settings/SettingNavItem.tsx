@@ -1,6 +1,6 @@
 import React from 'react';
 import clsx from 'clsx';
-import useRouting from '../../hooks/useRouting';
+import {useScrollSectionContext} from '../../hooks/useScrollSection';
 
 interface Props {
     title: React.ReactNode;
@@ -13,11 +13,11 @@ const SettingNavItem: React.FC<Props> = ({
     navid = '',
     onClick = () => {}
 }) => {
-    const {scrolledRoute} = useRouting();
+    const {currentSection} = useScrollSectionContext();
 
     const classNames = clsx(
         'block px-0 py-1 text-sm dark:text-white',
-        (scrolledRoute === navid) && 'font-bold'
+        (currentSection === navid) && 'font-bold'
     );
 
     return (
