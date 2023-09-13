@@ -144,7 +144,7 @@ module.exports = class BookshelfCollectionsRepository {
             await this.#model.add(data, {
                 transacting: options.transaction
             });
-            const thingsToInsert = collection.posts.map((postId, index) => {
+            const collectionPostsRelations = collection.posts.map((postId, index) => {
                 return {
                     id: (new ObjectID).toHexString(),
                     sort_order: collection.type === 'manual' ? index : 0,
@@ -152,8 +152,8 @@ module.exports = class BookshelfCollectionsRepository {
                     post_id: postId
                 };
             });
-            if (thingsToInsert.length > 0) {
-                await this.#relationModel.query().insert(thingsToInsert).transacting(options.transaction);
+            if (collectionPostsRelations.length > 0) {
+                await this.#relationModel.query().insert(collectionPostsRelations).transacting(options.transaction);
             }
         } else {
             await this.#model.edit(data, {
@@ -161,7 +161,7 @@ module.exports = class BookshelfCollectionsRepository {
                 transacting: options.transaction
             });
 
-            const things = collection.posts.map((postId, index) => {
+            const collectionPostsRelations = collection.posts.map((postId, index) => {
                 return {
                     id: (new ObjectID).toHexString(),
                     sort_order: collection.type === 'manual' ? index : 0,
@@ -170,7 +170,7 @@ module.exports = class BookshelfCollectionsRepository {
                 };
             });
 
-            const thingsToDelete = [];
+            const collectionPostRelationsToDeleteIds = [];
 
             if (collection.type === 'manual') {
                 await this.#relationModel.query().delete().where('collection_id', collection.id).transacting(options.transaction);
@@ -178,24 +178,24 @@ module.exports = class BookshelfCollectionsRepository {
                 const existingRelations = existing.toJSON().collectionPosts;
 
                 for (const existingRelation of existingRelations) {
-                    const found = things.find((thing) => {
+                    const found = collectionPostsRelations.find((thing) => {
                         return thing.post_id === existingRelation.post_id;
                     });
                     if (found) {
                         found.id = null;
                     } else {
-                        thingsToDelete.push(existingRelation.id);
+                        collectionPostRelationsToDeleteIds.push(existingRelation.id);
                     }
                 }
             }
 
-            const thingsToInsert = things.filter(thing => thing.id !== null);
+            const missingCollectionPostsRelations = collectionPostsRelations.filter(thing => thing.id !== null);
 
-            if (thingsToInsert.length > 0) {
-                await this.#relationModel.query().insert(thingsToInsert).transacting(options.transaction);
+            if (missingCollectionPostsRelations.length > 0) {
+                await this.#relationModel.query().insert(missingCollectionPostsRelations).transacting(options.transaction);
             }
-            if (thingsToDelete.length > 0) {
-                await this.#relationModel.query().delete().whereIn('id', thingsToDelete).transacting(options.transaction);
+            if (collectionPostRelationsToDeleteIds.length > 0) {
+                await this.#relationModel.query().delete().whereIn('id', collectionPostRelationsToDeleteIds).transacting(options.transaction);
             }
         }
     }
