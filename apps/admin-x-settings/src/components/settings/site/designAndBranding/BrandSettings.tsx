@@ -74,6 +74,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                     <div className='flex gap-3'>
                         <ImageUpload
                             deleteButtonClassName='!top-1 !right-1'
+                            editButtonClassName='!top-1 !right-1'
                             height={values.icon ? '66px' : '36px'}
                             id='logo'
                             imageBWCheckedBg={true}
