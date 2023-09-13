@@ -9,7 +9,7 @@
                     <div class="gh-setting-desc">{{truncate @setting.description 100}}</div>
                 {{/if}}
             </div>
-            <div class="for-switch x-small" style="{{unless @setting.description 'margin-top: -6px;' ''}}">
+            <div class="for-switch x-small" style={{html-safe (concat "margin-top: " (unless @setting.description '-6px' '0') ";")}}>
                 <label for={{this.checkboxId}} class="switch">
                     <input type="checkbox" class="gh-input" id={{this.checkboxId}} checked={{@setting.value}} {{on "input" this.toggleValue}}>
                     <span class="input-toggle-component mt1"></span>
