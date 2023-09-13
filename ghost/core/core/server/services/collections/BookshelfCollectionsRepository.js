@@ -104,10 +104,6 @@ module.exports = class BookshelfCollectionsRepository {
      * @returns {Promise<void>}
      */
     async save(collection, options = {}) {
-        if (collection.deleted) {
-            await this.#model.destroy({id: collection.id});
-            return;
-        }
         if (!options.transaction) {
             return this.createTransaction((transaction) => {
                 return this.save(collection, {
@@ -116,6 +112,13 @@ module.exports = class BookshelfCollectionsRepository {
                 });
             });
         }
+
+        if (collection.deleted) {
+            await this.#relationModel.query().delete().where('collection_id', collection.id).transacting(options.transaction);
+            await this.#model.destroy({id: collection.id, transaction: options.transaction});
+            return;
+        }
+
         const data = {
             id: collection.id,
             slug: collection.slug,
