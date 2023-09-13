@@ -124,6 +124,7 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
                     }
 
                     <MultiSelect
+                        canCreate={true}
                         hint='Will be applied to all members signing up via this form'
                         options={labelOptions}
                         placeholder='Pick one or more labels (optional)'

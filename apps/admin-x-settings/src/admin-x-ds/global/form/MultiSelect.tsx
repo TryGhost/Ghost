@@ -1,3 +1,4 @@
+import CreatableSelect from 'react-select/creatable';
 import Heading from '../Heading';
 import Hint from '../Hint';
 import React, {useId, useMemo} from 'react';
@@ -20,7 +21,8 @@ interface MultiSelectProps {
     placeholder?: string;
     color?: MultiSelectColor
     hint?: string;
-    onChange: (selected: MultiValue<MultiSelectOption>) => void
+    onChange: (selected: MultiValue<MultiSelectOption>) => void;
+    canCreate?: boolean;
 }
 
 const multiValueColor = (color?: MultiSelectColor) => {
@@ -60,6 +62,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     options,
     values,
     onChange,
+    canCreate = false,
     ...props
 }) => {
     const id = useId();
@@ -84,30 +87,58 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     return (
         <div className='flex flex-col'>
             {title && <Heading htmlFor={id} grey useLabelTag>{title}</Heading>}
-            <ReactSelect
-                classNames={{
-                    menuList: () => 'z-50',
-                    valueContainer: () => customClasses.valueContainer,
-                    control: () => customClasses.control,
-                    placeholder: () => customClasses.placeHolder,
-                    menu: () => customClasses.menu,
-                    option: () => customClasses.option,
-                    multiValue: ({data}) => customClasses.multiValue(data.color),
-                    noOptionsMessage: () => customClasses.noOptionsMessage,
-                    groupHeading: () => customClasses.groupHeading
-                }}
-                closeMenuOnSelect={false}
-                components={{DropdownIndicator: dropdownIndicatorComponent, Option}}
-                inputId={id}
-                isClearable={false}
-                options={options}
-                placeholder={placeholder ? placeholder : ''}
-                value={values}
-                isMulti
-                unstyled
-                onChange={onChange}
-                {...props}
-            />
+            {
+                canCreate ?
+                    <CreatableSelect
+                        classNames={{
+                            menuList: () => 'z-50',
+                            valueContainer: () => customClasses.valueContainer,
+                            control: () => customClasses.control,
+                            placeholder: () => customClasses.placeHolder,
+                            menu: () => customClasses.menu,
+                            option: () => customClasses.option,
+                            multiValue: ({data}) => customClasses.multiValue(data.color),
+                            noOptionsMessage: () => customClasses.noOptionsMessage,
+                            groupHeading: () => customClasses.groupHeading
+                        }}
+                        closeMenuOnSelect={false}
+                        components={{DropdownIndicator: dropdownIndicatorComponent, Option}}
+                        inputId={id}
+                        isClearable={false}
+                        options={options}
+                        placeholder={placeholder ? placeholder : ''}
+                        value={values}
+                        isMulti
+                        unstyled
+                        onChange={onChange}
+                        {...props}
+                    />
+                    :
+                    <ReactSelect
+                        classNames={{
+                            menuList: () => 'z-50',
+                            valueContainer: () => customClasses.valueContainer,
+                            control: () => customClasses.control,
+                            placeholder: () => customClasses.placeHolder,
+                            menu: () => customClasses.menu,
+                            option: () => customClasses.option,
+                            multiValue: ({data}) => customClasses.multiValue(data.color),
+                            noOptionsMessage: () => customClasses.noOptionsMessage,
+                            groupHeading: () => customClasses.groupHeading
+                        }}
+                        closeMenuOnSelect={false}
+                        components={{DropdownIndicator: dropdownIndicatorComponent, Option}}
+                        inputId={id}
+                        isClearable={false}
+                        options={options}
+                        placeholder={placeholder ? placeholder : ''}
+                        value={values}
+                        isMulti
+                        unstyled
+                        onChange={onChange}
+                        {...props}
+                    />
+            }
             {hint && <Hint color={error ? 'red' : ''}>{hint}</Hint>}
         </div>
     );
