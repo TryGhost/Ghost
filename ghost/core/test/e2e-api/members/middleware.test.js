@@ -8,6 +8,7 @@ let membersAgent;
 const memberMatcher = (newslettersCount) => {
     return {
         uuid: anyUuid,
+        // @NOTE: check if this field is even needed? it differs to the output in the other matcher
         created_at: anyISODateTime,
         newsletters: new Array(newslettersCount).fill(
             {
@@ -17,8 +18,7 @@ const memberMatcher = (newslettersCount) => {
     };
 };
 
-// @todo: we currently don't serialise the output of /api/member/newsletters/, we should fix this
-const memberMatcherUnserialised = (newslettersCount) => {
+const buildMemberMatcher = (newslettersCount) => {
     return {
         uuid: anyUuid,
         newsletters: new Array(newslettersCount).fill(
@@ -66,7 +66,7 @@ describe('Comments API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag
                 })
-                .matchBodySnapshot(memberMatcherUnserialised(1))
+                .matchBodySnapshot(buildMemberMatcher(1))
                 .expect(({body}) => {
                     body.email.should.eql(member.get('email'));
                     body.enable_comment_notifications.should.eql(false);
@@ -186,7 +186,7 @@ describe('Comments API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag
                 })
-                .matchBodySnapshot(memberMatcherUnserialised(2))
+                .matchBodySnapshot(buildMemberMatcher(2))
                 .expect(({body}) => {
                     body.email.should.eql(member.get('email'));
                     body.enable_comment_notifications.should.eql(true);
