@@ -94,12 +94,14 @@ const HistoryFilter: React.FC<{
             </Popover>
             {userId ?
                 <Button label='Clear search' link onClick={() => updateRoute('history/view')} /> :
-                <MultiSelect
-                    options={users.map(user => ({label: user.name, value: user.id}))}
-                    placeholder='Search staff'
-                    values={[]}
-                    onChange={([option]) => updateRoute(`history/view/${option.value}`)}
-                />
+                <div className='w-[200px]'>
+                    <MultiSelect
+                        options={users.map(user => ({label: user.name, value: user.id}))}
+                        placeholder='Search staff'
+                        values={[]}
+                        onChange={([option]) => updateRoute(`history/view/${option.value}`)}
+                    />
+                </div>
             }
         </div>
     );
