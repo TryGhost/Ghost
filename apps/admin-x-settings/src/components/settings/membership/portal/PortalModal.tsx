@@ -142,7 +142,8 @@ const PortalModal: React.FC = () => {
         updateTier={updateTier}
     />;
     const preview = <PortalPreview
-        localSettings={formState.settings} localTiers={formState.tiers}
+        localSettings={formState.settings}
+        localTiers={formState.tiers}
         selectedTab={selectedPreviewTab}
     />;
 

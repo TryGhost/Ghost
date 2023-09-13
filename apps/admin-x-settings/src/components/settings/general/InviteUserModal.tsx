@@ -13,6 +13,7 @@ import {useEffect, useRef, useState} from 'react';
 type RoleType = 'administrator' | 'editor' | 'author' | 'contributor';
 
 const InviteUserModal = NiceModal.create(() => {
+    const modal = NiceModal.useModal();
     const rolesQuery = useBrowseRoles();
     const assignableRolesQuery = useBrowseRoles({
         searchParams: {limit: 'all', permissions: 'assign'}
@@ -108,6 +109,9 @@ const InviteUserModal = NiceModal.create(() => {
                 message: `Invitation successfully sent to ${email}`,
                 type: 'success'
             });
+
+            modal.remove();
+            updateRoute('users');
         } catch (e) {
             setSaveState('error');
 

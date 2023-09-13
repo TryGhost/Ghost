@@ -75,6 +75,7 @@ const ZapierModal = NiceModal.create(() => {
             testId='zapier-modal'
             title=''
             onOk={() => {
+                updateRoute('integrations');
                 modal.remove();
             }}
         >

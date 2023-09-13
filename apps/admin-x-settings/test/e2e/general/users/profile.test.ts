@@ -126,7 +126,7 @@ test.describe('User profile', async () => {
 
         const wrapper = section.getByTestId('owner-user');
         await wrapper.hover();
-        await wrapper.getByRole('button', {name: 'Edit'}).click();
+        await wrapper.getByRole('button', {name: 'View profile'}).click();
 
         // Upload profile picture
 

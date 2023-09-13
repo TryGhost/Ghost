@@ -1,38 +1,66 @@
 import AppContext from '../../AppContext';
-import {useContext, useState, useEffect, useCallback} from 'react';
+import {useContext, useState, useEffect, useCallback, useMemo} from 'react';
 import CloseButton from '../common/CloseButton';
 import {clearURLParams} from '../../utils/notifications';
 import LoadingPage from './LoadingPage';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark-fill.svg';
+import {ReactComponent as ArrowIcon} from '../../images/icons/arrow-top-right.svg';
+import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
+import {getRefDomain} from '../../utils/helpers';
 
 export const RecommendationsPageStyles = `
     .gh-portal-recommendation-item .gh-portal-list-detail {
         padding: 4px 24px 4px 0px;
     }
 
-  .gh-portal-recommendation-item-header {
+    .gh-portal-recommendation-item-header {
     display: flex;
     align-items: center;
     gap: 8px;
     cursor: pointer;
-  }
+    }
 
-  .gh-portal-recommendation-item-favicon {
+    .gh-portal-recommendation-item-favicon {
     width: 20px;
     height: 20px;
     border-radius: 3px;
-  }
+    }
 
-  .gh-portal-recommendations-header {
+    .gh-portal-recommendations-header {
     display: flex;
     flex-direction: column;
     align-items: center;
     margin-bottom: 20px;
-  }
+    }
 
-  .gh-portal-recommendations-description {
+    .gh-portal-recommendations-description {
     text-align: center;
-  }
+    }
+
+    .gh-portal-recommendation-item .gh-portal-list-detail {
+    transition: 0.2s ease-in-out opacity;
+    }
+
+    .gh-portal-recommendation-item:hover .gh-portal-list-detail {
+    cursor: pointer;
+    opacity: 0.8;
+    }
+
+    .gh-portal-recommendation-arrow-icon {
+    height: 12px;
+    opacity: 0;
+    margin-left: -6px;
+    transition: 0.2s ease-in opacity;
+    }
+
+    .gh-portal-recommendation-arrow-icon path {
+    stroke-width: 3px;
+    stroke: #555;
+    }
+
+    .gh-portal-recommendation-item .gh-portal-list-detail:hover .gh-portal-recommendation-arrow-icon {
+    opacity: 0.8;
+    }
 `;
 
 // Fisher-Yates shuffle
@@ -66,73 +94,91 @@ const RecommendationIcon = ({title, favicon, featuredImage}) => {
     return (<img className="gh-portal-recommendation-item-favicon" src={icon} alt={title} onError={hideIcon} />);
 };
 
-const prepareTab = () => {
-    return window.open('', '_blank');
-};
-
-const openTab = (tab, url) => {
+const openTab = (url) => {
+    const tab = window.open(url, '_blank');
     if (tab) {
-        tab.location.href = url;
         tab.focus();
     } else {
-        // Probably failed to create a tab
+        // Safari fix after async operation / failed to create a new tab
         window.location.href = url;
     }
 };
 
 const RecommendationItem = (recommendation) => {
-    const {t, onAction, member} = useContext(AppContext);
+    const {t, onAction, member, site} = useContext(AppContext);
     const {title, url, reason, favicon, one_click_subscribe: oneClickSubscribe, featured_image: featuredImage} = recommendation;
     const allowOneClickSubscribe = member && oneClickSubscribe;
     const [subscribed, setSubscribed] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const outboundLinkTagging = site.outbound_link_tagging ?? false;
+
+    const refUrl = useMemo(() => {
+        if (!outboundLinkTagging) {
+            return url;
+        }
+        try {
+            const ref = new URL(url);
+
+            if (ref.searchParams.has('ref') || ref.searchParams.has('utm_source') || ref.searchParams.has('source')) {
+                // Don't overwrite + keep existing source attribution
+                return url;
+            }
+            ref.searchParams.set('ref', getRefDomain());
+            return ref.toString();
+        } catch (_) {
+            return url;
+        }
+    }, [url, outboundLinkTagging]);
 
     const visitHandler = useCallback(() => {
         // Open url in a new tab
-        const tab = window.open(url, '_blank');
-        tab?.focus();
-    }, [url]);
+        openTab(refUrl);
+    }, [refUrl]);
 
     const oneClickSubscribeHandler = useCallback(async () => {
-        // We need to open a tab immediately, otherwise it is not possible to open a tab in case of errors later
-        // after the async operation is done (browser blocks it outside of user interaction)
-        const tab = prepareTab();
-
         try {
+            setLoading(true);
             await onAction('oneClickSubscribe', {
                 siteUrl: url,
                 throwErrors: true
             });
             setSubscribed(true);
-            tab.close();
         } catch (_) {
             // Open portal signup page
-            const signupUrl = new URL('#/portal/signup', url);
+            const signupUrl = new URL('#/portal/signup', refUrl);
 
             // Trigger a visit
-            openTab(tab, signupUrl);
+            openTab(signupUrl);
         }
-    }, [setSubscribed, url]);
+        setLoading(false);
+    }, [setSubscribed, url, refUrl]);
 
     const clickHandler = useCallback((e) => {
+        if (loading) {
+            return;
+        }
         if (allowOneClickSubscribe) {
             oneClickSubscribeHandler(e);
         } else {
             visitHandler(e);
         }
-    }, [allowOneClickSubscribe, oneClickSubscribeHandler, visitHandler]);
+    }, [loading, allowOneClickSubscribe, oneClickSubscribeHandler, visitHandler]);
 
     return (
         <section className="gh-portal-recommendation-item">
-            <div className="gh-portal-list-detail gh-portal-list-big">
-                <div className="gh-portal-recommendation-item-header" onClick={visitHandler}>
+            <div className="gh-portal-list-detail gh-portal-list-big" onClick={visitHandler}>
+                <div className="gh-portal-recommendation-item-header">
                     <RecommendationIcon title={title} favicon={favicon} featuredImage={featuredImage} />
                     <h3>{title}</h3>
+                    <ArrowIcon className="gh-portal-recommendation-arrow-icon" />
                 </div>
                 {reason && <p>{reason}</p>}
             </div>
             <div>
                 {subscribed && <CheckmarkIcon className='gh-portal-checkmark-icon' alt='' />}
-                {!subscribed && <button type="button" className="gh-portal-btn gh-portal-btn-list" onClick={clickHandler}>{allowOneClickSubscribe ? t('Subscribe') : t('Visit')}</button>}
+                {!subscribed && loading && <span className='gh-portal-recommendations-loading-container'><LoaderIcon className={'gh-portal-loadingicon dark'} /></span>}
+                {/* {!subscribed && !loading && <button type="button" className="gh-portal-btn gh-portal-btn-list" onClick={clickHandler}>{allowOneClickSubscribe ? t('Subscribe') : t('Visit')}</button>} */}
+                {!subscribed && allowOneClickSubscribe && <button type="button" className="gh-portal-btn gh-portal-btn-list" onClick={clickHandler}>{t('Subscribe')}</button>}
             </div>
         </section>
     );
@@ -172,8 +218,8 @@ const RecommendationsPage = () => {
         };
     }, []);
 
-    const heading = pageData && pageData.signup ? t('You\'re subscribed!') : t('Recommendations');
-    const subheading = t(`Here are a few other sites {{siteTitle}} thinks you may enjoy.`, {siteTitle: title});
+    const heading = pageData && pageData.signup ? t('Welcome to {{siteTitle}}', {siteTitle: title}) : t('Recommendations');
+    const subheading = pageData && pageData.signup ? t('Thanks for subscribing. Here are a few other sites you may enjoy. ') : t('Here are a few other sites you may enjoy.');
 
     if (!recommendationsEnabled) {
         return null;

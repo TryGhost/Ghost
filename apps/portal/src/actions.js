@@ -1,6 +1,6 @@
 import setupGhostApi from './utils/api';
 import {HumanReadableError} from './utils/errors';
-import {createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl} from './utils/helpers';
+import {createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl, getRefDomain} from './utils/helpers';
 
 function switchPage({data, state}) {
     return {
@@ -79,7 +79,7 @@ async function signout({api, state}) {
 
 async function signin({data, api, state}) {
     try {
-        await api.member.sendMagicLink({...data, emailType: 'signin'});
+        await api.member.sendMagicLink({...data, emailType: 'signin', outboundLinkTagging: state.site.outbound_link_tagging});
         return {
             page: 'magiclink',
             lastPage: 'signin'
@@ -100,7 +100,7 @@ async function signup({data, state, api}) {
         let {plan, tierId, cadence, email, name, newsletters, offerId} = data;
 
         if (plan.toLowerCase() === 'free') {
-            await api.member.sendMagicLink({emailType: 'signup', ...data});
+            await api.member.sendMagicLink({emailType: 'signup', ...data, outboundLinkTagging: state.site.outbound_link_tagging});
         } else {
             if (tierId && cadence) {
                 await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId});
@@ -480,13 +480,14 @@ async function oneClickSubscribe({data: {siteUrl}, state}) {
     const {t, member} = state;
 
     const referrerUrl = window.location.href;
-    const referrerSource = window.location.hostname.replace(/^www\./, '');
+    const referrerSource = getRefDomain();
 
     await externalSiteApi.member.sendMagicLink({
         emailType: 'signup',
         name: member.name,
         email: member.email,
         autoRedirect: false,
+        outboundLinkTagging: state.site.outbound_link_tagging,
         customUrlHistory: [
             {
                 time: Date.now(),

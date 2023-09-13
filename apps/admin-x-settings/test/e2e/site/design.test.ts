@@ -81,7 +81,7 @@ test.describe('Design settings', async () => {
 
         await modal.getByLabel('Site description').fill('new description');
         // set timeout of 500ms to wait for the debounce
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(1000);
         await modal.getByRole('button', {name: 'Save'}).click();
 
         expect(lastPreviewRequest.previewHeader).toMatch(/&d=new\+description&/);

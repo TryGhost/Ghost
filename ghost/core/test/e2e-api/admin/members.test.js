@@ -67,10 +67,11 @@ async function getNewsletters() {
 }
 
 const newsletterSnapshot = {
-    id: anyObjectId,
-    uuid: anyUuid,
-    created_at: anyISODateTime,
-    updated_at: anyISODateTime
+    id: anyObjectId
+};
+
+const attributionSnapshot = {
+    id: null
 };
 
 const subscriptionSnapshot = {
@@ -122,6 +123,7 @@ function buildMemberWithIncludesSnapshot(options) {
         uuid: anyUuid,
         created_at: anyISODateTime,
         updated_at: anyISODateTime,
+        attribution: attributionSnapshot,
         newsletters: new Array(options.newsletters).fill(newsletterSnapshot),
         subscriptions: anyArray,
         labels: anyArray
@@ -142,20 +144,29 @@ const memberMatcherShallowIncludes = {
     created_at: anyISODateTime,
     updated_at: anyISODateTime,
     subscriptions: anyArray,
-    labels: anyArray,
-    newsletters: anyArray
+    labels: anyArray
 };
 
-const buildMemberMatcherShallowIncludesWithTiers = (tiersCount) => {
-    let tiers = anyArray;
-    if (tiersCount) {
-        tiers = new Array(tiers).fill(tierMatcher);
+/**
+ *
+ * @param {number} tiersCount
+ * @param {number} newsletterCount
+ * @returns
+ */
+const buildMemberMatcherShallowIncludesWithTiers = (tiersCount, newsletterCount) => {
+    const matcher = {
+        ...memberMatcherShallowIncludes
+    };
+
+    if (tiersCount !== undefined) {
+        matcher.tiers = new Array(tiersCount).fill(tierMatcher);
     }
 
-    return {
-        ...memberMatcherShallowIncludes,
-        tiers
-    };
+    if (newsletterCount !== undefined) {
+        matcher.newsletters = new Array(newsletterCount).fill(newsletterSnapshot);
+    }
+
+    return matcher;
 };
 
 let agent;
@@ -245,7 +256,7 @@ describe('Members API - member attribution', function () {
             .get(`/members/${member.id}/`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -288,7 +299,7 @@ describe('Members API - member attribution', function () {
             .get(`/members/${member.id}/`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -331,7 +342,7 @@ describe('Members API - member attribution', function () {
             .get(`/members/${member.id}/`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -374,7 +385,7 @@ describe('Members API - member attribution', function () {
             .get(`/members/${member.id}/`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -414,7 +425,7 @@ describe('Members API - member attribution', function () {
             .get(`/members/${member.id}/`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -485,7 +496,16 @@ describe('Members API', function () {
             .get('/members/')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(8).fill(memberMatcherShallowIncludes)
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -498,7 +518,7 @@ describe('Members API', function () {
             .get('/members/?filter=label:label-1')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(undefined, 1))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -511,7 +531,11 @@ describe('Members API', function () {
             .get('/members/?filter=signup:' + fixtureManager.get('posts', 0).id)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(3).fill(memberMatcherShallowIncludes)
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -524,7 +548,7 @@ describe('Members API', function () {
             .get('/members/?filter=conversion:' + fixtureManager.get('posts', 0).id)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(undefined, 1))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -537,7 +561,7 @@ describe('Members API', function () {
             .get('/members/?search=member1')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(undefined, 1))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -550,7 +574,13 @@ describe('Members API', function () {
             .get('/members/?filter=status:paid')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(5).fill(memberMatcherShallowIncludes)
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -564,7 +594,12 @@ describe('Members API', function () {
             .get(`/members/?filter=tier_id:[${products.toJSON().id}]`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(4).fill(memberMatcherShallowIncludes)
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -577,7 +612,7 @@ describe('Members API', function () {
             .get(`/members/?filter=name:~'Venkman'`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(undefined, 0))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -590,7 +625,13 @@ describe('Members API', function () {
             .get('/members/?filter=status:paid&include=emailRecipients')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(5).fill(memberMatcherShallowIncludes)
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -608,7 +649,16 @@ describe('Members API', function () {
                 'content-version': anyContentVersion
             })
             .matchBodySnapshot({
-                members: new Array(8).fill(memberMatcherShallowIncludes)
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0)
+                ]
             })
             .expect(({body}) => {
                 const {members} = body;
@@ -624,7 +674,16 @@ describe('Members API', function () {
                 'content-version': anyContentVersion
             })
             .matchBodySnapshot({
-                members: new Array(8).fill(memberMatcherShallowIncludes)
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0)
+                ]
             })
             .expect(({body}) => {
                 const {members} = body;
@@ -637,7 +696,7 @@ describe('Members API', function () {
             .get('members/?search=egg')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: [memberMatcherShallowIncludes]
+                members: [buildMemberMatcherShallowIncludesWithTiers(undefined, 1)]
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -650,7 +709,7 @@ describe('Members API', function () {
             .get('members/?search=MEMBER2')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: [memberMatcherShallowIncludes]
+                members: [buildMemberMatcherShallowIncludesWithTiers(undefined, 1)]
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -663,7 +722,7 @@ describe('Members API', function () {
             .get('members/?search=egon&paid=true')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: [memberMatcherShallowIncludes]
+                members: [buildMemberMatcherShallowIncludesWithTiers(undefined, 1)]
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -691,7 +750,7 @@ describe('Members API', function () {
             .get(`/members/${testUtils.DataGenerator.Content.members[0].id}/`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -704,7 +763,7 @@ describe('Members API', function () {
             .get(`/members/${testUtils.DataGenerator.Content.members[0].id}/?include=email_recipients`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -717,7 +776,7 @@ describe('Members API', function () {
             .get(`/members/${testUtils.DataGenerator.Content.members[0].id}/?include=tiers`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers())
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -741,7 +800,7 @@ describe('Members API', function () {
             .body({members: [member]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 0))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -791,7 +850,7 @@ describe('Members API', function () {
             .body({members: [member]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -813,7 +872,7 @@ describe('Members API', function () {
             .body({members: [memberFailLimit]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -1029,7 +1088,7 @@ describe('Members API', function () {
             .body({members: [initialMember]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -1044,7 +1103,7 @@ describe('Members API', function () {
             .body({members: [compedPayload]})
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(1))
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(1, 1))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -1691,7 +1750,7 @@ describe('Members API', function () {
             .body({members: [memberToChange]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -1723,7 +1782,7 @@ describe('Members API', function () {
             .body({members: [memberChanged]})
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 0))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -1822,7 +1881,7 @@ describe('Members API', function () {
             .body({members: [memberToChange]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -1855,7 +1914,7 @@ describe('Members API', function () {
             .body({members: [memberChanged]})
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -1956,7 +2015,7 @@ describe('Members API', function () {
             .body({members: [memberToCreate]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -2007,7 +2066,7 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     labels: anyArray,
                     subscriptions: [subscriptionSnapshotWithTier],
-                    newsletters: anyArray,
+                    newsletters: new Array(1).fill(newsletterSnapshot),
                     tiers: [tierSnapshot]
                 })
             })
@@ -2028,7 +2087,7 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     labels: anyArray,
                     subscriptions: [subscriptionSnapshotWithTier],
-                    newsletters: anyArray,
+                    newsletters: new Array(1).fill(newsletterSnapshot),
                     tiers: [tierSnapshot]
                 })
             })
@@ -2051,7 +2110,7 @@ describe('Members API', function () {
             .body({members: [member]})
             .expectStatus(201)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -2258,7 +2317,11 @@ describe('Members API', function () {
             .get('/members/?filter=newsletters:weekly-newsletter')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(3).fill(memberMatcherShallowIncludes)
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2)
+                ]
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -2271,7 +2334,16 @@ describe('Members API', function () {
             .get('/members/?include=tiers&filter=tier:default-product')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(8).fill(buildMemberMatcherShallowIncludesWithTiers())
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(1, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(1, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(1, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(1, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(1, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(1, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(1, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(1, 1)
+                ]
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -2562,7 +2634,7 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     subscriptions: anyArray,
                     labels: anyArray,
-                    newsletters: anyArray
+                    newsletters: new Array(0)
                 }]
             })
             .matchHeaderSnapshot({

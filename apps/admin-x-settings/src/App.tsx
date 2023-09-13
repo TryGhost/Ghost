@@ -66,7 +66,7 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, d
                                             </div>
                                         </div>
                                         <div className="relative flex-auto pt-[3vmin] tablet:ml-[300px] tablet:pt-[85px]">
-                                            <div className='pointer-events-none fixed inset-x-0 top-0 z-[5] hidden h-[80px] bg-gradient-to-t from-transparent to-white to-60% dark:to-black tablet:!visible tablet:!block'></div>
+                                            {/* <div className='pointer-events-none fixed inset-x-0 top-0 z-[5] hidden h-[80px] bg-gradient-to-t from-transparent to-white to-60% dark:to-black tablet:!visible tablet:!block'></div> */}
                                             <Settings />
                                         </div>
                                     </div>

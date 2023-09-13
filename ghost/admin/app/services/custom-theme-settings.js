@@ -5,6 +5,8 @@ import {run} from '@ember/runloop';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
+const HIDDEN_SETTING_VALUE = null;
+
 export default class CustomThemeSettingsServices extends Service {
     @service store;
 
@@ -34,7 +36,7 @@ export default class CustomThemeSettingsServices extends Service {
         const keyValue = {};
 
         this.settings.forEach((setting) => {
-            keyValue[setting.key] = setting.value;
+            keyValue[setting.key] = this._isSettingVisible(setting) ? setting.value : HIDDEN_SETTING_VALUE;
         });
 
         return keyValue;
@@ -63,6 +65,8 @@ export default class CustomThemeSettingsServices extends Service {
         const settings = yield this.store.findAll('custom-theme-setting');
         this.settings = settings;
         this.settingGroups = this._buildSettingGroups(settings);
+
+        this.updateSettingsVisibility();
 
         this._hasLoaded = true;
 
@@ -93,8 +97,10 @@ export default class CustomThemeSettingsServices extends Service {
         this.settings.forEach(setting => setting.rollbackAttributes());
     }
 
-    rebuildSettingGroups() {
-        this.settingGroups = this._buildSettingGroups(this.settings);
+    updateSettingsVisibility() {
+        this.settings.forEach((setting) => {
+            setting.visible = this._isSettingVisible(setting);
+        });
     }
 
     _buildSettingGroups(settings) {
@@ -116,15 +122,7 @@ export default class CustomThemeSettingsServices extends Service {
         }
 
         this.KNOWN_GROUPS.forEach((knownGroup) => {
-            const groupSettings = settings
-                .filter(setting => setting.group === knownGroup.key)
-                .filter((setting) => {
-                    if (setting.visibility) {
-                        return nql(setting.visibility).queryJSON(this.keyValueObject);
-                    }
-
-                    return true;
-                });
+            const groupSettings = settings.filter(setting => setting.group === knownGroup.key);
 
             if (groupSettings.length) {
                 groups.push(Object.assign({}, knownGroup, {settings: groupSettings}));
@@ -132,5 +130,15 @@ export default class CustomThemeSettingsServices extends Service {
         });
 
         return groups;
+    }
+
+    _isSettingVisible(setting) {
+        if (!setting.visibility) {
+            return true;
+        }
+
+        const settingsMap = this.settings.reduce((map, {key, value}) => ({...map, [key]: value}), {});
+
+        return nql(setting.visibility).queryJSON(settingsMap);
     }
 }
