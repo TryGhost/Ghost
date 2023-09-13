@@ -36,10 +36,11 @@ const TierCard: React.FC<TierCardProps> = ({tier}) => {
                     <span className='text-xl font-bold tracking-tighter'>{numberWithCommas(currencyToDecimal(tier.monthly_price || 0))}</span>
                     {(tier.monthly_price && tier.monthly_price > 0) && <span className='text-sm text-grey-700'>/month</span>}
                 </div>
-                {tier.trial_days &&
+                {tier.trial_days ?
                     <div className='mb-4 mt-1'>
                         <TrialDaysLabel size='sm' trialDays={tier.trial_days}/>
                     </div>
+                    : ''
                 }
                 <div className='mt-2 line-clamp-2 text-[1.4rem] font-medium'>
                     {tier.description || <span className='opacity-50'>No description</span>}
