@@ -115,7 +115,7 @@ module.exports = class BookshelfCollectionsRepository {
 
         if (collection.deleted) {
             await this.#relationModel.query().delete().where('collection_id', collection.id).transacting(options.transaction);
-            await this.#model.destroy({id: collection.id, transaction: options.transaction});
+            await this.#model.query().delete().where('id', collection.id).transacting(options.transaction);
             return;
         }
 
