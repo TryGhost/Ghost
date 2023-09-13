@@ -79,6 +79,8 @@ describe('Exporter', function () {
                 'posts_tags',
                 'products',
                 'products_benefits',
+                'recommendation_click_events',
+                'recommendation_subscribe_events',
                 'recommendations',
                 'redirects',
                 'roles',
