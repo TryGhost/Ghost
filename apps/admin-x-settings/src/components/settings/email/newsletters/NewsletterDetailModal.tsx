@@ -143,21 +143,21 @@ const Sidebar: React.FC<{
                             checked={newsletter.show_header_icon}
                             direction="rtl"
                             label='Publication icon'
-                            labelStyle='value'
+                            labelStyle='heading'
                             onChange={e => updateNewsletter({show_header_icon: e.target.checked})}
                         />}
                         <Toggle
                             checked={newsletter.show_header_title}
                             direction="rtl"
                             label='Publication title'
-                            labelStyle='value'
+                            labelStyle='heading'
                             onChange={e => updateNewsletter({show_header_title: e.target.checked})}
                         />
                         <Toggle
                             checked={newsletter.show_header_name}
                             direction="rtl"
                             label='Newsletter name'
-                            labelStyle='value'
+                            labelStyle='heading'
                             onChange={e => updateNewsletter({show_header_name: e.target.checked})}
                         />
                     </ToggleGroup>
