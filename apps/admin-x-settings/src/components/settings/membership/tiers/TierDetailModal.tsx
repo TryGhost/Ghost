@@ -202,9 +202,9 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                             </div>
                             <TextField
                                 disabled={!hasFreeTrial}
-                                hint={<>
-                                    Members will be subscribed at full price once the trial ends. <a href="https://ghost.org/" rel="noreferrer" target="_blank">Learn more</a>
-                                </>}
+                                hint={<div className='mt-1'>
+                                    Members will be subscribed at full price once the trial ends. <a className='text-green' href="https://ghost.org/" rel="noreferrer" target="_blank">Learn more</a>
+                                </div>}
                                 placeholder='0'
                                 rightPlaceholder='days'
                                 title='Trial days'
