@@ -5,12 +5,15 @@ import InfiniteScrollListener from '../../../admin-x-ds/global/InfiniteScrollLis
 import List from '../../../admin-x-ds/global/List';
 import ListItem from '../../../admin-x-ds/global/ListItem';
 import Modal from '../../../admin-x-ds/global/modal/Modal';
+import MultiSelect from '../../../admin-x-ds/global/form/MultiSelect';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import Popover from '../../../admin-x-ds/global/Popover';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import ToggleGroup from '../../../admin-x-ds/global/form/ToggleGroup';
 import useRouting from '../../../hooks/useRouting';
+import useStaffUsers from '../../../hooks/useStaffUsers';
 import {Action, getActionTitle, getContextResource, getLinkTarget, isBulkAction, useBrowseActions} from '../../../api/actions';
+import {RoutingModalProps} from '../../providers/RoutingProvider';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
 import {useCallback, useState} from 'react';
 
@@ -62,28 +65,43 @@ const HistoryFilterToggle: React.FC<{
 };
 
 const HistoryFilter: React.FC<{
+    userId?: string;
     excludedEvents: string[];
     excludedResources: string[];
     toggleEventType: (event: string, included: boolean) => void;
     toggleResourceType: (resource: string, included: boolean) => void;
-}> = ({excludedEvents, excludedResources, toggleEventType, toggleResourceType}) => {
+}> = ({userId, excludedEvents, excludedResources, toggleEventType, toggleResourceType}) => {
+    const {updateRoute} = useRouting();
+    const {users} = useStaffUsers();
+
     return (
-        <Popover position='right' trigger={<Button label='Filter' link />}>
-            <div className='flex w-[220px] flex-col gap-8 p-5'>
-                <ToggleGroup>
-                    <HistoryFilterToggle excludedItems={excludedEvents} item='added' label='Added' toggleItem={toggleEventType} />
-                    <HistoryFilterToggle excludedItems={excludedEvents} item='edited' label='Edited' toggleItem={toggleEventType} />
-                    <HistoryFilterToggle excludedItems={excludedEvents} item='deleted' label='Deleted' toggleItem={toggleEventType} />
-                </ToggleGroup>
-                <ToggleGroup>
-                    <HistoryFilterToggle excludedItems={excludedResources} item='post' label='Posts' toggleItem={toggleResourceType} />
-                    <HistoryFilterToggle excludedItems={excludedResources} item='page' label='Pages' toggleItem={toggleResourceType} />
-                    <HistoryFilterToggle excludedItems={excludedResources} item='tag' label='Tags' toggleItem={toggleResourceType} />
-                    <HistoryFilterToggle excludedItems={excludedResources} item='offer,product' label='Tiers & offers' toggleItem={toggleResourceType} />
-                    <HistoryFilterToggle excludedItems={excludedResources} item='api_key,integration,setting,user,webhook' label='Settings & staff' toggleItem={toggleResourceType} />
-                </ToggleGroup>
-            </div>
-        </Popover>
+        <div className='flex items-center gap-4'>
+            <Popover position='right' trigger={<Button label='Filter' link />}>
+                <div className='flex w-[220px] flex-col gap-8 p-5'>
+                    <ToggleGroup>
+                        <HistoryFilterToggle excludedItems={excludedEvents} item='added' label='Added' toggleItem={toggleEventType} />
+                        <HistoryFilterToggle excludedItems={excludedEvents} item='edited' label='Edited' toggleItem={toggleEventType} />
+                        <HistoryFilterToggle excludedItems={excludedEvents} item='deleted' label='Deleted' toggleItem={toggleEventType} />
+                    </ToggleGroup>
+                    <ToggleGroup>
+                        <HistoryFilterToggle excludedItems={excludedResources} item='post' label='Posts' toggleItem={toggleResourceType} />
+                        <HistoryFilterToggle excludedItems={excludedResources} item='page' label='Pages' toggleItem={toggleResourceType} />
+                        <HistoryFilterToggle excludedItems={excludedResources} item='tag' label='Tags' toggleItem={toggleResourceType} />
+                        <HistoryFilterToggle excludedItems={excludedResources} item='offer,product' label='Tiers & offers' toggleItem={toggleResourceType} />
+                        <HistoryFilterToggle excludedItems={excludedResources} item='api_key,integration,setting,user,webhook' label='Settings & staff' toggleItem={toggleResourceType} />
+                    </ToggleGroup>
+                </div>
+            </Popover>
+            {userId ?
+                <Button label='Clear search' link onClick={() => updateRoute('history/view')} /> :
+                <MultiSelect
+                    options={users.map(user => ({label: user.name, value: user.id}))}
+                    placeholder='Search staff'
+                    values={[]}
+                    onChange={([option]) => updateRoute(`history/view/${option.value}`)}
+                />
+            }
+        </div>
     );
 };
 
@@ -131,13 +149,12 @@ const formatDateForFilter = (date: Date) => {
 
 const PAGE_SIZE = 200;
 
-const HistoryModal = NiceModal.create(() => {
+const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
     const modal = useModal();
     const {updateRoute} = useRouting();
 
     const [excludedEvents, setExcludedEvents] = useState<string[]>([]);
     const [excludedResources, setExcludedResources] = useState<string[]>(['label']);
-    const [user] = useState<string>();
 
     const {data, fetchNextPage} = useBrowseActions({
         searchParams: {
@@ -146,12 +163,12 @@ const HistoryModal = NiceModal.create(() => {
             filter: [
                 excludedEvents.length && `event:-[${excludedEvents.join(',')}]`,
                 excludedResources.length && `resource_type:-[${excludedResources.join(',')}]`,
-                user && `actor_id:${user}`
+                params?.user && `actor_id:${params.user}`
             ].filter(Boolean).join('+')
         },
         getNextPageParams: (lastPage, otherParams) => ({
             ...otherParams,
-            filter: [otherParams.filter, `created_at:<'${formatDateForFilter(new Date(lastPage.actions[lastPage.actions.length - 1].created_at))}'`].join('+')
+            filter: [otherParams.filter, lastPage.actions.length && `created_at:<'${formatDateForFilter(new Date(lastPage.actions[lastPage.actions.length - 1].created_at))}'`].join('+')
         }),
         keepPreviousData: true
     });
@@ -183,6 +200,7 @@ const HistoryModal = NiceModal.create(() => {
                 excludedResources={excludedResources}
                 toggleEventType={(event, included) => toggleValue(setExcludedEvents, event, !included)}
                 toggleResourceType={(resource, included) => toggleValue(setExcludedResources, resource, !included)}
+                userId={params?.user}
             />}
             onOk={() => {
                 modal.remove();
