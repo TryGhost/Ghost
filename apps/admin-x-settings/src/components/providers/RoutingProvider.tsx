@@ -72,6 +72,7 @@ const modalPaths: {[key: string]: () => Promise<{default: React.FC<NiceModalHocP
     'newsletters/add': AddNewsletterModal,
     'newsletters/show/:id': NewsletterDetailModal,
     'history/view': HistoryModal,
+    'history/view/:user': HistoryModal,
     'integrations/zapier': ZapierModal,
     'integrations/slack': SlackModal,
     'integrations/amp': AmpModal,
