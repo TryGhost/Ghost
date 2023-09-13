@@ -6,6 +6,7 @@ import TextField from '../admin-x-ds/global/form/TextField';
 import useFeatureFlag from '../hooks/useFeatureFlag';
 import useRouting from '../hooks/useRouting';
 import {getSettingValues} from '../api/settings';
+import {isEditorUser} from '../api/users';
 import {useGlobalData} from './providers/GlobalDataProvider';
 import {useSearch} from './providers/ServiceProvider';
 
@@ -13,7 +14,7 @@ const Sidebar: React.FC = () => {
     const {filter, setFilter} = useSearch();
     const {updateRoute} = useRouting();
 
-    const {settings, config} = useGlobalData();
+    const {settings, config, currentUser} = useGlobalData();
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
 
     const handleSectionClick = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -31,6 +32,11 @@ const Sidebar: React.FC = () => {
             document.getElementById('admin-x-root')?.scrollTo({top: 0, left: 0});
         }
     };
+
+    // Editors can only see staff settings, so no point in showing navigation
+    if (isEditorUser(currentUser)) {
+        return null;
+    }
 
     return (
         <div className='no-scrollbar tablet:h-[calc(100vh-5vmin-84px)] tablet:w-[240px] tablet:overflow-y-scroll'>
