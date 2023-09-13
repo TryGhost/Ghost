@@ -19,6 +19,9 @@ interface ImageUploadProps {
     deleteButtonClassName?: string;
     deleteButtonContent?: React.ReactNode;
     deleteButtonUnstyled?: boolean;
+    editButtonClassName?: string;
+    editButtonContent?: React.ReactNode;
+    editButtonUnstyled?: boolean;
 
     /**
      * Removes all the classnames from all elements so you can set a completely custom styling
@@ -27,6 +30,14 @@ interface ImageUploadProps {
     onUpload: (file: File) => void;
     onDelete: () => void;
     onImageClick?: MouseEventHandler<HTMLImageElement>;
+
+    /**
+     * Pintura config
+     */
+    pintura?: {
+        isEnabled: boolean;
+        openEditor: () => void;
+    }
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -46,7 +57,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     unstyled = false,
     onUpload,
     onDelete,
-    onImageClick
+    onImageClick,
+    pintura,
+    editButtonClassName,
+    editButtonContent,
+    editButtonUnstyled = false
 }) => {
     if (!unstyled) {
         imageContainerClassName = clsx(
@@ -75,9 +90,17 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                 deleteButtonClassName
             );
         }
+
+        if (!editButtonUnstyled) {
+            editButtonClassName = clsx(
+                'absolute right-16 top-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible md:invisible',
+                editButtonClassName
+            );
+        }
     }
 
     deleteButtonContent = deleteButtonContent || <Icon colorClass='text-white' name='trash' size='sm' />;
+    editButtonContent = editButtonContent || <Icon colorClass='text-white' name='pen' size='sm' />;
 
     if (imageURL) {
         let image = (
@@ -89,6 +112,12 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                     width: (unstyled ? '' : width || '100%'),
                     height: (unstyled ? '' : height || 'auto')
                 }} onClick={onImageClick} />
+                {
+                    pintura?.isEnabled && pintura?.openEditor &&
+                    <button className={editButtonClassName} type='button' onClick={pintura.openEditor}>
+                        {editButtonContent}
+                    </button>
+                }
                 <button className={deleteButtonClassName} type='button' onClick={onDelete}>
                     {deleteButtonContent}
                 </button>
