@@ -21,7 +21,7 @@ function cardTemplate(node) {
     const posts = testPostData.slice(0, postCount);
 
     const cardClass = 'kg-card kg-collection-card'
-        + (layout === 'grid' && ' kg-width-wide');
+        + (layout === 'grid' ? ' kg-width-wide' : '');
     const headerClass = 'kg-collection-card-title';
     const collectionClass = 'kg-collection-card-feed'
         + (layout === 'list' ? ' kg-collection-card-list' : ' kg-collection-card-grid')
@@ -31,7 +31,7 @@ function cardTemplate(node) {
         + ((layout === 'grid' && columns === 4) ? ' columns-4' : '');
 
     return (
-        `<div class="${cardClass} data-collection-slug="${collection.slug} data-collection-limit="${postCount}">
+        `<div class="${cardClass}" data-kg-collection-slug="${collection}" data-kg-collection-limit="${postCount}">
             <h4 class="${headerClass}">${header}</h4>
             <div class="${collectionClass}">
                 ${posts.map(post => postTemplate(post, layout, columns)).join('')}
@@ -74,30 +74,30 @@ const testPostData = [
         title: 'The Secret Life of Kittens: Uncovering Their Mischievous Master Plans',
         id: 1,
         url: 'https://www.google.com',
-        published_at: DateTime.now().minus({days: Math.floor(Math.random() * 100)}).toISO(),
+        published_at: '2023-07-08T16:26:13.846-05:00',
         excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
         feature_image: 'https://placekitten.com/230/250',
-        reading_time: Math.floor(Math.random() * 10),
+        reading_time: 3,
         author: 'Author McAuthory'
     },
     {
         title: 'Kittens Gone Wild: Epic Adventures of Feline Daredevils',
         id: 2,
         url: 'https://www.google.com',
-        published_at: DateTime.now().minus({days: Math.random() * 100}).toISO(),
+        published_at: '2023-08-17T16:26:13.858-05:00',
         excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
         feature_image: 'https://placekitten.com/251/250',
-        reading_time: Math.floor(Math.random() * 10),
+        reading_time: 5,
         author: 'Writer Writterson'
     },
     {
         title: 'The Kitten Olympics: Hilarious Competitions and Paw-some Winners',
         id: 3,
         url: 'https://www.google.com',
-        published_at: DateTime.now().minus({days: Math.random() * 100}).toISO(),
+        published_at: '2023-09-11T16:26:13.858-05:00',
         excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
         feature_image: 'https://placekitten.com/249/251',
-        reading_time: Math.floor(Math.random() * 10),
+        reading_time: 9,
         author: 'Author McAuthory'
     },
     {

@@ -1,7 +1,7 @@
 /* eslint-disable ghost/filenames/match-exported-class */
 import {generateDecoratorNode} from '../../generate-decorator-node';
-// import {parseCollectionNode} from './CollectionParser';
 import {renderCollectionNode} from './collection-renderer';
+import {collectionParser} from './collection-parser';
 
 export class CollectionNode extends generateDecoratorNode({nodeType: 'collection',
     properties: [
@@ -11,13 +11,10 @@ export class CollectionNode extends generateDecoratorNode({nodeType: 'collection
         {name: 'columns', default: 3},
         {name: 'header', default: 'Latest', wordCount: true}
     ]}
-    // do we want a limit option so we don't have to 'get' and calculate it?
-    // {name: 'limit', default: '3'}
-    // may want other props like showing title, excerpt, date posted, etc.
 ) {
-    // static importDOM() {
-    //     return parseCollectionNode(this);
-    // }
+    static importDOM() {
+        return collectionParser(this);
+    }
 
     exportDOM(options = {}) {
         return renderCollectionNode(this, options);
