@@ -477,7 +477,7 @@ async function updateProfile({data, state, api}) {
 
 async function oneClickSubscribe({data: {siteUrl}, state}) {
     const externalSiteApi = setupGhostApi({siteUrl: siteUrl, apiUrl: 'not-defined', contentApiKey: 'not-defined'});
-    const {t, member} = state;
+    const {member} = state;
 
     const referrerUrl = window.location.href;
     const referrerSource = getRefDomain();
