@@ -1,0 +1,132 @@
+.kg-collection-card {
+    width: 100%;
+}
+
+.kg-collection-card-title {
+    padding: .8rem 0 1.6rem 0;
+    font-size: 1.5rem;
+    text-transform: uppercase;
+}
+
+.kg-collection-card-post {
+    display: flex;
+    gap: 2rem;
+}
+
+.kg-collection-card-img {
+    position: relative;
+    aspect-ratio: 3/2;
+}
+
+.kg-collection-card-img img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* List layout */
+
+.kg-collection-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.kg-collection-card-list .kg-collection-card-img {
+    flex: 0 0 30%;
+}
+
+.kg-collection-card-content {
+    display: flex;
+    flex-direction: column;
+    font-size: 1.45rem;
+}
+
+h2.kg-collection-card-post-title {
+    font-size: 2rem;
+}
+
+p.kg-collection-card-post-excerpt {
+    margin-top: .8rem;
+}
+
+.kg-collection-card-post-meta {
+    display: flex;
+    opacity: .5;
+    margin-top: .8rem;
+}
+
+/* Grid layout */
+
+.kg-collection-card-grid {
+    display: grid;
+}
+
+.kg-collection-card-grid.columns-1 {
+    grid-template-columns: repeat(1,minmax(0,1fr));
+    gap: 4.8rem;
+}
+
+.kg-collection-card-grid.columns-2 {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 4rem;
+}
+
+.kg-collection-card-grid.columns-3 {
+    grid-template-columns: repeat(3,minmax(0,1fr));
+    gap: 3.2rem;
+}
+
+.kg-collection-card-grid.columns-4 {
+    grid-template-columns: repeat(4,minmax(0,1fr));
+    gap: 2.4rem;
+}
+
+.kg-collection-card-grid .kg-collection-card-post {
+    flex-direction: column;
+}
+
+.kg-collection-card-grid.columns-1 .kg-collection-card-post {
+    gap: 2rem;
+}
+
+.kg-collection-card-grid.columns-2 .kg-collection-card-post {
+    gap: 1.6rem;
+}
+
+.kg-collection-card-grid.columns-3 .kg-collection-card-post,
+.kg-collection-card-grid.columns-4 .kg-collection-card-post {
+    gap: 1.2rem;
+}
+
+.kg-collection-card-grid.columns-1 .kg-collection-card-img,
+.kg-collection-card-grid.columns-2 .kg-collection-card-img {
+    aspect-ratio: 16/9;
+}
+
+.kg-collection-card-grid.columns-1 .kg-collection-card-content {
+    font-size: 1.8rem;
+}
+
+.kg-collection-card-grid.columns-2 .kg-collection-card-content {
+    font-size: 1.6rem;
+}
+
+.kg-collection-card-grid.columns-3 .kg-collection-card-content,
+.kg-collection-card-grid.columns-4 .kg-collection-card-content {
+    font-size: 1.5rem;
+}
+
+.kg-collection-card-grid.columns-1 h2.kg-collection-card-post-title {
+    font-size: 3.6rem;
+}
+
+.kg-collection-card-grid.columns-2 h2.kg-collection-card-post-title {
+    font-size: 2.4rem;
+}
+
+.kg-collection-card-grid.columns-4 h2.kg-collection-card-post-title {
+    font-size: 1.7rem;
+}
