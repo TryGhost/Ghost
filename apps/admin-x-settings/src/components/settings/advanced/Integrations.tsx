@@ -84,7 +84,7 @@ const BuiltInIntegrations: React.FC = () => {
     const zapierDisabled = config.hostSettings?.limits?.customIntegrations?.disabled;
 
     const {settings} = useGlobalData();
-    const [ampEnabled, unsplashEnabled, pinturaEnabled, firstPromoterEnabled] = getSettingValues<boolean>(settings, ['amp', 'unsplash', 'pintura', 'firstpromoter']);
+    const [ampEnabled, unsplashEnabled, pinturaEnabled, firstPromoterEnabled, slackUrl, slackUsername] = getSettingValues<boolean>(settings, ['amp', 'unsplash', 'pintura', 'firstpromoter', 'slack_url', 'slack_username']);
 
     return (
         <List titleSeparator={false}>
@@ -102,6 +102,7 @@ const BuiltInIntegrations: React.FC = () => {
                 action={() => {
                     openModal('integrations/slack');
                 }}
+                active={slackUrl && slackUsername}
                 detail='A messaging app for teams'
                 icon={<SlackIcon className='h-8 w-8' />}
                 title='Slack' />
