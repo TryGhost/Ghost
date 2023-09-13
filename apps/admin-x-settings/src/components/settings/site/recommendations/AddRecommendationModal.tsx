@@ -78,6 +78,7 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
                 updatedRecommendation.favicon = oembed?.metadata?.icon ?? formState.favicon ?? null;
                 updatedRecommendation.one_click_subscribe = false;
             }
+            updatedRecommendation.reason = updatedRecommendation.excerpt || null;
 
             // Switch modal without changing the route (the second modal is not reachable by URL)
             modal.remove();
