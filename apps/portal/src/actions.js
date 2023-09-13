@@ -477,7 +477,7 @@ async function updateProfile({data, state, api}) {
 
 async function oneClickSubscribe({data: {siteUrl}, state}) {
     const externalSiteApi = setupGhostApi({siteUrl: siteUrl, apiUrl: 'not-defined', contentApiKey: 'not-defined'});
-    const {t, member} = state;
+    const {member} = state;
 
     const referrerUrl = window.location.href;
     const referrerSource = getRefDomain();
@@ -498,17 +498,7 @@ async function oneClickSubscribe({data: {siteUrl}, state}) {
         ]
     });
 
-    return {
-        popupNotification: createPopupNotification({
-            type: 'subscribe:success',
-            autoHide: true,
-            closeable: true,
-            duration: 10000,
-            status: 'success',
-            state,
-            message: t(`To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!`)
-        })
-    };
+    return {};
 }
 
 const Actions = {
