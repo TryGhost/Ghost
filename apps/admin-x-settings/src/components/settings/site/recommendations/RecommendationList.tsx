@@ -10,6 +10,7 @@ import TableRow from '../../../../admin-x-ds/global/TableRow';
 import useRouting from '../../../../hooks/useRouting';
 import {PaginationData} from '../../../../hooks/usePagination';
 import {Recommendation, useDeleteRecommendation} from '../../../../api/recommendations';
+import {showToast} from '../../../../admin-x-ds/global/Toast';
 
 interface RecommendationListProps {
     recommendations: Recommendation[],
@@ -31,8 +32,19 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
                     </>,
                     okLabel: 'Remove',
                     onOk: async (modal) => {
-                        await deleteRecommendation(recommendation);
-                        modal?.remove();
+                        try {
+                            await deleteRecommendation(recommendation);
+                            modal?.remove();
+                            showToast({
+                                message: 'Successfully removed the recommendation',
+                                type: 'success'
+                            });
+                        } catch (_) {
+                            showToast({
+                                message: 'Failed to remove the recommendation. Please try again later.',
+                                type: 'error'
+                            });
+                        }
                     }
                 });
             }} />
