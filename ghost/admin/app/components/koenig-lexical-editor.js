@@ -131,6 +131,7 @@ const WordCountPlugin = (props) => {
 export default class KoenigLexicalEditor extends Component {
     @service ajax;
     @service feature;
+    @service frontend;
     @service ghostPaths;
     @service session;
     @service store;
@@ -138,7 +139,9 @@ export default class KoenigLexicalEditor extends Component {
     @service membersUtils;
 
     @inject config;
+
     offers = null;
+    contentKey = null;
 
     get pinturaJsUrl() {
         if (!this.settings.pintura) {
@@ -241,13 +244,20 @@ export default class KoenigLexicalEditor extends Component {
         };
 
         const fetchCollectionPosts = async (collectionSlug) => {
-            const collectionPostsEndpoint = this.ghostPaths.url.api('posts');
-            const {posts} = await this.ajax.request(collectionPostsEndpoint, {
-                data: {
-                    collection: collectionSlug,
-                    limit: 12
-                }
-            });
+            if (!this.contentKey) {
+                const integrations = await this.store.findAll('integration');
+                const contentIntegration = integrations.findBy('slug', 'ghost-core-content');
+                this.contentKey = contentIntegration?.contentKey.secret;
+            }
+
+            const postsUrl = new URL(this.frontend.getUrl('/ghost/api/content/posts/'));
+            postsUrl.searchParams.append('key', this.contentKey);
+            postsUrl.searchParams.append('collection', collectionSlug);
+            postsUrl.searchParams.append('limit', 12);
+
+            const response = await this.frontend.fetch(postsUrl.toString());
+            const {posts} = await response.json();
+
             return posts;
         };
 
