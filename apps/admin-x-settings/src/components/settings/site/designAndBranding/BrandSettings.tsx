@@ -110,6 +110,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                     <Heading className='mb-2' grey={(values.coverImage ? true : false)} level={6}>Publication cover</Heading>
                     <ImageUpload
                         deleteButtonClassName='!top-1 !right-1'
+                        editButtonClassName='!top-1 !right-10'
                         height='180px'
                         id='cover'
                         imageURL={values.coverImage || ''}
