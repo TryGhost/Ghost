@@ -15,6 +15,7 @@ import TextArea from '../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import useFeatureFlag from '../../../hooks/useFeatureFlag';
+import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
@@ -22,9 +23,11 @@ import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {RoutingModalProps} from '../../providers/RoutingProvider';
 import {User, isAdminUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner, useUpdatePassword} from '../../../api/users';
 import {getImageUrl, useUploadImage} from '../../../api/images';
+import {getSettingValues} from '../../../api/settings';
 import {showToast} from '../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
 import {useBrowseRoles} from '../../../api/roles';
+import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 interface CustomHeadingProps {
     children?: React.ReactNode;
@@ -460,6 +463,20 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     const {mutateAsync: makeOwner} = useMakeOwner();
     const limiter = useLimiter();
 
+    // Pintura integration
+    const {settings} = useGlobalData();
+    const [pintura] = getSettingValues<boolean>(settings, ['pintura']);
+    const [pinturaJsUrl] = getSettingValues<string>(settings, ['pintura_js_url']);
+    const [pinturaCssUrl] = getSettingValues<string>(settings, ['pintura_css_url']);
+
+    const editor = usePinturaEditor(
+        {config: {
+            jsUrl: pinturaJsUrl || '',
+            cssUrl: pinturaCssUrl || ''
+        },
+        disabled: !pintura}
+    );
+
     useEffect(() => {
         if (saveState === 'saved') {
             setTimeout(() => {
@@ -718,13 +735,26 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                     </div>
                     <div className='relative flex flex-col items-start gap-4 px-12 pb-60 pt-10 md:flex-row md:items-center md:pb-7 md:pt-60'>
                         <ImageUpload
-                            deleteButtonClassName='md:invisible absolute -right-2 -top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible'
+                            deleteButtonClassName='md:invisible absolute pr-3 -right-2 -top-2 flex h-8 w-16 cursor-pointer items-center justify-end rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:!visible'
                             deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
+                            editButtonClassName='md:invisible absolute right-[22px] -top-2 flex h-8 w-8 cursor-pointer items-center justify-center text-white group-hover:!visible z-20'
                             fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
                             id='avatar'
                             imageClassName='w-full h-full object-cover rounded-full'
                             imageContainerClassName='relative group bg-cover bg-center -ml-2 h-[80px] w-[80px]'
                             imageURL={userData.profile_image}
+                            pintura={
+                                {
+                                    isEnabled: pintura || false,
+                                    openEditor: async () => editor.openEditor({
+                                        image: userData.profile_image || '',
+                                        // handleSave: async (file:File) => {
+                                        handleSave: async () => {
+                                            // updateSetting('cover_image', getImageUrl(await uploadImage({file})));
+                                        }
+                                    })
+                                }
+                            }
                             unstyled={true}
                             width='80px'
                             onDelete={() => {
