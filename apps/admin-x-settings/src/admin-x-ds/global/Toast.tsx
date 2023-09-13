@@ -97,3 +97,7 @@ export const showToast = ({
     }
     );
 };
+
+export const dismissAllToasts = (): void => {
+    toast.dismiss();
+};
