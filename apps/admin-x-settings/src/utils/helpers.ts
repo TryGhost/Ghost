@@ -1,4 +1,5 @@
 export interface IGhostPaths {
+    subdir: string;
     adminRoot: string;
     assetRoot: string;
     apiRoot: string;
@@ -10,7 +11,15 @@ export function getGhostPaths(): IGhostPaths {
     let adminRoot = `${subdir}/ghost/`;
     let assetRoot = `${subdir}/ghost/assets/`;
     let apiRoot = `${subdir}/ghost/api/admin`;
-    return {adminRoot, assetRoot, apiRoot};
+    return {subdir, adminRoot, assetRoot, apiRoot};
+}
+
+export function resolveAsset(assetPath: string, relativeTo: string) {
+    if (assetPath.match(/^(?:[a-z]+:)?\/\//i)) {
+        return assetPath;
+    }
+
+    return `${relativeTo}${assetPath}`;
 }
 
 export function getLocalTime(timeZone: string) {
@@ -60,6 +69,10 @@ export function downloadFile(url: string) {
     }
 
     iframe.setAttribute('src', url);
+}
+
+export function downloadFromEndpoint(path: string) {
+    downloadFile(`${getGhostPaths().apiRoot}${path}`);
 }
 
 export function numberWithCommas(x: number) {

@@ -101,10 +101,10 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({settings,url}) => {
         <>
             <iframe
                 ref={iframeRef}
+                className='h-[110%] w-[110%] origin-top-left scale-[.90909] max-[1600px]:h-[130%] max-[1600px]:w-[130%] max-[1600px]:scale-[.76923]'
                 data-testid="theme-preview"
                 height="100%"
                 title="Site Preview"
-                width="100%"
             ></iframe>
         </>
     );

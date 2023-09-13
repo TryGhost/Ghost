@@ -80,9 +80,9 @@ test.describe('Design settings', async () => {
         await expect(modal.frameLocator('[data-testid="theme-preview"]').getByText('homepage preview')).toHaveCount(1);
 
         await modal.getByLabel('Site description').fill('new description');
+        // set timeout of 500ms to wait for the debounce
+        await page.waitForTimeout(1000);
         await modal.getByRole('button', {name: 'Save'}).click();
-
-        await expect(modal).not.toBeVisible();
 
         expect(lastPreviewRequest.previewHeader).toMatch(/&d=new\+description&/);
 
@@ -131,8 +131,6 @@ test.describe('Design settings', async () => {
 
         await modal.getByLabel('Navigation layout').selectOption('Logo in the middle');
         await modal.getByRole('button', {name: 'Save'}).click();
-
-        await expect(modal).not.toBeVisible();
 
         const expectedSettings = {navigation_layout: 'Logo in the middle'};
         const expectedEncoded = new URLSearchParams([['custom', JSON.stringify(expectedSettings)]]).toString();

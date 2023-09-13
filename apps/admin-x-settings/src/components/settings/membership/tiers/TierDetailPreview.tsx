@@ -3,16 +3,10 @@ import Heading from '../../../../admin-x-ds/global/Heading';
 import Icon from '../../../../admin-x-ds/global/Icon';
 import React, {useState} from 'react';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
-import {Tier} from '../../../../api/tiers';
+import {TierFormState} from './TierDetailModal';
+import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
 import {getSettingValues} from '../../../../api/settings';
-import {getSymbol} from '../../../../utils/currency';
 import {numberWithCommas} from '../../../../utils/helpers';
-
-export type TierFormState = Partial<Omit<Tier, 'monthly_price' | 'yearly_price' | 'trial_days'>> & {
-    monthly_price: string;
-    yearly_price: string;
-    trial_days: string;
-};
 
 interface TierDetailPreviewProps {
     tier: TierFormState;
@@ -81,22 +75,22 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier})
     const currencySymbol = currency ? getSymbol(currency) : '$';
     const benefits = tier?.benefits || [];
 
-    const monthlyPrice = parseFloat(tier?.monthly_price || '0');
-    const yearlyPrice = parseFloat(tier?.yearly_price || '0');
+    const monthlyPrice = currencyToDecimal(tier?.monthly_price || 0);
+    const yearlyPrice = currencyToDecimal(tier?.yearly_price || 0);
     const yearlyDiscount = tier?.monthly_price && tier?.yearly_price
         ? Math.ceil(((monthlyPrice * 12 - yearlyPrice) / (monthlyPrice * 12)) * 100)
         : 0;
 
     return (
-        <div className="mt-1">
+        <div>
             <div className="flex items-baseline justify-between">
                 <Heading className="pb-2" level={6} grey>{isFreeTier ? 'Free membership preview' : 'Tier preview'}</Heading>
                 {!isFreeTier && <div className="flex gap-1">
-                    <Button className={`${showingYearly === true ? 'text-grey-500' : 'text-grey-900'}`} label="Monthly" link onClick={() => setShowingYearly(false)} />
-                    <Button className={`ml-2 ${showingYearly === true ? 'text-grey-900' : 'text-grey-500'}`} label="Yearly" link onClick={() => setShowingYearly(true)} />
+                    <Button className={`${showingYearly === true ? 'text-grey-500' : 'text-grey-900 dark:text-white'}`} label="Monthly" link unstyled onClick={() => setShowingYearly(false)} />
+                    <Button className={`ml-2 ${showingYearly === true ? 'text-grey-900 dark:text-white' : 'text-grey-500'}`} label="Yearly" link unstyled onClick={() => setShowingYearly(true)} />
                 </div>}
             </div>
-            <div className='border border-grey-200'>
+            <div className='rounded-sm border border-grey-200 bg-white dark:border-transparent'>
                 <div className="flex-column relative flex min-h-[200px] w-full max-w-[420px] scale-90 items-start justify-stretch rounded bg-white p-4">
                     <div className="min-h-[56px] w-full">
                         <h4 className={`-mt-1 mb-0 w-full break-words text-lg font-semibold leading-tight text-pink ${!name && 'opacity-30'}`}>{name || 'Bronze'}</h4>

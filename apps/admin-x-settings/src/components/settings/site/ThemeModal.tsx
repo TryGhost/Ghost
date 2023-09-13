@@ -3,15 +3,17 @@ import Breadcrumbs from '../../../admin-x-ds/global/Breadcrumbs';
 import Button from '../../../admin-x-ds/global/Button';
 import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
 import FileUpload from '../../../admin-x-ds/global/form/FileUpload';
+import LimitModal from '../../../admin-x-ds/global/modal/LimitModal';
 import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {NiceModalHandler, useModal} from '@ebay/nice-modal-react';
 import OfficialThemes from './theme/OfficialThemes';
 import PageHeader from '../../../admin-x-ds/global/layout/PageHeader';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import TabView from '../../../admin-x-ds/global/TabView';
 import ThemeInstalledModal from './theme/ThemeInstalledModal';
 import ThemePreview from './theme/ThemePreview';
 import useRouting from '../../../hooks/useRouting';
+import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {OfficialTheme} from '../../providers/ServiceProvider';
 import {Theme, useBrowseThemes, useInstallTheme, useUploadTheme} from '../../../api/themes';
 
@@ -40,6 +42,24 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
 }) => {
     const {updateRoute} = useRouting();
     const {mutateAsync: uploadTheme} = useUploadTheme();
+    const limiter = useLimiter();
+
+    const [uploadConfig, setUploadConfig] = useState<{enabled: boolean; error?: string}>();
+
+    useEffect(() => {
+        if (limiter) {
+            // Sending a bad string to make sure it fails (empty string isn't valid)
+            limiter.errorIfWouldGoOverLimit('customThemes', {value: '.'})
+                .then(() => setUploadConfig({enabled: true}))
+                .catch((error) => {
+                    if (error instanceof HostLimitError) {
+                        setUploadConfig({enabled: false, error: error.message});
+                    }
+                });
+        } else {
+            setUploadConfig({enabled: true});
+        }
+    }, [limiter]);
 
     const onClose = () => {
         updateRoute('design/edit');
@@ -94,16 +114,76 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
 
     const left =
         <Breadcrumbs
+            activeItemClassName='hidden md:!block md:!visible'
+            itemClassName='hidden md:!block md:!visible'
             items={[
                 {label: 'Design', onClick: onClose},
                 {label: 'Change theme'}
             ]}
+            separatorClassName='hidden md:!block md:!visible'
             backIcon
             onBack={onClose}
         />;
 
     const right =
         <div className='flex items-center gap-14'>
+            <div className='hidden md:!visible md:!block'>
+                <TabView
+                    border={false}
+                    selectedTab={currentTab}
+                    tabs={[
+                        {id: 'official', title: 'Official themes'},
+                        {id: 'installed', title: 'Installed'}
+                    ]}
+                    onTabChange={(id: string) => {
+                        setCurrentTab(id);
+                    }} />
+            </div>
+            <div className='flex items-center gap-3'>
+                {uploadConfig && (
+                    uploadConfig.enabled ?
+                        <FileUpload id='theme-upload' onUpload={async (file: File) => {
+                            const themeFileName = file?.name.replace(/\.zip$/, '');
+                            const existingThemeNames = themes.map(t => t.name);
+                            if (existingThemeNames.includes(themeFileName)) {
+                                NiceModal.show(ConfirmationModal, {
+                                    title: 'Overwrite theme',
+                                    prompt: (
+                                        <>
+                                            The theme <strong>{themeFileName}</strong> already exists.
+                                            Do you want to overwrite it?
+                                        </>
+                                    ),
+                                    okLabel: 'Overwrite',
+                                    cancelLabel: 'Cancel',
+                                    okRunningLabel: 'Overwriting...',
+                                    okColor: 'red',
+                                    onOk: async (confirmModal) => {
+                                        await handleThemeUpload({file, onActivate: onClose});
+                                        setCurrentTab('installed');
+                                        confirmModal?.remove();
+                                    }
+                                });
+                            } else {
+                                setCurrentTab('installed');
+                                handleThemeUpload({file, onActivate: onClose});
+                            }
+                        }}>
+                            <Button color='black' label='Upload theme' tag='div' />
+                        </FileUpload> :
+                        <Button color='black' label='Upload theme' onClick={() => {
+                            NiceModal.show(LimitModal, {
+                                title: 'Upgrade to enable custom themes',
+                                prompt: uploadConfig?.error || <>Your current plan only supports official themes. You can install them from the <a href="https://ghost.org/marketplace/">Ghost theme marketplace</a>.</>
+                            });
+                        }} />
+                )}
+            </div>
+        </div>;
+
+    return (<>
+        <PageHeader containerClassName='bg-white dark:bg-black' left={left} right={right} />
+        <div className='px-[8vmin] md:hidden'>
             <TabView
                 border={false}
                 selectedTab={currentTab}
@@ -114,43 +194,8 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                 onTabChange={(id: string) => {
                     setCurrentTab(id);
                 }} />
-            <div className='flex items-center gap-3'>
-                <FileUpload id='theme-uplaod' onUpload={async (file: File) => {
-                    const themeFileName = file?.name.replace(/\.zip$/, '');
-                    const existingThemeNames = themes.map(t => t.name);
-                    if (existingThemeNames.includes(themeFileName)) {
-                        NiceModal.show(ConfirmationModal, {
-                            title: 'Overwrite theme',
-                            prompt: (
-                                <>
-                                    The theme <strong>{themeFileName}</strong> already exists.
-                                    Do you want to overwrite it?
-                                </>
-                            ),
-                            okLabel: 'Overwrite',
-                            cancelLabel: 'Cancel',
-                            okRunningLabel: 'Overwriting...',
-                            okColor: 'red',
-                            onOk: async (confirmModal) => {
-                                await handleThemeUpload({file, onActivate: onClose});
-                                setCurrentTab('installed');
-                                confirmModal?.remove();
-                            }
-                        });
-                    } else {
-                        setCurrentTab('installed');
-                        handleThemeUpload({file, onActivate: onClose});
-                    }
-                }}>
-                    <Button color='black' label='Upload theme' tag='div' />
-                </FileUpload>
-                {/* <Button color='black' label='Save & Close' onClick={() => {
-                    modal.remove();
-                }} /> */}
-            </div>
-        </div>;
-
-    return <PageHeader containerClassName='bg-white' left={left} right={right} />;
+        </div>
+    </>);
 };
 
 const ThemeModalContent: React.FC<ThemeModalContentProps> = ({
@@ -246,9 +291,10 @@ const ChangeThemeModal = NiceModal.create(() => {
             afterClose={() => {
                 updateRoute('design/edit');
             }}
+            animate={false}
             cancelLabel=''
             footer={false}
-            noPadding={true}
+            padding={false}
             size='full'
             testId='theme-modal'
             title=''
@@ -281,11 +327,13 @@ const ChangeThemeModal = NiceModal.create(() => {
                         setSelectedTheme={setSelectedTheme}
                         themes={themes}
                     />
-                    <ThemeModalContent
-                        currentTab={currentTab}
-                        themes={themes}
-                        onSelectTheme={onSelectTheme}
-                    />
+                    {!selectedTheme &&
+                        <ThemeModalContent
+                            currentTab={currentTab}
+                            themes={themes}
+                            onSelectTheme={onSelectTheme}
+                        />
+                    }
                 </div>
             </div>
         </Modal>

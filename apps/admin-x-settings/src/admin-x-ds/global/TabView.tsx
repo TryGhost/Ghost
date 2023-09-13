@@ -40,11 +40,11 @@ function TabView<ID extends string = string>({
     };
 
     const containerClasses = clsx(
-        'flex',
+        'no-scrollbar flex w-full overflow-x-auto',
         width === 'narrow' && 'gap-3',
         width === 'normal' && 'gap-5',
         width === 'wide' && 'gap-7',
-        border && 'border-b border-grey-300'
+        border && 'border-b border-grey-300 dark:border-grey-900'
     );
 
     return (
@@ -55,9 +55,9 @@ function TabView<ID extends string = string>({
                         key={tab.id}
                         aria-selected={selectedTab === tab.id}
                         className={clsx(
-                            '-m-b-px cursor-pointer appearance-none py-1 text-sm transition-all after:invisible after:block after:h-px after:overflow-hidden after:font-bold after:text-transparent after:content-[attr(title)]',
+                            '-m-b-px cursor-pointer appearance-none whitespace-nowrap py-1 text-sm transition-all after:invisible after:block after:h-px after:overflow-hidden after:font-bold after:text-transparent after:content-[attr(title)] dark:text-white',
                             border && 'border-b-[3px]',
-                            selectedTab === tab.id && border ? 'border-black' : 'border-transparent hover:border-grey-500',
+                            selectedTab === tab.id && border ? 'border-black dark:border-white' : 'border-transparent hover:border-grey-500',
                             selectedTab === tab.id && 'font-bold'
                         )}
                         id={tab.id}

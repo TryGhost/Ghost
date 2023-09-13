@@ -15,6 +15,7 @@ export interface ConfirmationModalProps {
         remove: () => void;
     }) => void | Promise<void>;
     customFooter?: boolean | React.ReactNode;
+    formSheet?: boolean;
 }
 
 export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
@@ -26,15 +27,18 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
     okColor = 'black',
     onCancel,
     onOk,
-    customFooter
+    customFooter,
+    formSheet = true
 }) => {
     const modal = useModal();
     const [taskState, setTaskState] = useState<'running' | ''>('');
     return (
         <Modal
             backDropClick={false}
+            buttonsDisabled={taskState === 'running'}
             cancelLabel={cancelLabel}
             footer={customFooter}
+            formSheet={formSheet}
             okColor={okColor}
             okLabel={taskState === 'running' ? okRunningLabel : okLabel}
             size={540}

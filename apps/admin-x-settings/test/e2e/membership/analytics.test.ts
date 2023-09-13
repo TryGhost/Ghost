@@ -38,4 +38,20 @@ test.describe('Analytics settings', async () => {
             ]
         });
     });
+
+    test('Supports downloading analytics csv export', async ({page}) => {
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            postsExport: {method: 'GET', path: '/posts/export/?limit=1000', response: 'csv data'}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('analytics');
+
+        await section.getByRole('button', {name: 'Export post analytics'}).click();
+
+        const hasDownloadUrl = lastApiRequests.postsExport?.url?.includes('/posts/export/?limit=1000');
+        expect(hasDownloadUrl).toBe(true);
+    });
 });

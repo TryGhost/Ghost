@@ -1,13 +1,9 @@
 import Button from '../../../admin-x-ds/global/Button';
-import NewsletterDetailModal from './newsletters/NewsletterDetailModal';
 import NewslettersList from './newsletters/NewslettersList';
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
-import useHandleRoute from '../../../hooks/useHandleRoute';
 import useRouting from '../../../hooks/useRouting';
-import {modalRoutes} from '../../providers/RoutingProvider';
 import {useBrowseNewsletters} from '../../../api/newsletters';
 
 const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
@@ -17,16 +13,6 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
     const [selectedTab, setSelectedTab] = useState('active-newsletters');
     const {data: {newsletters} = {}} = useBrowseNewsletters();
-
-    useHandleRoute(modalRoutes.showNewsletter, ({id}) => {
-        const newsletter = newsletters?.find(u => u.id === id);
-
-        if (!newsletter) {
-            return;
-        }
-
-        NiceModal.show(NewsletterDetailModal, {newsletter});
-    }, [newsletters]);
 
     const buttons = (
         <Button color='green' label='Add newsletter' link={true} onClick={() => {

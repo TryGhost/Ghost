@@ -11,7 +11,7 @@ const config = {
         // Use a single browser since we can't simultaneously test multiple browsers
         browserName: 'chromium',
         headless: !process.env.PLAYWRIGHT_DEBUG,
-        baseURL: process.env.TEST_URL ?? 'http://localhost:2369',
+        baseURL: process.env.TEST_URL ?? 'http://127.0.0.1:2369',
         // TODO: Where to put this
         storageState: 'playwright-state.json'
     },

@@ -50,10 +50,10 @@ const Button: React.FC<ButtonProps> = ({
 
         switch (color) {
         case 'black':
-            styles += link ? ' text-black hover:text-grey-800' : ` bg-black text-white ${!disabled && 'hover:bg-grey-900'}`;
+            styles += link ? ' text-black dark:text-white hover:text-grey-800' : ` bg-black text-white dark:bg-white dark:text-black ${!disabled && 'hover:bg-grey-900'}`;
             break;
         case 'grey':
-            styles += link ? ' text-black hover:text-grey-800' : ` bg-grey-100 text-black ${!disabled && 'hover:!bg-grey-300'}`;
+            styles += link ? ' text-black dark:text-white hover:text-grey-800' : ` bg-grey-100 text-black dark:bg-grey-900 dark:text-white ${!disabled && 'hover:!bg-grey-300 dark:hover:!bg-grey-800'}`;
             break;
         case 'green':
             styles += link ? ' text-green hover:text-green-400' : ` bg-green text-white ${!disabled && 'hover:bg-green-400'}`;
@@ -62,13 +62,13 @@ const Button: React.FC<ButtonProps> = ({
             styles += link ? ' text-red hover:text-red-400' : ` bg-red text-white ${!disabled && 'hover:bg-red-400'}`;
             break;
         case 'white':
-            styles += link ? ' text-white hover:text-white' : ` bg-white text-black`;
+            styles += link ? ' text-white hover:text-white dark:text-black dark:hover:text-grey-800' : ` bg-white dark:bg-black text-black dark:text-white`;
             break;
         case 'outline':
-            styles += link ? ' text-black hover:text-grey-800' : ` border border-grey-300 bg-transparent text-black ${!disabled && 'hover:!border-black'}`;
+            styles += link ? ' text-black dark:text-white hover:text-grey-800' : `text-black border border-grey-300 bg-transparent dark:border-grey-800 dark:text-white ${!disabled && 'hover:!border-black dark:hover:!border-white'}`;
             break;
         default:
-            styles += link ? ' text-black hover:text-grey-800' : ` text-black ${!disabled && 'hover:bg-grey-200'}`;
+            styles += link ? ' text-black dark:text-white hover:text-grey-800' : ` text-black dark:text-white dark:hover:bg-grey-900 ${!disabled && 'hover:bg-grey-200'}`;
             break;
         }
 
@@ -78,8 +78,10 @@ const Button: React.FC<ButtonProps> = ({
 
     styles += ` ${className}`;
 
+    const iconClasses = label && icon && !hideLabel ? 'mr-1.5' : '';
+
     const buttonChildren = <>
-        {icon && <Icon colorClass={iconColorClass} name={icon} size={size === 'sm' ? 'sm' : 'md'} />}
+        {icon && <Icon className={iconClasses} colorClass={iconColorClass} name={icon} size={size === 'sm' ? 'sm' : 'md'} />}
         {(label && hideLabel) ? <span className="sr-only">{label}</span> : label}
     </>;
     const buttonElement = React.createElement(tag, {className: styles,

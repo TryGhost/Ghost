@@ -7,16 +7,19 @@ import clsx from 'clsx';
 export interface SelectOption {
     value: string;
     label: string;
+    key?: string;
     className?: string;
 }
 
 export interface SelectOptionGroup {
     label: string;
+    key?: string;
     options: SelectOption[];
 }
 
 export interface SelectProps {
     title?: string;
+    hideTitle?: boolean;
     size?: 'xs' | 'md';
     prompt?: string;
     options: SelectOption[] | SelectOptionGroup[];
@@ -35,6 +38,7 @@ export interface SelectProps {
 
 const Select: React.FC<SelectProps> = ({
     title,
+    hideTitle,
     size = 'md',
     prompt,
     options,
@@ -59,8 +63,8 @@ const Select: React.FC<SelectProps> = ({
     let containerClasses = '';
     if (!unstyled) {
         containerClasses = clsx(
-            'relative w-full after:pointer-events-none',
-            `after:absolute after:block after:h-2 after:w-2 after:rotate-45 after:border-[1px] after:border-l-0 after:border-t-0 after:border-grey-900 after:content-['']`,
+            'relative w-full after:pointer-events-none dark:text-white',
+            `after:absolute after:block after:h-2 after:w-2 after:rotate-45 after:border-[1px] after:border-l-0 after:border-t-0 after:border-grey-900 after:content-[''] dark:after:border-grey-500`,
             size === 'xs' ? 'after:top-[6px]' : 'after:top-[14px]',
             clearBg ? 'after:right-0' : 'after:right-4',
             disabled && 'opacity-40'
@@ -78,7 +82,7 @@ const Select: React.FC<SelectProps> = ({
             'w-full appearance-none outline-none',
             border && 'border-b',
             !clearBg && 'bg-grey-75 px-[10px]',
-            error ? 'border-red' : 'border-grey-500 focus:border-black',
+            error ? '!border-red' : 'border-grey-500 focus:border-black dark:border-grey-800 dark:focus:border-grey-500',
             disabled ? 'cursor-auto' : 'cursor-pointer hover:border-grey-700',
             (title && !clearBg) && 'mt-2'
         );
@@ -92,16 +96,16 @@ const Select: React.FC<SelectProps> = ({
 
     const select = (
         <>
-            {title && <Heading grey={selectedOption || !prompt ? true : false} htmlFor={id} useLabelTag={true}>{title}</Heading>}
+            {title && <Heading className={hideTitle ? 'sr-only' : ''} grey={selectedOption || !prompt ? true : false} htmlFor={id} useLabelTag={true}>{title}</Heading>}
             <div className={containerClasses}>
                 <select className={selectClasses} disabled={disabled} id={id} value={selectedOption} onChange={handleOptionChange}>
-                    {prompt && <option className={optionClasses} value="">{prompt}</option>}
+                    {prompt && <option className={optionClasses} value="" disabled selected>{prompt}</option>}
                     {options.map(option => (
                         'options' in option ?
-                            <optgroup key={option.label} label={option.label}>
+                            <optgroup key={option.key || option.label} label={option.label}>
                                 {option.options.map(child => (
                                     <option
-                                        key={child.value}
+                                        key={child.key || child.value}
                                         className={clsx(optionClasses, child.className)}
                                         value={child.value}
                                     >
@@ -110,7 +114,7 @@ const Select: React.FC<SelectProps> = ({
                                 ))}
                             </optgroup> :
                             <option
-                                key={option.value}
+                                key={option.key || option.value}
                                 className={clsx(optionClasses, option.className)}
                                 value={option.value}
                             >

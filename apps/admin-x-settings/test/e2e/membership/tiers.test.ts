@@ -26,9 +26,9 @@ test.describe('Tier settings', async () => {
 
         await modal.getByRole('button', {name: 'Save & close'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/One or more fields have errors/);
+        await expect(page.getByTestId('toast')).toHaveText(/Can't save tier/);
         await expect(modal).toHaveText(/You must specify a name/);
-        await expect(modal).toHaveText(/Subscription amount must be at least \$1\.00/);
+        await expect(modal).toHaveText(/Amount must be at least \$1/);
 
         await modal.getByLabel('Name').fill('Plus tier');
         await modal.getByLabel('Monthly price').fill('8');
@@ -104,7 +104,7 @@ test.describe('Tier settings', async () => {
         await modal.getByLabel('Name').fill('');
         await modal.getByRole('button', {name: 'Save & close'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/One or more fields have errors/);
+        await expect(page.getByTestId('toast')).toHaveText(/Can't save tier/);
         await expect(modal).toHaveText(/You must specify a name/);
 
         await modal.getByLabel('Name').fill('Supporter updated');

@@ -16,10 +16,16 @@ export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}
     let name = (nameInput && nameInput.value) || undefined;
     let emailType = undefined;
     let labels = [];
+    let newsletters = [];
 
     let labelInputs = event.target.querySelectorAll('input[data-members-label]') || [];
     for (let i = 0; i < labelInputs.length; ++i) {
         labels.push(labelInputs[i].value);
+    }
+
+    let newsletterInputs = event.target.querySelectorAll('input[type=hidden][data-members-newsletter], input[type=checkbox][data-members-newsletter]:checked, input[type=radio][data-members-newsletter]:checked') || [];
+    for (let i = 0; i < newsletterInputs.length; ++i) {
+        newsletters.push({id: newsletterInputs[i].value});
     }
 
     if (form.dataset.membersForm) {
@@ -37,6 +43,17 @@ export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}
     };
     if (urlHistory) {
         reqBody.urlHistory = urlHistory;
+    }
+    if (newsletterInputs.length > 0) {
+        reqBody.newsletters = newsletters;
+    } else {
+        // If there was only check-able newsletter inputs in the form, but none were checked, set reqBody.newsletters
+        // to an empty array so that the member is not signed up to the default newsletters
+        const checkableNewsletterInputs = event.target.querySelectorAll('input[type=checkbox][data-members-newsletter]') || [];
+
+        if (checkableNewsletterInputs.length > 0) {
+            reqBody.newsletters = [];
+        }
     }
 
     fetch(`${siteUrl}/members/api/send-magic-link/`, {

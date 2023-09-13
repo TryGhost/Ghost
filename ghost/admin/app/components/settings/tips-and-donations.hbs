@@ -15,7 +15,7 @@
         </div>
         {{#if (feature "tipsAndDonations")}}
             {{#if this.membersUtils.isStripeEnabled}}
-                <button type="button" class="gh-btn" {{on "click" (toggle-action "tipsAndDonationsOpen" this)}}>
+                <button type="button" class="gh-btn" {{on "click" (toggle-action "tipsAndDonationsOpen" this)}} data-testid="expand-tips-and-donations">
                     <span>{{if this.tipsAndDonationsOpen "Close" "Expand"}}</span>
                 </button>
             {{else}}
@@ -48,6 +48,7 @@
                                     <input
                                         type="number"
                                         id="gh-tips-and-donations-amount"
+                                        data-testid="tips-and-donations-amount"
                                         class="gh-input"
                                         name="amount"
                                         min="0"
@@ -76,8 +77,8 @@
                     </div>
 
                     <GhFormGroup class="no-margin">
-                        <label for="tips-and-donations-link" class="fw6 mb1">Shareable link</label>
-                        <div class="gh-input-group">
+                        <label for="tips-and-donations-link" class="fw6 mb1">Shareable link — <a href="#" {{on "click" this.showPreview}}>Preview</a></label>
+                        <div class="gh-tips-and-donations-link-container">
                             <GhTextInput
                                 data-test-input="tips-and-donations-link"
                                 @id="gh-tips-and-donations-link"
@@ -86,12 +87,17 @@
                                 @value="{{this.siteUrl}}/#/portal/support"
                                 @placeholder="{{this.siteUrl}}/#/portal/support"
                             />
-                                <GhTaskButton
-                                data-test-button="tips-and-donations-copy-link"
-                                @buttonText="Copy link"
-                                @task={{this.copyTipsAndDonationsLink}}
-                                @successText="Copied"
-                                @class="gh-btn gh-btn-black gh-btn-icon" />
+                            <button
+                                type="button" {{on "click" (fn (perform this.copyTipsAndDonationsLink))}}
+                                class="gh-portal-setting-copy"
+                                data-test-button="copy-url-attr"
+                            >
+                                {{#if (and this.copyTipsAndDonationsLink.isRunning)}}
+                                    {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
+                                {{else}}
+                                    <span data-tooltip="Copy">{{svg-jar "copy" class="w4 v-mid fill-darkgrey"}}</span>
+                                {{/if}}
+                            </button>
                         </div>
                     </GhFormGroup>
 

@@ -1774,7 +1774,7 @@ p.theme-validation-details {
 /* ---------------------------------------------------- */
 
 .gh-nav-contextual {
-    flex: 0 0 360px;
+    flex: 0 0 clamp(320px, 17.09vw + 86.5px, 360px);
 }
 
 .gh-nav-header {
@@ -2114,6 +2114,10 @@ p.theme-validation-details {
     display: flex;
     flex-direction: column;
     height: 100%;
+}
+
+.gh-design.gh-canvas {
+    padding: 0 clamp(24px, 10.26vw + -116.1px, 48px);
 }
 
 .gh-preview-page-selector,
@@ -3202,6 +3206,21 @@ p.theme-validation-details {
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     border-left: none !important;
+}
+
+.gh-tips-and-donations-link-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1.4rem;
+    height: 38px;
+    background: var(--whitegrey-l2);
+    border-radius: 4px;
+    border: 1px solid var(--whitegrey);
+    color: var(--darkgrey);
+    font-weight: 500;
+    width: 100%;
 }
 
 /* History log

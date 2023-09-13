@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures} from '../../utils/e2e';
+import {globalDataRequests, limitRequests, mockApi, responseFixtures} from '../../utils/e2e';
 
 test.describe('Newsletter settings', async () => {
     test('Supports creating a new newsletter', async ({page}) => {
@@ -26,7 +26,7 @@ test.describe('Newsletter settings', async () => {
         const modal = page.getByTestId('add-newsletter-modal');
         await modal.getByRole('button', {name: 'Create'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/One or more fields have errors/);
+        await expect(page.getByTestId('toast')).toHaveText(/Can't save newsletter/);
         await expect(modal).toHaveText(/Please enter a name/);
 
         // Shouldn't be necessary, but without these Playwright doesn't click Create the second time for some reason
@@ -69,7 +69,7 @@ test.describe('Newsletter settings', async () => {
         await modal.getByPlaceholder('Weekly Roundup').fill('');
         await modal.getByRole('button', {name: 'Save & close'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/One or more fields have errors/);
+        await expect(page.getByTestId('toast')).toHaveText(/Can't save newsletter/);
         await expect(modal).toHaveText(/Please enter a name/);
 
         await modal.getByPlaceholder('Weekly Roundup').fill('Updated newsletter');
@@ -176,5 +176,46 @@ test.describe('Newsletter settings', async () => {
                 status: 'archived'
             }]
         });
+    });
+
+    test('Limits the number of newsletters', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            ...limitRequests,
+            browseConfig: {
+                ...globalDataRequests.browseConfig,
+                response: {
+                    config: {
+                        ...responseFixtures.config.config,
+                        hostSettings: {
+                            limits: {
+                                newsletters: {
+                                    max: 1,
+                                    error: 'Your plan supports up to {{max}} newsletters. Please upgrade to add more.'
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=all', response: responseFixtures.newsletters}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('newsletters');
+
+        await section.getByRole('button', {name: 'Add newsletter'}).click();
+
+        await expect(page.getByTestId('limit-modal')).toHaveText(/Your plan supports up to 1 newsletters/);
+
+        await page.getByTestId('limit-modal').getByRole('button', {name: 'Cancel'}).click();
+
+        await section.getByRole('tab', {name: 'Archived'}).click();
+
+        await section.getByText('Average newsletter').hover();
+        await section.getByRole('button', {name: 'Activate'}).click();
+
+        await expect(page.getByTestId('limit-modal')).toHaveText(/Your plan supports up to 1 newsletters/);
     });
 });

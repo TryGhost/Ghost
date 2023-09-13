@@ -47,7 +47,7 @@ const upload = multer({dest: os.tmpdir()});
 
 const deleteSingleFile = file => fs.unlink(file.path).catch(err => logging.error(err));
 
-const single = name => (req, res, next) => {
+const single = name => function singleUploadFunction(req, res, next) {
     const singleUpload = upload.single(name);
 
     singleUpload(req, res, (err) => {
@@ -77,7 +77,7 @@ const single = name => (req, res, next) => {
     });
 };
 
-const media = (fileName, thumbName) => (req, res, next) => {
+const media = (fileName, thumbName) => function mediaUploadFunction(req, res, next) {
     const mediaUpload = upload.fields([{
         name: fileName,
         maxCount: 1

@@ -47,11 +47,7 @@
   },
   "renovate": {
     "extends": [
-      "@tryghost:quietJS",
-      "@tryghost:disableTryGhostAutomerge",
-      "@tryghost:groupTestLint",
-      "@tryghost:groupCSS",
-      "@tryghost:groupBuildTools"
+      "github>tryghost/renovate-config:quiet"
     ],
     "rebaseWhen": "never",
     "ignoreDeps": [
@@ -72,18 +68,6 @@
       "ghost/admin/lib/koenig-editor/package.json"
     ],
     "packageRules": [
-      {
-        "packagePatterns": [
-          "@tryghost"
-        ],
-        "groupName": "@tryghost"
-      },
-      {
-        "packagePatterns": [
-          "metascraper"
-        ],
-        "groupName": "metascraper"
-      },
       {
         "groupName": "ember-basic-dropdown addons",
         "packagePatterns": [
@@ -120,15 +104,15 @@
     "*.js": "eslint"
   },
   "devDependencies": {
-    "concurrently": "8.2.0",
+    "concurrently": "8.2.1",
     "eslint": "8.44.0",
-    "eslint-plugin-ghost": "3.3.0",
+    "eslint-plugin-ghost": "3.3.2",
     "eslint-plugin-react": "7.33.0",
     "husky": "8.0.3",
-    "lint-staged": "13.2.3",
-    "nx": "16.6.0",
+    "lint-staged": "14.0.1",
+    "nx": "16.7.4",
     "rimraf": "5.0.1",
     "ts-node": "10.9.1",
-    "typescript": "5.1.6"
+    "typescript": "5.2.2"
   }
 }

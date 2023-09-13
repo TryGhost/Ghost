@@ -1,10 +1,12 @@
+import ColorPickerField from '../../../../admin-x-ds/global/form/ColorPickerField';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import Hint from '../../../../admin-x-ds/global/Hint';
 import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
-import React from 'react';
+import React, {useRef, useState} from 'react';
 import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import {SettingValue} from '../../../../api/settings';
+import {debounce} from '../../../../utils/debounce';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
 
 export interface BrandSettingValues {
@@ -17,6 +19,14 @@ export interface BrandSettingValues {
 
 const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key: string, value: SettingValue) => void }> = ({values,updateSetting}) => {
     const {mutateAsync: uploadImage} = useUploadImage();
+    const [siteDescription, setSiteDescription] = useState(values.description);
+
+    const updateDescriptionDebouncedRef = useRef(
+        debounce((value: string) => {
+            updateSetting('description', value);
+        }, 500)
+    );
+    const updateSettingDebounced = debounce(updateSetting, 500);
 
     return (
         <div className='mt-7'>
@@ -26,24 +36,21 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                     clearBg={true}
                     hint='Used in your theme, meta data and search results'
                     title='Site description'
-                    value={values.description}
-                    onChange={event => updateSetting('description', event.target.value)}
+                    value={siteDescription}
+                    onChange={(event) => {
+                        // Immediately update the local state
+                        setSiteDescription(event.target.value);
+                        // Debounce the updateSetting call
+                        updateDescriptionDebouncedRef.current(event.target.value);
+                    }}
                 />
-                <div className='flex items-center justify-between gap-3'>
-                    <Heading grey={true} level={6}>Accent color</Heading>
-                    <div className='relative max-w-[70px]'>
-                        {/* <span className='absolute left-1 top-[9px] text-grey-600'>#</span> */}
-                        <TextField
-                            key='accent-color'
-                            className='text-right'
-                            clearBg={true}
-                            maxLength={7}
-                            type='color'
-                            value={values.accentColor}
-                            onChange={event => updateSetting('accent_color', event.target.value)}
-                        />
-                    </div>
-                </div>
+                <ColorPickerField
+                    direction='rtl'
+                    title={<Heading className='mt-[3px]' grey={true} level={6}>Accent color</Heading>}
+                    value={values.accentColor}
+                    // we debounce this because the color picker fires a lot of events.
+                    onChange={value => updateSettingDebounced('accent_color', value)}
+                />
                 <div className={`flex justify-between ${values.icon ? 'items-start ' : 'items-end'}`}>
                     <div>
                         <Heading grey={(values.icon ? true : false)} level={6}>Publication icon</Heading>

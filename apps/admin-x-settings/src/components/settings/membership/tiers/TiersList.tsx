@@ -5,7 +5,6 @@ import React from 'react';
 import useRouting from '../../../../hooks/useRouting';
 import {Tier, useEditTier} from '../../../../api/tiers';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
-import {modalRoutes} from '../../../providers/RoutingProvider';
 import {numberWithCommas} from '../../../../utils/helpers';
 
 interface TiersListProps {
@@ -17,7 +16,7 @@ interface TierCardProps {
     tier: Tier;
 }
 
-const cardContainerClasses = 'group flex min-h-[200px] flex-col items-start justify-between gap-4 self-stretch rounded-sm border border-grey-300 p-4 transition-all hover:border-grey-400';
+const cardContainerClasses = 'group/tiercard flex min-[900px]:min-h-[200px] flex-col items-start justify-between gap-4 self-stretch rounded-sm border border-grey-300 p-4 transition-all hover:border-grey-400 dark:border-grey-900 dark:hover:border-grey-700';
 
 const TierCard: React.FC<TierCardProps> = ({tier}) => {
     const {updateRoute} = useRouting();
@@ -28,7 +27,7 @@ const TierCard: React.FC<TierCardProps> = ({tier}) => {
     return (
         <div className={cardContainerClasses} data-testid='tier-card'>
             <div className='w-full grow cursor-pointer' onClick={() => {
-                updateRoute(modalRoutes.showTier, {id: tier.id});
+                updateRoute({route: `tiers/show/${tier.id}`});
             }}>
                 <div className='text-[1.65rem] font-bold leading-tight tracking-tight text-pink'>{tier.name}</div>
                 <div className='mt-2 flex items-baseline'>
@@ -42,11 +41,11 @@ const TierCard: React.FC<TierCardProps> = ({tier}) => {
             </div>
             {tier.monthly_price && (
                 tier.active ?
-                    <Button className='group opacity-0 group-hover:opacity-100' color='red' label='Archive' link onClick={() => {
+                    <Button className='group group-hover/tiercard:opacity-100 tablet:opacity-0' color='red' label='Archive' link onClick={() => {
                         updateTier({...tier, active: false});
                     }}/>
                     :
-                    <Button className='group opacity-0 group-hover:opacity-100' color='green' label='Activate' link onClick={() => {
+                    <Button className='group group-hover/tiercard:opacity-100 tablet:opacity-0' color='green' label='Activate' link onClick={() => {
                         updateTier({...tier, active: true});
                     }}/>
             )}
@@ -72,7 +71,7 @@ const TiersList: React.FC<TiersListProps> = ({
     }
 
     return (
-        <div className='mt-4 grid grid-cols-3 gap-4'>
+        <div className='mt-4 grid grid-cols-1 gap-4 min-[900px]:grid-cols-3'>
             {tiers.map((tier) => {
                 return <TierCard tier={tier} />;
             })}

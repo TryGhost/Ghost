@@ -132,7 +132,7 @@ class OEmbedService {
     /**
      * @param {string} url
      *
-     * @returns {Promise<{url: string, body: string}>}
+     * @returns {Promise<{url: string, body: string, contentType: string|undefined}>}
      */
     async fetchPageHtml(url) {
         // Fetch url and get response as binary buffer to
@@ -154,7 +154,8 @@ class OEmbedService {
             if (encoding === null) {
                 return {
                     body: body.toString(),
-                    url: responseUrl
+                    url: responseUrl,
+                    contentType: headers['content-type']
                 };
             }
 
@@ -163,14 +164,16 @@ class OEmbedService {
 
             return {
                 body: decodedBody,
-                url: responseUrl
+                url: responseUrl,
+                contentType: headers['content-type']
             };
         } catch (err) {
             logging.error(err);
             //return non decoded body anyway
             return {
                 body: body.toString(),
-                url: responseUrl
+                url: responseUrl,
+                contentType: headers['content-type']
             };
         }
     }
@@ -203,6 +206,13 @@ class OEmbedService {
             gotOpts.retry = 0;
         }
 
+        const pickFn = (sizes, pickDefault) => {
+            // Prioritize apple touch icon with sizes > 180
+            const appleTouchIcon = sizes.find(item => item.rel?.includes('apple') && item.sizes && item.size.width >= 180);
+            const svgIcon = sizes.find(item => item.href?.endsWith('svg'));
+            return appleTouchIcon || svgIcon || pickDefault(sizes);
+        };
+
         const metascraper = require('metascraper')([
             require('metascraper-url')(),
             require('metascraper-title')(),
@@ -211,7 +221,8 @@ class OEmbedService {
             require('metascraper-publisher')(),
             require('metascraper-image')(),
             require('metascraper-logo-favicon')({
-                gotOpts
+                gotOpts,
+                pickFn
             }),
             require('metascraper-logo')()
         ]);
@@ -347,7 +358,7 @@ class OEmbedService {
             }
 
             // Not in the list, we need to fetch the content
-            const {url: pageUrl, body} = await this.fetchPageHtml(url);
+            const {url: pageUrl, body, contentType} = await this.fetchPageHtml(url);
 
             // fetch only bookmark when explicitly requested
             if (type === 'bookmark') {
@@ -356,8 +367,26 @@ class OEmbedService {
 
             // mentions need to return bookmark data (metadata) and body (html) for link verification
             if (type === 'mention') {
+                if (contentType.includes('application/json')) {
+                    // No need to fetch metadata: we have none
+                    const bookmark = {
+                        version: '1.0',
+                        type: 'bookmark',
+                        url,
+                        metadata: {
+                            title: null,
+                            description: null,
+                            publisher: null,
+                            author: null,
+                            thumbnail: null,
+                            icon: null
+                        },
+                        contentType
+                    };
+                    return {...bookmark, body};
+                }
                 const bookmark = await this.fetchBookmarkData(url, body);
-                return {...bookmark, body};
+                return {...bookmark, body, contentType};
             }
 
             // attempt to fetch oembed

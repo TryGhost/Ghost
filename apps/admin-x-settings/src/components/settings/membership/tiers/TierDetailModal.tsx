@@ -1,10 +1,11 @@
 import Button from '../../../../admin-x-ds/global/Button';
+import CurrencyField from '../../../../admin-x-ds/global/form/CurrencyField';
 import Form from '../../../../admin-x-ds/global/form/Form';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import Icon from '../../../../admin-x-ds/global/Icon';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import Select from '../../../../admin-x-ds/global/form/Select';
 import SortableList from '../../../../admin-x-ds/global/SortableList';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
@@ -14,23 +15,18 @@ import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import useSortableIndexedList from '../../../../hooks/useSortableIndexedList';
-import {Tier, useAddTier, useEditTier} from '../../../../api/tiers';
-import {currencies, currencyFromDecimal, currencyGroups, currencyToDecimal, getSymbol} from '../../../../utils/currency';
+import {RoutingModalProps} from '../../../providers/RoutingProvider';
+import {Tier, useAddTier, useBrowseTiers, useEditTier} from '../../../../api/tiers';
+import {currencies, currencySelectGroups, validateCurrencyAmount} from '../../../../utils/currency';
 import {getSettingValues} from '../../../../api/settings';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
 
-interface TierDetailModalProps {
-    tier?: Tier
-}
-
-type TierFormState = Partial<Omit<Tier, 'monthly_price' | 'yearly_price' | 'trial_days'>> & {
-    monthly_price: string;
-    yearly_price: string;
+export type TierFormState = Partial<Omit<Tier, 'trial_days'>> & {
     trial_days: string;
 };
 
-const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
+const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     const isFreeTier = tier?.type === 'free';
 
     const modal = useModal();
@@ -51,21 +47,17 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
     const {formState, saveState, updateForm, handleSave} = useForm<TierFormState>({
         initialState: {
             ...(tier || {}),
-            monthly_price: tier?.monthly_price ? currencyToDecimal(tier.monthly_price).toString() : '',
-            yearly_price: tier?.yearly_price ? currencyToDecimal(tier.yearly_price).toString() : '',
             trial_days: tier?.trial_days?.toString() || '',
             currency: tier?.currency || currencies[0].isoCode
         },
         onSave: async () => {
-            const {monthly_price: monthlyPrice, yearly_price: yearlyPrice, trial_days: trialDays, currency, ...rest} = formState;
+            const {trial_days: trialDays, currency, ...rest} = formState;
             const values: Partial<Tier> = rest;
 
             values.benefits = values.benefits?.filter(benefit => benefit);
 
             if (!isFreeTier) {
                 values.currency = currency;
-                values.monthly_price = currencyFromDecimal(parseFloat(monthlyPrice));
-                values.yearly_price = currencyFromDecimal(parseFloat(yearlyPrice));
                 values.trial_days = parseInt(trialDays);
             }
 
@@ -79,12 +71,10 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
         }
     });
 
-    const currencySymbol = formState.currency ? getSymbol(formState.currency) : '$';
-
     const validators = {
         name: () => setError('name', formState.name ? undefined : 'You must specify a name'),
-        monthly_price: () => setError('monthly_price', (isFreeTier || (formState.monthly_price && parseFloat(formState.monthly_price) >= 1)) ? undefined : `Subscription amount must be at least ${currencySymbol}1.00`),
-        yearly_price: () => setError('yearly_price', (isFreeTier || (formState.yearly_price && parseFloat(formState.yearly_price) >= 1)) ? undefined : `Subscription amount must be at least ${currencySymbol}1.00`)
+        monthly_price: () => formState.type !== 'free' && setError('monthly_price', validateCurrencyAmount(formState.monthly_price || 0, formState.currency, {allowZero: false})),
+        yearly_price: () => formState.type !== 'free' && setError('yearly_price', validateCurrencyAmount(formState.yearly_price || 0, formState.currency, {allowZero: false}))
     };
 
     const benefits = useSortableIndexedList({
@@ -93,10 +83,6 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
         blank: '',
         canAddNewItem: item => !!item
     });
-
-    const forceCurrencyValue = (value: string) => {
-        return value.match(/[\d]+\.?[\d]{0,2}/)?.[0] || '';
-    };
 
     const toggleFreeTrial = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.checked) {
@@ -108,6 +94,17 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
         }
     };
 
+    // Only validate amounts when the user changes currency, don't show errors on initial render
+    const didInitialRender = useRef(false);
+    useEffect(() => {
+        if (didInitialRender.current) {
+            validators.monthly_price();
+            validators.yearly_price();
+        }
+
+        didInitialRender.current = true;
+    }, [formState.currency]); // eslint-disable-line react-hooks/exhaustive-deps
+
     return <Modal
         afterClose={() => {
             updateRoute('tiers');
@@ -118,20 +115,18 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
         testId='tier-detail-modal'
         title='Tier'
         stickyFooter
-        onOk={() => {
+        onOk={async () => {
+            toast.remove();
+
             if (Object.values(validators).filter(validator => validator()).length) {
                 showToast({
                     type: 'pageError',
-                    message: 'Can\'t save tier! One or more fields have errors, please doublecheck you filled all mandatory fields'
+                    message: 'Can\'t save tier, please double check that you\'ve filled in all mandatory fields.'
                 });
                 return;
             }
 
-            handleSave();
-
-            if (saveState !== 'unsaved') {
-                toast.dismiss();
-                modal.remove();
+            if (await handleSave()) {
                 updateRoute('tiers');
             }
         }}
@@ -156,20 +151,14 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                         value={formState.description || ''}
                         onChange={e => updateForm(state => ({...state, description: e.target.value}))}
                     />
-                    {!isFreeTier && <div className='flex gap-10'>
+                    {!isFreeTier && <div className='flex flex-col gap-10 md:flex-row'>
                         <div className='basis-1/2'>
                             <div className='mb-1 flex h-6 items-center justify-between'>
                                 <Heading level={6}>Prices</Heading>
                                 <div className='w-10'>
                                     <Select
                                         border={false}
-                                        options={Object.values(currencyGroups()).map(group => ({
-                                            label: '—',
-                                            options: group.map(({isoCode,name}) => ({
-                                                value: isoCode,
-                                                label: `${isoCode} - ${name}`
-                                            }))
-                                        }))}
+                                        options={currencySelectGroups()}
                                         selectClassName='font-medium'
                                         selectedOption={formState.currency}
                                         size='xs'
@@ -178,27 +167,27 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                                 </div>
                             </div>
                             <div className='flex flex-col gap-2'>
-                                <TextField
+                                <CurrencyField
                                     error={Boolean(errors.monthly_price)}
                                     hint={errors.monthly_price}
                                     placeholder='1'
                                     rightPlaceholder={`${formState.currency}/month`}
                                     title='Monthly price'
-                                    value={formState.monthly_price}
+                                    valueInCents={formState.monthly_price || 0}
                                     hideTitle
                                     onBlur={() => validators.monthly_price()}
-                                    onChange={e => updateForm(state => ({...state, monthly_price: forceCurrencyValue(e.target.value)}))}
+                                    onChange={price => updateForm(state => ({...state, monthly_price: price}))}
                                 />
-                                <TextField
+                                <CurrencyField
                                     error={Boolean(errors.yearly_price)}
                                     hint={errors.yearly_price}
                                     placeholder='10'
                                     rightPlaceholder={`${formState.currency}/year`}
                                     title='Yearly price'
-                                    value={formState.yearly_price}
+                                    valueInCents={formState.yearly_price || 0}
                                     hideTitle
                                     onBlur={() => validators.yearly_price()}
-                                    onChange={e => updateForm(state => ({...state, yearly_price: forceCurrencyValue(e.target.value)}))}
+                                    onChange={price => updateForm(state => ({...state, yearly_price: price}))}
                                 />
                             </div>
                         </div>
@@ -241,7 +230,7 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                         />
                     </div>
                     <div className="relative mt-0.5 flex items-center gap-3">
-                        <Icon name='check' size='sm' />
+                        <Icon className='dark:text-white' name='check' size='sm' />
                         <TextField
                             className='grow'
                             containerClassName='w-100'
@@ -264,11 +253,27 @@ const TierDetailModal: React.FC<TierDetailModalProps> = ({tier}) => {
                     </div>
                 </Form>
             </div>
-            <div className='sticky top-[94px] shrink-0 basis-[380px]'>
+            <div className='sticky top-[94px] hidden shrink-0 basis-[380px] min-[920px]:!visible min-[920px]:!block'>
                 <TierDetailPreview isFreeTier={isFreeTier} tier={formState} />
             </div>
         </div>
     </Modal>;
+};
+
+const TierDetailModal: React.FC<RoutingModalProps> = ({params}) => {
+    const {data: {tiers} = {}} = useBrowseTiers();
+
+    let tier: Tier | undefined;
+
+    if (params?.id) {
+        tier = tiers?.find(({id}) => id === params?.id);
+
+        if (!tier) {
+            return;
+        }
+    }
+
+    return <TierDetailModalContent tier={tier} />;
 };
 
 export default NiceModal.create(TierDetailModal);

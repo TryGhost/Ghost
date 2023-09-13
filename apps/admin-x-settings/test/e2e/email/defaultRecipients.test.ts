@@ -80,7 +80,7 @@ test.describe('Default recipient settings', async () => {
         await section.getByRole('button', {name: 'Edit'}).click();
 
         await section.getByLabel('Default newsletter recipients').selectOption({label: 'Specific people'});
-        await section.getByLabel('Select tiers').click();
+        await section.getByLabel('Filter').click();
 
         await section.locator('[data-testid="multiselect-option"]', {hasText: 'Basic Supporter'}).click();
         await section.locator('[data-testid="multiselect-option"]', {hasText: 'first-label'}).click();

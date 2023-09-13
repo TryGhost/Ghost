@@ -1,4 +1,5 @@
 import ButtonGroup from '../../../../admin-x-ds/global/ButtonGroup';
+import ColorPickerField from '../../../../admin-x-ds/global/form/ColorPickerField';
 import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import Form from '../../../../admin-x-ds/global/form/Form';
 import Heading from '../../../../admin-x-ds/global/Heading';
@@ -16,33 +17,33 @@ import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import ToggleGroup from '../../../../admin-x-ds/global/form/ToggleGroup';
-import useForm from '../../../../hooks/useForm';
+import useFeatureFlag from '../../../../hooks/useFeatureFlag';
+import useForm, {ErrorMessages} from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import validator from 'validator';
-import {Newsletter, useEditNewsletter} from '../../../../api/newsletters';
+import {Newsletter, useBrowseNewsletters, useEditNewsletter} from '../../../../api/newsletters';
 import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
+import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {fullEmailAddress} from '../../../../api/site';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
 import {getSettingValues} from '../../../../api/settings';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
+import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {toast} from 'react-hot-toast';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
-
-interface NewsletterDetailModalProps {
-    newsletter: Newsletter
-}
 
 const Sidebar: React.FC<{
     newsletter: Newsletter;
     updateNewsletter: (fields: Partial<Newsletter>) => void;
     validate: () => void;
-    errors: Record<string, string>;
+    errors: ErrorMessages;
     clearError: (field: string) => void;
 }> = ({newsletter, updateNewsletter, validate, errors, clearError}) => {
     const {settings, siteData, config} = useGlobalData();
     const [membersSupportAddress] = getSettingValues<string>(settings, ['members_support_address']);
     const {mutateAsync: uploadImage} = useUploadImage();
     const [selectedTab, setSelectedTab] = useState('generalSettings');
+    const hasEmailCustomization = useFeatureFlag('emailCustomization');
 
     const replyToEmails = [
         {label: `Newsletter address (${fullEmailAddress(newsletter.sender_email || 'noreply', siteData)})`, value: 'newsletter'},
@@ -53,6 +54,16 @@ const Sidebar: React.FC<{
         {value: 'serif', label: 'Elegant serif', className: 'font-serif'},
         {value: 'sans_serif', label: 'Clean sans-serif'}
     ];
+
+    const backgroundColorIsDark = () => {
+        if (newsletter.background_color === 'dark') {
+            return true;
+        }
+        if (newsletter.background_color === 'light') {
+            return false;
+        }
+        return textColorForBackgroundColor(newsletter.background_color).hex().toLowerCase() === '#ffffff';
+    };
 
     const tabs: Tab[] = [
         {
@@ -146,6 +157,49 @@ const Sidebar: React.FC<{
                 </Form>
 
                 <Form className='mt-6' gap='sm' margins='lg' title='Body'>
+                    {hasEmailCustomization && <>
+                        <ColorPickerField
+                            direction='rtl'
+                            swatches={[
+                                {
+                                    hex: '#f0f0f0',
+                                    title: 'Light grey'
+                                },
+                                {
+                                    hex: '#ffffff',
+                                    value: 'light',
+                                    title: 'White'
+                                }
+                            ]}
+                            title='Background color'
+                            value={newsletter.background_color || 'light'}
+                            onChange={color => updateNewsletter({background_color: color!})}
+                        />
+                        <ColorPickerField
+                            clearButtonValue={null}
+                            direction='rtl'
+                            swatches={[
+                                {
+                                    hex: siteData.accent_color,
+                                    value: 'accent',
+                                    title: 'Accent'
+                                },
+                                {
+                                    hex: backgroundColorIsDark() ? '#ffffff' : '#000000',
+                                    value: 'auto',
+                                    title: 'Auto'
+                                },
+                                {
+                                    value: null,
+                                    title: 'Transparent',
+                                    hex: '#00000000'
+                                }
+                            ]}
+                            title='Border color'
+                            value={newsletter.border_color}
+                            onChange={color => updateNewsletter({border_color: color})}
+                        />
+                    </>}
                     <Toggle
                         checked={newsletter.show_post_title_section}
                         direction="rtl"
@@ -189,6 +243,24 @@ const Sidebar: React.FC<{
                         className="mb-1 !gap-0"
                         />
                     </div>
+                    {hasEmailCustomization && <ColorPickerField
+                        direction='rtl'
+                        swatches={[
+                            {
+                                value: 'accent',
+                                title: 'Accent',
+                                hex: siteData.accent_color
+                            },
+                            {
+                                value: null,
+                                title: 'Auto',
+                                hex: backgroundColorIsDark() ? '#ffffff' : '#000000'
+                            }
+                        ]}
+                        title='Heading color'
+                        value={newsletter.title_color}
+                        onChange={color => updateNewsletter({title_color: color})}
+                    />}
                     <Select
                         options={fontOptions}
                         selectedOption={newsletter.body_font_category}
@@ -199,39 +271,39 @@ const Sidebar: React.FC<{
                         checked={newsletter.show_feature_image}
                         direction="rtl"
                         label='Feature image'
-                        labelStyle='value'
+                        labelStyle='heading'
                         onChange={e => updateNewsletter({show_feature_image: e.target.checked})}
                     />
                 </Form>
 
                 <Form className='mt-6' gap='sm' margins='lg' title='Footer'>
-                    <ToggleGroup>
+                    <ToggleGroup gap='lg'>
                         <Toggle
                             checked={newsletter.feedback_enabled}
                             direction="rtl"
                             label='Ask your readers for feedback'
-                            labelStyle='value'
+                            labelStyle='heading'
                             onChange={e => updateNewsletter({feedback_enabled: e.target.checked})}
                         />
                         <Toggle
                             checked={newsletter.show_comment_cta}
                             direction="rtl"
                             label='Add a link to your comments'
-                            labelStyle='value'
+                            labelStyle='heading'
                             onChange={e => updateNewsletter({show_comment_cta: e.target.checked})}
                         />
                         <Toggle
                             checked={newsletter.show_latest_posts}
                             direction="rtl"
                             label='Share your latest posts'
-                            labelStyle='value'
+                            labelStyle='heading'
                             onChange={e => updateNewsletter({show_latest_posts: e.target.checked})}
                         />
                         <Toggle
                             checked={newsletter.show_subscription_details}
                             direction="rtl"
                             label='Show subscription details'
-                            labelStyle='value'
+                            labelStyle='heading'
                             onChange={e => updateNewsletter({show_subscription_details: e.target.checked})}
                         />
                     </ToggleGroup>
@@ -266,8 +338,12 @@ const Sidebar: React.FC<{
                         <Toggle
                             checked={newsletter.show_badge}
                             direction='rtl'
-                            hint='Show you’re a part of the indie publishing movement with a small badge in the footer'
-                            label='Promote independent publishing'
+                            label={
+                                <div className='flex flex-col gap-0.5'>
+                                    <span className='text-sm md:text-base'>Promote independent publishing</span>
+                                    <span className='text-[11px] leading-tight text-grey-700 md:text-xs md:leading-tight'>Show you’re a part of the indie publishing movement with a small badge in the footer</span>
+                                </div>
+                            }
                             labelStyle='value'
                             onChange={e => updateNewsletter({show_badge: e.target.checked})}
                         />
@@ -278,7 +354,7 @@ const Sidebar: React.FC<{
     );
 };
 
-const NewsletterDetailModal: React.FC<NewsletterDetailModalProps> = ({newsletter}) => {
+const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
     const modal = useModal();
     const {siteData} = useGlobalData();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
@@ -349,11 +425,22 @@ const NewsletterDetailModal: React.FC<NewsletterDetailModalProps> = ({newsletter
             } else {
                 showToast({
                     type: 'pageError',
-                    message: 'Can\'t save newsletter! One or more fields have errors, please doublecheck you filled all mandatory fields'
+                    message: 'Can\'t save newsletter, please double check that you\'ve filled in all mandatory fields.'
                 });
             }
         }}
     />;
+};
+
+const NewsletterDetailModal: React.FC<RoutingModalProps> = ({params}) => {
+    const {data: {newsletters} = {}} = useBrowseNewsletters();
+    const newsletter = newsletters?.find(({id}) => id === params?.id);
+
+    if (newsletter) {
+        return <NewsletterDetailModalContent newsletter={newsletter} />;
+    } else {
+        return null;
+    }
 };
 
 export default NiceModal.create(NewsletterDetailModal);

@@ -3,6 +3,7 @@ import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModa
 import Heading from '../../../admin-x-ds/global/Heading';
 import Icon from '../../../admin-x-ds/global/Icon';
 import ImageUpload from '../../../admin-x-ds/global/form/ImageUpload';
+import LimitModal from '../../../admin-x-ds/global/modal/LimitModal';
 import Menu, {MenuItem} from '../../../admin-x-ds/global/Menu';
 import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
@@ -10,11 +11,15 @@ import Radio from '../../../admin-x-ds/global/form/Radio';
 import React, {useEffect, useRef, useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
+import TextArea from '../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
+import useFeatureFlag from '../../../hooks/useFeatureFlag';
 import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
+import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
+import {RoutingModalProps} from '../../providers/RoutingProvider';
 import {User, isAdminUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner, useUpdatePassword} from '../../../api/users';
 import {getImageUrl, useUploadImage} from '../../../api/images';
 import {showToast} from '../../../admin-x-ds/global/Toast';
@@ -53,8 +58,8 @@ const RoleSelector: React.FC<UserDetailProps> = ({user, setUserData}) => {
         return (
             <>
                 <Heading level={6}>Role</Heading>
-                <div className='flex h-[295px] flex-col items-center justify-center gap-3 bg-grey-75 px-10 py-20 text-center text-sm text-grey-800'>
-                    <Icon colorClass='text-grey-800' name='crown' size='lg' />
+                <div className='flex h-[295px] flex-col items-center justify-center gap-3 bg-grey-75 px-10 py-20 text-center text-sm text-grey-800 dark:bg-grey-950 dark:text-white'>
+                    <Icon colorClass='text-grey-800 dark:text-white' name='crown' size='lg' />
                     This user is the owner of the site. To change their role, you need to transfer the ownership first.
                 </div>
             </>
@@ -115,7 +120,7 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, validators, user, setUs
             />
             <TextField
                 error={!!errors?.email}
-                hint={errors?.email || ''}
+                hint={errors?.email || 'Used for notifications'}
                 title="Email"
                 value={user.email}
                 onBlur={(e) => {
@@ -154,6 +159,7 @@ const DetailsInputs: React.FC<UserDetailProps> = ({errors, validators, user, set
                 }}
             />
             <TextField
+                hint="Where in the world do you live?"
                 title="Location"
                 value={user.location}
                 onChange={(e) => {
@@ -162,7 +168,8 @@ const DetailsInputs: React.FC<UserDetailProps> = ({errors, validators, user, set
             />
             <TextField
                 error={!!errors?.url}
-                hint={errors?.url || ''}
+                hint={errors?.url || 'Have a website or blog other than this one? Link it!'}
+                placeholder='https://example.com'
                 title="Website"
                 value={user.website}
                 onBlur={(e) => {
@@ -173,6 +180,8 @@ const DetailsInputs: React.FC<UserDetailProps> = ({errors, validators, user, set
                 }}
             />
             <TextField
+                hint='URL of your personal Facebook Profile'
+                placeholder='https://www.facebook.com/ghost'
                 title="Facebook profile"
                 value={user.facebook}
                 onChange={(e) => {
@@ -180,16 +189,18 @@ const DetailsInputs: React.FC<UserDetailProps> = ({errors, validators, user, set
                 }}
             />
             <TextField
+                hint='URL of your personal Twitter profile'
+                placeholder='https://twitter.com/ghost'
                 title="Twitter profile"
                 value={user.twitter}
                 onChange={(e) => {
                     setUserData?.({...user, twitter: e.target.value});
                 }}
             />
-            <TextField
-                hint="Recommended: 200 characters."
+            <TextArea
+                hint={<>Recommended: 200 characters. You&lsquo;ve used <span className='font-bold'>{user.bio?.length || 0}</span></>}
                 title="Bio"
-                value={user.bio}
+                value={user.bio || ''}
                 onChange={(e) => {
                     setUserData?.({...user, bio: e.target.value});
                 }}
@@ -211,6 +222,8 @@ const Details: React.FC<UserDetailProps> = ({errors, validators, user, setUserDa
 };
 
 const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
+    const hasWebmentions = useFeatureFlag('webmentions');
+
     return (
         <SettingGroupContent>
             <Toggle
@@ -222,6 +235,15 @@ const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user, setUserData}
                     setUserData?.({...user, comment_notifications: e.target.checked});
                 }}
             />
+            {hasWebmentions && <Toggle
+                checked={user.mention_notifications}
+                direction='rtl'
+                hint='Every time another site links to your work'
+                label='Mentions'
+                onChange={(e) => {
+                    setUserData?.({...user, mention_notifications: e.target.checked});
+                }}
+            />}
             <Toggle
                 checked={user.free_member_signup_notification}
                 direction='rtl'
@@ -408,33 +430,35 @@ const Password: React.FC<UserDetailProps> = ({user}) => {
     );
 };
 
-interface UserDetailModalProps {
-    user: User;
-}
-
 const UserMenuTrigger = () => (
     <button className='flex h-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] px-3 opacity-80 hover:opacity-100' type='button'>
-        <Icon colorClass='text-white' name='ellipsis' size='md' />
         <span className='sr-only'>Actions</span>
+        <Icon colorClass='text-white' name='ellipsis' size='md' />
     </button>
 );
 
-const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
+const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     const {updateRoute} = useRouting();
     const {ownerUser} = useStaffUsers();
-    const [userData, setUserData] = useState(user);
-    const [saveState, setSaveState] = useState('');
+    const [userData, _setUserData] = useState(user);
+    const [saveState, setSaveState] = useState<'' | 'unsaved' | 'saving' | 'saved'>('');
     const [errors, setErrors] = useState<{
         name?: string;
         email?: string;
         url?: string;
     }>({});
 
+    const setUserData = (newUserData: User | ((current: User) => User)) => {
+        _setUserData(newUserData);
+        setSaveState('unsaved');
+    };
+
     const mainModal = useModal();
     const {mutateAsync: uploadImage} = useUploadImage();
     const {mutateAsync: updateUser} = useEditUser();
     const {mutateAsync: deleteUser} = useDeleteUser();
     const {mutateAsync: makeOwner} = useMakeOwner();
+    const limiter = useLimiter();
 
     useEffect(() => {
         if (saveState === 'saved') {
@@ -445,7 +469,23 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
         }
     }, [mainModal, saveState, updateRoute]);
 
-    const confirmSuspend = (_user: User) => {
+    const confirmSuspend = async (_user: User) => {
+        if (_user.status === 'inactive' && _user.roles[0].name !== 'Contributor') {
+            try {
+                await limiter?.errorIfWouldGoOverLimit('staff');
+            } catch (error) {
+                if (error instanceof HostLimitError) {
+                    NiceModal.show(LimitModal, {
+                        formSheet: true,
+                        prompt: error.message || `Your current plan doesn't support more users.`
+                    });
+                    return;
+                } else {
+                    throw error;
+                }
+            }
+        }
+
         let warningText = 'This user will no longer be able to log in but their posts will be kept.';
         if (_user.status === 'inactive') {
             warningText = 'This user will be able to log in again and will have the same permissions they had previously.';
@@ -596,7 +636,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
         okLabel = 'Saved';
     }
 
-    const fileUploadButtonClasses = 'absolute right-[104px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium z-10';
+    const fileUploadButtonClasses = 'absolute left-12 md:left-auto md:right-[104px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium z-10';
 
     const suspendedText = userData.status === 'inactive' ? ' (Suspended)' : '';
 
@@ -626,6 +666,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
     return (
         <Modal
             afterClose={() => updateRoute('users')}
+            dirty={saveState === 'unsaved'}
             okLabel={okLabel}
             size='lg'
             stickyFooter={true}
@@ -640,7 +681,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
                 if (error) {
                     showToast({
                         type: 'pageError',
-                        message: 'Can\'t save user! One or more fields have errors, please doublecheck you filled all mandatory fields'
+                        message: 'Can\'t save user, please double check that you\'ve filled in all mandatory fields.'
                     });
                     setSaveState('');
                     return;
@@ -671,12 +712,12 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
                             handleImageUpload('cover_image', file);
                         }}
                     >Upload cover image</ImageUpload>
-                    <div className="absolute bottom-12 right-12">
-                        <Menu items={menuItems} position='left' trigger={<UserMenuTrigger />}></Menu>
+                    <div className="absolute bottom-12 right-12 z-10">
+                        <Menu items={menuItems} position='right' trigger={<UserMenuTrigger />}></Menu>
                     </div>
-                    <div className='relative flex items-center gap-4 px-12 pb-7 pt-60'>
+                    <div className='relative flex flex-col items-start gap-4 px-12 pb-60 pt-10 md:flex-row md:items-center md:pb-7 md:pt-60'>
                         <ImageUpload
-                            deleteButtonClassName='invisible absolute -right-2 -top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible'
+                            deleteButtonClassName='md:invisible absolute -right-2 -top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible'
                             deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
                             fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
                             id='avatar'
@@ -700,7 +741,7 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
                         </div>
                     </div>
                 </div>
-                <div className='mt-10 grid grid-cols-2 gap-x-12 gap-y-20'>
+                <div className='mt-10 grid grid-cols-1 gap-x-12 gap-y-20 md:grid-cols-2'>
                     <Basic errors={errors} setUserData={setUserData} user={userData} validators={validators} />
                     <Details errors={errors} setUserData={setUserData} user={userData} validators={validators} />
                     <EmailNotifications setUserData={setUserData} user={userData} />
@@ -709,6 +750,17 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
             </div>
         </Modal>
     );
+};
+
+const UserDetailModal: React.FC<RoutingModalProps> = ({params}) => {
+    const {users} = useStaffUsers();
+    const user = users.find(({slug}) => slug === params?.slug);
+
+    if (user) {
+        return <UserDetailModalContent user={user} />;
+    } else {
+        return null;
+    }
 };
 
 export default NiceModal.create(UserDetailModal);

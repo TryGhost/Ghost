@@ -1,5 +1,7 @@
-import {QueryClient, UseQueryOptions, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import {QueryClient, UseInfiniteQueryOptions, UseQueryOptions, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {getGhostPaths} from './helpers';
+import {useMemo} from 'react';
+import {usePage, usePagination} from '../hooks/usePagination';
 import {useServices} from '../components/providers/ServiceProvider';
 
 export interface Meta {
@@ -19,6 +21,7 @@ interface RequestOptions {
     headers?: {
         'Content-Type'?: string;
     };
+    credentials?: 'include' | 'omit' | 'same-origin';
 }
 
 export class ApiError extends Error {
@@ -71,6 +74,8 @@ export const useFetchApi = () => {
             throw new ApiError(response, data);
         } else if (response.status === 204) {
             return;
+        } else if (response.headers.get('content-type')?.includes('text/csv')) {
+            return await response.text();
         } else {
             return await response.json();
         }
@@ -79,7 +84,7 @@ export const useFetchApi = () => {
 
 const {apiRoot} = getGhostPaths();
 
-const apiUrl = (path: string, searchParams: { [key: string]: string } = {}) => {
+export const apiUrl = (path: string, searchParams: Record<string, string> = {}) => {
     const url = new URL(`${apiRoot}${path}`, window.location.origin);
     url.search = new URLSearchParams(searchParams).toString();
     return url.toString();
@@ -93,11 +98,11 @@ const parameterizedPath = (path: string, params: string | string[]) => {
 interface QueryOptions<ResponseData> {
     dataType: string
     path: string
-    defaultSearchParams?: { [key: string]: string };
+    defaultSearchParams?: Record<string, string>;
     returnData?: (originalData: unknown) => ResponseData;
 }
 
-type QueryHookOptions<ResponseData> = UseQueryOptions<ResponseData> & { searchParams?: { [key: string]: string } };
+type QueryHookOptions<ResponseData> = UseQueryOptions<ResponseData> & { searchParams?: Record<string, string> };
 
 export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) => ({searchParams, ...query}: QueryHookOptions<ResponseData> = {}) => {
     const url = apiUrl(options.path, searchParams || options.defaultSearchParams);
@@ -109,9 +114,75 @@ export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) =
         ...query
     });
 
+    const data = useMemo(() => (
+        (result.data && options.returnData) ? options.returnData(result.data) : result.data)
+    , [result]);
+
     return {
         ...result,
-        data: (result.data && options.returnData) ? options.returnData(result.data) : result.data
+        data
+    };
+};
+
+export const createPaginatedQuery = <ResponseData extends {meta?: Meta}>(options: QueryOptions<ResponseData>) => ({searchParams, ...query}: QueryHookOptions<ResponseData> = {}) => {
+    const {page, setPage} = usePage();
+    const limit = (searchParams?.limit || options.defaultSearchParams?.limit) ? parseInt(searchParams?.limit || options.defaultSearchParams?.limit || '15') : 15;
+
+    const paginatedSearchParams = searchParams || options.defaultSearchParams || {};
+    paginatedSearchParams.page = page.toString();
+
+    const url = apiUrl(options.path, paginatedSearchParams);
+    const fetchApi = useFetchApi();
+
+    const result = useQuery<ResponseData>({
+        queryKey: [options.dataType, url],
+        queryFn: () => fetchApi(url),
+        ...query
+    });
+
+    const data = useMemo(() => (
+        (result.data && options.returnData) ? options.returnData(result.data) : result.data)
+    , [result]);
+
+    const pagination = usePagination({
+        page,
+        setPage,
+        limit,
+        // Don't pass the meta data if we are fetching, because then it is probably out of date and this causes issues
+        meta: result.isFetching ? undefined : data?.meta
+    });
+
+    return {
+        ...result,
+        data,
+        pagination
+    };
+};
+
+type InfiniteQueryOptions<ResponseData> = Omit<QueryOptions<ResponseData>, 'returnData'> & {
+    returnData: NonNullable<QueryOptions<ResponseData>['returnData']>
+}
+
+type InfiniteQueryHookOptions<ResponseData> = UseInfiniteQueryOptions<ResponseData> & {
+    searchParams?: Record<string, string>;
+    getNextPageParams: (data: ResponseData, params: Record<string, string>) => Record<string, string>;
+};
+
+export const createInfiniteQuery = <ResponseData>(options: InfiniteQueryOptions<ResponseData>) => ({searchParams, getNextPageParams, ...query}: InfiniteQueryHookOptions<ResponseData>) => {
+    const fetchApi = useFetchApi();
+
+    const result = useInfiniteQuery<ResponseData>({
+        queryKey: [options.dataType, apiUrl(options.path, searchParams || options.defaultSearchParams)],
+        queryFn: ({pageParam}) => fetchApi(apiUrl(options.path, pageParam || searchParams || options.defaultSearchParams)),
+        getNextPageParam: data => getNextPageParams(data, searchParams || options.defaultSearchParams || {}),
+        ...query
+    });
+
+    const data = useMemo(() => result.data && options.returnData(result.data), [result]);
+
+    return {
+        ...result,
+        data
     };
 };
 
@@ -125,14 +196,14 @@ interface MutationOptions<ResponseData, Payload> extends Omit<QueryOptions<Respo
     body?: (payload: Payload) => FormData | object;
     searchParams?: (payload: Payload) => { [key: string]: string; };
     invalidateQueries?: { dataType: string; };
-    updateQueries?: { dataType: string; update: <CurrentData>(newData: ResponseData, currentData: CurrentData, payload: Payload) => unknown };
+    updateQueries?: { dataType: string; update: (newData: ResponseData, currentData: unknown, payload: Payload) => unknown };
 }
 
 const mutate = <ResponseData, Payload>({fetchApi, path, payload, searchParams, options}: {
     fetchApi: ReturnType<typeof useFetchApi>;
     path: string;
     payload?: Payload;
-    searchParams?: { [key: string]: string };
+    searchParams?: Record<string, string>;
     options: MutationOptions<ResponseData, Payload>
 }) => {
     const {defaultSearchParams, body, ...requestOptions} = options;

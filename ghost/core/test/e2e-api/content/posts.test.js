@@ -26,6 +26,8 @@ describe('Posts Content API', function () {
     let agent;
 
     before(async function () {
+        // NOTE: can be removed after collections -> GA
+        mockManager.mockLabsEnabled('collections');
         agent = await agentProvider.getContentAPIAgent();
         await fixtureManager.init('owner:post', 'users', 'user:inactive', 'posts', 'tags:extra', 'api_keys', 'newsletters', 'members:newsletters');
         await agent.authenticate();
