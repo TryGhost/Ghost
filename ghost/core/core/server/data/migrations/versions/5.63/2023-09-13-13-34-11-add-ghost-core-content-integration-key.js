@@ -22,7 +22,7 @@ const addIntegrationContentKey = async (knex, integration) => {
 
     if (!existingIntegration) {
         throw new InternalServerError({
-            message: `Count not find "${integration.name}" integration`
+            message: `Could not find "${integration.name}" integration`
         });
     }
 
