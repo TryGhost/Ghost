@@ -27,6 +27,8 @@ export interface CustomThemeSettingsResponseType {
 
 const dataType = 'CustomThemeSettingsResponseType';
 
+export const customThemeSettingsDataType = dataType;
+
 export const useBrowseCustomThemeSettings = createQuery<CustomThemeSettingsResponseType>({
     dataType,
     path: '/custom_theme_settings/'

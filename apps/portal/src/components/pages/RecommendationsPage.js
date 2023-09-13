@@ -3,12 +3,17 @@ import {useContext, useState, useEffect, useCallback, useMemo} from 'react';
 import CloseButton from '../common/CloseButton';
 import {clearURLParams} from '../../utils/notifications';
 import LoadingPage from './LoadingPage';
-import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark-fill.svg';
 import {ReactComponent as ArrowIcon} from '../../images/icons/arrow-top-right.svg';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
+import {ReactComponent as CheckmarkIcon} from '../../images/icons/check-circle.svg';
+
 import {getRefDomain} from '../../utils/helpers';
 
 export const RecommendationsPageStyles = `
+    .gh-portal-recommendation-item {
+        min-height: 38px;
+    }
+
     .gh-portal-recommendation-item .gh-portal-list-detail {
         padding: 4px 24px 4px 0px;
     }
@@ -37,11 +42,19 @@ export const RecommendationsPageStyles = `
     text-align: center;
     }
 
+    .gh-portal-recommendation-description-container {
+        position: relative;
+    }
+
+    .gh-portal-recommendation-description-hidden {
+        visibility: hidden;
+    }
+
     .gh-portal-recommendation-item .gh-portal-list-detail {
     transition: 0.2s ease-in-out opacity;
     }
 
-    .gh-portal-recommendation-item:hover .gh-portal-list-detail {
+    .gh-portal-list-detail:hover {
     cursor: pointer;
     opacity: 0.8;
     }
@@ -60,6 +73,39 @@ export const RecommendationsPageStyles = `
 
     .gh-portal-recommendation-item .gh-portal-list-detail:hover .gh-portal-recommendation-arrow-icon {
     opacity: 0.8;
+    }
+    
+    .gh-portal-recommendation-subscribed {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 1.5rem;
+        letter-spacing: 0.3px;
+        line-height: 1.3em;
+        animation: 0.5s ease-in-out fadeIn;
+    }
+
+    .gh-portal-recommendation-subscribed.with-reason {
+        position: absolute;
+        margin-top: 5px;
+    }
+
+    .gh-portal-recommendation-subscribed.without-reason {
+        margin-top: 10px;
+    }
+
+    .gh-portal-recommendation-subscribed span {
+        color: var(--grey6);
+    }
+
+    .gh-portal-recommendation-checkmark-icon {
+        height: 20px;
+        color: #30cf43;
+    }
+
+    .gh-portal-recommendation-item .gh-portal-loadingicon {
+        position: relative !important;
+        height: 24px;
     }
 `;
 
@@ -172,13 +218,14 @@ const RecommendationItem = (recommendation) => {
                     <h3>{title}</h3>
                     <ArrowIcon className="gh-portal-recommendation-arrow-icon" />
                 </div>
-                {reason && <p>{reason}</p>}
+                <div className="gh-portal-recommendation-description-container">
+                    {subscribed && <div className={'gh-portal-recommendation-subscribed ' + (reason ? 'with-reason' : 'without-reason')}><CheckmarkIcon className="gh-portal-recommendation-checkmark-icon" alt=''/><span>{t('Verification link sent, check your inbox')}</span></div>}
+                    {reason && <p className={subscribed ? 'gh-portal-recommendation-description-hidden' : ''}>{reason}</p>}
+                </div>
             </div>
             <div>
-                {subscribed && <CheckmarkIcon className='gh-portal-checkmark-icon' alt='' />}
                 {!subscribed && loading && <span className='gh-portal-recommendations-loading-container'><LoaderIcon className={'gh-portal-loadingicon dark'} /></span>}
-                {/* {!subscribed && !loading && <button type="button" className="gh-portal-btn gh-portal-btn-list" onClick={clickHandler}>{allowOneClickSubscribe ? t('Subscribe') : t('Visit')}</button>} */}
-                {!subscribed && allowOneClickSubscribe && <button type="button" className="gh-portal-btn gh-portal-btn-list" onClick={clickHandler}>{t('Subscribe')}</button>}
+                {!subscribed && !loading && allowOneClickSubscribe && <button type="button" className="gh-portal-btn gh-portal-btn-list" onClick={clickHandler}>{t('Subscribe')}</button>}
             </div>
         </section>
     );
