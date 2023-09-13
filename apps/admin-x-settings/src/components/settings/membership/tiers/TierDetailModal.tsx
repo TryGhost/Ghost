@@ -121,7 +121,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
             if (Object.values(validators).filter(validator => validator()).length) {
                 showToast({
                     type: 'pageError',
-                    message: 'Can\'t save tier, please double check that you\'ve filled in all mandatory fields.'
+                    message: 'Can\'t save tier, please double check that you\'ve filled all mandatory fields.'
                 });
                 return;
             }

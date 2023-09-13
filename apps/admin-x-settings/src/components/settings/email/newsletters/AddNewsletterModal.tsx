@@ -83,7 +83,7 @@ const AddNewsletterModal: React.FC<AddNewsletterModalProps> = () => {
             } else {
                 showToast({
                     type: 'pageError',
-                    message: 'Can\'t save newsletter, please double check that you\'ve filled in all mandatory fields.'
+                    message: 'Can\'t save newsletter, please double check that you\'ve filled all mandatory fields.'
                 });
             }
         }}
