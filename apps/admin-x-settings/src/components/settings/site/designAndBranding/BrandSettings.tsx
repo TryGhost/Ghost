@@ -5,9 +5,12 @@ import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
 import React, {useRef, useState} from 'react';
 import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
+import usePinturaEditor from '../../../../hooks/usePinturaEditor';
 import {SettingValue} from '../../../../api/settings';
 import {debounce} from '../../../../utils/debounce';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
+import {getSettingValues} from '../../../../api/settings';
+import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 export interface BrandSettingValues {
     description: string
@@ -20,6 +23,10 @@ export interface BrandSettingValues {
 const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key: string, value: SettingValue) => void }> = ({values,updateSetting}) => {
     const {mutateAsync: uploadImage} = useUploadImage();
     const [siteDescription, setSiteDescription] = useState(values.description);
+    const {settings} = useGlobalData();
+    const [pintura] = getSettingValues<boolean>(settings, ['pintura']);
+    const [pinturaJsUrl] = getSettingValues<string>(settings, ['pintura_js_url']);
+    const [pinturaCssUrl] = getSettingValues<string>(settings, ['pintura_css_url']);
 
     const updateDescriptionDebouncedRef = useRef(
         debounce((value: string) => {
@@ -27,6 +34,14 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
         }, 500)
     );
     const updateSettingDebounced = debounce(updateSetting, 500);
+
+    const editor = usePinturaEditor(
+        {config: {
+            jsUrl: pinturaJsUrl || '',
+            cssUrl: pinturaCssUrl || ''
+        },
+        disabled: !pintura}
+    );
 
     return (
         <div className='mt-7'>
@@ -97,6 +112,17 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                         height='180px'
                         id='cover'
                         imageURL={values.coverImage || ''}
+                        pintura={
+                            {
+                                isEnabled: pintura || false,
+                                openEditor: async () => editor.openEditor({
+                                    image: values.coverImage || '',
+                                    handleSave: async (file:File) => {
+                                        updateSetting('cover_image', getImageUrl(await uploadImage({file})));
+                                    }
+                                })
+                            }
+                        }
                         onDelete={() => updateSetting('cover_image', null)}
                         onUpload={async (file) => {
                             updateSetting('cover_image', getImageUrl(await uploadImage({file})));

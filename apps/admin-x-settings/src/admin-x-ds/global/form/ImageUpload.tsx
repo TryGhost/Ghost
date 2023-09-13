@@ -27,6 +27,14 @@ interface ImageUploadProps {
     onUpload: (file: File) => void;
     onDelete: () => void;
     onImageClick?: MouseEventHandler<HTMLImageElement>;
+
+    /**
+     * Pintura config
+     */
+    pintura?: {
+        isEnabled: boolean;
+        openEditor: () => void;
+    }
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -46,7 +54,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     unstyled = false,
     onUpload,
     onDelete,
-    onImageClick
+    onImageClick,
+    pintura
 }) => {
     if (!unstyled) {
         imageContainerClassName = clsx(
@@ -89,6 +98,12 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                     width: (unstyled ? '' : width || '100%'),
                     height: (unstyled ? '' : height || 'auto')
                 }} onClick={onImageClick} />
+                {
+                    pintura?.isEnabled && pintura?.openEditor &&
+                    <button className='absolute bottom-4 right-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] text-white hover:bg-black' type='button' onClick={pintura.openEditor}>
+                        <Icon colorClass='text-white' name='pencil' size='sm' />
+                    </button>
+                }
                 <button className={deleteButtonClassName} type='button' onClick={onDelete}>
                     {deleteButtonContent}
                 </button>
