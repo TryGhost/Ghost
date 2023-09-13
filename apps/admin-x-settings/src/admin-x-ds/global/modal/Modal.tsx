@@ -1,7 +1,7 @@
 import Button, {ButtonColor, ButtonProps} from '../Button';
 import ButtonGroup from '../ButtonGroup';
 import Heading from '../Heading';
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import StickyFooter from '../StickyFooter';
 import clsx from 'clsx';
 import useGlobalDirtyState from '../../../hooks/useGlobalDirtyState';
@@ -68,6 +68,7 @@ const Modal: React.FC<ModalProps> = ({
 }) => {
     const modal = useModal();
     const {setGlobalDirtyState} = useGlobalDirtyState();
+    const [animationFinished, setAnimationFinished] = useState(false);
 
     useEffect(() => {
         setGlobalDirtyState(dirty);
@@ -94,6 +95,16 @@ const Modal: React.FC<ModalProps> = ({
             document.removeEventListener('keydown', handleEscapeKey);
         };
     }, [modal, dirty, afterClose, onCancel]);
+
+    // The animation classes apply a transform to the modal, which breaks anything inside using position:fixed
+    // We should remove the class as soon as the animation is finished
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            setAnimationFinished(true);
+        }, 250);
+
+        return () => clearTimeout(timeout);
+    }, []);
 
     let buttons: ButtonProps[] = [];
 
@@ -132,8 +143,8 @@ const Modal: React.FC<ModalProps> = ({
     let modalClasses = clsx(
         'relative z-50 mx-auto flex max-h-[100%] w-full flex-col justify-between overflow-x-hidden rounded bg-white dark:bg-black',
         formSheet ? 'shadow-md' : 'shadow-xl',
-        (animate && !formSheet) && 'animate-modal-in',
-        formSheet && 'animate-modal-in-reverse',
+        (animate && !formSheet && !animationFinished) && 'animate-modal-in',
+        (formSheet && !animationFinished) && 'animate-modal-in-reverse',
         scrolling ? 'overflow-y-auto' : 'overflow-y-hidden'
     );
 

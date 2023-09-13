@@ -7,7 +7,7 @@ import SettingSection from '../../../admin-x-ds/settings/SettingSection';
 import {getSettingValues} from '../../../api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
-const searchKeywords = {
+export const searchKeywords = {
     enableNewsletters: ['newsletter', 'enable', 'disable', 'turn on'],
     newsletters: ['newsletter', 'email'],
     defaultRecipients: ['newsletter', 'default recipients', 'email'],

@@ -807,6 +807,13 @@
                     "description": "Internal frontend integration",
                     "type": "internal",
                     "api_keys": [{"type": "content"}]
+                },
+                {
+                    "slug": "ghost-core-content",
+                    "name": "Ghost Core Content API",
+                    "description": "Internal Content API integration for Admin access",
+                    "type": "core",
+                    "api_keys": [{"type": "content"}]
                 }
             ]
         }
