@@ -39,7 +39,7 @@ const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recomme
         <TextArea
             clearBg={true}
             rows={3}
-            title="Reason for recommending (optional)"
+            title="Description (optional)"
             value={formState.reason ?? ''}
             onChange={e => updateForm(state => ({...state, reason: e.target.value}))}
         />
