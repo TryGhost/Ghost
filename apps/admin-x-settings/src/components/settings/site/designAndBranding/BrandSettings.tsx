@@ -35,13 +35,17 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
     );
     const updateSettingDebounced = debounce(updateSetting, 500);
 
+    const pinturaEnabled = Boolean(pintura) && Boolean(pinturaJsUrl) && Boolean(pinturaCssUrl);
+
     const editor = usePinturaEditor(
         {config: {
             jsUrl: pinturaJsUrl || '',
             cssUrl: pinturaCssUrl || ''
         },
-        disabled: !pintura}
+        disabled: !pinturaEnabled}
     );
+
+    // check if pintura !false and pintura_js_url and pintura_css_url are not '' or null or undefined
 
     return (
         <div className='mt-7'>
@@ -116,7 +120,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                         imageURL={values.coverImage || ''}
                         pintura={
                             {
-                                isEnabled: pintura || false,
+                                isEnabled: pinturaEnabled,
                                 openEditor: async () => editor.openEditor({
                                     image: values.coverImage || '',
                                     handleSave: async (file:File) => {

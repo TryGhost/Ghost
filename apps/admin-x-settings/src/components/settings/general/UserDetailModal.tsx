@@ -468,13 +468,14 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     const [pintura] = getSettingValues<boolean>(settings, ['pintura']);
     const [pinturaJsUrl] = getSettingValues<string>(settings, ['pintura_js_url']);
     const [pinturaCssUrl] = getSettingValues<string>(settings, ['pintura_css_url']);
+    const pinturaEnabled = Boolean(pintura) && Boolean(pinturaJsUrl) && Boolean(pinturaCssUrl);
 
     const editor = usePinturaEditor(
         {config: {
             jsUrl: pinturaJsUrl || '',
             cssUrl: pinturaCssUrl || ''
         },
-        disabled: !pintura}
+        disabled: !pinturaEnabled}
     );
 
     useEffect(() => {
@@ -729,12 +730,11 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                         imageURL={userData.cover_image || ''}
                         pintura={
                             {
-                                isEnabled: pintura || false,
+                                isEnabled: pinturaEnabled,
                                 openEditor: async () => editor.openEditor({
                                     image: userData.cover_image || '',
-                                    // handleSave: async (file:File) => {
-                                    handleSave: async () => {
-                                        // updateSetting('cover_image', getImageUrl(await uploadImage({file})));
+                                    handleSave: async (file:File) => {
+                                        handleImageUpload('cover_image', file);
                                     }
                                 })
                             }
@@ -762,12 +762,11 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                             imageURL={userData.profile_image}
                             pintura={
                                 {
-                                    isEnabled: pintura || false,
+                                    isEnabled: pinturaEnabled,
                                     openEditor: async () => editor.openEditor({
                                         image: userData.profile_image || '',
-                                        // handleSave: async (file:File) => {
-                                        handleSave: async () => {
-                                            // updateSetting('cover_image', getImageUrl(await uploadImage({file})));
+                                        handleSave: async (file:File) => {
+                                            handleImageUpload('profile_image', file);
                                         }
                                     })
                                 }
