@@ -76,10 +76,6 @@ const HistoryFilter: React.FC<{
     const {users} = useStaffUsers();
     const [searchedStaff, setSearchStaff] = useState<MultiSelectOption | null>();
 
-    const setStaff = (staff: MultiSelectOption) => {
-        setSearchStaff(staff);
-    };
-
     const resetStaff = () => {
         setSearchStaff(null);
     };
@@ -109,10 +105,10 @@ const HistoryFilter: React.FC<{
                     placeholder='Search staff'
                     size='sm'
                     values={(searchedStaff ? [searchedStaff] : [])}
-                    onChange={([option]) => {
-                        if (option) {
-                            setStaff(option);
-                            updateRoute(`history/view/${option.value}`);
+                    onChange={(options) => {
+                        if (options.length) {
+                            setSearchStaff(options[options.length - 1]);
+                            updateRoute(`history/view/${options[options.length - 1].value}`);
                         } else {
                             resetStaff();
                             updateRoute('history/view');
