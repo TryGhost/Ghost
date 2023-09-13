@@ -1,10 +1,11 @@
 import ButtonGroup from '../global/ButtonGroup';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import SettingGroupHeader from './SettingGroupHeader';
 import clsx from 'clsx';
 import useRouting from '../../hooks/useRouting';
 import {ButtonProps} from '../global/Button';
 import {SaveState} from '../../hooks/useForm';
+import {useScrollSection} from '../../hooks/useScrollSection';
 import {useSearch} from '../../components/providers/ServiceProvider';
 
 interface SettingGroupProps {
@@ -55,12 +56,9 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     onCancel
 }) => {
     const {checkVisible} = useSearch();
-    const {yScroll, updateScrolled, route} = useRouting();
+    const {route} = useRouting();
     const [highlight, setHighlight] = useState(false);
-    const scrollRef = useRef<HTMLDivElement | null>(null);
-    const [currentRect, setCurrentRect] = useState<{top: number, bottom: number}>({top: 0, bottom: 0});
-    const topOffset = -193.5;
-    const bottomOffset = 36;
+    const {ref} = useScrollSection(navid);
 
     const handleEdit = () => {
         onEditingChange?.(true);
@@ -133,24 +131,6 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     }
 
     useEffect(() => {
-        if (scrollRef.current) {
-            const rootElement = document.getElementById('admin-x-settings-content');
-            const rootRect = rootElement?.getBoundingClientRect() || DOMRect.fromRect();
-            const sectionRect = scrollRef.current.getBoundingClientRect();
-            setCurrentRect({
-                top: sectionRect.top - rootRect!.top,
-                bottom: (sectionRect.top - rootRect!.top) + sectionRect.height
-            });
-        }
-    }, [checkVisible, navid]);
-
-    useEffect(() => {
-        if (currentRect.top && yScroll! >= currentRect.top + topOffset && yScroll! < currentRect.bottom + topOffset + bottomOffset) {
-            updateScrolled(navid!);
-        }
-    }, [yScroll, currentRect, navid, updateScrolled, topOffset, bottomOffset]);
-
-    useEffect(() => {
         setHighlight(route === navid);
     }, [route, navid]);
 
@@ -172,9 +152,8 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     );
 
     return (
-        <div ref={scrollRef} className={containerClasses} data-testid={testId}>
-            {/* {yScroll} / {currentRect.top + topOffset} / {currentRect.bottom + topOffset + bottomOffset} */}
-            <div className='absolute top-[-193px]' id={navid && navid}></div>
+        <div className={containerClasses} data-testid={testId}>
+            <div ref={ref} className='absolute' id={navid && navid}></div>
             {customHeader ? customHeader :
                 <SettingGroupHeader description={description} title={title!}>
                     {customButtons ? customButtons :
