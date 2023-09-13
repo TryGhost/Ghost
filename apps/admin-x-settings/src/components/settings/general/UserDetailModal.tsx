@@ -623,7 +623,8 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             id: 'view-user-activity',
             label: 'View user activity',
             onClick: () => {
-                // TODO: show user activity
+                mainModal.remove();
+                updateRoute(`history/view/${userData.id}`);
             }
         }
     ]);
