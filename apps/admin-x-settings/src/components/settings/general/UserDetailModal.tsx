@@ -656,6 +656,10 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
 
     const fileUploadButtonClasses = 'absolute left-12 md:left-auto md:right-[104px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium z-10';
 
+    const deleteButtonClasses = 'absolute left-12 md:left-auto md:right-[152px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium z-10';
+
+    const editButtonClasses = 'absolute left-12 md:left-auto md:right-[102px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium z-10';
+
     const suspendedText = userData.status === 'inactive' ? ' (Suspended)' : '';
 
     const validators = {
@@ -714,14 +718,27 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             <div>
                 <div className={`relative -mx-12 -mt-12 rounded-t bg-gradient-to-tr from-grey-900 to-black`}>
                     <ImageUpload
-                        deleteButtonClassName={fileUploadButtonClasses}
+                        deleteButtonClassName={deleteButtonClasses}
                         deleteButtonContent='Delete cover image'
+                        editButtonClassName={editButtonClasses}
                         fileUploadClassName={fileUploadButtonClasses}
                         height={userData.cover_image ? '100%' : '32px'}
                         id='cover-image'
                         imageClassName='w-full h-full object-cover'
                         imageContainerClassName='absolute inset-0 bg-cover group bg-center rounded-t overflow-hidden'
                         imageURL={userData.cover_image || ''}
+                        pintura={
+                            {
+                                isEnabled: pintura || false,
+                                openEditor: async () => editor.openEditor({
+                                    image: userData.cover_image || '',
+                                    // handleSave: async (file:File) => {
+                                    handleSave: async () => {
+                                        // updateSetting('cover_image', getImageUrl(await uploadImage({file})));
+                                    }
+                                })
+                            }
+                        }
                         unstyled={true}
                         onDelete={() => {
                             handleImageDelete('cover_image');
