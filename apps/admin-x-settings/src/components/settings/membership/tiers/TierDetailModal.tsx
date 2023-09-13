@@ -126,6 +126,11 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                 return;
             }
 
+            if (saveState !== 'unsaved') {
+                updateRoute('tiers');
+                modal.remove();
+            }
+
             if (await handleSave()) {
                 updateRoute('tiers');
             }
