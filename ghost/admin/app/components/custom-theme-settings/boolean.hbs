@@ -1,7 +1,7 @@
 <div class="gh-stack-item {{if (eq @index 0) "gh-setting-first" "gh-setting"}} gh-setting-boolean">
     <div class="flex-grow-1">
         <div class="flex justify-between items-start relative">
-            <div class="flex flex-column" style="margin-right: 20px;">
+            <div class="flex flex-column mr5">
                 <span class="gh-setting-title {{if @setting.description '' 'mb0'}}" for={{this.checkboxId}}>
                     {{humanize-setting-key @setting.key}}
                 </span>
