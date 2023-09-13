@@ -36,19 +36,16 @@ function getPortalPreviewUrl({settings, config, tiers, siteData, selectedTab}: {
     settingsParam.append('button', getSettingValue(settings, 'portal_button') ? 'true' : 'false');
     settingsParam.append('name', getSettingValue(settings, 'portal_name') ? 'true' : 'false');
     settingsParam.append('isFree', portalPlans.includes('free') ? 'true' : 'false');
-    settingsParam.append('isMonthly', portalPlans.includes('monthly') ? 'true' : 'false');
-    settingsParam.append('isYearly', portalPlans.includes('yearly') ? 'true' : 'false');
+    settingsParam.append('isMonthly', checkStripeEnabled(settings, config) && portalPlans.includes('monthly') ? 'true' : 'false');
+    settingsParam.append('isYearly', checkStripeEnabled(settings, config) && portalPlans.includes('yearly') ? 'true' : 'false');
     settingsParam.append('page', selectedTab === 'account' ? 'accountHome' : 'signup');
     settingsParam.append('buttonIcon', encodeURIComponent(getSettingValue(settings, 'portal_button_icon') || 'icon-1'));
     settingsParam.append('signupButtonText', encodeURIComponent(getSettingValue(settings, 'portal_button_signup_text') || ''));
     settingsParam.append('membersSignupAccess', getSettingValue(settings, 'members_signup_access') || 'all');
     settingsParam.append('allowSelfSignup', allowSelfSignup ? 'true' : 'false');
-    settingsParam.append('signupTermsHtml', encodeURIComponent(getSettingValue(settings, 'portal_signup_terms_html') || ''));
+    settingsParam.append('signupTermsHtml', getSettingValue(settings, 'portal_signup_terms_html') || '');
     settingsParam.append('signupCheckboxRequired', getSettingValue(settings, 'portal_signup_checkbox_required') ? 'true' : 'false');
-
-    if (portalTiers && portalTiers.length) {
-        settingsParam.append('portalProducts', encodeURIComponent(portalTiers.join(','))); // assuming that it might be more than 1
-    }
+    settingsParam.append('portalProducts', encodeURIComponent(portalTiers.join(','))); // assuming that it might be more than 1
 
     if (portalPlans && portalPlans.length) {
         settingsParam.append('portalPrices', encodeURIComponent(portalPlans.join(',')));
