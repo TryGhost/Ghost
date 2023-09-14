@@ -57,9 +57,26 @@ class PostsService {
             }
 
             const postIds = collection.posts;
-            options.filter = `id:[${postIds.join(',')}]+type:post`;
-            options.status = 'all';
-            posts = await this.models.Post.findPage(options);
+
+            if (postIds.length !== 0) {
+                options.filter = `id:[${postIds.join(',')}]+type:post`;
+                options.status = 'all';
+                posts = await this.models.Post.findPage(options);
+            } else {
+                posts = {
+                    data: [],
+                    meta: {
+                        pagination: {
+                            page: 1,
+                            pages: 1,
+                            total: 0,
+                            limit: options.limit || 15,
+                            next: null,
+                            prev: null
+                        }
+                    }
+                };
+            }
         } else {
             posts = await this.models.Post.findPage(options);
         }
