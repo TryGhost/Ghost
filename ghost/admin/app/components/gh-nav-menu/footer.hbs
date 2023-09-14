@@ -99,15 +99,12 @@
             </GhBasicDropdown>
         </div>
         <div class="flex items-center pe-all">
-            {{#if (gh-user-can-admin this.session.user)}}
+            {{#if (or (gh-user-can-admin this.session.user) this.session.user.isEditor)}}
                 {{#if (feature "adminXSettings")}}
                     <LinkTo class="gh-nav-bottom-tabicon" @route="settings-x" @current-when={{this.isSettingsRoute}} data-test-nav="settings">{{svg-jar "settings"}}</LinkTo>
                 {{else}}
                     <LinkTo class="gh-nav-bottom-tabicon" @route="settings" @current-when={{this.isSettingsRoute}} data-test-nav="settings">{{svg-jar "settings"}}</LinkTo>
                 {{/if}}
-            {{/if}}
-            {{#if this.session.user.isEditor}}
-                <LinkTo class="gh-nav-bottom-tabicon" @route="settings.staff" @current-when={{this.isSettingsRoute}} data-test-nav="settings">{{svg-jar "settings"}}</LinkTo>
             {{/if}}
             <div class="nightshift-toggle-container">
                 <div class="nightshift-toggle {{if this.feature.nightShift "on"}}" {{action (toggle "nightShift" this.feature)}}>
