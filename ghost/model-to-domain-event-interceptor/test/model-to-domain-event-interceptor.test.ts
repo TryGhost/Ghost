@@ -193,6 +193,34 @@ describe('ModelToDomainEventInterceptor', function () {
         });
 
         eventRegistry.emit('tag.deleted', {
+            _previousAttributes: {
+                id: '1234-deleted',
+                slug: 'tag-slug'
+            }
+        });
+
+        await DomainEvents.allSettled();
+
+        assert.ok(interceptedEvent);
+    });
+
+    it('Intercepts tag.deleted Model event without an id property and dispatches TagDeletedEvent Domain event', async function () {
+        let eventRegistry = new EventRegistry();
+        const modelToDomainEventInterceptor = new ModelToDomainEventInterceptor({
+            ModelEvents: eventRegistry,
+            DomainEvents: DomainEvents
+        });
+
+        modelToDomainEventInterceptor.init();
+
+        let interceptedEvent;
+        DomainEvents.subscribe(TagDeletedEvent, (event: TagDeletedEvent) => {
+            assert.equal(event.id, '1234-deleted');
+            assert.equal(event.data.slug, 'tag-slug');
+            interceptedEvent = event;
+        });
+
+        eventRegistry.emit('tag.deleted', {
             id: '1234-deleted',
             attributes: {
                 slug: 'tag-slug'
