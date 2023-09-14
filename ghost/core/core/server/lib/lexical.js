@@ -30,6 +30,13 @@ module.exports = {
     },
 
     async render(lexical, userOptions = {}) {
+        const getCollectionPosts = async (collectionSlug, postCount) => {
+            const transacting = userOptions.transacting;
+            const {data} = await postsService.browsePosts({collection: collectionSlug, limit: postCount, transacting});
+            let posts = data.map(p => p.toJSON());
+            return posts;
+        };
+
         const options = Object.assign({
             siteUrl: config.get('url'),
             imageOptimization: config.get('imageOptimization'),
@@ -46,7 +53,7 @@ module.exports = {
                 const {JSDOM} = require('jsdom');
                 return (new JSDOM()).window.document;
             },
-            postsService
+            getCollectionPosts
         }, userOptions);
 
         return await this.lexicalHtmlRenderer.render(lexical, options);
