@@ -22,6 +22,7 @@ import validator from 'validator';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {RoutingModalProps} from '../../providers/RoutingProvider';
 import {User, isAdminUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner, useUpdatePassword} from '../../../api/users';
+import {genStaffToken, getStaffToken} from '../../../api/staffToken';
 import {getImageUrl, useUploadImage} from '../../../api/images';
 import {getSettingValues} from '../../../api/settings';
 import {showToast} from '../../../admin-x-ds/global/Toast';
@@ -433,6 +434,58 @@ const Password: React.FC<UserDetailProps> = ({user}) => {
     );
 };
 
+const StaffToken: React.FC<UserDetailProps> = () => {
+    const {data: {apiKey} = {}} = getStaffToken();
+    const [token, setToken] = useState('');
+    const {mutateAsync: newApiKey} = genStaffToken();
+    const [copied, setCopied] = useState(false);
+    
+    const copyToClipboard = () => {
+        navigator.clipboard.writeText(token);
+        setCopied(true);
+        setTimeout(() => {
+            setCopied(false);
+        }, 2000);
+    };
+
+    useEffect(() => {
+        setToken(apiKey?.secret || '');
+    } , [apiKey]);
+
+    const genConfirmation = () => {
+        NiceModal.show(ConfirmationModal, {
+            title: 'Regenerate your Staff Access Token',
+            prompt: 'You can regenerate your Staff Access Token any time, but any scripts or applications using it will need to be updated.',
+            okLabel: 'Regenerate your Staff Access Token',
+            okColor: 'red',
+            onOk: async (modal) => {
+                const newAPI = await newApiKey([]);
+                setToken(newAPI?.apiKey?.secret || '');
+                modal?.remove();
+            }
+        });
+    };
+    return (
+        <SettingGroup
+            border={false}
+            customHeader={<CustomHeader>Staff access token</CustomHeader>}
+            title='Staff access token'
+        >
+            <TextField
+                rightPlaceholder={
+                    <div className='flex'>
+                        <Button className='mt-2' color='white' label='Regenerate' size='sm' onClick={genConfirmation} />
+                        <Button className='mt-2' color={copied ? 'green' : 'white'} label={copied ? 'Copied' : 'Copy'} size='sm' onClick={copyToClipboard} />
+                    </div>
+                }
+                title="Staff access token"
+                type="text"
+                value={token}
+            />
+        </SettingGroup>
+    );
+};
+
 const UserMenuTrigger = () => (
     <button className='flex h-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] px-3 opacity-80 hover:opacity-100' type='button'>
         <span className='sr-only'>Actions</span>
@@ -793,6 +846,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                     <Details errors={errors} setUserData={setUserData} user={userData} validators={validators} />
                     <EmailNotifications setUserData={setUserData} user={userData} />
                     <Password user={userData} />
+                    <StaffToken user={userData} />
                 </div>
             </div>
         </Modal>
