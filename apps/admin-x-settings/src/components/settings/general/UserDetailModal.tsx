@@ -1,3 +1,4 @@
+import APIKeys from '../advanced/integrations/APIKeys';
 import Button from '../../../admin-x-ds/global/Button';
 import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
 import Heading from '../../../admin-x-ds/global/Heading';
@@ -11,7 +12,6 @@ import Radio from '../../../admin-x-ds/global/form/Radio';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextArea from '../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import useFeatureFlag from '../../../hooks/useFeatureFlag';
@@ -19,6 +19,7 @@ import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
+import {DetailsInputs} from './DetailsInputs';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {RoutingModalProps} from '../../providers/RoutingProvider';
 import {User, canAccessSettings, hasAdminAccess, isAdminUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner, useUpdatePassword} from '../../../api/users';
@@ -34,7 +35,7 @@ interface CustomHeadingProps {
     children?: React.ReactNode;
 }
 
-interface UserDetailProps {
+export interface UserDetailProps {
     user: User;
     setUserData?: (user: User) => void;
     errors?: {
@@ -136,6 +137,14 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, validators, user, setUs
                     setUserData?.({...user, email: e.target.value});
                 }}
             />
+            <TextField
+                hint="https://example.com/author"
+                title="Slug"
+                value={user.slug}
+                onChange={(e) => {
+                    setUserData?.({...user, slug: e.target.value});
+                }}
+            />
             {hasAdminAccess(currentUser) && <RoleSelector setUserData={setUserData} user={user} />}
         </SettingGroupContent>
     );
@@ -150,68 +159,6 @@ const Basic: React.FC<UserDetailProps> = ({errors, validators, user, setUserData
         >
             <BasicInputs errors={errors} setUserData={setUserData} user={user} validators={validators} />
         </SettingGroup>
-    );
-};
-
-const DetailsInputs: React.FC<UserDetailProps> = ({errors, validators, user, setUserData}) => {
-    return (
-        <SettingGroupContent>
-            <TextField
-                hint="https://example.com/author"
-                title="Slug"
-                value={user.slug}
-                onChange={(e) => {
-                    setUserData?.({...user, slug: e.target.value});
-                }}
-            />
-            <TextField
-                hint="Where in the world do you live?"
-                title="Location"
-                value={user.location}
-                onChange={(e) => {
-                    setUserData?.({...user, location: e.target.value});
-                }}
-            />
-            <TextField
-                error={!!errors?.url}
-                hint={errors?.url || 'Have a website or blog other than this one? Link it!'}
-                placeholder='https://example.com'
-                title="Website"
-                value={user.website}
-                onBlur={(e) => {
-                    validators?.url(e.target.value);
-                }}
-                onChange={(e) => {
-                    setUserData?.({...user, website: e.target.value});
-                }}
-            />
-            <TextField
-                hint='URL of your personal Facebook Profile'
-                placeholder='https://www.facebook.com/ghost'
-                title="Facebook profile"
-                value={user.facebook}
-                onChange={(e) => {
-                    setUserData?.({...user, facebook: e.target.value});
-                }}
-            />
-            <TextField
-                hint='URL of your personal Twitter profile'
-                placeholder='https://twitter.com/ghost'
-                title="Twitter profile"
-                value={user.twitter}
-                onChange={(e) => {
-                    setUserData?.({...user, twitter: e.target.value});
-                }}
-            />
-            <TextArea
-                hint={<>Recommended: 200 characters. You&lsquo;ve used <span className='font-bold'>{user.bio?.length || 0}</span></>}
-                title="Bio"
-                value={user.bio || ''}
-                onChange={(e) => {
-                    setUserData?.({...user, bio: e.target.value});
-                }}
-            />
-        </SettingGroupContent>
     );
 };
 
@@ -445,15 +392,6 @@ const StaffToken: React.FC<UserDetailProps> = () => {
     });
     const [token, setToken] = useState('');
     const {mutateAsync: newApiKey} = genStaffToken();
-    const [copied, setCopied] = useState(false);
-
-    const copyToClipboard = () => {
-        navigator.clipboard.writeText(token);
-        setCopied(true);
-        setTimeout(() => {
-            setCopied(false);
-        }, 2000);
-    };
 
     useEffect(() => {
         const getApiKey = async () => {
@@ -479,24 +417,14 @@ const StaffToken: React.FC<UserDetailProps> = () => {
         });
     };
     return (
-        <SettingGroup
-            border={false}
-            customHeader={<CustomHeader>Staff access token</CustomHeader>}
-            title='Staff access token'
-        >
-            <TextField
-                readOnly={true}
-                rightPlaceholder={
-                    <div className='flex'>
-                        <Button className='mt-2' color='white' label='Regenerate' size='sm' onClick={genConfirmation} />
-                        <Button className='mt-2' color={copied ? 'green' : 'white'} label={copied ? 'Copied' : 'Copy'} size='sm' onClick={copyToClipboard} />
-                    </div>
-                }
-                title="Staff access token"
-                type="text"
-                value={token || ''}
-            />
-        </SettingGroup>
+        <div>
+            <Heading className='mb-2' level={6} grey>Staff access token</Heading>
+            <APIKeys hasLabel={false} keys={[
+                {
+                    text: token || '',
+                    onRegenerate: genConfirmation
+                }]} />
+        </div>
     );
 };
 
@@ -868,10 +796,12 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                 </div>
                 <div className='mt-10 grid grid-cols-1 gap-x-12 gap-y-20 md:grid-cols-2'>
                     <Basic errors={errors} setUserData={setUserData} user={userData} validators={validators} />
-                    <Details errors={errors} setUserData={setUserData} user={userData} validators={validators} />
+                    <div className='flex flex-col justify-between gap-10'>
+                        <Details errors={errors} setUserData={setUserData} user={userData} validators={validators} />
+                        <StaffToken user={userData} />
+                    </div>
                     <EmailNotifications setUserData={setUserData} user={userData} />
                     <Password user={userData} />
-                    <StaffToken user={userData} />
                 </div>
             </div>
         </Modal>
