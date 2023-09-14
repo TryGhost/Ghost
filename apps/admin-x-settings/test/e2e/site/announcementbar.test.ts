@@ -17,15 +17,15 @@ test.describe('Announcement Bar', async () => {
             url: responseFixtures.latestPost.posts[0].url,
             response: '<html><head><style></style></head><body><div>post preview</div></body></html>'
         });
-    
+
         await page.goto('/');
-    
+
         const section = page.getByTestId('announcement-bar');
-    
+
         await section.getByRole('button', {name: 'Customize'}).click();
-    
+
         await page.waitForSelector('[data-testid="announcement-bar-preview-iframe"]');
-    
+
         const checkTextInIframes = async (iframesHandles, textToSearch) => {
             let textExists = false;
             for (const iframeHandle of iframesHandles) {
@@ -40,16 +40,16 @@ test.describe('Announcement Bar', async () => {
             }
             return textExists;
         };
-    
+
         const iframesHandleHome = await page.$$('[data-testid="announcement-bar-preview-iframe"] > iframe');
         const textExistsInHomeIframes = await checkTextInIframes(iframesHandleHome, 'homepage preview');
         expect(textExistsInHomeIframes).toBeTruthy();
-    
+
         const modal = page.getByTestId('announcement-bar-modal');
         await modal.getByTestId('design-toolbar').getByRole('tab', {name: 'Post'}).click();
-    
+
         await page.waitForSelector('[data-testid="announcement-bar-preview-iframe"]');
-        
+
         const iframesHandlePost = await page.$$('[data-testid="announcement-bar-preview-iframe"] > iframe');
         const textExistsInPostIframes = await checkTextInIframes(iframesHandlePost, 'post preview');
         expect(textExistsInPostIframes).toBeTruthy();
