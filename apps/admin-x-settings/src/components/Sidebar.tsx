@@ -9,7 +9,6 @@ import {searchKeywords as advancedSearchKeywords} from './settings/advanced/Adva
 import {searchKeywords as emailSearchKeywords} from './settings/email/EmailSettings';
 import {searchKeywords as generalSearchKeywords} from './settings/general/GeneralSettings';
 import {getSettingValues} from '../api/settings';
-import {isEditorUser} from '../api/users';
 import {searchKeywords as membershipSearchKeywords} from './settings/membership/MembershipSettings';
 import {searchKeywords as siteSearchKeywords} from './settings/site/SiteSettings';
 import {useGlobalData} from './providers/GlobalDataProvider';
@@ -19,7 +18,7 @@ const Sidebar: React.FC = () => {
     const {filter, setFilter} = useSearch();
     const {updateRoute} = useRouting();
 
-    const {settings, config, currentUser} = useGlobalData();
+    const {settings, config} = useGlobalData();
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
 
     const handleSectionClick = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -37,11 +36,6 @@ const Sidebar: React.FC = () => {
             document.getElementById('admin-x-root')?.scrollTo({top: 0, left: 0});
         }
     };
-
-    // Editors can only see staff settings, so no point in showing navigation
-    if (isEditorUser(currentUser)) {
-        return null;
-    }
 
     return (
         <div className='no-scrollbar tablet:h-[calc(100vh-5vmin-84px)] tablet:w-[240px] tablet:overflow-y-scroll'>
