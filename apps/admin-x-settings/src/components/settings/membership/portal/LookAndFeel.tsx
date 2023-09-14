@@ -62,7 +62,7 @@ const LookAndFeel: React.FC<{
         setUploadedIcon(undefined);
     };
 
-    return <Form marginTop>
+    return <div className='mt-7'><Form>
         <Toggle
             checked={Boolean(portalButton)}
             label='Show portal button'
@@ -116,7 +116,7 @@ const LookAndFeel: React.FC<{
                 onChange={e => updateSetting('portal_button_signup_text', e.target.value)}
             />
         }
-    </Form>;
+    </Form></div>;
 };
 
 export default LookAndFeel;
