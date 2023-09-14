@@ -47,7 +47,13 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
             onCancel={onCancel}
             onOk={async () => {
                 setTaskState('running');
-                await onOk?.(modal);
+
+                try {
+                    await onOk?.(modal);
+                } catch (e) {
+                    // eslint-disable-next-line no-console
+                    console.error('Unhandled Promise Rejection. Make sure you catch errors in your onOk handler.', e);
+                }
                 setTaskState('');
             }}
         >

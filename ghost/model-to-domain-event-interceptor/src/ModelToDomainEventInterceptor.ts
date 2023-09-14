@@ -52,7 +52,9 @@ export class ModelToDomainEventInterceptor {
 
         switch (modelEventName) {
         case 'post.deleted':
-            event = PostDeletedEvent.create({id: data.id});
+            event = PostDeletedEvent.create({
+                id: data.id || data._previousAttributes?.id
+            });
             break;
         case 'post.added':
             event = PostAddedEvent.create({
@@ -92,7 +94,10 @@ export class ModelToDomainEventInterceptor {
             });
             break;
         case 'tag.deleted':
-            event = TagDeletedEvent.create({id: data.id, slug: data.attributes.slug});
+            event = TagDeletedEvent.create({
+                id: data.id || data._previousAttributes?.id,
+                slug: data.attributes?.slug || data._previousAttributes?.slug
+            });
             break;
         default:
         }

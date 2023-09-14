@@ -229,6 +229,7 @@ const DesignModal: React.FC = () => {
         selectedURL={selectedPreviewTab}
         sidebar={sidebarContent}
         sidebarPadding={false}
+        siteLink={getHomepageUrl(siteData!)}
         size='full'
         testId='design-modal'
         title='Design'

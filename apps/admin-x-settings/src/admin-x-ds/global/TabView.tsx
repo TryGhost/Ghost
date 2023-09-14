@@ -40,7 +40,7 @@ function TabView<ID extends string = string>({
     };
 
     const containerClasses = clsx(
-        'flex w-full overflow-x-scroll',
+        'no-scrollbar flex w-full overflow-x-auto',
         width === 'narrow' && 'gap-3',
         width === 'normal' && 'gap-5',
         width === 'wide' && 'gap-7',

@@ -1,8 +1,9 @@
 import React, {useEffect, useRef, useState} from 'react';
-import useSettingGroup from '../../../../hooks/useSettingGroup';
-import {Setting, getSettingValue} from '../../../../api/settings';
+import {Config} from '../../../../api/config';
+import {Setting, checkStripeEnabled, getSettingValue} from '../../../../api/settings';
 import {SiteData} from '../../../../api/site';
 import {Tier} from '../../../../api/tiers';
+import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 type PortalFrameProps = {
     settings: Setting[];
@@ -10,11 +11,12 @@ type PortalFrameProps = {
     selectedTab: string;
 }
 
-function getPortalPreviewUrl({settings, tiers, siteData, selectedTab}: {
-    settings: Setting[],
-    tiers: Tier[],
-    siteData: SiteData|null,
-    selectedTab: string
+function getPortalPreviewUrl({settings, config, tiers, siteData, selectedTab}: {
+    settings: Setting[];
+    config: Config;
+    tiers: Tier[];
+    siteData: SiteData | null;
+    selectedTab: string;
 }) {
     if (!siteData?.url) {
         return null;
@@ -25,35 +27,25 @@ function getPortalPreviewUrl({settings, tiers, siteData, selectedTab}: {
 
     const baseUrl = siteData.url.replace(/\/$/, '');
     const portalBase = '/?v=modal-portal-settings#/portal/preview';
+
+    const portalPlans: string[] = JSON.parse(getSettingValue<string>(settings, 'portal_plans') || '');
+    const membersSignupAccess = getSettingValue<string>(settings, 'members_signup_access');
+    const allowSelfSignup = membersSignupAccess === 'all' && (!checkStripeEnabled(settings, config) || portalPlans.includes('free'));
+
     const settingsParam = new URLSearchParams();
-    const signupButtonText = getSettingValue(settings, 'portal_button_signup_text') || '';
-    let buttonIcon = getSettingValue(settings, 'portal_button_icon') as string || 'icon-1';
-    const portalPlans: string[] = JSON.parse(getSettingValue(settings, 'portal_plans') as string);
-    const isFreeChecked = portalPlans.includes('free') ? 'true' : 'false';
-    const isMonthlyChecked = portalPlans.includes('monthly') ? 'true' : 'false';
-    const isYearlyChecked = portalPlans.includes('yearly') ? 'true' : 'false';
-    const portalButton = getSettingValue(settings, 'portal_button') === true ? 'true' : 'false'; // Assuming a boolean
-    const portalName = getSettingValue(settings, 'portal_name') as boolean;
-    const signupCheckboxRequired = getSettingValue(settings, 'portal_signup_checkbox_required') ? 'true' : 'false'; // Assuming a boolean
-    const portalSignupTermsHtml = getSettingValue(settings, 'portal_signup_terms_html') || '';
-    let page = selectedTab === 'account' ? 'accountHome' : 'signup';
-
-    settingsParam.append('button', portalButton);
-    settingsParam.append('name', portalName ? 'true' : 'false');
-    settingsParam.append('isFree', isFreeChecked);
-    settingsParam.append('isMonthly', isMonthlyChecked);
-    settingsParam.append('isYearly', isYearlyChecked);
-    settingsParam.append('page', page);
-    settingsParam.append('buttonIcon', encodeURIComponent(buttonIcon));
-    settingsParam.append('signupButtonText', encodeURIComponent(signupButtonText));
-    settingsParam.append('membersSignupAccess', 'all');
-    settingsParam.append('allowSelfSignup', 'true');
-    settingsParam.append('signupTermsHtml', portalSignupTermsHtml.toString());
-    settingsParam.append('signupCheckboxRequired', signupCheckboxRequired);
-
-    if (portalTiers && portalTiers.length) {
-        settingsParam.append('portalProducts', encodeURIComponent(portalTiers.join(','))); // assuming that it might be more than 1
-    }
+    settingsParam.append('button', getSettingValue(settings, 'portal_button') ? 'true' : 'false');
+    settingsParam.append('name', getSettingValue(settings, 'portal_name') ? 'true' : 'false');
+    settingsParam.append('isFree', portalPlans.includes('free') ? 'true' : 'false');
+    settingsParam.append('isMonthly', checkStripeEnabled(settings, config) && portalPlans.includes('monthly') ? 'true' : 'false');
+    settingsParam.append('isYearly', checkStripeEnabled(settings, config) && portalPlans.includes('yearly') ? 'true' : 'false');
+    settingsParam.append('page', selectedTab === 'account' ? 'accountHome' : 'signup');
+    settingsParam.append('buttonIcon', encodeURIComponent(getSettingValue(settings, 'portal_button_icon') || 'icon-1'));
+    settingsParam.append('signupButtonText', encodeURIComponent(getSettingValue(settings, 'portal_button_signup_text') || ''));
+    settingsParam.append('membersSignupAccess', getSettingValue(settings, 'members_signup_access') || 'all');
+    settingsParam.append('allowSelfSignup', allowSelfSignup ? 'true' : 'false');
+    settingsParam.append('signupTermsHtml', getSettingValue(settings, 'portal_signup_terms_html') || '');
+    settingsParam.append('signupCheckboxRequired', getSettingValue(settings, 'portal_signup_checkbox_required') ? 'true' : 'false');
+    settingsParam.append('portalProducts', encodeURIComponent(portalTiers.join(','))); // assuming that it might be more than 1
 
     if (portalPlans && portalPlans.length) {
         settingsParam.append('portalPrices', encodeURIComponent(portalPlans.join(',')));
@@ -76,14 +68,16 @@ function getPortalPreviewUrl({settings, tiers, siteData, selectedTab}: {
 
 const PortalFrame: React.FC<PortalFrameProps> = ({settings, tiers, selectedTab}) => {
     const {
-        siteData
-    } = useSettingGroup();
+        siteData,
+        config
+    } = useGlobalData();
 
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [portalReady, setPortalReady] = useState(false);
 
     let href = getPortalPreviewUrl({
         settings,
+        config,
         tiers,
         siteData,
         selectedTab

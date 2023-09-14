@@ -40,7 +40,7 @@ const Sidebar: React.FC<{
     clearError: (field: string) => void;
 }> = ({newsletter, updateNewsletter, validate, errors, clearError}) => {
     const {settings, siteData, config} = useGlobalData();
-    const [membersSupportAddress] = getSettingValues<string>(settings, ['members_support_address']);
+    const [membersSupportAddress, icon] = getSettingValues<string>(settings, ['members_support_address', 'icon']);
     const {mutateAsync: uploadImage} = useUploadImage();
     const [selectedTab, setSelectedTab] = useState('generalSettings');
     const hasEmailCustomization = useFeatureFlag('emailCustomization');
@@ -139,6 +139,13 @@ const Sidebar: React.FC<{
                         </div>
                     </div>
                     <ToggleGroup>
+                        {icon && <Toggle
+                            checked={newsletter.show_header_icon}
+                            direction="rtl"
+                            label='Publication icon'
+                            labelStyle='value'
+                            onChange={e => updateNewsletter({show_header_icon: e.target.checked})}
+                        />}
                         <Toggle
                             checked={newsletter.show_header_title}
                             direction="rtl"
@@ -271,39 +278,39 @@ const Sidebar: React.FC<{
                         checked={newsletter.show_feature_image}
                         direction="rtl"
                         label='Feature image'
-                        labelStyle='value'
+                        labelStyle='heading'
                         onChange={e => updateNewsletter({show_feature_image: e.target.checked})}
                     />
                 </Form>
 
                 <Form className='mt-6' gap='sm' margins='lg' title='Footer'>
-                    <ToggleGroup>
+                    <ToggleGroup gap='lg'>
                         <Toggle
                             checked={newsletter.feedback_enabled}
                             direction="rtl"
                             label='Ask your readers for feedback'
-                            labelStyle='value'
+                            labelStyle='heading'
                             onChange={e => updateNewsletter({feedback_enabled: e.target.checked})}
                         />
                         <Toggle
                             checked={newsletter.show_comment_cta}
                             direction="rtl"
                             label='Add a link to your comments'
-                            labelStyle='value'
+                            labelStyle='heading'
                             onChange={e => updateNewsletter({show_comment_cta: e.target.checked})}
                         />
                         <Toggle
                             checked={newsletter.show_latest_posts}
                             direction="rtl"
                             label='Share your latest posts'
-                            labelStyle='value'
+                            labelStyle='heading'
                             onChange={e => updateNewsletter({show_latest_posts: e.target.checked})}
                         />
                         <Toggle
                             checked={newsletter.show_subscription_details}
                             direction="rtl"
                             label='Show subscription details'
-                            labelStyle='value'
+                            labelStyle='heading'
                             onChange={e => updateNewsletter({show_subscription_details: e.target.checked})}
                         />
                     </ToggleGroup>

@@ -10,6 +10,7 @@ import TableRow from '../../../../admin-x-ds/global/TableRow';
 import useRouting from '../../../../hooks/useRouting';
 import {PaginationData} from '../../../../hooks/usePagination';
 import {Recommendation, useDeleteRecommendation} from '../../../../api/recommendations';
+import {showToast} from '../../../../admin-x-ds/global/Toast';
 
 interface RecommendationListProps {
     recommendations: Recommendation[],
@@ -31,8 +32,19 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
                     </>,
                     okLabel: 'Remove',
                     onOk: async (modal) => {
-                        await deleteRecommendation(recommendation);
-                        modal?.remove();
+                        try {
+                            await deleteRecommendation(recommendation);
+                            modal?.remove();
+                            showToast({
+                                message: 'Successfully removed the recommendation',
+                                type: 'success'
+                            });
+                        } catch (_) {
+                            showToast({
+                                message: 'Failed to remove the recommendation. Please try again later.',
+                                type: 'error'
+                            });
+                        }
                     }
                 });
             }} />
@@ -54,6 +66,15 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
                         </div>
                         <span className='line-clamp-1 text-xs leading-snug text-grey-700'>{recommendation.reason || 'No reason added'}</span>
                     </div>
+                </div>
+            </TableCell>
+            <TableCell className='hidden md:!visible md:!table-cell' onClick={showDetails}>
+                <div className={`flex grow flex-col`}>
+                    {/* If it's 0 */}
+                    {/* <span className="text-grey-500">-</span> */}
+                    {/* If it's more than 0 */}
+                    <span>12</span>
+                    <span className='whitespace-nowrap text-xs text-grey-700'>Subscribers from you</span>
                 </div>
             </TableCell>
         </TableRow>

@@ -9,7 +9,7 @@ import Tiers from './Tiers';
 import TipsOrDonations from './TipsOrDonations';
 import useFeatureFlag from '../../../hooks/useFeatureFlag';
 
-const searchKeywords = {
+export const searchKeywords = {
     portal: ['portal', 'signup', 'sign up', 'signin', 'sign in', 'login', 'account', 'membership'],
     access: ['default', 'access', 'subscription', 'post', 'membership'],
     tiers: ['tiers', 'payment', 'paid'],
