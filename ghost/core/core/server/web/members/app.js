@@ -88,6 +88,20 @@ module.exports = function setupMembersApp() {
         announcementRouter()
     );
 
+    // Recommendations
+    membersApp.post(
+        '/api/recommendations/:id/clicked',
+        middleware.loadMemberSession,
+        http(api.recommendationsPublic.trackClicked)
+    );
+
+    // Recommendations
+    membersApp.post(
+        '/api/recommendations/:id/subscribed',
+        middleware.loadMemberSession,
+        http(api.recommendationsPublic.trackSubscribed)
+    );
+
     // Allow external systems to read public settings via the members api
     // Without CORS issues and without a required integration token
     // 1. Detect if a site is Running Ghost

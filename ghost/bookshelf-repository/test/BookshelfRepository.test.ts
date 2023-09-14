@@ -30,8 +30,14 @@ class SimpleBookshelfRepository extends BookshelfRepository<string, SimpleEntity
         };
     }
 
-    protected entityFieldToColumn(field: keyof SimpleEntity): string {
-        return field as string;
+    protected getFieldToColumnMap(): Record<keyof SimpleEntity, string> {
+        return {
+            id: 'id',
+            deleted: 'deleted',
+            name: 'name',
+            age: 'age',
+            birthday: 'birthday'
+        };
     }
 }
 

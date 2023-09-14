@@ -5,3 +5,7 @@ export * from './InMemoryRecommendationRepository';
 export * from './Recommendation';
 export * from './WellknownService';
 export * from './BookshelfRecommendationRepository';
+export * from './ClickEvent';
+export * from './BookshelfClickEventRepository';
+export * from './SubscribeEvent';
+export * from './BookshelfSubscribeEventRepository';

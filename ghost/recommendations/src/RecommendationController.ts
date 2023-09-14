@@ -6,7 +6,8 @@ import errors from '@tryghost/errors';
 type Frame = {
     data: any,
     options: any,
-    user: any
+    user: any,
+    member: any,
 };
 
 function validateString(object: any, key: string, {required = true, nullable = false} = {}): string|undefined|null {
@@ -119,6 +120,16 @@ export class RecommendationController {
             throw new errors.BadRequestError({message: 'limit must be greater or equal to 1'});
         }
         return limit;
+    }
+
+    #getFrameMemberId(frame: Frame): string {
+        if (!frame.options?.context?.member?.id) {
+            // This is an internal server error because authentication should happen outside this service.
+            throw new errors.UnauthorizedError({
+                message: 'Member not found'
+            });
+        }
+        return frame.options.context.member.id;
     }
 
     #getFrameRecommendation(frame: Frame): AddRecommendation {
@@ -237,5 +248,35 @@ export class RecommendationController {
                 pagination: this.#buildPagination({page, limit, count})
             }
         );
+    }
+
+    async trackClicked(frame: Frame) {
+        // First get the ID of the recommendation that was clicked
+        const id = this.#getFrameId(frame);
+        // Check type of event
+        let memberId: string | undefined;
+        try {
+            memberId = this.#getFrameMemberId(frame);
+        } catch (e) {
+            if (e instanceof errors.UnauthorizedError) {
+                // This is fine, this is not required
+            } else {
+                throw e;
+            }
+        }
+
+        await this.service.trackClicked({
+            id,
+            memberId
+        });
+    }
+    async trackSubscribed(frame: Frame) {
+        // First get the ID of the recommendation that was clicked
+        const id = this.#getFrameId(frame);
+        const memberId = this.#getFrameMemberId(frame);
+        await this.service.trackSubscribed({
+            id,
+            memberId
+        });
     }
 }

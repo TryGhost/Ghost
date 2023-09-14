@@ -5,6 +5,16 @@ class RecommendationServiceWrapper {
     repository;
 
     /**
+     * @type {import('@tryghost/recommendations').BookshelfClickEventRepository}
+     */
+    clickEventRepository;
+
+    /**
+     * @type {import('@tryghost/recommendations').BookshelfSubscribeEventRepository}
+     */
+    subscribeEventRepository;
+
+    /**
      * @type {import('@tryghost/recommendations').RecommendationController}
      */
     controller;
@@ -29,7 +39,8 @@ class RecommendationServiceWrapper {
             BookshelfRecommendationRepository,
             RecommendationService,
             RecommendationController,
-            WellknownService
+            WellknownService,
+            BookshelfClickEventRepository
         } = require('@tryghost/recommendations');
 
         const mentions = require('../mentions');
@@ -50,11 +61,21 @@ class RecommendationServiceWrapper {
         this.repository = new BookshelfRecommendationRepository(models.Recommendation, {
             sentry
         });
+
+        this.clickEventRepository = new BookshelfClickEventRepository(models.RecommendationClickEvent, {
+            sentry
+        });
+        this.subscribeEventRepository = new BookshelfClickEventRepository(models.RecommendationSubscribeEvent, {
+            sentry
+        });
+
         this.service = new RecommendationService({
             repository: this.repository,
             recommendationEnablerService,
             wellknownService,
-            mentionSendingService: mentions.sendingService
+            mentionSendingService: mentions.sendingService,
+            clickEventRepository: this.clickEventRepository,
+            subscribeEventRepository: this.subscribeEventRepository
         });
         this.controller = new RecommendationController({
             service: this.service
