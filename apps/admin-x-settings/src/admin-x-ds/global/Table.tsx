@@ -72,12 +72,12 @@ const Table: React.FC<TableProps> = ({children, borderTop, hint, hintSeparator, 
               
                 {/* TODO: make this div have the same height across all pages */}
                 <div>
-                  {!isLoading && <table ref={table} className={tableClasses}>
-                      <tbody>
-                          {children}
-                      </tbody>
-                  </table>}
-              </div>
+                    {!isLoading && <table ref={table} className={tableClasses}>
+                        <tbody>
+                            {children}
+                        </tbody>
+                    </table>}
+                </div>
 
                 {isLoading && <LoadingIndicator delay={200} size='lg' style={loadingStyle} />}
 
