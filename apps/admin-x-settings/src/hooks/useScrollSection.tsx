@@ -2,11 +2,13 @@ import {ReactNode, createContext, useCallback, useContext, useEffect, useMemo, u
 
 interface ScrollSectionContextData {
     updateSection: (id: string, element: HTMLDivElement) => void;
+    updateNav: (id: string, element: HTMLLIElement) => void;
     currentSection: string | null;
 }
 
 const ScrollSectionContext = createContext<ScrollSectionContextData>({
     updateSection: () => {},
+    updateNav: () => {},
     currentSection: null
 });
 
@@ -14,14 +16,51 @@ export const useScrollSectionContext = () => useContext(ScrollSectionContext);
 
 const scrollMargin = 193;
 
-const scrollToSection = (element: HTMLDivElement) => {
+const scrollToSection = (element: HTMLDivElement, doneInitialScroll: boolean) => {
     const root = document.getElementById('admin-x-root')!;
     const top = element.getBoundingClientRect().top + root.scrollTop;
 
     root.scrollTo({
-        behavior: 'smooth',
+        behavior: doneInitialScroll ? 'smooth' : 'instant',
         top: top - scrollMargin
     });
+};
+
+const scrollSidebarNav = (navElement: HTMLLIElement, doneInitialScroll: boolean) => {
+    const sidebar = document.getElementById('admin-x-settings-sidebar')!;
+
+    const bounds = navElement.getBoundingClientRect();
+
+    const parentBounds = sidebar.getBoundingClientRect();
+    const offsetTop = parentBounds.top + 40;
+
+    if (bounds.top >= offsetTop && bounds.left >= parentBounds.left && bounds.right <= parentBounds.right && bounds.bottom <= parentBounds.bottom) {
+        return;
+    }
+
+    if (!['auto', 'scroll'].includes(getComputedStyle(sidebar).overflowY)) {
+        return;
+    }
+
+    const behavior = doneInitialScroll ? 'smooth' : 'instant';
+
+    // If this is the first nav item, scroll to top
+    if (sidebar.querySelector('[data-setting-nav-item]') === navElement) {
+        sidebar.scrollTo({
+            top: 0,
+            behavior
+        });
+    } else if (bounds.top < offsetTop) {
+        sidebar.scrollTo({
+            top: sidebar.scrollTop + bounds.top - offsetTop,
+            behavior
+        });
+    } else {
+        sidebar.scrollTo({
+            top: sidebar.scrollTop + bounds.top - parentBounds.top - parentBounds.height + bounds.height + 4,
+            behavior
+        });
+    }
 };
 
 export const ScrollSectionProvider: React.FC<{
@@ -31,7 +70,11 @@ export const ScrollSectionProvider: React.FC<{
     const sectionElements = useRef<Record<string, HTMLDivElement>>({});
     const [intersectingSections, setIntersectingSections] = useState<string[]>([]);
     const [lastIntersectedSection, setLastIntersectedSection] = useState<string | null>(null);
+
     const [doneInitialScroll, setDoneInitialScroll] = useState(false);
+    const [, setDoneSidebarScroll] = useState(false);
+
+    const navElements = useRef<Record<string, HTMLLIElement>>({});
 
     const intersectionObserver = useMemo(() => new IntersectionObserver((entries) => {
         const entriesWithId = entries.map(({isIntersecting, target}) => ({
@@ -63,7 +106,7 @@ export const ScrollSectionProvider: React.FC<{
             return newSections;
         });
     }, {
-        rootMargin: `-${scrollMargin - 10}px 0px -40% 0px`
+        rootMargin: `-${scrollMargin - 50}px 0px -40% 0px`
     }), []);
 
     const updateSection = useCallback((id: string, element: HTMLDivElement) => {
@@ -79,12 +122,14 @@ export const ScrollSectionProvider: React.FC<{
         intersectionObserver.observe(element);
 
         if (!doneInitialScroll && id === navigatedSection) {
-            scrollToSection(element);
-
-            // element.scrollIntoView({behavior: 'smooth'});
+            scrollToSection(element, false);
             setDoneInitialScroll(true);
         }
     }, [intersectionObserver, navigatedSection, doneInitialScroll]);
+
+    const updateNav = useCallback((id: string, element: HTMLLIElement) => {
+        navElements.current[id] = element;
+    }, []);
 
     const currentSection = useMemo(() => {
         if (navigatedSection && intersectingSections.includes(navigatedSection)) {
@@ -100,14 +145,26 @@ export const ScrollSectionProvider: React.FC<{
 
     useEffect(() => {
         if (navigatedSection && sectionElements.current[navigatedSection]) {
-            scrollToSection(sectionElements.current[navigatedSection]);
-            setDoneInitialScroll(true);
+            setDoneInitialScroll((done) => {
+                scrollToSection(sectionElements.current[navigatedSection], done);
+                return true;
+            });
         }
     }, [navigatedSection]);
+
+    useEffect(() => {
+        if (currentSection && navElements.current[currentSection]) {
+            setDoneSidebarScroll((done) => {
+                scrollSidebarNav(navElements.current[currentSection], done);
+                return true;
+            });
+        }
+    }, [currentSection]);
 
     return (
         <ScrollSectionContext.Provider value={{
             updateSection,
+            updateNav,
             currentSection
         }}>
             {children}
@@ -127,5 +184,21 @@ export const useScrollSection = (id?: string) => {
 
     return {
         ref
+    };
+};
+
+export const useScrollSectionNav = (id?: string) => {
+    const {updateNav} = useScrollSectionContext();
+    const ref = useRef<HTMLLIElement>(null);
+
+    useEffect(() => {
+        if (id && ref.current) {
+            updateNav(id, ref.current);
+        }
+    }, [id, updateNav]);
+
+    return {
+        ref,
+        props: {'data-setting-nav-item': true}
     };
 };

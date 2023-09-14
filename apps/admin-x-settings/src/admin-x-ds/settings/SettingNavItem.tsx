@@ -1,6 +1,6 @@
 import React from 'react';
 import clsx from 'clsx';
-import {useScrollSectionContext} from '../../hooks/useScrollSection';
+import {useScrollSectionContext, useScrollSectionNav} from '../../hooks/useScrollSection';
 import {useSearch} from '../../components/providers/ServiceProvider';
 
 interface Props {
@@ -16,6 +16,7 @@ const SettingNavItem: React.FC<Props> = ({
     keywords,
     onClick = () => {}
 }) => {
+    const {ref, props} = useScrollSectionNav(navid);
     const {currentSection} = useScrollSectionContext();
     const {checkVisible} = useSearch();
 
@@ -26,7 +27,7 @@ const SettingNavItem: React.FC<Props> = ({
     );
 
     return (
-        <li><button className={classNames} name={navid} type='button' onClick={onClick}>{title}</button></li>
+        <li ref={ref} {...props}><button className={classNames} name={navid} type='button' onClick={onClick}>{title}</button></li>
     );
 };
 

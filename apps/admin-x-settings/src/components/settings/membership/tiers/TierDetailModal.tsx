@@ -244,6 +244,11 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                             value={benefits.newItem}
                             hideTitle
                             onChange={e => benefits.setNewItem(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    benefits.addItem();
+                                }
+                            }}
                         />
                         <Button
                             className='absolute right-0 top-1'

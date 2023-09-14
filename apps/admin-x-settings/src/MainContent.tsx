@@ -6,6 +6,7 @@ import Users from './components/settings/general/Users';
 import useRouting from './hooks/useRouting';
 import {ReactNode, useEffect} from 'react';
 import {canAccessSettings, isEditorUser} from './api/users';
+import {topLevelBackdropClasses} from './admin-x-ds/global/modal/Modal';
 import {useGlobalData} from './components/providers/GlobalDataProvider';
 
 const Page: React.FC<{children: ReactNode}> = ({children}) => {
@@ -22,7 +23,7 @@ const Page: React.FC<{children: ReactNode}> = ({children}) => {
 
 const MainContent: React.FC = () => {
     const {currentUser} = useGlobalData();
-    const {route, updateRoute} = useRouting();
+    const {route, updateRoute, loadingModal} = useRouting();
 
     useEffect(() => {
         if (!canAccessSettings(currentUser) && route !== `users/show/${currentUser.slug}`) {
@@ -47,6 +48,8 @@ const MainContent: React.FC = () => {
 
     return (
         <Page>
+            {loadingModal && <div className={`fixed inset-0 z-40 h-[100vh] w-[100vw] ${topLevelBackdropClasses}`} />}
+
             {/* Sidebar */}
             <div className="sticky top-[-42px] z-20 min-w-[260px] grow-0 md:top-[-52px] tablet:fixed tablet:top-[8vmin] tablet:basis-[260px]">
                 <div className='-mx-6 h-[84px] bg-white px-6 tablet:m-0 tablet:bg-transparent tablet:p-0'>

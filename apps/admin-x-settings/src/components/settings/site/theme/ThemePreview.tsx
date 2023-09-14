@@ -14,7 +14,6 @@ const ThemePreview: React.FC<{
     selectedTheme?: OfficialTheme;
     isInstalling?: boolean;
     installedTheme?: Theme;
-    installButtonLabel?: string;
     onBack: () => void;
     onClose: () => void;
     onInstall?: () => void | Promise<void>;
@@ -22,7 +21,6 @@ const ThemePreview: React.FC<{
     selectedTheme,
     isInstalling,
     installedTheme,
-    installButtonLabel,
     onBack,
     onClose,
     onInstall
@@ -33,8 +31,18 @@ const ThemePreview: React.FC<{
         return null;
     }
 
+    let installButtonLabel = `Install ${selectedTheme.name}`;
+
+    if (isInstalling) {
+        installButtonLabel = 'Installing...';
+    } else if (selectedTheme.ref === 'default') {
+        installButtonLabel = `Activate ${selectedTheme.name}`;
+    } else if (installedTheme) {
+        installButtonLabel = `Update ${selectedTheme.name}`;
+    }
+
     const handleInstall = () => {
-        if (installedTheme) {
+        if (installedTheme && selectedTheme.ref !== 'default') {
             NiceModal.show(ConfirmationModal, {
                 title: 'Overwrite theme',
                 prompt: (

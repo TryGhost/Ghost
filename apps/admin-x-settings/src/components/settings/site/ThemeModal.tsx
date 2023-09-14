@@ -14,8 +14,8 @@ import ThemeInstalledModal from './theme/ThemeInstalledModal';
 import ThemePreview from './theme/ThemePreview';
 import useRouting from '../../../hooks/useRouting';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
+import {InstalledTheme, Theme, useBrowseThemes, useInstallTheme, useUploadTheme} from '../../../api/themes';
 import {OfficialTheme} from '../../providers/ServiceProvider';
-import {Theme, useBrowseThemes, useInstallTheme, useUploadTheme} from '../../../api/themes';
 
 interface ThemeToolbarProps {
     selectedTheme: OfficialTheme|null;
@@ -235,49 +235,60 @@ const ChangeThemeModal = NiceModal.create(() => {
         return;
     }
 
-    let installedTheme;
+    let installedTheme: Theme|InstalledTheme|undefined;
     let onInstall;
     if (selectedTheme) {
         installedTheme = themes.find(theme => theme.name.toLowerCase() === selectedTheme!.name.toLowerCase());
         onInstall = async () => {
-            setInstalling(true);
-            const data = await installTheme(selectedTheme.ref);
-            setInstalling(false);
-
-            const newlyInstalledTheme = data.themes[0];
-
             let title = 'Success';
-            let prompt = <>
-                <strong>{newlyInstalledTheme.name}</strong> has been successfully installed.
-            </>;
+            let prompt = <></>;
 
-            if (!newlyInstalledTheme.active) {
+            // default theme can't be installed, only activated
+            if (selectedTheme.ref === 'default') {
+                title = 'Activate theme';
+                prompt = <>By clicking below, <strong>{selectedTheme.name}</strong> will automatically be activated as the theme for your site.</>;
+            } else {
+                setInstalling(true);
+                const data = await installTheme(selectedTheme.ref);
+                setInstalling(false);
+
+                const newlyInstalledTheme = data.themes[0];
+
+                title = 'Success';
                 prompt = <>
-                    {prompt}{' '}
-                    Do you want to activate it now?
-                </>;
-            }
-
-            if (newlyInstalledTheme.errors?.length || newlyInstalledTheme.warnings?.length) {
-                const hasErrors = newlyInstalledTheme.errors?.length;
-
-                title = `Installed with ${hasErrors ? 'errors' : 'warnings'}`;
-                prompt = <>
-                    The theme <strong>&quot;{newlyInstalledTheme.name}&quot;</strong> was installed successfully but we detected some {hasErrors ? 'errors' : 'warnings'}.
+                    <strong>{newlyInstalledTheme.name}</strong> has been successfully installed.
                 </>;
 
                 if (!newlyInstalledTheme.active) {
                     prompt = <>
-                        {prompt}
-                        You are still able to activate and use the theme but it is recommended to contact the theme developer fix these {hasErrors ? 'errors' : 'warnings'} before you do so.
+                        {prompt}{' '}
+        Do you want to activate it now?
                     </>;
                 }
+
+                if (newlyInstalledTheme.errors?.length || newlyInstalledTheme.warnings?.length) {
+                    const hasErrors = newlyInstalledTheme.errors?.length;
+
+                    title = `Installed with ${hasErrors ? 'errors' : 'warnings'}`;
+                    prompt = <>
+        The theme <strong>&quot;{newlyInstalledTheme.name}&quot;</strong> was installed successfully but we detected some {hasErrors ? 'errors' : 'warnings'}.
+                    </>;
+
+                    if (!newlyInstalledTheme.active) {
+                        prompt = <>
+                            {prompt}
+            You are still able to activate and use the theme but it is recommended to contact the theme developer fix these {hasErrors ? 'errors' : 'warnings'} before you do so.
+                        </>;
+                    }
+                }
+
+                installedTheme = newlyInstalledTheme;
             }
 
             NiceModal.show(ThemeInstalledModal, {
                 title,
                 prompt,
-                installedTheme: newlyInstalledTheme,
+                installedTheme: installedTheme!,
                 onActivate: () => {
                     updateRoute('design/edit');
                     modal.remove();
@@ -304,7 +315,6 @@ const ChangeThemeModal = NiceModal.create(() => {
                 <div className='grow'>
                     {selectedTheme &&
                         <ThemePreview
-                            installButtonLabel={installedTheme ? `Update ${selectedTheme?.name}` : `Install ${selectedTheme?.name}`}
                             installedTheme={installedTheme}
                             isInstalling={isInstalling}
                             selectedTheme={selectedTheme}
