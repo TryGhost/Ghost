@@ -318,6 +318,7 @@ const Sidebar: React.FC<{
                         config={config}
                         hint='Any extra information or legal text'
                         nodes='MINIMAL_NODES'
+                        placeholder=' '
                         title='Email footer'
                         value={newsletter.footer_content || ''}
                         onChange={html => updateNewsletter({footer_content: html})}
