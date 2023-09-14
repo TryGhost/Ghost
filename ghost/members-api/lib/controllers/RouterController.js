@@ -486,21 +486,20 @@ module.exports = class RouterController {
                 let {newsletters: requestedNewsletters} = req.body;
 
                 if (requestedNewsletters && requestedNewsletters.length > 0 && requestedNewsletters.every(newsletter => newsletter.name !== undefined)) {
-                    const newsletterNames = requestedNewsletters.map(newsletter => `'${newsletter.name}'`);
+                    const newsletterNames = requestedNewsletters.map(newsletter => newsletter.name);
+                    const newsletterNamesFilter = newsletterNames.map(newsletter => `'${newsletter.replace(/"/g, '\\"').replace(/'/g, `\\'`)}'`);
                     const newsletters = await this._newslettersService.browse({
-                        filter: `name:[${newsletterNames}]`,
+                        filter: `name:[${newsletterNamesFilter}]`,
                         columns: ['id','name','status']
                     });
 
-                    if (newsletters.length !== newsletterNames.length) {
-                        if (newsletters.length < newsletterNames.length) { //check for invalid newsletters
-                            const validNewsletters = newsletters.map(newsletter => `'${newsletter.name}'`);
-                            const invalidNewsletters = newsletterNames.filter(newsletter => !validNewsletters.includes(newsletter));
+                    if (newsletters.length !== newsletterNames.length) { //check for invalid newsletters
+                        const validNewsletters = newsletters.map(newsletter => newsletter.name);
+                        const invalidNewsletters = newsletterNames.filter(newsletter => !validNewsletters.includes(newsletter));
 
-                            throw new errors.BadRequestError({
-                                message: tpl(messages.invalidNewsletters, {newsletters: invalidNewsletters})
-                            });
-                        }
+                        throw new errors.BadRequestError({
+                            message: tpl(messages.invalidNewsletters, {newsletters: invalidNewsletters})
+                        });
                     }
 
                     //validation for archived newsletters

@@ -143,14 +143,15 @@ describe('RouterController', function () {
 
                 req.body.newsletters = newsletters.map(newsletter => ({name: newsletter.name}));
 
-                const newsletterNames = newsletters.map(newsletter => `'${newsletter.name}'`);
+                const newsletterNames = newsletters.map(newsletter => newsletter.name);
+                const newsletterNamesFilter = newsletterNames.map(newsletter => `'${newsletter.replace(/"/g, '\\"').replace(/'/g, `\\'`)}'`);
                 const newslettersServiceStub = {
                     browse: sinon.stub()
                 };
 
                 newslettersServiceStub.browse
                     .withArgs({
-                        filter: `name:[${newsletterNames}]`,
+                        filter: `name:[${newsletterNamesFilter}]`,
                         columns: ['id','name','status']
                     })
                     .resolves(newsletters);
@@ -194,7 +195,7 @@ describe('RouterController', function () {
                     newslettersService: newslettersServiceStub
                 });
 
-                await controller.sendMagicLink(req, res).should.be.rejectedWith(`Cannot subscribe to invalid newsletters '${INVALID_NEWSLETTER_NAME}'`);
+                await controller.sendMagicLink(req, res).should.be.rejectedWith(`Cannot subscribe to invalid newsletters ${INVALID_NEWSLETTER_NAME}`);
             });
 
             it('validates archived newsletters', async function () {
