@@ -1066,7 +1066,10 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         collection_id: {type: 'string', maxlength: 24, nullable: false, references: 'collections.id', cascadeDelete: true},
         post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id', cascadeDelete: true},
-        sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
+        sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        '@@UNIQUE_CONSTRAINTS@@': [
+            ['collection_id', 'post_id']
+        ]
     },
     recommendations: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
