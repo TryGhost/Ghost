@@ -192,7 +192,7 @@ const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
     );
 };
 
-const Users: React.FC<{ keywords: string[] }> = ({keywords}) => {
+const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords, highlight = true}) => {
     const {
         ownerUser,
         adminUsers,
@@ -246,6 +246,7 @@ const Users: React.FC<{ keywords: string[] }> = ({keywords}) => {
     return (
         <SettingGroup
             customButtons={buttons}
+            highlightOnModalClose={highlight}
             keywords={keywords}
             navid='users'
             testId='users'
