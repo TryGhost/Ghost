@@ -1335,12 +1335,15 @@ Post = ghostBookshelf.Model.extend({
         // pages are rendered after saving so data can be fetched outside of a transaction
         if (model.get('lexical') !== null && model.get('html') === null) {
             const html = await lexicalLib.render(model.get('lexical'));
+            const plaintext = htmlToPlaintext.excerpt(html);
 
+            // set model attributes so they are available immediately in code that uses the returned model
             model.set('html', html);
+            model.set('plaintext', plaintext);
 
             // update database manually using knex to avoid hooks being called multiple times
             await ghostBookshelf.transaction(async (transacting) => {
-                await ghostBookshelf.knex.raw('UPDATE posts SET html = ? WHERE id = ?', [html, model.id]).transacting(transacting);
+                await ghostBookshelf.knex.raw('UPDATE posts SET html = ?, plaintext = ? WHERE id = ?', [html, plaintext, model.id]).transacting(transacting);
             });
         }
 
