@@ -32,7 +32,7 @@ module.exports = function foreach(items, options) {
             visibility = visibility || 'all';
         }
     } 
-    
+
     if (_.isArray(items) && items.length > 0 && checks.isNewsletter(items[0])) {
         visibility = visibility || 'all';
     } else if (_.isObject(items) && _.isArray(Object.values(items))) {

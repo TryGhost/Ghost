@@ -5,7 +5,7 @@ function isPost(jsonData) {
 
 function isNewsletter(jsonData) {
     return Object.prototype.hasOwnProperty.call(jsonData, 'name') &&
-        Object.prototype.hasOwnProperty.call(jsonData, 'subscribe_on_signup') && Object.prototype.hasOwnProperty.call(jsonData, 'slug');
+        Object.prototype.hasOwnProperty.call(jsonData, 'subscribe_on_signup') && Object.prototype.hasOwnProperty.call(jsonData, 'visibility');
 }
 
 function isPage(jsonData = {}) {

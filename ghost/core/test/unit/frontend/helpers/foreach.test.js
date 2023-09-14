@@ -270,14 +270,6 @@ describe('{{#foreach}} helper', function () {
             }
         };
 
-        const newsletterObjectHashWithVisibility = {
-            newsletters: {
-                first: {name: 'first', visibility: 'members', slug: 'first', subscribe_on_signup: true},
-                second: {name: 'second', visibility: 'members', slug: 'second', subscribe_on_signup: true},
-                third: {name: 'third', visibility: 'paid', slug: 'third', subscribe_on_signup: false}
-            }
-        };
-
         const arrayHash = {
             posts: [
                 {title: 'first'}, {title: 'second'}, {title: 'third'}, {title: 'fourth'}, {title: 'fifth'}
@@ -287,14 +279,6 @@ describe('{{#foreach}} helper', function () {
         const arrayHashWithVis = {
             posts: [
                 {title: 'first', visibility: 'members', slug: 'first', html: ''}, {title: 'second'}, {title: 'third'}, {title: 'fourth'}, {title: 'fifth'}
-            ]
-        };
-
-        const newsletterArrayHashWithVisibility = {
-            newsletters: [
-                {name: 'first', visibility: 'members', slug: 'first', subscribe_on_signup: true},
-                {name: 'second', visibility: 'members', slug: 'second', subscribe_on_signup: true},
-                {name: 'third', visibility: 'paid', slug: 'third', subscribe_on_signup: false}
             ]
         };
 
@@ -419,6 +403,20 @@ describe('{{#foreach}} helper', function () {
         });
 
         it('foreach with newsletters with members visibility', function () {
+            const newsletterObjectHashWithVisibility = {
+                newsletters: {
+                    first: {name: 'first', visibility: 'members', slug: 'first', subscribe_on_signup: true},
+                    second: {name: 'second', visibility: 'members', slug: 'second', subscribe_on_signup: true},
+                    third: {name: 'third', visibility: 'paid', slug: 'third', subscribe_on_signup: false}
+                }
+            };
+            const newsletterArrayHashWithVisibility = {
+                newsletters: [
+                    {name: 'first', visibility: 'members', slug: 'first', subscribe_on_signup: true},
+                    {name: 'second', visibility: 'members', slug: 'second', subscribe_on_signup: true},
+                    {name: 'third', visibility: 'paid', slug: 'third', subscribe_on_signup: false}
+                ]
+            };
             const templateString = '<ul>{{#foreach newsletters}}<li>{{name}}</li>{{else}}not this{{/foreach}}</ul>';
             const expected = '<ul><li>first</li><li>second</li><li>third</li></ul>';
             shouldCompileToExpected(templateString, newsletterObjectHashWithVisibility, expected);
