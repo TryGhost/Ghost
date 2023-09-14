@@ -529,7 +529,7 @@ module.exports = class RouterController {
                     }
 
                     requestedNewsletters = newsletters
-                        .filter(newsletter => newsletter.status === 'active') //Are there only two status? 
+                        .filter(newsletter => newsletter.status === 'active')
                         .map(newsletter => ({id: newsletter.id}));
                 }
 
