@@ -559,12 +559,12 @@ export class CollectionsService {
         });
     }
 
-    async getById(id: string): Promise<Collection | null> {
-        return await this.collectionsRepository.getById(id);
+    async getById(id: string, options?: {transaction: Knex.Transaction}): Promise<Collection | null> {
+        return await this.collectionsRepository.getById(id, options);
     }
 
-    async getBySlug(slug: string): Promise<Collection | null> {
-        return await this.collectionsRepository.getBySlug(slug);
+    async getBySlug(slug: string, options?: {transaction: Knex.Transaction}): Promise<Collection | null> {
+        return await this.collectionsRepository.getBySlug(slug, options);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
