@@ -500,21 +500,6 @@ module.exports = class RouterController {
                             throw new errors.BadRequestError({
                                 message: tpl(messages.invalidNewsletters, {newsletters: invalidNewsletters})
                             });
-                        } else { //check for ambiguous newsletters
-                            const uniqueNewsletters = new Set();
-                            const ambiguousNewsletters = [];
-                          
-                            newsletters.forEach((newsletter) => {
-                                if (uniqueNewsletters.has(newsletter.name)) {
-                                    ambiguousNewsletters.push(newsletter);
-                                } else {
-                                    uniqueNewsletters.add(newsletter.name);
-                                }
-                            });
-
-                            throw new errors.BadRequestError({
-                                message: tpl(messages.ambiguousNewsletters, {newsletters: ambiguousNewsletters})
-                            });
                         }
                     }
 
