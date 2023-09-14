@@ -440,7 +440,9 @@ const Password: React.FC<UserDetailProps> = ({user}) => {
 };
 
 const StaffToken: React.FC<UserDetailProps> = () => {
-    const {data: {apiKey} = {}} = getStaffToken();
+    const {refetch: apiKey} = getStaffToken({
+        enabled: false
+    });
     const [token, setToken] = useState('');
     const {mutateAsync: newApiKey} = genStaffToken();
     const [copied, setCopied] = useState(false);
@@ -454,7 +456,13 @@ const StaffToken: React.FC<UserDetailProps> = () => {
     };
 
     useEffect(() => {
-        setToken(apiKey?.secret || '');
+        const getApiKey = async () => {
+            const newAPI = await apiKey();
+            if (newAPI) {
+                setToken(newAPI?.data?.apiKey?.secret || '');
+            }
+        };
+        getApiKey();
     } , [apiKey]);
 
     const genConfirmation = () => {
@@ -477,6 +485,7 @@ const StaffToken: React.FC<UserDetailProps> = () => {
             title='Staff access token'
         >
             <TextField
+                readOnly={true}
                 rightPlaceholder={
                     <div className='flex'>
                         <Button className='mt-2' color='white' label='Regenerate' size='sm' onClick={genConfirmation} />
@@ -485,7 +494,7 @@ const StaffToken: React.FC<UserDetailProps> = () => {
                 }
                 title="Staff access token"
                 type="text"
-                value={token}
+                value={token || ''}
             />
         </SettingGroup>
     );
