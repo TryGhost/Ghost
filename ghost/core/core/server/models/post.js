@@ -700,7 +700,12 @@ Post = ghostBookshelf.Model.extend({
             )
         ) {
             try {
-                this.set('html', await lexicalLib.render(this.get('lexical')));
+                if (this.get('type') === 'page' && labs.isSet('collectionsCard')) {
+                    // pages get rendered later so we can fetch collection card posts outside of a transaction
+                    this.set('html', null);
+                } else {
+                    this.set('html', await lexicalLib.render(this.get('lexical')));
+                }
             } catch (err) {
                 throw new errors.ValidationError({
                     message: tpl(messages.invalidLexicalStructure),
@@ -1291,10 +1296,10 @@ Post = ghostBookshelf.Model.extend({
             return ghostBookshelf.transaction((transacting) => {
                 options.transacting = transacting;
                 return editPost();
-            });
+            }).then(model => this.renderIfNeeded(model));
         }
 
-        return editPost();
+        return editPost().then(model => this.renderIfNeeded(model));
     },
 
     /**
@@ -1320,10 +1325,26 @@ Post = ghostBookshelf.Model.extend({
                 options.transacting = transacting;
 
                 return addPost();
+            }).then(this.renderIfNeeded);
+        }
+
+        return addPost().then(this.renderIfNeeded);
+    },
+
+    renderIfNeeded: async function renderIfNeeded(model) {
+        // pages are rendered after saving so data can be fetched outside of a transaction
+        if (model.get('lexical') !== null && model.get('html') === null) {
+            const html = await lexicalLib.render(model.get('lexical'));
+
+            model.set('html', html);
+
+            // update database manually using knex to avoid hooks being called multiple times
+            await ghostBookshelf.transaction(async (transacting) => {
+                await ghostBookshelf.knex.raw('UPDATE posts SET html = ? WHERE id = ?', [html, model.id]).transacting(transacting);
             });
         }
 
-        return addPost();
+        return model;
     },
 
     destroy: function destroy(unfilteredOptions) {
