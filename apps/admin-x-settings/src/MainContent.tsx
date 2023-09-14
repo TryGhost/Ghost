@@ -55,12 +55,11 @@ const MainContent: React.FC = () => {
                 <div className='-mx-6 h-[84px] bg-white px-6 tablet:m-0 tablet:bg-transparent tablet:p-0'>
                     <Heading>Settings</Heading>
                 </div>
-                <div className="relative mt-[-32px] w-full overflow-x-hidden after:absolute after:inset-x-0 after:top-0 after:hidden after:h-[40px] after:bg-gradient-to-b after:from-white after:to-transparent after:content-[''] dark:after:from-black tablet:w-[260px] tablet:after:!visible tablet:after:!block">
+                <div className="relative mt-[-32px] w-full overflow-x-hidden">
                     <Sidebar />
                 </div>
             </div>
-            <div className="relative flex-auto pt-[3vmin] tablet:ml-[300px] tablet:pt-[85px]">
-                {/* <div className='pointer-events-none fixed inset-x-0 top-0 z-[5] hidden h-[80px] bg-gradient-to-t from-transparent to-white to-60% dark:to-black tablet:!visible tablet:!block'></div> */}
+            <div className="relative flex-auto pt-[10vmin] tablet:ml-[300px] tablet:pt-[85px]">
                 <Settings />
             </div>
         </Page>

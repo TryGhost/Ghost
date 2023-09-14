@@ -83,7 +83,7 @@ const SignupOptions: React.FC<{
         });
     }
 
-    return <Form marginTop>
+    return <div className='mt-7'><Form>
         <Toggle
             checked={Boolean(portalName)}
             disabled={isDisabled}
@@ -141,7 +141,7 @@ const SignupOptions: React.FC<{
             labelStyle='heading'
             onChange={e => updateSetting('portal_signup_checkbox_required', e.target.checked)}
         />}
-    </Form>;
+    </Form></div>;
 };
 
 export default SignupOptions;
