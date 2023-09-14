@@ -38,12 +38,12 @@ const Sidebar: React.FC = () => {
     };
 
     return (
-        <div className='no-scrollbar tablet:h-[calc(100vh-5vmin-84px)] tablet:w-[240px] tablet:overflow-y-scroll'>
-            <div className='relative mb-10 md:pt-4 tablet:pt-[32px]'>
+        <div>
+            <div className='relative md:pt-4 tablet:h-[64px] tablet:pt-[32px]'>
                 <Icon className='absolute top-2 md:top-6 tablet:top-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
                 <TextField autoComplete="off" className='border-b border-grey-500 bg-transparent px-3 py-1.5 pl-[24px] text-sm dark:text-white' placeholder="Search" title="Search" value={filter} hideTitle unstyled onChange={updateSearch} />
             </div>
-            <div className="hidden tablet:!visible tablet:!block">
+            <div className="no-scrollbar hidden pt-10 tablet:!visible tablet:!block tablet:h-[calc(100vh-5vmin-84px-64px)] tablet:w-[240px] tablet:overflow-y-auto">
                 <SettingNavSection keywords={Object.values(generalSearchKeywords).flat()} title="General">
                     <SettingNavItem keywords={generalSearchKeywords.titleAndDescription} navid='title-and-description' title="Title and description" onClick={handleSectionClick} />
                     <SettingNavItem keywords={generalSearchKeywords.timeZone} navid='timezone' title="Timezone" onClick={handleSectionClick} />

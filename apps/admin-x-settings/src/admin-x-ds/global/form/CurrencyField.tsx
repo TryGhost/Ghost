@@ -3,7 +3,7 @@ import TextField, {TextFieldProps} from './TextField';
 import {currencyFromDecimal, currencyToDecimal} from '../../../utils/currency';
 
 export type CurrencyFieldProps = Omit<TextFieldProps, 'type' | 'onChange' | 'value'> & {
-    valueInCents?: number;
+    valueInCents?: number | '';
     currency?: string;
     onChange?: (cents: number) => void;
 }
@@ -20,7 +20,7 @@ const CurrencyField: React.FC<CurrencyFieldProps> = ({
     onChange,
     ...props
 }) => {
-    const [localValue, setLocalValue] = useState(currencyToDecimal(valueInCents || 0).toString());
+    const [localValue, setLocalValue] = useState(valueInCents === '' ? '' : currencyToDecimal(valueInCents || 0).toString());
 
     // While the user is editing we allow more lenient input, e.g. "1.32.566" to make it easier to type and change
     const stripNonNumeric = (input: string) => input.replace(/[^\d.]+/g, '');

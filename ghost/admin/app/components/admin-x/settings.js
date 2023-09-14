@@ -297,12 +297,12 @@ export default class AdminXSettings extends Component {
                 justifyContent: 'center',
                 paddingBottom: '8vh'
             }}>
-                <video width="100" height="100" loop autoplay muted playsinline preload="metadata" style={{
+                <video width="100" height="100" loop autoPlay muted playsInline preload="metadata" style={{
                     width: '100px',
                     height: '100px'
                 }}>
                     <source src="assets/videos/logo-loader.mp4" type="video/mp4" />
-                    <div class="gh-loading-spinner"></div>
+                    <div className="gh-loading-spinner"></div>
                 </video>
             </div>
         );

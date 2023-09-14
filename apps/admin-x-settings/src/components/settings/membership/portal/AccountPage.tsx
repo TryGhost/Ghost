@@ -25,9 +25,9 @@ const AccountPage: React.FC<{
         setValue(fullEmailAddress(settingValue, siteData!));
     };
 
-    return <Form marginTop>
+    return <div className='mt-7'><Form>
         <TextField title='Support email address' value={value} onBlur={updateSupportAddress} onChange={e => setValue(e.target.value)} />
-    </Form>;
+    </Form></div>;
 };
 
 export default AccountPage;

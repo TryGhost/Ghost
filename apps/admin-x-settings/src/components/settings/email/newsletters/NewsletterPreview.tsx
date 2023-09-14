@@ -93,6 +93,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
 
     return <NewsletterPreviewContent
         authorPlaceholder={currentUser.name || currentUser.email}
+        backgroundColor={colors.backgroundColor || '#ffffff'}
         bodyFontCategory={newsletter.body_font_category}
         footerContent={newsletter.footer_content}
         headerIcon={newsletter.show_header_icon ? icon : undefined}

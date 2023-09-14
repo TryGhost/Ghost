@@ -124,7 +124,7 @@ const NewsletterPreviewContent: React.FC<{
                                                 </span>
                                             )}
                                         </p>
-                                        <p className="pb-2 underline" style={{color: secondaryTextColor}}><span>View in browser</span></p>
+                                        <p className="pb-2" style={{color: secondaryTextColor}}><span>View in browser</span></p>
                                     </div>
                                 </div>
                             )}

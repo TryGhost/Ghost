@@ -90,7 +90,7 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
             } else {
                 showToast({
                     type: 'pageError',
-                    message: 'Can\'t save integration, please double check that you\'ve filled in all mandatory fields.'
+                    message: 'Can\'t save integration, please double check that you\'ve filled all mandatory fields.'
                 });
             }
         }}
