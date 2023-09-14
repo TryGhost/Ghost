@@ -104,7 +104,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
             } else {
                 showToast({
                     type: 'pageError',
-                    message: 'One or more fields have errors, please double check that you\'ve filled in all mandatory fields.'
+                    message: 'One or more fields have errors, please double check that you\'ve filled all mandatory fields.'
                 });
             }
         }}

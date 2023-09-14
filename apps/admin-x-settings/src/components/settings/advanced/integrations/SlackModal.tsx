@@ -43,7 +43,7 @@ const SlackModal = NiceModal.create(() => {
         } else {
             showToast({
                 type: 'pageError',
-                message: 'Can\'t save Slack settings, please double check that you\'ve filled in all mandatory fields.'
+                message: 'Can\'t save Slack settings, please double check that you\'ve filled all mandatory fields.'
             });
         }
     };
@@ -66,7 +66,7 @@ const SlackModal = NiceModal.create(() => {
                 } else {
                     showToast({
                         type: 'pageError',
-                        message: 'Can\'t save Slack settings, please double check that you\'ve filled in all mandatory fields.'
+                        message: 'Can\'t save Slack settings, please double check that you\'ve filled all mandatory fields.'
                     });
                 }
             }}
