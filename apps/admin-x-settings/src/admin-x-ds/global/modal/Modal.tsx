@@ -21,6 +21,7 @@ export interface ModalProps {
     title?: string;
     okLabel?: string;
     okColor?: ButtonColor;
+    okLoading?: boolean;
     cancelLabel?: string;
     leftButtonProps?: ButtonProps;
     buttonsDisabled?: boolean;
@@ -48,6 +49,7 @@ const Modal: React.FC<ModalProps> = ({
     testId,
     title,
     okLabel = 'OK',
+    okLoading = false,
     cancelLabel = 'Cancel',
     footer,
     leftButtonProps,
@@ -137,7 +139,8 @@ const Modal: React.FC<ModalProps> = ({
                 color: okColor,
                 className: 'min-w-[80px]',
                 onClick: onOk,
-                disabled: buttonsDisabled
+                disabled: buttonsDisabled,
+                loading: okLoading
             });
         }
     }
