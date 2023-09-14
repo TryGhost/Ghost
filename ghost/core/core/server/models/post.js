@@ -700,7 +700,7 @@ Post = ghostBookshelf.Model.extend({
             )
         ) {
             try {
-                this.set('html', await lexicalLib.render(this.get('lexical')));
+                this.set('html', await lexicalLib.render(this.get('lexical'), {transacting: options.transacting}));
             } catch (err) {
                 throw new errors.ValidationError({
                     message: tpl(messages.invalidLexicalStructure),
