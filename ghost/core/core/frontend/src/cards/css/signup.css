@@ -238,6 +238,7 @@
     text-overflow: ellipsis;
     border-radius: 3px;
     transition: opacity .2s ease;
+    cursor: pointer;
 }
 
 .kg-signup-card-button.kg-style-accent {
