@@ -30,7 +30,6 @@ describe('Checks', function () {
     it('isNewsletter', function () {
         checks.isNewsletter({}).should.eql(false);
         checks.isNewsletter({name: 'Test'}).should.eql(false);
-        checks.isNewsletter({name: 'Test', slug: 'test'}).should.eql(false);
         checks.isNewsletter({name: 'Test', visibility: 'members', subscribe_on_signup: true}).should.eql(true);
         checks.isNewsletter({name: 'Test', visibility: 'paid', subscribe_on_signup: false}).should.eql(true);
     });

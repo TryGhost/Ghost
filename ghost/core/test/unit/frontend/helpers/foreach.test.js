@@ -405,16 +405,16 @@ describe('{{#foreach}} helper', function () {
         it('foreach with newsletters with members visibility', function () {
             const newsletterObjectHashWithVisibility = {
                 newsletters: {
-                    first: {name: 'first', visibility: 'members', slug: 'first', subscribe_on_signup: true},
-                    second: {name: 'second', visibility: 'members', slug: 'second', subscribe_on_signup: true},
-                    third: {name: 'third', visibility: 'paid', slug: 'third', subscribe_on_signup: false}
+                    first: {name: 'first', visibility: 'members', subscribe_on_signup: true},
+                    second: {name: 'second', visibility: 'members', subscribe_on_signup: true},
+                    third: {name: 'third', visibility: 'paid', subscribe_on_signup: false}
                 }
             };
             const newsletterArrayHashWithVisibility = {
                 newsletters: [
-                    {name: 'first', visibility: 'members', slug: 'first', subscribe_on_signup: true},
-                    {name: 'second', visibility: 'members', slug: 'second', subscribe_on_signup: true},
-                    {name: 'third', visibility: 'paid', slug: 'third', subscribe_on_signup: false}
+                    {name: 'first', visibility: 'members', subscribe_on_signup: true},
+                    {name: 'second', visibility: 'members', subscribe_on_signup: true},
+                    {name: 'third', visibility: 'paid', subscribe_on_signup: false}
                 ]
             };
             const templateString = '<ul>{{#foreach newsletters}}<li>{{name}}</li>{{else}}not this{{/foreach}}</ul>';
