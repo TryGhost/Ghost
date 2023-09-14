@@ -69,12 +69,15 @@ const Table: React.FC<TableProps> = ({children, borderTop, hint, hintSeparator, 
         <>
             <div className='w-full overflow-x-auto'>
                 {pageTitle && <Heading>{pageTitle}</Heading>}
-                {!isLoading && <table ref={table} className={tableClasses}>
-                    <tbody>
-                        {children}
-                    </tbody>
-                </table>}
-                {isLoading && <CenteredLoadingIndicator delay={200} style={loadingStyle} />}
+                {/* TODO: make this div have the same height across all pages */}
+                <div>
+                    {!isLoading && <table ref={table} className={tableClasses}>
+                        <tbody>
+                            {children}
+                        </tbody>
+                    </table>}
+                    {isLoading && <CenteredLoadingIndicator delay={200} style={loadingStyle} />}
+                </div>
                 {(hint || pagination) &&
                 <div className="-mt-px">
                     {(hintSeparator || pagination) && <Separator />}
