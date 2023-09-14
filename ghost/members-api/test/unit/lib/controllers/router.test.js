@@ -126,29 +126,32 @@ describe('RouterController', function () {
                 const newsletters = [
                     {
                         id: 'abc123',
+                        name: 'Newsletter 1',
                         status: 'active'
                     },
                     {
                         id: 'def456',
+                        name: 'Newsletter 2',
                         status: 'active'
                     },
                     {
                         id: 'ghi789',
+                        name: 'Newsletter 3',
                         status: 'active'
                     }
                 ];
 
-                req.body.newsletters = newsletters.map(newsletter => ({id: newsletter.id}));
+                req.body.newsletters = newsletters.map(newsletter => ({name: newsletter.name}));
 
-                const newsletterIds = newsletters.map(newsletter => newsletter.id);
+                const newsletterNames = newsletters.map(newsletter => `'${newsletter.name}'`);
                 const newslettersServiceStub = {
                     browse: sinon.stub()
                 };
 
                 newslettersServiceStub.browse
                     .withArgs({
-                        filter: `id:[${newsletterIds}]`,
-                        columns: ['id', 'status']
+                        filter: `name:[${newsletterNames}]`,
+                        columns: ['id','name','status']
                     })
                     .resolves(newsletters);
 
@@ -170,10 +173,10 @@ describe('RouterController', function () {
             });
 
             it('validates specified newsletters', async function () {
-                const INVALID_NEWSLETTER_ID = 'abc123';
+                const INVALID_NEWSLETTER_NAME = 'abc123';
 
                 req.body.newsletters = [
-                    {id: INVALID_NEWSLETTER_ID}
+                    {name: INVALID_NEWSLETTER_NAME}
                 ];
 
                 const newslettersServiceStub = {
@@ -182,8 +185,8 @@ describe('RouterController', function () {
 
                 newslettersServiceStub.browse
                     .withArgs({
-                        filter: `id:[${INVALID_NEWSLETTER_ID}]`,
-                        columns: ['id', 'status']
+                        filter: `name:['${INVALID_NEWSLETTER_NAME}']`,
+                        columns: ['id','name','status']
                     })
                     .resolves([]);
 
@@ -191,36 +194,39 @@ describe('RouterController', function () {
                     newslettersService: newslettersServiceStub
                 });
 
-                await controller.sendMagicLink(req, res).should.be.rejectedWith(`Cannot subscribe to invalid newsletter ${INVALID_NEWSLETTER_ID}`);
+                await controller.sendMagicLink(req, res).should.be.rejectedWith(`Cannot subscribe to invalid newsletters '${INVALID_NEWSLETTER_NAME}'`);
             });
 
-            it('does not add specified newsletters to the tokenData if they are archived', async function () {
+            it('validates archived newsletters', async function () {
                 const newsletters = [
                     {
                         id: 'abc123',
+                        name: 'Newsletter 1',
                         status: 'active'
                     },
                     {
                         id: 'def456',
+                        name: 'Newsletter 2',
                         status: 'archived'
                     },
                     {
                         id: 'ghi789',
+                        name: 'Newsletter 3',
                         status: 'active'
                     }
                 ];
 
-                req.body.newsletters = newsletters.map(newsletter => ({id: newsletter.id}));
+                req.body.newsletters = newsletters.map(newsletter => ({name: newsletter.name}));
 
-                const newsletterIds = newsletters.map(newsletter => newsletter.id);
+                const newsletterNames = newsletters.map(newsletter => `'${newsletter.name}'`);
                 const newslettersServiceStub = {
                     browse: sinon.stub()
                 };
 
                 newslettersServiceStub.browse
                     .withArgs({
-                        filter: `id:[${newsletterIds}]`,
-                        columns: ['id', 'status']
+                        filter: `name:[${newsletterNames}]`,
+                        columns: ['id', 'name','status']
                     })
                     .resolves(newsletters);
 
@@ -228,16 +234,7 @@ describe('RouterController', function () {
                     newslettersService: newslettersServiceStub
                 });
 
-                await controller.sendMagicLink(req, res);
-
-                res.writeHead.calledOnceWith(201).should.be.true();
-                res.end.calledOnceWith('Created.').should.be.true();
-
-                sendEmailWithMagicLinkStub.calledOnce.should.be.true();
-                sendEmailWithMagicLinkStub.args[0][0].tokenData.newsletters.should.eql([
-                    {id: newsletters[0].id},
-                    {id: newsletters[2].id}
-                ]);
+                await controller.sendMagicLink(req, res).should.be.rejectedWith(`Cannot subscribe to archived newsletters Newsletter 2`);
             });
         });
     });

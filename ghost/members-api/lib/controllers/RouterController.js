@@ -485,7 +485,7 @@ module.exports = class RouterController {
                 // Validate requested newsletters
                 let {newsletters: requestedNewsletters} = req.body;
 
-                if (requestedNewsletters && requestedNewsletters.length > 0 && requestedNewsletters.every((newsletter) => newsletter.name !== undefined)) {
+                if (requestedNewsletters && requestedNewsletters.length > 0 && requestedNewsletters.every(newsletter => newsletter.name !== undefined)) {
                     const newsletterNames = requestedNewsletters.map(newsletter => `'${newsletter.name}'`);
                     const newsletters = await this._newslettersService.browse({
                         filter: `name:[${newsletterNames}]`,
@@ -493,7 +493,7 @@ module.exports = class RouterController {
                     });
 
                     if (newsletters.length !== newsletterNames.length) {
-                        if(newsletters.length < newsletterNames.length) { //check for invalid newsletters
+                        if (newsletters.length < newsletterNames.length) { //check for invalid newsletters
                             const validNewsletters = newsletters.map(newsletter => `'${newsletter.name}'`);
                             const invalidNewsletters = newsletterNames.filter(newsletter => !validNewsletters.includes(newsletter));
 
@@ -505,25 +505,24 @@ module.exports = class RouterController {
                             const ambiguousNewsletters = [];
                           
                             newsletters.forEach((newsletter) => {
-                              if (uniqueNewsletters.has(newsletter.name)) {
-                                ambiguousNewsletters.push(newsletter);
-                              } else {
-                                uniqueNewsletters.add(newsletter.name);
-                              }
+                                if (uniqueNewsletters.has(newsletter.name)) {
+                                    ambiguousNewsletters.push(newsletter);
+                                } else {
+                                    uniqueNewsletters.add(newsletter.name);
+                                }
                             });
 
                             throw new errors.BadRequestError({
                                 message: tpl(messages.ambiguousNewsletters, {newsletters: ambiguousNewsletters})
                             });
                         }
-
                     }
 
                     //validation for archived newsletters
                     const archivedNewsletters = newsletters
                         .filter(newsletter => newsletter.status === 'archived')
                         .map(newsletter => newsletter.name);
-                    if(archivedNewsletters && archivedNewsletters.length > 0) {
+                    if (archivedNewsletters && archivedNewsletters.length > 0) {
                         throw new errors.BadRequestError({
                             message: tpl(messages.archivedNewsletters, {newsletters: archivedNewsletters})
                         });
