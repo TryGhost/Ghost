@@ -51,7 +51,7 @@ export const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({size, color, 
 
     if (size === 'lg') {
         return (
-            <div className={`pupi flex h-64 items-center justify-center transition-opacity ${show ? 'opacity-100' : 'opacity-0'}`} style={style}>
+            <div className={`flex h-64 items-center justify-center transition-opacity ${show ? 'opacity-100' : 'opacity-0'}`} style={style}>
                 <div className={styles}></div>
             </div>
         );

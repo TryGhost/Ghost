@@ -30,6 +30,22 @@ const tableRows = (
             <TableCell>Jamie Larson</TableCell>
             <TableCell>jamie@example.com</TableCell>
         </TableRow>
+        <TableRow>
+            <TableCell>Jamie Larson</TableCell>
+            <TableCell>jamie@example.com</TableCell>
+        </TableRow>
+        <TableRow>
+            <TableCell>Jamie Larson</TableCell>
+            <TableCell>jamie@example.com</TableCell>
+        </TableRow>
+        <TableRow>
+            <TableCell>Jamie Larson</TableCell>
+            <TableCell>jamie@example.com</TableCell>
+        </TableRow>
+        <TableRow>
+            <TableCell>Jamie Larson</TableCell>
+            <TableCell>jamie@example.com</TableCell>
+        </TableRow>
     </>
 );
 
@@ -43,9 +59,18 @@ export const Default: Story = {
     decorators: [(_story: () => ReactNode) => (<div style={{maxWidth: '600px'}}>{_story()}</div>)]
 };
 
+export const WithPageTitle: Story = {
+    args: {
+        pageTitle: 'This is a page title',
+        children: tableRows
+    }
+};
+
 export const Loading: Story = {
     args: {
         children: tableRows,
-        isLoading: true
+        isLoading: true,
+        hint: 'This is a hint',
+        hintSeparator: true
     }
 };
