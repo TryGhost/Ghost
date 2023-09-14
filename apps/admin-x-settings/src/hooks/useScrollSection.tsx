@@ -12,13 +12,15 @@ const ScrollSectionContext = createContext<ScrollSectionContextData>({
 
 export const useScrollSectionContext = () => useContext(ScrollSectionContext);
 
+const scrollMargin = 193;
+
 const scrollToSection = (element: HTMLDivElement) => {
     const root = document.getElementById('admin-x-root')!;
     const top = element.getBoundingClientRect().top + root.scrollTop;
 
     root.scrollTo({
         behavior: 'smooth',
-        top: top - 193
+        top: top - scrollMargin
     });
 };
 
@@ -61,7 +63,7 @@ export const ScrollSectionProvider: React.FC<{
             return newSections;
         });
     }, {
-        rootMargin: '-20% 0px -40% 0px'
+        rootMargin: `-${scrollMargin - 10}px 0px -40% 0px`
     }), []);
 
     const updateSection = useCallback((id: string, element: HTMLDivElement) => {
