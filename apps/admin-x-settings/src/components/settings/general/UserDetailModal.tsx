@@ -21,7 +21,7 @@ import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {RoutingModalProps} from '../../providers/RoutingProvider';
-import {User, isAdminUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner, useUpdatePassword} from '../../../api/users';
+import {User, hasAdminAccess, isAdminUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner, useUpdatePassword} from '../../../api/users';
 import {genStaffToken, getStaffToken} from '../../../api/staffToken';
 import {getImageUrl, useUploadImage} from '../../../api/images';
 import {getSettingValues} from '../../../api/settings';
@@ -108,6 +108,8 @@ const RoleSelector: React.FC<UserDetailProps> = ({user, setUserData}) => {
 };
 
 const BasicInputs: React.FC<UserDetailProps> = ({errors, validators, user, setUserData}) => {
+    const {currentUser} = useGlobalData();
+
     return (
         <SettingGroupContent>
             <TextField
@@ -134,7 +136,7 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, validators, user, setUs
                     setUserData?.({...user, email: e.target.value});
                 }}
             />
-            <RoleSelector setUserData={setUserData} user={user} />
+            {hasAdminAccess(currentUser) && <RoleSelector setUserData={setUserData} user={user} />}
         </SettingGroupContent>
     );
 };
@@ -227,6 +229,7 @@ const Details: React.FC<UserDetailProps> = ({errors, validators, user, setUserDa
 
 const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
     const hasWebmentions = useFeatureFlag('webmentions');
+    const {currentUser} = useGlobalData();
 
     return (
         <SettingGroupContent>
@@ -239,51 +242,53 @@ const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user, setUserData}
                     setUserData?.({...user, comment_notifications: e.target.checked});
                 }}
             />
-            {hasWebmentions && <Toggle
-                checked={user.mention_notifications}
-                direction='rtl'
-                hint='Every time another site links to your work'
-                label='Mentions'
-                onChange={(e) => {
-                    setUserData?.({...user, mention_notifications: e.target.checked});
-                }}
-            />}
-            <Toggle
-                checked={user.free_member_signup_notification}
-                direction='rtl'
-                hint='Every time a new free member signs up'
-                label='New signups'
-                onChange={(e) => {
-                    setUserData?.({...user, free_member_signup_notification: e.target.checked});
-                }}
-            />
-            <Toggle
-                checked={user.paid_subscription_started_notification}
-                direction='rtl'
-                hint='Every time a member starts a new paid subscription'
-                label='New paid members'
-                onChange={(e) => {
-                    setUserData?.({...user, paid_subscription_started_notification: e.target.checked});
-                }}
-            />
-            <Toggle
-                checked={user.paid_subscription_canceled_notification}
-                direction='rtl'
-                hint='Every time a member cancels their paid subscription'
-                label='Paid member cancellations'
-                onChange={(e) => {
-                    setUserData?.({...user, paid_subscription_canceled_notification: e.target.checked});
-                }}
-            />
-            <Toggle
-                checked={user.milestone_notifications}
-                direction='rtl'
-                hint='Occasional summaries of your audience & revenue growth'
-                label='Milestones'
-                onChange={(e) => {
-                    setUserData?.({...user, milestone_notifications: e.target.checked});
-                }}
-            />
+            {hasAdminAccess(currentUser) && <>
+                {hasWebmentions && <Toggle
+                    checked={user.mention_notifications}
+                    direction='rtl'
+                    hint='Every time another site links to your work'
+                    label='Mentions'
+                    onChange={(e) => {
+                        setUserData?.({...user, mention_notifications: e.target.checked});
+                    }}
+                />}
+                <Toggle
+                    checked={user.free_member_signup_notification}
+                    direction='rtl'
+                    hint='Every time a new free member signs up'
+                    label='New signups'
+                    onChange={(e) => {
+                        setUserData?.({...user, free_member_signup_notification: e.target.checked});
+                    }}
+                />
+                <Toggle
+                    checked={user.paid_subscription_started_notification}
+                    direction='rtl'
+                    hint='Every time a member starts a new paid subscription'
+                    label='New paid members'
+                    onChange={(e) => {
+                        setUserData?.({...user, paid_subscription_started_notification: e.target.checked});
+                    }}
+                />
+                <Toggle
+                    checked={user.paid_subscription_canceled_notification}
+                    direction='rtl'
+                    hint='Every time a member cancels their paid subscription'
+                    label='Paid member cancellations'
+                    onChange={(e) => {
+                        setUserData?.({...user, paid_subscription_canceled_notification: e.target.checked});
+                    }}
+                />
+                <Toggle
+                    checked={user.milestone_notifications}
+                    direction='rtl'
+                    hint='Occasional summaries of your audience & revenue growth'
+                    label='Milestones'
+                    onChange={(e) => {
+                        setUserData?.({...user, milestone_notifications: e.target.checked});
+                    }}
+                />
+            </>}
         </SettingGroupContent>
     );
 };
@@ -439,7 +444,7 @@ const StaffToken: React.FC<UserDetailProps> = () => {
     const [token, setToken] = useState('');
     const {mutateAsync: newApiKey} = genStaffToken();
     const [copied, setCopied] = useState(false);
-    
+
     const copyToClipboard = () => {
         navigator.clipboard.writeText(token);
         setCopied(true);
