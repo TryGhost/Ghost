@@ -192,7 +192,7 @@ const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
     );
 };
 
-const Users: React.FC<{ keywords: string[], highlight: boolean }> = ({keywords, highlight = true}) => {
+const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords, highlight = true}) => {
     const {
         ownerUser,
         adminUsers,
