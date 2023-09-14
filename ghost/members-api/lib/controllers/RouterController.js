@@ -17,7 +17,9 @@ const messages = {
     memberNotFoundSignUp: 'No member exists with this e-mail address. Please sign up first.',
     invalidType: 'Invalid checkout type.',
     notConfigured: 'This site is not accepting payments at the moment.',
-    invalidNewsletterId: 'Cannot subscribe to invalid newsletter {ids}'
+    invalidNewsletters: 'Cannot subscribe to invalid newsletters {newsletters}',
+    archivedNewsletters: 'Cannot subscribe to archived newsletters {newsletters}',
+    ambiguousNewsletters: 'Cannot subscribe to ambiguous newsletters {newsletters}'
 };
 
 module.exports = class RouterController {
@@ -483,24 +485,52 @@ module.exports = class RouterController {
                 // Validate requested newsletters
                 let {newsletters: requestedNewsletters} = req.body;
 
-                if (requestedNewsletters && requestedNewsletters.length > 0) {
-                    const newsletterIds = requestedNewsletters.map(newsletter => newsletter.id);
+                if (requestedNewsletters && requestedNewsletters.length > 0 && requestedNewsletters.every((newsletter) => newsletter.name !== undefined)) {
+                    const newsletterNames = requestedNewsletters.map(newsletter => `'${newsletter.name}'`);
                     const newsletters = await this._newslettersService.browse({
-                        filter: `id:[${newsletterIds}]`,
-                        columns: ['id','status']
+                        filter: `name:[${newsletterNames}]`,
+                        columns: ['id','name','status']
                     });
 
-                    if (newsletters.length !== newsletterIds.length) {
-                        const validNewsletterIds = newsletters.map(newsletter => newsletter.id);
-                        const invalidNewsletterIds = newsletterIds.filter(id => !validNewsletterIds.includes(id));
+                    if (newsletters.length !== newsletterNames.length) {
+                        if(newsletters.length < newsletterNames.length) { //check for invalid newsletters
+                            const validNewsletters = newsletters.map(newsletter => `'${newsletter.name}'`);
+                            const invalidNewsletters = newsletterNames.filter(newsletter => !validNewsletters.includes(newsletter));
 
+                            throw new errors.BadRequestError({
+                                message: tpl(messages.invalidNewsletters, {newsletters: invalidNewsletters})
+                            });
+                        } else { //check for ambiguous newsletters
+                            const uniqueNewsletters = new Set();
+                            const ambiguousNewsletters = [];
+                          
+                            newsletters.forEach((newsletter) => {
+                              if (uniqueNewsletters.has(newsletter.name)) {
+                                ambiguousNewsletters.push(newsletter);
+                              } else {
+                                uniqueNewsletters.add(newsletter.name);
+                              }
+                            });
+
+                            throw new errors.BadRequestError({
+                                message: tpl(messages.ambiguousNewsletters, {newsletters: ambiguousNewsletters})
+                            });
+                        }
+
+                    }
+
+                    //validation for archived newsletters
+                    const archivedNewsletters = newsletters
+                        .filter(newsletter => newsletter.status === 'archived')
+                        .map(newsletter => newsletter.name);
+                    if(archivedNewsletters && archivedNewsletters.length > 0) {
                         throw new errors.BadRequestError({
-                            message: tpl(messages.invalidNewsletterId, {ids: invalidNewsletterIds})
+                            message: tpl(messages.archivedNewsletters, {newsletters: archivedNewsletters})
                         });
                     }
 
                     requestedNewsletters = newsletters
-                        .filter(newsletter => newsletter.status === 'active')
+                        .filter(newsletter => newsletter.status === 'active') //Are there only two status? 
                         .map(newsletter => ({id: newsletter.id}));
                 }
 
