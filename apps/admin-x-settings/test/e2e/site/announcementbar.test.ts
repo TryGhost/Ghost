@@ -17,42 +17,48 @@ test.describe('Announcement Bar', async () => {
             url: responseFixtures.latestPost.posts[0].url,
             response: '<html><head><style></style></head><body><div>post preview</div></body></html>'
         });
-    
+
         await page.goto('/');
-    
+
         const section = page.getByTestId('announcement-bar');
-    
+
         await section.getByRole('button', {name: 'Customize'}).click();
-    
+
+        // // Homepage and post preview
         await page.waitForSelector('[data-testid="announcement-bar-preview-iframe"]');
-    
-        const checkTextInIframes = async (iframesHandles, textToSearch) => {
-            let textExists = false;
-            for (const iframeHandle of iframesHandles) {
-                const frame = await iframeHandle.contentFrame();
-                const textFound = await frame?.$eval('body', (body, text) => {
-                    return body.innerText.includes(text);
-                }, textToSearch);
-                if (textFound) {
-                    textExists = true;
-                    break;
-                }
-            }
-            return textExists;
-        };
-    
-        const iframesHandleHome = await page.$$('[data-testid="announcement-bar-preview-iframe"] > iframe');
-        const textExistsInHomeIframes = await checkTextInIframes(iframesHandleHome, 'homepage preview');
-        expect(textExistsInHomeIframes).toBeTruthy();
-    
+        const iframeCount = await page.$$eval('[data-testid="announcement-bar-preview-iframe"] > iframe', frames => frames.length);
+
+        expect(iframeCount).toEqual(2);
+
         const modal = page.getByTestId('announcement-bar-modal');
-        await modal.getByTestId('design-toolbar').getByRole('tab', {name: 'Post'}).click();
-    
+
         await page.waitForSelector('[data-testid="announcement-bar-preview-iframe"]');
-        
+
+        // Get the iframes inside the modal
+        const iframesHandleHome = await page.$$('[data-testid="announcement-bar-preview-iframe"] > iframe');
+
+        const homeiframeHandler = iframesHandleHome[1]; // index 1 since that's the visible iframe
+        const frameHome = await homeiframeHandler.contentFrame();
+        const textExistsInFirstIframe = await frameHome?.$eval('body', (body, textToSearch) => {
+            return body.innerText.includes(textToSearch);
+        }, 'homepage preview');
+
+        expect(textExistsInFirstIframe).toBeTruthy();
+
+        await modal.getByTestId('design-toolbar').getByRole('tab', {name: 'Post'}).click();
+
+        await page.waitForSelector('[data-testid="announcement-bar-preview-iframe"]');
+
         const iframesHandlePost = await page.$$('[data-testid="announcement-bar-preview-iframe"] > iframe');
-        const textExistsInPostIframes = await checkTextInIframes(iframesHandlePost, 'post preview');
-        expect(textExistsInPostIframes).toBeTruthy();
+
+        const postiframeHandler = iframesHandlePost[0]; // index 0 since that's the visible iframe
+        const framePost = await postiframeHandler.contentFrame();
+
+        const textExistsInSecondIframe = await framePost?.$eval('body', (body, textToSearch) => {
+            return body.innerText.includes(textToSearch);
+        }, 'post preview');
+
+        expect(textExistsInSecondIframe).toBeTruthy();
     });
 
     // TODO - lexical isn't loading in the preview
