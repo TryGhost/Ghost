@@ -1,5 +1,6 @@
 import Icon from './Icon';
 import React, {HTMLProps} from 'react';
+import {LoadingIndicator} from './LoadingIndicator';
 
 export type ButtonColor = 'clear' | 'grey' | 'black' | 'green' | 'red' | 'white' | 'outline';
 export type ButtonSize = 'sm' | 'md';
@@ -18,6 +19,7 @@ export interface ButtonProps extends Omit<HTMLProps<HTMLButtonElement>, 'label' 
     unstyled?: boolean;
     className?: string;
     tag?: string;
+    loading?: boolean;
     onClick?: (e?:React.MouseEvent<HTMLElement>) => void;
 }
 
@@ -34,6 +36,7 @@ const Button: React.FC<ButtonProps> = ({
     unstyled = false,
     className = '',
     tag = 'button',
+    loading = false,
     onClick,
     ...props
 }) => {
@@ -80,10 +83,17 @@ const Button: React.FC<ButtonProps> = ({
 
     const iconClasses = label && icon && !hideLabel ? 'mr-1.5' : '';
 
-    const buttonChildren = <>
-        {icon && <Icon className={iconClasses} colorClass={iconColorClass} name={icon} size={size === 'sm' ? 'sm' : 'md'} />}
-        {(label && hideLabel) ? <span className="sr-only">{label}</span> : label}
-    </>;
+    let buttonChildren;
+
+    if (loading) {
+        buttonChildren = <>Loading</>;
+    } else {
+        buttonChildren = <>
+            {icon && <Icon className={iconClasses} colorClass={iconColorClass} name={icon} size={size === 'sm' ? 'sm' : 'md'} />}
+            {(label && hideLabel) ? <span className="sr-only">{label}</span> : label}
+        </>;
+    }
+    
     const buttonElement = React.createElement(tag, {className: styles,
         disabled: disabled,
         type: 'button',
