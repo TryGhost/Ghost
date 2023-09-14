@@ -1,3 +1,4 @@
+import APIKeys from '../advanced/integrations/APIKeys';
 import Button from '../../../admin-x-ds/global/Button';
 import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
 import Heading from '../../../admin-x-ds/global/Heading';
@@ -11,14 +12,15 @@ import Radio from '../../../admin-x-ds/global/form/Radio';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextArea from '../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
+import clsx from 'clsx';
 import useFeatureFlag from '../../../hooks/useFeatureFlag';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
+import {DetailsInputs} from './DetailsInputs';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {RoutingModalProps} from '../../providers/RoutingProvider';
 import {User, canAccessSettings, hasAdminAccess, isAdminUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner, useUpdatePassword} from '../../../api/users';
@@ -34,7 +36,7 @@ interface CustomHeadingProps {
     children?: React.ReactNode;
 }
 
-interface UserDetailProps {
+export interface UserDetailProps {
     user: User;
     setUserData?: (user: User) => void;
     errors?: {
@@ -136,6 +138,14 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, validators, user, setUs
                     setUserData?.({...user, email: e.target.value});
                 }}
             />
+            <TextField
+                hint="https://example.com/author"
+                title="Slug"
+                value={user.slug}
+                onChange={(e) => {
+                    setUserData?.({...user, slug: e.target.value});
+                }}
+            />
             {hasAdminAccess(currentUser) && <RoleSelector setUserData={setUserData} user={user} />}
         </SettingGroupContent>
     );
@@ -150,68 +160,6 @@ const Basic: React.FC<UserDetailProps> = ({errors, validators, user, setUserData
         >
             <BasicInputs errors={errors} setUserData={setUserData} user={user} validators={validators} />
         </SettingGroup>
-    );
-};
-
-const DetailsInputs: React.FC<UserDetailProps> = ({errors, validators, user, setUserData}) => {
-    return (
-        <SettingGroupContent>
-            <TextField
-                hint="https://example.com/author"
-                title="Slug"
-                value={user.slug}
-                onChange={(e) => {
-                    setUserData?.({...user, slug: e.target.value});
-                }}
-            />
-            <TextField
-                hint="Where in the world do you live?"
-                title="Location"
-                value={user.location}
-                onChange={(e) => {
-                    setUserData?.({...user, location: e.target.value});
-                }}
-            />
-            <TextField
-                error={!!errors?.url}
-                hint={errors?.url || 'Have a website or blog other than this one? Link it!'}
-                placeholder='https://example.com'
-                title="Website"
-                value={user.website}
-                onBlur={(e) => {
-                    validators?.url(e.target.value);
-                }}
-                onChange={(e) => {
-                    setUserData?.({...user, website: e.target.value});
-                }}
-            />
-            <TextField
-                hint='URL of your personal Facebook Profile'
-                placeholder='https://www.facebook.com/ghost'
-                title="Facebook profile"
-                value={user.facebook}
-                onChange={(e) => {
-                    setUserData?.({...user, facebook: e.target.value});
-                }}
-            />
-            <TextField
-                hint='URL of your personal Twitter profile'
-                placeholder='https://twitter.com/ghost'
-                title="Twitter profile"
-                value={user.twitter}
-                onChange={(e) => {
-                    setUserData?.({...user, twitter: e.target.value});
-                }}
-            />
-            <TextArea
-                hint={<>Recommended: 200 characters. You&lsquo;ve used <span className='font-bold'>{user.bio?.length || 0}</span></>}
-                title="Bio"
-                value={user.bio || ''}
-                onChange={(e) => {
-                    setUserData?.({...user, bio: e.target.value});
-                }}
-            />
-        </SettingGroupContent>
     );
 };
 
@@ -445,15 +393,6 @@ const StaffToken: React.FC<UserDetailProps> = () => {
     });
     const [token, setToken] = useState('');
     const {mutateAsync: newApiKey} = genStaffToken();
-    const [copied, setCopied] = useState(false);
-
-    const copyToClipboard = () => {
-        navigator.clipboard.writeText(token);
-        setCopied(true);
-        setTimeout(() => {
-            setCopied(false);
-        }, 2000);
-    };
 
     useEffect(() => {
         const getApiKey = async () => {
@@ -479,24 +418,14 @@ const StaffToken: React.FC<UserDetailProps> = () => {
         });
     };
     return (
-        <SettingGroup
-            border={false}
-            customHeader={<CustomHeader>Staff access token</CustomHeader>}
-            title='Staff access token'
-        >
-            <TextField
-                readOnly={true}
-                rightPlaceholder={
-                    <div className='flex'>
-                        <Button className='mt-2' color='white' label='Regenerate' size='sm' onClick={genConfirmation} />
-                        <Button className='mt-2' color={copied ? 'green' : 'white'} label={copied ? 'Copied' : 'Copy'} size='sm' onClick={copyToClipboard} />
-                    </div>
-                }
-                title="Staff access token"
-                type="text"
-                value={token || ''}
-            />
-        </SettingGroup>
+        <div>
+            <Heading className='mb-2' level={6} grey>Staff access token</Heading>
+            <APIKeys hasLabel={false} keys={[
+                {
+                    text: token || '',
+                    onRegenerate: genConfirmation
+                }]} />
+        </div>
     );
 };
 
@@ -731,11 +660,27 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         okLabel = 'Saved';
     }
 
-    const fileUploadButtonClasses = 'absolute left-12 md:left-auto md:right-[104px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium z-10';
+    const coverButtonContainerClassName = clsx(
+        canAccessSettings(currentUser) ? (
+            userData.cover_image ? 'relative ml-10 mr-[106px] flex translate-y-[-80px] gap-3 md:ml-0 md:justify-end' : 'relative -mb-8 ml-10 mr-[106px] flex translate-y-[358px] md:ml-0 md:translate-y-[268px] md:justify-end'
+        ) : (
+            userData.cover_image ? 'relative ml-10 flex max-w-4xl translate-y-[-80px] gap-3 md:mx-auto md:justify-end' : 'relative -mb-8 ml-10 flex max-w-4xl translate-y-[358px] md:mx-auto md:translate-y-[268px] md:justify-end'
+        )
+    );
 
-    const deleteButtonClasses = 'absolute left-12 md:left-auto md:right-[152px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium z-10';
+    const coverEditButtonBaseClasses = 'bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition-all cursor-pointer font-medium';
 
-    const editButtonClasses = 'absolute left-12 md:left-auto md:right-[102px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium z-10';
+    const fileUploadButtonClasses = clsx(
+        coverEditButtonBaseClasses
+    );
+
+    const deleteButtonClasses = clsx(
+        coverEditButtonBaseClasses
+    );
+
+    const editButtonClasses = clsx(
+        coverEditButtonBaseClasses
+    );
 
     const suspendedText = userData.status === 'inactive' ? ' (Suspended)' : '';
 
@@ -769,7 +714,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             backDrop={canAccessSettings(currentUser)}
             dirty={saveState === 'unsaved'}
             okLabel={okLabel}
-            size={canAccessSettings(currentUser) ? 'lg' : 'full'}
+            size={canAccessSettings(currentUser) ? 'lg' : 'bleed'}
             stickyFooter={true}
             testId='user-detail-modal'
             onOk={async () => {
@@ -795,8 +740,9 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             }}
         >
             <div>
-                <div className={`relative -mx-12 -mt-12 rounded-t bg-gradient-to-tr from-grey-900 to-black`}>
+                <div className={`relative -mx-10 -mt-10 ${canAccessSettings(currentUser) && 'rounded-t'} bg-gradient-to-tr from-grey-900 to-black`}>
                     <ImageUpload
+                        buttonContainerClassName={coverButtonContainerClassName}
                         deleteButtonClassName={deleteButtonClasses}
                         deleteButtonContent='Delete cover image'
                         editButtonClassName={editButtonClasses}
@@ -804,7 +750,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                         height={userData.cover_image ? '100%' : '32px'}
                         id='cover-image'
                         imageClassName='w-full h-full object-cover'
-                        imageContainerClassName='absolute inset-0 bg-cover group bg-center rounded-t overflow-hidden'
+                        imageContainerClassName={`absolute inset-0 bg-cover group bg-center ${canAccessSettings(currentUser) && 'rounded-t'} overflow-hidden`}
                         imageURL={userData.cover_image || ''}
                         pintura={
                             {
@@ -825,18 +771,18 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                             handleImageUpload('cover_image', file);
                         }}
                     >Upload cover image</ImageUpload>
-                    <div className="absolute bottom-12 right-12 z-10">
+                    {canAccessSettings(currentUser) && <div className="absolute bottom-12 right-12 z-10">
                         <Menu items={menuItems} position='right' trigger={<UserMenuTrigger />}></Menu>
-                    </div>
-                    <div className='relative flex flex-col items-start gap-4 px-12 pb-60 pt-10 md:flex-row md:items-center md:pb-7 md:pt-60'>
+                    </div>}
+                    <div className={`${!canAccessSettings(currentUser) ? 'mx-10 pl-0 md:max-w-[50%] min-[920px]:ml-[calc((100vw-920px)/2)] min-[920px]:max-w-[460px]' : 'max-w-[50%] pl-12'} relative flex flex-col items-start gap-4 pb-60 pt-10 md:flex-row md:items-center md:pb-7 md:pt-60`}>
                         <ImageUpload
                             deleteButtonClassName='md:invisible absolute pr-3 -right-2 -top-2 flex h-8 w-16 cursor-pointer items-center justify-end rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:!visible'
                             deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
                             editButtonClassName='md:invisible absolute right-[22px] -top-2 flex h-8 w-8 cursor-pointer items-center justify-center text-white group-hover:!visible z-20'
                             fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
                             id='avatar'
-                            imageClassName='w-full h-full object-cover rounded-full'
-                            imageContainerClassName='relative group bg-cover bg-center -ml-2 h-[80px] w-[80px]'
+                            imageClassName='w-full h-full object-cover rounded-full shrink-0'
+                            imageContainerClassName='relative group bg-cover bg-center -ml-2 h-[80px] w-[80px] shrink-0'
                             imageURL={userData.profile_image}
                             pintura={
                                 {
@@ -866,12 +812,14 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                         </div>
                     </div>
                 </div>
-                <div className='mt-10 grid grid-cols-1 gap-x-12 gap-y-20 md:grid-cols-2'>
+                <div className={`${!canAccessSettings(currentUser) && 'mx-auto max-w-4xl'} mt-10 grid grid-cols-1 gap-x-12 gap-y-20 md:grid-cols-2`}>
                     <Basic errors={errors} setUserData={setUserData} user={userData} validators={validators} />
-                    <Details errors={errors} setUserData={setUserData} user={userData} validators={validators} />
+                    <div className='flex flex-col justify-between gap-10'>
+                        <Details errors={errors} setUserData={setUserData} user={userData} validators={validators} />
+                        <StaffToken user={userData} />
+                    </div>
                     <EmailNotifications setUserData={setUserData} user={userData} />
                     <Password user={userData} />
-                    <StaffToken user={userData} />
                 </div>
             </div>
         </Modal>

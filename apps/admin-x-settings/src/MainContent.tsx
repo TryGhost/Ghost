@@ -40,7 +40,7 @@ const MainContent: React.FC = () => {
             <Page>
                 <div className='w-full'>
                     <Heading className='mb-10'>Settings</Heading>
-                    <Users keywords={[]} />
+                    <Users highlight={false} keywords={[]} />
                 </div>
             </Page>
         );
