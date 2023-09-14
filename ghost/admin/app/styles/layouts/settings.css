@@ -217,7 +217,7 @@
     letter-spacing: 0.3px;
     font-size: 1.3rem;
     font-weight: 400;
-    margin: 8px 0 12px;
+    margin: 8px 0 0;
 }
 
 .gh-setting-desc.mb0 {
@@ -225,7 +225,7 @@
 }
 
 .gh-setting-title + .gh-setting-desc {
-    margin-top: -4px;
+    margin-top: -6px;
 }
 
 .gh-setting-error {
@@ -2000,11 +2000,15 @@ p.theme-validation-details {
 }
 
 .gh-nav-design .gh-setting {
-    padding: 12px 0;
+    padding: 16px 0;
 }
 
 .gh-nav-design .gh-setting-first {
-    padding-bottom: 12px;
+    padding-bottom: 16px;
+}
+
+.gh-nav-design .gh-setting-boolean + .gh-setting-boolean {
+    padding-top: 8px;
 }
 
 .gh-nav-design .gh-setting-title {

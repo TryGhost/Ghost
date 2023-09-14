@@ -8,7 +8,7 @@
             <label class="gh-setting-title" for="publication-logo">Publication logo</label>
             <div class="gh-setting-desc mb3">The primary logo, should be transparent and at least 600x72px</div>
 
-            <div class="gh-setting-action gh-uploadbutton-container gh-setting-action-smallimg flex flex-column">
+            <div class="gh-setting-action gh-uploadbutton-container gh-setting-action-smallimg flex flex-column" style="margin-top: 12px;">
                 {{#each uploader.errors as |error|}}
                     <div class="gh-setting-error" data-test-error="logo">{{or error.context error.message}}</div>
                 {{/each}}
