@@ -145,3 +145,19 @@ export function isAdminUser(user: User) {
 export function isEditorUser(user: User) {
     return user.roles.some(role => role.name === 'Editor');
 }
+
+export function isAuthorUser(user: User) {
+    return user.roles.some(role => role.name === 'Author');
+}
+
+export function isContributorUser(user: User) {
+    return user.roles.some(role => role.name === 'Contributor');
+}
+
+export function canAccessSettings(user: User) {
+    return isOwnerUser(user) || isAdminUser(user) || isEditorUser(user);
+}
+
+export function hasAdminAccess(user: User) {
+    return isOwnerUser(user) || isAdminUser(user);
+}
