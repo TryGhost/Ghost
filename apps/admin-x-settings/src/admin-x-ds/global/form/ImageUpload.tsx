@@ -22,6 +22,7 @@ interface ImageUploadProps {
     editButtonClassName?: string;
     editButtonContent?: React.ReactNode;
     editButtonUnstyled?: boolean;
+    buttonContainerClassName?: string;
 
     /**
      * Removes all the classnames from all elements so you can set a completely custom styling
@@ -61,7 +62,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     pintura,
     editButtonClassName,
     editButtonContent,
-    editButtonUnstyled = false
+    editButtonUnstyled = false,
+    buttonContainerClassName
 }) => {
     if (!unstyled) {
         imageContainerClassName = clsx(
@@ -112,15 +114,17 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                     width: (unstyled ? '' : width || '100%'),
                     height: (unstyled ? '' : height || 'auto')
                 }} onClick={onImageClick} />
-                {
-                    pintura?.isEnabled && pintura?.openEditor &&
+                <div className={buttonContainerClassName}>
+                    {
+                        pintura?.isEnabled && pintura?.openEditor &&
                     <button className={editButtonClassName} type='button' onClick={pintura.openEditor}>
                         {editButtonContent}
                     </button>
-                }
-                <button className={deleteButtonClassName} type='button' onClick={onDelete}>
-                    {deleteButtonContent}
-                </button>
+                    }
+                    <button className={deleteButtonClassName} type='button' onClick={onDelete}>
+                        {deleteButtonContent}
+                    </button>
+                </div>
             </div>
         );
 
@@ -146,14 +150,16 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         return image;
     } else {
         return (
-            <FileUpload className={fileUploadClassName} id={id} style={
-                {
-                    width: (unstyled ? '' : width),
-                    height: (unstyled ? '' : height)
-                }
-            } unstyled={unstyled} onUpload={onUpload}>
-                <span className='text-center'>{children}</span>
-            </FileUpload>
+            <div className={buttonContainerClassName}>
+                <FileUpload className={fileUploadClassName} id={id} style={
+                    {
+                        width: (unstyled ? '' : width),
+                        height: (unstyled ? '' : height)
+                    }
+                } unstyled={unstyled} onUpload={onUpload}>
+                    <span className='text-center'>{children}</span>
+                </FileUpload>
+            </div>
         );
     }
 };

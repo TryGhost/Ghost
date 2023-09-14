@@ -14,6 +14,7 @@ import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
+import clsx from 'clsx';
 import useFeatureFlag from '../../../hooks/useFeatureFlag';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useRouting from '../../../hooks/useRouting';
@@ -659,11 +660,33 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         okLabel = 'Saved';
     }
 
-    const fileUploadButtonClasses = 'absolute left-12 md:left-auto md:right-[104px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium z-10';
+    const coverButtonContainerClassName = clsx(
+        canAccessSettings(currentUser) ? (
+            userData.cover_image ? 'relative z-20 ml-10 mr-[106px] flex translate-y-[-80px] gap-3 md:ml-0 md:justify-end' : 'relative z-20 -mb-8 ml-10 mr-[106px] flex translate-y-[358px] md:ml-0 md:translate-y-[268px] md:justify-end'
+        ) : (
+            userData.cover_image ? 'relative z-20 ml-10 flex max-w-4xl translate-y-[-80px] gap-3 md:mx-auto md:justify-end' : 'relative z-20 -mb-8 ml-10 flex max-w-4xl translate-y-[358px] md:mx-auto md:translate-y-[268px] md:justify-end'
+        )
+        // userData.cover_image ? '' : 'z-20 -mb-8 flex translate-y-[268px] justify-end',
+        // userData.cover_image && canAccessSettings(currentUser) ? 'ml-10 ' : 'mx-auto w-full max-w-4xl'
+    );
 
-    const deleteButtonClasses = 'absolute left-12 md:left-auto md:right-[152px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium z-10';
+    // 'absolute md:left-auto left-12 bottom-12'
+    const coverEditButtonBaseClasses = 'bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition-all cursor-pointer font-medium z-10';
 
-    const editButtonClasses = 'absolute left-12 md:left-auto md:right-[102px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium z-10';
+    const fileUploadButtonClasses = clsx(
+        coverEditButtonBaseClasses
+        // canAccessSettings(currentUser) ? 'md:right-[104px]' : ''
+    );
+
+    const deleteButtonClasses = clsx(
+        coverEditButtonBaseClasses
+        // canAccessSettings(currentUser) ? 'md:right-[152px]' : ''
+    );
+
+    const editButtonClasses = clsx(
+        coverEditButtonBaseClasses
+        // canAccessSettings(currentUser) ? 'md:right-[102px]' : ''
+    );
 
     const suspendedText = userData.status === 'inactive' ? ' (Suspended)' : '';
 
@@ -697,7 +720,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             backDrop={canAccessSettings(currentUser)}
             dirty={saveState === 'unsaved'}
             okLabel={okLabel}
-            size={canAccessSettings(currentUser) ? 'lg' : 'lg'}
+            size={canAccessSettings(currentUser) ? 'lg' : 'bleed'}
             stickyFooter={true}
             testId='user-detail-modal'
             onOk={async () => {
@@ -723,8 +746,9 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             }}
         >
             <div>
-                <div className={`relative -mx-12 -mt-12 rounded-t bg-gradient-to-tr from-grey-900 to-black`}>
+                <div className={`relative -mx-10 -mt-10 ${canAccessSettings(currentUser) && 'rounded-t'} bg-gradient-to-tr from-grey-900 to-black`}>
                     <ImageUpload
+                        buttonContainerClassName={coverButtonContainerClassName}
                         deleteButtonClassName={deleteButtonClasses}
                         deleteButtonContent='Delete cover image'
                         editButtonClassName={editButtonClasses}
@@ -732,7 +756,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                         height={userData.cover_image ? '100%' : '32px'}
                         id='cover-image'
                         imageClassName='w-full h-full object-cover'
-                        imageContainerClassName='absolute inset-0 bg-cover group bg-center rounded-t overflow-hidden'
+                        imageContainerClassName={`absolute inset-0 bg-cover group bg-center ${canAccessSettings(currentUser) && 'rounded-t'} overflow-hidden`}
                         imageURL={userData.cover_image || ''}
                         pintura={
                             {
@@ -753,10 +777,10 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                             handleImageUpload('cover_image', file);
                         }}
                     >Upload cover image</ImageUpload>
-                    <div className="absolute bottom-12 right-12 z-10">
+                    {canAccessSettings(currentUser) && <div className="absolute bottom-12 right-12 z-10">
                         <Menu items={menuItems} position='right' trigger={<UserMenuTrigger />}></Menu>
-                    </div>
-                    <div className='relative flex flex-col items-start gap-4 px-12 pb-60 pt-10 md:flex-row md:items-center md:pb-7 md:pt-60'>
+                    </div>}
+                    <div className={`${!canAccessSettings(currentUser) && 'mx-10 max-w-4xl pl-0 md:mx-auto'} relative flex flex-col items-start gap-4 px-12 pb-60 pt-10 md:flex-row md:items-center md:pb-7 md:pt-60`}>
                         <ImageUpload
                             deleteButtonClassName='md:invisible absolute pr-3 -right-2 -top-2 flex h-8 w-16 cursor-pointer items-center justify-end rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:!visible'
                             deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
@@ -794,7 +818,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                         </div>
                     </div>
                 </div>
-                <div className={`${!canAccessSettings(currentUser) && ''} mt-10 grid grid-cols-1 gap-x-12 gap-y-20 md:grid-cols-2`}>
+                <div className={`${!canAccessSettings(currentUser) && 'mx-auto max-w-4xl'} mt-10 grid grid-cols-1 gap-x-12 gap-y-20 md:grid-cols-2`}>
                     <Basic errors={errors} setUserData={setUserData} user={userData} validators={validators} />
                     <div className='flex flex-col justify-between gap-10'>
                         <Details errors={errors} setUserData={setUserData} user={userData} validators={validators} />

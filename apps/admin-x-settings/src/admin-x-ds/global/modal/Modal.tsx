@@ -146,7 +146,8 @@ const Modal: React.FC<ModalProps> = ({
     }
 
     let modalClasses = clsx(
-        'relative z-50 mx-auto flex max-h-[100%] w-full flex-col justify-between overflow-x-hidden rounded bg-white dark:bg-black',
+        'relative z-50 mx-auto flex max-h-[100%] w-full flex-col justify-between overflow-x-hidden bg-white dark:bg-black',
+        size !== 'bleed' && 'rounded',
         formSheet ? 'shadow-md' : 'shadow-xl',
         (animate && !formSheet && !animationFinished) && 'animate-modal-in',
         (formSheet && !animationFinished) && 'animate-modal-in-reverse',
