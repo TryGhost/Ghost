@@ -163,6 +163,18 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         }
     };
 
+    api.recommendations = {
+        trackClicked({recommendationId}) {
+            let url = endpointFor({type: 'members', resource: 'recommendations/' + recommendationId + '/clicked'});
+            navigator.sendBeacon(url);
+        },
+
+        trackSubscribed({recommendationId}) {
+            let url = endpointFor({type: 'members', resource: 'recommendations/' + recommendationId + '/subscribed'});
+            navigator.sendBeacon(url);
+        }
+    };
+
     api.member = {
         identity() {
             const url = endpointFor({type: 'members', resource: 'session'});

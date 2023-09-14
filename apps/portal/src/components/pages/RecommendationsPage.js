@@ -74,7 +74,7 @@ export const RecommendationsPageStyles = `
     .gh-portal-recommendation-item .gh-portal-list-detail:hover .gh-portal-recommendation-arrow-icon {
     opacity: 0.8;
     }
-    
+
     .gh-portal-recommendation-subscribed {
         display: flex;
         align-items: center;
@@ -155,6 +155,7 @@ const RecommendationItem = (recommendation) => {
     const {title, url, reason, favicon, one_click_subscribe: oneClickSubscribe, featured_image: featuredImage} = recommendation;
     const allowOneClickSubscribe = member && oneClickSubscribe;
     const [subscribed, setSubscribed] = useState(false);
+    const [clicked, setClicked] = useState(false);
     const [loading, setLoading] = useState(false);
     const outboundLinkTagging = site.outbound_link_tagging ?? false;
 
@@ -179,7 +180,12 @@ const RecommendationItem = (recommendation) => {
     const visitHandler = useCallback(() => {
         // Open url in a new tab
         openTab(refUrl);
-    }, [refUrl]);
+
+        if (!clicked) {
+            onAction('trackRecommendationClicked', {recommendationId: recommendation.id});
+            setClicked(true);
+        }
+    }, [refUrl, recommendation.id, clicked]);
 
     const oneClickSubscribeHandler = useCallback(async () => {
         try {
@@ -188,6 +194,10 @@ const RecommendationItem = (recommendation) => {
                 siteUrl: url,
                 throwErrors: true
             });
+            if (!clicked) {
+                onAction('trackRecommendationSubscribed', {recommendationId: recommendation.id});
+                setClicked(true);
+            }
             setSubscribed(true);
         } catch (_) {
             // Open portal signup page
@@ -195,9 +205,14 @@ const RecommendationItem = (recommendation) => {
 
             // Trigger a visit
             openTab(signupUrl);
+
+            if (!clicked) {
+                onAction('trackRecommendationClicked', {recommendationId: recommendation.id});
+                setClicked(true);
+            }
         }
         setLoading(false);
-    }, [setSubscribed, url, refUrl]);
+    }, [setSubscribed, url, refUrl, recommendation.id, clicked]);
 
     const clickHandler = useCallback((e) => {
         if (loading) {
