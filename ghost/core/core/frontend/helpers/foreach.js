@@ -39,9 +39,7 @@ module.exports = function foreach(items, options) {
         }
     }
     // Exclude items which should not be visible in the theme
-    console.log("##Log Before check: " + visibility + " " + JSON.stringify(items));
     items = ghostHelperUtils.visibility.filter(items, visibility);
-    console.log("##Log After check: " + visibility + " " + JSON.stringify(items));
 
     // Initial values set based on parameters sent through. If nothing sent, set to defaults
     const {fn, inverse, hash, data, ids} = options;
@@ -119,6 +117,5 @@ module.exports = function foreach(items, options) {
         output = inverse(this);
     }
 
-    console.log("##Log Output " + JSON.stringify(output));
     return output;
 };
