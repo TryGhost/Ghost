@@ -138,7 +138,7 @@ type RouteProviderProps = {
 };
 
 const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, children}) => {
-    const [route, setRoute] = useState<string>('');
+    const [route, setRoute] = useState<string | undefined>(undefined);
     const [loadingModal, setLoadingModal] = useState(false);
 
     useEffect(() => {
@@ -184,6 +184,10 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, childr
             window.removeEventListener('hashchange', handleHashChange);
         };
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    if (route === undefined) {
+        return null;
+    }
 
     return (
         <RouteContext.Provider
