@@ -83,7 +83,7 @@
     "yjs": "^13.5.50"
   },
   "devDependencies": {
-    "@babel/core": "7.22.17",
+    "@babel/core": "7.22.19",
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@etchteam/storybook-addon-status": "^4.2.4",
     "@playwright/test": "^1.33.0",
