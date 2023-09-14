@@ -150,6 +150,32 @@ describe('ModelToDomainEventInterceptor', function () {
         assert.ok(interceptedEvent);
     });
 
+    it('Intercepts post.deleted Model event without an id property and dispatches PostAddedEvent Domain event', async function () {
+        let eventRegistry = new EventRegistry();
+        const modelToDomainEventInterceptor = new ModelToDomainEventInterceptor({
+            ModelEvents: eventRegistry,
+            DomainEvents: DomainEvents
+        });
+
+        modelToDomainEventInterceptor.init();
+
+        let interceptedEvent;
+        DomainEvents.subscribe(PostDeletedEvent, (event: any) => {
+            assert.equal(event.id, '1234-deleted');
+            interceptedEvent = event;
+        });
+
+        eventRegistry.emit('post.deleted', {
+            _previousAttributes: {
+                id: '1234-deleted'
+            }
+        });
+
+        await DomainEvents.allSettled();
+
+        assert.ok(interceptedEvent);
+    });
+
     it('Intercepts tag.deleted Model event and dispatches TagDeletedEvent Domain event', async function () {
         let eventRegistry = new EventRegistry();
         const modelToDomainEventInterceptor = new ModelToDomainEventInterceptor({
