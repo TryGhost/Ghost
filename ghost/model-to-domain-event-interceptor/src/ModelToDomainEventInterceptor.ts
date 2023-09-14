@@ -94,7 +94,10 @@ export class ModelToDomainEventInterceptor {
             });
             break;
         case 'tag.deleted':
-            event = TagDeletedEvent.create({id: data.id, slug: data.attributes.slug});
+            event = TagDeletedEvent.create({
+                id: data.id || data._previousAttributes?.id,
+                slug: data.attributes?.slug || data._previousAttributes?.slug
+            });
             break;
         default:
         }
