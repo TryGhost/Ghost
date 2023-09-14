@@ -82,7 +82,7 @@ test.describe('Video card', async () => {
                                 <div></div>
                                 <button type="button"></button>
                               </div>
-                            </div>                          
+                            </div>
                           </div>
                           <div></div>
                         </div>
@@ -91,10 +91,11 @@ test.describe('Video card', async () => {
                             <div>
                               <div data-kg="editor">
                                 <div
+                                  contenteditable="true"
                                   role="textbox"
                                   spellcheck="true"
                                   data-lexical-editor="true"
-                                  contenteditable="true">
+                                >
                                   <p dir="ltr">
                                     <span data-lexical-text="true">This is a caption</span>
                                   </p>
@@ -461,10 +462,11 @@ test.describe('Video card', async () => {
                             <div>
                               <div data-kg="editor">
                                 <div
+                                  contenteditable="true"
                                   role="textbox"
                                   spellcheck="true"
                                   data-lexical-editor="true"
-                                  contenteditable="true">
+                                >
                                   <p dir="ltr">
                                     <span data-lexical-text="true">Test caption</span>
                                   </p>
