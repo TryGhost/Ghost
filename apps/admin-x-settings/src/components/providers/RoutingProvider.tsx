@@ -1,6 +1,7 @@
 import NiceModal, {NiceModalHocProps} from '@ebay/nice-modal-react';
 import React, {createContext, useCallback, useEffect, useState} from 'react';
 import {ScrollSectionProvider} from '../../hooks/useScrollSection';
+import {topLevelBackdropClasses} from '../../admin-x-ds/global/modal/Modal';
 
 export type RouteParams = {[key: string]: string}
 
@@ -108,13 +109,12 @@ const handleNavigation = () => {
     if (pathName) {
         const [path, modal] = Object.entries(modalPaths).find(([modalPath]) => matchRoute(pathName, modalPath)) || [];
 
-        if (path && modal) {
-            modal().then(({default: component}) => NiceModal.show(component, {params: matchRoute(pathName, path)}));
-        }
-
-        return pathName;
+        return {
+            pathName,
+            modal: (path && modal) ? modal().then(({default: component}) => NiceModal.show(component, {params: matchRoute(pathName, path)})) : undefined
+        };
     }
-    return '';
+    return {pathName: ''};
 };
 
 const matchRoute = (pathname: string, routeDefinition: string) => {
@@ -134,6 +134,7 @@ type RouteProviderProps = {
 
 const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, children}) => {
     const [route, setRoute] = useState<string>('');
+    const [loadingModal, setLoadingModal] = useState(false);
 
     useEffect(() => {
         // Preload all the modals after initial render to avoid a delay when opening them
@@ -161,12 +162,16 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, childr
 
     useEffect(() => {
         const handleHashChange = () => {
-            const matchedRoute = handleNavigation();
-            setRoute(matchedRoute);
+            const {pathName, modal} = handleNavigation();
+            setRoute(pathName);
+
+            if (modal) {
+                setLoadingModal(true);
+                modal.then(() => setLoadingModal(false));
+            }
         };
 
-        const matchedRoute = handleNavigation();
-        setRoute(matchedRoute);
+        handleHashChange();
 
         window.addEventListener('hashchange', handleHashChange);
 
@@ -183,6 +188,7 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, childr
             }}
         >
             <ScrollSectionProvider navigatedSection={route.split('/')[0]}>
+                {loadingModal && <div className={`fixed inset-0 z-40 ${topLevelBackdropClasses}`} />}
                 {children}
             </ScrollSectionProvider>
         </RouteContext.Provider>
