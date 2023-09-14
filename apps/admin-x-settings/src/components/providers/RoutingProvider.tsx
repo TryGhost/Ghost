@@ -1,7 +1,6 @@
 import NiceModal, {NiceModalHocProps} from '@ebay/nice-modal-react';
 import React, {createContext, useCallback, useEffect, useState} from 'react';
 import {ScrollSectionProvider} from '../../hooks/useScrollSection';
-import {topLevelBackdropClasses} from '../../admin-x-ds/global/modal/Modal';
 
 export type RouteParams = {[key: string]: string}
 
@@ -19,11 +18,13 @@ export type InternalLink = {
 export type RoutingContextData = {
     route: string;
     updateRoute: (to: string | InternalLink | ExternalLink) => void;
+    loadingModal: boolean;
 };
 
 export const RouteContext = createContext<RoutingContextData>({
     route: '',
-    updateRoute: () => {}
+    updateRoute: () => {},
+    loadingModal: false
 });
 
 export type RoutingModalProps = {
@@ -111,7 +112,11 @@ const handleNavigation = () => {
 
         return {
             pathName,
-            modal: (path && modal) ? modal().then(({default: component}) => NiceModal.show(component, {params: matchRoute(pathName, path)})) : undefined
+            modal: (path && modal) ?
+                modal().then(({default: component}) => {
+                    NiceModal.show(component, {params: matchRoute(pathName, path)});
+                }) :
+                undefined
         };
     }
     return {pathName: ''};
@@ -184,11 +189,11 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, childr
         <RouteContext.Provider
             value={{
                 route,
-                updateRoute
+                updateRoute,
+                loadingModal
             }}
         >
             <ScrollSectionProvider navigatedSection={route.split('/')[0]}>
-                {loadingModal && <div className={`fixed inset-0 z-40 ${topLevelBackdropClasses}`} />}
                 {children}
             </ScrollSectionProvider>
         </RouteContext.Provider>
