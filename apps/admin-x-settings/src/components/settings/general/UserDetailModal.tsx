@@ -480,6 +480,7 @@ const StaffToken: React.FC<UserDetailProps> = () => {
             title='Staff access token'
         >
             <TextField
+                readOnly={true}
                 rightPlaceholder={
                     <div className='flex'>
                         <Button className='mt-2' color='white' label='Regenerate' size='sm' onClick={genConfirmation} />
@@ -488,7 +489,7 @@ const StaffToken: React.FC<UserDetailProps> = () => {
                 }
                 title="Staff access token"
                 type="text"
-                value={token}
+                value={token || ''}
             />
         </SettingGroup>
     );
