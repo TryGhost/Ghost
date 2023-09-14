@@ -4,7 +4,7 @@ import Pagination from './Pagination';
 import React from 'react';
 import Separator from './Separator';
 import clsx from 'clsx';
-import {CenteredLoadingIndicator} from './LoadingIndicator';
+import {LoadingIndicator} from './LoadingIndicator';
 import {PaginationData} from '../../hooks/usePagination';
 
 interface TableProps {
@@ -69,12 +69,15 @@ const Table: React.FC<TableProps> = ({children, borderTop, hint, hintSeparator, 
         <>
             <div className='w-full overflow-x-auto'>
                 {pageTitle && <Heading>{pageTitle}</Heading>}
+                
                 {!isLoading && <table ref={table} className={tableClasses}>
                     <tbody>
                         {children}
                     </tbody>
                 </table>}
-                {isLoading && <CenteredLoadingIndicator delay={200} style={loadingStyle} />}
+
+                {isLoading && <LoadingIndicator delay={200} size='lg' style={loadingStyle} />}
+                
                 {(hint || pagination) &&
                 <div className="-mt-px">
                     {(hintSeparator || pagination) && <Separator />}

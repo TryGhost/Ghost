@@ -42,3 +42,10 @@ export const Default: Story = {
     },
     decorators: [(_story: () => ReactNode) => (<div style={{maxWidth: '600px'}}>{_story()}</div>)]
 };
+
+export const Loading: Story = {
+    args: {
+        children: tableRows,
+        isLoading: true
+    }
+};

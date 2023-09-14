@@ -86,6 +86,7 @@ export const IconSmall: Story = {
 export const Loading: Story = {
     args: {
         loading: true,
-        color: 'green'
+        color: 'green',
+        label: 'Button'
     }
 };
