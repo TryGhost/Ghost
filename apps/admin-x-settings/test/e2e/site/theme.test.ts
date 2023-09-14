@@ -40,7 +40,7 @@ test.describe('Theme settings', async () => {
 
         await modal.getByRole('button', {name: /Casper/}).click();
 
-        await expect(modal.getByRole('button', {name: 'Update Casper'})).toBeVisible();
+        await expect(modal.getByRole('button', {name: 'Activate Casper'})).toBeVisible();
 
         await expect(page.locator('iframe[title="Theme preview"]')).toHaveAttribute('src', 'https://demo.ghost.io/');
 

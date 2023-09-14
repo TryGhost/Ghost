@@ -18,11 +18,13 @@ export type InternalLink = {
 export type RoutingContextData = {
     route: string;
     updateRoute: (to: string | InternalLink | ExternalLink) => void;
+    loadingModal: boolean;
 };
 
 export const RouteContext = createContext<RoutingContextData>({
     route: '',
-    updateRoute: () => {}
+    updateRoute: () => {},
+    loadingModal: false
 });
 
 export type RoutingModalProps = {
@@ -108,13 +110,16 @@ const handleNavigation = () => {
     if (pathName) {
         const [path, modal] = Object.entries(modalPaths).find(([modalPath]) => matchRoute(pathName, modalPath)) || [];
 
-        if (path && modal) {
-            modal().then(({default: component}) => NiceModal.show(component, {params: matchRoute(pathName, path)}));
-        }
-
-        return pathName;
+        return {
+            pathName,
+            modal: (path && modal) ?
+                modal().then(({default: component}) => {
+                    NiceModal.show(component, {params: matchRoute(pathName, path)});
+                }) :
+                undefined
+        };
     }
-    return '';
+    return {pathName: ''};
 };
 
 const matchRoute = (pathname: string, routeDefinition: string) => {
@@ -133,7 +138,8 @@ type RouteProviderProps = {
 };
 
 const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, children}) => {
-    const [route, setRoute] = useState<string>('');
+    const [route, setRoute] = useState<string | undefined>(undefined);
+    const [loadingModal, setLoadingModal] = useState(false);
 
     useEffect(() => {
         // Preload all the modals after initial render to avoid a delay when opening them
@@ -161,12 +167,16 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, childr
 
     useEffect(() => {
         const handleHashChange = () => {
-            const matchedRoute = handleNavigation();
-            setRoute(matchedRoute);
+            const {pathName, modal} = handleNavigation();
+            setRoute(pathName);
+
+            if (modal) {
+                setLoadingModal(true);
+                modal.then(() => setLoadingModal(false));
+            }
         };
 
-        const matchedRoute = handleNavigation();
-        setRoute(matchedRoute);
+        handleHashChange();
 
         window.addEventListener('hashchange', handleHashChange);
 
@@ -175,11 +185,16 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, childr
         };
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+    if (route === undefined) {
+        return null;
+    }
+
     return (
         <RouteContext.Provider
             value={{
                 route,
-                updateRoute
+                updateRoute,
+                loadingModal
             }}
         >
             <ScrollSectionProvider navigatedSection={route.split('/')[0]}>
