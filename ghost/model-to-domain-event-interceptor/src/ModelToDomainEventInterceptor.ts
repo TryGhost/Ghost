@@ -52,7 +52,9 @@ export class ModelToDomainEventInterceptor {
 
         switch (modelEventName) {
         case 'post.deleted':
-            event = PostDeletedEvent.create({id: data.id});
+            event = PostDeletedEvent.create({
+                id: data.id || data._previousAttributes?.id
+            });
             break;
         case 'post.added':
             event = PostAddedEvent.create({

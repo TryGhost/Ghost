@@ -1,5 +1,6 @@
 const should = require('should');
 const assert = require('assert/strict');
+const DomainEvents = require('@tryghost/domain-events');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
 const {anyArray, anyContentVersion, anyEtag, anyErrorId, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyStringNumber, anyUuid, stringMatching} = matchers;
 const models = require('../../../core/server/models');
@@ -638,6 +639,34 @@ describe('Posts API', function () {
                         id: anyErrorId
                     }]
                 });
+        });
+
+        it('Can delete posts belonging to a collection and returns empty response when filtering by that collection', async function () {
+            const res = await agent.get('posts/?collection=featured')
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    posts: new Array(2).fill(matchPostShallowIncludes)
+                });
+
+            const posts = res.body.posts;
+
+            await agent.delete(`posts/${posts[0].id}/`).expectStatus(204);
+            await agent.delete(`posts/${posts[1].id}/`).expectStatus(204);
+
+            await DomainEvents.allSettled();
+
+            await agent
+                .get(`posts/?collection=featured`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot();
         });
     });
 
