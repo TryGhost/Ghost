@@ -6,8 +6,7 @@ import RecommendationReasonForm from './RecommendationReasonForm';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import {EditOrAddRecommendation, useAddRecommendation} from '../../../../api/recommendations';
-import {showToast} from '../../../../admin-x-ds/global/Toast';
-import {toast} from 'react-hot-toast';
+import {dismissAllToasts, showToast} from '../../../../admin-x-ds/global/Toast';
 
 interface AddRecommendationModalProps {
     recommendation: EditOrAddRecommendation,
@@ -26,6 +25,10 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
         onSave: async () => {
             await addRecommendation(formState);
             modal.remove();
+            showToast({
+                message: 'Successfully added a recommendation',
+                type: 'success'
+            });
             updateRoute('recommendations');
         },
         onValidate: () => {
@@ -95,13 +98,13 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
                 return;
             }
 
-            toast.remove();
+            dismissAllToasts();
             if (await handleSave({force: true})) {
                 // Already handled
             } else {
                 showToast({
                     type: 'pageError',
-                    message: 'One or more fields have errors, please double check that you\'ve filled in all mandatory fields.'
+                    message: 'One or more fields have errors, please double check that you\'ve filled all mandatory fields.'
                 });
             }
         }}

@@ -121,9 +121,14 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
             if (Object.values(validators).filter(validator => validator()).length) {
                 showToast({
                     type: 'pageError',
-                    message: 'Can\'t save tier, please double check that you\'ve filled in all mandatory fields.'
+                    message: 'Can\'t save tier, please double check that you\'ve filled all mandatory fields.'
                 });
                 return;
+            }
+
+            if (saveState !== 'unsaved') {
+                updateRoute('tiers');
+                modal.remove();
             }
 
             if (await handleSave()) {
@@ -173,7 +178,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                     placeholder='1'
                                     rightPlaceholder={`${formState.currency}/month`}
                                     title='Monthly price'
-                                    valueInCents={formState.monthly_price || 0}
+                                    valueInCents={formState.monthly_price || ''}
                                     hideTitle
                                     onBlur={() => validators.monthly_price()}
                                     onChange={price => updateForm(state => ({...state, monthly_price: price}))}
@@ -184,7 +189,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                     placeholder='10'
                                     rightPlaceholder={`${formState.currency}/year`}
                                     title='Yearly price'
-                                    valueInCents={formState.yearly_price || 0}
+                                    valueInCents={formState.yearly_price || ''}
                                     hideTitle
                                     onBlur={() => validators.yearly_price()}
                                     onChange={price => updateForm(state => ({...state, yearly_price: price}))}
@@ -197,9 +202,9 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                             </div>
                             <TextField
                                 disabled={!hasFreeTrial}
-                                hint={<>
-                                    Members will be subscribed at full price once the trial ends. <a href="https://ghost.org/" rel="noreferrer" target="_blank">Learn more</a>
-                                </>}
+                                hint={<div className='mt-1'>
+                                    Members will be subscribed at full price once the trial ends. <a className='text-green' href="https://ghost.org/" rel="noreferrer" target="_blank">Learn more</a>
+                                </div>}
                                 placeholder='0'
                                 rightPlaceholder='days'
                                 title='Trial days'

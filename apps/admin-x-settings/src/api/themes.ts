@@ -1,4 +1,5 @@
 import {createMutation, createQuery} from '../utils/apiRequests';
+import {customThemeSettingsDataType} from './customThemeSettings';
 
 // Types
 
@@ -65,6 +66,9 @@ export const useActivateTheme = createMutation<ThemesResponseType, string>({
                 }
             })
         })
+    },
+    invalidateQueries: {
+        dataType: customThemeSettingsDataType
     }
 });
 

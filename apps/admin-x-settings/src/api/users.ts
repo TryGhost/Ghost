@@ -78,6 +78,7 @@ export const useBrowseUsers = createQuery<UsersResponseType>({
 export const useCurrentUser = createQuery<User>({
     dataType,
     path: '/users/me/',
+    defaultSearchParams: {include: 'roles'},
     returnData: originalData => (originalData as UsersResponseType).users?.[0]
 });
 
@@ -139,4 +140,24 @@ export function isOwnerUser(user: User) {
 
 export function isAdminUser(user: User) {
     return user.roles.some(role => role.name === 'Administrator');
+}
+
+export function isEditorUser(user: User) {
+    return user.roles.some(role => role.name === 'Editor');
+}
+
+export function isAuthorUser(user: User) {
+    return user.roles.some(role => role.name === 'Author');
+}
+
+export function isContributorUser(user: User) {
+    return user.roles.some(role => role.name === 'Contributor');
+}
+
+export function canAccessSettings(user: User) {
+    return isOwnerUser(user) || isAdminUser(user) || isEditorUser(user);
+}
+
+export function hasAdminAccess(user: User) {
+    return isOwnerUser(user) || isAdminUser(user);
 }

@@ -1,7 +1,7 @@
 import AccountPage from './AccountPage';
 import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import LookAndFeel from './LookAndFeel';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import NiceModal from '@ebay/nice-modal-react';
 import PortalPreview from './PortalPreview';
 import React, {useState} from 'react';
 import SignupOptions from './SignupOptions';
@@ -61,7 +61,6 @@ const Sidebar: React.FC<{
 };
 
 const PortalModal: React.FC = () => {
-    const modal = useModal();
     const {updateRoute} = useRouting();
 
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('signup');
@@ -142,7 +141,8 @@ const PortalModal: React.FC = () => {
         updateTier={updateTier}
     />;
     const preview = <PortalPreview
-        localSettings={formState.settings} localTiers={formState.tiers}
+        localSettings={formState.settings}
+        localTiers={formState.tiers}
         selectedTab={selectedPreviewTab}
     />;
 
@@ -151,7 +151,7 @@ const PortalModal: React.FC = () => {
         {id: 'account', title: 'Account page'},
         {id: 'links', title: 'Links'}
     ];
-    let okLabel = 'Save & close';
+    let okLabel = 'Save';
     if (saveState === 'saving') {
         okLabel = 'Saving...';
     } else if (saveState === 'saved') {
@@ -162,6 +162,7 @@ const PortalModal: React.FC = () => {
         afterClose={() => {
             updateRoute('portal');
         }}
+        cancelLabel='Close'
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
         okLabel={okLabel}
@@ -175,8 +176,6 @@ const PortalModal: React.FC = () => {
         onOk={async () => {
             if (!Object.values(errors).filter(Boolean).length) {
                 await handleSave();
-                updateRoute('portal');
-                modal.remove();
             }
         }}
         onSelectURL={onSelectURL}

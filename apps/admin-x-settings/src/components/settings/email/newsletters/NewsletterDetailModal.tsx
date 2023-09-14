@@ -20,6 +20,7 @@ import ToggleGroup from '../../../../admin-x-ds/global/form/ToggleGroup';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useForm, {ErrorMessages} from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
+import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
 import {Newsletter, useBrowseNewsletters, useEditNewsletter} from '../../../../api/newsletters';
 import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
@@ -40,10 +41,12 @@ const Sidebar: React.FC<{
     clearError: (field: string) => void;
 }> = ({newsletter, updateNewsletter, validate, errors, clearError}) => {
     const {settings, siteData, config} = useGlobalData();
-    const [membersSupportAddress] = getSettingValues<string>(settings, ['members_support_address']);
+    const [membersSupportAddress, icon] = getSettingValues<string>(settings, ['members_support_address', 'icon']);
     const {mutateAsync: uploadImage} = useUploadImage();
     const [selectedTab, setSelectedTab] = useState('generalSettings');
     const hasEmailCustomization = useFeatureFlag('emailCustomization');
+    const {localSettings} = useSettingGroup();
+    const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
 
     const replyToEmails = [
         {label: `Newsletter address (${fullEmailAddress(newsletter.sender_email || 'noreply', siteData)})`, value: 'newsletter'},
@@ -85,11 +88,11 @@ const Sidebar: React.FC<{
                     <TextArea rows={2} title="Description" value={newsletter.description || ''} onChange={e => updateNewsletter({description: e.target.value})} />
                 </Form>
                 <Form className='mt-6' gap='sm' margins='lg' title='Email addresses'>
-                    <TextField placeholder="Ghost" title="Sender name" value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />
+                    <TextField placeholder={siteTitle} title="Sender name" value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />
                     <TextField
                         error={Boolean(errors.sender_email)}
                         hint={errors.sender_email}
-                        placeholder="noreply@localhost"
+                        placeholder={fullEmailAddress(newsletter.sender_email || 'noreply', siteData)}
                         title="Sender email address"
                         value={newsletter.sender_email || ''}
                         onBlur={validate}
@@ -139,18 +142,25 @@ const Sidebar: React.FC<{
                         </div>
                     </div>
                     <ToggleGroup>
+                        {icon && <Toggle
+                            checked={newsletter.show_header_icon}
+                            direction="rtl"
+                            label='Publication icon'
+                            labelStyle='heading'
+                            onChange={e => updateNewsletter({show_header_icon: e.target.checked})}
+                        />}
                         <Toggle
                             checked={newsletter.show_header_title}
                             direction="rtl"
                             label='Publication title'
-                            labelStyle='value'
+                            labelStyle='heading'
                             onChange={e => updateNewsletter({show_header_title: e.target.checked})}
                         />
                         <Toggle
                             checked={newsletter.show_header_name}
                             direction="rtl"
                             label='Newsletter name'
-                            labelStyle='value'
+                            labelStyle='heading'
                             onChange={e => updateNewsletter({show_header_name: e.target.checked})}
                         />
                     </ToggleGroup>
@@ -425,7 +435,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter}> = ({newsl
             } else {
                 showToast({
                     type: 'pageError',
-                    message: 'Can\'t save newsletter, please double check that you\'ve filled in all mandatory fields.'
+                    message: 'Can\'t save newsletter, please double check that you\'ve filled all mandatory fields.'
                 });
             }
         }}

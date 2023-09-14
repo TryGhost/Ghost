@@ -78,6 +78,7 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
                 updatedRecommendation.favicon = oembed?.metadata?.icon ?? formState.favicon ?? null;
                 updatedRecommendation.one_click_subscribe = false;
             }
+            updatedRecommendation.reason = updatedRecommendation.excerpt || null;
 
             // Switch modal without changing the route (the second modal is not reachable by URL)
             modal.remove();
@@ -135,7 +136,7 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
                 } else {
                     showToast({
                         type: 'pageError',
-                        message: 'One or more fields have errors, please double check that you\'ve filled in all mandatory fields.'
+                        message: 'One or more fields have errors, please double check that you\'ve filled all mandatory fields.'
                     });
                 }
             } catch (e) {
