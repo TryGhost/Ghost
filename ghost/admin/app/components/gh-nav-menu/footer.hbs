@@ -55,9 +55,15 @@
                         {{/if}}
 
                         <li>
-                            <LinkTo @route="settings.staff.user" @model={{this.session.user.slug}} class="dropdown-item" @role="menuitem" tabindex="-1" data-test-nav="user-profile">
-                                Your profile
-                            </LinkTo>
+                            {{#if (feature "adminXSettings")}}
+                                <LinkTo @route="settings-x.settings-x" @model="users/show/{{this.session.user.slug}}" class="dropdown-item" @role="menuitem" tabindex="-1" data-test-nav="user-profile">
+                                    Your profile
+                                </LinkTo>
+                            {{else}}
+                                <LinkTo @route="settings.staff.user" @model={{this.session.user.slug}} class="dropdown-item" @role="menuitem" tabindex="-1" data-test-nav="user-profile">
+                                    Your profile
+                                </LinkTo>
+                            {{/if}}
                         </li>
 
                         {{#unless this.session.user.isContributor}}

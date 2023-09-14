@@ -1,4 +1,3 @@
-import ExitSettingsButton from './components/ExitSettingsButton';
 import GlobalDataProvider from './components/providers/GlobalDataProvider';
 import MainContent from './MainContent';
 import NiceModal from '@ebay/nice-modal-react';
@@ -47,13 +46,7 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, d
                             >
                                 <Toaster />
                                 <NiceModal.Provider>
-                                    <div className='relative z-20 px-6 py-4 tablet:fixed'>
-                                        <ExitSettingsButton />
-                                    </div>
-
-                                    <div className="mx-auto flex max-w-[1080px] flex-col px-[5vmin] py-[12vmin] tablet:flex-row tablet:items-start tablet:gap-x-10 tablet:py-[8vmin]" id="admin-x-settings-content">
-                                        <MainContent />
-                                    </div>
+                                    <MainContent />
                                 </NiceModal.Provider>
                             </div>
                         </GlobalDirtyStateProvider>
