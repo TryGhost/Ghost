@@ -697,7 +697,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             backDrop={canAccessSettings(currentUser)}
             dirty={saveState === 'unsaved'}
             okLabel={okLabel}
-            size={canAccessSettings(currentUser) ? 'lg' : 'full'}
+            size={canAccessSettings(currentUser) ? 'lg' : 'lg'}
             stickyFooter={true}
             testId='user-detail-modal'
             onOk={async () => {
@@ -794,7 +794,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                         </div>
                     </div>
                 </div>
-                <div className='mt-10 grid grid-cols-1 gap-x-12 gap-y-20 md:grid-cols-2'>
+                <div className={`${!canAccessSettings(currentUser) && ''} mt-10 grid grid-cols-1 gap-x-12 gap-y-20 md:grid-cols-2`}>
                     <Basic errors={errors} setUserData={setUserData} user={userData} validators={validators} />
                     <div className='flex flex-col justify-between gap-10'>
                         <Details errors={errors} setUserData={setUserData} user={userData} validators={validators} />
