@@ -29,7 +29,7 @@ const queryClient = new QueryClient({
 
 function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, darkMode = false}: AppProps) {
     const appClassName = clsx(
-        'admin-x-settings h-[100vh] w-full overflow-y-auto',
+        'admin-x-settings h-[100vh] w-full overflow-y-auto overflow-x-hidden',
         darkMode && 'dark'
     );
 
