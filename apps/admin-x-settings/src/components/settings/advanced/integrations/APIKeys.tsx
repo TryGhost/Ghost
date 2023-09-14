@@ -26,7 +26,7 @@ const APIKeyField: React.FC<APIKeyFieldProps> = ({label, text = '', hint, onRege
     return <>
         {label && <div className='p-0 pr-4 text-sm text-grey-600 md:py-1'>{label}</div>}
         <div className={containerClasses}>
-            <input className='w-full bg-transparent px-0' type="text" value={text || ''} disabled />
+            {text}
             {hint}
             <div className='visible absolute right-0 top-[50%] flex translate-y-[-50%] gap-1 bg-white pl-1 text-sm group-hover/api-keys:visible dark:bg-black md:invisible'>
                 {onRegenerate && <Button color='outline' label='Regenerate' size='sm' onClick={onRegenerate} />}
