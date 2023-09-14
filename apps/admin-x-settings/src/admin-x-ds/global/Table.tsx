@@ -4,7 +4,7 @@ import Pagination from './Pagination';
 import React from 'react';
 import Separator from './Separator';
 import clsx from 'clsx';
-import {CenteredLoadingIndicator} from './LoadingIndicator';
+import {LoadingIndicator} from './LoadingIndicator';
 import {PaginationData} from '../../hooks/usePagination';
 
 interface TableProps {
@@ -69,6 +69,7 @@ const Table: React.FC<TableProps> = ({children, borderTop, hint, hintSeparator, 
         <>
             <div className='w-full overflow-x-auto'>
                 {pageTitle && <Heading>{pageTitle}</Heading>}
+              
                 {/* TODO: make this div have the same height across all pages */}
                 <div>
                     {!isLoading && <table ref={table} className={tableClasses}>
@@ -76,12 +77,14 @@ const Table: React.FC<TableProps> = ({children, borderTop, hint, hintSeparator, 
                             {children}
                         </tbody>
                     </table>}
-                    {isLoading && <CenteredLoadingIndicator delay={200} style={loadingStyle} />}
                 </div>
+
+                {isLoading && <LoadingIndicator delay={200} size='lg' style={loadingStyle} />}
+
                 {(hint || pagination) &&
                 <div className="-mt-px">
                     {(hintSeparator || pagination) && <Separator />}
-                    <div className="flex flex-col-reverse items-start justify-between gap-1 pt-2 md:flex-row md:items-center md:gap-0 md:pt-0 ">
+                    <div className="flex flex-col-reverse items-start justify-between gap-1 pt-2 md:flex-row md:items-center md:gap-0 md:pt-0">
                         <Hint>{hint ?? ' '}</Hint>
                         <OptionalPagination pagination={pagination} />
                     </div>

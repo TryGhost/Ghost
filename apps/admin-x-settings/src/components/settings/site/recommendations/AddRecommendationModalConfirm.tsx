@@ -41,9 +41,10 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
     });
 
     let okLabel = 'Add';
+    let loadingState = false;
 
     if (saveState === 'saving') {
-        okLabel = 'Adding...';
+        loadingState = true;
     } else if (saveState === 'saved') {
         okLabel = 'Added';
     }
@@ -81,6 +82,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
         leftButtonProps={leftButtonProps}
         okColor='black'
         okLabel={okLabel}
+        okLoading={loadingState}
         size='sm'
         testId='add-recommendation-modal'
         title={'Add recommendation'}

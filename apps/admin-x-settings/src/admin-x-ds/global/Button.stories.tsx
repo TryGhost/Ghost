@@ -82,3 +82,11 @@ export const IconSmall: Story = {
         iconColorClass: 'text-white'
     }
 };
+
+export const Loading: Story = {
+    args: {
+        loading: true,
+        color: 'green',
+        label: 'Button'
+    }
+};

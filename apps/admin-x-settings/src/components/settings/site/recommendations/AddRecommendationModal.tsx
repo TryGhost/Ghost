@@ -106,9 +106,10 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
     });
 
     let okLabel = 'Next';
+    let loadingState = false;
 
     if (saveState === 'saving') {
-        okLabel = 'Checking...';
+        loadingState = true;
     }
 
     return <Modal
@@ -120,6 +121,7 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
         backDropClick={false}
         okColor='black'
         okLabel={okLabel}
+        okLoading={loadingState}
         size='sm'
         testId='add-recommendation-modal'
         title='Add recommendation'
