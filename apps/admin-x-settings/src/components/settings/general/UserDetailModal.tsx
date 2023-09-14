@@ -662,30 +662,24 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
 
     const coverButtonContainerClassName = clsx(
         canAccessSettings(currentUser) ? (
-            userData.cover_image ? 'relative z-20 ml-10 mr-[106px] flex translate-y-[-80px] gap-3 md:ml-0 md:justify-end' : 'relative z-20 -mb-8 ml-10 mr-[106px] flex translate-y-[358px] md:ml-0 md:translate-y-[268px] md:justify-end'
+            userData.cover_image ? 'relative ml-10 mr-[106px] flex translate-y-[-80px] gap-3 md:ml-0 md:justify-end' : 'relative z-20 -mb-8 ml-10 mr-[106px] flex translate-y-[358px] md:ml-0 md:translate-y-[268px] md:justify-end'
         ) : (
-            userData.cover_image ? 'relative z-20 ml-10 flex max-w-4xl translate-y-[-80px] gap-3 md:mx-auto md:justify-end' : 'relative z-20 -mb-8 ml-10 flex max-w-4xl translate-y-[358px] md:mx-auto md:translate-y-[268px] md:justify-end'
+            userData.cover_image ? 'relative ml-10 flex max-w-4xl translate-y-[-80px] gap-3 md:mx-auto md:justify-end' : 'relative z-20 -mb-8 ml-10 flex max-w-4xl translate-y-[358px] md:mx-auto md:translate-y-[268px] md:justify-end'
         )
-        // userData.cover_image ? '' : 'z-20 -mb-8 flex translate-y-[268px] justify-end',
-        // userData.cover_image && canAccessSettings(currentUser) ? 'ml-10 ' : 'mx-auto w-full max-w-4xl'
     );
 
-    // 'absolute md:left-auto left-12 bottom-12'
-    const coverEditButtonBaseClasses = 'bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition-all cursor-pointer font-medium z-10';
+    const coverEditButtonBaseClasses = 'bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition-all cursor-pointer font-medium';
 
     const fileUploadButtonClasses = clsx(
         coverEditButtonBaseClasses
-        // canAccessSettings(currentUser) ? 'md:right-[104px]' : ''
     );
 
     const deleteButtonClasses = clsx(
         coverEditButtonBaseClasses
-        // canAccessSettings(currentUser) ? 'md:right-[152px]' : ''
     );
 
     const editButtonClasses = clsx(
         coverEditButtonBaseClasses
-        // canAccessSettings(currentUser) ? 'md:right-[102px]' : ''
     );
 
     const suspendedText = userData.status === 'inactive' ? ' (Suspended)' : '';
@@ -780,15 +774,15 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                     {canAccessSettings(currentUser) && <div className="absolute bottom-12 right-12 z-10">
                         <Menu items={menuItems} position='right' trigger={<UserMenuTrigger />}></Menu>
                     </div>}
-                    <div className={`${!canAccessSettings(currentUser) && 'mx-10 max-w-4xl pl-0 md:mx-auto'} relative flex flex-col items-start gap-4 px-12 pb-60 pt-10 md:flex-row md:items-center md:pb-7 md:pt-60`}>
+                    <div className={`${!canAccessSettings(currentUser) ? 'mx-10 pl-0 md:max-w-[50%] min-[920px]:ml-[calc((100vw-920px)/2)] min-[920px]:max-w-[460px]' : 'max-w-[50%] pl-12'} relative flex flex-col items-start gap-4 pb-60 pt-10 md:flex-row md:items-center md:pb-7 md:pt-60`}>
                         <ImageUpload
                             deleteButtonClassName='md:invisible absolute pr-3 -right-2 -top-2 flex h-8 w-16 cursor-pointer items-center justify-end rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:!visible'
                             deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
                             editButtonClassName='md:invisible absolute right-[22px] -top-2 flex h-8 w-8 cursor-pointer items-center justify-center text-white group-hover:!visible z-20'
                             fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
                             id='avatar'
-                            imageClassName='w-full h-full object-cover rounded-full'
-                            imageContainerClassName='relative group bg-cover bg-center -ml-2 h-[80px] w-[80px]'
+                            imageClassName='w-full h-full object-cover rounded-full shrink-0'
+                            imageContainerClassName='relative group bg-cover bg-center -ml-2 h-[80px] w-[80px] shrink-0'
                             imageURL={userData.profile_image}
                             pintura={
                                 {
