@@ -76,6 +76,15 @@ export class RecommendationService {
 
     async addRecommendation(addRecommendation: AddRecommendation) {
         const recommendation = Recommendation.create(addRecommendation);
+
+        // If a recommendation with this URL already exists, throw an error
+        const existing = await this.repository.getByUrl(recommendation.url);
+        if (existing) {
+            throw new errors.ValidationError({
+                message: 'A recommendation with this URL already exists.'
+            });
+        }
+
         await this.repository.save(recommendation);
 
         const recommendations = await this.listRecommendations();

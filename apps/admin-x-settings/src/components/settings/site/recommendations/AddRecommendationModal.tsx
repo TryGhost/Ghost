@@ -6,7 +6,8 @@ import React from 'react';
 import URLTextField from '../../../../admin-x-ds/global/form/URLTextField';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
-import {EditOrAddRecommendation} from '../../../../api/recommendations';
+import {EditOrAddRecommendation, useBrowseRecommendations} from '../../../../api/recommendations';
+import {arePathsEqual, trimSearchAndHash} from '../../../../utils/url';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
 import {useExternalGhostSite} from '../../../../api/external-ghost-site';
@@ -22,6 +23,7 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
     const {updateRoute} = useRouting();
     const {query: queryOembed} = useGetOembed();
     const {query: queryExternalGhostSite} = useExternalGhostSite();
+    const {data: {recommendations} = {}} = useBrowseRecommendations();
 
     const {formState, updateForm, handleSave, errors, validate, saveState, clearError} = useForm({
         initialState: recommendation ?? {
@@ -34,28 +36,19 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
             one_click_subscribe: false
         },
         onSave: async () => {
-            let validatedUrl: URL | null = null;
-            try {
-                validatedUrl = new URL(formState.url);
-            } catch (e) {
-                // Ignore
-            }
+            let validatedUrl: URL;
+            validatedUrl = new URL(formState.url);
+            validatedUrl = trimSearchAndHash(validatedUrl);
 
             // First check if it s a Ghost site or not
-            let externalGhostSite = validatedUrl && validatedUrl.protocol === 'https:' ? (await queryExternalGhostSite('https://' + validatedUrl.host)) : null;
-            let defaultTitle = formState.title;
-            if (!defaultTitle) {
-                if (validatedUrl) {
-                    defaultTitle = validatedUrl.hostname.replace('www.', '');
-                } else {
-                    // Ignore
-                    defaultTitle = formState.url;
-                }
-            }
+            let externalGhostSite = validatedUrl.protocol === 'https:' ? (await queryExternalGhostSite('https://' + validatedUrl.host)) : null;
+
+            // Use the hostname as fallback title
+            const defaultTitle = validatedUrl.hostname.replace('www.', '');
 
             const updatedRecommendation = {
                 ...formState,
-                title: defaultTitle
+                url: validatedUrl.toString()
             };
 
             if (externalGhostSite) {
@@ -65,7 +58,6 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
                 updatedRecommendation.featured_image = externalGhostSite.site.cover_image?.toString() ?? formState.featured_image ?? null;
                 updatedRecommendation.favicon = externalGhostSite.site.icon?.toString() ?? externalGhostSite.site.logo?.toString() ?? formState.favicon ?? null;
                 updatedRecommendation.one_click_subscribe = externalGhostSite.site.allow_self_signup;
-                updatedRecommendation.url = externalGhostSite.site.url.toString();
             } else {
                 // For non-Ghost sites, we use the Oemebd API to fetch metadata
                 const oembed = await queryOembed({
@@ -95,10 +87,15 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
 
                 // Check domain includes a dot
                 if (!u.hostname.includes('.')) {
-                    newErrors.url = 'Please enter a valid URL';
+                    newErrors.url = 'Please enter a valid URL.';
+                }
+
+                // Check that it doesn't exist already
+                if (recommendations?.find(r => arePathsEqual(r.url, u.toString()))) {
+                    newErrors.url = 'A recommendation with this URL already exists.';
                 }
             } catch (e) {
-                newErrors.url = 'Please enter a valid URL';
+                newErrors.url = 'Please enter a valid URL.';
             }
 
             return newErrors;
@@ -133,18 +130,11 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
 
             toast.remove();
             try {
-                if (await handleSave({force: true})) {
-                    // Already handled
-                } else {
-                    showToast({
-                        type: 'pageError',
-                        message: 'One or more fields have errors, please double check that you\'ve filled all mandatory fields.'
-                    });
-                }
+                await handleSave({force: true});
             } catch (e) {
                 showToast({
                     type: 'pageError',
-                    message: 'Something went wrong while checking this URL, please try again'
+                    message: 'Something went wrong while checking this URL, please try again.'
                 });
             }
         }}

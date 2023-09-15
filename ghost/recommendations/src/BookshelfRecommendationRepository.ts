@@ -7,10 +7,19 @@ type Sentry = {
     captureException(err: unknown): void;
 }
 
+type RecommendationFindOneData<T> = {
+    id?: T;
+    url?: string;
+};
+
+type RecommendationModelClass<T> = ModelClass<T> & {
+    findOne: (data: RecommendationFindOneData<T>, options?: { require?: boolean }) => Promise<ModelInstance<T> | null>;
+};
+
 export class BookshelfRecommendationRepository extends BookshelfRepository<string, Recommendation> implements RecommendationRepository {
     sentry?: Sentry;
 
-    constructor(Model: ModelClass<string>, deps: {sentry?: Sentry} = {}) {
+    constructor(Model: RecommendationModelClass<string>, deps: {sentry?: Sentry} = {}) {
         super(Model);
         this.sentry = deps.sentry;
     }
@@ -64,5 +73,10 @@ export class BookshelfRecommendationRepository extends BookshelfRepository<strin
             createdAt: 'created_at',
             updatedAt: 'updated_at'
         } as Record<keyof Recommendation, string>;
+    }
+
+    async getByUrl(url: URL): Promise<Recommendation | null> {
+        const model = await (this.Model as RecommendationModelClass<string>).findOne({url: url.toString()}, {require: false});
+        return model ? this.modelToEntity(model) : null;
     }
 }
