@@ -55,7 +55,7 @@ const ThemeSetting: React.FC<{
     case 'color':
         return (
             <ColorPickerField
-                debounceMs={500}
+                debounceMs={200}
                 direction='rtl'
                 hint={setting.description}
                 title={humanizeSettingKey(setting.key)}

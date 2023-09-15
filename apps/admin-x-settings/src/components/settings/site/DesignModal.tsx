@@ -104,10 +104,10 @@ const DesignModal: React.FC = () => {
     } = useForm({
         initialState: {
             settings: settings as Array<Setting & { dirty?: boolean }>,
-            themeSettings: (themeSettings?.custom_theme_settings || []) as Array<CustomThemeSetting & { dirty?: boolean }>
+            themeSettings: themeSettings ? (themeSettings.custom_theme_settings as Array<CustomThemeSetting & { dirty?: boolean }>) : undefined
         },
         onSave: async () => {
-            if (formState.themeSettings.some(setting => setting.dirty)) {
+            if (formState.themeSettings?.some(setting => setting.dirty)) {
                 const response = await editThemeSettings(formState.themeSettings);
                 updateForm(state => ({...state, themeSettings: response.custom_theme_settings}));
             }
@@ -132,14 +132,14 @@ const DesignModal: React.FC = () => {
     };
 
     const updateThemeSetting = (updated: CustomThemeSetting) => {
-        updateForm(state => ({...state, themeSettings: state.themeSettings.map(setting => (
+        updateForm(state => ({...state, themeSettings: state.themeSettings?.map(setting => (
             setting.key === updated.key ? {...updated, dirty: true} : setting
         ))}));
     };
 
     const [description, accentColor, icon, logo, coverImage] = getSettingValues(formState.settings, ['description', 'accent_color', 'icon', 'logo', 'cover_image']) as string[];
 
-    const themeSettingGroups = formState.themeSettings.reduce((groups, setting) => {
+    const themeSettingGroups = (formState.themeSettings || []).reduce((groups, setting) => {
         const group = (setting.group === 'homepage' || setting.group === 'post') ? setting.group : 'site-wide';
 
         return {

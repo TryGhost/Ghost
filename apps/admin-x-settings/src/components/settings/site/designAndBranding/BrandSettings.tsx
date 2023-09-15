@@ -62,7 +62,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                     }}
                 />
                 <ColorPickerField
-                    debounceMs={500}
+                    debounceMs={200}
                     direction='rtl'
                     title={<Heading className='mt-[3px]' grey={true} level={6}>Accent color</Heading>}
                     value={values.accentColor}
