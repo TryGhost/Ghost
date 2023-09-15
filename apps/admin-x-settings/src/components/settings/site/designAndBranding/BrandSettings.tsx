@@ -6,10 +6,9 @@ import React, {useRef, useState} from 'react';
 import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import usePinturaEditor from '../../../../hooks/usePinturaEditor';
-import {SettingValue} from '../../../../api/settings';
+import {SettingValue, getSettingValues} from '../../../../api/settings';
 import {debounce} from '../../../../utils/debounce';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
-import {getSettingValues} from '../../../../api/settings';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 export interface BrandSettingValues {
@@ -67,6 +66,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                     direction='rtl'
                     title={<Heading className='mt-[3px]' grey={true} level={6}>Accent color</Heading>}
                     value={values.accentColor}
+                    alwaysOpen
                     // we debounce this because the color picker fires a lot of events.
                     onChange={value => updateSettingDebounced('accent_color', value)}
                 />
