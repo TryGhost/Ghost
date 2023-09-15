@@ -194,10 +194,7 @@ const RecommendationItem = (recommendation) => {
                 siteUrl: url,
                 throwErrors: true
             });
-            if (!clicked) {
-                onAction('trackRecommendationSubscribed', {recommendationId: recommendation.id});
-                setClicked(true);
-            }
+            onAction('trackRecommendationSubscribed', {recommendationId: recommendation.id});
             setSubscribed(true);
         } catch (_) {
             // Open portal signup page
