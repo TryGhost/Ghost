@@ -28,59 +28,61 @@ export const RouteContext = createContext<RoutingContextData>({
 });
 
 export type RoutingModalProps = {
+    pathName: string;
     params?: Record<string, string>
 }
 
-const AddIntegrationModal = () => import('../settings/advanced/integrations/AddIntegrationModal');
-const AddNewsletterModal = () => import('../settings/email/newsletters/AddNewsletterModal');
-const AddRecommendationModal = () => import('../settings/site/recommendations/AddRecommendationModal');
-const AmpModal = () => import('../settings/advanced/integrations/AmpModal');
-const ChangeThemeModal = () => import('../settings/site/ThemeModal');
-const CustomIntegrationModal = () => import('../settings/advanced/integrations/CustomIntegrationModal');
-const DesignModal = () => import('../settings/site/DesignModal');
-const EditRecommendationModal = () => import('../settings/site/recommendations/EditRecommendationModal');
-const FirstpromoterModal = () => import('../settings/advanced/integrations/FirstPromoterModal');
-const HistoryModal = () => import('../settings/advanced/HistoryModal');
-const InviteUserModal = () => import('../settings/general/InviteUserModal');
-const NavigationModal = () => import('../settings/site/NavigationModal');
-const NewsletterDetailModal = () => import('../settings/email/newsletters/NewsletterDetailModal');
-const PinturaModal = () => import('../settings/advanced/integrations/PinturaModal');
-const PortalModal = () => import('../settings/membership/portal/PortalModal');
-const SlackModal = () => import('../settings/advanced/integrations/SlackModal');
-const StripeConnectModal = () => import('../settings/membership/stripe/StripeConnectModal');
-const TierDetailModal = () => import('../settings/membership/tiers/TierDetailModal');
-const UnsplashModal = () => import('../settings/advanced/integrations/UnsplashModal');
-const UserDetailModal = () => import('../settings/general/UserDetailModal');
-const ZapierModal = () => import('../settings/advanced/integrations/ZapierModal');
-const AnnouncementBarModal = () => import('../settings/site/AnnouncementBarModal');
-const EmbedSignupFormModal = () => import('../settings/membership/embedSignup/EmbedSignupFormModal');
+const modals: {[key: string]: () => Promise<{default: React.FC<NiceModalHocProps & RoutingModalProps>}>} = {
+    AddIntegrationModal: () => import('../settings/advanced/integrations/AddIntegrationModal'),
+    AddNewsletterModal: () => import('../settings/email/newsletters/AddNewsletterModal'),
+    AddRecommendationModal: () => import('../settings/site/recommendations/AddRecommendationModal'),
+    AmpModal: () => import('../settings/advanced/integrations/AmpModal'),
+    CustomIntegrationModal: () => import('../settings/advanced/integrations/CustomIntegrationModal'),
+    DesignAndThemeModal: () => import('../settings/site/DesignAndThemeModal'),
+    EditRecommendationModal: () => import('../settings/site/recommendations/EditRecommendationModal'),
+    FirstpromoterModal: () => import('../settings/advanced/integrations/FirstPromoterModal'),
+    HistoryModal: () => import('../settings/advanced/HistoryModal'),
+    InviteUserModal: () => import('../settings/general/InviteUserModal'),
+    NavigationModal: () => import('../settings/site/NavigationModal'),
+    NewsletterDetailModal: () => import('../settings/email/newsletters/NewsletterDetailModal'),
+    PinturaModal: () => import('../settings/advanced/integrations/PinturaModal'),
+    PortalModal: () => import('../settings/membership/portal/PortalModal'),
+    SlackModal: () => import('../settings/advanced/integrations/SlackModal'),
+    StripeConnectModal: () => import('../settings/membership/stripe/StripeConnectModal'),
+    TierDetailModal: () => import('../settings/membership/tiers/TierDetailModal'),
+    UnsplashModal: () => import('../settings/advanced/integrations/UnsplashModal'),
+    UserDetailModal: () => import('../settings/general/UserDetailModal'),
+    ZapierModal: () => import('../settings/advanced/integrations/ZapierModal'),
+    AnnouncementBarModal: () => import('../settings/site/AnnouncementBarModal'),
+    EmbedSignupFormModal: () => import('../settings/membership/embedSignup/EmbedSignupFormModal')
+};
 
-const modalPaths: {[key: string]: () => Promise<{default: React.FC<NiceModalHocProps & RoutingModalProps>}>} = {
-    'design/edit/themes': ChangeThemeModal,
-    'design/edit': DesignModal,
-    'navigation/edit': NavigationModal,
-    'users/invite': InviteUserModal,
-    'users/show/:slug': UserDetailModal,
-    'portal/edit': PortalModal,
-    'tiers/add': TierDetailModal,
-    'tiers/show/:id': TierDetailModal,
-    'stripe-connect': StripeConnectModal,
-    'newsletters/add': AddNewsletterModal,
-    'newsletters/show/:id': NewsletterDetailModal,
-    'history/view': HistoryModal,
-    'history/view/:user': HistoryModal,
-    'integrations/zapier': ZapierModal,
-    'integrations/slack': SlackModal,
-    'integrations/amp': AmpModal,
-    'integrations/unsplash': UnsplashModal,
-    'integrations/firstpromoter': FirstpromoterModal,
-    'integrations/pintura': PinturaModal,
-    'integrations/add': AddIntegrationModal,
-    'integrations/show/:id': CustomIntegrationModal,
-    'recommendations/add': AddRecommendationModal,
-    'recommendations/:id': EditRecommendationModal,
-    'announcement-bar/edit': AnnouncementBarModal,
-    'embed-signup-form/show': EmbedSignupFormModal
+const modalPaths: {[key: string]: keyof typeof modals} = {
+    'design/edit/themes': 'DesignAndThemeModal',
+    'design/edit': 'DesignAndThemeModal',
+    'navigation/edit': 'NavigationModal',
+    'users/invite': 'InviteUserModal',
+    'users/show/:slug': 'UserDetailModal',
+    'portal/edit': 'PortalModal',
+    'tiers/add': 'TierDetailModal',
+    'tiers/show/:id': 'TierDetailModal',
+    'stripe-connect': 'StripeConnectModal',
+    'newsletters/add': 'AddNewsletterModal',
+    'newsletters/show/:id': 'NewsletterDetailModal',
+    'history/view': 'HistoryModal',
+    'history/view/:user': 'HistoryModal',
+    'integrations/zapier': 'ZapierModal',
+    'integrations/slack': 'SlackModal',
+    'integrations/amp': 'AmpModal',
+    'integrations/unsplash': 'UnsplashModal',
+    'integrations/firstpromoter': 'FirstpromoterModal',
+    'integrations/pintura': 'PinturaModal',
+    'integrations/add': 'AddIntegrationModal',
+    'integrations/show/:id': 'CustomIntegrationModal',
+    'recommendations/add': 'AddRecommendationModal',
+    'recommendations/:id': 'EditRecommendationModal',
+    'announcement-bar/edit': 'AnnouncementBarModal',
+    'embed-signup-form/show': 'EmbedSignupFormModal'
 };
 
 function getHashPath(urlPath: string | undefined) {
@@ -97,7 +99,7 @@ function getHashPath(urlPath: string | undefined) {
     return null;
 }
 
-const handleNavigation = () => {
+const handleNavigation = (currentRoute: string | undefined) => {
     // Get the hash from the URL
     let hash = window.location.hash;
     hash = hash.substring(1);
@@ -109,13 +111,15 @@ const handleNavigation = () => {
     const pathName = getHashPath(url.pathname);
 
     if (pathName) {
-        const [path, modal] = Object.entries(modalPaths).find(([modalPath]) => matchRoute(pathName, modalPath)) || [];
+        const [, currentModalName] = Object.entries(modalPaths).find(([modalPath]) => matchRoute(currentRoute || '', modalPath)) || [];
+        const [path, modalName] = Object.entries(modalPaths).find(([modalPath]) => matchRoute(pathName, modalPath)) || [];
 
         return {
             pathName,
-            modal: (path && modal) ? 
-                modal().then(({default: component}) => {
-                    NiceModal.show(component, {params: matchRoute(pathName, path)});
+            changingModal: modalName && modalName !== currentModalName,
+            modal: (path && modalName) ?
+                modals[modalName]().then(({default: component}) => {
+                    NiceModal.show(component, {pathName, params: matchRoute(pathName, path)});
                 }) :
                 undefined
         };
@@ -143,7 +147,7 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, childr
     useEffect(() => {
         // Preload all the modals after initial render to avoid a delay when opening them
         setTimeout(() => {
-            Object.values(modalPaths).forEach(modal => modal());
+            Object.values(modalPaths).forEach(modal => modals[modal]());
         }, 1000);
     }, []);
 
@@ -166,13 +170,16 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, childr
 
     useEffect(() => {
         const handleHashChange = () => {
-            const {pathName, modal} = handleNavigation();
-            setRoute(pathName);
+            setRoute((currentRoute) => {
+                const {pathName, modal, changingModal} = handleNavigation(currentRoute);
 
-            if (modal) {
-                setLoadingModal(true);
-                modal.then(() => setLoadingModal(false));
-            }
+                if (modal && changingModal) {
+                    setLoadingModal(true);
+                    modal.then(() => setLoadingModal(false));
+                }
+
+                return pathName;
+            });
         };
 
         handleHashChange();
