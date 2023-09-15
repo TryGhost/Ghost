@@ -48,7 +48,7 @@ const Sidebar: React.FC<{
         {
             id: 'accountPage',
             title: 'Account page',
-            contents: <AccountPage localSettings={localSettings} updateSetting={updateSetting} />
+            contents: <AccountPage updateSetting={updateSetting} />
         }
     ];
 
@@ -92,10 +92,16 @@ const PortalModal: React.FC = () => {
                     cancelLabel: '',
                     onOk: confirmModal => confirmModal?.remove()
                 });
-            } catch (e) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } catch (e: any) {
+                let prompt = 'There was an error verifying your email address. Please try again.';
+
+                if (e?.message === 'Token expired') {
+                    prompt = 'The verification link has expired. Please try again.';
+                }
                 NiceModal.show(ConfirmationModal, {
                     title: 'Error verifying email address',
-                    prompt: 'There was an error verifying your email address. Please try again.',
+                    prompt: prompt,
                     okLabel: 'Close',
                     cancelLabel: '',
                     onOk: confirmModal => confirmModal?.remove()

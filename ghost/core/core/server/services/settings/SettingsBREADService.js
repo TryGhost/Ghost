@@ -66,6 +66,10 @@ class SettingsBREADService {
                 const adminUrl = urlUtils.urlFor('admin', true);
                 const signinURL = new URL(adminUrl);
                 signinURL.hash = `/settings/members/?verifyEmail=${token}`;
+                // NOTE: to be removed in future, this is to ensure that the new settings are used when enabled
+                if (labsService.isSet('adminXSettings')) {
+                    signinURL.hash = `/settings-x/portal/edit?verifyEmail=${token}`;
+                }
                 return signinURL.href;
             }
         };
