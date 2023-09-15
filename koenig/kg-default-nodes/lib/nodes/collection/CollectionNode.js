@@ -19,6 +19,23 @@ export class CollectionNode extends generateDecoratorNode({nodeType: 'collection
     exportDOM(options = {}) {
         return renderCollectionNode(this, options);
     }
+
+    hasDynamicData() {
+        return true;
+    }
+
+    async getDynamicData(options = {}) {
+        const key = this.getKey();
+        const collection = this.__collection.slug;
+        const postCount = this.__postCount;
+        
+        if (!options?.getCollectionPosts) {
+            return;
+        }
+
+        const posts = await options.getCollectionPosts(collection, postCount);
+        return {key, data: posts};
+    }
 }
 
 export const $createCollectionNode = (dataset) => {

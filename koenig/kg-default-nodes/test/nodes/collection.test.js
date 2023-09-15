@@ -11,6 +11,39 @@ describe('CollectionNode', function () {
     let dataset;
     let exportOptions;
 
+    const postData = [
+        {
+            title: 'The Secret Life of Kittens: Uncovering Their Mischievous Master Plans',
+            id: 1,
+            url: 'https://www.google.com',
+            published_at: '2023-07-08T16:26:13.846-05:00',
+            excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
+            feature_image: 'https://placekitten.com/230/250',
+            reading_time: 3,
+            author: 'Author McAuthory'
+        },
+        {
+            title: 'Kittens Gone Wild: Epic Adventures of Feline Daredevils',
+            id: 2,
+            url: 'https://www.google.com',
+            published_at: '2023-08-17T16:26:13.858-05:00',
+            excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
+            feature_image: 'https://placekitten.com/251/250',
+            reading_time: 5,
+            author: 'Writer Writterson'
+        },
+        {
+            title: 'The Kitten Olympics: Hilarious Competitions and Paw-some Winners',
+            id: 3,
+            url: 'https://www.google.com',
+            published_at: '2023-09-11T16:26:13.858-05:00',
+            excerpt: 'Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet',
+            feature_image: 'https://placekitten.com/249/251',
+            reading_time: 9,
+            author: 'Author McAuthory'
+        }
+    ];
+
     const editorTest = testFn => function (done) {
         editor.update(() => {
             try {
@@ -26,7 +59,7 @@ describe('CollectionNode', function () {
         editor = createHeadlessEditor({nodes: editorNodes});
 
         dataset = {
-            collection: 'featured',
+            collection: {slug: 'featured'},
             postCount: 3,
             layout: 'list',
             columns: 1,
@@ -36,7 +69,8 @@ describe('CollectionNode', function () {
         exportOptions = {
             createDocument() {
                 return (new JSDOM()).window.document;
-            }
+            },
+            renderData: new Map()
         };
     });
 
@@ -101,8 +135,14 @@ describe('CollectionNode', function () {
     });
 
     describe('exportDOM', function () {
+        // because the renderer requires outside data, we need to mock it
+        //  we can't mock the endpoint because that is called by the renderer, not exportDOM
         it('can render to HTML', editorTest(function () {
             const collectionNode = $createCollectionNode(dataset);
+            const nodeKey = collectionNode.getKey();
+            const renderData = new Map();
+            renderData.set(nodeKey, postData);
+            exportOptions.renderData = renderData;
             const {element} = collectionNode.exportDOM(exportOptions);
             const expectedElement = html`
                 <div class="kg-card kg-collection-card" data-kg-collection-slug="featured" data-kg-collection-limit="3">
