@@ -53,7 +53,6 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
         <SettingGroupContent columns={2}>
             <Toggle
                 checked={trackEmailOpens}
-                direction='rtl'
                 label='Newsletter opens'
                 onChange={(e) => {
                     handleToggleChange('email_track_opens', e);
@@ -61,7 +60,6 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
             />
             <Toggle
                 checked={trackEmailClicks}
-                direction='rtl'
                 label='Newsletter clicks'
                 onChange={(e) => {
                     handleToggleChange('email_track_clicks', e);
@@ -69,8 +67,6 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
             />
             <Toggle
                 checked={trackMemberSources}
-                direction='rtl'
-                hint='Track the traffic sources and posts that drive the most member growth'
                 label='Member sources'
                 onChange={(e) => {
                     handleToggleChange('members_track_sources', e);
@@ -78,8 +74,6 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
             />
             <Toggle
                 checked={outboundLinkTagging}
-                direction='rtl'
-                hint='Make it easier for other sites to track the traffic you send them in their analytics'
                 label='Outbound link tagging'
                 onChange={(e) => {
                     handleToggleChange('outbound_link_tagging', e);
@@ -103,6 +97,9 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSave}
         >
             {inputs}
+            <div className='-mt-1'>
+                <a className='text-sm text-green' href="https://ghost.org/help/post-analytics/" rel="noopener noreferrer" target="_blank">Learn about analytics</a>
+            </div>
         </SettingGroup>
     );
 };
