@@ -100,19 +100,20 @@ function getHashPath(urlPath: string | undefined) {
 const handleNavigation = () => {
     // Get the hash from the URL
     let hash = window.location.hash;
-
-    // Remove the leading '#' character from the hash
     hash = hash.substring(1);
 
-    // Get the path name from the hash
-    const pathName = getHashPath(hash);
+    // Create a URL to easily extract the path without query parameters
+    const domain = `${window.location.protocol}//${window.location.hostname}`;
+    let url = new URL(hash, domain);
+
+    const pathName = getHashPath(url.pathname);
 
     if (pathName) {
         const [path, modal] = Object.entries(modalPaths).find(([modalPath]) => matchRoute(pathName, modalPath)) || [];
 
         return {
             pathName,
-            modal: (path && modal) ?
+            modal: (path && modal) ? 
                 modal().then(({default: component}) => {
                     NiceModal.show(component, {params: matchRoute(pathName, path)});
                 }) :
@@ -124,9 +125,7 @@ const handleNavigation = () => {
 
 const matchRoute = (pathname: string, routeDefinition: string) => {
     const regex = new RegExp('^' + routeDefinition.replace(/:(\w+)/, '(?<$1>[^/]+)') + '$');
-
     const match = pathname.match(regex);
-
     if (match) {
         return match.groups || {};
     }
