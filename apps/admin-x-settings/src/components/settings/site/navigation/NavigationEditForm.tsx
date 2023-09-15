@@ -1,4 +1,5 @@
 import Button from '../../../../admin-x-ds/global/Button';
+import Icon from '../../../../admin-x-ds/global/Icon';
 import NavigationItemEditor from './NavigationItemEditor';
 import React from 'react';
 import SortableList from '../../../../admin-x-ds/global/SortableList';
@@ -23,16 +24,19 @@ const NavigationEditForm: React.FC<{
             )}
             onMove={navigation.moveItem}
         />
-        <NavigationItemEditor
-            action={<Button className='self-center' color='green' data-testid="add-button" icon="add" iconColorClass='text-white' size='sm' onClick={navigation.addItem} />}
-            baseUrl={baseUrl}
-            className="mt-1 pl-7"
-            clearError={key => navigation.clearError(navigation.newItem.id, key)}
-            data-testid="new-navigation-item"
-            item={navigation.newItem}
-            labelPlaceholder="New item label"
-            updateItem={navigation.setNewItem}
-        />
+        <div className='flex items-center gap-3'>
+            <Icon colorClass='text-grey-300 dark:text-grey-900 mt-1' name='add' size='sm' />
+            <NavigationItemEditor
+                action={<Button className='mx-2 self-center rounded bg-green p-1' data-testid="add-button" icon="add" iconColorClass='text-white' size='sm' unstyled onClick={navigation.addItem} />}
+                baseUrl={baseUrl}
+                className="mt-1"
+                clearError={key => navigation.clearError(navigation.newItem.id, key)}
+                data-testid="new-navigation-item"
+                item={navigation.newItem}
+                labelPlaceholder="New item label"
+                updateItem={navigation.setNewItem}
+            />
+        </div>
     </div>;
 };
 

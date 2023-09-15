@@ -11,7 +11,7 @@ const AnnouncementBar: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <SettingGroup
-            customButtons={<Button color='green' label='Customize' link onClick={openModal}/>}
+            customButtons={<Button color='green' label='Customize' link linkWithPadding onClick={openModal}/>}
             description="Highlight important updates or offers"
             keywords={keywords}
             navid='announcement-bar'
