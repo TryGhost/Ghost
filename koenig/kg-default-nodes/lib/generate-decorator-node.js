@@ -172,6 +172,13 @@ export function generateDecoratorNode({nodeType, properties = [], version = 1}) 
         /* c8 ignore stop */
 
         /**
+         * Defines whether a node has dynamic data that needs to be fetched from the server when rendering
+         */
+        hasDynamicData() {
+            return false;
+        }
+
+        /**
          * Defines whether a node has an edit mode in the editor UI
          */
         hasEditMode() {

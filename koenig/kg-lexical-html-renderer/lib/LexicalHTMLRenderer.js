@@ -13,6 +13,7 @@ class LexicalHTMLRenderer {
         const {HeadingNode, QuoteNode} = require('@lexical/rich-text');
         const {LinkNode} = require('@lexical/link');
         const {$convertToHtmlString} = require('./convert-to-html-string');
+        const {getDynamicDataNodes} = require('./get-dynamic-data-nodes');
 
         const defaultOptions = {
             target: 'html',
@@ -33,11 +34,25 @@ class LexicalHTMLRenderer {
             nodes: DEFAULT_NODES
         });
 
-        editor.setEditorState(editor.parseEditorState(lexicalState));
+        const editorState = editor.parseEditorState(lexicalState);
 
+        // gather nodes that require dynamic data
+        const dynamicDataNodes = getDynamicDataNodes(editorState);
+
+        // fetch dynamic data
+        let renderData = new Map();
+        await Promise.all(dynamicDataNodes.map(async (node) => {
+            const {key, data} = await node.getDynamicData(options);
+            renderData.set(key, data);
+        }));
+
+        options.renderData = renderData;
+        
+        // render nodes
+        editor.setEditorState(editorState);
         let html = '';
 
-        editor.update(() => {
+        editor.update(async () => {
             html = $convertToHtmlString(options);
         });
 
