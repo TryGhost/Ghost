@@ -501,6 +501,22 @@ async function oneClickSubscribe({data: {siteUrl}, state}) {
     return {};
 }
 
+function trackRecommendationClicked({data: {recommendationId}, api}) {
+    api.recommendations.trackClicked({
+        recommendationId
+    });
+
+    return {};
+}
+
+async function trackRecommendationSubscribed({data: {recommendationId}, api}) {
+    api.recommendations.trackSubscribed({
+        recommendationId
+    });
+
+    return {};
+}
+
 const Actions = {
     togglePopup,
     openPopup,
@@ -524,7 +540,9 @@ const Actions = {
     updateNewsletterPreference,
     showPopupNotification,
     removeEmailFromSuppressionList,
-    oneClickSubscribe
+    oneClickSubscribe,
+    trackRecommendationClicked,
+    trackRecommendationSubscribed
 };
 
 /** Handle actions in the App, returns updated state */

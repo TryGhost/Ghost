@@ -44,10 +44,10 @@ class PostsService {
     async browsePosts(options) {
         let posts;
         if (options.collection) {
-            let collection = await this.collectionsService.getById(options.collection);
+            let collection = await this.collectionsService.getById(options.collection, {transaction: options.transacting});
 
             if (!collection) {
-                collection = await this.collectionsService.getBySlug(options.collection);
+                collection = await this.collectionsService.getBySlug(options.collection, {transaction: options.transacting});
             }
 
             if (!collection) {

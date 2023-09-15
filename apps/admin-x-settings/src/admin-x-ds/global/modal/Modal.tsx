@@ -21,6 +21,7 @@ export interface ModalProps {
     title?: string;
     okLabel?: string;
     okColor?: ButtonColor;
+    okLoading?: boolean;
     cancelLabel?: string;
     leftButtonProps?: ButtonProps;
     buttonsDisabled?: boolean;
@@ -41,11 +42,14 @@ export interface ModalProps {
     formSheet?: boolean;
 }
 
+export const topLevelBackdropClasses = 'bg-[rgba(98,109,121,0.2)] backdrop-blur-[3px]';
+
 const Modal: React.FC<ModalProps> = ({
     size = 'md',
     testId,
     title,
     okLabel = 'OK',
+    okLoading = false,
     cancelLabel = 'Cancel',
     footer,
     leftButtonProps,
@@ -135,13 +139,15 @@ const Modal: React.FC<ModalProps> = ({
                 color: okColor,
                 className: 'min-w-[80px]',
                 onClick: onOk,
-                disabled: buttonsDisabled
+                disabled: buttonsDisabled,
+                loading: okLoading
             });
         }
     }
 
     let modalClasses = clsx(
-        'relative z-50 mx-auto flex max-h-[100%] w-full flex-col justify-between overflow-x-hidden rounded bg-white dark:bg-black',
+        'relative z-50 mx-auto flex max-h-[100%] w-full flex-col justify-between overflow-x-hidden bg-white dark:bg-black',
+        size !== 'bleed' && 'rounded',
         formSheet ? 'shadow-md' : 'shadow-xl',
         (animate && !formSheet && !animationFinished) && 'animate-modal-in',
         (formSheet && !animationFinished) && 'animate-modal-in-reverse',
@@ -257,7 +263,7 @@ const Modal: React.FC<ModalProps> = ({
         <div className={backdropClasses} id='modal-backdrop' onClick={handleBackdropClick}>
             <div className={clsx(
                 'pointer-events-none fixed inset-0 z-0',
-                (backDrop && !formSheet) && 'bg-[rgba(98,109,121,0.2)] backdrop-blur-[3px]',
+                (backDrop && !formSheet) && topLevelBackdropClasses,
                 formSheet && 'bg-[rgba(98,109,121,0.08)]'
             )}></div>
             <section className={modalClasses} data-testid={testId} style={modalStyles}>

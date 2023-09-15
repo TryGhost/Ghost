@@ -35,14 +35,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const sortTiers = (t: Tier[]) => {
-        t.sort((a, b) => {
-            if ((a.monthly_price as number) < (b.monthly_price as number)) {
-                return -1;
-            } else {
-                return 1;
-            }
-        });
-        return t;
+        return [...t].sort((a, b) => (a.monthly_price ?? 0) - (b.monthly_price ?? 0));
     };
 
     const tabs = [

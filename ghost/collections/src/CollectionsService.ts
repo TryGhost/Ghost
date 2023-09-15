@@ -13,10 +13,8 @@ import {Collection} from './Collection';
 import {CollectionRepository} from './CollectionRepository';
 import {CollectionPost} from './CollectionPost';
 import {MethodNotAllowedError} from '@tryghost/errors';
-import {PostDeletedEvent} from './events/PostDeletedEvent';
 import {PostAddedEvent} from './events/PostAddedEvent';
 import {PostEditedEvent} from './events/PostEditedEvent';
-import {PostsBulkDestroyedEvent} from '@tryghost/post-events';
 import {RepositoryUniqueChecker} from './RepositoryUniqueChecker';
 import {TagDeletedEvent} from './events/TagDeletedEvent';
 
@@ -173,15 +171,18 @@ export class CollectionsService {
      * @description Subscribes to Domain events to update collections when posts are added, updated or deleted
      */
     subscribeToEvents() {
-        this.DomainEvents.subscribe(PostDeletedEvent, async (event: PostDeletedEvent) => {
-            logging.info(`PostDeletedEvent received, removing post ${event.id} from all collections`);
-            try {
-                await this.removePostFromAllCollections(event.id);
-                /* c8 ignore next 3 */
-            } catch (err) {
-                logging.error({err, message: 'Error handling PostDeletedEvent'});
-            }
-        });
+        // @NOTE: event handling should be moved to the client - Ghost app
+        //        Leaving commented out handlers here to move them all together
+
+        // this.DomainEvents.subscribe(PostDeletedEvent, async (event: PostDeletedEvent) => {
+        //     logging.info(`PostDeletedEvent received, removing post ${event.id} from all collections`);
+        //     try {
+        //         await this.removePostFromAllCollections(event.id);
+        //         /* c8 ignore next 3 */
+        //     } catch (err) {
+        //         logging.error({err, message: 'Error handling PostDeletedEvent'});
+        //     }
+        // });
 
         this.DomainEvents.subscribe(PostAddedEvent, async (event: PostAddedEvent) => {
             logging.info(`PostAddedEvent received, adding post ${event.data.id} to matching collections`);
@@ -207,15 +208,15 @@ export class CollectionsService {
             }
         });
 
-        this.DomainEvents.subscribe(PostsBulkDestroyedEvent, async (event: PostsBulkDestroyedEvent) => {
-            logging.info(`BulkDestroyEvent received, removing posts ${event.data} from all collections`);
-            try {
-                await this.removePostsFromAllCollections(event.data);
-                /* c8 ignore next 3 */
-            } catch (err) {
-                logging.error({err, message: 'Error handling PostsBulkDestroyedEvent'});
-            }
-        });
+        // this.DomainEvents.subscribe(PostsBulkDestroyedEvent, async (event: PostsBulkDestroyedEvent) => {
+        //     logging.info(`BulkDestroyEvent received, removing posts ${event.data} from all collections`);
+        //     try {
+        //         await this.removePostsFromAllCollections(event.data);
+        //         /* c8 ignore next 3 */
+        //     } catch (err) {
+        //         logging.error({err, message: 'Error handling PostsBulkDestroyedEvent'});
+        //     }
+        // });
 
         this.DomainEvents.subscribe(PostsBulkUnpublishedEvent, async (event: PostsBulkUnpublishedEvent) => {
             logging.info(`PostsBulkUnpublishedEvent received, updating collection posts ${event.data}`);
@@ -356,7 +357,7 @@ export class CollectionsService {
         });
     }
 
-    private async removePostFromAllCollections(postId: string) {
+    async removePostFromAllCollections(postId: string) {
         return await this.collectionsRepository.createTransaction(async (transaction) => {
             // @NOTE: can be optimized by having a "getByPostId" method on the collections repository
             const collections = await this.collectionsRepository.getAll({transaction});
@@ -370,7 +371,7 @@ export class CollectionsService {
         });
     }
 
-    private async removePostsFromAllCollections(postIds: string[]) {
+    async removePostsFromAllCollections(postIds: string[]) {
         return await this.collectionsRepository.createTransaction(async (transaction) => {
             const collections = await this.collectionsRepository.getAll({transaction});
 
@@ -559,12 +560,12 @@ export class CollectionsService {
         });
     }
 
-    async getById(id: string): Promise<Collection | null> {
-        return await this.collectionsRepository.getById(id);
+    async getById(id: string, options?: {transaction: Knex.Transaction}): Promise<Collection | null> {
+        return await this.collectionsRepository.getById(id, options);
     }
 
-    async getBySlug(slug: string): Promise<Collection | null> {
-        return await this.collectionsRepository.getBySlug(slug);
+    async getBySlug(slug: string, options?: {transaction: Knex.Transaction}): Promise<Collection | null> {
+        return await this.collectionsRepository.getBySlug(slug, options);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

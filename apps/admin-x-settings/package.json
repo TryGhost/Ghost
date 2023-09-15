@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/admin-x-settings",
-  "version": "0.0.17",
+  "version": "0.0.19",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -59,7 +59,7 @@
     "validator": "7.2.0"
   },
   "devDependencies": {
-    "@playwright/test": "1.37.1",
+    "@playwright/test": "1.38.0",
     "@storybook/addon-essentials": "7.4.0",
     "@storybook/addon-interactions": "7.4.0",
     "@storybook/addon-links": "7.4.0",
@@ -67,7 +67,7 @@
     "@storybook/blocks": "7.4.0",
     "@storybook/react": "7.4.0",
     "@storybook/react-vite": "7.4.0",
-    "@storybook/testing-library": "0.2.0",
+    "@storybook/testing-library": "0.2.1",
     "@tailwindcss/forms": "0.5.6",
     "@tailwindcss/line-clamp": "0.4.4",
     "@types/react": "18.2.21",

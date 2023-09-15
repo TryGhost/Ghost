@@ -183,7 +183,11 @@ describe('UNIT > Settings BREAD Service:', function () {
                         return 'test';
                     }
                 },
-                labsService: {}
+                labsService: {
+                    isSet() {
+                        return false;
+                    }
+                }
             });
 
             const settings = await defaultSettingsManager.edit([

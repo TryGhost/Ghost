@@ -60,8 +60,8 @@ export class BookshelfRecommendationRepository extends BookshelfRepository<strin
         }
     }
 
-    entityFieldToColumn(field: keyof Recommendation): string {
-        const mapping = {
+    getFieldToColumnMap() {
+        return {
             id: 'id',
             title: 'title',
             reason: 'reason',
@@ -73,7 +73,6 @@ export class BookshelfRecommendationRepository extends BookshelfRepository<strin
             createdAt: 'created_at',
             updatedAt: 'updated_at'
         } as Record<keyof Recommendation, string>;
-        return mapping[field];
     }
 
     async getByUrl(url: URL): Promise<Recommendation | null> {
