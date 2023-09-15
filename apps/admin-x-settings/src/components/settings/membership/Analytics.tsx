@@ -54,7 +54,6 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <Toggle
                 checked={trackEmailOpens}
                 direction='rtl'
-                hint='Record when a member opens an email'
                 label='Newsletter opens'
                 onChange={(e) => {
                     handleToggleChange('email_track_opens', e);
@@ -63,7 +62,6 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <Toggle
                 checked={trackEmailClicks}
                 direction='rtl'
-                hint='Record when a member clicks on any link in an email'
                 label='Newsletter clicks'
                 onChange={(e) => {
                     handleToggleChange('email_track_clicks', e);
@@ -92,8 +90,8 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <SettingGroup
+            customButtons={<Button color='green' label='Export' link={true} onClick={exportPosts} />}
             description='Decide what data you collect from your members'
-            hideEditButton={true}
             isEditing={isEditing}
             keywords={keywords}
             navid='analytics'
@@ -105,10 +103,6 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSave}
         >
             {inputs}
-            <div className='mt-1'>
-                <Button color='green' label='Export post analytics' link={true} onClick={exportPosts} />
-                <div className='text-xs text-grey-700 dark:text-grey-600'>Download the data from your last 1,000 posts</div>
-            </div>
         </SettingGroup>
     );
 };
