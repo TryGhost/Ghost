@@ -32,7 +32,6 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
             updateSetting('description', value);
         }, 500)
     );
-    const updateSettingDebounced = debounce(updateSetting, 500);
 
     const pinturaEnabled = Boolean(pintura) && Boolean(pinturaJsUrl) && Boolean(pinturaCssUrl);
 
@@ -63,12 +62,13 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                     }}
                 />
                 <ColorPickerField
+                    debounceMs={500}
                     direction='rtl'
                     title={<Heading className='mt-[3px]' grey={true} level={6}>Accent color</Heading>}
                     value={values.accentColor}
                     alwaysOpen
                     // we debounce this because the color picker fires a lot of events.
-                    onChange={value => updateSettingDebounced('accent_color', value)}
+                    onChange={value => updateSetting('accent_color', value)}
                 />
                 <div className={`flex justify-between ${values.icon ? 'items-start ' : 'items-end'}`}>
                     <div>
