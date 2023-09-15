@@ -100,9 +100,17 @@ export class Recommendation {
             this.reason = null;
         }
 
+        this.url = this.cleanURL(this.url);
         this.createdAt.setMilliseconds(0);
         this.updatedAt?.setMilliseconds(0);
     }
+
+    cleanURL(url: URL) {
+        url.search = '';
+        url.hash = '';
+
+        return url;
+    };
 
     static create(data: RecommendationCreateData) {
         const id = data.id ?? ObjectId().toString();
@@ -123,6 +131,7 @@ export class Recommendation {
         this.validate(d);
         const recommendation = new Recommendation(d);
         recommendation.clean();
+
         return recommendation;
     }
 
