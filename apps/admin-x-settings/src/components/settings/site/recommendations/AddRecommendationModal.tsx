@@ -128,18 +128,11 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
 
             toast.remove();
             try {
-                if (await handleSave({force: true})) {
-                    // Already handled
-                } else {
-                    showToast({
-                        type: 'pageError',
-                        message: 'One or more fields have errors, please double check that you\'ve filled in all mandatory fields.'
-                    });
-                }
+                await handleSave({force: true});
             } catch (e) {
                 showToast({
                     type: 'pageError',
-                    message: 'Something went wrong while checking this URL, please try again'
+                    message: 'Something went wrong while checking this URL, please try again.'
                 });
             }
         }}
