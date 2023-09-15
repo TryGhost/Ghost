@@ -1,4 +1,5 @@
-import {PostDeletedEvent, PostAddedEvent, PostEditedEvent, TagDeletedEvent} from '@tryghost/collections';
+import {PostDeletedEvent} from '@tryghost/post-events';
+import {PostAddedEvent, PostEditedEvent, TagDeletedEvent} from '@tryghost/collections';
 
 type ModelToDomainEventInterceptorDeps = {
     ModelEvents: {

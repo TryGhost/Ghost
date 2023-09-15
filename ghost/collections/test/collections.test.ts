@@ -4,13 +4,11 @@ import DomainEvents from '@tryghost/domain-events';
 import {
     CollectionsService,
     CollectionsRepositoryInMemory,
-    PostDeletedEvent,
     PostAddedEvent,
     PostEditedEvent,
     TagDeletedEvent
 } from '../src/index';
 import {
-    PostsBulkDestroyedEvent,
     PostsBulkUnpublishedEvent,
     PostsBulkFeaturedEvent,
     PostsBulkUnfeaturedEvent,
@@ -474,13 +472,7 @@ describe('CollectionsService', function () {
                 assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 2);
                 assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 2);
 
-                collectionsService.subscribeToEvents();
-                const postDeletedEvent = PostDeletedEvent.create({
-                    id: postFixtures[0].id
-                });
-
-                DomainEvents.dispatch(postDeletedEvent);
-                await DomainEvents.allSettled();
+                await collectionsService.removePostFromAllCollections(postFixtures[0].id);
 
                 assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 2);
                 assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 1);
@@ -492,14 +484,11 @@ describe('CollectionsService', function () {
                 assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 2);
                 assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 2);
 
-                collectionsService.subscribeToEvents();
-                const postDeletedEvent = PostsBulkDestroyedEvent.create([
+                const deletedPostIds = [
                     postFixtures[0].id,
                     postFixtures[1].id
-                ]);
-
-                DomainEvents.dispatch(postDeletedEvent);
-                await DomainEvents.allSettled();
+                ];
+                await collectionsService.removePostsFromAllCollections(deletedPostIds);
 
                 assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 2);
                 assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 0);

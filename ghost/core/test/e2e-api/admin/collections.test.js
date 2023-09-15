@@ -632,7 +632,10 @@ describe('Collections API', function () {
                     await DomainEvents.allSettled();
                 }, this.skip.bind(this));
                 const collectionRelatedQueries = queries.filter(query => query.sql.includes('collection'));
-                assert.equal(collectionRelatedQueries.length, 2);
+
+                // deletion is handled on the DB layer through Cascade Delete,
+                // so collections should not execute any additional queries
+                assert.equal(collectionRelatedQueries.length, 0);
             }
 
             await agent
