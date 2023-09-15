@@ -102,14 +102,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
 
             dismissAllToasts();
             try {
-                if (await handleSave({force: true})) {
-                // Already handled
-                } else {
-                    showToast({
-                        type: 'pageError',
-                        message: 'One or more fields have errors, please double check that you\'ve filled in all mandatory fields.'
-                    });
-                }
+                await handleSave({force: true});
             } catch (e) {
                 showToast({
                     type: 'pageError',
