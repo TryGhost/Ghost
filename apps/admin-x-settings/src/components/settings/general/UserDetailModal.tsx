@@ -1,5 +1,5 @@
 import APIKeys from '../advanced/integrations/APIKeys';
-import Button from '../../../admin-x-ds/global/Button';
+import ChangePasswordForm from './users/ChangePasswordForm';
 import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
 import Heading from '../../../admin-x-ds/global/Heading';
 import Icon from '../../../admin-x-ds/global/Icon';
@@ -9,7 +9,7 @@ import Menu, {MenuItem} from '../../../admin-x-ds/global/Menu';
 import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import Radio from '../../../admin-x-ds/global/form/Radio';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/form/TextField';
@@ -23,7 +23,7 @@ import validator from 'validator';
 import {DetailsInputs} from './DetailsInputs';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {RoutingModalProps} from '../../providers/RoutingProvider';
-import {User, canAccessSettings, hasAdminAccess, isAdminUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner, useUpdatePassword} from '../../../api/users';
+import {User, canAccessSettings, hasAdminAccess, isAdminUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner} from '../../../api/users';
 import {genStaffToken, getStaffToken} from '../../../api/staffToken';
 import {getImageUrl, useUploadImage} from '../../../api/images';
 import {getSettingValues} from '../../../api/settings';
@@ -250,139 +250,6 @@ const EmailNotifications: React.FC<UserDetailProps> = ({user, setUserData}) => {
 
         >
             <EmailNotificationsInputs setUserData={setUserData} user={user} />
-        </SettingGroup>
-    );
-};
-
-function passwordValidation({password, confirmPassword}: {password: string; confirmPassword: string}) {
-    const errors: {
-        newPassword?: string;
-        confirmNewPassword?: string;
-    } = {};
-    if (password !== confirmPassword) {
-        errors.newPassword = 'Your new passwords do not match';
-        errors.confirmNewPassword = 'Your new passwords do not match';
-    }
-    if (password.length < 10) {
-        errors.newPassword = 'Password must be at least 10 characters';
-    }
-
-    //ToDo: add more validations
-
-    return errors;
-}
-
-const Password: React.FC<UserDetailProps> = ({user}) => {
-    const [editPassword, setEditPassword] = useState(false);
-    const [newPassword, setNewPassword] = useState('');
-    const [confirmNewPassword, setConfirmNewPassword] = useState('');
-    const [saveState, setSaveState] = useState<'saving'|'saved'|'error'|''>('');
-    const [errors, setErrors] = useState<{
-        newPassword?: string;
-        confirmNewPassword?: string;
-    }>({});
-    const newPasswordRef = useRef<HTMLInputElement>(null);
-    const confirmNewPasswordRef = useRef<HTMLInputElement>(null);
-
-    const {mutateAsync: updatePassword} = useUpdatePassword();
-
-    useEffect(() => {
-        if (saveState === 'saved') {
-            setTimeout(() => {
-                setSaveState('');
-                setEditPassword(false);
-            }, 2500);
-        }
-    }, [saveState]);
-
-    const showPasswordInputs = () => {
-        setEditPassword(true);
-    };
-
-    const view = (
-        <Button
-            color='grey'
-            label='Change password'
-            onClick={showPasswordInputs}
-        />
-    );
-    let buttonLabel = 'Change password';
-    if (saveState === 'saving') {
-        buttonLabel = 'Updating...';
-    } else if (saveState === 'saved') {
-        buttonLabel = 'Updated';
-    } else if (saveState === 'error') {
-        buttonLabel = 'Retry';
-    }
-    const form = (
-        <>
-            <TextField
-                error={!!errors.newPassword}
-                hint={errors.newPassword}
-                inputRef={newPasswordRef}
-                title="New password"
-                type="password"
-                value={newPassword}
-                onChange={(e) => {
-                    setNewPassword(e.target.value);
-                }}
-            />
-            <TextField
-                error={!!errors.confirmNewPassword}
-                hint={errors.confirmNewPassword}
-                inputRef={confirmNewPasswordRef}
-                title="Verify password"
-                type="password"
-                value={confirmNewPassword}
-                onChange={(e) => {
-                    setConfirmNewPassword(e.target.value);
-                }}
-            />
-            <Button
-                color='red'
-                label={buttonLabel}
-                onClick={async () => {
-                    setSaveState('saving');
-                    const validationErrros = passwordValidation({password: newPassword, confirmPassword: confirmNewPassword});
-                    setErrors(validationErrros);
-                    if (Object.keys(validationErrros).length > 0) {
-                        // show errors
-                        setNewPassword('');
-                        setConfirmNewPassword('');
-                        if (newPasswordRef.current) {
-                            newPasswordRef.current.value = '';
-                        }
-                        if (confirmNewPasswordRef.current) {
-                            confirmNewPasswordRef.current.value = '';
-                        }
-                        setSaveState('');
-                        return;
-                    }
-                    try {
-                        await updatePassword({
-                            newPassword,
-                            confirmNewPassword,
-                            oldPassword: '',
-                            userId: user?.id
-                        });
-                        setSaveState('saved');
-                    } catch (e) {
-                        setSaveState('error');
-                        // show errors
-                    }
-                }}
-            />
-        </>
-    );
-
-    return (
-        <SettingGroup
-            border={false}
-            customHeader={<CustomHeader>Password</CustomHeader>}
-            title='Password'
-
-        >
-            {editPassword ? form : view}
         </SettingGroup>
     );
 };
@@ -615,11 +482,9 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         }
     };
 
-    let suspendUserLabel = userData?.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
-
     let menuItems: MenuItem[] = [];
 
-    if (isAdminUser(userData)) {
+    if (isOwnerUser(currentUser) && isAdminUser(userData) && userData.status !== 'inactive') {
         menuItems.push({
             id: 'make-owner',
             label: 'Make owner',
@@ -627,30 +492,32 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         });
     }
 
-    menuItems = menuItems.concat([
-        {
+    if (userData.id !== currentUser.id) {
+        let suspendUserLabel = userData.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
+
+        menuItems.push({
             id: 'delete-user',
             label: 'Delete user',
             onClick: () => {
                 confirmDelete(user, {owner: ownerUser});
             }
-        },
-        {
+        }, {
             id: 'suspend-user',
             label: suspendUserLabel,
             onClick: () => {
                 confirmSuspend(userData);
             }
-        },
-        {
-            id: 'view-user-activity',
-            label: 'View user activity',
-            onClick: () => {
-                mainModal.remove();
-                updateRoute(`history/view/${userData.id}`);
-            }
+        });
+    }
+
+    menuItems.push({
+        id: 'view-user-activity',
+        label: 'View user activity',
+        onClick: () => {
+            mainModal.remove();
+            updateRoute(`history/view/${userData.id}`);
         }
-    ]);
+    });
 
     let okLabel = saveState === 'saved' ? 'Saved' : 'Save & close';
 
@@ -661,7 +528,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     }
 
     const coverButtonContainerClassName = clsx(
-        canAccessSettings(currentUser) ? (
+        hasAdminAccess(currentUser) ? (
             userData.cover_image ? 'relative ml-10 mr-[106px] flex translate-y-[-80px] gap-3 md:ml-0 md:justify-end' : 'relative -mb-8 ml-10 mr-[106px] flex translate-y-[358px] md:ml-0 md:translate-y-[268px] md:justify-end'
         ) : (
             userData.cover_image ? 'relative ml-10 flex max-w-4xl translate-y-[-80px] gap-3 md:mx-auto md:justify-end' : 'relative -mb-8 ml-10 flex max-w-4xl translate-y-[358px] md:mx-auto md:translate-y-[268px] md:justify-end'
@@ -771,7 +638,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                             handleImageUpload('cover_image', file);
                         }}
                     >Upload cover image</ImageUpload>
-                    {canAccessSettings(currentUser) && <div className="absolute bottom-12 right-12 z-10">
+                    {hasAdminAccess(currentUser) && <div className="absolute bottom-12 right-12 z-10">
                         <Menu items={menuItems} position='right' trigger={<UserMenuTrigger />}></Menu>
                     </div>}
                     <div className={`${!canAccessSettings(currentUser) ? 'mx-10 pl-0 md:max-w-[50%] min-[920px]:ml-[calc((100vw-920px)/2)] min-[920px]:max-w-[460px]' : 'max-w-[50%] pl-12'} relative flex flex-col items-start gap-4 pb-60 pt-10 md:flex-row md:items-center md:pb-7 md:pt-60`}>
@@ -819,7 +686,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                         <StaffToken user={userData} />
                     </div>
                     <EmailNotifications setUserData={setUserData} user={userData} />
-                    <Password user={userData} />
+                    <ChangePasswordForm user={userData} />
                 </div>
             </div>
         </Modal>
