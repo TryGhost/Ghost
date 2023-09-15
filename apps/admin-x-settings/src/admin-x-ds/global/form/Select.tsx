@@ -1,4 +1,5 @@
-import React, {useId} from 'react';
+import React, {useId, useMemo} from 'react';
+import ReactSelect, {DropdownIndicatorProps, OptionProps, Props, components} from 'react-select';
 
 import Heading from '../Heading';
 import Hint from '../Hint';
@@ -17,24 +18,46 @@ export interface SelectOptionGroup {
     options: SelectOption[];
 }
 
-export interface SelectProps {
+export interface SelectControlClasses {
+    control?: string;
+    valueContainer?: string;
+    placeHolder?: string;
+    menu?: string;
+    option?: string;
+    noOptionsMessage?: string;
+    groupHeading?: string;
+}
+
+export interface SelectProps extends Props<SelectOption, false> {
     title?: string;
     hideTitle?: boolean;
     size?: 'xs' | 'md';
     prompt?: string;
     options: SelectOption[] | SelectOptionGroup[];
     selectedOption?: string
-    onSelect: (value: string) => void;
+    onSelect: (value: string | undefined) => void;
     error?:boolean;
     hint?: React.ReactNode;
     clearBg?: boolean;
     border?: boolean;
+    fullWidth?: boolean;
     containerClassName?: string;
-    selectClassName?: string;
-    optionClassName?: string;
+    controlClasses?: SelectControlClasses;
     unstyled?: boolean;
     disabled?: boolean;
 }
+
+const DropdownIndicator: React.FC<DropdownIndicatorProps<SelectOption, false> & {clearBg: boolean}> = ({clearBg, ...props}) => (
+    <components.DropdownIndicator {...props}>
+        <div className={`absolute top-[14px] block h-2 w-2 rotate-45 border-[1px] border-l-0 border-t-0 border-grey-900 content-[''] dark:border-grey-400 ${clearBg ? 'right-0' : 'right-4'} `}></div>
+    </components.DropdownIndicator>
+);
+
+const Option: React.FC<OptionProps<SelectOption, false>> = ({children, ...optionProps}) => (
+    <components.Option {...optionProps}>
+        <span data-testid="multiselect-option">{children}</span>
+    </components.Option>
+);
 
 const Select: React.FC<SelectProps> = ({
     title,
@@ -48,25 +71,20 @@ const Select: React.FC<SelectProps> = ({
     hint,
     clearBg = true,
     border = true,
+    fullWidth = true,
     containerClassName,
-    selectClassName,
-    optionClassName,
+    controlClasses,
     unstyled,
-    disabled = false
+    disabled = false,
+    ...props
 }) => {
     const id = useId();
-
-    const handleOptionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        onSelect(event.target.value);
-    };
 
     let containerClasses = '';
     if (!unstyled) {
         containerClasses = clsx(
-            'relative w-full after:pointer-events-none dark:text-white',
-            `after:absolute after:block after:h-2 after:w-2 after:rotate-45 after:border-[1px] after:border-l-0 after:border-t-0 after:border-grey-900 after:content-[''] dark:after:border-grey-500`,
-            size === 'xs' ? 'after:top-[6px]' : 'after:top-[14px]',
-            clearBg ? 'after:right-0' : 'after:right-4',
+            'dark:text-white',
+            fullWidth && 'w-full',
             disabled && 'opacity-40'
         );
     }
@@ -75,53 +93,66 @@ const Select: React.FC<SelectProps> = ({
         containerClassName
     );
 
-    let selectClasses = '';
-    if (!unstyled) {
-        selectClasses = clsx(
-            size === 'xs' ? 'h-6 py-0 pr-3 text-xs' : 'h-10 py-2 pr-5',
-            'w-full appearance-none outline-none',
+    const customClasses = {
+        control: clsx(
+            controlClasses?.control,
+            'min-h-[40px] w-full cursor-pointer appearance-none outline-none dark:text-white',
+            size === 'xs' ? 'py-0 text-xs' : 'py-2',
             border && 'border-b',
-            !clearBg && 'bg-grey-75 px-[10px]',
-            error ? '!border-red' : 'border-grey-500 focus:border-black dark:border-grey-800 dark:focus:border-grey-500',
-            disabled ? 'cursor-auto' : 'cursor-pointer hover:border-grey-700',
+            !clearBg && 'bg-grey-75 px-[10px] dark:bg-grey-950',
+            error ? 'border-red' : 'border-grey-500 hover:border-grey-700 dark:border-grey-800 dark:hover:border-grey-700',
             (title && !clearBg) && 'mt-2'
-        );
-    }
-    selectClasses = clsx(
-        selectClasses,
-        selectClassName
-    );
+        ),
+        valueContainer: clsx('gap-1', controlClasses?.valueContainer),
+        placeHolder: clsx('text-grey-500 dark:text-grey-800', controlClasses?.placeHolder),
+        menu: clsx(
+            'z-50 rounded-b bg-white py-2 shadow dark:border dark:border-grey-900 dark:bg-black',
+            size === 'xs' && 'text-xs',
+            controlClasses?.menu
+        ),
+        option: clsx('px-3 py-[6px] hover:cursor-pointer hover:bg-grey-100 dark:text-white dark:hover:bg-grey-900', controlClasses?.option),
+        noOptionsMessage: clsx('p-3 text-grey-600', controlClasses?.noOptionsMessage),
+        groupHeading: clsx('px-3 py-[6px] text-2xs font-semibold uppercase tracking-wide text-grey-700', controlClasses?.groupHeading)
+    };
 
-    const optionClasses = optionClassName;
+    const dropdownIndicatorComponent = useMemo(() => {
+        return function DropdownIndicatorComponent(ddiProps: DropdownIndicatorProps<SelectOption, false>) {
+            return <DropdownIndicator {...ddiProps} clearBg={clearBg} />;
+        };
+    }, [clearBg]);
+
+    const individualOptions = options.flatMap((option) => {
+        if ('options' in option) {
+            return option.options;
+        }
+        return option;
+    });
 
     const select = (
         <>
             {title && <Heading className={hideTitle ? 'sr-only' : ''} grey={selectedOption || !prompt ? true : false} htmlFor={id} useLabelTag={true}>{title}</Heading>}
             <div className={containerClasses}>
-                <select className={selectClasses} disabled={disabled} id={id} value={selectedOption} onChange={handleOptionChange}>
-                    {prompt && <option className={optionClasses} value="" disabled selected>{prompt}</option>}
-                    {options.map(option => (
-                        'options' in option ?
-                            <optgroup key={option.key || option.label} label={option.label}>
-                                {option.options.map(child => (
-                                    <option
-                                        key={child.key || child.value}
-                                        className={clsx(optionClasses, child.className)}
-                                        value={child.value}
-                                    >
-                                        {child.label}
-                                    </option>
-                                ))}
-                            </optgroup> :
-                            <option
-                                key={option.key || option.value}
-                                className={clsx(optionClasses, option.className)}
-                                value={option.value}
-                            >
-                                {option.label}
-                            </option>
-                    ))}
-                </select>
+                <ReactSelect<SelectOption, false>
+                    classNames={{
+                        menuList: () => 'z-50',
+                        valueContainer: () => customClasses.valueContainer,
+                        control: () => customClasses.control,
+                        placeholder: () => customClasses.placeHolder,
+                        menu: () => customClasses.menu,
+                        option: () => customClasses.option,
+                        noOptionsMessage: () => customClasses.noOptionsMessage,
+                        groupHeading: () => customClasses.groupHeading
+                    }}
+                    components={{DropdownIndicator: dropdownIndicatorComponent, Option}}
+                    inputId={id}
+                    isClearable={false}
+                    options={options}
+                    placeholder={prompt ? prompt : ''}
+                    value={individualOptions.find(option => option.value === selectedOption)}
+                    unstyled
+                    onChange={option => onSelect(option?.value)}
+                    {...props}
+                />
             </div>
             {hint && <Hint color={error ? 'red' : ''}>{hint}</Hint>}
         </>

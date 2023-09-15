@@ -166,7 +166,9 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 selectedOption={selectedOption}
                 title="Default Newsletter recipients"
                 onSelect={(value) => {
-                    setDefaultRecipientValue(value);
+                    if (value) {
+                        setDefaultRecipientValue(value);
+                    }
                 }}
             />
             {(selectedOption === 'segment') && (

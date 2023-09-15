@@ -98,7 +98,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 selectedOption={membersSignupAccess}
                 title="Subscription access"
                 onSelect={(value) => {
-                    updateSetting('members_signup_access', value);
+                    updateSetting('members_signup_access', value || null);
                 }}
             />
             <Select
@@ -107,7 +107,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 selectedOption={defaultContentVisibility}
                 title="Default post access"
                 onSelect={(value) => {
-                    updateSetting('default_content_visibility', value);
+                    updateSetting('default_content_visibility', value || null);
                 }}
             />
             {defaultContentVisibility === 'tiers' && (
@@ -126,7 +126,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 selectedOption={commentsEnabled}
                 title="Commenting"
                 onSelect={(value) => {
-                    updateSetting('comments_enabled', value);
+                    updateSetting('comments_enabled', value || null);
                 }}
             />
         </SettingGroupContent>
