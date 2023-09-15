@@ -7,6 +7,7 @@ const storage = require('../adapters/storage');
 let nodes;
 let lexicalHtmlRenderer;
 let urlTransformMap;
+let postsService;
 
 function populateNodes() {
     const {DEFAULT_NODES} = require('@tryghost/kg-default-nodes');
@@ -28,12 +29,19 @@ module.exports = {
     },
 
     async render(lexical, userOptions = {}) {
-        const getPostServiceInstance = require('../services/posts/posts-service');
-        const postsService = getPostServiceInstance();
+        if (!postsService) {
+            const getPostServiceInstance = require('../services/posts/posts-service');
+            postsService = getPostServiceInstance();
+        }
 
         const getCollectionPosts = async (collectionSlug, postCount) => {
             const transacting = userOptions.transacting;
-            const {data} = await postsService.browsePosts({collection: collectionSlug, limit: postCount, transacting});
+            const {data} = await postsService.browsePosts({
+                context: {public: true}, // mimic Content API request
+                collection: collectionSlug,
+                limit: postCount,
+                transacting
+            });
             let posts = data.map(p => p.toJSON());
             return posts;
         };
