@@ -83,7 +83,7 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
 
 const RecommendationList: React.FC<RecommendationListProps> = ({recommendations, pagination, isLoading}) => {
     if (isLoading || recommendations.length) {
-        return <Table hint='Readers will see your recommendations in randomized order' isLoading={isLoading} pagination={pagination} hintSeparator>
+        return <Table hint='Readers will see your recommendations in randomized order' isLoading={isLoading} itemCount={recommendations.length} pagination={pagination} hintSeparator>
             {recommendations && recommendations.map(recommendation => <RecommendationItem key={recommendation.id} recommendation={recommendation} />)}
         </Table>;
     } else {

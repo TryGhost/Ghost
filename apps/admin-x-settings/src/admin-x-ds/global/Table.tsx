@@ -21,6 +21,7 @@ interface TableProps {
     className?: string;
     isLoading?: boolean;
     pagination?: PaginationData;
+    itemCount?: number;
 }
 
 const OptionalPagination = ({pagination}: {pagination?: PaginationData}) => {
@@ -31,7 +32,7 @@ const OptionalPagination = ({pagination}: {pagination?: PaginationData}) => {
     return <Pagination {...pagination}/>;
 };
 
-const Table: React.FC<TableProps> = ({header, children, borderTop, hint, hintSeparator, pageTitle, className, pagination, isLoading}) => {
+const Table: React.FC<TableProps> = ({header, children, borderTop, hint, hintSeparator, pageTitle, className, pagination, isLoading, itemCount}) => {
     const tableClasses = clsx(
         (borderTop || pageTitle) && 'border-t border-grey-300',
         'w-full',
@@ -44,22 +45,30 @@ const Table: React.FC<TableProps> = ({header, children, borderTop, hint, hintSep
     const [tableHeight, setTableHeight] = React.useState<number | undefined>(undefined);
 
     React.useEffect(() => {
-        // Add resize observer to table
+        if (!pagination || pagination.pages === 1) {
+            setTableHeight(undefined);
+            return;
+        }
+
         if (table.current) {
             const resizeObserver = new ResizeObserver((entries) => {
                 const height = entries[0].target.clientHeight;
                 setTableHeight(height);
             });
+
             resizeObserver.observe(table.current);
+
             return () => {
                 resizeObserver.disconnect();
             };
         }
-    }, [isLoading]);
+    }, [isLoading, itemCount, pagination]);
 
-    const loadingStyle = React.useMemo(() => {
+    const tableHeightStyle = React.useMemo(() => {
         if (tableHeight === undefined) {
-            return undefined;
+            return {
+                height: 'auto'
+            };
         }
 
         return {
@@ -71,20 +80,17 @@ const Table: React.FC<TableProps> = ({header, children, borderTop, hint, hintSep
         <>
             <div className='w-full overflow-x-auto'>
                 {pageTitle && <Heading>{pageTitle}</Heading>}
-              
-                {/* TODO: make this div have the same height across all pages */}
-                <div>
-                    <table className={tableClasses}>
-                        {header && <thead className='border-b border-grey-200 dark:border-grey-600'>
-                            <TableRow bgOnHover={false} separator={false}>{header}</TableRow>
-                        </thead>}
-                        {!isLoading && <tbody ref={table}>
-                            {children}
-                        </tbody>}
-                    </table>
-                </div>
 
-                {isLoading && <LoadingIndicator delay={200} size='lg' style={loadingStyle} />}
+                <table className={tableClasses} style={tableHeightStyle}>
+                    {header && <thead className='border-b border-grey-200 dark:border-grey-600'>
+                        <TableRow bgOnHover={false} separator={false}>{header}</TableRow>
+                    </thead>}
+                    {!isLoading && <tbody ref={table}>
+                        {children}
+                    </tbody>}
+                </table>
+
+                {isLoading && <LoadingIndicator delay={200} size='lg' style={tableHeightStyle} />}
 
                 {(hint || pagination) &&
                 <div className="-mt-px">
