@@ -121,9 +121,22 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
     };
 
     const handleSetHtml = (html: string) => {
+        // Workaround for a bug in Lexical where it adds style attributes everywhere with white-space: pre-wrap
+        // Likely related: https://github.com/facebook/lexical/issues/4255
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const elements = doc.querySelectorAll('*') as NodeListOf<HTMLElement>;
+
+        elements.forEach((element) => {
+            element.style.removeProperty('white-space');
+            if (!element.getAttribute('style')) {
+                element.removeAttribute('style');
+            }
+        });
+
         // Koenig sends this event on load without changing the value, so this prevents forms from being marked as unsaved
-        if (html !== value) {
-            onChange?.(html);
+        if (doc.body.innerHTML !== value) {
+            onChange?.(doc.body.innerHTML);
         }
     };
 
