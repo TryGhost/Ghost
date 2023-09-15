@@ -1,5 +1,6 @@
 import Form from '../../../../admin-x-ds/global/form/Form';
 import Heading from '../../../../admin-x-ds/global/Heading';
+import Hint from '../../../../admin-x-ds/global/Hint';
 import React from 'react';
 import RecommendationIcon from './RecommendationIcon';
 import TextArea from '../../../../admin-x-ds/global/form/TextArea';
@@ -27,6 +28,7 @@ const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recomme
                 </div>
                 <span className='line-clamp-1 text-xs leading-snug text-grey-700'>{formState.url}</span>
             </a>
+            {formState.one_click_subscribe && <Hint>This is a Ghost site, so your readers can subscribe with just one click</Hint>}
         </div>
 
         <TextField
