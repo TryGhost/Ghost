@@ -106,11 +106,9 @@ const handleNavigation = () => {
     const domain = `${window.location.protocol}//${window.location.hostname}`;
     let url = new URL(hash, domain);
 
-    // Get the path name from the hash, not including query parameters
     const pathName = getHashPath(url.pathname);
 
     if (pathName) {
-        // Search for the modal that matches the route
         const [path, modal] = Object.entries(modalPaths).find(([modalPath]) => matchRoute(pathName, modalPath)) || [];
 
         return {
@@ -118,7 +116,7 @@ const handleNavigation = () => {
             modal: (path && modal) ? 
                 modal().then(({default: component}) => {
                     NiceModal.show(component, {params: matchRoute(pathName, path)});
-                }) : 
+                }) :
                 undefined
         };
     }
