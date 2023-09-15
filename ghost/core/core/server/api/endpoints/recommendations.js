@@ -9,7 +9,8 @@ module.exports = {
         },
         options: [
             'limit',
-            'page'
+            'page',
+            'include'
         ],
         permissions: true,
         validation: {},

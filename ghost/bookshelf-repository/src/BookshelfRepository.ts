@@ -17,7 +17,7 @@ export type ModelClass<T> = {
     add: (data: object) => Promise<ModelInstance<T>>;
     getFilteredCollection: (options: {filter?: string, mongoTransformer?: unknown}) => {
         count(): Promise<number>,
-        query: (f: (q: Knex.QueryBuilder) => void) => void,
+        query: (f?: (q: Knex.QueryBuilder) => void) => Knex.QueryBuilder,
         fetchAll: () => Promise<ModelInstance<T>[]>
     };
 }
@@ -131,5 +131,24 @@ export abstract class BookshelfRepository<IDType, T extends Entity<IDType>> {
             mongoTransformer: this.#getNQLKeyTransformer()
         });
         return await collection.count();
+    }
+
+    async getGroupedCount<K extends keyof T>({filter, groupBy}: { filter?: string, groupBy: K }): Promise<({count: number} & Record<K, T[K]>)[]> {
+        const columnName = this.#entityFieldToColumn(groupBy);
+
+        const data = (await this.Model.getFilteredCollection({
+            filter,
+            mongoTransformer: this.#getNQLKeyTransformer()
+        }).query()
+            .select(columnName)
+            .count('* as count')
+            .groupBy(columnName)) as ({count: number} & Record<string, T[K]>)[];
+
+        return data.map((row) => {
+            return {
+                count: row.count,
+                [groupBy]: row[columnName]
+            };
+        }) as ({count: number} & Record<K, T[K]>)[];
     }
 }
