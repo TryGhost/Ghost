@@ -3,7 +3,9 @@ import events from 'events';
 import sinon from 'sinon';
 import DomainEvents from '@tryghost/domain-events';
 import {
-    PostDeletedEvent,
+    PostDeletedEvent
+} from '@tryghost/post-events';
+import {
     PostEditedEvent,
     PostAddedEvent,
     TagDeletedEvent

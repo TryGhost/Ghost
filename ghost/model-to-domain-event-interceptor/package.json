@@ -26,7 +26,8 @@
         "sinon": "15.2.0"
     },
     "dependencies": {
-        "@tryghost/collections": "0.0.0"
+        "@tryghost/collections": "0.0.0",
+        "@tryghost/post-events": "0.0.0"
     },
     "c8": {
         "exclude": [
