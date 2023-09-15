@@ -84,7 +84,6 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <SettingGroup
-            customButtons={<Button color='green' label='Export' link={true} onClick={exportPosts} />}
             description='Decide what data you collect from your members'
             isEditing={isEditing}
             keywords={keywords}
@@ -92,12 +91,14 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
             saveState={saveState}
             testId='analytics'
             title='Analytics'
+            hideEditButton
             onCancel={handleCancel}
             onEditingChange={handleEditingChange}
             onSave={handleSave}
         >
             {inputs}
-            <div className='-mt-1'>
+            <div className='items-center-mt-1 flex justify-between'>
+                <Button color='green' label='Export' link={true} onClick={exportPosts} />
                 <a className='text-sm text-green' href="https://ghost.org/help/post-analytics/" rel="noopener noreferrer" target="_blank">Learn about analytics</a>
             </div>
         </SettingGroup>
