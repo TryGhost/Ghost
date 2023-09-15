@@ -132,6 +132,7 @@
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Du annullerer ikke dit abonnement på {{title}} ved at afmelde dig fra alle e-mails",
     "Update": "Opdater",
     "Update your preferences": "Opdater dine præferencer",
+    "Verification link sent, check your inbox": "",
     "Verify your email address is correct": "Tjek om din e-mailadresse er korrekt",
     "View plans": "Se abonnementer",
     "We couldn't unsubscribe you as the email address was not found. Please contact the site owner.": "Vi kunne ikke afmelde dig, da e-mailen ikke blev fundet. Kontakt venligst ejeren af siden.",

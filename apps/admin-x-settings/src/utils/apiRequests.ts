@@ -1,3 +1,4 @@
+import handleResponse from './handleResponse';
 import {QueryClient, UseInfiniteQueryOptions, UseQueryOptions, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {getGhostPaths} from './helpers';
 import {useMemo} from 'react';
@@ -24,27 +25,6 @@ interface RequestOptions {
     credentials?: 'include' | 'omit' | 'same-origin';
 }
 
-export class ApiError extends Error {
-    constructor(
-        public readonly response: Response,
-        public readonly data?: {
-            errors?: Array<{
-                code: string | null;
-                context: string | null;
-                details: string | null;
-                ghostErrorCode: string | null;
-                help: string | null;
-                id: string;
-                message: string;
-                property: string | null;
-                type: string;
-            }>
-        }
-    ) {
-        super(data?.errors?.[0]?.message || response.statusText);
-    }
-}
-
 export const useFetchApi = () => {
     const {ghostVersion} = useServices();
 
@@ -69,16 +49,7 @@ export const useFetchApi = () => {
             ...options
         });
 
-        if (response.status > 299) {
-            const data = response.headers.get('content-type')?.includes('application/json') ? await response.json() : undefined;
-            throw new ApiError(response, data);
-        } else if (response.status === 204) {
-            return;
-        } else if (response.headers.get('content-type')?.includes('text/csv')) {
-            return await response.text();
-        } else {
-            return await response.json();
-        }
+        return handleResponse(response);
     };
 };
 

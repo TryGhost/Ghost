@@ -402,6 +402,27 @@ describe('{{#foreach}} helper', function () {
             shouldCompileToExpected(templateString, objectHashWithVis, expected);
         });
 
+        it('foreach with newsletters with members visibility', function () {
+            const newsletterObjectHashWithVisibility = {
+                newsletters: {
+                    first: {name: 'first', visibility: 'members', subscribe_on_signup: true},
+                    second: {name: 'second', visibility: 'members', subscribe_on_signup: true},
+                    third: {name: 'third', visibility: 'paid', subscribe_on_signup: false}
+                }
+            };
+            const newsletterArrayHashWithVisibility = {
+                newsletters: [
+                    {name: 'first', visibility: 'members', subscribe_on_signup: true},
+                    {name: 'second', visibility: 'members', subscribe_on_signup: true},
+                    {name: 'third', visibility: 'paid', subscribe_on_signup: false}
+                ]
+            };
+            const templateString = '<ul>{{#foreach newsletters}}<li>{{name}}</li>{{else}}not this{{/foreach}}</ul>';
+            const expected = '<ul><li>first</li><li>second</li><li>third</li></ul>';
+            shouldCompileToExpected(templateString, newsletterObjectHashWithVisibility, expected);
+            shouldCompileToExpected(templateString, newsletterArrayHashWithVisibility, expected);
+        });
+
         it('foreach with from 2', function () {
             const templateString = '<ul>{{#foreach posts from="2"}}<li>{{title}}</li>{{else}}not this{{/foreach}}</ul>';
             const expected = '<ul><li>second</li><li>third</li><li>fourth</li><li>fifth</li></ul>';
