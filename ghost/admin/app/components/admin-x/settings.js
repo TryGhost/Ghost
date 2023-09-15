@@ -9,10 +9,16 @@ import {tracked} from '@glimmer/tracking';
 
 // TODO: Long term move asset management directly in AdminX
 const officialThemes = [{
+    name: 'Source',
+    category: 'News',
+    previewUrl: 'https://source-news.ghost.io/',
+    ref: 'default',
+    image: 'assets/img/themes/Source.png'
+}, {
     name: 'Casper',
     category: 'Blog',
     previewUrl: 'https://demo.ghost.io/',
-    ref: 'default',
+    ref: 'TryGhost/Casper',
     image: 'assets/img/themes/Casper.png'
 }, {
     name: 'Headline',
