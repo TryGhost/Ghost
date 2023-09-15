@@ -486,7 +486,7 @@ module.exports = class RouterController {
 
                 if (requestedNewsletters && requestedNewsletters.length > 0 && requestedNewsletters.every(newsletter => newsletter.name !== undefined)) {
                     const newsletterNames = requestedNewsletters.map(newsletter => newsletter.name);
-                    const newsletterNamesFilter = newsletterNames.map(newsletter => `'${newsletter.replace(/("|')/g, "\\$1")}'`);
+                    const newsletterNamesFilter = newsletterNames.map(newsletter => `'${newsletter.replace(/("|')/g, '\\$1')}'`);
                     const newsletters = await this._newslettersService.browse({
                         filter: `name:[${newsletterNamesFilter}]`,
                         columns: ['id','name','status']
