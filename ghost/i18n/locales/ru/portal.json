@@ -1,6 +1,6 @@
 {
     "{{amount}} days free": "{{amount}} – дней бесплатно",
-    "{{amount}} off": "Скидка на "{{amount}}",
+    "{{amount}} off": "Скидка на {{amount}}",
     "{{amount}} off for first {{number}} months.": "Скидка {{amount}} на первые {{number}} месяцев.",
     "{{amount}} off for first {{period}}.": "Скидка {{amount}} на первый {{period}}.",
     "{{amount}} off forever.": "Скидка навсегда.",
