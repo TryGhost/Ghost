@@ -132,6 +132,7 @@
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Sähköpostien peruuttaminen ei peruuta maksullista tilaustasi {{title}}",
     "Update": "Päivitä",
     "Update your preferences": "Päivitä asetuksesi",
+    "Verification link sent, check your inbox": "",
     "Verify your email address is correct": "Vahvista sähköpostiosoitteesi oikeellisuus",
     "View plans": "Katso tilausvaihtoehtoja",
     "We couldn't unsubscribe you as the email address was not found. Please contact the site owner.": "Emme voineet peruuttaa tilaustasi, koska sähköpostiosoitetta ei löytynyt. Ota yhteyttä sivuston omistajaan.",

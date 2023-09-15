@@ -132,6 +132,7 @@
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Спирането на изпращането на писма, няма да ти прекрати абонамента и регистрацията в {{title}}",
     "Update": "Обнови",
     "Update your preferences": "Обнови твоите предпочитания/настройки",
+    "Verification link sent, check your inbox": "",
     "Verify your email address is correct": "Проверете дали имейл адресът ви е верен",
     "View plans": "Вижте плановете",
     "We couldn't unsubscribe you as the email address was not found. Please contact the site owner.": "Този пощенски адрес който опитвате да разабонирате, изглежда невалиден. Моля, свържете се със собственика на сайта.",

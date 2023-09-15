@@ -132,6 +132,7 @@
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Uppsögn tölvupósta felur ekki í sér uppsögn áskriftar að {{title}}",
     "Update": "Uppfæra",
     "Update your preferences": "Breyta vali",
+    "Verification link sent, check your inbox": "",
     "Verify your email address is correct": "Gakktu úr skugga um að netfangið sé rétt",
     "View plans": "Skoða áskriftarleiðir",
     "We couldn't unsubscribe you as the email address was not found. Please contact the site owner.": "Uppsögn mistókst vegna þess að netfangið fannst ekki. Hafðu samband við eiganda síðunnar.",
